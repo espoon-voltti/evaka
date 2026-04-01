@@ -23,8 +23,7 @@ import type { DevDaycare, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -134,8 +133,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       const header = new CitizenHeader(page, env)
       await header.selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
-      await waitUntilEqual(
-        () => calendar.getExpiringIncomeCtaContent(),
+      await expect(calendar.expiringIncomeCta).toHaveText(
         'Muista päivittää tulotietosi 01.02.2022 mennessä'
       )
       await calendar.clickExpiringIncomeCta()
@@ -147,10 +145,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       await incomeStatementsPage.checkAssured()
       await incomeStatementsPage.submit()
 
-      await waitUntilEqual(
-        async () => await incomeStatementsPage.rows.count(),
-        1
-      )
+      await expect(incomeStatementsPage.rows).toHaveCount(1)
       await incomeStatementsPage.rows
         .only()
         .assertText((text) => text.includes(today.format()))

@@ -31,7 +31,7 @@ import {
 import type { DevPerson } from '../../generated/api-types'
 import ConfirmedDayReservationPage from '../../pages/mobile/child-confimed-reservations-page'
 import MobileListPage from '../../pages/mobile/list-page'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 
@@ -233,25 +233,25 @@ test.describe('Child confirmed reservations', () => {
     const testDay = LocalDate.of(2022, 5, 19)
     await confirmedReservationPage.openDayItem(testDay)
 
-    await confirmedReservationPage
-      .childItem(testDay, shiftCareChild1.id)
-      .waitUntilVisible()
-    await confirmedReservationPage
-      .childItem(testDay, shiftCareChild2.id)
-      .waitUntilVisible()
+    await expect(
+      confirmedReservationPage.childItem(testDay, shiftCareChild1.id)
+    ).toBeVisible()
+    await expect(
+      confirmedReservationPage.childItem(testDay, shiftCareChild2.id)
+    ).toBeVisible()
 
-    await confirmedReservationPage
-      .childItem(testDay, testChild.id)
-      .waitUntilHidden()
-    await confirmedReservationPage
-      .childItem(testDay, testChild2.id)
-      .waitUntilHidden()
-    await confirmedReservationPage
-      .childItem(testDay, testChildRestricted.id)
-      .waitUntilHidden()
-    await confirmedReservationPage
-      .childItem(testDay, testChildNoSsn.id)
-      .waitUntilHidden()
+    await expect(
+      confirmedReservationPage.childItem(testDay, testChild.id)
+    ).toBeHidden()
+    await expect(
+      confirmedReservationPage.childItem(testDay, testChild2.id)
+    ).toBeHidden()
+    await expect(
+      confirmedReservationPage.childItem(testDay, testChildRestricted.id)
+    ).toBeHidden()
+    await expect(
+      confirmedReservationPage.childItem(testDay, testChildNoSsn.id)
+    ).toBeHidden()
   })
 
   test('Shift care daily counts are correct', async () => {

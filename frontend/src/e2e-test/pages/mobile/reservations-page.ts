@@ -4,6 +4,7 @@
 
 import type LocalDate from 'lib-common/local-date'
 
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { TextInput } from '../../utils/page'
 
@@ -28,9 +29,9 @@ export default class MobileReservationsPage {
     return await Promise.all(
       expected.map(async ({ date, text }) => {
         const reservationDate = this.#findReservationDate(date)
-        await reservationDate
-          .findByDataQa('reservation-text')
-          .assertTextEquals(text)
+        await expect(
+          reservationDate.findByDataQa('reservation-text')
+        ).toHaveText(text)
       })
     )
   }
@@ -83,15 +84,15 @@ export class MobileReservationsEditPage {
   }
 
   async assertFixedSchedule(date: LocalDate) {
-    await this.#findReservationDate(date)
-      .findByDataQa('fixed-schedule')
-      .waitUntilVisible()
+    await expect(
+      this.#findReservationDate(date).findByDataQa('fixed-schedule')
+    ).toBeVisible()
   }
 
   async assertTermBreak(date: LocalDate) {
-    await this.#findReservationDate(date)
-      .findByDataQa('term-break')
-      .waitUntilVisible()
+    await expect(
+      this.#findReservationDate(date).findByDataQa('term-break')
+    ).toBeVisible()
   }
 
   #findReservationDate = (date: LocalDate) =>

@@ -5,12 +5,12 @@
 import type { Page, Element } from '../../utils/page'
 
 export default class TopNav {
-  #userMenu: Element
+  userInitials: Element
   systemNotificationBtn: Element
   systemNotificationModal: Element
   systemNotificationModalClose: Element
   constructor(readonly page: Page) {
-    this.#userMenu = page.findByDataQa('top-bar-user')
+    this.userInitials = page.findByDataQa('top-bar-user')
     this.systemNotificationBtn = page.findByDataQa('system-notification-btn')
     this.systemNotificationModal = page.findByDataQa(
       'system-notification-modal'
@@ -20,18 +20,14 @@ export default class TopNav {
   }
 
   async openUserMenu() {
-    await this.#userMenu.click()
+    await this.userInitials.click()
   }
 
   async logout() {
-    await this.#userMenu.find('[data-qa="logout-btn"]').click()
-  }
-
-  getUserInitials(): Promise<string> {
-    return this.#userMenu.text
+    await this.userInitials.find('[data-qa="logout-btn"]').click()
   }
 
   getFullName(): Promise<string> {
-    return this.#userMenu.find('[data-qa="full-name"]').text
+    return this.userInitials.find('[data-qa="full-name"]').text
   }
 }

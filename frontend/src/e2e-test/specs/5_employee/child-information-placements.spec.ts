@@ -32,7 +32,7 @@ import {
   terminatePlacement
 } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import {
   Checkbox,
   Combobox,
@@ -298,7 +298,7 @@ test.describe('Child Information placement create (feature flag place guarantee 
     const modal = new Modal(evaka.findByDataQa('modal'))
     const unitSelect = new Combobox(modal.find('[data-qa="unit-select"]'))
     await unitSelect.fillAndSelectFirst(unitName)
-    await modal.findByDataQa('create-placement-end-date').assertTextEquals('')
+    await expect(modal.findByDataQa('create-placement-end-date')).toHaveText('')
     await modal.submitButton.assertDisabled(true)
   })
 
@@ -343,9 +343,9 @@ test.describe('Child Information placement create (feature flag place guarantee 
 
     // Placement starts a day before the term
     await start.fill(preschoolTerms.finnishPreschool.start.subDays(1))
-    await modal
-      .findText('Sijoituksen tulee olla esiopetuskaudella')
-      .waitUntilVisible()
+    await expect(
+      modal.findText('Sijoituksen tulee olla esiopetuskaudella')
+    ).toBeVisible()
     await modal.submitButton.assertDisabled(true)
 
     // A day before preschool term the extended term is valid so placement can be created
@@ -354,9 +354,9 @@ test.describe('Child Information placement create (feature flag place guarantee 
 
     // Placement starts a day before the term so it is invalid
     await start.fill(preschoolTerms.extendedTerm.start.subDays(1))
-    await modal
-      .findText('Sijoituksen tulee olla esiopetuskaudella')
-      .waitUntilVisible()
+    await expect(
+      modal.findText('Sijoituksen tulee olla esiopetuskaudella')
+    ).toBeVisible()
     await modal.submitButton.assertDisabled(true)
 
     // Create a valid placement
@@ -371,8 +371,8 @@ test.describe('Child Information placement create (feature flag place guarantee 
     )
     await editedStart.fill(preschoolTerms.extendedTerm.start.subDays(1))
 
-    await placements
-      .findText('Sijoituksen tulee olla esiopetuskaudella')
-      .waitUntilVisible()
+    await expect(
+      placements.findText('Sijoituksen tulee olla esiopetuskaudella')
+    ).toBeVisible()
   })
 })

@@ -13,7 +13,7 @@ import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import type { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
 test.describe('Absence application', () => {
@@ -65,20 +65,20 @@ test.describe('Absence application', () => {
       new FiniteDateRange(startDate, startDate.addWeeks(1))
     )
     await absenceModal.selectAbsenceType('OTHER_ABSENCE')
-    await absenceModal.tooManyAbsencesError(child.id).waitUntilVisible()
+    await expect(absenceModal.tooManyAbsencesError(child.id)).toBeVisible()
     await absenceModal.modalSendButton.assertDisabled(true)
     await absenceModal.selectDates(
       new FiniteDateRange(startDate, startDate.addWeeks(1).subDays(1))
     )
-    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await expect(absenceModal.tooManyAbsencesError(child.id)).toBeHidden()
     await absenceModal.modalSendButton.assertDisabled(false)
     await absenceModal.selectDates(
       new FiniteDateRange(startDate, startDate.addWeeks(1))
     )
-    await absenceModal.tooManyAbsencesError(child.id).waitUntilVisible()
+    await expect(absenceModal.tooManyAbsencesError(child.id)).toBeVisible()
     await absenceModal.modalSendButton.assertDisabled(true)
     await absenceModal.selectAbsenceType('SICKLEAVE')
-    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await expect(absenceModal.tooManyAbsencesError(child.id)).toBeHidden()
     await absenceModal.modalSendButton.assertDisabled(false)
   })
 
@@ -122,17 +122,17 @@ test.describe('Absence application', () => {
       new FiniteDateRange(startDate, startDate.addWeeks(1).subDays(1))
     )
     await absenceModal.selectAbsenceType('OTHER_ABSENCE')
-    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await expect(absenceModal.tooManyAbsencesError(child.id)).toBeHidden()
     await absenceModal.modalSendButton.assertDisabled(false)
     await absenceModal.selectDates(
       new FiniteDateRange(startDate, startDate.addWeeks(1))
     )
-    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await expect(absenceModal.tooManyAbsencesError(child.id)).toBeHidden()
     await absenceModal.modalSendButton.assertDisabled(false)
     await absenceModal.selectDates(
       new FiniteDateRange(startDate, startDate.addWeeks(1).addDays(1))
     )
-    await absenceModal.tooManyAbsencesError(child.id).waitUntilVisible()
+    await expect(absenceModal.tooManyAbsencesError(child.id)).toBeVisible()
     await absenceModal.modalSendButton.assertDisabled(true)
   })
 
@@ -175,17 +175,17 @@ test.describe('Absence application', () => {
       new FiniteDateRange(startDate, startDate.addWeeks(1).subDays(1))
     )
     await absenceModal.selectAbsenceType('OTHER_ABSENCE')
-    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await expect(absenceModal.tooManyAbsencesError(child.id)).toBeHidden()
     await absenceModal.modalSendButton.assertDisabled(false)
     await absenceModal.selectDates(
       new FiniteDateRange(startDate, startDate.addWeeks(1))
     )
-    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await expect(absenceModal.tooManyAbsencesError(child.id)).toBeHidden()
     await absenceModal.modalSendButton.assertDisabled(false)
     await absenceModal.selectDates(
       new FiniteDateRange(startDate, startDate.addWeeks(1).addDays(1))
     )
-    await absenceModal.tooManyAbsencesError(child.id).waitUntilVisible()
+    await expect(absenceModal.tooManyAbsencesError(child.id)).toBeVisible()
     await absenceModal.modalSendButton.assertDisabled(true)
   })
 
@@ -228,7 +228,7 @@ test.describe('Absence application', () => {
       new FiniteDateRange(startDate, startDate.addWeeks(1))
     )
     await absenceModal.selectAbsenceType('OTHER_ABSENCE')
-    await absenceModal.tooManyAbsencesError(child.id).waitUntilHidden()
+    await expect(absenceModal.tooManyAbsencesError(child.id)).toBeHidden()
     await absenceModal.modalSendButton.assertDisabled(false)
   })
 
@@ -473,7 +473,7 @@ test.describe('Absence application', () => {
     )
     await newAbsenceApplicationPage.description.fill('test')
     await newAbsenceApplicationPage.confirmation.check()
-    await newAbsenceApplicationPage.dateRangeWarning.waitUntilVisible()
+    await expect(newAbsenceApplicationPage.dateRangeWarning).toBeVisible()
     await newAbsenceApplicationPage.createButton.assertDisabled(true)
   })
 

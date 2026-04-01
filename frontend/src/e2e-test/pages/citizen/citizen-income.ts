@@ -4,6 +4,7 @@
 
 import type { IncomeStatementAttachmentType } from 'lib-common/generated/api-types/incomestatement'
 
+import { expect } from '../../playwright'
 import type {
   Page,
   Element,
@@ -71,7 +72,7 @@ export default class CitizenIncomePage {
   }
 
   async assertMissingAttachment(attachmentType: IncomeStatementAttachmentType) {
-    await this.#missingAttachment(attachmentType).waitUntilVisible()
+    await expect(this.#missingAttachment(attachmentType)).toBeVisible()
   }
 
   async saveDraft() {
@@ -197,11 +198,11 @@ export default class CitizenIncomePage {
     await this.page
       .findByDataQa('notification-container')
       .assertAttributeEquals('aria-live', 'polite')
-    await this.page
-      .find(
+    await expect(
+      this.page.find(
         '[data-qa="notification-container"] > [data-qa=income-statement-sent-notification]'
       )
-      .assertTextEquals('Tuloselvitys lähetetty')
+    ).toHaveText('Tuloselvitys lähetetty')
   }
 
   async closeNotification() {

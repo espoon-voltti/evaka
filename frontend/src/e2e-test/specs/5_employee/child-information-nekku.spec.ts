@@ -13,7 +13,7 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import type { AdditionalInformationSection } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import { employeeLogin } from '../../utils/user'
 
 let childInformationPage: ChildInformationPage
@@ -88,31 +88,31 @@ test.describe('Nekku fields are editable', () => {
   })
 
   test('Participates in breakfast information can be unset', async () => {
-    await section.participatesInBreakfast.assertTextEquals('Kyllä')
+    await expect(section.participatesInBreakfast).toHaveText('Kyllä')
 
     await section.editBtn.click()
     await section.participatesInBreakfastCheckbox.uncheck()
     await section.confirmBtn.click()
-    await section.participatesInBreakfast.assertTextEquals('Ei')
+    await expect(section.participatesInBreakfast).toHaveText('Ei')
   })
 
   test('Nekku diet can be edited', async () => {
-    await section.nekkuDiet.assertTextEquals('Seka')
+    await expect(section.nekkuDiet).toHaveText('Seka')
 
     await section.editBtn.click()
     await section.nekkuDietSelect.fillAndSelectFirst('V')
     await section.confirmBtn.click()
-    await section.nekkuDiet.assertTextEquals('Vegaani')
+    await expect(section.nekkuDiet).toHaveText('Vegaani')
   })
 
   test('Special diet fields are rendered correctly', async () => {
     await section.editBtn.click()
 
     const specialDietEditor = section.getNekkuSpecialDietEditor()
-    await specialDietEditor.getCheckBox('2', 'b', 'b1').waitUntilVisible()
-    await specialDietEditor.getCheckBox('2', 'b', 'b2').waitUntilVisible()
-    await specialDietEditor.getCheckBox('2', 'b', 'b3').waitUntilVisible()
-    await specialDietEditor.getTextField('2', 'a').waitUntilVisible()
+    await expect(specialDietEditor.getCheckBox('2', 'b', 'b1')).toBeVisible()
+    await expect(specialDietEditor.getCheckBox('2', 'b', 'b2')).toBeVisible()
+    await expect(specialDietEditor.getCheckBox('2', 'b', 'b3')).toBeVisible()
+    await expect(specialDietEditor.getTextField('2', 'a')).toBeVisible()
   })
 
   test('Special diet fields can be edited', async () => {
@@ -125,10 +125,10 @@ test.describe('Nekku fields are editable', () => {
 
     await section.confirmBtn.click()
 
-    await specialDietEditor
-      .getCheckBoxValue('2', 'b')
-      .assertTextEquals('b1, b3')
-    await specialDietEditor.getTextValue('2', 'a').assertTextEquals('a: Foo')
+    await expect(specialDietEditor.getCheckBoxValue('2', 'b')).toHaveText(
+      'b1, b3'
+    )
+    await expect(specialDietEditor.getTextValue('2', 'a')).toHaveText('a: Foo')
   })
 
   test('Special diets are saved to the database correctly', async () => {
@@ -143,7 +143,7 @@ test.describe('Nekku fields are editable', () => {
 
     // we don't really care about this assertion, it just ensures that the
     // data has been updated before we call getNekkuSpecialDietChoices()
-    await specialDietEditor.getTextValue('2', 'a').assertTextEquals('a: Foo')
+    await expect(specialDietEditor.getTextValue('2', 'a')).toHaveText('a: Foo')
 
     const savedValues = await getNekkuSpecialDietChoices({ childId })
     if (savedValues.length !== 3) throw Error('Excepted 3 special diet choices')

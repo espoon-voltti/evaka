@@ -97,7 +97,7 @@ test.describe('Citizen daycare applications', () => {
     await editorPage.goToVerification()
     await editorPage.assertErrorsExist()
     await editorPage.openSection('contactInfo')
-    await page.findByDataQa('guardianEmail-input-info').waitUntilHidden()
+    await expect(page.findByDataQa('guardianEmail-input-info')).toBeHidden()
   })
 
   test('If user has not selected any email setting in own settings the application requires it by default', async () => {
@@ -112,7 +112,7 @@ test.describe('Citizen daycare applications', () => {
     await editorPage.goToVerification()
     await editorPage.assertErrorsExist()
     await editorPage.openSection('contactInfo')
-    await page.findByDataQa('guardianEmail-input-info').waitUntilVisible()
+    await expect(page.findByDataQa('guardianEmail-input-info')).toBeVisible()
   })
 
   test('Minimal valid daycare application can be sent', async () => {
@@ -326,11 +326,11 @@ test.describe('Citizen daycare applications', () => {
     const applicationReadView =
       await applications.viewApplication(applicationId)
 
-    await applicationReadView.unitPreferenceSection.waitUntilVisible()
-    await applicationReadView.contactInfoSection.waitUntilHidden()
-    await applicationReadView.urgencyAttachments.waitUntilHidden()
-    await applicationReadView.shiftCareAttachments.waitUntilHidden()
-    await applicationReadView.assistanceNeedDescription.assertTextEquals('')
+    await expect(applicationReadView.unitPreferenceSection).toBeVisible()
+    await expect(applicationReadView.contactInfoSection).toBeHidden()
+    await expect(applicationReadView.urgencyAttachments).toBeHidden()
+    await expect(applicationReadView.shiftCareAttachments).toBeHidden()
+    await expect(applicationReadView.assistanceNeedDescription).toHaveText('')
   })
 
   test('Application can be saved as draft', async () => {
@@ -352,7 +352,7 @@ test.describe('Citizen daycare applications', () => {
     await editorPage.modalOkBtn.click()
     await applicationsPage.editApplication(applicationId)
     await editorPage.openSection('contactInfo')
-    await editorPage.guardianPhoneInput.assertValueEquals('040123456789')
+    await expect(editorPage.guardianPhoneInput).toHaveValue('040123456789')
   })
 
   test('If user has a verified email, that one is used in the application and cannot be changed', async () => {
@@ -387,15 +387,15 @@ test.describe('Citizen daycare applications', () => {
       },
       true
     )
-    await section.unverifiedEmailStatus.waitUntilVisible()
+    await expect(section.unverifiedEmailStatus).toBeVisible()
     await section.sendVerificationCode.click()
-    await section.verificationCodeField.waitUntilVisible()
+    await expect(section.verificationCodeField).toBeVisible()
     await runJobs({ mockedTime: mockedNow })
     const verificationCode = await getVerificationCodeFromEmail()
     expect(verificationCode).toBeTruthy()
     await section.verificationCodeField.fill(verificationCode ?? '')
     await section.verifyEmail.click()
-    await section.verifiedEmailStatus.waitUntilVisible()
+    await expect(section.verifiedEmailStatus).toBeVisible()
 
     // when user goes back to the application
     await page.reload()

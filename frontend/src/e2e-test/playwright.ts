@@ -5,15 +5,17 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 
 import {
+  expect as baseExpect,
   test as base,
   type BrowserContext,
-  type BrowserContextOptions
+  type BrowserContextOptions,
+  type Locator
 } from '@playwright/test'
 
 import { initScript, type EvakaBrowserContextOptions } from './browser'
 import config from './config'
 import { setTestMode } from './generated/api-clients'
-import { Page } from './utils/page'
+import { Element, ElementCollection, Page } from './utils/page'
 
 export type NewEvakaPage = (
   options?: BrowserContextOptions & EvakaBrowserContextOptions
@@ -92,4 +94,21 @@ test.afterAll(async () => {
   await setTestMode({ enabled: false })
 })
 
-export { expect } from '@playwright/test'
+function unwrapElement(value: unknown): unknown {
+  if (value instanceof Element) return value.locator
+  if (value instanceof ElementCollection) return value.locator
+  return value
+}
+
+export const expect = new Proxy(baseExpect, {
+  apply(target, thisArg, args: [unknown, ...unknown[]]) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return Reflect.apply(target, thisArg, [
+      unwrapElement(args[0]),
+      ...args.slice(1)
+    ])
+  }
+}) as {
+  (value: Element): ReturnType<typeof baseExpect<Locator>>
+  (value: ElementCollection): ReturnType<typeof baseExpect<Locator>>
+} & typeof baseExpect

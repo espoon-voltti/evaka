@@ -17,7 +17,7 @@ import {
 } from '../../generated/api-clients'
 import type { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -99,10 +99,10 @@ test.describe('Mobile employee daily notes', () => {
     await childRow.assertDailyNoteContainsText(daycareDailyNote.note)
 
     const noteModal = await childRow.openDailyNoteModal()
-    await noteModal.noteInput.assertValueEquals(daycareDailyNote.note)
-    await noteModal.sleepingHoursInput.assertValueEquals(hours)
-    await noteModal.sleepingMinutesInput.assertValueEquals(minutes)
-    await noteModal.reminderNoteInput.assertValueEquals(
+    await expect(noteModal.noteInput).toHaveValue(daycareDailyNote.note)
+    await expect(noteModal.sleepingHoursInput).toHaveValue(hours)
+    await expect(noteModal.sleepingMinutesInput).toHaveValue(minutes)
+    await expect(noteModal.reminderNoteInput).toHaveValue(
       daycareDailyNote.reminderNote
     )
 

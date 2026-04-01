@@ -8,7 +8,7 @@ import {
   upsertWeakCredentials
 } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin, enduserLoginWeak } from '../../utils/user'
 
@@ -35,8 +35,8 @@ test.describe('Citizen authentication - direct login', () => {
     await login(evaka)
     const header = new CitizenHeader(evaka)
     await header.logout()
-    await evaka.findByDataQa('weak-login').waitUntilVisible()
-    await evaka.findByDataQa('strong-login').waitUntilVisible()
+    await expect(evaka.findByDataQa('weak-login')).toBeVisible()
+    await expect(evaka.findByDataQa('strong-login')).toBeVisible()
   })
 })
 
@@ -47,7 +47,7 @@ test.describe('Citizen authentication - weak login', () => {
     await login(evaka)
     const header = new CitizenHeader(evaka)
     await header.logout()
-    await evaka.findByDataQa('weak-login').waitUntilVisible()
-    await evaka.findByDataQa('strong-login').waitUntilVisible()
+    await expect(evaka.findByDataQa('weak-login')).toBeVisible()
+    await expect(evaka.findByDataQa('strong-login')).toBeVisible()
   })
 })

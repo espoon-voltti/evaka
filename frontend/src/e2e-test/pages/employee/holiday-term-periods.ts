@@ -5,12 +5,13 @@
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type LocalDate from 'lib-common/local-date'
 
+import { expect } from '../../playwright'
 import type { Page, ElementCollection, Element } from '../../utils/page'
 import { Checkbox, DatePicker, Radio, TextInput } from '../../utils/page'
 
 export class HolidayAndTermPeriodsPage {
   #periodRows: ElementCollection
-  #questionnaireRows: ElementCollection
+  questionnaires: ElementCollection
   #preschoolTermRows: ElementCollection
   #clubTermRows: ElementCollection
   confirmCheckbox: Checkbox
@@ -48,7 +49,7 @@ export class HolidayAndTermPeriodsPage {
   }
   constructor(private readonly page: Page) {
     this.#periodRows = page.findAllByDataQa('holiday-period-row')
-    this.#questionnaireRows = page.findAllByDataQa('questionnaire-row')
+    this.questionnaires = page.findAllByDataQa('questionnaire-row')
     this.#preschoolTermRows = page.findAllByDataQa('preschool-term-row')
     this.#clubTermRows = page.findAllByDataQa('club-term-row')
     this.confirmCheckbox = new Checkbox(page.findByDataQa('confirm-checkbox'))
@@ -114,46 +115,33 @@ export class HolidayAndTermPeriodsPage {
         page.findByDataQa('input-application-period-start')
       )
     }
+    this.holidayPeriods = page.findAllByDataQa('holiday-period')
+    this.holidayPeriodDeadlines = page.findAllByDataQa(
+      'holiday-period-deadline'
+    )
+    this.clubTermPeriods = page.findAllByDataQa('term')
+    this.preschoolTermPeriods = page.findAllByDataQa('finnish-preschool')
+    this.extendedTermStartDates = page.findAllByDataQa('extended-term-start')
+    this.applicationPeriodStartDates = page.findAllByDataQa(
+      'application-period-start'
+    )
   }
 
-  get visiblePeriods(): Promise<string[]> {
-    return this.page.findAllByDataQa('holiday-period').allTexts()
-  }
+  holidayPeriods: ElementCollection
+  holidayPeriodDeadlines: ElementCollection
+  clubTermPeriods: ElementCollection
+  preschoolTermPeriods: ElementCollection
+  extendedTermStartDates: ElementCollection
+  applicationPeriodStartDates: ElementCollection
 
-  get visibleHolidayPeriodDeadlines(): Promise<string[]> {
-    return this.page.findAllByDataQa('holiday-period-deadline').allTexts()
-  }
-
-  get visibleClubTermPeriods(): Promise<string[]> {
-    return this.page.findAllByDataQa('term').allTexts()
-  }
-
-  get visiblePreschoolTermPeriods(): Promise<string[]> {
-    return this.page.findAllByDataQa('finnish-preschool').allTexts()
-  }
-
-  get visibleExtendedTermStartDates(): Promise<string[]> {
-    return this.page.findAllByDataQa('extended-term-start').allTexts()
-  }
-
-  get visibleApplicationPeriodStartDates(): Promise<string[]> {
-    return this.page.findAllByDataQa('application-period-start').allTexts()
-  }
-
-  async visibleTermBreakByDate(date: LocalDate): Promise<string[]> {
-    return this.page
-      .findAllByDataQa(`term-break-${date.formatIso()}`)
-      .allTexts()
-  }
-
-  get visibleQuestionnaires(): Promise<string[]> {
-    return this.#questionnaireRows.allTexts()
+  termBreaksByDate(date: LocalDate): ElementCollection {
+    return this.page.findAllByDataQa(`term-break-${date.formatIso()}`)
   }
 
   async assertQuestionnaireContainsText(nth: number, texts: string[]) {
-    const row = this.#questionnaireRows.nth(nth)
+    const row = this.questionnaires.nth(nth)
     for (const text of texts) {
-      await row.findText(text).waitUntilVisible()
+      await expect(row.findText(text)).toBeVisible()
     }
   }
 
@@ -354,11 +342,11 @@ export class HolidayAndTermPeriodsPage {
   }
 
   async editQuestionnaire(nth: number) {
-    return this.#questionnaireRows.nth(nth).findByDataQa('btn-edit').click()
+    return this.questionnaires.nth(nth).findByDataQa('btn-edit').click()
   }
 
   async deleteQuestionnaire(nth: number) {
-    await this.#questionnaireRows.nth(nth).findByDataQa('btn-delete').click()
+    await this.questionnaires.nth(nth).findByDataQa('btn-delete').click()
     return this.page.findByDataQa('modal-okBtn').click()
   }
 }

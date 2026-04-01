@@ -35,8 +35,7 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
 import MessagesPage from '../../pages/employee/messages/messages-page'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { test, expect } from '../../playwright'
 import { minimalDaycareForm } from '../../utils/application-forms'
 import type { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
@@ -148,9 +147,9 @@ test.describe('Foster parents', () => {
     await endedRelationshipPage
       .findByDataQa('applications-list')
       .assertAttributeEquals('data-isloading', 'false')
-    await endedRelationshipPage
-      .findByDataQa(`child-${fosterChild.id}`)
-      .waitUntilHidden()
+    await expect(
+      endedRelationshipPage.findByDataQa(`child-${fosterChild.id}`)
+    ).toBeHidden()
   })
 
   test('Foster parent can create a daycare application and accept a daycare decision for a child without a SSN', async ({
@@ -231,9 +230,9 @@ test.describe('Foster parents', () => {
     await endedRelationshipPage
       .findByDataQa('applications-list')
       .assertAttributeEquals('data-isloading', 'false')
-    await endedRelationshipPage
-      .findByDataQa(`child-${fosterChildNoSsn.id}`)
-      .waitUntilHidden()
+    await expect(
+      endedRelationshipPage.findByDataQa(`child-${fosterChildNoSsn.id}`)
+    ).toBeHidden()
   })
 
   test('Foster parent can receive and reply to messages', async ({
@@ -282,7 +281,7 @@ test.describe('Foster parents', () => {
     const reply = 'Message reply'
     await citizenMessagesPage.replyToFirstThread(reply)
     await runPendingAsyncJobs(mockedNow.addMinutes(1))
-    await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+    await expect(citizenMessagesPage.threadMessages).toHaveCount(2)
 
     unitSupervisorPage = await newEvakaPage({
       mockedTime: mockedNow.addMinutes(1)
@@ -290,7 +289,7 @@ test.describe('Foster parents', () => {
     await employeeLogin(unitSupervisorPage, unitSupervisor)
     messagesPage = new MessagesPage(unitSupervisorPage)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-    await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+    await expect(messagesPage.receivedMessages).toHaveCount(1)
     await messagesPage.receivedMessage.click()
     await messagesPage.assertMessageContent(1, reply)
 
@@ -370,14 +369,11 @@ test.describe('Foster parents', () => {
     await childPage.assertTerminatablePlacementCount(0)
 
     await childPage.assertTerminatedPlacementCount(1)
-    await waitUntilEqual(
-      () => childPage.getTerminatedPlacements(),
-      [
-        `Varhaiskasvatus, ${
-          testDaycare.name
-        }, viimeinen läsnäolopäivä: ${mockedDate.format()}`
-      ]
-    )
+    await expect(childPage.terminatedPlacements).toHaveText([
+      `Varhaiskasvatus, ${
+        testDaycare.name
+      }, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+    ])
 
     const endedRelationshipPage = await newEvakaPage({
       mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))

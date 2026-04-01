@@ -7,7 +7,7 @@ import type { StaffAttendanceType } from 'lib-common/generated/api-types/attenda
 import LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
-import { waitUntilEqual } from '../../../utils'
+import { expect } from '../../../playwright'
 import type { Page } from '../../../utils/page'
 import {
   Element,
@@ -52,9 +52,9 @@ export class UnitCalendarPageBase {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="unit-attendances"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="unit-attendances"][data-isloading="false"]')
+    ).toBeVisible()
   }
 
   async setFilterStartDate(date: LocalDate) {
@@ -115,13 +115,15 @@ export class UnitCalendarPageBase {
   }
 
   async waitForWeekLoaded() {
-    await this.page
-      .find('[data-qa="staff-attendances-status"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find(
+        '[data-qa="staff-attendances-status"][data-isloading="false"]'
+      )
+    ).toBeVisible()
   }
 
   async assertDateRange(expectedRange: FiniteDateRange) {
-    await waitUntilEqual(() => this.getSelectedDateRange(), expectedRange)
+    await expect.poll(() => this.getSelectedDateRange()).toEqual(expectedRange)
   }
 
   async clickAddPersonButton(): Promise<StaffAttendanceAddPersonModal> {
@@ -149,26 +151,26 @@ export class UnitOccupanciesSection extends Element {
   ) => this.find(`[data-qa="occupancies-${which}-${type}"]`)
 
   async assertGraphIsVisible() {
-    await this.#graph.waitUntilVisible()
+    await expect(this.#graph).toBeVisible()
   }
 
   async assertGraphHasNoData() {
-    await this.#noDataPlaceholder.waitUntilVisible()
+    await expect(this.#noDataPlaceholder).toBeVisible()
   }
 
   async assertNoValidValues() {
-    await this.#elem('no-valid-values', 'confirmed').waitUntilVisible()
-    await this.#elem('no-valid-values', 'planned').waitUntilVisible()
+    await expect(this.#elem('no-valid-values', 'confirmed')).toBeVisible()
+    await expect(this.#elem('no-valid-values', 'planned')).toBeVisible()
   }
 
   async assertConfirmed(minimum: string, maximum: string) {
-    await this.#elem('minimum', 'confirmed').assertTextEquals(minimum)
-    await this.#elem('maximum', 'confirmed').assertTextEquals(maximum)
+    await expect(this.#elem('minimum', 'confirmed')).toHaveText(minimum)
+    await expect(this.#elem('maximum', 'confirmed')).toHaveText(maximum)
   }
 
   async assertPlanned(minimum: string, maximum: string) {
-    await this.#elem('minimum', 'planned').assertTextEquals(minimum)
-    await this.#elem('maximum', 'planned').assertTextEquals(maximum)
+    await expect(this.#elem('minimum', 'planned')).toHaveText(minimum)
+    await expect(this.#elem('maximum', 'planned')).toHaveText(maximum)
   }
 }
 
@@ -180,30 +182,26 @@ export class UnitStaffAttendancesTable extends Element {
     super(element)
   }
 
-  get allNames(): Promise<string[]> {
-    return this.findAllByDataQa('staff-attendance-name').allTexts()
-  }
+  staffNames = this.findAllByDataQa('staff-attendance-name')
 
-  get rowCount(): Promise<number> {
-    return this.find('tbody').findAll('tr').count()
-  }
+  rows = this.find('tbody').findAll('tr')
 
   async assertPositiveOccupancyCoefficientCount(
     expectedCount: number
   ): Promise<void> {
     const icons = this.findAllByDataQa('icon-occupancy-coefficient-pos')
-    await waitUntilEqual(() => icons.count(), expectedCount)
+    await expect(icons).toHaveCount(expectedCount)
   }
 
   async assertZeroOccupancyCoefficientCount(
     expectedCount: number
   ): Promise<void> {
     const icons = this.findAllByDataQa('icon-occupancy-coefficient')
-    await waitUntilEqual(() => icons.count(), expectedCount)
+    await expect(icons).toHaveCount(expectedCount)
   }
 
   personCountSum(nth: number) {
-    return this.findAllByDataQa('person-count-sum').nth(nth).text
+    return this.findAllByDataQa('person-count-sum').nth(nth)
   }
 
   #attendanceCell = (date: LocalDate, row: number) =>
@@ -228,7 +226,7 @@ export class UnitStaffAttendancesTable extends Element {
     const row = this.findByDataQa(`attendance-row-${rowIx}`)
 
     if (name !== undefined) {
-      await row.findByDataQa('staff-attendance-name').assertTextEquals(name)
+      await expect(row.findByDataQa('staff-attendance-name')).toHaveText(name)
     }
 
     if (plannedAttendances !== undefined) {
@@ -236,37 +234,37 @@ export class UnitStaffAttendancesTable extends Element {
         .findAllByDataQa('planned-attendance-day')
         .nth(nth)
       for (const [i, [arrival, departure]] of plannedAttendances.entries()) {
-        await plannedAttendanceDay
-          .findAllByDataQa('planned-attendance-start')
-          .nth(i)
-          .assertTextEquals(arrival)
-        await plannedAttendanceDay
-          .findAllByDataQa('planned-attendance-end')
-          .nth(i)
-          .assertTextEquals(departure)
+        await expect(
+          plannedAttendanceDay
+            .findAllByDataQa('planned-attendance-start')
+            .nth(i)
+        ).toHaveText(arrival)
+        await expect(
+          plannedAttendanceDay.findAllByDataQa('planned-attendance-end').nth(i)
+        ).toHaveText(departure)
       }
     }
     if (attendances !== undefined) {
       const attendanceDay = row.findAllByDataQa('attendance-day').nth(nth)
       for (const [i, [arrival, departure]] of attendances.entries()) {
-        await attendanceDay
-          .findAllByDataQa('arrival-time')
-          .nth(i)
-          .assertTextEquals(arrival)
-        await attendanceDay
-          .findAllByDataQa('departure-time')
-          .nth(i)
-          .assertTextEquals(departure)
+        await expect(
+          attendanceDay.findAllByDataQa('arrival-time').nth(i)
+        ).toHaveText(arrival)
+        await expect(
+          attendanceDay.findAllByDataQa('departure-time').nth(i)
+        ).toHaveText(departure)
       }
     }
 
     if (hasStaffOccupancyEffect !== undefined) {
       if (hasStaffOccupancyEffect) {
-        await row
-          .findByDataQa('icon-occupancy-coefficient-pos')
-          .waitUntilVisible()
+        await expect(
+          row.findByDataQa('icon-occupancy-coefficient-pos')
+        ).toBeVisible()
       } else {
-        await row.findByDataQa('icon-occupancy-coefficient').waitUntilVisible()
+        await expect(
+          row.findByDataQa('icon-occupancy-coefficient')
+        ).toBeVisible()
       }
     }
   }
@@ -293,9 +291,9 @@ export class UnitStaffAttendancesTable extends Element {
     const arrivalTime = cell.findByDataQa('arrival-time')
     await arrivalTime.hover()
 
-    await this.page
-      .findByDataQa('arrival-time-tooltip')
-      .assertTextEquals(expectedTooltipText)
+    await expect(this.page.findByDataQa('arrival-time-tooltip')).toHaveText(
+      expectedTooltipText
+    )
   }
 
   async assertDepartureTimeTooltip(
@@ -307,9 +305,9 @@ export class UnitStaffAttendancesTable extends Element {
     const departureTime = cell.findByDataQa('departure-time')
     await departureTime.hover()
 
-    await this.page
-      .findByDataQa('departure-time-tooltip')
-      .assertTextEquals(expectedTooltipText)
+    await expect(this.page.findByDataQa('departure-time-tooltip')).toHaveText(
+      expectedTooltipText
+    )
   }
 
   async assertOpenDetailsVisible(
@@ -321,9 +319,9 @@ export class UnitStaffAttendancesTable extends Element {
     await cell.hover()
 
     if (visible) {
-      await cell.findByDataQa('open-details').waitUntilVisible()
+      await expect(cell.findByDataQa('open-details')).toBeVisible()
     } else {
-      await cell.findByDataQa('open-details').waitUntilHidden()
+      await expect(cell.findByDataQa('open-details')).toBeHidden()
     }
   }
 }
@@ -348,7 +346,7 @@ export class StaffAttendanceDetailsModal extends Element {
     const select = new Select(
       this.findAllByDataQa('attendance-type-select').nth(row)
     )
-    await select.waitUntilVisible()
+    await expect(select).toBeVisible()
     return select
   }
 
@@ -398,7 +396,7 @@ export class StaffAttendanceDetailsModal extends Element {
   async save() {
     const button = new AsyncButton(this.findByDataQa('save'))
     await button.click()
-    await button.waitUntilHidden()
+    await expect(button).toBeHidden()
   }
 
   async close() {
@@ -415,21 +413,21 @@ export class StaffAttendanceDetailsModal extends Element {
   }
 
   gapWarning(index: number) {
-    return this.findByDataQa(`attendance-gap-warning-${index}`).text
+    return this.findByDataQa(`attendance-gap-warning-${index}`)
   }
 
   arrivalTimeInfo(index: number) {
-    return this.findAllByDataQa('arrival-time-input-info').nth(index).text
+    return this.findAllByDataQa('arrival-time-input-info').nth(index)
   }
 
   departureTimeInfo(index: number) {
-    return this.findAllByDataQa('departure-time-input-info').nth(index).text
+    return this.findAllByDataQa('departure-time-input-info').nth(index)
   }
 
   async assertDepartureTimeInfoHidden(index: number) {
-    return await this.findAllByDataQa('departure-time-input-info')
-      .nth(index)
-      .waitUntilHidden()
+    return await expect(
+      this.findAllByDataQa('departure-time-input-info').nth(index)
+    ).toBeHidden()
   }
 }
 
@@ -475,12 +473,12 @@ export class StaffAttendanceAddPersonModal extends Element {
   }
 
   async timeErrorVisible() {
-    await this.findByDataQa(
-      'add-person-arrival-time-input-info'
-    ).waitUntilVisible()
+    await expect(
+      this.findByDataQa('add-person-arrival-time-input-info')
+    ).toBeVisible()
   }
 
   async nameErrorVisible() {
-    await this.findByDataQa('add-person-name-input-info').waitUntilVisible()
+    await expect(this.findByDataQa('add-person-name-input-info')).toBeVisible()
   }
 }

@@ -11,7 +11,7 @@ import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import {
   Checkbox,
@@ -54,16 +54,20 @@ export default class ChildInformationPage {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="person-details-section"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find(
+        '[data-qa="person-details-section"][data-isloading="false"]'
+      )
+    ).toBeVisible()
   }
 
   async assertName(lastName: string, firstName: string) {
-    await this.page.findByDataQa('person-last-name').assertTextEquals(lastName)
-    await this.page
-      .findByDataQa('person-first-names')
-      .assertTextEquals(firstName)
+    await expect(this.page.findByDataQa('person-last-name')).toHaveText(
+      lastName
+    )
+    await expect(this.page.findByDataQa('person-first-names')).toHaveText(
+      firstName
+    )
   }
 
   async clickEdit() {
@@ -71,11 +75,11 @@ export default class ChildInformationPage {
   }
 
   async deceasedIconIsShown() {
-    await this.#deceased.waitUntilVisible()
+    await expect(this.#deceased).toBeVisible()
   }
 
   async assertOphPersonOid(expected: string) {
-    await this.#ophPersonOidInput.assertTextEquals(expected)
+    await expect(this.#ophPersonOidInput).toHaveText(expected)
   }
 
   async setOphPersonOid(text: string) {
@@ -104,14 +108,16 @@ export default class ChildInformationPage {
   }
 
   async assertCollapsiblesVisible(params: Record<Collapsible, boolean>) {
-    await waitUntilEqual(() => this.getCollapsiblesVisibility(), params)
+    await expect.poll(() => this.getCollapsiblesVisibility()).toEqual(params)
   }
 
   async assertSomeCollapsiblesVisible(
     params: Partial<Record<Collapsible, boolean>>
   ) {
     const keys = Object.keys(params) as Collapsible[]
-    await waitUntilEqual(() => this.getCollapsiblesVisibility(keys), params)
+    await expect
+      .poll(() => this.getCollapsiblesVisibility(keys))
+      .toEqual(params)
   }
 
   async openCollapsible<C extends Collapsible>(
@@ -222,13 +228,13 @@ export class AbsenceApplicationsSection extends Section {
   async assertIncompleted(expected: string[]) {
     const table = this.page.findByDataQa('absence-applications-incompleted')
     const rows = table.findAllByDataQa('absence-applications-incompleted-row')
-    await rows.assertTextsEqual(expected)
+    await expect(rows).toHaveText(expected, { useInnerText: true })
   }
 
   async assertCompleted(expected: string[]) {
     const table = this.page.findByDataQa('absence-applications-completed')
     const rows = table.findAllByDataQa('absence-applications-completed-row')
-    await rows.assertTextsEqual(expected)
+    await expect(rows).toHaveText(expected, { useInnerText: true })
   }
 
   async openRejectModal(index: number) {
@@ -272,9 +278,9 @@ export class DailyServiceTimeSection extends Section {
   async assertTableRow(nth: number, title: string, status: string) {
     const row = this.findAllByDataQa('daily-service-times-row').nth(nth)
 
-    await row
-      .findByDataQa('daily-service-times-row-title')
-      .assertTextEquals(title)
+    await expect(row.findByDataQa('daily-service-times-row-title')).toHaveText(
+      title
+    )
     await row
       .findByDataQa('status')
       .assertAttributeEquals('data-qa-status', status)
@@ -293,7 +299,7 @@ export class DailyServiceTimeSection extends Section {
       }) + [data-qa="daily-service-times-row-collapsible"]`
     )
 
-    await collapsible.assertTextEquals(text)
+    await expect(collapsible).toHaveText(text, { useInnerText: true })
   }
 
   async editTableRow(nth: number) {
@@ -319,12 +325,16 @@ export class DailyServiceTimeSection extends Section {
   }
 
   async assertTableRowCount(count: number) {
-    await this.findAllByDataQa('daily-service-times-row').assertCount(count)
+    await expect(this.findAllByDataQa('daily-service-times-row')).toHaveCount(
+      count
+    )
   }
 }
 
 export class PedagogicalDocumentsSection extends Section {
-  readonly #startDate = this.find('[data-qa="pedagogical-document-start-date"]')
+  readonly startDateElement = this.find(
+    '[data-qa="pedagogical-document-start-date"]'
+  )
 
   readonly #document = this.find('[data-qa="pedagogical-document-document"]')
 
@@ -332,7 +342,7 @@ export class PedagogicalDocumentsSection extends Section {
     this.find('[data-qa="pedagogical-document-description"]')
   )
 
-  readonly #description = this.find(
+  readonly descriptionElement = this.find(
     '[data-qa="pedagogical-document-description"]'
   )
 
@@ -362,20 +372,12 @@ export class PedagogicalDocumentsSection extends Section {
     await this.#delete.click()
   }
 
-  get startDate(): Promise<string> {
-    return this.#startDate.text
-  }
-
   get document(): Promise<string> {
     return this.#document.text
   }
 
-  get description(): Promise<string> {
-    return this.#description.text
-  }
-
   async setDescription(text: string) {
-    await this.#description.click()
+    await this.descriptionElement.click()
     await this.#descriptionInput.type(text)
   }
 
@@ -421,13 +423,13 @@ export class ChildDocumentsSection extends Section {
     const rows = this.page
       .findByDataQa('table-of-internal-child-documents')
       .findAllByDataQa('child-document-row')
-    await rows.assertCount(expectedRows.length)
+    await expect(rows).toHaveCount(expectedRows.length)
     await Promise.all(
       expectedRows.map(async (expected, index) => {
         const row = rows.nth(index)
-        await row
-          .findByDataQa(`child-document-${expected.id}`)
-          .waitUntilVisible()
+        await expect(
+          row.findByDataQa(`child-document-${expected.id}`)
+        ).toBeVisible()
       })
     )
   }
@@ -440,11 +442,9 @@ export class ChildDocumentsSection extends Section {
     return new ChildDocumentPage(this.page)
   }
 
-  readonly internalChildDocumentsCount = () =>
-    this.page
-      .findByDataQa('table-of-internal-child-documents')
-      .findAllByDataQa('child-document-row')
-      .count()
+  readonly internalChildDocumentRows = this.page
+    .findByDataQa('table-of-internal-child-documents')
+    .findAllByDataQa('child-document-row')
 
   internalChildDocuments(nth: number) {
     const row = this.page
@@ -460,11 +460,9 @@ export class ChildDocumentsSection extends Section {
     }
   }
 
-  readonly externalChildDocumentsCount = () =>
-    this.page
-      .findByDataQa('table-of-external-child-documents')
-      .findAllByDataQa('child-document-row')
-      .count()
+  readonly externalChildDocumentRows = this.page
+    .findByDataQa('table-of-external-child-documents')
+    .findAllByDataQa('child-document-row')
 
   externalChildDocuments(nth: number) {
     const row = this.page
@@ -480,11 +478,9 @@ export class ChildDocumentsSection extends Section {
     }
   }
 
-  readonly decisionChildDocumentsCount = () =>
-    this.page
-      .findByDataQa('table-of-decision-child-documents')
-      .findAllByDataQa('child-document-row')
-      .count()
+  readonly decisionChildDocumentRows = this.page
+    .findByDataQa('table-of-decision-child-documents')
+    .findAllByDataQa('child-document-row')
 
   decisionChildDocuments(nth: number) {
     const row = this.page
@@ -541,7 +537,7 @@ export class BackupCaresSection extends Section {
   ) {
     await this.fillNewBackupCareFields(daycareName, startDate, endDate)
     await this.find('[data-qa="submit-backup-care-form"]').click()
-    await this.#backupCares.waitUntilVisible()
+    await expect(this.#backupCares).toBeVisible()
   }
 
   async fillNewBackupCareFields(
@@ -567,11 +563,11 @@ export class BackupCaresSection extends Section {
   }
 
   async assertError(expectedError: string) {
-    await this.#error.assertTextEquals(expectedError)
+    await expect(this.#error).toHaveText(expectedError)
   }
 
   async getBackupCares(): Promise<{ unit: string; period: string }[]> {
-    await this.#backupCares.waitUntilVisible()
+    await expect(this.#backupCares).toBeVisible()
     return this.evaluate((el) =>
       Array.from(el.querySelectorAll('[data-qa="backup-care-row"]')).map(
         (row) => ({
@@ -588,9 +584,9 @@ export class BackupCaresSection extends Section {
       .click()
 
     const modal = this.#backupCares.find('[data-qa="modal"]')
-    await modal.waitUntilVisible()
+    await expect(modal).toBeVisible()
     await this.#backupCares.find('[data-qa="modal-okBtn"]').click()
-    await modal.waitUntilHidden()
+    await expect(modal).toBeHidden()
   }
 
   async cancelBackupCareForm() {
@@ -643,28 +639,28 @@ export class FamilyContactsSection extends Section {
 
   async assertFamilyContactDetails(id: string, data: FamilyContactDetails) {
     const row = this.#familyContactRow(id)
-    await row.waitUntilVisible()
+    await expect(row).toBeVisible()
 
     if (data.email) {
-      await row
-        .findByDataQa('family-contact-email')
-        .assertTextEquals(data.email)
+      await expect(row.findByDataQa('family-contact-email')).toHaveText(
+        data.email
+      )
     } else {
-      await row.findByDataQa('family-contact-email').waitUntilHidden()
+      await expect(row.findByDataQa('family-contact-email')).toBeHidden()
     }
     if (data.phone) {
-      await row
-        .findByDataQa('family-contact-phone')
-        .assertTextEquals(data.phone)
+      await expect(row.findByDataQa('family-contact-phone')).toHaveText(
+        data.phone
+      )
     } else {
-      await row.findByDataQa('family-contact-phone').waitUntilHidden()
+      await expect(row.findByDataQa('family-contact-phone')).toBeHidden()
     }
     if (data.backupPhone) {
-      await row
-        .findByDataQa('family-contact-backup-phone')
-        .assertTextEquals(`${data.backupPhone} (Varanro)`)
+      await expect(row.findByDataQa('family-contact-backup-phone')).toHaveText(
+        `${data.backupPhone} (Varanro)`
+      )
     } else {
-      await row.findByDataQa('family-contact-backup-phone').waitUntilHidden()
+      await expect(row.findByDataQa('family-contact-backup-phone')).toBeHidden()
     }
   }
 
@@ -676,11 +672,11 @@ export class FamilyContactsSection extends Section {
   }
 
   async assertBackupPickupExists(name: string) {
-    await this.#row(name).waitUntilVisible()
+    await expect(this.#row(name)).toBeVisible()
   }
 
   async assertBackupPickupDoesNotExist(name: string) {
-    await this.#row(name).waitUntilHidden()
+    await expect(this.#row(name)).toBeHidden()
   }
 
   async deleteBackupPickup(name: string) {
@@ -694,7 +690,7 @@ export class GuardiansSection extends Section {
     this.findByDataQa(`table-guardian-row-${id}`)
 
   async assertGuardianExists(id: UUID) {
-    await this.guardianRow(id).waitUntilVisible()
+    await expect(this.guardianRow(id)).toBeVisible()
   }
 
   async assertFosterParentExists(
@@ -703,8 +699,8 @@ export class GuardiansSection extends Section {
     end: LocalDate | null
   ) {
     const row = this.findByDataQa(`foster-parent-row-${parentId}`)
-    await row.findByDataQa('start').assertTextEquals(start.format())
-    await row.findByDataQa('end').assertTextEquals(end?.format() ?? '')
+    await expect(row.findByDataQa('start')).toHaveText(start.format())
+    await expect(row.findByDataQa('end')).toHaveText(end?.format() ?? '')
   }
 
   async removeGuardianEvakaRights(id: UUID) {
@@ -731,25 +727,24 @@ export class GuardiansSection extends Section {
   }
 
   async waitUntilNotLoading() {
-    await waitUntilEqual(
-      () =>
-        this.findByDataQa('table-of-guardians').getAttribute('data-loading'),
+    await expect(this.findByDataQa('table-of-guardians')).toHaveAttribute(
+      'data-loading',
       'false'
     )
   }
 
   async assertGuardianStatusAllowed(id: UUID) {
     await this.waitUntilNotLoading()
-    await this.guardianRow(id)
-      .findByDataQa('evaka-rights-status')
-      .assertTextEquals('Sallittu')
+    await expect(
+      this.guardianRow(id).findByDataQa('evaka-rights-status')
+    ).toHaveText('Sallittu')
   }
 
   async assertGuardianStatusDenied(id: UUID) {
     await this.waitUntilNotLoading()
-    await this.guardianRow(id)
-      .findByDataQa('evaka-rights-status')
-      .assertTextEquals('Kielletty')
+    await expect(
+      this.guardianRow(id).findByDataQa('evaka-rights-status')
+    ).toHaveText('Kielletty')
   }
 }
 
@@ -787,7 +782,9 @@ export class PlacementsSection extends Section {
   }
 
   assertServiceNeedRowCount = async (expected: number) => {
-    await this.findAll('[data-qa="service-need-row"]').assertCount(expected)
+    await expect(this.findAll('[data-qa="service-need-row"]')).toHaveCount(
+      expected
+    )
   }
 
   #serviceNeedShiftCareCheckBox = new Checkbox(
@@ -807,19 +804,19 @@ export class PlacementsSection extends Section {
     rows: { unitName: string; period: string; status: string }[]
   ) {
     const placements = this.findAllByDataQa('placement-row')
-    await placements.assertCount(rows.length)
+    await expect(placements).toHaveCount(rows.length)
     await Promise.all(
       rows.map(async (row, index) => {
         const placement = placements.nth(index)
-        await placement
-          .findByDataQa('toolbar-accordion-title')
-          .assertTextEquals(row.unitName)
-        await placement
-          .findByDataQa('toolbar-accordion-subtitle')
-          .assertTextEquals(row.period)
-        await placement
-          .findByDataQa('placement-toolbar')
-          .assertTextEquals(row.status)
+        await expect(
+          placement.findByDataQa('toolbar-accordion-title')
+        ).toHaveText(row.unitName)
+        await expect(
+          placement.findByDataQa('toolbar-accordion-subtitle')
+        ).toHaveText(row.period)
+        await expect(placement.findByDataQa('placement-toolbar')).toHaveText(
+          row.status
+        )
       })
     )
   }
@@ -856,22 +853,22 @@ export class PlacementsSection extends Section {
     } else if (partWeek === false) {
       await this.serviceNeedPartWeekCheckbox.uncheck()
     } else {
-      await this.serviceNeedPartWeekCheckbox.waitUntilHidden()
+      await expect(this.serviceNeedPartWeekCheckbox).toBeHidden()
     }
 
     await this.serviceNeedSaveButton.click()
   }
 
   async assertNthServiceNeedRange(index: number, range: FiniteDateRange) {
-    await this.#serviceNeedRowRange(index).assertTextEquals(range.format())
+    await expect(this.#serviceNeedRowRange(index)).toHaveText(range.format())
   }
 
   async assertNthServiceNeedName(index: number, optionName: string) {
-    await this.#serviceNeedRowOptionName(index).assertTextEquals(optionName)
+    await expect(this.#serviceNeedRowOptionName(index)).toHaveText(optionName)
   }
 
   async assertNthServiceNeedPartWeek(index: number, partWeek: boolean) {
-    await this.#serviceNeedPartWeek(index).assertTextEquals(
+    await expect(this.#serviceNeedPartWeek(index)).toHaveText(
       partWeek ? 'Kyllä' : 'Ei'
     )
   }
@@ -880,51 +877,51 @@ export class PlacementsSection extends Section {
     index: number,
     shiftCareType: ShiftCareType
   ) {
-    await this.#serviceNeedRow(index)
-      .findByDataQa(`shift-care-${shiftCareType}`)
-      .waitUntilVisible()
+    await expect(
+      this.#serviceNeedRow(index).findByDataQa(`shift-care-${shiftCareType}`)
+    ).toBeVisible()
   }
 
   async assertServiceNeedOptions(placementId: string, optionIds: string[]) {
     await this.openPlacement(placementId)
     await this.addMissingServiceNeedButton.click()
-    await waitUntilTrue(async () => {
-      const selectableOptions = await this.serviceNeedOptionSelect
-        .findAll('option')
-        .evaluateAll((elements) =>
-          elements
-            .map((e) => e.getAttribute('value'))
-            .filter((value): value is string => !!value)
-        )
-
-      return (
-        optionIds.every((optionId) => selectableOptions.includes(optionId)) &&
-        selectableOptions.every((optionId) => optionIds.includes(optionId))
-      )
-    })
+    await expect
+      .poll(async () => {
+        const selectableOptions = await this.serviceNeedOptionSelect
+          .findAll('option')
+          .evaluateAll((elements) =>
+            elements
+              .map((e) => e.getAttribute('value'))
+              .filter((value): value is string => !!value)
+          )
+        return selectableOptions.sort()
+      })
+      .toEqual([...optionIds].sort())
   }
 
   async assertTerminatedByGuardianIsShown(placementId: string) {
-    await this.#terminatedByGuardian(placementId).waitUntilVisible()
+    await expect(this.#terminatedByGuardian(placementId)).toBeVisible()
   }
 
   async assertTerminatedByGuardianIsNotShown(placementId: string) {
-    await this.#placementRow(placementId)
-      .find('[data-qa="placement-details-start-date"]')
-      .waitUntilVisible()
-    await this.#terminatedByGuardian(placementId).waitUntilHidden()
+    await expect(
+      this.#placementRow(placementId).find(
+        '[data-qa="placement-details-start-date"]'
+      )
+    ).toBeVisible()
+    await expect(this.#terminatedByGuardian(placementId)).toBeHidden()
   }
 
   async assertSource(placementId: string, source: string) {
-    await this.#placementRow(placementId)
-      .findByDataQa('placement-source')
-      .assertTextEquals(source)
+    await expect(
+      this.#placementRow(placementId).findByDataQa('placement-source')
+    ).toHaveText(source)
   }
 
   async assertCreatedBy(placementId: string, creator: string) {
-    await this.#placementRow(placementId)
-      .findByDataQa('placement-created-by')
-      .assertTextEquals(creator)
+    await expect(
+      this.#placementRow(placementId).findByDataQa('placement-created-by')
+    ).toHaveText(creator)
   }
 
   async createNewPlacement({
@@ -985,15 +982,15 @@ export class ServiceApplicationsSection extends Section {
     serviceNeed: string,
     additionalInfo: string
   ) {
-    await this.undecidedApplication
-      .findByDataQa('start-date')
-      .assertTextEquals(startDate)
-    await this.undecidedApplication
-      .findByDataQa('service-need')
-      .assertTextEquals(serviceNeed)
-    await this.undecidedApplication
-      .findByDataQa('additional-info')
-      .assertTextEquals(additionalInfo)
+    await expect(
+      this.undecidedApplication.findByDataQa('start-date')
+    ).toHaveText(startDate)
+    await expect(
+      this.undecidedApplication.findByDataQa('service-need')
+    ).toHaveText(serviceNeed)
+    await expect(
+      this.undecidedApplication.findByDataQa('additional-info')
+    ).toHaveText(additionalInfo)
   }
 
   async acceptApplication() {
@@ -1021,15 +1018,15 @@ export class ServiceApplicationsSection extends Section {
     status: string,
     decidedAt: HelsinkiDateTime
   ) {
-    await this.decidedApplication(n)
-      .findByDataQa('start-date')
-      .assertTextEquals(startDate)
-    await this.decidedApplication(n)
-      .findByDataQa('service-need')
-      .assertTextEquals(serviceNeed)
-    await this.decidedApplication(n)
-      .findByDataQa('decision-status')
-      .assertTextEquals(`${status}, ${decidedAt.toLocalDate().format()}`)
+    await expect(
+      this.decidedApplication(n).findByDataQa('start-date')
+    ).toHaveText(startDate)
+    await expect(
+      this.decidedApplication(n).findByDataQa('service-need')
+    ).toHaveText(serviceNeed)
+    await expect(
+      this.decidedApplication(n).findByDataQa('decision-status')
+    ).toHaveText(`${status}, ${decidedAt.toLocalDate().format()}`)
   }
 }
 
@@ -1087,7 +1084,7 @@ export class AssistanceSection extends Section {
   }
 
   async assertAssistanceFactorCount(count: number) {
-    await this.#assistanceFactorRows.assertCount(count)
+    await expect(this.#assistanceFactorRows).toHaveCount(count)
   }
 
   daycareAssistanceRow(nth: number): DaycareAssistanceRow {
@@ -1095,7 +1092,7 @@ export class AssistanceSection extends Section {
   }
 
   async assertDaycareAssistanceCount(count: number) {
-    await this.#daycareAssistanceRows.assertCount(count)
+    await expect(this.#daycareAssistanceRows).toHaveCount(count)
   }
 
   preschoolAssistanceRow(nth: number): PreschoolAssistanceRow {
@@ -1103,7 +1100,7 @@ export class AssistanceSection extends Section {
   }
 
   async assertPreschoolAssistanceCount(count: number) {
-    await this.#preschoolAssistanceRows.assertCount(count)
+    await expect(this.#preschoolAssistanceRows).toHaveCount(count)
   }
 
   otherAssistanceMeasureRow(nth: number): OtherAssistanceMeasureRow {
@@ -1113,14 +1110,12 @@ export class AssistanceSection extends Section {
   }
 
   async assertOtherAssistanceMeasureCount(count: number) {
-    await this.#otherAssistanceMeasureRows.assertCount(count)
+    await expect(this.#otherAssistanceMeasureRows).toHaveCount(count)
   }
 
-  readonly assistanceNeedVoucherCoefficientCount = () =>
-    this.page
-      .findByDataQa('table-of-assistance-need-voucher-coefficients')
-      .findAllByDataQa('table-assistance-need-voucher-coefficient')
-      .count()
+  readonly assistanceNeedVoucherCoefficientRows = this.page
+    .findByDataQa('table-of-assistance-need-voucher-coefficients')
+    .findAllByDataQa('table-assistance-need-voucher-coefficient')
 
   async assistanceNeedVoucherCoefficients(nth: number) {
     const row = this.page
@@ -1268,7 +1263,7 @@ class FeeAlterationEditorPage {
   }
 
   async waitUntilReady() {
-    await this.dateRangePicker.start.waitUntilVisible()
+    await expect(this.dateRangePicker.start).toBeVisible()
   }
 }
 
@@ -1284,18 +1279,18 @@ export class FeeAlterationsSection extends Section {
 
   async assertAlterationDateRange(expected: string, nth = 0) {
     const feeAlterationDates = this.findAllByDataQa('fee-alteration-dates')
-    await feeAlterationDates.nth(nth).assertTextEquals(expected)
+    await expect(feeAlterationDates.nth(nth)).toHaveText(expected)
   }
 
   async assertAlterationAmount(expected: string, nth = 0) {
     const feeAlterationAmounts = this.findAllByDataQa('fee-alteration-amount')
-    await feeAlterationAmounts.nth(nth).assertTextEquals(expected)
+    await expect(feeAlterationAmounts.nth(nth)).toHaveText(expected)
   }
 
   async assertAttachmentExists(name: string) {
-    await waitUntilTrue(async () =>
-      (await this.page.findAllByDataQa('attachment').allTexts()).includes(name)
-    )
+    await expect(
+      this.page.findAllByDataQa('attachment').find(`text="${name}"`)
+    ).toBeVisible()
   }
 }
 

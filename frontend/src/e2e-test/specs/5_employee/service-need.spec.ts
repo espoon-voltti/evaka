@@ -19,8 +19,7 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee, DevPlacement } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { test } from '../../playwright'
-import { waitUntilTrue } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -111,11 +110,11 @@ test.describe('Service need', () => {
       partiallyInactiveServiceNeedOption.id
     )
     await section.serviceNeedSaveButton.assertDisabled(true)
-    await section.partiallyInvalidWarning.waitUntilVisible()
+    await expect(section.partiallyInvalidWarning).toBeVisible()
 
     await section.serviceNeedEndDate.fill(mockToday.addDays(5).format())
     await section.serviceNeedSaveButton.assertDisabled(false)
-    await section.partiallyInvalidWarning.waitUntilHidden()
+    await expect(section.partiallyInvalidWarning).toBeHidden()
     await section.serviceNeedSaveButton.click()
     await section.assertNthServiceNeedName(
       0,
@@ -162,7 +161,7 @@ test.describe('Service need', () => {
     await section.assertServiceNeedRowCount(1)
     await section.nthServiceNeedDeleteButton(0).click()
     await section.confirmDelete()
-    await waitUntilTrue(() => section.addMissingServiceNeedButton.visible)
+    await expect(section.addMissingServiceNeedButton).toBeVisible()
     await section.assertServiceNeedRowCount(0)
   })
 })

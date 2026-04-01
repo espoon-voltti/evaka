@@ -11,7 +11,7 @@ import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
-import { waitUntilEqual } from '../../../utils'
+import { expect } from '../../../playwright'
 import type { Page, ElementCollection } from '../../../utils/page'
 import {
   MultiSelect,
@@ -111,11 +111,11 @@ export default class ApplicationListView {
   }
 
   async assertApplicationIsVisible(applicationId: string) {
-    await this.#application(applicationId).waitUntilVisible()
+    await expect(this.#application(applicationId)).toBeVisible()
   }
 
   async assertApplicationCount(n: number) {
-    await waitUntilEqual(() => this.#applications.count(), n)
+    await expect(this.#applications).toHaveCount(n)
   }
 
   async showAsDesktop() {
@@ -171,7 +171,7 @@ export class ApplicationRow extends Element {
   }
 
   async assertStartDate(date: LocalDate) {
-    await this.root.findByDataQa('start-date').assertTextEquals(date.format())
+    await expect(this.root.findByDataQa('start-date')).toHaveText(date.format())
   }
 
   async assertServiceWorkerNoteMatches(matchingText: string) {
@@ -187,7 +187,7 @@ export class DecisionEditorPage {
   constructor(private page: Page) {}
 
   async waitUntilLoaded() {
-    await this.page.findByDataQa('save-decisions-button').waitUntilVisible()
+    await expect(this.page.findByDataQa('save-decisions-button')).toBeVisible()
   }
 
   async selectUnit(type: DecisionType, unitId: UUID) {

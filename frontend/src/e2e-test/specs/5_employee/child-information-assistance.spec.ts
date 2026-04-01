@@ -25,8 +25,7 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import type { AssistanceSection } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -91,8 +90,8 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.save.click()
 
       const row = assistance.assistanceFactorRow(0)
-      await row.capacityFactor.assertTextEquals('1,5')
-      await row.validDuring.assertTextEquals(validDuring.format())
+      await expect(row.capacityFactor).toHaveText('1,5')
+      await expect(row.validDuring).toHaveText(validDuring.format())
     })
 
     test('can be edited', async () => {
@@ -105,14 +104,14 @@ test.describe('Child Information assistance functionality for employees', () => 
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
       const row = assistance.assistanceFactorRow(0)
-      await row.capacityFactor.assertTextEquals('1,5')
+      await expect(row.capacityFactor).toHaveText('1,5')
 
       await row.edit.click()
       const form = assistance.assistanceFactorForm
       await form.capacityFactor.fill('2.5')
       await form.save.click()
 
-      await row.capacityFactor.assertTextEquals('2,5')
+      await expect(row.capacityFactor).toHaveText('2,5')
     })
 
     test('can be deleted', async () => {
@@ -136,9 +135,9 @@ test.describe('Child Information assistance functionality for employees', () => 
       await assistance.assistanceFactorRow(0).delete()
 
       await assistance.assertAssistanceFactorCount(1)
-      await assistance
-        .assistanceFactorRow(0)
-        .capacityFactor.assertTextEquals('1,5')
+      await expect(assistance.assistanceFactorRow(0).capacityFactor).toHaveText(
+        '1,5'
+      )
     })
   })
 
@@ -154,8 +153,8 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.save.click()
 
       const row = assistance.daycareAssistanceRow(0)
-      await row.level.assertTextEquals('Yleinen tuki, ei päätöstä')
-      await row.validDuring.assertTextEquals(validDuring.format())
+      await expect(row.level).toHaveText('Yleinen tuki, ei päätöstä')
+      await expect(row.validDuring).toHaveText(validDuring.format())
     })
 
     test('can be edited', async () => {
@@ -168,14 +167,14 @@ test.describe('Child Information assistance functionality for employees', () => 
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
       const row = assistance.daycareAssistanceRow(0)
-      await row.level.assertTextEquals('Yleinen tuki, ei päätöstä')
+      await expect(row.level).toHaveText('Yleinen tuki, ei päätöstä')
 
       await row.edit.click()
       const form = assistance.daycareAssistanceForm
       await form.level.selectOption('SPECIAL_SUPPORT')
       await form.save.click()
 
-      await row.level.assertTextEquals('Erityinen tuki')
+      await expect(row.level).toHaveText('Erityinen tuki')
     })
 
     test('can be deleted', async () => {
@@ -199,9 +198,9 @@ test.describe('Child Information assistance functionality for employees', () => 
       await assistance.daycareAssistanceRow(0).delete()
 
       await assistance.assertDaycareAssistanceCount(1)
-      await assistance
-        .daycareAssistanceRow(0)
-        .level.assertTextEquals('Yleinen tuki, ei päätöstä')
+      await expect(assistance.daycareAssistanceRow(0).level).toHaveText(
+        'Yleinen tuki, ei päätöstä'
+      )
     })
   })
 
@@ -217,10 +216,10 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.save.click()
 
       const row = assistance.preschoolAssistanceRow(0)
-      await row.level.assertTextEquals(
+      await expect(row.level).toHaveText(
         'Erityinen tuki ilman pidennettyä oppivelvollisuutta'
       )
-      await row.validDuring.assertTextEquals(validDuring.format())
+      await expect(row.validDuring).toHaveText(validDuring.format())
     })
 
     test('can be edited', async () => {
@@ -233,7 +232,7 @@ test.describe('Child Information assistance functionality for employees', () => 
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
       const row = assistance.preschoolAssistanceRow(0)
-      await row.level.assertTextEquals(
+      await expect(row.level).toHaveText(
         'Erityinen tuki ilman pidennettyä oppivelvollisuutta'
       )
 
@@ -242,7 +241,7 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.level.selectOption('INTENSIFIED_SUPPORT')
       await form.save.click()
 
-      await row.level.assertTextEquals('Tehostettu tuki')
+      await expect(row.level).toHaveText('Tehostettu tuki')
     })
 
     test('can be deleted', async () => {
@@ -266,9 +265,9 @@ test.describe('Child Information assistance functionality for employees', () => 
       await assistance.preschoolAssistanceRow(0).delete()
 
       await assistance.assertPreschoolAssistanceCount(1)
-      await assistance
-        .preschoolAssistanceRow(0)
-        .level.assertTextEquals('Tehostettu tuki')
+      await expect(assistance.preschoolAssistanceRow(0).level).toHaveText(
+        'Tehostettu tuki'
+      )
     })
   })
 
@@ -284,8 +283,8 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.save.click()
 
       const row = assistance.otherAssistanceMeasureRow(0)
-      await row.type.assertTextEquals('Lapsen kotoutumisen tuki (ELY)')
-      await row.validDuring.assertTextEquals(validDuring.format())
+      await expect(row.type).toHaveText('Lapsen kotoutumisen tuki (ELY)')
+      await expect(row.validDuring).toHaveText(validDuring.format())
     })
 
     test('can be edited', async () => {
@@ -298,14 +297,16 @@ test.describe('Child Information assistance functionality for employees', () => 
       await logUserIn(await Fixture.employee().unitSupervisor(unitId).save())
 
       const row = assistance.otherAssistanceMeasureRow(0)
-      await row.type.assertTextEquals('Kuljetusetu (esioppilailla Koski-tieto)')
+      await expect(row.type).toHaveText(
+        'Kuljetusetu (esioppilailla Koski-tieto)'
+      )
 
       await row.edit.click()
       const form = assistance.otherAssistanceMeasureForm
       await form.type.selectOption('ACCULTURATION_SUPPORT')
       await form.save.click()
 
-      await row.type.assertTextEquals('Lapsen kotoutumisen tuki (ELY)')
+      await expect(row.type).toHaveText('Lapsen kotoutumisen tuki (ELY)')
     })
 
     test('can be deleted', async () => {
@@ -330,9 +331,9 @@ test.describe('Child Information assistance functionality for employees', () => 
 
       await assistance.assertOtherAssistanceMeasureCount(1)
 
-      await assistance
-        .otherAssistanceMeasureRow(0)
-        .type.assertTextEquals('Kuljetusetu (esioppilailla Koski-tieto)')
+      await expect(assistance.otherAssistanceMeasureRow(0).type).toHaveText(
+        'Kuljetusetu (esioppilailla Koski-tieto)'
+      )
     })
   })
 
@@ -376,8 +377,12 @@ test.describe('Child Information assistance functionality for employees', () => 
     await logUserIn(unitSupervisor)
 
     await assistance.assertAssistanceFactorCount(2)
-    await assistance.assistanceFactorRow(0).capacityFactor.assertTextEquals('2')
-    await assistance.assistanceFactorRow(1).capacityFactor.assertTextEquals('1')
+    await expect(assistance.assistanceFactorRow(0).capacityFactor).toHaveText(
+      '2'
+    )
+    await expect(assistance.assistanceFactorRow(1).capacityFactor).toHaveText(
+      '1'
+    )
   })
 
   test('assistance factor for preschool for a child in preschool is shown for unit manager', async () => {
@@ -469,15 +474,14 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
 
     await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(0),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(0))
+      .toEqual({
         coefficient: '4,3',
         validityPeriod: '04.02.2021 – 01.09.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
   })
 
   test('new assistance need voucher coefficient cuts off previous one', async () => {
@@ -489,25 +493,23 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
     await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
     await createVoucherCoefficient('1,2', '16.06.2021', '05.10.2021')
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(0),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(0))
+      .toEqual({
         coefficient: '1,2',
         validityPeriod: '16.06.2021 – 05.10.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(1),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(1))
+      .toEqual({
         coefficient: '4,3',
         validityPeriod: '04.02.2021 – 15.06.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
   })
 
   test('assistance need voucher coefficient can be edited', async () => {
@@ -530,21 +532,21 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
     await form.validityPeriod.endInput.type('21.11.2021')
     await form.saveBtn.click()
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(0),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(0))
+      .toEqual({
         coefficient: '9,8',
         validityPeriod: '10.02.2021 – 21.11.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
 
-    await waitUntilEqual(
-      async () =>
-        !!(await assistance.assistanceNeedVoucherCoefficientModified(0)),
-      true
-    )
+    await expect
+      .poll(
+        async () =>
+          !!(await assistance.assistanceNeedVoucherCoefficientModified(0))
+      )
+      .toBe(true)
   })
 
   test('assistance need voucher coefficient editing cuts off other coefficient', async () => {
@@ -556,15 +558,14 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
     await createVoucherCoefficient('4,3', '04.02.2021', '01.09.2021')
     await createVoucherCoefficient('1,9', '29.11.2021', '30.12.2021')
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(0),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(0))
+      .toEqual({
         coefficient: '1,9',
         validityPeriod: '29.11.2021 – 30.12.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
 
     await assistance.assistanceNeedVoucherCoefficientActions(0).editBtn.click()
     const form = assistance.assistanceNeedVoucherCoefficientForm(
@@ -578,25 +579,23 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
     await form.validityPeriod.endInput.type('24.11.2021')
     await form.saveBtn.click()
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(0),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(0))
+      .toEqual({
         coefficient: '9,8',
         validityPeriod: '20.08.2021 – 24.11.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
 
-    await waitUntilEqual(
-      async () => await assistance.assistanceNeedVoucherCoefficients(1),
-      {
+    await expect
+      .poll(() => assistance.assistanceNeedVoucherCoefficients(1))
+      .toEqual({
         coefficient: '4,3',
         validityPeriod: '04.02.2021 – 19.08.2021',
         status: 'ENDED',
         actionCount: 2
-      }
-    )
+      })
   })
 
   test('assistance need voucher coefficient can be deleted', async () => {
@@ -613,6 +612,6 @@ test.describe('Child assistance need voucher coefficients for employees', () => 
 
     await assistance.modalOkBtn.click()
 
-    await waitUntilEqual(assistance.assistanceNeedVoucherCoefficientCount, 0)
+    await expect(assistance.assistanceNeedVoucherCoefficientRows).toHaveCount(0)
   })
 })

@@ -4,6 +4,7 @@
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
 
+import { expect } from '../../playwright'
 import type { ElementCollection, EnvType, Page } from '../../utils/page'
 import {
   Element,
@@ -27,7 +28,7 @@ export default class CitizenMessagesPage {
   #messageEditor: Element
   discardMessageButton: Element
   #inboxEmpty: Element
-  #threadContent: ElementCollection
+  threadMessages: ElementCollection
   #threadUrgent: Element
   #threadChildren: ElementCollection
   newMessageButton: Element
@@ -66,7 +67,7 @@ export default class CitizenMessagesPage {
     this.#inboxEmpty = page.find(
       '[data-qa="inbox-empty"][data-loading="false"]'
     )
-    this.#threadContent = page.findAll('[data-qa="thread-reader-content"]')
+    this.threadMessages = page.findAll('[data-qa="thread-reader-content"]')
     this.#threadUrgent = page
       .findByDataQa('thread-reader')
       .findByDataQa('urgent')
@@ -81,6 +82,7 @@ export default class CitizenMessagesPage {
       .findByDataQa('thread-reader')
       .findByDataQa('out-of-office-info')
     this.markUnreadButton = messageThreadActions.findByDataQa('mark-unread-btn')
+    this.threadAttachments = page.findAllByDataQa('attachment')
   }
 
   replyButtonTag = 'message-reply-editor-btn'
@@ -88,20 +90,16 @@ export default class CitizenMessagesPage {
   async createNewMessage(): Promise<CitizenMessageEditor> {
     await this.newMessageButton.click()
     const editor = new CitizenMessageEditor(this.#messageEditor)
-    await editor.waitUntilVisible()
+    await expect(editor).toBeVisible()
     return editor
   }
 
-  async getMessageCount() {
-    return this.#threadContent.count()
-  }
-
   async assertInboxIsEmpty() {
-    await this.#inboxEmpty.waitUntilVisible()
+    await expect(this.#inboxEmpty).toBeVisible()
   }
 
   async assertTimedNotification(dataQa: string, content: string) {
-    await this.page.findByDataQa(dataQa).assertTextEquals(content)
+    await expect(this.page.findByDataQa(dataQa)).toHaveText(content)
   }
 
   async assertNewMessageButtonIsFocused() {
@@ -112,11 +110,11 @@ export default class CitizenMessagesPage {
     await this.page
       .findByDataQa('notification-container')
       .assertAttributeEquals('aria-live', 'polite')
-    await this.page
-      .find(
+    await expect(
+      this.page.find(
         '[data-qa="notification-container"] > [data-qa=message-sent-notification]'
       )
-      .assertTextEquals('Viesti lähetetty')
+    ).toHaveText('Viesti lähetetty')
   }
 
   async assertThreadContent(message: {
@@ -127,14 +125,16 @@ export default class CitizenMessagesPage {
     childNames?: string[]
   }) {
     await this.#threadListItem.click()
-    await this.#threadTitle.assertTextEquals(
-      message.title + (message.sensitive ? ' (Arkaluontoinen viestiketju)' : '')
+    await expect(this.#threadTitle).toHaveText(
+      message.title +
+        (message.sensitive ? ' (Arkaluontoinen viestiketju)' : ''),
+      { useInnerText: true }
     )
-    await this.#threadContent.only().assertTextEquals(message.content)
+    await expect(this.threadMessages.only()).toHaveText(message.content)
     if (message.urgent ?? false) {
-      await this.#threadUrgent.waitUntilVisible()
+      await expect(this.#threadUrgent).toBeVisible()
     } else {
-      await this.#threadUrgent.waitUntilHidden()
+      await expect(this.#threadUrgent).toBeHidden()
     }
     if (message.childNames) {
       await this.#threadChildren.assertTextsEqualAnyOrder(message.childNames)
@@ -142,16 +142,16 @@ export default class CitizenMessagesPage {
   }
   async assertThreadIsRedacted() {
     await this.#threadListItem.click()
-    await this.#redactedThreadTitle.waitUntilVisible()
+    await expect(this.#redactedThreadTitle).toBeVisible()
   }
   async assertOpenReplyEditorButtonIsHidden() {
-    await this.#openReplyEditorButtonHidden.waitUntilAttached()
+    await expect(this.#openReplyEditorButtonHidden).toBeAttached()
   }
   async assertFinanceReplyInfo(visible: boolean) {
     if (visible) {
-      await this.#financeReplyInfo.waitUntilVisible()
+      await expect(this.#financeReplyInfo).toBeVisible()
     } else {
-      await this.#financeReplyInfo.waitUntilHidden()
+      await expect(this.#financeReplyInfo).toBeHidden()
     }
   }
   async openStrongAuthPage() {
@@ -159,16 +159,14 @@ export default class CitizenMessagesPage {
     return new MockStrongAuthPage(this.page)
   }
 
-  getThreadAttachmentCount(): Promise<number> {
-    return this.page.findAll('[data-qa="attachment"]').count()
-  }
+  threadAttachments: ElementCollection
 
   async openFirstThread() {
     await this.#threadListItem.click()
   }
 
   async assertHasNoMarkUnreadButton() {
-    await this.markUnreadButton.waitUntilHidden()
+    await expect(this.markUnreadButton).toBeHidden()
   }
 
   async discardReplyEditor() {
@@ -187,7 +185,7 @@ export default class CitizenMessagesPage {
   async sendReply() {
     await this.#sendReplyButton.click()
     // the editor is hidden after sending the reply
-    await this.#sendReplyButton.waitUntilHidden()
+    await expect(this.#sendReplyButton).toBeHidden()
   }
 
   secondaryRecipient(name: string) {
@@ -278,10 +276,12 @@ export class CitizenMessageEditor extends Element {
   }
   async assertChildrenSelectable(childIds: string[]) {
     for (const childId of childIds) {
-      await this.findByDataQa(`child-${childId}`).waitUntilVisible()
+      await expect(this.findByDataQa(`child-${childId}`)).toBeVisible()
     }
 
-    await this.findAllByDataQa('relevant-child').assertCount(childIds.length)
+    await expect(this.findAllByDataQa('relevant-child')).toHaveCount(
+      childIds.length
+    )
   }
 
   async selectRecipients(recipients: string[]) {
@@ -311,7 +311,7 @@ export class CitizenMessageEditor extends Element {
 
   async sendMessage() {
     await this.#sendMessage.click()
-    await this.waitUntilHidden()
+    await expect(this).toBeHidden()
   }
 
   async assertOutOfOffice(ooo: { name: string; period: FiniteDateRange }) {
@@ -321,6 +321,6 @@ export class CitizenMessageEditor extends Element {
   }
 
   async assertNoOutOfOffice() {
-    await this.#outOfOfficeInfo.waitUntilHidden()
+    await expect(this.#outOfOfficeInfo).toBeHidden()
   }
 }

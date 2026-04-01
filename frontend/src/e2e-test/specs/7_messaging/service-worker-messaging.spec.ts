@@ -36,7 +36,7 @@ import ApplicationReadView from '../../pages/employee/applications/application-r
 import EmployeeNav from '../../pages/employee/employee-nav'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import type { NewEvakaPage } from '../../playwright'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
@@ -110,7 +110,7 @@ test.describe('Service Worker Messaging', () => {
       await messageEditor.inputTitle.fill(title)
       await messageEditor.inputContent.fill(content)
       await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
+      await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
@@ -133,7 +133,7 @@ test.describe('Service Worker Messaging', () => {
       ).getMessageEditor()
       await messageEditor.inputContent.fill('message')
       await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
+      await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
@@ -156,7 +156,7 @@ test.describe('Service Worker Messaging', () => {
       ).getMessageEditor()
       await messageEditor.inputContent.fill('message')
       await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
+      await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       // Progress the application for the citizen to accept
@@ -212,17 +212,17 @@ test.describe('Service Worker Messaging', () => {
         label: 'Kansio 1'
       })
       await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
+      await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       const folderMessagesPage = await messagesPage.openFolder('Kansio 1')
-      await folderMessagesPage.messages.assertCount(1)
+      await expect(folderMessagesPage.messages).toHaveCount(1)
 
       await folderMessagesPage.moveFirstThread('Kansio 2')
 
-      await folderMessagesPage.messages.assertCount(0)
+      await expect(folderMessagesPage.messages).toHaveCount(0)
       await messagesPage.openFolder('Kansio 2')
-      await folderMessagesPage.messages.assertCount(1)
+      await expect(folderMessagesPage.messages).toHaveCount(1)
 
       await folderMessagesPage.openFirstThreadReplyEditor()
     })
@@ -238,11 +238,11 @@ test.describe('Service Worker Messaging', () => {
         label: 'Kansio 1'
       })
       await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
+      await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       const folderMessagesPage = await messagesPage.openFolder('Kansio 1')
-      await folderMessagesPage.messages.assertCount(1)
+      await expect(folderMessagesPage.messages).toHaveCount(1)
       await folderMessagesPage.openFirstThread()
       await folderMessagesPage.assertHasNoMarkUnreadButton()
     })
@@ -273,7 +273,7 @@ test.describe('Service Worker Messaging', () => {
       const content = 'This should be visible in the application note'
       await messageEditor.inputContent.fill(content)
       await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
+      await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await applReadView.reload()
@@ -290,7 +290,7 @@ test.describe('Service Worker Messaging', () => {
       const content = 'This should be visible in the application note'
       await messageEditor.inputContent.fill(content)
       await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
+      await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await applReadView.reload()
@@ -313,7 +313,7 @@ test.describe('Service Worker Messaging', () => {
       await messageEditor.inputTitle.fill(title)
       await messageEditor.inputContent.fill(content)
       await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
+      await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
@@ -345,7 +345,7 @@ test.describe('Service Worker Messaging', () => {
       await messageEditor.inputTitle.fill(title)
       await messageEditor.inputContent.fill(content)
       await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
+      await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openCitizenPage(mockedTime.addHours(1))
@@ -402,7 +402,7 @@ test.describe('Service Worker Messaging', () => {
       ).getMessageEditor()
       await messageEditor.inputContent.fill('message content')
       await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
+      await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await applReadView.reload()
@@ -420,7 +420,7 @@ test.describe('Service Worker Messaging', () => {
       const content = 'This is the message'
       await messageEditor.inputContent.fill(content)
       await messageEditor.sendButton.click()
-      await messageEditor.waitUntilHidden()
+      await expect(messageEditor).toBeHidden()
       await runPendingAsyncJobs(mockedTime.addMinutes(1))
 
       await openStaffPage(mockedTime, messagingAndServiceWorker)
@@ -469,8 +469,8 @@ test.describe('Service Worker Messaging', () => {
       await applReadView.navigateToApplication(applicationId)
 
       // Currently VEO can write notes so use this to ensure page is loaded
-      await staffPage.findByDataQa('add-note').waitUntilVisible()
-      await staffPage.findByDataQa('send-message-button').waitUntilHidden()
+      await expect(staffPage.findByDataQa('add-note')).toBeVisible()
+      await expect(staffPage.findByDataQa('send-message-button')).toBeHidden()
     })
   })
 })

@@ -38,7 +38,6 @@ import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import type { NewEvakaPage } from '../../playwright'
 import { test, expect } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
 import type { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin, enduserLoginWeak } from '../../utils/user'
 
@@ -194,13 +193,13 @@ test.describe('Sending and receiving messages', () => {
         )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
-        await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+        await expect(citizenMessagesPage.threadMessages).toHaveCount(2)
         await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
         await initStaffPage(mockedDateAt12)
         await staffPage.goto(`${config.employeeUrl}/messages`)
         messagesPage = new MessagesPage(staffPage)
-        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
         await messagesPage.receivedMessage.click()
         await messagesPage.assertMessageContent(1, defaultReply)
       })
@@ -221,16 +220,16 @@ test.describe('Sending and receiving messages', () => {
         )
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
-        await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+        await expect(citizenMessagesPage.threadMessages).toHaveCount(2)
         await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
 
         await initStaffPage(mockedDateAt12)
         await staffPage.goto(`${config.employeeUrl}/messages`)
         messagesPage = new MessagesPage(staffPage)
-        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await expect(messagesPage.receivedMessages).toHaveCount(1)
 
         await messagesPage.deleteFirstThread()
-        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
+        await expect(messagesPage.receivedMessages).toHaveCount(0)
       })
     })
   }
@@ -281,7 +280,7 @@ test.describe('Sending and receiving messages', () => {
     await messageEditor.inputTitle.fill('Aloittavalle otsikko')
     await messageEditor.inputContent.fill('Sisältö')
     await messageEditor.sendButton.click()
-    await messageEditor.waitUntilHidden()
+    await expect(messageEditor).toBeHidden()
 
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
@@ -355,7 +354,7 @@ test.describe('Sending and receiving messages', () => {
     await messageEditor.inputTitle.fill('Aloittavalle otsikko')
     await messageEditor.inputContent.fill('Sisältö')
     await messageEditor.sendButton.click()
-    await messageEditor.waitUntilHidden()
+    await expect(messageEditor).toBeHidden()
 
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
@@ -382,7 +381,7 @@ test.describe('Sending and receiving messages', () => {
     await employeeLogin(staffPage, futureStaff)
     await staffPage.goto(`${config.employeeUrl}/messages`)
     const staffMessagesPage = new MessagesPage(staffPage)
-    await waitUntilEqual(() => staffMessagesPage.getReceivedMessageCount(), 1)
+    await expect(staffMessagesPage.receivedMessages).toHaveCount(1)
     await staffMessagesPage.receivedMessage.click()
     await staffMessagesPage.assertMessageContent(1, 'Vastaukseni')
   })
@@ -954,7 +953,7 @@ test.describe('Additional filters', () => {
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(unitSupervisorPage)
     const messageEditor = await messagesPage.openMessageEditor()
-    await messageEditor.filtersButton.waitUntilVisible()
+    await expect(messageEditor.filtersButton).toBeVisible()
     await messageEditor.filtersButton.click()
     await messageEditor.assertFiltersVisible()
   })
@@ -965,7 +964,7 @@ test.describe('Additional filters', () => {
     const messagesPage = new MessagesPage(unitSupervisorPage)
     await messagesPage.unitReceived.click()
     const messageEditor = await messagesPage.openMessageEditor()
-    await messageEditor.sendButton.waitUntilVisible()
+    await expect(messageEditor.sendButton).toBeVisible()
     expect(await messageEditor.filtersButtonCount).toBe(0)
   })
 
@@ -999,7 +998,7 @@ test.describe('Additional filters', () => {
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadContent(message)
-    await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 1)
+    await expect(citizenMessagesPage.threadMessages).toHaveCount(1)
   })
 
   test(`Citizen doesn't receive a message when recipient filter doesn't match`, async () => {
@@ -1087,8 +1086,11 @@ test('Closed group accounts are sorted after open ones, both alphabetically by n
   await employeeLogin(unitSupervisorPage, unitSupervisor)
   await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
   const messagesPage = new MessagesPage(unitSupervisorPage)
-  await waitUntilEqual(
-    () => messagesPage.getGroupAccountNames(),
-    ['Alpha', 'Beta', 'Aapeli', 'Charlie', 'Delta']
-  )
+  await expect(messagesPage.groupAccountNames).toHaveText([
+    'Alpha',
+    'Beta',
+    'Aapeli',
+    'Charlie',
+    'Delta'
+  ])
 })

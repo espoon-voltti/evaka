@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '../../playwright'
 import { Element } from '../../utils/page'
 
 export class DiscussionReservationModal extends Element {
@@ -19,15 +20,15 @@ export class DiscussionReservationModal extends Element {
   }
 
   assertEventTimeNotShown = async (eventTimeId: string) => {
-    await this.findByDataQa(`radio-${eventTimeId}`).waitUntilHidden()
+    await expect(this.findByDataQa(`radio-${eventTimeId}`)).toBeHidden()
   }
 
   assertEventTimes = async (expectedEventTimeIds: string[]) => {
-    await this.findAllByDataQa('discussion-time-duration').assertCount(
+    await expect(this.findAllByDataQa('discussion-time-duration')).toHaveCount(
       expectedEventTimeIds.length
     )
     for (const et of expectedEventTimeIds) {
-      await this.findByDataQa(`radio-${et}`).waitUntilVisible()
+      await expect(this.findByDataQa(`radio-${et}`)).toBeVisible()
     }
   }
 
@@ -47,18 +48,18 @@ export class DiscussionSurveyModal extends Element {
     title: string
   ) => {
     const childElement = this.findByDataQa(`discussion-child-${childId}`)
-    await childElement.waitUntilVisible()
+    await expect(childElement).toBeVisible()
 
     const surveyElement = childElement.findByDataQa(
       `child-survey-${childId}-${surveyId}`
     )
-    await surveyElement.waitUntilVisible()
-    await surveyElement
-      .findByDataQa(`survey-title-${surveyId}`)
-      .assertTextEquals(title)
-    await surveyElement
-      .findByDataQa('open-survey-reservations-button')
-      .waitUntilVisible()
+    await expect(surveyElement).toBeVisible()
+    await expect(
+      surveyElement.findByDataQa(`survey-title-${surveyId}`)
+    ).toHaveText(title)
+    await expect(
+      surveyElement.findByDataQa('open-survey-reservations-button')
+    ).toBeVisible()
   }
 
   assertChildReservation = async (
@@ -71,31 +72,31 @@ export class DiscussionSurveyModal extends Element {
     isExportable = true
   ) => {
     const childElement = this.findByDataQa(`discussion-child-${childId}`)
-    await childElement.waitUntilVisible()
+    await expect(childElement).toBeVisible()
 
     const surveyElement = childElement.findByDataQa(
       `child-survey-${childId}-${surveyId}`
     )
-    await surveyElement.waitUntilVisible()
-    await surveyElement
-      .findByDataQa(`survey-title-${surveyId}`)
-      .assertTextEquals(title)
+    await expect(surveyElement).toBeVisible()
+    await expect(
+      surveyElement.findByDataQa(`survey-title-${surveyId}`)
+    ).toHaveText(title)
 
-    await surveyElement
-      .findByDataQa(`reservation-content-${reservationId}`)
-      .assertTextEquals(reservationText)
+    await expect(
+      surveyElement.findByDataQa(`reservation-content-${reservationId}`)
+    ).toHaveText(reservationText)
 
     const cancelButton = surveyElement.findByDataQa(`reservation-cancel-button`)
-    await cancelButton.waitUntilVisible()
+    await expect(cancelButton).toBeVisible()
     await cancelButton.assertDisabled(!isCancellable)
 
     const exportButton = surveyElement.findByDataQa(
       `event-export-button-${reservationId}`
     )
     if (isExportable) {
-      await exportButton.waitUntilVisible()
+      await expect(exportButton).toBeVisible()
     } else {
-      await exportButton.waitUntilHidden()
+      await expect(exportButton).toBeHidden()
     }
   }
 
@@ -103,7 +104,7 @@ export class DiscussionSurveyModal extends Element {
     const surveyElement = this.findByDataQa(
       `child-survey-${childId}-${surveyId}`
     )
-    await surveyElement.waitUntilVisible()
+    await expect(surveyElement).toBeVisible()
 
     const surveyReservationButton = surveyElement.findByDataQa(
       'open-survey-reservations-button'
@@ -115,10 +116,10 @@ export class DiscussionSurveyModal extends Element {
     const surveyElement = this.findByDataQa(
       `child-survey-${childId}-${surveyId}`
     )
-    await surveyElement.waitUntilVisible()
+    await expect(surveyElement).toBeVisible()
 
     const cancelButton = surveyElement.findByDataQa(`reservation-cancel-button`)
-    await cancelButton.waitUntilVisible()
+    await expect(cancelButton).toBeVisible()
     await cancelButton.assertDisabled(false)
     await cancelButton.click()
   }

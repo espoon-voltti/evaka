@@ -6,7 +6,7 @@ import type { IncomeStatementAttachmentType } from 'lib-common/generated/api-typ
 import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
 
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { expect } from '../../playwright'
 import type {
   Page,
   Element,
@@ -28,10 +28,11 @@ export class CitizenChildIncomeStatementViewPage {
     attachmentType: IncomeStatementAttachmentType,
     name: string
   ) {
-    await this.page
-      .findByDataQa(`attachments-${attachmentType}`)
-      .findByDataQa(`file-${name}`)
-      .waitUntilVisible()
+    await expect(
+      this.page
+        .findByDataQa(`attachments-${attachmentType}`)
+        .findByDataQa(`file-${name}`)
+    ).toBeVisible()
   }
 }
 
@@ -79,11 +80,11 @@ export class CitizenChildIncomeStatementEditPage {
     await this.page
       .findByDataQa('notification-container')
       .assertAttributeEquals('aria-live', 'polite')
-    await this.page
-      .find(
+    await expect(
+      this.page.find(
         '[data-qa="notification-container"] > [data-qa=income-statement-sent-notification]'
       )
-      .assertTextEquals('Tuloselvitys lähetetty')
+    ).toHaveText('Tuloselvitys lähetetty')
   }
 
   async closeNotification() {
@@ -128,33 +129,31 @@ export class CitizenChildIncomeStatementListPage {
   }
 
   async assertChildName(expectedName: string) {
-    await this.childIncomeStatementsSection
-      .find('[data-qa="child-name"]')
-      .assertTextEquals(expectedName)
+    await expect(
+      this.childIncomeStatementsSection.find('[data-qa="child-name"]')
+    ).toHaveText(expectedName)
   }
 
   async assertIncomeStatementMissingWarningIsShown() {
-    await waitUntilTrue(
-      () =>
-        this.childIncomeStatementsSection.find(
-          '[data-qa="child-income-statement-missing-warning"]'
-        ).visible
-    )
+    await expect(
+      this.childIncomeStatementsSection.find(
+        '[data-qa="child-income-statement-missing-warning"]'
+      )
+    ).toBeVisible()
   }
 
   async assertChildCount(expected: number) {
-    await this.page
-      .find('[data-qa="children-income-statements"]')
-      .waitUntilVisible()
-    await waitUntilEqual(
-      () => this.page.findAll(`[data-qa="child-income-statements"]`).count(),
-      expected
-    )
+    await expect(
+      this.page.find('[data-qa="children-income-statements"]')
+    ).toBeVisible()
+    await expect(
+      this.page.findAll(`[data-qa="child-income-statements"]`)
+    ).toHaveCount(expected)
   }
 
   async assertChildIncomeStatementRowCount(expected: number) {
-    await this.childIncomeStatementsList.waitUntilVisible()
-    await waitUntilEqual(() => this.childIncomeStatementRows.count(), expected)
+    await expect(this.childIncomeStatementsList).toBeVisible()
+    await expect(this.childIncomeStatementRows).toHaveCount(expected)
   }
 
   async incomeStatementId(nth: number) {

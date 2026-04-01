@@ -23,7 +23,7 @@ import ChildAttendancePage from '../../pages/mobile/child-attendance-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 
@@ -90,14 +90,14 @@ test.describe('Child and group notes', () => {
 
     await notePage.fillNote(childDailyNote)
     await notePage.saveChildDailyNote()
-    await childPage.notesExistsBubble.waitUntilVisible()
+    await expect(childPage.notesExistsBubble).toBeVisible()
     await childPage.openNotes()
     await notePage.assertNote(childDailyNote)
 
     await page.goto(config.mobileUrl)
     await listPage.selectChild(child.id)
     await childPage.markPresentLink.click()
-    await attendancePage.dailyNote.assertTextEquals(childDailyNote.note)
+    await expect(attendancePage.dailyNote).toHaveText(childDailyNote.note)
 
     await page.goto(config.mobileUrl)
     await listPage.openChildNotes(child.id)
@@ -115,8 +115,8 @@ test.describe('Child and group notes', () => {
     await page.goto(config.mobileUrl)
     await listPage.selectChild(child.id)
     await childPage.markPresentLink.click()
-    await attendancePage.groupNotes.assertCount(1)
-    await attendancePage.groupNotes.nth(0).assertTextEquals(groupNote)
+    await expect(attendancePage.groupNotes).toHaveCount(1)
+    await expect(attendancePage.groupNotes.nth(0)).toHaveText(groupNote)
   })
 
   test('Sticky notes can be created, edited and deleted', async () => {
@@ -144,8 +144,8 @@ test.describe('Child and group notes', () => {
     await page.goto(config.mobileUrl)
     await listPage.selectChild(child.id)
     await childPage.markPresentLink.click()
-    await attendancePage.stickyNotes.assertCount(1)
-    await attendancePage.stickyNotes.nth(0).assertTextEquals('Foobar')
+    await expect(attendancePage.stickyNotes).toHaveCount(1)
+    await expect(attendancePage.stickyNotes.nth(0)).toHaveText('Foobar')
   })
 })
 

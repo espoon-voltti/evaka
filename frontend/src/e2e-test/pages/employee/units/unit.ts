@@ -12,7 +12,7 @@ import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
 import { postPairingChallenge } from '../../../generated/api-clients'
-import { waitUntilEqual, waitUntilTrue } from '../../../utils'
+import { expect } from '../../../playwright'
 import type { Page } from '../../../utils/page'
 import {
   Checkbox,
@@ -87,9 +87,9 @@ export class UnitPage {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="unit-attendances"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="unit-attendances"][data-isloading="false"]')
+    ).toBeVisible()
   }
 
   async openUnitInformation(): Promise<UnitInfoPage> {
@@ -152,11 +152,11 @@ export class UnitInfoPage {
   }
 
   async assertUnitName(expectedName: string) {
-    await this.#unitName.assertTextEquals(expectedName)
+    await expect(this.#unitName).toHaveText(expectedName)
   }
 
   async assertVisitingAddress(expectedAddress: string) {
-    await this.#visitingAddress.assertTextEquals(expectedAddress)
+    await expect(this.#visitingAddress).toHaveText(expectedAddress)
   }
 
   async openUnitDetails(): Promise<UnitDetailsPage> {
@@ -185,23 +185,23 @@ export class UnitDetailsPage {
   }
 
   async waitUntilLoaded() {
-    await this.#editUnitButton.waitUntilVisible()
+    await expect(this.#editUnitButton).toBeVisible()
   }
 
   async assertUnitName(expectedName: string) {
-    await this.#unitName.assertTextEquals(expectedName)
+    await expect(this.#unitName).toHaveText(expectedName)
   }
 
   async assertTimeRangeByDay(dayNumber: number, expectedTime: string) {
-    await this.page
-      .find(`[data-qa="unit-timerange-detail-${dayNumber}"]`)
-      .assertTextEquals(expectedTime)
+    await expect(
+      this.page.find(`[data-qa="unit-timerange-detail-${dayNumber}"]`)
+    ).toHaveText(expectedTime)
   }
 
   async assertManagerData(name: string, phone: string, email: string) {
-    await this.#unitManagerName.assertTextEquals(name)
-    await this.#unitManagerPhone.assertTextEquals(phone)
-    await this.#unitManagerEmail.assertTextEquals(email)
+    await expect(this.#unitManagerName).toHaveText(name)
+    await expect(this.#unitManagerPhone).toHaveText(phone)
+    await expect(this.#unitManagerEmail).toHaveText(email)
   }
 
   async edit() {
@@ -218,16 +218,16 @@ export class UnitDetailsPage {
 
   async assertMealTimes(mealTimes: MealTimes) {
     for (const [key, value] of Object.entries(mealTimes)) {
-      await this.page
-        .find(`[data-qa="${key}-value-display"]`)
-        .assertTextEquals(`${value.start} - ${value.end}`)
+      await expect(
+        this.page.find(`[data-qa="${key}-value-display"]`)
+      ).toHaveText(`${value.start} - ${value.end}`)
     }
   }
 
   async assertShiftCareOperationTime(index: number, expected: string) {
-    await this.page
-      .findByDataQa(`shift-care-unit-timerange-detail-${index}`)
-      .assertTextEquals(expected)
+    await expect(
+      this.page.findByDataQa(`shift-care-unit-timerange-detail-${index}`)
+    ).toHaveText(expected)
   }
 }
 
@@ -391,11 +391,11 @@ export class UnitEditor {
   }
 
   async assertWarningIsVisible(dataQa: string) {
-    await this.page.findByDataQa(`${dataQa}`).waitUntilVisible()
+    await expect(this.page.findByDataQa(`${dataQa}`)).toBeVisible()
   }
 
   async assertWarningIsNotVisible(dataQa: string) {
-    await this.page.findByDataQa(`${dataQa}`).waitUntilHidden()
+    await expect(this.page.findByDataQa(`${dataQa}`)).toBeHidden()
   }
 
   async selectClosingDate(date: LocalDate) {
@@ -535,7 +535,7 @@ class AclSection extends Element {
       await this.addModal.coefficientCheckbox.check()
     }
     await this.addModal.submitButton.click()
-    await this.#table.waitUntilVisible()
+    await expect(this.#table).toBeVisible()
   }
 
   async deleteAcl(id: UUID) {
@@ -553,18 +553,17 @@ class AclSection extends Element {
       occupancyCoefficient: boolean
     }
   ) {
-    await row.findByDataQa('name').assertTextEquals(fields.name)
-    await row.findByDataQa('email').assertTextEquals(fields.email)
-    await row.findByDataQa('role').assertTextEquals(fields.role)
+    await expect(row.findByDataQa('name')).toHaveText(fields.name)
+    await expect(row.findByDataQa('email')).toHaveText(fields.email)
+    await expect(row.findByDataQa('role')).toHaveText(fields.role)
     if (fields.occupancyCoefficient) {
-      await row.findByDataQa('coefficient-on').waitUntilVisible()
+      await expect(row.findByDataQa('coefficient-on')).toBeVisible()
     } else {
-      await row.findByDataQa('coefficient-off').waitUntilAttached()
+      await expect(row.findByDataQa('coefficient-off')).toBeAttached()
     }
-    await waitUntilEqual(
-      () => row.find('[data-qa="groups"] > div').findAll('div').allTexts(),
-      fields.groups
-    )
+    await expect(
+      row.find('[data-qa="groups"] > div').findAll('div')
+    ).toHaveText(fields.groups)
   }
 
   async assertRows(
@@ -577,7 +576,7 @@ class AclSection extends Element {
       occupancyCoefficient: boolean
     }[]
   ) {
-    await waitUntilEqual(() => this.#tableRows.count(), rows.length)
+    await expect(this.#tableRows).toHaveCount(rows.length)
     await Promise.all(
       rows.map((fields) =>
         this.assertRowFields(this.#tableRow(fields.id), fields)
@@ -631,7 +630,7 @@ class TemporaryEmployeesSection extends Element {
     }
     await this.addModal.pinCode.fill(pinCode)
     await this.addModal.submitButton.click()
-    await this.#table.waitUntilVisible()
+    await expect(this.#table).toBeVisible()
   }
 
   async softDeleteTemporaryEmployeeByIndex(index: number) {
@@ -662,16 +661,15 @@ class TemporaryEmployeesSection extends Element {
       occupancyCoefficient: boolean
     }
   ) {
-    await row.findByDataQa('name').assertTextEquals(fields.name)
+    await expect(row.findByDataQa('name')).toHaveText(fields.name)
     if (fields.occupancyCoefficient) {
-      await row.findByDataQa('coefficient-on').waitUntilVisible()
+      await expect(row.findByDataQa('coefficient-on')).toBeVisible()
     } else {
-      await row.findByDataQa('coefficient-off').waitUntilAttached()
+      await expect(row.findByDataQa('coefficient-off')).toBeAttached()
     }
-    await waitUntilEqual(
-      () => row.find('[data-qa="groups"] > div').findAll('div').allTexts(),
-      fields.groups
-    )
+    await expect(
+      row.find('[data-qa="groups"] > div').findAll('div')
+    ).toHaveText(fields.groups)
   }
 
   async assertRowsExactly(
@@ -681,7 +679,7 @@ class TemporaryEmployeesSection extends Element {
       occupancyCoefficient: boolean
     }[]
   ) {
-    await this.#tableRows.assertCount(rows.length)
+    await expect(this.#tableRows).toHaveCount(rows.length)
     await Promise.all(
       rows.map((fields, index) =>
         this.assertRowFields(this.#tableRows.nth(index), fields)
@@ -706,7 +704,7 @@ class MobileDevicesSection extends Element {
   #startPairingButton = this.find('[data-qa="start-mobile-pairing"]')
 
   async assertDeviceExists(deviceName: string) {
-    await this.#rows.find('[data-qa="name"]').assertTextEquals(deviceName)
+    await expect(this.#rows.find('[data-qa="name"]')).toHaveText(deviceName)
   }
 
   async addMobileDevice(deviceName: string) {
@@ -777,13 +775,13 @@ export class ApplicationProcessPage {
   }
 
   async waitUntilVisible() {
-    await this.waitingConfirmation.waitUntilVisible()
+    await expect(this.waitingConfirmation).toBeVisible()
   }
 
   async assertAbsenceApplications(expected: string[]) {
     const table = this.page.findByDataQa('absence-applications-table')
     const rows = table.findAllByDataQa('absence-application-row')
-    await rows.assertTextsEqual(expected)
+    await expect(rows).toHaveText(expected, { useInnerText: true })
   }
 
   async openAbsenceApplication(index: number) {
@@ -802,21 +800,23 @@ class WaitingConfirmationSection extends Element {
   )
 
   async assertNotificationCounter(value: number) {
-    await this.#notificationCounter.assertTextEquals(value.toString())
+    await expect(this.#notificationCounter).toHaveText(value.toString())
   }
 
   async assertRowCount(count: number) {
-    await waitUntilEqual(() => this.#rows.count(), count)
+    await expect(this.#rows).toHaveCount(count)
   }
 
   async assertRejectedRowCount(count: number) {
-    await waitUntilEqual(() => this.#rejectedRows.count(), count)
+    await expect(this.#rejectedRows).toHaveCount(count)
   }
 
   async assertRow(applicationId: string, rejected: boolean) {
-    await this.find(
-      `[data-qa="placement-plan-row"][data-application-id="${applicationId}"][data-rejected=${rejected.toString()}]`
-    ).waitUntilVisible()
+    await expect(
+      this.find(
+        `[data-qa="placement-plan-row"][data-application-id="${applicationId}"][data-rejected=${rejected.toString()}]`
+      )
+    ).toBeVisible()
   }
 }
 
@@ -824,10 +824,12 @@ class ServiceApplicationsSection {
   constructor(private readonly page: Page) {}
 
   async assertApplicationCount(n: number) {
-    await this.page
-      .findByDataQa('service-applications-table')
-      .waitUntilVisible()
-    await this.page.findAllByDataQa('service-application-row').assertCount(n)
+    await expect(
+      this.page.findByDataQa('service-applications-table')
+    ).toBeVisible()
+    await expect(
+      this.page.findAllByDataQa('service-application-row')
+    ).toHaveCount(n)
   }
 
   applicationRow = (n: number) =>
@@ -850,7 +852,7 @@ class PlacementProposalsSection {
   }
 
   async assertAcceptButtonDisabled() {
-    await waitUntilTrue(() => this.#acceptButton.disabled)
+    await expect(this.#acceptButton).toBeDisabled()
   }
 
   async clickAcceptButton() {
@@ -876,31 +878,30 @@ class PlacementProposalsSection {
 
   async submitProposalRejectionReason() {
     await this.page.findByDataQa('modal-okBtn').click()
-    await this.page.findByDataQa('modal-okBtn').waitUntilHidden()
+    await expect(this.page.findByDataQa('modal-okBtn')).toBeHidden()
   }
 
   async waitUntilVisible() {
-    await this.#placementProposalTable.waitUntilVisible()
+    await expect(this.#placementProposalTable).toBeVisible()
   }
 
   async assertPlacementProposalRowCount(expected: number) {
     await this.waitUntilVisible()
-    await waitUntilEqual(
-      () =>
-        this.#placementProposalTable.findAll('[data-qa="child-name"]').count(),
-      expected
-    )
+    await expect(
+      this.#placementProposalTable.findAll('[data-qa="child-name"]')
+    ).toHaveCount(expected)
   }
 }
 
 class TransferApplicationsSection extends Element {
   async assertTable(expected: TransferApplicationUnitSummary[]) {
     const rows = this.findAllByDataQa('transfer-application-row')
-    await rows.assertTextsEqual(
+    await expect(rows).toHaveText(
       expected.map(
         (row) =>
           `${row.lastName} ${row.firstName}\n${row.dateOfBirth.format()}\n\t${row.preferredStartDate.format()}`
-      )
+      ),
+      { useInnerText: true }
     )
   }
 }
@@ -933,10 +934,10 @@ export class UnitCalendarEventsSection {
   }
 
   async assertNoEventsForDay(date: LocalDate) {
-    await this.page
+    const events = this.page
       .findByDataQa(`calendar-event-day-${date.formatIso()}`)
       .findAllByDataQa('event')
-      .assertCount(0)
+    await expect(events).toHaveCount(0)
   }
 
   get eventEditModal() {
@@ -981,15 +982,17 @@ export class SurveySummaryModal extends Modal {
   }
 
   async assertDescription(description: string) {
-    await this.findByDataQa('survey-description').assertTextEquals(description)
+    await expect(this.findByDataQa('survey-description')).toHaveText(
+      description
+    )
   }
 
   async assertEventTime(id: string, timeString: string) {
-    await this.findByDataQa(`times-${id}`).assertTextEquals(timeString)
+    await expect(this.findByDataQa(`times-${id}`)).toHaveText(timeString)
   }
 
   async assertReservee(id: string, reservee: string) {
-    await this.findByDataQa(`reservee-${id}`).assertTextEquals(reservee)
+    await expect(this.findByDataQa(`reservee-${id}`)).toHaveText(reservee)
   }
 }
 

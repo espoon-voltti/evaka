@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 
 export default class UnreadMobileMessagesPage {
@@ -22,10 +23,10 @@ export default class UnreadMobileMessagesPage {
   }
 
   async pinButtonExists() {
-    return await this.pinLoginButton.waitUntilVisible()
+    return await expect(this.pinLoginButton).toBeVisible()
   }
 
   async pinButtonDoesNotExist() {
-    return await this.pinLoginButton.waitUntilHidden()
+    return await expect(this.pinLoginButton).toBeHidden()
   }
 }

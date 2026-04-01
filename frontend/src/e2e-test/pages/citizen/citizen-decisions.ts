@@ -4,7 +4,7 @@
 
 import type { DecisionId } from 'lib-common/generated/api-types/shared'
 
-import { waitUntilEqual } from '../../utils'
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 
 export default class CitizenDecisionsPage {
@@ -32,12 +32,12 @@ export default class CitizenDecisionsPage {
     const decision = this.page
       .findByDataQa(`child-decisions-${childId}`)
       .findByDataQa(`application-decision-${decisionId}`)
-    await decision
-      .findByDataQa('title-decision-type')
-      .assertTextEquals(expectedTitle)
-    await decision
-      .findByDataQa('decision-sent-date')
-      .assertTextEquals(expectedSentDate)
+    await expect(decision.findByDataQa('title-decision-type')).toHaveText(
+      expectedTitle
+    )
+    await expect(decision.findByDataQa('decision-sent-date')).toHaveText(
+      expectedSentDate
+    )
     await decision
       .findByDataQa('decision-status')
       .assertText((text) => text.toLowerCase() === expectedStatus.toLowerCase())
@@ -56,12 +56,12 @@ export default class CitizenDecisionsPage {
     if ((await financeDecision.getAttribute('data-status')) === 'closed') {
       await financeDecision.click()
     }
-    await financeDecision
-      .findByDataQa(`finance-decision-title`)
-      .assertTextEquals(expectedTitle)
-    await financeDecision
-      .findByDataQa(`finance-decision-sent-at`)
-      .assertTextEquals(expectedSentAt)
+    await expect(
+      financeDecision.findByDataQa(`finance-decision-title`)
+    ).toHaveText(expectedTitle)
+    await expect(
+      financeDecision.findByDataQa(`finance-decision-sent-at`)
+    ).toHaveText(expectedSentAt)
     for (const coDebtor of expectedCoDebtorNames) {
       await financeDecision
         .findByDataQa(`finance-decision-co-debtors`)
@@ -78,9 +78,9 @@ export default class CitizenDecisionsPage {
   }
 
   async assertFinanceDecisionNotShown(decisionId: string) {
-    await this.page
-      .findByDataQa(`finance-decision-${decisionId}`)
-      .waitUntilHidden()
+    await expect(
+      this.page.findByDataQa(`finance-decision-${decisionId}`)
+    ).toBeHidden()
   }
 
   async assertMetadataForFinanceDecisionShown(financeDecisionId: string) {
@@ -91,14 +91,14 @@ export default class CitizenDecisionsPage {
       await financeDecision.click()
     }
     await this.#decisionMetadataButton(financeDecisionId).click()
-    await financeDecision
-      .findByDataQa('process-number-field')
-      .waitUntilVisible()
+    await expect(
+      financeDecision.findByDataQa('process-number-field')
+    ).toBeVisible()
   }
   async assertMetadataForFinanceDecisionNotShown(financeDecisionId: string) {
-    await this.page
-      .findByDataQa(`finance-decision-${financeDecisionId}`)
-      .waitUntilHidden()
+    await expect(
+      this.page.findByDataQa(`finance-decision-${financeDecisionId}`)
+    ).toBeHidden()
   }
 
   async navigateToDecisionResponse(
@@ -112,10 +112,10 @@ export default class CitizenDecisionsPage {
   }
 
   async assertChildDecisionCount(n: number, childId: string) {
-    await this.page
+    const sections = this.page
       .findByDataQa(`child-decisions-${childId}`)
       .findAll('section')
-      .assertCount(n)
+    await expect(sections).toHaveCount(n)
   }
 
   async viewDecisionMetadata(decisionId: DecisionId) {
@@ -124,7 +124,7 @@ export default class CitizenDecisionsPage {
       .findAll('button')
       .first()
       .click()
-    await this.page.findByDataQa('process-number-field').waitUntilVisible()
+    await expect(this.page.findByDataQa('process-number-field')).toBeVisible()
   }
 }
 
@@ -150,7 +150,7 @@ class CitizenDecisionResponsePage {
     this.#decisionBlock(decisionId).find('[data-qa="decision-status"]')
 
   async assertPageTitle(unresolvedCount: number) {
-    await this.#title.assertTextEquals(
+    await expect(this.#title).toHaveText(
       unresolvedCount === 0
         ? 'Vahvistettavat paikat'
         : unresolvedCount === 1
@@ -172,15 +172,14 @@ class CitizenDecisionResponsePage {
     decisionUnitText: string,
     decisionStatusText: string
   ) {
-    await this.#decisionTitle(decisionId).assertTextEquals(decisionTypeText)
-    await this.#decisionUnit(decisionId).assertTextEquals(decisionUnitText)
+    await expect(this.#decisionTitle(decisionId)).toHaveText(decisionTypeText)
+    await expect(this.#decisionUnit(decisionId)).toHaveText(decisionUnitText)
     await this.assertDecisionStatus(decisionId, decisionStatusText)
   }
 
   async assertDecisionStatus(decisionId: string, statusText: string) {
-    await waitUntilEqual(
-      async () => (await this.#decisionStatus(decisionId).text).toLowerCase(),
-      statusText.toLowerCase()
+    await expect(this.#decisionStatus(decisionId)).toHaveText(
+      new RegExp(`^${statusText}$`, 'i')
     )
   }
 
@@ -217,16 +216,14 @@ async function assertUnresolvedDecisionsCount(page: Page, count: number) {
   const element = page.findByDataQa('alert-box-unconfirmed-decisions-count')
 
   if (count === 0) {
-    return element.waitUntilHidden()
+    return expect(element).toBeHidden()
   }
 
   if (count === 1) {
-    return await element.assertTextEquals(
-      '1 paikka odottaa huoltajan vahvistusta'
-    )
+    return expect(element).toHaveText('1 paikka odottaa huoltajan vahvistusta')
   }
 
-  return await element.assertTextEquals(
+  return expect(element).toHaveText(
     `${count} paikkaa odottaa huoltajan vahvistusta`
   )
 }

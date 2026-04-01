@@ -29,7 +29,6 @@ import MobileListPage from '../../pages/mobile/list-page'
 import PinLoginPage from '../../pages/mobile/pin-login-page'
 import TopNav from '../../pages/mobile/top-nav'
 import { test, expect } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
 import { pairMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 
@@ -184,9 +183,9 @@ test.describe('Mobile PIN login', () => {
     await childPage.sensitiveInfoLink.click()
     await pinLoginPage.login(employeeName, pin)
     await childPage.assertBasicInfoIsShown(childName, contacts, backupPickups)
-    await childPage.sensitiveInfo.diet.waitUntilHidden()
+    await expect(childPage.sensitiveInfo.diet).toBeHidden()
     await childPage.showSensitiveInfoButton.click()
-    await childPage.sensitiveInfo.diet.waitUntilVisible()
+    await expect(childPage.sensitiveInfo.diet).toBeVisible()
 
     await childPage.assertSensitiveInfo(childAdditionalInfo)
   })
@@ -218,14 +217,14 @@ test.describe('Mobile PIN login', () => {
     await childPage.goBackFromSensitivePage.click()
     await childPage.goBack.click()
 
-    expect(await topNav.getUserInitials()).toEqual('YY')
+    await expect(topNav.userInitials).toHaveText('YY')
 
     await topNav.openUserMenu()
     expect(await topNav.getFullName()).toEqual('Yrjö Yksikkö')
 
     // when user logs out
     await topNav.logout()
-    await waitUntilEqual(() => topNav.getUserInitials(), '')
+    await expect(topNav.userInitials).toHaveText('')
 
     await listPage.selectChild(child.id)
     await childPage.sensitiveInfoLink.click()

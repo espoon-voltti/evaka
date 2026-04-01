@@ -4,6 +4,7 @@
 
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 import { Combobox, DatePicker } from '../../utils/page'
 
@@ -38,16 +39,16 @@ export class PlacementDraftPage {
       .find(`[data-qa="placement-item-${unitId}"]`)
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="placement-draft-page"][data-isloading="false"]')
-      .waitUntilVisible()
-    await this.page
-      .find('[data-qa^="placement-item-"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="placement-draft-page"][data-isloading="false"]')
+    ).toBeVisible()
+    await expect(
+      this.page.find('[data-qa^="placement-item-"][data-isloading="false"]')
+    ).toBeVisible()
   }
 
   async assertRestrictedDetailsWarning() {
-    await this.#restrictedDetailsWarning.waitUntilVisible()
+    await expect(this.#restrictedDetailsWarning).toBeVisible()
   }
 
   async assertOccupancies(unitId: UUID, occupancies: OccupancyValues) {
@@ -57,18 +58,18 @@ export class PlacementDraftPage {
     const speculated = this.#unitCard(unitId).find(
       '[data-qa="speculated-occupancies"]'
     )
-    await current
-      .find('[data-qa="3months"]')
-      .assertTextEquals(occupancies.max3Months)
-    await current
-      .find('[data-qa="6months"]')
-      .assertTextEquals(occupancies.max6Months)
-    await speculated
-      .find('[data-qa="3months"]')
-      .assertTextEquals(occupancies.max3MonthsSpeculated)
-    await speculated
-      .find('[data-qa="6months"]')
-      .assertTextEquals(occupancies.max6MonthsSpeculated)
+    await expect(current.find('[data-qa="3months"]')).toHaveText(
+      occupancies.max3Months
+    )
+    await expect(current.find('[data-qa="6months"]')).toHaveText(
+      occupancies.max6Months
+    )
+    await expect(speculated.find('[data-qa="3months"]')).toHaveText(
+      occupancies.max3MonthsSpeculated
+    )
+    await expect(speculated.find('[data-qa="6months"]')).toHaveText(
+      occupancies.max6MonthsSpeculated
+    )
   }
 
   async addOtherUnit(unitName: string) {

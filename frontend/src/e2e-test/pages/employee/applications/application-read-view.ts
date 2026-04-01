@@ -7,7 +7,7 @@ import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
-import { waitUntilTrue } from '../../../utils'
+import { expect } from '../../../playwright'
 import type { Page, Element, ElementCollection } from '../../../utils/page'
 import { Radio, TextInput, DatePicker } from '../../../utils/page'
 import MessagesPage from '../messages/messages-page'
@@ -51,24 +51,26 @@ export default class ApplicationReadView {
   }
 
   async waitUntilLoaded() {
-    await this.page.findByDataQa('application-read-view').waitUntilVisible()
-    await this.page
-      .find('[data-qa="vtj-guardian-section"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(this.page.findByDataQa('application-read-view')).toBeVisible()
+    await expect(
+      this.page.find('[data-qa="vtj-guardian-section"][data-isloading="false"]')
+    ).toBeVisible()
   }
 
   async assertDecisionAvailableForDownload(type: DecisionType) {
-    await this.page
-      .findByDataQa(`application-decision-${type}`)
-      .findByDataQa('application-decision-download-available')
-      .waitUntilVisible()
+    await expect(
+      this.page
+        .findByDataQa(`application-decision-${type}`)
+        .findByDataQa('application-decision-download-available')
+    ).toBeVisible()
   }
 
   async assertDecisionDownloadPending(type: DecisionType) {
-    await this.page
-      .findByDataQa(`application-decision-${type}`)
-      .findByDataQa('application-decision-download-pending')
-      .waitUntilVisible()
+    await expect(
+      this.page
+        .findByDataQa(`application-decision-${type}`)
+        .findByDataQa('application-decision-download-pending')
+    ).toBeVisible()
   }
 
   async navigateToApplication(id: UUID) {
@@ -76,15 +78,15 @@ export default class ApplicationReadView {
   }
 
   async assertPageTitle(expectedTitle: string) {
-    await this.#title.assertTextEquals(expectedTitle)
+    await expect(this.#title).toHaveText(expectedTitle)
   }
 
   async assertGuardianName(expectedName: string) {
-    await this.#guardianName.findText(expectedName).waitUntilVisible()
+    await expect(this.#guardianName.findText(expectedName)).toBeVisible()
   }
 
   async assertOtherVtjGuardianName(expectedName: string) {
-    await this.#vtjGuardianName.assertTextEquals(expectedName)
+    await expect(this.#vtjGuardianName).toHaveText(expectedName)
   }
 
   async assertOtherVtjGuardian(
@@ -92,37 +94,37 @@ export default class ApplicationReadView {
     expectedPhone: string,
     expectedEmail: string
   ) {
-    await this.#vtjGuardianName.assertTextEquals(expectedName)
-    await this.#vtjGuardianPhone.assertTextEquals(expectedPhone)
-    await this.#vtjGuardianEmail.assertTextEquals(expectedEmail)
+    await expect(this.#vtjGuardianName).toHaveText(expectedName)
+    await expect(this.#vtjGuardianPhone).toHaveText(expectedPhone)
+    await expect(this.#vtjGuardianEmail).toHaveText(expectedEmail)
   }
 
   async assertOtherVtjGuardianMissing() {
-    await this.page.findByDataQa('no-other-vtj-guardian').waitUntilVisible()
-    await this.#vtjGuardianName.waitUntilHidden()
+    await expect(this.page.findByDataQa('no-other-vtj-guardian')).toBeVisible()
+    await expect(this.#vtjGuardianName).toBeHidden()
   }
 
   async assertOtherGuardianSameAddress(status: boolean) {
-    await this.page
-      .findByDataQa('other-vtj-guardian-lives-in-same-address')
-      .findText(status ? 'Kyllä' : 'Ei')
-      .waitUntilVisible()
+    await expect(
+      this.page
+        .findByDataQa('other-vtj-guardian-lives-in-same-address')
+        .findText(status ? 'Kyllä' : 'Ei')
+    ).toBeVisible()
   }
 
   async assertOtherGuardianAgreementStatus(_status: false) {
     const expectedText = 'Ei ole sovittu yhdessä'
-    await this.page
-      .findByDataQa('agreement-status')
-      .findText(expectedText)
-      .waitUntilVisible()
+    await expect(
+      this.page.findByDataQa('agreement-status').findText(expectedText)
+    ).toBeVisible()
   }
 
   async assertGivenOtherGuardianInfo(
     expectedPhone: string,
     expectedEmail: string
   ) {
-    await this.#givenOtherGuardianPhone.assertTextEquals(expectedPhone)
-    await this.#giveOtherGuardianEmail.assertTextEquals(expectedEmail)
+    await expect(this.#givenOtherGuardianPhone).toHaveText(expectedPhone)
+    await expect(this.#giveOtherGuardianEmail).toHaveText(expectedEmail)
   }
 
   async setDecisionStartDate(type: DecisionType, startDate: string) {
@@ -144,16 +146,18 @@ export default class ApplicationReadView {
 
     const submit = decision.findByDataQa('decision-send-answer-button')
     await submit.click()
-    await submit.waitUntilHidden()
+    await expect(submit).toBeHidden()
   }
 
   async assertDecisionDisabled(type: DecisionType) {
     const decision = this.page.findByDataQa(`application-decision-${type}`)
-    await decision.findByDataQa('decision-send-answer-button').waitUntilHidden()
+    await expect(
+      decision.findByDataQa('decision-send-answer-button')
+    ).toBeHidden()
   }
 
   async assertApplicationStatus(text: string) {
-    await this.#applicationStatus.findText(text).waitUntilVisible()
+    await expect(this.#applicationStatus.findText(text)).toBeVisible()
   }
 
   async assertUrgencyAttachmentReceivedAtVisible(
@@ -161,38 +165,36 @@ export default class ApplicationReadView {
     byPaper = true
   ) {
     const attachment = this.page.findByDataQa(`urgent-attachment-${fileName}`)
-    await attachment.waitUntilVisible()
+    await expect(attachment).toBeVisible()
 
     const text = attachment.findByDataQa(`attachment-received-at`)
-    await text.waitUntilVisible()
+    await expect(text).toBeVisible()
 
-    await waitUntilTrue(async () =>
-      ((await text.text) ?? '').startsWith(
-        byPaper ? 'Toimitettu paperisena' : 'Toimitettu sähköisesti'
-      )
+    await expect(text).toContainText(
+      byPaper ? 'Toimitettu paperisena' : 'Toimitettu sähköisesti'
     )
   }
 
   async assertExtendedCareAttachmentExists(fileName: string) {
-    await this.page
-      .findByDataQa(`extended-care-attachment-${fileName}`)
-      .waitUntilVisible()
+    await expect(
+      this.page.findByDataQa(`extended-care-attachment-${fileName}`)
+    ).toBeVisible()
   }
 
   async assertExtendedCareAttachmentDoesNotExist(fileName: string) {
-    await this.page
-      .findByDataQa(`extended-care-attachment-${fileName}`)
-      .waitUntilHidden()
+    await expect(
+      this.page.findByDataQa(`extended-care-attachment-${fileName}`)
+    ).toBeHidden()
   }
 
   async assertApplicantIsDead() {
-    await this.page.findByDataQa('applicant-dead').waitUntilVisible()
+    await expect(this.page.findByDataQa('applicant-dead')).toBeVisible()
   }
 
   async assertDueDate(dueDate: LocalDate) {
-    await this.page
-      .findByDataQa('application-due-date')
-      .assertTextEquals(dueDate.format())
+    await expect(this.page.findByDataQa('application-due-date')).toHaveText(
+      dueDate.format()
+    )
   }
 
   async startEditing(): Promise<ApplicationEditView> {
@@ -215,15 +217,16 @@ export default class ApplicationReadView {
   }
 
   async assertNote(index: number, note: string) {
-    await this.notes
-      .nth(index)
-      .findByDataQa('application-note-content')
-      .assertTextEquals(note)
+    await expect(
+      this.notes.nth(index).findByDataQa('application-note-content')
+    ).toHaveText(note, { useInnerText: true })
   }
 
   async assertNoNotes() {
-    await this.page.findByDataQa('application-notes-list').waitUntilAttached()
-    await this.notes.nth(0).waitUntilHidden()
+    await expect(
+      this.page.findByDataQa('application-notes-list')
+    ).toBeAttached()
+    await expect(this.notes.nth(0)).toBeHidden()
   }
 
   async clickMessageThreadLinkInNote(index: number): Promise<MessagesPage> {
@@ -237,7 +240,7 @@ export default class ApplicationReadView {
   }
 
   async assertNoteNotEditable(index: number) {
-    await this.notes.nth(index).findByDataQa('edit-note').waitUntilHidden()
+    await expect(this.notes.nth(index).findByDataQa('edit-note')).toBeHidden()
   }
 
   async editNote(index: number, note: string) {
@@ -249,7 +252,7 @@ export default class ApplicationReadView {
   }
 
   async assertNoteNotDeletable(index: number) {
-    await this.notes.nth(index).findByDataQa('delete-note').waitUntilHidden()
+    await expect(this.notes.nth(index).findByDataQa('delete-note')).toBeHidden()
   }
 
   async deleteNote(index: number) {

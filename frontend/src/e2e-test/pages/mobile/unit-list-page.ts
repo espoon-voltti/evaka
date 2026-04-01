@@ -4,6 +4,7 @@
 
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 
 export default class UnitListPage {
@@ -17,6 +18,6 @@ export default class UnitListPage {
     const staffCount = this.page
       .findByDataQa(`unit-${unitId}`)
       .findByDataQa('staff-count')
-    await staffCount.assertTextEquals(`${present}/${allocated}`)
+    await expect(staffCount).toHaveText(`${present}/${allocated}`)
   }
 }

@@ -4,7 +4,7 @@
 
 import type { MessageType } from 'lib-common/generated/api-types/messaging'
 
-import { waitUntilEqual } from '../../../utils'
+import { expect } from '../../../playwright'
 import type { Page, ElementCollection } from '../../../utils/page'
 import {
   TextInput,
@@ -53,6 +53,8 @@ export default class MessagesPage {
       'message-box-row-received'
     )
     this.markUnreadButton = page.findByDataQa('mark-unread-btn')
+    this.receivedMessages = page.findAllByDataQa('received-message-row')
+    this.threadAttachments = page.findAllByDataQa('attachment')
   }
 
   async openSentMessages(nth = 0) {
@@ -68,20 +70,16 @@ export default class MessagesPage {
   #messageContent = (index = 0) =>
     this.page.findByDataQa(`message-content"][data-index="${index}`)
 
-  async getReceivedMessageCount() {
-    return await this.page.findAll('[data-qa="received-message-row"]').count()
-  }
-
-  async getThreadAttachmentCount(): Promise<number> {
-    return this.page.findAll('[data-qa="attachment"]').count()
-  }
+  receivedMessages: ElementCollection
+  threadAttachments: ElementCollection
 
   async assertReceivedMessageParticipantsContains(nth: number, str: string) {
-    await this.page
-      .findAllByDataQa('received-message-row')
-      .nth(nth)
-      .find('[data-qa="participants"]', { hasText: str })
-      .waitUntilVisible()
+    await expect(
+      this.page
+        .findAllByDataQa('received-message-row')
+        .nth(nth)
+        .find('[data-qa="participants"]', { hasText: str })
+    ).toBeVisible()
   }
 
   async openInbox(index: number) {
@@ -110,7 +108,7 @@ export default class MessagesPage {
   }
 
   async assertReplyContentIsEmpty() {
-    await this.#messageReplyContent.assertTextEquals('')
+    await expect(this.#messageReplyContent).toHaveText('')
   }
 
   async openMessageEditor() {
@@ -129,32 +127,32 @@ export default class MessagesPage {
   }
 
   async assertMessageContent(index: number, content: string) {
-    await this.#messageContent(index).assertTextEquals(content)
+    await expect(this.#messageContent(index)).toHaveText(content)
   }
 
   async assertDraftContent(title: string, content: string) {
     await this.#draftMessagesBoxRow.click()
-    await this.#draftMessage
-      .find('[data-qa="thread-list-item-title"]')
-      .assertTextEquals(title)
-    await this.#draftMessage
-      .find('[data-qa="thread-list-item-content"]')
-      .assertTextEquals(content)
+    await expect(
+      this.#draftMessage.find('[data-qa="thread-list-item-title"]')
+    ).toHaveText(title)
+    await expect(
+      this.#draftMessage.find('[data-qa="thread-list-item-content"]')
+    ).toHaveText(content)
   }
 
   async assertNoDrafts() {
     await this.#draftMessagesBoxRow.click()
-    await this.#emptyInboxText.waitUntilVisible()
+    await expect(this.#emptyInboxText).toBeVisible()
   }
 
   async assertCopyContent(title: string, content: string) {
     await this.#messageCopiesInbox.click()
-    await this.page
-      .findByDataQa('thread-list-item-title')
-      .assertTextEquals(title)
-    await this.page
-      .findByDataQa('thread-list-item-content')
-      .assertTextEquals(content)
+    await expect(this.page.findByDataQa('thread-list-item-title')).toHaveText(
+      title
+    )
+    await expect(this.page.findByDataQa('thread-list-item-content')).toHaveText(
+      content
+    )
   }
 
   async openCopyThread() {
@@ -164,7 +162,7 @@ export default class MessagesPage {
 
   async assertNoCopies() {
     await this.#messageCopiesInbox.click()
-    await this.#emptyInboxText.waitUntilVisible()
+    await expect(this.#emptyInboxText).toBeVisible()
   }
 
   secondaryRecipient(name: string) {
@@ -175,10 +173,8 @@ export default class MessagesPage {
     )
   }
 
-  async getGroupAccountNames(): Promise<string[]> {
-    return this.#unitAccount
-      .findAllByDataQa('group-message-account-name')
-      .allTexts()
+  get groupAccountNames(): ElementCollection {
+    return this.#unitAccount.findAllByDataQa('group-message-account-name')
   }
 
   async close() {
@@ -193,10 +189,9 @@ export class SentMessagesPage {
   }
 
   async assertMessageParticipants(nth: number, participants: string) {
-    await this.sentMessages
-      .nth(nth)
-      .findByDataQa('participants')
-      .assertTextEquals(participants)
+    await expect(
+      this.sentMessages.nth(nth).findByDataQa('participants')
+    ).toHaveText(participants)
   }
 
   async openMessage(nth: number) {
@@ -228,7 +223,7 @@ export class FolderMessagesPage {
     await this.page.findByDataQa('message-reply-editor-btn').click()
   }
   async assertHasNoMarkUnreadButton() {
-    await this.page.findByDataQa('mark-unread-btn').waitUntilHidden()
+    await expect(this.page.findByDataQa('mark-unread-btn')).toBeHidden()
   }
 }
 
@@ -236,7 +231,9 @@ export class SentMessagePage {
   constructor(private readonly page: Page) {}
 
   async assertMessageRecipients(recipients: string) {
-    await this.page.findByDataQa('recipient-names').assertTextEquals(recipients)
+    await expect(this.page.findByDataQa('recipient-names')).toHaveText(
+      recipients
+    )
   }
 }
 
@@ -244,7 +241,9 @@ export class MessageCopyPage {
   constructor(private readonly page: Page) {}
 
   async assertMessageRecipients(recipients: string) {
-    await this.page.findByDataQa('recipient-names').assertTextEquals(recipients)
+    await expect(this.page.findByDataQa('recipient-names')).toHaveText(
+      recipients
+    )
   }
 }
 
@@ -359,15 +358,15 @@ export class MessageEditor extends Element {
     if (message.confirmManyRecipients) {
       await this.findByDataQa('modal-okBtn').click()
     }
-    await this.waitUntilHidden()
+    await expect(this).toBeHidden()
   }
 
   async assertSimpleViewVisible() {
-    await this.inputTitle.waitUntilVisible()
-    await this.messageTypeMessage.waitUntilHidden()
-    await this.messageTypeBulletin.waitUntilHidden()
-    await this.urgent.waitUntilHidden()
-    await this.fileUpload.waitUntilHidden()
+    await expect(this.inputTitle).toBeVisible()
+    await expect(this.messageTypeMessage).toBeHidden()
+    await expect(this.messageTypeBulletin).toBeHidden()
+    await expect(this.urgent).toBeHidden()
+    await expect(this.fileUpload).toBeHidden()
   }
 
   async draftNewMessage(title: string, content: string) {
@@ -376,24 +375,20 @@ export class MessageEditor extends Element {
     await this.recipientSelection.firstOption().click()
     await this.recipientSelection.close()
     await this.inputContent.fill(content)
-    await waitUntilEqual(() => this.getEditorState(), 'clean')
-  }
-
-  async getEditorState() {
-    return this.getAttribute('data-status')
+    await expect(this).toHaveAttribute('data-status', 'clean')
   }
 
   async assertRecipient(recipientName: string) {
-    return waitUntilEqual(() => this.recipientSelection.text, recipientName)
+    await expect(this.recipientSelection).toHaveText(recipientName)
   }
 
   async assertTitle(title: string) {
-    return waitUntilEqual(() => this.inputTitle.inputValue, title)
+    await expect(this.inputTitle).toHaveValue(title)
   }
 
   async assertFiltersVisible() {
-    await this.yearsOfBirthSelection.waitUntilVisible()
-    await this.shiftcare.waitUntilVisible()
-    await this.familyDaycare.waitUntilVisible()
+    await expect(this.yearsOfBirthSelection).toBeVisible()
+    await expect(this.shiftcare).toBeVisible()
+    await expect(this.familyDaycare).toBeVisible()
   }
 }

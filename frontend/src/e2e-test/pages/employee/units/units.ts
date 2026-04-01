@@ -5,7 +5,7 @@
 import type { UUID } from 'lib-common/types'
 
 import config from '../../../config'
-import { waitUntilEqual } from '../../../utils'
+import { expect } from '../../../playwright'
 import type { ElementCollection, Page } from '../../../utils/page'
 import { Checkbox, Element, MultiSelect, TextInput } from '../../../utils/page'
 
@@ -51,7 +51,7 @@ export default class UnitsPage {
   }
 
   async assertRowCount(expectedCount: number) {
-    await waitUntilEqual(() => this.#rows.count(), expectedCount)
+    await expect(this.#rows).toHaveCount(expectedCount)
   }
 
   unitRow(id: UUID) {
@@ -86,10 +86,10 @@ export class UnitRow extends Element {
 
   async assertFields(fields: { name?: string; visitingAddress?: string }) {
     if (fields.name !== undefined) {
-      await this.#name.assertTextEquals(fields.name)
+      await expect(this.#name).toHaveText(fields.name)
     }
     if (fields.visitingAddress !== undefined) {
-      await this.#visitingAddress.assertTextEquals(fields.visitingAddress)
+      await expect(this.#visitingAddress).toHaveText(fields.visitingAddress)
     }
   }
 

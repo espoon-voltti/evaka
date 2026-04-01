@@ -34,8 +34,7 @@ import type {
   GuardiansSection
 } from '../../pages/employee/child-information'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -110,17 +109,17 @@ test.describe('Child Information - edit additional information', () => {
   test('medication info and be added and removed', async () => {
     const medication = 'Epipen'
 
-    await section.medication.assertTextEquals('')
+    await expect(section.medication).toHaveText('')
 
     await section.editBtn.click()
     await section.medicationInput.fill(medication)
     await section.confirmBtn.click()
-    await section.medication.assertTextEquals(medication)
+    await expect(section.medication).toHaveText(medication)
 
     await section.editBtn.click()
     await section.medicationInput.fill('')
     await section.confirmBtn.click()
-    await section.medication.assertTextEquals('')
+    await expect(section.medication).toHaveText('')
   })
   test('Language at home can be edited', async () => {
     const language = 'kreikka'
@@ -132,8 +131,8 @@ test.describe('Child Information - edit additional information', () => {
       config.employeeUrl + '/child-information/' + testChildNoSsn.id
     )
     await childInformationPage.waitUntilLoaded()
-    await section.languageAtHome.assertTextEquals('')
-    await section.languageAtHomeDetails.assertTextEquals('')
+    await expect(section.languageAtHome).toHaveText('')
+    await expect(section.languageAtHomeDetails).toHaveText('')
     await section.editBtn.click()
     await section.languageAtHomeCombobox.fillAndSelectItem(
       languageSearchText,
@@ -141,8 +140,8 @@ test.describe('Child Information - edit additional information', () => {
     )
     await section.languageAtHomeDetailsInput.fill(details)
     await section.confirmBtn.click()
-    await section.languageAtHome.assertTextEquals(language)
-    await section.languageAtHomeDetails.assertTextEquals(details)
+    await expect(section.languageAtHome).toHaveText(language)
+    await expect(section.languageAtHomeDetails).toHaveText(details)
   })
   test('Special diet can be edited', async () => {
     await putDiets({
@@ -165,14 +164,14 @@ test.describe('Child Information - edit additional information', () => {
       config.employeeUrl + '/child-information/' + testChildNoSsn.id
     )
     await childInformationPage.waitUntilLoaded()
-    await section.specialDiet.assertTextEquals('-')
+    await expect(section.specialDiet).toHaveText('-')
     await section.editBtn.click()
     await section.specialDietCombobox.fillAndSelectItem(
       dietSearchTerm,
       `diet-${dietId}`
     )
     await section.confirmBtn.click()
-    await section.specialDiet.assertTextEquals(dietCaption)
+    await expect(section.specialDiet).toHaveText(dietCaption)
   })
 })
 
@@ -183,8 +182,8 @@ test.describe('Child Information - header', () => {
       config.employeeUrl + '/child-information/' + testChildRestricted.id
     )
     await childInformationPage.waitUntilLoaded()
-    await childInformationPage.restrictedWarning.waitUntilVisible()
-    await childInformationPage.noGuardianInfo.waitUntilVisible()
+    await expect(childInformationPage.restrictedWarning).toBeVisible()
+    await expect(childInformationPage.noGuardianInfo).toBeVisible()
   })
 
   test('Deceased child indicator is shown', async () => {
@@ -401,17 +400,16 @@ test.describe('Child information - backup care', () => {
       LocalDate.of(2020, 2, 1),
       LocalDate.of(2020, 2, 3)
     )
-    await waitUntilEqual(
-      () => section.getBackupCares(),
-      [
+    await expect
+      .poll(() => section.getBackupCares())
+      .toEqual([
         {
           unit: testDaycare.name,
           period: '01.02.2020 - 03.02.2020'
         }
-      ]
-    )
+      ])
     await section.deleteBackupCare(0)
-    await waitUntilEqual(() => section.getBackupCares(), [])
+    await expect.poll(() => section.getBackupCares()).toEqual([])
   })
 
   test('error is shown if no placement is during the requested range', async () => {

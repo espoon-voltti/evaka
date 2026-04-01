@@ -26,7 +26,7 @@ import {
 } from '../../generated/api-clients'
 import type { DevDaycareGroup, DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -100,19 +100,21 @@ test.describe('Employee - Unit month calendar', () => {
     const monthCalendarPage = await groupSection.openMonthCalendar()
 
     // Monday is visible
-    await monthCalendarPage
-      .absenceCell(testChild2.id, monday)
-      .waitUntilVisible()
+    await expect(
+      monthCalendarPage.absenceCell(testChild2.id, monday)
+    ).toBeVisible()
 
     // Tue-Thu are term break days
     for (const date of termBreak.dates()) {
-      await monthCalendarPage.absenceCell(testChild2.id, date).waitUntilHidden()
+      await expect(
+        monthCalendarPage.absenceCell(testChild2.id, date)
+      ).toBeHidden()
     }
 
     // Fri is visible
-    await monthCalendarPage
-      .absenceCell(testChild2.id, monday.addDays(4))
-      .waitUntilVisible()
+    await expect(
+      monthCalendarPage.absenceCell(testChild2.id, monday.addDays(4))
+    ).toBeVisible()
   })
 
   test('User can open the month calendar and add an absence for a child with only one absence category', async () => {
@@ -311,20 +313,22 @@ test.describe('Employee - Unit month calendar', () => {
       const monthCalendarPage = await groupSection.openMonthCalendar()
 
       // Today is not in a holiday period
-      await monthCalendarPage
-        .absenceCell(testChild2.id, today)
-        .waitUntilVisible()
-      await monthCalendarPage
-        .absenceCell(testChild2.id, today)
-        .missingHolidayReservation.waitUntilHidden()
+      await expect(
+        monthCalendarPage.absenceCell(testChild2.id, today)
+      ).toBeVisible()
+      await expect(
+        monthCalendarPage.absenceCell(testChild2.id, today)
+          .missingHolidayReservation
+      ).toBeHidden()
 
       // Missing holiday reservation is shown for holiday period dates
       await monthCalendarPage.nextWeekButton.click()
       let date = holidayStart
       while (date <= holidayEnd) {
-        await monthCalendarPage
-          .absenceCell(testChild2.id, date)
-          .missingHolidayReservation.waitUntilVisible()
+        await expect(
+          monthCalendarPage.absenceCell(testChild2.id, date)
+            .missingHolidayReservation
+        ).toBeVisible()
         date = date.addDays(1)
       }
 
@@ -335,12 +339,13 @@ test.describe('Employee - Unit month calendar', () => {
         'UNKNOWN_ABSENCE',
         ['NONBILLABLE']
       )
-      await monthCalendarPage
-        .absenceCell(testChild2.id, holidayStart)
-        .waitUntilVisible()
-      await monthCalendarPage
-        .absenceCell(testChild2.id, holidayStart)
-        .missingHolidayReservation.waitUntilHidden()
+      await expect(
+        monthCalendarPage.absenceCell(testChild2.id, holidayStart)
+      ).toBeVisible()
+      await expect(
+        monthCalendarPage.absenceCell(testChild2.id, holidayStart)
+          .missingHolidayReservation
+      ).toBeHidden()
     })
 
     test('Missing holiday questionnaire answer indicators are shown for questionnaire dates that have no answer', async () => {
@@ -357,20 +362,22 @@ test.describe('Employee - Unit month calendar', () => {
       const monthCalendarPage = await groupSection.openMonthCalendar()
 
       // Today is not in a holiday period
-      await monthCalendarPage
-        .absenceCell(testChild2.id, today)
-        .waitUntilVisible()
-      await monthCalendarPage
-        .absenceCell(testChild2.id, today)
-        .missingQuestionnaireAnswer.waitUntilHidden()
+      await expect(
+        monthCalendarPage.absenceCell(testChild2.id, today)
+      ).toBeVisible()
+      await expect(
+        monthCalendarPage.absenceCell(testChild2.id, today)
+          .missingQuestionnaireAnswer
+      ).toBeHidden()
 
       // Missing questionnaire answers are shown for holiday period dates
       await monthCalendarPage.nextWeekButton.click()
       let date = holidayStart
       while (date <= holidayEnd) {
-        await monthCalendarPage
-          .absenceCell(testChild2.id, date)
-          .missingQuestionnaireAnswer.waitUntilVisible()
+        await expect(
+          monthCalendarPage.absenceCell(testChild2.id, date)
+            .missingQuestionnaireAnswer
+        ).toBeVisible()
         date = date.addDays(1)
       }
     })
@@ -389,20 +396,22 @@ test.describe('Employee - Unit month calendar', () => {
       const monthCalendarPage = await groupSection.openMonthCalendar()
 
       // Today is not in a holiday period
-      await monthCalendarPage
-        .absenceCell(testChild2.id, today)
-        .waitUntilVisible()
-      await monthCalendarPage
-        .absenceCell(testChild2.id, today)
-        .missingQuestionnaireAnswer.waitUntilHidden()
+      await expect(
+        monthCalendarPage.absenceCell(testChild2.id, today)
+      ).toBeVisible()
+      await expect(
+        monthCalendarPage.absenceCell(testChild2.id, today)
+          .missingQuestionnaireAnswer
+      ).toBeHidden()
 
       // Missing questionnaire answers are not shown for holiday period dates
       await monthCalendarPage.nextWeekButton.click()
       let date = holidayStart
       while (date <= holidayEnd) {
-        await monthCalendarPage
-          .absenceCell(testChild2.id, date)
-          .missingQuestionnaireAnswer.waitUntilHidden()
+        await expect(
+          monthCalendarPage.absenceCell(testChild2.id, date)
+            .missingQuestionnaireAnswer
+        ).toBeHidden()
         date = date.addDays(1)
       }
     })

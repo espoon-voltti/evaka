@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { DevEmployee } from '../../generated/api-types'
-import type { Page } from '../../utils/page'
+import { expect } from '../../playwright'
+import type { ElementCollection, Page } from '../../utils/page'
 import { Checkbox, Element, TextInput } from '../../utils/page'
 
 export class EmployeesPage {
@@ -21,11 +22,10 @@ export class EmployeesPage {
     this.createSsnEmployeeWizard = new CreateSsnEmployeeWizard(
       page.findByDataQa('create-ssn-employee-wizard')
     )
+    this.employeeNames = page.findAllByDataQa('employee-name')
   }
 
-  get visibleUsers(): Promise<string[]> {
-    return this.page.findAllByDataQa('employee-name').allTexts()
-  }
+  employeeNames: ElementCollection
 
   async activateEmployee(nth: number) {
     await this.page.findAllByDataQa('activate-button').nth(nth).click()
@@ -43,7 +43,7 @@ export class EmployeesPage {
   }
 
   async clickDeactivatedEmployees() {
-    await this.hideDeactivated.waitUntilVisible()
+    await expect(this.hideDeactivated).toBeVisible()
     await this.hideDeactivated.click()
   }
 

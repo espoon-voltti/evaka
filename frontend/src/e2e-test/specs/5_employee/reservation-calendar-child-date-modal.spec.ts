@@ -21,8 +21,7 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import type { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -116,27 +115,33 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.addReservationBtn.click()
     await modal.reservationStart(1).type('2030')
     await modal.reservationEnd(1).type('2359')
-    await modal.addReservationBtn.waitUntilHidden() // max 2
-    await modal.addAttendanceBtn.waitUntilHidden() // no attendances in future
+    await expect(modal.addReservationBtn).toBeHidden() // max 2
+    await expect(modal.addAttendanceBtn).toBeHidden() // no attendances in future
     await modal.submit()
 
     let reservations = reservationsTable.reservationCells(childId, date)
-    await reservations.assertCount(2)
-    await reservations.nth(0).assertTextEquals('09:00\n16:00*')
-    await reservations.nth(1).assertTextEquals('20:30\n23:59 *')
-    await reservationsTable
-      .outsideOpeningHoursWarning(childId, date, 1)
-      .waitUntilVisible()
+    await expect(reservations).toHaveCount(2)
+    await expect(reservations.nth(0)).toHaveText('09:00\n16:00*', {
+      useInnerText: true
+    })
+    await expect(reservations.nth(1)).toHaveText('20:30\n23:59 *', {
+      useInnerText: true
+    })
+    await expect(
+      reservationsTable.outsideOpeningHoursWarning(childId, date, 1)
+    ).toBeVisible()
 
     await reservationsTable.openChildDateModal(childId, date)
-    await modal.reservationStart(0).assertValueEquals('09:00')
+    await expect(modal.reservationStart(0)).toHaveValue('09:00')
     await modal.reservationStart(0).fill('10:15')
     await modal.reservationRemove(1).click()
     await modal.submit()
 
     reservations = reservationsTable.reservationCells(childId, date)
-    await reservations.assertCount(1)
-    await reservations.nth(0).assertTextEquals('10:15\n16:00*')
+    await expect(reservations).toHaveCount(1)
+    await expect(reservations.nth(0)).toHaveText('10:15\n16:00*', {
+      useInnerText: true
+    })
   })
 
   test('Add two attendances for yesterday then update one and remove other', async () => {
@@ -155,19 +160,25 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.submit()
 
     let attendances = reservationsTable.attendanceCells(childId, date)
-    await attendances.assertCount(2)
-    await attendances.nth(0).assertTextEquals('09:00\n16:00')
-    await attendances.nth(1).assertTextEquals('20:30\n-')
+    await expect(attendances).toHaveCount(2)
+    await expect(attendances.nth(0)).toHaveText('09:00\n16:00', {
+      useInnerText: true
+    })
+    await expect(attendances.nth(1)).toHaveText('20:30\n-', {
+      useInnerText: true
+    })
 
     await reservationsTable.openChildDateModal(childId, date)
-    await modal.attendanceStart(0).assertValueEquals('09:00')
+    await expect(modal.attendanceStart(0)).toHaveValue('09:00')
     await modal.attendanceStart(0).fill('10:15')
     await modal.attendanceRemove(1).click()
     await modal.submit()
 
     attendances = reservationsTable.attendanceCells(childId, date)
-    await attendances.assertCount(1)
-    await attendances.nth(0).assertTextEquals('10:15\n16:00')
+    await expect(attendances).toHaveCount(1)
+    await expect(attendances.nth(0)).toHaveText('10:15\n16:00', {
+      useInnerText: true
+    })
   })
 
   test('Add absences for child in preschool daycare for tomorrow then update one and remove other', async () => {
@@ -181,28 +192,24 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.billableAbsenceType.selectOption('SICKLEAVE')
 
     await modal.addNonbillableAbsenceBtn.click()
-    await waitUntilEqual(
-      () => modal.nonbillableAbsenceType.selectedOption,
-      'SICKLEAVE' // defaults from the other absence
-    )
+    // defaults from the other absence
+    await modal.nonbillableAbsenceType.assertSelectedOption('SICKLEAVE')
     await modal.nonbillableAbsenceType.selectOption('UNKNOWN_ABSENCE')
     await modal.submit()
 
     // billable absence has precedence
-    await reservationsTable
-      .reservationCells(childId, date)
-      .nth(0)
-      .assertTextEquals('Sairaus*')
+    await expect(
+      reservationsTable.reservationCells(childId, date).nth(0)
+    ).toHaveText('Sairaus*')
 
     await reservationsTable.openChildDateModal(childId, date)
     await modal.nonbillableAbsenceRemove.click()
     await modal.billableAbsenceType.selectOption('OTHER_ABSENCE')
     await modal.submit()
 
-    await reservationsTable
-      .reservationCells(childId, date)
-      .nth(0)
-      .assertTextEquals('Poissaolo*')
+    await expect(
+      reservationsTable.reservationCells(childId, date).nth(0)
+    ).toHaveText('Poissaolo*')
 
     // reservation times are shown if partially absent
     await reservationsTable.openChildDateModal(childId, date)
@@ -213,28 +220,24 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.reservationStart(1).fill('14:00')
     await modal.reservationEnd(1).fill('17:00')
     await modal.submit()
-    await reservationsTable
-      .reservationCells(childId, date)
-      .nth(0)
-      .assertTextEquals('09:00\n13:00*')
-    await reservationsTable
-      .reservationCells(childId, date)
-      .nth(1)
-      .assertTextEquals('14:00\n17:00*')
+    await expect(
+      reservationsTable.reservationCells(childId, date).nth(0)
+    ).toHaveText('09:00\n13:00*', { useInnerText: true })
+    await expect(
+      reservationsTable.reservationCells(childId, date).nth(1)
+    ).toHaveText('14:00\n17:00*', { useInnerText: true })
 
     // reservation times are not shown if fully absent
     await reservationsTable.openChildDateModal(childId, date)
     await modal.addNonbillableAbsenceBtn.click()
     await modal.nonbillableAbsenceType.selectOption('OTHER_ABSENCE')
     await modal.submit()
-    await reservationsTable
-      .reservationCells(childId, date)
-      .nth(0)
-      .assertTextEquals('Poissaolo*')
-    await reservationsTable
-      .reservationCells(childId, date)
-      .nth(1)
-      .assertTextEquals('')
+    await expect(
+      reservationsTable.reservationCells(childId, date).nth(0)
+    ).toHaveText('Poissaolo*')
+    await expect(
+      reservationsTable.reservationCells(childId, date).nth(1)
+    ).toHaveText('')
   })
 
   test('Add absence for child in preschool for yesterday', async () => {
@@ -244,16 +247,15 @@ test.describe('Reservation calendar child date modal', () => {
     const date = today.subDays(1)
 
     const modal = await reservationsTable.openChildDateModal(childId, date)
-    await modal.addReservationBtn.waitUntilHidden() // no reservations in preschool
-    await modal.addBillableAbsenceBtn.waitUntilHidden() // no billable absences in preschool
+    await expect(modal.addReservationBtn).toBeHidden() // no reservations in preschool
+    await expect(modal.addBillableAbsenceBtn).toBeHidden() // no billable absences in preschool
     await modal.addNonbillableAbsenceBtn.click()
     await modal.nonbillableAbsenceType.selectOption('OTHER_ABSENCE')
     await modal.submit()
 
-    await reservationsTable
-      .reservationCells(childId, date)
-      .nth(0)
-      .assertTextEquals('Poissaolo*')
+    await expect(
+      reservationsTable.reservationCells(childId, date).nth(0)
+    ).toHaveText('Poissaolo*')
   })
 
   test('Add absence for child in daycare for yesterday', async () => {
@@ -266,15 +268,14 @@ test.describe('Reservation calendar child date modal', () => {
     await modal.addReservationBtn.click()
     await modal.reservationStart(0).fill('09:00')
     await modal.reservationEnd(0).fill('13:00')
-    await modal.addNonbillableAbsenceBtn.waitUntilHidden() // no nonbillable absences in daycare
+    await expect(modal.addNonbillableAbsenceBtn).toBeHidden() // no nonbillable absences in daycare
     await modal.addBillableAbsenceBtn.click()
     await modal.billableAbsenceType.selectOption('OTHER_ABSENCE')
     await modal.submit()
 
-    await reservationsTable
-      .reservationCells(childId, date)
-      .nth(0)
-      .assertTextEquals('Poissaolo*')
+    await expect(
+      reservationsTable.reservationCells(childId, date).nth(0)
+    ).toHaveText('Poissaolo*')
   })
 
   test('Absence warnings for child in daycare', async () => {
@@ -378,21 +379,19 @@ test.describe('Reservation calendar child date modal', () => {
       await modal.reservationEnd(0).fill('21:00')
       await modal.submit()
 
-      await reservationsTable
-        .outsideOpeningHoursWarning(childId, date1, 0)
-        .waitUntilVisible()
-      await reservationsTable
-        .attendanceCells(childId, date1)
-        .nth(0)
-        .assertTextEquals('Tee varasijoitus ')
+      await expect(
+        reservationsTable.outsideOpeningHoursWarning(childId, date1, 0)
+      ).toBeVisible()
+      await expect(
+        reservationsTable.attendanceCells(childId, date1).nth(0)
+      ).toHaveText('Tee varasijoitus ')
 
-      await reservationsTable
-        .outsideOpeningHoursWarning(childId, date2, 0)
-        .waitUntilVisible()
-      await reservationsTable
-        .attendanceCells(childId, date2)
-        .nth(0)
-        .assertTextEquals('-\n-')
+      await expect(
+        reservationsTable.outsideOpeningHoursWarning(childId, date2, 0)
+      ).toBeVisible()
+      await expect(
+        reservationsTable.attendanceCells(childId, date2).nth(0)
+      ).toHaveText('-\n-', { useInnerText: true })
 
       const monthCalendar = await weekCalendar.openMonthCalendar()
       await monthCalendar.assertTooltipContains(childId, date1, [
@@ -439,16 +438,14 @@ test.describe('Reservation calendar child date modal', () => {
       await reservationsTable.assertCannotOpenChildDateModal(childId, date2)
 
       await weekCalendar.changeWeekToDate(date1)
-      await reservationsTable
-        .attendanceCells(childId, date1)
-        .nth(0)
-        .assertTextEquals('Tee varasijoitus ')
+      await expect(
+        reservationsTable.attendanceCells(childId, date1).nth(0)
+      ).toHaveText('Tee varasijoitus ')
 
       await weekCalendar.changeWeekToDate(date2)
-      await reservationsTable
-        .attendanceCells(childId, date2)
-        .nth(0)
-        .assertTextEquals('')
+      await expect(
+        reservationsTable.attendanceCells(childId, date2).nth(0)
+      ).toHaveText('')
 
       const monthCalendar = await weekCalendar.openMonthCalendar()
       await monthCalendar.changeWeekToDate(date1)
@@ -477,10 +474,9 @@ test.describe('Reservation calendar child date modal', () => {
       await modal.reservationEnd(0).fill('18:00')
       await modal.submit()
 
-      await reservationsTable
-        .attendanceCells(childId, date)
-        .nth(0)
-        .assertTextEquals('Tee varasijoitus ')
+      await expect(
+        reservationsTable.attendanceCells(childId, date).nth(0)
+      ).toHaveText('Tee varasijoitus ')
 
       const monthCalendar = await weekCalendar.openMonthCalendar()
       await monthCalendar.assertTooltipContains(childId, date, [

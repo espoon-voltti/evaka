@@ -4,6 +4,7 @@
 
 import type { Locator } from '@playwright/test'
 
+import { expect } from '../../../playwright'
 import type { Page } from '../../../utils/page'
 import {
   Checkbox,
@@ -36,13 +37,13 @@ export class DocumentTemplatesListPage {
 
   async openCreateModal(): Promise<TemplateModal> {
     await this.createNewButton.click()
-    await this.templateModal.waitUntilVisible()
+    await expect(this.templateModal).toBeVisible()
     return this.templateModal
   }
 
   async openImportModal(): Promise<TemplateImportModal> {
     await this.importTemplate.click()
-    await this.templateImportModal.waitUntilVisible()
+    await expect(this.templateImportModal).toBeVisible()
     return this.templateImportModal
   }
 

@@ -32,7 +32,7 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -168,32 +168,32 @@ test.describe('Employee - Guardian Information', () => {
     await createModal.endDate.fill('05.01.2020')
     await createModal.amount.fill('5')
     await createModal.price.fill('12')
-    await createModal.totalPrice.assertTextEquals('60 €')
+    await expect(createModal.totalPrice).toHaveText('60 €')
     await createModal.note.fill('Testimuistiinpano')
     await createModal.submit()
 
-    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(1)
+    await expect(invoiceCorrectionsSection.invoiceCorrectionRows).toHaveCount(1)
     const row = invoiceCorrectionsSection.lastRow()
-    await row.productSelect.assertTextEquals('Alennus (maksup.)')
-    await row.description.assertTextEquals('Virheen korjaus')
-    await row.unitSelect.assertTextEquals(testDaycare.name)
-    await row.period.assertTextEquals('01.01.2020 - 05.01.2020')
-    await row.amount.assertTextEquals('5')
-    await row.unitPrice.assertTextEquals('12,00 €')
-    await row.totalPrice.assertTextEquals('60,00 €')
-    await row.status.assertTextEquals('Ei laskulla')
+    await expect(row.productSelect).toHaveText('Alennus (maksup.)')
+    await expect(row.description).toHaveText('Virheen korjaus')
+    await expect(row.unitSelect).toHaveText(testDaycare.name)
+    await expect(row.period).toHaveText('01.01.2020 - 05.01.2020')
+    await expect(row.amount).toHaveText('5')
+    await expect(row.unitPrice).toHaveText('12,00 €')
+    await expect(row.totalPrice).toHaveText('60,00 €')
+    await expect(row.status).toHaveText('Ei laskulla')
     await row.noteIcon.hover()
-    await row.noteTooltip.assertTextEquals('Testimuistiinpano')
+    await expect(row.noteTooltip).toHaveText('Testimuistiinpano')
 
     const noteModal = await row.editNote()
     await noteModal.note.fill('Muokattu muistiinpano')
     await noteModal.submit()
 
     await row.noteIcon.hover()
-    await row.noteTooltip.assertTextEquals('Muokattu muistiinpano')
+    await expect(row.noteTooltip).toHaveText('Muokattu muistiinpano')
 
     await row.deleteRow()
-    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
+    await expect(invoiceCorrectionsSection.invoiceCorrectionRows).toHaveCount(0)
   })
 
   test('Invoice corrections show only units with cost center', async () => {
@@ -209,14 +209,14 @@ test.describe('Employee - Guardian Information', () => {
 
     const invoiceCorrectionsSection =
       await guardianPage.openCollapsible('invoiceCorrections')
-    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
+    await expect(invoiceCorrectionsSection.invoiceCorrectionRows).toHaveCount(0)
     let modal = await invoiceCorrectionsSection.addNewInvoiceCorrection()
     await modal.clickAndAssertUnitVisibility(testDaycare.name, true)
 
     await deleteDaycareCostCenter({ daycareId: testDaycare.id })
     await guardianPage.navigateToGuardian(testAdult.id)
     await guardianPage.openCollapsible('invoiceCorrections')
-    await invoiceCorrectionsSection.invoiceCorrectionRows.assertCount(0)
+    await expect(invoiceCorrectionsSection.invoiceCorrectionRows).toHaveCount(0)
     modal = await invoiceCorrectionsSection.addNewInvoiceCorrection()
     await modal.clickAndAssertUnitVisibility(testDaycare.name, false)
   })

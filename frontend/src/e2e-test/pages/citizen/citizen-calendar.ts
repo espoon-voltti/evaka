@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
 import uniq from 'lodash/uniq'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'
@@ -10,7 +9,7 @@ import type { ChildId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { expect } from '../../playwright'
 import type { Page, ElementCollection } from '../../utils/page'
 import {
   Checkbox,
@@ -38,12 +37,12 @@ export default class CitizenCalendarPage {
   #openCalendarActionsModal: Element
   reservationModal: Element
   #holidayCtas: ElementCollection
-  #expiringIncomeCta: Element
+  expiringIncomeCta: Element
   #dailyServiceTimeNotificationModal: Element
   discussionSurveyModal: Element
   discussionReservationModal: Element
   cancelConfirmModal: Element
-  #discussionsCta: Element
+  discussionsCta: Element
 
   constructor(
     private readonly page: Page,
@@ -54,7 +53,7 @@ export default class CitizenCalendarPage {
     )
     this.reservationModal = page.findByDataQa('reservation-modal')
     this.#holidayCtas = page.findAllByDataQa('holiday-period-cta')
-    this.#expiringIncomeCta = page.findByDataQa('expiring-income-cta')
+    this.expiringIncomeCta = page.findByDataQa('expiring-income-cta')
     this.#dailyServiceTimeNotificationModal = page.findByDataQa(
       'daily-service-time-notification-modal'
     )
@@ -63,7 +62,7 @@ export default class CitizenCalendarPage {
     this.discussionReservationModal = page.findByDataQa(
       'discussion-reservations-modal'
     )
-    this.#discussionsCta = page.findByDataQa('active-discussions-cta')
+    this.discussionsCta = page.findByDataQa('active-discussions-cta')
   }
 
   dayCell = (date: LocalDate) =>
@@ -79,15 +78,15 @@ export default class CitizenCalendarPage {
     this.page.findByDataQa('fetch-previous-button')
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="calendar-page"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="calendar-page"][data-isloading="false"]')
+    ).toBeVisible()
   }
 
   async assertEventCount(date: LocalDate, count: number) {
-    await this.dayCell(date)
-      .findByDataQa('event-count')
-      .assertTextEquals(count.toString())
+    await expect(this.dayCell(date).findByDataQa('event-count')).toHaveText(
+      count.toString()
+    )
   }
 
   async openReservationModal() {
@@ -134,7 +133,7 @@ export default class CitizenCalendarPage {
       await this.page.findByDataQa('open-discussions-modal').click()
     }
 
-    await this.discussionSurveyModal.waitUntilVisible()
+    await expect(this.discussionSurveyModal).toBeVisible()
     return new DiscussionSurveyModal(this.discussionSurveyModal)
   }
 
@@ -147,17 +146,17 @@ export default class CitizenCalendarPage {
   }
 
   async assertHolidayModalVisible(): Promise<void> {
-    return await this.page
-      .findByDataQa('fixed-period-selection-modal')
-      .waitUntilVisible()
+    return await expect(
+      this.page.findByDataQa('fixed-period-selection-modal')
+    ).toBeVisible()
   }
 
   async assertHolidayModalButtonVisible() {
     if (this.type === 'mobile') {
       await this.#openCalendarActionsModal.click()
-      await this.page
-        .findByDataQa('calendar-action-holidays')
-        .waitUntilVisible()
+      await expect(
+        this.page.findByDataQa('calendar-action-holidays')
+      ).toBeVisible()
     } else {
       await this.page.findByDataQa('open-holiday-modal').click()
     }
@@ -204,7 +203,7 @@ export default class CitizenCalendarPage {
   }
 
   async assertMonthTitle(title: string) {
-    await this.monthTitle().assertTextEquals(title)
+    await expect(this.monthTitle()).toHaveText(title)
   }
 
   async openMonthlySummary(year: number, month: number) {
@@ -213,10 +212,9 @@ export default class CitizenCalendarPage {
   }
 
   async assertHoliday(date: LocalDate) {
-    await this.dayCell(date)
-      .findByDataQa('reservations')
-      .findByDataQa('holiday')
-      .waitUntilVisible()
+    await expect(
+      this.dayCell(date).findByDataQa('reservations').findByDataQa('holiday')
+    ).toBeVisible()
   }
 
   readonly holidayPeriodBackground = 'rgb(253, 230, 219)'
@@ -239,16 +237,13 @@ export default class CitizenCalendarPage {
           ? this.nonEditableAbsenceBackground
           : null
     if (expectedBackground !== null) {
-      await waitUntilEqual(
-        () => this.getDayBackgroundColor(date),
-        expectedBackground
-      )
+      await expect
+        .poll(() => this.getDayBackgroundColor(date))
+        .toBe(expectedBackground)
     } else {
-      await waitUntilTrue(async () => {
-        const bg = await this.getDayBackgroundColor(date)
-        // White or transparent
-        return bg === 'rgb(255, 255, 255)' || bg === 'rgba(0, 0, 0, 0)'
-      })
+      await expect
+        .poll(() => this.getDayBackgroundColor(date))
+        .toMatch(/^(rgb\(255, 255, 255\)|rgba\(0, 0, 0, 0\))$/)
     }
   }
 
@@ -262,19 +257,21 @@ export default class CitizenCalendarPage {
       .findAllByDataQa('reservation-group')
 
     if (groups.length === 0) {
-      await day.waitUntilVisible()
+      await expect(day).toBeVisible()
     }
-    await rows.assertCount(groups.length)
+    await expect(rows).toHaveCount(groups.length)
 
     for (const [i, group] of groups.entries()) {
       const row = rows.nth(i)
       const childIds = uniq(group.childIds)
 
-      await row.findAllByDataQa('child-image').assertCount(childIds.length)
+      await expect(row.findAllByDataQa('child-image')).toHaveCount(
+        childIds.length
+      )
       for (const childId of childIds) {
-        await row
-          .find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
-          .waitUntilVisible()
+        await expect(
+          row.find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
+        ).toBeVisible()
       }
 
       await row.findByDataQa('reservation-text').assertText((elementText) => {
@@ -289,7 +286,7 @@ export default class CitizenCalendarPage {
     const day = this.page.findByDataQa(
       `${this.type}-calendar-day-${date.formatIso()}`
     )
-    await day.waitUntilHidden()
+    await expect(day).toBeHidden()
   }
 
   async assertTwoPartReservationFromDayCellGroup(
@@ -305,13 +302,13 @@ export default class CitizenCalendarPage {
 
     const row = reservationRows.nth(groupIndex)
 
-    await row
-      .find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
-      .waitUntilVisible()
+    await expect(
+      row.find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
+    ).toBeVisible()
 
-    await row
-      .findByDataQa('reservation-text')
-      .assertTextEquals(formatter(twoPartReservation))
+    await expect(row.findByDataQa('reservation-text')).toHaveText(
+      formatter(twoPartReservation)
+    )
   }
 
   async closeToasts(): Promise<void> {
@@ -333,46 +330,38 @@ export default class CitizenCalendarPage {
   }
 
   async assertHolidayCtaContent(content: string): Promise<void> {
-    await this.#holidayCtas.nth(0).assertTextEquals(content)
+    await expect(this.#holidayCtas.nth(0)).toHaveText(content)
   }
 
   async clickHolidayCta(): Promise<void> {
     return this.#holidayCtas.nth(0).click()
   }
 
-  async getExpiringIncomeCtaContent(): Promise<string> {
-    return this.#expiringIncomeCta.text
-  }
-
   async clickExpiringIncomeCta(): Promise<void> {
-    return await this.#expiringIncomeCta.click()
-  }
-
-  async getActiveDiscussionsCtaContent(): Promise<string> {
-    return this.#discussionsCta.text
+    return await this.expiringIncomeCta.click()
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {
     await this.page
       .find('[data-holiday-period-cta-status]')
       .assertAttributeEquals('data-holiday-period-cta-status', 'success')
-    await this.#holidayCtas.assertCount(0)
+    await expect(this.#holidayCtas).toHaveCount(0)
   }
 
   async assertExpiringIncomeCtaNotVisible(): Promise<void> {
     await this.page
       .find('[data-expiring-income-cta-status]')
       .assertAttributeEquals('data-expiring-income-cta-status', 'success')
-    await this.#expiringIncomeCta.waitUntilHidden()
+    await expect(this.expiringIncomeCta).toBeHidden()
   }
 
-  async getDailyServiceTimeNotificationModalContent(): Promise<string> {
-    return this.#dailyServiceTimeNotificationModal.findByDataQa('text').text
+  get dailyServiceTimeNotificationText() {
+    return this.#dailyServiceTimeNotificationModal.findByDataQa('text')
   }
 
   async assertChildCountOnDay(date: LocalDate, expectedCount: number) {
     const childImages = this.dayCell(date).findAllByDataQa('child-image')
-    await childImages.assertCount(expectedCount)
+    await expect(childImages).toHaveCount(expectedCount)
   }
 
   async getPageActiveElementDetails() {
@@ -674,13 +663,13 @@ class ReservationModal extends Element {
   }
 
   async assertReadOnlyWeeklyDay(dayIndex: number, state: ReadOnlyDayState) {
-    await this.findByDataQa(`weekly-${dayIndex}-${state}`).waitUntilVisible()
+    await expect(this.findByDataQa(`weekly-${dayIndex}-${state}`)).toBeVisible()
   }
 
   async assertReadOnlyIrregularDay(date: LocalDate, state: ReadOnlyDayState) {
-    await this.findByDataQa(
-      `irregular-${date.formatIso()}-${state}`
-    ).waitUntilVisible()
+    await expect(
+      this.findByDataQa(`irregular-${date.formatIso()}-${state}`)
+    ).toBeVisible()
   }
 
   async assertSendButtonDisabled(targetValue: boolean) {
@@ -691,9 +680,9 @@ class ReservationModal extends Element {
     input: 'start' | 'end',
     reservationIndex: 0 | 1
   ) {
-    await this.findByDataQa(
-      `daily-time-${reservationIndex}-${input}-info`
-    ).waitUntilVisible()
+    await expect(
+      this.findByDataQa(`daily-time-${reservationIndex}-${input}-info`)
+    ).toBeVisible()
   }
 
   async assertWeeklyInputValidationWarningVisible(
@@ -701,9 +690,11 @@ class ReservationModal extends Element {
     weekDayIndex: 0 | 1 | 2 | 3 | 4 | 5 | 6,
     reservationIndex: 0 | 1
   ) {
-    await this.findByDataQa(
-      `weekly-${weekDayIndex}-time-${reservationIndex}-${input}-info`
-    ).waitUntilVisible()
+    await expect(
+      this.findByDataQa(
+        `weekly-${weekDayIndex}-time-${reservationIndex}-${input}-info`
+      )
+    ).toBeVisible()
   }
 
   async assertIrregularInputValidationWarningVisible(
@@ -711,17 +702,21 @@ class ReservationModal extends Element {
     reservationIndex: 0 | 1,
     date: LocalDate
   ) {
-    await this.findByDataQa(
-      `irregular-${date.formatIso()}-time-${reservationIndex}-${input}-info`
-    ).waitUntilVisible()
+    await expect(
+      this.findByDataQa(
+        `irregular-${date.formatIso()}-time-${reservationIndex}-${input}-info`
+      )
+    ).toBeVisible()
   }
 
   async assertChildrenSelectable(childIds: string[]) {
     for (const childId of childIds) {
-      await this.findByDataQa(`child-${childId}`).waitUntilVisible()
+      await expect(this.findByDataQa(`child-${childId}`)).toBeVisible()
     }
 
-    await this.findAllByDataQa('relevant-child').assertCount(childIds.length)
+    await expect(this.findAllByDataQa('relevant-child')).toHaveCount(
+      childIds.length
+    )
   }
 
   async assertChildrenChipDisabled(disabled: boolean, childIds: string[]) {
@@ -732,19 +727,19 @@ class ReservationModal extends Element {
   }
 
   async assertHolidayPeriodInfoContent(content: string) {
-    await this.findByDataQa('holiday-period-info').assertTextEquals(content)
+    await expect(this.findByDataQa('holiday-period-info')).toHaveText(content)
   }
 
   async assertIncompletelyAnsweredPeriodsInfoVisible() {
-    await this.findByDataQa(
-      'incompletely-answered-periods-info'
-    ).waitUntilVisible()
+    await expect(
+      this.findByDataQa('incompletely-answered-periods-info')
+    ).toBeVisible()
   }
 
   async assertIncompletelyAnsweredPeriodsInfoNotVisible() {
-    await this.findByDataQa(
-      'incompletely-answered-periods-info'
-    ).waitUntilHidden()
+    await expect(
+      this.findByDataQa('incompletely-answered-periods-info')
+    ).toBeHidden()
   }
 
   getInfoBox(childId: string) {
@@ -778,12 +773,12 @@ class AbsencesModal {
 
   async assertChildrenSelectable(childIds: string[]) {
     for (const childId of childIds) {
-      await this.page.findByDataQa(`child-${childId}`).waitUntilVisible()
+      await expect(this.page.findByDataQa(`child-${childId}`)).toBeVisible()
     }
 
-    await this.page
-      .findAllByDataQa('relevant-child')
-      .assertCount(childIds.length)
+    await expect(this.page.findAllByDataQa('relevant-child')).toHaveCount(
+      childIds.length
+    )
   }
 
   async assertChildrenChipDisabled(disabled: boolean, childIds: string[]) {
@@ -873,39 +868,39 @@ class DayView extends Element {
   }
 
   async assertNoReservation(childId: UUID) {
-    await this.#childSection(childId)
-      .findByDataQa('no-reservations')
-      .waitUntilVisible()
+    await expect(
+      this.#childSection(childId).findByDataQa('no-reservations')
+    ).toBeVisible()
   }
 
   async assertReservations(childId: UUID, reservations: string) {
     const reservationsElement =
       this.#childSection(childId).findByDataQa('reservations')
-    await reservationsElement.assertTextEquals(reservations)
+    await expect(reservationsElement).toHaveText(reservations)
   }
 
   async assertReservationNoTimes(childId: UUID) {
-    await this.#childSection(childId)
-      .findByDataQa('reservation-no-times')
-      .waitUntilVisible()
+    await expect(
+      this.#childSection(childId).findByDataQa('reservation-no-times')
+    ).toBeVisible()
   }
 
   async assertReservationNotRequired(childId: UUID) {
-    await this.#childSection(childId)
-      .findByDataQa('reservation-not-required')
-      .waitUntilVisible()
+    await expect(
+      this.#childSection(childId).findByDataQa('reservation-not-required')
+    ).toBeVisible()
   }
 
   async assertNotYetReservable(childId: UUID) {
-    await this.#childSection(childId)
-      .findByDataQa('not-yet-reservable')
-      .waitUntilVisible()
+    await expect(
+      this.#childSection(childId).findByDataQa('not-yet-reservable')
+    ).toBeVisible()
   }
 
   async assertAttendances(childId: UUID, attendances: string[]) {
-    await this.#childSection(childId)
-      .findByDataQa('attendances')
-      .assertTextEquals(attendances.join('\n'))
+    await expect(
+      this.#childSection(childId).findByDataQa('attendances')
+    ).toHaveText(attendances.join('\n'), { useInnerText: true })
   }
 
   getServiceUsageWarning(childId: UUID) {
@@ -917,13 +912,13 @@ class DayView extends Element {
   }
 
   async assertAbsence(childId: UUID, value: string) {
-    await this.#childSection(childId)
-      .findByDataQa('absence')
-      .assertTextEquals(value)
+    await expect(
+      this.#childSection(childId).findByDataQa('absence')
+    ).toHaveText(value)
   }
 
   async assertNoActivePlacementsMsgVisible() {
-    await this.findByDataQa('no-active-placements-msg').waitUntilVisible()
+    await expect(this.findByDataQa('no-active-placements-msg')).toBeVisible()
   }
 
   async edit() {
@@ -947,22 +942,24 @@ class DayView extends Element {
     exportable = true
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
-    await event.waitUntilVisible()
-    await event.findByDataQa('event-title').assertTextEquals(title)
-    await event.findByDataQa('event-description').assertTextEquals(description)
+    await expect(event).toBeVisible()
+    await expect(event.findByDataQa('event-title')).toHaveText(title)
+    await expect(event.findByDataQa('event-description')).toHaveText(
+      description
+    )
 
     const exportButton = event.findByDataQa(`event-export-button-${eventId}`)
     if (exportable) {
-      await exportButton.waitUntilVisible()
+      await expect(exportButton).toBeVisible()
     } else {
-      await exportButton.waitUntilHidden()
+      await expect(exportButton).toBeHidden()
     }
   }
 
   async assertEventNotShown(childId: UUID, eventId: UUID) {
-    await this.#childSection(childId)
-      .findByDataQa(`event-${eventId}`)
-      .waitUntilHidden()
+    await expect(
+      this.#childSection(childId).findByDataQa(`event-${eventId}`)
+    ).toBeHidden()
   }
 
   async assertDiscussionReservation(
@@ -978,11 +975,13 @@ class DayView extends Element {
     exportable = true
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
-    await event.findByDataQa('title-text').assertTextEquals(title)
-    await event.findByDataQa('event-description').assertTextEquals(description)
-    await event
-      .findByDataQa(`reservation-time-${eventTimeId}`)
-      .assertTextEquals(reservationText)
+    await expect(event.findByDataQa('title-text')).toHaveText(title)
+    await expect(event.findByDataQa('event-description')).toHaveText(
+      description
+    )
+    await expect(
+      event.findByDataQa(`reservation-time-${eventTimeId}`)
+    ).toHaveText(reservationText)
     const cancelButton = new TextInput(
       event.findByDataQa(`reservation-cancel-button-${eventTimeId}`)
     )
@@ -992,9 +991,9 @@ class DayView extends Element {
       `event-export-button-${eventTimeId}`
     )
     if (exportable) {
-      await exportButton.waitUntilVisible()
+      await expect(exportButton).toBeVisible()
     } else {
-      await exportButton.waitUntilHidden()
+      await expect(exportButton).toBeHidden()
     }
   }
 
@@ -1050,7 +1049,7 @@ class HolidayModal extends Element {
       await this.#childHolidaySelect(child.id).selectOption(option)
     }
     await this.#modalSendButton.click()
-    await this.waitUntilHidden()
+    await expect(this).toBeHidden()
   }
 
   async markNoHolidays(children: { id: string }[]) {
@@ -1058,7 +1057,7 @@ class HolidayModal extends Element {
       await this.#childHolidaySelect(child.id).selectOption({ index: 0 })
     }
     await this.#modalSendButton.click()
-    await this.waitUntilHidden()
+    await expect(this).toBeHidden()
   }
 
   async markHoliday(child: { id: string }, option: string) {
@@ -1073,22 +1072,19 @@ class HolidayModal extends Element {
     values: { child: { id: string }; option: string }[]
   ) {
     for (const { child, option } of values) {
-      await waitUntilEqual(
-        () => this.#childHolidaySelect(child.id).selectedOption,
-        option
-      )
+      await this.#childHolidaySelect(child.id).assertSelectedOption(option)
     }
   }
 
   async assertNotEligible(child: { id: string }) {
-    await this.#childSection(child.id)
-      .findByDataQa('not-eligible')
-      .waitUntilVisible()
+    await expect(
+      this.#childSection(child.id).findByDataQa('not-eligible')
+    ).toBeVisible()
   }
 
   async assertOptions(child: { id: string }, expected: string[]) {
     const select = this.#childHolidaySelect(child.id)
-    await select.waitUntilVisible()
+    await expect(select).toBeVisible()
     const actual = await select.allOptions
     expect(actual).toEqual(expected)
   }

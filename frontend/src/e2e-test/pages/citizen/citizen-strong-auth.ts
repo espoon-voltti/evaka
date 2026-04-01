@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 
 export class MockStrongAuthPage {
@@ -11,7 +12,7 @@ export class MockStrongAuthPage {
     await this.page.find(`[id="${ssn}"]`).locator.check()
     await this.page.find('[type=submit]').findText('Kirjaudu').click()
     await this.page.find('[type=submit]').findText('Jatka').click()
-    await this.page.findByDataQa('header-city-logo').waitUntilVisible()
+    await expect(this.page.findByDataQa('header-city-logo')).toBeVisible()
     return createPage(this.page)
   }
 }

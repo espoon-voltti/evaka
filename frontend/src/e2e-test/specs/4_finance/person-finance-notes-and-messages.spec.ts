@@ -15,7 +15,7 @@ import {
 import type { DevEmployee } from '../../generated/api-types'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import MessagesPage from '../../pages/employee/messages/messages-page'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -203,8 +203,8 @@ test.describe('person finance messages', () => {
     await page.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(page)
     let folderPage = await messagesPage.openFolder('Talouskansio 1')
-    await folderPage.messages.assertCount(1)
+    await expect(folderPage.messages).toHaveCount(1)
     folderPage = await messagesPage.openFolder('Talouskansio 2')
-    await folderPage.messages.assertCount(0)
+    await expect(folderPage.messages).toHaveCount(0)
   })
 })

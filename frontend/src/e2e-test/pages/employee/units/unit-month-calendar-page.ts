@@ -9,7 +9,7 @@ import type {
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
-import { waitUntilEqual } from '../../../utils'
+import { expect } from '../../../playwright'
 import type { Page } from '../../../utils/page'
 import { Checkbox, Element, Modal, Radio, TextInput } from '../../../utils/page'
 
@@ -92,21 +92,23 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     }
   ) {
     const childRow = this.childRow(childId)
-    await childRow
-      .findByDataQa('reserved-hours')
-      .assertTextEquals(`${expected.reservedHours} h`)
+    await expect(childRow.findByDataQa('reserved-hours')).toHaveText(
+      `${expected.reservedHours} h`
+    )
     if (expected.reservedHoursWarning) {
-      await childRow.findByDataQa('reserved-hours-warning').waitUntilVisible()
+      await expect(
+        childRow.findByDataQa('reserved-hours-warning')
+      ).toBeVisible()
     } else {
-      await childRow.findByDataQa('reserved-hours-warning').waitUntilHidden()
+      await expect(childRow.findByDataQa('reserved-hours-warning')).toBeHidden()
     }
-    await childRow
-      .findByDataQa('used-hours')
-      .assertTextEquals(`${expected.usedHours} h`)
+    await expect(childRow.findByDataQa('used-hours')).toHaveText(
+      `${expected.usedHours} h`
+    )
     if (expected.usedHoursWarning) {
-      await childRow.findByDataQa('used-hours-warning').waitUntilVisible()
+      await expect(childRow.findByDataQa('used-hours-warning')).toBeVisible()
     } else {
-      await childRow.findByDataQa('used-hours-warning').waitUntilHidden()
+      await expect(childRow.findByDataQa('used-hours-warning')).toBeHidden()
     }
   }
 
@@ -115,12 +117,12 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     await new TextInput(cell.find('input')).fill(staffCount)
 
     // Wait until saved
-    await waitUntilEqual(() => cell.getAttribute('data-state'), 'clean')
+    await expect(cell).toHaveAttribute('data-state', 'clean')
   }
 
   async assertStaffAttendance(n: number, staffCount: string) {
     const input = new TextInput(this.#staffAttendanceCells.nth(n).find('input'))
-    await input.assertValueEquals(staffCount)
+    await expect(input).toHaveValue(staffCount)
   }
 }
 
@@ -146,7 +148,7 @@ export class AbsenceCell extends Element {
       type === 'empty'
         ? ':not([data-absence-type])'
         : `[data-absence-type="${type}"]`
-    await this.cell.find(positionAttr + absenceTypeAttr).waitUntilVisible()
+    await expect(this.cell.find(positionAttr + absenceTypeAttr)).toBeVisible()
   }
 
   async assertNoAbsence(category: AbsenceCategory) {

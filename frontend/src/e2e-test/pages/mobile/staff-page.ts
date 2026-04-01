@@ -8,7 +8,7 @@ import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import type { DevDaycareGroup } from '../../generated/api-types'
-import { waitUntilEqual } from '../../utils'
+import { expect } from '../../playwright'
 import type { ElementCollection, Page } from '../../utils/page'
 import {
   AsyncButton,
@@ -187,7 +187,9 @@ export class StaffAttendancePage {
     this.page.find(`[data-qa="staff-link"]`, { hasText: name })
 
   async assertShiftTimeTextShown(expectedText: string) {
-    await this.staffMemberPage.shiftTimeText.assertTextEquals(expectedText)
+    await expect(this.staffMemberPage.shiftTimeText).toHaveText(expectedText, {
+      useInnerText: true
+    })
   }
 
   async assertShiftDescriptionShownInInfo(expectedText: string) {
@@ -199,13 +201,13 @@ export class StaffAttendancePage {
   }
 
   async assertAttendanceTimeTextShown(expectedText: string) {
-    await waitUntilEqual(
-      () =>
+    await expect
+      .poll(() =>
         this.staffMemberPage.attendanceTimeTexts
           .allTexts()
-          .then((texts) => texts.join(',')),
-      expectedText
-    )
+          .then((texts) => texts.join(','))
+      )
+      .toBe(expectedText)
   }
 
   async markNewExternalStaffArrived(
@@ -228,11 +230,13 @@ export class StaffAttendancePage {
   async assertMarkNewExternalStaffDisabled() {
     await this.#addNewExternalMemberButton.click()
     await this.anyArrivalPage.markArrived.assertDisabled(true)
-    await this.anyArrivalPage.arrivedInput.waitUntilHidden()
+    await expect(this.anyArrivalPage.arrivedInput).toBeHidden()
   }
 
   async assertPresentStaffCount(expected: number) {
-    await this.#todayTabs.present.assertTextEquals(`LÄSNÄ\n(${expected})`)
+    await expect(this.#todayTabs.present).toHaveText(`LÄSNÄ\n(${expected})`, {
+      useInnerText: true
+    })
   }
 
   async openStaffPage(name: string) {
@@ -240,7 +244,7 @@ export class StaffAttendancePage {
   }
 
   async assertEmployeeStatus(expected: string) {
-    await this.anyMemberPage.status.assertTextEquals(expected)
+    await expect(this.anyMemberPage.status).toHaveText(expected)
   }
 
   async selectPrimaryTab(tab: 'today' | 'planned') {
@@ -257,17 +261,17 @@ export class StaffAttendancePage {
 
   async assertEmployeeAttendances(expectedArray: string[]) {
     const attendances = this.staffMemberPage.attendanceTimes
-    await attendances.assertCount(expectedArray.length)
+    await expect(attendances).toHaveCount(expectedArray.length)
     return Promise.all(
       expectedArray.map(async (expected, index) => {
         const attendance = attendances.nth(index)
-        await attendance.assertTextEquals(expected)
+        await expect(attendance).toHaveText(expected)
       })
     )
   }
 
   async assertExternalStaffArrivalTime(expected: string) {
-    await this.externalMemberPage.arrivalTime.assertTextEquals(expected)
+    await expect(this.externalMemberPage.arrivalTime).toHaveText(expected)
   }
 
   async selectAttendanceType(type: StaffAttendanceType) {
@@ -331,10 +335,7 @@ export class StaffAttendancePage {
   }
 
   async assertDoneButtonEnabled(enabled: boolean) {
-    await waitUntilEqual(
-      () => this.anyArrivalPage.markArrived.disabled,
-      !enabled
-    )
+    await this.anyArrivalPage.markArrived.assertDisabled(!enabled)
   }
 
   async clickDoneButton() {
@@ -342,25 +343,25 @@ export class StaffAttendancePage {
   }
 
   async assertMarkDepartedButtonEnabled(enabled: boolean) {
-    await waitUntilEqual(
-      () => this.staffDeparturePage.markDepartedBtn.disabled,
-      !enabled
-    )
+    await this.staffDeparturePage.markDepartedBtn.assertDisabled(!enabled)
   }
 
   async assertGroupSelectionVisible(visible: boolean) {
-    await waitUntilEqual(
-      () => this.staffArrivalPage.groupSelect.visible,
-      visible
-    )
+    if (visible) {
+      await expect(this.staffArrivalPage.groupSelect).toBeVisible()
+    } else {
+      await expect(this.staffArrivalPage.groupSelect).toBeHidden()
+    }
   }
 
   async assertArrivalTimeInputInfo(expected: string) {
-    await this.staffArrivalPage.timeInputWarningText.assertTextEquals(expected)
+    await expect(this.staffArrivalPage.timeInputWarningText).toHaveText(
+      expected
+    )
   }
 
   async assertDepartureTimeInputInfo(expected: string) {
-    await this.staffDeparturePage.timeInputWarningText.assertTextEquals(
+    await expect(this.staffDeparturePage.timeInputWarningText).toHaveText(
       expected
     )
   }
@@ -373,10 +374,15 @@ export class StaffAttendancePage {
     type: StaffAttendanceType,
     visible: boolean
   ) {
-    await waitUntilEqual(
-      () => this.staffDeparturePage.departureTypeCheckbox(type).visible,
-      visible
-    )
+    if (visible) {
+      await expect(
+        this.staffDeparturePage.departureTypeCheckbox(type)
+      ).toBeVisible()
+    } else {
+      await expect(
+        this.staffDeparturePage.departureTypeCheckbox(type)
+      ).toBeHidden()
+    }
   }
 }
 
@@ -409,7 +415,7 @@ export class StaffAttendanceEditPage {
 
   async typeSelect(index: number) {
     const select = new Select(this.page.findAllByDataQa('type').nth(index))
-    await select.waitUntilVisible()
+    await expect(select).toBeVisible()
     return select
   }
 

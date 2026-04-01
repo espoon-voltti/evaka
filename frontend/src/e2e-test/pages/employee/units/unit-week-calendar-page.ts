@@ -5,6 +5,7 @@
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../../playwright'
 import type { ElementCollection, Page } from '../../../utils/page'
 import { Element, Modal, Select, TextInput } from '../../../utils/page'
 
@@ -118,7 +119,7 @@ export class UnitChildReservationsTable extends Element {
   ): Promise<void> {
     const cell = this.reservationCells(childId, date).nth(0)
     await cell.hover()
-    await cell.findByDataQa('open-details').waitUntilHidden()
+    await expect(cell.findByDataQa('open-details')).toBeHidden()
   }
 
   async openChildDateModal(
@@ -184,26 +185,26 @@ export class ChildDatePresenceModal extends Modal {
       | 'extra-billable-absence'
     )[]
   ) {
-    await this.#absenceWarnings.waitUntilAttached()
+    await expect(this.#absenceWarnings).toBeAttached()
     if (expectedWarnings.includes('missing-nonbillable-absence')) {
-      await this.#warningMissingNonbillableAbsence.waitUntilVisible()
+      await expect(this.#warningMissingNonbillableAbsence).toBeVisible()
     } else {
-      await this.#warningMissingNonbillableAbsence.waitUntilHidden()
+      await expect(this.#warningMissingNonbillableAbsence).toBeHidden()
     }
     if (expectedWarnings.includes('extra-nonbillable-absence')) {
-      await this.#warningExtraNonbillableAbsence.waitUntilVisible()
+      await expect(this.#warningExtraNonbillableAbsence).toBeVisible()
     } else {
-      await this.#warningExtraNonbillableAbsence.waitUntilHidden()
+      await expect(this.#warningExtraNonbillableAbsence).toBeHidden()
     }
     if (expectedWarnings.includes('missing-billable-absence')) {
-      await this.#warningMissingBillableAbsence.waitUntilVisible()
+      await expect(this.#warningMissingBillableAbsence).toBeVisible()
     } else {
-      await this.#warningMissingBillableAbsence.waitUntilHidden()
+      await expect(this.#warningMissingBillableAbsence).toBeHidden()
     }
     if (expectedWarnings.includes('extra-billable-absence')) {
-      await this.#warningExtraBillableAbsence.waitUntilVisible()
+      await expect(this.#warningExtraBillableAbsence).toBeVisible()
     } else {
-      await this.#warningExtraBillableAbsence.waitUntilHidden()
+      await expect(this.#warningExtraBillableAbsence).toBeHidden()
     }
   }
 }

@@ -8,8 +8,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeesPage } from '../../pages/employee/employees'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -48,40 +47,42 @@ test.describe('Employees page', () => {
     })
 
     test('users can be searched by name', async () => {
-      await waitUntilEqual(
-        () => employeesPage.visibleUsers,
-        ['Sorsa Seppo', 'Testaaja Teppo']
-      )
+      await expect(employeesPage.employeeNames).toHaveText([
+        'Sorsa Seppo',
+        'Testaaja Teppo'
+      ])
 
       await employeesPage.clickDeactivatedEmployees()
       await employeesPage.deactivateEmployee(0)
-      await waitUntilEqual(
-        () => employeesPage.visibleUsers,
-        ['Sorsa Seppo', 'Testaaja Teppo']
-      )
+      await expect(employeesPage.employeeNames).toHaveText([
+        'Sorsa Seppo',
+        'Testaaja Teppo'
+      ])
 
       await employeesPage.clickDeactivatedEmployees()
-      await waitUntilEqual(() => employeesPage.visibleUsers, ['Testaaja Teppo'])
+      await expect(employeesPage.employeeNames).toHaveText(['Testaaja Teppo'])
 
       await employeesPage.clickDeactivatedEmployees()
       await employeesPage.activateEmployee(0)
-      await waitUntilEqual(
-        () => employeesPage.visibleUsers,
-        ['Sorsa Seppo', 'Testaaja Teppo']
-      )
+      await expect(employeesPage.employeeNames).toHaveText([
+        'Sorsa Seppo',
+        'Testaaja Teppo'
+      ])
 
       await employeesPage.nameInput.fill('Test')
-      await waitUntilEqual(() => employeesPage.visibleUsers, ['Testaaja Teppo'])
+      await expect(employeesPage.employeeNames).toHaveText(['Testaaja Teppo'])
     })
 
     test('can navigate to employee page', async () => {
       const employeePage = await employeesPage.openEmployeePage(employee)
-      await employeePage.content
-        .findTextExact(`${employee.firstName} ${employee.lastName}`)
-        .waitUntilVisible()
-      await employeePage.content
-        .findTextExact(employee.email!)
-        .waitUntilVisible()
+      await expect(
+        employeePage.content.findTextExact(
+          `${employee.firstName} ${employee.lastName}`
+        )
+      ).toBeVisible()
+      await expect(
+        employeePage.content.findTextExact(employee.email!)
+      ).toBeVisible()
     })
 
     test('a new employee can be added with SSN and deleted', async () => {
@@ -99,18 +100,19 @@ test.describe('Employees page', () => {
       await wizard.lastName.fill(person.lastName)
       await wizard.email.fill(person.email)
       await wizard.ok.click()
-      await wizard.waitUntilHidden()
+      await expect(wizard).toBeHidden()
 
       await nav.openAndClickDropdownMenuItem('employees')
-      await waitUntilEqual(
-        () => employeesPage.visibleUsers,
-        ['Esimerkki Erkki', 'Sorsa Seppo', 'Testaaja Teppo']
-      )
+      await expect(employeesPage.employeeNames).toHaveText([
+        'Esimerkki Erkki',
+        'Sorsa Seppo',
+        'Testaaja Teppo'
+      ])
       await employeesPage.deleteEmployee(0)
-      await waitUntilEqual(
-        () => employeesPage.visibleUsers,
-        ['Sorsa Seppo', 'Testaaja Teppo']
-      )
+      await expect(employeesPage.employeeNames).toHaveText([
+        'Sorsa Seppo',
+        'Testaaja Teppo'
+      ])
     })
   })
 })

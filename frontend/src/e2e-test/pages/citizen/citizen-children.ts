@@ -5,6 +5,7 @@
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../playwright'
 import type {
   Page,
   ElementCollection,
@@ -16,8 +17,8 @@ import { AsyncButton, Modal, TextInput } from '../../utils/page'
 import { CitizenNewAbsenceApplicationPage } from './citizen-new-absence-application'
 
 export class CitizenChildPage {
-  #placements: ElementCollection
-  #terminatedPlacements: ElementCollection
+  terminatablePlacements: ElementCollection
+  terminatedPlacements: ElementCollection
   createServiceApplicationButton: Element
   openApplicationInfoBox: Element
 
@@ -25,16 +26,19 @@ export class CitizenChildPage {
     private readonly page: Page,
     private readonly env: EnvType = 'desktop'
   ) {
-    this.#placements = page.findAllByDataQa('placement')
-    this.#terminatedPlacements = page.findAllByDataQa('terminated-placement')
+    this.terminatablePlacements = page.findAllByDataQa('placement')
+    this.terminatedPlacements = page.findAllByDataQa('terminated-placement')
     this.createServiceApplicationButton = page.findByDataQa(
       'create-service-application'
     )
     this.openApplicationInfoBox = page.findByDataQa('open-application-info-box')
+    this.nonTerminatablePlacements = page.findAllByDataQa(
+      'non-terminatable-placement'
+    )
   }
 
   async assertChildNameIsShown(name: string) {
-    await this.page.findByDataQa('child-name').assertTextEquals(name)
+    await expect(this.page.findByDataQa('child-name')).toHaveText(name)
   }
 
   async goBack() {
@@ -66,31 +70,31 @@ export class CitizenChildPage {
     }[]
   ) {
     if (data.length > 0) {
-      await this.page
-        .findByDataQa(`service-need-table-${this.env}`)
-        .waitUntilVisible()
+      await expect(
+        this.page.findByDataQa(`service-need-table-${this.env}`)
+      ).toBeVisible()
       const rows = this.page.findAllByDataQa(
         `service-need-table-row-${this.env}`
       )
-      await rows.assertCount(data.length)
+      await expect(rows).toHaveCount(data.length)
       await Promise.all(
         data.map(async (expected, index) => {
           const row = rows.nth(index)
-          await row
-            .findByDataQa('service-need-date-range')
-            .assertTextEquals(expected.dateRange)
-          await row
-            .findByDataQa('service-need-description')
-            .assertTextEquals(expected.description)
-          await row
-            .findByDataQa('service-need-unit')
-            .assertTextEquals(expected.unit)
+          await expect(row.findByDataQa('service-need-date-range')).toHaveText(
+            expected.dateRange
+          )
+          await expect(row.findByDataQa('service-need-description')).toHaveText(
+            expected.description
+          )
+          await expect(row.findByDataQa('service-need-unit')).toHaveText(
+            expected.unit
+          )
         })
       )
     } else {
-      await this.page
-        .findByDataQa(`service-need-table-${this.env}`)
-        .waitUntilHidden()
+      await expect(
+        this.page.findByDataQa(`service-need-table-${this.env}`)
+      ).toBeHidden()
     }
   }
 
@@ -98,47 +102,43 @@ export class CitizenChildPage {
     data: { dateRange: string; description: string }[]
   ) {
     if (data.length > 0) {
-      await this.page
-        .findByDataQa(`daily-service-time-table-${this.env}`)
-        .waitUntilVisible()
+      await expect(
+        this.page.findByDataQa(`daily-service-time-table-${this.env}`)
+      ).toBeVisible()
       const rows = this.page.findAllByDataQa(
         `daily-service-time-table-row-${this.env}`
       )
-      await rows.assertCount(data.length)
+      await expect(rows).toHaveCount(data.length)
       await Promise.all(
         data.map(async (expected, index) => {
           const row = rows.nth(index)
-          await row
-            .findByDataQa('daily-service-time-date-range')
-            .assertTextEquals(expected.dateRange)
-          await row
-            .findByDataQa('daily-service-time-description')
-            .assertTextEquals(expected.description)
+          await expect(
+            row.findByDataQa('daily-service-time-date-range')
+          ).toHaveText(expected.dateRange)
+          await expect(
+            row.findByDataQa('daily-service-time-description')
+          ).toHaveText(expected.description)
         })
       )
     } else {
-      await this.page
-        .findByDataQa(`daily-service-time-table-${this.env}`)
-        .waitUntilHidden()
+      await expect(
+        this.page.findByDataQa(`daily-service-time-table-${this.env}`)
+      ).toBeHidden()
     }
   }
 
   async assertTerminatablePlacementCount(count: number) {
-    await this.#placements.assertCount(count)
+    await expect(this.terminatablePlacements).toHaveCount(count)
   }
 
   async assertNonTerminatablePlacementCount(count: number) {
-    await this.page
-      .findAllByDataQa('non-terminatable-placement')
-      .assertCount(count)
+    await expect(
+      this.page.findAllByDataQa('non-terminatable-placement')
+    ).toHaveCount(count)
   }
 
   async assertTerminatedPlacementCount(count: number) {
-    await this.#terminatedPlacements.assertCount(count)
-  }
-
-  getTerminatedPlacements(): Promise<string[]> {
-    return this.#terminatedPlacements.allTexts()
+    await expect(this.terminatedPlacements).toHaveCount(count)
   }
 
   async togglePlacement(label: string) {
@@ -155,19 +155,13 @@ export class CitizenChildPage {
     await this.page.findAll('text=Irtisano paikka').nth(nth).click()
     const modalOkButton = new AsyncButton(this.page.findByDataQa('modal-okBtn'))
     await modalOkButton.click()
-    await modalOkButton.waitUntilHidden()
+    await expect(modalOkButton).toBeHidden()
   }
 
-  getTerminatablePlacements(): Promise<string[]> {
-    return this.#placements.allTexts()
-  }
-
-  getNonTerminatablePlacements(): Promise<string[]> {
-    return this.page.findAllByDataQa('non-terminatable-placement').allTexts()
-  }
+  nonTerminatablePlacements: ElementCollection
 
   getToggledPlacements(): Promise<string[]> {
-    return this.#placements.evaluateAll((elems) =>
+    return this.terminatablePlacements.evaluateAll((elems) =>
       elems
         .filter((e) => !!e.querySelector('input:checked'))
         .map((e) => e.textContent ?? '')
@@ -189,10 +183,11 @@ export class CitizenChildPage {
   ) {
     const table = this.page.findByDataQa('absence-applications-table')
     const rows = table.findAllByDataQa('absence-application-row')
-    await rows.assertTextsEqual(
+    await expect(rows).toHaveText(
       expected.map(
         (e) => `${e.range}\n${e.status}\nPoissaolon syy\n${e.description}\nPeru`
-      )
+      ),
+      { useInnerText: true }
     )
   }
 
@@ -210,11 +205,11 @@ export class CitizenChildPage {
       this.page.findByDataQa('delete-absence-application-modal')
     )
     await modal.submit()
-    await modal.waitUntilHidden()
+    await expect(modal).toBeHidden()
   }
 
   assertServiceApplicationsCount = (n: number) =>
-    this.page.findAllByDataQa('service-application-row').assertCount(n)
+    expect(this.page.findAllByDataQa('service-application-row')).toHaveCount(n)
   serviceApplicationRow = (n: number) =>
     this.page.findAllByDataQa('service-application-row').nth(n)
   serviceApplicationSentDate = (n: number) =>
@@ -240,19 +235,19 @@ export class CitizenChildPage {
       await this.serviceApplicationRow(n).findByDataQa('open-details').click()
       const modal = this.page.findByDataQa('service-application-modal')
 
-      await modal
-        .findByDataQa('additional-info')
-        .assertTextEquals(additionalInfo)
+      await expect(modal.findByDataQa('additional-info')).toHaveText(
+        additionalInfo
+      )
       await modal
         .findByDataQa('decision-status')
         .assertText((text) => text.startsWith(status))
 
       if (rejectedReason) {
-        await modal
-          .findByDataQa('rejected-reason')
-          .assertTextEquals(rejectedReason)
+        await expect(modal.findByDataQa('rejected-reason')).toHaveText(
+          rejectedReason
+        )
       } else {
-        await modal.findByDataQa('rejected-reason').waitUntilHidden()
+        await expect(modal.findByDataQa('rejected-reason')).toBeHidden()
       }
 
       await modal.findByDataQa('close-btn').click()

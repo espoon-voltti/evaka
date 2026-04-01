@@ -32,7 +32,7 @@ import type { DevEmployee, DevPlacement } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import type { InvoicesPage } from '../../pages/employee/finance/finance-page'
 import { FinancePage } from '../../pages/employee/finance/finance-page'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -137,55 +137,55 @@ test.describe('Invoices', () => {
       const invoicePage = await invoicesPage.openFirstInvoice()
 
       const head = invoicePage.headOfFamilySection
-      await head.headOfFamilyName.assertTextEquals(
+      await expect(head.headOfFamilyName).toHaveText(
         `${testAdult.firstName} ${testAdult.lastName}`
       )
-      await head.headOfFamilySsn.assertTextEquals(testAdult.ssn!)
-      await head.codebtorName.assertTextEquals(
+      await expect(head.headOfFamilySsn).toHaveText(testAdult.ssn!)
+      await expect(head.codebtorName).toHaveText(
         `${codebtor.firstName} ${codebtor.lastName}`
       )
-      await head.codebtorSsn.assertTextEquals(codebtor.ssn!)
+      await expect(head.codebtorSsn).toHaveText(codebtor.ssn!)
 
       const details = invoicePage.detailsSection
-      await details.status.assertTextEquals('Luonnos')
+      await expect(details.status).toHaveText('Luonnos')
 
       const periodStart = today.subMonths(1).withDate(1)
       const periodEnd = today.withDate(1).subDays(1)
-      await details.period.assertTextEquals(
+      await expect(details.period).toHaveText(
         `${periodStart.format()} - ${periodEnd.format()}`
       )
 
-      await details.number.assertTextEquals('')
-      await details.dueDate.assertTextEquals(today.addDays(28).format())
-      await details.account.assertTextEquals('3295')
-      await details.agreementType.assertTextEquals('299')
-      await details.relatedFeeDecisions.assertTextEquals(
+      await expect(details.number).toHaveText('')
+      await expect(details.dueDate).toHaveText(today.addDays(28).format())
+      await expect(details.account).toHaveText('3295')
+      await expect(details.agreementType).toHaveText('299')
+      await expect(details.relatedFeeDecisions).toHaveText(
         feeDecision.decisionNumber!.toString()
       )
-      await details.replacedInvoice.waitUntilHidden()
+      await expect(details.replacedInvoice).toBeHidden()
 
       const child = invoicePage.nthChild(0)
-      await child.childName.assertTextEquals(
+      await expect(child.childName).toHaveText(
         `${testChild2.lastName} ${testChild2.firstName}`
       )
-      await child.childSsn.assertTextEquals(testChild2.ssn!)
+      await expect(child.childSsn).toHaveText(testChild2.ssn!)
 
       const row = child.row(0)
-      await row.product.assertTextEquals('Varhaiskasvatus')
-      await row.description.assertTextEquals('')
-      await row.unit.assertTextEquals(testDaycare.name)
-      await row.period.assertTextEquals(
+      await expect(row.product).toHaveText('Varhaiskasvatus')
+      await expect(row.description).toHaveText('')
+      await expect(row.unit).toHaveText(testDaycare.name)
+      await expect(row.period).toHaveText(
         `${periodStart.format()} - ${periodEnd.format()}`
       )
-      await row.amount.assertTextEquals('1')
-      await row.unitPrice.assertTextEquals('289')
-      await row.totalPrice.assertTextEquals('289')
+      await expect(row.amount).toHaveText('1')
+      await expect(row.unitPrice).toHaveText('289')
+      await expect(row.totalPrice).toHaveText('289')
 
-      await child.totalPrice.assertTextEquals('289')
-      await child.previousTotalPrice.waitUntilHidden()
+      await expect(child.totalPrice).toHaveText('289')
+      await expect(child.previousTotalPrice).toBeHidden()
 
-      await invoicePage.totalPrice.assertTextEquals('289')
-      await invoicePage.previousTotalPrice.waitUntilHidden()
+      await expect(invoicePage.totalPrice).toHaveText('289')
+      await expect(invoicePage.previousTotalPrice).toBeHidden()
 
       await invoicesPage.navigateBackToInvoices()
     })
@@ -349,19 +349,19 @@ test.describe('Invoices', () => {
       const invoicePage = await invoicesPage.openFirstInvoice()
 
       const details = invoicePage.detailsSection
-      await details.status.assertTextEquals('Oikaisuluonnos')
+      await expect(details.status).toHaveText('Oikaisuluonnos')
 
-      await details.relatedFeeDecisions.assertTextEquals(
+      await expect(details.relatedFeeDecisions).toHaveText(
         feeDecision.decisionNumber!.toString()
       )
-      await details.replacedInvoice.assertTextEquals('Lasku 10/2024')
+      await expect(details.replacedInvoice).toHaveText('Lasku 10/2024')
 
       const child = invoicePage.nthChild(0)
-      await child.totalPrice.assertTextEquals('276,43')
-      await child.previousTotalPrice.assertTextEquals('289')
+      await expect(child.totalPrice).toHaveText('276,43')
+      await expect(child.previousTotalPrice).toHaveText('289')
 
-      await invoicePage.totalPrice.assertTextEquals('276,43')
-      await invoicePage.previousTotalPrice.assertTextEquals('289')
+      await expect(invoicePage.totalPrice).toHaveText('276,43')
+      await expect(invoicePage.previousTotalPrice).toHaveText('289')
 
       await invoicesPage.navigateBackToInvoices()
     })
@@ -377,20 +377,20 @@ test.describe('Invoices', () => {
       const invoicePage = await invoicesPage.openFirstInvoice()
 
       const details = invoicePage.detailsSection
-      await details.status.assertTextEquals('Oikaisuluonnos')
+      await expect(details.status).toHaveText('Oikaisuluonnos')
 
-      await details.replacedInvoice.assertTextEquals('Lasku 10/2024')
+      await expect(details.replacedInvoice).toHaveText('Lasku 10/2024')
 
       const child = invoicePage.nthChild(0)
-      await child.childName.assertTextEquals(
+      await expect(child.childName).toHaveText(
         `${testChild2.lastName} ${testChild2.firstName}`
       )
-      await child.childSsn.assertTextEquals(testChild2.ssn!)
-      await child.totalPrice.assertTextEquals('0')
-      await child.previousTotalPrice.assertTextEquals('289')
+      await expect(child.childSsn).toHaveText(testChild2.ssn!)
+      await expect(child.totalPrice).toHaveText('0')
+      await expect(child.previousTotalPrice).toHaveText('289')
 
-      await invoicePage.totalPrice.assertTextEquals('0')
-      await invoicePage.previousTotalPrice.assertTextEquals('289')
+      await expect(invoicePage.totalPrice).toHaveText('0')
+      await expect(invoicePage.previousTotalPrice).toHaveText('289')
 
       await invoicesPage.navigateBackToInvoices()
     })
@@ -417,11 +417,11 @@ test.describe('Invoices', () => {
       await form.markSentButton.click()
 
       const view = invoicePage.replacementInfo
-      await view.reason.assertTextEquals('Päiväkirjamerkintä')
-      await view.notes.assertTextEquals('Unohtunut päiväkirjamerkintä')
-      await view.attachments.assertCount(1)
-      await view.sentAt.assertTextEquals(now.format())
-      await view.sentBy.assertTextEquals(
+      await expect(view.reason).toHaveText('Päiväkirjamerkintä')
+      await expect(view.notes).toHaveText('Unohtunut päiväkirjamerkintä')
+      await expect(view.attachments).toHaveCount(1)
+      await expect(view.sentAt).toHaveText(now.format())
+      await expect(view.sentBy).toHaveText(
         `${financeAdmin.lastName} ${financeAdmin.firstName}`
       )
     })

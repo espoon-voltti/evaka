@@ -8,7 +8,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePinPage } from '../../pages/employee/employee-pin'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -32,12 +32,12 @@ test.describe('Employees PIN', () => {
 
   test('shows a warning if PIN is too easy, and warning disappears once PIN is valid', async () => {
     await pinPage.pinInput.fill('1111')
-    await pinPage.inputInfo.assertTextEquals(
+    await expect(pinPage.inputInfo).toHaveText(
       'Liian helppo PIN-koodi tai PIN-koodi sisältää kirjaimia'
     )
 
     await pinPage.pinInput.fill('9128')
-    await pinPage.inputInfo.waitUntilHidden()
+    await expect(pinPage.inputInfo).toBeHidden()
   })
 
   test('shows a warning if PIN is locked, and warning disappears when new PIN is set', async () => {
@@ -49,9 +49,9 @@ test.describe('Employees PIN', () => {
     }).save()
 
     await page.reload()
-    await pinPage.pinLockedAlertBox.waitUntilVisible()
+    await expect(pinPage.pinLockedAlertBox).toBeVisible()
     await pinPage.pinInput.type('2580')
     await pinPage.pinSendButton.click()
-    await pinPage.pinLockedAlertBox.waitUntilHidden()
+    await expect(pinPage.pinLockedAlertBox).toBeHidden()
   })
 })

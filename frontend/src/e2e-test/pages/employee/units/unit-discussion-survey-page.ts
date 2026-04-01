@@ -4,6 +4,7 @@
 
 import type LocalDate from 'lib-common/local-date'
 
+import { expect } from '../../../playwright'
 import type { Page } from '../../../utils/page'
 import {
   Element,
@@ -48,15 +49,17 @@ export class DiscussionSurveyListPage {
     const surveyItem = this.surveyList.findByDataQa(
       `survey-${expectedSurvey.id}`
     )
-    await surveyItem
-      .findByDataQa('survey-title')
-      .assertTextEquals(expectedSurvey.title)
-    await surveyItem
-      .findByDataQa('survey-status')
-      .assertTextEquals(expectedSurvey.status)
+    await expect(surveyItem.findByDataQa('survey-title')).toHaveText(
+      expectedSurvey.title
+    )
+    await expect(surveyItem.findByDataQa('survey-status')).toHaveText(
+      expectedSurvey.status
+    )
   }
   async assertDiscussionSurveyNotInList(surveyId: string) {
-    await this.surveyList.findByDataQa(`survey-${surveyId}`).waitUntilHidden()
+    await expect(
+      this.surveyList.findByDataQa(`survey-${surveyId}`)
+    ).toBeHidden()
   }
 }
 
@@ -109,9 +112,9 @@ export class DiscussionSurveyReadView {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .findByDataQa('survey-reservation-calendar-title')
-      .waitUntilVisible()
+    await expect(
+      this.page.findByDataQa('survey-reservation-calendar-title')
+    ).toBeVisible()
   }
 
   async addEventTimeForDay(date: LocalDate, eventTime: TestEventTime) {
@@ -123,7 +126,7 @@ export class DiscussionSurveyReadView {
       calendarDay.findByDataQa(`time-input-container`)
     )
 
-    await dayEditor.waitUntilVisible()
+    await expect(dayEditor).toBeVisible()
     await dayEditor.startTimeInput.fill(eventTime.startTime)
     await dayEditor.endTimeInput.fill(eventTime.endTime)
     await dayEditor.submitButton.click()
@@ -161,27 +164,31 @@ export class DiscussionSurveyReadView {
   }
 
   async assertSurveyTitle(expectedTitle: string) {
-    await this.page.findByDataQa('survey-title').assertTextEquals(expectedTitle)
+    await expect(this.page.findByDataQa('survey-title')).toHaveText(
+      expectedTitle
+    )
   }
 
   async assertSurveyDescription(expectedTitle: string) {
-    await this.page
-      .findByDataQa('survey-description')
-      .assertTextEquals(expectedTitle)
+    await expect(this.page.findByDataQa('survey-description')).toHaveText(
+      expectedTitle
+    )
   }
 
   async assertUnreservedAttendeeExists(attendeeId: string) {
-    await this.page
-      .findByDataQa('unreserved-attendees')
-      .findByDataQa(`attendee-${attendeeId}`)
-      .waitUntilVisible()
+    await expect(
+      this.page
+        .findByDataQa('unreserved-attendees')
+        .findByDataQa(`attendee-${attendeeId}`)
+    ).toBeVisible()
   }
 
   async assertReservedAttendeeExists(attendeeId: string) {
-    await this.page
-      .findByDataQa('reserved-attendees')
-      .findByDataQa(`attendee-${attendeeId}`)
-      .waitUntilVisible()
+    await expect(
+      this.page
+        .findByDataQa('reserved-attendees')
+        .findByDataQa(`attendee-${attendeeId}`)
+    ).toBeVisible()
   }
 
   async assertEventTimeExists(
@@ -194,9 +201,9 @@ export class DiscussionSurveyReadView {
     )
     const eventTimeRanges = calendarDay.findAllByDataQa('event-time-range')
 
-    await eventTimeRanges
-      .nth(index)
-      .assertTextEquals(`${eventTime.startTime} – ${eventTime.endTime}`)
+    await expect(eventTimeRanges.nth(index)).toHaveText(
+      `${eventTime.startTime} – ${eventTime.endTime}`
+    )
   }
 
   async assertNoTimesExist(date: LocalDate) {
@@ -204,7 +211,7 @@ export class DiscussionSurveyReadView {
       `times-calendar-day-${date.formatIso()}`
     )
     const eventTimeRanges = calendarDay.findAllByDataQa('event-time-range')
-    await eventTimeRanges.nth(0).waitUntilHidden()
+    await expect(eventTimeRanges.nth(0)).toBeHidden()
   }
 
   async assertReservationExists(date: LocalDate, index: number, name: string) {
@@ -212,10 +219,9 @@ export class DiscussionSurveyReadView {
       `times-calendar-day-${date.formatIso()}`
     )
     const reservationRows = calendarDay.findAllByDataQa('reservation-row')
-    await reservationRows
-      .nth(index)
-      .findByDataQa('reserve-event-time-button')
-      .assertTextEquals(name)
+    await expect(
+      reservationRows.nth(index).findByDataQa('reserve-event-time-button')
+    ).toHaveText(name)
   }
 }
 
@@ -236,7 +242,7 @@ export class DiscussionSurveyEditor {
   }
 
   async waitUntilLoaded() {
-    await this.submitButton.waitUntilVisible()
+    await expect(this.submitButton).toBeVisible()
   }
 
   async submit() {

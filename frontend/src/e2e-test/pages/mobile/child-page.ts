@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { DevChild } from '../../generated/api-types'
-import { waitUntilEqual } from '../../utils'
+import { expect } from '../../playwright'
 import type { Page, Element, ElementCollection } from '../../utils/page'
 
 export default class MobileChildPage {
@@ -95,7 +95,7 @@ export default class MobileChildPage {
   }
 
   async waitUntilLoaded() {
-    await this.childName.waitUntilVisible()
+    await expect(this.childName).toBeVisible()
   }
 
   async assertBasicInfoIsShown(
@@ -111,69 +111,69 @@ export default class MobileChildPage {
       phone: string
     }[]
   ) {
-    await this.basicInfo.name.assertTextEquals(name)
+    await expect(this.basicInfo.name).toHaveText(name)
     for (let i = 0; i < contacts.length; i++) {
       const contact = contacts[i]
-      await this.basicInfo
-        .contactName(i)
-        .assertTextEquals(`${contact.firstName} ${contact.lastName}`)
+      await expect(this.basicInfo.contactName(i)).toHaveText(
+        `${contact.firstName} ${contact.lastName}`
+      )
       if (contact.phone) {
-        await this.basicInfo.contactPhone(i).assertTextEquals(contact.phone)
+        await expect(this.basicInfo.contactPhone(i)).toHaveText(contact.phone)
       }
       if (contact.email) {
-        await this.basicInfo.contactEmail(i).assertTextEquals(contact.email)
+        await expect(this.basicInfo.contactEmail(i)).toHaveText(contact.email)
       }
     }
 
     for (let i = 0; i < backupPickups.length; i++) {
       const backupPickup = backupPickups[i]
-      await this.basicInfo
-        .backupPickupName(i)
-        .assertTextEquals(backupPickup.name)
-      await this.basicInfo
-        .backupPickupPhone(i)
-        .assertTextEquals(backupPickup.phone)
+      await expect(this.basicInfo.backupPickupName(i)).toHaveText(
+        backupPickup.name
+      )
+      await expect(this.basicInfo.backupPickupPhone(i)).toHaveText(
+        backupPickup.phone
+      )
     }
   }
 
   async assertSensitiveInfo(additionalInfo: DevChild) {
-    await this.sensitiveInfo.allergies.assertTextEquals(
+    await expect(this.sensitiveInfo.allergies).toHaveText(
       additionalInfo.allergies ?? 'should be defined'
     )
-    await this.sensitiveInfo.diet.assertTextEquals(
+    await expect(this.sensitiveInfo.diet).toHaveText(
       additionalInfo.diet ?? 'should be defined'
     )
-    await this.sensitiveInfo.medication.assertTextEquals(
+    await expect(this.sensitiveInfo.medication).toHaveText(
       additionalInfo.medication ?? 'should be defined'
     )
   }
 
   async openNotes() {
     await this.notesLink.click()
-    await this.saveNoteButton.waitUntilVisible()
+    await expect(this.saveNoteButton).toBeVisible()
   }
 
   async assertArrivalTimeInfoIsShown(arrivalTimeText: string) {
-    await waitUntilEqual(
-      () =>
+    await expect
+      .poll(() =>
         this.attendance.arrivalTimes
           .allTexts()
           .then((texts) =>
             texts.map((text) => text.replace(/\s/g, '')).join(',')
-          ),
-      arrivalTimeText
-    )
+          )
+      )
+      .toBe(arrivalTimeText)
   }
 
   async assertDepartureTimeInfoIsShown(departureTimeText: string) {
-    await waitUntilEqual(
-      () =>
+    await expect
+      .poll(() =>
         this.attendance.departureTimes
           .allTexts()
           .then((texts) =>
             texts.map((text) => text.replace(/\s/g, '')).join(',')
-          ),
-      departureTimeText
-    )
+          )
+      )
+      .toBe(departureTimeText)
   }
 }

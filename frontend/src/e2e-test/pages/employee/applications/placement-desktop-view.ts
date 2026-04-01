@@ -4,6 +4,7 @@
 
 import type LocalDate from 'lib-common/local-date'
 
+import { expect } from '../../../playwright'
 import type { Page, ElementCollection } from '../../../utils/page'
 import { Combobox, DatePicker } from '../../../utils/page'
 import { AsyncButton } from '../../../utils/page'
@@ -96,7 +97,7 @@ export class UnitPreference extends Element {
   }
 
   async assertPlacementDate(date: LocalDate) {
-    await this.placementDate.assertTextEquals(`${date.format()} –`)
+    await expect(this.placementDate).toHaveText(`${date.format()} –`)
   }
 }
 
@@ -123,9 +124,9 @@ export class DaycareCard extends Element {
   }
 
   async assertOccupancies(confirmed: number, planned: number, draft: number) {
-    await this.occupancyConfirmed.assertTextEquals(`${confirmed} %`)
-    await this.occupancyPlanned.assertTextEquals(`${planned} %`)
-    await this.occupancyDraft.assertTextEquals(`${draft} %`)
+    await expect(this.occupancyConfirmed).toHaveText(`${confirmed} %`)
+    await expect(this.occupancyPlanned).toHaveText(`${planned} %`)
+    await expect(this.occupancyDraft).toHaveText(`${draft} %`)
   }
 }
 
@@ -143,6 +144,6 @@ export class DraftPlacementRow extends Element {
   }
 
   async assertPlacementDate(date: LocalDate) {
-    await this.placementDate.assertTextEquals(`${date.format()} –`)
+    await expect(this.placementDate).toHaveText(`${date.format()} –`)
   }
 }

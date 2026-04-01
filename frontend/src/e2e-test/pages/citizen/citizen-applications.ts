@@ -10,7 +10,7 @@ import { fromUuid } from 'lib-common/id-type'
 import type { JsonOf } from 'lib-common/json'
 import type { UUID } from 'lib-common/types'
 
-import { waitUntilDefined, waitUntilEqual } from '../../utils'
+import { expect } from '../../playwright'
 import type { FormInput, Section } from '../../utils/application-forms'
 import { sections } from '../../utils/application-forms'
 import type { Page, Element } from '../../utils/page'
@@ -68,7 +68,7 @@ export default class CitizenApplicationsPage {
           : type === 'CLUB'
             ? 'Kerhohakemus'
             : ''
-    await this.#applicationTitle.assertTextEquals(title)
+    await expect(this.#applicationTitle).toHaveText(title)
 
     return new CitizenApplicationEditor(this.page)
   }
@@ -79,7 +79,7 @@ export default class CitizenApplicationsPage {
   ) {
     await this.#newApplicationButton(childId).click()
     await this.#applicationTypeRadio(type).click()
-    await this.#duplicateApplicationNotification.waitUntilVisible()
+    await expect(this.#duplicateApplicationNotification).toBeVisible()
   }
 
   async assertTransferNotificationIsShown(
@@ -88,7 +88,7 @@ export default class CitizenApplicationsPage {
   ) {
     await this.#newApplicationButton(childId).click()
     await this.#applicationTypeRadio(type).click()
-    await this.#transferApplicationNotification.waitUntilVisible()
+    await expect(this.#transferApplicationNotification).toBeVisible()
   }
 
   async editApplication(applicationId: string) {
@@ -103,7 +103,7 @@ export default class CitizenApplicationsPage {
   }
 
   async assertChildIsShown(childId: string, childName: string) {
-    await this.#childTitle(childId).assertTextEquals(childName)
+    await expect(this.#childTitle(childId)).toHaveText(childName)
   }
 
   async assertApplicationIsListed(
@@ -112,8 +112,8 @@ export default class CitizenApplicationsPage {
     preferredStartDate: string,
     status: string
   ) {
-    await this.#applicationType(id).assertTextEquals(title)
-    await this.#applicationPreferredStartDate(id).assertTextEquals(
+    await expect(this.#applicationType(id)).toHaveText(title)
+    await expect(this.#applicationPreferredStartDate(id)).toHaveText(
       preferredStartDate
     )
     await this.#applicationStatus(id).assertText((text) =>
@@ -127,21 +127,21 @@ export default class CitizenApplicationsPage {
   }
 
   async assertApplicationDoesNotExist(id: string) {
-    await this.#applicationType(id).waitUntilHidden()
+    await expect(this.#applicationType(id)).toBeHidden()
   }
 
   async assertApplicationExists(id: string) {
-    await this.#applicationType(id).waitUntilVisible()
+    await expect(this.#applicationType(id)).toBeVisible()
   }
 
   async assertApplicationHasNoMetadata(id: string) {
     await this.#applicationToggleMetadataButton(id).click()
-    await this.page.findByDataQa('metadata-not-found').waitUntilVisible()
+    await expect(this.page.findByDataQa('metadata-not-found')).toBeVisible()
   }
 
   async viewApplicationMetadata(id: string) {
     await this.#applicationToggleMetadataButton(id).click()
-    await this.page.findByDataQa('process-number-field').waitUntilVisible()
+    await expect(this.page.findByDataQa('process-number-field')).toBeVisible()
   }
 }
 
@@ -230,9 +230,9 @@ class CitizenApplicationEditor {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="applications-list"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="applications-list"][data-isloading="false"]')
+    ).toBeVisible()
   }
 
   getNewApplicationId() {
@@ -254,18 +254,17 @@ class CitizenApplicationEditor {
       await this.#allowOtherGuardianAccess.check()
     }
     await this.#sendButton.click()
-    await this.#applicationSentModal.waitUntilVisible()
+    await expect(this.#applicationSentModal).toBeVisible()
     await this.#applicationSentModal.find('[data-qa="modal-okBtn"]').click()
   }
 
   async assertErrorsExist() {
-    await this.#errorsTitle.waitUntilVisible()
+    await expect(this.#errorsTitle).toBeVisible()
   }
 
   async openSection(section: string) {
-    const status = await waitUntilDefined(() =>
-      this.#section(section).getAttribute('data-status')
-    )
+    await expect(this.#section(section)).toHaveAttribute('data-status', /.*/)
+    const status = await this.#section(section).getAttribute('data-status')
     if (status !== 'open') {
       await this.#sectionHeader(section).click()
     }
@@ -394,28 +393,28 @@ class CitizenApplicationEditor {
 
   async assertChildAddress(fullAddress: string) {
     await this.openSection('contactInfo')
-    await this.page
-      .find('[data-qa="child-street-address"]')
-      .assertTextEquals(fullAddress)
+    await expect(this.page.find('[data-qa="child-street-address"]')).toHaveText(
+      fullAddress
+    )
   }
 
   async assertServiceNeedOptions(
     placementType: PlacementType,
     options: ServiceNeedOption[]
   ) {
-    await this.page
-      .findAll(
+    await expect(
+      this.page.findAll(
         `[data-qa*="${this.serviceNeedOptionDataQaPrefix(placementType)}"]`
       )
-      .assertTextsEqual(options.map((option) => option.nameFi))
+    ).toHaveText(options.map((option) => option.nameFi))
   }
 
   async assertSelectedPreferredUnits(unitIds: UUID[]) {
     await this.openSection('unitPreference')
     for (const unitId of unitIds) {
-      await this.page
-        .findByDataQa(`preferred-unit-${unitId}`)
-        .waitUntilVisible()
+      await expect(
+        this.page.findByDataQa(`preferred-unit-${unitId}`)
+      ).toBeVisible()
     }
   }
 
@@ -428,15 +427,19 @@ class CitizenApplicationEditor {
   }
 
   async assertPreferredStartDateWarningIsShown(visible: boolean) {
-    await waitUntilEqual(() => this.#preferredStartDateWarning.visible, visible)
+    if (visible) {
+      await expect(this.#preferredStartDateWarning).toBeVisible()
+    } else {
+      await expect(this.#preferredStartDateWarning).toBeHidden()
+    }
   }
 
   async assertPreferredStartDateInfo(infoText: string | undefined) {
     if (infoText === undefined) {
-      await this.#preferredStartDateInfo.waitUntilHidden()
+      await expect(this.#preferredStartDateInfo).toBeHidden()
       return
     }
-    await this.#preferredStartDateInfo.assertTextEquals(infoText)
+    await expect(this.#preferredStartDateInfo).toHaveText(infoText)
   }
 
   async setPartTime(partTime: boolean) {
@@ -444,7 +447,11 @@ class CitizenApplicationEditor {
   }
 
   async assertPartTimeErrorIsShown(visible: boolean) {
-    await waitUntilEqual(() => this.#partTimeLimitError.visible, visible)
+    if (visible) {
+      await expect(this.#partTimeLimitError).toBeVisible()
+    } else {
+      await expect(this.#partTimeLimitError).toBeHidden()
+    }
   }
 
   async markApplicationUrgentAndAddAttachment(attachmentFilePath: string) {
@@ -480,8 +487,8 @@ class CitizenApplicationEditor {
   }
 
   async assertVerifiedReadOnlyEmail(email: string) {
-    await this.page.findByDataQa('verified-email').assertTextEquals(email)
-    await this.page.findByDataQa('guardianEmail-input').waitUntilHidden()
+    await expect(this.page.findByDataQa('verified-email')).toHaveText(email)
+    await expect(this.page.findByDataQa('guardianEmail-input')).toBeHidden()
   }
 
   private serviceNeedOptionDataQaPrefix(placementType: PlacementType | null) {

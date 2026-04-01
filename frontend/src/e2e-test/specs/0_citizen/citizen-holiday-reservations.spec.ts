@@ -33,7 +33,7 @@ import type {
 } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -231,7 +231,7 @@ test.describe('Holiday periods and questionnaires', () => {
       )
 
       await calendar.clickHolidayCta()
-      await calendar.reservationModal.waitUntilVisible()
+      await expect(calendar.reservationModal).toBeVisible()
     })
 
     test('Holiday period with reservations deadline passed -> no CTA toast', async () => {
@@ -620,7 +620,7 @@ test.describe('Holiday periods and questionnaires', () => {
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.clickHolidayCta()
-      await calendar.reservationModal.waitUntilVisible()
+      await expect(calendar.reservationModal).toBeVisible()
 
       const reservationModal = calendar.getReservationModal()
       await reservationModal.assertHolidayPeriodInfoContent(
@@ -644,7 +644,7 @@ test.describe('Holiday periods and questionnaires', () => {
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.clickHolidayCta()
-      await calendar.reservationModal.waitUntilVisible()
+      await expect(calendar.reservationModal).toBeVisible()
 
       const reservationModal = calendar.getReservationModal()
       await reservationModal.assertHolidayPeriodInfoContent(
@@ -674,7 +674,7 @@ test.describe('Holiday periods and questionnaires', () => {
       await new CitizenHeader(page).selectTab('calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.clickHolidayCta()
-      await calendar.reservationModal.waitUntilVisible()
+      await expect(calendar.reservationModal).toBeVisible()
 
       const reservationModal = calendar.getReservationModal()
       await reservationModal.assertHolidayPeriodInfoContent(

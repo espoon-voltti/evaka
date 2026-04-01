@@ -13,7 +13,7 @@ import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type LocalDate from 'lib-common/local-date'
 
 import { runPendingAsyncJobs } from '../../../dev-api'
-import { waitUntilEqual, waitUntilTrue } from '../../../utils'
+import { expect } from '../../../playwright'
 import type { Page, Element, ElementCollection } from '../../../utils/page'
 import {
   AsyncButton,
@@ -80,14 +80,13 @@ export class FeeDecisionsPage {
       .findAll('[data-qa="table-fee-decision-row"]')
       .first()
     this.searchButton = page.findByDataQa('search-button')
+    this.feeDecisionRows = page.findAllByDataQa('table-fee-decision-row')
   }
 
   #statusFilter = (status: FeeDecisionStatus) =>
     new Checkbox(this.page.findByDataQa(`fee-decision-status-filter-${status}`))
 
-  async getFeeDecisionCount() {
-    return this.page.findAll('[data-qa="table-fee-decision-row"]').count()
-  }
+  feeDecisionRows: ElementCollection
 
   async openFirstFeeDecision(): Promise<FeeDecisionDetailsPage> {
     const popup = await this.page.capturePopup(async () => {
@@ -120,10 +119,9 @@ export class FeeDecisionsPage {
     await this.#statusFilter('SENT').click()
     await this.#statusFilter('SENT').waitUntilChecked()
     await this.searchButton.click()
-    await waitUntilEqual(
-      () => this.page.findAll('[data-qa="table-fee-decision-row"]').count(),
-      count
-    )
+    await expect(
+      this.page.findAll('[data-qa="table-fee-decision-row"]')
+    ).toHaveCount(count)
   }
 }
 
@@ -145,28 +143,26 @@ export class FeeDecisionDetailsPage {
   }
 
   async assertPartnerName(expectedName: string) {
-    await this.#partnerName.assertTextEquals(expectedName)
+    await expect(this.#partnerName).toHaveText(expectedName)
   }
 
   async assertDecisionHandler(expectedName: string) {
-    await this.#decisionHandler.assertTextEquals(expectedName)
+    await expect(this.#decisionHandler).toHaveText(expectedName)
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
-    await waitUntilTrue(async () =>
-      (await this.#childIncome.nth(nth).text).includes(expectedTotalText)
-    )
+    await expect(this.#childIncome.nth(nth)).toContainText(expectedTotalText)
   }
 
   async assertPartnerNameNotShown() {
-    await this.#headOfFamily.waitUntilVisible()
-    await this.#partnerName.waitUntilHidden()
+    await expect(this.#headOfFamily).toBeVisible()
+    await expect(this.#partnerName).toBeHidden()
   }
 
   async waitUntilVisible() {
-    await this.page
-      .find('[data-qa="fee-decision-details-page"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="fee-decision-details-page"]')
+    ).toBeVisible()
   }
 
   async openDecisionHandlerModal() {
@@ -208,6 +204,7 @@ export class ValueDecisionsPage {
       .findAll('[data-qa="table-value-decision-row"]')
       .first()
     this.searchButton = page.findByDataQa('search-button')
+    this.valueDecisionRows = page.findAllByDataQa('table-value-decision-row')
   }
 
   #statusFilter = (status: VoucherValueDecisionStatus) =>
@@ -224,9 +221,7 @@ export class ValueDecisionsPage {
     return detailsPage
   }
 
-  async getValueDecisionCount() {
-    return this.page.findAll('[data-qa="table-value-decision-row"]').count()
-  }
+  valueDecisionRows: ElementCollection
 
   async setDates(from: LocalDate, to: LocalDate) {
     await this.#toDateInput.fill(to.format())
@@ -257,10 +252,9 @@ export class ValueDecisionsPage {
     await this.#statusFilter('SENT').click()
     await this.#statusFilter('SENT').waitUntilChecked()
     await this.searchButton.click()
-    await waitUntilEqual(
-      () => this.page.findAll('[data-qa="table-value-decision-row"]').count(),
-      count
-    )
+    await expect(
+      this.page.findAll('[data-qa="table-value-decision-row"]')
+    ).toHaveCount(count)
   }
 }
 
@@ -285,32 +279,30 @@ export class ValueDecisionDetailsPage {
 
   async sendValueDecision() {
     await this.#sendDecisionButton.click()
-    await this.#sendDecisionButton.waitUntilHidden()
+    await expect(this.#sendDecisionButton).toBeHidden()
   }
 
   async assertPartnerName(expectedName: string) {
-    await this.#partnerName.assertTextEquals(expectedName)
+    await expect(this.#partnerName).toHaveText(expectedName)
   }
 
   async assertPartnerNameNotShown() {
-    await this.#headOfFamily.waitUntilVisible()
-    await this.#partnerName.waitUntilHidden()
+    await expect(this.#headOfFamily).toBeVisible()
+    await expect(this.#partnerName).toBeHidden()
   }
 
   async assertDecisionHandler(expectedName: string) {
-    await this.#decisionHandler.assertTextEquals(expectedName)
+    await expect(this.#decisionHandler).toHaveText(expectedName)
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
-    await waitUntilTrue(async () =>
-      (await this.#childIncome.nth(nth).text).includes(expectedTotalText)
-    )
+    await expect(this.#childIncome.nth(nth)).toContainText(expectedTotalText)
   }
 
   async waitUntilVisible() {
-    await this.page
-      .find('[data-qa="voucher-value-decision-page"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="voucher-value-decision-page"]')
+    ).toBeVisible()
   }
 
   async openDecisionHandlerModal() {
@@ -342,13 +334,13 @@ export class FinanceDecisionHandlerSelectModal {
 
   async resolveDecisionHandlerModal(mockedNow: HelsinkiDateTime) {
     await this.#decisionHandlerSelectModalResolveBtn.click()
-    await this.#decisionHandlerSelectModalResolveBtn.waitUntilHidden()
+    await expect(this.#decisionHandlerSelectModalResolveBtn).toBeHidden()
     await runPendingAsyncJobs(mockedNow)
   }
 
   async rejectDecisionHandlerModal(mockedNow: HelsinkiDateTime) {
     await this.#decisionHandlerSelectModalRejectBtn.click()
-    await this.#decisionHandlerSelectModalRejectBtn.waitUntilHidden()
+    await expect(this.#decisionHandlerSelectModalRejectBtn).toBeHidden()
     await runPendingAsyncJobs(mockedNow)
   }
 }
@@ -397,7 +389,7 @@ export class InvoicesPage {
   }
 
   async assertLoaded() {
-    await this.#invoicesPage.waitUntilVisible()
+    await expect(this.#invoicesPage).toBeVisible()
   }
 
   async searchInvoices() {
@@ -411,10 +403,9 @@ export class InvoicesPage {
   }
 
   async assertInvoiceCount(count: number) {
-    await waitUntilEqual(
-      () => this.page.findAll('[data-qa="table-invoice-row"]').count(),
-      count
-    )
+    await expect(
+      this.page.findAll('[data-qa="table-invoice-row"]')
+    ).toHaveCount(count)
   }
 
   async toggleAllInvoices(toggled: boolean) {
@@ -438,14 +429,14 @@ export class InvoicesPage {
 
   async sendInvoices() {
     await this.#openSendInvoicesDialogButton.click()
-    await this.#sendInvoicesDialog.waitUntilVisible()
+    await expect(this.#sendInvoicesDialog).toBeVisible()
     await this.#sendInvoicesDialog.find('[data-qa="title"]').click()
     await this.#sendInvoicesButton.click()
-    await this.#sendInvoicesButton.waitUntilHidden()
+    await expect(this.#sendInvoicesButton).toBeHidden()
 
-    await this.#sendInvoicesSuccessOkButton.waitUntilVisible()
+    await expect(this.#sendInvoicesSuccessOkButton).toBeVisible()
     await this.#sendInvoicesSuccessOkButton.click()
-    await this.#sendInvoicesSuccessOkButton.waitUntilHidden()
+    await expect(this.#sendInvoicesSuccessOkButton).toBeHidden()
   }
 
   async filterByStatus(status: InvoiceStatus) {
@@ -454,13 +445,13 @@ export class InvoicesPage {
 
   async openFirstInvoice(): Promise<InvoiceDetailsPage> {
     await this.#invoiceInList.click()
-    await this.#invoiceDetailsPage.waitUntilVisible()
+    await expect(this.#invoiceDetailsPage).toBeVisible()
     return new InvoiceDetailsPage(this.page)
   }
 
   async navigateBackToInvoices() {
     await this.#navigateBack.click()
-    await this.#invoicesPage.waitUntilVisible()
+    await expect(this.#invoicesPage).toBeVisible()
   }
 
   async freeTextFilter(text: string) {
@@ -471,7 +462,7 @@ export class InvoicesPage {
 
   async markInvoiceSent() {
     await this.#markInvoiceSentButton.click()
-    await this.#markInvoiceSentButton.waitUntilHidden()
+    await expect(this.#markInvoiceSentButton).toBeHidden()
   }
 
   async assertButtonsDisabled() {
@@ -537,14 +528,12 @@ export class IncomeStatementsPage {
     expectedName: string,
     expectedTypeText: string
   ) {
-    await this.incomeStatementRows
-      .nth(nth)
-      .findByDataQa('person-link')
-      .assertTextEquals(expectedName)
-    await this.incomeStatementRows
-      .nth(nth)
-      .findByDataQa('income-statement-type')
-      .assertTextEquals(expectedTypeText)
+    await expect(
+      this.incomeStatementRows.nth(nth).findByDataQa('person-link')
+    ).toHaveText(expectedName)
+    await expect(
+      this.incomeStatementRows.nth(nth).findByDataQa('income-statement-type')
+    ).toHaveText(expectedTypeText)
   }
 }
 
@@ -564,8 +553,7 @@ export class PaymentsPage {
   }
 
   async assertPaymentCount(count: number) {
-    await waitUntilEqual(
-      () => this.page.findAllByDataQa('table-payment-row').count(),
+    await expect(this.page.findAllByDataQa('table-payment-row')).toHaveCount(
       count
     )
   }
@@ -580,10 +568,10 @@ export class PaymentsPage {
   async sendPayments() {
     await this.page.findByDataQa('open-send-payments-dialog').click()
     const modal = this.page.findByDataQa('send-payments-modal')
-    await modal.waitUntilVisible()
+    await expect(modal).toBeVisible()
     const sendButton = new AsyncButton(modal.findByDataQa('modal-okBtn'))
     await sendButton.click()
-    await modal.waitUntilHidden()
+    await expect(modal).toBeHidden()
   }
 
   async deletePayments() {

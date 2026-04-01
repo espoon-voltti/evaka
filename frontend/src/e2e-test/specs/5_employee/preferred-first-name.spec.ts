@@ -8,7 +8,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePreferredFirstNamePage } from '../../pages/employee/employee-preferred-first-name'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -46,7 +46,7 @@ test.describe('Employee preferred first name', () => {
 
     await employeePreferredFirstNamePage.preferredFirstName('Teppo')
     await employeePreferredFirstNamePage.confirm()
-    await page.findByDataQa('username').assertTextEquals('Teppo Sorsa')
+    await expect(page.findByDataQa('username')).toHaveText('Teppo Sorsa')
 
     await employeePreferredFirstNamePage.assertSelectedPreferredFirstName(
       'Teppo'

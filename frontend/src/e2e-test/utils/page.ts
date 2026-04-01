@@ -16,7 +16,7 @@ import type {
 
 import type LocalDate from 'lib-common/local-date'
 
-import { BoundingBox, waitUntilDefined, waitUntilEqual, waitUntilTrue } from '.'
+import { BoundingBox } from '.'
 
 export type EnvType = 'desktop' | 'mobile'
 
@@ -179,24 +179,14 @@ export class ElementCollection {
     return this.findAll(`[data-qa="${dataQa}"]`)
   }
 
-  async assertCount(count: number): Promise<void> {
-    if (count === 0) {
-      await this.nth(0).waitUntilHidden()
-    } else {
-      await this.nth(count - 1).waitUntilVisible()
-      await this.nth(count).waitUntilHidden()
-    }
-  }
-
-  async assertTextsEqual(values: string[]) {
-    await waitUntilEqual(() => this.allTexts(), values)
-  }
-
   async assertTextsEqualAnyOrder(values: string[]) {
-    await waitUntilEqual(async () => {
-      const texts = await this.allTexts()
-      return texts.sort()
-    }, values.slice().sort())
+    const expected = values.slice().sort()
+    await expect
+      .poll(async () => {
+        const texts = await this.allTexts()
+        return texts.sort()
+      })
+      .toEqual(expected)
   }
 }
 
@@ -236,11 +226,13 @@ export class Element {
   }
 
   get boundingBox(): Promise<BoundingBox | null> {
-    return this.waitUntilVisible().then(() =>
-      this.locator
-        .boundingBox()
-        .then((value) => (value ? new BoundingBox(value) : null))
-    )
+    return this.locator
+      .waitFor({ state: 'visible' })
+      .then(() =>
+        this.locator
+          .boundingBox()
+          .then((value) => (value ? new BoundingBox(value) : null))
+      )
   }
 
   // Visible text content
@@ -249,14 +241,7 @@ export class Element {
   }
 
   async assertText(assertion: (text: string) => boolean): Promise<void> {
-    await waitUntilTrue(async () => assertion(await this.text))
-  }
-
-  async assertTextEquals(expected: string): Promise<void> {
-    if (expected.trim() !== '') {
-      await this.waitUntilVisible()
-    }
-    await waitUntilEqual(() => this.text, expected)
+    await expect.poll(() => this.text.then(assertion)).toBe(true)
   }
 
   get visible(): Promise<boolean> {
@@ -264,34 +249,27 @@ export class Element {
   }
 
   get disabled(): Promise<boolean> {
-    return this.waitUntilVisible().then(() => this.locator.isDisabled())
+    return this.locator
+      .waitFor({ state: 'visible' })
+      .then(() => this.locator.isDisabled())
   }
 
   async assertDisabled(disabled: boolean): Promise<void> {
-    await waitUntilEqual(() => this.disabled, disabled)
+    if (disabled) {
+      await expect(this.locator).toBeDisabled()
+    } else {
+      await expect(this.locator).toBeEnabled()
+    }
   }
 
   async hover(): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.hover()
   }
 
   async click(): Promise<void> {
-    await this.waitUntilVisible()
-    await this.locator.click()
-  }
-
-  /// Like waitUntilVisible, but also works for elements with zero size
-  async waitUntilAttached(): Promise<void> {
-    await this.locator.waitFor({ state: 'attached' })
-  }
-
-  async waitUntilVisible(): Promise<void> {
     await this.locator.waitFor({ state: 'visible' })
-  }
-
-  async waitUntilHidden(): Promise<void> {
-    await this.locator.waitFor({ state: 'hidden' })
+    await this.locator.click()
   }
 
   async getAttribute(name: string): Promise<string | null> {
@@ -302,7 +280,11 @@ export class Element {
     name: string,
     value: string | null
   ): Promise<void> {
-    await waitUntilEqual(() => this.getAttribute(name), value)
+    if (value === null) {
+      await expect(this.locator).not.toHaveAttribute(name)
+    } else {
+      await expect(this.locator).toHaveAttribute(name, value)
+    }
   }
 
   async hasAttribute(name: string): Promise<boolean> {
@@ -318,49 +300,50 @@ export class Element {
   }
 
   async assertFocused(focused: boolean): Promise<void> {
-    await waitUntilEqual(() => this.focused, focused)
+    if (focused) {
+      await expect(this.locator).toBeFocused()
+    } else {
+      await expect(this.locator).not.toBeFocused()
+    }
   }
 }
 
 export class TextInput extends Element {
   async type(text: string): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.type(text)
   }
 
   async fill(text: string): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.fill(text)
   }
 
   async blur(): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.blur()
   }
 
   async clear(): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.fill('')
   }
 
   async press(key: string): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.press(key)
   }
 
   get inputValue(): Promise<string> {
-    return this.waitUntilVisible().then(() => this.locator.inputValue())
-  }
-
-  async assertValueEquals(expectedValue: string): Promise<void> {
-    await this.waitUntilVisible()
-    await waitUntilEqual(() => this.inputValue, expectedValue)
+    return this.locator
+      .waitFor({ state: 'visible' })
+      .then(() => this.locator.inputValue())
   }
 }
 
 export class PinInput extends Element {
   async fill(pinCode: string): Promise<void> {
-    await this.waitUntilVisible()
+    await this.locator.waitFor({ state: 'visible' })
     await this.locator.pressSequentially(pinCode)
   }
 }
@@ -379,7 +362,7 @@ export class DatePicker extends Element {
   }
 
   async assertValueEquals(value: string) {
-    await this.#input.assertValueEquals(value)
+    await expect(this.#input.locator).toHaveValue(value)
   }
 }
 
@@ -411,11 +394,11 @@ export class FileUpload extends Element {
   async upload(path: string | string[]) {
     const fileCountBefore = await this.fileCount
     await this.#input.setInputFiles(path)
-    await this.#uploadedFilesContainer
-      .find(
+    await expect(
+      this.#uploadedFilesContainer.find(
         `:nth-child(${fileCountBefore + 1}) [data-qa="file-download-button"]`
-      )
-      .waitUntilVisible()
+      ).locator
+    ).toBeVisible()
   }
 
   async uploadTestFile() {
@@ -437,7 +420,7 @@ export class FileUpload extends Element {
       .nth(index)
       .findByDataQa('file-delete-button')
       .click()
-    await waitUntilEqual(() => this.fileCount, fileCountBefore - 1)
+    await expect(this.#uploadedFiles.locator).toHaveCount(fileCountBefore - 1)
   }
 }
 
@@ -447,11 +430,11 @@ export class AsyncButton extends Element {
   }
 
   async waitUntilIdle() {
-    await waitUntilEqual(() => this.status(), '')
+    await expect(this.locator).toHaveAttribute('data-status', '')
   }
 
   async waitUntilSuccess() {
-    await waitUntilEqual(() => this.status(), 'success')
+    await expect(this.locator).toHaveAttribute('data-status', 'success')
   }
 }
 
@@ -479,11 +462,19 @@ export class Checkable extends Element {
   }
 
   async assertDisabled(disabled: boolean) {
-    await waitUntilEqual(() => this.#input.isDisabled(), disabled)
+    if (disabled) {
+      await expect(this.#input).toBeDisabled()
+    } else {
+      await expect(this.#input).toBeEnabled()
+    }
   }
 
   async waitUntilChecked(checked = true) {
-    await waitUntilEqual(() => this.checked, checked)
+    if (checked) {
+      await expect(this.#input).toBeChecked()
+    } else {
+      await expect(this.#input).not.toBeChecked()
+    }
   }
 }
 
@@ -517,7 +508,10 @@ export class SelectionChip extends Element {
   }
 
   async waitUntilChecked(checked = true) {
-    await waitUntilEqual(() => this.checked, checked)
+    await expect(this.locator).toHaveAttribute(
+      'aria-checked',
+      checked ? 'true' : 'false'
+    )
   }
 
   get disabled(): Promise<boolean> {
@@ -527,7 +521,11 @@ export class SelectionChip extends Element {
   }
 
   async assertDisabled(disabled: boolean) {
-    await waitUntilEqual(() => this.disabled, disabled)
+    if (disabled) {
+      await expect(this.locator).toHaveAttribute('aria-disabled', 'true')
+    } else {
+      await expect(this.locator).not.toHaveAttribute('aria-disabled')
+    }
   }
 }
 
@@ -553,8 +551,12 @@ export class Select extends Element {
     return this.#input.findAll('option').allTexts()
   }
 
+  async assertSelectedOption(value: string) {
+    await expect(this.#input.locator).toHaveValue(value)
+  }
+
   async assertOptions(expected: string[]) {
-    expect(await this.allOptions).toEqual(expected)
+    await expect(this.#input.findAll('option').locator).toHaveText(expected)
   }
 }
 
@@ -579,7 +581,7 @@ export class Combobox extends Element {
 
   async assertOptions(expected: string[]) {
     const options = this.findAllByDataQa('item')
-    await options.assertTextsEqual(expected)
+    await expect(options.locator).toHaveText(expected)
   }
 
   async selectItem(dataQa: string) {
@@ -615,30 +617,27 @@ export class MultiSelect extends Element {
   }
 
   async assertNoOptions() {
-    await this.findByDataQa('no-options').waitUntilVisible()
+    await expect(this.findByDataQa('no-options').locator).toBeVisible()
   }
 
   async assertOptions(options: string[]) {
     const actualOptions = this.findAllByDataQa('option')
-    await actualOptions.assertTextsEqual(options)
+    await expect(actualOptions.locator).toHaveText(options)
   }
 }
 
 export class Collapsible extends Element {
   async isOpen() {
-    const status = await waitUntilDefined(() =>
-      this.getAttribute('data-status')
-    )
+    await expect(this.locator).toHaveAttribute('data-status', /.*/)
+    const status = await this.getAttribute('data-status')
     return status !== 'closed'
   }
 
   async open() {
-    await waitUntilTrue(async () => {
-      if (!(await this.isOpen())) {
-        await this.click()
-      }
-      return this.isOpen()
-    })
+    if (!(await this.isOpen())) {
+      await this.click()
+    }
+    await expect(this.locator).not.toHaveAttribute('data-status', 'closed')
   }
 }
 
@@ -713,17 +712,15 @@ export class StaticChip extends Element {
   }
 
   async assertStatus(status: string) {
-    await waitUntilEqual(() => this.status, status)
+    await expect(this.locator).toHaveAttribute('data-qa-status', status)
   }
 }
 
 export class SecondaryRecipient extends Element {
   async assertIsSelected() {
-    await this.waitUntilVisible()
-    await this.assertAttributeEquals('aria-checked', 'true')
+    await expect(this.locator).toHaveAttribute('aria-checked', 'true')
   }
   async assertIsUnselected() {
-    await this.waitUntilVisible()
-    await this.assertAttributeEquals('aria-checked', 'false')
+    await expect(this.locator).toHaveAttribute('aria-checked', 'false')
   }
 }

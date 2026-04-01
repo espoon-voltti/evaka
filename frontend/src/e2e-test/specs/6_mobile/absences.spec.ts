@@ -10,8 +10,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import MobileAbsencesPage from '../../pages/mobile/absences-page'
 import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { test, expect } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 
@@ -70,7 +69,7 @@ test.describe('Future absences', () => {
   test('User can set and delete future absence periods', async () => {
     await listPage.selectChild(childId)
     await childPage.markAbsentBeforehandLink.click()
-    await waitUntilEqual(() => absencesPage.getAbsencesCount(), 0)
+    await expect(absencesPage.absenceRows).toHaveCount(0)
 
     await absencesPage.markNewAbsencePeriod(
       today.addWeeks(1),
@@ -78,7 +77,7 @@ test.describe('Future absences', () => {
       'SICKLEAVE'
     )
     await childPage.markAbsentBeforehandLink.click()
-    await waitUntilEqual(() => absencesPage.getAbsencesCount(), 1)
+    await expect(absencesPage.absenceRows).toHaveCount(1)
 
     await absencesPage.markNewAbsencePeriod(
       today.addWeeks(4),
@@ -86,9 +85,9 @@ test.describe('Future absences', () => {
       'SICKLEAVE'
     )
     await childPage.markAbsentBeforehandLink.click()
-    await waitUntilEqual(() => absencesPage.getAbsencesCount(), 2)
+    await expect(absencesPage.absenceRows).toHaveCount(2)
 
     await absencesPage.deleteFirstAbsencePeriod()
-    await waitUntilEqual(() => absencesPage.getAbsencesCount(), 1)
+    await expect(absencesPage.absenceRows).toHaveCount(1)
   })
 })

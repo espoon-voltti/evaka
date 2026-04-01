@@ -4,6 +4,7 @@
 
 import type LocalDate from 'lib-common/local-date'
 
+import { expect } from '../../playwright'
 import type { Page, ElementCollection, Element } from '../../utils/page'
 import { Checkbox, TextInput } from '../../utils/page'
 
@@ -84,9 +85,9 @@ export default class PersonSearchPage {
     )
     await this.#createPersonModal.postalCodeInput.type(personData.postalCode)
     await this.#createPersonModal.postOfficeInput.type(personData.postOffice)
-    await this.#createPersonModal.modal.waitUntilVisible()
+    await expect(this.#createPersonModal.modal).toBeVisible()
     await this.#modalConfirm.click()
-    await this.#createPersonModal.modal.waitUntilHidden()
+    await expect(this.#createPersonModal.modal).toBeHidden()
   }
 
   async findPerson(searchString: string) {
@@ -103,23 +104,23 @@ export default class PersonSearchPage {
     postOffice: string
     ssn?: string
   }) {
-    await this.#personData.firstName.assertTextEquals(personData.firstName)
-    await this.#personData.lastName.assertTextEquals(personData.lastName)
-    await this.#personData.dateOfBirth.assertTextEquals(
+    await expect(this.#personData.firstName).toHaveText(personData.firstName)
+    await expect(this.#personData.lastName).toHaveText(personData.lastName)
+    await expect(this.#personData.dateOfBirth).toHaveText(
       personData.dateOfBirth.format()
     )
-    await this.#personData.address.assertTextEquals(
+    await expect(this.#personData.address).toHaveText(
       `${personData.streetAddress}, ${personData.postalCode} ${personData.postOffice}`
     )
     if (personData.ssn === undefined) {
-      await this.#personData.ssn
-        .findByDataQa('add-ssn-button')
-        .waitUntilVisible()
-      await this.#personData.ssn
-        .findByDataQa('add-ssn-button')
-        .assertTextEquals('Aseta hetu')
+      await expect(
+        this.#personData.ssn.findByDataQa('add-ssn-button')
+      ).toBeVisible()
+      await expect(
+        this.#personData.ssn.findByDataQa('add-ssn-button')
+      ).toHaveText('Aseta hetu')
     } else {
-      await this.#personData.ssn.assertTextEquals(personData.ssn)
+      await expect(this.#personData.ssn).toHaveText(personData.ssn)
     }
   }
 
@@ -131,9 +132,9 @@ export default class PersonSearchPage {
 
   async checkAddSsnButtonVisibility(visible: boolean) {
     if (visible) {
-      await this.#addSsnButton.waitUntilVisible()
+      await expect(this.#addSsnButton).toBeVisible()
     } else {
-      await this.#noSsnText.waitUntilVisible()
+      await expect(this.#noSsnText).toBeVisible()
     }
   }
 

@@ -4,7 +4,7 @@
 
 import type { Lang } from 'lib-customizations/citizen'
 
-import { waitUntilFalse } from '../../utils'
+import { expect } from '../../playwright'
 import type { Page, Element, EnvType } from '../../utils/page'
 
 import { CitizenChildPage } from './citizen-children'
@@ -84,14 +84,16 @@ export default class CitizenHeader {
     ].includes(tab)
     if (isContainedInSubnav) {
       await this.#subNavMenu.click()
-      await this.page.findByDataQa(`sub-nav-menu-${tab}`).waitUntilHidden()
+      await expect(this.page.findByDataQa(`sub-nav-menu-${tab}`)).toBeHidden()
     } else {
-      await this.page.findByDataQa(`nav-${tab}-${this.type}`).waitUntilHidden()
+      await expect(
+        this.page.findByDataQa(`nav-${tab}-${this.type}`)
+      ).toBeHidden()
     }
   }
 
   async openChildPage(childId: string) {
-    await this.#childrenNav.waitUntilVisible()
+    await expect(this.#childrenNav).toBeVisible()
     if (
       (await this.#childrenNav.findByDataQa('drop-down-icon').visible) ||
       this.type === 'mobile'
@@ -125,47 +127,50 @@ export default class CitizenHeader {
   }
 
   async assertDOMLangAttrib(lang: 'fi' | 'sv' | 'en') {
-    await this.page.find(`html[lang=${lang}]`).waitUntilVisible()
+    await expect(this.page.find(`html[lang=${lang}]`)).toBeVisible()
   }
 
   async assertSubNavMenuHasText(text: string) {
-    await this.page
-      .findByDataQa(`sub-nav-menu-${this.type}`)
-      .findText(text)
-      .waitUntilVisible()
+    await expect(
+      this.page.findByDataQa(`sub-nav-menu-${this.type}`).findText(text)
+    ).toBeVisible()
   }
 
   async checkPersonalDetailsAttentionIndicatorsAreShown() {
-    await this.page
-      .findByDataQa(`attention-indicator-sub-menu-${this.type}`)
-      .waitUntilVisible()
+    await expect(
+      this.page.findByDataQa(`attention-indicator-sub-menu-${this.type}`)
+    ).toBeVisible()
     await this.#subNavMenu.click()
-    await this.page
-      .findByDataQa('personal-details-notification')
-      .waitUntilVisible()
+    await expect(
+      this.page.findByDataQa('personal-details-notification')
+    ).toBeVisible()
     await this.#subNavMenu.click()
   }
 
   async assertUnreadMessagesCount(expectedCount: number) {
-    await this.#messagesNav.waitUntilVisible()
+    await expect(this.#messagesNav).toBeVisible()
     if (expectedCount !== 0) {
-      await this.#unreadMessagesCount.assertTextEquals(expectedCount.toString())
+      await expect(this.#unreadMessagesCount).toHaveText(
+        expectedCount.toString()
+      )
     } else {
-      await waitUntilFalse(() => this.#unreadMessagesCount.visible)
+      await expect(this.#unreadMessagesCount).toBeHidden()
     }
   }
 
   async assertUnreadChildrenCount(expectedCount: number) {
-    await this.#childrenNav.waitUntilVisible()
+    await expect(this.#childrenNav).toBeVisible()
     if (expectedCount !== 0) {
-      await this.#unreadChildrenCount.assertTextEquals(expectedCount.toString())
+      await expect(this.#unreadChildrenCount).toHaveText(
+        expectedCount.toString()
+      )
     } else {
-      await waitUntilFalse(() => this.#unreadChildrenCount.visible)
+      await expect(this.#unreadChildrenCount).toBeHidden()
     }
   }
 
   async assertNoChildrenTab() {
-    await this.#childrenNav.waitUntilHidden()
+    await expect(this.#childrenNav).toBeHidden()
   }
 
   async logout() {

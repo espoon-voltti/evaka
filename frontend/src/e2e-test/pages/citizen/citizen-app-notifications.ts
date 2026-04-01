@@ -2,12 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 
 import type { DevPerson } from '../../generated/api-types'
+import { expect } from '../../playwright'
 import type { Element, Page } from '../../utils/page'
 
 const notificationPrefix = 'child-not-started-toast'
@@ -25,7 +24,7 @@ export default class CitizenNotificationsPage {
     const notification = this.page.findByDataQa(
       `${notificationPrefix}-${index}`
     )
-    await notification.waitUntilHidden()
+    await expect(notification).toBeHidden()
   }
 
   async assertStartingInfoNotificationContent(
@@ -51,7 +50,7 @@ export default class CitizenNotificationsPage {
     daycareName: string,
     startDate: LocalDate
   ) {
-    await parentElement.waitUntilVisible()
+    await expect(parentElement).toBeVisible()
     const content = await parentElement.text
 
     const name = formatPersonName(child, 'FirstFirst')

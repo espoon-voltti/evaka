@@ -22,7 +22,6 @@ import type {
 } from '../../generated/api-types'
 import CitizenMapPage from '../../pages/citizen/citizen-map'
 import { test, expect } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
 import type { Page } from '../../utils/page'
 
 const swedishDaycare: DevDaycare = {
@@ -83,50 +82,51 @@ test.describe('Citizen map page', () => {
   })
 
   test('Unit type filter affects the unit list', async () => {
-    await mapPage.daycareFilter.waitUntilVisible()
+    await expect(mapPage.daycareFilter).toBeVisible()
     expect(await mapPage.daycareFilter.checked).toBe(true)
-    await mapPage.listItemFor(testDaycare2).waitUntilVisible()
-    await mapPage.listItemFor(testClub).waitUntilHidden()
-    await mapPage.listItemFor(testPreschool).waitUntilVisible()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeVisible()
+    await expect(mapPage.listItemFor(testClub)).toBeHidden()
+    await expect(mapPage.listItemFor(testPreschool)).toBeVisible()
 
     await mapPage.clubFilter.check()
-    await mapPage.listItemFor(testClub).waitUntilVisible()
-    await mapPage.listItemFor(testDaycare2).waitUntilHidden()
-    await mapPage.listItemFor(testPreschool).waitUntilHidden()
+    await expect(mapPage.listItemFor(testClub)).toBeVisible()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeHidden()
+    await expect(mapPage.listItemFor(testPreschool)).toBeHidden()
 
     await mapPage.preschoolFilter.check()
-    await mapPage.listItemFor(testClub).waitUntilHidden()
-    await mapPage.listItemFor(testPreschool).waitUntilVisible()
-    await mapPage.listItemFor(testDaycare2).waitUntilHidden()
+    await expect(mapPage.listItemFor(testClub)).toBeHidden()
+    await expect(mapPage.listItemFor(testPreschool)).toBeVisible()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeHidden()
   })
 
   test('Unit language filter affects the unit list', async () => {
-    await mapPage.daycareFilter.waitUntilVisible()
+    await expect(mapPage.daycareFilter).toBeVisible()
     expect(await mapPage.daycareFilter.checked).toBe(true)
-    await mapPage.listItemFor(testDaycare2).waitUntilVisible()
-    await mapPage.listItemFor(swedishDaycare).waitUntilVisible()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeVisible()
+    await expect(mapPage.listItemFor(swedishDaycare)).toBeVisible()
 
     await mapPage.setLanguageFilter('fi', true)
-    await mapPage.listItemFor(swedishDaycare).waitUntilHidden()
-    await mapPage.listItemFor(testDaycare2).waitUntilVisible()
+    await expect(mapPage.listItemFor(swedishDaycare)).toBeHidden()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeVisible()
 
     await mapPage.setLanguageFilter('sv', true)
     await mapPage.setLanguageFilter('fi', false)
-    await mapPage.listItemFor(swedishDaycare).waitUntilVisible()
-    await mapPage.listItemFor(testDaycare2).waitUntilHidden()
+    await expect(mapPage.listItemFor(swedishDaycare)).toBeVisible()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeHidden()
   })
 
   test('Unit details can be viewed by clicking a list item', async () => {
     await mapPage.listItemFor(testDaycare2).click()
-    await mapPage.unitDetailsPanel.waitUntilVisible()
-    await waitUntilEqual(() => mapPage.unitDetailsPanel.name, testDaycare2.name)
+    await expect(mapPage.unitDetailsPanel).toBeVisible()
+    await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
+      testDaycare2.name
+    )
 
     await mapPage.unitDetailsPanel.backButton.click()
     await mapPage.listItemFor(swedishDaycare).click()
 
-    await mapPage.unitDetailsPanel.waitUntilVisible()
-    await waitUntilEqual(
-      () => mapPage.unitDetailsPanel.name,
+    await expect(mapPage.unitDetailsPanel).toBeVisible()
+    await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
       swedishDaycare.name
     )
   })
@@ -134,9 +134,8 @@ test.describe('Citizen map page', () => {
   test('Units can be searched', async () => {
     await mapPage.searchInput.type('Svart')
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
-    await mapPage.unitDetailsPanel.waitUntilVisible()
-    await waitUntilEqual(
-      () => mapPage.unitDetailsPanel.name,
+    await expect(mapPage.unitDetailsPanel).toBeVisible()
+    await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
       swedishDaycare.name
     )
   })
@@ -144,9 +143,8 @@ test.describe('Citizen map page', () => {
   test('Units can be searched by middle words in the name', async () => {
     await mapPage.searchInput.type('svenska')
     await mapPage.searchInput.clickUnitResult(swedishDaycare)
-    await mapPage.unitDetailsPanel.waitUntilVisible()
-    await waitUntilEqual(
-      () => mapPage.unitDetailsPanel.name,
+    await expect(mapPage.unitDetailsPanel).toBeVisible()
+    await expect(mapPage.unitDetailsPanel.nameElement).toHaveText(
       swedishDaycare.name
     )
   })
@@ -159,7 +157,7 @@ test.describe('Citizen map page', () => {
     })
     await mapPage.searchInput.type('Testikatu')
     await mapPage.searchInput.clickAddressResult(testStreet.properties.name)
-    await mapPage.map.addressMarker.waitUntilVisible()
+    await expect(mapPage.map.addressMarker).toBeVisible()
   })
 
   test('Unit markers can be clicked to open a popup', async () => {
@@ -170,9 +168,8 @@ test.describe('Citizen map page', () => {
 
   test('Private unit without any periods will show up on the map', async () => {
     await mapPage.testMapPopup(privateDaycareWithoutPeriods)
-    await waitUntilEqual(
-      () => mapPage.map.popupFor(privateDaycareWithoutPeriods).noApplying,
-      'Ei hakua eVakan kautta, ota yhteys yksikköön'
-    )
+    await expect(
+      mapPage.map.popupFor(privateDaycareWithoutPeriods).noApplying
+    ).toHaveText('Ei hakua eVakan kautta, ota yhteys yksikköön')
   })
 })

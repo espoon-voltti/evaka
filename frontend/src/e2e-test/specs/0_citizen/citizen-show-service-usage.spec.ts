@@ -18,7 +18,7 @@ import {
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -95,9 +95,10 @@ test.describe('Service time usage', () => {
       today.year,
       today.month
     )
-    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
-    await summary.textElement.assertTextEquals(
-      'Kaarina\n' + '\n' + 'Suunnitelma 8 h / 140 h\n' + 'Toteuma 8 h / 140 h'
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
+    await expect(summary.textElement).toHaveText(
+      'Kaarina\n' + '\n' + 'Suunnitelma 8 h / 140 h\n' + 'Toteuma 8 h / 140 h',
+      { useInnerText: true }
     )
   })
 
@@ -109,17 +110,18 @@ test.describe('Service time usage', () => {
       today.year,
       today.month
     )
-    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
-    await summary.textElement.assertTextEquals(
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
+    await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
         'Suunnitelma - / 140 h\n' +
-        'Toteuma 6 h 40 min / 140 h'
+        'Toteuma 6 h 40 min / 140 h',
+      { useInnerText: true }
     )
     const dayCell = calendarPage.dayCell(today.addWeeks(2))
-    await dayCell
-      .findByDataQa('reservation-text')
-      .assertTextEquals('Ilmoitus puuttuu')
+    await expect(dayCell.findByDataQa('reservation-text')).toHaveText(
+      'Ilmoitus puuttuu'
+    )
     const reservationModal = await calendarPage.openReservationModal()
     await reservationModal.fillDailyReservationInfo(
       new FiniteDateRange(today.addWeeks(2), today.addWeeks(2)),
@@ -127,15 +129,16 @@ test.describe('Service time usage', () => {
       '16:00'
     )
     await reservationModal.save()
-    await dayCell
-      .findByDataQa('reservation-text')
-      .assertTextEquals('08:00–16:00')
-    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
-    await summary.textElement.assertTextEquals(
+    await expect(dayCell.findByDataQa('reservation-text')).toHaveText(
+      '08:00–16:00'
+    )
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
+    await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
         'Suunnitelma 8 h / 140 h\n' +
-        'Toteuma 6 h 40 min / 140 h'
+        'Toteuma 6 h 40 min / 140 h',
+      { useInnerText: true }
     )
   })
 
@@ -147,17 +150,18 @@ test.describe('Service time usage', () => {
       today.year,
       today.month
     )
-    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
-    await summary.textElement.assertTextEquals(
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
+    await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
         'Suunnitelma - / 140 h\n' +
-        'Toteuma 6 h 40 min / 140 h'
+        'Toteuma 6 h 40 min / 140 h',
+      { useInnerText: true }
     )
     const dayCell = calendarPage.dayCell(today.addWeeks(2))
-    await dayCell
-      .findByDataQa('reservation-text')
-      .assertTextEquals('Ilmoitus puuttuu')
+    await expect(dayCell.findByDataQa('reservation-text')).toHaveText(
+      'Ilmoitus puuttuu'
+    )
     await calendarPage.navigateToNextMonths(2)
     await calendarPage.navigateToToday()
     const reservationModal = await calendarPage.openReservationModal()
@@ -167,15 +171,16 @@ test.describe('Service time usage', () => {
       '16:00'
     )
     await reservationModal.save()
-    await dayCell
-      .findByDataQa('reservation-text')
-      .assertTextEquals('08:00–16:00')
-    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
-    await summary.textElement.assertTextEquals(
+    await expect(dayCell.findByDataQa('reservation-text')).toHaveText(
+      '08:00–16:00'
+    )
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
+    await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
         'Suunnitelma 8 h / 140 h\n' +
-        'Toteuma 6 h 40 min / 140 h'
+        'Toteuma 6 h 40 min / 140 h',
+      { useInnerText: true }
     )
   })
 
@@ -193,12 +198,13 @@ test.describe('Service time usage', () => {
       today.year,
       today.month
     )
-    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
-    await summary.textElement.assertTextEquals(
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
+    await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
         'Suunnitelma - / 140 h\n' +
-        'Toteuma 7 h 30 min / 140 h'
+        'Toteuma 7 h 30 min / 140 h',
+      { useInnerText: true }
     )
   })
 
@@ -215,9 +221,9 @@ test.describe('Service time usage', () => {
 
     const calendarPage = await openCalendarPage(evaka)
     const dayView = await calendarPage.openDayView(yesterday)
-    await dayView
-      .getUsedService(testChild2.id)
-      .assertTextEquals('08:00–16:00 (8 h)')
+    await expect(dayView.getUsedService(testChild2.id)).toHaveText(
+      '08:00–16:00 (8 h)'
+    )
   })
 
   test('Service time usage based on attendance shown in day view', async ({
@@ -233,12 +239,12 @@ test.describe('Service time usage', () => {
 
     const calendarPage = await openCalendarPage(evaka)
     const dayView = await calendarPage.openDayView(today)
-    await dayView
-      .getUsedService(testChild2.id)
-      .assertTextEquals('08:00–15:30 (7 h 30 min)')
-    await dayView
-      .getServiceUsageWarning(testChild2.id)
-      .assertTextEquals('Toteunut läsnäoloaika ylittää ilmoitetun ajan.')
+    await expect(dayView.getUsedService(testChild2.id)).toHaveText(
+      '08:00–15:30 (7 h 30 min)'
+    )
+    await expect(dayView.getServiceUsageWarning(testChild2.id)).toHaveText(
+      'Toteunut läsnäoloaika ylittää ilmoitetun ajan.'
+    )
   })
 
   test('Service time warning when attendance is longer than reservation', async ({
@@ -261,14 +267,12 @@ test.describe('Service time usage', () => {
 
     const calendarPage = await openCalendarPage(evaka)
     const dayView = await calendarPage.openDayView(today)
-    await dayView
-      .getUsedService(testChild2.id)
-      .assertTextEquals('07:55–16:00 (8 h 5 min)')
-    await dayView
-      .getServiceUsageWarning(testChild2.id)
-      .assertTextEquals(
-        'Saapunut ilmoitettua aikaisemmin. Lähtenyt ilmoitettua myöhemmin.'
-      )
+    await expect(dayView.getUsedService(testChild2.id)).toHaveText(
+      '07:55–16:00 (8 h 5 min)'
+    )
+    await expect(dayView.getServiceUsageWarning(testChild2.id)).toHaveText(
+      'Saapunut ilmoitettua aikaisemmin. Lähtenyt ilmoitettua myöhemmin.'
+    )
   })
 })
 
@@ -347,12 +351,13 @@ test.describe('Service time alert', () => {
       today.year,
       today.month
     )
-    await summary.title.assertTextEquals('Läsnäolot 01.01. - 31.01.2022')
-    await summary.textElement.assertTextEquals(
+    await expect(summary.title).toHaveText('Läsnäolot 01.01. - 31.01.2022')
+    await expect(summary.textElement).toHaveText(
       'Kaarina\n' +
         '\n' +
         'Suunnitelma 57 h / 75 h\n' +
-        'Toteuma 76 h 30 min / 75 h'
+        'Toteuma 76 h 30 min / 75 h',
+      { useInnerText: true }
     )
   })
 
@@ -378,12 +383,13 @@ test.describe('Service time alert', () => {
 
     // Should be open initially, so we call getMonthlySummary instead of openMonthlySummary
     const summary = calendarPage.getMonthlySummary(today.year, 2)
-    await summary.title.assertTextEquals('Läsnäolot 01.02. - 28.02.2022')
-    await summary.warningElement.assertTextEquals(
+    await expect(summary.title).toHaveText('Läsnäolot 01.02. - 28.02.2022')
+    await expect(summary.warningElement).toHaveText(
       'Läsnäoloja suunniteltu sopimuksen ylittävä määrä:'
     )
-    await summary.textElement.assertTextEquals(
-      'Kaarina\n' + '\n' + 'Suunnitelma 80 h / 75 h\n' + 'Toteuma - / 75 h'
+    await expect(summary.textElement).toHaveText(
+      'Kaarina\n' + '\n' + 'Suunnitelma 80 h / 75 h\n' + 'Toteuma - / 75 h',
+      { useInnerText: true }
     )
   })
 })

@@ -154,7 +154,7 @@ test.describe('Citizen preschool applications', () => {
     await editorPage.goToVerification()
     await editorPage.assertErrorsExist()
     await editorPage.openSection('contactInfo')
-    await page.findByDataQa('guardianEmail-input-info').waitUntilHidden()
+    await expect(page.findByDataQa('guardianEmail-input-info')).toBeHidden()
   })
 
   test('If user has not selected any email setting in own settings the application requires it by default', async () => {
@@ -169,7 +169,7 @@ test.describe('Citizen preschool applications', () => {
     await editorPage.goToVerification()
     await editorPage.assertErrorsExist()
     await editorPage.openSection('contactInfo')
-    await page.findByDataQa('guardianEmail-input-info').waitUntilVisible()
+    await expect(page.findByDataQa('guardianEmail-input-info')).toBeVisible()
   })
 })
 

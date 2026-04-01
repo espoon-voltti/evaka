@@ -39,7 +39,6 @@ import CitizenNotificationsPage from '../../pages/citizen/citizen-app-notificati
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { test, expect } from '../../playwright'
 import type { NewEvakaPage } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
 import type { Page } from '../../utils/page'
 import type { EnvType } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -199,7 +198,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         .subDays(today.getIsoDayOfWeek() - 1)
 
       const reservationsModal = await calendarPage.openReservationModal()
-      await reservationsModal.waitUntilVisible()
+      await expect(reservationsModal).toBeVisible()
       await reservationsModal.deselectAllChildren()
       await reservationsModal.selectChild(testChildRestricted.id)
       await reservationsModal.startDate.fill(firstReservationDay)
@@ -431,10 +430,10 @@ for (const env of ['desktop', 'mobile'] as const) {
       const dayView = await calendarPage.openDayView(reservationDay)
       const absencesModal = await dayView.createAbsence()
 
-      await absencesModal.startDateInput.assertValueEquals(
+      await expect(absencesModal.startDateInput).toHaveValue(
         reservationDay.format()
       )
-      await absencesModal.endDateInput.assertValueEquals(
+      await expect(absencesModal.endDateInput).toHaveValue(
         reservationDay.format()
       )
     })
@@ -644,12 +643,12 @@ for (const env of ['desktop', 'mobile'] as const) {
       await child.reservationEnd.blur()
 
       await editor.saveButton.assertDisabled(true)
-      await editor
-        .findByDataQa('edit-reservation-time-0-start-info')
-        .waitUntilVisible()
-      await editor
-        .findByDataQa('edit-reservation-time-0-end-info')
-        .waitUntilVisible()
+      await expect(
+        editor.findByDataQa('edit-reservation-time-0-start-info')
+      ).toBeVisible()
+      await expect(
+        editor.findByDataQa('edit-reservation-time-0-end-info')
+      ).toBeVisible()
     })
 
     test('Citizen creates an absence and turns it back to a reservation', async ({
@@ -747,8 +746,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       await reservationsModal.dailySecondRangeDeleteButton.click()
       await reservationsModal.dailyAddReservationButton.assertDisabled(false)
       await reservationsModal.dailyAddReservationButton.assertFocused(true)
-      await waitUntilEqual(
-        () => reservationsModal.dailyScreenReaderMessage.text,
+      await expect(reservationsModal.dailyScreenReaderMessage).toHaveText(
         'Toinen aikaväli poistettu'
       )
     })
@@ -763,8 +761,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       await reservationsModal.endDate.fill(firstReservationDay.addDays(6))
       await reservationsModal.selectRepetition('DAILY')
       await reservationsModal.dailyAbsentButton.click()
-      await waitUntilEqual(
-        () => reservationsModal.dailyScreenReaderMessage.text,
+      await expect(reservationsModal.dailyScreenReaderMessage).toHaveText(
         'Merkitty poissaolevaksi'
       )
       await reservationsModal.dailyAbsentButton.assertFocused(true)
@@ -819,7 +816,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       const firstReservationDay = today.addDays(14)
 
       const reservationsModal = await calendarPage.openReservationModal()
-      await reservationsModal.waitUntilVisible()
+      await expect(reservationsModal).toBeVisible()
       await reservationsModal.deselectAllChildren()
       await reservationsModal.selectChild(testChild.id)
       await reservationsModal.selectChild(testChild2.id)
@@ -880,7 +877,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       const firstReservationDay = today.addDays(14)
 
       const reservationsModal = await calendarPage.openReservationModal()
-      await reservationsModal.waitUntilVisible()
+      await expect(reservationsModal).toBeVisible()
       await reservationsModal.deselectAllChildren()
       await reservationsModal.selectChild(testChild.id)
       await reservationsModal.selectChild(testChild2.id)
@@ -955,7 +952,7 @@ for (const env of ['desktop', 'mobile'] as const) {
       await absencesModal.assertChildrenChipDisabled(true, [testChild2.id])
 
       const infoBoxChild1 = absencesModal.getInfoBox(testChild.id)
-      await infoBoxChild1.waitUntilHidden()
+      await expect(infoBoxChild1).toBeHidden()
       const infoBoxChild2 = absencesModal.getInfoBox(testChild2.id)
       await notificationsPage.assertStartingInfoContent(
         infoBoxChild2,
@@ -1747,7 +1744,7 @@ test.describe('Citizen calendar child visibility', () => {
     await calendarPage.assertChildCountOnDay(firstReservationDay, 1)
 
     const holidayDayModal = await calendarPage.openDayView(firstReservationDay)
-    await holidayDayModal.childNames.assertCount(1)
+    await expect(holidayDayModal.childNames).toHaveCount(1)
     await holidayDayModal.close()
 
     const reservationsModal = await calendarPage.openReservationModal()
@@ -1803,7 +1800,7 @@ test.describe('Citizen calendar visibility', () => {
     })
     await enduserLogin(page, testAdult)
 
-    await page.findByDataQa('nav-calendar-desktop').waitUntilVisible()
+    await expect(page.findByDataQa('nav-calendar-desktop')).toBeVisible()
   })
 
   test('Child is not visible when placement starts later than 1 month (30 + 1) days', async ({
@@ -1825,8 +1822,8 @@ test.describe('Citizen calendar visibility', () => {
     await enduserLogin(page, testAdult)
 
     // Ensure page has loaded
-    await page.findByDataQa('nav-children-desktop').waitUntilVisible()
-    await page.findByDataQa('nav-calendar-desktop').waitUntilHidden()
+    await expect(page.findByDataQa('nav-children-desktop')).toBeVisible()
+    await expect(page.findByDataQa('nav-calendar-desktop')).toBeHidden()
   })
 
   test('Child is not visible when placement is in the past', async ({
@@ -1852,8 +1849,8 @@ test.describe('Citizen calendar visibility', () => {
     await enduserLogin(page, testAdult)
 
     // Ensure page has loaded
-    await page.findByDataQa('applications-list').waitUntilVisible()
-    await page.findByDataQa('nav-children-desktop').waitUntilHidden()
+    await expect(page.findByDataQa('applications-list')).toBeVisible()
+    await expect(page.findByDataQa('nav-children-desktop')).toBeHidden()
   })
 })
 

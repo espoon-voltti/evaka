@@ -4,8 +4,6 @@
 
 import assert from 'assert'
 
-import { expect } from '@playwright/test'
-
 import type { ApplicationStatus } from 'lib-common/generated/api-types/application'
 import type { ProviderType } from 'lib-common/generated/api-types/daycare'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
@@ -13,7 +11,7 @@ import type { DaycareId, GroupId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 
 import { captureTextualDownload } from '../../browser'
-import { waitUntilEqual } from '../../utils'
+import { expect } from '../../playwright'
 import type { Page, Element, ElementCollection } from '../../utils/page'
 import {
   Checkbox,
@@ -117,13 +115,13 @@ export class MissingHeadOfFamilyReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('missing-head-of-family-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     for (const [index, data] of expected.entries()) {
       const row = rows.nth(index)
-      await row.findByDataQa('child-name').assertTextEquals(data.childName)
-      await row
-        .findByDataQa('ranges-without-head')
-        .assertTextEquals(data.rangesWithoutHead)
+      await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
+      await expect(row.findByDataQa('ranges-without-head')).toHaveText(
+        data.rangesWithoutHead
+      )
     }
   }
 }
@@ -148,17 +146,19 @@ export class NonSsnChildrenReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('non-ssn-child-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     for (const [index, data] of expected.entries()) {
       const row = rows.nth(index)
-      await row.findByDataQa('child-name').assertTextEquals(data.childName)
-      await row.findByDataQa('date-of-birth').assertTextEquals(data.dateOfBirth)
-      await row
-        .findByDataQa('oph-person-oid')
-        .assertTextEquals(data.ophPersonOid)
-      await row
-        .findByDataQa('last-sent-to-varda')
-        .assertTextEquals(data.lastSentToVarda)
+      await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
+      await expect(row.findByDataQa('date-of-birth')).toHaveText(
+        data.dateOfBirth
+      )
+      await expect(row.findByDataQa('oph-person-oid')).toHaveText(
+        data.ophPersonOid
+      )
+      await expect(row.findByDataQa('last-sent-to-varda')).toHaveText(
+        data.lastSentToVarda
+      )
     }
   }
 }
@@ -173,16 +173,16 @@ export class ApplicationsReport {
   }
 
   private async areaWithNameExists(area: string, exists = true) {
-    await this.#table.waitUntilVisible()
+    await expect(this.#table).toBeVisible()
 
     const areaElem = this.#table
       .findAll(`[data-qa="care-area-name"]:has-text("${area}")`)
       .first()
 
     if (exists) {
-      await areaElem.waitUntilVisible()
+      await expect(areaElem).toBeVisible()
     } else {
-      await areaElem.waitUntilHidden()
+      await expect(areaElem).toBeHidden()
     }
   }
 
@@ -195,13 +195,14 @@ export class ApplicationsReport {
   }
 
   async assertContainsServiceProviders(providers: string[]) {
-    await this.#table.waitUntilVisible()
+    await expect(this.#table).toBeVisible()
 
     for (const provider of providers) {
-      await this.#table
-        .findAll(`[data-qa="unit-provider-type"]:has-text("${provider}")`)
-        .first()
-        .waitUntilVisible()
+      await expect(
+        this.#table
+          .findAll(`[data-qa="unit-provider-type"]:has-text("${provider}")`)
+          .first()
+      ).toBeVisible()
     }
   }
 
@@ -239,16 +240,16 @@ export class PlacementGuaranteeReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('placement-guarantee-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
-        await row.findByDataQa('area-name').assertTextEquals(data.areaName)
-        await row.findByDataQa('unit-name').assertTextEquals(data.unitName)
-        await row.findByDataQa('child-name').assertTextEquals(data.childName)
-        await row
-          .findByDataQa('placement-period')
-          .assertTextEquals(data.placementPeriod)
+        await expect(row.findByDataQa('area-name')).toHaveText(data.areaName)
+        await expect(row.findByDataQa('unit-name')).toHaveText(data.unitName)
+        await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
+        await expect(row.findByDataQa('placement-period')).toHaveText(
+          data.placementPeriod
+        )
       })
     )
   }
@@ -270,22 +271,22 @@ export class PlacementSketchingReport {
     currentUnitName: string | null = null
   ) {
     const element = this.page.findByDataQa(`${applicationId}`)
-    await element.waitUntilVisible()
+    await expect(element).toBeVisible()
 
-    await element
-      .find('[data-qa="requested-unit"]')
-      .assertTextEquals(requestedUnitName)
+    await expect(element.find('[data-qa="requested-unit"]')).toHaveText(
+      requestedUnitName
+    )
     if (currentUnitName) {
-      await element
-        .find('[data-qa="current-unit"]')
-        .assertTextEquals(currentUnitName)
+      await expect(element.find('[data-qa="current-unit"]')).toHaveText(
+        currentUnitName
+      )
     }
-    await element.find('[data-qa="child-name"]').assertTextEquals(childName)
+    await expect(element.find('[data-qa="child-name"]')).toHaveText(childName)
   }
 
   async assertNotRow(applicationId: string) {
     const element = this.page.findByDataQa(`${applicationId}`)
-    await element.waitUntilHidden()
+    await expect(element).toBeHidden()
   }
 
   async toggleApplicationStatus(status: ApplicationStatus) {
@@ -321,8 +322,7 @@ export class VoucherServiceProvidersReport {
   }
 
   async assertRowCount(expectedChildCount: number) {
-    await waitUntilEqual(
-      () => this.page.findAll('.reportRow').count(),
+    await expect(this.page.findAll('.reportRow')).toHaveCount(
       expectedChildCount
     )
   }
@@ -333,7 +333,7 @@ export class VoucherServiceProvidersReport {
     expectedMonthlySum: string
   ) {
     const row = this.page.findByDataQa(`${unitId}`)
-    await row.waitUntilVisible()
+    await expect(row).toBeVisible()
     expect(await row.find(`[data-qa="child-count"]`).text).toStrictEqual(
       expectedChildCount
     )
@@ -363,7 +363,7 @@ export class ServiceVoucherUnitReport {
   }
 
   async assertChildRowCount(expected: number) {
-    await waitUntilEqual(() => this.#childRows.count(), expected)
+    await expect(this.#childRows).toHaveCount(expected)
   }
 
   async assertChild(
@@ -373,10 +373,9 @@ export class ServiceVoucherUnitReport {
     expectedCoPayment: number,
     expectedRealizedAmount: number
   ) {
-    await this.page
-      .findAllByDataQa('child-name')
-      .nth(nth)
-      .assertTextEquals(expectedName)
+    await expect(this.page.findAllByDataQa('child-name').nth(nth)).toHaveText(
+      expectedName
+    )
     await this.page
       .findAllByDataQa('voucher-value')
       .nth(nth)
@@ -484,32 +483,32 @@ export class PreschoolAbsenceReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('preschool-absence-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
-        await row
-          .findByDataQa('first-name-column')
-          .assertTextEquals(data.firstName)
-        await row
-          .findByDataQa('last-name-column')
-          .assertTextEquals(data.lastName)
-        await row
-          .findByDataQa('daycare-name-column')
-          .assertTextEquals(data.daycareName)
-        await row
-          .findByDataQa('group-name-column')
-          .assertTextEquals(data.groupName)
-        await row.findByDataQa('total-column').assertTextEquals(data.TOTAL)
-        await row
-          .findByDataQa('other-absence-column')
-          .assertTextEquals(data.OTHER_ABSENCE)
-        await row
-          .findByDataQa('sickleave-column')
-          .assertTextEquals(data.SICKLEAVE)
-        await row
-          .findByDataQa('unknown-absence-column')
-          .assertTextEquals(data.UNKNOWN_ABSENCE)
+        await expect(row.findByDataQa('first-name-column')).toHaveText(
+          data.firstName
+        )
+        await expect(row.findByDataQa('last-name-column')).toHaveText(
+          data.lastName
+        )
+        await expect(row.findByDataQa('daycare-name-column')).toHaveText(
+          data.daycareName
+        )
+        await expect(row.findByDataQa('group-name-column')).toHaveText(
+          data.groupName
+        )
+        await expect(row.findByDataQa('total-column')).toHaveText(data.TOTAL)
+        await expect(row.findByDataQa('other-absence-column')).toHaveText(
+          data.OTHER_ABSENCE
+        )
+        await expect(row.findByDataQa('sickleave-column')).toHaveText(
+          data.SICKLEAVE
+        )
+        await expect(row.findByDataQa('unknown-absence-column')).toHaveText(
+          data.UNKNOWN_ABSENCE
+        )
       })
     )
   }
@@ -520,12 +519,12 @@ export class PreschoolApplicationReport {
 
   async assertNoResults() {
     const noResults = this.page.findByDataQa('no-results')
-    await noResults.waitUntilVisible()
+    await expect(noResults).toBeVisible()
   }
 
   async assertRows(expected: string[]) {
     const rows = this.page.findAllByDataQa('row')
-    await rows.assertTextsEqual(expected)
+    await expect(rows).toHaveText(expected, { useInnerText: true })
   }
 }
 
@@ -560,12 +559,12 @@ export class HolidayPeriodAttendanceReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('holiday-period-attendance-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
 
-        await row.findByDataQa('date-column').assertTextEquals(data.date)
+        await expect(row.findByDataQa('date-column')).toHaveText(data.date)
 
         const presentChildren = row
           .findByDataQa('present-children-column')
@@ -577,15 +576,15 @@ export class HolidayPeriodAttendanceReport {
           .findAllByDataQa('child-name')
         await this.assertChildNames(assistanceChildren, data.assistanceChildren)
 
-        await row
-          .findByDataQa('coefficient-sum-column')
-          .assertTextEquals(data.coefficientSum)
-        await row
-          .findByDataQa('staff-count-column')
-          .assertTextEquals(data.staffCount)
-        await row
-          .findByDataQa('absence-count-column')
-          .assertTextEquals(data.absenceCount)
+        await expect(row.findByDataQa('coefficient-sum-column')).toHaveText(
+          data.coefficientSum
+        )
+        await expect(row.findByDataQa('staff-count-column')).toHaveText(
+          data.staffCount
+        )
+        await expect(row.findByDataQa('absence-count-column')).toHaveText(
+          data.absenceCount
+        )
 
         const noResponseChildren = row
           .findByDataQa('no-response-children-column')
@@ -600,7 +599,7 @@ export class HolidayPeriodAttendanceReport {
     assert(childCount === names.length)
     for (let i = 0; i < childCount; i++) {
       const child = children.nth(i)
-      await child.assertTextEquals(`${i + 1}. ${names[i]}`)
+      await expect(child).toHaveText(`${i + 1}. ${names[i]}`)
     }
   }
 }
@@ -663,22 +662,22 @@ export class ChildAttendanceReservationByChildReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('child-attendance-reservation-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
-        await row.findByDataQa('child-name').assertTextEquals(data.childName)
+        await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
         if (data.attendanceReservationStart && data.attendanceReservationEnd) {
-          await row
-            .findByDataQa('attendance-reservation-start')
-            .assertTextEquals(data.attendanceReservationStart)
-          await row
-            .findByDataQa('attendance-reservation-end')
-            .assertTextEquals(data.attendanceReservationEnd)
+          await expect(
+            row.findByDataQa('attendance-reservation-start')
+          ).toHaveText(data.attendanceReservationStart)
+          await expect(
+            row.findByDataQa('attendance-reservation-end')
+          ).toHaveText(data.attendanceReservationEnd)
         } else {
-          await row
-            .findByDataQa('missing-reservation-text')
-            .assertTextEquals('Varaus puuttuu')
+          await expect(row.findByDataQa('missing-reservation-text')).toHaveText(
+            'Varaus puuttuu'
+          )
         }
       })
     )
@@ -755,7 +754,7 @@ export class OccupanciesReport {
 
   async assertReportDateColumns(expected: LocalDate[]) {
     const columns = this.page.findAllByDataQa('table-header-date')
-    await columns.assertTextsEqual(
+    await expect(columns).toHaveText(
       expected.map((date) => date.format('dd.MM.'))
     )
   }
@@ -763,7 +762,7 @@ export class OccupanciesReport {
   async assertReportUnitNameRows(expected: string[]) {
     const rows = this.page.findAllByDataQa('table-body-row-unit')
     const names = rows.findAllByDataQa('table-body-row-unit-name')
-    await names.assertTextsEqual(expected)
+    await expect(names).toHaveText(expected)
   }
 }
 
@@ -779,16 +778,16 @@ export class StartingPlacementsReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('report-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
-        await row.findByDataQa('child-name').assertTextEquals(data.childName)
-        await row.findByDataQa('area-name').assertTextEquals(data.areaName)
-        await row.findByDataQa('unit-name').assertTextEquals(data.unitName)
-        await row
-          .findByDataQa('placement-start-date')
-          .assertTextEquals(data.placementStart.format())
+        await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
+        await expect(row.findByDataQa('area-name')).toHaveText(data.areaName)
+        await expect(row.findByDataQa('unit-name')).toHaveText(data.unitName)
+        await expect(row.findByDataQa('placement-start-date')).toHaveText(
+          data.placementStart.format()
+        )
       })
     )
   }
@@ -809,25 +808,25 @@ export class EndedPlacementsReport {
     }[]
   ) {
     const rows = this.page.findAllByDataQa('report-row')
-    await rows.assertCount(expected.length)
+    await expect(rows).toHaveCount(expected.length)
     await Promise.all(
       expected.map(async (data, index) => {
         const row = rows.nth(index)
-        await row.findByDataQa('child-name').assertTextEquals(data.childName)
-        await row
-          .findByDataQa('child-date-of-birth')
-          .assertTextEquals(data.childDateOfBirth.format())
-        await row.findByDataQa('area-name').assertTextEquals(data.areaName)
-        await row.findByDataQa('unit-name').assertTextEquals(data.unitName)
-        await row
-          .findByDataQa('placement-end-date')
-          .assertTextEquals(data.placementEnd.format())
-        await row
-          .findByDataQa('next-placement-start-date')
-          .assertTextEquals(data.nextPlacementStart.format())
-        await row
-          .findByDataQa('next-placement-unit-name')
-          .assertTextEquals(data.nextPlacementUnitName)
+        await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
+        await expect(row.findByDataQa('child-date-of-birth')).toHaveText(
+          data.childDateOfBirth.format()
+        )
+        await expect(row.findByDataQa('area-name')).toHaveText(data.areaName)
+        await expect(row.findByDataQa('unit-name')).toHaveText(data.unitName)
+        await expect(row.findByDataQa('placement-end-date')).toHaveText(
+          data.placementEnd.format()
+        )
+        await expect(row.findByDataQa('next-placement-start-date')).toHaveText(
+          data.nextPlacementStart.format()
+        )
+        await expect(row.findByDataQa('next-placement-unit-name')).toHaveText(
+          data.nextPlacementUnitName
+        )
       })
     )
   }
@@ -861,11 +860,11 @@ export class SextetReport {
 
   async assertRows(expected: string[]) {
     const rows = this.page.findAllByDataQa('data-rows')
-    await rows.assertTextsEqual(expected)
+    await expect(rows).toHaveText(expected, { useInnerText: true })
   }
 
   async assertSum(expected: number) {
     const sum = this.page.findByDataQa('data-sum')
-    await sum.assertTextEquals(`${expected}`)
+    await expect(sum).toHaveText(`${expected}`)
   }
 }

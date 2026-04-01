@@ -30,7 +30,7 @@ import type { DevEmployee, DevPerson } from '../../generated/api-types'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import type { NewEvakaPage } from '../../playwright'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
@@ -208,7 +208,7 @@ test.describe('Municipal messaging -', () => {
     await messagingPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(messagingPage)
     const messageEditor = await messagesPage.openMessageEditor()
-    await messageEditor.filtersButton.waitUntilVisible()
+    await expect(messageEditor.filtersButton).toBeVisible()
     await messageEditor.filtersButton.click()
     await messageEditor.assertFiltersVisible()
   })

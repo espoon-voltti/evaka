@@ -37,8 +37,7 @@ import type {
 import type { UnitCalendarPage } from '../../pages/employee/units/unit'
 import { UnitPage } from '../../pages/employee/units/unit'
 import type { UnitStaffAttendancesTable } from '../../pages/employee/units/unit-calendar-page-base'
-import { test, type NewEvakaPage } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test, type NewEvakaPage } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -174,8 +173,7 @@ test.describe('Realtime staff attendances', () => {
     })
 
     test('The staff attendances table shows all unit staff', async () => {
-      await waitUntilEqual(
-        () => staffAttendances.allNames,
+      await expect(staffAttendances.staffNames).toHaveText(
         [nonGroupStaff, groupStaff].map(staffName)
       )
     })
@@ -232,11 +230,13 @@ test.describe('Realtime staff attendances', () => {
       })
 
       const modal = await staffAttendances.openDetails(0, mockedToday)
-      await waitUntilEqual(() => modal.summary(), {
-        plan: '07:00 – 15:00',
-        realized: '07:03 –',
-        hours: '10:57 (+2:57)'
-      })
+      await expect
+        .poll(() => modal.summary())
+        .toEqual({
+          plan: '07:00 – 15:00',
+          realized: '07:03 –',
+          hours: '10:57 (+2:57)'
+        })
     })
 
     test('Employee without group ACL is shown if they have attendances', async () => {
@@ -434,11 +434,13 @@ test.describe('Realtime staff attendances', () => {
       modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.assertHasStaffOccupancyEffectChecked(false)
 
-      await waitUntilEqual(() => modal.summary(), {
-        plan: '–',
-        realized: '07:00 – 15:00',
-        hours: '8:00'
-      })
+      await expect
+        .poll(() => modal.summary())
+        .toEqual({
+          plan: '–',
+          realized: '07:00 – 15:00',
+          hours: '8:00'
+        })
     })
 
     test('An existing overnight entry can only be edited through arrival date', async () => {
@@ -451,12 +453,14 @@ test.describe('Realtime staff attendances', () => {
       await modal.save()
 
       modal = await staffAttendances.openDetails(1, mockedToday.subDays(1))
-      await waitUntilEqual(() => modal.summary(), {
-        plan: '–',
-        realized: '21:00 – →',
-        hours: '3:00'
-      })
-      await modal.continuationAttendance.waitUntilHidden()
+      await expect
+        .poll(() => modal.summary())
+        .toEqual({
+          plan: '–',
+          realized: '21:00 – →',
+          hours: '3:00'
+        })
+      await expect(modal.continuationAttendance).toBeHidden()
       await modal.close()
 
       await staffAttendances.assertTableRow({
@@ -471,12 +475,17 @@ test.describe('Realtime staff attendances', () => {
       })
 
       modal = await staffAttendances.openDetails(1, mockedToday)
-      await waitUntilEqual(() => modal.summary(), {
-        plan: '–',
-        realized: '→ – 09:00',
-        hours: '9:00'
-      })
-      await modal.continuationAttendance.assertTextEquals('21:00\n–\n09:00*')
+      await expect
+        .poll(() => modal.summary())
+        .toEqual({
+          plan: '–',
+          realized: '→ – 09:00',
+          hours: '9:00'
+        })
+      await expect(modal.continuationAttendance).toHaveText(
+        '21:00\n–\n09:00*',
+        { useInnerText: true }
+      )
     })
 
     test('If departure is earlier than arrival, departure is on the next day', async () => {
@@ -501,11 +510,13 @@ test.describe('Realtime staff attendances', () => {
       })
 
       modal = await staffAttendances.openDetails(1, arrivalDate)
-      await waitUntilEqual(() => modal.summary(), {
-        plan: '–',
-        realized: '07:00 – →',
-        hours: '17:00'
-      })
+      await expect
+        .poll(() => modal.summary())
+        .toEqual({
+          plan: '–',
+          realized: '07:00 – →',
+          hours: '17:00'
+        })
     })
 
     test('Multiple new entries can be added', async () => {
@@ -548,11 +559,13 @@ test.describe('Realtime staff attendances', () => {
       })
 
       modal = await staffAttendances.openDetails(1, mockedToday)
-      await waitUntilEqual(() => modal.summary(), {
-        plan: '–',
-        realized: '07:00 – 15:00',
-        hours: '8:00'
-      })
+      await expect
+        .poll(() => modal.summary())
+        .toEqual({
+          plan: '–',
+          realized: '07:00 – 15:00',
+          hours: '8:00'
+        })
     })
 
     test('Gaps in attendances are warned about', async () => {
@@ -573,12 +586,10 @@ test.describe('Realtime staff attendances', () => {
       await modal.setArrivalTime(2, '13:20')
       await modal.setDepartureTime(2, '14:30')
 
-      await waitUntilEqual(
-        () => modal.gapWarning(1),
+      await expect(modal.gapWarning(1)).toHaveText(
         'Kirjaus puuttuu välillä 12:00 – 12:30'
       )
-      await waitUntilEqual(
-        () => modal.gapWarning(2),
+      await expect(modal.gapWarning(2)).toHaveText(
         'Kirjaus puuttuu välillä 13:00 – 13:20'
       )
     })
@@ -593,7 +604,7 @@ test.describe('Realtime staff attendances', () => {
         mockedToday.subDays(1)
       )
       await modal.setArrivalTime(0, '08:00')
-      await waitUntilEqual(() => modal.departureTimeInfo(0), 'Pakollinen tieto')
+      await expect(modal.departureTimeInfo(0)).toHaveText('Pakollinen tieto')
     })
 
     test('Departure time is NOT required when editing today', async () => {
@@ -603,7 +614,7 @@ test.describe('Realtime staff attendances', () => {
 
       const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setArrivalTime(0, '')
-      await waitUntilEqual(() => modal.arrivalTimeInfo(0), 'Pakollinen tieto')
+      await expect(modal.arrivalTimeInfo(0)).toHaveText('Pakollinen tieto')
       await modal.assertDepartureTimeInfoHidden(0)
     })
 
@@ -614,7 +625,7 @@ test.describe('Realtime staff attendances', () => {
 
       const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.newAttendanceButton.assertDisabled(true)
-      await modal.openAttendanceWarning.waitUntilVisible()
+      await expect(modal.openAttendanceWarning).toBeVisible()
     })
 
     test('If there is open attendance entry for yesterday in another unit, warning is visible', async () => {
@@ -636,7 +647,7 @@ test.describe('Realtime staff attendances', () => {
       })
 
       const modal = await staffAttendances.openDetails(1, mockedToday)
-      await modal.openAttendanceInAnotherUnitWarning.waitUntilVisible()
+      await expect(modal.openAttendanceInAnotherUnitWarning).toBeVisible()
     })
   })
 
@@ -676,15 +687,15 @@ test.describe('Realtime staff attendances', () => {
 
     test('Total staff counts', async () => {
       await calendarPage.selectGroup(groupId2)
-      await waitUntilEqual(() => staffAttendances.personCountSum(0), '– hlö')
+      await expect(staffAttendances.personCountSum(0)).toHaveText('– hlö')
 
       await calendarPage.selectGroup(groupId)
-      await waitUntilEqual(() => staffAttendances.personCountSum(0), '– hlö')
-      await waitUntilEqual(() => staffAttendances.personCountSum(1), '1 hlö')
-      await waitUntilEqual(() => staffAttendances.personCountSum(2), '2 hlö')
-      await waitUntilEqual(() => staffAttendances.personCountSum(3), '– hlö')
-      await waitUntilEqual(() => staffAttendances.personCountSum(4), '– hlö')
-      await waitUntilEqual(() => staffAttendances.personCountSum(5), '– hlö')
+      await expect(staffAttendances.personCountSum(0)).toHaveText('– hlö')
+      await expect(staffAttendances.personCountSum(1)).toHaveText('1 hlö')
+      await expect(staffAttendances.personCountSum(2)).toHaveText('2 hlö')
+      await expect(staffAttendances.personCountSum(3)).toHaveText('– hlö')
+      await expect(staffAttendances.personCountSum(4)).toHaveText('– hlö')
+      await expect(staffAttendances.personCountSum(5)).toHaveText('– hlö')
     })
   })
 
@@ -719,7 +730,7 @@ test.describe('Realtime staff attendances', () => {
       await modal.setDepartureTime(0, '13:00')
       await modal.save()
 
-      await waitUntilEqual(() => staffAttendances.rowCount, 2)
+      await expect(staffAttendances.rows).toHaveCount(2)
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 2,
@@ -732,7 +743,7 @@ test.describe('Realtime staff attendances', () => {
       await modal.removeAttendance(0)
       await modal.save()
 
-      await waitUntilEqual(() => staffAttendances.rowCount, 1)
+      await expect(staffAttendances.rows).toHaveCount(1)
     })
 
     test('Can an add multiple entries to an external', async () => {
@@ -758,7 +769,7 @@ test.describe('Realtime staff attendances', () => {
       await modal.setDepartureTime(0, '17:30')
       await modal.save()
 
-      await waitUntilEqual(() => staffAttendances.rowCount, 2)
+      await expect(staffAttendances.rows).toHaveCount(2)
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 0,

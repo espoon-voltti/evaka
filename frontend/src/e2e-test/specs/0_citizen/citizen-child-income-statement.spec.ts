@@ -21,7 +21,7 @@ import {
 } from '../../generated/api-clients'
 import { CitizenChildIncomeStatementListPage } from '../../pages/citizen/citizen-child-income'
 import CitizenHeader from '../../pages/citizen/citizen-header'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { EnvType, Page } from '../../utils/page'
 import { testFileName } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -155,7 +155,7 @@ for (const env of ['desktop', 'mobile'] as const) {
 
       // View
       const viewPage = await listPage.viewChildHandledIncomeStatement(0)
-      await viewPage.otherInfo.assertTextEquals('foo bar baz')
+      await expect(viewPage.otherInfo).toHaveText('foo bar baz')
       await viewPage.assertAttachmentExists('CHILD_INCOME', testFileName)
     })
 

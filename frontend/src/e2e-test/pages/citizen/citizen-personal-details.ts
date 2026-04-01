@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilFalse, waitUntilTrue } from '../../utils'
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { Checkbox, Element, Select, TextInput } from '../../utils/page'
 
@@ -63,23 +63,21 @@ export class CitizenPersonalDetailsSection extends Element {
   }
 
   async checkMissingEmailWarningIsShown() {
-    await this.#missingEmailOrPhoneBox.waitUntilVisible()
+    await expect(this.#missingEmailOrPhoneBox).toBeVisible()
     await this.#missingEmailOrPhoneBox.assertText((text) =>
       text.includes('Sähköpostiosoitteesi puuttuu')
     )
   }
 
   async checkMissingPhoneWarningIsShown() {
-    await waitUntilTrue(() => this.#missingEmailOrPhoneBox.visible)
-    await waitUntilTrue(async () =>
-      ((await this.#missingEmailOrPhoneBox.text) ?? '').includes(
-        'Puhelinnumerosi puuttuu'
-      )
+    await expect(this.#missingEmailOrPhoneBox).toBeVisible()
+    await expect(this.#missingEmailOrPhoneBox).toContainText(
+      'Puhelinnumerosi puuttuu'
     )
   }
 
   async assertAlertIsNotShown() {
-    await waitUntilFalse(() => this.#missingEmailOrPhoneBox.visible)
+    await expect(this.#missingEmailOrPhoneBox).toBeHidden()
   }
 
   async editPersonalData(
@@ -110,12 +108,12 @@ export class CitizenPersonalDetailsSection extends Element {
 
     if (expectValid) {
       await this.#save.click()
-      await waitUntilFalse(() => this.#startEditing.disabled)
+      await expect(this.#startEditing).toBeEnabled()
     }
   }
 
   async assertSaveIsDisabled() {
-    await waitUntilTrue(() => this.#save.hasAttribute('disabled'))
+    await expect(this.#save).toBeDisabled()
   }
 
   async checkPersonalData(data: {
@@ -124,12 +122,12 @@ export class CitizenPersonalDetailsSection extends Element {
     backupPhone: string
     email: string | null
   }) {
-    await this.#preferredName.assertTextEquals(data.preferredName)
-    await this.#phone.assertTextEquals(
+    await expect(this.#preferredName).toHaveText(data.preferredName)
+    await expect(this.#phone).toHaveText(
       data.phone === null ? 'Puhelinnumerosi puuttuu' : data.phone
     )
-    await this.#backupPhone.assertTextEquals(data.backupPhone)
-    await this.#email.assertTextEquals(
+    await expect(this.#backupPhone).toHaveText(data.backupPhone)
+    await expect(this.#email).toHaveText(
       data.email === null ? 'Sähköpostiosoite puuttuu' : data.email
     )
   }

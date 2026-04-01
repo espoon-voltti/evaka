@@ -35,8 +35,7 @@ import type {
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { UnitWeekCalendarPage } from '../../pages/employee/units/unit-week-calendar-page'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -144,10 +143,9 @@ test.describe('Unit group calendar', () => {
   test('Employee sees row for child', async ({ evaka }) => {
     await insertTestDataAndLogin(evaka)
     const childReservations = (await openWeekCalendar()).childReservations
-    await waitUntilEqual(
-      () => childReservations.childReservationRows(child1Fixture.id).count(),
-      1
-    )
+    await expect(
+      childReservations.childReservationRows(child1Fixture.id)
+    ).toHaveCount(1)
   })
 
   test('Select shiftcare virtual group - child has shiftcare', async ({
@@ -157,10 +155,9 @@ test.describe('Unit group calendar', () => {
     const childReservations = (await openWeekCalendar()).childReservations
     const calendarPage = new UnitWeekCalendarPage(page)
     await calendarPage.selectGroup('shift-care')
-    await waitUntilEqual(
-      () => childReservations.childReservationRows(child1Fixture.id).count(),
-      1
-    )
+    await expect(
+      childReservations.childReservationRows(child1Fixture.id)
+    ).toHaveCount(1)
   })
 
   test('Select shiftcare virtual group - child does not have shiftcare', async ({
@@ -170,10 +167,9 @@ test.describe('Unit group calendar', () => {
     const childReservations = (await openWeekCalendar()).childReservations
     const calendarPage = new UnitWeekCalendarPage(page)
     await calendarPage.selectGroup('shift-care')
-    await waitUntilEqual(
-      () => childReservations.childReservationRows(child1Fixture.id).count(),
-      0
-    )
+    await expect(
+      childReservations.childReservationRows(child1Fixture.id)
+    ).toHaveCount(0)
   })
 
   test('Child in backup care in other group for part of the week is shown', async ({
@@ -202,10 +198,9 @@ test.describe('Unit group calendar', () => {
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
     await weekCalendar.changeWeekToDate(backupCareSameUnitStartDate)
-    await waitUntilEqual(
-      () => childReservations.childInOtherGroup(child1Fixture.id).count(),
-      4
-    )
+    await expect(
+      childReservations.childInOtherGroup(child1Fixture.id)
+    ).toHaveCount(4)
   })
 
   test('Reservations are shown in the backup group calendar when backup is within the same unit', async ({
@@ -250,10 +245,9 @@ test.describe('Unit group calendar', () => {
 
     await weekCalendar.changeWeekToDate(backupCareSameUnitStartDate)
     await weekCalendar.selectGroup(groupId3)
-    await waitUntilEqual(
-      () => childReservations.childInOtherUnit(child1Fixture.id).count(),
-      0
-    )
+    await expect(
+      childReservations.childInOtherUnit(child1Fixture.id)
+    ).toHaveCount(0)
   })
 
   test('Child in backup care for the entire week is shown', async ({
@@ -263,10 +257,9 @@ test.describe('Unit group calendar', () => {
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
     await weekCalendar.changeWeekToDate(backupCareStartDate)
-    await waitUntilEqual(
-      () => childReservations.childInOtherUnit(child1Fixture.id).count(),
-      5
-    )
+    await expect(
+      childReservations.childInOtherUnit(child1Fixture.id)
+    ).toHaveCount(5)
   })
 
   test('Child in backup care during the week is shown', async ({ evaka }) => {
@@ -274,10 +267,9 @@ test.describe('Unit group calendar', () => {
     const weekCalendar = await openWeekCalendar()
     const childReservations = weekCalendar.childReservations
     await weekCalendar.changeWeekToDate(backupCareEndDate)
-    await waitUntilEqual(
-      () => childReservations.childInOtherUnit(child1Fixture.id).count(),
-      2
-    )
+    await expect(
+      childReservations.childInOtherUnit(child1Fixture.id)
+    ).toHaveCount(2)
   })
 
   test('Missing holiday reservations are shown', async ({ evaka }) => {
@@ -318,11 +310,9 @@ test.describe('Unit group calendar', () => {
     const childReservations = weekCalendar.childReservations
     await weekCalendar.changeWeekToDate(holidayPeriodStart)
 
-    await waitUntilEqual(
-      () =>
-        childReservations.missingHolidayReservations(child1Fixture.id).count(),
-      5
-    )
+    await expect(
+      childReservations.missingHolidayReservations(child1Fixture.id)
+    ).toHaveCount(5)
   })
 
   test('Missing holiday reservations are shown if reservation deadline has passed', async ({
@@ -340,11 +330,9 @@ test.describe('Unit group calendar', () => {
     const childReservations = weekCalendar.childReservations
     await weekCalendar.changeWeekToDate(holidayPeriodStart)
 
-    await waitUntilEqual(
-      () =>
-        childReservations.missingHolidayReservations(child1Fixture.id).count(),
-      7
-    )
+    await expect(
+      childReservations.missingHolidayReservations(child1Fixture.id)
+    ).toHaveCount(7)
   })
 
   test('Tooltip for attendance reservation is shown', async ({ evaka }) => {
@@ -436,9 +424,9 @@ test.describe('Unit group calendar', () => {
     await monthCalendar
       .absenceCell(child1Fixture.id, placementEndDate)
       .assertNoAbsence('BILLABLE')
-    await monthCalendar
-      .absenceCell(child1Fixture.id, placementEndDate.addDays(1))
-      .waitUntilHidden()
+    await expect(
+      monthCalendar.absenceCell(child1Fixture.id, placementEndDate.addDays(1))
+    ).toBeHidden()
   })
 
   test('Employee can add reservation', async ({ evaka }) => {
@@ -505,10 +493,9 @@ test.describe('Unit group calendar', () => {
 
     const childReservations = (await openWeekCalendar()).childReservations
 
-    await waitUntilEqual(
-      () => childReservations.childAttendanceRows(child1Fixture.id).count(),
-      attendances.length
-    )
+    await expect(
+      childReservations.childAttendanceRows(child1Fixture.id)
+    ).toHaveCount(attendances.length)
   })
 
   test('Employee can add absence records', async ({ evaka }) => {
@@ -518,10 +505,9 @@ test.describe('Unit group calendar', () => {
       child1Fixture.id
     )
     await reservationModal.addAbsence(mockedToday)
-    await waitUntilEqual(
-      () => childReservations.childAbsenceCells(child1Fixture.id).count(),
-      1
-    )
+    await expect(
+      childReservations.childAbsenceCells(child1Fixture.id)
+    ).toHaveCount(1)
   })
 
   test('Totals row multiplies occupancy coefficients and capacity factors', async ({
@@ -597,7 +583,7 @@ test.describe('Unit group calendar', () => {
     await unitPage.navigateToUnit(daycare.id)
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group.id)
-    await weekCalendar.childReservations.getTotalCounts().assertTextsEqual([
+    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText([
       '1 (1,75)', // serviceNeedOption1#realizedOccupancyCoefficientUnder3y
       '1 (1,75)', // serviceNeedOption1#realizedOccupancyCoefficientUnder3y
       '1 (1,40)', // serviceNeedOption2#realizedOccupancyCoefficientUnder3y
@@ -660,7 +646,7 @@ test.describe('Unit group calendar', () => {
     await unitPage.navigateToUnit(daycare.id)
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group.id)
-    await weekCalendar.childReservations.getTotalCounts().assertTextsEqual([
+    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText([
       '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
       '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
       '2 (2,75)', // realizedOccupancyCoefficient + realizedOccupancyCoefficientUnder3y
@@ -720,7 +706,7 @@ test.describe('Unit group calendar', () => {
     await unitPage.navigateToUnit(daycare.id)
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group.id)
-    await weekCalendar.childReservations.getTotalCounts().assertTextsEqual([
+    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText([
       '1 (1,75)', // family unit placement coefficient under 3y
       '1 (1,75)', // family unit placement coefficient under 3y
       '1 (1,75)', // family unit placement coefficient under 3y
@@ -775,7 +761,7 @@ test.describe('Unit group calendar', () => {
     await unitPage.navigateToUnit(daycare.id)
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group.id)
-    await weekCalendar.childReservations.getTotalCounts().assertTextsEqual([
+    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText([
       '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
       '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
       '1 (3,00)', // default service need option#realizedOccupancyCoefficientUnder3y
@@ -809,10 +795,9 @@ test.describe('Unit group calendar for shift care unit', () => {
     await reservationModal.setEndTime('23:59', 1)
     await reservationModal.save()
 
-    await waitUntilEqual(
-      () => childReservations.childReservationRows(child1Fixture.id).count(),
-      2
-    )
+    await expect(
+      childReservations.childReservationRows(child1Fixture.id)
+    ).toHaveCount(2)
   })
 
   test('Irregular reservation over weekend without shift care', async ({
@@ -837,15 +822,15 @@ test.describe('Unit group calendar for shift care unit', () => {
     await reservationModal.setEndTime('16:00', 1)
     await reservationModal.save()
 
-    await childReservations
-      .reservationCells(child1Fixture.id, nextFriday)
-      .nth(0)
-      .assertTextEquals('09:00\n17:00*')
+    await expect(
+      childReservations.reservationCells(child1Fixture.id, nextFriday).nth(0)
+    ).toHaveText('09:00\n17:00*', { useInnerText: true })
     await weekCalendar.nextWeekButton.click()
-    await childReservations
-      .reservationCells(child1Fixture.id, nextWeekMonday)
-      .nth(0)
-      .assertTextEquals('08:00\n16:00*')
+    await expect(
+      childReservations
+        .reservationCells(child1Fixture.id, nextWeekMonday)
+        .nth(0)
+    ).toHaveText('08:00\n16:00*', { useInnerText: true })
   })
 
   test('Employee sees attendances along reservations', async ({ evaka }) => {
@@ -896,36 +881,29 @@ test.describe('Unit group calendar for shift care unit', () => {
 
     await reservationModal.save()
 
-    await waitUntilEqual(
-      () => childReservations.childReservationRows(child1Fixture.id).count(),
-      2
-    )
+    await expect(
+      childReservations.childReservationRows(child1Fixture.id)
+    ).toHaveCount(2)
 
-    await waitUntilEqual(
-      () => childReservations.getReservation(startDate, 0),
-      ['00:00', '12:00*']
-    )
-    await waitUntilEqual(
-      () => childReservations.getReservation(startDate, 1),
-      ['20:00', '23:59*']
-    )
+    await expect
+      .poll(() => childReservations.getReservation(startDate, 0))
+      .toEqual(['00:00', '12:00*'])
+    await expect
+      .poll(() => childReservations.getReservation(startDate, 1))
+      .toEqual(['20:00', '23:59*'])
 
-    await waitUntilEqual(
-      () => childReservations.getAttendance(startDate, 0),
-      ['08:30', '13:30']
-    )
-    await waitUntilEqual(
-      () => childReservations.getAttendance(startDate, 1),
-      ['18:15', '23:59']
-    )
-    await waitUntilEqual(
-      () => childReservations.getAttendance(startDate.addDays(1), 0),
-      ['00:00', '05:30']
-    )
-    await waitUntilEqual(
-      () => childReservations.getAttendance(startDate.addDays(1), 1),
-      ['-', '-']
-    )
+    await expect
+      .poll(() => childReservations.getAttendance(startDate, 0))
+      .toEqual(['08:30', '13:30'])
+    await expect
+      .poll(() => childReservations.getAttendance(startDate, 1))
+      .toEqual(['18:15', '23:59'])
+    await expect
+      .poll(() => childReservations.getAttendance(startDate.addDays(1), 0))
+      .toEqual(['00:00', '05:30'])
+    await expect
+      .poll(() => childReservations.getAttendance(startDate.addDays(1), 1))
+      .toEqual(['-', '-'])
   })
 
   test('Child with unknown presence on a holiday is counted into total if they have shift care', async ({
@@ -995,17 +973,15 @@ test.describe('Unit group calendar for shift care unit', () => {
     await unitPage.navigateToUnit(daycare1.id)
     await unitPage.openCalendarPage()
     const weekCalendar = await unitPage.openWeekCalendar(group1.id)
-    await weekCalendar.childReservations
-      .getTotalCounts()
-      .assertTextsEqual([
-        '2 (2,00)',
-        '2 (2,00)',
-        '2 (2,00)',
-        '2 (2,00)',
-        '1 (1,00)',
-        '1 (1,00)',
-        '1 (1,00)'
-      ])
+    await expect(weekCalendar.childReservations.getTotalCounts()).toHaveText([
+      '2 (2,00)',
+      '2 (2,00)',
+      '2 (2,00)',
+      '2 (2,00)',
+      '1 (1,00)',
+      '1 (1,00)',
+      '1 (1,00)'
+    ])
   })
 
   test('Can make reservations on weekend days when child has shift care', async ({
@@ -1070,9 +1046,8 @@ test.describe('Unit group calendar for shift care unit', () => {
     await reservationModal.save()
 
     await weekCalendar.changeWeekToDate(saturday)
-    await childReservations
-      .reservationCells(child.id, saturday)
-      .nth(0)
-      .assertTextEquals('10:00\n16:00*')
+    await expect(
+      childReservations.reservationCells(child.id, saturday).nth(0)
+    ).toHaveText('10:00\n16:00*', { useInnerText: true })
   })
 })

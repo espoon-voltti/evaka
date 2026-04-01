@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilDefined, waitUntilEqual, waitUntilTrue } from '../../../utils'
+import { expect } from '../../../playwright'
 import type { ElementCollection, Page } from '../../../utils/page'
 import {
   Combobox,
@@ -43,9 +43,9 @@ export class UnitGroupsPage {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="unit-groups-page"][data-loading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="unit-groups-page"][data-loading="false"]')
+    ).toBeVisible()
   }
 
   #groupCollapsible = (groupId: string) =>
@@ -66,18 +66,19 @@ export class UnitGroupsPage {
   }
 
   async assertChildCapacityFactor(childId: string, factor: string) {
-    await this.page
-      .findByDataQa(`child-capacity-factor-${childId}`)
-      .assertTextEquals(factor)
+    await expect(
+      this.page.findByDataQa(`child-capacity-factor-${childId}`)
+    ).toHaveText(factor)
   }
 
   async assertGroupCount(expectedCount: number) {
-    await waitUntilEqual(() => this.#groupCollapsibles.count(), expectedCount)
+    await expect(this.#groupCollapsibles).toHaveCount(expectedCount)
   }
 
   async openGroupCollapsible(groupId: string) {
     const elem = this.#groupCollapsible(groupId)
-    const state = await waitUntilDefined(() => elem.getAttribute('data-status'))
+    await expect(elem).toHaveAttribute('data-status', /.*/)
+    const state = await elem.getAttribute('data-status')
     if (state === 'closed') {
       await elem.findByDataQa('group-name').click()
     }
@@ -85,21 +86,21 @@ export class UnitGroupsPage {
   }
 
   async assertGroupCollapsibleIsOpen(groupId: string) {
-    await this.#groupCollapsible(groupId)
-      .findByDataQa('group-name')
-      .waitUntilVisible()
+    await expect(
+      this.#groupCollapsible(groupId).findByDataQa('group-name')
+    ).toBeVisible()
   }
 
   async assertGroupCollapsibleHasNekkuOrderButton(groupId: string) {
-    await this.#groupCollapsible(groupId)
-      .findByDataQa(`btn-nekku-order`)
-      .waitUntilVisible()
+    await expect(
+      this.#groupCollapsible(groupId).findByDataQa(`btn-nekku-order`)
+    ).toBeVisible()
   }
 
   async assertGroupCollapsibleNotHasNekkuOrderButton(groupId: string) {
-    await this.#groupCollapsible(groupId)
-      .findByDataQa(`btn-nekku-order`)
-      .waitUntilHidden()
+    await expect(
+      this.#groupCollapsible(groupId).findByDataQa(`btn-nekku-order`)
+    ).toBeHidden()
   }
 
   async openNekkuOrderModal(groupId: string) {
@@ -107,16 +108,16 @@ export class UnitGroupsPage {
       .findByDataQa(`btn-nekku-order`)
       .click()
 
-    await this.page.findByDataQa('nekku-order-modal').waitUntilVisible()
+    await expect(this.page.findByDataQa('nekku-order-modal')).toBeVisible()
     return new NekkuOrderModal(this.page.findByDataQa('nekku-order-modal'))
   }
 
   async waitUntilVisible() {
-    await this.page.findByDataQa('groups-title-bar').waitUntilVisible()
+    await expect(this.page.findByDataQa('groups-title-bar')).toBeVisible()
   }
 
   async assertChildOccupancyFactorColumnNotVisible() {
-    await waitUntilEqual(() => this.childCapacityFactorColumnData.count(), 0)
+    await expect(this.childCapacityFactorColumnData).toHaveCount(0)
   }
 }
 
@@ -131,10 +132,7 @@ export class TerminatedPlacementsSection extends Element {
   }
 
   async assertRowCount(expectedCount: number) {
-    await waitUntilEqual(
-      () => this.#terminatedPlacementRows.count(),
-      expectedCount
-    )
+    await expect(this.#terminatedPlacementRows).toHaveCount(expectedCount)
   }
 }
 
@@ -149,10 +147,7 @@ export class MissingPlacementsSection extends Element {
   #missingPlacementRows = this.findAllByDataQa('missing-placement-row')
 
   async assertRowCount(expectedCount: number) {
-    await waitUntilEqual(
-      () => this.#missingPlacementRows.count(),
-      expectedCount
-    )
+    await expect(this.#missingPlacementRows).toHaveCount(expectedCount)
   }
 
   async createGroupPlacementForChild(n: number) {
@@ -201,16 +196,16 @@ export class MissingPlacementRow extends Element {
     groupMissingDuration?: string
   }) {
     if (fields.childName !== undefined) {
-      await this.#childName.assertTextEquals(fields.childName)
+      await expect(this.#childName).toHaveText(fields.childName)
     }
     if (fields.dateOfBirth !== undefined) {
-      await this.#dateOfBirth.assertTextEquals(fields.dateOfBirth)
+      await expect(this.#dateOfBirth).toHaveText(fields.dateOfBirth)
     }
     if (fields.placementDuration !== undefined) {
-      await this.#placementDuration.assertTextEquals(fields.placementDuration)
+      await expect(this.#placementDuration).toHaveText(fields.placementDuration)
     }
     if (fields.groupMissingDuration !== undefined) {
-      await this.#groupMissingDuration.assertTextEquals(
+      await expect(this.#groupMissingDuration).toHaveText(
         fields.groupMissingDuration
       )
     }
@@ -250,15 +245,15 @@ export class GroupCollapsible extends Element {
   #noChildren = this.findByDataQa('no-children-placeholder')
 
   async assertGroupName(expectedName: string) {
-    await this.#groupName.assertTextEquals(expectedName)
+    await expect(this.#groupName).toHaveText(expectedName)
   }
 
   async assertGroupStartDate(expectedStartDate: string) {
-    await this.#groupStartDate.assertTextEquals(expectedStartDate)
+    await expect(this.#groupStartDate).toHaveText(expectedStartDate)
   }
 
   async assertGroupEndDate(expectedEndDate: string) {
-    await this.#groupEndDate.assertTextEquals(expectedEndDate)
+    await expect(this.#groupEndDate).toHaveText(expectedEndDate)
   }
 
   childRow(childId: string) {
@@ -267,9 +262,9 @@ export class GroupCollapsible extends Element {
 
   async assertChildCount(expectedCount: number) {
     if (expectedCount === 0) {
-      await this.#noChildren.waitUntilVisible()
+      await expect(this.#noChildren).toBeVisible()
     } else {
-      await waitUntilEqual(() => this.#childRows.count(), expectedCount)
+      await expect(this.#childRows).toHaveCount(expectedCount)
     }
   }
 
@@ -316,12 +311,12 @@ export class GroupDailyNoteModal extends Modal {
 
   async save() {
     await this.#save.click()
-    await this.#save.waitUntilHidden()
+    await expect(this.#save).toBeHidden()
   }
 
   async deleteNote() {
     await this.#delete.click()
-    await this.#delete.waitUntilHidden()
+    await expect(this.#delete).toBeHidden()
   }
 }
 
@@ -367,18 +362,16 @@ export class GroupCollapsibleChildRow extends Element {
     placementDuration?: string
   }) {
     if (fields.childName !== undefined) {
-      await this.#childName.assertTextEquals(fields.childName)
+      await expect(this.#childName).toHaveText(fields.childName)
     }
     if (fields.placementDuration !== undefined) {
-      await this.#placementDuration.assertTextEquals(fields.placementDuration)
+      await expect(this.#placementDuration).toHaveText(fields.placementDuration)
     }
   }
 
   async assertDailyNoteContainsText(expectedText: string) {
     await this.#dailyNoteIcon.hover()
-    await waitUntilTrue(async () =>
-      ((await this.#dailyNoteTooltip.text) ?? '').includes(expectedText)
-    )
+    await expect(this.#dailyNoteTooltip).toContainText(expectedText)
   }
 
   async openDailyNoteModal() {
@@ -411,11 +404,11 @@ export class ChildDailyNoteModal extends Modal {
   #groupNoteInput = this.findByDataQa('sticky-note')
 
   async assertGroupNote(expectedText: string) {
-    await this.#groupNote.assertTextEquals(expectedText)
+    await expect(this.#groupNote).toHaveText(expectedText)
   }
 
   async assertNoGroupNote() {
-    await this.#groupNoteInput.waitUntilVisible()
+    await expect(this.#groupNoteInput).toBeVisible()
   }
 }
 

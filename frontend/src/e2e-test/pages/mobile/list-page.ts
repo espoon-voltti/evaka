@@ -4,6 +4,7 @@
 
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 import { Checkbox } from '../../utils/page'
 
@@ -40,13 +41,12 @@ export default class MobileListPage {
 
   childRow = (childId: UUID) => this.page.findByDataQa(`child-${childId}`)
 
-  async readChildGroupName(childId: UUID) {
-    const elem = this.page.findByDataQa(`child-group-name-${childId}`)
-    return elem.text
+  childGroupName(childId: UUID) {
+    return this.page.findByDataQa(`child-group-name-${childId}`)
   }
 
   async assertChildExists(childId: UUID) {
-    await this.childRow(childId).waitUntilVisible()
+    await expect(this.childRow(childId)).toBeVisible()
   }
 
   async selectChild(childId: UUID) {
@@ -60,10 +60,10 @@ export default class MobileListPage {
   }
 
   async assertChildNoteDoesntExist(childId: UUID) {
-    await this.childRow(childId).waitUntilVisible()
-    await this.childRow(childId)
-      .findByDataQa('link-child-daycare-daily-note')
-      .waitUntilHidden()
+    await expect(this.childRow(childId)).toBeVisible()
+    await expect(
+      this.childRow(childId).findByDataQa('link-child-daycare-daily-note')
+    ).toBeHidden()
   }
 
   async getAttendanceCounts() {
@@ -88,7 +88,7 @@ export default class MobileListPage {
   async selectGroup(id: string) {
     await this.groupSelectorButton.click()
     await this.groupChipElement(id).click()
-    await this.selectedGroupElement(id).waitUntilVisible()
+    await expect(this.selectedGroupElement(id)).toBeVisible()
   }
 
   async selectSortType(sortType: string) {
@@ -97,6 +97,6 @@ export default class MobileListPage {
 
   async assertChildNames(expected: string[]) {
     const rows = this.page.findAllByDataQa('child-name')
-    await rows.assertTextsEqual(expected)
+    await expect(rows).toHaveText(expected)
   }
 }

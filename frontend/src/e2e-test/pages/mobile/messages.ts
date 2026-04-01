@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilTrue } from '../../utils'
+import { expect } from '../../playwright'
 import type { Page, ElementCollection } from '../../utils/page'
 import { Element } from '../../utils/page'
 
@@ -28,12 +28,12 @@ export default class MobileMessagesPage {
     this.newMessage = page.findByDataQa('new-message-btn')
   }
 
-  async getThreadTitle(index: number) {
-    return this.titles.nth(index).text
+  threadTitle(index: number) {
+    return this.titles.nth(index)
   }
 
   async assertThreadsExist() {
-    await waitUntilTrue(async () => (await this.threads.count()) > 0)
+    await expect(this.threads).not.toHaveCount(0)
   }
 
   thread(nth: number) {

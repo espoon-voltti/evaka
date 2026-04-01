@@ -11,8 +11,7 @@ import {
 } from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import IncomeStatementsPage from '../../pages/citizen/citizen-income'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { test, expect } from '../../playwright'
 import type { EnvType, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -27,7 +26,7 @@ async function assertIncomeStatementCreated(
   sent: HelsinkiDateTime | null,
   env: EnvType
 ) {
-  await waitUntilEqual(async () => await incomeStatementsPage.rows.count(), 1)
+  await expect(incomeStatementsPage.rows).toHaveCount(1)
   const row = incomeStatementsPage.rows.only()
   await row.assertText((text) => text.includes(startDate))
   await row.assertText((text) =>
@@ -94,12 +93,12 @@ for (const env of ['desktop', 'mobile'] as const) {
         await incomeStatementsPage.setValidFromDate(
           now.toLocalDate().subMonths(12).subDays(1).format('d.M.yyyy')
         )
-        await incomeStatementsPage.incomeStartDateInfo.waitUntilVisible()
+        await expect(incomeStatementsPage.incomeStartDateInfo).toBeVisible()
 
         await incomeStatementsPage.setValidFromDate(startDate)
-        await incomeStatementsPage.incomeStartDateInfo.waitUntilHidden()
+        await expect(incomeStatementsPage.incomeStartDateInfo).toBeHidden()
 
-        await incomeStatementsPage.incomeEndDateInfo.waitUntilVisible()
+        await expect(incomeStatementsPage.incomeEndDateInfo).toBeVisible()
 
         await incomeStatementsPage.checkIncomesRegisterConsent()
         await incomeStatementsPage.checkAssured()
@@ -108,12 +107,12 @@ for (const env of ['desktop', 'mobile'] as const) {
 
         // End date can be max 1y from start date so a warning is shown
         await incomeStatementsPage.setValidToDate('25.12.2045')
-        await incomeStatementsPage.incomeEndDateInfo.assertTextEquals(
+        await expect(incomeStatementsPage.incomeEndDateInfo).toHaveText(
           'Valitse aikaisempi päivä'
         )
 
         await incomeStatementsPage.setValidToDate(endDate)
-        await incomeStatementsPage.incomeEndDateInfo.waitUntilHidden()
+        await expect(incomeStatementsPage.incomeEndDateInfo).toBeHidden()
         await incomeStatementsPage.submit()
         await incomeStatementsPage.assertAriaLiveExistsAndIncludesNotification()
         await assertIncomeStatementCreated(startDate, now, env)
@@ -161,7 +160,7 @@ for (const env of ['desktop', 'mobile'] as const) {
 
         // Try to submit without attachments
         await incomeStatementsPage.submit()
-        await incomeStatementsPage.invalidForm.waitUntilVisible()
+        await expect(incomeStatementsPage.invalidForm).toBeVisible()
 
         // Add the missing attachment
         await incomeStatementsPage

@@ -29,8 +29,7 @@ import {
 import EmployeeNav from '../../pages/employee/employee-nav'
 import type { ValueDecisionsPage } from '../../pages/employee/finance/finance-page'
 import { FinancePage } from '../../pages/employee/finance/finance-page'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -135,14 +134,14 @@ test.describe('Value decisions', () => {
       decision2DateTo.addDays(1)
     )
     await valueDecisionsPage.searchButton.click()
-    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 2)
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(2)
 
     await valueDecisionsPage.setDates(
       decision1DateTo.addDays(1),
       decision2DateTo.addDays(1)
     )
     await valueDecisionsPage.searchButton.click()
-    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 1)
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(1)
   })
 
   test('With two decisions any date filter overlap will show the decision', async () => {
@@ -154,7 +153,7 @@ test.describe('Value decisions', () => {
       decision2DateTo.subDays(1)
     )
     await valueDecisionsPage.searchButton.click()
-    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 2)
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(2)
   })
 
   test('Start date checkbox will filter out decisions that do not have a startdate within the date range', async () => {
@@ -166,10 +165,10 @@ test.describe('Value decisions', () => {
       decision2DateTo.subDays(1)
     )
     await valueDecisionsPage.searchButton.click()
-    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 2)
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(2)
     await valueDecisionsPage.startDateWithinRange()
     await valueDecisionsPage.searchButton.click()
-    await waitUntilEqual(() => valueDecisionsPage.getValueDecisionCount(), 1)
+    await expect(valueDecisionsPage.valueDecisionRows).toHaveCount(1)
   })
 
   test('Navigate to the decision details page', async () => {

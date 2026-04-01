@@ -22,8 +22,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import ErrorModal from '../../pages/employee/error-modal'
 import type { IncomeSection } from '../../pages/employee/guardian-information'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
-import { test } from '../../playwright'
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -80,7 +79,7 @@ test.describe('Income', () => {
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
-    await waitUntilEqual(() => incomesSection.incomeListItemCount(), 1)
+    await expect(incomesSection.incomeListItems).toHaveCount(1)
   })
 
   test('Create a new income with multiple values', async () => {
@@ -96,9 +95,9 @@ test.describe('Income', () => {
     await incomesSection.fillIncome('ALL_EXPENSES', '35,75')
     await incomesSection.save()
 
-    await waitUntilEqual(() => incomesSection.incomeListItemCount(), 1)
-    await waitUntilEqual(() => incomesSection.getIncomeSum(), '5100,50 €')
-    await waitUntilEqual(() => incomesSection.getExpensesSum(), '35,75 €')
+    await expect(incomesSection.incomeListItems).toHaveCount(1)
+    await expect(incomesSection.incomeSum).toHaveText('5100,50 €')
+    await expect(incomesSection.expensesSum).toHaveText('35,75 €')
   })
 
   test('Create a new income without end date', async () => {
@@ -106,12 +105,12 @@ test.describe('Income', () => {
 
     await incomesSection.fillIncomeStartDate('1.1.2020')
     await incomesSection.chooseIncomeEffect('INCOME')
-    await incomesSection.incomeEndDateInput.assertValueEquals('31.12.2020')
+    await expect(incomesSection.incomeEndDateInput).toHaveValue('31.12.2020')
     await incomesSection.fillIncomeEndDate('')
     await incomesSection.confirmRetroactive.check()
     await incomesSection.save()
 
-    await waitUntilEqual(() => incomesSection.incomeListItemCount(), 1)
+    await expect(incomesSection.incomeListItems).toHaveCount(1)
   })
 
   test('Income editor save button is disabled with invalid values', async () => {
@@ -119,13 +118,13 @@ test.describe('Income', () => {
 
     await incomesSection.fillIncomeStartDate('31.1.2020')
     await incomesSection.confirmRetroactive.check()
-    await waitUntilFalse(() => incomesSection.saveIsDisabled())
+    await expect(incomesSection.saveIncomeButton).toBeEnabled()
 
     await incomesSection.fillIncome('MAIN_INCOME', 'asd')
-    await waitUntilTrue(() => incomesSection.saveIsDisabled())
+    await expect(incomesSection.saveIncomeButton).toBeDisabled()
 
     await incomesSection.fillIncome('MAIN_INCOME', '123,123')
-    await waitUntilTrue(() => incomesSection.saveIsDisabled())
+    await expect(incomesSection.saveIncomeButton).toBeDisabled()
   })
 
   test('Existing income item can have its values updated', async () => {
@@ -138,8 +137,8 @@ test.describe('Income', () => {
     await incomesSection.fillIncome('MAIN_INCOME', '5000')
     await incomesSection.save()
 
-    await waitUntilEqual(() => incomesSection.getIncomeSum(), '5000 €')
-    await waitUntilEqual(() => incomesSection.getExpensesSum(), '0 €')
+    await expect(incomesSection.incomeSum).toHaveText('5000 €')
+    await expect(incomesSection.expensesSum).toHaveText('0 €')
 
     await incomesSection.edit()
 
@@ -149,8 +148,8 @@ test.describe('Income', () => {
     await incomesSection.confirmRetroactive.check()
     await incomesSection.save()
 
-    await waitUntilEqual(() => incomesSection.getIncomeSum(), '200 €')
-    await waitUntilEqual(() => incomesSection.getExpensesSum(), '300 €')
+    await expect(incomesSection.incomeSum).toHaveText('200 €')
+    await expect(incomesSection.expensesSum).toHaveText('300 €')
   })
 
   test('Income coefficients are saved and affect the sum', async () => {
@@ -170,8 +169,8 @@ test.describe('Income', () => {
 
     await incomesSection.save()
 
-    await waitUntilEqual(() => incomesSection.getIncomeSum(), '8380 €')
-    await waitUntilEqual(() => incomesSection.getExpensesSum(), '35,75 €')
+    await expect(incomesSection.incomeSum).toHaveText('8380 €')
+    await expect(incomesSection.expensesSum).toHaveText('35,75 €')
   })
 
   test('Non-contiguous incomes warning', async () => {
@@ -229,7 +228,7 @@ test.describe('Income', () => {
     await incomesSection.chooseIncomeEffect('MAX_FEE_ACCEPTED')
     await incomesSection.save()
 
-    await waitUntilEqual(() => incomesSection.incomeListItemCount(), 2)
+    await expect(incomesSection.incomeListItems).toHaveCount(2)
     await incomesSection.incomeListItems
       .nth(0)
       .assertText((s) =>
@@ -250,13 +249,13 @@ test.describe('Income', () => {
     await incomesSection.confirmRetroactive.check()
     await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
-    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
+    await expect(incomesSection.attachments).toHaveCount(1)
 
     await incomesSection.edit()
 
     await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
-    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 2)
+    await expect(incomesSection.attachments).toHaveCount(2)
   })
 
   test('Income with attachment can be deleted', async () => {
@@ -267,11 +266,11 @@ test.describe('Income', () => {
     await incomesSection.confirmRetroactive.check()
     await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
-    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
+    await expect(incomesSection.attachments).toHaveCount(1)
 
     await incomesSection.deleteIncomeItem(0)
 
-    await waitUntilEqual(() => incomesSection.incomeListItemCount(), 0)
+    await expect(incomesSection.incomeListItems).toHaveCount(0)
   })
 
   test('Attachment can be deleted while editing income', async () => {
@@ -282,13 +281,13 @@ test.describe('Income', () => {
     await incomesSection.confirmRetroactive.check()
     await incomesSection.attachmenUpload.uploadTestFile()
     await incomesSection.save()
-    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 1)
+    await expect(incomesSection.attachments).toHaveCount(1)
 
     await incomesSection.edit()
     await incomesSection.attachmenUpload.deleteUploadedFile(0)
     await incomesSection.cancelEdit()
 
-    await waitUntilEqual(() => incomesSection.getAttachmentCount(), 0)
+    await expect(incomesSection.attachments).toHaveCount(0)
   })
 
   test('Income notifications are shown', async () => {
@@ -321,15 +320,15 @@ test.describe('Income', () => {
 
     await page.reload()
     await incomesSection.toggleNotificationsCollapsible()
-    await waitUntilEqual(() => incomesSection.incomeNotificationRows.count(), 3)
-    await incomesSection.incomeNotificationRows
-      .nth(0)
-      .assertTextEquals('28.02.2020 06:00 (Aloittava asiakas)')
-    await incomesSection.incomeNotificationRows
-      .nth(1)
-      .assertTextEquals('22.02.2020 06:00 (Toinen muistutus)')
-    await incomesSection.incomeNotificationRows
-      .nth(2)
-      .assertTextEquals('15.02.2020 06:00 (Ensimmäinen muistutus)')
+    await expect(incomesSection.incomeNotificationRows).toHaveCount(3)
+    await expect(incomesSection.incomeNotificationRows.nth(0)).toHaveText(
+      '28.02.2020 06:00 (Aloittava asiakas)'
+    )
+    await expect(incomesSection.incomeNotificationRows.nth(1)).toHaveText(
+      '22.02.2020 06:00 (Toinen muistutus)'
+    )
+    await expect(incomesSection.incomeNotificationRows.nth(2)).toHaveText(
+      '15.02.2020 06:00 (Ensimmäinen muistutus)'
+    )
   })
 })

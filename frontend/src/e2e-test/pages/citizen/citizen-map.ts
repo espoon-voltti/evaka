@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { DevDaycare } from '../../generated/api-types'
-import { waitUntilEqual } from '../../utils'
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { Element, Radio, SelectionChip, TextInput } from '../../utils/page'
 
@@ -44,7 +44,9 @@ export default class CitizenMapPage {
   async testMapPopup(daycare: DevDaycare) {
     await this.listItemFor(daycare).click()
     await this.map.markerFor(daycare).click()
-    await waitUntilEqual(() => this.map.popupFor(daycare).name, daycare.name)
+    await expect(this.map.popupFor(daycare).nameElement).toHaveText(
+      daycare.name
+    )
   }
 }
 
@@ -64,23 +66,12 @@ class Map extends Element {
 
 class UnitDetailsPanel extends Element {
   readonly backButton = this.find('[data-qa="map-unit-details-back"]')
-
-  get name(): Promise<string | null> {
-    return this.find('[data-qa="map-unit-details-name"]').text
-  }
+  readonly nameElement = this.find('[data-qa="map-unit-details-name"]')
 }
 
 class MapPopup extends Element {
-  readonly #name = this.find('[data-qa="map-popup-name"]')
-  readonly #noApplying = this.find('[data-qa="map-popup-no-applying"]')
-
-  get name(): Promise<string | null> {
-    return this.#name.text
-  }
-
-  get noApplying(): Promise<string | null> {
-    return this.#noApplying.text
-  }
+  readonly nameElement = this.find('[data-qa="map-popup-name"]')
+  readonly noApplying = this.find('[data-qa="map-popup-no-applying"]')
 }
 
 class MapSearchInput extends Element {

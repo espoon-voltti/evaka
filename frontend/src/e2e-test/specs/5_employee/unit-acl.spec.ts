@@ -11,7 +11,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee } from '../../generated/api-types'
 import type { AclRole, UnitInfoPage } from '../../pages/employee/units/unit'
 import { UnitPage } from '../../pages/employee/units/unit'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -449,20 +449,20 @@ test.describe('Employee - unit ACL - temporary employee', () => {
       '2394'
     )
 
-    await unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows.assertCount(
-      0
-    )
+    await expect(
+      unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows
+    ).toHaveCount(0)
     await unitInfoPage.temporaryEmployees.softDeleteTemporaryEmployeeByIndex(0)
     await unitInfoPage.temporaryEmployees.assertRowsExactly([])
-    await unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows.assertCount(
-      1
-    )
+    await expect(
+      unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows
+    ).toHaveCount(1)
 
     await unitInfoPage.temporaryEmployees.hardDeleteTemporaryEmployeeByIndex(0)
     await unitInfoPage.temporaryEmployees.assertRowsExactly([])
-    await unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows.assertCount(
-      0
-    )
+    await expect(
+      unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows
+    ).toHaveCount(0)
   })
 
   test('Previous temporary staff member can be reactivated', async () => {
@@ -482,14 +482,14 @@ test.describe('Employee - unit ACL - temporary employee', () => {
       '2394'
     )
 
-    await unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows.assertCount(
-      0
-    )
+    await expect(
+      unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows
+    ).toHaveCount(0)
     await unitInfoPage.temporaryEmployees.softDeleteTemporaryEmployeeByIndex(0)
     await unitInfoPage.temporaryEmployees.assertRowsExactly([])
-    await unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows.assertCount(
-      1
-    )
+    await expect(
+      unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows
+    ).toHaveCount(1)
 
     await unitInfoPage.temporaryEmployees.reactivateTemporaryEmployeeByIndex(0)
     await unitInfoPage.temporaryEmployees.assertRowsExactly([
@@ -499,8 +499,8 @@ test.describe('Employee - unit ACL - temporary employee', () => {
         occupancyCoefficient: false
       }
     ])
-    await unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows.assertCount(
-      0
-    )
+    await expect(
+      unitInfoPage.temporaryEmployees.previousTemporaryEmployeeTableRows
+    ).toHaveCount(0)
   })
 })

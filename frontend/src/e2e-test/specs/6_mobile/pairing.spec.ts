@@ -11,7 +11,6 @@ import {
 } from '../../generated/api-clients'
 import { PairingFlow } from '../../pages/employee/mobile/pairing-flow'
 import { test, expect } from '../../playwright'
-import { waitUntilTrue } from '../../utils'
 import type { Page } from '../../utils/page'
 
 test.describe('Mobile pairing', () => {
@@ -44,7 +43,7 @@ test.describe('Mobile pairing', () => {
       body: { challengeKey: res.challengeKey, responseKey }
     })
 
-    await waitUntilTrue(() => pairingFlow.isPairingWizardFinished())
+    await pairingFlow.waitUntilPairingWizardFinished()
     await pairingFlow.clickStartCta()
   })
 })

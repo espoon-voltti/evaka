@@ -5,6 +5,7 @@
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 
 export type ReservationChildDetails = {
@@ -22,11 +23,11 @@ export default class ConfirmedDayReservationPage {
     this.dayRow(date).findByDataQa(`child-${childId}`)
 
   async assertDayExists(date: LocalDate) {
-    await this.dayRow(date).waitUntilVisible()
+    await expect(this.dayRow(date)).toBeVisible()
   }
 
   async assertDayDoesNotExist(date: LocalDate) {
-    await this.dayRow(date).waitUntilHidden()
+    await expect(this.dayRow(date)).toBeHidden()
   }
 
   async assertDailyCounts(
@@ -36,9 +37,11 @@ export default class ConfirmedDayReservationPage {
     absentCount: string
   ) {
     const day = this.dayRow(date)
-    await day.findByDataQa('present-total').assertTextEquals(presentCount)
-    await day.findByDataQa('present-calc').assertTextEquals(`(${presentCalc})`)
-    await day.findByDataQa('absent-total').assertTextEquals(`${absentCount}`)
+    await expect(day.findByDataQa('present-total')).toHaveText(presentCount)
+    await expect(day.findByDataQa('present-calc')).toHaveText(
+      `(${presentCalc})`
+    )
+    await expect(day.findByDataQa('absent-total')).toHaveText(`${absentCount}`)
   }
 
   async openDayItem(date: LocalDate) {
@@ -55,16 +58,14 @@ export default class ConfirmedDayReservationPage {
     const childPreferredName = childDetails.preferredName
       ? ` (${childDetails.preferredName})`
       : ''
-    await childItem
-      .findByDataQa('child-name')
-      .assertTextEquals(
-        `${childDetails.firstName} ${childDetails.lastName}${childPreferredName}`
-      )
+    await expect(childItem.findByDataQa('child-name')).toHaveText(
+      `${childDetails.firstName} ${childDetails.lastName}${childPreferredName}`
+    )
 
     for (const [index, value] of reservationTexts.entries()) {
-      await childItem
-        .findByDataQa(`reservation-content-${index}`)
-        .assertTextEquals(value)
+      await expect(
+        childItem.findByDataQa(`reservation-content-${index}`)
+      ).toHaveText(value)
     }
   }
 }

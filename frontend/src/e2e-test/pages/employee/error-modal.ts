@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 
 export default class ErrorModal {
@@ -15,10 +16,10 @@ export default class ErrorModal {
   }
 
   async ensureTitle(title: string) {
-    await this.#title.findText(title).waitUntilVisible()
+    await expect(this.#title.findText(title)).toBeVisible()
   }
 
   async ensureText(title: string) {
-    await this.#text.findText(title).waitUntilVisible()
+    await expect(this.#text.findText(title)).toBeVisible()
   }
 }

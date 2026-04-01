@@ -2,15 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { expect } from '@playwright/test'
-
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import {
   Checkbox,
@@ -47,24 +45,26 @@ export default class GuardianInformationPage {
   }
 
   async waitUntilLoaded() {
-    await this.page
-      .find('[data-qa="person-info-section"][data-isloading="false"]')
-      .waitUntilVisible()
-    await this.page
-      .find('[data-qa="family-overview-section"][data-isloading="false"]')
-      .waitUntilVisible()
+    await expect(
+      this.page.find('[data-qa="person-info-section"][data-isloading="false"]')
+    ).toBeVisible()
+    await expect(
+      this.page.find(
+        '[data-qa="family-overview-section"][data-isloading="false"]'
+      )
+    ).toBeVisible()
   }
 
   async assertRestrictedDetails(enabled: boolean) {
     switch (enabled) {
       case true:
-        await this.#restrictedDetailsEnabledLabel.waitUntilVisible()
-        await this.#personStreetAddress.assertTextEquals(
+        await expect(this.#restrictedDetailsEnabledLabel).toBeVisible()
+        await expect(this.#personStreetAddress).toHaveText(
           'Osoite ei ole saatavilla turvakiellon vuoksi'
         )
         break
       default:
-        await this.#restrictedDetailsEnabledLabel.waitUntilHidden()
+        await expect(this.#restrictedDetailsEnabledLabel).toBeHidden()
         await this.#personStreetAddress.assertText(
           (text) => text !== 'Osoite ei ole saatavilla turvakiellon vuoksi'
         )
@@ -108,9 +108,9 @@ class PersonInfoSection extends Section {
   #ssn = this.findByDataQa('person-ssn')
 
   async assertPersonInfo(lastName: string, firstName: string, ssn: string) {
-    await this.#lastName.findText(lastName).waitUntilVisible()
-    await this.#firstName.findText(firstName).waitUntilVisible()
-    await this.#ssn.findText(ssn).waitUntilVisible()
+    await expect(this.#lastName.findText(lastName)).toBeVisible()
+    await expect(this.#firstName.findText(firstName)).toBeVisible()
+    await expect(this.#ssn.findText(ssn)).toBeVisible()
   }
 }
 
@@ -125,20 +125,19 @@ class FamilyOverviewSection extends Section {
     incomeCents?: number
   }) {
     const person = this.findByDataQa(`table-family-overview-row-${personId}`)
-    await person.waitUntilVisible()
+    await expect(person).toBeVisible()
 
     if (age !== undefined) {
       const personAge = person.findByDataQa('person-age')
-      await personAge.assertTextEquals(age.toString())
+      await expect(personAge).toHaveText(age.toString())
     }
 
     if (incomeCents !== undefined) {
       const personIncome = person.findByDataQa('person-income-total')
       const expectedIncome = formatCents(incomeCents)
-      await waitUntilEqual(
-        async () => ((await personIncome.text) ?? '').split(' ')[0],
-        expectedIncome
-      )
+      await expect
+        .poll(() => personIncome.text.then((t) => (t ?? '').split(' ')[0]))
+        .toBe(expectedIncome)
     }
   }
 }
@@ -188,7 +187,7 @@ class ChildrenSection extends Section {
 
   async verifyChildAge(age: number) {
     const childAge = this.#childrenTableRow.nth(0).findByDataQa('child-age')
-    await childAge.assertTextEquals(age.toString())
+    await expect(childAge).toHaveText(age.toString())
   }
 }
 
@@ -196,11 +195,11 @@ class DependantsSection extends Section {
   #childRow = (id: UUID) => this.page.findByDataQa(`table-dependant-row-${id}`)
 
   async assertContainsDependantChild(id: UUID) {
-    await this.#childRow(id).waitUntilVisible()
+    await expect(this.#childRow(id)).toBeVisible()
   }
 
   async assertDoesNotContainDependantChild(id: UUID) {
-    await this.#childRow(id).waitUntilHidden()
+    await expect(this.#childRow(id)).toBeHidden()
   }
 }
 
@@ -242,8 +241,8 @@ class FosterChildrenSection extends Section {
       endDate?.format() ?? ''
     )
     await modal.submit()
-    await modal.waitUntilHidden()
-    await this.findByDataQa('spinner').waitUntilHidden()
+    await expect(modal).toBeHidden()
+    await expect(this.findByDataQa('spinner')).toBeHidden()
   }
 
   async deleteFosterChild(childId: string) {
@@ -252,8 +251,8 @@ class FosterChildrenSection extends Section {
       .click()
     const modal = new Modal(this.page.findByDataQa('delete-foster-child-modal'))
     await modal.submit()
-    await modal.waitUntilHidden()
-    await this.findByDataQa('spinner').waitUntilHidden()
+    await expect(modal).toBeHidden()
+    await expect(this.findByDataQa('spinner')).toBeHidden()
   }
 
   async assertRowExists(
@@ -262,12 +261,12 @@ class FosterChildrenSection extends Section {
     end: LocalDate | null
   ) {
     const row = this.findByDataQa(`foster-child-row-${childId}`)
-    await row.findByDataQa('start').assertTextEquals(start.format())
-    await row.findByDataQa('end').assertTextEquals(end?.format() ?? '')
+    await expect(row.findByDataQa('start')).toHaveText(start.format())
+    await expect(row.findByDataQa('end')).toHaveText(end?.format() ?? '')
   }
 
   async assertRowDoesNotExist(childId: string) {
-    await this.findByDataQa(`foster-child-row-${childId}`).waitUntilHidden()
+    await expect(this.findByDataQa(`foster-child-row-${childId}`)).toBeHidden()
   }
 }
 
@@ -275,7 +274,7 @@ class ApplicationsSection extends Section {
   #applicationRows = this.findAllByDataQa('table-application-row')
 
   async assertApplicationCount(n: number) {
-    await waitUntilEqual(() => this.#applicationRows.count(), n)
+    await expect(this.#applicationRows).toHaveCount(n)
   }
 
   async assertApplicationSummary(
@@ -284,8 +283,8 @@ class ApplicationsSection extends Section {
     unitName: string
   ) {
     const row = this.#applicationRows.nth(n)
-    await row.findText(childName).waitUntilVisible()
-    await row.findText(unitName).waitUntilVisible()
+    await expect(row.findText(childName)).toBeVisible()
+    await expect(row.findText(unitName)).toBeVisible()
   }
 }
 
@@ -293,7 +292,7 @@ class DecisionsSection extends Section {
   #decisionRows = this.findAllByDataQa('table-decision-row')
 
   async assertDecisionCount(n: number) {
-    await waitUntilEqual(() => this.#decisionRows.count(), n)
+    await expect(this.#decisionRows).toHaveCount(n)
   }
 
   async assertDecision(
@@ -303,19 +302,19 @@ class DecisionsSection extends Section {
     status: string
   ) {
     const row = this.#decisionRows.nth(n)
-    await row.findText(childName).waitUntilVisible()
-    await row.findText(unitName).waitUntilVisible()
-    await row.findText(status).waitUntilVisible()
+    await expect(row.findText(childName)).toBeVisible()
+    await expect(row.findText(unitName)).toBeVisible()
+    await expect(row.findText(status)).toBeVisible()
   }
 }
 
 export class IncomeSection extends Section {
   #newIncomeButton: Element
   #incomeDateRange: Element
-  #saveIncomeButton: Element
+  saveIncomeButton: Element
   #cancelIncomeButton: Element
-  #incomeSum: Element
-  #expensesSum: Element
+  incomeSum: Element
+  expensesSum: Element
   #editIncomeItemButton: Element
   incomeStartDateInput: DatePicker
   incomeEndDateInput: DatePicker
@@ -324,10 +323,10 @@ export class IncomeSection extends Section {
     super(page, root)
     this.#newIncomeButton = page.findByDataQa('add-income-button')
     this.#incomeDateRange = page.findByDataQa('income-date-range')
-    this.#saveIncomeButton = page.findByDataQa('save-income')
+    this.saveIncomeButton = page.findByDataQa('save-income')
     this.#cancelIncomeButton = page.findByDataQa('cancel-income-edit')
-    this.#incomeSum = page.findByDataQa('income-sum-income')
-    this.#expensesSum = page.findByDataQa('income-sum-expenses')
+    this.incomeSum = page.findByDataQa('income-sum-income')
+    this.expensesSum = page.findByDataQa('income-sum-expenses')
     this.#editIncomeItemButton = page.findByDataQa('edit-income-item')
 
     this.incomeStartDateInput = new DatePicker(
@@ -356,17 +355,19 @@ export class IncomeSection extends Section {
   confirmRetroactive = new Checkbox(this.findByDataQa('confirm-retroactive'))
 
   async assertIncomeStatementChildName(nth: number, childName: string) {
-    await this.#childIncomeStatementsTitles.nth(nth).assertTextEquals(childName)
+    await expect(this.#childIncomeStatementsTitles.nth(nth)).toHaveText(
+      childName
+    )
   }
 
   async assertIncomeStatementRowCount(expected: number) {
-    await this.#incomeStatementRows.assertCount(expected)
+    await expect(this.#incomeStatementRows).toHaveCount(expected)
   }
 
-  async isIncomeStatementHandled(nth = 0) {
+  incomeStatementHandledCheckbox(nth = 0) {
     return new Checkbox(
       this.#incomeStatementRows.nth(nth).findByDataQa(`is-handled-checkbox`)
-    ).checked
+    )
   }
 
   async openIncomeStatement(nth = 0) {
@@ -374,8 +375,8 @@ export class IncomeSection extends Section {
     return new IncomeStatementPage(this.page)
   }
 
-  async getIncomeStatementInnerText(nth = 0) {
-    return this.#incomeStatementRows.nth(nth).text
+  incomeStatementRow(nth = 0) {
+    return this.#incomeStatementRows.nth(nth)
   }
 
   async openNewIncomeForm() {
@@ -412,16 +413,12 @@ export class IncomeSection extends Section {
   }
 
   async save() {
-    await this.#saveIncomeButton.click()
-    await this.#saveIncomeButton.waitUntilHidden()
+    await this.saveIncomeButton.click()
+    await expect(this.saveIncomeButton).toBeHidden()
   }
 
   async saveFailing() {
-    await this.#saveIncomeButton.click()
-  }
-
-  async saveIsDisabled() {
-    return await this.#saveIncomeButton.disabled
+    await this.saveIncomeButton.click()
   }
 
   async cancelEdit() {
@@ -430,24 +427,12 @@ export class IncomeSection extends Section {
 
   incomeListItems = this.page.findAllByDataQa('income-list-item')
 
-  async incomeListItemCount() {
-    return await this.incomeListItems.count()
-  }
-
   async deleteIncomeItem(nth: number) {
     await this.incomeListItems
       .nth(nth)
       .findByDataQa('delete-income-item')
       .click()
     await this.findByDataQa('modal-okBtn').click()
-  }
-
-  async getIncomeSum() {
-    return await this.#incomeSum.text
-  }
-
-  async getExpensesSum() {
-    return await this.#expensesSum.text
   }
 
   async edit() {
@@ -458,9 +443,7 @@ export class IncomeSection extends Section {
     this.findByDataQa('income-attachment-upload')
   )
 
-  async getAttachmentCount() {
-    return this.findAllByDataQa('attachment').count()
-  }
+  attachments = this.findAllByDataQa('attachment')
 }
 
 class FeeDecisionsSection extends Section {
@@ -480,14 +463,10 @@ class FeeDecisionsSection extends Section {
     }
   ) {
     const decision = this.#feeDecisionTableRows.nth(n)
-    await waitUntilTrue(async () =>
-      ((await decision.text) ?? '').includes(
-        `Maksupäätös ${startDate} - ${endDate}`
-      )
+    await expect(decision).toContainText(
+      `Maksupäätös ${startDate} - ${endDate}`
     )
-    await waitUntilTrue(async () =>
-      ((await decision.text) ?? '').includes(status)
-    )
+    await expect(decision).toContainText(status)
   }
 
   async createRetroactiveFeeDecisions(date: string) {
@@ -503,9 +482,9 @@ class FeeDecisionsSection extends Section {
   }
 
   async checkFeeDecisionSentAt(nth: number, expectedSentAt: LocalDate) {
-    await this.#feeDecisionSentAt
-      .nth(nth)
-      .assertTextEquals(expectedSentAt.format('dd.MM.yyyy'))
+    await expect(this.#feeDecisionSentAt.nth(nth)).toHaveText(
+      expectedSentAt.format('dd.MM.yyyy')
+    )
   }
 }
 
@@ -526,16 +505,13 @@ class VoucherValueDecisionsSection extends Section {
     nth: number,
     expectedSentAt: LocalDate
   ) {
-    await this.#voucherValueDecisionSentAt
-      .nth(nth)
-      .assertTextEquals(expectedSentAt.format('dd.MM.yyyy'))
+    await expect(this.#voucherValueDecisionSentAt.nth(nth)).toHaveText(
+      expectedSentAt.format('dd.MM.yyyy')
+    )
   }
 
   async checkVoucherValueDecisionCount(expectedCount: number) {
-    await waitUntilEqual(
-      () => this.#voucherValueDecisions.count(),
-      expectedCount
-    )
+    await expect(this.#voucherValueDecisions).toHaveCount(expectedCount)
   }
 
   async createRetroactiveDecisions(from: LocalDate) {
@@ -551,13 +527,13 @@ class InvoicesSection extends Section {
   #invoiceRows = this.findAllByDataQa('table-invoice-row')
 
   async assertInvoiceCount(n: number) {
-    await waitUntilEqual(() => this.#invoiceRows.count(), n)
+    await expect(this.#invoiceRows).toHaveCount(n)
   }
 
   async assertInvoice(n: number, period: string, status: string) {
     const row = this.#invoiceRows.nth(n)
-    await row.findText(period).waitUntilVisible()
-    await row.findText(status).waitUntilVisible()
+    await expect(row.findText(period)).toBeVisible()
+    await expect(row.findText(status)).toBeVisible()
   }
 }
 
@@ -652,16 +628,18 @@ class FinanceNotesAndMessagesSection extends Section {
   #deleteThread = this.findAllByDataQa(`archive-finance-thread-button`)
 
   async checkNoteCreatedAt(nth: number, expectedCreatedAt: HelsinkiDateTime) {
-    await this.#noteCreatedAt
-      .nth(nth)
-      .assertTextEquals(expectedCreatedAt.format())
+    await expect(this.#noteCreatedAt.nth(nth)).toHaveText(
+      expectedCreatedAt.format()
+    )
   }
 
   async checkThreadLastMessageSentAt(
     nth: number,
     expectedSentAt: HelsinkiDateTime
   ) {
-    await this.#threadSentAt.nth(nth).assertTextEquals(expectedSentAt.format())
+    await expect(this.#threadSentAt.nth(nth)).toHaveText(
+      expectedSentAt.format()
+    )
   }
 
   async openNewMessageEditor() {

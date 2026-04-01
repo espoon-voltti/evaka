@@ -35,8 +35,7 @@ import MobileChildPage from '../../pages/mobile/child-page'
 import MobileListPage from '../../pages/mobile/list-page'
 import MobileNotePage from '../../pages/mobile/note-page'
 import type { NewEvakaPage } from '../../playwright'
-import { test } from '../../playwright'
-import { waitUntilEqual } from '../../utils'
+import { test, expect } from '../../playwright'
 import { pairMobileDevice } from '../../utils/mobile'
 import type { Page } from '../../utils/page'
 
@@ -162,13 +161,15 @@ test.describe('Child attendances', () => {
     absent: number,
     total: number
   ) =>
-    await waitUntilEqual(() => listPage.getAttendanceCounts(), {
-      coming,
-      present,
-      departed,
-      absent,
-      total
-    })
+    await expect
+      .poll(() => listPage.getAttendanceCounts())
+      .toEqual({
+        coming,
+        present,
+        departed,
+        absent,
+        total
+      })
 
   test.describe('Child mobile attendances', () => {
     test('Child a full day in daycare placement is not required to mark absence types', async ({
@@ -944,7 +945,7 @@ test.describe('Child attendances', () => {
       await childPage.markDepartedLink.click()
 
       await childAttendancePage.setTime('15:15')
-      await childAttendancePage.setTimeInfo.assertTextEquals('Saapui 15:15')
+      await expect(childAttendancePage.setTimeInfo).toHaveText('Saapui 15:15')
       await childAttendancePage.setTime('15:20')
       await childAttendancePage.markDepartedButton.click()
     })
@@ -988,13 +989,12 @@ test.describe('Child attendances', () => {
       await page.goto(mobileSignupUrl)
 
       await listPage.selectGroup('all')
-      await waitUntilEqual(
-        () => listPage.readChildGroupName(childId),
+      await expect(listPage.childGroupName(childId)).toHaveText(
         testDaycareGroup.name.toUpperCase()
       )
 
       await listPage.selectGroup(testDaycareGroup.id)
-      await waitUntilEqual(() => listPage.readChildGroupName(childId), '')
+      await expect(listPage.childGroupName(childId)).toHaveText('')
     })
 
     test('Child will not be visible in two groups at the same time', async ({
@@ -1065,7 +1065,7 @@ test.describe('Child attendances', () => {
 
       await assertAttendanceCounts(1, 0, 0, 0, 1)
       await listPage.selectChild(child)
-      await childPage.reservation.assertTextEquals('Läsnä')
+      await expect(childPage.reservation).toHaveText('Läsnä')
     })
 
     test('Term break child is shown in absent list', async ({
@@ -1089,7 +1089,7 @@ test.describe('Child attendances', () => {
       await assertAttendanceCounts(0, 0, 0, 1, 1)
       await listPage.absentChildrenTab.click()
       await listPage.selectChild(child)
-      await childPage.termBreak.waitUntilVisible()
+      await expect(childPage.termBreak).toBeVisible()
     })
 
     test('Non operational day child is shown in absent list', async ({
@@ -1113,7 +1113,7 @@ test.describe('Child attendances', () => {
       await assertAttendanceCounts(0, 0, 0, 1, 1)
       await listPage.absentChildrenTab.click()
       await listPage.selectChild(child)
-      await childPage.termBreak.waitUntilVisible()
+      await expect(childPage.termBreak).toBeVisible()
     })
 
     test('Child with shift care is shown in coming list even on weekend', async ({
@@ -1252,11 +1252,11 @@ test.describe('Child attendances', () => {
       await page.goto(mobileSignupUrl)
       await listPage.comingChildrenTab.click()
       await listPage.selectChild(testChild.id)
-      await childPage.noGuardiansInfoBox.waitUntilVisible()
+      await expect(childPage.noGuardiansInfoBox).toBeVisible()
 
       await page.goto(mobileSignupUrl)
       await listPage.selectChild(childWithGuardians.id)
-      await childPage.noGuardiansInfoBox.waitUntilHidden()
+      await expect(childPage.noGuardiansInfoBox).toBeHidden()
     })
 
     test('If child does has foster parent a message about missing guardian is not shown ', async ({
@@ -1287,7 +1287,7 @@ test.describe('Child attendances', () => {
       await page.goto(mobileSignupUrl)
       await listPage.comingChildrenTab.click()
       await listPage.selectChild(testChild.id)
-      await childPage.noGuardiansInfoBox.waitUntilHidden()
+      await expect(childPage.noGuardiansInfoBox).toBeHidden()
     })
   })
 
@@ -1324,7 +1324,7 @@ test.describe('Child attendances', () => {
       await listPage.presentChildrenTab.click()
       await listPage.selectChild(child1)
       await childPage.markDepartedLink.click()
-      await waitUntilEqual(() => childAttendancePage.groupNotes.count(), 2)
+      await expect(childAttendancePage.groupNotes).toHaveCount(2)
     })
   })
 })

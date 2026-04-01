@@ -32,8 +32,7 @@ import type {
 import type { UnitCalendarPage } from '../../pages/employee/units/unit'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { DiscussionSurveyReadView } from '../../pages/employee/units/unit-discussion-survey-page'
-import { test } from '../../playwright'
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -195,9 +194,12 @@ test.describe('Calendar events', () => {
     await creationModal.attendees.close()
     await creationModal.submit()
 
-    await calendarPage.calendarEventsSection
-      .getEventOfDay(mockedToday.addDays(1), 0)
-      .assertTextEquals('Testailijat: Test event (G)')
+    await expect(
+      calendarPage.calendarEventsSection.getEventOfDay(
+        mockedToday.addDays(1),
+        0
+      )
+    ).toHaveText('Testailijat: Test event (G)')
   })
 
   test('Employee can add multi-day event for individual child and edit and delete it', async () => {
@@ -208,47 +210,44 @@ test.describe('Calendar events', () => {
     await calendarPage.weekModeButton.click()
     const creationModal =
       await calendarPage.calendarEventsSection.openEventCreationModal()
-    await waitUntilTrue(() => creationModal.submitButton.disabled)
+    await expect(creationModal.submitButton).toBeDisabled()
     await creationModal.title.fill('Test event (P)')
     await creationModal.startDateInput.fill(startDate.format())
     await creationModal.endDateInput.fill(endDate.format())
     await creationModal.description.fill('Test event description')
-    await waitUntilFalse(() => creationModal.submitButton.disabled)
+    await expect(creationModal.submitButton).toBeEnabled()
     await creationModal.attendees.open()
     await creationModal.attendees.option(groupId).uncheck()
-    await waitUntilTrue(() => creationModal.submitButton.disabled)
+    await expect(creationModal.submitButton).toBeDisabled()
     await creationModal.attendees.expandOption(groupId)
     await creationModal.attendees.option(child1Fixture.id).check()
     await creationModal.attendees.option(child2Fixture.id).uncheck()
     await creationModal.attendees.close()
-    await waitUntilFalse(() => creationModal.submitButton.disabled)
+    await expect(creationModal.submitButton).toBeEnabled()
     await creationModal.submit()
 
-    await calendarPage.calendarEventsSection
-      .getEventOfDay(startDate, 0)
-      .assertTextEquals('Osa ryhmästä: Test event (P)')
-    await calendarPage.calendarEventsSection
-      .getEventOfDay(endDate, 0)
-      .assertTextEquals('Osa ryhmästä: Test event (P)')
+    await expect(
+      calendarPage.calendarEventsSection.getEventOfDay(startDate, 0)
+    ).toHaveText('Osa ryhmästä: Test event (P)')
+    await expect(
+      calendarPage.calendarEventsSection.getEventOfDay(endDate, 0)
+    ).toHaveText('Osa ryhmästä: Test event (P)')
 
     await calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).click()
 
     const editModal = calendarPage.calendarEventsSection.eventEditModal
-    await waitUntilEqual(() => editModal.title.inputValue, 'Test event (P)')
-    await waitUntilEqual(
-      () => editModal.description.inputValue,
-      'Test event description'
-    )
+    await expect(editModal.title).toHaveValue('Test event (P)')
+    await expect(editModal.description).toHaveValue('Test event description')
     await editModal.title.fill('Edited event title')
     await editModal.description.fill('Edited event description')
     await editModal.submit()
 
-    await calendarPage.calendarEventsSection
-      .getEventOfDay(startDate, 0)
-      .assertTextEquals('Osa ryhmästä: Edited event title')
-    await calendarPage.calendarEventsSection
-      .getEventOfDay(endDate, 0)
-      .assertTextEquals('Osa ryhmästä: Edited event title')
+    await expect(
+      calendarPage.calendarEventsSection.getEventOfDay(startDate, 0)
+    ).toHaveText('Osa ryhmästä: Edited event title')
+    await expect(
+      calendarPage.calendarEventsSection.getEventOfDay(endDate, 0)
+    ).toHaveText('Osa ryhmästä: Edited event title')
 
     await calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).click()
 
@@ -492,7 +491,7 @@ test.describe('Discussion surveys', () => {
     await surveyEditor.descriptionInput.fill(newSurvey.description)
     await surveyEditor.attendeeSelect.open()
     await surveyEditor.attendeeSelect.option(groupId).uncheck()
-    await waitUntilTrue(() => surveyEditor.submitSurveyButton.disabled)
+    await expect(surveyEditor.submitSurveyButton).toBeDisabled()
     await surveyEditor.attendeeSelect.option(child1Fixture.id).check()
     await surveyEditor.attendeeSelect.option(child2Fixture.id).uncheck()
     await surveyEditor.attendeeSelect.close()
@@ -501,7 +500,7 @@ test.describe('Discussion surveys', () => {
       startTime: '10:00',
       endTime: '10:20'
     })
-    await waitUntilFalse(() => surveyEditor.submitSurveyButton.disabled)
+    await expect(surveyEditor.submitSurveyButton).toBeEnabled()
     await surveyEditor.submit()
 
     const surveyView = new DiscussionSurveyReadView(page)

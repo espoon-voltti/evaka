@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from '../../utils'
+import { expect } from '../../playwright'
 import type { Page, Element } from '../../utils/page'
 
 export default class EmployeeNav {
@@ -65,11 +65,19 @@ export default class EmployeeNav {
         break
     }
     if (count > 0) {
-      await tabElem
-        .findByDataQa('notifications')
-        .assertTextEquals(count.toString())
+      await expect(tabElem.findByDataQa('notifications')).toHaveText(
+        count.toString()
+      )
     } else {
-      await tabElem.findByDataQa('no-notifications').waitUntilAttached()
+      await expect(tabElem.findByDataQa('no-notifications')).toBeAttached()
+    }
+  }
+
+  private async assertVisibility(element: Element, visible: boolean) {
+    if (visible) {
+      await expect(element).toBeVisible()
+    } else {
+      await expect(element).toBeHidden()
     }
   }
 
@@ -81,18 +89,11 @@ export default class EmployeeNav {
     reports: boolean
     messages: boolean
   }) {
-    await waitUntilEqual(
-      () => this.applicationsTab.visible,
-      params.applications
-    )
-    await waitUntilEqual(
-      () => this.applicationsTab.visible,
-      params.applications
-    )
-    await waitUntilEqual(() => this.unitsTab.visible, params.units)
-    await waitUntilEqual(() => this.searchTab.visible, params.search)
-    await waitUntilEqual(() => this.financeTab.visible, params.finance)
-    await waitUntilEqual(() => this.reportsTab.visible, params.reports)
-    await waitUntilEqual(() => this.messagesTab.visible, params.messages)
+    await this.assertVisibility(this.applicationsTab, params.applications)
+    await this.assertVisibility(this.unitsTab, params.units)
+    await this.assertVisibility(this.searchTab, params.search)
+    await this.assertVisibility(this.financeTab, params.finance)
+    await this.assertVisibility(this.reportsTab, params.reports)
+    await this.assertVisibility(this.messagesTab, params.messages)
   }
 }
