@@ -9,15 +9,36 @@ import {
   resetServiceState,
   upsertWeakCredentials
 } from '../../generated/api-clients'
-import type { DevEmployee } from '../../generated/api-types'
+import type { DevEmployee, DevPerson } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test, expect } from '../../playwright'
 import { Page } from '../../utils/page'
-import {
-  employeeSfiLoginForm,
-  enduserLoginSfi,
-  enduserLoginWeak
-} from '../../utils/user'
+import { enduserLoginWeak } from '../../utils/user'
+
+async function enduserLoginSfi(page: Page, person: DevPerson) {
+  if (!person.ssn) {
+    throw new Error('Person does not have an SSN: cannot login')
+  }
+  await page.goto(`${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2F`)
+  await page.find(`[id="${person.ssn}"]`).locator.check()
+  await page.find('[type=submit]').findText('Kirjaudu').click()
+  await page.find('[type=submit]').findText('Jatka').click()
+  await expect(page.findByDataQa('header-city-logo')).toBeVisible()
+}
+
+async function employeeLoginSfi(page: Page, employee: DevEmployee) {
+  if (!employee.ssn) {
+    throw new Error('Employee does not have an SSN: cannot login')
+  }
+  await page.goto(
+    `${config.apiUrl}/employee/auth/sfi/login?RelayState=%2Femployee`
+  )
+  await page.find(`[id="${employee.ssn}"]`).locator.check()
+  await page.find('[type=submit]').findText('Kirjaudu').click()
+  await page.find('[type=submit]').findText('Jatka').click()
+
+  await expect(page.findByDataQa('username')).toBeVisible()
+}
 
 test.describe('SFI authentication', () => {
   let ssnEmployee: DevEmployee
@@ -80,7 +101,7 @@ test.describe('SFI authentication', () => {
     ).toBeVisible()
 
     // Login again to both SFIs and logout from employee SFI
-    await employeeSfiLoginForm(employeeTab, ssnEmployee)
+    await employeeLoginSfi(employeeTab, ssnEmployee)
     await citizenTab.goto(
       `${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2F`
     )

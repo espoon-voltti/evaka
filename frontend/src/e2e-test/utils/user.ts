@@ -25,17 +25,6 @@ export async function enduserLogin(
   }
 }
 
-export async function enduserLoginSfi(page: Page, person: DevPerson) {
-  if (!person.ssn) {
-    throw new Error('Person does not have an SSN: cannot login')
-  }
-  await page.goto(`${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2F`)
-  await page.find(`[id="${person.ssn}"]`).locator.check()
-  await page.find('[type=submit]').findText('Kirjaudu').click()
-  await page.find('[type=submit]').findText('Jatka').click()
-  await expect(page.findByDataQa('header-city-logo')).toBeVisible()
-}
-
 export async function enduserLoginWeak(
   page: Page,
   credentials: { username: string; password: string }
@@ -76,7 +65,7 @@ export async function employeeLogin(
   await page.page.request.post(authUrl, { form: { preset } })
 }
 
-export async function employeeSfiLogin(page: Page, employee: DevEmployee) {
+export async function employeeLoginSfi(page: Page, employee: DevEmployee) {
   if (!employee.ssn) {
     throw new Error('Employee does not have an SSN: cannot login')
   }
@@ -88,18 +77,4 @@ export async function employeeSfiLogin(page: Page, employee: DevEmployee) {
       lastName: employee.lastName
     }
   })
-}
-
-export async function employeeSfiLoginForm(page: Page, employee: DevEmployee) {
-  if (!employee.ssn) {
-    throw new Error('Employee does not have an SSN: cannot login')
-  }
-  await page.goto(
-    `${config.apiUrl}/employee/auth/sfi/login?RelayState=%2Femployee`
-  )
-  await page.find(`[id="${employee.ssn}"]`).locator.check()
-  await page.find('[type=submit]').findText('Kirjaudu').click()
-  await page.find('[type=submit]').findText('Jatka').click()
-
-  await expect(page.findByDataQa('username')).toBeVisible()
 }
