@@ -19,7 +19,6 @@ import { theme } from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { fasExclamation } from 'lib-icons'
 
-import { EVAKA_START } from '../../../../constants'
 import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 import { errorToInputInfo } from '../../../../utils/validation/input-info-helper'
@@ -54,7 +53,7 @@ export default React.memo(function GroupModal({ unitId }: Props) {
 
   const initialForm: CreateGroupForm = {
     name: '',
-    startDate: EVAKA_START,
+    startDate: null,
     initialCaretakers: 3,
     aromiCustomerId: null
   }
