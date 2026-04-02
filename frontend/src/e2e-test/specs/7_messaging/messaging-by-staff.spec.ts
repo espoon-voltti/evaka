@@ -162,14 +162,18 @@ test.describe('Sending and receiving messages', () => {
     await employeeLogin(unitSupervisorPage, unitSupervisor)
   }
 
-  async function initCitizenPage(mockedTime: HelsinkiDateTime) {
+  async function initCitizenPage(mockedTime: HelsinkiDateTime, url?: string) {
     citizenPage = await newPage({ mockedTime })
-    await enduserLogin(citizenPage, testAdult)
+    await enduserLogin(citizenPage, testAdult, url)
   }
 
-  async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
+  async function initCitizenPageWeak(
+    mockedTime: HelsinkiDateTime,
+    path?: string
+  ) {
     citizenPage = await newPage({ mockedTime })
     await enduserLoginWeak(citizenPage, credentials)
+    if (path) await citizenPage.goto(config.enduserUrl + path)
   }
 
   for (const [name, initCitizen] of [
@@ -185,8 +189,7 @@ test.describe('Sending and receiving messages', () => {
         await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await initCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await initCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -212,8 +215,7 @@ test.describe('Sending and receiving messages', () => {
         await messageEditor.sendNewMessage(defaultMessage)
         await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-        await initCitizen(mockedDateAt11)
-        await citizenPage.goto(config.enduserMessagesUrl)
+        await initCitizen(mockedDateAt11, '/messages')
         const citizenMessagesPage = new CitizenMessagesPage(
           citizenPage,
           'desktop'
@@ -285,8 +287,7 @@ test.describe('Sending and receiving messages', () => {
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
     // Verify that the message is received by the starter child
-    await initCitizenPage(mockedDateAt11)
-    await citizenPage.goto(config.enduserMessagesUrl)
+    await initCitizenPage(mockedDateAt11, '/messages')
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadContent({
       title: 'Aloittavalle otsikko',
@@ -359,8 +360,7 @@ test.describe('Sending and receiving messages', () => {
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
     // Verify that the message is received by the starter
-    await initCitizenPage(mockedDateAt11)
-    await citizenPage.goto(config.enduserMessagesUrl)
+    await initCitizenPage(mockedDateAt11, '/messages')
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadContent({
       title: 'Aloittavalle otsikko',
@@ -474,9 +474,13 @@ test.describe('Sending and receiving sensitive messages', () => {
     await employeeLogin(staffPage, staff)
   }
 
-  async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
+  async function initCitizenPageWeak(
+    mockedTime: HelsinkiDateTime,
+    path?: string
+  ) {
     citizenPage = await newPage({ mockedTime })
     await enduserLoginWeak(citizenPage, credentials)
+    if (path) await citizenPage.goto(config.enduserUrl + path)
   }
 
   test('VEO sends sensitive message, citizen needs strong auth and after strong auth sees message', async () => {
@@ -500,8 +504,7 @@ test.describe('Sending and receiving sensitive messages', () => {
 
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-    await initCitizenPageWeak(mockedDateAt11)
-    await citizenPage.goto(config.enduserMessagesUrl)
+    await initCitizenPageWeak(mockedDateAt11, '/messages')
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadIsRedacted()
 
@@ -942,10 +945,11 @@ test.describe('Additional filters', () => {
 
   async function initOtherCitizenPage(
     mockedTime: HelsinkiDateTime,
-    citizen: DevPerson
+    citizen: DevPerson,
+    url?: string
   ) {
     citizenPage = await newPage({ mockedTime })
-    await enduserLogin(citizenPage, citizen)
+    await enduserLogin(citizenPage, citizen, url)
   }
 
   test('Additional filters are visible to unit supervisor on personal account', async () => {
@@ -994,8 +998,7 @@ test.describe('Additional filters', () => {
     await messageEditor.sendNewMessage(message)
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-    await initOtherCitizenPage(mockedDateAt11, testAdult2)
-    await citizenPage.goto(config.enduserMessagesUrl)
+    await initOtherCitizenPage(mockedDateAt11, testAdult2, '/messages')
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertThreadContent(message)
     await expect(citizenMessagesPage.threadMessages).toHaveCount(1)
@@ -1036,8 +1039,7 @@ test.describe('Additional filters', () => {
     })
     await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 
-    await initOtherCitizenPage(mockedDateAt11, testAdult2)
-    await citizenPage.goto(config.enduserMessagesUrl)
+    await initOtherCitizenPage(mockedDateAt11, testAdult2, '/messages')
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
     await citizenMessagesPage.assertInboxIsEmpty()
   })

@@ -66,7 +66,7 @@ async function openCalendarPage(
       featureFlags: options?.featureFlags
     }
   })
-  await enduserLogin(page, testAdult)
+  await enduserLogin(page, testAdult, '/calendar')
   return new CitizenCalendarPage(page, envType)
 }
 
@@ -809,7 +809,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         viewport,
         mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
       })
-      await enduserLogin(page, testAdult)
+      await enduserLogin(page, testAdult, '/calendar')
       const calendarPage = new CitizenCalendarPage(page, env)
       notificationsPage = new CitizenNotificationsPage(page)
 
@@ -870,7 +870,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         viewport,
         mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
       })
-      await enduserLogin(page, testAdult)
+      await enduserLogin(page, testAdult, '/calendar')
       const calendarPage = new CitizenCalendarPage(page, env)
       notificationsPage = new CitizenNotificationsPage(page)
 
@@ -936,7 +936,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         viewport,
         mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
       })
-      await enduserLogin(page, testAdult)
+      await enduserLogin(page, testAdult, '/calendar')
       const calendarPage = new CitizenCalendarPage(page, env)
       notificationsPage = new CitizenNotificationsPage(page)
 
@@ -1600,7 +1600,7 @@ test.describe('Citizen calendar child visibility', () => {
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     calendarPage = new CitizenCalendarPage(page, 'desktop')
-    await enduserLogin(page, testAdult)
+    await enduserLogin(page, testAdult, '/calendar')
 
     await calendarPage.assertChildCountOnDay(placement1start.subDays(1), 0)
     await calendarPage.assertChildCountOnDay(placement1start, 1)
@@ -1635,7 +1635,7 @@ test.describe('Citizen calendar child visibility', () => {
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     calendarPage = new CitizenCalendarPage(page, 'desktop')
-    await enduserLogin(page, testAdult)
+    await enduserLogin(page, testAdult, '/calendar')
 
     let dayView = await calendarPage.openDayView(today.subDays(1))
     await dayView.assertNoActivePlacementsMsgVisible()
@@ -1685,7 +1685,7 @@ test.describe('Citizen calendar child visibility', () => {
       mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
     calendarPage = new CitizenCalendarPage(page, 'desktop')
-    await enduserLogin(page, testAdult)
+    await enduserLogin(page, testAdult, '/calendar')
 
     // Saturday
     await calendarPage.assertChildCountOnDay(today.addDays(3), 1)
@@ -1798,7 +1798,7 @@ test.describe('Citizen calendar visibility', () => {
     const page = await newEvakaPage({
       mockedTime: visibilityToday.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(page, testAdult)
+    await enduserLogin(page, testAdult, '/')
 
     await expect(page.findByDataQa('nav-calendar-desktop')).toBeVisible()
   })
@@ -1819,7 +1819,7 @@ test.describe('Citizen calendar visibility', () => {
       mockedTime: visibilityToday.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
 
-    await enduserLogin(page, testAdult)
+    await enduserLogin(page, testAdult, '/')
 
     // Ensure page has loaded
     await expect(page.findByDataQa('nav-children-desktop')).toBeVisible()
@@ -1846,7 +1846,7 @@ test.describe('Citizen calendar visibility', () => {
       mockedTime: visibilityToday.toHelsinkiDateTime(LocalTime.of(12, 0))
     })
 
-    await enduserLogin(page, testAdult)
+    await enduserLogin(page, testAdult, '/')
 
     // Ensure page has loaded
     await expect(page.findByDataQa('applications-list')).toBeVisible()
@@ -1974,7 +1974,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         'DAYCARE'
       )
 
-      await enduserLogin(page, testAdult)
+      await enduserLogin(page, testAdult, '/')
 
       // Notifications are shown in child age order
       await notificationsPage.assertStartingInfoNotificationContent(
@@ -2012,7 +2012,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         'DAYCARE'
       )
 
-      await enduserLogin(page, testAdult)
+      await enduserLogin(page, testAdult, '/')
 
       await notificationsPage.assertStartingInfoNotificationContent(
         0,
@@ -2044,7 +2044,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         'DAYCARE'
       )
 
-      await enduserLogin(page, testAdult)
+      await enduserLogin(page, testAdult, '/')
 
       await notificationsPage.assertStartingInfoNotificationContent(
         0,
@@ -2071,7 +2071,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         'DAYCARE'
       )
 
-      await enduserLogin(page, testAdult)
+      await enduserLogin(page, testAdult, '/')
 
       await notificationsPage.assertNotificationIndexHidden(0)
       await notificationsPage.assertNotificationIndexHidden(1)
@@ -2085,7 +2085,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         'PRESCHOOL'
       )
 
-      await enduserLogin(page, testAdult)
+      await enduserLogin(page, testAdult, '/')
 
       await notificationsPage.assertStartingInfoNotificationContent(
         0,
@@ -2111,7 +2111,7 @@ for (const env of ['desktop', 'mobile'] as const) {
         'PRESCHOOL'
       )
 
-      await enduserLogin(page, testAdult)
+      await enduserLogin(page, testAdult, '/')
 
       await notificationsPage.assertStartingInfoNotificationContent(
         0,

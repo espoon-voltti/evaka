@@ -17,7 +17,6 @@ import {
 } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -32,9 +31,7 @@ test.use({
 })
 
 async function openCalendarPage(page: Page) {
-  await enduserLogin(page, testAdult)
-  const header = new CitizenHeader(page, 'desktop')
-  await header.selectTab('calendar')
+  await enduserLogin(page, testAdult, '/calendar')
   return new CitizenCalendarPage(page, 'desktop')
 }
 

@@ -32,7 +32,6 @@ import type {
   DevPlacement
 } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -197,8 +196,7 @@ test.describe('Holiday periods and questionnaires', () => {
     })
 
     test('No holiday period exists -> no CTA toast', async () => {
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
@@ -210,8 +208,7 @@ test.describe('Holiday periods and questionnaires', () => {
         reservationDeadline: today.addDays(5)
       }).save()
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
@@ -223,8 +220,7 @@ test.describe('Holiday periods and questionnaires', () => {
         reservationDeadline: today.addDays(5)
       }).save()
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaContent(
         'Ilmoita tästä\n läsnä- ja poissaolot välille 18.12.-08.01.2036 viimeistään 06.12.2035. Läsnäolojen tarkat kellonajat merkitään, kun kysely on päättynyt.'
@@ -241,8 +237,7 @@ test.describe('Holiday periods and questionnaires', () => {
         reservationDeadline: today.addDays(-1)
       }).save()
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
@@ -255,8 +250,7 @@ test.describe('Holiday periods and questionnaires', () => {
     })
 
     test('The holiday reservations toast is shown on calendar page', async () => {
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaContent(
         'Vastaa poissaolokyselyyn 06.12.2035 mennessä.'
@@ -264,8 +258,7 @@ test.describe('Holiday periods and questionnaires', () => {
     })
 
     test('The holiday reservations toast is hidden after answering questionnaire', async () => {
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaContent(
         'Vastaa poissaolokyselyyn 06.12.2035 mennessä.'
@@ -276,16 +269,14 @@ test.describe('Holiday periods and questionnaires', () => {
     })
 
     test('Clicking on the holiday reservations toast opens the holiday modal', async () => {
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.clickHolidayCta()
       await calendar.assertHolidayModalVisible()
     })
 
     test('The calendar page should show a button for reporting holidays', async () => {
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayModalButtonVisible()
     })
@@ -306,8 +297,7 @@ test.describe('Holiday periods and questionnaires', () => {
           ]
         )
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
 
       await assertFreeAbsences(false)
 
@@ -340,8 +330,7 @@ test.describe('Holiday periods and questionnaires', () => {
           ]
         )
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
 
       await assertFreeAbsences(false)
 
@@ -391,8 +380,7 @@ test.describe('Holiday periods and questionnaires', () => {
     })
 
     test('The holiday reservations toast is not shown on calendar page', async () => {
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
@@ -410,8 +398,7 @@ test.describe('Holiday periods and questionnaires', () => {
         }
       }).save()
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
@@ -443,8 +430,7 @@ test.describe('Holiday periods and questionnaires', () => {
         ]
       }).save()
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
@@ -472,8 +458,7 @@ test.describe('Holiday periods and questionnaires', () => {
         ]
       }).save()
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
@@ -501,8 +486,7 @@ test.describe('Holiday periods and questionnaires', () => {
         ]
       }).save()
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.assertHolidayCtaNotVisible()
     })
@@ -527,8 +511,7 @@ test.describe('Holiday periods and questionnaires', () => {
         LocalDate.of(2036, 6, 30)
       )
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       const holidayModal = await calendar.openHolidayModal()
 
@@ -561,8 +544,7 @@ test.describe('Holiday periods and questionnaires', () => {
       LocalDate.of(2035, 12, 27)
     )
 
-    await enduserLogin(page, guardian)
-    await new CitizenHeader(page).selectTab('calendar')
+    await enduserLogin(page, guardian, '/calendar')
     const calendar = new CitizenCalendarPage(page, 'desktop')
     const holidayModal = await calendar.openHolidayModal()
 
@@ -616,8 +598,7 @@ test.describe('Holiday periods and questionnaires', () => {
         reservationDeadline: today.addDays(5)
       }).save()
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.clickHolidayCta()
       await expect(calendar.reservationModal).toBeVisible()
@@ -640,8 +621,7 @@ test.describe('Holiday periods and questionnaires', () => {
         reservationDeadline: today.addDays(5)
       }).save()
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.clickHolidayCta()
       await expect(calendar.reservationModal).toBeVisible()
@@ -670,8 +650,7 @@ test.describe('Holiday periods and questionnaires', () => {
         reservationDeadline: today.addDays(5)
       }).save()
 
-      await enduserLogin(page, guardian)
-      await new CitizenHeader(page).selectTab('calendar')
+      await enduserLogin(page, guardian, '/calendar')
       const calendar = new CitizenCalendarPage(page, 'desktop')
       await calendar.clickHolidayCta()
       await expect(calendar.reservationModal).toBeVisible()

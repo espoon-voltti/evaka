@@ -29,7 +29,6 @@ import {
 } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test } from '../../playwright'
 import type { EnvType, Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -123,11 +122,9 @@ test.beforeEach(async () => {
 })
 
 async function setupPageObjects(page: Page, env: EnvType) {
-  await enduserLogin(page, testAdult)
-  const header = new CitizenHeader(page, env)
+  await enduserLogin(page, testAdult, '/calendar')
   const calendarPage = new CitizenCalendarPage(page, env)
-  await header.selectTab('calendar')
-  return { header, calendarPage }
+  return { calendarPage }
 }
 
 for (const env of ['desktop', 'mobile'] as const) {

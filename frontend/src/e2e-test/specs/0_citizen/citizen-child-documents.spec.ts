@@ -218,7 +218,7 @@ test.describe('Citizen child documents listing page', () => {
   test.use({ evakaOptions: { mockedTime: mockedNow } })
 
   test.beforeEach(async ({ evaka }) => {
-    await enduserLogin(evaka, testAdult)
+    await enduserLogin(evaka, testAdult, '/')
   })
 
   test('Published vasu is in the list', async ({ evaka }) => {
@@ -387,7 +387,7 @@ test.describe('Citizen child documents editor page', () => {
       })
       .save()
 
-    await enduserLogin(evaka, testAdult)
+    await enduserLogin(evaka, testAdult, '/')
     const header = new CitizenHeader(evaka, 'desktop')
     await header.assertUnreadChildrenCount(5)
     await header.openChildPage(child.id)
@@ -448,7 +448,7 @@ test.describe('Citizen child documents editor page', () => {
       })
       .save()
 
-    await enduserLogin(evaka, testAdult)
+    await enduserLogin(evaka, testAdult, '/')
     const toast1 = evaka.findByDataQa(`toast-child-document-${document.id}`)
     await expect(toast1).toHaveText(
       'Henkilökunta on pyytänyt sinua täyttämään asiakirjan, joka koskee lastasi: Jari-Petteri Karhula\nTäytä asiakirja',

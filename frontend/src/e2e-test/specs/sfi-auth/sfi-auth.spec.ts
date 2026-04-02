@@ -5,12 +5,40 @@
 import config from '../../config'
 import { testAdult } from '../../dev-api/fixtures'
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
-import type { DevEmployee } from '../../generated/api-types'
+import {
+  resetServiceState,
+  upsertWeakCredentials
+} from '../../generated/api-clients'
+import type { DevEmployee, DevPerson } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test, expect } from '../../playwright'
 import { Page } from '../../utils/page'
-import { employeeSfiLogin, enduserLogin } from '../../utils/user'
+import { enduserLoginWeak } from '../../utils/user'
+
+async function enduserLoginSfi(page: Page, person: DevPerson) {
+  if (!person.ssn) {
+    throw new Error('Person does not have an SSN: cannot login')
+  }
+  await page.goto(`${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2F`)
+  await page.find(`[id="${person.ssn}"]`).locator.check()
+  await page.find('[type=submit]').findText('Kirjaudu').click()
+  await page.find('[type=submit]').findText('Jatka').click()
+  await expect(page.findByDataQa('header-city-logo')).toBeVisible()
+}
+
+async function employeeLoginSfi(page: Page, employee: DevEmployee) {
+  if (!employee.ssn) {
+    throw new Error('Employee does not have an SSN: cannot login')
+  }
+  await page.goto(
+    `${config.apiUrl}/employee/auth/sfi/login?RelayState=%2Femployee`
+  )
+  await page.find(`[id="${employee.ssn}"]`).locator.check()
+  await page.find('[type=submit]').findText('Kirjaudu').click()
+  await page.find('[type=submit]').findText('Jatka').click()
+
+  await expect(page.findByDataQa('username')).toBeVisible()
+}
 
 test.describe('SFI authentication', () => {
   let ssnEmployee: DevEmployee
@@ -30,9 +58,33 @@ test.describe('SFI authentication', () => {
       .save()
   })
 
+  test('Citizen SFI logout leads back to login page', async () => {
+    await enduserLoginSfi(citizenTab, testAdult)
+    const header = new CitizenHeader(citizenTab)
+    await header.logout()
+    await expect(citizenTab.findByDataQa('weak-login')).toBeVisible()
+    await expect(citizenTab.findByDataQa('strong-login')).toBeVisible()
+  })
+
+  test('Citizen weak logout leads back to login page', async () => {
+    const credentials = {
+      username: 'test@example.com',
+      password: 'TestPassword456!'
+    }
+    await upsertWeakCredentials({
+      id: testAdult.id,
+      body: credentials
+    })
+    await enduserLoginWeak(citizenTab, credentials)
+    const header = new CitizenHeader(citizenTab)
+    await header.logout()
+    await expect(citizenTab.findByDataQa('weak-login')).toBeVisible()
+    await expect(citizenTab.findByDataQa('strong-login')).toBeVisible()
+  })
+
   test('SFI logout invalidates all SFI sessions for the user', async () => {
     // Login to both SFIs and logout from citizen SFI
-    await enduserLogin(citizenTab, testAdult)
+    await enduserLoginSfi(citizenTab, testAdult)
     const employeeTab = await Page.openNewTab(citizenTab)
     await employeeTab.goto(
       `${config.apiUrl}/employee/auth/sfi/login?RelayState=%2Femployee`
@@ -49,7 +101,7 @@ test.describe('SFI authentication', () => {
     ).toBeVisible()
 
     // Login again to both SFIs and logout from employee SFI
-    await employeeSfiLogin(employeeTab, ssnEmployee)
+    await employeeLoginSfi(employeeTab, ssnEmployee)
     await citizenTab.goto(
       `${config.apiUrl}/citizen/auth/sfi/login?RelayState=%2F`
     )

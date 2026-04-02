@@ -17,7 +17,6 @@ import {
 } from '../../dev-api/fixtures'
 import { getApplication, resetServiceState } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test } from '../../playwright'
 import {
   minimalDaycareFormWithServiceNeedOption,
@@ -31,7 +30,6 @@ const mockedTime = HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(15, 0))
 
 test.describe('Citizen daycare applications', () => {
   let page: Page
-  let header: CitizenHeader
   let applicationsPage: CitizenApplicationsPage
 
   test.use({
@@ -58,8 +56,7 @@ test.describe('Citizen daycare applications', () => {
     })
 
     page = evaka
-    await enduserLogin(page, testAdult)
-    header = new CitizenHeader(page)
+    await enduserLogin(page, testAdult, '/applications')
     applicationsPage = new CitizenApplicationsPage(page)
   })
 
@@ -100,7 +97,6 @@ test.describe('Citizen daycare applications', () => {
       validTo: LocalDate.of(2022, 12, 31)
     }).save()
 
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'
@@ -130,7 +126,6 @@ test.describe('Citizen daycare applications', () => {
 
 test.describe('Citizen preschool applications', () => {
   let page: Page
-  let header: CitizenHeader
   let applicationsPage: CitizenApplicationsPage
 
   test.use({
@@ -161,8 +156,7 @@ test.describe('Citizen preschool applications', () => {
     await preschoolTerm2021.save()
 
     page = evaka
-    await enduserLogin(page, testAdult)
-    header = new CitizenHeader(page)
+    await enduserLogin(page, testAdult, '/applications')
     applicationsPage = new CitizenApplicationsPage(page)
   })
 
@@ -191,7 +185,6 @@ test.describe('Citizen preschool applications', () => {
       validFrom: LocalDate.of(2022, 1, 1)
     }).save()
 
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'PRESCHOOL'

@@ -6,7 +6,6 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
-import config from '../../config'
 import {
   Fixture,
   testAdult,
@@ -135,8 +134,7 @@ async function getCitizenMessageEditor(
   citizenPage: Page,
   supervisorName: string
 ) {
-  await enduserLogin(citizenPage, testAdult)
-  await citizenPage.goto(config.enduserMessagesUrl)
+  await enduserLogin(citizenPage, testAdult, '/messages')
   const messagesPage = new CitizenMessagesPage(citizenPage, 'desktop')
   const editor = await messagesPage.createNewMessage()
   await editor.selectRecipients([supervisorName])

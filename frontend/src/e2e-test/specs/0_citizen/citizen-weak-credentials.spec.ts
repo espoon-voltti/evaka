@@ -11,7 +11,6 @@ import {
   upsertPasswordBlacklist
 } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage, {
   WeakCredentialsModal
 } from '../../pages/citizen/citizen-personal-details'
@@ -33,9 +32,7 @@ test.beforeEach(async () => {
 })
 
 async function openPersonalDetailsPage(page: Page, citizen: DevPerson) {
-  await enduserLogin(page, citizen)
-  const header = new CitizenHeader(page)
-  await header.selectTab('personal-details')
+  await enduserLogin(page, citizen, '/personal-details')
   return new CitizenPersonalDetailsPage(page)
 }
 
@@ -264,13 +261,11 @@ test.describe('Citizen weak credentials', () => {
     const weakSession = await newEvakaPage()
     const newPassword = 'EeyahShoqu+oe7th'
 
-    await enduserLogin(strongSession, citizen)
+    await enduserLogin(strongSession, citizen, '/personal-details')
     await enduserLoginWeak(weakSession, {
       username: email,
       password: 'aifiefaeC3io?dee'
     })
-    const header = new CitizenHeader(strongSession)
-    await header.selectTab('personal-details')
     const personalDetailsPage = new CitizenPersonalDetailsPage(strongSession)
     const section = personalDetailsPage.loginDetailsSection
     await expect(section.weakLoginEnabled).toBeVisible()

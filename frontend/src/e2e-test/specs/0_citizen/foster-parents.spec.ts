@@ -81,7 +81,7 @@ test.describe('Foster parents', () => {
     })
 
     activeRelationshipPage = evaka
-    await enduserLogin(activeRelationshipPage, testAdult)
+    await enduserLogin(activeRelationshipPage, testAdult, '/')
     activeRelationshipHeader = new CitizenHeader(activeRelationshipPage)
   })
 
@@ -141,9 +141,7 @@ test.describe('Foster parents', () => {
     const endedRelationshipPage = await newEvakaPage({
       mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(endedRelationshipPage, testAdult)
-    const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
-    await endedRelationshipHeader.selectTab('applications')
+    await enduserLogin(endedRelationshipPage, testAdult, '/applications')
     await endedRelationshipPage
       .findByDataQa('applications-list')
       .assertAttributeEquals('data-isloading', 'false')
@@ -224,9 +222,7 @@ test.describe('Foster parents', () => {
     const endedRelationshipPage = await newEvakaPage({
       mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(endedRelationshipPage, testAdult)
-    const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
-    await endedRelationshipHeader.selectTab('applications')
+    await enduserLogin(endedRelationshipPage, testAdult, '/applications')
     await endedRelationshipPage
       .findByDataQa('applications-list')
       .assertAttributeEquals('data-isloading', 'false')
@@ -296,8 +292,7 @@ test.describe('Foster parents', () => {
     const endedRelationshipPage = await newEvakaPage({
       mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(endedRelationshipPage, testAdult)
-    await endedRelationshipPage.goto(config.enduserMessagesUrl)
+    await enduserLogin(endedRelationshipPage, testAdult, '/messages')
     const endedCitizenMessagesPage = new CitizenMessagesPage(
       endedRelationshipPage,
       'desktop'
@@ -338,7 +333,7 @@ test.describe('Foster parents', () => {
     const endedRelationshipPage = await newEvakaPage({
       mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(endedRelationshipPage, testAdult)
+    await enduserLogin(endedRelationshipPage, testAdult, '/')
     const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
     await endedRelationshipHeader.assertNoChildrenTab()
   })
@@ -378,7 +373,7 @@ test.describe('Foster parents', () => {
     const endedRelationshipPage = await newEvakaPage({
       mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(endedRelationshipPage, testAdult)
+    await enduserLogin(endedRelationshipPage, testAdult, '/')
     const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
     await endedRelationshipHeader.assertNoChildrenTab()
   })
@@ -417,7 +412,7 @@ test.describe('Foster parents', () => {
     const endedRelationshipPage = await newEvakaPage({
       mockedTime: mockedDate.addDays(1).toHelsinkiDateTime(LocalTime.of(12, 0))
     })
-    await enduserLogin(endedRelationshipPage, testAdult)
+    await enduserLogin(endedRelationshipPage, testAdult, '/')
     const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
     await endedRelationshipHeader.assertNoTab('calendar')
   })

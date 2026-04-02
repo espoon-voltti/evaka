@@ -60,13 +60,12 @@ test.describe('Citizen daycare applications', () => {
     })
 
     page = evaka
-    await enduserLogin(page, testAdult)
+    await enduserLogin(page, testAdult, '/applications')
     header = new CitizenHeader(page)
     applicationsPage = new CitizenApplicationsPage(page)
   })
 
   test('Sending incomplete daycare application gives validation error', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'
@@ -116,7 +115,6 @@ test.describe('Citizen daycare applications', () => {
   })
 
   test('Minimal valid daycare application can be sent', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'
@@ -135,7 +133,6 @@ test.describe('Citizen daycare applications', () => {
   })
 
   test('Full valid daycare application can be sent', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'
@@ -194,7 +191,6 @@ test.describe('Citizen daycare applications', () => {
   })
 
   test('A warning is shown if preferred start date is very soon', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'
@@ -210,7 +206,6 @@ test.describe('Citizen daycare applications', () => {
   })
 
   test('A validation error message is shown if preferred start date is not valid', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'
@@ -224,7 +219,6 @@ test.describe('Citizen daycare applications', () => {
   })
 
   test('Citizen cannot move preferred start date before a previously selected date', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'
@@ -243,7 +237,6 @@ test.describe('Citizen daycare applications', () => {
   })
 
   test('An error message is shown if part time is chosen and daily hours exceed 5 hours', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'
@@ -257,7 +250,6 @@ test.describe('Citizen daycare applications', () => {
   })
 
   test('Previously selected preferred units exists', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'
@@ -276,7 +268,6 @@ test.describe('Citizen daycare applications', () => {
   })
 
   test('Application can be made for restricted child', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChildRestricted.id,
       'DAYCARE'
@@ -288,7 +279,6 @@ test.describe('Citizen daycare applications', () => {
   })
 
   test('Urgent application attachment can be uploaded and downloaded by citizen', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChildRestricted.id,
       'DAYCARE'
@@ -302,7 +292,6 @@ test.describe('Citizen daycare applications', () => {
   test('Other guardian can see an application after it has been sent, and cannot see person details or attachments', async ({
     newEvakaPage
   }) => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'
@@ -319,7 +308,7 @@ test.describe('Citizen daycare applications', () => {
     await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const otherGuardianPage = await newEvakaPage({ mockedTime: mockedNow })
-    await enduserLogin(otherGuardianPage, testAdult2)
+    await enduserLogin(otherGuardianPage, testAdult2, '/applications')
 
     const applications = new CitizenApplicationsPage(otherGuardianPage)
     await applications.assertApplicationExists(applicationId)
@@ -334,7 +323,6 @@ test.describe('Citizen daycare applications', () => {
   })
 
   test('Application can be saved as draft', async () => {
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'
@@ -357,7 +345,6 @@ test.describe('Citizen daycare applications', () => {
 
   test('If user has a verified email, that one is used in the application and cannot be changed', async () => {
     // given user has a draft application with an email
-    await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       testChild.id,
       'DAYCARE'

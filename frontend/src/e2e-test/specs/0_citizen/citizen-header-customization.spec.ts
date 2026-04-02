@@ -23,7 +23,7 @@ test.describe('Citizen header customization', () => {
   })
 
   test('English language can be disabled', async ({ evaka }) => {
-    await enduserLogin(evaka, testAdult)
+    await enduserLogin(evaka, testAdult, '/')
     const header = new CitizenHeader(evaka)
     expect(await header.listLanguages()).toStrictEqual({
       fi: true,

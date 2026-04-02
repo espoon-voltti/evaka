@@ -55,9 +55,7 @@ test.describe('Absence application', () => {
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
-    await enduserLogin(citizenPage, adult)
-    const citizenHeader = new CitizenHeader(citizenPage)
-    await citizenHeader.selectTab('calendar')
+    await enduserLogin(citizenPage, adult, '/calendar')
     const citizenCalendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
     const absenceModal = await citizenCalendarPage.openAbsencesModal()
     const startDate = termRange.start.addMonths(1)
@@ -113,9 +111,7 @@ test.describe('Absence application', () => {
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
-    await enduserLogin(citizenPage, adult)
-    const citizenHeader = new CitizenHeader(citizenPage)
-    await citizenHeader.selectTab('calendar')
+    await enduserLogin(citizenPage, adult, '/calendar')
     const citizenCalendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
     const absenceModal = await citizenCalendarPage.openAbsencesModal()
     await absenceModal.selectDates(
@@ -166,9 +162,7 @@ test.describe('Absence application', () => {
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
-    await enduserLogin(citizenPage, adult)
-    const citizenHeader = new CitizenHeader(citizenPage)
-    await citizenHeader.selectTab('calendar')
+    await enduserLogin(citizenPage, adult, '/calendar')
     const citizenCalendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
     const absenceModal = await citizenCalendarPage.openAbsencesModal()
     await absenceModal.selectDates(
@@ -218,9 +212,7 @@ test.describe('Absence application', () => {
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
-    await enduserLogin(citizenPage, adult)
-    const citizenHeader = new CitizenHeader(citizenPage)
-    await citizenHeader.selectTab('calendar')
+    await enduserLogin(citizenPage, adult, '/calendar')
     const citizenCalendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
     const absenceModal = await citizenCalendarPage.openAbsencesModal()
     const startDate = termRange.start.addMonths(1)
@@ -259,7 +251,7 @@ test.describe('Absence application', () => {
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
-    await enduserLogin(citizenPage, adult)
+    await enduserLogin(citizenPage, adult, '/')
     const citizenHeader = new CitizenHeader(citizenPage)
     const citizenChildPage = await citizenHeader.openChildPage(child.id)
     await citizenChildPage.openCollapsible('absence-applications')
@@ -328,7 +320,7 @@ test.describe('Absence application', () => {
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
-    await enduserLogin(citizenPage, adult)
+    await enduserLogin(citizenPage, adult, '/')
     const citizenHeader = new CitizenHeader(citizenPage)
     const citizenChildPage = await citizenHeader.openChildPage(child.id)
     await citizenChildPage.openCollapsible('absence-applications')
@@ -401,7 +393,7 @@ test.describe('Absence application', () => {
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
-    await enduserLogin(citizenPage, adult)
+    await enduserLogin(citizenPage, adult, '/')
     const citizenHeader = new CitizenHeader(citizenPage)
     const citizenChildPage = await citizenHeader.openChildPage(child.id)
     await citizenChildPage.openCollapsible('absence-applications')
@@ -459,7 +451,7 @@ test.describe('Absence application', () => {
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
-    await enduserLogin(page, adult)
+    await enduserLogin(page, adult, '/')
     const citizenHeader = new CitizenHeader(page)
     const citizenChildPage = await citizenHeader.openChildPage(child.id)
     await citizenChildPage.openCollapsible('absence-applications')
@@ -503,7 +495,7 @@ test.describe('Absence application', () => {
       mockedTime,
       citizenCustomizations: { featureFlags: { absenceApplications: true } }
     })
-    await enduserLogin(page, adult)
+    await enduserLogin(page, adult, '/')
     const citizenHeader = new CitizenHeader(page)
     const citizenChildPage = await citizenHeader.openChildPage(child.id)
     await citizenChildPage.openCollapsible('absence-applications')

@@ -18,7 +18,7 @@ test.describe('Citizen page', () => {
     await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
     page = evaka
-    await enduserLogin(page, testAdult)
+    await enduserLogin(page, testAdult, '/')
     header = new CitizenHeader(page)
   })
 

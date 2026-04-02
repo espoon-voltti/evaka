@@ -26,7 +26,6 @@ import {
 } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -52,13 +51,10 @@ test.describe('Citizen application decisions', () => {
     newEvakaPage: () => Promise<Page>
   ) {
     const page = await newEvakaPage()
-    await enduserLogin(page, citizen)
-    const header = new CitizenHeader(page)
-    await header.selectTab('decisions')
+    await enduserLogin(page, citizen, '/decisions')
     const citizenDecisionsPage = new CitizenDecisionsPage(page)
     return {
       page,
-      header,
       citizenDecisionsPage
     }
   }

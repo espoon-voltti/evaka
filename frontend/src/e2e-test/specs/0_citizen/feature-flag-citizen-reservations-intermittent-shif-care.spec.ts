@@ -14,7 +14,6 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import type { TwoPartReservation } from '../../pages/citizen/citizen-calendar'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test } from '../../playwright'
 import type { EnvType } from '../../utils/page'
 import type { Page } from '../../utils/page'
@@ -28,9 +27,7 @@ async function openCalendarPage(
   env: EnvType,
   endUser: DevPerson
 ) {
-  await enduserLogin(page, endUser)
-  const header = new CitizenHeader(page, env)
-  await header.selectTab('calendar')
+  await enduserLogin(page, endUser, '/calendar')
   return new CitizenCalendarPage(page, env)
 }
 

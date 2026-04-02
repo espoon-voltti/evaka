@@ -13,7 +13,6 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
-import config from '../../config'
 import {
   testDaycare,
   feeDecisionsFixture,
@@ -31,7 +30,6 @@ import {
 } from '../../generated/api-clients'
 import type { DevPerson, VoucherValueDecision } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
-import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -77,7 +75,6 @@ const parsePersonNames = (persons: DevPerson[]) =>
 
 test.describe('Citizen finance decisions', () => {
   let page: Page
-  let header: CitizenHeader
   let citizenDecisionsPage: CitizenDecisionsPage
   let feeDecision: FeeDecision
   let voucherValueDecision: VoucherValueDecision
@@ -129,12 +126,8 @@ test.describe('Citizen finance decisions', () => {
     evaka
   }) => {
     page = evaka
-    header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
-    await enduserLogin(page, testAdult)
-    await page.goto(config.enduserUrl)
-
-    await header.selectTab('decisions')
+    await enduserLogin(page, testAdult, '/decisions')
 
     await citizenDecisionsPage.assertFinanceDecisionShown(
       feeDecision.id,
@@ -155,12 +148,8 @@ test.describe('Citizen finance decisions', () => {
     evaka
   }) => {
     page = evaka
-    header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
-    await enduserLogin(page, partner)
-    await page.goto(config.enduserUrl)
-
-    await header.selectTab('decisions')
+    await enduserLogin(page, partner, '/decisions')
 
     await citizenDecisionsPage.assertFinanceDecisionShown(
       feeDecision.id,
@@ -177,12 +166,8 @@ test.describe('Citizen finance decisions', () => {
     evaka
   }) => {
     page = evaka
-    header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
-    await enduserLogin(page, testAdult)
-    await page.goto(config.enduserUrl)
-
-    await header.selectTab('decisions')
+    await enduserLogin(page, testAdult, '/decisions')
 
     await citizenDecisionsPage.assertMetadataForFinanceDecisionShown(
       feeDecision.id
@@ -196,12 +181,8 @@ test.describe('Citizen finance decisions', () => {
     evaka
   }) => {
     page = evaka
-    header = new CitizenHeader(page)
     citizenDecisionsPage = new CitizenDecisionsPage(page)
-    await enduserLogin(page, partner)
-    await page.goto(config.enduserUrl)
-
-    await header.selectTab('decisions')
+    await enduserLogin(page, partner, '/decisions')
 
     await citizenDecisionsPage.assertMetadataForFinanceDecisionShown(
       feeDecision.id
