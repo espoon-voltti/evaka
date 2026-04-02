@@ -532,6 +532,84 @@ jobs:
             !compose/test-results/**/binary/
           retention-days: 2
 
+  municipality-smoke-test:
+    needs:
+      - service
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        municipality: [oulu, turku]
+        include:
+          - municipality: oulu
+            service_need_option_id: de463972-9f97-11ec-a22c-931f5a294cea
+          - municipality: turku
+            service_need_option_id: 50358394-b961-11eb-b51f-67ac436e5636
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Login to GitHub Container Registry
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start service with ${{ matrix.municipality }} config
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        env:
+          TAG: "${{ github.event.pull_request.head.sha || github.sha }}"
+          BUILD: "false"
+        run: |
+          cd compose
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml pull db evaka-srv
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --wait db s3-mock
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml run -d \
+            -e EVAKA_MUNICIPALITY=${{ matrix.municipality }} \
+            -p 8888:8888 \
+            --name evaka-srv \
+            evaka-srv
+
+      - name: Wait for service to be healthy
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        run: |
+          TRIES=60
+          while [ $TRIES -gt 0 ]; do
+            RESPONSE=$(curl -sS --connect-timeout 3 --max-time 5 http://localhost:8888/health 2>/dev/null || echo "")
+            STATUS=$(echo "$RESPONSE" | jq -r '.status' 2>/dev/null || echo "")
+            if [ "$STATUS" = "UP" ]; then
+              echo "Service is healthy: $RESPONSE"
+              break
+            fi
+            echo "Got '$RESPONSE' - retrying ($TRIES left) ..."
+            sleep 5
+            TRIES=$((TRIES - 1))
+          done
+          if [ $TRIES -eq 0 ]; then
+            echo "::error::Service failed to start with ${{ matrix.municipality }} config"
+            docker logs evaka-srv
+            exit 1
+          fi
+
+      - name: Verify afterMigrate scripts ran
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        run: |
+          cd compose
+          result=$(docker compose -f docker-compose.yml exec -T db \
+            psql -U postgres -d evaka_local -tAc \
+            "SELECT count(*) FROM service_need_option WHERE id = '${{ matrix.service_need_option_id }}'")
+          if [ "$result" != "1" ]; then
+            echo "::error::Expected service_need_option ${{ matrix.service_need_option_id }} to exist for ${{ matrix.municipality }}, but count=$result"
+            exit 1
+          fi
+          echo "afterMigrate scripts ran successfully for ${{ matrix.municipality }}"
+
+      - name: Docker cleanup
+        if: always()
+        uses: espoon-voltti/voltti-actions/docker-cleanup@master
+
   e2e:
     needs:
       - service
@@ -657,6 +735,7 @@ jobs:
     needs:
       - service-test
       - service-integration-test
+      - municipality-smoke-test
       - e2e
       - frontend-test
       - lint-shell
