@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.espoo
 
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.espoo.bi.EspooBiJob
 import fi.espoo.evaka.espoo.bi.EspooBiTable
@@ -54,6 +55,7 @@ class EspooScheduledJobs(
     private val linkityEnv: LinkityEnv?,
     private val jsonMapper: JsonMapper,
     private val espooBiJob: EspooBiJob?,
+    private val evakaEnv: EvakaEnv,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
         env.jobs.map {
@@ -116,6 +118,11 @@ class EspooScheduledJobs(
         }
         val linkityClient = LinkityHttpClient(linkityEnv, jsonMapper)
         logger.info { "Sending staff attendances to Linkity for period $period" }
-        sendStaffAttendancesToLinkity(period, db, linkityClient)
+        sendStaffAttendancesToLinkity(
+            period,
+            db,
+            linkityClient,
+            evakaEnv.staffAttendanceDriftMinutes,
+        )
     }
 }

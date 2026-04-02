@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.titania
 
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.attendance.*
 import fi.espoo.evaka.pis.getEmployeeIdsByNumbers
 import fi.espoo.evaka.pis.getEmployeeIdsByNumbersMapById
@@ -20,10 +21,10 @@ import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
-private val MAX_DRIFT: Duration = Duration.ofMinutes(5)
-
 @Service
-class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
+class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaEnv: EvakaEnv) {
+
+    private val maxDrift: Duration = evakaEnv.staffAttendanceDriftMinutes
 
     fun updateWorkingTimeEvents(
         tx: Database.Transaction,
@@ -412,10 +413,10 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter) {
             .flatMap { plan ->
                 listOfNotNull(
                     plan
-                        .takeIf { event.durationSince(it.startTime).abs() <= MAX_DRIFT }
+                        .takeIf { event.durationSince(it.startTime).abs() <= maxDrift }
                         ?.let { it.startTime to it },
                     plan
-                        .takeIf { event.durationSince(it.endTime).abs() <= MAX_DRIFT }
+                        .takeIf { event.durationSince(it.endTime).abs() <= maxDrift }
                         ?.let { it.endTime to it },
                 )
             }

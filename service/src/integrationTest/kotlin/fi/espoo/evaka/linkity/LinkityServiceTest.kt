@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.dev.*
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -345,7 +346,7 @@ internal class LinkityServiceTest : FullApplicationTest(resetDbBeforeEach = true
         val period = FiniteDateRange(now.minusDays(1).toLocalDate(), now.toLocalDate())
 
         val client = MockLinkityClient()
-        sendStaffAttendancesToLinkity(period, db, client)
+        sendStaffAttendancesToLinkity(period, db, client, Duration.ofMinutes(5))
 
         val expected =
             StampingBatch(

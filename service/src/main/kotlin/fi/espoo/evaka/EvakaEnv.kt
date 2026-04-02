@@ -54,6 +54,7 @@ data class EvakaEnv(
     val passwordBlacklistDirectory: String?,
     val placementToolServiceNeedOptionId: ServiceNeedOptionId?,
     val newBrowserLoginEmailEnabled: Boolean,
+    val staffAttendanceDriftMinutes: Duration,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -104,6 +105,10 @@ data class EvakaEnv(
                     },
                 newBrowserLoginEmailEnabled =
                     env.lookup("evaka.new_browser_login_email.enabled") ?: false,
+                staffAttendanceDriftMinutes =
+                    Duration.ofMinutes(
+                        env.lookup("evaka.integration.staff_attendance_drift_minutes") ?: 5
+                    ),
             )
         }
     }
