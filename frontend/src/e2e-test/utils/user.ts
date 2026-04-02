@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import config from '../config'
-import type { DevEmployee, DevPerson } from '../generated/api-types'
+import type { DevPerson } from '../generated/api-types'
 import { expect } from '../playwright'
 
 import type { Page } from './page'
@@ -17,8 +17,8 @@ export async function enduserLogin(
   if (!person.ssn) {
     throw new Error('Person does not have an SSN: cannot login')
   }
-  await page.page.request.post(`${config.devApiGwUrl}/auth/sfi-login`, {
-    data: { type: 'citizen', ssn: person.ssn }
+  await page.page.request.post(`${config.devApiGwUrl}/auth/citizen-sfi-login`, {
+    data: { ssn: person.ssn }
   })
   if (path) {
     await page.goto(config.enduserUrl + path)
@@ -63,18 +63,4 @@ export async function employeeLogin(
     email: email ?? ''
   })
   await page.page.request.post(authUrl, { form: { preset } })
-}
-
-export async function employeeLoginSfi(page: Page, employee: DevEmployee) {
-  if (!employee.ssn) {
-    throw new Error('Employee does not have an SSN: cannot login')
-  }
-  await page.page.request.post(`${config.devApiGwUrl}/auth/sfi-login`, {
-    data: {
-      type: 'employee',
-      ssn: employee.ssn,
-      firstName: employee.firstName,
-      lastName: employee.lastName
-    }
-  })
 }
