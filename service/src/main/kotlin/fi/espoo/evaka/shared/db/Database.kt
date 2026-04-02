@@ -137,6 +137,20 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
                 .also { hooks.afterCommit.forEach { it() } }
         }
 
+        fun executeOutsideTransaction(f: QuerySql.Builder.() -> QuerySql): Int {
+            threadId.assertCurrentThread()
+            val handle = this.getRawHandle()
+            check(!handle.isInTransaction) { "Already in a transaction" }
+            return tracer.withSpan("db.executeOutsideTransaction read/write") {
+                val fragment = QuerySql.Builder().run { f(this) }
+                val raw = handle.createUpdate(fragment.sql.toString())
+                for ((idx, binding) in fragment.bindings.withIndex()) {
+                    raw.bindByType(idx, binding.value, binding.type)
+                }
+                raw.execute()
+            }
+        }
+
         override fun close() {
             threadId.assertCurrentThread()
             this.rawHandle?.close()

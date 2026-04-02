@@ -2102,14 +2102,11 @@ export async function rejectDecisionByCitizen(
 /**
 * Generated from fi.espoo.evaka.shared.dev.DevApi.resetServiceState
 */
-export async function resetServiceState(
-  options?: { mockedTime?: HelsinkiDateTime }
-): Promise<void> {
+export async function resetServiceState(): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/reset-service-state`.toString(),
-      method: 'POST',
-      headers: { EvakaMockedTime: options?.mockedTime?.formatIso() }
+      method: 'POST'
     })
     return json
   } catch (e) {
