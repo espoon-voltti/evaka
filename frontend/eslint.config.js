@@ -15,7 +15,7 @@ import globals from 'globals'
 import typescriptEslint from 'typescript-eslint'
 
 export default [
-  { ignores: ['.yarn', 'dist', 'src/*/generated'] },
+  { ignores: ['.yarn', 'dist', 'src/*/generated', 'test-results'] },
   eslint.configs.recommended,
   ...typescriptEslint.configs.recommendedTypeChecked,
   ...typescriptEslint.configs.stylisticTypeChecked,
