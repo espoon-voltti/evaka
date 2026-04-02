@@ -119,12 +119,27 @@ export default class CitizenDecisionsPage {
   }
 
   async viewDecisionMetadata(decisionId: DecisionId) {
-    await this.page
-      .findByDataQa(`application-decision-${decisionId}`)
-      .findAll('button')
-      .first()
-      .click()
-    await expect(this.page.findByDataQa('process-number-field')).toBeVisible()
+    const decisionSection = this.page.findByDataQa(
+      `application-decision-${decisionId}`
+    )
+    await decisionSection.findAll('button').first().click()
+    await expect(decisionSection.findByDataQa('decision-unit')).toBeVisible()
+    await decisionSection.findByDataQa('metadata-section').click()
+    await expect(
+      decisionSection.findByDataQa('process-number-field')
+    ).toBeVisible()
+  }
+
+  async viewDecisionWithoutMetadata(decisionId: DecisionId) {
+    const decisionSection = this.page.findByDataQa(
+      `application-decision-${decisionId}`
+    )
+    await decisionSection.findAll('button').first().click()
+    await expect(decisionSection.findByDataQa('decision-unit')).toBeVisible()
+    await expect(decisionSection.findByDataQa('metadata-section')).toBeHidden()
+    await expect(
+      decisionSection.findByDataQa('process-number-field')
+    ).toBeHidden()
   }
 }
 
