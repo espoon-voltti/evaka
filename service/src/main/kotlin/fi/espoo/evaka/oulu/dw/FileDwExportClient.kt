@@ -13,11 +13,10 @@ import java.io.BufferedOutputStream
 import java.nio.file.Files
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.deleteIfExists
-import software.amazon.awssdk.core.async.AsyncRequestBody
-import software.amazon.awssdk.services.s3.S3AsyncClient
+import software.amazon.awssdk.services.s3.S3Client
 
 class FileDwExportClient(
-    private val asyncClient: S3AsyncClient,
+    private val s3Client: S3Client,
     private val sftpSender: SftpSender,
     private val ouluEnv: OuluEnv,
 ) : DwExportClient {
@@ -47,22 +46,16 @@ class FileDwExportClient(
 
             logger.info { "Sending DW content for '$queryName' to S3" }
 
-            val body = AsyncRequestBody.forBlockingInputStream(tempFile.toFile().length())
-
-            val futureResponse =
-                asyncClient.putObject(
-                    { r -> r.bucket(bucket).key(key).contentType("text/csv") },
-                    body,
-                )
-
-            val contentLength = body.writeInputStream(Files.newInputStream(tempFile))
-            val response = futureResponse.join().sdkHttpResponse()
+            val response =
+                s3Client
+                    .putObject({ r -> r.bucket(bucket).key(key).contentType("text/csv") }, tempFile)
+                    .sdkHttpResponse()
 
             if (response.isSuccessful) {
-                logger.info { "DW file '$key' successfully sent ($contentLength bytes)" }
+                logger.info { "DW file '$key' successfully sent" }
             } else {
                 logger.warn {
-                    "DW file '$key' sending failed ($contentLength bytes): ${response.statusCode()} ${response.statusText()}"
+                    "DW file '$key' sending failed: ${response.statusCode()} ${response.statusText()}"
                 }
             }
         } catch (e: Exception) {

@@ -40,10 +40,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.springframework.beans.factory.annotation.Autowired
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 
@@ -101,24 +97,8 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
             s3Client.createBucket(CreateBucketRequest.builder().bucket(EXPORT_BUCKET).build())
         }
 
-        val s3AsyncClient =
-            S3AsyncClient.crtBuilder()
-                .httpConfiguration { it.trustAllCertificatesEnabled(true) }
-                .region(Region.EU_WEST_1)
-                .forcePathStyle(true)
-                .endpointOverride(bucketEnv.localS3Url)
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(
-                            bucketEnv.localS3AccessKeyId,
-                            bucketEnv.localS3SecretAccessKey,
-                        )
-                    )
-                )
-                .build()
-
         val sftpSender = SftpSender(turkuEnv.dwExport.sftp, SftpConnector(JSch()))
-        val exportClient = FileDWExportClient(s3AsyncClient, sftpSender, turkuEnv)
+        val exportClient = FileDWExportClient(s3Client, sftpSender, turkuEnv)
         job = DwExportJob(exportClient)
     }
 

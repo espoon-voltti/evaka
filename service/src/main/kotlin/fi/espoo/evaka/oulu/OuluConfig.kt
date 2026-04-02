@@ -5,7 +5,6 @@
 package fi.espoo.evaka.oulu
 
 import com.jcraft.jsch.JSch
-import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.document.archival.ArchivalIntegrationClient
@@ -61,9 +60,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.io.ClassPathResource
 import org.thymeleaf.ITemplateEngine
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.s3.S3AsyncClient
+import software.amazon.awssdk.services.s3.S3Client
 
 @Configuration
 @Profile("oulu_evaka")
@@ -204,30 +201,12 @@ class OuluConfig {
     @Bean fun mealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
 
     @Bean
-    @Profile("production")
-    fun productionS3AsyncClient(
-        bucketEnv: BucketEnv,
-        credentialsProvider: AwsCredentialsProvider,
-    ): S3AsyncClient = S3AsyncClient.crtBuilder().credentialsProvider(credentialsProvider).build()
-
-    @Bean
-    @Profile("local")
-    fun localS3AsyncClient(
-        bucketEnv: BucketEnv,
-        credentialsProvider: AwsCredentialsProvider,
-    ): S3AsyncClient =
-        S3AsyncClient.crtBuilder()
-            .region(Region.EU_WEST_1)
-            .credentialsProvider(credentialsProvider)
-            .build()
-
-    @Bean
     fun fileDwExportClient(
-        asyncClient: S3AsyncClient,
+        s3Client: S3Client,
         sftpConnector: SftpConnector,
         ouluEnv: OuluEnv,
     ): DwExportClient =
-        FileDwExportClient(asyncClient, SftpSender(ouluEnv.dwExport.sftp, sftpConnector), ouluEnv)
+        FileDwExportClient(s3Client, SftpSender(ouluEnv.dwExport.sftp, sftpConnector), ouluEnv)
 
     @Bean
     fun OuluAsyncJobRunner(
