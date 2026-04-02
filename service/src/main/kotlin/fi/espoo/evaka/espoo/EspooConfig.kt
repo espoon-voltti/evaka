@@ -265,6 +265,7 @@ class EspooConfig {
         jsonMapper: JsonMapper,
         childDocumentArchivalEnv: ChildDocumentArchivalEnv,
         espooBiJob: EspooBiJob?,
+        evakaEnv: EvakaEnv,
     ): EspooScheduledJobs =
         EspooScheduledJobs(
             patuReportingService,
@@ -273,6 +274,7 @@ class EspooConfig {
             linkityEnv,
             jsonMapper,
             espooBiJob,
+            evakaEnv,
         )
 
     @Bean fun espooMealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.linkity
 
+import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.attendance.*
 import fi.espoo.evaka.espoo.EspooAsyncJob
 import fi.espoo.evaka.espoo.LinkityEnv
@@ -20,10 +21,16 @@ import org.springframework.stereotype.Service
 import tools.jackson.databind.json.JsonMapper
 
 private val logger = KotlinLogging.logger {}
-private val MAX_DRIFT: Duration = Duration.ofMinutes(5)
 
 @Service
-class LinkitySyncService(val linkityEnv: LinkityEnv?, val jsonMapper: JsonMapper) {
+class LinkitySyncService(
+    val linkityEnv: LinkityEnv?,
+    val jsonMapper: JsonMapper,
+    evakaEnv: EvakaEnv,
+) {
+
+    private val maxDrift: Duration = evakaEnv.staffAttendanceDriftMinutes
+
     fun getStaffAttendancePlans(
         db: Database.Connection,
         clock: EvakaClock,
@@ -126,6 +133,7 @@ fun sendStaffAttendancesToLinkity(
     period: FiniteDateRange,
     db: Database.Connection,
     client: LinkityClient,
+    maxDrift: Duration,
 ) {
     lateinit var attendances: Map<EmployeeId, List<ExportableAttendance>>
     lateinit var plans: Map<EmployeeId, List<StaffAttendancePlan>>
@@ -141,7 +149,7 @@ fun sendStaffAttendancesToLinkity(
                 it.employeeId
             }
     }
-    val stampings = roundAttendancesToPlans(attendances, plans)
+    val stampings = roundAttendancesToPlans(attendances, plans, maxDrift)
     client.postStampings(
         StampingBatch(
             HelsinkiDateTime.atStartOfDay(period.start),
@@ -155,6 +163,7 @@ fun sendStaffAttendancesToLinkity(
 private fun roundAttendancesToPlans(
     attendances: Map<EmployeeId, List<ExportableAttendance>>,
     plans: Map<EmployeeId, List<StaffAttendancePlan>>,
+    maxDrift: Duration,
 ): List<Stamping> {
     return attendances.flatMap { (employeeId, attendances) ->
         val plannedTimes =
@@ -164,10 +173,10 @@ private fun roundAttendancesToPlans(
                 return@mapNotNull null
             }
             val roundedArrivalTime =
-                plannedTimes.find { it.durationSince(attendance.arrived).abs() <= MAX_DRIFT }
+                plannedTimes.find { it.durationSince(attendance.arrived).abs() <= maxDrift }
                     ?: attendance.arrived
             val roundedDepartureTime =
-                plannedTimes.find { it.durationSince(attendance.departed).abs() <= MAX_DRIFT }
+                plannedTimes.find { it.durationSince(attendance.departed).abs() <= maxDrift }
                     ?: attendance.departed
 
             Stamping(
