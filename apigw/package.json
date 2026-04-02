@@ -30,7 +30,7 @@
     "fast-xml-parser": "5.5.9",
     "helmet": "8.1.0",
     "jsonwebtoken": "9.0.3",
-    "lodash": "4.17.23",
+    "lodash": "4.18.1",
     "make-error-cause": "2.3.0",
     "nocache": "4.0.0",
     "pino": "10.3.1",
