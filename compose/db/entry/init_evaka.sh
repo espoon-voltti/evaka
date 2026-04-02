@@ -19,7 +19,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DATABASE
     CREATE ROLE "evaka_application_role_local";
 
     -- Migration login user
-    CREATE ROLE "evaka_migration_local" WITH LOGIN PASSWORD 'flyway'
+    CREATE ROLE "evaka_migration_local" WITH LOGIN PASSWORD 'flyway' CREATEDB
       IN ROLE "evaka_migration_role_local";
 
     -- App login user
