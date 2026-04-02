@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
 import { useTheme } from 'styled-components'
 
 import type { VoucherValueDecisionDifference } from 'lib-common/generated/api-types/invoicing'

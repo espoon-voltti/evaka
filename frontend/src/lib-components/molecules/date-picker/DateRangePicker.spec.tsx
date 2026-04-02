@@ -4,8 +4,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import '@testing-library/jest-dom'
-import React from 'react'
+import { describe, expect, it, vi } from 'vitest'
 
 import LocalDate from 'lib-common/local-date'
 
@@ -56,7 +55,7 @@ describe('DateRangePicker', () => {
     const date1 = LocalDate.of(2023, 9, 1)
     const date2 = LocalDate.of(2023, 9, 2)
     const date3 = LocalDate.of(2023, 9, 3)
-    const onChange = jest.fn()
+    const onChange = vi.fn()
 
     const { rerender } = render(
       <TestContextProvider translations={translations}>
@@ -136,7 +135,7 @@ describe('DateRangePicker', () => {
     const date2 = LocalDate.of(2023, 9, 2)
     const date3 = LocalDate.of(2023, 9, 3)
 
-    const onChange = jest.fn()
+    const onChange = vi.fn()
 
     const { rerender } = render(
       <TestContextProvider translations={translations}>
@@ -201,7 +200,7 @@ describe('DateRangePicker', () => {
 
   it('does NOT call onChange if dates are beyond min/max', async () => {
     const date = LocalDate.of(2023, 9, 1)
-    const onChange = jest.fn()
+    const onChange = vi.fn()
 
     render(
       <TestContextProvider translations={translations}>
@@ -226,7 +225,7 @@ describe('DateRangePicker', () => {
 
   it('does NOT call onChange if dates are invalid', async () => {
     const date = LocalDate.of(2023, 9, 1)
-    const onChange = jest.fn()
+    const onChange = vi.fn()
 
     render(
       <TestContextProvider translations={translations}>
@@ -253,7 +252,7 @@ describe('DateRangePicker', () => {
   it('if start passes end, sets end to start', async () => {
     const dateBefore = LocalDate.of(2023, 9, 1)
     const dateAfter = dateBefore.addDays(5)
-    const onChange = jest.fn()
+    const onChange = vi.fn()
 
     render(
       <TestContextProvider translations={translations}>
@@ -275,7 +274,7 @@ describe('DateRangePicker', () => {
   it('if end precedes start, sets start to end', async () => {
     const dateBefore = LocalDate.of(2023, 9, 1)
     const dateAfter = dateBefore.addDays(5)
-    const onChange = jest.fn()
+    const onChange = vi.fn()
 
     render(
       <TestContextProvider translations={translations}>
@@ -297,7 +296,7 @@ describe('DateRangePicker', () => {
   it('start and end can be set to invalid order using props', () => {
     const dateBefore = LocalDate.of(2023, 9, 1)
     const dateAfter = dateBefore.addDays(5)
-    const onChange = jest.fn()
+    const onChange = vi.fn()
 
     render(
       <TestContextProvider translations={translations}>

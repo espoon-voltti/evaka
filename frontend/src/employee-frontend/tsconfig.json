@@ -3,9 +3,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "composite": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "outDir": "../../dist/employee-frontend",
-    "types": ["jest"],
     "skipLibCheck": true
   },
   "references": [

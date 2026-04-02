@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { describe, expect, it } from 'vitest'
+
 import type { TerminatablePlacementGroup } from 'lib-common/generated/api-types/placement'
 import { evakaUserId, fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'

@@ -3,9 +3,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "composite": true,
-    "jsx": "react",
-    "outDir": "../../dist/citizen-frontend",
-    "types": ["jest"]
+    "jsx": "react-jsx",
+    "outDir": "../../dist/citizen-frontend"
   },
   "references": [
     { "path": "../lib-common" },

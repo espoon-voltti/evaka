@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { describe, expect, it } from 'vitest'
+
 import DateRange from './date-range'
 import FiniteDateRange, { mergeDateRanges } from './finite-date-range'
 import LocalDate from './local-date'

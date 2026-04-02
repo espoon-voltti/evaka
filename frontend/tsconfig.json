@@ -3,7 +3,7 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "files": ["vite.config.ts"],
+  "files": ["vite.config.ts", "vitest.config.ts", "vitest.setup.ts"],
   "references": [
     { "path": "./src/citizen-frontend" },
     { "path": "./src/lib-common" },
@@ -12,7 +12,6 @@
     { "path": "./src/employee-frontend" },
     { "path": "./src/employee-mobile-frontend" },
     { "path": "./src/lib-icons" },
-    { "path": "./src/lib-customizations" },
-    { "path": "./eslint-plugin" }
+    { "path": "./src/lib-customizations" }
   ]
 }

@@ -6,8 +6,8 @@ import { spawnSync } from 'child_process'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { describe, expect, test } from '@jest/globals'
 import lodash from 'lodash'
+import { describe, expect, test } from 'vitest'
 
 import type {
   AccessLog,

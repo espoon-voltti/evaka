@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-
 import type { Result } from 'lib-common/api'
 import type { MessageType } from 'lib-common/generated/api-types/messaging'
 import type {

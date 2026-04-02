@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { ReactNode } from 'react'
-import React from 'react'
 import { useLocation } from 'wouter'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'

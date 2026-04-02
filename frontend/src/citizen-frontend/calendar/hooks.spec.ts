@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { renderHook, act } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
 
 import type { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import { useSummaryInfo } from './hooks'

@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-
 import type { NamedPerson } from 'lib-common/names'
 import { formatPersonName } from 'lib-common/names'
 

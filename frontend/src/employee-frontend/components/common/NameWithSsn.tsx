@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-
 import type LocalDate from 'lib-common/local-date'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 

@@ -2,9 +2,10 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "rootDir": ".",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "noEmit": true,
-    "types": ["jest", "node"]
+    "types": ["node"]
   },
+  "files": ["vitest.setup.ts"],
   "exclude": ["dist", "node_modules", "*.js"]
 }

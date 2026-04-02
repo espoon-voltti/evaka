@@ -43,7 +43,7 @@ FROM builder AS test
 
 RUN yarn lint
 RUN yarn type-check
-RUN yarn test-ci
+RUN yarn test
 
 FROM base
 

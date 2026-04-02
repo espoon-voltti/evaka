@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import { Link } from 'wouter'
 
 import { useBoolean } from 'lib-common/form/hooks'

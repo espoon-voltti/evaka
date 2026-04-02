@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import styled from 'styled-components'
 
 import type FiniteDateRange from 'lib-common/finite-date-range'

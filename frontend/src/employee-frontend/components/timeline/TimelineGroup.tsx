@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 

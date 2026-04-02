@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect } from 'react'
+import { Fragment, useContext, useEffect } from 'react'
 import { useMemo } from 'react'
 
 import type { Result } from 'lib-common/api'

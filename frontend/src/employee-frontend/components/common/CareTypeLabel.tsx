@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
-
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { careTypeColors } from 'lib-customizations/common'

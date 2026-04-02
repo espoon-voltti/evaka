@@ -3,9 +3,9 @@
   "compilerOptions": {
     "rootDir": ".",
     "composite": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "outDir": "../../dist/lib-components",
-    "types": ["jest"],
+    "types": ["node"],
   },
   "references": [{ "path": "../lib-common" }, { "path": "../lib-icons" }]
 }

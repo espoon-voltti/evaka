@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import { useContext } from 'react'
 import { Redirect, useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'

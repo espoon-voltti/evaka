@@ -14,7 +14,6 @@ import {
   Tooltip
 } from 'chart.js'
 import annotationPlugin from 'chartjs-plugin-annotation'
-import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 

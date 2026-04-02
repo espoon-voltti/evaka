@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import styled from 'styled-components'
 
 import type { CaretakerAmount } from 'lib-common/generated/api-types/daycare'
