@@ -1021,7 +1021,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/preset-env@npm:^7.29.0":
+"@babel/preset-env@npm:^7.29.2":
   version: 7.29.2
   resolution: "@babel/preset-env@npm:7.29.2"
   dependencies:
@@ -3766,26 +3766,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-legacy@npm:8.0.0":
-  version: 8.0.0
-  resolution: "@vitejs/plugin-legacy@npm:8.0.0"
+"@vitejs/plugin-legacy@npm:8.0.1":
+  version: 8.0.1
+  resolution: "@vitejs/plugin-legacy@npm:8.0.1"
   dependencies:
     "@babel/core": "npm:^7.29.0"
     "@babel/plugin-transform-dynamic-import": "npm:^7.27.1"
     "@babel/plugin-transform-modules-systemjs": "npm:^7.29.0"
-    "@babel/preset-env": "npm:^7.29.0"
-    babel-plugin-polyfill-corejs3: "npm:^0.14.1"
-    babel-plugin-polyfill-regenerator: "npm:^0.6.7"
+    "@babel/preset-env": "npm:^7.29.2"
+    babel-plugin-polyfill-corejs3: "npm:^0.14.2"
+    babel-plugin-polyfill-regenerator: "npm:^0.6.8"
     browserslist: "npm:^4.28.1"
     browserslist-to-esbuild: "npm:^2.1.1"
-    core-js: "npm:^3.48.0"
+    core-js: "npm:^3.49.0"
     magic-string: "npm:^0.30.21"
     regenerator-runtime: "npm:^0.14.1"
     systemjs: "npm:^6.15.1"
   peerDependencies:
     terser: ^5.16.0
     vite: ^8.0.0
-  checksum: 10/cc86c219f58c56c0297689527ef52c7109a442fe525fed3a29bb7a87368c4f9a9083666b2e250b1554b8f5ec30f58f5fbef60760afc9374ea142876502098df1
+  checksum: 10/75bdcdb4e830b44a17f57b9a84b637bc5e625c031be6745b0011cbe72b997a8cb9b6f3039e92f0b71fa20574e8d5791f61b08f4a56281b41a7ab1ed7b0fa5e29
   languageName: node
   linkType: hard
 
@@ -4233,7 +4233,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"babel-plugin-polyfill-corejs3@npm:^0.14.0, babel-plugin-polyfill-corejs3@npm:^0.14.1":
+"babel-plugin-polyfill-corejs3@npm:^0.14.0, babel-plugin-polyfill-corejs3@npm:^0.14.2":
   version: 0.14.2
   resolution: "babel-plugin-polyfill-corejs3@npm:0.14.2"
   dependencies:
@@ -4245,7 +4245,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"babel-plugin-polyfill-regenerator@npm:^0.6.6, babel-plugin-polyfill-regenerator@npm:^0.6.7":
+"babel-plugin-polyfill-regenerator@npm:^0.6.6, babel-plugin-polyfill-regenerator@npm:^0.6.8":
   version: 0.6.8
   resolution: "babel-plugin-polyfill-regenerator@npm:0.6.8"
   dependencies:
@@ -4613,7 +4613,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:^3.48.0":
+"core-js@npm:^3.49.0":
   version: 3.49.0
   resolution: "core-js@npm:3.49.0"
   checksum: 10/31d018f9830b0240ae40869e380595f2d06a8800709ad63299a42a438ba0c8d5805045fa02a20a78f42761d83103b0b71eca982955f5e890fb7cf6b2fe6a9ab1
@@ -5600,7 +5600,7 @@ __metadata:
     "@types/react": "npm:19.2.14"
     "@types/react-dom": "npm:19.2.3"
     "@types/rollup": "npm:0.54.0"
-    "@vitejs/plugin-legacy": "npm:8.0.0"
+    "@vitejs/plugin-legacy": "npm:8.0.1"
     "@vitejs/plugin-react": "npm:6.0.1"
     autosize: "npm:6.0.1"
     axios: "npm:1.13.6"
