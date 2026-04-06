@@ -5508,7 +5508,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:7.0.1"
     globals: "npm:17.4.0"
     ical-generator: "npm:10.1.0"
-    jsdom: "npm:^29.0.1"
+    jsdom: "npm:29.0.1"
     leaflet: "npm:1.9.4"
     lib-common: "link:src/lib-common"
     lib-components: "link:src/lib-components"
@@ -6545,7 +6545,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsdom@npm:^29.0.1":
+"jsdom@npm:29.0.1":
   version: 29.0.1
   resolution: "jsdom@npm:29.0.1"
   dependencies:
