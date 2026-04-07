@@ -22,8 +22,31 @@ set -euo pipefail
 docker compose up -d
 pm2 start
 
+APIGW_PORT=${EVAKA_APIGW_PORT:-3000}
+SERVICE_PORT=${SERVER_PORT:-8888}
 FRONTEND_PORT=${EVAKA_FRONTEND_PORT:-9099}
 
+echo ""
+echo "Waiting for services to start (press Ctrl-C to skip)..."
+
+wait_for_port() {
+  local name=$1 port=$2
+  while ! curl -s -o /dev/null "http://localhost:${port}" 2>/dev/null; do
+    sleep 1
+  done
+  echo "  ${name} is up (port ${port})"
+}
+
+trap 'echo ""; echo "Skipped waiting. Services may still be starting."; exit 0' INT
+
+wait_for_port apigw "$APIGW_PORT" &
+wait_for_port service "$SERVICE_PORT" &
+wait_for_port frontend "$FRONTEND_PORT" &
+wait
+
+trap - INT
+
+echo ""
 echo "Development environment started."
 echo "Open http://localhost:${FRONTEND_PORT}/ in your browser."
 """
