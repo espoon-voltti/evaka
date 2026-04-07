@@ -670,6 +670,29 @@ class ApplicationControllerCitizen(
         }
     }
 
+    @GetMapping("/decisions/{id}")
+    fun getDecisionDetails(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable id: DecisionId,
+    ): CitizenDecisionDetails {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Decision.READ,
+                        id,
+                    )
+                    tx.getSentDecision(id)?.toCitizenDecisionDetails()
+                        ?: throw NotFound("Decision $id does not exist")
+                }
+            }
+            .also { Audit.DecisionRead.log(targetId = AuditId(id)) }
+    }
+
     @GetMapping("/applications/by-guardian/notifications")
     fun getGuardianApplicationNotifications(
         db: Database,
@@ -911,6 +934,34 @@ data class DecisionSummary(
     val sentDate: LocalDate,
     val resolved: LocalDate?,
 )
+
+data class CitizenDecisionDetails(
+    val unitName: String,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val sentDate: LocalDate,
+    val resolved: LocalDate?,
+)
+
+fun Decision.toCitizenDecisionDetails() =
+    CitizenDecisionDetails(
+        unitName =
+            when (type) {
+                DecisionType.DAYCARE,
+                DecisionType.DAYCARE_PART_TIME ->
+                    unit.daycareDecisionName.takeUnless { it.isBlank() }
+                DecisionType.PRESCHOOL,
+                DecisionType.PRESCHOOL_DAYCARE,
+                DecisionType.PRESCHOOL_CLUB,
+                DecisionType.PREPARATORY_EDUCATION ->
+                    unit.preschoolDecisionName.takeUnless { it.isBlank() }
+                else -> null
+            } ?: unit.name,
+        startDate = startDate,
+        endDate = endDate,
+        sentDate = sentDate!!,
+        resolved = resolved,
+    )
 
 data class LiableCitizenInfo(val id: PersonId, val firstName: String, val lastName: String)
 

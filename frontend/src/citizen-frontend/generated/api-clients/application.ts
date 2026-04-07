@@ -13,6 +13,7 @@ import type { ApplicationType } from 'lib-common/generated/api-types/application
 import type { ApplicationsOfChild } from 'lib-common/generated/api-types/application'
 import type { CitizenApplicationUpdate } from 'lib-common/generated/api-types/application'
 import type { CitizenChildren } from 'lib-common/generated/api-types/application'
+import type { CitizenDecisionDetails } from 'lib-common/generated/api-types/application'
 import type { CreateApplicationBody } from 'lib-common/generated/api-types/application'
 import type { DecisionId } from 'lib-common/generated/api-types/shared'
 import type { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
@@ -29,6 +30,7 @@ import { deserializeJsonApplicationDecisions } from 'lib-common/generated/api-ty
 import { deserializeJsonApplicationDetails } from 'lib-common/generated/api-types/application'
 import { deserializeJsonApplicationsOfChild } from 'lib-common/generated/api-types/application'
 import { deserializeJsonCitizenChildren } from 'lib-common/generated/api-types/application'
+import { deserializeJsonCitizenDecisionDetails } from 'lib-common/generated/api-types/application'
 import { deserializeJsonDecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
 import { deserializeJsonFinanceDecisionCitizenInfo } from 'lib-common/generated/api-types/application'
 import { uri } from 'lib-common/uri'
@@ -184,6 +186,22 @@ export async function getChildPlacementStatusByApplicationType(
     method: 'GET'
   })
   return json
+}
+
+
+/**
+* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getDecisionDetails
+*/
+export async function getDecisionDetails(
+  request: {
+    id: DecisionId
+  }
+): Promise<CitizenDecisionDetails> {
+  const { data: json } = await client.request<JsonOf<CitizenDecisionDetails>>({
+    url: uri`/citizen/decisions/${request.id}`.toString(),
+    method: 'GET'
+  })
+  return deserializeJsonCitizenDecisionDetails(json)
 }
 
 

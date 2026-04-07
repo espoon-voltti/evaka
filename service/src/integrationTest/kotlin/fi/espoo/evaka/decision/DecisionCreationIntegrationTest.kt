@@ -523,6 +523,112 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
+    fun `citizen can fetch decision details`() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val child = DevPerson(ssn = "070714A9126")
+        val citizen =
+            db.transaction { tx ->
+                tx.insert(guardian, DevPersonType.ADULT)
+                tx.insert(child, DevPersonType.CHILD)
+                AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
+            }
+        MockPersonDetailsService.addPersons(guardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
+        checkDecisionDrafts(
+            applicationId,
+            adult = guardian,
+            child = child,
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true,
+                    )
+                ),
+            otherGuardian = null,
+        )
+        val createdDecisions = createDecisions(applicationId)
+        assertEquals(1, createdDecisions.size)
+
+        val details =
+            applicationControllerCitizen.getDecisionDetails(
+                dbInstance(),
+                citizen,
+                clock,
+                createdDecisions[0].id,
+            )
+        assertEquals("Test Daycare / daycare", details.unitName)
+        assertEquals(period.start, details.startDate)
+        assertEquals(period.end, details.endDate)
+        assertEquals(clock.today(), details.sentDate)
+        assertNull(details.resolved)
+    }
+
+    @Test
+    fun `citizen cannot fetch decision details without access`() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val otherPerson = DevPerson(ssn = "311299-999E")
+        val child = DevPerson(ssn = "070714A9126")
+        val otherCitizen =
+            db.transaction { tx ->
+                tx.insert(guardian, DevPersonType.ADULT)
+                tx.insert(otherPerson, DevPersonType.ADULT)
+                tx.insert(child, DevPersonType.CHILD)
+                AuthenticatedUser.Citizen(otherPerson.id, CitizenAuthLevel.STRONG)
+            }
+        MockPersonDetailsService.addPersons(guardian, otherPerson, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
+        checkDecisionDrafts(
+            applicationId,
+            adult = guardian,
+            child = child,
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true,
+                    )
+                ),
+            otherGuardian = null,
+        )
+        val createdDecisions = createDecisions(applicationId)
+        assertEquals(1, createdDecisions.size)
+
+        assertThrows<Forbidden> {
+            applicationControllerCitizen.getDecisionDetails(
+                dbInstance(),
+                otherCitizen,
+                clock,
+                createdDecisions[0].id,
+            )
+        }
+    }
+
+    @Test
     fun `other guardian in different address as guardian sees decision but can't decide`() {
         val guardian = DevPerson(ssn = "070644-937X", residenceCode = "1")
         val otherGuardian = DevPerson(ssn = "311299-999E", residenceCode = "2")

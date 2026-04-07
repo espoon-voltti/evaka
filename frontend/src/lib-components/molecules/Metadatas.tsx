@@ -9,6 +9,7 @@ import type { ProcessMetadata } from 'lib-common/generated/api-types/caseprocess
 import type { DocumentMetadata } from 'lib-common/generated/api-types/caseprocess'
 import { faArrowDownToLine } from 'lib-icons'
 
+import HorizontalLine from '../atoms/HorizontalLine'
 import UnorderedList from '../atoms/UnorderedList'
 import { Button } from '../atoms/buttons/Button'
 import { useTranslations } from '../i18n'
@@ -18,7 +19,7 @@ import { Gap } from '../white-space'
 
 import LabelValueList from './LabelValueList'
 
-const DocumentMetadata = React.memo(function DocumentMetadata({
+const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
   document
 }: {
   document: DocumentMetadata
@@ -190,7 +191,7 @@ export const Metadatas = React.memo(function Metadatas({
     </>
   ) : (
     <div>
-      <Gap />
+      <HorizontalLine $slim />
       <LabelValueList
         spacing="small"
         contents={[
@@ -221,18 +222,24 @@ export const Metadatas = React.memo(function Metadatas({
             : [])
         ]}
       />
-      <Gap />
+      <HorizontalLine $slim />
       <H3>{i18n.metadata.primaryDocument}</H3>
-      <DocumentMetadata document={metadata.primaryDocument} />
+      <DocumentMetadataSection document={metadata.primaryDocument} />
       {metadata.secondaryDocuments.length > 0 && (
         <>
           <Gap />
+          <HorizontalLine $slim />
           <H3>{i18n.metadata.secondaryDocuments}</H3>
+          <Gap />
           <FixedSpaceColumn>
             {metadata.secondaryDocuments.map((doc, i) => (
-              <DocumentMetadata key={i} document={doc} />
+              <React.Fragment key={i}>
+                {i > 0 && <HorizontalLine $slim />}
+                <DocumentMetadataSection document={doc} />
+              </React.Fragment>
             ))}
           </FixedSpaceColumn>
+          <Gap />
         </>
       )}
       {metadata.process.history.length > 0 && (

@@ -6,6 +6,7 @@ import { Queries } from 'lib-common/query'
 
 import {
   acceptDecision,
+  getDecisionDetails,
   getDecisions,
   getGuardianApplicationNotifications,
   getLiableCitizenFinanceDecisions,
@@ -19,6 +20,8 @@ import {
 import { receivedMessagesQuery } from '../messages/queries'
 
 const q = new Queries()
+
+export const decisionDetailsQuery = q.query(getDecisionDetails)
 
 export const decisionsQuery = q.query(getDecisions)
 

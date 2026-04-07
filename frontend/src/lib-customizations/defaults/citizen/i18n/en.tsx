@@ -1750,6 +1750,7 @@ const en: Translations = {
           'First confirm the decision regarding pre-primary education or preparatory education. After that, you can confirm the related early childhood education decision.'
       },
       openPdf: 'Show the decision',
+      additionalDetails: 'Additional details',
       warnings: {
         decisionWithNoResponseWarning: {
           title: 'There is a decision without a response',

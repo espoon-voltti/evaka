@@ -26,8 +26,8 @@ import {
 } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
+import type { NewEvakaPage } from '../../playwright'
 import { test } from '../../playwright'
-import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
@@ -48,10 +48,14 @@ test.describe('Citizen application decisions', () => {
 
   async function openCitizenDecisionsPage(
     citizen: DevPerson,
-    newEvakaPage: () => Promise<Page>
+    newEvakaPage: NewEvakaPage,
+    showMetadataToCitizen = true
   ) {
-    const page = await newEvakaPage()
+    const page = await newEvakaPage({
+      citizenCustomizations: { featureFlags: { showMetadataToCitizen } }
+    })
     await enduserLogin(page, citizen, '/decisions')
+
     const citizenDecisionsPage = new CitizenDecisionsPage(page)
     return {
       page,
@@ -263,9 +267,7 @@ test.describe('Citizen application decisions', () => {
     await citizenDecisionsPage.assertUnresolvedDecisionsCount(0)
   })
 
-  test('Citizen can open and view decision metadata', async ({
-    newEvakaPage
-  }) => {
+  async function setupDecisionForMetadataTest() {
     const application = applicationFixture(
       testChild,
       testAdult,
@@ -290,12 +292,29 @@ test.describe('Citizen application decisions', () => {
       applicationId: application.id
     })
     if (decisions.length !== 1) throw Error('Expected 1 decision')
+    return decisions[0]
+  }
 
+  test('Citizen can open and view decision metadata', async ({
+    newEvakaPage
+  }) => {
+    const decision = await setupDecisionForMetadataTest()
     const { citizenDecisionsPage } = await openCitizenDecisionsPage(
       testAdult,
       newEvakaPage
     )
+    await citizenDecisionsPage.viewDecisionMetadata(decision.id)
+  })
 
-    await citizenDecisionsPage.viewDecisionMetadata(decisions[0].id)
+  test('Citizen cannot open or view decision metadata when feature flag is disabled', async ({
+    newEvakaPage
+  }) => {
+    const decision = await setupDecisionForMetadataTest()
+    const { citizenDecisionsPage } = await openCitizenDecisionsPage(
+      testAdult,
+      newEvakaPage,
+      false
+    )
+    await citizenDecisionsPage.viewDecisionWithoutMetadata(decision.id)
   })
 })

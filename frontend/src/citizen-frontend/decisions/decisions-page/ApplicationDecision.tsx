@@ -14,16 +14,21 @@ import type {
   DecisionId
 } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import IconChip from 'lib-components/atoms/IconChip'
 import { ResponsiveLinkButton } from 'lib-components/atoms/buttons/LinkButton'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
-import { H3, H4 } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { H3, H4, Label } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import { applicationMetadataQuery } from '../../applications/queries'
+import { renderResult } from '../../async-rendering'
 import { useTranslation } from '../../localization'
 import { MetadataResultSection } from '../../metadata/MetadataSection'
+import { PdfLink } from '../PdfLink'
+import { decisionDetailsQuery } from '../queries'
 import { iconPropsByStatus } from '../shared'
 
 interface Props {
@@ -63,6 +68,7 @@ export default React.memo(function ApplicationDecision({
           <H4 $noMargin data-qa="decision-sent-date">
             {sentDate.format()}
           </H4>
+          <Gap $size="xxs" />
           <H3 $noMargin data-qa="title-decision-type">
             {t.decisions.applicationDecisions.type[type]}
           </H3>
@@ -90,13 +96,75 @@ export default React.memo(function ApplicationDecision({
       $paddingVertical="0"
       data-qa={`application-decision-${id}`}
     >
-      {featureFlags.showMetadataToCitizen && (
-        <MetadataResultSection
-          query={applicationMetadataQuery({ applicationId })}
-        />
-      )}
+      {open && <DecisionDetails id={id} applicationId={applicationId} />}
     </CollapsibleContentArea>
   )
+})
+
+const DecisionDetails = React.memo(function DecisionDetails({
+  id,
+  applicationId
+}: {
+  id: DecisionId
+  applicationId: ApplicationId
+}) {
+  const t = useTranslation()
+  const detailsResult = useQueryResult(decisionDetailsQuery({ id }))
+  const [metadataOpen, setMetadataOpen] = useState(false)
+  const toggleMetadata = useCallback(() => setMetadataOpen((o) => !o), [])
+
+  return renderResult(detailsResult, (details) => (
+    <FixedSpaceColumn $spacing="s">
+      <PaddedRow>
+        <PdfLink decisionId={id} />
+      </PaddedRow>
+      <div>
+        <Label>{t.decisions.applicationDecisions.unit}</Label>
+        <Gap $size="xxs" />
+        <div data-qa="decision-unit" translate="no">
+          {details.unitName}
+        </div>
+      </div>
+      <div>
+        <Label>{t.decisions.applicationDecisions.period}</Label>
+        <Gap $size="xxs" />
+        <div data-qa="decision-period">
+          {details.startDate.format()} – {details.endDate.format()}
+        </div>
+      </div>
+      <div>
+        <Label>{t.decisions.applicationDecisions.sentDate}</Label>
+        <Gap $size="xxs" />
+        <div data-qa="decision-sent-date-detail">
+          {details.sentDate.format()}
+        </div>
+      </div>
+      <div>
+        <Label>{t.decisions.applicationDecisions.resolved}</Label>
+        <Gap $size="xxs" />
+        <div data-qa="decision-resolved">
+          {details.resolved?.format() ?? '–'}
+        </div>
+      </div>
+      {featureFlags.showMetadataToCitizen && (
+        <MetadataAccordion
+          open={metadataOpen}
+          toggleOpen={toggleMetadata}
+          title={
+            <Label>{t.decisions.applicationDecisions.additionalDetails}</Label>
+          }
+          $opaque={false}
+          $paddingHorizontal="s"
+          $paddingVertical="s"
+          data-qa="metadata-section"
+        >
+          <MetadataResultSection
+            query={applicationMetadataQuery({ applicationId })}
+          />
+        </MetadataAccordion>
+      )}
+    </FixedSpaceColumn>
+  ))
 })
 
 const AlwaysShownCollapseContent = styled.div`
@@ -105,4 +173,12 @@ const AlwaysShownCollapseContent = styled.div`
   align-items: flex-start;
   gap: ${defaultMargins.s};
   margin-top: ${defaultMargins.s};
+`
+const PaddedRow = styled.div`
+  padding: ${defaultMargins.xs};
+  word-break: break-word;
+`
+const MetadataAccordion = styled(CollapsibleContentArea)`
+  background-color: ${(p) => p.theme.colors.grayscale.g4};
+  padding: ${defaultMargins.s};
 `
