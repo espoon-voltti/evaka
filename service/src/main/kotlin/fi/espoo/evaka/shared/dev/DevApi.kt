@@ -220,6 +220,7 @@ class DevApi(
     private val invoiceGenerator: InvoiceGenerator,
     private val featureConfig: FeatureConfig,
     private val passwordService: PasswordService,
+    private val templateDbManager: TemplateDbManager,
 ) {
     private val digitransit = MockDigitransit()
 
@@ -238,6 +239,9 @@ class DevApi(
 
     @PostMapping("/test-mode")
     fun setTestMode(db: Database, @RequestParam enabled: Boolean) {
+        if (!enabled) {
+            templateDbManager.resetToOriginal()
+        }
         asyncJobRunners.forEach {
             if (enabled) {
                 it.stopBackgroundPolling()
@@ -250,14 +254,8 @@ class DevApi(
     }
 
     @PostMapping("/reset-service-state")
-    fun resetServiceState(db: Database, clock: EvakaClock) {
-        // Run async jobs before database reset to avoid database locks/deadlocks
-        runAllAsyncJobs(clock)
-
-        db.connect { dbc ->
-            dbc.waitUntilNoQueriesRunning(timeout = Duration.ofSeconds(10))
-            dbc.withLockedDatabase(timeout = Duration.ofSeconds(10)) { it.resetDatabase() }
-        }
+    fun resetServiceState() {
+        templateDbManager.resetToTemplate()
         MockEmailClient.clear()
         MockPersonDetailsService.reset()
     }

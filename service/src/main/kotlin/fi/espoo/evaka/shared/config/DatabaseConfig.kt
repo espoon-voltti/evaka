@@ -50,7 +50,7 @@ class DatabaseConfig {
             )
             .load()
             .run { migrate() }
-        return HikariDataSource(
+        val hikariConfig =
             HikariConfig().apply {
                 connectionInitSql =
                     "SET SESSION statement_timeout = '${env.defaultStatementTimeout.toMillis()}ms'"
@@ -66,6 +66,6 @@ class DatabaseConfig {
                     TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt(),
                 )
             }
-        )
+        return SwappableDataSource(HikariDataSource(hikariConfig), hikariConfig)
     }
 }
