@@ -540,17 +540,19 @@ jobs:
       fail-fast: false
       matrix:
         municipality: [oulu, turku]
+        # The service need option IDs are known IDs in municipalitie's `afterMigrate_*` scripts
         include:
           - municipality: oulu
             service_need_option_id: de463972-9f97-11ec-a22c-931f5a294cea
           - municipality: turku
             service_need_option_id: 50358394-b961-11eb-b51f-67ac436e5636
 
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+
     steps:
       - uses: actions/checkout@v6
 
       - name: Login to GitHub Container Registry
-        if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -558,7 +560,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start service with ${{ matrix.municipality }} config
-        if: ${{ !github.event.pull_request.head.repo.fork }}
         env:
           TAG: "${{ github.event.pull_request.head.sha || github.sha }}"
           BUILD: "false"
@@ -573,7 +574,6 @@ jobs:
             evaka-srv
 
       - name: Wait for service to be healthy
-        if: ${{ !github.event.pull_request.head.repo.fork }}
         run: |
           TRIES=60
           while [ $TRIES -gt 0 ]; do
@@ -594,7 +594,6 @@ jobs:
           fi
 
       - name: Verify afterMigrate scripts ran
-        if: ${{ !github.event.pull_request.head.repo.fork }}
         run: |
           cd compose
           result=$(docker compose -f docker-compose.yml exec -T db \
