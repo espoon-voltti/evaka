@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2021 City of Oulu
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+fi.espoo.evaka.oulu:
+  MessageProvider:
+    DECISION_HEADER:
+      fi: Oulun esiopetukseen ja varhaiskasvatukseen liittyvät päätökset
+    DECISION_CONTENT:
+      fi: |
+        Olette hakeneet lapsellenne varhaiskasvatus- esiopetus- tai avoimen varhaiskasvatuksen paikkaa tai palveluseteliä Oulun varhaiskasvatuksesta. Päätös on luettavissa oheisesta liitteestä. 
+
+        Huomioithan, että vastaus päätökseen tulee antaa kahden viikon kuluessa tämän päätöksen saamisesta sähköisesti osoitteessa varhaiskasvatus.ouka.fi (vaatii vahvan tunnistautumisen).
+    FEE_DECISION_HEADER:
+      fi: Oulun varhaiskasvatukseen liittyvät päätökset
+    FEE_DECISION_CONTENT:
+      fi: |
+        Olette saaneet päätöksen varhaiskasvatuksen asiakasmaksusta Oulun kaupungilta. Päätös on luettavissa oheisesta liitteestä.
+        
+        Maksupäätös on voimassa toistaiseksi. Jos perheen bruttotuloissa tapahtuu olennaisia muutoksia, on uusi tuloselvitys tehtävä välittömästi.
+        
+        Lisätietoja maksun määräytymisestä löytyy Oulun kaupungin verkkosivuilta: Varhaiskasvatuksen asiakasmaksut.
+    VOUCHER_VALUE_DECISION_HEADER:
+      fi: Oulun varhaiskasvatukseen liittyvät päätökset
+    VOUCHER_VALUE_DECISION_CONTENT:
+      fi: |
+        Olette saaneet päätöksen varhaiskasvatuksen palvelusetelin arvosta ja omavastuuosuudesta. Päätös on luettavissa oheisesta liitteestä.
+
+        Päätös omavastuuosuudesta on voimassa toistaiseksi.  Päiväkodin / perhepäivähoitajan perimä omavastuu voi olla suurempi, kuin mitä päätöksessä ilmoitettu, jos päiväkodin hinta on suurempi kuin palvelusetelin enimmäisarvo. Jos perheen bruttotuloissa tapahtuu olennaisia muutoksia, on uusi tuloselvitys tehtävä välittömästi.
+
+        Lisätietoja maksun määräytymisestä löytyy Oulun kaupungin verkkosivuilta: Varhaiskasvatuksen asiakasmaksut.
+    ASSISTANCE_NEED_DECISION_HEADER:
+      fi: Oulun varhaiskasvatukseen liittyvät päätökset
+    ASSISTANCE_NEED_DECISION_CONTENT:
+      fi: |
+        Lapsellenne on tehty päätös. Voit katsella päätöstä eVakassa.
+        Koska olette ottanut Suomi.fi -palvelun käyttöönne, on päätös myös luettavissa alla olevista liitteistä.

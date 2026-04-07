@@ -40,6 +40,8 @@ src/lib-customizations/**/*
 !src/lib-customizations/defaults/**/*
 !src/lib-customizations/espoo
 !src/lib-customizations/espoo/**/*
+!src/lib-customizations/oulu
+!src/lib-customizations/oulu/**/*
 !src/lib-customizations/turku
 !src/lib-customizations/turku/**/*
 !src/lib-customizations/README.md

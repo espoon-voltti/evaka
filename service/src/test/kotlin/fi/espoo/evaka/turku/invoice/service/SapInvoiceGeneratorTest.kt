@@ -347,7 +347,10 @@ class SapInvoiceGeneratorTest {
     @Test
     fun `result should be equal to a known good format`() {
         val correctInvoice =
-            object {}.javaClass.getResource("/invoice-client/CorrectSapInvoice.txt")?.readText()
+            object {}
+                .javaClass
+                .getResource("/turku/invoice-client/CorrectSapInvoice.txt")
+                ?.readText()
         assert(invoiceXml.equals(correctInvoice))
     }
 }

@@ -1,0 +1,64 @@
+# SPDX-FileCopyrightText: 2021 City of Oulu
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+spring:
+  application:
+    name: "evakaoulu-service"
+#logging:
+#  level:
+#    root: TRACE
+evaka:
+  email:
+    sender_address: "no-reply.evaka@ouka.fi"
+    sender_name:
+      fi: "Oulun Varhaiskasvatus"
+      sv: "Uleåborg småbarnspedagogik"
+    application_received:
+      sender_address:
+        fi: "vaka.palveluohjaus@ouka.fi"
+        sv: "dagis@ouka.fi"
+      sender_name:
+        fi: "Varhaiskasvatuksen palveluohjaus"
+        sv: "Barninvalskoordinatorer / Uleåborg"
+  oph:
+    organizer_oid: "1.2.246.562.10.80381044462"
+    organizer_id: "90"
+    municipality_code: "564"
+  fee_decision:
+    min_date: "2019-01-01"
+  database:
+    flyway:
+      locations:
+        - db/migration
+        - oulu/db/migration
+  integration:
+    sfi:
+      contact_organization:
+        name: "eVaka Oulu"
+        street_address: "PL 75"
+        postal_code: "90015"
+        post_office: "Oulu"
+
+---
+spring.config.activate.on-profile: local
+evakaoulu:
+  intime_invoices:
+    username: user
+    password: pass
+    address: address
+    path: path
+  intime_payments:
+    username: user
+    password: pass
+    address: address
+    path: path
+  bucket:
+    export: evakaoulu-export-it
+  dw_export:
+    prefix: reports
+    sftp:
+      username: user
+      password: pass
+      address: address
+      path: path
