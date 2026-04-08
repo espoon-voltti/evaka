@@ -309,8 +309,9 @@ function provision() {
     [
       "if [ -f /etc/sandbox-provisioned ]; then exit 0; fi",
       `mkdir -p ${shellQuote(hostHome)}`,
-      `sed -i 's|:/home/${vmUser}.linux:|:${hostHome}:|' /etc/passwd`,
-      `cp -a /home/${vmUser}.linux/. ${shellQuote(hostHome)}/`,
+      `vmHome=$(ls -d /home/${vmUser}.linux /home/${vmUser}.guest 2>/dev/null | head -1)`,
+      `sed -i "s|:$vmHome:|:${hostHome}:|" /etc/passwd`,
+      `cp -a "$vmHome/." ${shellQuote(hostHome)}/`,
       "apt-get update",
       "apt-get install -y --no-install-recommends locales netcat-openbsd",
       "sed -i 's/# en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen",
