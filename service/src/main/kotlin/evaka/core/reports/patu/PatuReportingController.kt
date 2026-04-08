@@ -1,0 +1,57 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.reports.patu
+
+import evaka.core.Audit
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.db.Database
+import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.security.AccessControl
+import evaka.core.shared.security.Action
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.LocalDate
+import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+
+private val logger = KotlinLogging.logger {}
+
+@RestController
+@RequestMapping("/employee/patu-report")
+class PatuReportingController(
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val accessControl: AccessControl,
+) {
+
+    @PostMapping
+    fun sendPatuReport(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
+    ) {
+        val range = DateRange(from, to)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.Global.SEND_PATU_REPORT)
+                logger.info { "Scheduling patu report $range" }
+                asyncJobRunner.plan(
+                    tx,
+                    payloads = listOf(AsyncJob.SendPatuReport(range)),
+                    runAt = HelsinkiDateTime.now(),
+                    retryCount = 1,
+                )
+            }
+        }
+        Audit.PatuReportSend.log(meta = mapOf("from" to from, "to" to to))
+    }
+}

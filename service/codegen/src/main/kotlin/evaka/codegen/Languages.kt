@@ -4,8 +4,8 @@
 
 package evaka.codegen
 
-import fi.espoo.evaka.shared.domain.ISO_LANGUAGES_SUBSET
-import fi.espoo.evaka.shared.domain.IsoLanguage
+import evaka.core.shared.domain.ISO_LANGUAGES_SUBSET
+import evaka.core.shared.domain.IsoLanguage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import kotlin.io.path.readText

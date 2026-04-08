@@ -1,0 +1,657 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.application
+
+import evaka.core.FullApplicationTest
+import evaka.core.daycare.PreschoolTerm
+import evaka.core.defaultMunicipalOrganizerOid
+import evaka.core.invoicing.testFeeThresholds
+import evaka.core.messaging.createServiceWorkerMessageAccount
+import evaka.core.messaging.getCitizenMessageAccount
+import evaka.core.messaging.getUnreadMessagesCountsCitizen
+import evaka.core.pis.getPersonBySSN
+import evaka.core.placement.PlacementType
+import evaka.core.shared.AreaId
+import evaka.core.shared.ChildId
+import evaka.core.shared.DaycareId
+import evaka.core.shared.GroupId
+import evaka.core.shared.PersonId
+import evaka.core.shared.PreschoolTermId
+import evaka.core.shared.ServiceNeedOptionId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.auth.CitizenAuthLevel
+import evaka.core.shared.auth.UserRole
+import evaka.core.shared.data.DateSet
+import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevDaycareGroup
+import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevFridgeChild
+import evaka.core.shared.dev.DevGuardian
+import evaka.core.shared.dev.DevPerson
+import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.DevPreschoolTerm
+import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.NotFound
+import evaka.core.shared.job.ScheduledJobs
+import evaka.core.shared.security.AccessControl
+import evaka.core.shared.security.Action
+import evaka.core.shared.security.PilotFeature
+import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import evaka.core.vtjclient.service.persondetails.MockVtjDataset
+import evaka.core.vtjclient.service.persondetails.MockVtjPerson
+import java.math.BigDecimal
+import java.nio.charset.StandardCharsets
+import java.time.LocalDate
+import java.util.UUID
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.whenever
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockMultipartFile
+
+class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var controller: PlacementToolController
+    @Autowired lateinit var service: PlacementToolService
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var scheduledJobs: ScheduledJobs
+    @Autowired lateinit var accessCpontrol: AccessControl
+
+    private val clock = MockEvakaClock(2021, 1, 7, 12, 0)
+    final val employee = DevEmployee(firstName = "Test", lastName = "Employee")
+    private val admin = AuthenticatedUser.Employee(employee.id, setOf(UserRole.ADMIN))
+    val defaultServiceNeedOption =
+        ServiceNeedOption(
+            ServiceNeedOptionId(UUID.randomUUID()),
+            "Esiopetus ja liittyvä varhaiskasvatus",
+            "Esiopetus ja liittyvä varhaiskasvatus",
+            "Esiopetus ja liittyvä varhaiskasvatus",
+            PlacementType.PRESCHOOL_DAYCARE,
+        )
+    val nonDefaultServiceNeedOption =
+        ServiceNeedOption(
+            ServiceNeedOptionId(UUID.randomUUID()),
+            "Esiopetus ja liittyvä varhaiskasvatus",
+            "Esiopetus ja liittyvä varhaiskasvatus",
+            "Esiopetus ja liittyvä varhaiskasvatus",
+            PlacementType.PRESCHOOL_DAYCARE,
+        )
+    val preschoolTerm =
+        PreschoolTerm(
+            PreschoolTermId(UUID.randomUUID()),
+            FiniteDateRange(LocalDate.of(2021, 8, 11), LocalDate.of(2022, 6, 3)),
+            FiniteDateRange(LocalDate.of(2021, 8, 13), LocalDate.of(2022, 6, 3)),
+            FiniteDateRange(LocalDate.of(2021, 8, 1), LocalDate.of(2022, 6, 3)),
+            FiniteDateRange(LocalDate.of(2021, 1, 8), LocalDate.of(2021, 1, 20)),
+            DateSet.empty(),
+        )
+
+    val adult =
+        DevPerson(
+            id = PersonId(UUID.randomUUID()),
+            dateOfBirth = LocalDate.of(1980, 1, 1),
+            ssn = "010180-1232",
+            firstName = "John",
+            lastName = "Doe",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+            restrictedDetailsEnabled = false,
+        )
+
+    val child =
+        DevPerson(
+            id = ChildId(UUID.randomUUID()),
+            dateOfBirth = LocalDate.of(2016, 6, 1),
+            ssn = "010616A941Y",
+            firstName = "Ricky",
+            lastName = "Doe",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+            restrictedDetailsEnabled = false,
+        )
+
+    final val area = DevCareArea(id = AreaId(UUID.randomUUID()), name = "Test Area", areaCode = 200)
+
+    val unit =
+        DevDaycare(
+            id = DaycareId(UUID.randomUUID()),
+            name = "Test Daycare",
+            areaId = area.id,
+            ophOrganizerOid = defaultMunicipalOrganizerOid,
+            enabledPilotFeatures =
+                setOf(
+                    PilotFeature.MESSAGING,
+                    PilotFeature.MOBILE,
+                    PilotFeature.RESERVATIONS,
+                    PilotFeature.PLACEMENT_TERMINATION,
+                ),
+        )
+
+    @BeforeEach
+    fun setUp() {
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(
+                DevDaycareGroup(
+                    id = GroupId(UUID.randomUUID()),
+                    daycareId = unit.id,
+                    name = "Test group 1",
+                )
+            )
+            tx.insert(
+                evaka.core.serviceneed.ServiceNeedOption(
+                    id = defaultServiceNeedOption.id,
+                    nameFi = defaultServiceNeedOption.nameFi,
+                    nameSv = defaultServiceNeedOption.nameSv,
+                    nameEn = defaultServiceNeedOption.nameEn,
+                    validPlacementType = defaultServiceNeedOption.validPlacementType!!,
+                    defaultOption = true,
+                    feeCoefficient = BigDecimal("0.80"),
+                    occupancyCoefficient = BigDecimal("1.00"),
+                    occupancyCoefficientUnder3y = BigDecimal("1.75"),
+                    realizedOccupancyCoefficient = BigDecimal("1.00"),
+                    realizedOccupancyCoefficientUnder3y = BigDecimal("1.75"),
+                    daycareHoursPerWeek = 25,
+                    contractDaysPerMonth = null,
+                    daycareHoursPerMonth = null,
+                    partDay = false,
+                    partWeek = false,
+                    feeDescriptionFi = "",
+                    feeDescriptionSv = "",
+                    voucherValueDescriptionFi = "",
+                    voucherValueDescriptionSv = "",
+                    validFrom = LocalDate.of(2000, 1, 1),
+                    validTo = null,
+                    showForCitizen = true,
+                )
+            )
+            tx.insert(
+                evaka.core.serviceneed.ServiceNeedOption(
+                    id = nonDefaultServiceNeedOption.id,
+                    nameFi = nonDefaultServiceNeedOption.nameFi,
+                    nameSv = nonDefaultServiceNeedOption.nameSv,
+                    nameEn = nonDefaultServiceNeedOption.nameEn,
+                    validPlacementType = nonDefaultServiceNeedOption.validPlacementType!!,
+                    defaultOption = false,
+                    feeCoefficient = BigDecimal("0.80"),
+                    occupancyCoefficient = BigDecimal("1.00"),
+                    occupancyCoefficientUnder3y = BigDecimal("1.75"),
+                    realizedOccupancyCoefficient = BigDecimal("1.00"),
+                    realizedOccupancyCoefficientUnder3y = BigDecimal("1.75"),
+                    daycareHoursPerWeek = 25,
+                    contractDaysPerMonth = null,
+                    daycareHoursPerMonth = null,
+                    partDay = false,
+                    partWeek = false,
+                    feeDescriptionFi = "",
+                    feeDescriptionSv = "",
+                    voucherValueDescriptionFi = "",
+                    voucherValueDescriptionSv = "",
+                    validFrom = LocalDate.of(2000, 1, 1),
+                    validTo = null,
+                    showForCitizen = true,
+                )
+            )
+            tx.insert(
+                DevPreschoolTerm(
+                    preschoolTerm.id,
+                    preschoolTerm.finnishPreschool,
+                    preschoolTerm.swedishPreschool,
+                    preschoolTerm.extendedTerm,
+                    preschoolTerm.applicationPeriod,
+                    preschoolTerm.termBreaks,
+                )
+            )
+            MockPersonDetailsService.addPersons(adult, child)
+            MockPersonDetailsService.addDependants(adult, child)
+            tx.createServiceWorkerMessageAccount()
+        }
+    }
+
+    private fun insertPersonData() {
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(DevGuardian(adult.id, child.id))
+            tx.insert(
+                DevFridgeChild(
+                    childId = child.id,
+                    headOfChild = adult.id,
+                    startDate = child.dateOfBirth,
+                    endDate = child.dateOfBirth.plusYears(18),
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `parse csv`() {
+        val csv =
+            """
+            "lapsen_id";"esiopetusyksikon_id"
+            "${child.id}";"${unit.id}"
+        """
+                .trimIndent()
+
+        val data = parsePlacementToolCsv(csv.byteInputStream())
+        assertEquals(1, data.size)
+        assertEquals(unit.id, data[child.id.raw.toString()])
+    }
+
+    @Test
+    fun `parse csv with BOM`() {
+        val csv =
+            """
+            "lapsen_id";"esiopetusyksikon_id"
+            "${child.id}";"${unit.id}"
+        """
+                .trimIndent()
+
+        val data = parsePlacementToolCsv("\ufeff$csv".byteInputStream())
+        assertEquals(1, data.size)
+        assertEquals(unit.id, data[child.id.raw.toString()])
+    }
+
+    @Test
+    fun `parse csv with ssn`() {
+        val csv =
+            """
+            "lapsen_id";"esiopetusyksikon_id"
+            "${child.ssn!!}";"${unit.id}"
+        """
+                .trimIndent()
+
+        val data = parsePlacementToolCsv(csv.byteInputStream())
+        assertEquals(1, data.size)
+        assertEquals(unit.id, data[child.ssn!!])
+    }
+
+    @Test
+    fun `parse csv with faulty child id`() {
+        val csv =
+            """
+            "lapsen_id";"esiopetusyksikon_id"
+            "";"${unit.id}"
+        """
+                .trimIndent()
+
+        val data = parsePlacementToolCsv(csv.byteInputStream())
+        assertEquals(0, data.size)
+    }
+
+    @Test
+    fun `parse csv with faulty group id`() {
+        val csv =
+            """
+            "lapsen_id";"esiopetusyksikon_id"
+            "${child.id}";""
+        """
+                .trimIndent()
+
+        val data = parsePlacementToolCsv(csv.byteInputStream())
+        assertEquals(0, data.size)
+    }
+
+    @Test
+    fun `parse csv with missing group id field`() {
+        val csv =
+            """
+            "lapsen_id";"esiopetusyksikon_id"
+            "${child.id}";
+        """
+                .trimIndent()
+
+        val data = parsePlacementToolCsv(csv.byteInputStream())
+        assertEquals(0, data.size)
+    }
+
+    @Test
+    fun `create application with one guardian`() {
+        insertPersonData()
+        val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
+        service.createApplication(
+            db,
+            admin,
+            clock,
+            data,
+            defaultServiceNeedOption.id,
+            preschoolTerm.id,
+        )
+
+        clock.tick()
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val applicationSummaries = db.read { it.fetchApplicationSummariesForGuardian(adult.id) }
+        assertEquals(1, applicationSummaries.size)
+
+        val summary = applicationSummaries.first()
+        assertEquals(summary.childId, child.id)
+        assertEquals(summary.preferredUnitId, unit.id)
+        assertEquals(summary.status, ApplicationStatus.SENT)
+
+        val messagingAccount = db.read { it.getCitizenMessageAccount(adult.id) }
+        assertNotNull(messagingAccount)
+        val messageCount =
+            db.read {
+                it.getUnreadMessagesCountsCitizen(
+                        accessCpontrol.requireAuthorizationFilter(
+                            it,
+                            AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                        )
+                    )
+                    .firstOrNull()
+                    ?.unreadCount ?: 0
+            }
+        assertEquals(1, messageCount)
+    }
+
+    @Test
+    fun `create application with two guardians`() {
+        insertPersonData()
+        val adult2 =
+            DevPerson(
+                id = PersonId(UUID.randomUUID()),
+                dateOfBirth = LocalDate.of(1979, 2, 1),
+                ssn = "010279-123L",
+                firstName = "Joan",
+                lastName = "Doe",
+                streetAddress = "Kamreerintie 2",
+                postalCode = "02770",
+                postOffice = "Espoo",
+                restrictedDetailsEnabled = false,
+                email = "joan.doe@example.com",
+            )
+        db.transaction { tx ->
+            tx.insert(adult2, DevPersonType.ADULT)
+            tx.insert(DevGuardian(adult2.id, child.id))
+            MockPersonDetailsService.addPersons(adult2)
+            MockPersonDetailsService.addDependants(adult2, child)
+        }
+        val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
+        service.createApplication(
+            db,
+            admin,
+            clock,
+            data,
+            defaultServiceNeedOption.id,
+            preschoolTerm.id,
+        )
+
+        clock.tick()
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val applicationSummaries = db.read { it.fetchApplicationSummariesForGuardian(adult.id) }
+        assertEquals(1, applicationSummaries.size)
+
+        val summary = applicationSummaries.first()
+        assertEquals(summary.childId, child.id)
+        assertEquals(summary.preferredUnitId, unit.id)
+        assertEquals(summary.status, ApplicationStatus.SENT)
+
+        val application = db.read { it.fetchApplicationDetails(summary.applicationId) }
+        assertNotNull(application)
+        assert(application.allowOtherGuardianAccess)
+        assert(!application.hideFromGuardian)
+    }
+
+    @Test
+    fun `create application for waiting decision`() {
+        insertPersonData()
+        whenever(featureConfig.placementToolApplicationStatus)
+            .thenReturn(ApplicationStatus.WAITING_DECISION)
+        val data = PlacementToolData(childId = child.id, preschoolId = unit.id)
+        service.createApplication(
+            db,
+            admin,
+            clock,
+            data,
+            defaultServiceNeedOption.id,
+            preschoolTerm.id,
+        )
+
+        clock.tick()
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val applicationSummaries = db.read { it.fetchApplicationSummariesForGuardian(adult.id) }
+        assertEquals(1, applicationSummaries.size)
+
+        val summary = applicationSummaries.first()
+        assertEquals(summary.childId, child.id)
+        assertEquals(summary.preferredUnitId, unit.id)
+        assertEquals(summary.status, ApplicationStatus.WAITING_DECISION)
+
+        val application = db.read { it.fetchApplicationDetails(summary.applicationId) }
+        assertNotNull(application)
+        assert(application.allowOtherGuardianAccess)
+        assert(application.hideFromGuardian)
+
+        val messagingAccount = db.read { it.getCitizenMessageAccount(adult.id) }
+        assertNotNull(messagingAccount)
+        val messageCount =
+            db.read {
+                it.getUnreadMessagesCountsCitizen(
+                        accessCpontrol.requireAuthorizationFilter(
+                            it,
+                            AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                        )
+                    )
+                    .firstOrNull()
+                    ?.unreadCount ?: 0
+            }
+        assertEquals(0, messageCount)
+    }
+
+    @Test
+    fun `create application without proper child`() {
+        insertPersonData()
+        val data = PlacementToolData(childId = ChildId(UUID.randomUUID()), preschoolId = unit.id)
+        assertThrows<Exception> {
+            service.createApplication(
+                db,
+                admin,
+                clock,
+                data,
+                defaultServiceNeedOption.id,
+                preschoolTerm.id,
+            )
+        }
+    }
+
+    @Test
+    fun `create application without proper unit`() {
+        insertPersonData()
+        val data = PlacementToolData(childId = child.id, preschoolId = DaycareId(UUID.randomUUID()))
+        assertThrows<Exception> {
+            service.createApplication(
+                db,
+                admin,
+                clock,
+                data,
+                defaultServiceNeedOption.id,
+                preschoolTerm.id,
+            )
+        }
+    }
+
+    @Test
+    fun `create application from ssn`() {
+        MockPersonDetailsService.add(
+            MockVtjDataset(
+                persons = listOf(MockVtjPerson.from(child), MockVtjPerson.from(adult)),
+                guardianDependants = mapOf(adult.ssn!! to listOf(child.ssn!!)),
+            )
+        )
+        db.transaction { tx -> tx.insert(testFeeThresholds) }
+        val file =
+            MockMultipartFile(
+                "test.csv",
+                """
+lapsen_id;esiopetusyksikon_id
+${child.ssn!!};${unit.id}
+        """
+                    .trimIndent()
+                    .toByteArray(StandardCharsets.UTF_8),
+            )
+        whenever(evakaEnv.placementToolServiceNeedOptionId).thenReturn(defaultServiceNeedOption.id)
+
+        val validationPre =
+            controller.validatePlacementToolApplications(dbInstance(), admin, clock, file)
+        assertEquals(1, validationPre.count)
+        assertEquals(0, validationPre.existing)
+
+        controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val applicationSummaries =
+            db.read {
+                val person = it.getPersonBySSN(adult.ssn!!)
+                it.fetchApplicationSummariesForGuardian(person!!.id)
+            }
+        assertEquals(1, applicationSummaries.size)
+        val summary = applicationSummaries.first()
+        assertEquals(summary.preferredUnitId, unit.id)
+        val child = db.read { it.getPersonBySSN(child.ssn!!) }
+        assertEquals(summary.childId, child!!.id)
+        val application = db.read { tx -> tx.fetchApplicationDetails(summary.applicationId) }
+        assertEquals(
+            defaultServiceNeedOption,
+            application?.form?.preferences?.serviceNeed?.serviceNeedOption,
+        )
+
+        val validationPost =
+            controller.validatePlacementToolApplications(dbInstance(), admin, clock, file)
+        assertEquals(1, validationPost.count)
+        assertEquals(1, validationPost.existing)
+    }
+
+    @Test
+    fun `create application from ssn for waiting decision works with incomplete family data`() {
+        whenever(featureConfig.placementToolApplicationStatus)
+            .thenReturn(ApplicationStatus.WAITING_DECISION)
+        db.transaction { tx -> tx.insert(child, DevPersonType.RAW_ROW) }
+        MockPersonDetailsService.add(
+            MockVtjDataset(
+                persons = listOf(MockVtjPerson.from(child), MockVtjPerson.from(adult)),
+                guardianDependants = mapOf(adult.ssn!! to listOf(child.ssn!!)),
+            )
+        )
+        db.transaction { tx -> tx.insert(testFeeThresholds) }
+        val file =
+            MockMultipartFile(
+                "test.csv",
+                """
+lapsen_id;esiopetusyksikon_id
+${child.ssn!!};${unit.id}
+        """
+                    .trimIndent()
+                    .toByteArray(StandardCharsets.UTF_8),
+            )
+
+        val validationPre =
+            controller.validatePlacementToolApplications(dbInstance(), admin, clock, file)
+        assertEquals(1, validationPre.count)
+        assertEquals(0, validationPre.existing)
+
+        controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val applicationSummaries =
+            db.read {
+                val person = it.getPersonBySSN(adult.ssn!!)
+                it.fetchApplicationSummariesForGuardian(person!!.id)
+            }
+        assertEquals(1, applicationSummaries.size)
+        val summary = applicationSummaries.first()
+        assertEquals(summary.preferredUnitId, unit.id)
+        val child = db.read { it.getPersonBySSN(child.ssn!!) }
+        assertEquals(summary.childId, child!!.id)
+
+        val validationPost =
+            controller.validatePlacementToolApplications(dbInstance(), admin, clock, file)
+        assertEquals(1, validationPost.count)
+        assertEquals(1, validationPost.existing)
+    }
+
+    @Test
+    fun `service need option can be configured`() {
+        whenever(evakaEnv.placementToolServiceNeedOptionId)
+            .thenReturn(nonDefaultServiceNeedOption.id)
+
+        insertPersonData()
+        val file =
+            MockMultipartFile(
+                "test.csv",
+                """
+lapsen_id;esiopetusyksikon_id
+${child.id};${unit.id}
+        """
+                    .trimIndent()
+                    .toByteArray(StandardCharsets.UTF_8),
+            )
+
+        controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val applicationSummaries =
+            db.read {
+                val person = it.getPersonBySSN(adult.ssn!!)
+                it.fetchApplicationSummariesForGuardian(person!!.id)
+            }
+        assertEquals(1, applicationSummaries.size)
+        val summary = applicationSummaries.first()
+        val application = db.read { tx -> tx.fetchApplicationDetails(summary.applicationId) }
+        assertEquals(
+            nonDefaultServiceNeedOption,
+            application?.form?.preferences?.serviceNeed?.serviceNeedOption,
+        )
+    }
+
+    @Test
+    fun `unknown service need option id throws not found`() {
+        val serviceNeedOptionId = ServiceNeedOptionId(UUID.randomUUID())
+        whenever(evakaEnv.placementToolServiceNeedOptionId).thenReturn(serviceNeedOptionId)
+
+        insertPersonData()
+        val file =
+            MockMultipartFile(
+                "test.csv",
+                """
+lapsen_id;esiopetusyksikon_id
+${child.id};${unit.id}
+        """
+                    .trimIndent()
+                    .toByteArray(StandardCharsets.UTF_8),
+            )
+
+        val exception =
+            assertThrows<NotFound> {
+                controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
+            }
+        assertEquals("No service need option found: $serviceNeedOptionId", exception.message)
+    }
+
+    @Test
+    fun `next preschool term is received correctly`() {
+        val nextTerms = controller.getNextPreschoolTerm(dbInstance(), admin, clock)
+        assertTrue(nextTerms.isNotEmpty())
+        assertEquals(preschoolTerm, nextTerms[0])
+    }
+}

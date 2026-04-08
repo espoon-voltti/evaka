@@ -1,0 +1,611 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.reservations
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
+import evaka.core.Audit
+import evaka.core.AuditId
+import evaka.core.CitizenCalendarEnv
+import evaka.core.EvakaEnv
+import evaka.core.absence.Absence
+import evaka.core.absence.AbsenceCategory
+import evaka.core.absence.AbsenceService
+import evaka.core.absence.AbsenceType
+import evaka.core.absence.getAbsencesCitizen
+import evaka.core.attendance.getChildAttendancesCitizen
+import evaka.core.daycare.ClubTerm
+import evaka.core.daycare.PreschoolTerm
+import evaka.core.daycare.getClubTerms
+import evaka.core.daycare.getPreschoolTerms
+import evaka.core.holidayperiod.HolidayPeriodEffect
+import evaka.core.holidayperiod.getHolidayPeriods
+import evaka.core.placement.PlacementType
+import evaka.core.placement.ScheduleType
+import evaka.core.serviceneed.ShiftCareType
+import evaka.core.shared.ChildId
+import evaka.core.shared.ChildImageId
+import evaka.core.shared.FeatureConfig
+import evaka.core.shared.PersonId
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.TimeInterval
+import evaka.core.shared.domain.TimeRange
+import evaka.core.shared.domain.getHolidays
+import evaka.core.shared.domain.getOperationalDatesForChildren
+import evaka.core.shared.domain.getPreschoolOperationalDatesForChildren
+import evaka.core.shared.security.AccessControl
+import evaka.core.shared.security.Action
+import java.time.LocalDate
+import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+
+@RestController
+class ReservationControllerCitizen(
+    private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig,
+    private val env: EvakaEnv,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
+    private val absenceService: AbsenceService,
+) {
+    @GetMapping("/citizen/reservations")
+    fun getReservations(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
+    ): ReservationsResponse {
+        val requestedRange =
+            try {
+                FiniteDateRange(from, to)
+            } catch (e: IllegalArgumentException) {
+                throw BadRequest("Invalid date range $from - $to")
+            }
+
+        val today = clock.today()
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_RESERVATIONS,
+                        user.id,
+                    )
+                    val holidayPeriods = tx.getHolidayPeriods()
+                    val holidays = getHolidays(requestedRange)
+                    val preschoolTerms = tx.getPreschoolTerms(requestedRange)
+                    val clubTerms = tx.getClubTerms(requestedRange)
+                    val children =
+                        tx.getReservationChildren(
+                            user.id,
+                            today,
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                        )
+                    val childIds = children.map { it.id }.toSet()
+                    val reservationEnabledPlacementRangesByChild =
+                        tx.getReservationEnabledPlacementRangesByChild(childIds)
+                    val placements =
+                        tx.getReservationPlacements(
+                            childIds,
+                            // Include all future placements for upcomingPlacementType computation
+                            DateRange(minOf(today, requestedRange.start), null),
+                        )
+                    val backupPlacements =
+                        tx.getReservationBackupPlacements(childIds, requestedRange)
+
+                    val absences: Map<Pair<ChildId, LocalDate>, List<Absence>> =
+                        tx.getAbsencesCitizen(today, user.id, requestedRange).groupBy {
+                            it.childId to it.date
+                        }
+                    val reservations: Map<Pair<ChildId, LocalDate>, List<ReservationResponse>> =
+                        tx.getReservationsCitizen(today, user.id, requestedRange)
+                            .groupBy { it.childId to it.date }
+                            .mapValues { (_, reservations) ->
+                                reservations.map { ReservationResponse.from(it) }
+                            }
+                    val attendances: Map<Pair<ChildId, LocalDate>, List<TimeInterval>> =
+                        tx.getChildAttendancesCitizen(today, user.id, requestedRange)
+                            .groupBy { it.childId to it.date }
+                            .mapValues { (_, attendances) ->
+                                attendances.map { TimeInterval(it.startTime, it.endTime) }
+                            }
+
+                    val childIdsWithHourBasedServiceNeed =
+                        placements
+                            .filter { (_, placements) ->
+                                placements.any { pl ->
+                                    pl.serviceNeeds.any { sn -> sn.daycareHoursPerMonth != null }
+                                }
+                            }
+                            .keys
+                    val operationDays =
+                        tx.getOperationalDatesForChildren(
+                            requestedRange,
+                            childIdsWithHourBasedServiceNeed,
+                        )
+
+                    val reservableRange =
+                        getReservableRange(
+                            clock.now(),
+                            featureConfig.citizenReservationThresholdHours,
+                        )
+                    val days =
+                        requestedRange
+                            .dates()
+                            .map { date ->
+                                val isHoliday = holidays.contains(date)
+                                ReservationResponseDay(
+                                    date = date,
+                                    holiday = isHoliday,
+                                    children =
+                                        // Includes all children that are eligible for daycare
+                                        // on this date: have a placement and is an operation day in
+                                        // their unit, or child has intermittent shift care.
+                                        //
+                                        // Preschool/club only children are eligible when there's
+                                        // activity on the date. This excludes e.g. Christmas or
+                                        // winter holidays.
+                                        children
+                                            .sortedBy { it.id }
+                                            .mapNotNull { child ->
+                                                placements[child.id]
+                                                    ?.find { it.range.includes(date) }
+                                                    ?.let { placement ->
+                                                        placementDay(
+                                                            date,
+                                                            isHoliday,
+                                                            placement,
+                                                            backupPlacements[child.id],
+                                                            clubTerms,
+                                                            preschoolTerms,
+                                                        )
+                                                    }
+                                                    ?.let { placementDay ->
+                                                        val key = Pair(child.id, date)
+                                                        val holidayPeriod =
+                                                            holidayPeriods.find {
+                                                                it.period.includes(date)
+                                                            }
+                                                        val childAbsences =
+                                                            absences[key] ?: listOf()
+                                                        val childReservations =
+                                                            reservations[key] ?: listOf()
+                                                        val childAttendances =
+                                                            attendances[key] ?: listOf()
+
+                                                        val usedServiceResult =
+                                                            placementDay.daycareHoursPerMonth
+                                                                ?.let { daycareHoursPerMonth ->
+                                                                    computeUsedService(
+                                                                        today = today,
+                                                                        date = date,
+                                                                        daycareHoursPerMonth,
+                                                                        placementDay.placementType,
+                                                                        placementDay.preschoolTime,
+                                                                        placementDay
+                                                                            .preparatoryTime,
+                                                                        operationDays[child.id]
+                                                                            ?: emptySet(),
+                                                                        placementDay.shiftCareType,
+                                                                        childAbsences.map {
+                                                                            it.absenceType to
+                                                                                it.category
+                                                                        },
+                                                                        childReservations
+                                                                            .mapNotNull {
+                                                                                it.asTimeRange()
+                                                                            },
+                                                                        childAttendances,
+                                                                    )
+                                                                }
+                                                        ReservationResponseDayChild(
+                                                            childId = child.id,
+                                                            scheduleType =
+                                                                placementDay.scheduleType,
+                                                            shiftCare = placementDay.shiftCare,
+                                                            absence =
+                                                                relevantAbsence(
+                                                                    today,
+                                                                    placementDay.placementType,
+                                                                    childReservations.isNotEmpty(),
+                                                                    childAbsences,
+                                                                ),
+                                                            reservations =
+                                                                childReservations.sorted(),
+                                                            attendances =
+                                                                childAttendances.sortedBy {
+                                                                    it.start
+                                                                },
+                                                            usedService = usedServiceResult,
+                                                            reservableTimeRange =
+                                                                placementDay.reservableTimeRange,
+                                                            holidayPeriodEffect =
+                                                                holidayPeriod?.effect(
+                                                                    today,
+                                                                    reservationEnabledPlacementRangesByChild[
+                                                                        child.id]!!,
+                                                                ),
+                                                        )
+                                                    }
+                                            },
+                                )
+                            }
+                            .toList()
+
+                    ReservationsResponse(
+                        children =
+                            children.mapNotNull { child ->
+                                // Only return children with at least one placement
+                                placements[child.id]?.let { childPlacements ->
+                                    ReservationChild.from(child, days, childPlacements, today)
+                                }
+                            },
+                        days = days,
+                        reservableRange = reservableRange,
+                    )
+                }
+            }
+            .also {
+                Audit.AttendanceReservationCitizenRead.log(
+                    targetId = AuditId(user.id),
+                    meta = mapOf("from" to from, "to" to to),
+                )
+            }
+    }
+
+    @PostMapping("/citizen/reservations")
+    fun postReservations(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestBody body: List<DailyReservationRequest>,
+    ) {
+        val children = body.map { it.childId }.toSet()
+
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.CREATE_RESERVATION,
+                        children,
+                    )
+
+                    createReservationsAndAbsences(
+                        tx,
+                        clock.now(),
+                        user,
+                        body,
+                        featureConfig.citizenReservationThresholdHours,
+                        env.plannedAbsenceEnabledForHourBasedServiceNeeds,
+                    )
+                }
+            }
+            ?.also {
+                Audit.AttendanceReservationCitizenCreate.log(
+                    targetId = AuditId(children),
+                    meta =
+                        mapOf(
+                            "deletedAbsences" to it.deletedAbsences,
+                            "deletedReservations" to it.deletedReservations,
+                            "upsertedAbsences" to it.upsertedAbsences,
+                            "upsertedReservations" to it.upsertedReservations,
+                        ),
+                )
+            }
+    }
+
+    @PostMapping("/citizen/absences")
+    fun postAbsences(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestBody body: AbsenceRequest,
+    ) {
+        val (deletedAbsences, deletedReservations, insertedAbsences) =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.CREATE_ABSENCE,
+                        body.childIds,
+                    )
+                    absenceService.createAbsences(tx, user, clock, body)
+                }
+            }
+        Audit.AbsenceCitizenCreate.log(
+            targetId = AuditId(body.childIds),
+            objectId = AuditId(insertedAbsences),
+            meta =
+                mapOf(
+                    "deletedAbsences" to deletedAbsences,
+                    "deletedReservations" to deletedReservations,
+                ),
+        )
+    }
+
+    data class OperationalDatesRequest(val range: FiniteDateRange, val childIds: Set<ChildId>)
+
+    @PostMapping("/citizen/preschool-operational-dates")
+    fun getPreschoolOperationalDates(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestBody body: OperationalDatesRequest,
+    ): Map<ChildId, Set<LocalDate>> {
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Child.CREATE_ABSENCE,
+                    body.childIds,
+                )
+                tx.getPreschoolOperationalDatesForChildren(body.range, body.childIds)
+            }
+        }
+    }
+}
+
+data class PlacementDay(
+    val placementType: PlacementType,
+    val scheduleType: ScheduleType,
+    val shiftCare: Boolean,
+    val shiftCareType: ShiftCareType,
+    val daycareHoursPerMonth: Int?,
+    val reservableTimeRange: ReservableTimeRange,
+    val preschoolTime: TimeRange?,
+    val preparatoryTime: TimeRange?,
+)
+
+private fun placementDay(
+    date: LocalDate,
+    isHoliday: Boolean,
+    placement: ReservationPlacement,
+    backupPlacements: List<ReservationBackupPlacement>?,
+    clubTerms: List<ClubTerm>,
+    preschoolTerms: List<PreschoolTerm>,
+): PlacementDay? {
+    val serviceNeed = placement.serviceNeeds.find { it.range.includes(date) }
+    val backupPlacementForDate = backupPlacements?.find { it.range.includes(date) }
+
+    val shiftCareType = serviceNeed?.shiftCareType ?: ShiftCareType.NONE
+    val operationTimes =
+        when (shiftCareType) {
+            ShiftCareType.NONE -> {
+                backupPlacementForDate?.operationTimes ?: placement.operationTimes
+            }
+
+            ShiftCareType.INTERMITTENT,
+            ShiftCareType.FULL -> {
+                if (backupPlacementForDate != null) {
+                    backupPlacementForDate.shiftCareOperationTimes
+                        ?: backupPlacementForDate.operationTimes
+                } else {
+                    placement.shiftCareOperationTimes ?: placement.operationTimes
+                }
+            }
+        }
+
+    val shiftCare = shiftCareType != ShiftCareType.NONE
+    val openOnHolidays =
+        shiftCare &&
+            (backupPlacementForDate?.shiftCareOpenOnHolidays ?: placement.shiftCareOpenOnHolidays)
+
+    // null means that the unit is not open today
+    val operationTime =
+        operationTimes[date.dayOfWeek.value - 1].takeIf { !isHoliday || openOnHolidays }
+
+    return if (operationTime != null || shiftCareType == ShiftCareType.INTERMITTENT) {
+        PlacementDay(
+            placementType = placement.type,
+            scheduleType = placement.type.scheduleType(date, clubTerms, preschoolTerms),
+            shiftCare = shiftCare,
+            shiftCareType = shiftCareType,
+            daycareHoursPerMonth = serviceNeed?.daycareHoursPerMonth,
+            reservableTimeRange =
+                when (shiftCareType) {
+                    ShiftCareType.NONE -> {
+                        ReservableTimeRange.Normal(operationTime!!)
+                    }
+
+                    ShiftCareType.FULL -> {
+                        ReservableTimeRange.ShiftCare(operationTime!!)
+                    }
+
+                    ShiftCareType.INTERMITTENT -> {
+                        ReservableTimeRange.IntermittentShiftCare(operationTime)
+                    }
+                },
+            preschoolTime = placement.dailyPreschoolTime,
+            preparatoryTime = placement.dailyPreparatoryTime,
+        )
+    } else {
+        null
+    }
+}
+
+private fun relevantAbsence(
+    today: LocalDate,
+    placementType: PlacementType,
+    hasReservation: Boolean,
+    absences: List<Absence>,
+): AbsenceInfo? {
+    // Take billable absence if available, as it affects invoicing and is more important in that
+    // sense
+    val absence =
+        (absences.firstOrNull { it.category == AbsenceCategory.BILLABLE } ?: absences.firstOrNull())
+            ?: return null
+    val fullDayAbsence = absences.size == placementType.absenceCategories().size
+
+    return if (absence.date.isBefore(today) || fullDayAbsence || !hasReservation) {
+        // Absence should be shown in citizen's calendar (although attendances still take
+        // precedence)
+        AbsenceInfo(absence.absenceType, absence.editableByCitizen())
+    } else {
+        // Absence is not relevant for citizen's calendar
+        null
+    }
+}
+
+data class ReservationsResponse(
+    val children: List<ReservationChild>,
+    val days: List<ReservationResponseDay>,
+    val reservableRange: FiniteDateRange,
+)
+
+data class ReservationChild(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String,
+    val duplicateOf: PersonId?,
+    val imageId: ChildImageId?,
+    val upcomingPlacementType: PlacementType?,
+    val upcomingPlacementStartDate: LocalDate?,
+    val upcomingPlacementUnitName: String?,
+    val monthSummaries: List<MonthSummary>,
+) {
+    companion object {
+        fun from(
+            child: ReservationChildRow,
+            days: List<ReservationResponseDay>,
+            placements: List<ReservationPlacement>,
+            today: LocalDate,
+        ): ReservationChild {
+            val hasHourBasedServiceNeeds =
+                placements.any { p -> p.serviceNeeds.any { sn -> sn.daycareHoursPerMonth != null } }
+            val currentOrNextPlacement =
+                placements.find { it.range.includes(today) }
+                    ?: placements.minByOrNull { it.range.start }
+            val monthSummaries =
+                if (hasHourBasedServiceNeeds) {
+                    days
+                        .mapNotNull { day ->
+                            day.children.find { it.childId == child.id }?.let { day.date to it }
+                        }
+                        .groupBy(
+                            { (date, _) -> date.year to date.monthValue },
+                            { (_, childDay) -> childDay },
+                        )
+                        .mapNotNull { (yearMonth, childDays) ->
+                            val (year, month) = yearMonth
+                            val monthRange = FiniteDateRange.ofMonth(LocalDate.of(year, month, 1))
+
+                            // As per how the hour-based service needs are used in practice, there
+                            // should only be just one service need for the child for each month, so
+                            // we'll take the first one
+                            val daycareHoursPerMonth =
+                                placements
+                                    .find { it.range.overlaps(monthRange) }
+                                    ?.serviceNeeds
+                                    ?.find {
+                                        it.range.overlaps(monthRange) &&
+                                            it.daycareHoursPerMonth != null
+                                    }
+                                    ?.daycareHoursPerMonth
+
+                            if (daycareHoursPerMonth == null) {
+                                // Not an hour-based service need, don't generate a summary at all
+                                return@mapNotNull null
+                            }
+
+                            MonthSummary(
+                                year = yearMonth.first,
+                                month = yearMonth.second,
+                                serviceNeedMinutes = daycareHoursPerMonth.toLong() * 60,
+                                reservedMinutes =
+                                    childDays.sumOf { it.usedService?.reservedMinutes ?: 0 },
+                                usedServiceMinutes =
+                                    childDays.sumOf { it.usedService?.usedServiceMinutes ?: 0 },
+                            )
+                        }
+                } else {
+                    // No hour-based service needs, don't generate summaries
+                    emptyList()
+                }
+
+            return ReservationChild(
+                id = child.id,
+                firstName = child.firstName,
+                lastName = child.lastName,
+                preferredName = child.preferredName,
+                duplicateOf = child.duplicateOf,
+                imageId = child.imageId,
+                upcomingPlacementType = placements.find { it.range.end >= today }?.type,
+                upcomingPlacementStartDate =
+                    placements.find { it.range.end >= today }?.range?.start,
+                upcomingPlacementUnitName = placements.find { it.range.end >= today }?.unitName,
+                monthSummaries = monthSummaries,
+            )
+        }
+    }
+}
+
+data class MonthSummary(
+    val year: Int,
+    val month: Int,
+    val serviceNeedMinutes: Long,
+    val reservedMinutes: Long,
+    val usedServiceMinutes: Long,
+)
+
+data class ReservationResponseDay(
+    val date: LocalDate,
+    val holiday: Boolean,
+    val children: List<ReservationResponseDayChild>,
+)
+
+data class ReservationResponseDayChild(
+    val childId: ChildId,
+    val scheduleType: ScheduleType,
+    val shiftCare: Boolean, // Whether child in 7-day-a-week or intermittent shift care
+    val absence: AbsenceInfo?,
+    val reservations: List<ReservationResponse>,
+    val attendances: List<TimeInterval>,
+    val usedService: UsedServiceResult?,
+    val reservableTimeRange: ReservableTimeRange,
+    val holidayPeriodEffect: HolidayPeriodEffect?,
+)
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class ReservableTimeRange {
+    // Child is in normal daycare: The child can make reservations on days according to the
+    // placement unit's operation times
+    @JsonTypeName("NORMAL") data class Normal(val range: TimeRange) : ReservableTimeRange()
+
+    // Child is in shift daycare: The child can make reservations on days according to the
+    // placement unit's shift care operation times
+    @JsonTypeName("SHIFT_CARE") data class ShiftCare(val range: TimeRange) : ReservableTimeRange()
+
+    // Child is in intermittent shift care: The child can make any reservations on any days, and we
+    // return the placement unit's operational times just for showing it as information in the UI.
+    // `null` means that the placement unit is closed on this day.
+    @JsonTypeName("INTERMITTENT_SHIFT_CARE")
+    data class IntermittentShiftCare(val placementUnitOperationTime: TimeRange?) :
+        ReservableTimeRange()
+}
+
+data class AbsenceInfo(val type: AbsenceType, val editable: Boolean)
+
+data class AbsenceRequest(
+    val childIds: Set<ChildId>,
+    val dateRange: FiniteDateRange,
+    val absenceType: AbsenceType,
+)

@@ -1,0 +1,40 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.dvv
+
+import evaka.core.DvvModificationsEnv
+import evaka.core.FullApplicationTest
+import evaka.core.VtjXroadEnv
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
+import org.junit.jupiter.api.BeforeEach
+import org.mockito.kotlin.mock
+import org.springframework.beans.factory.annotation.Autowired
+
+class DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach: Boolean) :
+    FullApplicationTest(resetDbBeforeEach = resetDbBeforeEach) {
+
+    @Autowired protected lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
+    protected lateinit var dvvModificationsServiceClient: DvvModificationsServiceClient
+    protected lateinit var dvvModificationsService: DvvModificationsService
+    protected lateinit var requestCustomizerMock: DvvModificationRequestCustomizer
+
+    @BeforeEach
+    fun initDvvModificationService() {
+        assert(httpPort > 0)
+        val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv/api/v1"
+        requestCustomizerMock = mock()
+        dvvModificationsServiceClient =
+            DvvModificationsServiceClient(
+                jsonMapper,
+                listOf(requestCustomizerMock),
+                VtjXroadEnv.fromEnvironment(env).copy(keyStore = null, trustStore = null),
+                DvvModificationsEnv.fromEnvironment(env).copy(url = mockDvvBaseUrl),
+            )
+        dvvModificationsService =
+            DvvModificationsService(dvvModificationsServiceClient, asyncJobRunner)
+    }
+}

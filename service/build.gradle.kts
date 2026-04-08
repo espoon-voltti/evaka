@@ -248,13 +248,13 @@ tasks {
     }
 
     bootRun {
-        mainClass.set("fi.espoo.evaka.MainKt")
+        mainClass.set("evaka.core.MainKt")
         // If you want to develop against VTJ, add vtj-dev here
         systemProperty("spring.profiles.active", "local")
     }
 
     register("bootRunTest", org.springframework.boot.gradle.tasks.run.BootRun::class) {
-        mainClass.set("fi.espoo.evaka.MainKt")
+        mainClass.set("evaka.core.MainKt")
         classpath = sourceSets["main"].runtimeClasspath
         systemProperty("spring.profiles.active", "local")
         systemProperty("evaka.database.url", "jdbc:postgresql://localhost:5432/evaka_it")
@@ -264,13 +264,13 @@ tasks {
 
     register("generateVapidKey", JavaExec::class) {
         description = "Generate VAPID key for use with push notifications"
-        mainClass.set("fi.espoo.evaka.webpush.VapidKeyGeneratorKt")
+        mainClass.set("evaka.core.webpush.VapidKeyGeneratorKt")
         classpath = sourceSets["test"].runtimeClasspath
     }
 
     register("encodePassword", JavaExec::class) {
         description = "Encode a password with the default password hash algorithm"
-        mainClass.set("fi.espoo.evaka.shared.auth.PasswordHasherCliKt")
+        mainClass.set("evaka.core.shared.auth.PasswordHasherCliKt")
         classpath = sourceSets["test"].runtimeClasspath
     }
 

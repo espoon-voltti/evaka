@@ -4,7 +4,7 @@
 
 package evaka.codegen
 
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.HelsinkiDateTime
 
 val fileHeader =
     """

@@ -4,7 +4,7 @@
 
 package evaka.codegen.actionenum
 
-import fi.espoo.evaka.shared.security.Action
+import evaka.core.shared.security.Action
 import java.nio.file.Path
 import kotlin.io.path.writeText
 

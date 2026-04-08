@@ -1,0 +1,629 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.shared.security.actionrule
+
+import evaka.core.document.childdocument.DocumentStatus
+import evaka.core.shared.AbsenceApplicationId
+import evaka.core.shared.ApplicationId
+import evaka.core.shared.AttachmentId
+import evaka.core.shared.CalendarEventId
+import evaka.core.shared.CalendarEventTimeId
+import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.ChildId
+import evaka.core.shared.ChildImageId
+import evaka.core.shared.DailyServiceTimeNotificationId
+import evaka.core.shared.DatabaseTable
+import evaka.core.shared.DecisionId
+import evaka.core.shared.FeeDecisionId
+import evaka.core.shared.Id
+import evaka.core.shared.IncomeStatementId
+import evaka.core.shared.MessageAccountId
+import evaka.core.shared.PedagogicalDocumentId
+import evaka.core.shared.PersonId
+import evaka.core.shared.PlacementId
+import evaka.core.shared.ServiceApplicationId
+import evaka.core.shared.VoucherValueDecisionId
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.auth.CitizenAuthLevel
+import evaka.core.shared.db.QuerySql
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.security.AccessControlDecision
+
+private typealias FilterByCitizen =
+    QuerySql.Builder.(personId: PersonId, now: HelsinkiDateTime) -> QuerySql
+
+data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
+    fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) =
+        authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
+
+    private fun <T : Id<*>> rule(filter: FilterByCitizen): DatabaseActionRule.Scoped<T, IsCitizen> =
+        DatabaseActionRule.Scoped.Simple(this, Query(filter))
+
+    private data class Query<T : Id<*>>(private val filter: FilterByCitizen) :
+        DatabaseActionRule.Scoped.Query<T, IsCitizen> {
+        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+            when (user) {
+                is AuthenticatedUser.Citizen -> QuerySql { filter(user.id, now) }
+                else -> Pair(user, now)
+            }
+
+        override fun executeWithTargets(
+            ctx: DatabaseActionRule.QueryContext,
+            targets: Set<T>,
+        ): Map<T, DatabaseActionRule.Deferred<IsCitizen>> =
+            when (ctx.user) {
+                is AuthenticatedUser.Citizen -> {
+                    val targetCheck = targets.idTargetPredicate()
+                    ctx.tx
+                        .createQuery {
+                            sql(
+                                """
+                    SELECT id
+                    FROM (${subquery { filter(ctx.user.id, ctx.now) } }) fragment
+                    WHERE ${predicate(targetCheck.forTable("fragment"))}
+                    """
+                                    .trimIndent()
+                            )
+                        }
+                        .toSet<Id<DatabaseTable>>()
+                        .let { matched ->
+                            targets
+                                .filter { matched.contains(it) }
+                                .associateWith { Deferred(ctx.user.authLevel) }
+                        }
+                }
+
+                else -> {
+                    emptyMap()
+                }
+            }
+
+        override fun queryWithParams(
+            ctx: DatabaseActionRule.QueryContext,
+            params: IsCitizen,
+        ): QuerySql? =
+            when (ctx.user) {
+                is AuthenticatedUser.Citizen -> {
+                    if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
+                        QuerySql { filter(ctx.user.id, ctx.now) }
+                    } else {
+                        null
+                    }
+                }
+
+                else -> {
+                    null
+                }
+            }
+    }
+
+    private class Deferred(private val authLevel: CitizenAuthLevel) :
+        DatabaseActionRule.Deferred<IsCitizen> {
+        override fun evaluate(params: IsCitizen): AccessControlDecision =
+            if (params.isPermittedAuthLevel(authLevel)) {
+                AccessControlDecision.Permitted(params)
+            } else {
+                AccessControlDecision.None
+            }
+    }
+
+    fun any() =
+        object : StaticActionRule {
+            override fun evaluate(user: AuthenticatedUser): AccessControlDecision =
+                if (user is AuthenticatedUser.Citizen && isPermittedAuthLevel(user.authLevel)) {
+                    AccessControlDecision.Permitted(this)
+                } else {
+                    AccessControlDecision.None
+                }
+        }
+
+    fun self() =
+        object : DatabaseActionRule.Scoped<PersonId, IsCitizen> {
+            override val params = this@IsCitizen
+            override val query =
+                object : DatabaseActionRule.Scoped.Query<PersonId, IsCitizen> {
+                    override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+                        Pair(user, now)
+
+                    override fun executeWithTargets(
+                        ctx: DatabaseActionRule.QueryContext,
+                        targets: Set<PersonId>,
+                    ): Map<PersonId, DatabaseActionRule.Deferred<IsCitizen>> =
+                        when (ctx.user) {
+                            is AuthenticatedUser.Citizen -> {
+                                targets
+                                    .filter { it == ctx.user.id }
+                                    .associateWith { Deferred(ctx.user.authLevel) }
+                            }
+
+                            else -> {
+                                emptyMap()
+                            }
+                        }
+
+                    override fun queryWithParams(
+                        ctx: DatabaseActionRule.QueryContext,
+                        params: IsCitizen,
+                    ): QuerySql? =
+                        when (ctx.user) {
+                            is AuthenticatedUser.Citizen -> {
+                                QuerySql { sql("SELECT ${bind(ctx.user.id)} AS id") }
+                            }
+
+                            else -> {
+                                null
+                            }
+                        }
+                }
+        }
+
+    fun uploaderOfAttachment() =
+        rule<AttachmentId> { personId, _ ->
+            sql(
+                """
+SELECT id
+FROM attachment
+WHERE uploaded_by = ${bind(personId)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun guardianOfChild() =
+        rule<ChildId> { guardianId, _ ->
+            sql(
+                """
+SELECT child_id AS id
+FROM guardian
+WHERE guardian_id = ${bind(guardianId)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun fosterParentOfChild() =
+        rule<ChildId> { userId, now ->
+            sql(
+                """
+SELECT child_id AS id
+FROM foster_parent
+WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun guardianOfChildWithActiveOrUpcomingPlacement() =
+        rule<ChildId> { guardianId, now ->
+            sql(
+                """
+SELECT guardian.child_id AS id
+FROM guardian
+JOIN placement p ON p.child_id = guardian.child_id AND p.end_date >= ${bind(now.toLocalDate())}
+WHERE guardian_id = ${bind(guardianId)}
+"""
+                    .trimIndent()
+            )
+        }
+
+    fun fosterParentOfChildWithActiveOrUpcomingPlacement() =
+        rule<ChildId> { userId, now ->
+            sql(
+                """
+SELECT foster_parent.child_id AS id
+FROM foster_parent
+JOIN placement p ON p.child_id = foster_parent.child_id AND p.end_date >= ${bind(now.toLocalDate())}
+WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
+"""
+                    .trimIndent()
+            )
+        }
+
+    fun fosterParentOfChildOfChildImage() =
+        rule<ChildImageId> { userId, now ->
+            sql(
+                """
+SELECT img.id
+FROM child_images img
+JOIN person child ON img.child_id = child.id
+JOIN foster_parent ON child.id = foster_parent.child_id
+WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun guardianOfChildOfChildImage() =
+        rule<ChildImageId> { guardianId, _ ->
+            sql(
+                """
+SELECT img.id
+FROM child_images img
+JOIN person child ON img.child_id = child.id
+JOIN guardian ON child.id = guardian.child_id
+WHERE guardian_id = ${bind(guardianId)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun guardianOfChildOfIncomeStatement() =
+        rule<IncomeStatementId> { citizenId, _ ->
+            sql(
+                """
+SELECT id
+FROM income_statement i
+JOIN guardian g ON i.person_id = g.child_id
+WHERE g.guardian_id = ${bind(citizenId)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun guardianOfChildOfPedagogicalDocument() =
+        rule<PedagogicalDocumentId> { guardianId, _ ->
+            sql(
+                """
+SELECT pd.id
+FROM pedagogical_document pd
+JOIN guardian g ON pd.child_id = g.child_id
+WHERE g.guardian_id = ${bind(guardianId)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun fosterParentOfChildOfPedagogicalDocument() =
+        rule<PedagogicalDocumentId> { userId, now ->
+            sql(
+                """
+SELECT pd.id
+FROM pedagogical_document pd
+JOIN foster_parent fp ON pd.child_id = fp.child_id
+WHERE fp.parent_id = ${bind(userId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun guardianOfChildOfPedagogicalDocumentOfAttachment() =
+        rule<AttachmentId> { guardianId, now ->
+            sql(
+                """
+SELECT a.id
+FROM attachment a
+JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
+JOIN guardian g ON pd.child_id = g.child_id
+JOIN placement p ON pd.child_id = p.child_id AND p.end_date >= ${bind(now.toLocalDate())}
+WHERE g.guardian_id = ${bind(guardianId)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun fosterParentOfChildOfPedagogicalDocumentOfAttachment() =
+        rule<AttachmentId> { userId, now ->
+            sql(
+                """
+SELECT a.id
+FROM attachment a
+JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
+JOIN foster_parent fp ON pd.child_id = fp.child_id
+JOIN placement p ON pd.child_id = p.child_id AND p.end_date >= ${bind(now.toLocalDate())}
+WHERE fp.parent_id = ${bind(userId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun guardianOfChildOfPlacement() =
+        rule<PlacementId> { guardianId, _ ->
+            sql(
+                """
+SELECT placement.id
+FROM placement
+JOIN guardian ON placement.child_id = guardian.child_id
+WHERE guardian_id = ${bind(guardianId)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun fosterParentOfChildOfPlacement() =
+        rule<PlacementId> { userId, now ->
+            sql(
+                """
+SELECT placement.id
+FROM placement
+JOIN foster_parent fp ON placement.child_id = fp.child_id AND fp.valid_during @> ${bind(now.toLocalDate())}
+WHERE parent_id = ${bind(userId)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun guardianOfChildOfPublishedChildDocument(editable: Boolean = false) =
+        rule<ChildDocumentId> { citizenId, _ ->
+            sql(
+                """
+SELECT id
+FROM child_document cd
+WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = ${bind(citizenId)} AND g.child_id = cd.child_id)
+    AND EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = cd.id)
+    ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.citizenEditable })}::child_document_status[])" else ""}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun fosterParentOfChildOfPublishedChildDocument(editable: Boolean = false) =
+        rule<ChildDocumentId> { citizenId, now ->
+            sql(
+                """
+SELECT id
+FROM child_document cd
+WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenId)} AND fp.child_id = cd.child_id AND fp.valid_during @> ${bind(now.toLocalDate())})
+    AND EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = cd.id)
+    ${if (editable) "AND status = ANY(${bind(DocumentStatus.entries.filter { it.citizenEditable })}::child_document_status[])" else ""}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun hasMessageAccount() =
+        rule<MessageAccountId> { citizenId, _ ->
+            sql("SELECT id FROM message_account WHERE person_id = ${bind(citizenId)}")
+        }
+
+    fun ownerOfApplication() =
+        rule<ApplicationId> { citizenId, _ ->
+            sql(
+                """
+SELECT id
+FROM application
+WHERE guardian_id = ${bind(citizenId)}
+            """
+            )
+        }
+
+    fun otherGuardianOfApplication() =
+        rule<ApplicationId> { citizenId, now ->
+            sql(
+                """
+SELECT a.id
+FROM application a
+JOIN application_other_guardian aog ON a.id = aog.application_id
+WHERE aog.guardian_id = ${bind(citizenId)}
+AND allow_other_guardian_access IS TRUE
+AND (
+    EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
+)
+"""
+            )
+        }
+
+    fun otherGuardianOfApplicationAndLivesInTheSameAddress() =
+        rule<ApplicationId> { citizenId, now ->
+            sql(
+                """
+SELECT a.id
+FROM application a
+JOIN application_other_guardian aog ON a.id = aog.application_id
+JOIN person other_guardian ON aog.guardian_id = other_guardian.id
+JOIN person guardian ON a.guardian_id = guardian.id
+JOIN person child ON a.child_id = child.id
+WHERE aog.guardian_id = ${bind(citizenId)}
+AND allow_other_guardian_access IS TRUE
+AND (
+    EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
+)
+AND NOT other_guardian.restricted_details_enabled
+AND NOT guardian.restricted_details_enabled
+AND NOT child.restricted_details_enabled
+AND other_guardian.street_address NOT ILIKE '%poste restante%'
+AND guardian.street_address NOT ILIKE '%poste restante%'
+AND child.street_address NOT ILIKE '%poste restante%'
+AND (
+    (trim(other_guardian.residence_code) != '' AND
+     trim(guardian.residence_code) != '' AND
+     other_guardian.residence_code = guardian.residence_code) OR
+    (trim(other_guardian.street_address) != '' AND
+     trim(guardian.street_address) != '' AND
+     trim(other_guardian.postal_code) != '' AND
+     trim(guardian.postal_code) != '' AND
+     lower(other_guardian.street_address) = lower(guardian.street_address) AND
+     other_guardian.postal_code = guardian.postal_code)
+)
+AND (
+    (trim(other_guardian.residence_code) != '' AND
+     trim(child.residence_code) != '' AND
+     other_guardian.residence_code = child.residence_code) OR
+    (trim(other_guardian.street_address) != '' AND
+     trim(child.street_address) != '' AND
+     trim(other_guardian.postal_code) != '' AND
+     trim(child.postal_code) != '' AND
+     lower(other_guardian.street_address) = lower(child.street_address) AND
+     other_guardian.postal_code = child.postal_code)
+)
+"""
+            )
+        }
+
+    fun ownerOfApplicationOfSentDecision() =
+        rule<DecisionId> { citizenId, _ ->
+            sql(
+                """
+SELECT decision.id
+FROM decision
+JOIN application ON decision.application_id = application.id
+WHERE guardian_id = ${bind(citizenId)}
+AND decision.sent_date IS NOT NULL
+"""
+            )
+        }
+
+    fun otherGuardianOfApplicationOfSentDecision() =
+        rule<DecisionId> { citizenId, now ->
+            sql(
+                """
+SELECT decision.id
+FROM decision
+JOIN application a ON decision.application_id = a.id
+JOIN application_other_guardian aog ON a.id = aog.application_id
+WHERE aog.guardian_id = ${bind(citizenId)}
+AND decision.sent_date IS NOT NULL
+AND allow_other_guardian_access IS TRUE
+AND (
+    EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
+)
+"""
+            )
+        }
+
+    fun otherGuardianOfApplicationOfSentDecisionWithNoContactInfo() =
+        rule<DecisionId> { citizenId, now ->
+            sql(
+                """
+SELECT decision.id
+FROM decision
+JOIN application a ON decision.application_id = a.id
+JOIN application_other_guardian aog ON a.id = aog.application_id
+WHERE aog.guardian_id = ${bind(citizenId)}
+AND decision.sent_date IS NOT NULL
+AND allow_other_guardian_access IS TRUE
+AND (
+    EXISTS (SELECT FROM guardian g WHERE g.guardian_id = aog.guardian_id AND g.child_id = a.child_id)
+    OR EXISTS (SELECT FROM foster_parent fp WHERE fp.parent_id = aog.guardian_id AND fp.child_id = a.child_id AND valid_during @> ${bind(now.toLocalDate())})
+)
+AND NOT decision.document_contains_contact_info
+"""
+            )
+        }
+
+    fun absenceApplicationCreatedBy() =
+        rule<AbsenceApplicationId> { userId, _ ->
+            sql(
+                """
+SELECT id
+FROM absence_application
+WHERE created_by = ${bind(userId)}
+            """
+            )
+        }
+
+    fun ownerOfServiceApplication() =
+        rule<ServiceApplicationId> { userId, _ ->
+            sql(
+                """
+SELECT id
+FROM service_application
+WHERE person_id = ${bind(userId)}
+            """
+            )
+        }
+
+    fun ownerOfIncomeStatement() =
+        rule<IncomeStatementId> { citizenId, _ ->
+            sql(
+                """
+SELECT id
+FROM income_statement
+WHERE person_id = ${bind(citizenId)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun recipientOfDailyServiceTimeNotification() =
+        rule<DailyServiceTimeNotificationId> { citizenId, _ ->
+            sql(
+                """
+SELECT id
+FROM daily_service_time_notification
+WHERE guardian_id = ${bind(citizenId)}
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun liableForFeeDecisionPayment() =
+        rule<FeeDecisionId> { citizenId, _ ->
+            sql(
+                """
+SELECT fd.id
+FROM fee_decision fd
+WHERE (fd.head_of_family_id = ${bind(citizenId)} OR fd.partner_id = ${bind(citizenId)}) 
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun liableForVoucherValueDecisionPayment() =
+        rule<VoucherValueDecisionId> { citizenId, _ ->
+            sql(
+                """
+SELECT vvd.id
+FROM voucher_value_decision vvd
+WHERE (vvd.head_of_family_id = ${bind(citizenId)} OR vvd.partner_id = ${bind(citizenId)}) 
+            """
+                    .trimIndent()
+            )
+        }
+
+    fun guardianOfChildOfCalendarEventAttendee() =
+        rule<CalendarEventId> { citizenId, _ ->
+            sql(
+                """
+SELECT cea.calendar_event_id AS id
+FROM calendar_event_attendee_child_view cea
+JOIN person child ON cea.child_id = child.id
+JOIN guardian ON child.id = guardian.child_id
+WHERE guardian_id = ${bind(citizenId)}
+"""
+            )
+        }
+
+    fun fosterParentOfChildOfCalendarEventAttendee() =
+        rule<CalendarEventId> { citizenId, now ->
+            sql(
+                """
+SELECT cea.calendar_event_id AS id
+FROM calendar_event_attendee_child_view cea
+JOIN person child ON cea.child_id = child.id
+JOIN foster_parent ON child.id = foster_parent.child_id
+WHERE parent_id = ${bind(citizenId)} AND valid_during @> ${bind(now.toLocalDate())}
+"""
+            )
+        }
+
+    fun guardianOfChildOfCalendarEventTimeReservation() =
+        rule<CalendarEventTimeId> { citizenId, _ ->
+            sql(
+                """
+SELECT cet.id AS id
+FROM calendar_event_time cet
+JOIN person child ON cet.child_id = child.id
+JOIN guardian g ON child.id = g.child_id
+WHERE g.guardian_id = ${bind(citizenId)}
+"""
+            )
+        }
+
+    fun fosterParentOfChildOfCalendarEventTimeReservation() =
+        rule<CalendarEventTimeId> { citizenId, now ->
+            sql(
+                """
+SELECT cet.id AS id
+FROM calendar_event_time cet
+JOIN person child ON cet.child_id = child.id
+JOIN foster_parent fp ON child.id = fp.child_id
+WHERE fp.parent_id = ${bind(citizenId)} AND fp.valid_during @> ${bind(now.toLocalDate())}
+"""
+            )
+        }
+}

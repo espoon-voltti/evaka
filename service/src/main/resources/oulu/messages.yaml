@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-fi.espoo.evaka.oulu:
+evaka.instance.oulu:
   MessageProvider:
     DECISION_HEADER:
       fi: Oulun esiopetukseen ja varhaiskasvatukseen liittyvät päätökset

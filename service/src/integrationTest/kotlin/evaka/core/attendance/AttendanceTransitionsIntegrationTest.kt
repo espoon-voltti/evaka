@@ -1,0 +1,608 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.attendance
+
+import evaka.core.FullApplicationTest
+import evaka.core.absence.AbsenceCategory
+import evaka.core.absence.AbsenceType
+import evaka.core.placement.PlacementType
+import evaka.core.preschoolTerm2023
+import evaka.core.shared.ChildId
+import evaka.core.shared.MobileDeviceId
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.dev.DevAbsence
+import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevDaycareGroup
+import evaka.core.shared.dev.DevDaycareGroupPlacement
+import evaka.core.shared.dev.DevPerson
+import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.DevPlacement
+import evaka.core.shared.dev.createMobileDeviceToUnit
+import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertTestChildAttendance
+import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.Conflict
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.UUID
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
+
+class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var childAttendanceController: ChildAttendanceController
+
+    private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val child = DevPerson()
+    private val group = DevDaycareGroup(daycareId = daycare.id)
+    private val today = LocalDate.of(2024, 1, 17)
+    private val placementStart = today.minusDays(30)
+    private val placementEnd = today.plusDays(30)
+
+    private val mockClock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(17, 19, 30)))
+    private val roundedNow = mockClock.now().toLocalTime().withSecond(0).withNano(0)
+
+    @BeforeEach
+    fun beforeEach() {
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(preschoolTerm2023)
+            tx.insert(group)
+            tx.createMobileDeviceToUnit(mobileUser.id, daycare.id)
+        }
+    }
+
+    @Test
+    fun `post child arrives - happy case`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildComing()
+
+        val arrived = LocalTime.of(9, 15)
+        markArrived(arrived)
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.PRESENT, child.status)
+        assertNotNull(child.attendances)
+        assertEquals(arrived, child.attendances[0].arrived.toLocalTime().withSecond(0).withNano(0))
+        assertNull(child.attendances[0].departed)
+        assertTrue(child.absences.isEmpty())
+    }
+
+    @Test
+    fun `post child arrives - arriving twice is error`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived = LocalTime.of(9, 0))
+
+        val arrived = LocalTime.of(9, 15)
+        assertThrows<Conflict> { markArrived(arrived) }
+    }
+
+    @Test
+    fun `post return to coming - happy case when present`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent()
+
+        returnToComing()
+        expectNoAttendanceStatuses()
+    }
+
+    @Test
+    fun `post return to coming - happy case when absent`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildAbsent(
+            AbsenceType.UNKNOWN_ABSENCE,
+            AbsenceCategory.BILLABLE,
+            AbsenceCategory.NONBILLABLE,
+        )
+
+        returnToComing()
+        expectNoAttendanceStatuses()
+    }
+
+    @Test
+    fun `get expected absences - preschool daycare placement and present from preschool start`() {
+        val arrived = LocalTime.of(9, 0)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        assertEquals(
+            setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
+            getExpectedAbsencesOnDeparture(LocalTime.of(9, 30), child.id),
+        )
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE),
+            getExpectedAbsencesOnDeparture(LocalTime.of(12, 45), child.id),
+        )
+        assertEquals(setOf(), getExpectedAbsencesOnDeparture(LocalTime.of(13, 20), child.id))
+    }
+
+    @Test
+    fun `get expected absences - preschool daycare placement and present from preschool end`() {
+        val arrived = LocalTime.of(13, 0)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        assertEquals(
+            setOf(AbsenceCategory.NONBILLABLE),
+            getExpectedAbsencesOnDeparture(LocalTime.of(17, 20), child.id),
+        )
+    }
+
+    @Test
+    fun `get expected absences - preschool daycare placement and present hour before preschool start`() {
+        val arrived = LocalTime.of(8, 0)
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(arrived)
+
+        assertEquals(
+            setOf(AbsenceCategory.NONBILLABLE),
+            getExpectedAbsencesOnDeparture(LocalTime.of(9, 45), child.id),
+        )
+        assertEquals(setOf(), getExpectedAbsencesOnDeparture(LocalTime.of(13, 0), child.id))
+    }
+
+    @Test
+    fun `get expected absences - not yet present`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildComing()
+        assertThrows<BadRequest> { getExpectedAbsencesOnDeparture(LocalTime.of(13, 30), child.id) }
+    }
+
+    @Test
+    fun `get expected absences - already departed`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildDeparted(arrived = LocalTime.of(9, 0), departed = LocalTime.of(13, 0))
+        assertThrows<BadRequest> { getExpectedAbsencesOnDeparture(LocalTime.of(13, 30), child.id) }
+    }
+
+    @Test
+    fun `post child departs - happy case`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(LocalTime.of(8, 0))
+
+        val departed = LocalTime.of(16, 0)
+        markDeparted(departed, child.id, absenceTypeNonbillable = null, absenceTypeBillable = null)
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+        assertNotNull(child.attendances)
+        assertEquals(
+            departed,
+            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0),
+        )
+        assertTrue(child.absences.isEmpty())
+    }
+
+    @Test
+    fun `post child departs - absent from preschool_daycare`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(LocalTime.of(9, 0))
+
+        val departed = LocalTime.of(13, 0)
+        val absenceType = AbsenceType.OTHER_ABSENCE
+        markDeparted(
+            departed,
+            child.id,
+            absenceTypeNonbillable = null,
+            absenceTypeBillable = absenceType,
+        )
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+        assertNotNull(child.attendances)
+        assertEquals(
+            departed,
+            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0),
+        )
+        assertContentEquals(listOf(AbsenceCategory.BILLABLE), child.absences.map { it.category })
+    }
+
+    @Test
+    fun `post child departs - absent from preschool`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(LocalTime.of(12, 45))
+
+        val departed = LocalTime.of(18, 0)
+        val absenceType = AbsenceType.UNKNOWN_ABSENCE
+        markDeparted(
+            departed,
+            child.id,
+            absenceTypeNonbillable = absenceType,
+            absenceTypeBillable = null,
+        )
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+        assertNotNull(child.attendances)
+        assertEquals(
+            departed,
+            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0),
+        )
+        assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
+    }
+
+    @Test
+    fun `post child departs - absent from preschool and preschool_daycare`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildPresent(LocalTime.of(8, 50))
+
+        val departed = LocalTime.of(9, 30)
+        val absenceType = AbsenceType.SICKLEAVE
+        markDeparted(departed, child.id, absenceType, absenceType)
+
+        val child = expectOneAttendanceStatus()
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+        assertNotNull(child.attendances)
+        assertEquals(
+            departed,
+            child.attendances[0].departed?.toLocalTime()?.withSecond(0)?.withNano(0),
+        )
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
+            child.absences.map { it.category }.toSet(),
+        )
+    }
+
+    @Test
+    fun `post child departs - multi day attendance - departed less than 30 min ago`() {
+        givenChildPlacement(PlacementType.DAYCARE)
+        givenChildPresent(LocalTime.of(20, 50), mockClock.today().minusDays(1))
+
+        val departed = mockClock.now().toLocalTime().minusMinutes(20).withSecond(0).withNano(0)
+        markDeparted(departed, child.id, null, null)
+
+        val child = expectOneAttendanceStatus()
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+    }
+
+    @Test
+    fun `post child departs - multi day attendance - departed more than 30 min ago`() {
+        givenChildPlacement(PlacementType.DAYCARE)
+        givenChildPresent(LocalTime.of(20, 50), mockClock.today().minusDays(1))
+
+        val departed = mockClock.now().toLocalTime().withSecond(0).withNano(0).minusMinutes(40)
+        markDeparted(departed, child.id, null, null)
+
+        val child = expectOneAttendanceStatus()
+        assertEquals(AttendanceStatus.COMING, child.status)
+    }
+
+    @Test
+    fun `post child departs - departing twice is error`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildDeparted(arrived = LocalTime.of(9, 0), departed = LocalTime.of(14, 0))
+
+        assertThrows<BadRequest> { markDeparted(LocalTime.of(15, 0), child.id, null, null) }
+    }
+
+    @Test
+    fun `post return to present - happy case when departed`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildDeparted()
+
+        returnToPresent()
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.PRESENT, child.status)
+        assertNotNull(child.attendances)
+        assertNotNull(child.attendances[0].arrived)
+        assertNull(child.attendances[0].departed)
+        assertTrue(child.absences.isEmpty())
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to preschool`() {
+        // previous day attendance should have no effect
+        db.transaction {
+            it.insertTestChildAttendance(
+                childId = child.id,
+                unitId = daycare.id,
+                arrived = mockClock.now().minusDays(1).minusHours(1),
+                departed = mockClock.now().minusDays(1).minusMinutes(1),
+            )
+        }
+        givenChildPlacement(PlacementType.PRESCHOOL)
+        givenChildComing()
+
+        markFullDayAbsence(AbsenceType.SICKLEAVE)
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to preschool_daycare`() {
+        givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
+        givenChildComing()
+
+        markFullDayAbsence(AbsenceType.SICKLEAVE)
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
+            child.absences.map { it.category }.toSet(),
+        )
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to preparatory`() {
+        givenChildPlacement(PlacementType.PREPARATORY)
+        givenChildComing()
+
+        markFullDayAbsence(AbsenceType.SICKLEAVE)
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to preparatory_daycare`() {
+        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
+        givenChildComing()
+
+        markFullDayAbsence(AbsenceType.SICKLEAVE)
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
+            child.absences.map { it.category }.toSet(),
+        )
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to daycare`() {
+        givenChildPlacement(PlacementType.DAYCARE)
+        givenChildComing()
+
+        markFullDayAbsence(AbsenceType.SICKLEAVE)
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertContentEquals(listOf(AbsenceCategory.BILLABLE), child.absences.map { it.category })
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to daycare_part_time`() {
+        givenChildPlacement(PlacementType.DAYCARE_PART_TIME)
+        givenChildComing()
+
+        markFullDayAbsence(AbsenceType.SICKLEAVE)
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertContentEquals(listOf(AbsenceCategory.BILLABLE), child.absences.map { it.category })
+    }
+
+    @Test
+    fun `post full day absence - happy case when coming to club`() {
+        givenChildPlacement(PlacementType.CLUB)
+        givenChildComing()
+
+        markFullDayAbsence(AbsenceType.SICKLEAVE)
+        val child = expectOneAttendanceStatus()
+
+        assertEquals(AttendanceStatus.ABSENT, child.status)
+        assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
+    }
+
+    @Test
+    fun `post full day absence - error when no placement`() {
+        assertThrows<BadRequest> { markFullDayAbsence(AbsenceType.SICKLEAVE) }
+    }
+
+    @Test
+    fun `post full day absence - error when present`() {
+        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
+        givenChildPresent()
+
+        assertThrows<Conflict> { markFullDayAbsence(AbsenceType.SICKLEAVE) }
+    }
+
+    @Test
+    fun `post full day absence - error when departed`() {
+        givenChildPlacement(PlacementType.PREPARATORY_DAYCARE)
+        givenChildDeparted()
+
+        assertThrows<Conflict> { markFullDayAbsence(AbsenceType.SICKLEAVE) }
+    }
+
+    private fun givenChildPlacement(placementType: PlacementType) {
+        val placement =
+            DevPlacement(
+                type = placementType,
+                childId = child.id,
+                unitId = daycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+            )
+        db.transaction { tx ->
+            tx.insert(placement)
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placement.id,
+                    daycareGroupId = group.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+        }
+    }
+
+    private fun givenChildComing() {
+        val attendance = getAttendanceStatuses()
+        if (attendance.isNotEmpty()) {
+            assertEquals(1, attendance.size)
+            assertEquals(AttendanceStatus.COMING, attendance.values.first().status)
+        }
+    }
+
+    private fun givenChildPresent(
+        arrived: LocalTime = roundedNow.minusHours(1),
+        date: LocalDate = mockClock.today(),
+    ) {
+        db.transaction {
+            it.insertTestChildAttendance(
+                childId = child.id,
+                unitId = daycare.id,
+                arrived = HelsinkiDateTime.of(date, arrived),
+                departed = null,
+            )
+        }
+        val child = expectOneAttendanceStatus()
+        assertEquals(AttendanceStatus.PRESENT, child.status)
+    }
+
+    private fun givenChildDeparted(
+        arrived: LocalTime = roundedNow.minusHours(1),
+        departed: LocalTime = roundedNow.minusMinutes(10),
+    ) {
+        db.transaction {
+            it.insertTestChildAttendance(
+                childId = child.id,
+                unitId = daycare.id,
+                arrived = mockClock.now().withTime(arrived),
+                departed = mockClock.now().withTime(departed),
+            )
+        }
+        val child = expectOneAttendanceStatus()
+        assertEquals(AttendanceStatus.DEPARTED, child.status)
+    }
+
+    private fun givenChildAbsent(absenceType: AbsenceType, vararg categories: AbsenceCategory) {
+        categories.forEach { category ->
+            db.transaction {
+                it.insert(
+                    DevAbsence(
+                        childId = child.id,
+                        date = LocalDate.now(),
+                        absenceType = absenceType,
+                        absenceCategory = category,
+                    )
+                )
+            }
+        }
+    }
+
+    private fun getAttendanceStatuses() =
+        childAttendanceController.getAttendanceStatuses(
+            dbInstance(),
+            mobileUser,
+            mockClock,
+            daycare.id,
+        )
+
+    private fun expectOneAttendanceStatus():
+        ChildAttendanceController.ChildAttendanceStatusResponse {
+        val attendances = getAttendanceStatuses()
+        assertEquals(1, attendances.size)
+        return attendances.values.first()
+    }
+
+    private fun expectNoAttendanceStatuses() {
+        val attendances = getAttendanceStatuses()
+        assertEquals(0, attendances.size)
+    }
+
+    private fun markArrived(arrived: LocalTime) {
+        childAttendanceController.postArrivals(
+            dbInstance(),
+            mobileUser,
+            mockClock,
+            daycare.id,
+            ChildAttendanceController.ArrivalsRequest(children = setOf(child.id), arrived = arrived),
+        )
+    }
+
+    private fun returnToComing() {
+        childAttendanceController.returnToComing(
+            dbInstance(),
+            mobileUser,
+            mockClock,
+            daycare.id,
+            child.id,
+        )
+    }
+
+    private fun getExpectedAbsencesOnDeparture(
+        departed: LocalTime,
+        childId: ChildId,
+    ): Set<AbsenceCategory>? {
+        return childAttendanceController
+            .getExpectedAbsencesOnDepartures(
+                dbInstance(),
+                mobileUser,
+                mockClock,
+                daycare.id,
+                ChildAttendanceController.ExpectedAbsencesOnDeparturesRequest(
+                    setOf(childId),
+                    departed,
+                ),
+            )
+            .categoriesByChild[childId]
+    }
+
+    private fun markDeparted(
+        departed: LocalTime,
+        childId: ChildId,
+        absenceTypeNonbillable: AbsenceType?,
+        absenceTypeBillable: AbsenceType?,
+    ) {
+        childAttendanceController.postDepartures(
+            dbInstance(),
+            mobileUser,
+            mockClock,
+            daycare.id,
+            ChildAttendanceController.DeparturesRequest(
+                departed = departed,
+                departures =
+                    listOf(
+                        ChildAttendanceController.ChildDeparture(
+                            childId = childId,
+                            absenceTypeNonbillable = absenceTypeNonbillable,
+                            absenceTypeBillable = absenceTypeBillable,
+                        )
+                    ),
+            ),
+        )
+    }
+
+    private fun returnToPresent() {
+        childAttendanceController.returnToPresent(
+            dbInstance(),
+            mobileUser,
+            mockClock,
+            daycare.id,
+            child.id,
+        )
+    }
+
+    private fun markFullDayAbsence(absenceType: AbsenceType) {
+        childAttendanceController.postFullDayAbsence(
+            dbInstance(),
+            mobileUser,
+            mockClock,
+            daycare.id,
+            child.id,
+            ChildAttendanceController.FullDayAbsenceRequest(absenceType),
+        )
+    }
+}

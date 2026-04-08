@@ -1,0 +1,283 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.messaging
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
+import evaka.core.application.ApplicationStatus
+import evaka.core.application.ApplicationType
+import evaka.core.attachment.Attachment
+import evaka.core.shared.ApplicationId
+import evaka.core.shared.AreaId
+import evaka.core.shared.ChildId
+import evaka.core.shared.DaycareId
+import evaka.core.shared.GroupId
+import evaka.core.shared.MessageAccountId
+import evaka.core.shared.MessageContentId
+import evaka.core.shared.MessageId
+import evaka.core.shared.MessageThreadId
+import evaka.core.shared.PersonId
+import evaka.core.shared.config.SealedSubclassSimpleName
+import evaka.core.shared.db.DatabaseEnum
+import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
+import org.jdbi.v3.json.Json
+import tools.jackson.databind.annotation.JsonTypeIdResolver
+
+data class Message(
+    val id: MessageId,
+    val threadId: MessageThreadId,
+    @Json val sender: MessageAccount,
+    @Json val recipients: Set<MessageAccount>,
+    val sentAt: HelsinkiDateTime,
+    val content: String,
+    val readAt: HelsinkiDateTime? = null,
+    @Json val attachments: List<Attachment>,
+    val recipientNames: Set<String>? = null,
+)
+
+data class MessageThread(
+    val id: MessageThreadId,
+    val type: MessageType,
+    val title: String,
+    val urgent: Boolean,
+    val sensitive: Boolean,
+    val isCopy: Boolean,
+    val applicationId: ApplicationId?,
+    val applicationType: ApplicationType?,
+    val applicationStatus: ApplicationStatus?,
+    val children: List<MessageChild>,
+    @Json val messages: List<Message>,
+)
+
+data class MessageThreadStub(
+    val id: MessageThreadId,
+    val type: MessageType,
+    val title: String,
+    val urgent: Boolean,
+    val sensitive: Boolean,
+    val isCopy: Boolean,
+)
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@JsonTypeIdResolver(SealedSubclassSimpleName::class)
+sealed interface CitizenMessageThread {
+    val id: MessageThreadId
+    val urgent: Boolean
+
+    data class Redacted(
+        override val id: MessageThreadId,
+        override val urgent: Boolean,
+        val sender: MessageAccount?,
+        val lastMessageSentAt: HelsinkiDateTime?,
+        val hasUnreadMessages: Boolean,
+    ) : CitizenMessageThread {
+        companion object {
+            fun fromMessageThread(accountId: MessageAccountId, messageThread: MessageThread) =
+                Redacted(
+                    messageThread.id,
+                    messageThread.urgent,
+                    messageThread.messages.firstOrNull()?.sender,
+                    messageThread.messages.lastOrNull()?.sentAt,
+                    messageThread.messages
+                        .findLast { message -> message.sender.id != accountId }
+                        ?.readAt == null,
+                )
+        }
+    }
+
+    data class Regular(
+        override val id: MessageThreadId,
+        override val urgent: Boolean,
+        val children: List<MessageChild>,
+        val messageType: MessageType,
+        val title: String,
+        val sensitive: Boolean,
+        val isCopy: Boolean,
+        val applicationStatus: ApplicationStatus?,
+        val messages: List<Message>,
+    ) : CitizenMessageThread {
+        companion object {
+            fun fromMessageThread(messageThread: MessageThread) =
+                Regular(
+                    messageThread.id,
+                    messageThread.urgent,
+                    messageThread.children,
+                    messageThread.type,
+                    messageThread.title,
+                    messageThread.sensitive,
+                    messageThread.isCopy,
+                    messageThread.applicationStatus,
+                    messageThread.messages,
+                )
+        }
+    }
+}
+
+data class SentMessage(
+    val contentId: MessageContentId,
+    val content: String,
+    val sentAt: HelsinkiDateTime,
+    val threadTitle: String,
+    val type: MessageType,
+    val urgent: Boolean,
+    val sensitive: Boolean,
+    val recipientNames: List<String>,
+    @Json val attachments: List<Attachment>,
+)
+
+enum class MessageType : DatabaseEnum {
+    MESSAGE,
+    BULLETIN;
+
+    override val sqlType: String = "message_type"
+}
+
+enum class MessageRecipientType {
+    AREA,
+    UNIT,
+    UNIT_IN_AREA,
+    GROUP,
+    CHILD,
+    CITIZEN,
+}
+
+data class SelectableRecipientsResponse(
+    val accountId: MessageAccountId,
+    val receivers: List<SelectableRecipient>,
+)
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class SelectableRecipient(val type: MessageRecipientType) {
+    abstract val name: String
+
+    @JsonTypeName("AREA")
+    data class Area(val id: AreaId, override val name: String, val receivers: List<UnitInArea>) :
+        SelectableRecipient(MessageRecipientType.AREA)
+
+    @JsonTypeName("UNIT_IN_AREA")
+    data class UnitInArea(val id: DaycareId, override val name: String) :
+        SelectableRecipient(MessageRecipientType.UNIT_IN_AREA)
+
+    @JsonTypeName("UNIT")
+    data class Unit(
+        val id: DaycareId,
+        override val name: String,
+        val receivers: List<Group>,
+        val hasStarters: Boolean,
+    ) : SelectableRecipient(MessageRecipientType.UNIT)
+
+    @JsonTypeName("GROUP")
+    data class Group(
+        val id: GroupId,
+        override val name: String,
+        val receivers: List<Child>,
+        val hasStarters: Boolean,
+    ) : SelectableRecipient(MessageRecipientType.GROUP)
+
+    @JsonTypeName("CHILD")
+    data class Child(val id: ChildId, override val name: String, val startDate: LocalDate?) :
+        SelectableRecipient(MessageRecipientType.CHILD)
+
+    @JsonTypeName("CITIZEN")
+    data class Citizen(val id: PersonId, override val name: String) :
+        SelectableRecipient(MessageRecipientType.CITIZEN)
+}
+
+enum class AccountType : DatabaseEnum {
+    PERSONAL,
+    GROUP,
+    CITIZEN,
+    MUNICIPAL,
+    SERVICE_WORKER,
+    FINANCE;
+
+    fun isPrimaryRecipientForCitizenMessage(): Boolean =
+        when (this) {
+            PERSONAL -> true
+            GROUP -> true
+            CITIZEN -> false
+            MUNICIPAL -> false
+            SERVICE_WORKER -> false
+            FINANCE -> false
+        }
+
+    override val sqlType: String = "message_account_type"
+}
+
+data class MessageAccount(
+    val id: MessageAccountId,
+    val name: String,
+    val type: AccountType,
+    val personId: PersonId?,
+)
+
+data class MessageAccountWithPresence(
+    val account: MessageAccount,
+    val outOfOffice: FiniteDateRange?,
+)
+
+data class Group(
+    @PropagateNull val id: GroupId,
+    val name: String,
+    val unitId: DaycareId,
+    val unitName: String,
+    val closed: Boolean,
+)
+
+data class AuthorizedMessageAccount(
+    @Nested("account_") val account: MessageAccount,
+    @Nested("group_") val daycareGroup: Group?,
+)
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class MessageRecipient(val type: MessageRecipientType) {
+    abstract fun isStarter(): Boolean
+
+    @JsonTypeName("AREA")
+    data class Area(val id: AreaId) : MessageRecipient(MessageRecipientType.AREA) {
+        override fun isStarter(): Boolean = false
+    }
+
+    @JsonTypeName("UNIT")
+    data class Unit(val id: DaycareId, val starter: Boolean = false) :
+        MessageRecipient(MessageRecipientType.UNIT) {
+        override fun isStarter(): Boolean = starter
+    }
+
+    @JsonTypeName("GROUP")
+    data class Group(val id: GroupId, val starter: Boolean = false) :
+        MessageRecipient(MessageRecipientType.GROUP) {
+        override fun isStarter(): Boolean = starter
+    }
+
+    @JsonTypeName("CHILD")
+    data class Child(val id: ChildId, val starter: Boolean = false) :
+        MessageRecipient(MessageRecipientType.CHILD) {
+        override fun isStarter(): Boolean = starter
+    }
+
+    @JsonTypeName("CITIZEN")
+    data class Citizen(val id: PersonId) : MessageRecipient(MessageRecipientType.CITIZEN) {
+        override fun isStarter(): Boolean = false
+    }
+}
+
+data class MessageChild(
+    val childId: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String,
+)
+
+data class NewMessageStub(
+    val title: String,
+    val content: String,
+    val urgent: Boolean,
+    val sensitive: Boolean,
+)

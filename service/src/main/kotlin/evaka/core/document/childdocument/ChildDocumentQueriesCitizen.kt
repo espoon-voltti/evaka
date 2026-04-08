@@ -1,0 +1,153 @@
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.document.childdocument
+
+import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.PersonId
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.db.Database
+import evaka.core.shared.db.Predicate
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.security.actionrule.AccessControlFilter
+import evaka.core.shared.security.actionrule.toPredicate
+
+private fun Database.Read.childDocumentCitizenSummaryQuery(
+    user: AuthenticatedUser.Citizen,
+    childDocumentPredicate: Predicate,
+) = createQuery {
+    sql(
+        """
+SELECT
+    cd.id,
+    cd.status,
+    dt.type,
+    dt.name AS template_name,
+    latest_version.published_at,
+    (NOT EXISTS(
+        SELECT FROM child_document_read cdr
+        WHERE cdr.person_id = ${bind(user.id)} AND cdr.document_id = cd.id
+    )) AS unread,
+    child.id AS child_id,
+    child.first_name AS child_first_name,
+    child.last_name AS child_last_name,
+    child.date_of_birth AS child_date_of_birth,
+    cd.answered_at,
+    answered_by.id AS answered_by_id,
+    CASE answered_by.type
+        WHEN 'CITIZEN' THEN answered_by.name
+        ELSE ''
+    END AS answered_by_name,
+    answered_by.type AS answered_by_type,
+    cdd.id AS decision_id,
+    cdd.status AS decision_status,
+    cdd.created_at AS decision_created_at,
+    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
+    cdd.decision_number AS decision_decision_number,
+    cdd.annulment_reason AS decision_annulment_reason
+FROM child_document cd
+JOIN document_template dt ON cd.template_id = dt.id
+JOIN person child ON cd.child_id = child.id
+LEFT JOIN child_document_latest_published_version latest_version ON latest_version.child_document_id = cd.id
+LEFT JOIN evaka_user answered_by ON cd.answered_by = answered_by.id
+LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
+WHERE ${predicate(childDocumentPredicate.forTable("cd"))}
+"""
+    )
+}
+
+fun Database.Read.getChildDocumentCitizenSummaries(
+    user: AuthenticatedUser.Citizen,
+    childId: PersonId,
+): List<ChildDocumentCitizenSummary> =
+    childDocumentCitizenSummaryQuery(
+            user,
+            Predicate.all(
+                Predicate { where("$it.child_id = ${bind(childId)}") },
+                Predicate {
+                    where(
+                        "EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = $it.id)"
+                    )
+                },
+            ),
+        )
+        .toList<ChildDocumentCitizenSummary>()
+
+fun Database.Read.getUnansweredChildDocuments(
+    user: AuthenticatedUser.Citizen,
+    filter: AccessControlFilter<ChildDocumentId>,
+) =
+    childDocumentCitizenSummaryQuery(
+            user,
+            Predicate.all(
+                filter.toPredicate(),
+                Predicate { where("$it.answered_at IS NULL AND $it.answered_by IS NULL") },
+            ),
+        )
+        .toList<ChildDocumentCitizenSummary>()
+
+fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCitizenDetails? {
+    return createQuery {
+            sql(
+                """
+                SELECT 
+                    cd.id,
+                    cd.status,
+                    latest_version.published_at,
+                    EXISTS(
+                        SELECT 1 FROM child_document_published_version v 
+                        WHERE v.child_document_id = cd.id 
+                        AND v.document_key IS NOT NULL
+                    ) AS downloadable,
+                    latest_version.published_content AS content,
+                    p.id as child_id,
+                    p.first_name as child_first_name,
+                    p.last_name as child_last_name,
+                    p.date_of_birth as child_date_of_birth,
+                    dt.id as template_id,
+                    dt.name as template_name,
+                    dt.type as template_type,
+                    dt.placement_types as template_placement_types,
+                    dt.language as template_language,
+                    dt.legal_basis as template_legal_basis,
+                    dt.confidentiality_basis as template_confidentiality_basis,
+                    dt.confidentiality_duration_years as template_confidentiality_duration_years,
+                    dt.validity as template_validity,
+                    dt.published as template_published,
+                    dt.content as template_content,
+                    dt.archive_externally as template_archive_externally,
+                    cdd.id AS decision_id,
+                    cdd.status AS decision_status,
+                    cdd.created_at AS decision_created_at,
+                    CASE WHEN cdd.valid_from IS NOT NULL THEN daterange(cdd.valid_from, cdd.valid_to, '[]') END AS decision_validity,
+                    cdd.decision_number AS decision_decision_number,
+                    cdd.annulment_reason AS decision_annulment_reason
+                FROM child_document cd
+                JOIN document_template dt on cd.template_id = dt.id
+                JOIN person p on cd.child_id = p.id
+                LEFT JOIN child_document_latest_published_version latest_version ON latest_version.child_document_id = cd.id
+                LEFT JOIN child_document_decision cdd ON cdd.id = cd.decision_id
+                WHERE cd.id = ${bind(id)} AND latest_version.published_at IS NOT NULL
+                """
+            )
+        }
+        .exactlyOneOrNull<ChildDocumentCitizenDetails>()
+}
+
+fun Database.Transaction.markChildDocumentAsRead(
+    user: AuthenticatedUser.Citizen,
+    id: ChildDocumentId,
+    now: HelsinkiDateTime,
+) {
+    createUpdate {
+            sql(
+                """
+                INSERT INTO child_document_read (document_id, person_id, read_at) 
+                VALUES (${bind(id)}, ${bind(user.id)}, ${bind(now)})
+                ON CONFLICT DO NOTHING;
+                """
+            )
+        }
+        .execute()
+}

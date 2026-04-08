@@ -1,0 +1,58 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.setting
+
+import evaka.core.Audit
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.db.Database
+import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.security.AccessControl
+import evaka.core.shared.security.Action
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+
+@RestController
+@RequestMapping("/employee/settings")
+class SettingController(private val accessControl: AccessControl) {
+
+    @GetMapping
+    fun getSettings(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+    ): Map<SettingType, String> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.UPDATE_SETTINGS,
+                    )
+                    tx.getSettings()
+                }
+            }
+            .also { Audit.SettingsRead.log() }
+    }
+
+    @PutMapping
+    fun putSettings(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestBody settings: Map<SettingType, String>,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.Global.UPDATE_SETTINGS)
+                tx.setSettings(settings)
+            }
+        }
+        Audit.SettingsUpdate.log()
+    }
+}

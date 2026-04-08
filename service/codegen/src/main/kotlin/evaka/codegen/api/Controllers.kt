@@ -4,10 +4,10 @@
 
 package evaka.codegen.api
 
-import fi.espoo.evaka.ExcludeCodeGen
-import fi.espoo.evaka.ForcePlainGet
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.domain.EvakaClock
+import evaka.core.ExcludeCodeGen
+import evaka.core.ForcePlainGet
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.domain.EvakaClock
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
