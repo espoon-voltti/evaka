@@ -5,8 +5,8 @@
 package evaka.codegen.api
 
 import evaka.codegen.fileHeader
-import fi.espoo.evaka.shared.utils.letIf
-import fi.espoo.evaka.shared.utils.mapOfNotNullValues
+import evaka.core.shared.utils.letIf
+import evaka.core.shared.utils.mapOfNotNullValues
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 import kotlin.reflect.jvm.jvmName
@@ -15,7 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder
 private val logger = KotlinLogging.logger {}
 
 fun generateApiFiles(): Map<TsFile, String> {
-    val allEndpoints = scanEndpoints("fi.espoo.evaka")
+    val allEndpoints = scanEndpoints("evaka.core")
     allEndpoints.forEach { it.validate() }
 
     val endpoints =
@@ -33,7 +33,7 @@ fun generateApiFiles(): Map<TsFile, String> {
         )
 
     val devEndpoints =
-        scanEndpoints("fi.espoo.evaka", profiles = listOf("enable_dev_api")).filter {
+        scanEndpoints("evaka.core", profiles = listOf("enable_dev_api")).filter {
             it.path.startsWith("/dev-api/")
         }
     val devMetadata =

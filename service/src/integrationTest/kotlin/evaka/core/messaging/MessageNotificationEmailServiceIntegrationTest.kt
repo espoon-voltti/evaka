@@ -1,0 +1,337 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.messaging
+
+import evaka.core.FullApplicationTest
+import evaka.core.application.ApplicationType
+import evaka.core.application.persistence.daycare.Adult
+import evaka.core.application.persistence.daycare.Apply
+import evaka.core.application.persistence.daycare.Child
+import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.emailclient.Email
+import evaka.core.emailclient.MockEmailClient
+import evaka.core.pis.service.insertGuardian
+import evaka.core.placement.PlacementType
+import evaka.core.shared.ApplicationId
+import evaka.core.shared.MessageAccountId
+import evaka.core.shared.MessageThreadFolderId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.auth.UserRole
+import evaka.core.shared.auth.insertDaycareAclRow
+import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevDaycareGroup
+import evaka.core.shared.dev.DevDaycareGroupPlacement
+import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevPerson
+import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.DevPlacement
+import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertTestApplication
+import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.job.ScheduledJobs
+import evaka.core.shared.security.AccessControl
+import evaka.core.shared.security.Action
+import evaka.core.shared.security.PilotFeature
+import evaka.core.toApplicationType
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+
+class MessageNotificationEmailServiceIntegrationTest :
+    FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var accessControl: AccessControl
+    @Autowired lateinit var messageController: MessageController
+    @Autowired lateinit var scheduledJobs: ScheduledJobs
+
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
+    private val child = DevPerson()
+
+    private val testPersonFi = DevPerson(email = "fi@example.com", language = "fi")
+    private val testPersonSv = DevPerson(email = "sv@example.com", language = "sv")
+    private val testPersonEn = DevPerson(email = "en@example.com", language = "en")
+    private val testPersonEl = DevPerson(email = "el@example.com", language = "el")
+    private val testPersonNoEmail = DevPerson(email = null, language = "fi")
+
+    private val testPersons =
+        listOf(testPersonFi, testPersonSv, testPersonEn, testPersonEl, testPersonNoEmail)
+    private val testAddresses = testPersons.mapNotNull { it.email }
+
+    private val staffEmployee = DevEmployee()
+    private val employee =
+        AuthenticatedUser.Employee(id = staffEmployee.id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+
+    private val clock = MockEvakaClock(2023, 1, 1, 12, 0)
+
+    @BeforeEach
+    fun beforeEach() {
+        val placementStart = clock.today().minusDays(30)
+        val placementEnd = clock.today().plusDays(30)
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(child, DevPersonType.CHILD)
+
+            val group = DevDaycareGroup(daycareId = daycare.id, startDate = placementStart)
+            tx.insert(group)
+
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd,
+                    )
+                )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = group.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            testPersons.forEach {
+                tx.insert(it, DevPersonType.ADULT)
+                tx.insertGuardian(it.id, child.id)
+            }
+
+            tx.insert(staffEmployee)
+            tx.upsertEmployeeMessageAccount(staffEmployee.id)
+            tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
+        }
+    }
+
+    @Test
+    fun `notifications are sent to citizens`() {
+        val employeeAccount =
+            db.read {
+                it.getEmployeeMessageAccountIds(
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            employee,
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                        )
+                    )
+                    .first()
+            }
+
+        postNewThread(
+            sender = employeeAccount,
+            recipients = listOf(MessageRecipient.Child(child.id)),
+            user = employee,
+            clock,
+        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
+
+        assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+        assertEquals(
+            "Uusi viesti eVakassa / Nytt personligt meddelande i eVaka / New message in eVaka",
+            getEmailFor(testPersonFi).content.subject,
+        )
+        assertEquals(
+            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonSv).fromAddress.address,
+        )
+        assertEquals(
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonEn).fromAddress.address,
+        )
+    }
+
+    @Test
+    fun `bulletin notifications are sent to citizens`() {
+        val municipalAccountId = db.transaction { tx -> tx.createMunicipalMessageAccount() }
+
+        val adminUser =
+            db.transaction { tx ->
+                AuthenticatedUser.Employee(
+                    tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN))),
+                    roles = setOf(UserRole.ADMIN),
+                )
+            }
+
+        postNewThread(
+            sender = municipalAccountId,
+            recipients = listOf(MessageRecipient.Child(child.id)),
+            user = adminUser,
+            clock,
+            type = MessageType.BULLETIN,
+        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
+
+        assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+        assertEquals(
+            "Uusi tiedote eVakassa / Nytt allmänt meddelande i eVaka / New bulletin in eVaka",
+            getEmailFor(testPersonFi).content.subject,
+        )
+        assertTrue(
+            getEmailFor(testPersonFi)
+                .content
+                .text
+                .startsWith(
+                    "Sinulle on saapunut uusi tiedote eVakaan lähettäjältä Espoon kaupunki - Esbo stad - City of Espoo otsikolla \"Juhannus/Midsommar/Midsummer\"."
+                )
+        )
+
+        assertEquals(
+            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonSv).fromAddress.address,
+        )
+        assertEquals(
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonEn).fromAddress.address,
+        )
+    }
+
+    @Test
+    fun `a notification is not sent when the message has been already read`() {
+        val employeeAccount =
+            db.read {
+                it.getEmployeeMessageAccountIds(
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            employee,
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                        )
+                    )
+                    .first()
+            }
+
+        val contentId =
+            postNewThread(
+                sender = employeeAccount,
+                recipients = listOf(MessageRecipient.Child(child.id)),
+                user = employee,
+                clock = clock,
+            )
+        assertNotNull(contentId)
+
+        markAllRecipientMessagesRead(testPersonFi, clock)
+
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
+
+        assertEquals(3, MockEmailClient.emails.size)
+        assertTrue(MockEmailClient.emails.none { email -> email.toAddress == testPersonFi.email })
+    }
+
+    @Test
+    fun `notifications related to an application are sent to citizens`() {
+        val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
+        val serviceWorkerAccount =
+            db.transaction { tx ->
+                tx.insert(serviceWorker)
+                tx.createServiceWorkerMessageAccount()
+            }
+
+        val guardian = testPersons.first()
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                    sentDate = clock.today(),
+                    dueDate = null,
+                    guardianId = guardian.id,
+                    childId = child.id,
+                    type = PlacementType.DAYCARE.toApplicationType(),
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            serviceStart = "08:00",
+                            serviceEnd = "16:00",
+                            child = Child(dateOfBirth = clock.today().minusYears(3)),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            preferredStartDate = clock.today().plusMonths(5),
+                        ),
+                )
+            }
+
+        postNewThread(
+            sender = serviceWorkerAccount,
+            recipients = listOf(MessageRecipient.Citizen(guardian.id)),
+            user = serviceWorker.user,
+            clock = clock,
+            relatedApplicationId = applicationId,
+        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
+
+        assertEquals(setOf(guardian.email), MockEmailClient.emails.map { it.toAddress }.toSet())
+        assertEquals(
+            "Uusi viesti eVakassa / Nytt personligt meddelande i eVaka / New message in eVaka",
+            getEmailFor(guardian).content.subject,
+        )
+        assertTrue(
+            getEmailFor(guardian)
+                .content
+                .text
+                .contains(
+                    "Sinulle on saapunut uusi hakemustasi koskeva viesti eVakaan lähettäjältä"
+                )
+        )
+    }
+
+    private fun postNewThread(
+        sender: MessageAccountId,
+        recipients: List<MessageRecipient>,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        type: MessageType = MessageType.MESSAGE,
+        initialFolder: MessageThreadFolderId? = null,
+        relatedApplicationId: ApplicationId? = null,
+    ) =
+        messageController.createMessage(
+            dbInstance(),
+            user,
+            clock,
+            sender,
+            initialFolder,
+            MessageController.PostMessageBody(
+                title = "Juhannus/Midsommar/Midsummer",
+                content = "Juhannus tulee pian",
+                type = type,
+                recipients = recipients.toSet(),
+                recipientNames = listOf(),
+                urgent = false,
+                sensitive = false,
+                relatedApplicationId = relatedApplicationId,
+            ),
+        )
+
+    private fun getEmailFor(person: DevPerson): Email {
+        val address = person.email ?: throw Error("$person has no email")
+        return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
+    }
+
+    private fun markAllRecipientMessagesRead(person: DevPerson, clock: EvakaClock) {
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    """
+UPDATE message_recipients mr SET read_at = ${bind(clock.now())}
+WHERE mr.id IN (
+    SELECT mr.id
+    FROM message_recipients mr LEFT JOIN message_account ma ON mr.recipient_id = ma.id
+    WHERE ma.person_id = ${bind(person.id)}
+)
+"""
+                )
+            }
+        }
+    }
+}

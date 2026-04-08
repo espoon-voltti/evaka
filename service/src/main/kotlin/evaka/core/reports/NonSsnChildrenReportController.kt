@@ -1,0 +1,81 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.reports
+
+import evaka.core.Audit
+import evaka.core.shared.ChildId
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.db.Database
+import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.security.AccessControl
+import evaka.core.shared.security.Action
+import java.time.LocalDate
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
+
+@RestController
+class NonSsnChildrenReportController(private val accessControl: AccessControl) {
+    @GetMapping("/employee/reports/non-ssn-children")
+    fun getNonSsnChildrenReportRows(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+    ): List<NonSsnChildrenReportRow> {
+        return db.connect { dbc ->
+                dbc.read {
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_NON_SSN_CHILDREN_REPORT,
+                    )
+
+                    it.getNonSsnChildren(clock.today())
+                }
+            }
+            .also { Audit.NonSsnChildrenReport.log(meta = mapOf("count" to it.size)) }
+    }
+}
+
+data class NonSsnChildrenReportRow(
+    val childId: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate,
+    val ophPersonOid: String?,
+    val lastSentToVarda: HelsinkiDateTime?,
+    val lastSentToKoski: HelsinkiDateTime?,
+)
+
+private fun Database.Read.getNonSsnChildren(
+    examinationDate: LocalDate
+): List<NonSsnChildrenReportRow> =
+    createQuery {
+            sql(
+                """
+SELECT
+    p.first_name,
+    p.last_name,
+    p.id AS child_id,
+    p.date_of_birth,
+    p.oph_person_oid,
+    v.last_success_at AS last_sent_to_varda,
+    (
+        SELECT max(ksr.updated)
+        FROM koski_study_right ksr
+        WHERE ksr.child_id = p.id
+    ) AS last_sent_to_koski
+FROM person p
+LEFT JOIN varda_state v ON v.child_id = p.id
+WHERE p.social_security_number IS NULL AND EXISTS(
+    SELECT FROM placement pl
+    WHERE pl.child_id = p.id AND pl.end_date >= ${bind(examinationDate)}
+)
+"""
+            )
+        }
+        .toList<NonSsnChildrenReportRow>()

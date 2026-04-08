@@ -1,0 +1,39 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.shared.message
+
+import evaka.core.decision.DecisionSendAddress
+import evaka.core.shared.domain.OfficialLanguage
+
+interface IMessageProvider {
+    fun getDecisionHeader(lang: OfficialLanguage): String
+
+    fun getDecisionContent(lang: OfficialLanguage, skipGuardianApproval: Boolean? = false): String
+
+    fun getChildDocumentDecisionHeader(lang: OfficialLanguage): String
+
+    fun getChildDocumentDecisionContent(lang: OfficialLanguage): String
+
+    fun getFeeDecisionHeader(lang: OfficialLanguage): String
+
+    fun getFeeDecisionContent(lang: OfficialLanguage): String
+
+    fun getVoucherValueDecisionHeader(lang: OfficialLanguage): String
+
+    fun getVoucherValueDecisionContent(lang: OfficialLanguage): String
+
+    /**
+     * Returns address used for decisions when person has restricted details enabled or missing
+     * address.
+     */
+    fun getDefaultDecisionAddress(lang: OfficialLanguage): DecisionSendAddress
+
+    /** Returns address used for fee decisions when person is missing address. */
+    fun getDefaultFinancialDecisionAddress(lang: OfficialLanguage): DecisionSendAddress
+
+    fun getPlacementToolHeader(lang: OfficialLanguage): String
+
+    fun getPlacementToolContent(lang: OfficialLanguage): String
+}

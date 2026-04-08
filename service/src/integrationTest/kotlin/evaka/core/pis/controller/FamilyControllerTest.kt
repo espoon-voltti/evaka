@@ -1,0 +1,248 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.pis.controller
+
+import evaka.core.FullApplicationTest
+import evaka.core.pis.FamilyContactRole
+import evaka.core.pis.controllers.FamilyController
+import evaka.core.shared.PersonId
+import evaka.core.shared.auth.UserRole
+import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevFosterParent
+import evaka.core.shared.dev.DevFridgeChild
+import evaka.core.shared.dev.DevFridgePartnership
+import evaka.core.shared.dev.DevGuardian
+import evaka.core.shared.dev.DevPerson
+import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
+import java.time.LocalDate
+import java.time.LocalTime
+import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+
+class FamilyControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var controller: FamilyController
+
+    private val employee = DevEmployee(roles = setOf(UserRole.ADMIN))
+    private val clock =
+        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 1), LocalTime.of(15, 0)))
+    private val currentlyValid =
+        FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+
+    private val child = DevPerson()
+
+    @BeforeEach
+    fun beforeEach() {
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(child, DevPersonType.CHILD)
+        }
+    }
+
+    @Test
+    fun `getFamilyContactsSummary, full family with guardian as head of family`() {
+        lateinit var guardian: PersonId
+        lateinit var guardianAndHouseholdHead: PersonId
+        lateinit var fosterParent: PersonId
+        lateinit var householdAdult: PersonId
+
+        db.transaction { tx ->
+            guardian =
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                    tx.insert(DevGuardian(it, child.id))
+                }
+            guardianAndHouseholdHead =
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                    tx.insert(DevGuardian(it, child.id))
+                    tx.insert(
+                        DevFridgeChild(
+                            childId = child.id,
+                            headOfChild = it,
+                            startDate = currentlyValid.start,
+                            endDate = currentlyValid.end,
+                        )
+                    )
+                }
+            fosterParent =
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                    tx.insert(
+                        DevFosterParent(
+                            childId = child.id,
+                            parentId = it,
+                            validDuring = currentlyValid.asDateRange(),
+                            modifiedAt = clock.now(),
+                            modifiedBy = employee.evakaUserId,
+                        )
+                    )
+                }
+
+            // Householdsibling should not be shown
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgeChild(
+                        childId = it,
+                        headOfChild = guardianAndHouseholdHead,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end,
+                    )
+                )
+            }
+            householdAdult =
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                    tx.insert(
+                        DevFridgePartnership(
+                            first = guardianAndHouseholdHead,
+                            second = it,
+                            startDate = currentlyValid.start,
+                            endDate = currentlyValid.end,
+                            createdAt = clock.now(),
+                        )
+                    )
+                }
+        }
+        assertEquals(
+            listOf(
+                (guardianAndHouseholdHead to FamilyContactRole.LOCAL_GUARDIAN),
+                (guardian to FamilyContactRole.REMOTE_GUARDIAN),
+                (fosterParent to FamilyContactRole.REMOTE_FOSTER_PARENT),
+                (householdAdult to FamilyContactRole.LOCAL_ADULT),
+            ),
+            getFamilyContactSummary().map { (it.id to it.role) },
+        )
+    }
+
+    @Test
+    fun `getFamilyContactsSummary, minimal family with foster parent as head of family`() {
+        lateinit var fosterParentAndHouseholdHead: PersonId
+
+        db.transaction { tx ->
+            fosterParentAndHouseholdHead =
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                    tx.insert(
+                        DevFosterParent(
+                            childId = child.id,
+                            parentId = it,
+                            validDuring = currentlyValid.asDateRange(),
+                            modifiedAt = clock.now(),
+                            modifiedBy = employee.evakaUserId,
+                        )
+                    )
+                    tx.insert(
+                        DevFridgeChild(
+                            childId = child.id,
+                            headOfChild = it,
+                            startDate = currentlyValid.start,
+                            endDate = currentlyValid.end,
+                        )
+                    )
+                }
+        }
+        assertEquals(
+            listOf((fosterParentAndHouseholdHead to FamilyContactRole.LOCAL_FOSTER_PARENT)),
+            getFamilyContactSummary().map { (it.id to it.role) },
+        )
+    }
+
+    @Test
+    fun `family contacts do not include people in conflict state`() {
+        lateinit var headOfChild: PersonId
+
+        db.transaction { tx ->
+            headOfChild =
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                    tx.insert(
+                        DevFridgeChild(
+                            childId = child.id,
+                            headOfChild = it,
+                            startDate = currentlyValid.start,
+                            endDate = currentlyValid.end,
+                        )
+                    )
+                }
+            // Household siblings are not shown
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgeChild(
+                        childId = it,
+                        headOfChild = headOfChild,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end,
+                    )
+                )
+            }
+            // conflict head of child
+            val conflictHeadOfChild =
+                tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                    tx.insert(
+                        DevFridgeChild(
+                            childId = child.id,
+                            headOfChild = it,
+                            startDate = currentlyValid.start,
+                            endDate = currentlyValid.end,
+                            conflict = true,
+                        )
+                    )
+                }
+            // conflict adult in valid household
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgePartnership(
+                        first = headOfChild,
+                        second = it,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end,
+                        conflict = true,
+                    )
+                )
+            }
+            // valid adult in conflict household
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgePartnership(
+                        first = conflictHeadOfChild,
+                        second = it,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end,
+                    )
+                )
+            }
+            // conflict sibling in valid household
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgeChild(
+                        childId = it,
+                        headOfChild = headOfChild,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end,
+                        conflict = true,
+                    )
+                )
+            }
+            // valid sibling in conflict household
+            tx.insert(DevPerson(), DevPersonType.RAW_ROW).also {
+                tx.insert(
+                    DevFridgeChild(
+                        childId = it,
+                        headOfChild = conflictHeadOfChild,
+                        startDate = currentlyValid.start,
+                        endDate = currentlyValid.end,
+                    )
+                )
+            }
+        }
+        assertEquals(
+            listOf((headOfChild to FamilyContactRole.LOCAL_ADULT)),
+            getFamilyContactSummary().map { (it.id to it.role) },
+        )
+    }
+
+    private fun getFamilyContactSummary() =
+        controller.getFamilyContactSummary(dbInstance(), employee.user, clock, child.id)
+}

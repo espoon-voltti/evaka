@@ -1,0 +1,128 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.s3
+
+import evaka.core.BucketEnv
+import evaka.core.FullApplicationTest
+import evaka.core.shared.AttachmentId
+import evaka.core.shared.utils.trustAllCerts
+import java.util.UUID
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
+
+class S3DocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = false) {
+    @Autowired private lateinit var s3Client: S3Client
+
+    @Autowired private lateinit var s3Presigner: S3Presigner
+
+    @Autowired private lateinit var bucketEnv: BucketEnv
+
+    private lateinit var documentClient: DocumentService
+
+    private val http = OkHttpClient.Builder().apply { trustAllCerts(this) }.build()
+
+    val documentRef = DocumentKey.Attachment(AttachmentId(UUID.randomUUID()))
+
+    @BeforeEach
+    fun beforeEach() {
+        documentClient =
+            S3DocumentService(s3Client, s3Presigner, bucketEnv.copy(proxyThroughNginx = true))
+    }
+
+    @Test
+    fun `redirects when not proxying through nginx`() {
+        val documentClientNoProxy =
+            S3DocumentService(s3Client, s3Presigner, bucketEnv.copy(proxyThroughNginx = false))
+        val location =
+            documentClientNoProxy.upload(documentRef, byteArrayOf(0x11, 0x22, 0x33), "text/plain")
+
+        val response = documentClientNoProxy.responseAttachment(location, null)
+        assertEquals(HttpStatus.FOUND, response.statusCode)
+        assertNotNull(response.headers["Location"])
+        assertNull(response.headers["X-Accel-Redirect"])
+    }
+
+    @Test
+    fun `uses X-Accel-Redirect when proxying through nginx`() {
+        val location =
+            documentClient.upload(documentRef, byteArrayOf(0x33, 0x22, 0x11), "text/plain")
+
+        val response = documentClient.responseAttachment(location, null)
+        assertEquals(HttpStatus.OK, response.statusCode)
+        assertNull(response.headers["Location"])
+        assertNotNull(response.headers["X-Accel-Redirect"])
+    }
+
+    @Test
+    fun `upload-download round trip with get`() {
+        val location =
+            documentClient.upload(documentRef, byteArrayOf(0x11, 0x33, 0x22), "text/plain")
+
+        val document = documentClient.get(location)
+
+        assertContentEquals(byteArrayOf(0x11, 0x33, 0x22), document.bytes)
+    }
+
+    @Test
+    fun `responseAttachment works without filename`() {
+        val location = documentClient.upload(documentRef, byteArrayOf(0x22, 0x11, 0x33), "text/csv")
+
+        val response = documentClient.responseAttachment(location, null)
+        val s3Url = responseEntityToS3URL(response)
+        val s3response = http.newCall(Request.Builder().url(s3Url).build()).execute()
+
+        assertEquals("text/csv", s3response.header("Content-Type"))
+        assertContentEquals(byteArrayOf(0x22, 0x11, 0x33), s3response.body.bytes())
+        assertEquals(listOf("attachment"), response.headers["Content-Disposition"])
+    }
+
+    @Test
+    fun `responseAttachment works with filename`() {
+        val location =
+            documentClient.upload(documentRef, byteArrayOf(0x33, 0x11, 0x22), "application/pdf")
+
+        val response = documentClient.responseAttachment(location, "overridden-filename.pdf")
+        val s3Url = responseEntityToS3URL(response)
+        val s3response = http.newCall(Request.Builder().url(s3Url).build()).execute()
+
+        assertEquals("application/pdf", s3response.header("Content-Type"))
+        assertContentEquals(byteArrayOf(0x33, 0x11, 0x22), s3response.body.bytes())
+        assertEquals(
+            listOf(
+                "attachment; filename=\"=?UTF-8?Q?overridden-filename.pdf?=\"; filename*=UTF-8''overridden-filename.pdf"
+            ),
+            response.headers["Content-Disposition"],
+        )
+    }
+
+    @Test
+    fun `responseInline works`() {
+        val location =
+            documentClient.upload(documentRef, byteArrayOf(0x12, 0x34, 0x56), "text/plain")
+
+        val response = documentClient.responseInline(location, "overridden-filename.txt")
+        val s3Url = responseEntityToS3URL(response)
+        val s3response = http.newCall(Request.Builder().url(s3Url).build()).execute()
+
+        assertEquals("text/plain", s3response.header("Content-Type"))
+        assertContentEquals(byteArrayOf(0x12, 0x34, 0x56), s3response.body.bytes())
+        assertEquals(
+            listOf(
+                "inline; filename=\"=?UTF-8?Q?overridden-filename.txt?=\"; filename*=UTF-8''overridden-filename.txt"
+            ),
+            response.headers["Content-Disposition"],
+        )
+    }
+}

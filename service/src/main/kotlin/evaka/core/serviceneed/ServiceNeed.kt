@@ -1,0 +1,360 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.serviceneed
+
+import evaka.core.ConstList
+import evaka.core.invoicing.domain.SiblingDiscount
+import evaka.core.placement.PlacementType
+import evaka.core.shared.ChildId
+import evaka.core.shared.EvakaUserId
+import evaka.core.shared.PlacementId
+import evaka.core.shared.ServiceNeedId
+import evaka.core.shared.ServiceNeedOptionId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.db.Database
+import evaka.core.shared.db.DatabaseEnum
+import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.HelsinkiDateTime
+import java.math.BigDecimal
+import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
+import tools.jackson.databind.annotation.JsonDeserialize
+
+@ConstList("shiftCareType")
+enum class ShiftCareType : DatabaseEnum {
+    NONE,
+    INTERMITTENT,
+    FULL;
+
+    override val sqlType: String = "shift_care_type"
+
+    companion object {
+        fun fromBoolean(value: Boolean): ShiftCareType {
+            return when (value) {
+                true -> FULL
+                false -> NONE
+            }
+        }
+    }
+}
+
+data class ServiceNeed(
+    val id: ServiceNeedId,
+    val placementId: PlacementId,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    @Nested("option") val option: ServiceNeedOptionSummary,
+    val shiftCare: ShiftCareType,
+    val partWeek: Boolean,
+    @Nested("confirmed")
+    @JsonDeserialize(using = ServiceNeedConfirmationDeserializer::class)
+    val confirmed: ServiceNeedConfirmation?,
+    val updated: HelsinkiDateTime,
+)
+
+data class ServiceNeedSummary(
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    @Nested("option") val option: ServiceNeedOptionPublicInfo?,
+    val contractDaysPerMonth: Int?,
+    val unitName: String,
+    val reservationsEnabled: Boolean,
+    val isDefault: Boolean,
+    val hasNonDefaultOptions: Boolean,
+)
+
+data class ServiceNeedChildRange(val childId: ChildId, val dateRange: FiniteDateRange)
+
+data class ServiceNeedOptionSummary(
+    val id: ServiceNeedOptionId,
+    val nameFi: String,
+    val nameSv: String,
+    val nameEn: String,
+    val updated: HelsinkiDateTime,
+)
+
+data class ServiceNeedConfirmation(
+    @PropagateNull val userId: EvakaUserId,
+    val name: String,
+    val at: HelsinkiDateTime?,
+)
+
+data class ServiceNeedOptionPublicInfo(
+    val id: ServiceNeedOptionId,
+    val nameFi: String,
+    val nameSv: String,
+    val nameEn: String,
+    val validPlacementType: PlacementType,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?,
+) {
+    companion object {
+        fun of(option: ServiceNeedOption) =
+            ServiceNeedOptionPublicInfo(
+                option.id,
+                option.nameFi,
+                option.nameSv,
+                option.nameEn,
+                option.validPlacementType,
+                option.validFrom,
+                option.validTo,
+            )
+    }
+}
+
+data class ServiceNeedOption(
+    val id: ServiceNeedOptionId,
+    val nameFi: String,
+    val nameSv: String,
+    val nameEn: String,
+    val validPlacementType: PlacementType,
+    val defaultOption: Boolean,
+    val feeCoefficient: BigDecimal,
+    val occupancyCoefficient: BigDecimal,
+    val occupancyCoefficientUnder3y: BigDecimal,
+    val realizedOccupancyCoefficient: BigDecimal,
+    val realizedOccupancyCoefficientUnder3y: BigDecimal,
+    val daycareHoursPerWeek: Int, // Used only for Varda
+    val contractDaysPerMonth: Int?,
+    val daycareHoursPerMonth: Int?,
+    val partDay: Boolean,
+    val partWeek: Boolean?,
+    val feeDescriptionFi: String,
+    val feeDescriptionSv: String,
+    val voucherValueDescriptionFi: String,
+    val voucherValueDescriptionSv: String,
+    val validFrom: LocalDate,
+    val validTo: LocalDate?,
+    val updated: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val showForCitizen: Boolean,
+) {
+    fun daycareMinutesPerMonth(): Long? = daycareHoursPerMonth?.let { it * 60L }
+}
+
+data class ServiceNeedOptionFee(
+    val serviceNeedOptionId: ServiceNeedOptionId,
+    val validity: DateRange,
+    val baseFee: Int,
+    val siblingDiscount2: BigDecimal,
+    val siblingFee2: Int,
+    val siblingDiscount2Plus: BigDecimal,
+    val siblingFee2Plus: Int,
+) {
+    fun siblingDiscount(siblingOrdinal: Int): SiblingDiscount {
+        val multiplier =
+            when (siblingOrdinal) {
+                1 -> BigDecimal(1)
+                2 -> BigDecimal(1) - siblingDiscount2
+                else -> BigDecimal(1) - siblingDiscount2Plus
+            }
+        val percent = ((BigDecimal(1) - multiplier) * BigDecimal(100)).toInt()
+        val fee =
+            when (siblingOrdinal) {
+                1 -> null
+                2 -> siblingFee2
+                else -> siblingFee2Plus
+            }
+        return SiblingDiscount(multiplier, percent, fee)
+    }
+}
+
+fun validateServiceNeed(
+    db: Database.Read,
+    placementId: PlacementId,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    optionId: ServiceNeedOptionId,
+    partWeek: Boolean,
+) {
+    if (endDate.isBefore(startDate)) {
+        throw BadRequest("Start date cannot be before end date.")
+    }
+
+    db.createQuery {
+            sql(
+                """
+                SELECT 1
+                FROM placement pl
+                JOIN service_need_option sno ON sno.valid_placement_type = pl.type
+                WHERE pl.id = ${bind(placementId)} AND sno.id = ${bind(optionId)} 
+                    AND daterange(sno.valid_from, sno.valid_to, '[]') @> ${bind(FiniteDateRange(startDate, endDate))}
+                    AND (sno.part_week IS NULL OR sno.part_week = ${bind(partWeek)})
+                """
+            )
+        }
+        .toList<Int>()
+        .let { if (it.isEmpty()) throw BadRequest("Invalid service need type") }
+
+    db.createQuery {
+            sql(
+                """
+                SELECT 1
+                FROM placement pl
+                WHERE
+                    pl.id = ${bind(placementId)} AND
+                    daterange(pl.start_date, pl.end_date, '[]') @> daterange(${bind(startDate)}, ${bind(endDate)}, '[]')
+                """
+            )
+        }
+        .toList<Int>()
+        .let { if (it.isEmpty()) throw BadRequest("Service need must be within placement") }
+}
+
+fun createServiceNeed(
+    tx: Database.Transaction,
+    user: AuthenticatedUser,
+    placementId: PlacementId,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    optionId: ServiceNeedOptionId,
+    shiftCare: ShiftCareType,
+    partWeek: Boolean,
+    confirmedAt: HelsinkiDateTime,
+): ServiceNeedId {
+    validateServiceNeed(tx, placementId, startDate, endDate, optionId, partWeek)
+    clearServiceNeedsFromPeriod(tx, placementId, FiniteDateRange(startDate, endDate))
+    return tx.insertServiceNeed(
+        placementId = placementId,
+        startDate = startDate,
+        endDate = endDate,
+        optionId = optionId,
+        shiftCare = shiftCare,
+        partWeek = partWeek,
+        confirmedBy = user.evakaUserId,
+        confirmedAt = confirmedAt,
+    )
+}
+
+fun updateServiceNeed(
+    tx: Database.Transaction,
+    user: AuthenticatedUser,
+    id: ServiceNeedId,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    optionId: ServiceNeedOptionId,
+    shiftCare: ShiftCareType,
+    partWeek: Boolean,
+    confirmedAt: HelsinkiDateTime,
+) {
+    val old = tx.getServiceNeed(id)
+    validateServiceNeed(tx, old.placementId, startDate, endDate, optionId, partWeek)
+    if (startDate.isBefore(old.startDate)) {
+        clearServiceNeedsFromPeriod(
+            tx,
+            old.placementId,
+            FiniteDateRange(startDate, old.startDate.minusDays(1)),
+            excluding = id,
+        )
+    }
+    if (endDate.isAfter(old.endDate)) {
+        clearServiceNeedsFromPeriod(
+            tx,
+            old.placementId,
+            FiniteDateRange(old.endDate.plusDays(1), endDate),
+            excluding = id,
+        )
+    }
+
+    tx.updateServiceNeed(
+        id = id,
+        startDate = startDate,
+        endDate = endDate,
+        optionId = optionId,
+        shiftCare = shiftCare,
+        partWeek = partWeek,
+        confirmedBy = user.evakaUserId,
+        confirmedAt = confirmedAt,
+    )
+}
+
+fun clearServiceNeedsFromPeriod(
+    tx: Database.Transaction,
+    placementId: PlacementId,
+    periodToClear: FiniteDateRange,
+    excluding: ServiceNeedId? = null,
+) {
+    tx.getOverlappingServiceNeeds(placementId, periodToClear.start, periodToClear.end, excluding)
+        .forEach { old ->
+            val oldPeriod = FiniteDateRange(old.startDate, old.endDate)
+            when {
+                periodToClear.contains(oldPeriod) -> {
+                    tx.deleteServiceNeed(old.id)
+                }
+
+                periodToClear.includes(oldPeriod.start) -> {
+                    tx.updateServiceNeed(
+                        id = old.id,
+                        startDate = periodToClear.end.plusDays(1),
+                        endDate = old.endDate,
+                        optionId = old.option.id,
+                        shiftCare = old.shiftCare,
+                        partWeek = old.partWeek,
+                        confirmedBy = old.confirmed?.userId,
+                        confirmedAt = old.confirmed?.at,
+                    )
+                }
+
+                periodToClear.includes(oldPeriod.end) -> {
+                    tx.updateServiceNeed(
+                        id = old.id,
+                        startDate = old.startDate,
+                        endDate = periodToClear.start.minusDays(1),
+                        optionId = old.option.id,
+                        shiftCare = old.shiftCare,
+                        partWeek = old.partWeek,
+                        confirmedBy = old.confirmed?.userId,
+                        confirmedAt = old.confirmed?.at,
+                    )
+                }
+
+                else -> {
+                    tx.updateServiceNeed(
+                        id = old.id,
+                        startDate = old.startDate,
+                        endDate = periodToClear.start.minusDays(1),
+                        optionId = old.option.id,
+                        shiftCare = old.shiftCare,
+                        partWeek = old.partWeek,
+                        confirmedBy = old.confirmed?.userId,
+                        confirmedAt = old.confirmed?.at,
+                    )
+                    tx.insertServiceNeed(
+                        placementId = placementId,
+                        startDate = periodToClear.end.plusDays(1),
+                        endDate = old.endDate,
+                        optionId = old.option.id,
+                        shiftCare = old.shiftCare,
+                        partWeek = old.partWeek,
+                        confirmedBy = old.confirmed?.userId,
+                        confirmedAt = old.confirmed?.at,
+                    )
+                }
+            }
+        }
+}
+
+fun notifyServiceNeedUpdated(
+    tx: Database.Transaction,
+    clock: EvakaClock,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    childRange: ServiceNeedChildRange,
+) {
+    asyncJobRunner.plan(
+        tx,
+        listOf(
+            AsyncJob.GenerateFinanceDecisions.forChild(
+                childRange.childId,
+                childRange.dateRange.asDateRange(),
+            )
+        ),
+        runAt = clock.now(),
+    )
+}

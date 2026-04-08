@@ -1,0 +1,300 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.attendance
+
+import evaka.core.PureJdbiTest
+import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevPerson
+import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertTestChildAttendance
+import evaka.core.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
+import java.time.LocalTime
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+class AttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val now = HelsinkiDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(12, 0, 0))
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee()
+    private val child1 = DevPerson()
+    private val child2 = DevPerson()
+
+    @BeforeEach
+    fun beforeEach() {
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employee)
+            tx.insert(child1, DevPersonType.CHILD)
+            tx.insert(child2, DevPersonType.CHILD)
+        }
+    }
+
+    @Test
+    fun empty() {
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
+        assertTrue(attendances.isEmpty())
+    }
+
+    @Test
+    fun `ongoing attendance`() {
+        db.transaction { tx ->
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child1.id,
+                arrived = now,
+                departed = null,
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+        }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
+        assertEquals(
+            mapOf(
+                child1.id to
+                    listOf(
+                        AttendanceTimes(
+                            arrived = now,
+                            departed = null,
+                            modifiedAt = now,
+                            modifiedBy = employee.evakaUser,
+                        )
+                    )
+            ),
+            attendances,
+        )
+    }
+
+    @Test
+    fun `ended attendance`() {
+        db.transaction { tx ->
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child1.id,
+                arrived = now.minusHours(1),
+                departed = now,
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+        }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
+        assertEquals(
+            mapOf(
+                child1.id to
+                    listOf(
+                        AttendanceTimes(
+                            arrived = now.minusHours(1),
+                            departed = now,
+                            modifiedAt = now,
+                            modifiedBy = employee.evakaUser,
+                        )
+                    )
+            ),
+            attendances,
+        )
+    }
+
+    @Test
+    fun `multiple children`() {
+        db.transaction { tx ->
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child1.id,
+                arrived = now.minusHours(1),
+                departed = now,
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child2.id,
+                arrived = now.minusHours(2),
+                departed = null,
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+        }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
+        assertEquals(
+            mapOf(
+                child1.id to
+                    listOf(
+                        AttendanceTimes(
+                            arrived = now.minusHours(1),
+                            departed = now,
+                            modifiedAt = now,
+                            modifiedBy = employee.evakaUser,
+                        )
+                    ),
+                child2.id to
+                    listOf(
+                        AttendanceTimes(
+                            arrived = now.minusHours(2),
+                            departed = null,
+                            modifiedAt = now,
+                            modifiedBy = employee.evakaUser,
+                        )
+                    ),
+            ),
+            attendances,
+        )
+    }
+
+    @Test
+    fun `multiple attendances per child`() {
+        db.transaction { tx ->
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child1.id,
+                arrived = now.minusHours(3),
+                departed = now.minusHours(2),
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child1.id,
+                arrived = now.minusHours(1),
+                departed = now,
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child2.id,
+                arrived = now.minusHours(4),
+                departed = now.minusHours(3),
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child2.id,
+                arrived = now.minusHours(2),
+                departed = null,
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+        }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
+        assertEquals(
+            mapOf(
+                // Newest attendance is first
+                child1.id to
+                    listOf(
+                        AttendanceTimes(
+                            arrived = now.minusHours(1),
+                            departed = now,
+                            modifiedAt = now,
+                            modifiedBy = employee.evakaUser,
+                        ),
+                        AttendanceTimes(
+                            arrived = now.minusHours(3),
+                            departed = now.minusHours(2),
+                            modifiedAt = now,
+                            modifiedBy = employee.evakaUser,
+                        ),
+                    ),
+                child2.id to
+                    listOf(
+                        AttendanceTimes(
+                            arrived = now.minusHours(2),
+                            departed = null,
+                            modifiedAt = now,
+                            modifiedBy = employee.evakaUser,
+                        ),
+                        AttendanceTimes(
+                            arrived = now.minusHours(4),
+                            departed = now.minusHours(3),
+                            modifiedAt = now,
+                            modifiedBy = employee.evakaUser,
+                        ),
+                    ),
+            ),
+            attendances,
+        )
+    }
+
+    @Test
+    fun `ongoing attendance started yesterday`() {
+        db.transaction { tx ->
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child1.id,
+                arrived = now.minusDays(1),
+                departed = now.minusDays(1).atEndOfDay(),
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child1.id,
+                arrived = now.atStartOfDay(),
+                departed = null,
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+        }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
+        assertEquals(
+            mapOf(
+                child1.id to
+                    listOf(
+                        AttendanceTimes(
+                            arrived = now.minusDays(1),
+                            departed = null,
+                            modifiedAt = now,
+                            modifiedBy = employee.evakaUser,
+                        )
+                    )
+            ),
+            attendances,
+        )
+    }
+
+    @Test
+    fun `attendance started yesterday`() {
+        db.transaction { tx ->
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child1.id,
+                arrived = now.minusDays(1),
+                departed = now.minusDays(1).atEndOfDay(),
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+            tx.insertTestChildAttendance(
+                unitId = daycare.id,
+                childId = child1.id,
+                arrived = now.atStartOfDay(),
+                departed = now.minusMinutes(45),
+                modifiedAt = now,
+                modifiedBy = employee.evakaUserId,
+            )
+        }
+        val attendances = db.read { it.getUnitChildAttendances(daycare.id, now) }
+        assertEquals(
+            mapOf(
+                child1.id to
+                    listOf(
+                        AttendanceTimes(
+                            arrived = now.minusDays(1),
+                            departed = now.minusMinutes(45),
+                            modifiedAt = now,
+                            modifiedBy = employee.evakaUser,
+                        )
+                    )
+            ),
+            attendances,
+        )
+    }
+}

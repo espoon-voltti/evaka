@@ -1,0 +1,1864 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.document.childdocument
+
+import evaka.core.FullApplicationTest
+import evaka.core.caseprocess.CaseProcessState
+import evaka.core.caseprocess.DocumentConfidentiality
+import evaka.core.caseprocess.ProcessMetadataController
+import evaka.core.caseprocess.SfiMethod
+import evaka.core.caseprocess.getCaseProcess
+import evaka.core.daycare.domain.Language
+import evaka.core.document.CheckboxGroupQuestionOption
+import evaka.core.document.ChildDocumentType
+import evaka.core.document.DocumentTemplate
+import evaka.core.document.DocumentTemplateContent
+import evaka.core.document.DocumentTemplateController
+import evaka.core.document.Question
+import evaka.core.document.RadioButtonGroupQuestionOption
+import evaka.core.document.Section
+import evaka.core.pis.service.insertGuardian
+import evaka.core.sficlient.MockSfiMessagesClient
+import evaka.core.sficlient.rest.EventType
+import evaka.core.shared.ChildDocumentDecisionId
+import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.DaycareId
+import evaka.core.shared.DocumentTemplateId
+import evaka.core.shared.EmployeeId
+import evaka.core.shared.GroupId
+import evaka.core.shared.PersonId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.auth.CitizenAuthLevel
+import evaka.core.shared.auth.UserRole
+import evaka.core.shared.auth.insertDaycareAclRow
+import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevDaycareGroup
+import evaka.core.shared.dev.DevDaycareGroupPlacement
+import evaka.core.shared.dev.DevDocumentTemplate
+import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevPerson
+import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.DevPlacement
+import evaka.core.shared.dev.DevSfiMessageEvent
+import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertEmployeeToDaycareGroupAcl
+import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.Conflict
+import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.Forbidden
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.NotFound
+import evaka.core.shared.security.Action
+import evaka.core.shared.security.PilotFeature
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.*
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
+
+class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var controller: ChildDocumentController
+    @Autowired lateinit var templateController: DocumentTemplateController
+    @Autowired lateinit var metadataController: ProcessMetadataController
+
+    private val area = DevCareArea()
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            language = Language.sv,
+            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
+        )
+    private val child = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1), ssn = "010617A123U")
+    private val adult = DevPerson(ssn = "010180-1232")
+    val employeeUser = DevEmployee(roles = setOf(UserRole.ADMIN))
+    lateinit var unitSupervisorUser: AuthenticatedUser.Employee
+
+    final val clock = MockEvakaClock(2022, 1, 1, 15, 0)
+
+    final val templateIdPed = DocumentTemplateId(UUID.randomUUID())
+    final val templateIdPedagogicalReport = DocumentTemplateId(UUID.randomUUID())
+    final val templateIdHojks = DocumentTemplateId(UUID.randomUUID())
+    final val templateIdAssistanceDecision = DocumentTemplateId(UUID.randomUUID())
+    final val templateIdCitizenBasic = DocumentTemplateId(UUID.randomUUID())
+
+    final val templateContent =
+        DocumentTemplateContent(
+            sections =
+                listOf(
+                    Section(
+                        id = "s1",
+                        label = "Eka",
+                        questions =
+                            listOf(
+                                Question.TextQuestion(id = "q1", label = "kysymys 1"),
+                                Question.CheckboxQuestion(id = "q2", label = "kysymys 2"),
+                                Question.CheckboxGroupQuestion(
+                                    id = "q3",
+                                    label = "kysymys 3",
+                                    options =
+                                        listOf(
+                                            CheckboxGroupQuestionOption("a", "eka"),
+                                            CheckboxGroupQuestionOption("b", "toka"),
+                                            CheckboxGroupQuestionOption("c", "kolmas"),
+                                        ),
+                                ),
+                                Question.RadioButtonGroupQuestion(
+                                    id = "q4",
+                                    label = "kysymys 4",
+                                    options =
+                                        listOf(
+                                            RadioButtonGroupQuestionOption("a", "eka"),
+                                            RadioButtonGroupQuestionOption("b", "toka"),
+                                            RadioButtonGroupQuestionOption("c", "kolmas"),
+                                        ),
+                                ),
+                                Question.StaticTextDisplayQuestion(
+                                    id = "q5",
+                                    label = "tekstikappale",
+                                    text = "lorem ipsum",
+                                ),
+                                Question.DateQuestion(id = "q6", label = "päiväys"),
+                                Question.GroupedTextFieldsQuestion(
+                                    id = "q7",
+                                    label = "vastuullinen",
+                                    fieldLabels = listOf("etunimi", "sukunimi"),
+                                    allowMultipleRows = false,
+                                ),
+                                Question.GroupedTextFieldsQuestion(
+                                    id = "q8",
+                                    label = "huoltajat",
+                                    fieldLabels = listOf("etunimi", "sukunimi"),
+                                    allowMultipleRows = true,
+                                ),
+                            ),
+                    )
+                )
+        )
+
+    val devTemplatePed =
+        DevDocumentTemplate(
+            id = templateIdPed,
+            type = ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
+            name = "Pedagoginen arvio 2023",
+            validity = DateRange(clock.today(), clock.today()),
+            content = templateContent,
+        )
+
+    val devTemplatePedagogicalReport =
+        DevDocumentTemplate(
+            id = templateIdPedagogicalReport,
+            type = ChildDocumentType.PEDAGOGICAL_REPORT,
+            name = "Pedagoginen selvitys 2023",
+            validity = DateRange(clock.today(), clock.today()),
+            content = templateContent,
+        )
+
+    val devTemplateHojks =
+        DevDocumentTemplate(
+            id = templateIdHojks,
+            type = ChildDocumentType.HOJKS,
+            name = "HOJKS",
+            validity = DateRange(clock.today(), clock.today()),
+            content = templateContent,
+            processDefinitionNumber = "123.456.789",
+            archiveDurationMonths = 120,
+            confidentiality = DocumentConfidentiality(100, "JulkL 24.1 § 25 ja 30 kohdat"),
+            archiveExternally = true,
+        )
+
+    val devTemplateAssistanceDecision =
+        DevDocumentTemplate(
+            id = templateIdAssistanceDecision,
+            type = ChildDocumentType.OTHER_DECISION,
+            name = "Tuenpäätös",
+            validity = DateRange(clock.today(), clock.today()),
+            content = templateContent,
+            processDefinitionNumber = "123.456.000",
+            archiveDurationMonths = 120,
+            confidentiality = DocumentConfidentiality(100, "JulkL 24.1 § 25 ja 30 kohdat"),
+            endDecisionWhenUnitChanges = true,
+        )
+
+    val devTemplateCitizenBasic =
+        DevDocumentTemplate(
+            id = templateIdCitizenBasic,
+            type = ChildDocumentType.CITIZEN_BASIC,
+            name = "Huoltajan kanssa täytettävä asiakirja",
+            validity = DateRange(clock.today(), clock.today()),
+            content = templateContent,
+        )
+
+    @BeforeEach
+    internal fun setUp() {
+        MockSfiMessagesClient.reset()
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(employeeUser)
+            val unitSupervisorId = tx.insert(DevEmployee())
+            unitSupervisorUser =
+                unitSupervisorId.let {
+                    AuthenticatedUser.Employee(it, setOf(UserRole.UNIT_SUPERVISOR))
+                }
+            tx.insertDaycareAclRow(
+                daycareId = daycare.id,
+                employeeId = unitSupervisorId,
+                role = UserRole.UNIT_SUPERVISOR,
+            )
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insertGuardian(adult.id, child.id)
+            tx.insert(devTemplatePed)
+            tx.insert(devTemplatePedagogicalReport)
+            tx.insert(devTemplateHojks)
+            tx.insert(devTemplateAssistanceDecision)
+            tx.insert(devTemplateCitizenBasic)
+        }
+    }
+
+    private fun createPlacement(
+        startDate: LocalDate = clock.today(),
+        endDate: LocalDate = clock.today().plusDays(5),
+        childId: PersonId = child.id,
+        unitId: DaycareId = daycare.id,
+    ) =
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+        }
+
+    private fun createPlacementWithGroup(
+        startDate: LocalDate = clock.today(),
+        endDate: LocalDate = clock.today().plusDays(5),
+        childId: PersonId = child.id,
+        unitId: DaycareId = daycare.id,
+    ): GroupId {
+        val placementId = createPlacement(startDate, endDate, childId, unitId)
+
+        return db.transaction { tx ->
+            val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groupId,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+            groupId
+        }
+    }
+
+    @Test
+    fun `creating new document and fetching it`() {
+        val documentId = createDocument()
+
+        val document = controller.getDocument(dbInstance(), employeeUser.user, clock, documentId)
+        assertEquals(
+            ChildDocumentWithPermittedActions(
+                data =
+                    ChildDocumentDetails(
+                        id = documentId,
+                        status = DocumentStatus.DRAFT,
+                        publishedAt = null,
+                        pdfAvailable = false,
+                        content = DocumentContent(answers = emptyList()),
+                        publishedContent = null,
+                        child =
+                            ChildBasics(
+                                id = child.id,
+                                firstName = child.firstName,
+                                lastName = child.lastName,
+                                dateOfBirth = child.dateOfBirth,
+                            ),
+                        template =
+                            DocumentTemplate(
+                                id = templateIdPed,
+                                name = devTemplatePed.name,
+                                type = devTemplatePed.type,
+                                placementTypes = devTemplatePed.placementTypes,
+                                language = devTemplatePed.language,
+                                confidentiality = devTemplatePed.confidentiality,
+                                legalBasis = devTemplatePed.legalBasis,
+                                validity = devTemplatePed.validity,
+                                published = devTemplatePed.published,
+                                processDefinitionNumber = null,
+                                archiveDurationMonths = null,
+                                content = templateContent,
+                                archiveExternally = false,
+                                endDecisionWhenUnitChanges =
+                                    devTemplatePed.endDecisionWhenUnitChanges,
+                            ),
+                        archivedAt = null,
+                    ),
+                permittedActions =
+                    setOf(
+                        Action.ChildDocument.DELETE,
+                        Action.ChildDocument.PUBLISH,
+                        Action.ChildDocument.READ,
+                        Action.ChildDocument.UPDATE,
+                        Action.ChildDocument.NEXT_STATUS,
+                        Action.ChildDocument.PREV_STATUS,
+                        Action.ChildDocument.READ_METADATA,
+                        Action.ChildDocument.DOWNLOAD,
+                        Action.ChildDocument.DOWNLOAD_VERSION,
+                        Action.ChildDocument.ARCHIVE,
+                        Action.ChildDocument.PROPOSE_DECISION,
+                        Action.ChildDocument.ANNUL_DECISION,
+                        Action.ChildDocument.UPDATE_DECISION_VALIDITY,
+                    ),
+            ),
+            document,
+        )
+
+        val summaries = getDocuments(child.id)
+        assertEquals(
+            listOf(
+                ChildDocumentSummary(
+                    id = documentId,
+                    status = DocumentStatus.DRAFT,
+                    type = devTemplatePed.type,
+                    templateId = devTemplatePed.id,
+                    templateName = devTemplatePed.name,
+                    childFirstName = child.firstName,
+                    childLastName = child.lastName,
+                    modifiedAt = clock.now(),
+                    modifiedBy = employeeUser.lastName + " " + employeeUser.firstName,
+                    publishedAt = null,
+                    publishedBy = null,
+                    answeredAt = null,
+                    answeredBy = null,
+                )
+            ),
+            summaries.map { it.data },
+        )
+    }
+
+    @Test
+    fun `VEO cannot see own document for child no longer placed in her unit`() {
+        createPlacement()
+
+        val veoInPlacementUnit = DevEmployee()
+        db.transaction {
+            it.insert(
+                veoInPlacementUnit,
+                unitRoles = mapOf(daycare.id to UserRole.SPECIAL_EDUCATION_TEACHER),
+            )
+        }
+
+        val documentId = createDocument(user = veoInPlacementUnit.user)
+
+        assertEquals(
+            documentId,
+            controller.getDocument(dbInstance(), veoInPlacementUnit.user, clock, documentId).data.id,
+        )
+        assertEquals(1, getDocuments(child.id, user = veoInPlacementUnit.user).size)
+        // remove child placement so child is not in VEO's unit so no document should be visible
+        db.transaction { tx ->
+                tx.createUpdate { sql("DELETE FROM placement WHERE child_id = ${bind(child.id)}") }
+            }
+            .execute()
+
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), veoInPlacementUnit.user, clock, documentId)
+        }
+
+        assertThrows<Forbidden> { getDocuments(child.id, user = veoInPlacementUnit.user) }
+    }
+
+    @Test
+    fun `creating new document may start a metadata process`() {
+        val now1 = clock.now()
+        val documentId = createDocument(templateId = templateIdHojks)
+
+        val document = getDocument(documentId)
+        assertEquals(
+            DocumentConfidentiality(durationYears = 100, basis = "JulkL 24.1 § 25 ja 30 kohdat"),
+            document.template.confidentiality,
+        )
+
+        val metadata = getChildDocumentMetadata(documentId).data
+        assertNotNull(metadata)
+        metadata.also {
+            assertEquals("1/123.456.789/2022", it.process.caseIdentifier)
+            assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", it.process.organization)
+            assertEquals(120, it.process.archiveDurationMonths)
+            assertEquals("HOJKS", it.primaryDocument.name)
+            assertEquals(
+                devTemplateHojks.confidentiality?.durationYears,
+                it.primaryDocument.confidentiality?.durationYears,
+            )
+            assertEquals(
+                devTemplateHojks.confidentiality?.basis,
+                it.primaryDocument.confidentiality?.basis,
+            )
+            assertNotNull(it.primaryDocument.createdAtDate)
+            assertNotNull(it.primaryDocument.createdAtTime)
+            assertEquals(employeeUser.evakaUserId, it.primaryDocument.createdBy?.id)
+            it.process.history.also { history ->
+                assertEquals(1, history.size)
+                assertEquals(CaseProcessState.INITIAL, history.first().state)
+                assertEquals(now1, history.first().enteredAt)
+                assertEquals(employeeUser.evakaUserId, history.first().enteredBy.id)
+            }
+        }
+
+        val clock2 = MockEvakaClock(clock.now().plusHours(1))
+        nextState(documentId, DocumentStatus.PREPARED, clock2)
+        assertEquals(2, db.read { it.getCaseProcess(metadata.process.id)!!.history }.size)
+
+        val clock3 = MockEvakaClock(clock2.now().plusHours(1))
+        nextState(documentId, DocumentStatus.COMPLETED, clock3)
+        assertEquals(3, db.read { it.getCaseProcess(metadata.process.id)!!.history }.size)
+
+        val clock4 = MockEvakaClock(clock3.now().plusHours(1))
+        prevState(documentId, DocumentStatus.PREPARED, clock4)
+        assertEquals(2, db.read { it.getCaseProcess(metadata.process.id)!!.history }.size)
+
+        val clock5 = MockEvakaClock(clock4.now().plusHours(1))
+        prevState(documentId, DocumentStatus.DRAFT, clock5)
+        val history = db.read { it.getCaseProcess(metadata.process.id)!!.history }
+        assertEquals(1, history.size)
+        assertEquals(clock.now(), history[0].enteredAt)
+        assertEquals(CaseProcessState.INITIAL, history[0].state)
+
+        controller.deleteDraftDocument(dbInstance(), employeeUser.user, clock5, documentId)
+        assertNull(db.read { it.getCaseProcess(metadata.process.id) })
+    }
+
+    @Test
+    fun `force unpublishing a template deletes all related data`() {
+        val documentId = createDecisionDocument(templateId = templateIdAssistanceDecision)
+        proposeChildDocumentDecision(documentId, unitSupervisorUser.id)
+        acceptChildDocumentDecision(
+            id = documentId,
+            validity = DateRange(clock.today().plusDays(2), clock.today().plusDays(5)),
+            user = unitSupervisorUser,
+        )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        // Mark document as read by guardian
+        val guardianUser = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG)
+        db.transaction { tx -> tx.markChildDocumentAsRead(guardianUser, documentId, clock.now()) }
+
+        templateController.forceUnpublishTemplate(
+            dbInstance(),
+            employeeUser.user,
+            clock,
+            templateIdAssistanceDecision,
+        )
+
+        assertFalse(
+            templateController
+                .getTemplate(dbInstance(), employeeUser.user, clock, templateIdAssistanceDecision)
+                .published
+        )
+        assertEquals(0, getDocuments(child.id).size)
+    }
+
+    @Test
+    fun `creating new document not allowed for expired document`() {
+        val template2 =
+            db.transaction {
+                it.insert(
+                    DevDocumentTemplate(
+                        validity =
+                            DateRange(clock.today().minusDays(9), clock.today().minusDays(1)),
+                        content = templateContent,
+                    )
+                )
+            }
+        assertThrows<BadRequest> { createDocument(templateId = template2) }
+    }
+
+    @Test
+    fun `creating new document not allowed for unpublished document`() {
+        val template2 =
+            db.transaction {
+                it.insert(
+                    DevDocumentTemplate(
+                        validity = DateRange(clock.today(), clock.today()),
+                        published = false,
+                        content = templateContent,
+                    )
+                )
+            }
+        assertThrows<BadRequest> { createDocument(templateId = template2) }
+    }
+
+    @Test
+    fun `publishing document with version creation logic`() {
+        val documentId = createDocument()
+        assertTrue(db.read { it.getChildDocumentPublishedVersions(documentId) }.isEmpty())
+
+        // First publish creates version 1
+        publishDocument(documentId)
+        assertEquals(
+            clock.now(),
+            controller
+                .getDocument(dbInstance(), employeeUser.user, clock, documentId)
+                .data
+                .publishedAt,
+        )
+
+        asyncJobRunner.runPendingJobsSync(clock)
+        val versions1 = db.read { it.getChildDocumentPublishedVersions(documentId) }
+        assertEquals(1, versions1.size)
+        assertEquals(1, versions1[0].versionNumber)
+        assertNotNull(versions1[0].documentKey) // PDF should be generated for version 1
+        assertTrue(versions1[0].documentKey!!.contains("_v1")) // Should contain version postfix
+
+        // Publishing again without content changes should not create new version
+        publishDocument(documentId)
+        asyncJobRunner.runPendingJobsSync(clock)
+        val versionsUnchanged = db.read { it.getChildDocumentPublishedVersions(documentId) }
+        assertEquals(1, versionsUnchanged.size)
+        assertNotNull(versionsUnchanged[0].documentKey) // PDF should still be available
+        assertTrue(versionsUnchanged[0].documentKey!!.contains("_v1")) // Still version 1
+
+        // Change content and publish - creates version 2
+        updateDocumentContent(
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "answer1"))),
+        )
+        publishDocument(documentId)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val versions2 = db.read { it.getChildDocumentPublishedVersions(documentId) }
+        assertEquals(2, versions2.size)
+        assertEquals(2, versions2[0].versionNumber) // Latest version first
+        assertEquals(1, versions2[1].versionNumber)
+
+        // Both versions should have PDFs generated with correct version postfixes
+        val v2 = versions2.find { it.versionNumber == 2 }!!
+        val v1 = versions2.find { it.versionNumber == 1 }!!
+
+        assertNotNull(v1.documentKey, "PDF should be generated for version 1")
+        assertNotNull(v2.documentKey, "PDF should be generated for version 2")
+        assertNotEquals(v1.documentKey, v2.documentKey) // Should be different versioned keys
+
+        // Keys should contain version information
+        assertTrue(v1.documentKey!!.contains("_v1"), "Version 1 key should contain _v1")
+        assertTrue(v2.documentKey!!.contains("_v2"), "Version 2 key should contain _v2")
+    }
+
+    @Test
+    fun `backward compatibility with existing jobs`() {
+        val documentId = createDocument()
+
+        // Manually create a published version in the database (simulating old publish behavior)
+        // In the new schema, we only need to create the version record
+        db.transaction { tx ->
+            // Manually insert a version row (simulating what createPublishedVersionIfNeeded would
+            // do)
+            tx.createUpdate {
+                    sql(
+                        """
+                    INSERT INTO child_document_published_version 
+                    (child_document_id, version_number, created_at, created_by, published_content)
+                    SELECT ${bind(documentId)}, 1, ${bind(clock.now())}, ${bind(employeeUser.evakaUserId)}, content
+                    FROM child_document WHERE id = ${bind(documentId)}
+                """
+                    )
+                }
+                .execute()
+        }
+
+        // Verify version exists but PDF not generated yet
+        val versionsBefore = db.read { it.getChildDocumentPublishedVersions(documentId) }
+        assertEquals(1, versionsBefore.size)
+        assertNull(versionsBefore[0].documentKey) // PDF not generated yet
+
+        // Manually create an old-style AsyncJob without versionNumber (simulating old job)
+        db.transaction { tx ->
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.CreateChildDocumentPdf(documentId)),
+                runAt = clock.now(),
+            )
+        }
+
+        // Run async job processing - should default to version 1
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val versionsAfter = db.read { it.getChildDocumentPublishedVersions(documentId) }
+        assertEquals(1, versionsAfter.size)
+        assertNotNull(
+            versionsAfter[0].documentKey
+        ) // PDF should be generated (defaults to version 1)
+    }
+
+    @Test
+    fun `version list in metadata response`() {
+        val documentId = createDocument(templateId = templateIdHojks)
+
+        // Initially no versions for unpublished document
+        val metadata1 = getChildDocumentMetadata(documentId).data!!
+        assertTrue(metadata1.primaryDocument.publishedVersions.isNullOrEmpty())
+
+        // First publish
+        publishDocument(documentId)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val metadata2 = getChildDocumentMetadata(documentId).data!!
+        val versions2 = metadata2.primaryDocument.publishedVersions
+        assertNotNull(versions2)
+        assertEquals(1, versions2.size)
+        val version1 = versions2[0]
+        assertEquals(1, version1.versionNumber)
+        assertEquals(clock.now(), version1.createdAt)
+        assertEquals(employeeUser.evakaUserId, version1.createdBy.id)
+        assertTrue(version1.downloadPath?.contains("/pdf?version=1") == true)
+
+        // Change content and publish again
+        updateDocumentContent(
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "answer2"))),
+        )
+        publishDocument(documentId)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val metadata3 = getChildDocumentMetadata(documentId).data!!
+        val versions3 = metadata3.primaryDocument.publishedVersions
+        assertNotNull(versions3)
+        assertEquals(2, versions3.size)
+
+        // Versions should be in descending order (latest first)
+        val latestVersion = versions3[0]
+        val olderVersion = versions3[1]
+        assertEquals(2, latestVersion.versionNumber)
+        assertEquals(1, olderVersion.versionNumber)
+        assertTrue(latestVersion.downloadPath?.contains("/pdf?version=2") == true)
+        assertTrue(olderVersion.downloadPath?.contains("/pdf?version=1") == true)
+    }
+
+    @Test
+    fun `read markers deleted when PDF generation completes`() {
+        val documentId = createDocument()
+
+        // First publish the document so it can be read
+        publishDocument(documentId)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        // Verify document is published and has PDF
+        val versionsAfterFirstPublish = db.read { it.getChildDocumentPublishedVersions(documentId) }
+        assertEquals(1, versionsAfterFirstPublish.size)
+        assertNotNull(versionsAfterFirstPublish[0].documentKey)
+
+        // Now add read markers (simulating users having read the published document)
+        db.transaction { tx ->
+            tx.createUpdate {
+                    sql(
+                        """
+                    INSERT INTO child_document_read (document_id, person_id, read_at)
+                    VALUES (${bind(documentId)}, ${bind(adult.id)}, ${bind(clock.now())})
+                """
+                    )
+                }
+                .execute()
+        }
+
+        // Verify read marker exists
+        val readMarkersAfterReading =
+            db.read { tx ->
+                tx.createQuery {
+                        sql(
+                            "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
+                        )
+                    }
+                    .exactlyOne<Int>()
+            }
+        assertEquals(1, readMarkersAfterReading)
+
+        // Make a change to the document content
+        updateDocumentContent(
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "updated content"))),
+        )
+
+        // Republish the document - should create new version
+        publishDocument(documentId)
+
+        // Read markers should still exist before async job processing (PDF not regenerated yet)
+        val readMarkersAfterRepublish =
+            db.read { tx ->
+                tx.createQuery {
+                        sql(
+                            "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
+                        )
+                    }
+                    .exactlyOne<Int>()
+            }
+        assertEquals(1, readMarkersAfterRepublish)
+
+        // Process async jobs to generate PDF for the new version
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        // Verify new version was created with PDF
+        val versionsAfterSecondPublish =
+            db.read { it.getChildDocumentPublishedVersions(documentId) }
+        assertEquals(2, versionsAfterSecondPublish.size)
+        val latestVersion = versionsAfterSecondPublish.find { it.versionNumber == 2 }!!
+        assertNotNull(latestVersion.documentKey)
+
+        // Read markers should be deleted after PDF generation completes
+        val readMarkersAfterPdf =
+            db.read { tx ->
+                tx.createQuery {
+                        sql(
+                            "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
+                        )
+                    }
+                    .exactlyOne<Int>()
+            }
+        assertEquals(0, readMarkersAfterPdf)
+    }
+
+    @Test
+    fun `publishDocument endpoint with content change detection`() {
+        val documentId = createDocument()
+
+        // First publish should create version
+        publishDocument(documentId)
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertEquals(1, db.read { it.getChildDocumentPublishedVersions(documentId) }.size)
+
+        // Publishing without content changes should not create version
+        publishDocument(documentId)
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertEquals(1, db.read { it.getChildDocumentPublishedVersions(documentId) }.size)
+
+        // Publishing with content changes should create new version
+        updateDocumentContent(
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "new content"))),
+        )
+        publishDocument(documentId)
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertEquals(2, db.read { it.getChildDocumentPublishedVersions(documentId) }.size)
+    }
+
+    @Test
+    fun `nextDocumentStatus endpoint publishing behavior`() {
+        val documentId = createDocument(templateId = templateIdHojks)
+
+        // Add some content
+        updateDocumentContent(
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "content"))),
+        )
+
+        // Moving to PREPARED should trigger publishing for non-decision documents
+        nextState(documentId, DocumentStatus.PREPARED)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val versions = db.read { it.getChildDocumentPublishedVersions(documentId) }
+        assertEquals(1, versions.size)
+        assertNotNull(versions[0].documentKey) // PDF should be generated
+
+        // Moving back to DRAFT and then to PREPARED again without content changes should not create
+        // new version
+        prevState(documentId, DocumentStatus.DRAFT)
+        nextState(documentId, DocumentStatus.PREPARED)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val versionsAfter = db.read { it.getChildDocumentPublishedVersions(documentId) }
+        assertEquals(1, versionsAfter.size) // No new version created
+    }
+
+    @Test
+    fun `deleting draft document`() {
+        val documentId = createDocument()
+        controller.deleteDraftDocument(dbInstance(), employeeUser.user, clock, documentId)
+        assertThrows<NotFound> {
+            controller.getDocument(dbInstance(), employeeUser.user, clock, documentId)
+        }
+    }
+
+    @Test
+    fun `deleting previously published draft document schedules PDF deletion jobs`() {
+        val documentId = createDocument(templateId = templateIdHojks)
+
+        updateDocumentContent(
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "some content"))),
+        )
+
+        nextState(documentId, DocumentStatus.PREPARED)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val versionsAfterPublish = db.read { it.getChildDocumentPublishedVersions(documentId) }
+        val pdfKeys = versionsAfterPublish.mapNotNull { it.documentKey }
+        assertTrue(pdfKeys.isNotEmpty())
+
+        prevState(documentId, DocumentStatus.DRAFT)
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+
+        deleteDraftDocument(documentId)
+        assertThrows<NotFound> { getDocument(documentId) }
+
+        val scheduledDeleteKeys =
+            db.read { tx ->
+                tx.createQuery {
+                        sql(
+                            "SELECT payload::json->>'key' as key FROM async_job WHERE type = 'DeleteChildDocumentPdf'"
+                        )
+                    }
+                    .toList<String>()
+            }
+
+        assertEquals(pdfKeys.toSet(), scheduledDeleteKeys.toSet())
+    }
+
+    @Test
+    fun `updating content with all answers`() {
+        val documentId = createDocument()
+        val content =
+            DocumentContent(
+                answers =
+                    listOf(
+                        AnsweredQuestion.TextAnswer("q1", "hello"),
+                        AnsweredQuestion.CheckboxAnswer("q2", true),
+                        AnsweredQuestion.CheckboxGroupAnswer(
+                            "q3",
+                            listOf(CheckboxGroupAnswerContent("a"), CheckboxGroupAnswerContent("c")),
+                        ),
+                        AnsweredQuestion.RadioButtonGroupAnswer("q4", "b"),
+                        AnsweredQuestion.StaticTextDisplayAnswer("q5", null),
+                        AnsweredQuestion.DateAnswer("q6", LocalDate.of(2022, 1, 7)),
+                        AnsweredQuestion.GroupedTextFieldsAnswer(
+                            "q7",
+                            listOf(listOf("testi", "testaaja")),
+                        ),
+                        AnsweredQuestion.GroupedTextFieldsAnswer(
+                            "q8",
+                            listOf(listOf("donald", "duck"), listOf("mickey", "mouse")),
+                        ),
+                    )
+            )
+        updateDocumentContent(documentId, content)
+        assertEquals(
+            content,
+            controller.getDocument(dbInstance(), employeeUser.user, clock, documentId).data.content,
+        )
+    }
+
+    @Test
+    fun `updating content with partial but valid answers is ok`() {
+        val documentId = createDocument()
+        val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
+        updateDocumentContent(documentId, content)
+        assertEquals(
+            content,
+            controller.getDocument(dbInstance(), employeeUser.user, clock, documentId).data.content,
+        )
+    }
+
+    @Test
+    fun `updating content of completed document fails`() {
+        val documentId = createDocument()
+        nextState(documentId, DocumentStatus.COMPLETED)
+        val content = DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello")))
+        assertThrows<BadRequest> { updateDocumentContent(documentId, content) }
+    }
+
+    @Test
+    fun `updating content fails when answering nonexistent question`() {
+        val documentId = createDocument()
+        val content =
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q999", "hello")))
+        assertThrows<BadRequest> { updateDocumentContent(documentId, content) }
+    }
+
+    @Test
+    fun `updating content fails when answering question with wrong type`() {
+        val documentId = createDocument()
+        val content = DocumentContent(answers = listOf(AnsweredQuestion.CheckboxAnswer("q1", true)))
+        assertThrows<BadRequest> { updateDocumentContent(documentId, content) }
+    }
+
+    @Test
+    fun `updating content fails when answering checkbox group question with unknown option`() {
+        val documentId = createDocument()
+        val content =
+            DocumentContent(
+                answers =
+                    listOf(
+                        AnsweredQuestion.CheckboxGroupAnswer(
+                            "q3",
+                            listOf(CheckboxGroupAnswerContent("a"), CheckboxGroupAnswerContent("d")),
+                        )
+                    )
+            )
+        assertThrows<BadRequest> { updateDocumentContent(documentId, content) }
+    }
+
+    @Test
+    fun `updating content fails when answering radio button group question with unknown option`() {
+        val documentId = createDocument()
+        val content =
+            DocumentContent(answers = listOf(AnsweredQuestion.RadioButtonGroupAnswer("q3", "d")))
+        assertThrows<BadRequest> { updateDocumentContent(documentId, content) }
+    }
+
+    @Test
+    fun `hojks status flow`() {
+        val documentId = createDocument(templateId = templateIdHojks)
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+        assertNull(getDocument(documentId).publishedAt)
+
+        // cannot skip states
+        assertThrows<Conflict> { nextState(documentId, DocumentStatus.COMPLETED) }
+
+        nextState(documentId, DocumentStatus.PREPARED)
+        assertEquals(DocumentStatus.PREPARED, getDocument(documentId).status)
+        assertNotNull(getDocument(documentId).publishedAt)
+        nextState(documentId, DocumentStatus.COMPLETED)
+        assertEquals(DocumentStatus.COMPLETED, getDocument(documentId).status)
+        prevState(documentId, DocumentStatus.PREPARED)
+        assertEquals(DocumentStatus.PREPARED, getDocument(documentId).status)
+        prevState(documentId, DocumentStatus.DRAFT)
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+        assertNotNull(getDocument(documentId).publishedAt)
+
+        // no sfi messages are sent
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertEquals(0, MockSfiMessagesClient.getMessages().size)
+    }
+
+    @Test
+    fun `pedagogical doc status flow`() {
+        val documentId = createDocument()
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+        assertNull(getDocument(documentId).publishedAt)
+
+        assertThrows<Conflict> { nextState(documentId, DocumentStatus.PREPARED) }
+
+        nextState(documentId, DocumentStatus.COMPLETED)
+        assertEquals(DocumentStatus.COMPLETED, getDocument(documentId).status)
+        assertNotNull(getDocument(documentId).publishedAt)
+
+        assertThrows<Conflict> { prevState(documentId, DocumentStatus.PREPARED) }
+
+        prevState(documentId, DocumentStatus.DRAFT)
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+        assertNotNull(getDocument(documentId).publishedAt)
+
+        // no sfi messages are sent
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertEquals(0, MockSfiMessagesClient.getMessages().size)
+    }
+
+    @Test
+    fun `decision status flow - accept and annul`() {
+        createPlacement()
+        val documentId = createDecisionDocument()
+
+        assertEquals(DocumentStatus.DRAFT, getDocument(documentId).status)
+        assertNull(getDocument(documentId).publishedAt)
+
+        assertThrows<Conflict> { nextState(documentId, DocumentStatus.PREPARED) }
+        assertThrows<Conflict> { nextState(documentId, DocumentStatus.COMPLETED) }
+        assertThrows<BadRequest> { nextState(documentId, DocumentStatus.DECISION_PROPOSAL) }
+
+        proposeChildDocumentDecision(documentId, unitSupervisorUser.id)
+        assertEquals(DocumentStatus.DECISION_PROPOSAL, getDocument(documentId).status)
+        assertEquals(unitSupervisorUser.id, getDocument(documentId).decisionMaker)
+        assertNull(getDocument(documentId).publishedAt)
+
+        assertThrows<BadRequest> { nextState(documentId, DocumentStatus.COMPLETED) }
+        val validity = DateRange(clock.today().plusDays(2), clock.today().plusDays(5))
+        // not the assigned decision maker
+        assertThrows<Forbidden> {
+            acceptChildDocumentDecision(documentId, validity, employeeUser.user)
+        }
+        acceptChildDocumentDecision(documentId, validity, user = unitSupervisorUser)
+        getDocument(documentId).also { doc ->
+            assertEquals(DocumentStatus.COMPLETED, doc.status)
+            assertEquals(ChildDocumentDecisionStatus.ACCEPTED, doc.decision?.status)
+            assertEquals(10_000, doc.decision?.decisionNumber)
+            assertNotNull(doc.publishedAt)
+            assertEquals(daycare.name, doc.decision?.daycareName)
+        }
+
+        // sfi message was sent
+        // First run: CreateChildDocumentPdf job
+        asyncJobRunner.runPendingJobsSync(clock)
+        // Second run: SendChildDocumentDecisionSfiMessage job (scheduled by CreateChildDocumentPdf)
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertThat(MockSfiMessagesClient.getMessages())
+            .extracting({ it.ssn }, { it.messageHeader })
+            .containsExactly(Tuple(adult.ssn, "Espoon varhaiskasvatukseen liittyvät päätökset"))
+
+        // cannot cancel decision
+        assertThrows<BadRequest> { prevState(documentId, DocumentStatus.DECISION_PROPOSAL) }
+
+        annulChildDocumentDecision(
+            documentId,
+            user = unitSupervisorUser,
+            reason = "Perustelut mitätöinnille",
+        )
+        getDocument(documentId).also { doc ->
+            assertEquals(DocumentStatus.COMPLETED, doc.status)
+            assertEquals(ChildDocumentDecisionStatus.ANNULLED, doc.decision?.status)
+            assertEquals("Perustelut mitätöinnille", doc.decision?.annulmentReason)
+        }
+
+        val metadata = getChildDocumentMetadata(documentId).data!!
+        assertThat(metadata.process.history)
+            .extracting({ it.state }, { it.enteredBy.id })
+            .containsExactly(
+                Tuple(CaseProcessState.INITIAL, employeeUser.id),
+                Tuple(CaseProcessState.PREPARATION, employeeUser.id),
+                Tuple(CaseProcessState.DECIDING, unitSupervisorUser.id),
+                Tuple(CaseProcessState.COMPLETED, AuthenticatedUser.SystemInternalUser.evakaUserId),
+            )
+
+        assertThat(metadata.primaryDocument.sfiDeliveries)
+            .extracting({ it.recipientName }, { it.method })
+            .containsExactly(Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.PENDING))
+        // mock sfi event
+        db.transaction { tx ->
+            tx.insert(
+                DevSfiMessageEvent(
+                    messageId = MockSfiMessagesClient.getMessages().first().messageId,
+                    eventType = EventType.ELECTRONIC_MESSAGE_CREATED,
+                )
+            )
+        }
+        assertThat(getChildDocumentMetadata(documentId).data!!.primaryDocument.sfiDeliveries)
+            .extracting({ it.recipientName }, { it.method })
+            .containsExactly(Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.ELECTRONIC))
+    }
+
+    @Test
+    fun `decision status flow - reject`() {
+        createPlacement()
+        val documentId = createDecisionDocument()
+
+        proposeChildDocumentDecision(documentId, unitSupervisorUser.id)
+
+        // not the assigned decision maker
+        assertThrows<Forbidden> {
+            rejectChildDocumentDecision(documentId, user = employeeUser.user)
+        }
+
+        rejectChildDocumentDecision(documentId, user = unitSupervisorUser)
+        getDocument(documentId).also { doc ->
+            assertEquals(DocumentStatus.COMPLETED, doc.status)
+            assertEquals(ChildDocumentDecisionStatus.REJECTED, doc.decision?.status)
+            assertEquals(10_000, doc.decision?.decisionNumber)
+            assertNotNull(doc.publishedAt)
+        }
+
+        // sfi message was sent
+        // First run: CreateChildDocumentPdf job
+        asyncJobRunner.runPendingJobsSync(clock)
+        // Second run: SendChildDocumentDecisionSfiMessage job (scheduled by CreateChildDocumentPdf)
+        asyncJobRunner.runPendingJobsSync(clock)
+        assertThat(MockSfiMessagesClient.getMessages())
+            .extracting({ it.ssn }, { it.messageHeader })
+            .containsExactly(Tuple(adult.ssn, "Espoon varhaiskasvatukseen liittyvät päätökset"))
+
+        // cannot cancel decision
+        assertThrows<BadRequest> { prevState(documentId, DocumentStatus.DECISION_PROPOSAL) }
+
+        // cannot annul rejected decision
+        assertThrows<BadRequest> {
+            annulChildDocumentDecision(
+                documentId,
+                user = unitSupervisorUser,
+                reason = "Perustelut mitätöinnille",
+            )
+        }
+    }
+
+    @Test
+    fun `Only the decision maker can get other accepted decisions for child`() {
+        createPlacement()
+        val documentId1 = createDecisionDocument()
+
+        proposeChildDocumentDecision(documentId1, unitSupervisorUser.id)
+
+        val validity = DateRange(clock.today(), clock.today().plusDays(7))
+
+        acceptChildDocumentDecision(documentId1, validity, user = unitSupervisorUser)
+
+        val document1 = getDocument(documentId1)
+
+        val documentId2 = createDecisionDocument()
+
+        proposeChildDocumentDecision(documentId2, unitSupervisorUser.id)
+
+        // not the assigned decision maker
+        assertThrows<Forbidden> {
+            getAcceptedChildDocumentDecisions(documentId2, user = employeeUser.user)
+        }
+
+        val decisions = getAcceptedChildDocumentDecisions(documentId2, user = unitSupervisorUser)
+        assertEquals(1, decisions.size)
+        assertEquals(document1.decision?.id, decisions.first().id)
+    }
+
+    @Test
+    fun `Substitutive decision can end other accepted decisions for child`() {
+        createPlacement()
+
+        // Create and accept the first decision
+        val documentId1 = createDecisionDocument()
+
+        proposeChildDocumentDecision(documentId1, unitSupervisorUser.id)
+
+        val validity1 = DateRange(clock.today(), null)
+
+        acceptChildDocumentDecision(documentId1, validity1, user = unitSupervisorUser)
+
+        // Create and accept the second decision
+        val documentId2 = createDecisionDocument()
+
+        proposeChildDocumentDecision(documentId2, unitSupervisorUser.id)
+
+        val validity2 = DateRange(clock.today().plusDays(1), clock.today().plusDays(7))
+
+        var document1 = getDocument(documentId1)
+
+        acceptChildDocumentDecision(
+            documentId2,
+            validity2,
+            user = unitSupervisorUser,
+            endingDecisionIds = listOf(document1.decision!!.id),
+        )
+
+        // Check that the first decision has ended before the second decision and that the second
+        // decision is valid
+        document1 = getDocument(documentId1)
+        val document2 = getDocument(documentId2)
+        assertEquals(validity2.start.minusDays(1), document1.decision!!.validity!!.end)
+        assertEquals(validity2, document2.decision!!.validity)
+    }
+
+    @Test
+    fun `User 1 takes a lock and updates, user 2 cannot do that for 15 minutes`() {
+        createPlacement()
+
+        // user 1 creates at 10:00
+        val documentId = createDocument(clockOverride = MockEvakaClock(2022, 1, 1, 10, 0))
+
+        // user 1 takes a lock at 11:00
+        var lock =
+            takeDocumentWriteLock(documentId, clockOverride = MockEvakaClock(2022, 1, 1, 11, 0))
+        assertTrue(lock.lockTakenSuccessfully)
+        assertEquals(employeeUser.evakaUserId, lock.currentLock.lockedBy)
+        assertEquals(
+            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 5)),
+            lock.currentLock.opensAt,
+        )
+
+        // user 1 updates document and re-takes a lock at 11:02
+        updateDocumentContent(
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello"))),
+            now = MockEvakaClock(2022, 1, 1, 11, 2),
+        )
+
+        // user 1 updates document at 11:20, which extends the expired lock as no one else has taken
+        // it in between
+        updateDocumentContent(
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello2"))),
+            now = MockEvakaClock(2022, 1, 1, 11, 20),
+        )
+
+        // user 2 tries to take a lock at 11:22, which is not yet possible
+        lock =
+            takeDocumentWriteLock(
+                documentId,
+                user = unitSupervisorUser,
+                clockOverride = MockEvakaClock(2022, 1, 1, 11, 22),
+            )
+        assertFalse(lock.lockTakenSuccessfully)
+        assertEquals(employeeUser.evakaUserId, lock.currentLock.lockedBy)
+        assertEquals(
+            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 25)),
+            lock.currentLock.opensAt,
+        )
+
+        // user 2 tries to update the document at 11:22 without owning the lock, which fails
+        assertThrows<Conflict> {
+            updateDocumentContent(
+                documentId,
+                DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello3"))),
+                now = MockEvakaClock(2022, 1, 1, 11, 22),
+                user = unitSupervisorUser,
+            )
+        }
+
+        // user 2 takes a lock at 11:27
+        lock =
+            takeDocumentWriteLock(
+                documentId,
+                user = unitSupervisorUser,
+                clockOverride = MockEvakaClock(2022, 1, 1, 11, 27),
+            )
+        assertTrue(lock.lockTakenSuccessfully)
+        assertEquals(unitSupervisorUser.evakaUserId, lock.currentLock.lockedBy)
+        assertEquals(
+            HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(11, 32)),
+            lock.currentLock.opensAt,
+        )
+
+        // user 2 updates the document at 11:28
+        updateDocumentContent(
+            documentId,
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello4"))),
+            user = unitSupervisorUser,
+            now = MockEvakaClock(2022, 1, 1, 11, 28),
+        )
+
+        // user 1 cannot update the document at 11:30
+        assertThrows<Conflict> {
+            updateDocumentContent(
+                documentId,
+                DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "hello5"))),
+                now = MockEvakaClock(2022, 1, 1, 11, 30),
+            )
+        }
+    }
+
+    @Test
+    fun `unit supervisor doesn't see pedagogical assessment document from duplicate`() {
+        val duplicateId =
+            db.transaction { tx ->
+                val unitId = tx.insert(DevDaycare(areaId = area.id))
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5),
+                    )
+                )
+                childId
+            }
+        val documentId = createDocument(childId = duplicateId)
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId)
+        }
+    }
+
+    @Test
+    fun `unit supervisor doesn't see pedagogical report document from duplicate`() {
+        val duplicateId =
+            db.transaction { tx ->
+                val unitId = tx.insert(DevDaycare(areaId = area.id))
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5),
+                    )
+                )
+                childId
+            }
+        val documentId =
+            createDocument(childId = duplicateId, templateId = templateIdPedagogicalReport)
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId)
+        }
+    }
+
+    @Test
+    fun `unit supervisor sees hojks document from duplicate`() {
+        createPlacement()
+        val duplicateId =
+            db.transaction { tx ->
+                val unitId =
+                    tx.insert(
+                        DevDaycare(
+                            areaId = area.id,
+                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
+                        )
+                    )
+                val childId =
+                    tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
+                tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = unitId,
+                        startDate = clock.today(),
+                        endDate = clock.today().plusDays(5),
+                    )
+                )
+                childId
+            }
+        val documentId = createDocument(childId = duplicateId, templateId = templateIdHojks)
+        assertNotNull(controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId))
+    }
+
+    @Test
+    fun `archiving document with template not marked for external archiving fails`() {
+        // Create document with a template not marked for external archiving (Ped template)
+        val documentId = createDocument()
+
+        // Trying to archive should fail with BadRequest
+        assertThrows<BadRequest> { planArchiveChildDocument(documentId) }
+    }
+
+    @Test
+    fun `non-closed document archival fails`() {
+        // Create document with a template marked for external archiving (HOJKS template)
+        val documentId2 = createDocument(templateId = templateIdHojks)
+
+        assertThrows<BadRequest> { planArchiveChildDocument(documentId2) }
+    }
+
+    @Test
+    fun `closed document archival works`() {
+        // Create document with a template marked for external archiving (HOJKS template)
+        val documentId2 = createDocument(templateId = templateIdHojks)
+
+        nextState(documentId2, DocumentStatus.PREPARED)
+        nextState(documentId2, DocumentStatus.COMPLETED)
+
+        planArchiveChildDocument(documentId2)
+    }
+
+    @Test
+    fun `employee with STAFF permission can edit ordinary document but not decision document`() {
+        val groupId =
+            createPlacementWithGroup(
+                startDate = clock.today(),
+                endDate = clock.today().plusDays(10),
+            )
+
+        val staffEmployee = DevEmployee()
+        val staffUser =
+            db.transaction { tx ->
+                val staffId = tx.insert(staffEmployee)
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+            }
+
+        // Create an ordinary child document (PEDAGOGICAL_ASSESSMENT)
+        val ordinaryDocumentId = createDocument()
+
+        // Create a decision document (OTHER_DECISION)
+        val decisionDocumentId = createDecisionDocument()
+
+        // Staff employee should be able to update the ordinary document
+        val laterClock = MockEvakaClock(clock.now().plusMinutes(6))
+        val ordinaryContent =
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "staff edit")))
+        updateDocumentContent(
+            ordinaryDocumentId,
+            ordinaryContent,
+            now = laterClock,
+            user = staffUser,
+        )
+
+        // Verify the update succeeded
+        assertEquals(
+            ordinaryContent,
+            controller
+                .getDocument(dbInstance(), staffUser, laterClock, ordinaryDocumentId)
+                .data
+                .content,
+        )
+
+        // Staff employee should NOT be able to update the decision document
+        val decisionContent =
+            DocumentContent(
+                answers = listOf(AnsweredQuestion.TextAnswer("q1", "staff edit decision"))
+            )
+        assertThrows<Forbidden> {
+            updateDocumentContent(
+                decisionDocumentId,
+                decisionContent,
+                now = laterClock,
+                user = staffUser,
+            )
+        }
+    }
+
+    private fun getDocument(id: ChildDocumentId) =
+        controller.getDocument(dbInstance(), employeeUser.user, clock, id).data
+
+    private fun updateDocumentContent(
+        id: ChildDocumentId,
+        content: DocumentContent,
+        now: MockEvakaClock = clock,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+    ) = controller.updateDocumentContent(dbInstance(), user, now, id, content)
+
+    private fun nextState(
+        id: ChildDocumentId,
+        status: DocumentStatus,
+        clockOverride: MockEvakaClock = clock,
+    ) =
+        controller.nextDocumentStatus(
+            dbInstance(),
+            employeeUser.user,
+            clockOverride,
+            id,
+            ChildDocumentController.StatusChangeRequest(status),
+        )
+
+    private fun prevState(
+        id: ChildDocumentId,
+        status: DocumentStatus,
+        clockOverride: MockEvakaClock = clock,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+    ) =
+        controller.prevDocumentStatus(
+            dbInstance(),
+            user,
+            clockOverride,
+            id,
+            ChildDocumentController.StatusChangeRequest(status),
+        )
+
+    private fun proposeChildDocumentDecision(
+        id: ChildDocumentId,
+        decisionMaker: EmployeeId,
+        clockOverride: MockEvakaClock = clock,
+    ) =
+        controller.proposeChildDocumentDecision(
+            dbInstance(),
+            employeeUser.user,
+            clockOverride,
+            id,
+            ChildDocumentController.ProposeChildDocumentDecisionRequest(decisionMaker),
+        )
+
+    private fun acceptChildDocumentDecision(
+        id: ChildDocumentId,
+        validity: DateRange,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+        endingDecisionIds: List<ChildDocumentDecisionId> = emptyList(),
+    ) =
+        controller.acceptChildDocumentDecision(
+            dbInstance(),
+            user,
+            clockOverride,
+            id,
+            ChildDocumentController.AcceptChildDocumentDecisionRequest(validity, endingDecisionIds),
+        )
+
+    private fun rejectChildDocumentDecision(
+        id: ChildDocumentId,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) = controller.rejectChildDocumentDecision(dbInstance(), user, clockOverride, id)
+
+    private fun annulChildDocumentDecision(
+        id: ChildDocumentId,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+        reason: String,
+    ) =
+        controller.annulChildDocumentDecision(
+            dbInstance(),
+            user,
+            clockOverride,
+            id,
+            body = ChildDocumentController.AnnulChildDocumentDecisionRequest(reason),
+        )
+
+    private fun getChildDocumentMetadata(id: ChildDocumentId) =
+        metadataController.getChildDocumentMetadata(dbInstance(), employeeUser.user, clock, id)
+
+    @Test
+    fun `STAFF can access child documents when placement starts within 30 days`() {
+        // Create a placement starting 15 days from now
+        val futureStartDate = clock.today().plusDays(15)
+        val futureEndDate = clock.today().plusDays(90)
+
+        val groupId = createPlacementWithGroup(startDate = futureStartDate, endDate = futureEndDate)
+
+        // Create STAFF employee with group access
+        val staffUser =
+            db.transaction { tx ->
+                val staffId = tx.insert(DevEmployee())
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+            }
+
+        // Create a CITIZEN_BASIC document
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(child.id, templateIdCitizenBasic),
+            )
+
+        // STAFF should be able to read the document (permission check happens in controller)
+        val document = controller.getDocument(dbInstance(), staffUser, clock, documentId)
+        assertEquals(child.id, document.data.child.id)
+        assertTrue(document.permittedActions.contains(Action.ChildDocument.READ))
+
+        // STAFF should be able to see documents in getDocuments list
+        val documents = controller.getDocuments(dbInstance(), staffUser, clock, child.id)
+        assertEquals(1, documents.size)
+        assertTrue(documents[0].permittedActions.contains(Action.ChildDocument.READ))
+    }
+
+    @Test
+    fun `STAFF cannot access child documents when placement starts beyond 30 days`() {
+        // Create a placement starting 35 days from now (beyond 30-day window)
+        val futureStartDate = clock.today().plusDays(35)
+        val futureEndDate = clock.today().plusDays(120)
+
+        val groupId = createPlacementWithGroup(startDate = futureStartDate, endDate = futureEndDate)
+
+        val staffUser =
+            db.transaction { tx ->
+                val staffId = tx.insert(DevEmployee())
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+            }
+
+        // Create a document as admin
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(child.id, templateIdCitizenBasic),
+            )
+
+        // STAFF should NOT be able to read the document (too far in future)
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), staffUser, clock, documentId)
+        }
+
+        // STAFF should NOT see documents in getDocuments list (also throws Forbidden)
+        assertThrows<Forbidden> {
+            controller.getDocuments(dbInstance(), staffUser, clock, child.id)
+        }
+    }
+
+    @Test
+    fun `STAFF cannot access child documents when placement has ended`() {
+        // Create a placement that ended yesterday
+        val pastStartDate = clock.today().minusDays(60)
+        val pastEndDate = clock.today().minusDays(1)
+
+        val groupId = createPlacementWithGroup(startDate = pastStartDate, endDate = pastEndDate)
+
+        val staffUser =
+            db.transaction { tx ->
+                val staffId = tx.insert(DevEmployee())
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+            }
+
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(child.id, templateIdCitizenBasic),
+            )
+
+        // STAFF should NOT be able to access expired placement documents
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), staffUser, clock, documentId)
+        }
+
+        // STAFF should NOT see documents in list (also throws Forbidden)
+        assertThrows<Forbidden> {
+            controller.getDocuments(dbInstance(), staffUser, clock, child.id)
+        }
+    }
+
+    @Test
+    fun `STAFF can create documents for placement starting within 30 days`() {
+        val futureStartDate = clock.today().plusDays(20)
+        val futureEndDate = clock.today().plusDays(100)
+
+        val groupId = createPlacementWithGroup(startDate = futureStartDate, endDate = futureEndDate)
+
+        val staffUser =
+            db.transaction { tx ->
+                val staffId = tx.insert(DevEmployee())
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+            }
+
+        // STAFF should be able to create a document for future placement
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                staffUser,
+                clock,
+                ChildDocumentCreateRequest(child.id, templateIdCitizenBasic),
+            )
+
+        assertNotNull(documentId)
+
+        // Verify document was created
+        val document = controller.getDocument(dbInstance(), staffUser, clock, documentId)
+        assertEquals(child.id, document.data.child.id)
+    }
+
+    @Test
+    fun `STAFF with future access still cannot manage decision documents`() {
+        // Create a placement starting 15 days from now
+        val futureStartDate = clock.today().plusDays(15)
+        val futureEndDate = clock.today().plusDays(90)
+
+        val groupId = createPlacementWithGroup(startDate = futureStartDate, endDate = futureEndDate)
+
+        val staffUser =
+            db.transaction { tx ->
+                val staffId = tx.insert(DevEmployee())
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+            }
+
+        // Create a decision document as admin
+        val decisionDocumentId =
+            controller.createDecisionDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(child.id, templateIdAssistanceDecision),
+            )
+
+        // STAFF should be able to READ the decision document
+        val document = controller.getDocument(dbInstance(), staffUser, clock, decisionDocumentId)
+        assertTrue(document.permittedActions.contains(Action.ChildDocument.READ))
+
+        // But STAFF should NOT be able to UPDATE the decision document
+        assertFalse(document.permittedActions.contains(Action.ChildDocument.UPDATE))
+
+        // Verify by attempting to update - should throw Forbidden
+        val decisionContent =
+            DocumentContent(
+                answers = listOf(AnsweredQuestion.TextAnswer("q1", "staff edit decision"))
+            )
+        assertThrows<Forbidden> {
+            updateDocumentContent(decisionDocumentId, decisionContent, user = staffUser)
+        }
+    }
+
+    @Test
+    fun `STAFF can manage all non-decision document types with active placement (backward compatibility)`() {
+        // Create active placement (existing behavior - no future window needed)
+        val groupId =
+            createPlacementWithGroup(
+                startDate = clock.today(),
+                endDate = clock.today().plusDays(10),
+            )
+
+        val staffUser =
+            db.transaction { tx ->
+                val staffId = tx.insert(DevEmployee())
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+            }
+
+        // Test different document types that STAFF should be able to manage
+        val documentTypes =
+            listOf(
+                templateIdCitizenBasic to "CITIZEN_BASIC",
+                templateIdPed to "PEDAGOGICAL_ASSESSMENT",
+                templateIdHojks to "HOJKS",
+            )
+
+        documentTypes.forEachIndexed { index, (templateId, typeName) ->
+            // Use different clock time for each iteration to avoid lock conflicts
+            val creationClock = MockEvakaClock(clock.now().plusMinutes((index + 1) * 10L))
+
+            // Create document as admin (takes a lock for admin)
+            val documentId =
+                controller.createDocument(
+                    dbInstance(),
+                    employeeUser.user,
+                    creationClock,
+                    ChildDocumentCreateRequest(child.id, templateId),
+                )
+
+            // Use a later clock for STAFF operations (admin's lock has expired)
+            val staffClock = MockEvakaClock(creationClock.now().plusMinutes(6))
+
+            // STAFF should be able to READ
+            val document = controller.getDocument(dbInstance(), staffUser, staffClock, documentId)
+            assertTrue(
+                document.permittedActions.contains(Action.ChildDocument.READ),
+                "$typeName: STAFF should have READ permission",
+            )
+
+            // STAFF should be able to UPDATE (non-decision documents)
+            assertTrue(
+                document.permittedActions.contains(Action.ChildDocument.UPDATE),
+                "$typeName: STAFF should have UPDATE permission",
+            )
+
+            // Verify update works - first take the lock (admin's lock has expired)
+            controller.takeDocumentWriteLock(dbInstance(), staffUser, staffClock, documentId)
+
+            val content =
+                DocumentContent(
+                    answers = listOf(AnsweredQuestion.TextAnswer("q1", "staff edit $typeName"))
+                )
+            updateDocumentContent(documentId, content, now = staffClock, user = staffUser)
+
+            assertEquals(
+                content,
+                controller
+                    .getDocument(dbInstance(), staffUser, staffClock, documentId)
+                    .data
+                    .content,
+                "$typeName: Content should be updated",
+            )
+
+            assertTrue(
+                document.permittedActions.contains(Action.ChildDocument.DELETE),
+                "$typeName: STAFF should have DELETE permission for draft",
+            )
+        }
+    }
+
+    @Test
+    fun `STAFF can READ but not UPDATE decision documents with active placement`() {
+        val groupId =
+            createPlacementWithGroup(
+                startDate = clock.today(),
+                endDate = clock.today().plusDays(10),
+            )
+
+        val staffUser =
+            db.transaction { tx ->
+                val staffId = tx.insert(DevEmployee())
+                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+            }
+
+        val decisionDocumentId =
+            controller.createDecisionDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(child.id, templateIdAssistanceDecision),
+            )
+
+        val document = controller.getDocument(dbInstance(), staffUser, clock, decisionDocumentId)
+        assertTrue(
+            document.permittedActions.contains(Action.ChildDocument.READ),
+            "STAFF should have READ permission for decisions",
+        )
+
+        assertFalse(
+            document.permittedActions.contains(Action.ChildDocument.UPDATE),
+            "STAFF should NOT have UPDATE permission for decisions",
+        )
+
+        val content =
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "attempt to edit")))
+        assertThrows<Forbidden> {
+            updateDocumentContent(decisionDocumentId, content, user = staffUser)
+        }
+    }
+
+    private fun createDocument(
+        childId: PersonId = child.id,
+        templateId: DocumentTemplateId = templateIdPed,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) =
+        controller.createDocument(
+            dbInstance(),
+            user,
+            clockOverride,
+            ChildDocumentCreateRequest(childId, templateId),
+        )
+
+    private fun publishDocument(
+        id: ChildDocumentId,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) = controller.publishDocument(dbInstance(), user, clockOverride, id)
+
+    private fun deleteDraftDocument(
+        id: ChildDocumentId,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) = controller.deleteDraftDocument(dbInstance(), user, clockOverride, id)
+
+    private fun getDocuments(
+        childId: PersonId,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) = controller.getDocuments(dbInstance(), user, clockOverride, childId)
+
+    private fun createDecisionDocument(
+        childId: PersonId = child.id,
+        templateId: DocumentTemplateId = templateIdAssistanceDecision,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) =
+        controller.createDecisionDocument(
+            dbInstance(),
+            user,
+            clockOverride,
+            ChildDocumentCreateRequest(childId, templateId),
+        )
+
+    private fun takeDocumentWriteLock(
+        id: ChildDocumentId,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) = controller.takeDocumentWriteLock(dbInstance(), user, clockOverride, id)
+
+    private fun planArchiveChildDocument(
+        id: ChildDocumentId,
+        archivalEnabled: Boolean = true,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) = controller.planArchiveChildDocument(dbInstance(), user, clockOverride, id, archivalEnabled)
+
+    private fun getAcceptedChildDocumentDecisions(
+        id: ChildDocumentId,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) = controller.getAcceptedChildDocumentDecisions(dbInstance(), user, clockOverride, id)
+}

@@ -1,0 +1,664 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.pdfgen
+
+import evaka.core.application.Address
+import evaka.core.application.ApplicationDetails
+import evaka.core.application.ApplicationForm
+import evaka.core.application.ApplicationOrigin
+import evaka.core.application.ApplicationStatus
+import evaka.core.application.ApplicationType
+import evaka.core.application.ChildDetails
+import evaka.core.application.Guardian
+import evaka.core.application.PersonBasics
+import evaka.core.application.Preferences
+import evaka.core.application.PreferredUnit
+import evaka.core.application.ServiceNeed
+import evaka.core.caseprocess.DocumentConfidentiality
+import evaka.core.daycare.UnitManager
+import evaka.core.daycare.domain.ProviderType
+import evaka.core.decision.Decision
+import evaka.core.decision.DecisionStatus
+import evaka.core.decision.DecisionType
+import evaka.core.decision.DecisionUnit
+import evaka.core.decision.createDecisionPdf
+import evaka.core.document.CheckboxGroupQuestionOption
+import evaka.core.document.ChildDocumentType
+import evaka.core.document.DocumentTemplate
+import evaka.core.document.DocumentTemplateContent
+import evaka.core.document.Question
+import evaka.core.document.RadioButtonGroupQuestionOption
+import evaka.core.document.Section
+import evaka.core.document.childdocument.AnsweredQuestion
+import evaka.core.document.childdocument.CheckboxGroupAnswerContent
+import evaka.core.document.childdocument.ChildBasics
+import evaka.core.document.childdocument.ChildDocumentDetails
+import evaka.core.document.childdocument.DocumentContent
+import evaka.core.document.childdocument.DocumentStatus
+import evaka.core.document.childdocument.generateChildDocumentHtml
+import evaka.core.identity.ExternalIdentifier
+import evaka.core.pis.service.PersonDTO
+import evaka.core.pis.service.createAddressPagePdf
+import evaka.core.placement.PlacementType
+import evaka.core.setting.SettingType
+import evaka.core.shared.ApplicationId
+import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.ChildId
+import evaka.core.shared.DaycareId
+import evaka.core.shared.DecisionId
+import evaka.core.shared.DocumentTemplateId
+import evaka.core.shared.PersonId
+import evaka.core.shared.config.PDFConfig
+import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevPerson
+import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.OfficialLanguage
+import evaka.core.shared.domain.Rectangle
+import evaka.core.shared.domain.UiLanguage
+import evaka.core.shared.message.EvakaMessageProvider
+import evaka.core.shared.message.IMessageProvider
+import evaka.core.shared.template.EvakaTemplateProvider
+import evaka.core.shared.template.ITemplateProvider
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
+import java.io.FileOutputStream
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.UUID
+import kotlin.test.assertNotNull
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
+import org.thymeleaf.ITemplateEngine
+
+val logger = KotlinLogging.logger {}
+
+private val testArea = DevCareArea()
+private val testDaycare = DevDaycare(areaId = testArea.id)
+private val voucherDaycare =
+    DevDaycare(
+        areaId = testArea.id,
+        name = "Test Voucher Daycare",
+        providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+    )
+
+private val testAdult = DevPerson(ssn = "010180-1232", dateOfBirth = LocalDate.of(1980, 1, 1))
+private val testChild = DevPerson(ssn = "010617A123U", dateOfBirth = LocalDate.of(2017, 6, 1))
+private val decisionMaker = DevEmployee()
+
+private fun preschoolApplication(preferredUnit: DevDaycare) =
+    ApplicationDetails(
+        id = ApplicationId(UUID.randomUUID()),
+        type = ApplicationType.PRESCHOOL,
+        status = ApplicationStatus.WAITING_DECISION,
+        origin = ApplicationOrigin.ELECTRONIC,
+        childId = testChild.id,
+        guardianId = testAdult.id,
+        otherGuardianLivesInSameAddress = null,
+        childRestricted = false,
+        guardianRestricted = false,
+        guardianDateOfDeath = null,
+        checkedByAdmin = true,
+        confidential = false,
+        createdAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        createdBy = decisionMaker.evakaUser,
+        modifiedAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
+        modifiedBy = decisionMaker.evakaUser,
+        sentDate = LocalDate.of(2021, 1, 15),
+        sentTime = null,
+        dueDate = null,
+        dueDateSetManuallyAt = null,
+        transferApplication = false,
+        additionalDaycareApplication = false,
+        hideFromGuardian = false,
+        allowOtherGuardianAccess = true,
+        attachments = listOf(),
+        hasOtherGuardian = false,
+        form =
+            ApplicationForm(
+                child =
+                    ChildDetails(
+                        person =
+                            PersonBasics(
+                                firstName = testChild.firstName,
+                                lastName = testChild.lastName,
+                                socialSecurityNumber = testChild.ssn,
+                            ),
+                        dateOfBirth = testChild.dateOfBirth,
+                        address =
+                            Address(
+                                street = testChild.streetAddress,
+                                postalCode = testChild.postalCode,
+                                postOffice = testChild.postOffice,
+                            ),
+                        futureAddress = null,
+                        nationality = "fi",
+                        language = "fi",
+                        allergies = "allergies",
+                        diet = "diet",
+                        assistanceNeeded = true,
+                        assistanceDescription = "This is a description for assistance.",
+                    ),
+                guardian =
+                    Guardian(
+                        person =
+                            PersonBasics(
+                                firstName = testAdult.firstName,
+                                lastName = testAdult.lastName,
+                                socialSecurityNumber = testAdult.ssn,
+                            ),
+                        address =
+                            Address(
+                                street = testAdult.streetAddress,
+                                postalCode = testAdult.postalCode,
+                                postOffice = testAdult.postOffice,
+                            ),
+                        futureAddress = null,
+                        phoneNumber = "0504139432",
+                        email = "joku@maili.fi",
+                    ),
+                secondGuardian = null,
+                otherPartner = null,
+                otherChildren = emptyList(),
+                preferences =
+                    Preferences(
+                        preferredUnits =
+                            listOf(PreferredUnit(preferredUnit.id, preferredUnit.name)),
+                        preferredStartDate = LocalDate.of(2021, 8, 15),
+                        connectedDaycarePreferredStartDate = null,
+                        serviceNeed =
+                            ServiceNeed(
+                                startTime = "08:00",
+                                endTime = "17:00",
+                                shiftCare = false,
+                                partTime = false,
+                                serviceNeedOption = null,
+                            ),
+                        siblingBasis = null,
+                        preparatory = false,
+                        urgent = false,
+                    ),
+                maxFeeAccepted = false,
+                otherInfo = "other info",
+                clubDetails = null,
+            ),
+    )
+
+private val application = preschoolApplication(testDaycare)
+private val transferApplication = application.copy(transferApplication = true)
+private val voucherApplication = preschoolApplication(voucherDaycare)
+
+private val voucherDecisionUnit =
+    DecisionUnit(
+        DaycareId(UUID.randomUUID()),
+        "PS päiväkoti",
+        "PS päiväkoti",
+        "PS päiväkodin esiopetus",
+        "Pirkko Päiväkodinjohtaja",
+        "PSpolku 123",
+        "02200",
+        "ESPOO",
+        "+35850 1234564",
+        "Varhaiskasvatuksen palveluohjaus",
+        "Kamreerintie 2, 02200 Espoo",
+        providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+    )
+
+private val daycareTransferDecision =
+    createValidDecision(applicationId = transferApplication.id, type = DecisionType.DAYCARE)
+private val daycareDecision =
+    createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE)
+private val preschoolDaycareDecision =
+    createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL_DAYCARE)
+private val daycareDecisionPartTime =
+    createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE_PART_TIME)
+private val daycareDecisionPartTimeVoucher =
+    createValidDecision(
+        applicationId = voucherApplication.id,
+        type = DecisionType.DAYCARE_PART_TIME,
+        unit = voucherDecisionUnit,
+    )
+private val preschoolDecision =
+    createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL)
+private val preparatoryDecision =
+    createValidDecision(applicationId = application.id, type = DecisionType.PREPARATORY_EDUCATION)
+private val clubDecision =
+    createValidDecision(applicationId = application.id, type = DecisionType.CLUB)
+
+private val voucherDecision =
+    daycareDecision.copy(
+        endDate = LocalDate.of(2019, 7, 31),
+        unit =
+            DecisionUnit(
+                DaycareId(UUID.randomUUID()),
+                "Suomenniemen palvelusetelipäiväkoti",
+                "Suomenniemen palvelusetelipäiväkoti",
+                "Suomenniemen palvelusetelipäiväkodin esiopetus",
+                "Pirkko Sanelma Ullanlinna",
+                "Hyväntoivonniementie 13 B",
+                "02200",
+                "ESPOO",
+                "+35850 1234564",
+                "Suomenniemen palvelusetelipäiväkodin asiakaspalvelu",
+                "Kartanonkujanpää 565, 02210 Espoo",
+                providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+            ),
+    )
+
+private val settings = mapOf<SettingType, String>()
+private val child =
+    PersonDTO(
+        testChild.id,
+        null,
+        ExternalIdentifier.SSN.getInstance(testChild.ssn!!),
+        false,
+        "Kullervo Kyöstinpoika",
+        "Pöysti",
+        "",
+        null,
+        "",
+        "",
+        null,
+        testChild.dateOfBirth,
+        null,
+        "Kuusikallionrinne 26 A 4",
+        "02270",
+        "Espoo",
+        "",
+        "",
+    )
+private val guardian =
+    PersonDTO(
+        testAdult.id,
+        null,
+        ExternalIdentifier.SSN.getInstance(testAdult.ssn!!),
+        false,
+        "Kyösti Taavetinpoika",
+        "Pöysti",
+        "",
+        "kyostipoysti@example.com",
+        "+358914822",
+        "+358914829",
+        null,
+        testAdult.dateOfBirth,
+        null,
+        "Kuusikallionrinne 26 A 4",
+        "02270",
+        "Espoo",
+        "",
+        "",
+    )
+private val manager =
+    UnitManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
+
+@TestConfiguration
+class PdfGeneratorTestConfiguration {
+    @Bean fun messageProvider(): IMessageProvider = EvakaMessageProvider()
+
+    @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
+
+    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine("espoo")
+}
+
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.NONE,
+    classes = [PdfGeneratorTestConfiguration::class, PDFConfig::class, PdfGenerator::class],
+)
+class PdfGeneratorTest {
+    @Autowired lateinit var pdfGenerator: PdfGenerator
+
+    @Test
+    fun createFinnishPDFs() {
+        createPDF(daycareTransferDecision, true, OfficialLanguage.FI)
+        createPDF(daycareDecision, false, OfficialLanguage.FI)
+        createPDF(daycareDecisionPartTime, false, OfficialLanguage.FI)
+        createPDF(daycareDecisionPartTimeVoucher, false, OfficialLanguage.FI)
+        createPDF(preschoolDaycareDecision, false, OfficialLanguage.FI)
+        createPDF(preschoolDecision, false, OfficialLanguage.FI)
+        createPDF(preparatoryDecision, false, OfficialLanguage.FI)
+        createPDF(voucherDecision, false, OfficialLanguage.FI)
+        createPDF(clubDecision, false, OfficialLanguage.FI)
+    }
+
+    @Test
+    fun createSwedishPDFs() {
+        createPDF(daycareTransferDecision, true, OfficialLanguage.SV)
+        createPDF(daycareDecision, false, OfficialLanguage.SV)
+        createPDF(daycareDecisionPartTime, false, OfficialLanguage.SV)
+        createPDF(daycareDecisionPartTimeVoucher, false, OfficialLanguage.SV)
+        createPDF(preschoolDaycareDecision, false, OfficialLanguage.SV)
+        createPDF(preschoolDecision, false, OfficialLanguage.SV)
+        createPDF(preparatoryDecision, false, OfficialLanguage.SV)
+        createPDF(voucherDecision, false, OfficialLanguage.SV)
+        createPDF(clubDecision, false, OfficialLanguage.SV)
+    }
+
+    @Test
+    fun createAddressPagePdfTest() {
+        val document =
+            createAddressPagePdf(
+                pdfGenerator,
+                LocalDate.of(2024, 1, 1),
+                Rectangle.iPostWindowPosition,
+                guardian,
+            )
+
+        val file = File.createTempFile("address_page_", ".pdf")
+        FileOutputStream(file).use { it.write(document.bytes) }
+
+        logger.debug { "Generated address page PDF to ${file.absolutePath}" }
+    }
+
+    @Test
+    fun createChildDocumentPdf() {
+        val content =
+            DocumentContent(
+                answers =
+                    listOf(
+                        AnsweredQuestion.TextAnswer(questionId = "s1q1", answer = "Ihan jees"),
+                        AnsweredQuestion.TextAnswer(
+                            questionId = "s1q2",
+                            answer =
+                                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus euismod turpis leo. \n" +
+                                    "in commodo velit interdum vitae. Vivamus eu felis libero. Aliquam non pellentesque ex. \n" +
+                                    "vitae suscipit libero. Ut varius turpis non faucibus iaculis. Curabitur mi mi, suscipit.\n\n" +
+                                    "Quis maximus in, blandit sit amet purus. Nam aliquam pellentesque magna, eu sodales neque" +
+                                    "luctus id. Mauris blandit sed enim sit amet iaculis. Praesent dapibus vehicula augue, " +
+                                    "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam.",
+                        ),
+                        AnsweredQuestion.CheckboxAnswer(questionId = "s2q1", answer = true),
+                        AnsweredQuestion.CheckboxAnswer(questionId = "s2q2", answer = false),
+                        AnsweredQuestion.StaticTextDisplayAnswer(
+                            questionId = "s2q3",
+                            answer = null,
+                        ),
+                        AnsweredQuestion.CheckboxGroupAnswer(
+                            questionId = "s2q4",
+                            answer =
+                                listOf(
+                                    CheckboxGroupAnswerContent(optionId = "2"),
+                                    CheckboxGroupAnswerContent(optionId = "3", "Lohikäärme"),
+                                ),
+                        ),
+                        AnsweredQuestion.RadioButtonGroupAnswer(questionId = "s2q6", answer = "2"),
+                        AnsweredQuestion.DateAnswer(
+                            questionId = "s3q1",
+                            answer = LocalDate.of(2023, 5, 20),
+                        ),
+                        AnsweredQuestion.GroupedTextFieldsAnswer(
+                            questionId = "s3q2",
+                            answer =
+                                listOf(
+                                    listOf(
+                                        "Roope",
+                                        "Ankka",
+                                        "Triljonääri",
+                                        "roope.ankka@ankkalinna.fi",
+                                        "+358 99 765 4321",
+                                    )
+                                ),
+                        ),
+                        AnsweredQuestion.GroupedTextFieldsAnswer(
+                            questionId = "s3q3",
+                            answer =
+                                listOf(
+                                    listOf("Aku Kalevi Uolevi", "Ankka", "Isä"),
+                                    listOf("Hilda", "Hanhivaara", "Ilkeä äitipuoli"),
+                                ),
+                        ),
+                    )
+            )
+        val document =
+            ChildDocumentDetails(
+                id = ChildDocumentId(UUID.randomUUID()),
+                status = DocumentStatus.COMPLETED,
+                publishedAt = HelsinkiDateTime.now(),
+                pdfAvailable = false,
+                child =
+                    ChildBasics(
+                        id = PersonId(UUID.randomUUID()),
+                        firstName = "Tessa Tiina-Tellervo",
+                        lastName = "Testaaja-Meikäläinen",
+                        dateOfBirth = LocalDate.now().minusYears(4),
+                    ),
+                template =
+                    DocumentTemplate(
+                        id = DocumentTemplateId(UUID.randomUUID()),
+                        type = ChildDocumentType.HOJKS,
+                        placementTypes = PlacementType.entries.toSet(),
+                        name = "Varhaiskasvatussuunnitelma 2023-2024",
+                        language = UiLanguage.FI,
+                        confidentiality = DocumentConfidentiality(100, "§ 999"),
+                        legalBasis =
+                            "§3.2b varhaiskasvatuslaki, varhaiskasvatuslautakunnan päätös ja määräys 11.3.2017",
+                        validity =
+                            DateRange(LocalDate.now().minusYears(1), LocalDate.now().plusYears(1)),
+                        processDefinitionNumber = null,
+                        archiveDurationMonths = null,
+                        published = true,
+                        archiveExternally = false,
+                        endDecisionWhenUnitChanges = null,
+                        content =
+                            DocumentTemplateContent(
+                                sections =
+                                    listOf(
+                                        Section(
+                                            id = "s1",
+                                            label = "Eka osio",
+                                            questions =
+                                                listOf(
+                                                    Question.TextQuestion(
+                                                        id = "s1q1",
+                                                        label = "Mitä kuuluu?",
+                                                    ),
+                                                    Question.TextQuestion(
+                                                        id = "s1q2",
+                                                        label = "Kerro lisää",
+                                                        multiline = true,
+                                                    ),
+                                                ),
+                                        ),
+                                        Section(
+                                            id = "s2",
+                                            label = "Toka osio",
+                                            questions =
+                                                listOf(
+                                                    Question.CheckboxQuestion(
+                                                        id = "s2q1",
+                                                        label = "Hyväksyn käyttöehdot",
+                                                    ),
+                                                    Question.CheckboxQuestion(
+                                                        id = "s2q2",
+                                                        label = "Minulle saa lähettää mainoksia",
+                                                    ),
+                                                    Question.StaticTextDisplayQuestion(
+                                                        id = "s2q3",
+                                                        label = "Ylimääräinen väliotsikko",
+                                                    ),
+                                                    Question.CheckboxGroupQuestion(
+                                                        id = "s2q4",
+                                                        label = "Suosikkielämet",
+                                                        options =
+                                                            listOf(
+                                                                CheckboxGroupQuestionOption(
+                                                                    id = "1",
+                                                                    label = "Kissa",
+                                                                ),
+                                                                CheckboxGroupQuestionOption(
+                                                                    id = "2",
+                                                                    label = "Koira",
+                                                                ),
+                                                                CheckboxGroupQuestionOption(
+                                                                    id = "3",
+                                                                    label = "Muu, mikä?",
+                                                                    withText = true,
+                                                                ),
+                                                            ),
+                                                    ),
+                                                    Question.StaticTextDisplayQuestion(
+                                                        id = "s2q5",
+                                                        text = "Staattinen tekstikappale.",
+                                                    ),
+                                                    Question.RadioButtonGroupQuestion(
+                                                        id = "s2q6",
+                                                        label = "Laskiaispullaan kuuluu?",
+                                                        options =
+                                                            listOf(
+                                                                RadioButtonGroupQuestionOption(
+                                                                    id = "1",
+                                                                    label = "Hillo",
+                                                                ),
+                                                                RadioButtonGroupQuestionOption(
+                                                                    id = "2",
+                                                                    label = "Mantelimassa",
+                                                                ),
+                                                            ),
+                                                    ),
+                                                    Question.StaticTextDisplayQuestion(
+                                                        id = "s2q7",
+                                                        label = "Valitusoikeus",
+                                                        text =
+                                                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus euismod turpis leo. " +
+                                                                "in commodo velit interdum vitae. Vivamus eu felis libero. Aliquam non pellentesque ex. " +
+                                                                "vitae suscipit libero. Ut varius turpis non faucibus iaculis. Curabitur mi mi, suscipit.\n\n" +
+                                                                "Quis maximus in, blandit sit amet purus. Nam aliquam pellentesque magna, eu sodales neque" +
+                                                                "luctus id. Mauris blandit sed enim sit amet iaculis. Praesent dapibus vehicula augue, " +
+                                                                "sed porta magna pulvinar at. Sed dui orci, pharetra nec orci at, ultricies semper quam.",
+                                                    ),
+                                                ),
+                                        ),
+                                        Section(
+                                            id = "s3",
+                                            label = "Kolmas osio",
+                                            questions =
+                                                listOf(
+                                                    Question.DateQuestion(
+                                                        id = "s3q1",
+                                                        label = "Keskustelun päivämäärä",
+                                                    ),
+                                                    Question.GroupedTextFieldsQuestion(
+                                                        id = "s3q2",
+                                                        label = "Päätöksen tekijä",
+                                                        fieldLabels =
+                                                            listOf(
+                                                                "Etunimi",
+                                                                "Sukunimi",
+                                                                "Titteli",
+                                                                "Sähköpoti",
+                                                                "Puhelinnumero",
+                                                            ),
+                                                        allowMultipleRows = false,
+                                                    ),
+                                                    Question.GroupedTextFieldsQuestion(
+                                                        id = "s3q3",
+                                                        label = "Osallistujat",
+                                                        fieldLabels =
+                                                            listOf("Etunimi", "Sukunimi", "Rooli"),
+                                                        allowMultipleRows = true,
+                                                    ),
+                                                ),
+                                        ),
+                                    )
+                            ),
+                    ),
+                content = content,
+                publishedContent = content,
+                archivedAt = null,
+            )
+
+        val html = generateChildDocumentHtml(document)
+        val bytes = pdfGenerator.render(html)
+        val file = File.createTempFile("child_document_", ".pdf")
+        FileOutputStream(file).use { it.write(bytes) }
+
+        logger.debug { "Generated child document PDF to ${file.absolutePath}" }
+    }
+
+    private fun createPDF(
+        decision: Decision,
+        isTransferApplication: Boolean,
+        lang: OfficialLanguage,
+        serviceNeed: ServiceNeed? = null,
+    ) {
+        val decisionPdfByteArray =
+            createDecisionPdf(
+                EvakaTemplateProvider(),
+                pdfGenerator,
+                settings,
+                decision,
+                child,
+                isTransferApplication,
+                serviceNeed,
+                lang,
+                manager,
+                manager,
+            )
+
+        val file = File.createTempFile("decision_", ".pdf")
+        assertNotNull(decisionPdfByteArray)
+
+        FileOutputStream(file).use { it.write(decisionPdfByteArray) }
+
+        logger.debug {
+            "Generated $lang ${decision.type} (${decision.unit.providerType}${if (isTransferApplication) ", transfer application" else ""}) decision PDF to ${file.absolutePath}"
+        }
+    }
+}
+
+fun createValidDecision(
+    id: DecisionId = DecisionId(UUID.randomUUID()),
+    createdBy: String = "John Doe",
+    type: DecisionType = DecisionType.DAYCARE,
+    startDate: LocalDate = LocalDate.of(2019, 1, 1),
+    endDate: LocalDate = LocalDate.of(2019, 12, 31),
+    unit: DecisionUnit =
+        DecisionUnit(
+            DaycareId(UUID.randomUUID()),
+            "Kuusenkerkän päiväkoti",
+            "Kuusenkerkän päiväkoti",
+            "Kuusenkerkän päiväkodin esiopetus",
+            "Pirkko Päiväkodinjohtaja",
+            "Kuusernkerkänpolku 123",
+            "02200",
+            "ESPOO",
+            "+35850 1234564",
+            "Varhaiskasvatuksen palveluohjaus",
+            "Kamreerintie 2, 02200 Espoo",
+            providerType = ProviderType.MUNICIPAL,
+        ),
+    applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
+    childId: ChildId = ChildId(UUID.randomUUID()),
+    documentKey: String? = null,
+    decisionNumber: Long = 123,
+    sentDate: LocalDate = LocalDate.now(),
+    status: DecisionStatus = DecisionStatus.ACCEPTED,
+    resolved: LocalDate? = null,
+): Decision {
+    return Decision(
+        id = id,
+        createdBy = createdBy,
+        type = type,
+        startDate = startDate,
+        endDate = endDate,
+        unit = unit,
+        applicationId = applicationId,
+        childId = childId,
+        documentKey = documentKey,
+        decisionNumber = decisionNumber,
+        sentDate = sentDate,
+        status = status,
+        childName = "Test Child",
+        requestedStartDate = startDate,
+        resolved = resolved,
+        resolvedByName = null,
+        documentContainsContactInfo = false,
+        archivedAt = null,
+    )
+}

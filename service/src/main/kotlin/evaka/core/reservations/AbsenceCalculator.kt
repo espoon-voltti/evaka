@@ -1,0 +1,223 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.reservations
+
+import evaka.core.absence.AbsenceCategory
+import evaka.core.daycare.PreschoolTerm
+import evaka.core.daycare.domain.Language
+import evaka.core.daycare.getDaycare
+import evaka.core.daycare.getPreschoolTerm
+import evaka.core.placement.PlacementType
+import evaka.core.placement.getPlacementsForChildDuring
+import evaka.core.placement.getPlacementsForChildrenAt
+import evaka.core.shared.ChildId
+import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.HelsinkiDateTimeRange
+import evaka.core.shared.domain.TimeRange
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalTime
+
+fun getExpectedAbsenceCategories(
+    tx: Database.Read,
+    date: LocalDate,
+    attendanceTimesByChild: Map<ChildId, List<TimeRange>>,
+): Map<ChildId, Set<AbsenceCategory>?> {
+    val childIds = attendanceTimesByChild.keys
+    val placements = tx.getPlacementsForChildrenAt(childIds, date)
+    val preschoolTerm = tx.getPreschoolTerm(date)
+
+    return attendanceTimesByChild.mapValues { (childId, childAttendanceTimes) ->
+        val placement = placements[childId] ?: throw BadRequest("child has no placement")
+        val daycare = tx.getDaycare(placement.unitId)!!
+        getExpectedAbsenceCategories(
+            date = date,
+            attendanceTimes = childAttendanceTimes,
+            placementType = placement.type,
+            unitLanguage = daycare.language,
+            dailyPreschoolTime = daycare.dailyPreschoolTime,
+            dailyPreparatoryTime = daycare.dailyPreparatoryTime,
+            preschoolTerm = preschoolTerm,
+        )
+    }
+}
+
+fun getExpectedAbsenceCategories(
+    tx: Database.Read,
+    date: LocalDate,
+    childId: ChildId,
+    attendanceTimes: List<TimeRange>,
+): Set<AbsenceCategory>? {
+    val placement =
+        tx.getPlacementsForChildDuring(childId, date, date).firstOrNull()
+            ?: throw BadRequest("child has no placement")
+    val daycare = tx.getDaycare(placement.unitId)!!
+    val preschoolTerm = tx.getPreschoolTerm(date)
+
+    return getExpectedAbsenceCategories(
+        date = date,
+        attendanceTimes = attendanceTimes,
+        placementType = placement.type,
+        unitLanguage = daycare.language,
+        dailyPreschoolTime = daycare.dailyPreschoolTime,
+        dailyPreparatoryTime = daycare.dailyPreparatoryTime,
+        preschoolTerm = preschoolTerm,
+    )
+}
+
+// null return value means that absences should not be deducted from reservations or attendances
+fun getExpectedAbsenceCategories(
+    date: LocalDate,
+    attendanceTimes: List<TimeRange>,
+    placementType: PlacementType,
+    unitLanguage: Language,
+    dailyPreschoolTime: TimeRange?,
+    dailyPreparatoryTime: TimeRange?,
+    preschoolTerm: PreschoolTerm?,
+): Set<AbsenceCategory>? {
+    val presences = attendanceTimes.map { it.asHelsinkiDateTimeRange(date) }
+
+    val preschoolEducationOnGoing =
+        preschoolTerm != null &&
+            preschoolTerm.byUnitLanguage(unitLanguage).includes(date) &&
+            !preschoolTerm.termBreaks.includes(date)
+
+    val preparatoryEducationOnGoing = preschoolEducationOnGoing
+
+    val preschoolTime =
+        (dailyPreschoolTime ?: TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)))
+            .asHelsinkiDateTimeRange(date)
+    val beforePreschoolTime =
+        HelsinkiDateTimeRange.of(
+            date = date,
+            startTime = LocalTime.of(0, 0),
+            endTime = preschoolTime.start.toLocalTime(),
+        )
+    val afterPreschoolTime =
+        HelsinkiDateTimeRange.of(
+            date = date,
+            startTime = preschoolTime.end.toLocalTime(),
+            endTime = LocalTime.of(23, 59),
+        )
+
+    val preparatoryTime =
+        (dailyPreparatoryTime ?: TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)))
+            .asHelsinkiDateTimeRange(date)
+    val beforePreparatoryTime =
+        HelsinkiDateTimeRange.of(
+            date = date,
+            startTime = LocalTime.of(0, 0),
+            endTime = preparatoryTime.start.toLocalTime(),
+        )
+    val afterPreparatoryTime =
+        HelsinkiDateTimeRange.of(
+            date = date,
+            startTime = preparatoryTime.end.toLocalTime(),
+            endTime = LocalTime.of(23, 59),
+        )
+
+    return when (placementType) {
+        PlacementType.PRESCHOOL -> {
+            setOfNotNull(
+                    AbsenceCategory.NONBILLABLE.takeIf {
+                        overlapTime(presences, preschoolTime) < Duration.ofMinutes(60)
+                    }
+                )
+                .takeIf { preschoolEducationOnGoing }
+        }
+
+        PlacementType.PRESCHOOL_DAYCARE,
+        PlacementType.PRESCHOOL_CLUB -> {
+            if (preschoolEducationOnGoing) {
+                setOfNotNull(
+                    AbsenceCategory.NONBILLABLE.takeIf {
+                        overlapTime(presences, preschoolTime) < Duration.ofMinutes(60)
+                    },
+                    AbsenceCategory.BILLABLE.takeIf {
+                        overlapTime(presences, beforePreschoolTime) < Duration.ofMinutes(15) &&
+                            overlapTime(presences, afterPreschoolTime) < Duration.ofMinutes(15)
+                    },
+                )
+            } else {
+                setOfNotNull(
+                    AbsenceCategory.BILLABLE.takeIf {
+                        totalTime(presences) < Duration.ofMinutes(15)
+                    }
+                )
+            }
+        }
+
+        PlacementType.PREPARATORY -> {
+            setOfNotNull(
+                    AbsenceCategory.NONBILLABLE.takeIf {
+                        overlapTime(presences, preparatoryTime) < Duration.ofMinutes(60)
+                    }
+                )
+                .takeIf { preparatoryEducationOnGoing }
+        }
+
+        PlacementType.PREPARATORY_DAYCARE -> {
+            if (preparatoryEducationOnGoing) {
+                setOfNotNull(
+                    AbsenceCategory.NONBILLABLE.takeIf {
+                        overlapTime(presences, preparatoryTime) < Duration.ofMinutes(60)
+                    },
+                    AbsenceCategory.BILLABLE.takeIf {
+                        overlapTime(presences, beforePreparatoryTime) < Duration.ofMinutes(15) &&
+                            overlapTime(presences, afterPreparatoryTime) < Duration.ofMinutes(15)
+                    },
+                )
+            } else {
+                setOfNotNull(
+                    AbsenceCategory.BILLABLE.takeIf {
+                        totalTime(presences) < Duration.ofMinutes(15)
+                    }
+                )
+            }
+        }
+
+        PlacementType.DAYCARE,
+        PlacementType.DAYCARE_PART_TIME,
+        PlacementType.PRESCHOOL_DAYCARE_ONLY,
+        PlacementType.PREPARATORY_DAYCARE_ONLY,
+        PlacementType.TEMPORARY_DAYCARE,
+        PlacementType.TEMPORARY_DAYCARE_PART_DAY -> {
+            setOfNotNull(
+                AbsenceCategory.BILLABLE.takeIf { totalTime(presences) < Duration.ofMinutes(15) }
+            )
+        }
+
+        PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> {
+            setOfNotNull(
+                AbsenceCategory.NONBILLABLE.takeIf {
+                    totalTime(presences) < Duration.ofMinutes(15)
+                },
+                AbsenceCategory.BILLABLE.takeIf {
+                    totalTime(presences) < Duration.ofMinutes(4 * 60 + 15)
+                },
+            )
+        }
+
+        PlacementType.SCHOOL_SHIFT_CARE -> {
+            setOfNotNull(
+                AbsenceCategory.NONBILLABLE.takeIf { totalTime(presences) < Duration.ofMinutes(15) }
+            )
+        }
+
+        PlacementType.CLUB -> {
+            null
+        }
+    }
+}
+
+private fun totalTime(times: List<HelsinkiDateTimeRange>): Duration =
+    times.fold(Duration.ZERO) { totalDuration, range -> totalDuration + range.getDuration() }
+
+private fun overlapTime(
+    times: List<HelsinkiDateTimeRange>,
+    schedule: HelsinkiDateTimeRange,
+): Duration = totalTime(times.mapNotNull { it.intersection(schedule) })

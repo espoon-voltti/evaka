@@ -1,0 +1,229 @@
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.document.childdocument
+
+import evaka.core.Audit
+import evaka.core.AuditId
+import evaka.core.caseprocess.updateDocumentCaseProcessHistory
+import evaka.core.children.getCitizenChildIds
+import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.ChildId
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.db.Database
+import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.NotFound
+import evaka.core.shared.security.AccessControl
+import evaka.core.shared.security.Action
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+
+@RestController
+@RequestMapping("/citizen/child-documents")
+class ChildDocumentControllerCitizen(
+    private val accessControl: AccessControl,
+    private val childDocumentService: ChildDocumentService,
+) {
+    @GetMapping
+    fun getDocuments(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestParam childId: ChildId,
+    ): List<ChildDocumentCitizenSummary> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.READ_CHILD_DOCUMENTS,
+                        childId,
+                    )
+                    tx.getChildDocumentCitizenSummaries(user, childId)
+                }
+            }
+            .also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
+    }
+
+    @GetMapping("/{documentId}")
+    fun getDocument(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+    ): ChildDocumentCitizenDetails {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.ChildDocument.READ,
+                        documentId,
+                    )
+
+                    tx.getCitizenChildDocument(documentId)
+                        ?: throw NotFound("Document $documentId not found")
+                }
+            }
+            .also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
+    }
+
+    @GetMapping("/{documentId}/pdf")
+    fun downloadChildDocument(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+    ): ResponseEntity<Any> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.ChildDocument.DOWNLOAD,
+                        documentId,
+                    )
+                    childDocumentService.getPdfResponse(tx, documentId)
+                }
+            }
+            .also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
+    }
+
+    @PutMapping("/{documentId}/read")
+    fun putDocumentRead(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+    ) {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.ChildDocument.READ,
+                        documentId,
+                    )
+
+                    tx.markChildDocumentAsRead(user, documentId, clock.now())
+                }
+            }
+            .also { Audit.ChildDocumentMarkRead.log(targetId = AuditId(documentId)) }
+    }
+
+    @GetMapping("/unread-count")
+    fun getUnreadDocumentsCount(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+    ): Map<ChildId, Int> {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_CHILD_DOCUMENTS_UNREAD_COUNT,
+                        user.id,
+                    )
+                    val children = tx.getCitizenChildIds(clock.today(), user.id)
+
+                    children.associateWith { childId ->
+                        tx.getChildDocumentCitizenSummaries(user, childId).count { it.unread }
+                    }
+                }
+            }
+            .also { Audit.ChildDocumentUnreadCount.log(targetId = AuditId(user.id)) }
+    }
+
+    @GetMapping("/unanswered")
+    fun getUnansweredChildDocuments(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+    ): List<ChildDocumentCitizenSummary> {
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val filter =
+                    accessControl.getAuthorizationFilter(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.ChildDocument.NOTIFY_UPDATE,
+                    )
+                filter?.let { tx.getUnansweredChildDocuments(user, it) } ?: emptyList()
+            }
+        }
+    }
+
+    data class UpdateChildDocumentRequest(val status: DocumentStatus, val content: DocumentContent)
+
+    @PutMapping("/{documentId}")
+    fun updateChildDocument(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable documentId: ChildDocumentId,
+        @RequestBody body: UpdateChildDocumentRequest,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.ChildDocument.UPDATE,
+                        documentId,
+                    )
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+
+                    val statusTransition =
+                        validateStatusTransition(
+                            document = document,
+                            requestedStatus = body.status,
+                            goingForward = true,
+                        )
+
+                    validateContentAgainstTemplate(body.content, document.template.content)
+
+                    tx.updateChildDocument(
+                        documentId,
+                        statusTransition,
+                        body.content,
+                        clock.now(),
+                        user.evakaUserId,
+                    )
+
+                    childDocumentService.publishAndScheduleNotifications(
+                        tx,
+                        user,
+                        documentId,
+                        clock.now(),
+                        emailPolicy = EmailNotificationPolicy.NEVER,
+                    )
+
+                    updateDocumentCaseProcessHistory(
+                        tx = tx,
+                        document = document,
+                        newStatus = statusTransition.newStatus,
+                        now = clock.now(),
+                        userId = user.evakaUserId,
+                    )
+                }
+                .also { Audit.ChildDocumentUpdate.log(targetId = AuditId(documentId)) }
+        }
+    }
+}

@@ -6,8 +6,8 @@ package evaka.codegen.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonValue
-import fi.espoo.evaka.ConstList
-import fi.espoo.evaka.ForceCodeGenType
+import evaka.core.ConstList
+import evaka.core.ForceCodeGenType
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType

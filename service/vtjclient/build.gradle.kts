@@ -38,7 +38,7 @@ val wsdl2javaTask = tasks.register<JavaExec>("wsdl2java") {
         "-d",
         generatedSources.get().toString(),
         "-p",
-        "fi.espoo.evaka.vtjclient.soap",
+        "evaka.core.vtjclient.soap",
         "-mark-generated",
         "-autoNameResolution",
         wsdl
