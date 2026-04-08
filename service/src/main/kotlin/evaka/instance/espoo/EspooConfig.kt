@@ -64,7 +64,6 @@ import org.thymeleaf.ITemplateEngine
 import tools.jackson.databind.json.JsonMapper
 
 @Configuration
-@Profile("espoo_evaka")
 @Import(EspooAsyncJobRegistration::class)
 class EspooConfig {
     @Bean fun espooEnv(env: Environment) = EspooEnv.fromEnvironment(env)

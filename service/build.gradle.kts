@@ -248,13 +248,13 @@ tasks {
     }
 
     bootRun {
-        mainClass.set("evaka.core.MainKt")
+        mainClass.set("evaka.MainKt")
         // If you want to develop against VTJ, add vtj-dev here
         systemProperty("spring.profiles.active", "local")
     }
 
     register("bootRunTest", org.springframework.boot.gradle.tasks.run.BootRun::class) {
-        mainClass.set("evaka.core.MainKt")
+        mainClass.set("evaka.MainKt")
         classpath = sourceSets["main"].runtimeClasspath
         systemProperty("spring.profiles.active", "local")
         systemProperty("evaka.database.url", "jdbc:postgresql://localhost:5432/evaka_it")

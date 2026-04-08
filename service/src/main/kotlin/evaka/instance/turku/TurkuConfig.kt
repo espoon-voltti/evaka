@@ -61,7 +61,6 @@ import org.thymeleaf.ITemplateEngine
 import software.amazon.awssdk.services.s3.S3Client
 
 @Configuration
-@Profile("turku_evaka")
 @Import(TurkuAsyncJobRegistration::class)
 class TurkuConfig {
     @Bean fun turkuEnv(env: Environment): TurkuEnv = TurkuEnv.fromEnvironment(env)
