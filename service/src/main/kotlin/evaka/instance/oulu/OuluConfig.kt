@@ -66,7 +66,6 @@ import org.thymeleaf.ITemplateEngine
 import software.amazon.awssdk.services.s3.S3Client
 
 @Configuration
-@Profile("oulu_evaka")
 @Import(OuluAsyncJobRegistration::class)
 class OuluConfig {
     @Bean fun ouluEnv(env: Environment): OuluEnv = OuluEnv.fromEnvironment(env)

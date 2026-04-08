@@ -17,7 +17,9 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Import
 
+@Import(MockBiConfiguration::class, MockBiEndpoint::class)
 class EspooBiJobTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2023, 1, 1, 1, 0)))
 
