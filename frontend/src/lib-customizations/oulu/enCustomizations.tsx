@@ -1,12 +1,6 @@
-{
-  /*
-SPDX-FileCopyrightText: 2021 City of Oulu
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
-
-import React from 'react'
+// SPDX-FileCopyrightText: 2021 City of Oulu
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
