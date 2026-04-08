@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 
 internal class ProEInvoiceGeneratorTest {
     val financeDateProvider = FinanceDateProvider(MockEvakaClock(2022, 5, 5, 12, 34, 56))
-    val proEInvoiceGenerator = ProEInvoiceGenerator(InvoiceChecker(), financeDateProvider)
+    val proEInvoiceGenerator = ProEInvoiceGenerator(financeDateProvider)
 
     @Test
     fun `should return successfully created invoices in success list`() {

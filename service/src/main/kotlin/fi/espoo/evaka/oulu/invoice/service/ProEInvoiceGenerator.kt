@@ -23,10 +23,7 @@ data class InvoiceData(
 )
 
 @Component
-class ProEInvoiceGenerator(
-    private val invoiceChecker: InvoiceChecker,
-    val financeDateProvider: FinanceDateProvider,
-) : StringInvoiceGenerator {
+class ProEInvoiceGenerator(val financeDateProvider: FinanceDateProvider) : StringInvoiceGenerator {
     fun generateInvoiceTitle(): String {
         val previousMonth = financeDateProvider.previousMonth()
         return "Varhaiskasvatus $previousMonth"
@@ -257,7 +254,9 @@ class ProEInvoiceGenerator(
         val manuallySentList = mutableListOf<InvoiceDetailed>()
 
         val (manuallySent, succeeded) =
-            invoices.partition { invoice -> invoiceChecker.shouldSendManually(invoice) }
+            invoices.partition { invoice ->
+                invoice.headOfFamily.restrictedDetailsEnabled || invoice.headOfFamily.ssn == null
+            }
         manuallySentList.addAll(manuallySent)
 
         succeeded.forEach {
