@@ -5,7 +5,6 @@
 package fi.espoo.evaka.espoo
 
 import fi.espoo.evaka.ChildDocumentArchivalEnv
-import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ScheduledJobsEnv
 import fi.espoo.evaka.Sensitive
@@ -42,9 +41,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.PasswordConstraints
 import fi.espoo.evaka.shared.auth.PasswordSpecification
 import fi.espoo.evaka.shared.config.PDFConfig
-import fi.espoo.evaka.shared.config.SwappableDataSource
 import fi.espoo.evaka.shared.db.DevDataInitializer
-import fi.espoo.evaka.shared.dev.TemplateDbManager
 import fi.espoo.evaka.shared.message.EvakaMessageProvider
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
@@ -53,7 +50,6 @@ import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.evaka.titania.TitaniaEmployeeIdConverter
 import io.opentelemetry.api.trace.Tracer
 import java.net.URI
-import javax.sql.DataSource
 import org.jdbi.v3.core.Jdbi
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory
@@ -140,23 +136,6 @@ class EspooConfig {
             "espoo.job",
             env,
         )
-
-    @Bean
-    @Profile("enable_dev_api")
-    fun templateDbManager(dataSource: DataSource, jdbi: Jdbi, env: DatabaseEnv): TemplateDbManager =
-        if (dataSource !is SwappableDataSource) {
-            throw IllegalStateException(
-                "DataSource must be a SwappableDataSource to use TemplateDbManager"
-            )
-        } else {
-            TemplateDbManager(
-                dataSource,
-                jdbi,
-                env.flywayUsername,
-                env.flywayPassword.value,
-                env.url,
-            )
-        }
 
     @Bean
     @Profile("local")

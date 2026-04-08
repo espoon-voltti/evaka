@@ -4,9 +4,6 @@
 
 package fi.espoo.evaka.oulu.payment.service
 
-import org.springframework.stereotype.Component
-
-@Component
 class BicMapper {
     fun mapIban(iban: String): String {
         val normalizedIban = iban.filterNot { it.isWhitespace() }

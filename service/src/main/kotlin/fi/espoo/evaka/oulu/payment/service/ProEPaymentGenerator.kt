@@ -11,14 +11,8 @@ import fi.espoo.evaka.oulu.util.FieldType
 import fi.espoo.evaka.oulu.util.FinanceDateProvider
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import org.springframework.stereotype.Component
 
-@Component
-class ProEPaymentGenerator(
-    private val paymentChecker: PaymentChecker,
-    val financeDateProvider: FinanceDateProvider,
-    val bicMapper: BicMapper,
-) {
+class ProEPaymentGenerator(val financeDateProvider: FinanceDateProvider, val bicMapper: BicMapper) {
     data class Result(
         val sendResult: PaymentIntegrationClient.SendResult = PaymentIntegrationClient.SendResult(),
         val paymentString: String = "",
@@ -199,7 +193,11 @@ class ProEPaymentGenerator(
         val failedList = mutableListOf<Payment>()
 
         val (failed, succeeded) =
-            payments.partition { payment -> paymentChecker.shouldFail(payment) }
+            payments.partition { payment ->
+                payment.unit.iban == null ||
+                    payment.unit.businessId == null ||
+                    payment.unit.providerId == null
+            }
         failedList.addAll(failed)
 
         val paymentString = StringBuilder("")
