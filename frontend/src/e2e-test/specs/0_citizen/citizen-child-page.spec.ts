@@ -69,7 +69,9 @@ test.describe('Citizen children page', () => {
       )
     })
 
-    await enduserLogin(evaka, testAdult, '/')
+    await enduserLogin(evaka, testAdult, '/calendar')
+    await new CitizenCalendarPage(evaka, 'desktop').waitUntilLoaded()
+
     const header = new CitizenHeader(evaka)
     const childPage = new CitizenChildPage(evaka)
 
