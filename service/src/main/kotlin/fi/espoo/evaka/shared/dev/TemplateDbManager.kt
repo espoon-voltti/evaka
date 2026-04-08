@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.dev
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.shared.config.SwappableDataSource
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.configureJdbi
@@ -14,20 +15,23 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
+import javax.sql.DataSource
 import org.jdbi.v3.core.Jdbi
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Component
 
 private val logger = KotlinLogging.logger {}
 
-class TemplateDbManager(
-    private val swappableDataSource: SwappableDataSource,
-    private val jdbi: Jdbi,
-    private val flywayUsername: String,
-    private val flywayPassword: String,
-    private val jdbcUrl: String,
-) {
+@Component
+@Profile("enable_dev_api")
+class TemplateDbManager(dataSource: DataSource, private val env: DatabaseEnv) {
+    private val swappableDataSource =
+        dataSource as? SwappableDataSource
+            ?: throw IllegalArgumentException("DataSource must be a SwappableDataSource")
+
     private val counter = AtomicInteger(0)
-    private val baseJdbcUrl = jdbcUrl.substringBeforeLast('/')
-    private val baseDbName = jdbcUrl.substringAfterLast('/')
+    private val baseJdbcUrl = env.url.substringBeforeLast('/')
+    private val baseDbName = env.url.substringAfterLast('/')
     private val templateDbName = "${baseDbName}_template"
 
     private val mgmtJdbi =
@@ -36,8 +40,8 @@ class TemplateDbManager(
                 HikariDataSource(
                     HikariConfig().apply {
                         jdbcUrl = "$baseJdbcUrl/postgres"
-                        username = flywayUsername
-                        password = flywayPassword
+                        username = env.flywayUsername
+                        password = env.flywayPassword.value
                         maximumPoolSize = 2
                         poolName = "evaka-template-db-manager"
                     }
@@ -71,7 +75,7 @@ class TemplateDbManager(
     }
 
     fun resetToOriginal() {
-        val oldPool = swappableDataSource.swap(jdbcUrl)
+        val oldPool = swappableDataSource.swap(env.url)
         val oldDbName = currentDbName.getAndSet(baseDbName)
         CompletableFuture.runAsync { dropOldDb(oldPool, oldDbName) }
     }
@@ -114,26 +118,24 @@ WHERE
                 sql("CREATE DATABASE \"$templateDbName\" TEMPLATE \"$baseDbName\"")
             }
             // Reopen the connection pool (swap with same URL creates a fresh pool)
-            swappableDataSource.swap(jdbcUrl)
+            swappableDataSource.swap(env.url)
 
             // Reset the template database to a clean state
             val templatePool =
                 HikariDataSource(
                     HikariConfig().apply {
                         jdbcUrl = "$baseJdbcUrl/$templateDbName"
-                        username = flywayUsername
-                        password = flywayPassword
+                        username = env.flywayUsername
+                        password = env.flywayPassword.value
                         maximumPoolSize = 1
                         poolName = "evaka-template-reset"
                     }
                 )
-            try {
-                val templateJdbi = configureJdbi(Jdbi.create(templatePool))
+            templatePool.use {
+                val templateJdbi = configureJdbi(Jdbi.create(it))
                 Database(templateJdbi, noopTracer()).connect { templateDbc ->
                     templateDbc.transaction { tx -> tx.resetDatabase() }
                 }
-            } finally {
-                templatePool.close()
             }
 
             logger.info { "Template database '$templateDbName' created successfully" }
