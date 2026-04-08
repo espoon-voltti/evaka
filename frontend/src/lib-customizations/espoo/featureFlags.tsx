@@ -133,7 +133,8 @@ const features: Features = {
     missingQuestionnaireAnswerMarkerEnabled: false,
     absenceApplications: true,
     showMetadataToCitizen: true,
-    placementDesktop: true
+    placementDesktop: true,
+    employeeLanguageSelection: true
   }
 }
 
