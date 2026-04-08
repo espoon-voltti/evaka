@@ -18,7 +18,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareController.createBackupCare
+* Generated from evaka.core.backupcare.BackupCareController.createBackupCare
 */
 export async function createBackupCare(
   request: {
@@ -36,7 +36,7 @@ export async function createBackupCare(
 
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareController.deleteBackupCare
+* Generated from evaka.core.backupcare.BackupCareController.deleteBackupCare
 */
 export async function deleteBackupCare(
   request: {
@@ -52,7 +52,7 @@ export async function deleteBackupCare(
 
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareController.getChildBackupCares
+* Generated from evaka.core.backupcare.BackupCareController.getChildBackupCares
 */
 export async function getChildBackupCares(
   request: {
@@ -68,7 +68,7 @@ export async function getChildBackupCares(
 
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareController.updateBackupCare
+* Generated from evaka.core.backupcare.BackupCareController.updateBackupCare
 */
 export async function updateBackupCare(
   request: {

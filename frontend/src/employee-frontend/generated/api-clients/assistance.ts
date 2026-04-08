@@ -28,7 +28,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.createAssistanceAction
+* Generated from evaka.core.assistance.AssistanceController.createAssistanceAction
 */
 export async function createAssistanceAction(
   request: {
@@ -46,7 +46,7 @@ export async function createAssistanceAction(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.createAssistanceFactor
+* Generated from evaka.core.assistance.AssistanceController.createAssistanceFactor
 */
 export async function createAssistanceFactor(
   request: {
@@ -64,7 +64,7 @@ export async function createAssistanceFactor(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.createDaycareAssistance
+* Generated from evaka.core.assistance.AssistanceController.createDaycareAssistance
 */
 export async function createDaycareAssistance(
   request: {
@@ -82,7 +82,7 @@ export async function createDaycareAssistance(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.createOtherAssistanceMeasure
+* Generated from evaka.core.assistance.AssistanceController.createOtherAssistanceMeasure
 */
 export async function createOtherAssistanceMeasure(
   request: {
@@ -100,7 +100,7 @@ export async function createOtherAssistanceMeasure(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.createPreschoolAssistance
+* Generated from evaka.core.assistance.AssistanceController.createPreschoolAssistance
 */
 export async function createPreschoolAssistance(
   request: {
@@ -118,7 +118,7 @@ export async function createPreschoolAssistance(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.deleteAssistanceAction
+* Generated from evaka.core.assistance.AssistanceController.deleteAssistanceAction
 */
 export async function deleteAssistanceAction(
   request: {
@@ -134,7 +134,7 @@ export async function deleteAssistanceAction(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.deleteAssistanceFactor
+* Generated from evaka.core.assistance.AssistanceController.deleteAssistanceFactor
 */
 export async function deleteAssistanceFactor(
   request: {
@@ -150,7 +150,7 @@ export async function deleteAssistanceFactor(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.deleteDaycareAssistance
+* Generated from evaka.core.assistance.AssistanceController.deleteDaycareAssistance
 */
 export async function deleteDaycareAssistance(
   request: {
@@ -166,7 +166,7 @@ export async function deleteDaycareAssistance(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.deleteOtherAssistanceMeasure
+* Generated from evaka.core.assistance.AssistanceController.deleteOtherAssistanceMeasure
 */
 export async function deleteOtherAssistanceMeasure(
   request: {
@@ -182,7 +182,7 @@ export async function deleteOtherAssistanceMeasure(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.deletePreschoolAssistance
+* Generated from evaka.core.assistance.AssistanceController.deletePreschoolAssistance
 */
 export async function deletePreschoolAssistance(
   request: {
@@ -198,7 +198,7 @@ export async function deletePreschoolAssistance(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.getAssistanceActionOptions
+* Generated from evaka.core.assistance.AssistanceController.getAssistanceActionOptions
 */
 export async function getAssistanceActionOptions(): Promise<AssistanceActionOption[]> {
   const { data: json } = await client.request<JsonOf<AssistanceActionOption[]>>({
@@ -210,7 +210,7 @@ export async function getAssistanceActionOptions(): Promise<AssistanceActionOpti
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.getChildAssistance
+* Generated from evaka.core.assistance.AssistanceController.getChildAssistance
 */
 export async function getChildAssistance(
   request: {
@@ -226,7 +226,7 @@ export async function getChildAssistance(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.updateAssistanceAction
+* Generated from evaka.core.assistance.AssistanceController.updateAssistanceAction
 */
 export async function updateAssistanceAction(
   request: {
@@ -244,7 +244,7 @@ export async function updateAssistanceAction(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.updateAssistanceFactor
+* Generated from evaka.core.assistance.AssistanceController.updateAssistanceFactor
 */
 export async function updateAssistanceFactor(
   request: {
@@ -262,7 +262,7 @@ export async function updateAssistanceFactor(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.updateDaycareAssistance
+* Generated from evaka.core.assistance.AssistanceController.updateDaycareAssistance
 */
 export async function updateDaycareAssistance(
   request: {
@@ -280,7 +280,7 @@ export async function updateDaycareAssistance(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.updateOtherAssistanceMeasure
+* Generated from evaka.core.assistance.AssistanceController.updateOtherAssistanceMeasure
 */
 export async function updateOtherAssistanceMeasure(
   request: {
@@ -298,7 +298,7 @@ export async function updateOtherAssistanceMeasure(
 
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.updatePreschoolAssistance
+* Generated from evaka.core.assistance.AssistanceController.updatePreschoolAssistance
 */
 export async function updatePreschoolAssistance(
   request: {

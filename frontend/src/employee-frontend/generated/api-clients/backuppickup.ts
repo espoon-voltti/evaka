@@ -16,7 +16,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.backuppickup.BackupPickupController.createBackupPickup
+* Generated from evaka.core.backuppickup.BackupPickupController.createBackupPickup
 */
 export async function createBackupPickup(
   request: {
@@ -34,7 +34,7 @@ export async function createBackupPickup(
 
 
 /**
-* Generated from fi.espoo.evaka.backuppickup.BackupPickupController.deleteBackupPickup
+* Generated from evaka.core.backuppickup.BackupPickupController.deleteBackupPickup
 */
 export async function deleteBackupPickup(
   request: {
@@ -50,7 +50,7 @@ export async function deleteBackupPickup(
 
 
 /**
-* Generated from fi.espoo.evaka.backuppickup.BackupPickupController.getBackupPickups
+* Generated from evaka.core.backuppickup.BackupPickupController.getBackupPickups
 */
 export async function getBackupPickups(
   request: {
@@ -66,7 +66,7 @@ export async function getBackupPickups(
 
 
 /**
-* Generated from fi.espoo.evaka.backuppickup.BackupPickupController.updateBackupPickup
+* Generated from evaka.core.backuppickup.BackupPickupController.updateBackupPickup
 */
 export async function updateBackupPickup(
   request: {

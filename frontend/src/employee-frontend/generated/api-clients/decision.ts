@@ -17,7 +17,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionController.downloadDecisionPdf
+* Generated from evaka.core.decision.DecisionController.downloadDecisionPdf
 */
 export function downloadDecisionPdf(
   request: {
@@ -31,7 +31,7 @@ export function downloadDecisionPdf(
 
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionController.getDecisionUnits
+* Generated from evaka.core.decision.DecisionController.getDecisionUnits
 */
 export async function getDecisionUnits(): Promise<DecisionUnit[]> {
   const { data: json } = await client.request<JsonOf<DecisionUnit[]>>({
@@ -43,7 +43,7 @@ export async function getDecisionUnits(): Promise<DecisionUnit[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionController.getDecisionsByGuardian
+* Generated from evaka.core.decision.DecisionController.getDecisionsByGuardian
 */
 export async function getDecisionsByGuardian(
   request: {
@@ -63,7 +63,7 @@ export async function getDecisionsByGuardian(
 
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionController.planArchiveDecision
+* Generated from evaka.core.decision.DecisionController.planArchiveDecision
 */
 export async function planArchiveDecision(
   request: {

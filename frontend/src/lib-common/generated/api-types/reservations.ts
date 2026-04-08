@@ -30,7 +30,7 @@ import { deserializeJsonHolidayPeriodEffect } from './holidayperiod'
 import { deserializeJsonOngoingAttendanceWithUnit } from './attendance'
 
 /**
-* Generated from fi.espoo.evaka.reservations.AbsenceInfo
+* Generated from evaka.core.reservations.AbsenceInfo
 */
 export interface AbsenceInfo {
   editable: boolean
@@ -38,7 +38,7 @@ export interface AbsenceInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.AbsenceRequest
+* Generated from evaka.core.reservations.AbsenceRequest
 */
 export interface AbsenceRequest {
   absenceType: AbsenceType
@@ -47,7 +47,7 @@ export interface AbsenceRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.AbsenceTypeResponse
+* Generated from evaka.core.reservations.AbsenceTypeResponse
 */
 export interface AbsenceTypeResponse {
   absenceType: AbsenceType
@@ -55,7 +55,7 @@ export interface AbsenceTypeResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceTimesForDate
+* Generated from evaka.core.reservations.AttendanceTimesForDate
 */
 export interface AttendanceTimesForDate {
   date: LocalDate
@@ -65,14 +65,14 @@ export interface AttendanceTimesForDate {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.BackupPlacementType
+* Generated from evaka.core.reservations.AttendanceReservationController.BackupPlacementType
 */
 export type BackupPlacementType =
   | 'OUT_ON_BACKUP_PLACEMENT'
   | 'IN_BACKUP_PLACEMENT'
 
 /**
-* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.Child
+* Generated from evaka.core.reservations.UnitAttendanceReservations.Child
 */
 export interface Child {
   dateOfBirth: LocalDate
@@ -84,7 +84,7 @@ export interface Child {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.ChildDatePresence
+* Generated from evaka.core.reservations.ChildDatePresence
 */
 export interface ChildDatePresence {
   absenceBillable: AbsenceType | null
@@ -97,7 +97,7 @@ export interface ChildDatePresence {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ChildRecordOfDay
+* Generated from evaka.core.reservations.UnitAttendanceReservations.ChildRecordOfDay
 */
 export interface ChildRecordOfDay {
   absenceBillable: AbsenceTypeResponse | null
@@ -116,7 +116,7 @@ export interface ChildRecordOfDay {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.ChildReservationInfo
+* Generated from evaka.core.reservations.AttendanceReservationController.ChildReservationInfo
 */
 export interface ChildReservationInfo {
   absent: boolean
@@ -130,7 +130,7 @@ export interface ChildReservationInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.ConfirmedRangeDate
+* Generated from evaka.core.reservations.ConfirmedRangeDate
 */
 export interface ConfirmedRangeDate {
   absenceType: AbsenceType | null
@@ -141,7 +141,7 @@ export interface ConfirmedRangeDate {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.ConfirmedRangeDateUpdate
+* Generated from evaka.core.reservations.ConfirmedRangeDateUpdate
 */
 export interface ConfirmedRangeDateUpdate {
   absenceType: AbsenceType | null
@@ -150,7 +150,7 @@ export interface ConfirmedRangeDateUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.DailyChildReservationResult
+* Generated from evaka.core.reservations.AttendanceReservationController.DailyChildReservationResult
 */
 export interface DailyChildReservationResult {
   childReservations: ChildReservationInfo[]
@@ -160,7 +160,7 @@ export interface DailyChildReservationResult {
 
 export namespace DailyReservationRequest {
   /**
-  * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Absent
+  * Generated from evaka.core.reservations.DailyReservationRequest.Absent
   */
   export interface Absent {
     type: 'ABSENT'
@@ -169,7 +169,7 @@ export namespace DailyReservationRequest {
   }
 
   /**
-  * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Nothing
+  * Generated from evaka.core.reservations.DailyReservationRequest.Nothing
   */
   export interface Nothing {
     type: 'NOTHING'
@@ -178,7 +178,7 @@ export namespace DailyReservationRequest {
   }
 
   /**
-  * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Present
+  * Generated from evaka.core.reservations.DailyReservationRequest.Present
   */
   export interface Present {
     type: 'PRESENT'
@@ -187,7 +187,7 @@ export namespace DailyReservationRequest {
   }
 
   /**
-  * Generated from fi.espoo.evaka.reservations.DailyReservationRequest.Reservations
+  * Generated from evaka.core.reservations.DailyReservationRequest.Reservations
   */
   export interface Reservations {
     type: 'RESERVATIONS'
@@ -199,13 +199,13 @@ export namespace DailyReservationRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.DailyReservationRequest
+* Generated from evaka.core.reservations.DailyReservationRequest
 */
 export type DailyReservationRequest = DailyReservationRequest.Absent | DailyReservationRequest.Nothing | DailyReservationRequest.Present | DailyReservationRequest.Reservations
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.DayReservationStatisticsResult
+* Generated from evaka.core.reservations.AttendanceReservationController.DayReservationStatisticsResult
 */
 export interface DayReservationStatisticsResult {
   date: LocalDate
@@ -213,7 +213,7 @@ export interface DayReservationStatisticsResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.ExpectedAbsencesRequest
+* Generated from evaka.core.reservations.AttendanceReservationController.ExpectedAbsencesRequest
 */
 export interface ExpectedAbsencesRequest {
   attendances: TimeRange[]
@@ -222,14 +222,14 @@ export interface ExpectedAbsencesRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.ExpectedAbsencesResponse
+* Generated from evaka.core.reservations.AttendanceReservationController.ExpectedAbsencesResponse
 */
 export interface ExpectedAbsencesResponse {
   categories: AbsenceCategory[] | null
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.GroupReservationStatisticResult
+* Generated from evaka.core.reservations.AttendanceReservationController.GroupReservationStatisticResult
 */
 export interface GroupReservationStatisticResult {
   absentCount: number
@@ -239,7 +239,7 @@ export interface GroupReservationStatisticResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.MonthSummary
+* Generated from evaka.core.reservations.MonthSummary
 */
 export interface MonthSummary {
   month: number
@@ -250,14 +250,14 @@ export interface MonthSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.OngoingAttendanceResponse
+* Generated from evaka.core.reservations.AttendanceReservationController.OngoingAttendanceResponse
 */
 export interface OngoingAttendanceResponse {
   ongoingAttendance: OngoingAttendanceWithUnit | null
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationControllerCitizen.OperationalDatesRequest
+* Generated from evaka.core.reservations.ReservationControllerCitizen.OperationalDatesRequest
 */
 export interface OperationalDatesRequest {
   childIds: PersonId[]
@@ -265,7 +265,7 @@ export interface OperationalDatesRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.OperationalDay
+* Generated from evaka.core.reservations.UnitAttendanceReservations.OperationalDay
 */
 export interface OperationalDay {
   children: ChildRecordOfDay[]
@@ -276,7 +276,7 @@ export interface OperationalDay {
 
 export namespace ReservableTimeRange {
   /**
-  * Generated from fi.espoo.evaka.reservations.ReservableTimeRange.IntermittentShiftCare
+  * Generated from evaka.core.reservations.ReservableTimeRange.IntermittentShiftCare
   */
   export interface IntermittentShiftCare {
     type: 'INTERMITTENT_SHIFT_CARE'
@@ -284,7 +284,7 @@ export namespace ReservableTimeRange {
   }
 
   /**
-  * Generated from fi.espoo.evaka.reservations.ReservableTimeRange.Normal
+  * Generated from evaka.core.reservations.ReservableTimeRange.Normal
   */
   export interface Normal {
     type: 'NORMAL'
@@ -292,7 +292,7 @@ export namespace ReservableTimeRange {
   }
 
   /**
-  * Generated from fi.espoo.evaka.reservations.ReservableTimeRange.ShiftCare
+  * Generated from evaka.core.reservations.ReservableTimeRange.ShiftCare
   */
   export interface ShiftCare {
     type: 'SHIFT_CARE'
@@ -301,7 +301,7 @@ export namespace ReservableTimeRange {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservableTimeRange
+* Generated from evaka.core.reservations.ReservableTimeRange
 */
 export type ReservableTimeRange = ReservableTimeRange.IntermittentShiftCare | ReservableTimeRange.Normal | ReservableTimeRange.ShiftCare
 
@@ -309,14 +309,14 @@ export type ReservableTimeRange = ReservableTimeRange.IntermittentShiftCare | Re
 
 export namespace Reservation {
   /**
-  * Generated from fi.espoo.evaka.reservations.Reservation.NoTimes
+  * Generated from evaka.core.reservations.Reservation.NoTimes
   */
   export interface NoTimes {
     type: 'NO_TIMES'
   }
 
   /**
-  * Generated from fi.espoo.evaka.reservations.Reservation.Times
+  * Generated from evaka.core.reservations.Reservation.Times
   */
   export interface Times {
     type: 'TIMES'
@@ -325,13 +325,13 @@ export namespace Reservation {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.Reservation
+* Generated from evaka.core.reservations.Reservation
 */
 export type Reservation = Reservation.NoTimes | Reservation.Times
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationChild
+* Generated from evaka.core.reservations.ReservationChild
 */
 export interface ReservationChild {
   duplicateOf: PersonId | null
@@ -347,7 +347,7 @@ export interface ReservationChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.ReservationChildInfo
+* Generated from evaka.core.reservations.AttendanceReservationController.ReservationChildInfo
 */
 export interface ReservationChildInfo {
   dateOfBirth: LocalDate
@@ -358,7 +358,7 @@ export interface ReservationChildInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.ReservationGroup
+* Generated from evaka.core.reservations.UnitAttendanceReservations.ReservationGroup
 */
 export interface ReservationGroup {
   id: GroupId
@@ -368,7 +368,7 @@ export interface ReservationGroup {
 
 export namespace ReservationResponse {
   /**
-  * Generated from fi.espoo.evaka.reservations.ReservationResponse.NoTimes
+  * Generated from evaka.core.reservations.ReservationResponse.NoTimes
   */
   export interface NoTimes {
     type: 'NO_TIMES'
@@ -378,7 +378,7 @@ export namespace ReservationResponse {
   }
 
   /**
-  * Generated from fi.espoo.evaka.reservations.ReservationResponse.Times
+  * Generated from evaka.core.reservations.ReservationResponse.Times
   */
   export interface Times {
     type: 'TIMES'
@@ -390,13 +390,13 @@ export namespace ReservationResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationResponse
+* Generated from evaka.core.reservations.ReservationResponse
 */
 export type ReservationResponse = ReservationResponse.NoTimes | ReservationResponse.Times
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationResponseDay
+* Generated from evaka.core.reservations.ReservationResponseDay
 */
 export interface ReservationResponseDay {
   children: ReservationResponseDayChild[]
@@ -405,7 +405,7 @@ export interface ReservationResponseDay {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationResponseDayChild
+* Generated from evaka.core.reservations.ReservationResponseDayChild
 */
 export interface ReservationResponseDayChild {
   absence: AbsenceInfo | null
@@ -420,7 +420,7 @@ export interface ReservationResponseDayChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationsResponse
+* Generated from evaka.core.reservations.ReservationsResponse
 */
 export interface ReservationsResponse {
   children: ReservationChild[]
@@ -429,7 +429,7 @@ export interface ReservationsResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations
+* Generated from evaka.core.reservations.UnitAttendanceReservations
 */
 export interface UnitAttendanceReservations {
   children: Child[]
@@ -439,7 +439,7 @@ export interface UnitAttendanceReservations {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.UnitAttendanceReservations.UnitDateInfo
+* Generated from evaka.core.reservations.UnitAttendanceReservations.UnitDateInfo
 */
 export interface UnitDateInfo {
   isHoliday: boolean
@@ -450,7 +450,7 @@ export interface UnitDateInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.reservations.UsedServiceResult
+* Generated from evaka.core.reservations.UsedServiceResult
 */
 export interface UsedServiceResult {
   reservedMinutes: number

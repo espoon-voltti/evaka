@@ -16,7 +16,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentController.createPedagogicalDocument
+* Generated from evaka.core.pedagogicaldocument.PedagogicalDocumentController.createPedagogicalDocument
 */
 export async function createPedagogicalDocument(
   request: {
@@ -33,7 +33,7 @@ export async function createPedagogicalDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentController.deletePedagogicalDocument
+* Generated from evaka.core.pedagogicaldocument.PedagogicalDocumentController.deletePedagogicalDocument
 */
 export async function deletePedagogicalDocument(
   request: {
@@ -49,7 +49,7 @@ export async function deletePedagogicalDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentController.getChildPedagogicalDocuments
+* Generated from evaka.core.pedagogicaldocument.PedagogicalDocumentController.getChildPedagogicalDocuments
 */
 export async function getChildPedagogicalDocuments(
   request: {
@@ -65,7 +65,7 @@ export async function getChildPedagogicalDocuments(
 
 
 /**
-* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentController.updatePedagogicalDocument
+* Generated from evaka.core.pedagogicaldocument.PedagogicalDocumentController.updatePedagogicalDocument
 */
 export async function updatePedagogicalDocument(
   request: {

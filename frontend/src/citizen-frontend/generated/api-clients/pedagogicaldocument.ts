@@ -14,7 +14,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentControllerCitizen.getPedagogicalDocumentsForChild
+* Generated from evaka.core.pedagogicaldocument.PedagogicalDocumentControllerCitizen.getPedagogicalDocumentsForChild
 */
 export async function getPedagogicalDocumentsForChild(
   request: {
@@ -30,7 +30,7 @@ export async function getPedagogicalDocumentsForChild(
 
 
 /**
-* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentControllerCitizen.getUnreadPedagogicalDocumentCount
+* Generated from evaka.core.pedagogicaldocument.PedagogicalDocumentControllerCitizen.getUnreadPedagogicalDocumentCount
 */
 export async function getUnreadPedagogicalDocumentCount(): Promise<Partial<Record<PersonId, number>>> {
   const { data: json } = await client.request<JsonOf<Partial<Record<PersonId, number>>>>({
@@ -42,7 +42,7 @@ export async function getUnreadPedagogicalDocumentCount(): Promise<Partial<Recor
 
 
 /**
-* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentControllerCitizen.markPedagogicalDocumentRead
+* Generated from evaka.core.pedagogicaldocument.PedagogicalDocumentControllerCitizen.markPedagogicalDocumentRead
 */
 export async function markPedagogicalDocumentRead(
   request: {

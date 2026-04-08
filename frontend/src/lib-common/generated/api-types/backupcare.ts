@@ -16,7 +16,7 @@ import type { ServiceNeed } from './serviceneed'
 import { deserializeJsonServiceNeed } from './serviceneed'
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareChild
+* Generated from evaka.core.backupcare.BackupCareChild
 */
 export interface BackupCareChild {
   birthDate: LocalDate
@@ -26,14 +26,14 @@ export interface BackupCareChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareCreateResponse
+* Generated from evaka.core.backupcare.BackupCareCreateResponse
 */
 export interface BackupCareCreateResponse {
   id: BackupCareId
 }
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareGroup
+* Generated from evaka.core.backupcare.BackupCareGroup
 */
 export interface BackupCareGroup {
   id: GroupId
@@ -41,7 +41,7 @@ export interface BackupCareGroup {
 }
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareUnit
+* Generated from evaka.core.backupcare.BackupCareUnit
 */
 export interface BackupCareUnit {
   id: DaycareId
@@ -49,7 +49,7 @@ export interface BackupCareUnit {
 }
 
 /**
-* Generated from fi.espoo.evaka.backupcare.BackupCareUpdateRequest
+* Generated from evaka.core.backupcare.BackupCareUpdateRequest
 */
 export interface BackupCareUpdateRequest {
   groupId: GroupId | null
@@ -57,7 +57,7 @@ export interface BackupCareUpdateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.backupcare.ChildBackupCare
+* Generated from evaka.core.backupcare.ChildBackupCare
 */
 export interface ChildBackupCare {
   group: BackupCareGroup | null
@@ -67,7 +67,7 @@ export interface ChildBackupCare {
 }
 
 /**
-* Generated from fi.espoo.evaka.backupcare.ChildBackupCareResponse
+* Generated from evaka.core.backupcare.ChildBackupCareResponse
 */
 export interface ChildBackupCareResponse {
   backupCare: ChildBackupCare
@@ -75,14 +75,14 @@ export interface ChildBackupCareResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.backupcare.ChildBackupCaresResponse
+* Generated from evaka.core.backupcare.ChildBackupCaresResponse
 */
 export interface ChildBackupCaresResponse {
   backupCares: ChildBackupCareResponse[]
 }
 
 /**
-* Generated from fi.espoo.evaka.backupcare.NewBackupCare
+* Generated from evaka.core.backupcare.NewBackupCare
 */
 export interface NewBackupCare {
   groupId: GroupId | null
@@ -91,7 +91,7 @@ export interface NewBackupCare {
 }
 
 /**
-* Generated from fi.espoo.evaka.backupcare.UnitBackupCare
+* Generated from evaka.core.backupcare.UnitBackupCare
 */
 export interface UnitBackupCare {
   child: BackupCareChild

@@ -15,7 +15,7 @@ import type { ProviderType } from './daycare'
 import type { SortDirection } from './invoicing'
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.Accountant
+* Generated from evaka.core.incomestatement.Accountant
 */
 export interface Accountant {
   address: string
@@ -25,7 +25,7 @@ export interface Accountant {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.ChildBasicInfo
+* Generated from evaka.core.incomestatement.ChildBasicInfo
 */
 export interface ChildBasicInfo {
   firstName: string
@@ -34,7 +34,7 @@ export interface ChildBasicInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.Entrepreneur
+* Generated from evaka.core.incomestatement.Entrepreneur
 */
 export interface Entrepreneur {
   accountant: Accountant | null
@@ -51,7 +51,7 @@ export interface Entrepreneur {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.EstimatedIncome
+* Generated from evaka.core.incomestatement.EstimatedIncome
 */
 export interface EstimatedIncome {
   estimatedMonthlyIncome: number
@@ -62,7 +62,7 @@ export interface EstimatedIncome {
 
 export namespace Gross {
   /**
-  * Generated from fi.espoo.evaka.incomestatement.Gross.Income
+  * Generated from evaka.core.incomestatement.Gross.Income
   */
   export interface Income {
     type: 'INCOME'
@@ -73,7 +73,7 @@ export namespace Gross {
   }
 
   /**
-  * Generated from fi.espoo.evaka.incomestatement.Gross.NoIncome
+  * Generated from evaka.core.incomestatement.Gross.NoIncome
   */
   export interface NoIncome {
     type: 'NO_INCOME'
@@ -82,13 +82,13 @@ export namespace Gross {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.Gross
+* Generated from evaka.core.incomestatement.Gross
 */
 export type Gross = Gross.Income | Gross.NoIncome
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeSource
+* Generated from evaka.core.incomestatement.IncomeSource
 */
 export type IncomeSource =
   | 'INCOMES_REGISTER'
@@ -97,7 +97,7 @@ export type IncomeSource =
 
 export namespace IncomeStatement {
   /**
-  * Generated from fi.espoo.evaka.incomestatement.IncomeStatement.ChildIncome
+  * Generated from evaka.core.incomestatement.IncomeStatement.ChildIncome
   */
   export interface ChildIncome {
     type: 'CHILD_INCOME'
@@ -118,7 +118,7 @@ export namespace IncomeStatement {
   }
 
   /**
-  * Generated from fi.espoo.evaka.incomestatement.IncomeStatement.HighestFee
+  * Generated from evaka.core.incomestatement.IncomeStatement.HighestFee
   */
   export interface HighestFee {
     type: 'HIGHEST_FEE'
@@ -137,7 +137,7 @@ export namespace IncomeStatement {
   }
 
   /**
-  * Generated from fi.espoo.evaka.incomestatement.IncomeStatement.Income
+  * Generated from evaka.core.incomestatement.IncomeStatement.Income
   */
   export interface Income {
     type: 'INCOME'
@@ -163,13 +163,13 @@ export namespace IncomeStatement {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatement
+* Generated from evaka.core.incomestatement.IncomeStatement
 */
 export type IncomeStatement = IncomeStatement.ChildIncome | IncomeStatement.HighestFee | IncomeStatement.Income
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementAttachment
+* Generated from evaka.core.incomestatement.IncomeStatementAttachment
 */
 export interface IncomeStatementAttachment {
   contentType: string
@@ -180,7 +180,7 @@ export interface IncomeStatementAttachment {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementAttachmentType
+* Generated from evaka.core.incomestatement.IncomeStatementAttachmentType
 */
 export const incomeStatementAttachmentTypes = [
   'PAYSLIP_GROSS',
@@ -224,7 +224,7 @@ export const incomeStatementAttachmentTypes = [
 export type IncomeStatementAttachmentType = typeof incomeStatementAttachmentTypes[number]
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementAwaitingHandler
+* Generated from evaka.core.incomestatement.IncomeStatementAwaitingHandler
 */
 export interface IncomeStatementAwaitingHandler {
   citizenModifiedAt: HelsinkiDateTime
@@ -244,7 +244,7 @@ export interface IncomeStatementAwaitingHandler {
 
 export namespace IncomeStatementBody {
   /**
-  * Generated from fi.espoo.evaka.incomestatement.IncomeStatementBody.ChildIncome
+  * Generated from evaka.core.incomestatement.IncomeStatementBody.ChildIncome
   */
   export interface ChildIncome {
     type: 'CHILD_INCOME'
@@ -255,7 +255,7 @@ export namespace IncomeStatementBody {
   }
 
   /**
-  * Generated from fi.espoo.evaka.incomestatement.IncomeStatementBody.HighestFee
+  * Generated from evaka.core.incomestatement.IncomeStatementBody.HighestFee
   */
   export interface HighestFee {
     type: 'HIGHEST_FEE'
@@ -264,7 +264,7 @@ export namespace IncomeStatementBody {
   }
 
   /**
-  * Generated from fi.espoo.evaka.incomestatement.IncomeStatementBody.Income
+  * Generated from evaka.core.incomestatement.IncomeStatementBody.Income
   */
   export interface Income {
     type: 'INCOME'
@@ -280,13 +280,13 @@ export namespace IncomeStatementBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementBody
+* Generated from evaka.core.incomestatement.IncomeStatementBody
 */
 export type IncomeStatementBody = IncomeStatementBody.ChildIncome | IncomeStatementBody.HighestFee | IncomeStatementBody.Income
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementSortParam
+* Generated from evaka.core.incomestatement.IncomeStatementSortParam
 */
 export type IncomeStatementSortParam =
   | 'SENT_AT'
@@ -298,7 +298,7 @@ export type IncomeStatementSortParam =
   | 'CITIZEN_MODIFIED_AT'
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementStatus
+* Generated from evaka.core.incomestatement.IncomeStatementStatus
 */
 export type IncomeStatementStatus =
   | 'DRAFT'
@@ -307,7 +307,7 @@ export type IncomeStatementStatus =
   | 'HANDLED'
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementType
+* Generated from evaka.core.incomestatement.IncomeStatementType
 */
 export type IncomeStatementType =
   | 'HIGHEST_FEE'
@@ -315,14 +315,14 @@ export type IncomeStatementType =
   | 'CHILD_INCOME'
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.LimitedCompany
+* Generated from evaka.core.incomestatement.LimitedCompany
 */
 export interface LimitedCompany {
   incomeSource: IncomeSource
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.OtherIncome
+* Generated from evaka.core.incomestatement.OtherIncome
 */
 export const otherIncomes = [
   'PENSION',
@@ -354,7 +354,7 @@ export const otherIncomes = [
 export type OtherIncome = typeof otherIncomes[number]
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.PagedIncomeStatements
+* Generated from evaka.core.incomestatement.PagedIncomeStatements
 */
 export interface PagedIncomeStatements {
   data: IncomeStatement[]
@@ -363,7 +363,7 @@ export interface PagedIncomeStatements {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.PagedIncomeStatementsAwaitingHandler
+* Generated from evaka.core.incomestatement.PagedIncomeStatementsAwaitingHandler
 */
 export interface PagedIncomeStatementsAwaitingHandler {
   data: IncomeStatementAwaitingHandler[]
@@ -372,7 +372,7 @@ export interface PagedIncomeStatementsAwaitingHandler {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.PartnerIncomeStatementStatus
+* Generated from evaka.core.incomestatement.PartnerIncomeStatementStatus
 */
 export interface PartnerIncomeStatementStatus {
   hasIncomeStatement: boolean
@@ -380,14 +380,14 @@ export interface PartnerIncomeStatementStatus {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.PartnerIncomeStatementStatusResponse
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.PartnerIncomeStatementStatusResponse
 */
 export interface PartnerIncomeStatementStatusResponse {
   partner: PartnerIncomeStatementStatus | null
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.SearchIncomeStatementsRequest
+* Generated from evaka.core.incomestatement.SearchIncomeStatementsRequest
 */
 export interface SearchIncomeStatementsRequest {
   areas: string[] | null
@@ -403,7 +403,7 @@ export interface SearchIncomeStatementsRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.SelfEmployed
+* Generated from evaka.core.incomestatement.SelfEmployed
 */
 export interface SelfEmployed {
   attachments: boolean
@@ -411,7 +411,7 @@ export interface SelfEmployed {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementController.SetIncomeStatementHandledBody
+* Generated from evaka.core.incomestatement.IncomeStatementController.SetIncomeStatementHandledBody
 */
 export interface SetIncomeStatementHandledBody {
   handlerNote: string
@@ -419,7 +419,7 @@ export interface SetIncomeStatementHandledBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.UpdateSentIncomeStatementBody
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.UpdateSentIncomeStatementBody
 */
 export interface UpdateSentIncomeStatementBody {
   attachmentIds: AttachmentId[]

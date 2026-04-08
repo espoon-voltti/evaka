@@ -22,7 +22,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.pairing.MobileDevicesController.deleteMobileDevice
+* Generated from evaka.core.pairing.MobileDevicesController.deleteMobileDevice
 */
 export async function deleteMobileDevice(
   request: {
@@ -38,7 +38,7 @@ export async function deleteMobileDevice(
 
 
 /**
-* Generated from fi.espoo.evaka.pairing.MobileDevicesController.getMobileDevices
+* Generated from evaka.core.pairing.MobileDevicesController.getMobileDevices
 */
 export async function getMobileDevices(
   request: {
@@ -58,7 +58,7 @@ export async function getMobileDevices(
 
 
 /**
-* Generated from fi.espoo.evaka.pairing.MobileDevicesController.getPersonalMobileDevices
+* Generated from evaka.core.pairing.MobileDevicesController.getPersonalMobileDevices
 */
 export async function getPersonalMobileDevices(): Promise<MobileDevice[]> {
   const { data: json } = await client.request<JsonOf<MobileDevice[]>>({
@@ -70,7 +70,7 @@ export async function getPersonalMobileDevices(): Promise<MobileDevice[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.pairing.MobileDevicesController.putMobileDeviceName
+* Generated from evaka.core.pairing.MobileDevicesController.putMobileDeviceName
 */
 export async function putMobileDeviceName(
   request: {
@@ -88,7 +88,7 @@ export async function putMobileDeviceName(
 
 
 /**
-* Generated from fi.espoo.evaka.pairing.PairingsController.getPairingStatus
+* Generated from evaka.core.pairing.PairingsController.getPairingStatus
 */
 export async function getPairingStatus(
   request: {
@@ -104,7 +104,7 @@ export async function getPairingStatus(
 
 
 /**
-* Generated from fi.espoo.evaka.pairing.PairingsController.postPairing
+* Generated from evaka.core.pairing.PairingsController.postPairing
 */
 export async function postPairing(
   request: {
@@ -121,7 +121,7 @@ export async function postPairing(
 
 
 /**
-* Generated from fi.espoo.evaka.pairing.PairingsController.postPairingResponse
+* Generated from evaka.core.pairing.PairingsController.postPairingResponse
 */
 export async function postPairingResponse(
   request: {

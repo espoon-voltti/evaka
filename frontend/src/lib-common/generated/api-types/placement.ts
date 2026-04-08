@@ -29,7 +29,7 @@ import { deserializeJsonServiceNeed } from './serviceneed'
 import { deserializeJsonServiceNeedOption } from './serviceneed'
 
 /**
-* Generated from fi.espoo.evaka.placement.ChildBasics
+* Generated from evaka.core.placement.ChildBasics
 */
 export interface ChildBasics {
   dateOfBirth: LocalDate
@@ -40,7 +40,7 @@ export interface ChildBasics {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.ChildPlacement
+* Generated from evaka.core.placement.ChildPlacement
 */
 export interface ChildPlacement {
   childId: PersonId
@@ -56,14 +56,14 @@ export interface ChildPlacement {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.ChildPlacementResponse
+* Generated from evaka.core.placement.PlacementControllerCitizen.ChildPlacementResponse
 */
 export interface ChildPlacementResponse {
   placements: TerminatablePlacementGroup[]
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.DaycareBasics
+* Generated from evaka.core.placement.DaycareBasics
 */
 export interface DaycareBasics {
   area: string
@@ -75,7 +75,7 @@ export interface DaycareBasics {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.DaycareGroupPlacement
+* Generated from evaka.core.placement.DaycareGroupPlacement
 */
 export interface DaycareGroupPlacement {
   daycarePlacementId: PlacementId
@@ -87,7 +87,7 @@ export interface DaycareGroupPlacement {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.DaycarePlacementWithDetails
+* Generated from evaka.core.placement.DaycarePlacementWithDetails
 */
 export interface DaycarePlacementWithDetails {
   child: ChildBasics
@@ -111,7 +111,7 @@ export interface DaycarePlacementWithDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.GroupPlacementRequestBody
+* Generated from evaka.core.placement.GroupPlacementRequestBody
 */
 export interface GroupPlacementRequestBody {
   endDate: LocalDate
@@ -120,7 +120,7 @@ export interface GroupPlacementRequestBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.GroupTransferRequestBody
+* Generated from evaka.core.placement.GroupTransferRequestBody
 */
 export interface GroupTransferRequestBody {
   groupId: GroupId
@@ -128,7 +128,7 @@ export interface GroupTransferRequestBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.MessagingCategory
+* Generated from evaka.core.placement.MessagingCategory
 */
 export const messagingCategory = [
   'MESSAGING_CLUB',
@@ -139,7 +139,7 @@ export const messagingCategory = [
 export type MessagingCategory = typeof messagingCategory[number]
 
 /**
-* Generated from fi.espoo.evaka.placement.MissingBackupGroupPlacement
+* Generated from evaka.core.placement.MissingBackupGroupPlacement
 */
 export interface MissingBackupGroupPlacement {
   backupCareId: BackupCareId
@@ -153,7 +153,7 @@ export interface MissingBackupGroupPlacement {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.MissingGroupPlacement
+* Generated from evaka.core.placement.MissingGroupPlacement
 */
 export interface MissingGroupPlacement {
   childId: PersonId
@@ -169,7 +169,7 @@ export interface MissingGroupPlacement {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.MissingGroupPlacementServiceNeed
+* Generated from evaka.core.placement.MissingGroupPlacementServiceNeed
 */
 export interface MissingGroupPlacementServiceNeed {
   endDate: LocalDate
@@ -178,7 +178,7 @@ export interface MissingGroupPlacementServiceNeed {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementCreateRequestBody
+* Generated from evaka.core.placement.PlacementCreateRequestBody
 */
 export interface PlacementCreateRequestBody {
   childId: PersonId
@@ -190,7 +190,7 @@ export interface PlacementCreateRequestBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementDraftChild
+* Generated from evaka.core.placement.PlacementDraftChild
 */
 export interface PlacementDraftChild {
   dob: LocalDate
@@ -200,7 +200,7 @@ export interface PlacementDraftChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementDraftSummary
+* Generated from evaka.core.placement.PlacementDraftSummary
 */
 export interface PlacementDraftSummary {
   startDate: LocalDate
@@ -208,7 +208,7 @@ export interface PlacementDraftSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementDraftUnit
+* Generated from evaka.core.placement.PlacementDraftUnit
 */
 export interface PlacementDraftUnit {
   id: DaycareId
@@ -216,7 +216,7 @@ export interface PlacementDraftUnit {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementPlanChild
+* Generated from evaka.core.placement.PlacementPlanChild
 */
 export interface PlacementPlanChild {
   dateOfBirth: LocalDate
@@ -226,7 +226,7 @@ export interface PlacementPlanChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
+* Generated from evaka.core.placement.PlacementPlanConfirmationStatus
 */
 export type PlacementPlanConfirmationStatus =
   | 'PENDING'
@@ -235,7 +235,7 @@ export type PlacementPlanConfirmationStatus =
   | 'REJECTED_NOT_CONFIRMED'
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementPlanDetails
+* Generated from evaka.core.placement.PlacementPlanDetails
 */
 export interface PlacementPlanDetails {
   applicationId: ApplicationId
@@ -253,7 +253,7 @@ export interface PlacementPlanDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementPlanDraft
+* Generated from evaka.core.placement.PlacementPlanDraft
 */
 export interface PlacementPlanDraft {
   child: PlacementDraftChild
@@ -269,7 +269,7 @@ export interface PlacementPlanDraft {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementPlanRejectReason
+* Generated from evaka.core.placement.PlacementPlanRejectReason
 */
 export type PlacementPlanRejectReason =
   | 'OTHER'
@@ -278,7 +278,7 @@ export type PlacementPlanRejectReason =
   | 'REASON_3'
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementResponse
+* Generated from evaka.core.placement.PlacementResponse
 */
 export interface PlacementResponse {
   permittedPlacementActions: Partial<Record<PlacementId, Action.Placement[]>>
@@ -287,7 +287,7 @@ export interface PlacementResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementSourceCreatedBy
+* Generated from evaka.core.placement.PlacementSourceCreatedBy
 */
 export type PlacementSourceCreatedBy =
   | 'CITIZEN'
@@ -297,7 +297,7 @@ export type PlacementSourceCreatedBy =
   | 'UNKNOWN'
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementSummary
+* Generated from evaka.core.placement.PlacementSummary
 */
 export interface PlacementSummary {
   childId: PersonId
@@ -310,7 +310,7 @@ export interface PlacementSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.PlacementTerminationRequestBody
+* Generated from evaka.core.placement.PlacementControllerCitizen.PlacementTerminationRequestBody
 */
 export interface PlacementTerminationRequestBody {
   terminateDaycareOnly: boolean | null
@@ -320,7 +320,7 @@ export interface PlacementTerminationRequestBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementType
+* Generated from evaka.core.placement.PlacementType
 */
 export type PlacementType =
   | 'CLUB'
@@ -340,7 +340,7 @@ export type PlacementType =
   | 'SCHOOL_SHIFT_CARE'
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementUpdateRequestBody
+* Generated from evaka.core.placement.PlacementUpdateRequestBody
 */
 export interface PlacementUpdateRequestBody {
   endDate: LocalDate
@@ -348,7 +348,7 @@ export interface PlacementUpdateRequestBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.ScheduleType
+* Generated from evaka.core.placement.ScheduleType
 */
 export type ScheduleType =
   | 'RESERVATION_REQUIRED'
@@ -356,7 +356,7 @@ export type ScheduleType =
   | 'TERM_BREAK'
 
 /**
-* Generated from fi.espoo.evaka.placement.TerminatablePlacementGroup
+* Generated from evaka.core.placement.TerminatablePlacementGroup
 */
 export interface TerminatablePlacementGroup {
   additionalPlacements: ChildPlacement[]
@@ -370,7 +370,7 @@ export interface TerminatablePlacementGroup {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.TerminatablePlacementType
+* Generated from evaka.core.placement.TerminatablePlacementType
 */
 export type TerminatablePlacementType =
   | 'CLUB'
@@ -379,7 +379,7 @@ export type TerminatablePlacementType =
   | 'PRESCHOOL'
 
 /**
-* Generated from fi.espoo.evaka.placement.TerminatedPlacement
+* Generated from evaka.core.placement.TerminatedPlacement
 */
 export interface TerminatedPlacement {
   child: ChildBasics
@@ -393,7 +393,7 @@ export interface TerminatedPlacement {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.UnitChildrenCapacityFactors
+* Generated from evaka.core.placement.UnitChildrenCapacityFactors
 */
 export interface UnitChildrenCapacityFactors {
   assistanceNeedFactor: number

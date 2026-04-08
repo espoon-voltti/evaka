@@ -135,7 +135,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.addAbsence
+* Generated from evaka.core.shared.dev.DevApi.addAbsence
 */
 export async function addAbsence(
   request: {
@@ -156,7 +156,7 @@ export async function addAbsence(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.addAclRoleForDaycare
+* Generated from evaka.core.shared.dev.DevApi.addAclRoleForDaycare
 */
 export async function addAclRoleForDaycare(
   request: {
@@ -178,7 +178,7 @@ export async function addAclRoleForDaycare(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.addCalendarEvent
+* Generated from evaka.core.shared.dev.DevApi.addCalendarEvent
 */
 export async function addCalendarEvent(
   request: {
@@ -199,7 +199,7 @@ export async function addCalendarEvent(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.addCalendarEventAttendee
+* Generated from evaka.core.shared.dev.DevApi.addCalendarEventAttendee
 */
 export async function addCalendarEventAttendee(
   request: {
@@ -220,7 +220,7 @@ export async function addCalendarEventAttendee(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.addCalendarEventTime
+* Generated from evaka.core.shared.dev.DevApi.addCalendarEventTime
 */
 export async function addCalendarEventTime(
   request: {
@@ -241,7 +241,7 @@ export async function addCalendarEventTime(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.addDailyServiceTime
+* Generated from evaka.core.shared.dev.DevApi.addDailyServiceTime
 */
 export async function addDailyServiceTime(
   request: {
@@ -262,7 +262,7 @@ export async function addDailyServiceTime(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.addDailyServiceTimeNotification
+* Generated from evaka.core.shared.dev.DevApi.addDailyServiceTimeNotification
 */
 export async function addDailyServiceTimeNotification(
   request: {
@@ -283,7 +283,7 @@ export async function addDailyServiceTimeNotification(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.addPayment
+* Generated from evaka.core.shared.dev.DevApi.addPayment
 */
 export async function addPayment(
   request: {
@@ -304,7 +304,7 @@ export async function addPayment(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.addStaffAttendance
+* Generated from evaka.core.shared.dev.DevApi.addStaffAttendance
 */
 export async function addStaffAttendance(
   request: {
@@ -325,7 +325,7 @@ export async function addStaffAttendance(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.addStaffAttendancePlan
+* Generated from evaka.core.shared.dev.DevApi.addStaffAttendancePlan
 */
 export async function addStaffAttendancePlan(
   request: {
@@ -346,7 +346,7 @@ export async function addStaffAttendancePlan(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.cleanUpMessages
+* Generated from evaka.core.shared.dev.DevApi.cleanUpMessages
 */
 export async function cleanUpMessages(): Promise<void> {
   try {
@@ -362,7 +362,7 @@ export async function cleanUpMessages(): Promise<void> {
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createApplicationPlacementPlan
+* Generated from evaka.core.shared.dev.DevApi.createApplicationPlacementPlan
 */
 export async function createApplicationPlacementPlan(
   request: {
@@ -386,7 +386,7 @@ export async function createApplicationPlacementPlan(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createApplications
+* Generated from evaka.core.shared.dev.DevApi.createApplications
 */
 export async function createApplications(
   request: {
@@ -409,7 +409,7 @@ export async function createApplications(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createAssistanceAction
+* Generated from evaka.core.shared.dev.DevApi.createAssistanceAction
 */
 export async function createAssistanceAction(
   request: {
@@ -430,7 +430,7 @@ export async function createAssistanceAction(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createAssistanceActionOption
+* Generated from evaka.core.shared.dev.DevApi.createAssistanceActionOption
 */
 export async function createAssistanceActionOption(
   request: {
@@ -451,7 +451,7 @@ export async function createAssistanceActionOption(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createAssistanceFactors
+* Generated from evaka.core.shared.dev.DevApi.createAssistanceFactors
 */
 export async function createAssistanceFactors(
   request: {
@@ -472,7 +472,7 @@ export async function createAssistanceFactors(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createAssistanceNeedVoucherCoefficients
+* Generated from evaka.core.shared.dev.DevApi.createAssistanceNeedVoucherCoefficients
 */
 export async function createAssistanceNeedVoucherCoefficients(
   request: {
@@ -493,7 +493,7 @@ export async function createAssistanceNeedVoucherCoefficients(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createBackupCares
+* Generated from evaka.core.shared.dev.DevApi.createBackupCares
 */
 export async function createBackupCares(
   request: {
@@ -514,7 +514,7 @@ export async function createBackupCares(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createBackupPickup
+* Generated from evaka.core.shared.dev.DevApi.createBackupPickup
 */
 export async function createBackupPickup(
   request: {
@@ -535,7 +535,7 @@ export async function createBackupPickup(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createCareAreas
+* Generated from evaka.core.shared.dev.DevApi.createCareAreas
 */
 export async function createCareAreas(
   request: {
@@ -556,7 +556,7 @@ export async function createCareAreas(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createChildDocument
+* Generated from evaka.core.shared.dev.DevApi.createChildDocument
 */
 export async function createChildDocument(
   request: {
@@ -579,7 +579,7 @@ export async function createChildDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createChildren
+* Generated from evaka.core.shared.dev.DevApi.createChildren
 */
 export async function createChildren(
   request: {
@@ -600,7 +600,7 @@ export async function createChildren(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createClubTerm
+* Generated from evaka.core.shared.dev.DevApi.createClubTerm
 */
 export async function createClubTerm(
   request: {
@@ -621,7 +621,7 @@ export async function createClubTerm(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDaycareAssistances
+* Generated from evaka.core.shared.dev.DevApi.createDaycareAssistances
 */
 export async function createDaycareAssistances(
   request: {
@@ -642,7 +642,7 @@ export async function createDaycareAssistances(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDaycareCaretakers
+* Generated from evaka.core.shared.dev.DevApi.createDaycareCaretakers
 */
 export async function createDaycareCaretakers(
   request: {
@@ -663,7 +663,7 @@ export async function createDaycareCaretakers(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDaycareGroupAclRows
+* Generated from evaka.core.shared.dev.DevApi.createDaycareGroupAclRows
 */
 export async function createDaycareGroupAclRows(
   request: {
@@ -684,7 +684,7 @@ export async function createDaycareGroupAclRows(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDaycareGroupPlacement
+* Generated from evaka.core.shared.dev.DevApi.createDaycareGroupPlacement
 */
 export async function createDaycareGroupPlacement(
   request: {
@@ -705,7 +705,7 @@ export async function createDaycareGroupPlacement(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDaycareGroups
+* Generated from evaka.core.shared.dev.DevApi.createDaycareGroups
 */
 export async function createDaycareGroups(
   request: {
@@ -726,7 +726,7 @@ export async function createDaycareGroups(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDaycarePlacements
+* Generated from evaka.core.shared.dev.DevApi.createDaycarePlacements
 */
 export async function createDaycarePlacements(
   request: {
@@ -747,7 +747,7 @@ export async function createDaycarePlacements(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDaycares
+* Generated from evaka.core.shared.dev.DevApi.createDaycares
 */
 export async function createDaycares(
   request: {
@@ -768,7 +768,7 @@ export async function createDaycares(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDecisionPdf
+* Generated from evaka.core.shared.dev.DevApi.createDecisionPdf
 */
 export async function createDecisionPdf(
   request: {
@@ -788,7 +788,7 @@ export async function createDecisionPdf(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDecisions
+* Generated from evaka.core.shared.dev.DevApi.createDecisions
 */
 export async function createDecisions(
   request: {
@@ -811,7 +811,7 @@ export async function createDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDefaultPlacementPlan
+* Generated from evaka.core.shared.dev.DevApi.createDefaultPlacementPlan
 */
 export async function createDefaultPlacementPlan(
   request: {
@@ -833,7 +833,7 @@ export async function createDefaultPlacementPlan(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDefaultServiceNeedOptions
+* Generated from evaka.core.shared.dev.DevApi.createDefaultServiceNeedOptions
 */
 export async function createDefaultServiceNeedOptions(): Promise<void> {
   try {
@@ -849,7 +849,7 @@ export async function createDefaultServiceNeedOptions(): Promise<void> {
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createDocumentTemplate
+* Generated from evaka.core.shared.dev.DevApi.createDocumentTemplate
 */
 export async function createDocumentTemplate(
   request: {
@@ -872,7 +872,7 @@ export async function createDocumentTemplate(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createEmployee
+* Generated from evaka.core.shared.dev.DevApi.createEmployee
 */
 export async function createEmployee(
   request: {
@@ -893,7 +893,7 @@ export async function createEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createEmployeePins
+* Generated from evaka.core.shared.dev.DevApi.createEmployeePins
 */
 export async function createEmployeePins(
   request: {
@@ -914,7 +914,7 @@ export async function createEmployeePins(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createFamilyContact
+* Generated from evaka.core.shared.dev.DevApi.createFamilyContact
 */
 export async function createFamilyContact(
   request: {
@@ -935,7 +935,7 @@ export async function createFamilyContact(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createFeeDecisions
+* Generated from evaka.core.shared.dev.DevApi.createFeeDecisions
 */
 export async function createFeeDecisions(
   request: {
@@ -961,7 +961,7 @@ export async function createFeeDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createFeeThresholds
+* Generated from evaka.core.shared.dev.DevApi.createFeeThresholds
 */
 export async function createFeeThresholds(
   request: {
@@ -982,7 +982,7 @@ export async function createFeeThresholds(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createFinanceNotes
+* Generated from evaka.core.shared.dev.DevApi.createFinanceNotes
 */
 export async function createFinanceNotes(
   request: {
@@ -1005,7 +1005,7 @@ export async function createFinanceNotes(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createFosterParent
+* Generated from evaka.core.shared.dev.DevApi.createFosterParent
 */
 export async function createFosterParent(
   request: {
@@ -1026,7 +1026,7 @@ export async function createFosterParent(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createFridgeChild
+* Generated from evaka.core.shared.dev.DevApi.createFridgeChild
 */
 export async function createFridgeChild(
   request: {
@@ -1047,7 +1047,7 @@ export async function createFridgeChild(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createFridgePartner
+* Generated from evaka.core.shared.dev.DevApi.createFridgePartner
 */
 export async function createFridgePartner(
   request: {
@@ -1068,7 +1068,7 @@ export async function createFridgePartner(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createHolidayPeriod
+* Generated from evaka.core.shared.dev.DevApi.createHolidayPeriod
 */
 export async function createHolidayPeriod(
   request: {
@@ -1090,7 +1090,7 @@ export async function createHolidayPeriod(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createHolidayQuestionnaire
+* Generated from evaka.core.shared.dev.DevApi.createHolidayQuestionnaire
 */
 export async function createHolidayQuestionnaire(
   request: {
@@ -1112,7 +1112,7 @@ export async function createHolidayQuestionnaire(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createIncome
+* Generated from evaka.core.shared.dev.DevApi.createIncome
 */
 export async function createIncome(
   request: {
@@ -1133,7 +1133,7 @@ export async function createIncome(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createIncomeNotification
+* Generated from evaka.core.shared.dev.DevApi.createIncomeNotification
 */
 export async function createIncomeNotification(
   request: {
@@ -1154,7 +1154,7 @@ export async function createIncomeNotification(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createIncomeStatement
+* Generated from evaka.core.shared.dev.DevApi.createIncomeStatement
 */
 export async function createIncomeStatement(
   request: {
@@ -1175,7 +1175,7 @@ export async function createIncomeStatement(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createInvoices
+* Generated from evaka.core.shared.dev.DevApi.createInvoices
 */
 export async function createInvoices(
   request: {
@@ -1196,7 +1196,7 @@ export async function createInvoices(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createMessageAccounts
+* Generated from evaka.core.shared.dev.DevApi.createMessageAccounts
 */
 export async function createMessageAccounts(): Promise<void> {
   try {
@@ -1212,7 +1212,7 @@ export async function createMessageAccounts(): Promise<void> {
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createNekkuCustomer
+* Generated from evaka.core.shared.dev.DevApi.createNekkuCustomer
 */
 export async function createNekkuCustomer(
   request: {
@@ -1235,7 +1235,7 @@ export async function createNekkuCustomer(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createNekkuSpecialDiets
+* Generated from evaka.core.shared.dev.DevApi.createNekkuSpecialDiets
 */
 export async function createNekkuSpecialDiets(
   request: {
@@ -1258,7 +1258,7 @@ export async function createNekkuSpecialDiets(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createOtherAssistanceMeasures
+* Generated from evaka.core.shared.dev.DevApi.createOtherAssistanceMeasures
 */
 export async function createOtherAssistanceMeasures(
   request: {
@@ -1279,7 +1279,7 @@ export async function createOtherAssistanceMeasures(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createParentships
+* Generated from evaka.core.shared.dev.DevApi.createParentships
 */
 export async function createParentships(
   request: {
@@ -1300,7 +1300,7 @@ export async function createParentships(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createPedagogicalDocumentAttachment
+* Generated from evaka.core.shared.dev.DevApi.createPedagogicalDocumentAttachment
 */
 export async function createPedagogicalDocumentAttachment(
   request: {
@@ -1339,7 +1339,7 @@ export async function createPedagogicalDocumentAttachment(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createPedagogicalDocuments
+* Generated from evaka.core.shared.dev.DevApi.createPedagogicalDocuments
 */
 export async function createPedagogicalDocuments(
   request: {
@@ -1360,7 +1360,7 @@ export async function createPedagogicalDocuments(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createPerson
+* Generated from evaka.core.shared.dev.DevApi.createPerson
 */
 export async function createPerson(
   request: {
@@ -1386,7 +1386,7 @@ export async function createPerson(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createPlacementPlan
+* Generated from evaka.core.shared.dev.DevApi.createPlacementPlan
 */
 export async function createPlacementPlan(
   request: {
@@ -1408,7 +1408,7 @@ export async function createPlacementPlan(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createPreschoolAssistances
+* Generated from evaka.core.shared.dev.DevApi.createPreschoolAssistances
 */
 export async function createPreschoolAssistances(
   request: {
@@ -1429,7 +1429,7 @@ export async function createPreschoolAssistances(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createPreschoolTerm
+* Generated from evaka.core.shared.dev.DevApi.createPreschoolTerm
 */
 export async function createPreschoolTerm(
   request: {
@@ -1450,7 +1450,7 @@ export async function createPreschoolTerm(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createServiceNeedOption
+* Generated from evaka.core.shared.dev.DevApi.createServiceNeedOption
 */
 export async function createServiceNeedOption(
   request: {
@@ -1471,7 +1471,7 @@ export async function createServiceNeedOption(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createServiceNeeds
+* Generated from evaka.core.shared.dev.DevApi.createServiceNeeds
 */
 export async function createServiceNeeds(
   request: {
@@ -1492,7 +1492,7 @@ export async function createServiceNeeds(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createVoucherValueDecisions
+* Generated from evaka.core.shared.dev.DevApi.createVoucherValueDecisions
 */
 export async function createVoucherValueDecisions(
   request: {
@@ -1518,7 +1518,7 @@ export async function createVoucherValueDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.createVoucherValues
+* Generated from evaka.core.shared.dev.DevApi.createVoucherValues
 */
 export async function createVoucherValues(): Promise<void> {
   try {
@@ -1534,7 +1534,7 @@ export async function createVoucherValues(): Promise<void> {
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.deleteDaycareCostCenter
+* Generated from evaka.core.shared.dev.DevApi.deleteDaycareCostCenter
 */
 export async function deleteDaycareCostCenter(
   request: {
@@ -1554,7 +1554,7 @@ export async function deleteDaycareCostCenter(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.deletePlacement
+* Generated from evaka.core.shared.dev.DevApi.deletePlacement
 */
 export async function deletePlacement(
   request: {
@@ -1574,7 +1574,7 @@ export async function deletePlacement(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.forceFullVtjRefresh
+* Generated from evaka.core.shared.dev.DevApi.forceFullVtjRefresh
 */
 export async function forceFullVtjRefresh(
   request: {
@@ -1594,7 +1594,7 @@ export async function forceFullVtjRefresh(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.generateReplacementDraftInvoices
+* Generated from evaka.core.shared.dev.DevApi.generateReplacementDraftInvoices
 */
 export async function generateReplacementDraftInvoices(
   options?: { mockedTime?: HelsinkiDateTime }
@@ -1613,7 +1613,7 @@ export async function generateReplacementDraftInvoices(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getAbsences
+* Generated from evaka.core.shared.dev.DevApi.getAbsences
 */
 export async function getAbsences(
   request: {
@@ -1639,7 +1639,7 @@ export async function getAbsences(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getApplication
+* Generated from evaka.core.shared.dev.DevApi.getApplication
 */
 export async function getApplication(
   request: {
@@ -1659,7 +1659,7 @@ export async function getApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getApplicationDecisions
+* Generated from evaka.core.shared.dev.DevApi.getApplicationDecisions
 */
 export async function getApplicationDecisions(
   request: {
@@ -1679,7 +1679,7 @@ export async function getApplicationDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getMessages
+* Generated from evaka.core.shared.dev.DevApi.getMessages
 */
 export async function getMessages(): Promise<SfiMessage[]> {
   try {
@@ -1695,7 +1695,7 @@ export async function getMessages(): Promise<SfiMessage[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getNekkuSpecialDietChoices
+* Generated from evaka.core.shared.dev.DevApi.getNekkuSpecialDietChoices
 */
 export async function getNekkuSpecialDietChoices(
   request: {
@@ -1715,7 +1715,7 @@ export async function getNekkuSpecialDietChoices(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getSentEmails
+* Generated from evaka.core.shared.dev.DevApi.getSentEmails
 */
 export async function getSentEmails(): Promise<Email[]> {
   try {
@@ -1731,7 +1731,7 @@ export async function getSentEmails(): Promise<Email[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.getStaffAttendances
+* Generated from evaka.core.shared.dev.DevApi.getStaffAttendances
 */
 export async function getStaffAttendances(): Promise<StaffMemberAttendance[]> {
   try {
@@ -1747,7 +1747,7 @@ export async function getStaffAttendances(): Promise<StaffMemberAttendance[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.insertChild
+* Generated from evaka.core.shared.dev.DevApi.insertChild
 */
 export async function insertChild(
   request: {
@@ -1768,7 +1768,7 @@ export async function insertChild(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.insertGuardians
+* Generated from evaka.core.shared.dev.DevApi.insertGuardians
 */
 export async function insertGuardians(
   request: {
@@ -1789,7 +1789,7 @@ export async function insertGuardians(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postAttendances
+* Generated from evaka.core.shared.dev.DevApi.postAttendances
 */
 export async function postAttendances(
   request: {
@@ -1810,7 +1810,7 @@ export async function postAttendances(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postChildDailyNote
+* Generated from evaka.core.shared.dev.DevApi.postChildDailyNote
 */
 export async function postChildDailyNote(
   request: {
@@ -1832,7 +1832,7 @@ export async function postChildDailyNote(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postChildStickyNote
+* Generated from evaka.core.shared.dev.DevApi.postChildStickyNote
 */
 export async function postChildStickyNote(
   request: {
@@ -1854,7 +1854,7 @@ export async function postChildStickyNote(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postGroupNote
+* Generated from evaka.core.shared.dev.DevApi.postGroupNote
 */
 export async function postGroupNote(
   request: {
@@ -1876,7 +1876,7 @@ export async function postGroupNote(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postMobileDevice
+* Generated from evaka.core.shared.dev.DevApi.postMobileDevice
 */
 export async function postMobileDevice(
   request: {
@@ -1897,7 +1897,7 @@ export async function postMobileDevice(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postPairing
+* Generated from evaka.core.shared.dev.DevApi.postPairing
 */
 export async function postPairing(
   request: {
@@ -1920,7 +1920,7 @@ export async function postPairing(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postPairingChallenge
+* Generated from evaka.core.shared.dev.DevApi.postPairingChallenge
 */
 export async function postPairingChallenge(
   request: {
@@ -1943,7 +1943,7 @@ export async function postPairingChallenge(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postPairingResponse
+* Generated from evaka.core.shared.dev.DevApi.postPairingResponse
 */
 export async function postPairingResponse(
   request: {
@@ -1967,7 +1967,7 @@ export async function postPairingResponse(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postPersonalMobileDevice
+* Generated from evaka.core.shared.dev.DevApi.postPersonalMobileDevice
 */
 export async function postPersonalMobileDevice(
   request: {
@@ -1988,7 +1988,7 @@ export async function postPersonalMobileDevice(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postReservations
+* Generated from evaka.core.shared.dev.DevApi.postReservations
 */
 export async function postReservations(
   request: {
@@ -2011,7 +2011,7 @@ export async function postReservations(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.postReservationsRaw
+* Generated from evaka.core.shared.dev.DevApi.postReservationsRaw
 */
 export async function postReservationsRaw(
   request: {
@@ -2034,7 +2034,7 @@ export async function postReservationsRaw(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.putDiets
+* Generated from evaka.core.shared.dev.DevApi.putDiets
 */
 export async function putDiets(
   request: {
@@ -2057,7 +2057,7 @@ export async function putDiets(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.putDigitransitAutocomplete
+* Generated from evaka.core.shared.dev.DevApi.putDigitransitAutocomplete
 */
 export async function putDigitransitAutocomplete(
   request: {
@@ -2078,7 +2078,7 @@ export async function putDigitransitAutocomplete(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.rejectDecisionByCitizen
+* Generated from evaka.core.shared.dev.DevApi.rejectDecisionByCitizen
 */
 export async function rejectDecisionByCitizen(
   request: {
@@ -2100,7 +2100,7 @@ export async function rejectDecisionByCitizen(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.resetServiceState
+* Generated from evaka.core.shared.dev.DevApi.resetServiceState
 */
 export async function resetServiceState(): Promise<void> {
   try {
@@ -2116,7 +2116,7 @@ export async function resetServiceState(): Promise<void> {
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.runJobs
+* Generated from evaka.core.shared.dev.DevApi.runJobs
 */
 export async function runJobs(
   options?: { mockedTime?: HelsinkiDateTime }
@@ -2135,7 +2135,7 @@ export async function runJobs(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.setPersonEmail
+* Generated from evaka.core.shared.dev.DevApi.setPersonEmail
 */
 export async function setPersonEmail(
   request: {
@@ -2156,7 +2156,7 @@ export async function setPersonEmail(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.setTestMode
+* Generated from evaka.core.shared.dev.DevApi.setTestMode
 */
 export async function setTestMode(
   request: {
@@ -2180,7 +2180,7 @@ export async function setTestMode(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.simpleAction
+* Generated from evaka.core.shared.dev.DevApi.simpleAction
 */
 export async function simpleAction(
   request: {
@@ -2203,7 +2203,7 @@ export async function simpleAction(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.terminatePlacement
+* Generated from evaka.core.shared.dev.DevApi.terminatePlacement
 */
 export async function terminatePlacement(
   request: {
@@ -2224,7 +2224,7 @@ export async function terminatePlacement(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.updateIncomeStatementHandled
+* Generated from evaka.core.shared.dev.DevApi.updateIncomeStatementHandled
 */
 export async function updateIncomeStatementHandled(
   request: {
@@ -2247,7 +2247,7 @@ export async function updateIncomeStatementHandled(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.upsertPasswordBlacklist
+* Generated from evaka.core.shared.dev.DevApi.upsertPasswordBlacklist
 */
 export async function upsertPasswordBlacklist(
   request: {
@@ -2270,7 +2270,7 @@ export async function upsertPasswordBlacklist(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.upsertStaffOccupancyCoefficient
+* Generated from evaka.core.shared.dev.DevApi.upsertStaffOccupancyCoefficient
 */
 export async function upsertStaffOccupancyCoefficient(
   request: {
@@ -2291,7 +2291,7 @@ export async function upsertStaffOccupancyCoefficient(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.upsertVtjDataset
+* Generated from evaka.core.shared.dev.DevApi.upsertVtjDataset
 */
 export async function upsertVtjDataset(
   request: {
@@ -2312,7 +2312,7 @@ export async function upsertVtjDataset(
 
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.upsertWeakCredentials
+* Generated from evaka.core.shared.dev.DevApi.upsertWeakCredentials
 */
 export async function upsertWeakCredentials(
   request: {

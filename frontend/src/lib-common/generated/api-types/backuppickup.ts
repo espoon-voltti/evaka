@@ -8,7 +8,7 @@ import type { BackupPickupId } from './shared'
 import type { PersonId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.backuppickup.ChildBackupPickup
+* Generated from evaka.core.backuppickup.ChildBackupPickup
 */
 export interface ChildBackupPickup {
   childId: PersonId
@@ -18,7 +18,7 @@ export interface ChildBackupPickup {
 }
 
 /**
-* Generated from fi.espoo.evaka.backuppickup.ChildBackupPickupContent
+* Generated from evaka.core.backuppickup.ChildBackupPickupContent
 */
 export interface ChildBackupPickupContent {
   name: string
@@ -26,7 +26,7 @@ export interface ChildBackupPickupContent {
 }
 
 /**
-* Generated from fi.espoo.evaka.backuppickup.ChildBackupPickupCreateResponse
+* Generated from evaka.core.backuppickup.ChildBackupPickupCreateResponse
 */
 export interface ChildBackupPickupCreateResponse {
   id: BackupPickupId

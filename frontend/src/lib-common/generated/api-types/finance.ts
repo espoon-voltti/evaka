@@ -12,7 +12,7 @@ import type { JsonOf } from '../../json'
 import type { PersonId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.finance.notes.FinanceNote
+* Generated from evaka.core.finance.notes.FinanceNote
 */
 export interface FinanceNote {
   content: string
@@ -26,7 +26,7 @@ export interface FinanceNote {
 }
 
 /**
-* Generated from fi.espoo.evaka.finance.notes.FinanceNoteRequest
+* Generated from evaka.core.finance.notes.FinanceNoteRequest
 */
 export interface FinanceNoteRequest {
   content: string
@@ -34,7 +34,7 @@ export interface FinanceNoteRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.finance.notes.FinanceNoteResponse
+* Generated from evaka.core.finance.notes.FinanceNoteResponse
 */
 export interface FinanceNoteResponse {
   note: FinanceNote

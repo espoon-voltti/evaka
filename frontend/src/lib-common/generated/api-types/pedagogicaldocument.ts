@@ -12,7 +12,7 @@ import type { PedagogicalDocumentId } from './shared'
 import type { PersonId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocument
+* Generated from evaka.core.pedagogicaldocument.PedagogicalDocument
 */
 export interface PedagogicalDocument {
   attachments: Attachment[]
@@ -26,7 +26,7 @@ export interface PedagogicalDocument {
 }
 
 /**
-* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentCitizen
+* Generated from evaka.core.pedagogicaldocument.PedagogicalDocumentCitizen
 */
 export interface PedagogicalDocumentCitizen {
   attachments: Attachment[]
@@ -38,7 +38,7 @@ export interface PedagogicalDocumentCitizen {
 }
 
 /**
-* Generated from fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentPostBody
+* Generated from evaka.core.pedagogicaldocument.PedagogicalDocumentPostBody
 */
 export interface PedagogicalDocumentPostBody {
   childId: PersonId

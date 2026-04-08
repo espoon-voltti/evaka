@@ -44,7 +44,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.archiveThread
+* Generated from evaka.core.messaging.MessageController.archiveThread
 */
 export async function archiveThread(
   request: {
@@ -61,7 +61,7 @@ export async function archiveThread(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.createMessage
+* Generated from evaka.core.messaging.MessageController.createMessage
 */
 export async function createMessage(
   request: {
@@ -84,7 +84,7 @@ export async function createMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.createMessagePreflightCheck
+* Generated from evaka.core.messaging.MessageController.createMessagePreflightCheck
 */
 export async function createMessagePreflightCheck(
   request: {
@@ -102,7 +102,7 @@ export async function createMessagePreflightCheck(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.deleteDraftMessage
+* Generated from evaka.core.messaging.MessageController.deleteDraftMessage
 */
 export async function deleteDraftMessage(
   request: {
@@ -119,7 +119,7 @@ export async function deleteDraftMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getAccountsByUser
+* Generated from evaka.core.messaging.MessageController.getAccountsByUser
 */
 export async function getAccountsByUser(): Promise<AuthorizedMessageAccount[]> {
   const { data: json } = await client.request<JsonOf<AuthorizedMessageAccount[]>>({
@@ -131,7 +131,7 @@ export async function getAccountsByUser(): Promise<AuthorizedMessageAccount[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getArchivedMessages
+* Generated from evaka.core.messaging.MessageController.getArchivedMessages
 */
 export async function getArchivedMessages(
   request: {
@@ -152,7 +152,7 @@ export async function getArchivedMessages(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getDraftMessages
+* Generated from evaka.core.messaging.MessageController.getDraftMessages
 */
 export async function getDraftMessages(
   request: {
@@ -168,7 +168,7 @@ export async function getDraftMessages(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getFinanceMessagesWithPerson
+* Generated from evaka.core.messaging.MessageController.getFinanceMessagesWithPerson
 */
 export async function getFinanceMessagesWithPerson(
   request: {
@@ -184,7 +184,7 @@ export async function getFinanceMessagesWithPerson(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getFolders
+* Generated from evaka.core.messaging.MessageController.getFolders
 */
 export async function getFolders(): Promise<MessageThreadFolder[]> {
   const { data: json } = await client.request<JsonOf<MessageThreadFolder[]>>({
@@ -196,7 +196,7 @@ export async function getFolders(): Promise<MessageThreadFolder[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getMessageCopies
+* Generated from evaka.core.messaging.MessageController.getMessageCopies
 */
 export async function getMessageCopies(
   request: {
@@ -217,7 +217,7 @@ export async function getMessageCopies(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getMessagesInFolder
+* Generated from evaka.core.messaging.MessageController.getMessagesInFolder
 */
 export async function getMessagesInFolder(
   request: {
@@ -239,7 +239,7 @@ export async function getMessagesInFolder(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getReceivedMessages
+* Generated from evaka.core.messaging.MessageController.getReceivedMessages
 */
 export async function getReceivedMessages(
   request: {
@@ -260,7 +260,7 @@ export async function getReceivedMessages(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getSelectableRecipients
+* Generated from evaka.core.messaging.MessageController.getSelectableRecipients
 */
 export async function getSelectableRecipients(): Promise<SelectableRecipientsResponse[]> {
   const { data: json } = await client.request<JsonOf<SelectableRecipientsResponse[]>>({
@@ -272,7 +272,7 @@ export async function getSelectableRecipients(): Promise<SelectableRecipientsRes
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getSentMessages
+* Generated from evaka.core.messaging.MessageController.getSentMessages
 */
 export async function getSentMessages(
   request: {
@@ -293,7 +293,7 @@ export async function getSentMessages(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getServiceWorkerAccountThreadByApplicationId
+* Generated from evaka.core.messaging.MessageController.getServiceWorkerAccountThreadByApplicationId
 */
 export async function getServiceWorkerAccountThreadByApplicationId(
   request: {
@@ -309,7 +309,7 @@ export async function getServiceWorkerAccountThreadByApplicationId(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getThread
+* Generated from evaka.core.messaging.MessageController.getThread
 */
 export async function getThread(
   request: {
@@ -326,7 +326,7 @@ export async function getThread(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getUnreadMessages
+* Generated from evaka.core.messaging.MessageController.getUnreadMessages
 */
 export async function getUnreadMessages(): Promise<UnreadCountByAccount[]> {
   const { data: json } = await client.request<JsonOf<UnreadCountByAccount[]>>({
@@ -338,7 +338,7 @@ export async function getUnreadMessages(): Promise<UnreadCountByAccount[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.initDraftMessage
+* Generated from evaka.core.messaging.MessageController.initDraftMessage
 */
 export async function initDraftMessage(
   request: {
@@ -354,7 +354,7 @@ export async function initDraftMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.markLastReceivedMessageInThreadUnread
+* Generated from evaka.core.messaging.MessageController.markLastReceivedMessageInThreadUnread
 */
 export async function markLastReceivedMessageInThreadUnread(
   request: {
@@ -371,7 +371,7 @@ export async function markLastReceivedMessageInThreadUnread(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.markThreadRead
+* Generated from evaka.core.messaging.MessageController.markThreadRead
 */
 export async function markThreadRead(
   request: {
@@ -388,7 +388,7 @@ export async function markThreadRead(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.moveThreadToFolder
+* Generated from evaka.core.messaging.MessageController.moveThreadToFolder
 */
 export async function moveThreadToFolder(
   request: {
@@ -406,7 +406,7 @@ export async function moveThreadToFolder(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.replyToMessage
+* Generated from evaka.core.messaging.MessageController.replyToMessage
 */
 export async function replyToMessage(
   request: {
@@ -425,7 +425,7 @@ export async function replyToMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.replyToThread
+* Generated from evaka.core.messaging.MessageController.replyToThread
 */
 export async function replyToThread(
   request: {
@@ -444,7 +444,7 @@ export async function replyToThread(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.updateDraftMessage
+* Generated from evaka.core.messaging.MessageController.updateDraftMessage
 */
 export async function updateDraftMessage(
   request: {

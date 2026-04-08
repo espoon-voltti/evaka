@@ -22,7 +22,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.archiveThread
+* Generated from evaka.core.messaging.MessageControllerCitizen.archiveThread
 */
 export async function archiveThread(
   request: {
@@ -38,7 +38,7 @@ export async function archiveThread(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.getMyAccount
+* Generated from evaka.core.messaging.MessageControllerCitizen.getMyAccount
 */
 export async function getMyAccount(): Promise<MyAccountResponse> {
   const { data: json } = await client.request<JsonOf<MyAccountResponse>>({
@@ -50,7 +50,7 @@ export async function getMyAccount(): Promise<MyAccountResponse> {
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.getReceivedMessages
+* Generated from evaka.core.messaging.MessageControllerCitizen.getReceivedMessages
 */
 export async function getReceivedMessages(
   request: {
@@ -70,7 +70,7 @@ export async function getReceivedMessages(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.getRecipients
+* Generated from evaka.core.messaging.MessageControllerCitizen.getRecipients
 */
 export async function getRecipients(): Promise<GetRecipientsResponse> {
   const { data: json } = await client.request<JsonOf<GetRecipientsResponse>>({
@@ -82,7 +82,7 @@ export async function getRecipients(): Promise<GetRecipientsResponse> {
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.getUnreadMessages
+* Generated from evaka.core.messaging.MessageControllerCitizen.getUnreadMessages
 */
 export async function getUnreadMessages(): Promise<number> {
   const { data: json } = await client.request<JsonOf<number>>({
@@ -94,7 +94,7 @@ export async function getUnreadMessages(): Promise<number> {
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.markLastReceivedMessageInThreadUnread
+* Generated from evaka.core.messaging.MessageControllerCitizen.markLastReceivedMessageInThreadUnread
 */
 export async function markLastReceivedMessageInThreadUnread(
   request: {
@@ -110,7 +110,7 @@ export async function markLastReceivedMessageInThreadUnread(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.markThreadRead
+* Generated from evaka.core.messaging.MessageControllerCitizen.markThreadRead
 */
 export async function markThreadRead(
   request: {
@@ -126,7 +126,7 @@ export async function markThreadRead(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.newMessage
+* Generated from evaka.core.messaging.MessageControllerCitizen.newMessage
 */
 export async function newMessage(
   request: {
@@ -143,7 +143,7 @@ export async function newMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.replyToMessage
+* Generated from evaka.core.messaging.MessageControllerCitizen.replyToMessage
 */
 export async function replyToMessage(
   request: {
@@ -161,7 +161,7 @@ export async function replyToMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.replyToThread
+* Generated from evaka.core.messaging.MessageControllerCitizen.replyToThread
 */
 export async function replyToThread(
   request: {

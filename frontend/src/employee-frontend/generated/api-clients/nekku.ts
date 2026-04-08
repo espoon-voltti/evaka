@@ -18,7 +18,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuController.getNekkuMealTypes
+* Generated from evaka.core.nekku.NekkuController.getNekkuMealTypes
 */
 export async function getNekkuMealTypes(): Promise<NekkuMealType[]> {
   const { data: json } = await client.request<JsonOf<NekkuMealType[]>>({
@@ -30,7 +30,7 @@ export async function getNekkuMealTypes(): Promise<NekkuMealType[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuController.getNekkuSpecialDietFields
+* Generated from evaka.core.nekku.NekkuController.getNekkuSpecialDietFields
 */
 export async function getNekkuSpecialDietFields(): Promise<NekkuSpecialDietsFieldWithoutOptions[]> {
   const { data: json } = await client.request<JsonOf<NekkuSpecialDietsFieldWithoutOptions[]>>({
@@ -42,7 +42,7 @@ export async function getNekkuSpecialDietFields(): Promise<NekkuSpecialDietsFiel
 
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuController.getNekkuSpecialDietOptions
+* Generated from evaka.core.nekku.NekkuController.getNekkuSpecialDietOptions
 */
 export async function getNekkuSpecialDietOptions(): Promise<NekkuSpecialDietOptionWithFieldId[]> {
   const { data: json } = await client.request<JsonOf<NekkuSpecialDietOptionWithFieldId[]>>({
@@ -54,7 +54,7 @@ export async function getNekkuSpecialDietOptions(): Promise<NekkuSpecialDietOpti
 
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuController.getNekkuSpecialDiets
+* Generated from evaka.core.nekku.NekkuController.getNekkuSpecialDiets
 */
 export async function getNekkuSpecialDiets(): Promise<NekkuSpecialDietWithoutFields[]> {
   const { data: json } = await client.request<JsonOf<NekkuSpecialDietWithoutFields[]>>({
@@ -66,7 +66,7 @@ export async function getNekkuSpecialDiets(): Promise<NekkuSpecialDietWithoutFie
 
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuController.getNekkuUnitNumbers
+* Generated from evaka.core.nekku.NekkuController.getNekkuUnitNumbers
 */
 export async function getNekkuUnitNumbers(): Promise<NekkuUnitNumber[]> {
   const { data: json } = await client.request<JsonOf<NekkuUnitNumber[]>>({
@@ -78,7 +78,7 @@ export async function getNekkuUnitNumbers(): Promise<NekkuUnitNumber[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuController.nekkuManualOrder
+* Generated from evaka.core.nekku.NekkuController.nekkuManualOrder
 */
 export async function nekkuManualOrder(
   request: {

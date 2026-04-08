@@ -11,7 +11,7 @@ import type { PersonId } from './shared'
 import type { PlacementType } from './placement'
 
 /**
-* Generated from fi.espoo.evaka.sensitive.ChildBasicInformation
+* Generated from evaka.core.sensitive.ChildBasicInformation
 */
 export interface ChildBasicInformation {
   backupPickups: ContactInfo[]
@@ -25,7 +25,7 @@ export interface ChildBasicInformation {
 }
 
 /**
-* Generated from fi.espoo.evaka.sensitive.ChildSensitiveInformation
+* Generated from evaka.core.sensitive.ChildSensitiveInformation
 */
 export interface ChildSensitiveInformation {
   additionalInfo: string

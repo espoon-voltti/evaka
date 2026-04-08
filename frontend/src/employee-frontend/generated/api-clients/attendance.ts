@@ -21,7 +21,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.getOpenGroupAttendance
+* Generated from evaka.core.attendance.RealtimeStaffAttendanceController.getOpenGroupAttendance
 */
 export async function getOpenGroupAttendance(
   request: {
@@ -41,7 +41,7 @@ export async function getOpenGroupAttendance(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.getRealtimeStaffAttendances
+* Generated from evaka.core.attendance.RealtimeStaffAttendanceController.getRealtimeStaffAttendances
 */
 export async function getRealtimeStaffAttendances(
   request: {
@@ -65,7 +65,7 @@ export async function getRealtimeStaffAttendances(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.upsertDailyExternalRealtimeAttendances
+* Generated from evaka.core.attendance.RealtimeStaffAttendanceController.upsertDailyExternalRealtimeAttendances
 */
 export async function upsertDailyExternalRealtimeAttendances(
   request: {
@@ -82,7 +82,7 @@ export async function upsertDailyExternalRealtimeAttendances(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances
+* Generated from evaka.core.attendance.RealtimeStaffAttendanceController.upsertDailyStaffRealtimeAttendances
 */
 export async function upsertDailyStaffRealtimeAttendances(
   request: {

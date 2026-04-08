@@ -124,7 +124,7 @@ export type AbsenceId = Id<'Absence'>
 export type AssistanceActionOptionId = Id<'AssistanceActionOption'>
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.MockDigitransit.Autocomplete
+* Generated from evaka.core.shared.dev.MockDigitransit.Autocomplete
 */
 export interface Autocomplete {
   features: Feature[]
@@ -133,7 +133,7 @@ export interface Autocomplete {
 export type CalendarEventAttendeeId = Id<'CalendarEventAttendee'>
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.Caretaker
+* Generated from evaka.core.shared.dev.DevApi.Caretaker
 */
 export interface Caretaker {
   amount: number
@@ -143,7 +143,7 @@ export interface Caretaker {
 }
 
 /**
-* Generated from fi.espoo.evaka.nekku.CustomerType
+* Generated from evaka.core.nekku.CustomerType
 */
 export interface CustomerType {
   type: string
@@ -151,7 +151,7 @@ export interface CustomerType {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DaycareAclInsert
+* Generated from evaka.core.shared.dev.DaycareAclInsert
 */
 export interface DaycareAclInsert {
   externalId: string
@@ -159,7 +159,7 @@ export interface DaycareAclInsert {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.DecisionRequest
+* Generated from evaka.core.shared.dev.DevApi.DecisionRequest
 */
 export interface DecisionRequest {
   applicationId: ApplicationId
@@ -173,7 +173,7 @@ export interface DecisionRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevAbsence
+* Generated from evaka.core.shared.dev.DevAbsence
 */
 export interface DevAbsence {
   absenceCategory: AbsenceCategory
@@ -187,7 +187,7 @@ export interface DevAbsence {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApplicationWithForm
+* Generated from evaka.core.shared.dev.DevApplicationWithForm
 */
 export interface DevApplicationWithForm {
   allowOtherGuardianAccess: boolean
@@ -213,7 +213,7 @@ export interface DevApplicationWithForm {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevAssistanceAction
+* Generated from evaka.core.shared.dev.DevAssistanceAction
 */
 export interface DevAssistanceAction {
   actions: string[]
@@ -228,7 +228,7 @@ export interface DevAssistanceAction {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevAssistanceActionOption
+* Generated from evaka.core.shared.dev.DevAssistanceActionOption
 */
 export interface DevAssistanceActionOption {
   category: AssistanceActionOptionCategory
@@ -242,7 +242,7 @@ export interface DevAssistanceActionOption {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevAssistanceFactor
+* Generated from evaka.core.shared.dev.DevAssistanceFactor
 */
 export interface DevAssistanceFactor {
   capacityFactor: number
@@ -254,7 +254,7 @@ export interface DevAssistanceFactor {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevAssistanceNeedVoucherCoefficient
+* Generated from evaka.core.shared.dev.DevAssistanceNeedVoucherCoefficient
 */
 export interface DevAssistanceNeedVoucherCoefficient {
   childId: PersonId
@@ -266,7 +266,7 @@ export interface DevAssistanceNeedVoucherCoefficient {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevBackupCare
+* Generated from evaka.core.shared.dev.DevBackupCare
 */
 export interface DevBackupCare {
   childId: PersonId
@@ -281,7 +281,7 @@ export interface DevBackupCare {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevBackupPickup
+* Generated from evaka.core.shared.dev.DevBackupPickup
 */
 export interface DevBackupPickup {
   childId: PersonId
@@ -291,7 +291,7 @@ export interface DevBackupPickup {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevCalendarEvent
+* Generated from evaka.core.shared.dev.DevCalendarEvent
 */
 export interface DevCalendarEvent {
   description: string
@@ -305,7 +305,7 @@ export interface DevCalendarEvent {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevCalendarEventAttendee
+* Generated from evaka.core.shared.dev.DevCalendarEventAttendee
 */
 export interface DevCalendarEventAttendee {
   calendarEventId: CalendarEventId
@@ -316,7 +316,7 @@ export interface DevCalendarEventAttendee {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevCalendarEventTime
+* Generated from evaka.core.shared.dev.DevCalendarEventTime
 */
 export interface DevCalendarEventTime {
   calendarEventId: CalendarEventId
@@ -330,7 +330,7 @@ export interface DevCalendarEventTime {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevCareArea
+* Generated from evaka.core.shared.dev.DevCareArea
 */
 export interface DevCareArea {
   areaCode: number | null
@@ -341,7 +341,7 @@ export interface DevCareArea {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevChild
+* Generated from evaka.core.shared.dev.DevChild
 */
 export interface DevChild {
   additionalInfo: string
@@ -358,7 +358,7 @@ export interface DevChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevChildAttendance
+* Generated from evaka.core.shared.dev.DevChildAttendance
 */
 export interface DevChildAttendance {
   arrived: LocalTime
@@ -371,7 +371,7 @@ export interface DevChildAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevChildDocument
+* Generated from evaka.core.shared.dev.DevChildDocument
 */
 export interface DevChildDocument {
   answeredAt: HelsinkiDateTime | null
@@ -394,7 +394,7 @@ export interface DevChildDocument {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevChildDocumentDecision
+* Generated from evaka.core.shared.dev.DevChildDocumentDecision
 */
 export interface DevChildDocumentDecision {
   createdAt: HelsinkiDateTime
@@ -408,7 +408,7 @@ export interface DevChildDocumentDecision {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevChildDocumentPublishedVersion
+* Generated from evaka.core.shared.dev.DevChildDocumentPublishedVersion
 */
 export interface DevChildDocumentPublishedVersion {
   createdAt: HelsinkiDateTime
@@ -419,7 +419,7 @@ export interface DevChildDocumentPublishedVersion {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevClubTerm
+* Generated from evaka.core.shared.dev.DevClubTerm
 */
 export interface DevClubTerm {
   applicationPeriod: FiniteDateRange
@@ -429,7 +429,7 @@ export interface DevClubTerm {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevDailyServiceTimeNotification
+* Generated from evaka.core.shared.dev.DevDailyServiceTimeNotification
 */
 export interface DevDailyServiceTimeNotification {
   guardianId: PersonId
@@ -437,7 +437,7 @@ export interface DevDailyServiceTimeNotification {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevDailyServiceTimes
+* Generated from evaka.core.shared.dev.DevDailyServiceTimes
 */
 export interface DevDailyServiceTimes {
   childId: PersonId
@@ -455,7 +455,7 @@ export interface DevDailyServiceTimes {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevDaycare
+* Generated from evaka.core.shared.dev.DevDaycare
 */
 export interface DevDaycare {
   additionalInfo: string | null
@@ -511,7 +511,7 @@ export interface DevDaycare {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevDaycareAssistance
+* Generated from evaka.core.shared.dev.DevDaycareAssistance
 */
 export interface DevDaycareAssistance {
   childId: PersonId
@@ -523,7 +523,7 @@ export interface DevDaycareAssistance {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevDaycareGroup
+* Generated from evaka.core.shared.dev.DevDaycareGroup
 */
 export interface DevDaycareGroup {
   aromiCustomerId: string | null
@@ -537,7 +537,7 @@ export interface DevDaycareGroup {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevDaycareGroupAcl
+* Generated from evaka.core.shared.dev.DevDaycareGroupAcl
 */
 export interface DevDaycareGroupAcl {
   created: HelsinkiDateTime
@@ -547,7 +547,7 @@ export interface DevDaycareGroupAcl {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevDaycareGroupPlacement
+* Generated from evaka.core.shared.dev.DevDaycareGroupPlacement
 */
 export interface DevDaycareGroupPlacement {
   daycareGroupId: GroupId
@@ -558,7 +558,7 @@ export interface DevDaycareGroupPlacement {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevDocumentTemplate
+* Generated from evaka.core.shared.dev.DevDocumentTemplate
 */
 export interface DevDocumentTemplate {
   archiveDurationMonths: number | null
@@ -578,7 +578,7 @@ export interface DevDocumentTemplate {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevEmployee
+* Generated from evaka.core.shared.dev.DevEmployee
 */
 export interface DevEmployee {
   active: boolean
@@ -596,7 +596,7 @@ export interface DevEmployee {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevEmployeePin
+* Generated from evaka.core.shared.dev.DevEmployeePin
 */
 export interface DevEmployeePin {
   employeeExternalId: string | null
@@ -607,7 +607,7 @@ export interface DevEmployeePin {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevFamilyContact
+* Generated from evaka.core.shared.dev.DevFamilyContact
 */
 export interface DevFamilyContact {
   childId: PersonId
@@ -617,7 +617,7 @@ export interface DevFamilyContact {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.DevFinanceNote
+* Generated from evaka.core.shared.dev.DevApi.DevFinanceNote
 */
 export interface DevFinanceNote {
   content: string
@@ -625,7 +625,7 @@ export interface DevFinanceNote {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevFosterParent
+* Generated from evaka.core.shared.dev.DevFosterParent
 */
 export interface DevFosterParent {
   childId: PersonId
@@ -637,7 +637,7 @@ export interface DevFosterParent {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevFridgeChild
+* Generated from evaka.core.shared.dev.DevFridgeChild
 */
 export interface DevFridgeChild {
   childId: PersonId
@@ -649,7 +649,7 @@ export interface DevFridgeChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevFridgePartner
+* Generated from evaka.core.shared.dev.DevFridgePartner
 */
 export interface DevFridgePartner {
   conflict: boolean
@@ -663,7 +663,7 @@ export interface DevFridgePartner {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevGuardian
+* Generated from evaka.core.shared.dev.DevGuardian
 */
 export interface DevGuardian {
   childId: PersonId
@@ -671,7 +671,7 @@ export interface DevGuardian {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevIncome
+* Generated from evaka.core.shared.dev.DevIncome
 */
 export interface DevIncome {
   data: Partial<Record<string, IncomeValue>>
@@ -687,7 +687,7 @@ export interface DevIncome {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevIncomeStatement
+* Generated from evaka.core.shared.dev.DevIncomeStatement
 */
 export interface DevIncomeStatement {
   createdAt: HelsinkiDateTime
@@ -704,7 +704,7 @@ export interface DevIncomeStatement {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevInvoice
+* Generated from evaka.core.shared.dev.DevInvoice
 */
 export interface DevInvoice {
   areaId: AreaId
@@ -726,7 +726,7 @@ export interface DevInvoice {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevInvoiceRow
+* Generated from evaka.core.shared.dev.DevInvoiceRow
 */
 export interface DevInvoiceRow {
   amount: number
@@ -743,7 +743,7 @@ export interface DevInvoiceRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevMobileDevice
+* Generated from evaka.core.shared.dev.DevMobileDevice
 */
 export interface DevMobileDevice {
   id: MobileDeviceId
@@ -754,7 +754,7 @@ export interface DevMobileDevice {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevOtherAssistanceMeasure
+* Generated from evaka.core.shared.dev.DevOtherAssistanceMeasure
 */
 export interface DevOtherAssistanceMeasure {
   childId: PersonId
@@ -766,7 +766,7 @@ export interface DevOtherAssistanceMeasure {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevParentship
+* Generated from evaka.core.shared.dev.DevParentship
 */
 export interface DevParentship {
   childId: PersonId
@@ -778,7 +778,7 @@ export interface DevParentship {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevPayment
+* Generated from evaka.core.shared.dev.DevPayment
 */
 export interface DevPayment {
   amount: number
@@ -799,7 +799,7 @@ export interface DevPayment {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevPedagogicalDocument
+* Generated from evaka.core.shared.dev.DevPedagogicalDocument
 */
 export interface DevPedagogicalDocument {
   childId: PersonId
@@ -812,7 +812,7 @@ export interface DevPedagogicalDocument {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevPerson
+* Generated from evaka.core.shared.dev.DevPerson
 */
 export interface DevPerson {
   backupPhone: string
@@ -848,7 +848,7 @@ export interface DevPerson {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.DevPersonEmail
+* Generated from evaka.core.shared.dev.DevApi.DevPersonEmail
 */
 export interface DevPersonEmail {
   email: string | null
@@ -856,7 +856,7 @@ export interface DevPersonEmail {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevPersonType
+* Generated from evaka.core.shared.dev.DevPersonType
 */
 export type DevPersonType =
   | 'CHILD'
@@ -864,7 +864,7 @@ export type DevPersonType =
   | 'RAW_ROW'
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevPersonalMobileDevice
+* Generated from evaka.core.shared.dev.DevPersonalMobileDevice
 */
 export interface DevPersonalMobileDevice {
   employeeId: EmployeeId
@@ -874,7 +874,7 @@ export interface DevPersonalMobileDevice {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevPlacement
+* Generated from evaka.core.shared.dev.DevPlacement
 */
 export interface DevPlacement {
   childId: PersonId
@@ -896,7 +896,7 @@ export interface DevPlacement {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevPreschoolAssistance
+* Generated from evaka.core.shared.dev.DevPreschoolAssistance
 */
 export interface DevPreschoolAssistance {
   childId: PersonId
@@ -908,7 +908,7 @@ export interface DevPreschoolAssistance {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevPreschoolTerm
+* Generated from evaka.core.shared.dev.DevPreschoolTerm
 */
 export interface DevPreschoolTerm {
   applicationPeriod: FiniteDateRange
@@ -920,7 +920,7 @@ export interface DevPreschoolTerm {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevServiceNeed
+* Generated from evaka.core.shared.dev.DevServiceNeed
 */
 export interface DevServiceNeed {
   confirmedAt: HelsinkiDateTime | null
@@ -935,7 +935,7 @@ export interface DevServiceNeed {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevStaffAttendance
+* Generated from evaka.core.shared.dev.DevStaffAttendance
 */
 export interface DevStaffAttendance {
   arrived: HelsinkiDateTime
@@ -951,7 +951,7 @@ export interface DevStaffAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevStaffAttendancePlan
+* Generated from evaka.core.shared.dev.DevStaffAttendancePlan
 */
 export interface DevStaffAttendancePlan {
   description: string | null
@@ -963,7 +963,7 @@ export interface DevStaffAttendancePlan {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.DevTerminatePlacementRequest
+* Generated from evaka.core.shared.dev.DevApi.DevTerminatePlacementRequest
 */
 export interface DevTerminatePlacementRequest {
   endDate: LocalDate
@@ -973,7 +973,7 @@ export interface DevTerminatePlacementRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevUpsertStaffOccupancyCoefficient
+* Generated from evaka.core.shared.dev.DevUpsertStaffOccupancyCoefficient
 */
 export interface DevUpsertStaffOccupancyCoefficient {
   coefficient: number
@@ -982,7 +982,7 @@ export interface DevUpsertStaffOccupancyCoefficient {
 }
 
 /**
-* Generated from fi.espoo.evaka.emailclient.Email
+* Generated from evaka.core.emailclient.Email
 */
 export interface Email {
   content: EmailContent
@@ -992,7 +992,7 @@ export interface Email {
 }
 
 /**
-* Generated from fi.espoo.evaka.emailclient.EmailContent
+* Generated from evaka.core.emailclient.EmailContent
 */
 export interface EmailContent {
   html: string
@@ -1001,7 +1001,7 @@ export interface EmailContent {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.MockDigitransit.Feature
+* Generated from evaka.core.shared.dev.MockDigitransit.Feature
 */
 export interface Feature {
   geometry: Geometry
@@ -1009,7 +1009,7 @@ export interface Feature {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.MockDigitransit.FeatureProperties
+* Generated from evaka.core.shared.dev.MockDigitransit.FeatureProperties
 */
 export interface FeatureProperties {
   localadmin: string | null
@@ -1019,7 +1019,7 @@ export interface FeatureProperties {
 }
 
 /**
-* Generated from fi.espoo.evaka.emailclient.FromAddress
+* Generated from evaka.core.emailclient.FromAddress
 */
 export interface FromAddress {
   address: string
@@ -1027,14 +1027,14 @@ export interface FromAddress {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.MockDigitransit.Geometry
+* Generated from evaka.core.shared.dev.MockDigitransit.Geometry
 */
 export interface Geometry {
   coordinates: [number, number]
 }
 
 /**
-* Generated from fi.espoo.evaka.vtjclient.service.persondetails.MockVtjDataset
+* Generated from evaka.core.vtjclient.service.persondetails.MockVtjDataset
 */
 export interface MockVtjDataset {
   guardianDependants: Partial<Record<string, string[]>>
@@ -1042,7 +1042,7 @@ export interface MockVtjDataset {
 }
 
 /**
-* Generated from fi.espoo.evaka.vtjclient.service.persondetails.MockVtjPerson
+* Generated from evaka.core.vtjclient.service.persondetails.MockVtjPerson
 */
 export interface MockVtjPerson {
   address: PersonAddress | null
@@ -1058,7 +1058,7 @@ export interface MockVtjPerson {
 }
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuCustomer
+* Generated from evaka.core.nekku.NekkuCustomer
 */
 export interface NekkuCustomer {
   customerType: CustomerType[]
@@ -1068,7 +1068,7 @@ export interface NekkuCustomer {
 }
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuCustomerWeekday
+* Generated from evaka.core.nekku.NekkuCustomerWeekday
 */
 export const nekku_customer_weekday = [
   'MONDAY',
@@ -1084,7 +1084,7 @@ export const nekku_customer_weekday = [
 export type NekkuCustomerWeekday = typeof nekku_customer_weekday[number]
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuSpecialDiet
+* Generated from evaka.core.nekku.NekkuSpecialDiet
 */
 export interface NekkuSpecialDiet {
   fields: NekkuSpecialDietsField[]
@@ -1093,7 +1093,7 @@ export interface NekkuSpecialDiet {
 }
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuSpecialDietOption
+* Generated from evaka.core.nekku.NekkuSpecialDietOption
 */
 export interface NekkuSpecialDietOption {
   key: string
@@ -1102,7 +1102,7 @@ export interface NekkuSpecialDietOption {
 }
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuSpecialDietsField
+* Generated from evaka.core.nekku.NekkuSpecialDietsField
 */
 export interface NekkuSpecialDietsField {
   id: string
@@ -1112,7 +1112,7 @@ export interface NekkuSpecialDietsField {
 }
 
 /**
-* Generated from fi.espoo.evaka.vtjclient.dto.PersonAddress
+* Generated from evaka.core.vtjclient.dto.PersonAddress
 */
 export interface PersonAddress {
   postOffice: string | null
@@ -1123,7 +1123,7 @@ export interface PersonAddress {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.PlacementPlan
+* Generated from evaka.core.shared.dev.PlacementPlan
 */
 export interface PlacementPlan {
   periodEnd: LocalDate
@@ -1134,7 +1134,7 @@ export interface PlacementPlan {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementSource
+* Generated from evaka.core.placement.PlacementSource
 */
 export type PlacementSource =
   | 'APPLICATION'
@@ -1143,7 +1143,7 @@ export type PlacementSource =
   | 'MANUAL'
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationInsert
+* Generated from evaka.core.reservations.ReservationInsert
 */
 export interface ReservationInsert {
   childId: PersonId
@@ -1152,7 +1152,7 @@ export interface ReservationInsert {
 }
 
 /**
-* Generated from fi.espoo.evaka.vtjclient.dto.RestrictedDetails
+* Generated from evaka.core.vtjclient.dto.RestrictedDetails
 */
 export interface RestrictedDetails {
   enabled: boolean
@@ -1160,7 +1160,7 @@ export interface RestrictedDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.sficlient.SfiMessage
+* Generated from evaka.core.sficlient.SfiMessage
 */
 export interface SfiMessage {
   countryCode: string
@@ -1186,7 +1186,7 @@ export type SfiMessageId = Id<'SfiMessage'>
 export type StaffAttendancePlanId = Id<'StaffAttendancePlan'>
 
 /**
-* Generated from fi.espoo.evaka.shared.dev.DevApi.UpdateIncomeStatementHandledBody
+* Generated from evaka.core.shared.dev.DevApi.UpdateIncomeStatementHandledBody
 */
 export interface UpdateIncomeStatementHandledBody {
   employeeId: EmployeeId
@@ -1196,7 +1196,7 @@ export interface UpdateIncomeStatementHandledBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+* Generated from evaka.core.invoicing.domain.VoucherValueDecision
 */
 export interface VoucherValueDecision {
   approvedAt: HelsinkiDateTime | null
@@ -1233,7 +1233,7 @@ export interface VoucherValueDecision {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
+* Generated from evaka.core.invoicing.domain.VoucherValueDecisionPlacement
 */
 export interface VoucherValueDecisionPlacement {
   type: PlacementType

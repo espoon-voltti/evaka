@@ -20,7 +20,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationControllerCitizen.getAllApplicableUnits
+* Generated from evaka.core.daycare.controllers.LocationControllerCitizen.getAllApplicableUnits
 */
 export async function getAllApplicableUnits(
   request: {
@@ -36,7 +36,7 @@ export async function getAllApplicableUnits(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationControllerCitizen.getApplicationUnits
+* Generated from evaka.core.daycare.controllers.LocationControllerCitizen.getApplicationUnits
 */
 export async function getApplicationUnits(
   request: {
@@ -60,7 +60,7 @@ export async function getApplicationUnits(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.getClubTerms
+* Generated from evaka.core.daycare.controllers.TermsController.getClubTerms
 */
 export async function getClubTerms(): Promise<ClubTerm[]> {
   const { data: json } = await client.request<JsonOf<ClubTerm[]>>({
@@ -72,7 +72,7 @@ export async function getClubTerms(): Promise<ClubTerm[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.getPreschoolTerms
+* Generated from evaka.core.daycare.controllers.TermsController.getPreschoolTerms
 */
 export async function getPreschoolTerms(): Promise<PreschoolTerm[]> {
   const { data: json } = await client.request<JsonOf<PreschoolTerm[]>>({

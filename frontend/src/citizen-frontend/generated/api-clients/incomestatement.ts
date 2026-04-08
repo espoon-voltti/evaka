@@ -23,7 +23,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.createChildIncomeStatement
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.createChildIncomeStatement
 */
 export async function createChildIncomeStatement(
   request: {
@@ -46,7 +46,7 @@ export async function createChildIncomeStatement(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.createIncomeStatement
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.createIncomeStatement
 */
 export async function createIncomeStatement(
   request: {
@@ -68,7 +68,7 @@ export async function createIncomeStatement(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.deleteIncomeStatement
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.deleteIncomeStatement
 */
 export async function deleteIncomeStatement(
   request: {
@@ -84,7 +84,7 @@ export async function deleteIncomeStatement(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getChildIncomeStatementStartDates
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.getChildIncomeStatementStartDates
 */
 export async function getChildIncomeStatementStartDates(
   request: {
@@ -100,7 +100,7 @@ export async function getChildIncomeStatementStartDates(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getChildIncomeStatements
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.getChildIncomeStatements
 */
 export async function getChildIncomeStatements(
   request: {
@@ -121,7 +121,7 @@ export async function getChildIncomeStatements(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getIncomeStatement
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.getIncomeStatement
 */
 export async function getIncomeStatement(
   request: {
@@ -137,7 +137,7 @@ export async function getIncomeStatement(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getIncomeStatementChildren
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.getIncomeStatementChildren
 */
 export async function getIncomeStatementChildren(): Promise<ChildBasicInfo[]> {
   const { data: json } = await client.request<JsonOf<ChildBasicInfo[]>>({
@@ -149,7 +149,7 @@ export async function getIncomeStatementChildren(): Promise<ChildBasicInfo[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getIncomeStatementStartDates
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.getIncomeStatementStartDates
 */
 export async function getIncomeStatementStartDates(): Promise<LocalDate[]> {
   const { data: json } = await client.request<JsonOf<LocalDate[]>>({
@@ -161,7 +161,7 @@ export async function getIncomeStatementStartDates(): Promise<LocalDate[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getIncomeStatements
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.getIncomeStatements
 */
 export async function getIncomeStatements(
   request: {
@@ -181,7 +181,7 @@ export async function getIncomeStatements(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.getPartnerIncomeStatementStatus
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.getPartnerIncomeStatementStatus
 */
 export async function getPartnerIncomeStatementStatus(): Promise<PartnerIncomeStatementStatusResponse> {
   const { data: json } = await client.request<JsonOf<PartnerIncomeStatementStatusResponse>>({
@@ -193,7 +193,7 @@ export async function getPartnerIncomeStatementStatus(): Promise<PartnerIncomeSt
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.updateIncomeStatement
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.updateIncomeStatement
 */
 export async function updateIncomeStatement(
   request: {
@@ -216,7 +216,7 @@ export async function updateIncomeStatement(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementControllerCitizen.updateSentIncomeStatement
+* Generated from evaka.core.incomestatement.IncomeStatementControllerCitizen.updateSentIncomeStatement
 */
 export async function updateSentIncomeStatement(
   request: {

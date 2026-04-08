@@ -16,7 +16,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.pairing.PairingsController.getPairingStatus
+* Generated from evaka.core.pairing.PairingsController.getPairingStatus
 */
 export async function getPairingStatus(
   request: {
@@ -32,7 +32,7 @@ export async function getPairingStatus(
 
 
 /**
-* Generated from fi.espoo.evaka.pairing.PairingsController.postPairingChallenge
+* Generated from evaka.core.pairing.PairingsController.postPairingChallenge
 */
 export async function postPairingChallenge(
   request: {

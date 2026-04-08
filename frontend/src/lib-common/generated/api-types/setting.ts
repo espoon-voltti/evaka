@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 /**
-* Generated from fi.espoo.evaka.setting.SettingType
+* Generated from evaka.core.setting.SettingType
 */
 export const settings = [
   'DECISION_MAKER_NAME',

@@ -12,7 +12,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.aromi.AromiController.getMealOrders
+* Generated from evaka.core.aromi.AromiController.getMealOrders
 */
 export function getMealOrders(
   request: {

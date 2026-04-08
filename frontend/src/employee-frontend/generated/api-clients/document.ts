@@ -44,7 +44,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.createTemplate
+* Generated from evaka.core.document.DocumentTemplateController.createTemplate
 */
 export async function createTemplate(
   request: {
@@ -61,7 +61,7 @@ export async function createTemplate(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.deleteDraftTemplate
+* Generated from evaka.core.document.DocumentTemplateController.deleteDraftTemplate
 */
 export async function deleteDraftTemplate(
   request: {
@@ -77,7 +77,7 @@ export async function deleteDraftTemplate(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.duplicateTemplate
+* Generated from evaka.core.document.DocumentTemplateController.duplicateTemplate
 */
 export async function duplicateTemplate(
   request: {
@@ -95,7 +95,7 @@ export async function duplicateTemplate(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.exportTemplate
+* Generated from evaka.core.document.DocumentTemplateController.exportTemplate
 */
 export function exportTemplate(
   request: {
@@ -109,7 +109,7 @@ export function exportTemplate(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.forceUnpublishTemplate
+* Generated from evaka.core.document.DocumentTemplateController.forceUnpublishTemplate
 */
 export async function forceUnpublishTemplate(
   request: {
@@ -125,7 +125,7 @@ export async function forceUnpublishTemplate(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.getActiveTemplates
+* Generated from evaka.core.document.DocumentTemplateController.getActiveTemplates
 */
 export async function getActiveTemplates(
   request: {
@@ -145,7 +145,7 @@ export async function getActiveTemplates(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.getActiveTemplatesByGroupId
+* Generated from evaka.core.document.DocumentTemplateController.getActiveTemplatesByGroupId
 */
 export async function getActiveTemplatesByGroupId(
   request: {
@@ -167,7 +167,7 @@ export async function getActiveTemplatesByGroupId(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.getTemplate
+* Generated from evaka.core.document.DocumentTemplateController.getTemplate
 */
 export async function getTemplate(
   request: {
@@ -183,7 +183,7 @@ export async function getTemplate(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.getTemplates
+* Generated from evaka.core.document.DocumentTemplateController.getTemplates
 */
 export async function getTemplates(): Promise<DocumentTemplateSummary[]> {
   const { data: json } = await client.request<JsonOf<DocumentTemplateSummary[]>>({
@@ -195,7 +195,7 @@ export async function getTemplates(): Promise<DocumentTemplateSummary[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.importTemplate
+* Generated from evaka.core.document.DocumentTemplateController.importTemplate
 */
 export async function importTemplate(
   request: {
@@ -212,7 +212,7 @@ export async function importTemplate(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.publishTemplate
+* Generated from evaka.core.document.DocumentTemplateController.publishTemplate
 */
 export async function publishTemplate(
   request: {
@@ -228,7 +228,7 @@ export async function publishTemplate(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.updateDraftTemplateBasics
+* Generated from evaka.core.document.DocumentTemplateController.updateDraftTemplateBasics
 */
 export async function updateDraftTemplateBasics(
   request: {
@@ -246,7 +246,7 @@ export async function updateDraftTemplateBasics(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.updateDraftTemplateContent
+* Generated from evaka.core.document.DocumentTemplateController.updateDraftTemplateContent
 */
 export async function updateDraftTemplateContent(
   request: {
@@ -264,7 +264,7 @@ export async function updateDraftTemplateContent(
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateController.updateTemplateValidity
+* Generated from evaka.core.document.DocumentTemplateController.updateTemplateValidity
 */
 export async function updateTemplateValidity(
   request: {
@@ -282,7 +282,7 @@ export async function updateTemplateValidity(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.acceptChildDocumentDecision
+* Generated from evaka.core.document.childdocument.ChildDocumentController.acceptChildDocumentDecision
 */
 export async function acceptChildDocumentDecision(
   request: {
@@ -300,7 +300,7 @@ export async function acceptChildDocumentDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.annulChildDocumentDecision
+* Generated from evaka.core.document.childdocument.ChildDocumentController.annulChildDocumentDecision
 */
 export async function annulChildDocumentDecision(
   request: {
@@ -318,7 +318,7 @@ export async function annulChildDocumentDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.createDecisionDocument
+* Generated from evaka.core.document.childdocument.ChildDocumentController.createDecisionDocument
 */
 export async function createDecisionDocument(
   request: {
@@ -335,7 +335,7 @@ export async function createDecisionDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.createDocument
+* Generated from evaka.core.document.childdocument.ChildDocumentController.createDocument
 */
 export async function createDocument(
   request: {
@@ -352,7 +352,7 @@ export async function createDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.createDocuments
+* Generated from evaka.core.document.childdocument.ChildDocumentController.createDocuments
 */
 export async function createDocuments(
   request: {
@@ -369,7 +369,7 @@ export async function createDocuments(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.deleteDraftDocument
+* Generated from evaka.core.document.childdocument.ChildDocumentController.deleteDraftDocument
 */
 export async function deleteDraftDocument(
   request: {
@@ -385,7 +385,7 @@ export async function deleteDraftDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.downloadChildDocument
+* Generated from evaka.core.document.childdocument.ChildDocumentController.downloadChildDocument
 */
 export function downloadChildDocument(
   request: {
@@ -403,7 +403,7 @@ export function downloadChildDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.getAcceptedChildDocumentDecisions
+* Generated from evaka.core.document.childdocument.ChildDocumentController.getAcceptedChildDocumentDecisions
 */
 export async function getAcceptedChildDocumentDecisions(
   request: {
@@ -423,7 +423,7 @@ export async function getAcceptedChildDocumentDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.getChildDocumentDecisionMakers
+* Generated from evaka.core.document.childdocument.ChildDocumentController.getChildDocumentDecisionMakers
 */
 export async function getChildDocumentDecisionMakers(
   request: {
@@ -439,7 +439,7 @@ export async function getChildDocumentDecisionMakers(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.getDocument
+* Generated from evaka.core.document.childdocument.ChildDocumentController.getDocument
 */
 export async function getDocument(
   request: {
@@ -455,7 +455,7 @@ export async function getDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.getDocuments
+* Generated from evaka.core.document.childdocument.ChildDocumentController.getDocuments
 */
 export async function getDocuments(
   request: {
@@ -475,7 +475,7 @@ export async function getDocuments(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.getNonCompletedChildDocumentChildIds
+* Generated from evaka.core.document.childdocument.ChildDocumentController.getNonCompletedChildDocumentChildIds
 */
 export async function getNonCompletedChildDocumentChildIds(
   request: {
@@ -497,7 +497,7 @@ export async function getNonCompletedChildDocumentChildIds(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.nextDocumentStatus
+* Generated from evaka.core.document.childdocument.ChildDocumentController.nextDocumentStatus
 */
 export async function nextDocumentStatus(
   request: {
@@ -515,7 +515,7 @@ export async function nextDocumentStatus(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.planArchiveChildDocument
+* Generated from evaka.core.document.childdocument.ChildDocumentController.planArchiveChildDocument
 */
 export async function planArchiveChildDocument(
   request: {
@@ -531,7 +531,7 @@ export async function planArchiveChildDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.prevDocumentStatus
+* Generated from evaka.core.document.childdocument.ChildDocumentController.prevDocumentStatus
 */
 export async function prevDocumentStatus(
   request: {
@@ -549,7 +549,7 @@ export async function prevDocumentStatus(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.proposeChildDocumentDecision
+* Generated from evaka.core.document.childdocument.ChildDocumentController.proposeChildDocumentDecision
 */
 export async function proposeChildDocumentDecision(
   request: {
@@ -567,7 +567,7 @@ export async function proposeChildDocumentDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.publishDocument
+* Generated from evaka.core.document.childdocument.ChildDocumentController.publishDocument
 */
 export async function publishDocument(
   request: {
@@ -583,7 +583,7 @@ export async function publishDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.rejectChildDocumentDecision
+* Generated from evaka.core.document.childdocument.ChildDocumentController.rejectChildDocumentDecision
 */
 export async function rejectChildDocumentDecision(
   request: {
@@ -599,7 +599,7 @@ export async function rejectChildDocumentDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.takeDocumentWriteLock
+* Generated from evaka.core.document.childdocument.ChildDocumentController.takeDocumentWriteLock
 */
 export async function takeDocumentWriteLock(
   request: {
@@ -615,7 +615,7 @@ export async function takeDocumentWriteLock(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.updateChildDocumentDecisionValidity
+* Generated from evaka.core.document.childdocument.ChildDocumentController.updateChildDocumentDecisionValidity
 */
 export async function updateChildDocumentDecisionValidity(
   request: {
@@ -633,7 +633,7 @@ export async function updateChildDocumentDecisionValidity(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.updateDocumentContent
+* Generated from evaka.core.document.childdocument.ChildDocumentController.updateDocumentContent
 */
 export async function updateDocumentContent(
   request: {

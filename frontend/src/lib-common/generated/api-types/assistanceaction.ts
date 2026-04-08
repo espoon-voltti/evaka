@@ -13,7 +13,7 @@ import LocalDate from '../../local-date'
 import type { PersonId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.assistanceaction.AssistanceAction
+* Generated from evaka.core.assistanceaction.AssistanceAction
 */
 export interface AssistanceAction {
   actions: string[]
@@ -27,7 +27,7 @@ export interface AssistanceAction {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistanceaction.AssistanceActionOption
+* Generated from evaka.core.assistanceaction.AssistanceActionOption
 */
 export interface AssistanceActionOption {
   category: AssistanceActionOptionCategory
@@ -40,7 +40,7 @@ export interface AssistanceActionOption {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistanceaction.AssistanceActionOptionCategory
+* Generated from evaka.core.assistanceaction.AssistanceActionOptionCategory
 */
 export const assistanceActionOptionCategories = [
   'DAYCARE',
@@ -50,7 +50,7 @@ export const assistanceActionOptionCategories = [
 export type AssistanceActionOptionCategory = typeof assistanceActionOptionCategories[number]
 
 /**
-* Generated from fi.espoo.evaka.assistanceaction.AssistanceActionRequest
+* Generated from evaka.core.assistanceaction.AssistanceActionRequest
 */
 export interface AssistanceActionRequest {
   actions: string[]
@@ -60,7 +60,7 @@ export interface AssistanceActionRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistanceaction.AssistanceActionResponse
+* Generated from evaka.core.assistanceaction.AssistanceActionResponse
 */
 export interface AssistanceActionResponse {
   action: AssistanceAction

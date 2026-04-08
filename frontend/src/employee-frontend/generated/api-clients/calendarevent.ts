@@ -26,7 +26,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.addCalendarEventTime
+* Generated from evaka.core.calendarevent.CalendarEventController.addCalendarEventTime
 */
 export async function addCalendarEventTime(
   request: {
@@ -44,7 +44,7 @@ export async function addCalendarEventTime(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.clearEventTimesInEventForChild
+* Generated from evaka.core.calendarevent.CalendarEventController.clearEventTimesInEventForChild
 */
 export async function clearEventTimesInEventForChild(
   request: {
@@ -61,7 +61,7 @@ export async function clearEventTimesInEventForChild(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.createCalendarEvent
+* Generated from evaka.core.calendarevent.CalendarEventController.createCalendarEvent
 */
 export async function createCalendarEvent(
   request: {
@@ -78,7 +78,7 @@ export async function createCalendarEvent(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.deleteCalendarEvent
+* Generated from evaka.core.calendarevent.CalendarEventController.deleteCalendarEvent
 */
 export async function deleteCalendarEvent(
   request: {
@@ -94,7 +94,7 @@ export async function deleteCalendarEvent(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.deleteCalendarEventTime
+* Generated from evaka.core.calendarevent.CalendarEventController.deleteCalendarEventTime
 */
 export async function deleteCalendarEventTime(
   request: {
@@ -110,7 +110,7 @@ export async function deleteCalendarEventTime(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.getCalendarEvent
+* Generated from evaka.core.calendarevent.CalendarEventController.getCalendarEvent
 */
 export async function getCalendarEvent(
   request: {
@@ -126,7 +126,7 @@ export async function getCalendarEvent(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.getGroupDiscussionReservationDays
+* Generated from evaka.core.calendarevent.CalendarEventController.getGroupDiscussionReservationDays
 */
 export async function getGroupDiscussionReservationDays(
   request: {
@@ -150,7 +150,7 @@ export async function getGroupDiscussionReservationDays(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.getGroupDiscussionSurveys
+* Generated from evaka.core.calendarevent.CalendarEventController.getGroupDiscussionSurveys
 */
 export async function getGroupDiscussionSurveys(
   request: {
@@ -167,7 +167,7 @@ export async function getGroupDiscussionSurveys(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.getUnitCalendarEvents
+* Generated from evaka.core.calendarevent.CalendarEventController.getUnitCalendarEvents
 */
 export async function getUnitCalendarEvents(
   request: {
@@ -190,7 +190,7 @@ export async function getUnitCalendarEvents(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.modifyCalendarEvent
+* Generated from evaka.core.calendarevent.CalendarEventController.modifyCalendarEvent
 */
 export async function modifyCalendarEvent(
   request: {
@@ -208,7 +208,7 @@ export async function modifyCalendarEvent(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.setCalendarEventTimeReservation
+* Generated from evaka.core.calendarevent.CalendarEventController.setCalendarEventTimeReservation
 */
 export async function setCalendarEventTimeReservation(
   request: {
@@ -225,7 +225,7 @@ export async function setCalendarEventTimeReservation(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.updateCalendarEvent
+* Generated from evaka.core.calendarevent.CalendarEventController.updateCalendarEvent
 */
 export async function updateCalendarEvent(
   request: {

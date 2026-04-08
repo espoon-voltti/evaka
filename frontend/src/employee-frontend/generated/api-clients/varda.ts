@@ -11,7 +11,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.varda.VardaController.markChildForVardaReset
+* Generated from evaka.core.varda.VardaController.markChildForVardaReset
 */
 export async function markChildForVardaReset(
   request: {

@@ -13,7 +13,7 @@ import type { JsonOf } from '../../json'
 import type { PersonId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficient
+* Generated from evaka.core.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficient
 */
 export interface AssistanceNeedVoucherCoefficient {
   childId: PersonId
@@ -25,7 +25,7 @@ export interface AssistanceNeedVoucherCoefficient {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
+* Generated from evaka.core.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientRequest
 */
 export interface AssistanceNeedVoucherCoefficientRequest {
   coefficient: number
@@ -33,7 +33,7 @@ export interface AssistanceNeedVoucherCoefficientRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientResponse
+* Generated from evaka.core.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientResponse
 */
 export interface AssistanceNeedVoucherCoefficientResponse {
   permittedActions: Action.AssistanceNeedVoucherCoefficient[]

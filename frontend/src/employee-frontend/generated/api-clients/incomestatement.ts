@@ -23,7 +23,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementController.getIncomeStatement
+* Generated from evaka.core.incomestatement.IncomeStatementController.getIncomeStatement
 */
 export async function getIncomeStatement(
   request: {
@@ -39,7 +39,7 @@ export async function getIncomeStatement(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementController.getIncomeStatementChildren
+* Generated from evaka.core.incomestatement.IncomeStatementController.getIncomeStatementChildren
 */
 export async function getIncomeStatementChildren(
   request: {
@@ -55,7 +55,7 @@ export async function getIncomeStatementChildren(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementController.getIncomeStatements
+* Generated from evaka.core.incomestatement.IncomeStatementController.getIncomeStatements
 */
 export async function getIncomeStatements(
   request: {
@@ -76,7 +76,7 @@ export async function getIncomeStatements(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementController.getIncomeStatementsAwaitingHandler
+* Generated from evaka.core.incomestatement.IncomeStatementController.getIncomeStatementsAwaitingHandler
 */
 export async function getIncomeStatementsAwaitingHandler(
   request: {
@@ -93,7 +93,7 @@ export async function getIncomeStatementsAwaitingHandler(
 
 
 /**
-* Generated from fi.espoo.evaka.incomestatement.IncomeStatementController.setIncomeStatementHandled
+* Generated from evaka.core.incomestatement.IncomeStatementController.setIncomeStatementHandled
 */
 export async function setIncomeStatementHandled(
   request: {

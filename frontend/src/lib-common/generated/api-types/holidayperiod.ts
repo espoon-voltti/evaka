@@ -14,7 +14,7 @@ import type { PersonId } from './shared'
 import type { Translatable } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.ActiveQuestionnaire
+* Generated from evaka.core.holidayperiod.ActiveQuestionnaire
 */
 export interface ActiveQuestionnaire {
   eligibleChildren: Partial<Record<PersonId, FiniteDateRange[]>>
@@ -23,14 +23,14 @@ export interface ActiveQuestionnaire {
 }
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.FixedPeriodsBody
+* Generated from evaka.core.holidayperiod.FixedPeriodsBody
 */
 export interface FixedPeriodsBody {
   fixedPeriods: Partial<Record<PersonId, FiniteDateRange | null>>
 }
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriod
+* Generated from evaka.core.holidayperiod.HolidayPeriod
 */
 export interface HolidayPeriod {
   id: HolidayPeriodId
@@ -40,7 +40,7 @@ export interface HolidayPeriod {
 }
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodCreate
+* Generated from evaka.core.holidayperiod.HolidayPeriodCreate
 */
 export interface HolidayPeriodCreate {
   period: FiniteDateRange
@@ -51,7 +51,7 @@ export interface HolidayPeriodCreate {
 
 export namespace HolidayPeriodEffect {
   /**
-  * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodEffect.NotYetReservable
+  * Generated from evaka.core.holidayperiod.HolidayPeriodEffect.NotYetReservable
   */
   export interface NotYetReservable {
     type: 'NotYetReservable'
@@ -60,14 +60,14 @@ export namespace HolidayPeriodEffect {
   }
 
   /**
-  * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodEffect.ReservationsClosed
+  * Generated from evaka.core.holidayperiod.HolidayPeriodEffect.ReservationsClosed
   */
   export interface ReservationsClosed {
     type: 'ReservationsClosed'
   }
 
   /**
-  * Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodEffect.ReservationsOpen
+  * Generated from evaka.core.holidayperiod.HolidayPeriodEffect.ReservationsOpen
   */
   export interface ReservationsOpen {
     type: 'ReservationsOpen'
@@ -75,13 +75,13 @@ export namespace HolidayPeriodEffect {
 }
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodEffect
+* Generated from evaka.core.holidayperiod.HolidayPeriodEffect
 */
 export type HolidayPeriodEffect = HolidayPeriodEffect.NotYetReservable | HolidayPeriodEffect.ReservationsClosed | HolidayPeriodEffect.ReservationsOpen
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodUpdate
+* Generated from evaka.core.holidayperiod.HolidayPeriodUpdate
 */
 export interface HolidayPeriodUpdate {
   reservationDeadline: LocalDate
@@ -91,7 +91,7 @@ export interface HolidayPeriodUpdate {
 
 export namespace HolidayQuestionnaire {
   /**
-  * Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaire.FixedPeriodQuestionnaire
+  * Generated from evaka.core.holidayperiod.HolidayQuestionnaire.FixedPeriodQuestionnaire
   */
   export interface FixedPeriodQuestionnaire {
     type: 'FIXED_PERIOD'
@@ -108,7 +108,7 @@ export namespace HolidayQuestionnaire {
   }
 
   /**
-  * Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaire.OpenRangesQuestionnaire
+  * Generated from evaka.core.holidayperiod.HolidayQuestionnaire.OpenRangesQuestionnaire
   */
   export interface OpenRangesQuestionnaire {
     type: 'OPEN_RANGES'
@@ -126,13 +126,13 @@ export namespace HolidayQuestionnaire {
 }
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaire
+* Generated from evaka.core.holidayperiod.HolidayQuestionnaire
 */
 export type HolidayQuestionnaire = HolidayQuestionnaire.FixedPeriodQuestionnaire | HolidayQuestionnaire.OpenRangesQuestionnaire
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireAnswer
+* Generated from evaka.core.holidayperiod.HolidayQuestionnaireAnswer
 */
 export interface HolidayQuestionnaireAnswer {
   childId: PersonId
@@ -142,7 +142,7 @@ export interface HolidayQuestionnaireAnswer {
 }
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.OpenRangesBody
+* Generated from evaka.core.holidayperiod.OpenRangesBody
 */
 export interface OpenRangesBody {
   openRanges: Partial<Record<PersonId, FiniteDateRange[]>>
@@ -151,7 +151,7 @@ export interface OpenRangesBody {
 
 export namespace QuestionnaireBody {
   /**
-  * Generated from fi.espoo.evaka.holidayperiod.QuestionnaireBody.FixedPeriodQuestionnaireBody
+  * Generated from evaka.core.holidayperiod.QuestionnaireBody.FixedPeriodQuestionnaireBody
   */
   export interface FixedPeriodQuestionnaireBody {
     type: 'FIXED_PERIOD'
@@ -167,7 +167,7 @@ export namespace QuestionnaireBody {
   }
 
   /**
-  * Generated from fi.espoo.evaka.holidayperiod.QuestionnaireBody.OpenRangesQuestionnaireBody
+  * Generated from evaka.core.holidayperiod.QuestionnaireBody.OpenRangesQuestionnaireBody
   */
   export interface OpenRangesQuestionnaireBody {
     type: 'OPEN_RANGES'
@@ -184,20 +184,20 @@ export namespace QuestionnaireBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.QuestionnaireBody
+* Generated from evaka.core.holidayperiod.QuestionnaireBody
 */
 export type QuestionnaireBody = QuestionnaireBody.FixedPeriodQuestionnaireBody | QuestionnaireBody.OpenRangesQuestionnaireBody
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.QuestionnaireConditions
+* Generated from evaka.core.holidayperiod.QuestionnaireConditions
 */
 export interface QuestionnaireConditions {
   continuousPlacement: FiniteDateRange | null
 }
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.QuestionnaireType
+* Generated from evaka.core.holidayperiod.QuestionnaireType
 */
 export type QuestionnaireType =
   | 'FIXED_PERIOD'

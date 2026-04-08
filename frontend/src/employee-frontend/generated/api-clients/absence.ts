@@ -27,7 +27,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceController.addPresences
+* Generated from evaka.core.absence.AbsenceController.addPresences
 */
 export async function addPresences(
   request: {
@@ -45,7 +45,7 @@ export async function addPresences(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceController.deleteHolidayReservations
+* Generated from evaka.core.absence.AbsenceController.deleteHolidayReservations
 */
 export async function deleteHolidayReservations(
   request: {
@@ -63,7 +63,7 @@ export async function deleteHolidayReservations(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceController.getAbsencesOfChild
+* Generated from evaka.core.absence.AbsenceController.getAbsencesOfChild
 */
 export async function getAbsencesOfChild(
   request: {
@@ -86,7 +86,7 @@ export async function getAbsencesOfChild(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceController.groupMonthCalendar
+* Generated from evaka.core.absence.AbsenceController.groupMonthCalendar
 */
 export async function groupMonthCalendar(
   request: {
@@ -109,7 +109,7 @@ export async function groupMonthCalendar(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceController.upsertAbsences
+* Generated from evaka.core.absence.AbsenceController.upsertAbsences
 */
 export async function upsertAbsences(
   request: {
@@ -127,7 +127,7 @@ export async function upsertAbsences(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerEmployee.acceptAbsenceApplication
+* Generated from evaka.core.absence.application.AbsenceApplicationControllerEmployee.acceptAbsenceApplication
 */
 export async function acceptAbsenceApplication(
   request: {
@@ -143,7 +143,7 @@ export async function acceptAbsenceApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerEmployee.getAbsenceApplications
+* Generated from evaka.core.absence.application.AbsenceApplicationControllerEmployee.getAbsenceApplications
 */
 export async function getAbsenceApplications(
   request: {
@@ -167,7 +167,7 @@ export async function getAbsenceApplications(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerEmployee.rejectAbsenceApplication
+* Generated from evaka.core.absence.application.AbsenceApplicationControllerEmployee.rejectAbsenceApplication
 */
 export async function rejectAbsenceApplication(
   request: {

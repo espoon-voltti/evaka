@@ -26,7 +26,7 @@ import type { VoucherValueDecisionStatus } from './invoicing'
 import { deserializeJsonCreationModificationMetadata } from './pis'
 
 /**
-* Generated from fi.espoo.evaka.timeline.Timeline
+* Generated from evaka.core.timeline.Timeline
 */
 export interface Timeline {
   children: TimelineChildDetailed[]
@@ -40,7 +40,7 @@ export interface Timeline {
 }
 
 /**
-* Generated from fi.espoo.evaka.timeline.TimelineChildDetailed
+* Generated from evaka.core.timeline.TimelineChildDetailed
 */
 export interface TimelineChildDetailed {
   childId: PersonId
@@ -58,7 +58,7 @@ export interface TimelineChildDetailed {
 }
 
 /**
-* Generated from fi.espoo.evaka.timeline.TimelineFeeAlteration
+* Generated from evaka.core.timeline.TimelineFeeAlteration
 */
 export interface TimelineFeeAlteration {
   absolute: boolean
@@ -70,7 +70,7 @@ export interface TimelineFeeAlteration {
 }
 
 /**
-* Generated from fi.espoo.evaka.timeline.TimelineFeeDecision
+* Generated from evaka.core.timeline.TimelineFeeDecision
 */
 export interface TimelineFeeDecision {
   id: FeeDecisionId
@@ -80,7 +80,7 @@ export interface TimelineFeeDecision {
 }
 
 /**
-* Generated from fi.espoo.evaka.timeline.TimelineIncome
+* Generated from evaka.core.timeline.TimelineIncome
 */
 export interface TimelineIncome {
   effect: IncomeEffect
@@ -89,7 +89,7 @@ export interface TimelineIncome {
 }
 
 /**
-* Generated from fi.espoo.evaka.timeline.TimelinePartnerDetailed
+* Generated from evaka.core.timeline.TimelinePartnerDetailed
 */
 export interface TimelinePartnerDetailed {
   children: TimelineChildDetailed[]
@@ -106,7 +106,7 @@ export interface TimelinePartnerDetailed {
 }
 
 /**
-* Generated from fi.espoo.evaka.timeline.TimelinePlacement
+* Generated from evaka.core.timeline.TimelinePlacement
 */
 export interface TimelinePlacement {
   id: PlacementId
@@ -116,7 +116,7 @@ export interface TimelinePlacement {
 }
 
 /**
-* Generated from fi.espoo.evaka.timeline.TimelinePlacementUnit
+* Generated from evaka.core.timeline.TimelinePlacementUnit
 */
 export interface TimelinePlacementUnit {
   id: DaycareId
@@ -124,7 +124,7 @@ export interface TimelinePlacementUnit {
 }
 
 /**
-* Generated from fi.espoo.evaka.timeline.TimelineServiceNeed
+* Generated from evaka.core.timeline.TimelineServiceNeed
 */
 export interface TimelineServiceNeed {
   id: ServiceNeedId
@@ -133,7 +133,7 @@ export interface TimelineServiceNeed {
 }
 
 /**
-* Generated from fi.espoo.evaka.timeline.TimelineValueDecision
+* Generated from evaka.core.timeline.TimelineValueDecision
 */
 export interface TimelineValueDecision {
   id: VoucherValueDecisionId

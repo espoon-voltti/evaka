@@ -15,7 +15,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.timeline.TimelineController.getTimeline
+* Generated from evaka.core.timeline.TimelineController.getTimeline
 */
 export async function getTimeline(
   request: {

@@ -11,7 +11,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.getAttachment
+* Generated from evaka.core.attachment.AttachmentsController.getAttachment
 */
 export function getAttachment(
   request: {

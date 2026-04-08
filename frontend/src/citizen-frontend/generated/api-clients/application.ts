@@ -37,7 +37,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.acceptDecision
+* Generated from evaka.core.application.ApplicationControllerCitizen.acceptDecision
 */
 export async function acceptDecision(
   request: {
@@ -55,7 +55,7 @@ export async function acceptDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.createApplication
+* Generated from evaka.core.application.ApplicationControllerCitizen.createApplication
 */
 export async function createApplication(
   request: {
@@ -72,7 +72,7 @@ export async function createApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.deleteOrCancelUnprocessedApplication
+* Generated from evaka.core.application.ApplicationControllerCitizen.deleteOrCancelUnprocessedApplication
 */
 export async function deleteOrCancelUnprocessedApplication(
   request: {
@@ -88,7 +88,7 @@ export async function deleteOrCancelUnprocessedApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.downloadDecisionPdf
+* Generated from evaka.core.application.ApplicationControllerCitizen.downloadDecisionPdf
 */
 export function downloadDecisionPdf(
   request: {
@@ -102,7 +102,7 @@ export function downloadDecisionPdf(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.downloadFeeDecisionPdf
+* Generated from evaka.core.application.ApplicationControllerCitizen.downloadFeeDecisionPdf
 */
 export function downloadFeeDecisionPdf(
   request: {
@@ -116,7 +116,7 @@ export function downloadFeeDecisionPdf(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.downloadVoucherValueDecisionPdf
+* Generated from evaka.core.application.ApplicationControllerCitizen.downloadVoucherValueDecisionPdf
 */
 export function downloadVoucherValueDecisionPdf(
   request: {
@@ -130,7 +130,7 @@ export function downloadVoucherValueDecisionPdf(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getApplication
+* Generated from evaka.core.application.ApplicationControllerCitizen.getApplication
 */
 export async function getApplication(
   request: {
@@ -146,7 +146,7 @@ export async function getApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getApplicationChildren
+* Generated from evaka.core.application.ApplicationControllerCitizen.getApplicationChildren
 */
 export async function getApplicationChildren(): Promise<CitizenChildren[]> {
   const { data: json } = await client.request<JsonOf<CitizenChildren[]>>({
@@ -158,7 +158,7 @@ export async function getApplicationChildren(): Promise<CitizenChildren[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getChildDuplicateApplications
+* Generated from evaka.core.application.ApplicationControllerCitizen.getChildDuplicateApplications
 */
 export async function getChildDuplicateApplications(
   request: {
@@ -174,7 +174,7 @@ export async function getChildDuplicateApplications(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getChildPlacementStatusByApplicationType
+* Generated from evaka.core.application.ApplicationControllerCitizen.getChildPlacementStatusByApplicationType
 */
 export async function getChildPlacementStatusByApplicationType(
   request: {
@@ -190,7 +190,7 @@ export async function getChildPlacementStatusByApplicationType(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getDecisionDetails
+* Generated from evaka.core.application.ApplicationControllerCitizen.getDecisionDetails
 */
 export async function getDecisionDetails(
   request: {
@@ -206,7 +206,7 @@ export async function getDecisionDetails(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getDecisions
+* Generated from evaka.core.application.ApplicationControllerCitizen.getDecisions
 */
 export async function getDecisions(): Promise<ApplicationDecisions> {
   const { data: json } = await client.request<JsonOf<ApplicationDecisions>>({
@@ -218,7 +218,7 @@ export async function getDecisions(): Promise<ApplicationDecisions> {
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getGuardianApplicationNotifications
+* Generated from evaka.core.application.ApplicationControllerCitizen.getGuardianApplicationNotifications
 */
 export async function getGuardianApplicationNotifications(): Promise<number> {
   const { data: json } = await client.request<JsonOf<number>>({
@@ -230,7 +230,7 @@ export async function getGuardianApplicationNotifications(): Promise<number> {
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getGuardianApplications
+* Generated from evaka.core.application.ApplicationControllerCitizen.getGuardianApplications
 */
 export async function getGuardianApplications(): Promise<ApplicationsOfChild[]> {
   const { data: json } = await client.request<JsonOf<ApplicationsOfChild[]>>({
@@ -242,7 +242,7 @@ export async function getGuardianApplications(): Promise<ApplicationsOfChild[]> 
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getLiableCitizenFinanceDecisions
+* Generated from evaka.core.application.ApplicationControllerCitizen.getLiableCitizenFinanceDecisions
 */
 export async function getLiableCitizenFinanceDecisions(): Promise<FinanceDecisionCitizenInfo[]> {
   const { data: json } = await client.request<JsonOf<FinanceDecisionCitizenInfo[]>>({
@@ -254,7 +254,7 @@ export async function getLiableCitizenFinanceDecisions(): Promise<FinanceDecisio
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.getPendingDecisions
+* Generated from evaka.core.application.ApplicationControllerCitizen.getPendingDecisions
 */
 export async function getPendingDecisions(): Promise<DecisionWithValidStartDatePeriod[]> {
   const { data: json } = await client.request<JsonOf<DecisionWithValidStartDatePeriod[]>>({
@@ -266,7 +266,7 @@ export async function getPendingDecisions(): Promise<DecisionWithValidStartDateP
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.rejectDecision
+* Generated from evaka.core.application.ApplicationControllerCitizen.rejectDecision
 */
 export async function rejectDecision(
   request: {
@@ -284,7 +284,7 @@ export async function rejectDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.saveApplicationAsDraft
+* Generated from evaka.core.application.ApplicationControllerCitizen.saveApplicationAsDraft
 */
 export async function saveApplicationAsDraft(
   request: {
@@ -302,7 +302,7 @@ export async function saveApplicationAsDraft(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.sendApplication
+* Generated from evaka.core.application.ApplicationControllerCitizen.sendApplication
 */
 export async function sendApplication(
   request: {
@@ -318,7 +318,7 @@ export async function sendApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.updateApplication
+* Generated from evaka.core.application.ApplicationControllerCitizen.updateApplication
 */
 export async function updateApplication(
   request: {

@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 /**
-* Generated from fi.espoo.evaka.specialdiet.MealTexture
+* Generated from evaka.core.specialdiet.MealTexture
 */
 export interface MealTexture {
   id: number | null
@@ -13,7 +13,7 @@ export interface MealTexture {
 }
 
 /**
-* Generated from fi.espoo.evaka.specialdiet.SpecialDiet
+* Generated from evaka.core.specialdiet.SpecialDiet
 */
 export interface SpecialDiet {
   abbreviation: string

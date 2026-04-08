@@ -15,7 +15,7 @@ import type { PersonId } from './shared'
 import type { ProviderType } from './daycare'
 
 /**
-* Generated from fi.espoo.evaka.decision.Decision
+* Generated from evaka.core.decision.Decision
 */
 export interface Decision {
   applicationId: ApplicationId
@@ -39,7 +39,7 @@ export interface Decision {
 }
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionDraft
+* Generated from evaka.core.decision.DecisionDraft
 */
 export interface DecisionDraft {
   endDate: LocalDate
@@ -51,7 +51,7 @@ export interface DecisionDraft {
 }
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionDraftUpdate
+* Generated from evaka.core.decision.DecisionDraftUpdate
 */
 export interface DecisionDraftUpdate {
   endDate: LocalDate
@@ -62,7 +62,7 @@ export interface DecisionDraftUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionStatus
+* Generated from evaka.core.decision.DecisionStatus
 */
 export type DecisionStatus =
   | 'PENDING'
@@ -70,7 +70,7 @@ export type DecisionStatus =
   | 'REJECTED'
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionType
+* Generated from evaka.core.decision.DecisionType
 */
 export type DecisionType =
   | 'CLUB'
@@ -82,7 +82,7 @@ export type DecisionType =
   | 'PREPARATORY_EDUCATION'
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionUnit
+* Generated from evaka.core.decision.DecisionUnit
 */
 export interface DecisionUnit {
   daycareDecisionName: string
@@ -100,7 +100,7 @@ export interface DecisionUnit {
 }
 
 /**
-* Generated from fi.espoo.evaka.decision.DecisionController.DecisionWithPermittedActions
+* Generated from evaka.core.decision.DecisionController.DecisionWithPermittedActions
 */
 export interface DecisionWithPermittedActions {
   data: Decision

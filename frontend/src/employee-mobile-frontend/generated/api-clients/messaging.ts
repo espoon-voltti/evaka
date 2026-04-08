@@ -38,7 +38,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.createMessage
+* Generated from evaka.core.messaging.MessageController.createMessage
 */
 export async function createMessage(
   request: {
@@ -56,7 +56,7 @@ export async function createMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.createMessagePreflightCheck
+* Generated from evaka.core.messaging.MessageController.createMessagePreflightCheck
 */
 export async function createMessagePreflightCheck(
   request: {
@@ -74,7 +74,7 @@ export async function createMessagePreflightCheck(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.deleteDraftMessage
+* Generated from evaka.core.messaging.MessageController.deleteDraftMessage
 */
 export async function deleteDraftMessage(
   request: {
@@ -91,7 +91,7 @@ export async function deleteDraftMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getAccountsByDevice
+* Generated from evaka.core.messaging.MessageController.getAccountsByDevice
 */
 export async function getAccountsByDevice(
   request: {
@@ -107,7 +107,7 @@ export async function getAccountsByDevice(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getDraftMessages
+* Generated from evaka.core.messaging.MessageController.getDraftMessages
 */
 export async function getDraftMessages(
   request: {
@@ -123,7 +123,7 @@ export async function getDraftMessages(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getReceivedMessages
+* Generated from evaka.core.messaging.MessageController.getReceivedMessages
 */
 export async function getReceivedMessages(
   request: {
@@ -146,7 +146,7 @@ export async function getReceivedMessages(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getSelectableRecipients
+* Generated from evaka.core.messaging.MessageController.getSelectableRecipients
 */
 export async function getSelectableRecipients(): Promise<SelectableRecipientsResponse[]> {
   const { data: json } = await client.request<JsonOf<SelectableRecipientsResponse[]>>({
@@ -158,7 +158,7 @@ export async function getSelectableRecipients(): Promise<SelectableRecipientsRes
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getSentMessages
+* Generated from evaka.core.messaging.MessageController.getSentMessages
 */
 export async function getSentMessages(
   request: {
@@ -179,7 +179,7 @@ export async function getSentMessages(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getThread
+* Generated from evaka.core.messaging.MessageController.getThread
 */
 export async function getThread(
   request: {
@@ -196,7 +196,7 @@ export async function getThread(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.getUnreadMessagesByUnit
+* Generated from evaka.core.messaging.MessageController.getUnreadMessagesByUnit
 */
 export async function getUnreadMessagesByUnit(
   request: {
@@ -212,7 +212,7 @@ export async function getUnreadMessagesByUnit(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.initDraftMessage
+* Generated from evaka.core.messaging.MessageController.initDraftMessage
 */
 export async function initDraftMessage(
   request: {
@@ -228,7 +228,7 @@ export async function initDraftMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.markThreadRead
+* Generated from evaka.core.messaging.MessageController.markThreadRead
 */
 export async function markThreadRead(
   request: {
@@ -245,7 +245,7 @@ export async function markThreadRead(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.replyToMessage
+* Generated from evaka.core.messaging.MessageController.replyToMessage
 */
 export async function replyToMessage(
   request: {
@@ -264,7 +264,7 @@ export async function replyToMessage(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.replyToThread
+* Generated from evaka.core.messaging.MessageController.replyToThread
 */
 export async function replyToThread(
   request: {
@@ -283,7 +283,7 @@ export async function replyToThread(
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.updateDraftMessage
+* Generated from evaka.core.messaging.MessageController.updateDraftMessage
 */
 export async function updateDraftMessage(
   request: {
