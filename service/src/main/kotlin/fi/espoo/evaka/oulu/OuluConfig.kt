@@ -33,6 +33,7 @@ import fi.espoo.evaka.oulu.invoice.service.OuluInvoiceClient
 import fi.espoo.evaka.oulu.invoice.service.ProEInvoiceGenerator
 import fi.espoo.evaka.oulu.invoice.service.SftpConnector
 import fi.espoo.evaka.oulu.invoice.service.SftpSender
+import fi.espoo.evaka.oulu.payment.service.BicMapper
 import fi.espoo.evaka.oulu.payment.service.OuluPaymentIntegrationClient
 import fi.espoo.evaka.oulu.payment.service.ProEPaymentGenerator
 import fi.espoo.evaka.oulu.security.OuluActionRuleMapping
@@ -183,10 +184,11 @@ class OuluConfig {
     @Bean
     fun paymentIntegrationClient(
         ouluEnv: OuluEnv,
-        paymentGenerator: ProEPaymentGenerator,
         sftpConnector: SftpConnector,
     ): PaymentIntegrationClient {
         val sftpSender = SftpSender(ouluEnv.intimePayments, sftpConnector)
+        val paymentGenerator =
+            ProEPaymentGenerator(FinanceDateProvider(RealEvakaClock()), BicMapper())
         return OuluPaymentIntegrationClient(paymentGenerator, sftpSender)
     }
 
