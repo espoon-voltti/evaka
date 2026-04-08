@@ -15,14 +15,12 @@ import java.lang.Math.abs
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
-import org.springframework.stereotype.Component
 
 data class InvoiceData(
     val invoiceHeader: Map<InvoiceFieldName, String>,
     val rowsPerChild: Map<PersonId, List<Map<InvoiceFieldName, String>>>,
 )
 
-@Component
 class ProEInvoiceGenerator(val financeDateProvider: FinanceDateProvider) : StringInvoiceGenerator {
     fun generateInvoiceTitle(): String {
         val previousMonth = financeDateProvider.previousMonth()

@@ -37,6 +37,7 @@ import fi.espoo.evaka.oulu.payment.service.OuluPaymentIntegrationClient
 import fi.espoo.evaka.oulu.payment.service.ProEPaymentGenerator
 import fi.espoo.evaka.oulu.security.OuluActionRuleMapping
 import fi.espoo.evaka.oulu.template.config.OuluTemplateProvider
+import fi.espoo.evaka.oulu.util.FinanceDateProvider
 import fi.espoo.evaka.shared.ArchiveProcessConfig
 import fi.espoo.evaka.shared.ArchiveProcessType
 import fi.espoo.evaka.shared.FeatureConfig
@@ -44,6 +45,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.PasswordConstraints
 import fi.espoo.evaka.shared.auth.PasswordSpecification
 import fi.espoo.evaka.shared.config.PDFConfig
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.template.ITemplateProvider
@@ -157,11 +159,13 @@ class OuluConfig {
     @Bean
     fun invoiceIntegrationClient(
         ouluEnv: OuluEnv,
-        invoiceGenerator: ProEInvoiceGenerator,
         sftpConnector: SftpConnector,
     ): InvoiceIntegrationClient {
         val sftpSender = SftpSender(ouluEnv.intimeInvoices, sftpConnector)
-        return OuluInvoiceClient(sftpSender, invoiceGenerator)
+        return OuluInvoiceClient(
+            sftpSender,
+            ProEInvoiceGenerator(FinanceDateProvider(RealEvakaClock())),
+        )
     }
 
     @Bean fun sftpConnector(): SftpConnector = SftpConnector(JSch())

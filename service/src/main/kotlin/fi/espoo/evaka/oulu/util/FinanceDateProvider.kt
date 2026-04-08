@@ -8,9 +8,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import org.springframework.stereotype.Component
 
-@Component
 class FinanceDateProvider(val evakaClock: EvakaClock = RealEvakaClock()) {
     fun currentDate(): String {
         val invoiceIdFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
