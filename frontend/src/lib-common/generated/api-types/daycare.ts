@@ -45,7 +45,7 @@ import { deserializeJsonTerminatedPlacement } from './placement'
 import { deserializeJsonUnitBackupCare } from './backupcare'
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.AclUpdate
+* Generated from evaka.core.daycare.controllers.UnitAclController.AclUpdate
 */
 export interface AclUpdate {
   endDate: LocalDate | null
@@ -55,7 +55,7 @@ export interface AclUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.AdditionalInformation
+* Generated from evaka.core.daycare.controllers.AdditionalInformation
 */
 export interface AdditionalInformation {
   additionalInfo: string
@@ -73,7 +73,7 @@ export interface AdditionalInformation {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.ApplicationUnitType
+* Generated from evaka.core.daycare.controllers.ApplicationUnitType
 */
 export type ApplicationUnitType =
   | 'CLUB'
@@ -82,7 +82,7 @@ export type ApplicationUnitType =
   | 'PREPARATORY'
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.AreaJSON
+* Generated from evaka.core.daycare.controllers.AreaJSON
 */
 export interface AreaJSON {
   id: AreaId
@@ -91,7 +91,7 @@ export interface AreaJSON {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.CareType
+* Generated from evaka.core.daycare.CareType
 */
 export const careTypes = [
   'CLUB',
@@ -105,7 +105,7 @@ export const careTypes = [
 export type CareType = typeof careTypes[number]
 
 /**
-* Generated from fi.espoo.evaka.daycare.CaretakerAmount
+* Generated from evaka.core.daycare.CaretakerAmount
 */
 export interface CaretakerAmount {
   amount: number
@@ -116,7 +116,7 @@ export interface CaretakerAmount {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.CaretakerRequest
+* Generated from evaka.core.daycare.controllers.DaycareController.CaretakerRequest
 */
 export interface CaretakerRequest {
   amount: number
@@ -125,7 +125,7 @@ export interface CaretakerRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.Caretakers
+* Generated from evaka.core.daycare.service.Caretakers
 */
 export interface Caretakers {
   maximum: number
@@ -133,7 +133,7 @@ export interface Caretakers {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.CaretakersResponse
+* Generated from evaka.core.daycare.controllers.DaycareController.CaretakersResponse
 */
 export interface CaretakersResponse {
   caretakers: CaretakerAmount[]
@@ -142,7 +142,7 @@ export interface CaretakersResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.ChildController.ChildResponse
+* Generated from evaka.core.daycare.controllers.ChildController.ChildResponse
 */
 export interface ChildResponse {
   assistanceNeedVoucherCoefficientsEnabled: boolean
@@ -153,7 +153,7 @@ export interface ChildResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.ClubTerm
+* Generated from evaka.core.daycare.ClubTerm
 */
 export interface ClubTerm {
   applicationPeriod: FiniteDateRange
@@ -163,7 +163,7 @@ export interface ClubTerm {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.ClubTermRequest
+* Generated from evaka.core.daycare.controllers.TermsController.ClubTermRequest
 */
 export interface ClubTermRequest {
   applicationPeriod: FiniteDateRange
@@ -172,14 +172,14 @@ export interface ClubTermRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.CreateDaycareResponse
+* Generated from evaka.core.daycare.controllers.DaycareController.CreateDaycareResponse
 */
 export interface CreateDaycareResponse {
   id: DaycareId
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.CreateGroupRequest
+* Generated from evaka.core.daycare.controllers.DaycareController.CreateGroupRequest
 */
 export interface CreateGroupRequest {
   aromiCustomerId: string | null
@@ -189,7 +189,7 @@ export interface CreateGroupRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.Daycare
+* Generated from evaka.core.daycare.Daycare
 */
 export interface Daycare {
   additionalInfo: string | null
@@ -243,7 +243,7 @@ export interface Daycare {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.DaycareCareArea
+* Generated from evaka.core.daycare.DaycareCareArea
 */
 export interface DaycareCareArea {
   id: AreaId
@@ -252,7 +252,7 @@ export interface DaycareCareArea {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.DaycareDecisionCustomization
+* Generated from evaka.core.daycare.DaycareDecisionCustomization
 */
 export interface DaycareDecisionCustomization {
   daycareName: string
@@ -262,7 +262,7 @@ export interface DaycareDecisionCustomization {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.DaycareFields
+* Generated from evaka.core.daycare.DaycareFields
 */
 export interface DaycareFields {
   additionalInfo: string | null
@@ -312,7 +312,7 @@ export interface DaycareFields {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.DaycareGroup
+* Generated from evaka.core.daycare.service.DaycareGroup
 */
 export interface DaycareGroup {
   aromiCustomerId: string | null
@@ -327,7 +327,7 @@ export interface DaycareGroup {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.DaycareGroupResponse
+* Generated from evaka.core.daycare.controllers.DaycareController.DaycareGroupResponse
 */
 export interface DaycareGroupResponse {
   endDate: LocalDate | null
@@ -337,7 +337,7 @@ export interface DaycareGroupResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.DaycareMealtimes
+* Generated from evaka.core.daycare.DaycareMealtimes
 */
 export interface DaycareMealtimes {
   breakfast: TimeRange | null
@@ -348,7 +348,7 @@ export interface DaycareMealtimes {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.DaycareResponse
+* Generated from evaka.core.daycare.controllers.DaycareController.DaycareResponse
 */
 export interface DaycareResponse {
   daycare: Daycare
@@ -359,7 +359,7 @@ export interface DaycareResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.FinanceDecisionHandler
+* Generated from evaka.core.daycare.FinanceDecisionHandler
 */
 export interface FinanceDecisionHandler {
   firstName: string
@@ -368,7 +368,7 @@ export interface FinanceDecisionHandler {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.GroupOccupancies
+* Generated from evaka.core.daycare.controllers.GroupOccupancies
 */
 export interface GroupOccupancies {
   confirmed: Partial<Record<GroupId, OccupancyResponse>>
@@ -376,7 +376,7 @@ export interface GroupOccupancies {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.GroupStaffAttendance
+* Generated from evaka.core.daycare.service.GroupStaffAttendance
 */
 export interface GroupStaffAttendance {
   count: number
@@ -386,7 +386,7 @@ export interface GroupStaffAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.GroupUpdateRequest
+* Generated from evaka.core.daycare.controllers.DaycareController.GroupUpdateRequest
 */
 export interface GroupUpdateRequest {
   aromiCustomerId: string | null
@@ -398,7 +398,7 @@ export interface GroupUpdateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.domain.Language
+* Generated from evaka.core.daycare.domain.Language
 */
 export type Language =
   | 'fi'
@@ -406,7 +406,7 @@ export type Language =
   | 'en'
 
 /**
-* Generated from fi.espoo.evaka.daycare.MailingAddress
+* Generated from evaka.core.daycare.MailingAddress
 */
 export interface MailingAddress {
   poBox: string | null
@@ -416,7 +416,7 @@ export interface MailingAddress {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.PreschoolTerm
+* Generated from evaka.core.daycare.PreschoolTerm
 */
 export interface PreschoolTerm {
   applicationPeriod: FiniteDateRange
@@ -428,7 +428,7 @@ export interface PreschoolTerm {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.PreschoolTermRequest
+* Generated from evaka.core.daycare.controllers.TermsController.PreschoolTermRequest
 */
 export interface PreschoolTermRequest {
   applicationPeriod: FiniteDateRange
@@ -439,7 +439,7 @@ export interface PreschoolTermRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.domain.ProviderType
+* Generated from evaka.core.daycare.domain.ProviderType
 */
 export type ProviderType =
   | 'MUNICIPAL'
@@ -450,7 +450,7 @@ export type ProviderType =
   | 'EXTERNAL_PURCHASED'
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.PublicUnit
+* Generated from evaka.core.daycare.controllers.PublicUnit
 */
 export interface PublicUnit {
   clubApplyPeriod: DateRange | null
@@ -473,14 +473,14 @@ export interface PublicUnit {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.ServiceWorkerNote
+* Generated from evaka.core.daycare.controllers.DaycareController.ServiceWorkerNote
 */
 export interface ServiceWorkerNote {
   note: string
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.StaffAttendanceForDates
+* Generated from evaka.core.daycare.service.StaffAttendanceForDates
 */
 export interface StaffAttendanceForDates {
   attendances: Partial<Record<string, GroupStaffAttendance>>
@@ -491,7 +491,7 @@ export interface StaffAttendanceForDates {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.StaffAttendanceUpdate
+* Generated from evaka.core.daycare.service.StaffAttendanceUpdate
 */
 export interface StaffAttendanceUpdate {
   count: number | null
@@ -500,7 +500,7 @@ export interface StaffAttendanceUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.UnitFeatures
+* Generated from evaka.core.daycare.UnitFeatures
 */
 export interface UnitFeatures {
   features: PilotFeature[]
@@ -511,7 +511,7 @@ export interface UnitFeatures {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitGroupDetails
+* Generated from evaka.core.daycare.controllers.UnitGroupDetails
 */
 export interface UnitGroupDetails {
   backupCares: UnitBackupCare[]
@@ -529,7 +529,7 @@ export interface UnitGroupDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.UnitManager
+* Generated from evaka.core.daycare.UnitManager
 */
 export interface UnitManager {
   email: string
@@ -538,7 +538,7 @@ export interface UnitManager {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.UnitNotifications
+* Generated from evaka.core.daycare.controllers.DaycareController.UnitNotifications
 */
 export interface UnitNotifications {
   applications: number
@@ -546,7 +546,7 @@ export interface UnitNotifications {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.UnitOperationPeriod
+* Generated from evaka.core.daycare.UnitOperationPeriod
 */
 export interface UnitOperationPeriod {
   closingDate: LocalDate | null
@@ -554,7 +554,7 @@ export interface UnitOperationPeriod {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.UnitStub
+* Generated from evaka.core.daycare.UnitStub
 */
 export interface UnitStub {
   careTypes: CareType[]
@@ -564,7 +564,7 @@ export interface UnitStub {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitTypeFilter
+* Generated from evaka.core.daycare.controllers.UnitTypeFilter
 */
 export type UnitTypeFilter =
   | 'CLUB'
@@ -572,7 +572,7 @@ export type UnitTypeFilter =
   | 'PRESCHOOL'
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.UpdateFeaturesRequest
+* Generated from evaka.core.daycare.controllers.DaycareController.UpdateFeaturesRequest
 */
 export interface UpdateFeaturesRequest {
   enable: boolean
@@ -581,7 +581,7 @@ export interface UpdateFeaturesRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.VisitingAddress
+* Generated from evaka.core.daycare.VisitingAddress
 */
 export interface VisitingAddress {
   postOffice: string

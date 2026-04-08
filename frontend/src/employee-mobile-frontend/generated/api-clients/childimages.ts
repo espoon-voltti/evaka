@@ -13,7 +13,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.childimages.ChildImageController.deleteImage
+* Generated from evaka.core.childimages.ChildImageController.deleteImage
 */
 export async function deleteImage(
   request: {
@@ -29,7 +29,7 @@ export async function deleteImage(
 
 
 /**
-* Generated from fi.espoo.evaka.childimages.ChildImageController.putImage
+* Generated from evaka.core.childimages.ChildImageController.putImage
 */
 export async function putImage(
   request: {

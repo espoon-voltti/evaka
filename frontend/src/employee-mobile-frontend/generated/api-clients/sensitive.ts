@@ -14,7 +14,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.sensitive.ChildInfoController.getBasicInfo
+* Generated from evaka.core.sensitive.ChildInfoController.getBasicInfo
 */
 export async function getBasicInfo(
   request: {
@@ -30,7 +30,7 @@ export async function getBasicInfo(
 
 
 /**
-* Generated from fi.espoo.evaka.sensitive.ChildInfoController.getSensitiveInfo
+* Generated from evaka.core.sensitive.ChildInfoController.getSensitiveInfo
 */
 export async function getSensitiveInfo(
   request: {

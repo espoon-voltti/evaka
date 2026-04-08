@@ -14,7 +14,7 @@ import LocalDate from '../../local-date'
 import type { PersonId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.note.child.daily.ChildDailyNote
+* Generated from evaka.core.note.child.daily.ChildDailyNote
 */
 export interface ChildDailyNote {
   childId: PersonId
@@ -29,7 +29,7 @@ export interface ChildDailyNote {
 }
 
 /**
-* Generated from fi.espoo.evaka.note.child.daily.ChildDailyNoteBody
+* Generated from evaka.core.note.child.daily.ChildDailyNoteBody
 */
 export interface ChildDailyNoteBody {
   feedingNote: ChildDailyNoteLevel | null
@@ -41,7 +41,7 @@ export interface ChildDailyNoteBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.note.child.daily.ChildDailyNoteLevel
+* Generated from evaka.core.note.child.daily.ChildDailyNoteLevel
 */
 export const childDailyNoteLevelValues = [
   'GOOD',
@@ -52,7 +52,7 @@ export const childDailyNoteLevelValues = [
 export type ChildDailyNoteLevel = typeof childDailyNoteLevelValues[number]
 
 /**
-* Generated from fi.espoo.evaka.note.child.daily.ChildDailyNoteReminder
+* Generated from evaka.core.note.child.daily.ChildDailyNoteReminder
 */
 export const childDailyNoteReminderValues = [
   'DIAPERS',
@@ -63,7 +63,7 @@ export const childDailyNoteReminderValues = [
 export type ChildDailyNoteReminder = typeof childDailyNoteReminderValues[number]
 
 /**
-* Generated from fi.espoo.evaka.note.child.sticky.ChildStickyNote
+* Generated from evaka.core.note.child.sticky.ChildStickyNote
 */
 export interface ChildStickyNote {
   childId: PersonId
@@ -74,7 +74,7 @@ export interface ChildStickyNote {
 }
 
 /**
-* Generated from fi.espoo.evaka.note.child.sticky.ChildStickyNoteBody
+* Generated from evaka.core.note.child.sticky.ChildStickyNoteBody
 */
 export interface ChildStickyNoteBody {
   expires: LocalDate
@@ -82,7 +82,7 @@ export interface ChildStickyNoteBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.note.group.GroupNote
+* Generated from evaka.core.note.group.GroupNote
 */
 export interface GroupNote {
   createdAt: HelsinkiDateTime
@@ -94,7 +94,7 @@ export interface GroupNote {
 }
 
 /**
-* Generated from fi.espoo.evaka.note.group.GroupNoteBody
+* Generated from evaka.core.note.group.GroupNoteBody
 */
 export interface GroupNoteBody {
   expires: LocalDate
@@ -102,7 +102,7 @@ export interface GroupNoteBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.note.NotesController.NotesByGroupResponse
+* Generated from evaka.core.note.NotesController.NotesByGroupResponse
 */
 export interface NotesByGroupResponse {
   childDailyNotes: ChildDailyNote[]

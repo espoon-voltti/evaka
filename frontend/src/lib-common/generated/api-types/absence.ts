@@ -24,7 +24,7 @@ import { deserializeJsonReservation } from './reservations'
 import { deserializeJsonServiceTimesPresenceStatus } from './dailyservicetimes'
 
 /**
-* Generated from fi.espoo.evaka.absence.Absence
+* Generated from evaka.core.absence.Absence
 */
 export interface Absence {
   absenceType: AbsenceType
@@ -37,7 +37,7 @@ export interface Absence {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationCreateRequest
+* Generated from evaka.core.absence.application.AbsenceApplicationCreateRequest
 */
 export interface AbsenceApplicationCreateRequest {
   childId: PersonId
@@ -47,14 +47,14 @@ export interface AbsenceApplicationCreateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationRejectRequest
+* Generated from evaka.core.absence.application.AbsenceApplicationRejectRequest
 */
 export interface AbsenceApplicationRejectRequest {
   reason: string
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationStatus
+* Generated from evaka.core.absence.application.AbsenceApplicationStatus
 */
 export type AbsenceApplicationStatus =
   | 'WAITING_DECISION'
@@ -62,7 +62,7 @@ export type AbsenceApplicationStatus =
   | 'REJECTED'
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationSummary
+* Generated from evaka.core.absence.application.AbsenceApplicationSummary
 */
 export interface AbsenceApplicationSummary {
   child: PersonNameDetails
@@ -79,7 +79,7 @@ export interface AbsenceApplicationSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationSummaryCitizen
+* Generated from evaka.core.absence.application.AbsenceApplicationSummaryCitizen
 */
 export interface AbsenceApplicationSummaryCitizen {
   actions: Action.Citizen.AbsenceApplication[]
@@ -87,7 +87,7 @@ export interface AbsenceApplicationSummaryCitizen {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationSummaryEmployee
+* Generated from evaka.core.absence.application.AbsenceApplicationSummaryEmployee
 */
 export interface AbsenceApplicationSummaryEmployee {
   actions: Action.AbsenceApplication[]
@@ -95,14 +95,14 @@ export interface AbsenceApplicationSummaryEmployee {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceCategory
+* Generated from evaka.core.absence.AbsenceCategory
 */
 export type AbsenceCategory =
   | 'BILLABLE'
   | 'NONBILLABLE'
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceType
+* Generated from evaka.core.absence.AbsenceType
 */
 export type AbsenceType =
   | 'OTHER_ABSENCE'
@@ -115,7 +115,7 @@ export type AbsenceType =
   | 'UNAUTHORIZED_ABSENCE'
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceUpsert
+* Generated from evaka.core.absence.AbsenceUpsert
 */
 export interface AbsenceUpsert {
   absenceType: AbsenceType
@@ -125,7 +125,7 @@ export interface AbsenceUpsert {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceWithModifierInfo
+* Generated from evaka.core.absence.AbsenceWithModifierInfo
 */
 export interface AbsenceWithModifierInfo {
   absenceType: AbsenceType
@@ -135,7 +135,7 @@ export interface AbsenceWithModifierInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.ChildReservation
+* Generated from evaka.core.absence.ChildReservation
 */
 export interface ChildReservation {
   created: HelsinkiDateTime
@@ -144,7 +144,7 @@ export interface ChildReservation {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.ChildServiceNeedInfo
+* Generated from evaka.core.absence.ChildServiceNeedInfo
 */
 export interface ChildServiceNeedInfo {
   childId: PersonId
@@ -157,7 +157,7 @@ export interface ChildServiceNeedInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.GroupMonthCalendar
+* Generated from evaka.core.absence.GroupMonthCalendar
 */
 export interface GroupMonthCalendar {
   children: GroupMonthCalendarChild[]
@@ -170,7 +170,7 @@ export interface GroupMonthCalendar {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.GroupMonthCalendarChild
+* Generated from evaka.core.absence.GroupMonthCalendarChild
 */
 export interface GroupMonthCalendarChild {
   actualServiceNeeds: ChildServiceNeedInfo[]
@@ -184,7 +184,7 @@ export interface GroupMonthCalendarChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.GroupMonthCalendarDay
+* Generated from evaka.core.absence.GroupMonthCalendarDay
 */
 export interface GroupMonthCalendarDay {
   children: GroupMonthCalendarDayChild[]
@@ -194,7 +194,7 @@ export interface GroupMonthCalendarDay {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.GroupMonthCalendarDayChild
+* Generated from evaka.core.absence.GroupMonthCalendarDayChild
 */
 export interface GroupMonthCalendarDayChild {
   absenceCategories: AbsenceCategory[]
@@ -210,7 +210,7 @@ export interface GroupMonthCalendarDayChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceController.HolidayReservationsDelete
+* Generated from evaka.core.absence.AbsenceController.HolidayReservationsDelete
 */
 export interface HolidayReservationsDelete {
   childId: PersonId
@@ -218,7 +218,7 @@ export interface HolidayReservationsDelete {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.Presence
+* Generated from evaka.core.absence.Presence
 */
 export interface Presence {
   category: AbsenceCategory
@@ -227,7 +227,7 @@ export interface Presence {
 }
 
 /**
-* Generated from fi.espoo.evaka.absence.UsedServiceTotals
+* Generated from evaka.core.absence.UsedServiceTotals
 */
 export interface UsedServiceTotals {
   reservedHours: number

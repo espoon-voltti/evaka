@@ -13,7 +13,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.jamix.JamixController.sendJamixOrders
+* Generated from evaka.core.jamix.JamixController.sendJamixOrders
 */
 export async function sendJamixOrders(
   request: {

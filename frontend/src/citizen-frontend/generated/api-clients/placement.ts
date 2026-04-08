@@ -15,7 +15,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.getPlacements
+* Generated from evaka.core.placement.PlacementControllerCitizen.getPlacements
 */
 export async function getPlacements(
   request: {
@@ -31,7 +31,7 @@ export async function getPlacements(
 
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.postPlacementTermination
+* Generated from evaka.core.placement.PlacementControllerCitizen.postPlacementTermination
 */
 export async function postPlacementTermination(
   request: {

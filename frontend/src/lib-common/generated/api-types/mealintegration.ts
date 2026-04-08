@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 /**
-* Generated from fi.espoo.evaka.mealintegration.MealType
+* Generated from evaka.core.mealintegration.MealType
 */
 export type MealType =
   | 'BREAKFAST'

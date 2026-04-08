@@ -12,7 +12,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.getCurrentSystemNotificationCitizen
+* Generated from evaka.core.systemnotifications.SystemNotificationsController.getCurrentSystemNotificationCitizen
 */
 export async function getCurrentSystemNotificationCitizen(): Promise<CurrentNotificationResponseCitizen> {
   const { data: json } = await client.request<JsonOf<CurrentNotificationResponseCitizen>>({

@@ -12,7 +12,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.specialdiet.MealTexturesController.getMealTextures
+* Generated from evaka.core.specialdiet.MealTexturesController.getMealTextures
 */
 export async function getMealTextures(): Promise<MealTexture[]> {
   const { data: json } = await client.request<JsonOf<MealTexture[]>>({
@@ -24,7 +24,7 @@ export async function getMealTextures(): Promise<MealTexture[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.specialdiet.SpecialDietController.getDiets
+* Generated from evaka.core.specialdiet.SpecialDietController.getDiets
 */
 export async function getDiets(): Promise<SpecialDiet[]> {
   const { data: json } = await client.request<JsonOf<SpecialDiet[]>>({

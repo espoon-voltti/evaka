@@ -18,7 +18,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerCitizen.deleteAbsenceApplication
+* Generated from evaka.core.absence.application.AbsenceApplicationControllerCitizen.deleteAbsenceApplication
 */
 export async function deleteAbsenceApplication(
   request: {
@@ -34,7 +34,7 @@ export async function deleteAbsenceApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerCitizen.getAbsenceApplicationPossibleDateRanges
+* Generated from evaka.core.absence.application.AbsenceApplicationControllerCitizen.getAbsenceApplicationPossibleDateRanges
 */
 export async function getAbsenceApplicationPossibleDateRanges(
   request: {
@@ -54,7 +54,7 @@ export async function getAbsenceApplicationPossibleDateRanges(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerCitizen.getAbsenceApplications
+* Generated from evaka.core.absence.application.AbsenceApplicationControllerCitizen.getAbsenceApplications
 */
 export async function getAbsenceApplications(
   request: {
@@ -74,7 +74,7 @@ export async function getAbsenceApplications(
 
 
 /**
-* Generated from fi.espoo.evaka.absence.application.AbsenceApplicationControllerCitizen.postAbsenceApplication
+* Generated from evaka.core.absence.application.AbsenceApplicationControllerCitizen.postAbsenceApplication
 */
 export async function postAbsenceApplication(
   request: {

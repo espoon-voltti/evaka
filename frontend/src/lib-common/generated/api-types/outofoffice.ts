@@ -9,7 +9,7 @@ import type { JsonOf } from '../../json'
 import type { OutOfOfficeId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.outofoffice.OutOfOfficePeriod
+* Generated from evaka.core.outofoffice.OutOfOfficePeriod
 */
 export interface OutOfOfficePeriod {
   id: OutOfOfficeId
@@ -17,7 +17,7 @@ export interface OutOfOfficePeriod {
 }
 
 /**
-* Generated from fi.espoo.evaka.outofoffice.OutOfOfficePeriodUpsert
+* Generated from evaka.core.outofoffice.OutOfOfficePeriodUpsert
 */
 export interface OutOfOfficePeriodUpsert {
   id: OutOfOfficeId | null

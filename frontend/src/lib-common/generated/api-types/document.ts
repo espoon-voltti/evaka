@@ -21,7 +21,7 @@ import type { PlacementType } from './placement'
 import type { UiLanguage } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.AcceptChildDocumentDecisionRequest
+* Generated from evaka.core.document.childdocument.ChildDocumentController.AcceptChildDocumentDecisionRequest
 */
 export interface AcceptChildDocumentDecisionRequest {
   endingDecisionIds: ChildDocumentDecisionId[] | null
@@ -29,7 +29,7 @@ export interface AcceptChildDocumentDecisionRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.AcceptedChildDecisions
+* Generated from evaka.core.document.childdocument.AcceptedChildDecisions
 */
 export interface AcceptedChildDecisions {
   id: ChildDocumentDecisionId
@@ -39,7 +39,7 @@ export interface AcceptedChildDecisions {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.AnnulChildDocumentDecisionRequest
+* Generated from evaka.core.document.childdocument.ChildDocumentController.AnnulChildDocumentDecisionRequest
 */
 export interface AnnulChildDocumentDecisionRequest {
   reason: string
@@ -48,7 +48,7 @@ export interface AnnulChildDocumentDecisionRequest {
 
 export namespace AnsweredQuestion {
   /**
-  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.CheckboxAnswer
+  * Generated from evaka.core.document.childdocument.AnsweredQuestion.CheckboxAnswer
   */
   export interface CheckboxAnswer {
     type: 'CHECKBOX'
@@ -57,7 +57,7 @@ export namespace AnsweredQuestion {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.CheckboxGroupAnswer
+  * Generated from evaka.core.document.childdocument.AnsweredQuestion.CheckboxGroupAnswer
   */
   export interface CheckboxGroupAnswer {
     type: 'CHECKBOX_GROUP'
@@ -66,7 +66,7 @@ export namespace AnsweredQuestion {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.DateAnswer
+  * Generated from evaka.core.document.childdocument.AnsweredQuestion.DateAnswer
   */
   export interface DateAnswer {
     type: 'DATE'
@@ -75,7 +75,7 @@ export namespace AnsweredQuestion {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.GroupedTextFieldsAnswer
+  * Generated from evaka.core.document.childdocument.AnsweredQuestion.GroupedTextFieldsAnswer
   */
   export interface GroupedTextFieldsAnswer {
     type: 'GROUPED_TEXT_FIELDS'
@@ -84,7 +84,7 @@ export namespace AnsweredQuestion {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.RadioButtonGroupAnswer
+  * Generated from evaka.core.document.childdocument.AnsweredQuestion.RadioButtonGroupAnswer
   */
   export interface RadioButtonGroupAnswer {
     type: 'RADIO_BUTTON_GROUP'
@@ -93,7 +93,7 @@ export namespace AnsweredQuestion {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.StaticTextDisplayAnswer
+  * Generated from evaka.core.document.childdocument.AnsweredQuestion.StaticTextDisplayAnswer
   */
   export interface StaticTextDisplayAnswer {
     type: 'STATIC_TEXT_DISPLAY'
@@ -102,7 +102,7 @@ export namespace AnsweredQuestion {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion.TextAnswer
+  * Generated from evaka.core.document.childdocument.AnsweredQuestion.TextAnswer
   */
   export interface TextAnswer {
     type: 'TEXT'
@@ -112,13 +112,13 @@ export namespace AnsweredQuestion {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.AnsweredQuestion
+* Generated from evaka.core.document.childdocument.AnsweredQuestion
 */
 export type AnsweredQuestion = AnsweredQuestion.CheckboxAnswer | AnsweredQuestion.CheckboxGroupAnswer | AnsweredQuestion.DateAnswer | AnsweredQuestion.GroupedTextFieldsAnswer | AnsweredQuestion.RadioButtonGroupAnswer | AnsweredQuestion.StaticTextDisplayAnswer | AnsweredQuestion.TextAnswer
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.CheckboxGroupAnswerContent
+* Generated from evaka.core.document.childdocument.CheckboxGroupAnswerContent
 */
 export interface CheckboxGroupAnswerContent {
   extra: string
@@ -126,7 +126,7 @@ export interface CheckboxGroupAnswerContent {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.CheckboxGroupQuestionOption
+* Generated from evaka.core.document.CheckboxGroupQuestionOption
 */
 export interface CheckboxGroupQuestionOption {
   id: string
@@ -135,7 +135,7 @@ export interface CheckboxGroupQuestionOption {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildBasics
+* Generated from evaka.core.document.childdocument.ChildBasics
 */
 export interface ChildBasics {
   dateOfBirth: LocalDate | null
@@ -145,7 +145,7 @@ export interface ChildBasics {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentCitizenDetails
+* Generated from evaka.core.document.childdocument.ChildDocumentCitizenDetails
 */
 export interface ChildDocumentCitizenDetails {
   child: ChildBasics
@@ -159,7 +159,7 @@ export interface ChildDocumentCitizenDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentCitizenSummary
+* Generated from evaka.core.document.childdocument.ChildDocumentCitizenSummary
 */
 export interface ChildDocumentCitizenSummary {
   answeredAt: HelsinkiDateTime | null
@@ -175,7 +175,7 @@ export interface ChildDocumentCitizenSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentCreateRequest
+* Generated from evaka.core.document.childdocument.ChildDocumentCreateRequest
 */
 export interface ChildDocumentCreateRequest {
   childId: PersonId
@@ -183,7 +183,7 @@ export interface ChildDocumentCreateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentDecision
+* Generated from evaka.core.document.childdocument.ChildDocumentDecision
 */
 export interface ChildDocumentDecision {
   annulmentReason: string
@@ -196,7 +196,7 @@ export interface ChildDocumentDecision {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentDecisionStatus
+* Generated from evaka.core.document.childdocument.ChildDocumentDecisionStatus
 */
 export type ChildDocumentDecisionStatus =
   | 'ACCEPTED'
@@ -204,7 +204,7 @@ export type ChildDocumentDecisionStatus =
   | 'ANNULLED'
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentDetails
+* Generated from evaka.core.document.childdocument.ChildDocumentDetails
 */
 export interface ChildDocumentDetails {
   archivedAt: HelsinkiDateTime | null
@@ -221,7 +221,7 @@ export interface ChildDocumentDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentOrDecisionStatus
+* Generated from evaka.core.document.childdocument.ChildDocumentOrDecisionStatus
 */
 export type ChildDocumentOrDecisionStatus =
   | 'DRAFT'
@@ -234,7 +234,7 @@ export type ChildDocumentOrDecisionStatus =
   | 'ANNULLED'
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentSummary
+* Generated from evaka.core.document.childdocument.ChildDocumentSummary
 */
 export interface ChildDocumentSummary {
   answeredAt: HelsinkiDateTime | null
@@ -255,7 +255,7 @@ export interface ChildDocumentSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.ChildDocumentSummaryWithPermittedActions
+* Generated from evaka.core.document.childdocument.ChildDocumentController.ChildDocumentSummaryWithPermittedActions
 */
 export interface ChildDocumentSummaryWithPermittedActions {
   data: ChildDocumentSummary
@@ -263,7 +263,7 @@ export interface ChildDocumentSummaryWithPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.ChildDocumentType
+* Generated from evaka.core.document.ChildDocumentType
 */
 export const childDocumentTypes = [
   'PEDAGOGICAL_REPORT',
@@ -283,7 +283,7 @@ export const childDocumentTypes = [
 export type ChildDocumentType = typeof childDocumentTypes[number]
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentWithPermittedActions
+* Generated from evaka.core.document.childdocument.ChildDocumentWithPermittedActions
 */
 export interface ChildDocumentWithPermittedActions {
   data: ChildDocumentDetails
@@ -291,7 +291,7 @@ export interface ChildDocumentWithPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentsCreateRequest
+* Generated from evaka.core.document.childdocument.ChildDocumentsCreateRequest
 */
 export interface ChildDocumentsCreateRequest {
   childIds: PersonId[]
@@ -299,14 +299,14 @@ export interface ChildDocumentsCreateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.DocumentContent
+* Generated from evaka.core.document.childdocument.DocumentContent
 */
 export interface DocumentContent {
   answers: AnsweredQuestion[]
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.DocumentLockResponse
+* Generated from evaka.core.document.childdocument.ChildDocumentController.DocumentLockResponse
 */
 export interface DocumentLockResponse {
   currentLock: DocumentWriteLock
@@ -314,7 +314,7 @@ export interface DocumentLockResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.DocumentStatus
+* Generated from evaka.core.document.childdocument.DocumentStatus
 */
 export type DocumentStatus =
   | 'DRAFT'
@@ -324,7 +324,7 @@ export type DocumentStatus =
   | 'COMPLETED'
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplate
+* Generated from evaka.core.document.DocumentTemplate
 */
 export interface DocumentTemplate {
   archiveDurationMonths: number | null
@@ -346,7 +346,7 @@ export interface DocumentTemplate {
 
 export namespace DocumentTemplateBasicsRequest {
   /**
-  * Generated from fi.espoo.evaka.document.DocumentTemplateBasicsRequest.ArchivedExternally
+  * Generated from evaka.core.document.DocumentTemplateBasicsRequest.ArchivedExternally
   */
   export interface ArchivedExternally {
     templateType: 'ARCHIVED_EXTERNALLY'
@@ -364,7 +364,7 @@ export namespace DocumentTemplateBasicsRequest {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.DocumentTemplateBasicsRequest.Regular
+  * Generated from evaka.core.document.DocumentTemplateBasicsRequest.Regular
   */
   export interface Regular {
     templateType: 'REGULAR'
@@ -383,20 +383,20 @@ export namespace DocumentTemplateBasicsRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateBasicsRequest
+* Generated from evaka.core.document.DocumentTemplateBasicsRequest
 */
 export type DocumentTemplateBasicsRequest = DocumentTemplateBasicsRequest.ArchivedExternally | DocumentTemplateBasicsRequest.Regular
 
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateContent
+* Generated from evaka.core.document.DocumentTemplateContent
 */
 export interface DocumentTemplateContent {
   sections: Section[]
 }
 
 /**
-* Generated from fi.espoo.evaka.document.DocumentTemplateSummary
+* Generated from evaka.core.document.DocumentTemplateSummary
 */
 export interface DocumentTemplateSummary {
   documentCount: number
@@ -410,7 +410,7 @@ export interface DocumentTemplateSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.DocumentWriteLock
+* Generated from evaka.core.document.childdocument.DocumentWriteLock
 */
 export interface DocumentWriteLock {
   lockedBy: EvakaUserId
@@ -419,7 +419,7 @@ export interface DocumentWriteLock {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.ExportedDocumentTemplate
+* Generated from evaka.core.document.ExportedDocumentTemplate
 */
 export interface ExportedDocumentTemplate {
   archiveDurationMonths: number | null
@@ -437,7 +437,7 @@ export interface ExportedDocumentTemplate {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.ProposeChildDocumentDecisionRequest
+* Generated from evaka.core.document.childdocument.ChildDocumentController.ProposeChildDocumentDecisionRequest
 */
 export interface ProposeChildDocumentDecisionRequest {
   decisionMaker: EmployeeId
@@ -446,7 +446,7 @@ export interface ProposeChildDocumentDecisionRequest {
 
 export namespace Question {
   /**
-  * Generated from fi.espoo.evaka.document.Question.CheckboxGroupQuestion
+  * Generated from evaka.core.document.Question.CheckboxGroupQuestion
   */
   export interface CheckboxGroupQuestion {
     type: 'CHECKBOX_GROUP'
@@ -457,7 +457,7 @@ export namespace Question {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.Question.CheckboxQuestion
+  * Generated from evaka.core.document.Question.CheckboxQuestion
   */
   export interface CheckboxQuestion {
     type: 'CHECKBOX'
@@ -467,7 +467,7 @@ export namespace Question {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.Question.DateQuestion
+  * Generated from evaka.core.document.Question.DateQuestion
   */
   export interface DateQuestion {
     type: 'DATE'
@@ -477,7 +477,7 @@ export namespace Question {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.Question.GroupedTextFieldsQuestion
+  * Generated from evaka.core.document.Question.GroupedTextFieldsQuestion
   */
   export interface GroupedTextFieldsQuestion {
     type: 'GROUPED_TEXT_FIELDS'
@@ -489,7 +489,7 @@ export namespace Question {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.Question.RadioButtonGroupQuestion
+  * Generated from evaka.core.document.Question.RadioButtonGroupQuestion
   */
   export interface RadioButtonGroupQuestion {
     type: 'RADIO_BUTTON_GROUP'
@@ -500,7 +500,7 @@ export namespace Question {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.Question.StaticTextDisplayQuestion
+  * Generated from evaka.core.document.Question.StaticTextDisplayQuestion
   */
   export interface StaticTextDisplayQuestion {
     type: 'STATIC_TEXT_DISPLAY'
@@ -511,7 +511,7 @@ export namespace Question {
   }
 
   /**
-  * Generated from fi.espoo.evaka.document.Question.TextQuestion
+  * Generated from evaka.core.document.Question.TextQuestion
   */
   export interface TextQuestion {
     type: 'TEXT'
@@ -523,13 +523,13 @@ export namespace Question {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.Question
+* Generated from evaka.core.document.Question
 */
 export type Question = Question.CheckboxGroupQuestion | Question.CheckboxQuestion | Question.DateQuestion | Question.GroupedTextFieldsQuestion | Question.RadioButtonGroupQuestion | Question.StaticTextDisplayQuestion | Question.TextQuestion
 
 
 /**
-* Generated from fi.espoo.evaka.document.QuestionType
+* Generated from evaka.core.document.QuestionType
 */
 export const questionTypes = [
   'TEXT',
@@ -544,7 +544,7 @@ export const questionTypes = [
 export type QuestionType = typeof questionTypes[number]
 
 /**
-* Generated from fi.espoo.evaka.document.RadioButtonGroupQuestionOption
+* Generated from evaka.core.document.RadioButtonGroupQuestionOption
 */
 export interface RadioButtonGroupQuestionOption {
   id: string
@@ -552,7 +552,7 @@ export interface RadioButtonGroupQuestionOption {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.Section
+* Generated from evaka.core.document.Section
 */
 export interface Section {
   id: string
@@ -562,21 +562,21 @@ export interface Section {
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.StatusChangeRequest
+* Generated from evaka.core.document.childdocument.ChildDocumentController.StatusChangeRequest
 */
 export interface StatusChangeRequest {
   newStatus: DocumentStatus
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentController.UpdateChildDocumentDecisionValidityRequest
+* Generated from evaka.core.document.childdocument.ChildDocumentController.UpdateChildDocumentDecisionValidityRequest
 */
 export interface UpdateChildDocumentDecisionValidityRequest {
   newValidity: DateRange
 }
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.UpdateChildDocumentRequest
+* Generated from evaka.core.document.childdocument.ChildDocumentControllerCitizen.UpdateChildDocumentRequest
 */
 export interface UpdateChildDocumentRequest {
   content: DocumentContent

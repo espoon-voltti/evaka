@@ -69,7 +69,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.activateEmployee
+* Generated from evaka.core.pis.controllers.EmployeeController.activateEmployee
 */
 export async function activateEmployee(
   request: {
@@ -85,7 +85,7 @@ export async function activateEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.createSsnEmployee
+* Generated from evaka.core.pis.controllers.EmployeeController.createSsnEmployee
 */
 export async function createSsnEmployee(
   request: {
@@ -102,7 +102,7 @@ export async function createSsnEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.deactivateEmployee
+* Generated from evaka.core.pis.controllers.EmployeeController.deactivateEmployee
 */
 export async function deactivateEmployee(
   request: {
@@ -118,7 +118,7 @@ export async function deactivateEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.deleteEmployee
+* Generated from evaka.core.pis.controllers.EmployeeController.deleteEmployee
 */
 export async function deleteEmployee(
   request: {
@@ -134,7 +134,7 @@ export async function deleteEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.deleteEmployeeDaycareRoles
+* Generated from evaka.core.pis.controllers.EmployeeController.deleteEmployeeDaycareRoles
 */
 export async function deleteEmployeeDaycareRoles(
   request: {
@@ -155,7 +155,7 @@ export async function deleteEmployeeDaycareRoles(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.deleteEmployeeScheduledDaycareRole
+* Generated from evaka.core.pis.controllers.EmployeeController.deleteEmployeeScheduledDaycareRole
 */
 export async function deleteEmployeeScheduledDaycareRole(
   request: {
@@ -176,7 +176,7 @@ export async function deleteEmployeeScheduledDaycareRole(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getEmployeeDetails
+* Generated from evaka.core.pis.controllers.EmployeeController.getEmployeeDetails
 */
 export async function getEmployeeDetails(
   request: {
@@ -192,7 +192,7 @@ export async function getEmployeeDetails(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getEmployeePreferredFirstName
+* Generated from evaka.core.pis.controllers.EmployeeController.getEmployeePreferredFirstName
 */
 export async function getEmployeePreferredFirstName(): Promise<EmployeePreferredFirstName> {
   const { data: json } = await client.request<JsonOf<EmployeePreferredFirstName>>({
@@ -204,7 +204,7 @@ export async function getEmployeePreferredFirstName(): Promise<EmployeePreferred
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getEmployees
+* Generated from evaka.core.pis.controllers.EmployeeController.getEmployees
 */
 export async function getEmployees(): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
@@ -216,7 +216,7 @@ export async function getEmployees(): Promise<Employee[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.getFinanceDecisionHandlers
+* Generated from evaka.core.pis.controllers.EmployeeController.getFinanceDecisionHandlers
 */
 export async function getFinanceDecisionHandlers(): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
@@ -228,7 +228,7 @@ export async function getFinanceDecisionHandlers(): Promise<Employee[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.isPinLocked
+* Generated from evaka.core.pis.controllers.EmployeeController.isPinLocked
 */
 export async function isPinLocked(): Promise<boolean> {
   const { data: json } = await client.request<JsonOf<boolean>>({
@@ -240,7 +240,7 @@ export async function isPinLocked(): Promise<boolean> {
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.searchEmployees
+* Generated from evaka.core.pis.controllers.EmployeeController.searchEmployees
 */
 export async function searchEmployees(
   request: {
@@ -257,7 +257,7 @@ export async function searchEmployees(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.setEmployeePreferredFirstName
+* Generated from evaka.core.pis.controllers.EmployeeController.setEmployeePreferredFirstName
 */
 export async function setEmployeePreferredFirstName(
   request: {
@@ -274,7 +274,7 @@ export async function setEmployeePreferredFirstName(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.updateEmployeeEmail
+* Generated from evaka.core.pis.controllers.EmployeeController.updateEmployeeEmail
 */
 export async function updateEmployeeEmail(
   request: {
@@ -292,7 +292,7 @@ export async function updateEmployeeEmail(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.updateEmployeeGlobalRoles
+* Generated from evaka.core.pis.controllers.EmployeeController.updateEmployeeGlobalRoles
 */
 export async function updateEmployeeGlobalRoles(
   request: {
@@ -310,7 +310,7 @@ export async function updateEmployeeGlobalRoles(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.upsertEmployeeDaycareRoles
+* Generated from evaka.core.pis.controllers.EmployeeController.upsertEmployeeDaycareRoles
 */
 export async function upsertEmployeeDaycareRoles(
   request: {
@@ -328,7 +328,7 @@ export async function upsertEmployeeDaycareRoles(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.upsertPinCode
+* Generated from evaka.core.pis.controllers.EmployeeController.upsertPinCode
 */
 export async function upsertPinCode(
   request: {
@@ -345,7 +345,7 @@ export async function upsertPinCode(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FamilyController.getFamilyByPerson
+* Generated from evaka.core.pis.controllers.FamilyController.getFamilyByPerson
 */
 export async function getFamilyByPerson(
   request: {
@@ -361,7 +361,7 @@ export async function getFamilyByPerson(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FamilyController.getFamilyContactSummary
+* Generated from evaka.core.pis.controllers.FamilyController.getFamilyContactSummary
 */
 export async function getFamilyContactSummary(
   request: {
@@ -381,7 +381,7 @@ export async function getFamilyContactSummary(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FamilyController.updateFamilyContactDetails
+* Generated from evaka.core.pis.controllers.FamilyController.updateFamilyContactDetails
 */
 export async function updateFamilyContactDetails(
   request: {
@@ -398,7 +398,7 @@ export async function updateFamilyContactDetails(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FamilyController.updateFamilyContactPriority
+* Generated from evaka.core.pis.controllers.FamilyController.updateFamilyContactPriority
 */
 export async function updateFamilyContactPriority(
   request: {
@@ -415,7 +415,7 @@ export async function updateFamilyContactPriority(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FosterParentController.createFosterParentRelationship
+* Generated from evaka.core.pis.controllers.FosterParentController.createFosterParentRelationship
 */
 export async function createFosterParentRelationship(
   request: {
@@ -432,7 +432,7 @@ export async function createFosterParentRelationship(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FosterParentController.deleteFosterParentRelationship
+* Generated from evaka.core.pis.controllers.FosterParentController.deleteFosterParentRelationship
 */
 export async function deleteFosterParentRelationship(
   request: {
@@ -448,7 +448,7 @@ export async function deleteFosterParentRelationship(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FosterParentController.getFosterChildren
+* Generated from evaka.core.pis.controllers.FosterParentController.getFosterChildren
 */
 export async function getFosterChildren(
   request: {
@@ -464,7 +464,7 @@ export async function getFosterChildren(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FosterParentController.getFosterParents
+* Generated from evaka.core.pis.controllers.FosterParentController.getFosterParents
 */
 export async function getFosterParents(
   request: {
@@ -480,7 +480,7 @@ export async function getFosterParents(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FosterParentController.updateFosterParentRelationshipValidity
+* Generated from evaka.core.pis.controllers.FosterParentController.updateFosterParentRelationshipValidity
 */
 export async function updateFosterParentRelationshipValidity(
   request: {
@@ -498,7 +498,7 @@ export async function updateFosterParentRelationshipValidity(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.createParentship
+* Generated from evaka.core.pis.controllers.ParentshipController.createParentship
 */
 export async function createParentship(
   request: {
@@ -515,7 +515,7 @@ export async function createParentship(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.deleteParentship
+* Generated from evaka.core.pis.controllers.ParentshipController.deleteParentship
 */
 export async function deleteParentship(
   request: {
@@ -531,7 +531,7 @@ export async function deleteParentship(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.getParentships
+* Generated from evaka.core.pis.controllers.ParentshipController.getParentships
 */
 export async function getParentships(
   request: {
@@ -553,7 +553,7 @@ export async function getParentships(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.retryParentship
+* Generated from evaka.core.pis.controllers.ParentshipController.retryParentship
 */
 export async function retryParentship(
   request: {
@@ -569,7 +569,7 @@ export async function retryParentship(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.updateParentship
+* Generated from evaka.core.pis.controllers.ParentshipController.updateParentship
 */
 export async function updateParentship(
   request: {
@@ -587,7 +587,7 @@ export async function updateParentship(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.createPartnership
+* Generated from evaka.core.pis.controllers.PartnershipsController.createPartnership
 */
 export async function createPartnership(
   request: {
@@ -604,7 +604,7 @@ export async function createPartnership(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.deletePartnership
+* Generated from evaka.core.pis.controllers.PartnershipsController.deletePartnership
 */
 export async function deletePartnership(
   request: {
@@ -620,7 +620,7 @@ export async function deletePartnership(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.getPartnerships
+* Generated from evaka.core.pis.controllers.PartnershipsController.getPartnerships
 */
 export async function getPartnerships(
   request: {
@@ -640,7 +640,7 @@ export async function getPartnerships(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.retryPartnership
+* Generated from evaka.core.pis.controllers.PartnershipsController.retryPartnership
 */
 export async function retryPartnership(
   request: {
@@ -656,7 +656,7 @@ export async function retryPartnership(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.updatePartnership
+* Generated from evaka.core.pis.controllers.PartnershipsController.updatePartnership
 */
 export async function updatePartnership(
   request: {
@@ -674,7 +674,7 @@ export async function updatePartnership(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.addSsn
+* Generated from evaka.core.pis.controllers.PersonController.addSsn
 */
 export async function addSsn(
   request: {
@@ -692,7 +692,7 @@ export async function addSsn(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.createPerson
+* Generated from evaka.core.pis.controllers.PersonController.createPerson
 */
 export async function createPerson(
   request: {
@@ -709,7 +709,7 @@ export async function createPerson(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.disableSsn
+* Generated from evaka.core.pis.controllers.PersonController.disableSsn
 */
 export async function disableSsn(
   request: {
@@ -727,7 +727,7 @@ export async function disableSsn(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.getAddressPagePdf
+* Generated from evaka.core.pis.controllers.PersonController.getAddressPagePdf
 */
 export function getAddressPagePdf(
   request: {
@@ -741,7 +741,7 @@ export function getAddressPagePdf(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.getOrCreatePersonBySsn
+* Generated from evaka.core.pis.controllers.PersonController.getOrCreatePersonBySsn
 */
 export async function getOrCreatePersonBySsn(
   request: {
@@ -758,7 +758,7 @@ export async function getOrCreatePersonBySsn(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.getPerson
+* Generated from evaka.core.pis.controllers.PersonController.getPerson
 */
 export async function getPerson(
   request: {
@@ -774,7 +774,7 @@ export async function getPerson(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.getPersonDependants
+* Generated from evaka.core.pis.controllers.PersonController.getPersonDependants
 */
 export async function getPersonDependants(
   request: {
@@ -790,7 +790,7 @@ export async function getPersonDependants(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.getPersonGuardians
+* Generated from evaka.core.pis.controllers.PersonController.getPersonGuardians
 */
 export async function getPersonGuardians(
   request: {
@@ -806,7 +806,7 @@ export async function getPersonGuardians(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.getPersonIdentity
+* Generated from evaka.core.pis.controllers.PersonController.getPersonIdentity
 */
 export async function getPersonIdentity(
   request: {
@@ -822,7 +822,7 @@ export async function getPersonIdentity(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.getPersonSensitiveDetails
+* Generated from evaka.core.pis.controllers.PersonController.getPersonSensitiveDetails
 */
 export async function getPersonSensitiveDetails(
   request: {
@@ -838,7 +838,7 @@ export async function getPersonSensitiveDetails(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.mergePeople
+* Generated from evaka.core.pis.controllers.PersonController.mergePeople
 */
 export async function mergePeople(
   request: {
@@ -855,7 +855,7 @@ export async function mergePeople(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.safeDeletePerson
+* Generated from evaka.core.pis.controllers.PersonController.safeDeletePerson
 */
 export async function safeDeletePerson(
   request: {
@@ -871,7 +871,7 @@ export async function safeDeletePerson(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.searchPerson
+* Generated from evaka.core.pis.controllers.PersonController.searchPerson
 */
 export async function searchPerson(
   request: {
@@ -888,7 +888,7 @@ export async function searchPerson(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.updateGuardianEvakaRights
+* Generated from evaka.core.pis.controllers.PersonController.updateGuardianEvakaRights
 */
 export async function updateGuardianEvakaRights(
   request: {
@@ -906,7 +906,7 @@ export async function updateGuardianEvakaRights(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.updatePersonAndFamilyFromVtj
+* Generated from evaka.core.pis.controllers.PersonController.updatePersonAndFamilyFromVtj
 */
 export async function updatePersonAndFamilyFromVtj(
   request: {
@@ -922,7 +922,7 @@ export async function updatePersonAndFamilyFromVtj(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.updatePersonDetails
+* Generated from evaka.core.pis.controllers.PersonController.updatePersonDetails
 */
 export async function updatePersonDetails(
   request: {

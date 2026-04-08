@@ -20,7 +20,7 @@ import type { ServiceNeedId } from './shared'
 import type { ServiceNeedOptionId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.AcceptServiceApplicationBody
+* Generated from evaka.core.serviceneed.application.ServiceApplicationController.AcceptServiceApplicationBody
 */
 export interface AcceptServiceApplicationBody {
   partWeek: boolean
@@ -28,7 +28,7 @@ export interface AcceptServiceApplicationBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationControllerCitizen.CitizenServiceApplication
+* Generated from evaka.core.serviceneed.application.ServiceApplicationControllerCitizen.CitizenServiceApplication
 */
 export interface CitizenServiceApplication {
   data: ServiceApplication
@@ -36,7 +36,7 @@ export interface CitizenServiceApplication {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.EmployeeServiceApplication
+* Generated from evaka.core.serviceneed.application.ServiceApplicationController.EmployeeServiceApplication
 */
 export interface EmployeeServiceApplication {
   data: ServiceApplication
@@ -44,7 +44,7 @@ export interface EmployeeServiceApplication {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplication
+* Generated from evaka.core.serviceneed.application.ServiceApplication
 */
 export interface ServiceApplication {
   additionalInfo: string
@@ -61,7 +61,7 @@ export interface ServiceApplication {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationControllerCitizen.ServiceApplicationCreateRequest
+* Generated from evaka.core.serviceneed.application.ServiceApplicationControllerCitizen.ServiceApplicationCreateRequest
 */
 export interface ServiceApplicationCreateRequest {
   additionalInfo: string
@@ -71,7 +71,7 @@ export interface ServiceApplicationCreateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationDecision
+* Generated from evaka.core.serviceneed.application.ServiceApplicationDecision
 */
 export interface ServiceApplicationDecision {
   decidedAt: HelsinkiDateTime
@@ -82,14 +82,14 @@ export interface ServiceApplicationDecision {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationDecisionStatus
+* Generated from evaka.core.serviceneed.application.ServiceApplicationDecisionStatus
 */
 export type ServiceApplicationDecisionStatus =
   | 'ACCEPTED'
   | 'REJECTED'
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationPlacement
+* Generated from evaka.core.serviceneed.application.ServiceApplicationPlacement
 */
 export interface ServiceApplicationPlacement {
   endDate: LocalDate
@@ -99,14 +99,14 @@ export interface ServiceApplicationPlacement {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.ServiceApplicationRejection
+* Generated from evaka.core.serviceneed.application.ServiceApplicationController.ServiceApplicationRejection
 */
 export interface ServiceApplicationRejection {
   reason: string
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeed
+* Generated from evaka.core.serviceneed.ServiceNeed
 */
 export interface ServiceNeed {
   confirmed: ServiceNeedConfirmation | null
@@ -121,7 +121,7 @@ export interface ServiceNeed {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedConfirmation
+* Generated from evaka.core.serviceneed.ServiceNeedConfirmation
 */
 export interface ServiceNeedConfirmation {
   at: HelsinkiDateTime | null
@@ -130,7 +130,7 @@ export interface ServiceNeedConfirmation {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.ServiceNeedCreateRequest
+* Generated from evaka.core.serviceneed.ServiceNeedController.ServiceNeedCreateRequest
 */
 export interface ServiceNeedCreateRequest {
   endDate: LocalDate
@@ -142,7 +142,7 @@ export interface ServiceNeedCreateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedOption
+* Generated from evaka.core.serviceneed.ServiceNeedOption
 */
 export interface ServiceNeedOption {
   contractDaysPerMonth: number | null
@@ -172,7 +172,7 @@ export interface ServiceNeedOption {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceNeedOptionBasics
+* Generated from evaka.core.serviceneed.application.ServiceNeedOptionBasics
 */
 export interface ServiceNeedOptionBasics {
   id: ServiceNeedOptionId
@@ -185,7 +185,7 @@ export interface ServiceNeedOptionBasics {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedOptionPublicInfo
+* Generated from evaka.core.serviceneed.ServiceNeedOptionPublicInfo
 */
 export interface ServiceNeedOptionPublicInfo {
   id: ServiceNeedOptionId
@@ -198,7 +198,7 @@ export interface ServiceNeedOptionPublicInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedOptionSummary
+* Generated from evaka.core.serviceneed.ServiceNeedOptionSummary
 */
 export interface ServiceNeedOptionSummary {
   id: ServiceNeedOptionId
@@ -209,7 +209,7 @@ export interface ServiceNeedOptionSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedSummary
+* Generated from evaka.core.serviceneed.ServiceNeedSummary
 */
 export interface ServiceNeedSummary {
   contractDaysPerMonth: number | null
@@ -223,7 +223,7 @@ export interface ServiceNeedSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.ServiceNeedUpdateRequest
+* Generated from evaka.core.serviceneed.ServiceNeedController.ServiceNeedUpdateRequest
 */
 export interface ServiceNeedUpdateRequest {
   endDate: LocalDate
@@ -234,7 +234,7 @@ export interface ServiceNeedUpdateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ShiftCareType
+* Generated from evaka.core.serviceneed.ShiftCareType
 */
 export const shiftCareType = [
   'NONE',
@@ -245,7 +245,7 @@ export const shiftCareType = [
 export type ShiftCareType = typeof shiftCareType[number]
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.UndecidedServiceApplicationSummary
+* Generated from evaka.core.serviceneed.application.UndecidedServiceApplicationSummary
 */
 export interface UndecidedServiceApplicationSummary {
   childId: PersonId

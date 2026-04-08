@@ -69,7 +69,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.ChildController.getAdditionalInfo
+* Generated from evaka.core.daycare.controllers.ChildController.getAdditionalInfo
 */
 export async function getAdditionalInfo(
   request: {
@@ -85,7 +85,7 @@ export async function getAdditionalInfo(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.ChildController.getChild
+* Generated from evaka.core.daycare.controllers.ChildController.getChild
 */
 export async function getChild(
   request: {
@@ -101,7 +101,7 @@ export async function getChild(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.ChildController.updateAdditionalInfo
+* Generated from evaka.core.daycare.controllers.ChildController.updateAdditionalInfo
 */
 export async function updateAdditionalInfo(
   request: {
@@ -119,7 +119,7 @@ export async function updateAdditionalInfo(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.createCaretakers
+* Generated from evaka.core.daycare.controllers.DaycareController.createCaretakers
 */
 export async function createCaretakers(
   request: {
@@ -138,7 +138,7 @@ export async function createCaretakers(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.createDaycare
+* Generated from evaka.core.daycare.controllers.DaycareController.createDaycare
 */
 export async function createDaycare(
   request: {
@@ -155,7 +155,7 @@ export async function createDaycare(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.createGroup
+* Generated from evaka.core.daycare.controllers.DaycareController.createGroup
 */
 export async function createGroup(
   request: {
@@ -173,7 +173,7 @@ export async function createGroup(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.deleteGroup
+* Generated from evaka.core.daycare.controllers.DaycareController.deleteGroup
 */
 export async function deleteGroup(
   request: {
@@ -190,7 +190,7 @@ export async function deleteGroup(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getCaretakers
+* Generated from evaka.core.daycare.controllers.DaycareController.getCaretakers
 */
 export async function getCaretakers(
   request: {
@@ -207,7 +207,7 @@ export async function getCaretakers(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getDaycare
+* Generated from evaka.core.daycare.controllers.DaycareController.getDaycare
 */
 export async function getDaycare(
   request: {
@@ -223,7 +223,7 @@ export async function getDaycare(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getDaycares
+* Generated from evaka.core.daycare.controllers.DaycareController.getDaycares
 */
 export async function getDaycares(
   request: {
@@ -243,7 +243,7 @@ export async function getDaycares(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getGroups
+* Generated from evaka.core.daycare.controllers.DaycareController.getGroups
 */
 export async function getGroups(
   request: {
@@ -268,7 +268,7 @@ export async function getGroups(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getUnitFeatures
+* Generated from evaka.core.daycare.controllers.DaycareController.getUnitFeatures
 */
 export async function getUnitFeatures(): Promise<UnitFeatures[]> {
   const { data: json } = await client.request<JsonOf<UnitFeatures[]>>({
@@ -280,7 +280,7 @@ export async function getUnitFeatures(): Promise<UnitFeatures[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getUnitGroupDetails
+* Generated from evaka.core.daycare.controllers.DaycareController.getUnitGroupDetails
 */
 export async function getUnitGroupDetails(
   request: {
@@ -303,7 +303,7 @@ export async function getUnitGroupDetails(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getUnitNotifications
+* Generated from evaka.core.daycare.controllers.DaycareController.getUnitNotifications
 */
 export async function getUnitNotifications(
   request: {
@@ -319,7 +319,7 @@ export async function getUnitNotifications(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getUnitOperationPeriods
+* Generated from evaka.core.daycare.controllers.DaycareController.getUnitOperationPeriods
 */
 export async function getUnitOperationPeriods(
   request: {
@@ -341,7 +341,7 @@ export async function getUnitOperationPeriods(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.getUnitServiceWorkerNote
+* Generated from evaka.core.daycare.controllers.DaycareController.getUnitServiceWorkerNote
 */
 export async function getUnitServiceWorkerNote(
   request: {
@@ -357,7 +357,7 @@ export async function getUnitServiceWorkerNote(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.removeCaretakers
+* Generated from evaka.core.daycare.controllers.DaycareController.removeCaretakers
 */
 export async function removeCaretakers(
   request: {
@@ -375,7 +375,7 @@ export async function removeCaretakers(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.setUnitServiceWorkerNote
+* Generated from evaka.core.daycare.controllers.DaycareController.setUnitServiceWorkerNote
 */
 export async function setUnitServiceWorkerNote(
   request: {
@@ -393,7 +393,7 @@ export async function setUnitServiceWorkerNote(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.updateCaretakers
+* Generated from evaka.core.daycare.controllers.DaycareController.updateCaretakers
 */
 export async function updateCaretakers(
   request: {
@@ -413,7 +413,7 @@ export async function updateCaretakers(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.updateDaycare
+* Generated from evaka.core.daycare.controllers.DaycareController.updateDaycare
 */
 export async function updateDaycare(
   request: {
@@ -431,7 +431,7 @@ export async function updateDaycare(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.updateGroup
+* Generated from evaka.core.daycare.controllers.DaycareController.updateGroup
 */
 export async function updateGroup(
   request: {
@@ -450,7 +450,7 @@ export async function updateGroup(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.updateUnitClosingDate
+* Generated from evaka.core.daycare.controllers.DaycareController.updateUnitClosingDate
 */
 export async function updateUnitClosingDate(
   request: {
@@ -471,7 +471,7 @@ export async function updateUnitClosingDate(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.updateUnitFeatures
+* Generated from evaka.core.daycare.controllers.DaycareController.updateUnitFeatures
 */
 export async function updateUnitFeatures(
   request: {
@@ -488,7 +488,7 @@ export async function updateUnitFeatures(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationController.getApplicationUnits
+* Generated from evaka.core.daycare.controllers.LocationController.getApplicationUnits
 */
 export async function getApplicationUnits(
   request: {
@@ -512,7 +512,7 @@ export async function getApplicationUnits(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationController.getAreas
+* Generated from evaka.core.daycare.controllers.LocationController.getAreas
 */
 export async function getAreas(): Promise<AreaJSON[]> {
   const { data: json } = await client.request<JsonOf<AreaJSON[]>>({
@@ -524,7 +524,7 @@ export async function getAreas(): Promise<AreaJSON[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.LocationController.getUnits
+* Generated from evaka.core.daycare.controllers.LocationController.getUnits
 */
 export async function getUnits(
   request: {
@@ -548,7 +548,7 @@ export async function getUnits(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.StaffAttendanceController.getStaffAttendancesByGroup
+* Generated from evaka.core.daycare.controllers.StaffAttendanceController.getStaffAttendancesByGroup
 */
 export async function getStaffAttendancesByGroup(
   request: {
@@ -571,7 +571,7 @@ export async function getStaffAttendancesByGroup(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.StaffAttendanceController.upsertStaffAttendance
+* Generated from evaka.core.daycare.controllers.StaffAttendanceController.upsertStaffAttendance
 */
 export async function upsertStaffAttendance(
   request: {
@@ -589,7 +589,7 @@ export async function upsertStaffAttendance(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.createClubTerm
+* Generated from evaka.core.daycare.controllers.TermsController.createClubTerm
 */
 export async function createClubTerm(
   request: {
@@ -606,7 +606,7 @@ export async function createClubTerm(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.createPreschoolTerm
+* Generated from evaka.core.daycare.controllers.TermsController.createPreschoolTerm
 */
 export async function createPreschoolTerm(
   request: {
@@ -623,7 +623,7 @@ export async function createPreschoolTerm(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.deleteClubTerm
+* Generated from evaka.core.daycare.controllers.TermsController.deleteClubTerm
 */
 export async function deleteClubTerm(
   request: {
@@ -639,7 +639,7 @@ export async function deleteClubTerm(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.deletePreschoolTerm
+* Generated from evaka.core.daycare.controllers.TermsController.deletePreschoolTerm
 */
 export async function deletePreschoolTerm(
   request: {
@@ -655,7 +655,7 @@ export async function deletePreschoolTerm(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.getClubTerms
+* Generated from evaka.core.daycare.controllers.TermsController.getClubTerms
 */
 export async function getClubTerms(): Promise<ClubTerm[]> {
   const { data: json } = await client.request<JsonOf<ClubTerm[]>>({
@@ -667,7 +667,7 @@ export async function getClubTerms(): Promise<ClubTerm[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.getPreschoolTerms
+* Generated from evaka.core.daycare.controllers.TermsController.getPreschoolTerms
 */
 export async function getPreschoolTerms(): Promise<PreschoolTerm[]> {
   const { data: json } = await client.request<JsonOf<PreschoolTerm[]>>({
@@ -679,7 +679,7 @@ export async function getPreschoolTerms(): Promise<PreschoolTerm[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.updateClubTerm
+* Generated from evaka.core.daycare.controllers.TermsController.updateClubTerm
 */
 export async function updateClubTerm(
   request: {
@@ -697,7 +697,7 @@ export async function updateClubTerm(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.TermsController.updatePreschoolTerm
+* Generated from evaka.core.daycare.controllers.TermsController.updatePreschoolTerm
 */
 export async function updatePreschoolTerm(
   request: {
@@ -715,7 +715,7 @@ export async function updatePreschoolTerm(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.addFullAclForRole
+* Generated from evaka.core.daycare.controllers.UnitAclController.addFullAclForRole
 */
 export async function addFullAclForRole(
   request: {
@@ -734,7 +734,7 @@ export async function addFullAclForRole(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.createTemporaryEmployee
+* Generated from evaka.core.daycare.controllers.UnitAclController.createTemporaryEmployee
 */
 export async function createTemporaryEmployee(
   request: {
@@ -752,7 +752,7 @@ export async function createTemporaryEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.deleteEarlyChildhoodEducationSecretary
+* Generated from evaka.core.daycare.controllers.UnitAclController.deleteEarlyChildhoodEducationSecretary
 */
 export async function deleteEarlyChildhoodEducationSecretary(
   request: {
@@ -769,7 +769,7 @@ export async function deleteEarlyChildhoodEducationSecretary(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.deleteScheduledAcl
+* Generated from evaka.core.daycare.controllers.UnitAclController.deleteScheduledAcl
 */
 export async function deleteScheduledAcl(
   request: {
@@ -786,7 +786,7 @@ export async function deleteScheduledAcl(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.deleteSpecialEducationTeacher
+* Generated from evaka.core.daycare.controllers.UnitAclController.deleteSpecialEducationTeacher
 */
 export async function deleteSpecialEducationTeacher(
   request: {
@@ -803,7 +803,7 @@ export async function deleteSpecialEducationTeacher(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.deleteStaff
+* Generated from evaka.core.daycare.controllers.UnitAclController.deleteStaff
 */
 export async function deleteStaff(
   request: {
@@ -820,7 +820,7 @@ export async function deleteStaff(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.deleteTemporaryEmployee
+* Generated from evaka.core.daycare.controllers.UnitAclController.deleteTemporaryEmployee
 */
 export async function deleteTemporaryEmployee(
   request: {
@@ -837,7 +837,7 @@ export async function deleteTemporaryEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.deleteTemporaryEmployeeAcl
+* Generated from evaka.core.daycare.controllers.UnitAclController.deleteTemporaryEmployeeAcl
 */
 export async function deleteTemporaryEmployeeAcl(
   request: {
@@ -854,7 +854,7 @@ export async function deleteTemporaryEmployeeAcl(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.deleteUnitSupervisor
+* Generated from evaka.core.daycare.controllers.UnitAclController.deleteUnitSupervisor
 */
 export async function deleteUnitSupervisor(
   request: {
@@ -871,7 +871,7 @@ export async function deleteUnitSupervisor(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.getDaycareAcl
+* Generated from evaka.core.daycare.controllers.UnitAclController.getDaycareAcl
 */
 export async function getDaycareAcl(
   request: {
@@ -887,7 +887,7 @@ export async function getDaycareAcl(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.getScheduledDaycareAcl
+* Generated from evaka.core.daycare.controllers.UnitAclController.getScheduledDaycareAcl
 */
 export async function getScheduledDaycareAcl(
   request: {
@@ -903,7 +903,7 @@ export async function getScheduledDaycareAcl(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.getTemporaryEmployee
+* Generated from evaka.core.daycare.controllers.UnitAclController.getTemporaryEmployee
 */
 export async function getTemporaryEmployee(
   request: {
@@ -920,7 +920,7 @@ export async function getTemporaryEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.getTemporaryEmployees
+* Generated from evaka.core.daycare.controllers.UnitAclController.getTemporaryEmployees
 */
 export async function getTemporaryEmployees(
   request: {
@@ -936,7 +936,7 @@ export async function getTemporaryEmployees(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.reactivateTemporaryEmployee
+* Generated from evaka.core.daycare.controllers.UnitAclController.reactivateTemporaryEmployee
 */
 export async function reactivateTemporaryEmployee(
   request: {
@@ -953,7 +953,7 @@ export async function reactivateTemporaryEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.updateGroupAcl
+* Generated from evaka.core.daycare.controllers.UnitAclController.updateGroupAcl
 */
 export async function updateGroupAcl(
   request: {
@@ -972,7 +972,7 @@ export async function updateGroupAcl(
 
 
 /**
-* Generated from fi.espoo.evaka.daycare.controllers.UnitAclController.updateTemporaryEmployee
+* Generated from evaka.core.daycare.controllers.UnitAclController.updateTemporaryEmployee
 */
 export async function updateTemporaryEmployee(
   request: {

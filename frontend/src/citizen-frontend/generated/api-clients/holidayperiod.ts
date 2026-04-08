@@ -18,7 +18,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodControllerCitizen.answerFixedPeriodQuestionnaire
+* Generated from evaka.core.holidayperiod.HolidayPeriodControllerCitizen.answerFixedPeriodQuestionnaire
 */
 export async function answerFixedPeriodQuestionnaire(
   request: {
@@ -36,7 +36,7 @@ export async function answerFixedPeriodQuestionnaire(
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodControllerCitizen.answerOpenRangeQuestionnaire
+* Generated from evaka.core.holidayperiod.HolidayPeriodControllerCitizen.answerOpenRangeQuestionnaire
 */
 export async function answerOpenRangeQuestionnaire(
   request: {
@@ -54,7 +54,7 @@ export async function answerOpenRangeQuestionnaire(
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodControllerCitizen.getActiveQuestionnaires
+* Generated from evaka.core.holidayperiod.HolidayPeriodControllerCitizen.getActiveQuestionnaires
 */
 export async function getActiveQuestionnaires(): Promise<ActiveQuestionnaire[]> {
   const { data: json } = await client.request<JsonOf<ActiveQuestionnaire[]>>({
@@ -66,7 +66,7 @@ export async function getActiveQuestionnaires(): Promise<ActiveQuestionnaire[]> 
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodControllerCitizen.getHolidayPeriods
+* Generated from evaka.core.holidayperiod.HolidayPeriodControllerCitizen.getHolidayPeriods
 */
 export async function getHolidayPeriods(): Promise<HolidayPeriod[]> {
   const { data: json } = await client.request<JsonOf<HolidayPeriod[]>>({

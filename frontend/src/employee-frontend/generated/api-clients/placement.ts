@@ -21,7 +21,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementController.createGroupPlacement
+* Generated from evaka.core.placement.PlacementController.createGroupPlacement
 */
 export async function createGroupPlacement(
   request: {
@@ -39,7 +39,7 @@ export async function createGroupPlacement(
 
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementController.createPlacement
+* Generated from evaka.core.placement.PlacementController.createPlacement
 */
 export async function createPlacement(
   request: {
@@ -56,7 +56,7 @@ export async function createPlacement(
 
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementController.deleteGroupPlacement
+* Generated from evaka.core.placement.PlacementController.deleteGroupPlacement
 */
 export async function deleteGroupPlacement(
   request: {
@@ -72,7 +72,7 @@ export async function deleteGroupPlacement(
 
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementController.deletePlacement
+* Generated from evaka.core.placement.PlacementController.deletePlacement
 */
 export async function deletePlacement(
   request: {
@@ -88,7 +88,7 @@ export async function deletePlacement(
 
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementController.getChildPlacementPeriods
+* Generated from evaka.core.placement.PlacementController.getChildPlacementPeriods
 */
 export async function getChildPlacementPeriods(
   request: {
@@ -104,7 +104,7 @@ export async function getChildPlacementPeriods(
 
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementController.getChildPlacements
+* Generated from evaka.core.placement.PlacementController.getChildPlacements
 */
 export async function getChildPlacements(
   request: {
@@ -120,7 +120,7 @@ export async function getChildPlacements(
 
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementController.transferGroupPlacement
+* Generated from evaka.core.placement.PlacementController.transferGroupPlacement
 */
 export async function transferGroupPlacement(
   request: {
@@ -138,7 +138,7 @@ export async function transferGroupPlacement(
 
 
 /**
-* Generated from fi.espoo.evaka.placement.PlacementController.updatePlacementById
+* Generated from evaka.core.placement.PlacementController.updatePlacementById
 */
 export async function updatePlacementById(
   request: {

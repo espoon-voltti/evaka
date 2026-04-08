@@ -26,7 +26,7 @@ import type { MessagingCategory } from './placement'
 import type { PersonId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.messaging.AccountType
+* Generated from evaka.core.messaging.AccountType
 */
 export type AccountType =
   | 'PERSONAL'
@@ -37,7 +37,7 @@ export type AccountType =
   | 'FINANCE'
 
 /**
-* Generated from fi.espoo.evaka.messaging.AuthorizedMessageAccount
+* Generated from evaka.core.messaging.AuthorizedMessageAccount
 */
 export interface AuthorizedMessageAccount {
   account: MessageAccount
@@ -45,7 +45,7 @@ export interface AuthorizedMessageAccount {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.ChildMessageAccountAccess
+* Generated from evaka.core.messaging.MessageControllerCitizen.ChildMessageAccountAccess
 */
 export interface ChildMessageAccountAccess {
   childId: PersonId | null
@@ -54,7 +54,7 @@ export interface ChildMessageAccountAccess {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.CitizenMessageBody
+* Generated from evaka.core.messaging.CitizenMessageBody
 */
 export interface CitizenMessageBody {
   attachmentIds: AttachmentId[]
@@ -67,7 +67,7 @@ export interface CitizenMessageBody {
 
 export namespace CitizenMessageThread {
   /**
-  * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Redacted
+  * Generated from evaka.core.messaging.CitizenMessageThread.Redacted
   */
   export interface Redacted {
     type: 'Redacted'
@@ -79,7 +79,7 @@ export namespace CitizenMessageThread {
   }
 
   /**
-  * Generated from fi.espoo.evaka.messaging.CitizenMessageThread.Regular
+  * Generated from evaka.core.messaging.CitizenMessageThread.Regular
   */
   export interface Regular {
     type: 'Regular'
@@ -96,20 +96,20 @@ export namespace CitizenMessageThread {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.CitizenMessageThread
+* Generated from evaka.core.messaging.CitizenMessageThread
 */
 export type CitizenMessageThread = CitizenMessageThread.Redacted | CitizenMessageThread.Regular
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.CreateMessageResponse
+* Generated from evaka.core.messaging.MessageController.CreateMessageResponse
 */
 export interface CreateMessageResponse {
   createdId: MessageContentId | null
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.DraftContent
+* Generated from evaka.core.messaging.DraftContent
 */
 export interface DraftContent {
   attachments: Attachment[]
@@ -125,7 +125,7 @@ export interface DraftContent {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.DraftRecipient
+* Generated from evaka.core.messaging.DraftRecipient
 */
 export interface DraftRecipient {
   accountId: string
@@ -133,7 +133,7 @@ export interface DraftRecipient {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.GetRecipientsResponse
+* Generated from evaka.core.messaging.MessageControllerCitizen.GetRecipientsResponse
 */
 export interface GetRecipientsResponse {
   childrenToMessageAccounts: ChildMessageAccountAccess[]
@@ -141,7 +141,7 @@ export interface GetRecipientsResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.Group
+* Generated from evaka.core.messaging.Group
 */
 export interface Group {
   closed: boolean
@@ -152,7 +152,7 @@ export interface Group {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.Message
+* Generated from evaka.core.messaging.Message
 */
 export interface Message {
   attachments: Attachment[]
@@ -167,7 +167,7 @@ export interface Message {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageAccount
+* Generated from evaka.core.messaging.MessageAccount
 */
 export interface MessageAccount {
   id: MessageAccountId
@@ -177,7 +177,7 @@ export interface MessageAccount {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageAccountWithPresence
+* Generated from evaka.core.messaging.MessageAccountWithPresence
 */
 export interface MessageAccountWithPresence {
   account: MessageAccount
@@ -185,7 +185,7 @@ export interface MessageAccountWithPresence {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageChild
+* Generated from evaka.core.messaging.MessageChild
 */
 export interface MessageChild {
   childId: PersonId
@@ -195,7 +195,7 @@ export interface MessageChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageCopy
+* Generated from evaka.core.messaging.MessageCopy
 */
 export interface MessageCopy {
   attachments: Attachment[]
@@ -220,7 +220,7 @@ export interface MessageCopy {
 
 export namespace MessageRecipient {
   /**
-  * Generated from fi.espoo.evaka.messaging.MessageRecipient.Area
+  * Generated from evaka.core.messaging.MessageRecipient.Area
   */
   export interface Area {
     type: 'AREA'
@@ -228,7 +228,7 @@ export namespace MessageRecipient {
   }
 
   /**
-  * Generated from fi.espoo.evaka.messaging.MessageRecipient.Child
+  * Generated from evaka.core.messaging.MessageRecipient.Child
   */
   export interface Child {
     type: 'CHILD'
@@ -237,7 +237,7 @@ export namespace MessageRecipient {
   }
 
   /**
-  * Generated from fi.espoo.evaka.messaging.MessageRecipient.Citizen
+  * Generated from evaka.core.messaging.MessageRecipient.Citizen
   */
   export interface Citizen {
     type: 'CITIZEN'
@@ -245,7 +245,7 @@ export namespace MessageRecipient {
   }
 
   /**
-  * Generated from fi.espoo.evaka.messaging.MessageRecipient.Group
+  * Generated from evaka.core.messaging.MessageRecipient.Group
   */
   export interface Group {
     type: 'GROUP'
@@ -254,7 +254,7 @@ export namespace MessageRecipient {
   }
 
   /**
-  * Generated from fi.espoo.evaka.messaging.MessageRecipient.Unit
+  * Generated from evaka.core.messaging.MessageRecipient.Unit
   */
   export interface Unit {
     type: 'UNIT'
@@ -264,13 +264,13 @@ export namespace MessageRecipient {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageRecipient
+* Generated from evaka.core.messaging.MessageRecipient
 */
 export type MessageRecipient = MessageRecipient.Area | MessageRecipient.Child | MessageRecipient.Citizen | MessageRecipient.Group | MessageRecipient.Unit
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageRecipientType
+* Generated from evaka.core.messaging.MessageRecipientType
 */
 export type MessageRecipientType =
   | 'AREA'
@@ -281,7 +281,7 @@ export type MessageRecipientType =
   | 'CITIZEN'
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageThread
+* Generated from evaka.core.messaging.MessageThread
 */
 export interface MessageThread {
   applicationId: ApplicationId | null
@@ -298,7 +298,7 @@ export interface MessageThread {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.MessageThreadFolder
+* Generated from evaka.core.messaging.MessageController.MessageThreadFolder
 */
 export interface MessageThreadFolder {
   id: MessageThreadFolderId
@@ -307,14 +307,14 @@ export interface MessageThreadFolder {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageType
+* Generated from evaka.core.messaging.MessageType
 */
 export type MessageType =
   | 'MESSAGE'
   | 'BULLETIN'
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.MyAccountResponse
+* Generated from evaka.core.messaging.MessageControllerCitizen.MyAccountResponse
 */
 export interface MyAccountResponse {
   accountId: MessageAccountId
@@ -322,7 +322,7 @@ export interface MyAccountResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.PagedCitizenMessageThreads
+* Generated from evaka.core.messaging.PagedCitizenMessageThreads
 */
 export interface PagedCitizenMessageThreads {
   data: CitizenMessageThread[]
@@ -331,7 +331,7 @@ export interface PagedCitizenMessageThreads {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.PagedMessageCopies
+* Generated from evaka.core.messaging.PagedMessageCopies
 */
 export interface PagedMessageCopies {
   data: MessageCopy[]
@@ -340,7 +340,7 @@ export interface PagedMessageCopies {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.PagedMessageThreads
+* Generated from evaka.core.messaging.PagedMessageThreads
 */
 export interface PagedMessageThreads {
   data: MessageThread[]
@@ -349,7 +349,7 @@ export interface PagedMessageThreads {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.PagedSentMessages
+* Generated from evaka.core.messaging.PagedSentMessages
 */
 export interface PagedSentMessages {
   data: SentMessage[]
@@ -358,7 +358,7 @@ export interface PagedSentMessages {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.PostMessageBody
+* Generated from evaka.core.messaging.MessageController.PostMessageBody
 */
 export interface PostMessageBody {
   attachmentIds: AttachmentId[]
@@ -375,7 +375,7 @@ export interface PostMessageBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.PostMessageFilters
+* Generated from evaka.core.messaging.MessageController.PostMessageFilters
 */
 export interface PostMessageFilters {
   familyDaycare: boolean
@@ -386,7 +386,7 @@ export interface PostMessageFilters {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.PostMessagePreflightBody
+* Generated from evaka.core.messaging.MessageController.PostMessagePreflightBody
 */
 export interface PostMessagePreflightBody {
   filters: PostMessageFilters | null
@@ -394,14 +394,14 @@ export interface PostMessagePreflightBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.PostMessagePreflightResponse
+* Generated from evaka.core.messaging.MessageController.PostMessagePreflightResponse
 */
 export interface PostMessagePreflightResponse {
   numberOfRecipientAccounts: number
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.ReplyToMessageBody
+* Generated from evaka.core.messaging.ReplyToMessageBody
 */
 export interface ReplyToMessageBody {
   content: string
@@ -411,7 +411,7 @@ export interface ReplyToMessageBody {
 
 export namespace SelectableRecipient {
   /**
-  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.Area
+  * Generated from evaka.core.messaging.SelectableRecipient.Area
   */
   export interface Area {
     type: 'AREA'
@@ -421,7 +421,7 @@ export namespace SelectableRecipient {
   }
 
   /**
-  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.Child
+  * Generated from evaka.core.messaging.SelectableRecipient.Child
   */
   export interface Child {
     type: 'CHILD'
@@ -431,7 +431,7 @@ export namespace SelectableRecipient {
   }
 
   /**
-  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.Citizen
+  * Generated from evaka.core.messaging.SelectableRecipient.Citizen
   */
   export interface Citizen {
     type: 'CITIZEN'
@@ -440,7 +440,7 @@ export namespace SelectableRecipient {
   }
 
   /**
-  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.Group
+  * Generated from evaka.core.messaging.SelectableRecipient.Group
   */
   export interface Group {
     type: 'GROUP'
@@ -451,7 +451,7 @@ export namespace SelectableRecipient {
   }
 
   /**
-  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.Unit
+  * Generated from evaka.core.messaging.SelectableRecipient.Unit
   */
   export interface Unit {
     type: 'UNIT'
@@ -462,7 +462,7 @@ export namespace SelectableRecipient {
   }
 
   /**
-  * Generated from fi.espoo.evaka.messaging.SelectableRecipient.UnitInArea
+  * Generated from evaka.core.messaging.SelectableRecipient.UnitInArea
   */
   export interface UnitInArea {
     type: 'UNIT_IN_AREA'
@@ -472,13 +472,13 @@ export namespace SelectableRecipient {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.SelectableRecipient
+* Generated from evaka.core.messaging.SelectableRecipient
 */
 export type SelectableRecipient = SelectableRecipient.Area | SelectableRecipient.Child | SelectableRecipient.Citizen | SelectableRecipient.Group | SelectableRecipient.Unit | SelectableRecipient.UnitInArea
 
 
 /**
-* Generated from fi.espoo.evaka.messaging.SelectableRecipientsResponse
+* Generated from evaka.core.messaging.SelectableRecipientsResponse
 */
 export interface SelectableRecipientsResponse {
   accountId: MessageAccountId
@@ -486,7 +486,7 @@ export interface SelectableRecipientsResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.SentMessage
+* Generated from evaka.core.messaging.SentMessage
 */
 export interface SentMessage {
   attachments: Attachment[]
@@ -501,14 +501,14 @@ export interface SentMessage {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageController.ThreadByApplicationResponse
+* Generated from evaka.core.messaging.MessageController.ThreadByApplicationResponse
 */
 export interface ThreadByApplicationResponse {
   thread: MessageThread | null
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageService.ThreadReply
+* Generated from evaka.core.messaging.MessageService.ThreadReply
 */
 export interface ThreadReply {
   message: Message
@@ -516,7 +516,7 @@ export interface ThreadReply {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.UnreadCountByAccount
+* Generated from evaka.core.messaging.UnreadCountByAccount
 */
 export interface UnreadCountByAccount {
   accountId: MessageAccountId
@@ -527,7 +527,7 @@ export interface UnreadCountByAccount {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.UnreadCountByAccountAndGroup
+* Generated from evaka.core.messaging.UnreadCountByAccountAndGroup
 */
 export interface UnreadCountByAccountAndGroup {
   accountId: MessageAccountId
@@ -537,7 +537,7 @@ export interface UnreadCountByAccountAndGroup {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.UpdatableDraftContent
+* Generated from evaka.core.messaging.UpdatableDraftContent
 */
 export interface UpdatableDraftContent {
   content: string

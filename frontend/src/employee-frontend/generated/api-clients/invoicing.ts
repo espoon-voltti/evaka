@@ -79,7 +79,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeAlterationController.createFeeAlteration
+* Generated from evaka.core.invoicing.controller.FeeAlterationController.createFeeAlteration
 */
 export async function createFeeAlteration(
   request: {
@@ -96,7 +96,7 @@ export async function createFeeAlteration(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeAlterationController.deleteFeeAlteration
+* Generated from evaka.core.invoicing.controller.FeeAlterationController.deleteFeeAlteration
 */
 export async function deleteFeeAlteration(
   request: {
@@ -112,7 +112,7 @@ export async function deleteFeeAlteration(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeAlterationController.getFeeAlterations
+* Generated from evaka.core.invoicing.controller.FeeAlterationController.getFeeAlterations
 */
 export async function getFeeAlterations(
   request: {
@@ -132,7 +132,7 @@ export async function getFeeAlterations(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeAlterationController.updateFeeAlteration
+* Generated from evaka.core.invoicing.controller.FeeAlterationController.updateFeeAlteration
 */
 export async function updateFeeAlteration(
   request: {
@@ -150,7 +150,7 @@ export async function updateFeeAlteration(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.confirmFeeDecisionDrafts
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.confirmFeeDecisionDrafts
 */
 export async function confirmFeeDecisionDrafts(
   request: {
@@ -172,7 +172,7 @@ export async function confirmFeeDecisionDrafts(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.generateRetroactiveFeeDecisions
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.generateRetroactiveFeeDecisions
 */
 export async function generateRetroactiveFeeDecisions(
   request: {
@@ -190,7 +190,7 @@ export async function generateRetroactiveFeeDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.getFeeDecision
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.getFeeDecision
 */
 export async function getFeeDecision(
   request: {
@@ -206,7 +206,7 @@ export async function getFeeDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.getFeeDecisionPdf
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.getFeeDecisionPdf
 */
 export function getFeeDecisionPdf(
   request: {
@@ -220,7 +220,7 @@ export function getFeeDecisionPdf(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.getHeadOfFamilyFeeDecisions
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.getHeadOfFamilyFeeDecisions
 */
 export async function getHeadOfFamilyFeeDecisions(
   request: {
@@ -236,7 +236,7 @@ export async function getHeadOfFamilyFeeDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.ignoreFeeDecisionDrafts
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.ignoreFeeDecisionDrafts
 */
 export async function ignoreFeeDecisionDrafts(
   request: {
@@ -253,7 +253,7 @@ export async function ignoreFeeDecisionDrafts(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.planArchiveFeeDecision
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.planArchiveFeeDecision
 */
 export async function planArchiveFeeDecision(
   request: {
@@ -269,7 +269,7 @@ export async function planArchiveFeeDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.searchFeeDecisions
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.searchFeeDecisions
 */
 export async function searchFeeDecisions(
   request: {
@@ -286,7 +286,7 @@ export async function searchFeeDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.setFeeDecisionSent
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.setFeeDecisionSent
 */
 export async function setFeeDecisionSent(
   request: {
@@ -303,7 +303,7 @@ export async function setFeeDecisionSent(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.setFeeDecisionType
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.setFeeDecisionType
 */
 export async function setFeeDecisionType(
   request: {
@@ -321,7 +321,7 @@ export async function setFeeDecisionType(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.unignoreFeeDecisionDrafts
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.unignoreFeeDecisionDrafts
 */
 export async function unignoreFeeDecisionDrafts(
   request: {
@@ -338,7 +338,7 @@ export async function unignoreFeeDecisionDrafts(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.createFeeThresholds
+* Generated from evaka.core.invoicing.controller.FinanceBasicsController.createFeeThresholds
 */
 export async function createFeeThresholds(
   request: {
@@ -355,7 +355,7 @@ export async function createFeeThresholds(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.createVoucherValue
+* Generated from evaka.core.invoicing.controller.FinanceBasicsController.createVoucherValue
 */
 export async function createVoucherValue(
   request: {
@@ -372,7 +372,7 @@ export async function createVoucherValue(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.deleteVoucherValue
+* Generated from evaka.core.invoicing.controller.FinanceBasicsController.deleteVoucherValue
 */
 export async function deleteVoucherValue(
   request: {
@@ -388,7 +388,7 @@ export async function deleteVoucherValue(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.getFeeThresholds
+* Generated from evaka.core.invoicing.controller.FinanceBasicsController.getFeeThresholds
 */
 export async function getFeeThresholds(): Promise<FeeThresholdsWithId[]> {
   const { data: json } = await client.request<JsonOf<FeeThresholdsWithId[]>>({
@@ -400,7 +400,7 @@ export async function getFeeThresholds(): Promise<FeeThresholdsWithId[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.getVoucherValues
+* Generated from evaka.core.invoicing.controller.FinanceBasicsController.getVoucherValues
 */
 export async function getVoucherValues(): Promise<Partial<Record<ServiceNeedOptionId, ServiceNeedOptionVoucherValueRangeWithId[]>>> {
   const { data: json } = await client.request<JsonOf<Partial<Record<ServiceNeedOptionId, ServiceNeedOptionVoucherValueRangeWithId[]>>>>({
@@ -414,7 +414,7 @@ export async function getVoucherValues(): Promise<Partial<Record<ServiceNeedOpti
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.updateFeeThresholds
+* Generated from evaka.core.invoicing.controller.FinanceBasicsController.updateFeeThresholds
 */
 export async function updateFeeThresholds(
   request: {
@@ -432,7 +432,7 @@ export async function updateFeeThresholds(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FinanceBasicsController.updateVoucherValue
+* Generated from evaka.core.invoicing.controller.FinanceBasicsController.updateVoucherValue
 */
 export async function updateVoucherValue(
   request: {
@@ -450,7 +450,7 @@ export async function updateVoucherValue(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FinanceDecisionController.getSelectableFinanceDecisionHandlers
+* Generated from evaka.core.invoicing.controller.FinanceDecisionController.getSelectableFinanceDecisionHandlers
 */
 export async function getSelectableFinanceDecisionHandlers(): Promise<Employee[]> {
   const { data: json } = await client.request<JsonOf<Employee[]>>({
@@ -462,7 +462,7 @@ export async function getSelectableFinanceDecisionHandlers(): Promise<Employee[]
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.createIncome
+* Generated from evaka.core.invoicing.controller.IncomeController.createIncome
 */
 export async function createIncome(
   request: {
@@ -479,7 +479,7 @@ export async function createIncome(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.deleteIncome
+* Generated from evaka.core.invoicing.controller.IncomeController.deleteIncome
 */
 export async function deleteIncome(
   request: {
@@ -495,7 +495,7 @@ export async function deleteIncome(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.getIncomeMultipliers
+* Generated from evaka.core.invoicing.controller.IncomeController.getIncomeMultipliers
 */
 export async function getIncomeMultipliers(): Promise<Partial<Record<IncomeCoefficient, number>>> {
   const { data: json } = await client.request<JsonOf<Partial<Record<IncomeCoefficient, number>>>>({
@@ -507,7 +507,7 @@ export async function getIncomeMultipliers(): Promise<Partial<Record<IncomeCoeff
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.getIncomeNotifications
+* Generated from evaka.core.invoicing.controller.IncomeController.getIncomeNotifications
 */
 export async function getIncomeNotifications(
   request: {
@@ -527,7 +527,7 @@ export async function getIncomeNotifications(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.getIncomeTypeOptions
+* Generated from evaka.core.invoicing.controller.IncomeController.getIncomeTypeOptions
 */
 export async function getIncomeTypeOptions(): Promise<IncomeTypeOptions> {
   const { data: json } = await client.request<JsonOf<IncomeTypeOptions>>({
@@ -539,7 +539,7 @@ export async function getIncomeTypeOptions(): Promise<IncomeTypeOptions> {
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.getPersonIncomes
+* Generated from evaka.core.invoicing.controller.IncomeController.getPersonIncomes
 */
 export async function getPersonIncomes(
   request: {
@@ -559,7 +559,7 @@ export async function getPersonIncomes(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.updateIncome
+* Generated from evaka.core.invoicing.controller.IncomeController.updateIncome
 */
 export async function updateIncome(
   request: {
@@ -577,7 +577,7 @@ export async function updateIncome(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.createDraftInvoices
+* Generated from evaka.core.invoicing.controller.InvoiceController.createDraftInvoices
 */
 export async function createDraftInvoices(): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -589,7 +589,7 @@ export async function createDraftInvoices(): Promise<void> {
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.createReplacementDraftsForHeadOfFamily
+* Generated from evaka.core.invoicing.controller.InvoiceController.createReplacementDraftsForHeadOfFamily
 */
 export async function createReplacementDraftsForHeadOfFamily(
   request: {
@@ -605,7 +605,7 @@ export async function createReplacementDraftsForHeadOfFamily(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.deleteDraftInvoices
+* Generated from evaka.core.invoicing.controller.InvoiceController.deleteDraftInvoices
 */
 export async function deleteDraftInvoices(
   request: {
@@ -622,7 +622,7 @@ export async function deleteDraftInvoices(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.getHeadOfFamilyInvoices
+* Generated from evaka.core.invoicing.controller.InvoiceController.getHeadOfFamilyInvoices
 */
 export async function getHeadOfFamilyInvoices(
   request: {
@@ -638,7 +638,7 @@ export async function getHeadOfFamilyInvoices(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.getInvoice
+* Generated from evaka.core.invoicing.controller.InvoiceController.getInvoice
 */
 export async function getInvoice(
   request: {
@@ -654,7 +654,7 @@ export async function getInvoice(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.getInvoiceCodes
+* Generated from evaka.core.invoicing.controller.InvoiceController.getInvoiceCodes
 */
 export async function getInvoiceCodes(): Promise<InvoiceCodes> {
   const { data: json } = await client.request<JsonOf<InvoiceCodes>>({
@@ -666,7 +666,7 @@ export async function getInvoiceCodes(): Promise<InvoiceCodes> {
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.markInvoicesSent
+* Generated from evaka.core.invoicing.controller.InvoiceController.markInvoicesSent
 */
 export async function markInvoicesSent(
   request: {
@@ -683,7 +683,7 @@ export async function markInvoicesSent(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.markReplacementDraftSent
+* Generated from evaka.core.invoicing.controller.InvoiceController.markReplacementDraftSent
 */
 export async function markReplacementDraftSent(
   request: {
@@ -701,7 +701,7 @@ export async function markReplacementDraftSent(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.resendInvoices
+* Generated from evaka.core.invoicing.controller.InvoiceController.resendInvoices
 */
 export async function resendInvoices(
   request: {
@@ -718,7 +718,7 @@ export async function resendInvoices(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.resendInvoicesByDate
+* Generated from evaka.core.invoicing.controller.InvoiceController.resendInvoicesByDate
 */
 export async function resendInvoicesByDate(
   request: {
@@ -735,7 +735,7 @@ export async function resendInvoicesByDate(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.searchInvoices
+* Generated from evaka.core.invoicing.controller.InvoiceController.searchInvoices
 */
 export async function searchInvoices(
   request: {
@@ -752,7 +752,7 @@ export async function searchInvoices(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.sendInvoices
+* Generated from evaka.core.invoicing.controller.InvoiceController.sendInvoices
 */
 export async function sendInvoices(
   request: {
@@ -776,7 +776,7 @@ export async function sendInvoices(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.sendInvoicesByDate
+* Generated from evaka.core.invoicing.controller.InvoiceController.sendInvoicesByDate
 */
 export async function sendInvoicesByDate(
   request: {
@@ -793,7 +793,7 @@ export async function sendInvoicesByDate(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.createInvoiceCorrection
+* Generated from evaka.core.invoicing.controller.InvoiceCorrectionsController.createInvoiceCorrection
 */
 export async function createInvoiceCorrection(
   request: {
@@ -810,7 +810,7 @@ export async function createInvoiceCorrection(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.deleteInvoiceCorrection
+* Generated from evaka.core.invoicing.controller.InvoiceCorrectionsController.deleteInvoiceCorrection
 */
 export async function deleteInvoiceCorrection(
   request: {
@@ -826,7 +826,7 @@ export async function deleteInvoiceCorrection(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.getPersonInvoiceCorrections
+* Generated from evaka.core.invoicing.controller.InvoiceCorrectionsController.getPersonInvoiceCorrections
 */
 export async function getPersonInvoiceCorrections(
   request: {
@@ -842,7 +842,7 @@ export async function getPersonInvoiceCorrections(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.updateInvoiceCorrectionNote
+* Generated from evaka.core.invoicing.controller.InvoiceCorrectionsController.updateInvoiceCorrectionNote
 */
 export async function updateInvoiceCorrectionNote(
   request: {
@@ -860,7 +860,7 @@ export async function updateInvoiceCorrectionNote(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.confirmDraftPayments
+* Generated from evaka.core.invoicing.controller.PaymentController.confirmDraftPayments
 */
 export async function confirmDraftPayments(
   request: {
@@ -877,7 +877,7 @@ export async function confirmDraftPayments(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.createPaymentDrafts
+* Generated from evaka.core.invoicing.controller.PaymentController.createPaymentDrafts
 */
 export async function createPaymentDrafts(): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -889,7 +889,7 @@ export async function createPaymentDrafts(): Promise<void> {
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.deleteDraftPayments
+* Generated from evaka.core.invoicing.controller.PaymentController.deleteDraftPayments
 */
 export async function deleteDraftPayments(
   request: {
@@ -906,7 +906,7 @@ export async function deleteDraftPayments(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.revertPaymentsToDrafts
+* Generated from evaka.core.invoicing.controller.PaymentController.revertPaymentsToDrafts
 */
 export async function revertPaymentsToDrafts(
   request: {
@@ -923,7 +923,7 @@ export async function revertPaymentsToDrafts(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.searchPayments
+* Generated from evaka.core.invoicing.controller.PaymentController.searchPayments
 */
 export async function searchPayments(
   request: {
@@ -940,7 +940,7 @@ export async function searchPayments(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.sendPayments
+* Generated from evaka.core.invoicing.controller.PaymentController.sendPayments
 */
 export async function sendPayments(
   request: {
@@ -957,7 +957,7 @@ export async function sendPayments(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.generateRetroactiveVoucherValueDecisions
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.generateRetroactiveVoucherValueDecisions
 */
 export async function generateRetroactiveVoucherValueDecisions(
   request: {
@@ -975,7 +975,7 @@ export async function generateRetroactiveVoucherValueDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.getHeadOfFamilyVoucherValueDecisions
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.getHeadOfFamilyVoucherValueDecisions
 */
 export async function getHeadOfFamilyVoucherValueDecisions(
   request: {
@@ -991,7 +991,7 @@ export async function getHeadOfFamilyVoucherValueDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.getVoucherValueDecision
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.getVoucherValueDecision
 */
 export async function getVoucherValueDecision(
   request: {
@@ -1007,7 +1007,7 @@ export async function getVoucherValueDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.getVoucherValueDecisionPdf
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.getVoucherValueDecisionPdf
 */
 export function getVoucherValueDecisionPdf(
   request: {
@@ -1021,7 +1021,7 @@ export function getVoucherValueDecisionPdf(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.ignoreVoucherValueDecisionDrafts
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.ignoreVoucherValueDecisionDrafts
 */
 export async function ignoreVoucherValueDecisionDrafts(
   request: {
@@ -1038,7 +1038,7 @@ export async function ignoreVoucherValueDecisionDrafts(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.markVoucherValueDecisionSent
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.markVoucherValueDecisionSent
 */
 export async function markVoucherValueDecisionSent(
   request: {
@@ -1055,7 +1055,7 @@ export async function markVoucherValueDecisionSent(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.planArchiveVoucherValueDecision
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.planArchiveVoucherValueDecision
 */
 export async function planArchiveVoucherValueDecision(
   request: {
@@ -1071,7 +1071,7 @@ export async function planArchiveVoucherValueDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.searchVoucherValueDecisions
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.searchVoucherValueDecisions
 */
 export async function searchVoucherValueDecisions(
   request: {
@@ -1088,7 +1088,7 @@ export async function searchVoucherValueDecisions(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.sendVoucherValueDecisionDrafts
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.sendVoucherValueDecisionDrafts
 */
 export async function sendVoucherValueDecisionDrafts(
   request: {
@@ -1110,7 +1110,7 @@ export async function sendVoucherValueDecisionDrafts(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.setVoucherValueDecisionType
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.setVoucherValueDecisionType
 */
 export async function setVoucherValueDecisionType(
   request: {
@@ -1128,7 +1128,7 @@ export async function setVoucherValueDecisionType(
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.unignoreVoucherValueDecisionDrafts
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.unignoreVoucherValueDecisionDrafts
 */
 export async function unignoreVoucherValueDecisionDrafts(
   request: {

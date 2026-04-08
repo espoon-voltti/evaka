@@ -17,7 +17,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.deleteDailyServiceTimes
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimesController.deleteDailyServiceTimes
 */
 export async function deleteDailyServiceTimes(
   request: {
@@ -33,7 +33,7 @@ export async function deleteDailyServiceTimes(
 
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.getDailyServiceTimes
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimesController.getDailyServiceTimes
 */
 export async function getDailyServiceTimes(
   request: {
@@ -49,7 +49,7 @@ export async function getDailyServiceTimes(
 
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.postDailyServiceTimes
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimesController.postDailyServiceTimes
 */
 export async function postDailyServiceTimes(
   request: {
@@ -67,7 +67,7 @@ export async function postDailyServiceTimes(
 
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.putDailyServiceTimes
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimesController.putDailyServiceTimes
 */
 export async function putDailyServiceTimes(
   request: {
@@ -85,7 +85,7 @@ export async function putDailyServiceTimes(
 
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.putDailyServiceTimesEnd
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimesController.putDailyServiceTimesEnd
 */
 export async function putDailyServiceTimesEnd(
   request: {

@@ -32,14 +32,14 @@ import type { ProviderType } from './daycare'
 import type { UserRole } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.AddSsnRequest
+* Generated from evaka.core.pis.controllers.PersonController.AddSsnRequest
 */
 export interface AddSsnRequest {
   ssn: string
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.CitizenUserDetails
+* Generated from evaka.core.pis.CitizenUserDetails
 */
 export interface CitizenUserDetails {
   backupPhone: string
@@ -56,7 +56,7 @@ export interface CitizenUserDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.SystemController.CitizenUserResponse
+* Generated from evaka.core.pis.SystemController.CitizenUserResponse
 */
 export interface CitizenUserResponse {
   accessibleFeatures: CitizenFeatures
@@ -65,7 +65,7 @@ export interface CitizenUserResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.CreateFosterParentRelationshipBody
+* Generated from evaka.core.pis.controllers.CreateFosterParentRelationshipBody
 */
 export interface CreateFosterParentRelationshipBody {
   childId: PersonId
@@ -74,7 +74,7 @@ export interface CreateFosterParentRelationshipBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.CreatePersonBody
+* Generated from evaka.core.pis.controllers.CreatePersonBody
 */
 export interface CreatePersonBody {
   dateOfBirth: LocalDate
@@ -88,7 +88,7 @@ export interface CreatePersonBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.CreateSource
+* Generated from evaka.core.pis.CreateSource
 */
 export type CreateSource =
   | 'USER'
@@ -96,14 +96,14 @@ export type CreateSource =
   | 'DVV'
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.CreateSsnEmployeeResponse
+* Generated from evaka.core.pis.controllers.EmployeeController.CreateSsnEmployeeResponse
 */
 export interface CreateSsnEmployeeResponse {
   id: EmployeeId
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.CreationModificationMetadata
+* Generated from evaka.core.pis.CreationModificationMetadata
 */
 export interface CreationModificationMetadata {
   createSource: CreateSource | null
@@ -120,7 +120,7 @@ export interface CreationModificationMetadata {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.DaycareGroupRole
+* Generated from evaka.core.pis.DaycareGroupRole
 */
 export interface DaycareGroupRole {
   daycareId: DaycareId
@@ -130,7 +130,7 @@ export interface DaycareGroupRole {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.DaycareRole
+* Generated from evaka.core.pis.DaycareRole
 */
 export interface DaycareRole {
   daycareId: DaycareId
@@ -140,14 +140,14 @@ export interface DaycareRole {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.DisableSsnRequest
+* Generated from evaka.core.pis.controllers.PersonController.DisableSsnRequest
 */
 export interface DisableSsnRequest {
   disabled: boolean
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.EmailMessageType
+* Generated from evaka.core.pis.EmailMessageType
 */
 export const emailMessageTypes = [
   'TRANSACTIONAL',
@@ -165,7 +165,7 @@ export const emailMessageTypes = [
 export type EmailMessageType = typeof emailMessageTypes[number]
 
 /**
-* Generated from fi.espoo.evaka.pis.EmailVerification
+* Generated from evaka.core.pis.EmailVerification
 */
 export interface EmailVerification {
   email: string
@@ -175,7 +175,7 @@ export interface EmailVerification {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.EmailVerificationRequest
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.EmailVerificationRequest
 */
 export interface EmailVerificationRequest {
   code: string
@@ -183,7 +183,7 @@ export interface EmailVerificationRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.EmailVerificationStatusResponse
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.EmailVerificationStatusResponse
 */
 export interface EmailVerificationStatusResponse {
   email: string | null
@@ -192,7 +192,7 @@ export interface EmailVerificationStatusResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.Employee
+* Generated from evaka.core.pis.Employee
 */
 export interface Employee {
   active: boolean
@@ -210,14 +210,14 @@ export interface Employee {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.EmployeeEmailRequest
+* Generated from evaka.core.pis.controllers.EmployeeController.EmployeeEmailRequest
 */
 export interface EmployeeEmailRequest {
   email: string | null
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.EmployeePreferredFirstName
+* Generated from evaka.core.pis.controllers.EmployeeController.EmployeePreferredFirstName
 */
 export interface EmployeePreferredFirstName {
   preferredFirstName: string | null
@@ -225,14 +225,14 @@ export interface EmployeePreferredFirstName {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.EmployeeSetPreferredFirstNameUpdateRequest
+* Generated from evaka.core.pis.controllers.EmployeeController.EmployeeSetPreferredFirstNameUpdateRequest
 */
 export interface EmployeeSetPreferredFirstNameUpdateRequest {
   preferredFirstName: string | null
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.SystemController.EmployeeUserResponse
+* Generated from evaka.core.pis.SystemController.EmployeeUserResponse
 */
 export interface EmployeeUserResponse {
   accessibleFeatures: EmployeeFeatures
@@ -245,7 +245,7 @@ export interface EmployeeUserResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.EmployeeWithDaycareRoles
+* Generated from evaka.core.pis.EmployeeWithDaycareRoles
 */
 export interface EmployeeWithDaycareRoles {
   active: boolean
@@ -269,7 +269,7 @@ export interface EmployeeWithDaycareRoles {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.EvakaRightsRequest
+* Generated from evaka.core.pis.controllers.PersonController.EvakaRightsRequest
 */
 export interface EvakaRightsRequest {
   denied: boolean
@@ -277,7 +277,7 @@ export interface EvakaRightsRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.FamilyContact
+* Generated from evaka.core.pis.FamilyContact
 */
 export interface FamilyContact {
   backupPhone: string
@@ -294,7 +294,7 @@ export interface FamilyContact {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FamilyContactPriorityUpdate
+* Generated from evaka.core.pis.controllers.FamilyContactPriorityUpdate
 */
 export interface FamilyContactPriorityUpdate {
   childId: PersonId
@@ -303,7 +303,7 @@ export interface FamilyContactPriorityUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.FamilyContactRole
+* Generated from evaka.core.pis.FamilyContactRole
 */
 export type FamilyContactRole =
   | 'LOCAL_GUARDIAN'
@@ -314,7 +314,7 @@ export type FamilyContactRole =
   | 'REMOTE_FOSTER_PARENT'
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FamilyContactUpdate
+* Generated from evaka.core.pis.controllers.FamilyContactUpdate
 */
 export interface FamilyContactUpdate {
   backupPhone: string | null
@@ -325,7 +325,7 @@ export interface FamilyContactUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.FamilyOverview
+* Generated from evaka.core.pis.service.FamilyOverview
 */
 export interface FamilyOverview {
   children: FamilyOverviewPerson[]
@@ -335,7 +335,7 @@ export interface FamilyOverview {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.FamilyOverviewIncome
+* Generated from evaka.core.pis.service.FamilyOverviewIncome
 */
 export interface FamilyOverviewIncome {
   effect: IncomeEffect | null
@@ -343,7 +343,7 @@ export interface FamilyOverviewIncome {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.FamilyOverviewPerson
+* Generated from evaka.core.pis.service.FamilyOverviewPerson
 */
 export interface FamilyOverviewPerson {
   dateOfBirth: LocalDate
@@ -359,7 +359,7 @@ export interface FamilyOverviewPerson {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.FosterParentRelationship
+* Generated from evaka.core.pis.controllers.FosterParentRelationship
 */
 export interface FosterParentRelationship {
   child: PersonSummary
@@ -371,7 +371,7 @@ export interface FosterParentRelationship {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.GetOrCreatePersonBySsnRequest
+* Generated from evaka.core.pis.controllers.GetOrCreatePersonBySsnRequest
 */
 export interface GetOrCreatePersonBySsnRequest {
   readonly: boolean
@@ -379,7 +379,7 @@ export interface GetOrCreatePersonBySsnRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.GuardiansResponse
+* Generated from evaka.core.pis.controllers.PersonController.GuardiansResponse
 */
 export interface GuardiansResponse {
   blockedGuardians: PersonJSON[] | null
@@ -387,7 +387,7 @@ export interface GuardiansResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.MergeRequest
+* Generated from evaka.core.pis.controllers.PersonController.MergeRequest
 */
 export interface MergeRequest {
   duplicate: PersonId
@@ -395,14 +395,14 @@ export interface MergeRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.ModifySource
+* Generated from evaka.core.pis.ModifySource
 */
 export type ModifySource =
   | 'USER'
   | 'DVV'
 
 /**
-* Generated from fi.espoo.evaka.pis.NewSsnEmployee
+* Generated from evaka.core.pis.NewSsnEmployee
 */
 export interface NewSsnEmployee {
   email: string | null
@@ -412,7 +412,7 @@ export interface NewSsnEmployee {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.PersonAddressDTO.Origin
+* Generated from evaka.core.pis.service.PersonAddressDTO.Origin
 */
 export type Origin =
   | 'VTJ'
@@ -420,7 +420,7 @@ export type Origin =
   | 'EVAKA'
 
 /**
-* Generated from fi.espoo.evaka.pis.service.ParentshipDetailed
+* Generated from evaka.core.pis.service.ParentshipDetailed
 */
 export interface ParentshipDetailed {
   child: PersonJSON
@@ -435,7 +435,7 @@ export interface ParentshipDetailed {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.ParentshipRequest
+* Generated from evaka.core.pis.controllers.ParentshipController.ParentshipRequest
 */
 export interface ParentshipRequest {
   childId: PersonId
@@ -445,7 +445,7 @@ export interface ParentshipRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.ParentshipUpdateRequest
+* Generated from evaka.core.pis.controllers.ParentshipController.ParentshipUpdateRequest
 */
 export interface ParentshipUpdateRequest {
   endDate: LocalDate
@@ -453,7 +453,7 @@ export interface ParentshipUpdateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.ParentshipController.ParentshipWithPermittedActions
+* Generated from evaka.core.pis.controllers.ParentshipController.ParentshipWithPermittedActions
 */
 export interface ParentshipWithPermittedActions {
   data: ParentshipDetailed
@@ -461,7 +461,7 @@ export interface ParentshipWithPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.Partnership
+* Generated from evaka.core.pis.service.Partnership
 */
 export interface Partnership {
   conflict: boolean
@@ -473,7 +473,7 @@ export interface Partnership {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.PartnershipRequest
+* Generated from evaka.core.pis.controllers.PartnershipsController.PartnershipRequest
 */
 export interface PartnershipRequest {
   endDate: LocalDate | null
@@ -483,7 +483,7 @@ export interface PartnershipRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.PartnershipUpdateRequest
+* Generated from evaka.core.pis.controllers.PartnershipsController.PartnershipUpdateRequest
 */
 export interface PartnershipUpdateRequest {
   endDate: LocalDate | null
@@ -491,7 +491,7 @@ export interface PartnershipUpdateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PartnershipsController.PartnershipWithPermittedActions
+* Generated from evaka.core.pis.controllers.PartnershipsController.PartnershipWithPermittedActions
 */
 export interface PartnershipWithPermittedActions {
   data: Partnership
@@ -499,7 +499,7 @@ export interface PartnershipWithPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.PersonAddressDTO
+* Generated from evaka.core.pis.service.PersonAddressDTO
 */
 export interface PersonAddressDTO {
   origin: Origin
@@ -510,7 +510,7 @@ export interface PersonAddressDTO {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.PersonBasicInfo
+* Generated from evaka.core.pis.service.PersonBasicInfo
 */
 export interface PersonBasicInfo {
   dateOfBirth: LocalDate
@@ -525,7 +525,7 @@ export interface PersonBasicInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.PersonJSON
+* Generated from evaka.core.pis.service.PersonJSON
 */
 export interface PersonJSON {
   backupPhone: string
@@ -556,7 +556,7 @@ export interface PersonJSON {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.PersonNameDetails
+* Generated from evaka.core.pis.PersonNameDetails
 */
 export interface PersonNameDetails {
   firstName: string
@@ -565,7 +565,7 @@ export interface PersonNameDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.PersonPatch
+* Generated from evaka.core.pis.service.PersonPatch
 */
 export interface PersonPatch {
   backupPhone: string | null
@@ -587,7 +587,7 @@ export interface PersonPatch {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.PersonResponse
+* Generated from evaka.core.pis.controllers.PersonController.PersonResponse
 */
 export interface PersonResponse {
   permittedActions: Action.Person[]
@@ -595,7 +595,7 @@ export interface PersonResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.PersonSensitiveDetails
+* Generated from evaka.core.pis.service.PersonSensitiveDetails
 */
 export interface PersonSensitiveDetails {
   backupPhone: string
@@ -618,7 +618,7 @@ export interface PersonSensitiveDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.PersonSummary
+* Generated from evaka.core.pis.PersonSummary
 */
 export interface PersonSummary {
   dateOfBirth: LocalDate
@@ -632,7 +632,7 @@ export interface PersonSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.service.PersonWithChildrenDTO
+* Generated from evaka.core.pis.service.PersonWithChildrenDTO
 */
 export interface PersonWithChildrenDTO {
   address: PersonAddressDTO
@@ -656,7 +656,7 @@ export interface PersonWithChildrenDTO {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.PersonalDataUpdate
+* Generated from evaka.core.pis.PersonalDataUpdate
 */
 export interface PersonalDataUpdate {
   backupPhone: string
@@ -666,14 +666,14 @@ export interface PersonalDataUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PinCode
+* Generated from evaka.core.pis.controllers.PinCode
 */
 export interface PinCode {
   pin: string
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.SystemController.PinLoginEmployee
+* Generated from evaka.core.pis.SystemController.PinLoginEmployee
 */
 export interface PinLoginEmployee {
   firstName: string
@@ -681,7 +681,7 @@ export interface PinLoginEmployee {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.SystemController.PinLoginResponse
+* Generated from evaka.core.pis.SystemController.PinLoginResponse
 */
 export interface PinLoginResponse {
   employee: PinLoginEmployee | null
@@ -689,7 +689,7 @@ export interface PinLoginResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.SystemController.PinLoginStatus
+* Generated from evaka.core.pis.SystemController.PinLoginStatus
 */
 export type PinLoginStatus =
   | 'SUCCESS'
@@ -697,7 +697,7 @@ export type PinLoginStatus =
   | 'PIN_LOCKED'
 
 /**
-* Generated from fi.espoo.evaka.pis.service.RestrictedDetails
+* Generated from evaka.core.pis.service.RestrictedDetails
 */
 export interface RestrictedDetails {
   enabled: boolean
@@ -705,7 +705,7 @@ export interface RestrictedDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.ScheduledDaycareRole
+* Generated from evaka.core.pis.ScheduledDaycareRole
 */
 export interface ScheduledDaycareRole {
   daycareId: DaycareId
@@ -716,7 +716,7 @@ export interface ScheduledDaycareRole {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
+* Generated from evaka.core.pis.controllers.SearchEmployeeRequest
 */
 export interface SearchEmployeeRequest {
   globalRoles: UserRole[] | null
@@ -727,7 +727,7 @@ export interface SearchEmployeeRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.SearchPersonBody
+* Generated from evaka.core.pis.controllers.SearchPersonBody
 */
 export interface SearchPersonBody {
   orderBy: string
@@ -736,7 +736,7 @@ export interface SearchPersonBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.TemporaryEmployee
+* Generated from evaka.core.pis.TemporaryEmployee
 */
 export interface TemporaryEmployee {
   firstName: string
@@ -747,14 +747,14 @@ export interface TemporaryEmployee {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest
 */
 export interface UpdateWeakLoginCredentialsRequest {
   password: string
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.UpsertEmployeeDaycareRolesRequest
+* Generated from evaka.core.pis.controllers.EmployeeController.UpsertEmployeeDaycareRolesRequest
 */
 export interface UpsertEmployeeDaycareRolesRequest {
   daycareIds: DaycareId[]

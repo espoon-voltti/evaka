@@ -13,7 +13,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.absence.AbsenceControllerEmployeeMobile.futureAbsencesOfChild
+* Generated from evaka.core.absence.AbsenceControllerEmployeeMobile.futureAbsencesOfChild
 */
 export async function futureAbsencesOfChild(
   request: {

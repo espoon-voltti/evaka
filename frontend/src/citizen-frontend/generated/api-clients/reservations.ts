@@ -19,7 +19,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationControllerCitizen.getPreschoolOperationalDates
+* Generated from evaka.core.reservations.ReservationControllerCitizen.getPreschoolOperationalDates
 */
 export async function getPreschoolOperationalDates(
   request: {
@@ -38,7 +38,7 @@ export async function getPreschoolOperationalDates(
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationControllerCitizen.getReservations
+* Generated from evaka.core.reservations.ReservationControllerCitizen.getReservations
 */
 export async function getReservations(
   request: {
@@ -60,7 +60,7 @@ export async function getReservations(
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationControllerCitizen.postAbsences
+* Generated from evaka.core.reservations.ReservationControllerCitizen.postAbsences
 */
 export async function postAbsences(
   request: {
@@ -77,7 +77,7 @@ export async function postAbsences(
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.ReservationControllerCitizen.postReservations
+* Generated from evaka.core.reservations.ReservationControllerCitizen.postReservations
 */
 export async function postReservations(
   request: {
