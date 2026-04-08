@@ -3256,6 +3256,7 @@ CREATE TABLE public.income_statement (
     business_id text NOT NULL,
     gross_no_income_description text,
     citizen_modified_at timestamp with time zone,
+    CONSTRAINT "check$income_statement_citizen_modified_at" CHECK (((sent_at IS NULL) = (citizen_modified_at IS NULL))),
     CONSTRAINT income_statement_status_check CHECK ((((status = 'HANDLED'::public.income_statement_status) = (handler_id IS NOT NULL)) AND ((status = 'HANDLED'::public.income_statement_status) = (handled_at IS NOT NULL)) AND ((status = 'DRAFT'::public.income_statement_status) = (sent_at IS NULL))))
 );
 
