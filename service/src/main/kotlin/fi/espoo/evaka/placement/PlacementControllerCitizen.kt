@@ -91,18 +91,18 @@ class PlacementControllerCitizen(
             }
 
         db.connect { dbc ->
-                val terminatablePlacementGroup =
-                    dbc.read { tx ->
-                        if (
-                            tx.getUnitFeatures(body.unitId)
-                                ?.features
-                                ?.contains(PilotFeature.PLACEMENT_TERMINATION) != true
-                        ) {
-                            throw Forbidden(
-                                "Placement termination not enabled for unit",
-                                "PLACEMENT_TERMINATION_DISABLED",
-                            )
-                        }
+                dbc.transaction { tx ->
+                    if (
+                        tx.getUnitFeatures(body.unitId)
+                            ?.features
+                            ?.contains(PilotFeature.PLACEMENT_TERMINATION) != true
+                    ) {
+                        throw Forbidden(
+                            "Placement termination not enabled for unit",
+                            "PLACEMENT_TERMINATION_DISABLED",
+                        )
+                    }
+                    val terminatablePlacementGroup =
                         tx.getCitizenChildPlacements(clock.today(), childId)
                             .also { placements ->
                                 accessControl.requirePermissionFor(
@@ -116,86 +116,81 @@ class PlacementControllerCitizen(
                             .let { mapToTerminatablePlacements(it, clock.today()) }
                             .find { it.unitId == body.unitId && it.type == body.type }
                             ?: throw NotFound("Matching placement type not found")
-                    }
 
-                val cancelableTransferApplicationIds =
-                    dbc.transaction { tx ->
-                        if (body.terminateDaycareOnly == true) {
-                            terminateBilledDaycare(
-                                tx,
-                                user,
-                                terminatablePlacementGroup,
-                                terminationDate,
-                                childId,
-                                body.unitId,
-                                clock.now(),
-                            )
-                        } else {
-                            // normal termination simply cancels or terminates the placements
-                            terminatablePlacementGroup
-                                .let { it.placements + it.additionalPlacements }
-                                .filter { it.endDate.isAfter(terminationDate) }
-                                .forEach {
-                                    cancelOrTerminatePlacement(
-                                        tx,
-                                        it,
-                                        terminationDate,
-                                        user,
-                                        clock.now(),
-                                    )
-                                }
-                        }
-                        // Make sure termination bookkeeping happens when no placement is terminated
-                        // from the middle i.e. some placements have been completely deleted and the
-                        // termination date is the end date of some placement.
-                        val allPlacements =
-                            terminatablePlacementGroup.placements +
-                                terminatablePlacementGroup.additionalPlacements
-                        if (allPlacements.any { it.startDate > terminationDate }) {
-                            val endingPlacement =
-                                allPlacements.find { it.endDate == terminationDate }
-                            if (endingPlacement != null) {
-                                tx.updatePlacementTermination(
-                                    endingPlacement.id,
-                                    clock.today(),
-                                    user.evakaUserId,
+                    if (body.terminateDaycareOnly == true) {
+                        terminateBilledDaycare(
+                            tx,
+                            user,
+                            terminatablePlacementGroup,
+                            terminationDate,
+                            childId,
+                            body.unitId,
+                            clock.now(),
+                        )
+                    } else {
+                        // normal termination simply cancels or terminates the placements
+                        terminatablePlacementGroup
+                            .let { it.placements + it.additionalPlacements }
+                            .filter { it.endDate.isAfter(terminationDate) }
+                            .forEach {
+                                cancelOrTerminatePlacement(
+                                    tx,
+                                    it,
+                                    terminationDate,
+                                    user,
+                                    clock.now(),
                                 )
                             }
-                        }
-
-                        val cancelableTransferApplicationIds =
-                            tx.cancelAllActiveTransferApplications(childId, clock, user.evakaUserId)
-
-                        tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
-                            childId,
-                            clock.today(),
-                        )
-                        asyncJobRunner.plan(
-                            tx,
-                            listOf(
-                                AsyncJob.GenerateFinanceDecisions.forChild(
-                                    childId,
-                                    DateRange(terminationDate, null),
-                                )
-                            ),
-                            runAt = clock.now(),
-                        )
-
-                        cancelableTransferApplicationIds
                     }
-                Pair(terminatablePlacementGroup, cancelableTransferApplicationIds)
+                    // Make sure termination bookkeeping happens when no placement is terminated
+                    // from the middle i.e. some placements have been completely deleted and the
+                    // termination date is the end date of some placement.
+                    val allPlacements =
+                        terminatablePlacementGroup.placements +
+                            terminatablePlacementGroup.additionalPlacements
+                    if (allPlacements.any { it.startDate > terminationDate }) {
+                        val endingPlacement = allPlacements.find { it.endDate == terminationDate }
+                        if (endingPlacement != null) {
+                            tx.updatePlacementTermination(
+                                endingPlacement.id,
+                                clock.today(),
+                                user.evakaUserId,
+                            )
+                        }
+                    }
+
+                    val cancelableTransferApplicationIds =
+                        tx.cancelAllActiveTransferApplications(childId, clock, user.evakaUserId)
+
+                    tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
+                        childId,
+                        clock.today(),
+                    )
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forChild(
+                                childId,
+                                DateRange(terminationDate, null),
+                            )
+                        ),
+                        runAt = clock.now(),
+                    )
+
+                    val placements =
+                        terminatablePlacementGroup.placements +
+                            terminatablePlacementGroup.additionalPlacements
+                    Pair(placements.map { it.id }, cancelableTransferApplicationIds)
+                }
             }
-            .also { (terminatablePlacementGroup, cancelableTransferApplicationIds) ->
-                val placements =
-                    terminatablePlacementGroup.placements +
-                        terminatablePlacementGroup.additionalPlacements
+            .also { (placementIds, cancelableTransferApplicationIds) ->
                 Audit.PlacementTerminate.log(
                     targetId = AuditId(listOf(body.unitId, childId)),
-                    objectId = AuditId(placements.map { it.id } + cancelableTransferApplicationIds),
+                    objectId = AuditId(placementIds + cancelableTransferApplicationIds),
                     meta =
                         mapOf(
                             "type" to body.type,
-                            "placementIds" to placements.map { it.id },
+                            "placementIds" to placementIds,
                             "transferApplicationIds" to cancelableTransferApplicationIds,
                         ),
                 )

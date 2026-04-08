@@ -7,9 +7,9 @@ package fi.espoo.evaka.occupancy
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.AuditId
 import fi.espoo.evaka.application.fetchApplicationDetails
+import fi.espoo.evaka.daycare.Caretakers
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitStats
-import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.SpeculatedPlacement
 import fi.espoo.evaka.reports.AttendanceReservationReportRow

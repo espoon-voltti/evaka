@@ -2,69 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package fi.espoo.evaka.daycare.service
+package fi.espoo.evaka.daycare
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
-import java.time.Month
-import org.springframework.stereotype.Service
-
-@Service
-class StaffAttendanceService {
-    fun getUnitAttendancesForDate(
-        db: Database.Connection,
-        unitId: DaycareId,
-        date: LocalDate,
-    ): UnitStaffAttendance {
-        return db.read { tx -> tx.getUnitStaffAttendanceForDate(unitId, date) }
-    }
-
-    fun getGroupAttendancesByMonth(
-        db: Database.Connection,
-        year: Int,
-        month: Int,
-        groupId: GroupId,
-    ): StaffAttendanceForDates {
-        val range = FiniteDateRange.ofMonth(year, Month.of(month))
-
-        return db.read { tx ->
-            val groupInfo =
-                tx.getGroupInfo(groupId)
-                    ?: throw BadRequest("Couldn't find group info with id $groupId")
-
-            val attendanceList = tx.getStaffAttendanceByRange(range, groupId)
-            val attendanceMap = attendanceList.associateBy { it.date }
-
-            StaffAttendanceForDates(
-                groupId,
-                groupInfo.groupName,
-                groupInfo.startDate,
-                groupInfo.endDate,
-                attendanceMap,
-            )
-        }
-    }
-
-    fun upsertStaffAttendance(db: Database.Connection, staffAttendance: StaffAttendanceUpdate) {
-        db.transaction { tx ->
-            if (!tx.isValidStaffAttendanceDate(staffAttendance)) {
-                throw BadRequest(
-                    "Error: Upserting staff count failed. Group is not operating in given date"
-                )
-            }
-            tx.upsertStaffAttendance(staffAttendance)
-        }
-    }
-
-    fun clearStaffAttendance(db: Database.Connection, groupId: GroupId, date: LocalDate) {
-        db.transaction { tx -> tx.deleteStaffAttendance(groupId, date) }
-    }
-}
 
 data class GroupStaffAttendance(
     val groupId: GroupId,
