@@ -212,6 +212,13 @@ CREATE TYPE public.daycare_assistance_level AS ENUM (
     'SPECIAL_SUPPORT'
 );
 
+-- Name: decision_reasoning_collection_type; Type: TYPE; Schema: public
+
+CREATE TYPE public.decision_reasoning_collection_type AS ENUM (
+    'DAYCARE',
+    'PRESCHOOL'
+);
+
 -- Name: decision_status; Type: TYPE; Schema: public
 
 CREATE TYPE public.decision_status AS ENUM (
@@ -2794,6 +2801,35 @@ CREATE SEQUENCE public.decision_number_seq
 
 ALTER SEQUENCE public.decision_number_seq OWNED BY public.decision.number;
 
+-- Name: decision_reasoning_generic; Type: TABLE; Schema: public
+
+CREATE TABLE public.decision_reasoning_generic (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    collection_type public.decision_reasoning_collection_type NOT NULL,
+    valid_from date NOT NULL,
+    text_fi text NOT NULL,
+    text_sv text NOT NULL,
+    ready boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    modified_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+-- Name: decision_reasoning_individual; Type: TABLE; Schema: public
+
+CREATE TABLE public.decision_reasoning_individual (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    collection_type public.decision_reasoning_collection_type NOT NULL,
+    title_fi text NOT NULL,
+    title_sv text NOT NULL,
+    text_fi text NOT NULL,
+    text_sv text NOT NULL,
+    removed_at timestamp with time zone,
+    created_at timestamp with time zone NOT NULL,
+    modified_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
 -- Name: document_template; Type: TABLE; Schema: public
 
 CREATE TABLE public.document_template (
@@ -4453,6 +4489,16 @@ ALTER TABLE ONLY public.daycare_group_placement
 
 ALTER TABLE ONLY public.daycare
     ADD CONSTRAINT daycare_pkey PRIMARY KEY (id);
+
+-- Name: decision_reasoning_generic decision_reasoning_generic_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.decision_reasoning_generic
+    ADD CONSTRAINT decision_reasoning_generic_pkey PRIMARY KEY (id);
+
+-- Name: decision_reasoning_individual decision_reasoning_individual_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.decision_reasoning_individual
+    ADD CONSTRAINT decision_reasoning_individual_pkey PRIMARY KEY (id);
 
 -- Name: document_template document_template_pkey; Type: CONSTRAINT; Schema: public
 
@@ -6632,6 +6678,14 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.daycare_group_placement FOR
 -- Name: decision set_timestamp; Type: TRIGGER; Schema: public
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.decision FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+
+-- Name: decision_reasoning_generic set_timestamp; Type: TRIGGER; Schema: public
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.decision_reasoning_generic FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
+
+-- Name: decision_reasoning_individual set_timestamp; Type: TRIGGER; Schema: public
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.decision_reasoning_individual FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: document_template set_timestamp; Type: TRIGGER; Schema: public
 
