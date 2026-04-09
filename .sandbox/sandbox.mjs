@@ -136,6 +136,107 @@ function vmExists() {
   }
 }
 
+// --- VM config ---
+
+function colimaConfigPath() {
+  return resolve(homedir(), ".colima", profile, "colima.yaml");
+}
+
+function readVmConfig() {
+  const configPath = colimaConfigPath();
+  if (!existsSync(configPath)) {
+    return null;
+  }
+  const content = readFileSync(configPath, "utf-8");
+
+  const cpu = parseInt(content.match(/^cpu:\s*(\d+)/m)?.[1]);
+  const memory = parseInt(content.match(/^memory:\s*(\d+)/m)?.[1]);
+  const disk = parseInt(content.match(/^disk:\s*(\d+)/m)?.[1]);
+
+  const mounts = [];
+  const mountsMatch = content.match(/^mounts:\n((?:[\s-].*\n)*)/m);
+  if (mountsMatch) {
+    const mountBlock = mountsMatch[1];
+    const entryRegex = /- location:\s*(.+)\n\s+writable:\s*(true|false)/g;
+    let m;
+    while ((m = entryRegex.exec(mountBlock)) !== null) {
+      mounts.push({ location: m[1].trim(), writable: m[2] === "true" });
+    }
+  }
+
+  return { cpu, memory, disk, mounts };
+}
+
+function desiredVmConfig(config) {
+  const mounts = [{ location: projectRoot, writable: true }];
+  for (const m of config.mounts) {
+    const parsed = parseMount(m);
+    if (isDirectory(parsed.location)) {
+      mounts.push(parsed);
+    }
+  }
+  const seen = new Set();
+  const uniqueMounts = [];
+  for (const m of mounts) {
+    if (!seen.has(m.location)) {
+      seen.add(m.location);
+      uniqueMounts.push(m);
+    }
+  }
+  return {
+    cpu: config.cpu,
+    memory: config.memory,
+    disk: config.disk,
+    mounts: uniqueMounts,
+  };
+}
+
+function mountsEqual(a, b) {
+  if (a.length !== b.length) return false;
+  const key = (m) => `${m.location}:${m.writable}`;
+  const setA = new Set(a.map(key));
+  return b.every((m) => setA.has(key(m)));
+}
+
+function diffConfig(desired, actual) {
+  const changes = [];
+  if (desired.cpu !== actual.cpu) {
+    changes.push(`cpu: ${actual.cpu} → ${desired.cpu}`);
+  }
+  if (desired.memory !== actual.memory) {
+    changes.push(`memory: ${actual.memory} → ${desired.memory}`);
+  }
+  if (desired.disk !== actual.disk) {
+    changes.push(`disk: ${actual.disk} → ${desired.disk}`);
+  }
+  if (!mountsEqual(desired.mounts, actual.mounts)) {
+    changes.push("mounts changed");
+  }
+  return changes;
+}
+
+function writeVmConfig(desired) {
+  const configPath = colimaConfigPath();
+  let content = readFileSync(configPath, "utf-8");
+
+  content = content.replace(/^cpu:\s*\d+/m, `cpu: ${desired.cpu}`);
+  content = content.replace(/^memory:\s*\d+/m, `memory: ${desired.memory}`);
+  content = content.replace(/^disk:\s*\d+/m, `disk: ${desired.disk}`);
+
+  const mountsYaml = desired.mounts
+    .map(
+      (m) =>
+        `  - location: ${m.location}\n    writable: ${m.writable}`
+    )
+    .join("\n");
+  content = content.replace(
+    /^mounts:\n(?:[\s-].*\n)*/m,
+    `mounts:\n${mountsYaml}\n`
+  );
+
+  writeFileSync(configPath, content);
+}
+
 // --- Notify listener ---
 
 const notifyPort = 39813;
@@ -323,6 +424,20 @@ function provision() {
 
 // --- Commands ---
 
+function runCopies(config) {
+  for (const copy of config.copies) {
+    const { src, dst } = parseCopy(copy);
+    console.log(`Copying ${src} → ${dst}`);
+    const dstDir = dirname(dst);
+    ssh(["sudo", "mkdir", "-p", dstDir]);
+    ssh(["sudo", "chown", `${hostUser.uid}:${hostUser.gid}`, dstDir]);
+    execFileSync("bash", [
+      "-c",
+      `cat ${shellQuote(src)} | colima ssh --profile ${profile} -- bash -c ${shellQuote("cat > " + shellQuote(dst))}`,
+    ]);
+  }
+}
+
 function create() {
   if (vmExists()) {
     console.error(
@@ -345,18 +460,7 @@ function create() {
     ssh(["bash", "-c", `cd ${shellQuote(projectRoot)} && bash ${shellQuote(postCreatePath)}`]);
   }
 
-  // Copy files
-  for (const copy of config.copies) {
-    const { src, dst } = parseCopy(copy);
-    console.log(`Copying ${src} → ${dst}`);
-    const dstDir = dirname(dst);
-    ssh(["sudo", "mkdir", "-p", dstDir]);
-    ssh(["sudo", "chown", `${hostUser.uid}:${hostUser.gid}`, dstDir]);
-    execFileSync("bash", [
-      "-c",
-      `cat ${shellQuote(src)} | colima ssh --profile ${profile} -- bash -c ${shellQuote("cat > " + shellQuote(dst))}`,
-    ]);
-  }
+  runCopies(config);
 
   // Run post-create.local.sh
   const postCreateLocalPath = resolve(
@@ -369,6 +473,42 @@ function create() {
   }
 
   console.log("VM ready.");
+}
+
+function apply() {
+  if (!vmExists()) {
+    console.error("VM does not exist. Use 'sandbox create' first.");
+    process.exit(1);
+  }
+
+  const config = loadConfig();
+  const desired = desiredVmConfig(config);
+  const actual = readVmConfig();
+
+  if (!actual) {
+    console.error("Could not read Colima config. Use 'sandbox recreate' instead.");
+    process.exit(1);
+  }
+
+  const changes = diffConfig(desired, actual);
+
+  if (changes.length === 0) {
+    console.log("VM config is up to date.");
+  } else {
+    console.log("Applying config changes:");
+    for (const change of changes) {
+      console.log(`  ${change}`);
+    }
+    writeVmConfig(desired);
+    console.log("Restarting VM...");
+    stopListener();
+    stopPortForwarding();
+    colima(["stop", "--profile", profile]);
+    colima(["start", "--profile", profile]);
+  }
+
+  runCopies(config);
+  console.log("Done.");
 }
 
 function ensureVmRunning() {
@@ -385,6 +525,18 @@ function exec(cmd) {
   ensureVmRunning();
 
   const config = loadConfig();
+
+  const actual = readVmConfig();
+  if (actual) {
+    const desired = desiredVmConfig(config);
+    const changes = diffConfig(desired, actual);
+    if (changes.length > 0) {
+      console.error(
+        "Warning: sandbox.json has changed. Run 'sandbox apply' to update."
+      );
+    }
+  }
+
   ensureListener(config.notify);
   ensurePortForwarding(config.ports);
 
@@ -436,6 +588,7 @@ const usage = `Usage: sandbox <command> [options...]
 Commands:
   create                 Create and provision the VM
   exec [cmd...]          Run a command in the VM (default: bash)
+  apply                  Apply config changes without recreating
   stop                   Stop the VM
   rm                     Remove the VM
   recreate               Remove and recreate the VM
@@ -456,6 +609,8 @@ if (values.help || command === undefined) {
   create();
 } else if (command === "exec") {
   exec(rest);
+} else if (command === "apply") {
+  apply();
 } else if (command === "stop") {
   stop();
 } else if (command === "rm") {
