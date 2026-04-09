@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" name="SAPSD_Myyntitilaus_v1.0" targetNamespace="http://www.tampere.fi/services/sapsd/salesorder/v1.0" xmlns:common="http://www.tampere.fi/messages/ipaas/commontypes/v1.0" xmlns:msg="http://www.tampere.fi/messages/sapsd/salesorder/v11.2" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:tns="http://www.tampere.fi/services/sapsd/salesorder/v1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:documentation>
+    <wsdl:appinfo source="WMQI_APPINFO">
+      <MRWSDLAppInfo imported="true">
+        <generatedXSD location="SAPSD_Myyntitilaus_v1_0_InlineSchema1.xsd"/>
+        <binding hasEncoding="false" imported="true" name="SAPSD_Myyntitilaus_v1.0SOAP12" originalBindingStyle="document"/>
+      </MRWSDLAppInfo>
+    </wsdl:appinfo>
+  </wsdl:documentation>
+  <wsdl:types>      	
+    
+          <xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.tampere.fi/services/sapsd/salesorder/v1.0" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions">
+<xsd:import namespace="http://www.tampere.fi/messages/ipaas/commontypes/v1.0" schemaLocation="iPaaS_Common_Types_v1_0.xsd"/>
+<xsd:import namespace="http://www.tampere.fi/messages/sapsd/salesorder/v11.2" schemaLocation="SalesOrder_iPaaS_v11_2.xsd"/>
+<xsd:include schemaLocation="SAPSD_Myyntitilaus_v1_0_InlineSchema1.xsd"/>
+    </xsd:schema>
+    </wsdl:types>
+  <wsdl:message name="sendSalesOrderRequest">
+    <wsdl:part element="tns:SendSalesOrderRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="sendSalesOrderResponse">
+    <wsdl:part element="tns:SendSalesOrderResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="applicationFault">
+  	<wsdl:part element="common:ApplicationFault" name="applicationFault"/>
+  </wsdl:message>
+  <wsdl:message name="systemFault">
+  	<wsdl:part element="common:SystemFault" name="systemFault"/>
+  </wsdl:message>
+  <wsdl:portType name="SAPSD_Myyntitilaus_v1.0">
+    <wsdl:operation name="sendSalesOrder">
+      <wsdl:input message="tns:sendSalesOrderRequest"/>
+      <wsdl:output message="tns:sendSalesOrderResponse"/>
+      <wsdl:fault message="tns:applicationFault" name="applicationFault"/>
+      <wsdl:fault message="tns:systemFault" name="systemFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SAPSD_Myyntitilaus_v1.0SOAP12" type="tns:SAPSD_Myyntitilaus_v1.0">
+    <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="sendSalesOrder">
+      <soap12:operation soapAction="http://www.tampere.fi/services/sapsd/salesorder/v1.0/SendSalesOrder"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="applicationFault">
+      	<soap12:fault name="applicationFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="systemFault">
+      	<soap12:fault name="systemFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="SAPSD_Myyntitilaus_v1.0">
+    <wsdl:port binding="tns:SAPSD_Myyntitilaus_v1.0SOAP12" name="SAPSD_Myyntitilaus_v1.0SOAP12">
+      <soap12:address location="https://service"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

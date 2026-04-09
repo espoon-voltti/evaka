@@ -1,0 +1,38 @@
+<!--
+SPDX-FileCopyrightText: 2024 Tampere region
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <style th:replace="~{orivesi/shared/common.html :: css}"></style>
+</head>
+
+<body>
+
+<header th:replace="~{orivesi/shared/common :: header}"></header>
+<footer th:replace="~{orivesi/shared/common :: footer}"></footer>
+
+<div class="page">
+    <h1 th:text="#{decision.title}"></h1>
+    <div th:replace="~{orivesi/shared/common :: child-and-unit-details}"></div>
+
+    <div th:utext="#{decision.instructions}"></div>
+
+</div>
+
+<div class="page">
+    <p th:utext="#{decision.legalInstructions}"></p>
+    <div th:replace="~{orivesi/shared/common :: decision-details}"></div>
+</div>
+
+<div class="page last-page">
+    <div th:replace="~{orivesi/shared/daycare-correction :: correction}"></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2021 City of Tampere
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+spring:
+  application:
+    name: "trevaka-service"
+evaka:
+  database:
+    flyway:
+      locations: db/migration,db/data/tampere
+  oph:
+    organizer_oid: "1.2.246.562.10.79499343246"
+    organizer_id: "176" # from test environment
+    municipality_code: "837"
+  integration:
+    sfi:
+      contact_organization:
+        name: "eVaka Tampere"
+        street_address: "PL 487"
+        postal_code: "33101"
+        post_office: "Tampere"
+  placement_tool:
+    service_need_option_id: "0a58d934-6fd1-11ed-a75e-c353faef5857"
+trevaka:
+  municipality: tampere

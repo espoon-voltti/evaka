@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2024 Tampere region
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+evaka:
+  database:
+    flyway:
+      locations: db/migration,db/data/kangasala
+  oph:
+    organizer_oid: "1.2.246.562.10.77047788581"
+    organizer_id: "231"
+    municipality_code: "211"
+  integration:
+    sfi:
+      contact_organization:
+        name: "eVaka Kangasala"
+        street_address: "PL 50"
+        postal_code: "36201"
+        post_office: "Kangasala"
+  planned_absence:
+    enabled_for_hour_based_service_needs: true
+  placement_tool:
+    service_need_option_id: "3b94630b-e01e-4b61-b040-8910baf96e97"
+trevaka:
+  municipality: kangasala

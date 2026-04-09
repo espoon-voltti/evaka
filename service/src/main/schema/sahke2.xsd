@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="http://www.profium.com/sahke2"
+  xmlns:tns="http://www.profium.com/sahke2"
+  xmlns:s2="http://www.profium.com/sahke2"
+  elementFormDefault="qualified">
+
+    <element name="title" type="string" />
+    <element name="created" type="date" />
+    <element name="description" type="string" />
+    <element name="calculationBaseDate" type="date" />
+    <element name="agent">
+        <complexType>
+            <all>
+                <element ref="s2:agentRole" minOccurs="1" />
+                <element ref="s2:agentName" minOccurs="0" />
+                <element ref="s2:corporateName" minOccurs="0" />
+            </all>
+        </complexType>
+    </element>
+    <element name="agentRole" type="string" />
+    <element name="agentName" type="string" />
+    <element name="corporateName" type="string" />
+</schema>

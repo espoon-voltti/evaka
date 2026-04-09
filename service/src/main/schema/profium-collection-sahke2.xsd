@@ -1,0 +1,73 @@
+<!--
+   Copyright 2024 Profium Ltd. All rights reserved. info@profium.com
+  
+   This XML Schema can be used to validate Profium collections which contain
+   metadata elements defined in sahke2.xsd and which use another namespace
+   than the collections.
+-->
+
+<xs:schema attributeFormDefault="unqualified"
+    elementFormDefault="qualified"
+    targetNamespace="http://www.profium.com/reception/2022/03"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:s2="http://www.profium.com/sahke2">
+    <xs:import namespace="http://www.profium.com/sahke2" schemaLocation="sahke2.xsd" />
+    <xs:element name="collections">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="initiator" maxOccurs="1" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element type="xs:string" name="source_system" />
+                            <xs:element type="xs:string" name="initiator_id" />
+                            <xs:element type="xs:string" name="initiator_name" />
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="collection" maxOccurs="unbounded" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element type="xs:string" name="type" />
+                            <xs:element type="xs:string" name="folder" />
+                            <xs:element name="metadata">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element ref="s2:title" minOccurs="1" maxOccurs="1" />
+                                        <xs:element ref="s2:description" minOccurs="0" maxOccurs="1" />
+                                        <xs:element ref="s2:calculationBaseDate" minOccurs="0"
+                                            maxOccurs="1" />
+                                        <xs:element ref="s2:created" minOccurs="1" maxOccurs="1" />
+                                        <xs:element ref="s2:agent" maxOccurs="unbounded" minOccurs="0"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="content">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="file" maxOccurs="unbounded" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:simpleContent>
+                                                    <xs:extension base="xs:string">
+                                                        <xs:attribute type="xs:string" name="name"
+                                                            use="required" />
+                                                        <xs:attribute type="xs:string"
+                                                            name="originalId" use="required" />
+                                                        <xs:attribute type="xs:string" name="format"
+                                                            use="optional" />
+                                                        <xs:attribute type="xs:int" name="size"
+                                                            use="optional" />
+                                                    </xs:extension>
+                                                </xs:simpleContent>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="notifyemail" />
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

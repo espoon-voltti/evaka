@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!--File PayableAccounting_v08.xsd, application TAM_SAPFICO_Ostoreskontra_Service--><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.tampere.fi/messages/sapfico/payableaccounting/v08" xmlns="http://www.tampere.fi/messages/sapfico/payableaccounting/v08">
+  <xsd:element name="PayableAccounting">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element maxOccurs="unbounded" ref="Invoice"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="Invoice">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="PayableAccountingHeader"/>
+        <xsd:element maxOccurs="unbounded" ref="PayableAccountingLine"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="PayableAccountingHeader">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="SAPVendor"/>
+        <xsd:element ref="IBAN"/>
+        <xsd:element ref="BIC"  minOccurs="0"/>
+        <xsd:element ref="Customer"  minOccurs="0"/>
+        <xsd:element ref="Organisation"/>
+        <xsd:element ref="Date"/>
+        <xsd:element ref="Year"  minOccurs="0"/>
+        <xsd:element ref="ReceiptType"/>
+        <xsd:element ref="DebetKredit"/>
+        <xsd:element ref="Reference"/>
+        <xsd:element ref="Currency"  minOccurs="0"/>
+        <xsd:element ref="Description"  minOccurs="0"/>
+        <xsd:element ref="BillingDate"/>
+        <xsd:element ref="BillNumber"/>
+        <xsd:element ref="BillValue"/>
+        <xsd:element ref="PaymentReference"  minOccurs="0"/>
+        <xsd:element ref="PaymentCondition"  minOccurs="0"/>
+        <xsd:element ref="SourceReference"  minOccurs="0"/>
+        <xsd:element ref="BasicDate"/>
+        <xsd:element ref="InterfaceID"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="SAPVendor" type="xsd:string"/>
+  <xsd:element name="IBAN" type="xsd:string"/>
+  <xsd:element name="BIC" type="xsd:string"/>
+  <xsd:element name="Customer" type="xsd:NMTOKEN"/>
+  <xsd:element name="Organisation" type="xsd:integer"/>
+  <xsd:element name="Date" type="xsd:NMTOKEN"/>
+  <xsd:element name="Year" type="xsd:string"/>
+  <xsd:element name="ReceiptType" type="xsd:NMTOKEN"/>
+  <xsd:element name="Reference" type="xsd:string"/>
+  <xsd:element name="Currency" type="xsd:string"/>
+  <xsd:element name="BillingDate" type="xsd:string"/>
+  <xsd:element name="BillNumber" type="xsd:string"/>
+  <xsd:element name="BillValue" type="xsd:decimal"/>
+  <xsd:element name="PaymentReference" type="xsd:string"/>
+  <xsd:element name="PaymentCondition" type="xsd:string"/>
+  <xsd:element name="SourceReference" type="xsd:string"/>
+  <xsd:element name="BasicDate" type="xsd:NMTOKEN"/>
+  <xsd:element name="InterfaceID" type="xsd:string"/>
+  <xsd:element name="PayableAccountingLine">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="0" ref="Description"/>
+        <xsd:element ref="Account"/>
+        <xsd:sequence minOccurs="0">
+          <xsd:element ref="CostCenter" minOccurs="0"/>
+          <xsd:element ref="ProfitCenter" minOccurs="0"/>
+          <xsd:element ref="InternalOrder" minOccurs="0"/>
+          <xsd:element ref="Network" minOccurs="0"/>
+          <xsd:element ref="TransactionType" minOccurs="0"/>
+          <xsd:element ref="TaxCode" minOccurs="0"/>
+          <xsd:element ref="PartnerCode" minOccurs="0"/>
+          <xsd:element ref="FunctionalArea" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:element ref="DebetKredit"/>
+        <xsd:element ref="Value"/>
+        <xsd:sequence minOccurs="0">
+          <xsd:element ref="ReferenceLine" minOccurs="0"/>
+          <xsd:element ref="WBS_element" minOccurs="0"/>
+          <xsd:element ref="Material" minOccurs="0"/>
+          <xsd:element ref="SubOrganisation" minOccurs="0"/>
+        </xsd:sequence>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="Account" type="xsd:NMTOKEN"/>
+  <xsd:element name="CostCenter" type="xsd:string"/>
+  <xsd:element name="ProfitCenter" type="xsd:string"/>
+  <xsd:element name="InternalOrder" type="xsd:string"/>
+  <xsd:element name="Network">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="Number"/>
+        <xsd:element ref="Phase"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="Number" type="xsd:string"/>
+  <xsd:element name="Phase" type="xsd:string"/>
+  <xsd:element name="TransactionType" type="xsd:string"/>
+  <xsd:element name="TaxCode" type="xsd:string"/>
+  <xsd:element name="PartnerCode" type="xsd:integer"/>
+  <xsd:element name="FunctionalArea" type="xsd:string"/>
+  <xsd:element name="Value" type="xsd:decimal"/>
+  <xsd:element name="ReferenceLine" type="xsd:string"/>
+  <xsd:element name="WBS_element" type="xsd:string"/>
+  <xsd:element name="Material" type="xsd:string"/>
+  <xsd:element name="SubOrganisation" type="xsd:string"/>
+  <xsd:element name="DebetKredit" type="xsd:string"/>
+  <xsd:element name="Description" type="xsd:string"/>
+</xsd:schema>

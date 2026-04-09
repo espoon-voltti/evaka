@@ -1,0 +1,38 @@
+<!--
+SPDX-FileCopyrightText: 2024 Tampere region
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="correction">
+    <h1 th:text="#{title}"></h1>
+    <div class="correction-content">
+        <div th:utext="#{content}"></div>
+    </div>
+
+    <div class="correction-content">
+        <h2 th:text="#{address.title}">Oikaisuviranomaisen osoite</h2>
+        <div th:utext="#{address.content}">Länsi- ja Sisä-Suomen aluehallintovirasto ...</div>
+    </div>
+
+    <div class="correction-content">
+        <h2 th:text="#{time.title}">Valitusaika</h2>
+        <div th:utext="#{time.content}">Valitusaika on 14 päivää tiedoksisaannista</div>
+    </div>
+
+    <div class="correction-content">
+        <h2 th:text="#{notice.title}">Tiedoksisaanti</h2>
+        <div th:utext="#{notice.content}">Asianosaisen katsotaan saaneen päätöksestä tiedon, ...</div>
+    </div>
+
+    <div class="correction-content">
+        <h2 th:text="#{complaint.title}">Valituskirja</h2>
+        <div th:utext="#{complaint.content}">Valituskirjassa, joka on osoitettava viranomaiselle, on ilmoitettava ...</div>
+    </div>
+</th:block>
+</body>
+</html>

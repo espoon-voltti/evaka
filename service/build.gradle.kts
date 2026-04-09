@@ -40,6 +40,34 @@ val integrationTestImplementation: Configuration by
 
 val downloadOnly: Configuration by configurations.creating { isTransitive = false }
 
+val xjcTool: Configuration by configurations.creating
+val xjcGenerate = tasks.register<JavaExec>("xjcGenerate") {
+    group = "code generation"
+    description = "Generates Java classes from XML schema using the XJC binding compiler"
+
+    val schemaDirectory = layout.projectDirectory.dir("src/main/schema")
+    val outputDirectory = layout.buildDirectory.dir("generated/sources/xjc/java/main")
+
+    classpath = xjcTool
+    mainClass = "com.sun.tools.xjc.Driver"
+    args = listOf(
+        "-no-header",
+        "-quiet",
+        "-d",
+        outputDirectory.get().asFile.absolutePath,
+        schemaDirectory.asFile.absolutePath,
+    )
+
+    inputs.dir(schemaDirectory)
+    outputs.dir(outputDirectory)
+}
+tasks.compileKotlin {
+    dependsOn(xjcGenerate)
+}
+sourceSets.main {
+    java.srcDirs(xjcGenerate)
+}
+
 configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
 
 idea {
@@ -47,6 +75,10 @@ idea {
 }
 
 dependencies {
+    xjcTool(platform(project(":evaka-bom")))
+    xjcTool("com.sun.xml.bind:jaxb-xjc")
+    xjcTool("com.sun.xml.bind:jaxb-impl")
+
     api(platform(project(":evaka-bom")))
     implementation(platform(project(":evaka-bom")))
     testImplementation(platform(project(":evaka-bom")))
@@ -98,6 +130,8 @@ dependencies {
 
     // Apache HttpClient
     implementation("org.apache.httpcomponents:httpclient")
+    implementation("org.apache.httpcomponents.core5:httpcore5")
+    implementation("org.apache.httpcomponents.client5:httpclient5")
 
     // SFTP
     implementation("com.github.mwiede:jsch")
@@ -106,6 +140,7 @@ dependencies {
     implementation("tools.jackson.core:jackson-core")
     implementation("tools.jackson.core:jackson-databind")
     implementation("tools.jackson.module:jackson-module-kotlin")
+    implementation("tools.jackson.dataformat:jackson-dataformat-csv")
 
     // AWS SDK
     implementation("software.amazon.awssdk:s3")

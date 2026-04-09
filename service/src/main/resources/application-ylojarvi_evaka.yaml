@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2024 Tampere region
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+evaka:
+  database:
+    flyway:
+      locations: db/migration,db/data/ylojarvi
+  oph:
+    organizer_oid: "1.2.246.562.10.722837895010"
+    organizer_id: "242"
+    municipality_code: "980"
+  integration:
+    sfi:
+      contact_organization:
+        name: "eVaka Ylöjärvi"
+        street_address: "Kuruntie 14"
+        postal_code: "33470"
+        post_office: "Ylöjärvi"
+  planned_absence:
+    enabled_for_hour_based_service_needs: true
+  placement_tool:
+    service_need_option_id: "9e6a4660-2f83-40e3-bf27-d9590e93dbf2"
+trevaka:
+  municipality: ylojarvi
+ylojarvi:
+  invoice:
+    municipalityCode: 606
+    invoiceType: 53

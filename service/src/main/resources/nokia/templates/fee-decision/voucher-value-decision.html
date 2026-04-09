@@ -1,0 +1,173 @@
+<!--
+SPDX-FileCopyrightText: 2024 Tampere region
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <style th:replace="~{nokia/shared/common.html :: css}"></style>
+    <style th:replace="~{nokia/fee-decision/fee-decision-css.html}"></style>
+</head>
+
+<body>
+
+<header th:replace="~{nokia/shared/common :: feeDecisionHeader}"></header>
+<footer th:replace="~{nokia/shared/common :: footer}"></footer>
+
+<div class="page">
+    <h1 th:if="${isReliefDecision}" th:text="#{text.relief.title}"></h1>
+    <h1 th:unless="${isReliefDecision}" th:text="#{text.title}"></h1>
+
+    <div th:text="${partnerIsCodebtor} ? ${#messages.msg('text.names', headFullName, partnerFullName)} : ${#messages.msg('text.name', headFullName)}"></div>
+
+    <p th:unless="${decisionType == 'NORMAL'}">
+        <th:block th:text="#{text.relief.handled}">Maksuvapautushakemuksenne on käsitelty.</th:block>
+        <th:block th:if="${decisionType == 'RELIEF_ACCEPTED'}" th:text="#{text.relief.accepted}"></th:block>
+        <th:block th:if="${decisionType == 'RELIEF_REJECTED'}" th:text="#{text.relief.rejected}"></th:block>
+    </p>
+
+    <p th:utext="${showValidTo}? #{decision.details.child2(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')}, ${validFrom}, ${validTo})} : #{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')}, ${validFrom})}"></p>
+
+    <p th:text="#{decision.details.unitTitle(${placementUnit.name})}"></p>
+
+    <p th:if="${isReliefDecision}"
+       th:text="#{text.relief.decision(${coPayment}, ${validFrom})}"></p>
+
+    <p th:text="#{decision.instructionsForCalculation}"></p>
+
+    <table class="narrow">
+        <tbody>
+        <tr>
+            <td th:text="${headFullName}"></td>
+
+            <td class="text-right" th:switch="${headIncomeEffect}">
+                <span th:case="'MAX_FEE_ACCEPTED'" th:text="#{decision.income.maxFeeAccepted}"></span>
+                <span th:case="'INCOMPLETE'" th:text="#{decision.income.notAvailable}"></span>
+                <span th:case="'INCOME'" th:text="${headIncomeTotal}"></span>
+                <span th:case="'NOT_AVAILABLE'" th:text="#{decision.income.notAvailable}"></span>
+            </td>
+        </tr>
+        <tr th:if="${hasPartner}">
+            <td th:text="${partnerFullName}"></td>
+            <td class="text-right" th:switch="${partnerIncomeEffect}">
+                <span th:case="'MAX_FEE_ACCEPTED'" th:text="#{decision.income.maxFeeAccepted}"></span>
+                <span th:case="'INCOMPLETE'" th:text="#{decision.income.notAvailable}"></span>
+                <span th:case="'INCOME'" th:text="${partnerIncomeTotal}"></span>
+                <span th:case="'NOT_AVAILABLE'" th:text="#{decision.income.notAvailable}"></span>
+            </td>
+        </tr>
+        <tr th:if="${hasChildIncome}">
+            <td th:text="${childFullName}"></td>
+            <td class="text-right" th:switch="${childIncomeEffect}">
+                <span th:case="'MAX_FEE_ACCEPTED'" th:text="#{decision.income.maxFeeAccepted}"></span>
+                <span th:case="'INCOMPLETE'" th:text="#{decision.income.notAvailable}"></span>
+                <span th:case="'INCOME'" th:text="${childIncomeTotal}"></span>
+                <span th:case="'NOT_AVAILABLE'" th:text="#{decision.income.notAvailable}"></span>
+            </td>
+        </tr>
+
+        <tr th:if="${showTotalIncome}">
+            <td><strong class="semi" th:text="#{decision.combined}"/></td>
+            <td class="text-right" th:text="${totalIncome}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p></p>
+
+    <table class="narrow">
+        <tbody>
+        <tr>
+            <td th:text="#{decision.serviceNeed}"></td>
+            <td class="text-right">
+                <span th:text="${voucherValueDescription}"></span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <span th:text="#{decision.familySize}"></span>
+                <span th:text="${familySize}"></span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table class="narrow">
+        <tbody>
+        <tr>
+            <td th:text="#{decision.baseValue}"></td>
+            <td class="text-right" th:text="${value}"></td>
+        </tr>
+        <tr th:each="alteration: ${feeAlterations}">
+            <td th:switch="${alteration.type.name}">
+                <span th:case="'DISCOUNT'" th:text="#{text.feeAlterationType.DISCOUNT}"></span>
+                <span th:case="'INCREASE'" th:text="#{text.feeAlterationType.INCREASE}"></span>
+                <span th:case="'RELIEF'" th:text="#{text.feeAlterationType.RELIEF}"></span>
+            </td>
+            <td class="text-right" th:text="${alteration.effectFormatted}"></td>
+        </tr>
+        <tr>
+            <td th:text="#{decision.coPayment}"></td>
+            <td class="text-right">– <span th:text="${coPayment}"></span></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p></p>
+
+    <table class="narrow">
+        <tbody>
+        <tr>
+            <td><strong class="semi" th:text="#{decision.amountOfVoucherForProvider}"></strong></td>
+            <td class="text-right"><strong th:text="${serviceProviderValue}"></strong></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:utext="#{decision.details.customerFeeInfo}"></div>
+    <div th:utext="#{decision.details.incomeChanges}"></div>
+</div>
+
+<div class="page">
+    <div th:utext="#{decision.legalInstructions}"></div>
+
+    <div class="decision-details-container">
+        <p>
+            <strong th:text="#{decision.sentDate}">Päätöspäivä</strong>
+            <span th:text="${approvedAt}"></span>
+        </p>
+        <p>
+            <strong th:text="#{decision.decisionMethodTitle}">Tiedoksiantotapa:</strong>
+            <span th:text="#{decision.decisionMethod.sent}">Lähetetty</span>
+        </p>
+        <p>
+            <strong th:text="#{decision.approver.prefix}">Päätöksentekijä</strong>
+        </p>
+        <th:block th:if="${decisionType == 'NORMAL'}">
+            <div>
+                <span th:text="${approverFirstName}"></span>
+                <span th:text="${approverLastName}"></span>
+            </div>
+            <div th:utext="#{decision.approver.title}">Varhaiskasvatuksen palvelusihteeri</div>
+            <div th:utext="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
+        </th:block>
+        <th:block th:unless="${decisionType == 'NORMAL'}">
+            <div th:if="${not #strings.isEmpty(decisionMakerName)}" th:text="${decisionMakerName}"></div>
+            <div th:if="${not #strings.isEmpty(decisionMakerTitle)}" th:text="${decisionMakerTitle}">Asiakaspalvelupäällikkö</div>
+            <div th:if="${not #strings.isEmpty(decisionMakerName) or not #strings.isEmpty(decisionMakerTitle)}"
+                 th:text="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
+        </th:block>
+
+        <p th:utext="#{decision.approver.details}"></p>
+    </div>
+</div>
+
+<div class="page last-page">
+    <div th:replace="~{nokia/shared/fee-decision-correction :: correction}"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: 2024 Tampere region
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+fi.kangasala.evaka:
+  MessageProvider:
+    DECISION_HEADER:
+      fi: Kangasalan varhaiskasvatukseen liittyvät päätökset
+    DECISION_CONTENT:
+      fi: |
+        Olette hakeneet lapsellenne varhaiskasvatus- tai kerhopaikkaa Kangasalan varhaiskasvatuksesta. Päätös on luettavissa Suomi.fi-viestit -palvelusta.
+        
+        Varhaiskasvatus tai kerhopaikka on hakemuksen tehneen huoltajan hyväksyttävissä Kangasalan kaupungin varhaiskasvatuksen sähköisessä palvelussa osoitteessa evaka.kangasala.fi. Paikkaa ei voi hyväksyä Suomi.fi-viestit -palvelussa.
+        
+        Huomioittehan, että vastaus päätökseen tulee antaa kahden viikon kuluessa.
+    FEE_DECISION_HEADER:
+      fi: Kangasalan varhaiskasvatukseen liittyvät päätökset
+    FEE_DECISION_CONTENT:
+      fi: |
+        Olette saaneet päätöksen varhaiskasvatuksen asiakasmaksusta Kangasalan kaupungilta. Päätös on luettavissa Suomi.fi-viestit -palvelusta.
+        
+        Varhaiskasvatuksen asiakasmaksu on voimassa toistaiseksi ja perheellä on velvollisuus ilmoittaa, mikäli perheen tulot olennaisesti muuttuvat (+/- 10 %).
+        
+        Lisätietoja varhaiskasvatuksen asiakasmaksuista
+        
+        https://www.kangasala.fi/kasva-ja-opi/varhaiskasvatus-ja-esiopetus/asiakasmaksut/
+    VOUCHER_VALUE_DECISION_HEADER:
+      fi: Kangasalan varhaiskasvatukseen liittyvät päätökset
+    VOUCHER_VALUE_DECISION_CONTENT:
+      fi: |
+        Olette saaneet päätöksen palvelusetelin omavastuuosuudesta Kangasalan kaupungilta. Päätös on luettavissa Suomi.fi-viestit -palvelusta.
+
+        Omavastuuosuus on voimassa toistaiseksi ja perheellä on velvollisuus ilmoittaa, mikäli perheen tulot olennaisesti muuttuvat (+/- 10 %).
+
+        Lisätietoja:
+
+        https://www.kangasala.fi/kasva-ja-opi/varhaiskasvatus-ja-esiopetus/asiakasmaksut/
+    ASSISTANCE_NEED_DECISION_HEADER:
+      fi: Kangasalan varhaiskasvatukseen liittyvät päätökset
+    ASSISTANCE_NEED_DECISION_CONTENT:
+      fi: |
+        Lapsellenne on tehty päätös tuen tarpeesta. Voit katsella päätöstä eVakassa.
+        
+        Koska olette ottanut Suomi.fi -palvelun käyttöönne, on päätös myös luettavissa alla olevista liitteistä.
