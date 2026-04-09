@@ -105,12 +105,41 @@ class Section extends Element {
 class PersonInfoSection extends Section {
   #lastName = this.findByDataQa('person-last-name')
   #firstName = this.findByDataQa('person-first-names')
+  #birthday = this.findByDataQa('person-birthday')
   #ssn = this.findByDataQa('person-ssn')
+  #language = this.findByDataQa('person-language')
+  #streetAddress = this.findByDataQa('person-details-street-address')
+  #editButton = this.findByDataQa('edit-person-settings-button')
+  #toggleDetailsButton = this.findByDataQa('toggle-person-details-button')
+
+  async toggleSensitiveDetails() {
+    await this.#toggleDetailsButton.click()
+  }
 
   async assertPersonInfo(lastName: string, firstName: string, ssn: string) {
     await expect(this.#lastName.findText(lastName)).toBeVisible()
     await expect(this.#firstName.findText(firstName)).toBeVisible()
     await expect(this.#ssn.findText(ssn)).toBeVisible()
+  }
+
+  async assertBasicInfoVisible() {
+    await expect(this.#lastName).toBeVisible()
+    await expect(this.#firstName).toBeVisible()
+    await expect(this.#birthday).toBeVisible()
+  }
+
+  async assertSensitiveFieldsHidden() {
+    await expect(this.#ssn).toBeHidden()
+    await expect(this.#language).toBeHidden()
+    await expect(this.#streetAddress).toBeHidden()
+    await expect(this.#editButton).toBeHidden()
+  }
+
+  async assertSensitiveFieldsVisible() {
+    await expect(this.#ssn).toBeVisible()
+    await expect(this.#language).toBeVisible()
+    await expect(this.#streetAddress).toBeVisible()
+    await expect(this.#editButton).toBeVisible()
   }
 }
 

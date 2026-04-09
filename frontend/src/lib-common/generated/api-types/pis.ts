@@ -510,6 +510,21 @@ export interface PersonAddressDTO {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.service.PersonBasicInfo
+*/
+export interface PersonBasicInfo {
+  dateOfBirth: LocalDate
+  dateOfDeath: LocalDate | null
+  duplicateOf: PersonId | null
+  firstName: string
+  hasSsn: boolean
+  id: PersonId
+  lastName: string
+  restrictedDetailsEnabled: boolean
+  ssnAddingDisabled: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.service.PersonJSON
 */
 export interface PersonJSON {
@@ -576,7 +591,30 @@ export interface PersonPatch {
 */
 export interface PersonResponse {
   permittedActions: Action.Person[]
-  person: PersonJSON
+  person: PersonBasicInfo
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.service.PersonSensitiveDetails
+*/
+export interface PersonSensitiveDetails {
+  backupPhone: string
+  email: string | null
+  forceManualFeeDecisions: boolean
+  invoiceRecipientName: string
+  invoicingPostOffice: string
+  invoicingPostalCode: string
+  invoicingStreetAddress: string
+  language: string | null
+  municipalityOfResidence: string
+  ophPersonOid: string | null
+  phone: string
+  postOffice: string
+  postalCode: string
+  residenceCode: string
+  socialSecurityNumber: string | null
+  streetAddress: string
+  updatedFromVtj: HelsinkiDateTime | null
 }
 
 /**
@@ -913,6 +951,15 @@ export function deserializeJsonPartnershipWithPermittedActions(json: JsonOf<Part
 }
 
 
+export function deserializeJsonPersonBasicInfo(json: JsonOf<PersonBasicInfo>): PersonBasicInfo {
+  return {
+    ...json,
+    dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
+    dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null
+  }
+}
+
+
 export function deserializeJsonPersonJSON(json: JsonOf<PersonJSON>): PersonJSON {
   return {
     ...json,
@@ -934,7 +981,15 @@ export function deserializeJsonPersonPatch(json: JsonOf<PersonPatch>): PersonPat
 export function deserializeJsonPersonResponse(json: JsonOf<PersonResponse>): PersonResponse {
   return {
     ...json,
-    person: deserializeJsonPersonJSON(json.person)
+    person: deserializeJsonPersonBasicInfo(json.person)
+  }
+}
+
+
+export function deserializeJsonPersonSensitiveDetails(json: JsonOf<PersonSensitiveDetails>): PersonSensitiveDetails {
+  return {
+    ...json,
+    updatedFromVtj: (json.updatedFromVtj != null) ? HelsinkiDateTime.parseIso(json.updatedFromVtj) : null
   }
 }
 

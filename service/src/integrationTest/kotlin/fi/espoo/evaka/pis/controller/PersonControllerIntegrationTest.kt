@@ -5,6 +5,7 @@
 package fi.espoo.evaka.pis.controller
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.controllers.ChildController
 import fi.espoo.evaka.identity.getDobFromSsn
 import fi.espoo.evaka.pis.controllers.PersonController
 import fi.espoo.evaka.pis.controllers.SearchPersonBody
@@ -12,12 +13,14 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.blockGuardian
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
 import kotlin.test.assertEquals
@@ -31,6 +34,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
 
     @Autowired lateinit var controller: PersonController
+    @Autowired lateinit var childController: ChildController
 
     private val clock = MockEvakaClock(2022, 1, 1, 12, 0)
 
@@ -224,6 +228,145 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         controller.getPersonGuardians(dbInstance(), admin.user, clock, childId).let { response ->
             assertEquals(1, response.guardians.size)
             assertEquals(1, response.blockedGuardians?.size)
+        }
+    }
+
+    private val sensitiveTestPerson =
+        DevPerson(
+            ssn = "140881-172X",
+            dateOfBirth = getDobFromSsn("140881-172X"),
+            firstName = "Matti",
+            lastName = "Meikäläinen",
+            email = "matti@example.com",
+            phone = "0401234567",
+            language = "fi",
+            streetAddress = "Testikatu 1",
+            postalCode = "00100",
+            postOffice = "Helsinki",
+            residenceCode = "12345",
+            municipalityOfResidence = "Helsinki",
+            ophPersonOid = "1.2.246.562.24.00000000001",
+        )
+
+    private val invoicePatch =
+        PersonPatch(
+            invoiceRecipientName = "Matti Meikäläinen",
+            invoicingStreetAddress = "Laskukatu 2",
+            invoicingPostalCode = "00200",
+            invoicingPostOffice = "Helsinki",
+            forceManualFeeDecisions = true,
+        )
+
+    @Test
+    fun `getPerson returns basic person info`() {
+        val personId =
+            db.transaction { tx -> tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW) }
+
+        val response = controller.getPerson(dbInstance(), admin.user, clock, personId)
+
+        assertEquals(sensitiveTestPerson.firstName, response.person.firstName)
+        assertEquals(sensitiveTestPerson.lastName, response.person.lastName)
+        assertEquals(sensitiveTestPerson.dateOfBirth, response.person.dateOfBirth)
+        assertEquals(
+            sensitiveTestPerson.restrictedDetailsEnabled,
+            response.person.restrictedDetailsEnabled,
+        )
+        assertEquals(true, response.person.hasSsn)
+        assertEquals(false, response.person.ssnAddingDisabled)
+
+        val noSsnPersonId =
+            db.transaction { tx -> tx.insert(DevPerson(ssn = null), DevPersonType.RAW_ROW) }
+        val noSsnResponse = controller.getPerson(dbInstance(), admin.user, clock, noSsnPersonId)
+        assertEquals(false, noSsnResponse.person.hasSsn)
+    }
+
+    @Test
+    fun `getChild returns basic person info`() {
+        val personId =
+            db.transaction { tx -> tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW) }
+
+        val response =
+            childController.getChild(dbInstance(), admin.user, clock, ChildId(personId.raw))
+
+        assertEquals(sensitiveTestPerson.firstName, response.person.firstName)
+        assertEquals(sensitiveTestPerson.lastName, response.person.lastName)
+        assertEquals(sensitiveTestPerson.dateOfBirth, response.person.dateOfBirth)
+        assertEquals(true, response.person.hasSsn)
+        assertEquals(false, response.person.ssnAddingDisabled)
+        assertEquals(
+            sensitiveTestPerson.restrictedDetailsEnabled,
+            response.person.restrictedDetailsEnabled,
+        )
+
+        val noSsnPersonId =
+            db.transaction { tx -> tx.insert(DevPerson(ssn = null), DevPersonType.RAW_ROW) }
+        val noSsnResponse =
+            childController.getChild(dbInstance(), admin.user, clock, ChildId(noSsnPersonId.raw))
+        assertEquals(false, noSsnResponse.person.hasSsn)
+    }
+
+    @Test
+    fun `getPersonSensitiveDetails returns sensitive data for admin`() {
+        val personId =
+            db.transaction { tx -> tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW) }
+        controller.updatePersonDetails(dbInstance(), admin.user, clock, personId, invoicePatch)
+
+        val response =
+            controller.getPersonSensitiveDetails(dbInstance(), admin.user, clock, personId)
+
+        assertEquals(sensitiveTestPerson.ssn, response.socialSecurityNumber)
+        assertEquals(sensitiveTestPerson.language, response.language)
+        assertEquals(sensitiveTestPerson.email, response.email)
+        assertEquals(sensitiveTestPerson.phone, response.phone)
+        assertEquals(sensitiveTestPerson.streetAddress, response.streetAddress)
+        assertEquals(sensitiveTestPerson.postalCode, response.postalCode)
+        assertEquals(sensitiveTestPerson.postOffice, response.postOffice)
+        assertEquals(sensitiveTestPerson.residenceCode, response.residenceCode)
+        assertEquals(sensitiveTestPerson.municipalityOfResidence, response.municipalityOfResidence)
+        assertEquals(invoicePatch.invoiceRecipientName, response.invoiceRecipientName)
+        assertEquals(invoicePatch.invoicingStreetAddress, response.invoicingStreetAddress)
+        assertEquals(invoicePatch.invoicingPostalCode, response.invoicingPostalCode)
+        assertEquals(invoicePatch.invoicingPostOffice, response.invoicingPostOffice)
+        assertEquals(invoicePatch.forceManualFeeDecisions, response.forceManualFeeDecisions)
+        assertEquals(sensitiveTestPerson.ophPersonOid, response.ophPersonOid)
+    }
+
+    @Test
+    fun `getPersonSensitiveDetails redacts invoice and OPH fields for service worker`() {
+        val personId =
+            db.transaction { tx -> tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW) }
+        controller.updatePersonDetails(dbInstance(), admin.user, clock, personId, invoicePatch)
+
+        val response =
+            controller.getPersonSensitiveDetails(dbInstance(), serviceWorker.user, clock, personId)
+
+        assertEquals(sensitiveTestPerson.ssn, response.socialSecurityNumber)
+        assertEquals(sensitiveTestPerson.language, response.language)
+        assertEquals(sensitiveTestPerson.email, response.email)
+        assertEquals(sensitiveTestPerson.phone, response.phone)
+        assertEquals(sensitiveTestPerson.streetAddress, response.streetAddress)
+        assertEquals("", response.invoiceRecipientName)
+        assertEquals("", response.invoicingStreetAddress)
+        assertEquals("", response.invoicingPostalCode)
+        assertEquals("", response.invoicingPostOffice)
+        assertEquals(false, response.forceManualFeeDecisions)
+        assertEquals(null, response.ophPersonOid)
+    }
+
+    @Test
+    fun `getPersonSensitiveDetails returns 403 for unauthorized user`() {
+        val unauthorizedEmployee = DevEmployee()
+        db.transaction { tx -> tx.insert(unauthorizedEmployee) }
+        val personId =
+            db.transaction { tx -> tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW) }
+
+        assertThrows<Forbidden> {
+            controller.getPersonSensitiveDetails(
+                dbInstance(),
+                unauthorizedEmployee.user,
+                clock,
+                personId,
+            )
         }
     }
 

@@ -14,7 +14,7 @@ import { InlineInternalLinkButton } from 'lib-components/atoms/buttons/InlineLin
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { faFileAlt } from 'lib-icons'
 
-import { ChildContext } from '../../state'
+import { personIdentityQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
 import { RequireRole } from '../../utils/roles'
@@ -24,6 +24,7 @@ import { DateTd, NameTd, StatusTd } from '../person-profile/common'
 
 import CreateApplicationModal from './CreateApplicationModal'
 import { getChildApplicationSummariesQuery, guardiansQuery } from './queries'
+import { ChildContext } from './state'
 
 interface Props {
   childId: ChildId
@@ -32,8 +33,13 @@ interface Props {
 export default React.memo(function ChildApplications({ childId }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode } = useContext(UIContext)
-  const { permittedActions, person } = useContext(ChildContext)
+  const { permittedActions } = useContext(ChildContext)
 
+  const child = useQueryResult(
+    uiMode === 'create-new-application'
+      ? personIdentityQuery({ personId: childId })
+      : constantQuery(null)
+  )
   const guardians = useQueryResult(
     permittedActions.has('READ_GUARDIANS')
       ? guardiansQuery({ personId: childId })
@@ -118,10 +124,11 @@ export default React.memo(function ChildApplications({ childId }: Props) {
       ))}
 
       {uiMode === 'create-new-application' &&
-        person.isSuccess &&
+        child.isSuccess &&
+        child.value &&
         guardians.isSuccess && (
           <CreateApplicationModal
-            child={person.value}
+            child={child.value}
             guardians={guardians.map((g) => g?.guardians ?? []).getOrElse([])}
           />
         )}

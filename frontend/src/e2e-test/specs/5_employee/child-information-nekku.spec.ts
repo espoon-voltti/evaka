@@ -83,7 +83,8 @@ test.beforeEach(async ({ evaka }) => {
 
 test.describe('Nekku fields are editable', () => {
   let section: AdditionalInformationSection
-  test.beforeEach(() => {
+  test.beforeEach(async () => {
+    await childInformationPage.toggleSensitiveDetails()
     section = childInformationPage.additionalInformationSection()
   })
 

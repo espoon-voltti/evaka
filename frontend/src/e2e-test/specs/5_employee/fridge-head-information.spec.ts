@@ -114,11 +114,15 @@ test.describe('Employee - Head of family details', () => {
 
   test('guardian has restriction details enabled', async () => {
     await guardianInformation.navigateToGuardian(testAdultRestricted.id)
+    const personInfo = guardianInformation.getCollapsible('personInfo')
+    await personInfo.toggleSensitiveDetails()
     await guardianInformation.assertRestrictedDetails(true)
   })
 
   test('guardian does not have restriction details enabled', async () => {
     await guardianInformation.navigateToGuardian(regularPerson.id)
+    const personInfo = guardianInformation.getCollapsible('personInfo')
+    await personInfo.toggleSensitiveDetails()
     await guardianInformation.assertRestrictedDetails(false)
   })
 

@@ -46,16 +46,20 @@ test.describe('SSN disabling', () => {
     }
     await adminPersonSearchPage.createPerson(person)
     await adminPersonSearchPage.findPerson(person.firstName)
+    await adminPersonSearchPage.toggleSensitiveDetails()
     await adminPersonSearchPage.disableSsnAdding(true)
 
     await serviceWorkerPersonSearchPage.findPerson(person.firstName)
+    await serviceWorkerPersonSearchPage.toggleSensitiveDetails()
     await serviceWorkerPersonSearchPage.checkAddSsnButtonVisibility(false)
 
     await adminPage.reload()
+    await adminPersonSearchPage.toggleSensitiveDetails()
     await adminPersonSearchPage.checkAddSsnButtonVisibility(true)
     await adminPersonSearchPage.disableSsnAdding(false)
 
     await serviceWorkerPage.reload()
+    await serviceWorkerPersonSearchPage.toggleSensitiveDetails()
     await serviceWorkerPersonSearchPage.checkAddSsnButtonVisibility(true)
   })
 })

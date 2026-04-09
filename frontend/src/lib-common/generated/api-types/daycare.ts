@@ -26,7 +26,7 @@ import type { MissingGroupPlacement } from './placement'
 import type { NekkuProductMealType } from './nekku'
 import type { NekkuSpecialDietChoices } from './nekku'
 import type { OccupancyResponse } from './occupancy'
-import type { PersonJSON } from './pis'
+import type { PersonBasicInfo } from './pis'
 import type { PilotFeature } from './shared'
 import type { PlacementId } from './shared'
 import type { PreschoolTermId } from './shared'
@@ -40,7 +40,7 @@ import { deserializeJsonDaycarePlacementWithDetails } from './placement'
 import { deserializeJsonMissingBackupGroupPlacement } from './placement'
 import { deserializeJsonMissingGroupPlacement } from './placement'
 import { deserializeJsonOccupancyResponse } from './occupancy'
-import { deserializeJsonPersonJSON } from './pis'
+import { deserializeJsonPersonBasicInfo } from './pis'
 import { deserializeJsonTerminatedPlacement } from './placement'
 import { deserializeJsonUnitBackupCare } from './backupcare'
 
@@ -149,7 +149,7 @@ export interface ChildResponse {
   hasGuardian: boolean
   permittedActions: Action.Child[]
   permittedPersonActions: Action.Person[]
-  person: PersonJSON
+  person: PersonBasicInfo
 }
 
 /**
@@ -627,7 +627,7 @@ export function deserializeJsonCaretakersResponse(json: JsonOf<CaretakersRespons
 export function deserializeJsonChildResponse(json: JsonOf<ChildResponse>): ChildResponse {
   return {
     ...json,
-    person: deserializeJsonPersonJSON(json.person)
+    person: deserializeJsonPersonBasicInfo(json.person)
   }
 }
 

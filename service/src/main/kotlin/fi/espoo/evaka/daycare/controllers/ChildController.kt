@@ -12,10 +12,9 @@ import fi.espoo.evaka.daycare.updateChild
 import fi.espoo.evaka.nekku.NekkuProductMealType
 import fi.espoo.evaka.nekku.NekkuSpecialDietChoices
 import fi.espoo.evaka.pis.getPersonById
-import fi.espoo.evaka.pis.service.PersonJSON
+import fi.espoo.evaka.pis.service.PersonBasicInfo
 import fi.espoo.evaka.pis.service.getFosterParentsForChildren
 import fi.espoo.evaka.pis.service.getGuardiansForChildren
-import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.pis.updatePreferredName
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -51,25 +50,7 @@ class ChildController(
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(tx, user, clock, Action.Child.READ, childId)
                     val child =
-                        tx.getPersonById(childId)
-                            ?.hideNonPermittedPersonData(
-                                includeInvoiceAddress =
-                                    accessControl.hasPermissionFor(
-                                        tx,
-                                        user,
-                                        clock,
-                                        Action.Person.READ_INVOICE_ADDRESS,
-                                        childId,
-                                    ),
-                                includeOphOid =
-                                    accessControl.hasPermissionFor(
-                                        tx,
-                                        user,
-                                        clock,
-                                        Action.Person.READ_OPH_OID,
-                                        childId,
-                                    ),
-                            ) ?: throw NotFound("Child $childId not found")
+                        tx.getPersonById(childId) ?: throw NotFound("Child $childId not found")
 
                     val childHasGuardian =
                         tx.getGuardiansForChildren(listOf(childId))
@@ -82,7 +63,7 @@ class ChildController(
                             .toMap()
 
                     ChildResponse(
-                        person = PersonJSON.from(child),
+                        person = PersonBasicInfo.from(child),
                         permittedActions =
                             accessControl.getPermittedActions(tx, user, clock, childId),
                         permittedPersonActions =
@@ -95,7 +76,7 @@ class ChildController(
                     )
                 }
             }
-            .also { Audit.PersonDetailsRead.log(targetId = AuditId(childId)) }
+            .also { Audit.PersonRead.log(targetId = AuditId(childId)) }
     }
 
     @GetMapping("/employee/children/{childId}/additional-information")
@@ -144,7 +125,7 @@ class ChildController(
     }
 
     data class ChildResponse(
-        val person: PersonJSON,
+        val person: PersonBasicInfo,
         val permittedActions: Set<Action.Child>,
         val permittedPersonActions: Set<Action.Person>,
         val assistanceNeedVoucherCoefficientsEnabled: Boolean,

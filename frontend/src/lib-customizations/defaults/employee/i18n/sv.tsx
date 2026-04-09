@@ -1472,6 +1472,8 @@ export const sv: typeof fi = {
       'Användare inom servicehandledning och ekonomi får inte ange personbeteckning för barn. När personbeteckning saknas har barnet ingen vårdnadsrelation. Om personbeteckning ska anges senare måste barnets tidigare dokument tas bort från systemet.',
     ssnInvalid: 'Ogiltig personbeteckning',
     ssnConflict: 'Denna användare finns redan i systemet.',
+    showDetails: 'Visa alla',
+    hideDetails: 'Visa mindre',
     updateFromVtj: 'Uppdatera från befolkningsregistret',
     partner: 'Makar/Sambor',
     partnerInfo:

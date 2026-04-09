@@ -5,6 +5,7 @@
 import React, { useContext, useState } from 'react'
 
 import { isLoading } from 'lib-common/api'
+import { useBoolean } from 'lib-common/form/hooks'
 import { formatPersonName } from 'lib-common/names'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
@@ -21,6 +22,8 @@ export default React.memo(function PersonFridgeHead() {
   const { i18n } = useTranslation()
   const { person, permittedActions } = useContext<PersonState>(PersonContext)
   const [open, setOpen] = useState(true)
+  const [sensitiveDetailsOpen, { toggle: toggleSensitiveDetails }] =
+    useBoolean(false)
 
   useTitle(
     person.map(
@@ -44,6 +47,8 @@ export default React.memo(function PersonFridgeHead() {
             person={person}
             isChild={false}
             permittedActions={permittedActions}
+            sensitiveDetailsOpen={sensitiveDetailsOpen}
+            onToggleSensitiveDetails={toggleSensitiveDetails}
           />
         ))}
       </CollapsibleContentArea>

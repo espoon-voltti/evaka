@@ -90,6 +90,7 @@ test.describe('Employee - Guardian Information', () => {
     await guardianPage.navigateToGuardian(testAdult.id)
 
     const personInfoSection = guardianPage.getCollapsible('personInfo')
+    await personInfoSection.toggleSensitiveDetails()
     await personInfoSection.assertPersonInfo(
       testAdult.lastName,
       testAdult.firstName,
@@ -194,6 +195,21 @@ test.describe('Employee - Guardian Information', () => {
 
     await row.deleteRow()
     await expect(invoiceCorrectionsSection.invoiceCorrectionRows).toHaveCount(0)
+  })
+
+  test('sensitive fields can be toggled on and off', async () => {
+    const guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(testAdult.id)
+    const personInfo = guardianPage.getCollapsible('personInfo')
+
+    await personInfo.assertBasicInfoVisible()
+    await personInfo.assertSensitiveFieldsHidden()
+
+    await personInfo.toggleSensitiveDetails()
+    await personInfo.assertSensitiveFieldsVisible()
+
+    await personInfo.toggleSensitiveDetails()
+    await personInfo.assertSensitiveFieldsHidden()
   })
 
   test('Invoice corrections show only units with cost center', async () => {

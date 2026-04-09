@@ -36,6 +36,10 @@ export default class ChildInformationPage {
   noGuardianInfo: Element
   #ophPersonOidInput: TextInput
   #editButton: Element
+  #toggleDetailsButton: Element
+  #ssn: Element
+  #streetAddress: Element
+  #additionalInformation: Element
   confirmButton: Element
 
   constructor(private readonly page: Page) {
@@ -46,6 +50,12 @@ export default class ChildInformationPage {
       page.findByDataQa('person-oph-person-oid')
     )
     this.#editButton = page.findByDataQa('edit-person-settings-button')
+    this.#toggleDetailsButton = page.findByDataQa(
+      'toggle-person-details-button'
+    )
+    this.#ssn = page.findByDataQa('person-ssn')
+    this.#streetAddress = page.findByDataQa('person-details-street-address')
+    this.#additionalInformation = page.findByDataQa('additional-information')
     this.confirmButton = page.findByDataQa('confirm-edited-person-button')
   }
 
@@ -59,6 +69,24 @@ export default class ChildInformationPage {
         '[data-qa="person-details-section"][data-isloading="false"]'
       )
     ).toBeVisible()
+  }
+
+  async toggleSensitiveDetails() {
+    await this.#toggleDetailsButton.click()
+  }
+
+  async assertSensitiveFieldsHidden() {
+    await expect(this.#ssn).toBeHidden()
+    await expect(this.#streetAddress).toBeHidden()
+    await expect(this.#additionalInformation).toBeHidden()
+    await expect(this.#editButton).toBeHidden()
+  }
+
+  async assertSensitiveFieldsVisible() {
+    await expect(this.#ssn).toBeVisible()
+    await expect(this.#streetAddress).toBeVisible()
+    await expect(this.#additionalInformation).toBeVisible()
+    await expect(this.#editButton).toBeVisible()
   }
 
   async assertName(lastName: string, firstName: string) {
