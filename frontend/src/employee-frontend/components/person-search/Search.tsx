@@ -133,16 +133,6 @@ export default React.memo(function Search() {
                 >
                   {i18n.personSearch.address}
                 </SortableTh>
-                <SortableTh
-                  sorted={
-                    sortColumn === 'social_security_number'
-                      ? sortDirection
-                      : undefined
-                  }
-                  onClick={sortToggle('social_security_number')}
-                >
-                  {i18n.personSearch.socialSecurityNumber}
-                </SortableTh>
               </Tr>
             </Thead>
             <Tbody>
@@ -164,7 +154,6 @@ export default React.memo(function Search() {
                       </Td>
                       <Td $align="left">{getAge(person.dateOfBirth)}</Td>
                       <Td $align="left">{person.streetAddress}</Td>
-                      <Td $align="left">{person.socialSecurityNumber}</Td>
                     </Tr>
                   ))}
                   {customers.value.length > 99 && (
@@ -178,14 +167,14 @@ export default React.memo(function Search() {
               )}
               {customers.isLoading && (
                 <Tr>
-                  <Td colSpan={4}>
+                  <Td colSpan={3}>
                     <Loader />
                   </Td>
                 </Tr>
               )}
               {customers.isFailure && (
                 <Tr>
-                  <Td colSpan={4}>{i18n.common.loadingFailed}</Td>
+                  <Td colSpan={3}>{i18n.common.loadingFailed}</Td>
                 </Tr>
               )}
             </Tbody>
