@@ -25,7 +25,7 @@ class MessageConfiguration {
 
     @Bean
     fun messageProvider(): IMessageProvider {
-        val messageSource = YamlMessageSource(ClassPathResource("messages-ylojarvi.yaml"))
+        val messageSource = YamlMessageSource(ClassPathResource("ylojarvi/messages.yaml"))
         return YlojarviMessageProvider(messageSource)
     }
 }

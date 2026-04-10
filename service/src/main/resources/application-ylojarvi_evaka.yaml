@@ -5,7 +5,9 @@
 evaka:
   database:
     flyway:
-      locations: db/migration,db/data/ylojarvi
+      locations:
+        - db/migration
+        - ylojarvi/db/migration
   oph:
     organizer_oid: "1.2.246.562.10.722837895010"
     organizer_id: "242"
@@ -21,9 +23,39 @@ evaka:
     enabled_for_hour_based_service_needs: true
   placement_tool:
     service_need_option_id: "9e6a4660-2f83-40e3-bf27-d9590e93dbf2"
-trevaka:
-  municipality: ylojarvi
 ylojarvi:
   invoice:
     municipalityCode: 606
     invoiceType: 53
+
+---
+spring.config.activate.on-profile: local
+evaka:
+  email:
+    sender_address: evaka@localhost
+    sender_name:
+      fi: evaka_local_fi
+      sv: evaka_local_sv
+  integration:
+    koski:
+      enabled: false
+    archival:
+      enabled: true
+ylojarvi:
+  invoice:
+    sftp:
+      host: localhost
+      port: 2222
+      host_keys: AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
+      username: foo
+      private-key: |
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+        QyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQAAAJjUgHxz1IB8
+        cwAAAAtzc2gtZWQyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQ
+        AAAEBOKiwR898c7d20IF4F4O6++awDPFfhoeDlH+t09hwEw0pCRF2Rcx+4e//U9YwnpOFy
+        G/Y94T64SRRtul/5x7+ZAAAADmV2YWthX2xvY2FsL2l0AQIDBAUGBw==
+        -----END OPENSSH PRIVATE KEY-----
+      prefix: upload/
+  bucket:
+    export: trevaka-export-dev

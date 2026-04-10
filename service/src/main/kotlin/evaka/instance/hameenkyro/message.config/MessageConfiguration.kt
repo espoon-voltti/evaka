@@ -25,7 +25,7 @@ class MessageConfiguration {
 
     @Bean
     fun messageProvider(): IMessageProvider {
-        val messageSource = YamlMessageSource(ClassPathResource("messages-hameenkyro.yaml"))
+        val messageSource = YamlMessageSource(ClassPathResource("hameenkyro/messages.yaml"))
         return HameenkyroMessageProvider(messageSource)
     }
 }

@@ -5,7 +5,9 @@
 evaka:
   database:
     flyway:
-      locations: db/migration,db/data/lempaala
+      locations:
+        - db/migration
+        - lempaala/db/migration
   oph:
     organizer_oid: "1.2.246.562.10.74484103937"
     organizer_id: "98"
@@ -19,9 +21,24 @@ evaka:
         post_office: "Lempäälä"
   planned_absence:
     enabled_for_hour_based_service_needs: true
-trevaka:
-  municipality: lempaala
 lempaala:
   invoice:
     organizationCode: 193
     invoiceType: 54
+
+---
+spring.config.activate.on-profile: local
+evaka:
+  email:
+    sender_address: evaka@localhost
+    sender_name:
+      fi: evaka_local_fi
+      sv: evaka_local_sv
+  integration:
+    koski:
+      enabled: false
+    archival:
+      enabled: true
+lempaala:
+  bucket:
+    export: trevaka-export-dev

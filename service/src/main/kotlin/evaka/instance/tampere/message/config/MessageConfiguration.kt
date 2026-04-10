@@ -25,7 +25,7 @@ class MessageConfiguration {
 
     @Bean
     fun messageProvider(): IMessageProvider {
-        val messageSource = YamlMessageSource(ClassPathResource("messages-tampere.yaml"))
+        val messageSource = YamlMessageSource(ClassPathResource("tampere/messages.yaml"))
         return TampereMessageProvider(messageSource)
     }
 }

@@ -25,7 +25,7 @@ class MessageConfiguration {
 
     @Bean
     fun messageProvider(): IMessageProvider {
-        val messageSource = YamlMessageSource(ClassPathResource("messages-pirkkala.yaml"))
+        val messageSource = YamlMessageSource(ClassPathResource("pirkkala/messages.yaml"))
         return PirkkalaMessageProvider(messageSource)
     }
 }

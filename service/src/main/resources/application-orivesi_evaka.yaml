@@ -5,7 +5,9 @@
 evaka:
   database:
     flyway:
-      locations: db/migration,db/data/orivesi
+      locations:
+        - db/migration
+        - orivesi/db/migration
   oph:
     organizer_oid: "1.2.246.562.10.74499914872"
     organizer_id: "246"
@@ -19,9 +21,24 @@ evaka:
         post_office: "Orivesi"
   planned_absence:
     enabled_for_hour_based_service_needs: true
-trevaka:
-  municipality: orivesi
 orivesi:
   invoice:
     municipalityCode: 562
     invoiceType: 30
+
+---
+spring.config.activate.on-profile: local
+evaka:
+  email:
+    sender_address: evaka@localhost
+    sender_name:
+      fi: evaka_local_fi
+      sv: evaka_local_sv
+  integration:
+    koski:
+      enabled: false
+    archival:
+      enabled: true
+orivesi:
+  bucket:
+    export: trevaka-export-dev

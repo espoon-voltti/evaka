@@ -5,7 +5,9 @@
 evaka:
   database:
     flyway:
-      locations: db/migration,db/data/hameenkyro
+      locations:
+        - db/migration
+        - hameenkyro/db/migration
   oph:
     organizer_oid: "1.2.246.562.10.64495287985"
     organizer_id: "243"
@@ -19,5 +21,20 @@ evaka:
         post_office: "Hämeenkyrö"
   planned_absence:
     enabled_for_hour_based_service_needs: true
-trevaka:
-  municipality: hameenkyro
+
+---
+spring.config.activate.on-profile: local
+evaka:
+  email:
+    sender_address: evaka@localhost
+    sender_name:
+      fi: evaka_local_fi
+      sv: evaka_local_sv
+  integration:
+    koski:
+      enabled: false
+    archival:
+      enabled: true
+hameenkyro:
+  bucket:
+    export: trevaka-export-dev

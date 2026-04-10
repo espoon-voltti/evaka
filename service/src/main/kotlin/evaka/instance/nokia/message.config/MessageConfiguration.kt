@@ -25,7 +25,7 @@ class MessageConfiguration {
 
     @Bean
     fun messageProvider(): IMessageProvider {
-        val messageSource = YamlMessageSource(ClassPathResource("messages-nokia.yaml"))
+        val messageSource = YamlMessageSource(ClassPathResource("nokia/messages.yaml"))
         return NokiaMessageProvider(messageSource)
     }
 }

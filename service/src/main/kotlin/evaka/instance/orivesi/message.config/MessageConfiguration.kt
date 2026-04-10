@@ -25,7 +25,7 @@ class MessageConfiguration {
 
     @Bean
     fun messageProvider(): IMessageProvider {
-        val messageSource = YamlMessageSource(ClassPathResource("messages-orivesi.yaml"))
+        val messageSource = YamlMessageSource(ClassPathResource("orivesi/messages.yaml"))
         return OrivesiMessageProvider(messageSource)
     }
 }

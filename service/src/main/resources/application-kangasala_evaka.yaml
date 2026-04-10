@@ -5,7 +5,9 @@
 evaka:
   database:
     flyway:
-      locations: db/migration,db/data/kangasala
+      locations:
+        - db/migration
+        - kangasala/db/migration
   oph:
     organizer_oid: "1.2.246.562.10.77047788581"
     organizer_id: "231"
@@ -21,5 +23,20 @@ evaka:
     enabled_for_hour_based_service_needs: true
   placement_tool:
     service_need_option_id: "3b94630b-e01e-4b61-b040-8910baf96e97"
-trevaka:
-  municipality: kangasala
+
+---
+spring.config.activate.on-profile: local
+evaka:
+  email:
+    sender_address: evaka@localhost
+    sender_name:
+      fi: evaka_local_fi
+      sv: evaka_local_sv
+  integration:
+    koski:
+      enabled: false
+    archival:
+      enabled: true
+kangasala:
+  bucket:
+    export: trevaka-export-dev

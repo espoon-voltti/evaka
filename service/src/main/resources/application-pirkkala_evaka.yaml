@@ -5,7 +5,9 @@
 evaka:
   database:
     flyway:
-      locations: db/migration,db/data/pirkkala
+      locations:
+        - db/migration
+        - pirkkala/db/migration
   oph:
     organizer_oid: "1.2.246.562.10.64435881079"
     organizer_id: "30"
@@ -19,9 +21,24 @@ evaka:
         post_office: "Pirkkala"
   planned_absence:
     enabled_for_hour_based_service_needs: true
-trevaka:
-  municipality: pirkkala
 pirkkala:
   invoice:
     municipalityCode: 604
     invoiceType: 53
+
+---
+spring.config.activate.on-profile: local
+evaka:
+  email:
+    sender_address: evaka@localhost
+    sender_name:
+      fi: evaka_local_fi
+      sv: evaka_local_sv
+  integration:
+    koski:
+      enabled: false
+    archival:
+      enabled: true
+pirkkala:
+  bucket:
+    export: trevaka-export-dev
