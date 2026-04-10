@@ -21,7 +21,6 @@ import evaka.instance.orivesi.OrivesiProperties
 import evaka.instance.orivesi.invoice.service.OrivesiInvoiceIntegrationClient
 import evaka.instance.orivesi.invoice.service.ProEInvoiceGenerator
 import evaka.instance.orivesi.invoice.service.S3Sender
-import evaka.trevaka.time.ClockService
 import java.math.BigDecimal
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -33,13 +32,12 @@ class InvoiceConfiguration {
     @Primary
     @Bean(name = ["orivesiInvoiceIntegrationClient"])
     fun invoiceIntegrationClient(
-        clockService: ClockService,
         properties: OrivesiProperties,
         invoiceGenerator: ProEInvoiceGenerator,
         s3Client: S3Client,
     ): InvoiceIntegrationClient {
         val s3Sender = S3Sender(s3Client, properties)
-        return OrivesiInvoiceIntegrationClient(clockService, s3Sender, invoiceGenerator)
+        return OrivesiInvoiceIntegrationClient(s3Sender, invoiceGenerator)
     }
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = OrivesiIncomeTypesProvider()

@@ -9,6 +9,7 @@ import evaka.core.invoicing.domain.InvoiceRowDetailed
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
 import evaka.core.invoicing.integration.InvoiceIntegrationClient.SendResult
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.instance.tampere.InvoiceProperties
 import evaka.instance.tampere.invoice.config.findProduct
 import evaka.trevaka.jaxb.localDateToXMLGregorianCalendar
@@ -64,7 +65,7 @@ class TampereInvoiceClient(
             null
         }
 
-    override fun send(invoices: List<InvoiceDetailed>): SendResult {
+    override fun send(now: HelsinkiDateTime, invoices: List<InvoiceDetailed>): SendResult {
         logger.info { "Invoice batch started" }
         val (zeroSumInvoices, nonZeroSumInvoices) =
             invoices.partition { invoice -> invoice.totalPrice == 0 }

@@ -21,7 +21,6 @@ import evaka.instance.hameenkyro.HameenkyroProperties
 import evaka.instance.hameenkyro.invoice.service.HameenkyroInvoiceIntegrationClient
 import evaka.instance.hameenkyro.invoice.service.ProEInvoiceGenerator
 import evaka.instance.hameenkyro.invoice.service.S3Sender
-import evaka.trevaka.time.ClockService
 import java.math.BigDecimal
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -33,13 +32,12 @@ class InvoiceConfiguration {
     @Primary
     @Bean(name = ["hameenkyroInvoiceIntegrationClient"])
     fun invoiceIntegrationClient(
-        clockService: ClockService,
         properties: HameenkyroProperties,
         invoiceGenerator: ProEInvoiceGenerator,
         s3Client: S3Client,
     ): InvoiceIntegrationClient {
         val s3Sender = S3Sender(s3Client, properties)
-        return HameenkyroInvoiceIntegrationClient(clockService, s3Sender, invoiceGenerator)
+        return HameenkyroInvoiceIntegrationClient(s3Sender, invoiceGenerator)
     }
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = HameenkyroIncomeTypesProvider()

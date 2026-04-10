@@ -9,6 +9,7 @@ import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.service.EspooInvoiceProducts
 import evaka.core.invoicing.service.ProductKey
 import evaka.core.shared.buildHttpClient
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.europeHelsinki
 import evaka.core.shared.utils.basicAuthInterceptor
 import evaka.core.shared.utils.post
@@ -33,7 +34,10 @@ class EspooInvoiceIntegrationClient(
             interceptors = listOf(basicAuthInterceptor(env.username, env.password.value)),
         )
 
-    override fun send(invoices: List<InvoiceDetailed>): InvoiceIntegrationClient.SendResult {
+    override fun send(
+        now: HelsinkiDateTime,
+        invoices: List<InvoiceDetailed>,
+    ): InvoiceIntegrationClient.SendResult {
         val (withSSN, withoutSSN) =
             invoices.partition { invoice -> invoice.headOfFamily.ssn != null }
 

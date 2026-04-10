@@ -21,7 +21,6 @@ import evaka.instance.kangasala.KangasalaProperties
 import evaka.instance.kangasala.invoice.service.KangasalaInvoiceIntegrationClient
 import evaka.instance.kangasala.invoice.service.ProEInvoiceGenerator
 import evaka.instance.kangasala.invoice.service.S3Sender
-import evaka.trevaka.time.ClockService
 import java.math.BigDecimal
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -33,13 +32,12 @@ class InvoiceConfiguration {
     @Primary
     @Bean(name = ["kangasalaInvoiceIntegrationClient"])
     fun invoiceIntegrationClient(
-        clockService: ClockService,
         properties: KangasalaProperties,
         invoiceGenerator: ProEInvoiceGenerator,
         s3Client: S3Client,
     ): InvoiceIntegrationClient {
         val s3Sender = S3Sender(s3Client, properties)
-        return KangasalaInvoiceIntegrationClient(clockService, s3Sender, invoiceGenerator)
+        return KangasalaInvoiceIntegrationClient(s3Sender, invoiceGenerator)
     }
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = KangasalaIncomeTypesProvider()

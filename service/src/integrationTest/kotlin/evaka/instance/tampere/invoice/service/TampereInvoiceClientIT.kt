@@ -13,7 +13,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.verify
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.instance.tampere.AbstractTampereIntegrationTest
+import java.time.LocalDate
+import java.time.LocalTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Test
@@ -22,8 +25,9 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.ws.soap.client.SoapFaultClientException
 
 internal class TampereInvoiceClientIT : AbstractTampereIntegrationTest() {
-
     @Autowired private lateinit var client: InvoiceIntegrationClient
+
+    private val mockNow = HelsinkiDateTime.of(LocalDate.of(2021, 2, 1), LocalTime.of(12, 34))
 
     @Test
     fun send() {
@@ -38,7 +42,7 @@ internal class TampereInvoiceClientIT : AbstractTampereIntegrationTest() {
                 )
         )
 
-        assertThat(client.send(listOf(invoice1)))
+        assertThat(client.send(mockNow, listOf(invoice1)))
             .returns(listOf(invoice1)) { it.succeeded }
             .returns(listOf()) { it.failed }
 
@@ -75,7 +79,7 @@ internal class TampereInvoiceClientIT : AbstractTampereIntegrationTest() {
                 )
         )
 
-        val thrown = catchThrowable { client.send(listOf(invoice1)) }
+        val thrown = catchThrowable { client.send(mockNow, listOf(invoice1)) }
 
         assertThat(thrown).isInstanceOf(SoapFaultClientException::class.java)
         verify(
@@ -105,7 +109,7 @@ internal class TampereInvoiceClientIT : AbstractTampereIntegrationTest() {
                 )
         )
 
-        val thrown = catchThrowable { client.send(listOf(invoice1)) }
+        val thrown = catchThrowable { client.send(mockNow, listOf(invoice1)) }
 
         assertThat(thrown).isInstanceOf(SoapFaultClientException::class.java)
         verify(

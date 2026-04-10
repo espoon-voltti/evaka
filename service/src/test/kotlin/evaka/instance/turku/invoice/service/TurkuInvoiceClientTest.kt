@@ -6,6 +6,9 @@ package evaka.instance.turku.invoice.service
 import com.jcraft.jsch.SftpException
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
+import evaka.core.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
+import java.time.LocalTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -25,6 +28,8 @@ internal class TurkuInvoiceClientTest {
     private val eVakaTurkuInvoiceClient = TurkuInvoiceClient(sftpSender, invoiceGenerator)
     private val fileNamePattern = """LAVAK_1002\d{6}-\d{6}.xml"""
 
+    private val mockNow = HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(13, 34, 56))
+
     @Test
     fun `should pass invoices to the invoice generator`() {
         val validInvoice = validInvoice()
@@ -37,7 +42,7 @@ internal class TurkuInvoiceClientTest {
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        eVakaTurkuInvoiceClient.send(invoiceList)
+        eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         verify(invoiceGenerator).generateInvoice(invoiceList)
     }
@@ -54,7 +59,7 @@ internal class TurkuInvoiceClientTest {
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        eVakaTurkuInvoiceClient.send(invoiceList)
+        eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         verify(sftpSender)
             .send(eq(sapInvoice1), argThat { filePath -> filePath.matches(Regex(fileNamePattern)) })
@@ -67,7 +72,7 @@ internal class TurkuInvoiceClientTest {
             StringInvoiceGenerator.InvoiceGeneratorResult(InvoiceIntegrationClient.SendResult(), "")
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        eVakaTurkuInvoiceClient.send(invoiceList)
+        eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         verify(sftpSender, never())
             .send(eq(""), argThat { filePath -> filePath.matches(Regex(fileNamePattern)) })
@@ -85,7 +90,7 @@ internal class TurkuInvoiceClientTest {
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        val sendResult = eVakaTurkuInvoiceClient.send(invoiceList)
+        val sendResult = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(sendResult.succeeded).hasSize(1)
     }
@@ -110,7 +115,7 @@ internal class TurkuInvoiceClientTest {
             )
             .thenThrow(SftpException::class.java)
 
-        val sendResult = eVakaTurkuInvoiceClient.send(invoiceList)
+        val sendResult = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(sendResult.failed).hasSize(2)
     }
@@ -127,7 +132,7 @@ internal class TurkuInvoiceClientTest {
                     sapInvoice1,
                 )
             )
-        val sendResult = eVakaTurkuInvoiceClient.send(invoiceList)
+        val sendResult = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(sendResult.succeeded).hasSize(2)
         verify(sftpSender)
@@ -152,7 +157,7 @@ internal class TurkuInvoiceClientTest {
                     sapInvoice1,
                 )
             )
-        val sendResult = eVakaTurkuInvoiceClient.send(invoiceList)
+        val sendResult = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(sendResult.succeeded).hasSize(1)
         assertThat(sendResult.manuallySent).hasSize(1)
@@ -177,7 +182,7 @@ internal class TurkuInvoiceClientTest {
                 )
             )
 
-        eVakaTurkuInvoiceClient.send(invoiceList)
+        eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(output).contains("Successfully sent 1 invoices and created 1 manual invoice")
     }
@@ -203,7 +208,7 @@ internal class TurkuInvoiceClientTest {
                 )
             )
             .thenThrow(SftpException::class.java)
-        eVakaTurkuInvoiceClient.send(invoiceList)
+        eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(output).contains("Failed to send 2 invoices")
     }

@@ -7,7 +7,6 @@ import com.jcraft.jsch.SftpException
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.MockEvakaClock
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -26,14 +25,10 @@ internal class OuluInvoiceClientTest {
     val invoiceGenerator = mock<ProEInvoiceGenerator>()
     val sftpSender = mock<SftpSender>()
     val ouluInvoiceClient = OuluInvoiceClient(sftpSender, invoiceGenerator)
-    val mockClock =
-        MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(13, 34, 56)))
+    val mockNow = HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(13, 34, 56))
     val fileName: String =
         "proe-" +
-            mockClock
-                .now()
-                .toLocalDateTime()
-                .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) +
+            mockNow.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) +
             ".txt"
 
     @Test
@@ -48,7 +43,7 @@ internal class OuluInvoiceClientTest {
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        ouluInvoiceClient.send(invoiceList)
+        ouluInvoiceClient.send(mockNow, invoiceList)
 
         verify(invoiceGenerator).generateInvoice(invoiceList)
     }
@@ -65,7 +60,7 @@ internal class OuluInvoiceClientTest {
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        ouluInvoiceClient.sendWithClock(invoiceList, mockClock)
+        ouluInvoiceClient.send(mockNow, invoiceList)
 
         verify(sftpSender).send(proEInvoice1, fileName)
     }
@@ -77,7 +72,7 @@ internal class OuluInvoiceClientTest {
             StringInvoiceGenerator.InvoiceGeneratorResult(InvoiceIntegrationClient.SendResult(), "")
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        ouluInvoiceClient.sendWithClock(invoiceList, mockClock)
+        ouluInvoiceClient.send(mockNow, invoiceList)
 
         verify(sftpSender, never()).send("", fileName)
     }
@@ -94,7 +89,7 @@ internal class OuluInvoiceClientTest {
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        val sendResult = ouluInvoiceClient.send(invoiceList)
+        val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(sendResult.succeeded).hasSize(1)
     }
@@ -113,7 +108,7 @@ internal class OuluInvoiceClientTest {
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
         whenever(sftpSender.send(proEInvoice1, fileName)).thenThrow(SftpException::class.java)
 
-        val sendResult = ouluInvoiceClient.sendWithClock(invoiceList, mockClock)
+        val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(sendResult.failed).hasSize(2)
     }
@@ -130,7 +125,7 @@ internal class OuluInvoiceClientTest {
                     "xx",
                 )
             )
-        val sendResult = ouluInvoiceClient.sendWithClock(invoiceList, mockClock)
+        val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(sendResult.succeeded).hasSize(2)
         verify(sftpSender).send(proEInvoice1, fileName)
@@ -154,7 +149,7 @@ internal class OuluInvoiceClientTest {
                     "x",
                 )
             )
-        val sendResult = ouluInvoiceClient.sendWithClock(invoiceList, mockClock)
+        val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(sendResult.succeeded).hasSize(1)
         assertThat(sendResult.manuallySent).hasSize(1)
@@ -178,7 +173,7 @@ internal class OuluInvoiceClientTest {
                 )
             )
 
-        ouluInvoiceClient.send(invoiceList)
+        ouluInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(output).contains("Successfully sent 1 invoices and created 1 manual invoice")
     }
@@ -198,7 +193,7 @@ internal class OuluInvoiceClientTest {
             )
 
         whenever(sftpSender.send(proEInvoice1, fileName)).thenThrow(SftpException::class.java)
-        ouluInvoiceClient.sendWithClock(invoiceList, mockClock)
+        ouluInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(output).contains("Failed to send 2 invoices")
     }
@@ -215,7 +210,7 @@ internal class OuluInvoiceClientTest {
                     "xx",
                 )
             )
-        val sendResult = ouluInvoiceClient.sendWithClock(invoiceList, mockClock)
+        val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
 
         verify(sftpSender).send(proEInvoice1, "proe-20221012-133456.txt")
     }

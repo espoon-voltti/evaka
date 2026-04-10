@@ -6,6 +6,7 @@ package evaka.instance.turku.invoice.service
 
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
+import evaka.core.shared.domain.HelsinkiDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -16,7 +17,10 @@ class TurkuInvoiceClient(
     private val sftpSender: SftpSender,
     private val invoiceGenerator: SapInvoiceGenerator,
 ) : InvoiceIntegrationClient {
-    override fun send(invoices: List<InvoiceDetailed>): InvoiceIntegrationClient.SendResult {
+    override fun send(
+        now: HelsinkiDateTime,
+        invoices: List<InvoiceDetailed>,
+    ): InvoiceIntegrationClient.SendResult {
         val failedList = mutableListOf<InvoiceDetailed>()
 
         val generatorResult = invoiceGenerator.generateInvoice(invoices)

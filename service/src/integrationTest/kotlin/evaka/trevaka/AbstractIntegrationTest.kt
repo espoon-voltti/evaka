@@ -8,7 +8,6 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.noopTracer
 import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import evaka.instance.tampere.database.resetTampereDatabaseForE2ETests
-import evaka.trevaka.time.ClockService
 import java.io.FileOutputStream
 import java.nio.file.Paths
 import org.jdbi.v3.core.Jdbi
@@ -19,7 +18,6 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.wiremock.spring.EnableWireMock
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.S3Client
@@ -37,9 +35,6 @@ private val reportsPath: String = "${Paths.get("build").toAbsolutePath()}/report
 @SpringBootTest(classes = [IntegrationTestConfiguration::class])
 @EnableWireMock
 abstract class AbstractIntegrationTest {
-
-    @MockitoSpyBean protected lateinit var clockService: ClockService
-
     @Autowired private lateinit var jdbi: Jdbi
 
     protected lateinit var db: Database.Connection

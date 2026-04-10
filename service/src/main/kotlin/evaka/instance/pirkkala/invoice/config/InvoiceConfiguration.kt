@@ -21,7 +21,6 @@ import evaka.instance.pirkkala.PirkkalaProperties
 import evaka.instance.pirkkala.invoice.service.PirkkalaInvoiceIntegrationClient
 import evaka.instance.pirkkala.invoice.service.ProEInvoiceGenerator
 import evaka.instance.pirkkala.invoice.service.S3Sender
-import evaka.trevaka.time.ClockService
 import java.math.BigDecimal
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -33,13 +32,12 @@ class InvoiceConfiguration {
     @Primary
     @Bean(name = ["pirkkalaInvoiceIntegrationClient"])
     fun invoiceIntegrationClient(
-        clockService: ClockService,
         properties: PirkkalaProperties,
         invoiceGenerator: ProEInvoiceGenerator,
         s3Client: S3Client,
     ): InvoiceIntegrationClient {
         val s3Sender = S3Sender(s3Client, properties)
-        return PirkkalaInvoiceIntegrationClient(clockService, s3Sender, invoiceGenerator)
+        return PirkkalaInvoiceIntegrationClient(s3Sender, invoiceGenerator)
     }
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = PirkkalaIncomeTypesProvider()

@@ -22,7 +22,6 @@ import evaka.trevaka.invoice.FixedLengthField.Number
 import evaka.trevaka.invoice.FixedLengthField.Text
 import evaka.trevaka.invoice.InvoiceAddress
 import evaka.trevaka.invoice.InvoicePerson
-import evaka.trevaka.time.ClockService
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
@@ -37,9 +36,8 @@ private val RESTRICTED_ADDRESS =
 class YlojarviInvoiceClient(
     private val sftpClient: SftpClient,
     private val properties: InvoiceProperties,
-    private val clockService: ClockService,
 ) : InvoiceIntegrationClient {
-    override fun send(invoices: List<InvoiceDetailed>): SendResult {
+    override fun send(now: HelsinkiDateTime, invoices: List<InvoiceDetailed>): SendResult {
         val (zeroSumInvoices, nonZeroSumInvoices) =
             invoices.partition { invoice -> invoice.totalPrice == 0 }
         val (nonSsnInvoices, ssnInvoices) =
@@ -47,7 +45,6 @@ class YlojarviInvoiceClient(
         if (ssnInvoices.isEmpty())
             return SendResult(succeeded = zeroSumInvoices, manuallySent = nonSsnInvoices)
 
-        val now = clockService.clock().now()
         val data =
             FixedLengthField.render(
                 ssnInvoices.flatMap { invoice -> toInvoiceData(invoice, now, properties) }

@@ -18,8 +18,10 @@ import evaka.core.shared.InvoiceId
 import evaka.core.shared.InvoiceRowId
 import evaka.core.shared.PersonId
 import evaka.core.shared.config.defaultJsonMapperBuilder
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.instance.espoo.EspooInvoiceIntegrationEnv
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -36,6 +38,8 @@ class EspooInvoiceIntegrationClientTest {
     private val jsonMapper = defaultJsonMapperBuilder().build()
 
     private lateinit var mockWebServer: MockWebServer
+
+    private val mockNow = HelsinkiDateTime.of(LocalDate.of(2020, 2, 14), LocalTime.of(12, 0))
 
     @BeforeEach
     fun setUp() {
@@ -68,7 +72,7 @@ class EspooInvoiceIntegrationClientTest {
 
         val client = createClient()
         val invoice = testInvoice()
-        val result = client.send(listOf(invoice))
+        val result = client.send(mockNow, listOf(invoice))
 
         assertEquals(1, result.succeeded.size)
         assertTrue(result.failed.isEmpty())
@@ -102,7 +106,7 @@ class EspooInvoiceIntegrationClientTest {
     fun `send places invoices without SSN in manuallySent without making HTTP requests`() {
         val client = createClient()
         val invoice = testInvoice(headOfFamily = testPerson(ssn = null))
-        val result = client.send(listOf(invoice))
+        val result = client.send(mockNow, listOf(invoice))
 
         assertTrue(result.succeeded.isEmpty())
         assertTrue(result.failed.isEmpty())
@@ -116,7 +120,7 @@ class EspooInvoiceIntegrationClientTest {
 
         val client = createClient()
         val invoice = testInvoice()
-        val result = client.send(listOf(invoice))
+        val result = client.send(mockNow, listOf(invoice))
 
         assertTrue(result.succeeded.isEmpty())
         assertEquals(1, result.failed.size)

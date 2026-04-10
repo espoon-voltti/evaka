@@ -7,8 +7,7 @@ package evaka.instance.oulu.invoice.service
 import com.jcraft.jsch.SftpException
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
-import evaka.core.shared.domain.EvakaClock
-import evaka.core.shared.domain.RealEvakaClock
+import evaka.core.shared.domain.HelsinkiDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.format.DateTimeFormatter
 
@@ -18,12 +17,9 @@ class OuluInvoiceClient(
     private val sftpSender: SftpSender,
     private val invoiceGenerator: ProEInvoiceGenerator,
 ) : InvoiceIntegrationClient {
-    override fun send(invoices: List<InvoiceDetailed>): InvoiceIntegrationClient.SendResult =
-        sendWithClock(invoices, RealEvakaClock())
-
-    fun sendWithClock(
+    override fun send(
+        now: HelsinkiDateTime,
         invoices: List<InvoiceDetailed>,
-        clock: EvakaClock,
     ): InvoiceIntegrationClient.SendResult {
         val failedList = mutableListOf<InvoiceDetailed>()
 
@@ -36,9 +32,7 @@ class OuluInvoiceClient(
             try {
                 val fileName =
                     "proe-" +
-                        clock
-                            .now()
-                            .toLocalDateTime()
+                        now.toLocalDateTime()
                             .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) +
                         ".txt"
                 sftpSender.send(proEinvoices, fileName)

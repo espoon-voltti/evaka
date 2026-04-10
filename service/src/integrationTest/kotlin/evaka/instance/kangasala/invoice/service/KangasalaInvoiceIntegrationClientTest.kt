@@ -6,7 +6,6 @@ package evaka.instance.kangasala.invoice.service
 
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.MockEvakaClock
 import evaka.instance.kangasala.AbstractKangasalaIntegrationTest
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
@@ -14,7 +13,6 @@ import java.time.LocalTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 class KangasalaInvoiceIntegrationClientTest : AbstractKangasalaIntegrationTest() {
@@ -22,13 +20,10 @@ class KangasalaInvoiceIntegrationClientTest : AbstractKangasalaIntegrationTest()
 
     @Test
     fun `valid invoice with invoice number`() {
-        whenever(clockService.clock())
-            .thenReturn(
-                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2021, 2, 1), LocalTime.of(12, 34)))
-            )
+        val mockNow = HelsinkiDateTime.of(LocalDate.of(2021, 2, 1), LocalTime.of(12, 34))
         val invoices = listOf(validInvoice().copy(number = 1))
 
-        val result = invoiceIntegrationClient.send(invoices)
+        val result = invoiceIntegrationClient.send(mockNow, invoices)
 
         assertThat(result)
             .returns(invoices) { it.succeeded }

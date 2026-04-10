@@ -7,19 +7,17 @@ package evaka.instance.orivesi.invoice.service
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
 import evaka.core.invoicing.integration.InvoiceIntegrationClient.SendResult
-import evaka.trevaka.time.ClockService
+import evaka.core.shared.domain.HelsinkiDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.YearMonth
 
 private val logger = KotlinLogging.logger {}
 
 class OrivesiInvoiceIntegrationClient(
-    private val clockService: ClockService,
     private val s3Sender: S3Sender,
     private val invoiceGenerator: ProEInvoiceGenerator,
 ) : InvoiceIntegrationClient {
-    override fun send(invoices: List<InvoiceDetailed>): SendResult {
-        val now = clockService.clock().now()
+    override fun send(now: HelsinkiDateTime, invoices: List<InvoiceDetailed>): SendResult {
         val failedList = mutableListOf<InvoiceDetailed>()
 
         val (zeroSumInvoices, nonZeroSumInvoices) =

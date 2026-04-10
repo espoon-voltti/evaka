@@ -21,7 +21,6 @@ import evaka.instance.lempaala.LempaalaProperties
 import evaka.instance.lempaala.invoice.service.LempaalaInvoiceIntegrationClient
 import evaka.instance.lempaala.invoice.service.ProEInvoiceGenerator
 import evaka.instance.lempaala.invoice.service.S3Sender
-import evaka.trevaka.time.ClockService
 import java.math.BigDecimal
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -33,13 +32,12 @@ class InvoiceConfiguration {
     @Primary
     @Bean(name = ["lempaalaInvoiceIntegrationClient"])
     fun invoiceIntegrationClient(
-        clockService: ClockService,
         properties: LempaalaProperties,
         invoiceGenerator: ProEInvoiceGenerator,
         s3Client: S3Client,
     ): InvoiceIntegrationClient {
         val s3Sender = S3Sender(s3Client, properties)
-        return LempaalaInvoiceIntegrationClient(clockService, s3Sender, invoiceGenerator)
+        return LempaalaInvoiceIntegrationClient(s3Sender, invoiceGenerator)
     }
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = LempaalaIncomeTypesProvider()

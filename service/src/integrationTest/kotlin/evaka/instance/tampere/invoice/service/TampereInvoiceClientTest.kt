@@ -16,6 +16,7 @@ import evaka.core.shared.DaycareId
 import evaka.core.shared.InvoiceId
 import evaka.core.shared.InvoiceRowId
 import evaka.core.shared.PersonId
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.instance.tampere.BiExportProperties
 import evaka.instance.tampere.BucketProperties
 import evaka.instance.tampere.InvoiceProperties
@@ -26,6 +27,7 @@ import evaka.instance.tampere.invoice.config.InvoiceConfiguration
 import evaka.trevaka.addClientInterceptors
 import evaka.trevaka.newPayloadValidatingInterceptor
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.Locale
 import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
@@ -45,6 +47,8 @@ internal class TampereInvoiceClientTest {
 
     private lateinit var client: TampereInvoiceClient
     private lateinit var server: MockWebServiceServer
+
+    private val mockNow = HelsinkiDateTime.of(LocalDate.of(2021, 2, 1), LocalTime.of(12, 34))
 
     @BeforeEach
     fun setup() {
@@ -81,7 +85,7 @@ internal class TampereInvoiceClientTest {
                 withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml"))
             )
 
-        assertThat(client.send(listOf(invoice1, invoice2)))
+        assertThat(client.send(mockNow, listOf(invoice1, invoice2)))
             .returns(listOf(invoice1)) { it.succeeded }
             .returns(listOf()) { it.failed }
             .returns(listOf(invoice2)) { it.manuallySent }
@@ -114,7 +118,7 @@ internal class TampereInvoiceClientTest {
                 withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml"))
             )
 
-        assertThat(client.send(listOf(invoice1)))
+        assertThat(client.send(mockNow, listOf(invoice1)))
             .returns(listOf(invoice1)) { it.succeeded }
             .returns(listOf()) { it.failed }
             .returns(listOf()) { it.manuallySent }
@@ -137,7 +141,7 @@ internal class TampereInvoiceClientTest {
                 withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml"))
             )
 
-        assertThat(client.send(listOf(invoice1)))
+        assertThat(client.send(mockNow, listOf(invoice1)))
             .returns(listOf(invoice1)) { it.succeeded }
             .returns(listOf()) { it.failed }
             .returns(listOf()) { it.manuallySent }
@@ -157,7 +161,7 @@ internal class TampereInvoiceClientTest {
                 withPayload(ClassPathResource("invoice-client/sales-order-response-ok.xml"))
             )
 
-        assertThat(client.send(listOf(invoice1)))
+        assertThat(client.send(mockNow, listOf(invoice1)))
             .returns(listOf(invoice1)) { it.succeeded }
             .returns(listOf()) { it.failed }
             .returns(listOf()) { it.manuallySent }
@@ -174,7 +178,7 @@ internal class TampereInvoiceClientTest {
             .expect(connectionTo("http://localhost:8080/salesOrder"))
             .andRespond(withClientOrSenderFault("test", Locale.ENGLISH))
 
-        val thrown = catchThrowable { client.send(listOf(invoice1, invoice2)) }
+        val thrown = catchThrowable { client.send(mockNow, listOf(invoice1, invoice2)) }
 
         assertThat(thrown).isInstanceOf(SoapFaultClientException::class.java)
         server.verify()
@@ -188,7 +192,7 @@ internal class TampereInvoiceClientTest {
             .expect(connectionTo("http://localhost:8080/salesOrder"))
             .andRespond(withServerOrReceiverFault("test", Locale.ENGLISH))
 
-        val thrown = catchThrowable { client.send(listOf(invoice1, invoice2)) }
+        val thrown = catchThrowable { client.send(mockNow, listOf(invoice1, invoice2)) }
 
         assertThat(thrown).isInstanceOf(SoapFaultClientException::class.java)
         server.verify()
@@ -216,7 +220,7 @@ internal class TampereInvoiceClientTest {
                         ),
                 )
 
-        assertThat(client.send(listOf(invoice1, invoice2)))
+        assertThat(client.send(mockNow, listOf(invoice1, invoice2)))
             .returns(listOf(invoice1, invoice2)) { it.succeeded }
             .returns(listOf()) { it.failed }
             .returns(listOf()) { it.manuallySent }

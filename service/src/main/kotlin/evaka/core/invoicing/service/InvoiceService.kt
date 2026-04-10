@@ -76,7 +76,7 @@ class InvoiceService(
                 )
             }
 
-        val sendResult = integrationClient.send(updatedInvoices)
+        val sendResult = integrationClient.send(now, updatedInvoices)
         tx.setDraftsSent(now, sendResult.succeeded, sentBy)
         tx.setDraftsWaitingForManualSending(sendResult.manuallySent)
         tx.saveCostCenterFields(
@@ -101,7 +101,7 @@ class InvoiceService(
             throw BadRequest("Some invoices were not sent before")
         }
 
-        val sendResult = integrationClient.send(invoices)
+        val sendResult = integrationClient.send(now, invoices)
         tx.setDraftsSent(now, sendResult.succeeded, sentBy)
     }
 

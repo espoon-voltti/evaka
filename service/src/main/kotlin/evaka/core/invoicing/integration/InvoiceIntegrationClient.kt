@@ -5,6 +5,7 @@
 package evaka.core.invoicing.integration
 
 import evaka.core.invoicing.domain.InvoiceDetailed
+import evaka.core.shared.domain.HelsinkiDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import tools.jackson.databind.json.JsonMapper
 
@@ -17,10 +18,10 @@ interface InvoiceIntegrationClient {
         val manuallySent: List<InvoiceDetailed> = listOf(),
     )
 
-    fun send(invoices: List<InvoiceDetailed>): SendResult
+    fun send(now: HelsinkiDateTime, invoices: List<InvoiceDetailed>): SendResult
 
     class MockClient(private val jsonMapper: JsonMapper) : InvoiceIntegrationClient {
-        override fun send(invoices: List<InvoiceDetailed>): SendResult {
+        override fun send(now: HelsinkiDateTime, invoices: List<InvoiceDetailed>): SendResult {
             logger.info {
                 "Mock invoice integration client got invoices ${jsonMapper.writeValueAsString(invoices)}"
             }

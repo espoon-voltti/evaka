@@ -20,7 +20,6 @@ import evaka.core.placement.PlacementType
 import evaka.core.shared.sftp.SftpClient
 import evaka.instance.nokia.NokiaProperties
 import evaka.instance.nokia.invoice.NokiaInvoiceClient
-import evaka.trevaka.time.ClockService
 import java.math.BigDecimal
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -30,12 +29,9 @@ import org.springframework.context.annotation.Primary
 class InvoiceConfiguration {
     @Primary
     @Bean(name = ["nokiaInvoiceIntegrationClient"])
-    fun invoiceIntegrationClient(
-        clockService: ClockService,
-        properties: NokiaProperties,
-    ): InvoiceIntegrationClient {
+    fun invoiceIntegrationClient(properties: NokiaProperties): InvoiceIntegrationClient {
         val sftpEnv = properties.invoice.sftp.toSftpEnv()
-        return NokiaInvoiceClient(SftpClient(sftpEnv), properties.invoice, clockService)
+        return NokiaInvoiceClient(SftpClient(sftpEnv), properties.invoice)
     }
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = NokiaIncomeTypesProvider()
