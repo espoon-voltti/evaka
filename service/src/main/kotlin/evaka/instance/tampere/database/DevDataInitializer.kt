@@ -5,7 +5,7 @@
 package evaka.instance.tampere.database
 
 import evaka.core.shared.db.Database
-import evaka.core.shared.dev.runDevScript
+import evaka.core.shared.dev.runSqlScript
 import evaka.core.shared.noopTracer
 import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import evaka.core.vtjclient.service.persondetails.legacyMockVtjDataset
@@ -19,7 +19,7 @@ class DevDataInitializer(jdbi: Jdbi) {
     init {
         Database(jdbi, noopTracer()).connect { db ->
             db.transaction { tx ->
-                tx.runDevScript("reset-tampere-database-for-e2e-tests.sql")
+                tx.runSqlScript("tampere/reset-tampere-database-for-e2e-tests.sql")
                 tx.ensureTampereDevData()
             }
         }

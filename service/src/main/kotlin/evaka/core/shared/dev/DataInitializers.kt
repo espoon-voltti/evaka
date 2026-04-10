@@ -110,8 +110,7 @@ import org.springframework.core.io.ClassPathResource
 
 private val logger = KotlinLogging.logger {}
 
-fun Database.Transaction.runDevScript(devScriptName: String) {
-    val path = "dev-data/$devScriptName"
+fun Database.Transaction.runSqlScript(path: String) {
     logger.info { "Running SQL script: $path" }
     ClassPathResource(path).inputStream.use {
         it.bufferedReader().readText().let { content -> execute { sql(content) } }
@@ -132,13 +131,13 @@ const val INSERT_APPLICATION_PLACEMENT_TEST_DATA = false
 fun Database.Transaction.ensureDevData() {
     if (createQuery { sql("SELECT count(*) FROM care_area") }.exactlyOne<Int>() == 0) {
         listOf(
-                "dev-data.sql",
-                "service-need-options.sql",
-                "employees.sql",
-                "preschool-terms.sql",
-                "club-terms.sql",
+                "dev-data/dev-data.sql",
+                "dev-data/service-need-options.sql",
+                "dev-data/employees.sql",
+                "dev-data/preschool-terms.sql",
+                "dev-data/club-terms.sql",
             )
-            .forEach { runDevScript(it) }
+            .forEach { runSqlScript(it) }
 
         if (INSERT_APPLICATION_PLACEMENT_TEST_DATA) {
             insertApplicationPlacementTestData(tx = this)

@@ -33,7 +33,7 @@ import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.configureJdbi
 import evaka.core.shared.dev.resetDatabase
-import evaka.core.shared.dev.runDevScript
+import evaka.core.shared.dev.runSqlScript
 import evaka.core.shared.message.EvakaMessageProvider
 import evaka.core.shared.message.IMessageProvider
 import evaka.core.shared.noopTracer
@@ -115,7 +115,7 @@ fun getTestDataSource(): TestDataSource =
                                 .run { migrate() }
                             Database(Jdbi.create(it), noopTracer()).connect { db ->
                                 db.transaction { tx ->
-                                    tx.runDevScript("reset-database.sql")
+                                    tx.runSqlScript("dev-data/reset-database.sql")
                                     tx.resetDatabase()
                                 }
                             }

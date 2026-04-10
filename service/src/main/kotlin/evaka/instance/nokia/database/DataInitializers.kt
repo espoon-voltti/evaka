@@ -5,10 +5,10 @@
 package evaka.instance.nokia.database
 
 import evaka.core.shared.db.Database
-import evaka.core.shared.dev.runDevScript
+import evaka.core.shared.dev.runSqlScript
 
 fun Database.Transaction.ensureNokiaDevData() {
     if (createQuery { sql("SELECT count(*) FROM daycare") }.mapTo<Int>().exactlyOne() == 0) {
-        listOf("nokia-dev-data.sql").forEach { runDevScript(it) }
+        listOf("nokia/dev-data.sql").forEach { runSqlScript(it) }
     }
 }

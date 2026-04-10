@@ -5,10 +5,10 @@
 package evaka.instance.hameenkyro.database
 
 import evaka.core.shared.db.Database
-import evaka.core.shared.dev.runDevScript
+import evaka.core.shared.dev.runSqlScript
 
 fun Database.Transaction.ensureHameenkyroDevData() {
     if (createQuery { sql("SELECT count(*) FROM daycare") }.mapTo<Int>().exactlyOne() == 0) {
-        listOf("hameenkyro-dev-data.sql").forEach { runDevScript(it) }
+        listOf("hameenkyro/dev-data.sql").forEach { runSqlScript(it) }
     }
 }

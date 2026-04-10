@@ -5,7 +5,6 @@
 package evaka.instance.hameenkyro.database
 
 import evaka.core.shared.db.Database
-import evaka.core.shared.dev.runDevScript
 import evaka.core.shared.noopTracer
 import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import evaka.core.vtjclient.service.persondetails.legacyMockVtjDataset
@@ -18,10 +17,7 @@ import org.springframework.stereotype.Component
 class DevDataInitializer(jdbi: Jdbi) {
     init {
         Database(jdbi, noopTracer()).connect { db ->
-            db.transaction { tx ->
-                tx.runDevScript("reset-tampere-database-for-e2e-tests.sql")
-                tx.ensureHameenkyroDevData()
-            }
+            db.transaction { tx -> tx.ensureHameenkyroDevData() }
         }
         MockPersonDetailsService.add(legacyMockVtjDataset())
     }

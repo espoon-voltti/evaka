@@ -5,18 +5,10 @@
 package evaka.instance.turku.database
 
 import evaka.core.shared.db.Database
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.core.io.ClassPathResource
-
-private val logger = KotlinLogging.logger {}
+import evaka.core.shared.dev.runSqlScript
 
 fun Database.Transaction.ensureTurkuDevData() {
     if (createQuery { sql("SELECT count(*) FROM daycare") }.mapTo<Int>().exactlyOne() == 0) {
-        listOf("turku/dev-data/turku-dev-data.sql").forEach { path ->
-            logger.info { "Running SQL script: $path" }
-            ClassPathResource(path).inputStream.use {
-                it.bufferedReader().readText().let { content -> execute { sql(content) } }
-            }
-        }
+        listOf("turku/dev-data.sql").forEach { runSqlScript(it) }
     }
 }

@@ -1,8 +1,8 @@
--- SPDX-FileCopyrightText: 2021 City of Oulu
+-- SPDX-FileCopyrightText: 2021 City of Tampere
 --
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
-CREATE OR REPLACE FUNCTION reset_oulu_database_for_e2e_tests() RETURNS void AS $$
+CREATE OR REPLACE FUNCTION reset_tampere_database_for_e2e_tests() RETURNS void AS $$
 BEGIN
 EXECUTE (
     SELECT 'TRUNCATE TABLE ' || string_agg(quote_ident(table_name), ', ') || ' CASCADE'
@@ -12,12 +12,10 @@ EXECUTE (
       AND table_name not in (
         'flyway_schema_history',
         'assistance_action_option',
-        'assistance_basis_option',
         'care_area',
-        'service_need_option',
-        'club_term',
-        'preschool_term',
-        'voucher_value'
+        'holiday',
+        'service_need_option_fee',
+        'service_need_option'
     )
 );
 EXECUTE (

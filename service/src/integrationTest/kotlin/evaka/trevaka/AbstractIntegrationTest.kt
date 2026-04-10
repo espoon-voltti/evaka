@@ -5,7 +5,6 @@
 package evaka.trevaka
 
 import evaka.core.shared.db.Database
-import evaka.core.shared.dev.runDevScript
 import evaka.core.shared.noopTracer
 import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import evaka.instance.tampere.database.resetTampereDatabaseForE2ETests
@@ -50,7 +49,6 @@ abstract class AbstractIntegrationTest {
     @BeforeAll
     protected fun initializeJdbi() {
         db = Database(jdbi, noopTracer()).connectWithManualLifecycle()
-        db.transaction { tx -> tx.runDevScript("reset-tampere-database-for-e2e-tests.sql") }
     }
 
     @BeforeEach

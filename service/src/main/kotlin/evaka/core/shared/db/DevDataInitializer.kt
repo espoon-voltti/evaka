@@ -5,7 +5,7 @@
 package evaka.core.shared.db
 
 import evaka.core.shared.dev.ensureDevData
-import evaka.core.shared.dev.runDevScript
+import evaka.core.shared.dev.runSqlScript
 import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import evaka.core.vtjclient.service.persondetails.legacyMockVtjDataset
 import io.opentelemetry.api.trace.Tracer
@@ -15,8 +15,8 @@ class DevDataInitializer(jdbi: Jdbi, tracer: Tracer) {
     init {
         Database(jdbi, tracer).connect { db ->
             db.transaction { tx ->
-                tx.runDevScript("lock-database-nowait.sql")
-                tx.runDevScript("reset-database.sql")
+                tx.runSqlScript("dev-data/lock-database-nowait.sql")
+                tx.runSqlScript("dev-data/reset-database.sql")
                 tx.ensureDevData()
             }
         }

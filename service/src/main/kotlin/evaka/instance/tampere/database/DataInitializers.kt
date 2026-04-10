@@ -5,11 +5,11 @@
 package evaka.instance.tampere.database
 
 import evaka.core.shared.db.Database
-import evaka.core.shared.dev.runDevScript
+import evaka.core.shared.dev.runSqlScript
 
 fun Database.Transaction.ensureTampereDevData() {
     if (createQuery { sql("SELECT count(*) FROM daycare") }.mapTo<Int>().exactlyOne() == 0) {
-        listOf("tampere-dev-data.sql").forEach { runDevScript(it) }
+        listOf("tampere/dev-data.sql").forEach { runSqlScript(it) }
     }
 }
 
