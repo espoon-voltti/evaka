@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-fi.kangasala.evaka:
+evaka.instance.kangasala:
   MessageProvider:
     DECISION_HEADER:
       fi: Kangasalan varhaiskasvatukseen liittyvät päätökset

@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-fi.pirkkala.evaka:
+evaka.instance.pirkkala:
   MessageProvider:
     DECISION_HEADER:
       fi: Pirkkalan varhaiskasvatukseen liittyvät päätökset

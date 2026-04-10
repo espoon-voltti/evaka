@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-fi.hameenkyro.evaka:
+evaka.instance.hameenkyro:
   MessageProvider:
     DECISION_HEADER:
       fi: Hämeenkyrön varhaiskasvatukseen liittyvät päätökset

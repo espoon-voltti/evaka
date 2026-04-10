@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-fi.lempaala.evaka:
+evaka.instance.lempaala:
   MessageProvider:
     DECISION_HEADER:
       fi: Lempäälän varhaiskasvatukseen liittyvät päätökset

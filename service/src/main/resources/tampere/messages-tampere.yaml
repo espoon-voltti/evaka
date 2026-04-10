@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-fi.tampere.trevaka:
+evaka.instance.tampere:
   MessageProvider:
     DECISION_HEADER:
       fi: Tampereen varhaiskasvatukseen liittyvät päätökset

@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-fi.nokiankaupunki.evaka:
+evaka.instance.nokia:
   MessageProvider:
     DECISION_HEADER:
       fi: Nokian varhaiskasvatukseen liittyvät päätökset

@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-fi.ylojarvi.evaka:
+evaka.instance.ylojarvi:
   MessageProvider:
     DECISION_HEADER:
       fi: Ylöjärven varhaiskasvatukseen liittyvät päätökset
