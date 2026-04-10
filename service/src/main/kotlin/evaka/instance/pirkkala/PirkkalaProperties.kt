@@ -4,7 +4,7 @@
 
 package evaka.instance.pirkkala
 
-import evaka.instance.nokiankaupunki.SftpArchivalProperties
+import evaka.instance.nokia.SftpArchivalProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "pirkkala")

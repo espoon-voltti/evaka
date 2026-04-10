@@ -24,7 +24,7 @@ import evaka.core.shared.FeatureConfig
 import evaka.core.shared.sftp.SftpClient
 import evaka.core.user.EvakaUser
 import evaka.core.user.EvakaUserType
-import evaka.instance.nokiankaupunki.SftpArchivalProperties
+import evaka.instance.nokia.SftpArchivalProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.xml.bind.JAXBContext
 import jakarta.xml.bind.Marshaller

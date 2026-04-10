@@ -69,7 +69,7 @@ import evaka.core.shared.security.actionrule.UnscopedActionRule
 import evaka.instance.hameenkyro.security.HameenkyroActionRuleMapping
 import evaka.instance.kangasala.security.KangasalaActionRuleMapping
 import evaka.instance.lempaala.security.LempaalaActionRuleMapping
-import evaka.instance.nokiankaupunki.security.NokiaActionRuleMapping
+import evaka.instance.nokia.security.NokiaActionRuleMapping
 import evaka.instance.orivesi.security.OrivesiActionRuleMapping
 import evaka.instance.pirkkala.security.PirkkalaActionRuleMapping
 import evaka.instance.tampere.security.TampereActionRuleMapping

@@ -94,8 +94,8 @@ class YlojarviInstance
 class PirkkalaInstance
 
 @Configuration
-@ComponentScan("evaka.trevaka", "evaka.instance.nokiankaupunki")
-@ConfigurationPropertiesScan(basePackages = ["evaka.trevaka", "evaka.instance.nokiankaupunki"])
+@ComponentScan("evaka.trevaka", "evaka.instance.nokia")
+@ConfigurationPropertiesScan(basePackages = ["evaka.trevaka", "evaka.instance.nokia"])
 class NokiaInstance
 
 @Configuration

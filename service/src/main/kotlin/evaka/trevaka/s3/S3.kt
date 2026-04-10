@@ -7,7 +7,7 @@ package evaka.trevaka.s3
 import evaka.instance.hameenkyro.HameenkyroProperties
 import evaka.instance.kangasala.KangasalaProperties
 import evaka.instance.lempaala.LempaalaProperties
-import evaka.instance.nokiankaupunki.NokiaProperties
+import evaka.instance.nokia.NokiaProperties
 import evaka.instance.orivesi.OrivesiProperties
 import evaka.instance.pirkkala.PirkkalaProperties
 import evaka.instance.tampere.TampereProperties
