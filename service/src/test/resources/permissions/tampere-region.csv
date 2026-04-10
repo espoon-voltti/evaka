@@ -1,0 +1,480 @@
+﻿Tyyppi;Toiminto;"Tekninen nimi";Pääkäyttäjä;Raportointi;"Vaka-päälliköt";Talous;"Talouden työntekijä (ulkoinen)";Palveluohjaus;Viestintä;Johtaja;Henkilökunta;Erityisopettaja;Varhaiskasvatussihteeri
+;"Asetukset-sivu";SETTINGS_PAGE;"TRE,NOK,YLO,ORI";;;;;"TRE,NOK,YLO,ORI";;;;;
+;"Asiakastiedot-sivu";PERSON_SEARCH_PAGE;x;;x;x;x;x;;x;;x;x
+;"Asiakirjapohjat-sivu";DOCUMENT_TEMPLATES_PAGE;x;;;;;;;;;;
+;"Hakemukset-sivu";APPLICATIONS_PAGE;x;;x;;;x;;;;x;
+;"Henkilökohtainen eVaka mobiili -sivu";"PERSONAL_MOBILE_DEVICE_PAGE";x;;;;;;;x;;x;
+;"Loma-ajat ja toimintakaudet -sivu";"HOLIDAY_AND_TERM_PERIODS_PAGE";x;;;;;;;;;;
+;"Poissaoloviesti-sivu";OUT_OF_OFFICE_PAGE;x;;;;;;;x;;;
+;"Raportit-sivu";REPORTS_PAGE;x;x;x;x;x;x;;x;x;x;x
+;"Talouden maksuasetukset-sivu";FINANCE_BASICS_PAGE;x;;;x;;;;;;;
+;"Talous-sivu";FINANCE_PAGE;x;;x;x;x;;;;;;
+;"Toimintojen avaukset -sivu";UNIT_FEATURES_PAGE;x;;;;;;;;;;
+;"Työntekijät-sivu";EMPLOYEES_PAGE;x;;;;;;;;;;
+;"Viestit-sivu";MESSAGES_PAGE;x;;;x;;x;x;x;x;x;x
+;"Yksiköt-sivu";UNITS_PAGE;x;;x;x;x;x;;x;x;x;x
+;"eVaka mobiilin PIN-koodi -sivu";PIN_CODE_PAGE;x;x;x;x;x;x;x;x;x;x;x
+;"Aromi-raportti";READ_AROMI_ORDERS;x;;;;;;;;;;
+;"Asiakasmaksut-raportti";"READ_CUSTOMER_FEES_REPORT";x;x;;x;;;;;;;
+;"Esiopetuksen poissaoloraportti alueittain";"READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA";x;;;;;;;;;;
+;"Esiopetuksen sijoitusten hahmotteluraportti -raportti";"READ_PLACEMENT_SKETCHING_REPORT";x;;x;;;x;;x;;;x
+;"Hetuttomat lapset -raportti";"READ_NON_SSN_CHILDREN_REPORT";x;;;x;;x;;;;;
+;Kuusikkovertailu;READ_SEXTET_REPORT;x;x;x;;;;;;;;
+;"Laskujen täsmäytys -raportti";READ_INVOICE_REPORT;x;;x;x;x;;;;;;
+;"Monistuneet kuntalaiset -raportti";"READ_DUPLICATE_PEOPLE_REPORT";x;;;;;;;;;;
+;"Muut päätökset -raportti";"READ_CHILD_DOCUMENT_DECISIONS_REPORT";x;;x;;;;;x;;x;
+;"Patu-raportin lähetys";SEND_PATU_REPORT;;;;;;;;;;;
+;"Patu-raportin lähetys";SUBMIT_PATU_REPORT;;;;;;;;;;;
+;"Puuttuvat päämiehet -raportti";"READ_MISSING_HEAD_OF_FAMILY_REPORT";x;;x;x;;x;;;;;
+;"Puuttuvat tulotiedot -raportti";"READ_INCOMPLETE_INCOMES_REPORT";x;;;x;x;;;;;;
+;"Päätökset-raportti";READ_DECISIONS_REPORT;x;x;x;;;x;;;;;
+;Raakaraportti;READ_RAW_REPORT;x;x;;;;;;;;;
+;"Sijoitusten määrä -raportti";"READ_PLACEMENT_COUNT_REPORT";x;x;x;;;;;;;;
+;"Tampereen alueen seutuselvitys -raportti";"READ_TAMPERE_REGIONAL_SURVEY_REPORT";x;x;;;;;;;;;
+;"Tulevat esikoululaiset -raportti";READ_FUTURE_PRESCHOOLERS;x;;;;;;;;;;
+;"Varda-raportit";READ_VARDA_REPORT;x;;;;;;;;;;
+;"Varhaiskasvatuksessa lopettavat lapset -raportti";"READ_ENDED_PLACEMENTS_REPORT";x;;x;x;;x;;;;;
+;"Yksiköt-raportti";READ_UNITS_REPORT;x;;;;;;;;;;
+;"Aktiivisten lomakyselyiden luku";"READ_ACTIVE_HOLIDAY_QUESTIONNAIRES";;;;;;;;;;;
+;"Arvopäätösten haku";"SEARCH_VOUCHER_VALUE_DECISIONS";x;;x;x;;;;;;;
+;"Asetuksien muokkaus";UPDATE_SETTINGS;"TRE,NOK,YLO,ORI";;;;;"TRE,NOK,YLO,ORI";;;;;
+;"Asiakirjapohjan luonti";CREATE_DOCUMENT_TEMPLATE;x;;;;;;;;;;
+;"Asiakirjapohjien luku";READ_DOCUMENT_TEMPLATE;x;;x;;;;;x;x;x;
+;"Erityisruokavalioiden luku";READ_SPECIAL_DIET_LIST;x;;;;;x;;x;x;x;
+;"Esiopetuskauden luonti";CREATE_PRESCHOOL_TERM;x;;;;;;;;;;
+;"Esiopetussijoitusten tuonti";PLACEMENT_TOOL;x;;;;;;;;;;
+;"Hahmotellun täyttö/käyttöasteen luku";READ_DRAFT_OCCUPANCIES;x;;;;;x;;;;;
+;"Hakemuksen luonti";CREATE_PAPER_APPLICATION;x;;;;;x;;;;;
+;"Henkilöiden haku";SEARCH_PEOPLE;x;;x;x;x;x;;x;;x;x
+;"Henkilöiden haku (rajoittamaton)";"SEARCH_PEOPLE_UNRESTRICTED";x;;x;x;x;x;;;;;
+;"Henkilökohtaisen mobiililaitteen parituksen luonti";"CREATE_PERSONAL_MOBILE_DEVICE_PAIRING";x;;;;;;;x;;x;
+;"Henkilökohtaisten mobiililaitteiden luku";"READ_PERSONAL_MOBILE_DEVICES";x;x;x;x;x;x;x;x;x;x;x
+;"Henkilön luonti";CREATE_PERSON;x;;;x;;x;;;;;
+;"Henkilön luonti VTJ:stä";CREATE_PERSON_FROM_VTJ;x;;;x;;x;;;;;
+;"Jamixin lähetys";SEND_JAMIX_ORDERS;x;;;;;;;;;;
+;"Kerhokauden luonti";CREATE_CLUB_TERM;x;;;;;;;;;;
+;"Laskujen haku";SEARCH_INVOICES;x;;x;x;x;;;;;;
+;"Laskuluonnosten luonti";CREATE_DRAFT_INVOICES;x;;;x;;;;;;;
+;"Lomakauden luku";READ_HOLIDAY_PERIOD;x;;;;;;;;;;
+;"Lomakauden luonti";CREATE_HOLIDAY_PERIOD;x;;;;;;;;;;
+;"Lomakauden muokkaus";UPDATE_HOLIDAY_PERIOD;x;;;;;;;;;;
+;"Lomakauden poisto";DELETE_HOLIDAY_PERIOD;x;;;;;;;;;;
+;"Lomakausien luku";READ_HOLIDAY_PERIODS;x;;;;;;;x;;;x
+;"Lomakyselyiden luku";"READ_HOLIDAY_QUESTIONNAIRES";x;;;;;;;x;;;
+;"Lomakyselyn luku";"READ_HOLIDAY_QUESTIONNAIRE";x;;;;;;;;;;
+;"Lomakyselyn luonti";"CREATE_HOLIDAY_QUESTIONNAIRE";x;;;;;;;;;;
+;"Lomakyselyn muokkaus";"UPDATE_HOLIDAY_QUESTIONNAIRE";x;;;;;;;;;;
+;"Lomakyselyn poisto";"DELETE_HOLIDAY_QUESTIONNAIRE";x;;;;;;;;;;
+;"Maksujen haku";SEARCH_PAYMENTS;x;;;x;;;;;;;
+;"Maksuluonnosten luonti";CREATE_DRAFT_PAYMENTS;x;;;x;;;;;;;
+;"Maksupäätösten haku";SEARCH_FEE_DECISIONS;x;;x;x;x;;;;;;
+;"Palveluntarvevaihtoehtojen luku";"READ_SERVICE_NEED_OPTIONS";x;x;x;x;x;x;x;x;x;x;x
+;"Palveluohjauksen muistiinpanojen luku";"READ_SERVICE_WORKER_APPLICATION_NOTES";x;;x;;;x;;;;;
+;"Palveluohjauksen muistiinpanojen muokkaus";"WRITE_SERVICE_WORKER_APPLICATION_NOTES";x;;;;;x;;;;;
+;"Palveluseteliarvojen luku";READ_VOUCHER_VALUES;x;;;x;x;;;;;;
+;"Palveluseteliarvon luonti";CREATE_VOUCHER_VALUE;x;;;x;;;;;;;
+;"Palveluseteliarvon muokkaus";UPDATE_VOUCHER_VALUE;x;;;x;;;;;;;
+;"Palveluseteliarvon poisto";DELETE_VOUCHER_VALUE;x;;;x;;;;;;;
+;"Päätösluonnoksen yksiköiden luku";READ_DECISION_UNITS;x;;x;;;x;;x;;;x
+;Sijoittelutyöpöytä;"READ_PLACEMENT_DESKTOP_DAYCARES";x;;;;;x;;;;;
+;"Talouden maksuasetuksien luku";READ_FEE_THRESHOLDS;x;;x;x;x;;;;;;
+;"Talouden maksuasetuksien luonti";CREATE_FEE_THRESHOLDS;x;;;x;;;;;;;
+;"Talouden päätöksen käsittelijöiden luku";"READ_FINANCE_DECISION_HANDLERS";x;;x;x;x;x;;x;;;x
+;"Talouden päätöksen käsittelijöiden luku";"READ_SELECTABLE_FINANCE_DECISION_HANDLERS";x;;;x;x;;;;;;
+;"Tilapäisten ilmoitusten luku";"READ_SYSTEM_NOTIFICATIONS";x;;;;;;;;;;
+;"Tilapäisten ilmoitusten luonti";"UPDATE_SYSTEM_NOTIFICATION";x;;;;;;;;;;
+;"Tukitoimivaihtoehtojen luku";"READ_ASSISTANCE_ACTION_OPTIONS";x;x;x;x;x;x;;x;x;x;x
+;"Tulokertoimen luku";"READ_INCOME_COEFFICIENT_MULTIPLIERS";x;;;x;x;;;;;;
+;"Tulokoodien luku";READ_INVOICE_CODES;x;;x;x;x;;;;;;
+;"Tuloselvitysten luku (odottaa käsittelyä)";"FETCH_INCOME_STATEMENTS_AWAITING_HANDLER";x;;x;x;;;;;;;
+;"Tulotyyppien luku";READ_INCOME_TYPES;x;;x;x;x;;;;;;
+;"Työntekijän luonti";CREATE_EMPLOYEE;x;;;;;;;;;;
+;"Työntekijöiden haku";SEARCH_EMPLOYEES;x;;;;;;;;;;
+;"Työntekijöiden luku";READ_EMPLOYEES;x;;x;;;x;;x;;x;x
+;"Vardan toiminnot";VARDA_OPERATIONS;x;;;;;;;;;;
+;"Yksiköiden luku";READ_UNITS;x;x;x;x;x;x;;x;x;x;x
+;"Yksikön luonti";CREATE_UNIT;x;;;;;;;;;;
+;"Yksikön toimintojen luku";READ_UNIT_FEATURES;x;;;;;;;;;;
+Hakemus;Luku;READ;x;;x;;;x;;x;;;
+Hakemus;"Palveluohjauksen viestien luku";"READ_SERVICE_WORKER_ACCOUNT_MESSAGES";x;;;;;x;;;;;
+Hakemus;"Metadatan luku";READ_METADATA;x;;;;;;;;;;
+Hakemus;"Tuen tarpeellisen luku";"READ_IF_HAS_ASSISTANCE_NEED";x;;x;;;x;;x;;x;
+Hakemus;Muokkaus;UPDATE;x;;;;;x;;;;;
+Hakemus;Lähetys;SEND;x;;;;;x;;;;;
+Hakemus;Hylkäys;CANCEL;x;;;;;x;;;;;
+Hakemus;"Sijoitettaviin siirtäminen";"MOVE_TO_WAITING_PLACEMENT";x;;;;;x;;;;;
+Hakemus;"Lähetettyihin palautus";RETURN_TO_SENT;x;;;;;x;;;;;
+Hakemus;Tarkistus;VERIFY;x;;;;;x;;;;;
+Hakemus;"Sijoitushahmotelman luku";"READ_PLACEMENT_PLAN_DRAFT";x;;x;;;x;;;;;
+Hakemus;"Sijoitushahmotelman luonti";CREATE_PLACEMENT_PLAN;x;;;;;x;;;;;
+Hakemus;"Sijoitushahmotelman hylkäys";CANCEL_PLACEMENT_PLAN;x;;;;;x;;;;;
+Hakemus;"Päätösluonnoksen luku";READ_DECISION_DRAFT;x;;x;;;x;;;;;
+Hakemus;"Päätösluonnoksen muokkaus";UPDATE_DECISION_DRAFT;x;;;;;x;;;;;
+Hakemus;"Päätöksen lähetys ilman sijoitusehdotusta";"SEND_DECISIONS_WITHOUT_PROPOSAL";x;;;;;x;;;;;
+Hakemus;"Sijoitusehdotuksen lähetys";SEND_PLACEMENT_PROPOSAL;x;;;;;x;;;;;
+Hakemus;"Sijoitusehdotuksen peruminen";"WITHDRAW_PLACEMENT_PROPOSAL";x;;;;;x;;;;;
+Hakemus;"Sijoitusehdotukseen vastaaminen";"RESPOND_TO_PLACEMENT_PROPOSAL";x;;;;;x;;x;;;
+Hakemus;"Merkitseminen postitetuksi";CONFIRM_DECISIONS_MAILED;x;;;;;x;;;;;
+Hakemus;"Päätöksen hyväksyminen";ACCEPT_DECISION;x;;;;;x;;x;;;
+Hakemus;"Päätöksen hylkääminen";REJECT_DECISION;x;;;;;x;;x;;;
+Hakemus;"Muistiinpanojen luku";READ_NOTES;x;;x;;;x;;;;x;
+Hakemus;"Muistiinpanon luonti";CREATE_NOTE;x;;;;;x;;;;x;
+Hakemus;"Erityisopettajan muistiinpanojen luku";"READ_SPECIAL_EDUCATION_TEACHER_NOTES";x;;;;;;;;;x;
+Hakemus;"Liitteen lähetys";UPLOAD_ATTACHMENT;x;;;;;x;;;;;
+Hakemus;"Sijoitushahmotelman muokkaus";UPDATE_PLACEMENT_DRAFT;x;;;;;x;;;;;
+"Hakemuksen muistiinpano";Muokkaus;UPDATE;x;;;;;x;;;;;
+"Hakemuksen muistiinpano";Poisto;DELETE;x;;;;;x;;;;;
+"Talouden muistiinpano";Muokkaus;UPDATE;x;;;x;x;;;;;;
+"Talouden muistiinpano";Poisto;DELETE;x;;;x;x;;;;;;
+Päätös;Luku;READ;x;;;;;x;;x;;;
+Päätös;"Lataus (pdf)";DOWNLOAD_PDF;x;;x;;;x;;x;;;x
+Päätös;Arkistointi;ARCHIVE;x;;;;;;;;;;
+"Esiopetuksen poissaolohakemus";Luku;READ;x;;;;;;;x;x;;
+"Esiopetuksen poissaolohakemus";"Päätöksen luonti";DECIDE;x;;;;;;;x;;;
+"Esiopetuksen poissaolohakemus";"Päätöksen luonti (max viikko)";DECIDE_MAX_WEEK;x;;;;;;;x;x;;
+"Palveluntarpeen muutoshakemus";Hyväksyminen;ACCEPT;x;;;;;;;x;;;
+"Palveluntarpeen muutoshakemus";Hylkääminen;REJECT;x;;;;;;;x;;;
+Henkilö;"Henkilötunnuksen lisäys";ADD_SSN;x;;;;;x;;;;;
+Henkilö;"Talouden mustiinpanon luonti";CREATE_FINANCE_NOTE;x;;;x;x;;;;;;
+Henkilö;"Sijaisvanhemman luonti";"CREATE_FOSTER_PARENT_RELATIONSHIP";x;;;;;x;;;;;
+Henkilö;"Tulon luonti";CREATE_INCOME;x;;;x;;;;;;;
+Henkilö;"Laskun korjausrivin luonti";"CREATE_INVOICE_CORRECTION";x;;;x;x;;;;;;
+Henkilö;"Huoltajuuden luonti";CREATE_PARENTSHIP;x;;;x;;x;;x;;;
+Henkilö;"Puolisosuhteen luonti";CREATE_PARTNERSHIP;x;;;x;;x;;x;;;
+Henkilö;"Oikaisulaskuluonnosten luonti";"CREATE_REPLACEMENT_DRAFT_INVOICES";x;;;x;x;;;;;;
+Henkilö;Poisto;DELETE;x;;;;;;;;;;
+Henkilö;"Osoitesivun lataus";DOWNLOAD_ADDRESS_PAGE;x;;;x;;x;;;;;
+Henkilö;"Henkilötunnuksen lisäys pois käytöstä";DISABLE_SSN_ADDING;x;;;;;x;;;;;
+Henkilö;"Henkilötunnuksen lisäys käyttöön";ENABLE_SSN_ADDING;x;;;;;;;;;;
+Henkilö;"Takautuvan maksupäätösluonnoksen luonti";"GENERATE_RETROACTIVE_FEE_DECISIONS";x;;;x;;;;;;;
+Henkilö;"Takautuvan arvopäätösluonnoksen luonti";"GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS";x;;;x;;;;;;;
+Henkilö;Yhdistäminen;MERGE;x;;;;;;;;;;
+Henkilö;"Hakemuksen luku";READ_APPLICATIONS;x;;x;;;x;;;;;
+Henkilö;"Lapsen sijoituksien luku";"READ_CHILD_PLACEMENT_PERIODS";x;;x;x;x;;;;;;
+Henkilö;"Päätösten luku";READ_DECISIONS;x;;x;;;x;;x;;;x
+Henkilö;"Perheen tietojen koosteen luku";READ_FAMILY_OVERVIEW;x;;x;x;x;;;x;;;x
+Henkilö;"Maksupäätösten luku";READ_FEE_DECISIONS;x;;x;x;x;;;;;;
+Henkilö;"Talouden muistiinpanojen luku";READ_FINANCE_NOTES;x;;;x;x;;;;;;
+Henkilö;"Sijaislasten luku";READ_FOSTER_CHILDREN;x;;;x;;x;;x;x;;
+Henkilö;"Sijaisvanhempien luku";READ_FOSTER_PARENTS;x;;;x;;x;;x;x;;
+Henkilö;"Tulon luku";READ_INCOME;x;;x;x;;;;;;;
+Henkilö;"Tuloselvitysten luku";READ_INCOME_STATEMENTS;x;;x;x;;;;;;;
+Henkilö;"Tuloilmoitusten luku";"READ_INCOME_NOTIFICATIONS";x;;;x;;;;;;;
+Henkilö;"Laskujen luku";READ_INVOICES;x;;x;x;x;;;;;;
+Henkilö;"Laskutusosoitteen luku";READ_INVOICE_ADDRESS;x;;x;x;x;;;;;;
+Henkilö;"Laskun korjausrivien luku";READ_INVOICE_CORRECTIONS;x;;x;x;x;;;;;;
+Henkilö;"OPH OID:n luku";READ_OPH_OID;x;;x;;;;;x;;;x
+Henkilö;"Päämiehien luku";READ_PARENTSHIPS;x;;x;x;x;x;;x;;;x
+Henkilö;"Puolisoiden luku";READ_PARTNERSHIPS;x;;x;x;x;x;;x;;;x
+Henkilö;Luku;READ;x;;x;x;x;x;;x;x;x;x
+Henkilö;"Huollettavien luku";READ_DEPENDANTS;x;;x;x;;x;;x;;;x
+Henkilö;"Aikajana luku";READ_TIMELINE;x;;;x;;;;;;;
+Henkilö;"Arvopäätöksien luku";"READ_VOUCHER_VALUE_DECISIONS";x;;x;x;;;;;;;
+Henkilö;Muokkaus;UPDATE;x;;;x;;x;;x;x;;
+Henkilö;"eVaka-oikeuksien muokkaus";UPDATE_EVAKA_RIGHTS;x;;;;;x;;;;;
+Henkilö;"Laskutusosoitteen muokkaus";UPDATE_INVOICE_ADDRESS;x;;;x;;;;;;;
+Henkilö;"OPH OID:n muokkaus";UPDATE_OPH_OID;x;;;;;;;;;;
+Henkilö;"Henkilötietojen muokkaus";UPDATE_PERSONAL_DETAILS;x;;;;;x;;;;;
+Henkilö;"Henkilötietojen vtj-pävitys";UPDATE_FROM_VTJ;x;;;;;x;;;;;
+Päämies;Poisto;DELETE;x;;;x;;;;;;;
+Päämies;"Konfliktaavien päämiehien poisto";"DELETE_CONFLICTED_PARENTSHIP";x;;;x;;x;;x;;;
+Päämies;Uudelleenlähetys;RETRY;x;;;x;;x;;x;;;
+Päämies;Muokkaus;UPDATE;x;;;x;;x;;x;;;
+Puoliso;Poisto;DELETE;x;;;x;;x;;;;;
+Puoliso;Uudelleenlähetys;RETRY;x;;;x;;x;;x;;;
+Puoliso;Muokkaus;UPDATE;x;;;x;;x;;x;;;
+Tuloselvitys;Luku;READ;x;;;x;;;;;;;
+Tuloselvitys;"Käsittelyn muokkaus";UPDATE_HANDLED;x;;;x;;;;;;;
+Tuloselvitys;"Liitteen lähetys";UPLOAD_ATTACHMENT;x;;;x;;;;;;;
+Tulo;Muokkaus;UPDATE;x;;;x;;;;;;;
+Tulo;Poisto;DELETE;x;;;x;;;;;;;
+Tulo;"Liitteen lähetys";UPLOAD_ATTACHMENT;x;;;x;;;;;;;
+Lapsi;Luku;READ;x;;x;x;x;x;;x;x;x;x
+Lapsi;"Esiopetuksen poissaolohakemuksien luku";"READ_ABSENCE_APPLICATIONS";x;;;;;;;x;x;;
+Lapsi;"Poissaolon luonti";CREATE_ABSENCE;x;;;x;;;;x;x;x;x
+Lapsi;"Poissaolojen luku";READ_ABSENCES;x;;x;x;x;;;x;;;
+Lapsi;"Tulevaisuuden poissaolojen luku";READ_FUTURE_ABSENCES;x;;x;x;x;;;x;;;
+Lapsi;"Lapsen läsnä- ja poissaolotiedot -raportti";READ_ATTENDANCE_REPORT;x;;;;;;;x;x;x;
+Lapsi;"Poissaolon poisto";DELETE_ABSENCE;x;;;x;;;;x;x;x;x
+Lapsi;"Poissaolojen poisto";DELETE_ABSENCE_RANGE;x;;;;;;;;;;
+Lapsi;"Läsnäolovarauksien luku (ei-varattavat)";"READ_NON_RESERVABLE_RESERVATIONS";;;;;;;;;;;
+Lapsi;"Läsnäolovarauksien muokkaus (ei-varattavat)";"UPDATE_NON_RESERVABLE_RESERVATIONS";;;;;;;;;;;
+Lapsi;"Läsnäolovarauksien poisto (loma-aika)";"DELETE_HOLIDAY_RESERVATIONS";x;;;;;;;x;x;x;
+Lapsi;"Lisätietojen luku";READ_ADDITIONAL_INFO;x;;x;;;x;;x;x;x;x
+Lapsi;"Lisätietojen muokkaus";UPDATE_ADDITIONAL_INFO;x;;;;;x;;x;x;x;
+Lapsi;"Hakemuksen luku";READ_APPLICATION;x;;x;;;x;;x;;;
+Lapsi;"Tuen luku";READ_ASSISTANCE;x;;x;x;;x;;x;x;x;x
+Lapsi;"Tuen kertoimen luonti";CREATE_ASSISTANCE_FACTOR;x;;;;;x;;x;;x;
+Lapsi;"Tuen kertoimien luku";READ_ASSISTANCE_FACTORS;x;;x;x;;x;;x;;x;x
+Lapsi;"Tuen taso varhaiskastuksessa luonti";"CREATE_DAYCARE_ASSISTANCE";x;;;;;x;;x;;x;
+Lapsi;"Tuen tasojen varhaiskasvatuksessa luku";READ_DAYCARE_ASSISTANCES;x;;x;;;x;;x;;x;x
+Lapsi;"Tuen taso esiopetuksessa luonti";"CREATE_PRESCHOOL_ASSISTANCE";x;;;;;x;;x;;x;
+Lapsi;"Tuen tasojen esiopetuksessa luku";"READ_PRESCHOOL_ASSISTANCES";x;;x;;;x;;x;;x;x
+Lapsi;"Tukitoimen luonti";CREATE_ASSISTANCE_ACTION;x;;;;;x;;x;;x;
+Lapsi;"Tukitoimien luku";READ_ASSISTANCE_ACTION;x;;x;;;x;;x;;x;x
+Lapsi;"Muut toimet luonti";"CREATE_OTHER_ASSISTANCE_MEASURE";x;;;;;x;;x;;x;
+Lapsi;"Muut toimet luku";"READ_OTHER_ASSISTANCE_MEASURES";x;;x;;;x;;x;;x;x
+Lapsi;"Palvelusetelikertoimien luku";"READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS";x;;;;;x;;x;;x;
+Lapsi;"Palvelusetelikertoimen luonti";"CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT";x;;;;;;;;;x;
+Lapsi;"Läsnäolovarauksen luonti";"CREATE_ATTENDANCE_RESERVATION";x;;;;;;;x;x;x;x
+Lapsi;"Lapsen paikallaolon muokkaus";"UPSERT_CHILD_DATE_PRESENCE";x;;;;;;;x;x;x;
+Lapsi;"Varasijoituksen luonti";CREATE_BACKUP_CARE;x;;;;;x;;x;x;;x
+Lapsi;"Läsnäolon luku (meneillään oleva)";READ_ONGOING_ATTENDANCE;x;;;;;x;;x;;;x
+Lapsi;"Varasijoituksen luku";READ_BACKUP_CARE;x;;x;x;x;x;;x;x;x;x
+Lapsi;"Varahakijan luonti";CREATE_BACKUP_PICKUP;x;;;;;;;x;x;x;
+Lapsi;"Varahakijan luku";READ_BACKUP_PICKUP;x;;;;;;;x;x;x;x
+Lapsi;"Päivittäisen muistiinpanon luonti";CREATE_DAILY_NOTE;x;;;;;;;x;x;x;
+Lapsi;"Lähipäivien huomion luonti";CREATE_STICKY_NOTE;x;;;;;;;x;x;x;
+Lapsi;"Päivittäisten varhaiskasvatusaikojen luku";READ_DAILY_SERVICE_TIMES;;;;;;;;;;;
+Lapsi;"Päivittäisen varhaiskasvatusajan luonti";"CREATE_DAILY_SERVICE_TIME";;;;;;;;;;;
+Lapsi;"Sijoituksen luku";READ_PLACEMENT;x;;x;x;x;x;;x;x;x;x
+Lapsi;"Palvelutarpeen muutoshakemuksien luku";"READ_SERVICE_APPLICATIONS";x;;;;;;;x;;;
+Lapsi;"Palvelutarpeiden luku";READ_SERVICE_NEEDS;x;;;;;x;;x;x;x;x
+Lapsi;"Perheen yhteystietojen luku";READ_FAMILY_CONTACTS;x;;;;;;;x;x;x;x
+Lapsi;"Perheen yhteystietojen muokkaus";"UPDATE_FAMILY_CONTACT_DETAILS";x;;;;;;;x;x;x;
+Lapsi;"Perheen yhteystietojen järjestyksen muokkaus";"UPDATE_FAMILY_CONTACT_PRIORITY";x;;;;;;;x;x;x;
+Lapsi;"Huoltajien luku";READ_GUARDIANS;x;;x;x;x;x;;x;;;x
+Lapsi;"Estettyjen huoltajien luku";READ_BLOCKED_GUARDIANS;x;;;;;x;;;;;
+Lapsi;"Maksumuutoksen luonti";CREATE_FEE_ALTERATION;x;;;x;;;;;;;
+Lapsi;"Maksumuutosten luku";READ_FEE_ALTERATIONS;x;;x;x;;;;;;;
+Lapsi;"Asiakirjan luonti";CREATE_CHILD_DOCUMENT;x;;;;;;;x;x;x;
+Lapsi;"Muun päätöksen luonti";"CREATE_CHILD_DECISION_DOCUMENT";x;;;;;;;x;;x;
+Lapsi;"Asiakirjan luku";READ_CHILD_DOCUMENT;x;;x;;;;;x;x;x;
+Lapsi;"Pedagogisen dokumentoinnin luonti";"CREATE_PEDAGOGICAL_DOCUMENT";x;;;;;;;x;x;x;x
+Lapsi;"Pedagogisen dokumentoinnin luku";"READ_PEDAGOGICAL_DOCUMENTS";x;;;;;;;x;x;x;x
+Lapsi;"Perustietojen luku";READ_BASIC_INFO;x;;;;;;;x;x;x;x
+Lapsi;"Arkaluontoisten tietojen luku";READ_SENSITIVE_INFO;x;;;;;;;x;x;x;x
+Lapsi;"Kuvan luonti";UPLOAD_IMAGE;x;;;;;;;x;x;x;
+Lapsi;"Kuvan poisto";DELETE_IMAGE;x;;;;;;;x;x;x;
+"Lapsen muistiinpano";Muokkaus;UPDATE;x;;;;;;;x;x;x;
+"Lapsen muistiinpano";Poisto;DELETE;x;;;;;;;x;x;x;
+"Lapsen huomiot lähipäivinä";Muokkaus;UPDATE;x;;;;;;;x;x;x;
+"Lapsen huomiot lähipäivinä";Poisto;DELETE;x;;;;;;;x;x;x;
+"Lapsen kuva";Lataus;DOWNLOAD;x;;;;;;;x;x;x;x
+Varahakija;Muokkaus;UPDATE;x;;;;;;;x;x;;
+Varahakija;Poisto;DELETE;x;;;;;;;x;x;;
+Sijaisvanhempi;Poisto;DELETE;x;;;;;x;;;;;
+Sijaisvanhempi;Muokkaus;UPDATE;x;;;;;x;;;;;
+Sijoitus;Muokkaus;UPDATE;x;;;;;x;;x;;;x
+Sijoitus;Poisto;DELETE;x;;;;;x;;x;;;x
+Sijoitus;"Ryhmäsijoituksen luonti";CREATE_GROUP_PLACEMENT;x;;;;;;;x;;;x
+Sijoitus;"Palvelutarpeen luonti";CREATE_SERVICE_NEED;x;;;x;;x;;x;;;x
+Palveluntarve;Muokkaus;UPDATE;x;;;x;;x;;x;;;x
+Palveluntarve;Poisto;DELETE;x;;;x;;x;;;;;x
+Varasijoitus;Muokkaus;UPDATE;x;;;;;x;;x;x;;x
+Varasijoitus;Poisto;DELETE;x;;;;;x;;x;x;;x
+"Päivittäinen varhaiskasvatusaika";Muokkaus;UPDATE;x;;;;;;;x;x;x;
+"Päivittäinen varhaiskasvatusaika";Poisto;DELETE;x;;;;;;;x;x;x;
+"Tuen kerroin";Muokkaus;UPDATE;x;;;;;x;;x;;x;
+"Tuen kerroin";Poisto;DELETE;x;;;;;x;;x;;x;
+"Tuen kerroin";Luku;READ;x;;x;x;;x;;x;x;x;x
+Palvelusetelikerroin;Muokkaus;UPDATE;x;;;;;;;;;x;
+Palvelusetelikerroin;Poisto;DELETE;x;;;;;;;;;x;
+"Tuen taso varhaiskasvatuksessa";Muokkaus;UPDATE;x;;;;;x;;x;;x;
+"Tuen taso varhaiskasvatuksessa";Poisto;DELETE;x;;;;;x;;x;;x;
+"Tuen taso varhaiskasvatuksessa";Luku;READ;x;;x;;;;;x;x;x;x
+"Tuki esiopetuksessa";Muokkaus;UPDATE;x;;;;;x;;x;;x;
+"Tuki esiopetuksessa";Poisto;DELETE;x;;;;;x;;x;;x;
+"Tuki esiopetuksessa";Luku;READ;x;;x;;;x;;x;x;x;x
+"Tukitoimet ja tukipalvelut";Muokkaus;UPDATE;x;;;;;x;;x;;x;
+"Tukitoimet ja tukipalvelut";Poisto;DELETE;x;;;;;x;;x;;x;
+"Tukitoimet ja tukipalvelut";Luku;READ;x;;x;;;;;x;x;x;x
+"Muut toimet";Muokkaus;UPDATE;x;;;;;x;;x;;x;
+"Muut toimet";Poisto;DELETE;x;;;;;x;;x;;x;
+"Muut toimet";Luku;READ;x;;x;;;;;x;x;x;x
+"Pegagoginen dokumentointi";"Liitteen luonti";CREATE_ATTACHMENT;x;;;;;;;x;x;x;x
+"Pegagoginen dokumentointi";Poisto;DELETE;x;;;;;;;x;x;x;x
+"Pegagoginen dokumentointi";Muokkaus;UPDATE;x;;;;;;;x;x;x;x
+Asiakirja;Luku;READ;x;;x;;;;;x;x;x;
+Asiakirja;"Metadatan luku";READ_METADATA;x;;;;;;;;;;
+Asiakirja;"Hyväksyttyjen päätöksien luku";READ_ACCEPTED_DECISIONS;;;;;;;;;;;
+Asiakirja;Lataus;DOWNLOAD;x;;;;;;;x;x;x;
+Asiakirja;"Version lataus";DOWNLOAD_VERSION;x;;;;;;;;;;
+Asiakirja;Muokkaus;UPDATE;x;;;;;;;x;x;x;
+Asiakirja;Julkaisu;PUBLISH;x;;;;;;;x;x;x;
+Asiakirja;"Seuraavaan tilaan siirtäminen";NEXT_STATUS;x;;;;;;;x;x;x;
+Asiakirja;"Edelliseen tilaan siirtäminen";PREV_STATUS;x;;;;;;;x;x;x;
+Asiakirja;Poisto;DELETE;x;;;;;;;x;x;x;
+Asiakirja;"Päätöksen ehdotus";PROPOSE_DECISION;x;;;;;;;x;;x;
+Asiakirja;"Päätöksen hyväksyminen";ACCEPT_DECISION;;;;;;;;;;;
+Asiakirja;"Päätöksen hylkääminen";REJECT_DECISION;;;;;;;;;;;
+Asiakirja;"Päätöksen mitätöinti";ANNUL_DECISION;x;;;;;;;;;;
+Asiakirja;"Päätöksen voimassaoloajan muokkaus";UPDATE_DECISION_VALIDITY;x;;;;;;;;;;
+Asiakirja;Arkistointi;ARCHIVE;x;;;;;;;;;;
+Maksumuutos;Muokkaus;UPDATE;x;;;x;;;;;;;
+Maksumuutos;Poisto;DELETE;x;;;x;;;;;;;
+Maksumuutos;"Liitteen lähetys";UPLOAD_ATTACHMENT;x;;;x;;;;;;;
+Yksikkö;Luku;READ;x;x;x;x;x;x;;x;x;x;x
+Yksikkö;"Palveluohjauksen muistiinpanon luku";READ_SERVICE_WORKER_NOTE;x;;;;;x;;;;;
+Yksikkö;"Palveluohjauksen muistiinpanon muokkaus";SET_SERVICE_WORKER_NOTE;x;;;;;x;;;;;
+Yksikkö;"Ryhmän tietojen luku";READ_GROUP_DETAILS;x;;x;x;x;x;;x;x;x;x
+Yksikkö;"Läsnäolojen luku";READ_ATTENDANCES;x;;x;x;x;x;;x;x;x;x
+Yksikkö;"Hakemuksien ja sijoitushahmotelmien luku";"READ_APPLICATIONS_AND_PLACEMENT_PLANS";x;;x;;;x;;x;;;
+Yksikkö;"Esiopetuksen poissaolohakemuksien luku";"READ_ABSENCE_APPLICATIONS";x;;;;;;;x;x;;
+Yksikkö;"Siirtoa muualle hakeneiden luku";"READ_TRANSFER_APPLICATIONS";x;;;;;x;;x;;;
+Yksikkö;"Palvelutarpeen muutoshakemuksien luku";"READ_SERVICE_APPLICATIONS";x;;;;;;;x;;;
+Yksikkö;"Ryhmien luku";READ_GROUPS;x;;x;x;x;x;;x;x;x;x
+Yksikkö;"Lapsen kertoimen luku";"READ_CHILD_CAPACITY_FACTORS";x;;x;;;x;;x;;x;x
+Yksikkö;Muokkaus;UPDATE;x;;;;;;;;;;
+Yksikkö;"Lasten läsnäolojen luku";READ_CHILD_ATTENDANCES;x;;x;;;x;;x;x;x;x
+Yksikkö;"Lasten läsnäolovarausten luku";READ_CHILD_RESERVATIONS;;;;;;;;;;;
+Yksikkö;"Yksikön läsnäolojen tilastojen luku";"READ_UNIT_RESERVATION_STATISTICS";;;;;;;;;;;
+Yksikkö;"Lasten läsnäolojen muokkaus";UPDATE_CHILD_ATTENDANCES;x;;;;;x;;x;x;;
+Yksikkö;"Henkilöstön läsnäolojen luku";READ_STAFF_ATTENDANCES;x;;;;;;;x;x;x;x
+Yksikkö;"Henkilöstön läsnäolojen muokkaus";UPDATE_STAFF_ATTENDANCES;x;;;;;;;x;x;x;x
+Yksikkö;"Henkilöstön läsnäolojen luku";"READ_REALTIME_STAFF_ATTENDANCES";;;;;;;;;;;
+Yksikkö;"Henkilöstön täyttö/käyttöasteen kertoimien luku";"READ_STAFF_OCCUPANCY_COEFFICIENTS";x;;;;;;;x;x;x;x
+Yksikkö;"Henkilöstön täyttö/käyttöasteen kertoimien muokkaus";"UPSERT_STAFF_OCCUPANCY_COEFFICIENTS";x;;;;;;;x;;;x
+Yksikkö;"Täyttö/käyttöasteen luku";READ_OCCUPANCIES;x;;x;x;x;x;;x;;x;
+Yksikkö;"Läsnäolovarausten luku";"READ_ATTENDANCE_RESERVATIONS";x;;;;;;;x;x;x;x
+Yksikkö;"Sijoituksen luonti";CREATE_PLACEMENT;x;;;;;x;;x;;;x
+Yksikkö;"Sijoitushahmotelman hyväksyminen";"ACCEPT_PLACEMENT_PROPOSAL";x;;;;;x;;x;;;
+Yksikkö;"Ryhmän luonti";CREATE_GROUP;x;;;;;;;x;;;x
+Yksikkö;"Mobiilin tilastojen luku";READ_MOBILE_STATS;;;;;;;;;;;
+Yksikkö;"Mobiilin tietojen luku";READ_MOBILE_INFO;;;;;;;;;;;
+Yksikkö;"Mobiililaitteiden luku";READ_MOBILE_DEVICES;x;;;;;;;x;;;x
+Yksikkö;"Mobiililaitteen parituksen luonti";"CREATE_MOBILE_DEVICE_PAIRING";x;;;;;;;x;;;x
+Yksikkö;"Käyttöoikeuksien luku";READ_ACL;x;;;;;;;x;;;x
+Yksikkö;"Johtajan käyttöoikeuden luonti";"INSERT_ACL_UNIT_SUPERVISOR";x;;;;;;;;;;
+Yksikkö;"Johtajan käyttöoikeuden muokkaus";"UPDATE_ACL_UNIT_SUPERVISOR";x;;;;;;;;;;
+Yksikkö;"Erityisopettajan käyttöoikeuden luonti";"INSERT_ACL_SPECIAL_EDUCATION_TEACHER";x;;;;;;;;;;
+Yksikkö;"Erityisopettajan käyttöoikeuden muokkaus";"UPDATE_ACL_SPECIAL_EDUCATION_TEACHER";x;;;;;;;;;;
+Yksikkö;"Varhaiskasvatussihteerin käyttöoikeuden luonti";"INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY";x;;;;;;;;;;
+Yksikkö;"Varhaiskasvatussihteerin käyttöoikeuden muokkaus";"UPDATE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY";x;;;;;;;;;;
+Yksikkö;"Henkilökunnan käyttöoikeuden luonti";INSERT_ACL_STAFF;x;;;;;;;x;;;x
+Yksikkö;"Henkilökunnan käyttöoikeuden muokkaus";UPDATE_ACL_STAFF;x;;;;;;;x;;;x
+Yksikkö;"Käyttöoikeuden muokkaus (ajastettu)";UPDATE_ACL_SCHEDULED;x;;;;;;;x;;;
+Yksikkö;"Ryhmän käyttöoikeuden muokkaus";UPDATE_STAFF_GROUP_ACL;x;;;;;;;x;;;x
+Yksikkö;"Saapuneet hakemukset -raportti";READ_APPLICATIONS_REPORT;x;x;x;;;x;;x;;;x
+Yksikkö;"Varhaiskasvatuspaikkatakuu-raportti";"READ_PLACEMENT_GUARANTEE_REPORT";x;;x;;;x;;x;;;x
+Yksikkö;"Lasten tuen tarpeet ja tukitoimet -raportti";"READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT";x;x;x;;;x;;x;;x;x
+Yksikkö;"Lasten tuen tarpeet ja tukitoimet -raportti (lapsittain)";"READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT_BY_CHILD";x;x;;;;;;x;;x;x
+Yksikkö;"Päiväkohtaiset lapsen tulo- ja lähtöajat -raportti";"READ_ATTENDANCE_RESERVATION_REPORT";x;x;x;;;;;x;x;;x
+Yksikkö;"Lasten kielet ja iät yksiköissä -raportti";"READ_CHILD_AGE_AND_LANGUAGE_REPORT";x;x;x;;;x;;;;x;
+Yksikkö;"Lapsi eri osoitteessa -raportti";"READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT";x;;x;x;;x;;;;;
+Yksikkö;"Palveluntarpeen ylitykset -raportti";"READ_EXCEEDED_SERVICE_NEEDS_REPORT";"VES,HAM,NOK,YLO,PIR,KAN,LEM,ORI";;;"VES,HAM,NOK,YLO,PIR,KAN,LEM,ORI";;"VES,HAM,NOK,YLO,PIR,KAN,LEM,ORI";;"VES,HAM,NOK,YLO,PIR,KAN,LEM,ORI";;;"VES,HAM,NOK,YLO,PIR,KAN,LEM,ORI"
+Yksikkö;"Perhekonfliktit-raportti";"READ_FAMILY_CONFLICT_REPORT";x;;x;x;;x;;x;;;x
+Yksikkö;"Perheen yhteystietokooste -raportti";"READ_FAMILY_CONTACT_REPORT";x;;;;;;;x;;;x
+Yksikkö;"Perhepäivähoidossa olevien lasten ateriaraportti";"READ_FAMILY_DAYCARE_MEAL_REPORT";x;;x;;;;;x;;;
+Yksikkö;"Puuttuvat palveluntarpeet -raportti";"READ_MISSING_SERVICE_NEED_REPORT";x;;x;x;;x;;x;;;x
+Yksikkö;"Täyttö- ja käyttöasteet -raportti";READ_OCCUPANCY_REPORT;x;x;x;;;x;;x;;;x
+Yksikkö;"Puoliso eri osoitteessa -raportti";"READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT";x;;x;x;;x;;;;;
+Yksikkö;"Lasten palvelutarpeet ja iät yksiköissä -raportti";READ_SERVICE_NEED_REPORT;x;x;x;;;x;;x;;;x
+Yksikkö;"Nekku tilaukset -raportti";READ_NEKKU_ORDER_REPORT;x;;;;;;;x;x;;
+Yksikkö;"Palveluseteliyksiköt-raportti";"READ_SERVICE_VOUCHER_REPORT";x;x;x;x;;;;x;;;x
+Yksikkö;"Palvelusetelilapset yksikössä -raportti";"READ_SERVICE_VOUCHER_VALUES_REPORT";x;;x;x;;;;x;;;x
+Yksikkö;"Yksikön toimintojen muokkaus";UPDATE_FEATURES;x;;;;;;;;;;
+Yksikkö;"Lukemattomien viestien luku";READ_UNREAD_MESSAGES;;;;;;;;;;;
+Yksikkö;"Irtisanotun sijoituksen luku";"READ_TERMINATED_PLACEMENTS";x;;;;;x;;x;;;
+Yksikkö;"Ryhmää odottavien lasten luku";"READ_MISSING_GROUP_PLACEMENTS";x;;x;;;x;;x;;;x
+Yksikkö;"Tapahtumien luku";READ_CALENDAR_EVENTS;x;;;;;;;x;x;x;
+Yksikkö;"Tapahtuman luonti";CREATE_CALENDAR_EVENT;x;;;;;;;x;x;x;
+Yksikkö;"Tilapäisen sijaisen luonti";"CREATE_TEMPORARY_EMPLOYEE";x;;;;;;;x;;;x
+Yksikkö;"Tilapäisen sijaisen luku";READ_TEMPORARY_EMPLOYEE;x;;;;;;;x;;;x
+Yksikkö;"Tilapäisen sijaisen muokkaus";"UPDATE_TEMPORARY_EMPLOYEE";x;;;;;;;x;;;x
+Yksikkö;"Tilapäisen sijaisen poisto";"DELETE_TEMPORARY_EMPLOYEE";x;;;;;;;x;;;x
+Yksikkö;"Ruokailijamäärät-raportti";READ_MEAL_REPORT;x;;;;;;;x;;;x
+Yksikkö;"Esiopetuksen poissaoloraportti";"READ_PRESCHOOL_ABSENCE_REPORT_FOR_UNIT";x;;;;;;;x;x;;
+Yksikkö;"Pedagogiset asiakirjat -raportti";"READ_CHILD_DOCUMENTS_REPORT";x;;x;;;;;x;;x;
+Yksikkö;"Ehdottava EO-raportti";"READ_PRESCHOOL_APPLICATION_REPORT";"TRE,NOK,YLO,KAN";;"TRE,NOK,YLO,KAN";;;"TRE,NOK,YLO,KAN";;"TRE,NOK,YLO,KAN";;;
+Yksikkö;Lomakyselyraportti;"READ_HOLIDAY_PERIOD_ATTENDANCE_REPORT";x;;;;;;;x;;;x
+Yksikkö;Poissaolokyselyraportti;"READ_HOLIDAY_QUESTIONNAIRE_REPORT";x;;;;;;;x;;;
+Yksikkö;"Varhaiskasvatuksessa aloittavat lapset";"READ_STARTING_PLACEMENTS_REPORT";x;;x;x;;x;;x;;;
+Yksikkö;"Työntekijän henkilönumeron luku";"READ_STAFF_EMPLOYEE_NUMBER";x;;;;;;;x;;;
+Yksikkö;"Titania-virheet -raportti";READ_TITANIA_ERRORS;x;;;;;;;x;;;
+Ryhmä;Muokkaus;UPDATE;x;;;;;;;x;;;x
+Ryhmä;Poisto;DELETE;x;;;;;x;;x;;;x
+Ryhmä;"Poissaolon luonti";CREATE_ABSENCES;x;;;x;;;;x;x;x;x
+Ryhmä;"Poissaolojen luku";READ_ABSENCES;x;;x;x;x;x;;x;x;x;x
+Ryhmä;"Poissaolon poisto";DELETE_ABSENCES;x;;;x;;;;x;x;x;x
+Ryhmä;"Henkilöstön läsnäolojen luku";READ_STAFF_ATTENDANCES;x;;x;x;;;;x;x;x;x
+Ryhmä;"Henkilöstön läsnäolojen muokkaus";UPDATE_STAFF_ATTENDANCES;x;;;;;;;x;x;;
+Ryhmä;"Henkilökunnan tarpeen luku";READ_CARETAKERS;x;;x;x;;x;;x;x;x;x
+Ryhmä;"Henkilökunnan tarpeen luonti";CREATE_CARETAKERS;x;;;;;;;x;;;x
+Ryhmä;"Henkilökunnan tarpeen muokkaus";UPDATE_CARETAKERS;x;;;;;;;x;;;x
+Ryhmä;"Henkilökunnan tarpeen poisto";DELETE_CARETAKERS;x;;;;;;;x;;;x
+Ryhmä;"Muistiinpanon luonti";CREATE_NOTE;x;;;;;;;x;x;x;
+Ryhmä;"Muistiinpanojen luku";READ_NOTES;x;;;;;;;x;x;x;x
+Ryhmä;"Lähteväksi merkitseminen";MARK_DEPARTURE;;;;;;;;;;;
+Ryhmä;"Lähteväksi merkitseminen (muu henkilö)";MARK_EXTERNAL_DEPARTURE;;;;;;;;;;;
+Ryhmä;"Saapuneeksi merkitseminen";MARK_ARRIVAL;;;;;;;;;;;
+Ryhmä;"Saapuneeksi merkitseminen (muu henkilö)";MARK_EXTERNAL_ARRIVAL;;;;;;;;;;;
+Ryhmä;"Ilmoitusten vastaanotto";"RECEIVE_PUSH_NOTIFICATIONS";;;;;;;;;;;
+Ryhmä;"Tapahtuman luonti";CREATE_CALENDAR_EVENT;x;;;;;;;x;x;x;
+Ryhmä;"Lapsen asiakirjan luonti";CREATE_CHILD_DOCUMENTS;x;;;;;;;x;x;x;
+Ryhmä;"Kuntalaisen asiakirjat -raportti";"READ_CITIZEN_DOCUMENT_RESPONSE_REPORT";x;;;;;;;x;x;;
+Ryhmä;"Nekun lähetys";NEKKU_MANUAL_ORDER;x;;;;;;;x;x;;
+"Ryhmän muistiinpano";Muokkaus;UPDATE;x;;;;;;;x;x;x;
+"Ryhmän muistiinpano";Poisto;DELETE;x;;;;;;;x;x;x;
+Ryhmäsijoitus;Muokkaus;UPDATE;x;;;;;;;x;;;x
+Ryhmäsijoitus;Poisto;DELETE;x;;;;;;;x;;;x
+Tapahtuma;Luku;READ;x;;;;;;;x;x;x;
+Tapahtuma;Poisto;DELETE;x;;;;;;;x;x;x;
+Tapahtuma;Muokkaus;UPDATE;x;;;;;;;x;x;x;
+Keskusteluaika;Poisto;DELETE;x;;;;;;;x;x;x;
+Keskusteluaika;"Läsnäolovarauksen muokkaus";UPDATE_RESERVATION;x;;;;;;;x;x;x;
+Työntekijä;"Tietojen luku";READ_DETAILS;x;;;;;;;;;;
+Työntekijä;Poisto;DELETE;x;;;;;;;;;;
+Työntekijä;"Roolien muokkaus";UPDATE_GLOBAL_ROLES;x;;;;;;;;;;
+Työntekijä;"Yksikön roolien muokkaus";UPDATE_DAYCARE_ROLES;x;;;;;;;;;;
+Työntekijä;"Yksikön roolies poisto";DELETE_DAYCARE_ROLES;x;;;;;;;;;;
+Työntekijä;"Henkilöstön läsnäolojen muokkaus";UPDATE_STAFF_ATTENDANCES;x;;;;;;;x;;;
+Työntekijä;Aktivointi;ACTIVATE;x;;;;;;;;;;
+Työntekijä;Deaktivointi;DEACTIVATE;x;;;;;;;;;;
+Työntekijä;"Henkilöstön läsnäolojen luku (meneillään oleva)";"READ_OPEN_GROUP_ATTENDANCE";x;;;;;;;;;;
+Työntekijä;"Poissaoloviestin luku";READ_OUT_OF_OFFICE;x;;;;;;;x;;;
+Työntekijä;"Poissaoloviestin luonti";UPDATE_OUT_OF_OFFICE;x;;;;;;;x;;;
+Työntekijä;"Sähköpostin muokkaus";UPDATE_EMAIL;x;;;;;;;;;;
+Viestitili;Pääsy;ACCESS;;;;;;;;x;;;
+Mobiililaite;"Nimen muokkaus";UPDATE_NAME;x;;;;;;;x;;;x
+Mobiililaite;Poisto;DELETE;x;;;;;;;x;;;x
+Mobiiliparitus;Luonti;POST_RESPONSE;x;;;;;;;x;;;x
+Liite;"Liitteen luku (orpo)";READ_ORPHAN_ATTACHMENT;;;;;;;;;;;
+Liite;"Hakemuksen liitteen luku";"READ_APPLICATION_ATTACHMENT";x;;x;;;x;;x;;;
+Liite;"Tuloselvityksen liitteen luku";"READ_INCOME_STATEMENT_ATTACHMENT";x;;x;x;;;;;;;
+Liite;"Tulon liitteen luku";READ_INCOME_ATTACHMENT;x;;x;x;;;;;;;
+Liite;"Laskun liitteen luku";READ_INVOICE_ATTACHMENT;x;;;x;x;;;;;;
+Liite;"Pedagogisen dokumentoinnin liitteen luku";"READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT";x;;;;;;;x;x;x;x
+Liite;"Maksumuutoksen liitteen luku";"READ_FEE_ALTERATION_ATTACHMENT";x;;;x;;;;;;;
+Liite;"Liitteen poisto (orpo)";DELETE_ORPHAN_ATTACHMENT;;;;;;;;;;;
+Liite;"Hakemuksen liitteen poisto";"DELETE_APPLICATION_ATTACHMENT";x;;;;;x;;;;;
+Liite;"Tuloselvityksen liitteen poisto";"DELETE_INCOME_STATEMENT_ATTACHMENT";x;;;x;;;;;;;
+Liite;"Tulon liitteen poisto";DELETE_INCOME_ATTACHMENT;x;;;x;;;;;;;
+Liite;"Laskun liitteen poisto";"DELETE_INVOICE_ATTACHMENT";x;;;x;x;;;;;;
+Liite;"Viestin liitteen poisto";"DELETE_MESSAGE_CONTENT_ATTACHMENT";x;;;;;;;;;;
+Liite;"Pedagogisen dokumentoinnin liitteen poisto";"DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT";x;;;;;;;x;x;x;x
+Liite;"Maksumuutoksen liitteen poisto";"DELETE_FEE_ALTERATION_ATTACHMENTS";x;;;x;;;;;;;
+"Talouden maksuasetukset";Muokkaus;UPDATE;x;;;x;;;;;;;
+Esiopetuskausi;Muokkaus;UPDATE;x;;;;;;;;;;
+Esiopetuskausi;Poisto;DELETE;x;;;;;;;;;;
+Kerhokausi;Muokkaus;UPDATE;x;;;;;;;;;;
+Kerhokausi;Poisto;DELETE;x;;;;;;;;;;
+Asiakirjapohja;Luku;READ;x;;;;;;;;;;
+Asiakirjapohja;Kopiointi;COPY;x;;;;;;;;;;
+Asiakirjapohja;Muokkaus;UPDATE;x;;;;;;;;;;
+Asiakirjapohja;Poisto;DELETE;x;;;;;;;;;;
+Asiakirjapohja;"Julkaisun peruminen";FORCE_UNPUBLISH;x;;;;;;;;;;
+Maksupäätös;Luku;READ;x;;x;x;x;;;;;;
+Maksupäätös;"Metadatan luku";READ_METADATA;x;;;;;;;;;;
+Maksupäätös;Muokkaus;UPDATE;x;;;x;;;;;;;
+Maksupäätös;Ohitus;IGNORE;x;;;x;;;;;;;
+Maksupäätös;"Ohituksen kumoaminen";UNIGNORE;x;;;x;;;;;;;
+Maksupäätös;Arkistointi;ARCHIVE;x;;;;;;;;;;
+Arvopäätös;Luku;READ;x;;x;x;;;;;;;
+Arvopäätös;"Metadatan luku";READ_METADATA;x;;;;;;;;;;
+Arvopäätös;Muokkaus;UPDATE;x;;;x;;;;;;;
+Arvopäätös;Ohitus;IGNORE;x;;;x;;;;;;;
+Arvopäätös;"Ohituksen kumoaminen";UNIGNORE;x;;;x;;;;;;;
+Arvopäätös;Arkistointi;ARCHIVE;x;;;;;;;;;;
+Lasku;Luku;READ;x;;x;x;x;;;;;;
+Lasku;"Liitteen lähetys";UPLOAD_ATTACHMENT;x;;;x;x;;;;;;
+Lasku;"Lähetetyksi merkitseminen";MARK_SENT;x;;;x;x;;;;;;
+Lasku;Lähetys;SEND;x;;;x;;;;;;;
+Lasku;Uudelleenlähetys;RESEND;;;;;;;;;;;
+Lasku;Poisto;DELETE;x;;;x;;;;;;;
+"Laskun korjausrivi";Poisto;DELETE;x;;;x;x;;;;;;
+"Laskun korjausrivi";"Muistiinpanon muokkaus";UPDATE_NOTE;x;;;x;x;;;;;;
+Maksu;Lähetys;SEND;x;;;x;;;;;;;
+Maksu;Poisto;DELETE;x;;;x;;;;;;;
+Maksu;Vahvistus;CONFIRM;x;;;x;;;;;;;
+Maksu;"Luonnokseksi palauttaminen";REVERT_TO_DRAFT;x;;;x;;;;;;;
