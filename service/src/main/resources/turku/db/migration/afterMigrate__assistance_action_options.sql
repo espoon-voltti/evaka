@@ -11,7 +11,7 @@ VALUES
     ('50', 'Pienennetty ryhmä', 'Ryhmän rakenne: VO, LH ja avustaja tai TH. Lapsiluku 13 kpl, joista kolmella lapsella tuen tarve', 50, 'DAYCARE'),
     ('60', 'Alueellinen integroitu ryhmä', 'Ryhmän rakenne: VEO/VO, VO ja kaksi LH. Lapsiluku 14 kpl, joista viidellä tuen tarve', 60, 'DAYCARE'),
     ('70', 'Erityisryhmä', 'Sarat-ryhmä. Ryhmän rakenne: VO, SH ja kaksi LH. Lapsiluku 8 kpl, joista kaikilla erityisen tuen tarve', 70, 'DAYCARE'),
-    ('80', 'Ryhmän pienennyspäätös', 'Tehdään harkinnanvaraisesti', 80, 'DAYCARE'),
+    ('80', 'Ryhmän pienennys', NULL, 80, 'DAYCARE'),
     ('90', 'KV-laki', NULL, 90, 'DAYCARE'),
     ('100', 'Varhaiskasvatuksen erityisopettajan konsultaatio', NULL, 100, 'DAYCARE'),
     ('110', 'Varhaiskasvatuksen erityisopettajan osa-aikainen opetus', NULL, 110, 'DAYCARE'),
