@@ -7,8 +7,8 @@ package evaka.core.decision.reasoning
 import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.db.Database
-import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.NotFound
 
 fun Database.Read.getGenericReasonings(
     collectionType: DecisionReasoningCollectionType
@@ -51,8 +51,7 @@ fun Database.Transaction.updateGenericReasoning(
                 sql(
                     """
 UPDATE decision_reasoning_generic
-SET collection_type = ${bind(body.collectionType)},
-    valid_from = ${bind(body.validFrom)},
+SET valid_from = ${bind(body.validFrom)},
     text_fi = ${bind(body.textFi)},
     text_sv = ${bind(body.textSv)},
     ready = ${bind(body.ready)},
@@ -63,7 +62,7 @@ WHERE id = ${bind(id)} AND ready = false
             }
             .execute()
     if (updated == 0) {
-        throw Conflict("Generic reasoning $id is already marked as ready")
+        throw NotFound("Generic reasoning $id not found in expected state (not ready)")
     }
 }
 
@@ -79,7 +78,7 @@ WHERE id = ${bind(id)} AND ready = false
             }
             .execute()
     if (deleted == 0) {
-        throw Conflict("Cannot delete generic reasoning $id because it is marked as ready")
+        throw NotFound("Generic reasoning $id not found in expected state (not ready)")
     }
 }
 
@@ -130,6 +129,6 @@ WHERE id = ${bind(id)} AND removed_at IS NULL
             }
             .execute()
     if (updated == 0) {
-        throw Conflict("Individual reasoning $id is already removed")
+        throw NotFound("Individual reasoning $id not found")
     }
 }

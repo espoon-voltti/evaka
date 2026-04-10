@@ -45,7 +45,7 @@ This design ensures that the full history of reasoning entries is preserved.
 
 ### Ready state and decision blocking
 
-Each generic reasoning entry has a ready/not-ready flag. New entries are created as not ready. This allows the admin to prepare the next season's reasoning in advance with placeholder text while the political decisions are still being finalized.
+Each generic reasoning entry has a ready/not-ready flag. New entries default to not ready, but the admin may choose to activate an entry immediately upon creation if the text is finalized. This allows the admin to prepare the next season's reasoning in advance with placeholder text while the political decisions are still being finalized, or to create and activate an entry in a single step when the text is already known.
 
 While the active generic reasoning for a given validity period is not ready, any decision whose start date falls within that period is blocked from advancing beyond the "waiting for decision" state. This prevents decisions from being sent with incomplete or placeholder reasoning. Once the admin finalizes the text and marks the entry as ready, the block is lifted and the affected decisions can proceed.
 
@@ -103,9 +103,9 @@ The reasoning management page is accessible from the employee UI user context me
 
 The page has two primary tabs for selecting the collection type: daycare and preschool. Within each tab, there are two sections: one for generic reasonings and one for individual reasonings. Each section heading shows the number of entries in parentheses and has an "Add new" button.
 
-For generic reasonings, each entry is displayed as a full-width card with a formatted label derived from the collection type and validity date range. Finnish and Swedish text are shown side by side. Long text is truncated with a "Show more" button. Not-ready entries have an edit button that transforms the card into an inline edit form with cancel and save buttons. Ready entries are read-only.
+For generic reasonings, each entry is displayed as a full-width card with a formatted label derived from the collection type and validity date range. Finnish and Swedish text are shown side by side. Not-ready entries have an edit button that transforms the card into an inline edit form with cancel and save buttons. Ready entries are read-only.
 
-For individual reasonings, each entry is displayed as a full-width card with Finnish and Swedish text side by side. Within each language block, the card shows a language label (FI / SV), the title, and the text body. Long text is truncated with a "Show more" button.
+For individual reasonings, each entry is displayed as a full-width card with Finnish and Swedish text side by side. Within each language block, the card shows a language label (FI / SV), the title, and the text body.
 
 For individual reasonings, each active card has a "Remove from use" button. There is no edit functionality — entries are immutable after creation.
 

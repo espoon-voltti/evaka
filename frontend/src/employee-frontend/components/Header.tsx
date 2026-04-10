@@ -414,6 +414,15 @@ export default React.memo(function Header() {
                   {i18n.documentTemplates.title}
                 </Link>
               )}
+              {user?.accessibleFeatures.decisionReasonings && (
+                <Link
+                  to="/decision-reasonings"
+                  onClick={closeUserPopup}
+                  data-qa="user-popup-decision-reasonings"
+                >
+                  {i18n.titles.decisionReasonings}
+                </Link>
+              )}
               {user?.accessibleFeatures.holidayAndTermPeriods && (
                 <Link
                   to="/holiday-periods"

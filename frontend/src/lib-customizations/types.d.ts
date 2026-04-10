@@ -324,6 +324,11 @@ interface BaseFeatureFlags {
    * Enable language selection in employee frontends
    */
   employeeLanguageSelection?: boolean
+
+  /**
+   * EXPERIMENTAL: Enable decision reasoning options management page
+   */
+  decisionReasoningOptions?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

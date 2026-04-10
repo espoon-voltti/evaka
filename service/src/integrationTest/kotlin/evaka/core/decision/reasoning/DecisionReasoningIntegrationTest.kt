@@ -11,7 +11,6 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.insert
-import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -161,7 +160,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val id = createGenericReasoning(body)
         updateGenericReasoning(id, body.copy(ready = true))
 
-        assertThrows<Conflict> { updateGenericReasoning(id, body.copy(textFi = "Should fail")) }
+        assertThrows<NotFound> { updateGenericReasoning(id, body.copy(textFi = "Should fail")) }
     }
 
     @Test
@@ -177,7 +176,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val id = createGenericReasoning(body)
         updateGenericReasoning(id, body.copy(ready = true))
 
-        assertThrows<Conflict> { deleteGenericReasoning(id) }
+        assertThrows<NotFound> { deleteGenericReasoning(id) }
     }
 
     @Test
@@ -251,7 +250,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val id = createIndividualReasoning(body)
         removeIndividualReasoning(id)
 
-        assertThrows<Conflict> { removeIndividualReasoning(id) }
+        assertThrows<NotFound> { removeIndividualReasoning(id) }
     }
 
     @Test
