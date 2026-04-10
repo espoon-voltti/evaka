@@ -539,13 +539,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        municipality: [oulu, turku]
-        # The service need option IDs are known IDs in municipalitie's `afterMigrate_*` scripts
+        # The service need option IDs are known IDs in municipalities' `afterMigrate_*` scripts
         include:
           - municipality: oulu
             service_need_option_id: de463972-9f97-11ec-a22c-931f5a294cea
           - municipality: turku
             service_need_option_id: 50358394-b961-11eb-b51f-67ac436e5636
+          - municipality: tampere
+            service_need_option_id: 0a58d934-6fd1-11ed-a75e-c353faef5857
+          - municipality: hameenkyro
+            service_need_option_id: 1183e6ec-00b3-45b3-a9b5-efd9d521946a
+          - municipality: kangasala
+            service_need_option_id: 000a9d54-dd88-4f71-8489-b7d29e49ae92
+          - municipality: lempaala
+            service_need_option_id: 15ec591b-9dc7-42da-8cae-1a01ac36c62f
+          - municipality: nokia
+            service_need_option_id: 0af77db8-61aa-4ffb-8019-d9a73886e793
+          - municipality: orivesi
+            service_need_option_id: 8d7334fa-76cf-4661-8a9a-d53f6b03a8c5
+          - municipality: pirkkala
+            service_need_option_id: 18a83b84-51e5-49a3-9bc7-52fd7563944a
+          - municipality: vesilahti
+            service_need_option_id: 3e49ca5f-7144-49d4-8184-ab96758ee969
+          - municipality: ylojarvi
+            service_need_option_id: 19eb58c9-e8f6-42f4-a635-4c84a3e08d77
 
     if: ${{ !github.event.pull_request.head.repo.fork }}
 
