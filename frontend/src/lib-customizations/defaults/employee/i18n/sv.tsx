@@ -1550,14 +1550,14 @@ export const sv: typeof fi = {
       editModalTitle: 'Vårdnadshavarens eVaka-rättigheter',
       modalInfoParagraph: (
         <>
-          Med eVaka-rättigheter bestäms om vårdnadshavaren kan se uppgifter
-          relaterade till sitt omhändertagna barn i eVaka. Rättigheterna kan
-          förbjudas endast{' '}
+          Med eVaka-rättigheter bestäms om vårdnadshavaren kan se uppgifter som
+          gäller barnet i eVaka. Rättigheterna kan förbjudas{' '}
           <strong>
-            i motiverade barnskyddssituationer med socialarbetarens skriftliga
-            meddelande
+            till exempel på grund av en anmälan från en socialarbetare eller
+            annan behörig myndighet
           </strong>
-          . Rättigheterna ska återställas om omhändertagandet upphör.
+          . Rättigheterna ska återställas om det inte längre finns grund för
+          förbudet.
         </>
       ),
       modalUpdateSubtitle:
