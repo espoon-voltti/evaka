@@ -9,29 +9,29 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <head>
     <meta charset="utf-8"/>
-    <style th:replace="~{lempaala/shared/common.html :: css}"></style>
+    <style th:replace="~{shared/common.html :: css}"></style>
 </head>
 
 <body>
 
-<header th:replace="~{lempaala/shared/common :: header}"></header>
-<footer th:replace="~{lempaala/shared/common :: footer}"></footer>
+<header th:replace="~{shared/common :: header}"></header>
+<footer th:replace="~{shared/common :: footer}"></footer>
 
 <div class="page">
     <h1 th:text="${#messages.msgOrNull('decision.title.' + decision.type)} ?: #{decision.title}"></h1>
-    <div th:replace="~{lempaala/shared/common :: child-and-unit-details}"></div>
+    <div th:replace="~{shared/common :: child-and-unit-details}"></div>
 
     <div th:utext="${#messages.msgOrNull('decision.instructions.' + decision.type)} ?: #{decision.instructions}"></div>
-    <div th:replace="~{lempaala/shared/common :: decision-details }"></div>
+    <div th:replace="~{shared/common :: decision-details }"></div>
 </div>
 
 <div class="page last-page">
     <th:block th:switch="${decision.type.name()}">
         <th:block th:case="'PRESCHOOL'">
-            <div th:replace="~{lempaala/shared/preschool-correction :: correction}" />
+            <div th:replace="~{shared/preschool-correction :: correction}" />
         </th:block>
         <th:block th:case="*">
-            <div th:replace="~{lempaala/shared/daycare-correction :: correction}" />
+            <div th:replace="~{shared/daycare-correction :: correction}" />
         </th:block>
     </th:block>
 </div>

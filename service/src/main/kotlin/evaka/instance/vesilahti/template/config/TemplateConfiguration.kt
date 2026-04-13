@@ -5,6 +5,7 @@
 package evaka.instance.vesilahti.template.config
 
 import evaka.core.decision.DecisionType
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.template.ITemplateProvider
 import org.springframework.context.annotation.Bean
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class TemplateConfiguration {
+    @Bean fun templateEngine() = pdfTemplateEngine("vesilahti")
 
     @Bean fun templateProvider(): ITemplateProvider = VesilahtiTemplateProvider()
 }
@@ -32,19 +34,19 @@ class VesilahtiTemplateProvider : ITemplateProvider {
             DecisionType.PREPARATORY_EDUCATION -> "Valmistavan_opetuksen_päätös"
         }
 
-    override fun getFeeDecisionPath(): String = "vesilahti/fee-decision/decision"
+    override fun getFeeDecisionPath(): String = "fee-decision/decision"
 
     override fun getVoucherValueDecisionPath(): String = throw UnsupportedOperationException()
 
-    override fun getClubDecisionPath(): String = "vesilahti/club/decision"
+    override fun getClubDecisionPath(): String = "club/decision"
 
     override fun getDaycareVoucherDecisionPath(): String = throw UnsupportedOperationException()
 
-    override fun getDaycareTransferDecisionPath(): String = "vesilahti/daycare/decision"
+    override fun getDaycareTransferDecisionPath(): String = "daycare/decision"
 
-    override fun getDaycareDecisionPath(): String = "vesilahti/daycare/decision"
+    override fun getDaycareDecisionPath(): String = "daycare/decision"
 
     override fun getPreschoolDecisionPath(): String = throw UnsupportedOperationException()
 
-    override fun getPreparatoryDecisionPath(): String = "vesilahti/preparatory/decision"
+    override fun getPreparatoryDecisionPath(): String = "preparatory/decision"
 }

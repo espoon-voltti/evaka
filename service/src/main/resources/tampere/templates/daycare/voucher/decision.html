@@ -9,17 +9,17 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <head>
     <meta charset="utf-8"/>
-    <style th:replace="~{tampere/shared/common.html :: css}"></style>
+    <style th:replace="~{shared/common.html :: css}"></style>
 </head>
 
 <body>
 
-<header th:replace="~{ tampere/shared/common :: header}"></header>
-<footer th:replace="~{ tampere/shared/common :: footer}"></footer>
+<header th:replace="~{ shared/common :: header}"></header>
+<footer th:replace="~{ shared/common :: footer}"></footer>
 
 <div class="page">
     <h1 th:text="#{decision.title}"></h1>
-    <div th:replace="~{ tampere/shared/common :: child-and-unit-details}"></div>
+    <div th:replace="~{ shared/common :: child-and-unit-details}"></div>
 
     <div th:utext="#{decision.instructions}"></div>
 
@@ -27,11 +27,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <div class="page">
     <p th:utext="#{decision.legalInstructions}"></p>
-    <div th:replace="~{ tampere/shared/common :: decision-details }"></div>
+    <div th:replace="~{ shared/common :: decision-details }"></div>
 </div>
 
 <div class="page last-page">
-    <div th:replace="~{tampere/shared/daycare-correction :: correction(decisionTypeName = ${decision.type.name()})}"></div>
+    <div th:replace="~{shared/daycare-correction :: correction(decisionTypeName = ${decision.type.name()})}"></div>
 </div>
 
 </body>

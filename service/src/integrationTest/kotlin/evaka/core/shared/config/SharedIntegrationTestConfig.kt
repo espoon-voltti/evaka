@@ -202,7 +202,7 @@ class SharedIntegrationTestConfig {
 
     // TODO: It's a convenience to have espoo templates in integration tests, should be better to
     // have test-specific templates instead
-    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine("espoo")
+    @Bean fun templateEngine(): ITemplateEngine = pdfTemplateEngine("espoo")
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 

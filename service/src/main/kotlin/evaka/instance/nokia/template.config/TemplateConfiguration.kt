@@ -5,13 +5,16 @@
 package evaka.instance.nokia.template.config
 
 import evaka.core.decision.DecisionType
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.template.ITemplateProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.thymeleaf.ITemplateEngine
 
 @Configuration
 class TemplateConfiguration {
+    @Bean fun templateEngine(): ITemplateEngine = pdfTemplateEngine("nokia")
 
     @Bean fun templateProvider(): ITemplateProvider = NokiaTemplateProvider()
 }
@@ -32,19 +35,19 @@ class NokiaTemplateProvider : ITemplateProvider {
             DecisionType.PREPARATORY_EDUCATION -> "Valmistavan_opetuksen_päätös"
         }
 
-    override fun getFeeDecisionPath(): String = "nokia/fee-decision/decision"
+    override fun getFeeDecisionPath(): String = "fee-decision/decision"
 
-    override fun getVoucherValueDecisionPath(): String = "nokia/fee-decision/voucher-value-decision"
+    override fun getVoucherValueDecisionPath(): String = "fee-decision/voucher-value-decision"
 
-    override fun getClubDecisionPath(): String = "nokia/club/decision"
+    override fun getClubDecisionPath(): String = "club/decision"
 
-    override fun getDaycareVoucherDecisionPath(): String = "nokia/daycare/voucher/decision"
+    override fun getDaycareVoucherDecisionPath(): String = "daycare/voucher/decision"
 
-    override fun getDaycareTransferDecisionPath(): String = "nokia/daycare/decision"
+    override fun getDaycareTransferDecisionPath(): String = "daycare/decision"
 
-    override fun getDaycareDecisionPath(): String = "nokia/daycare/decision"
+    override fun getDaycareDecisionPath(): String = "daycare/decision"
 
-    override fun getPreschoolDecisionPath(): String = "nokia/daycare/decision"
+    override fun getPreschoolDecisionPath(): String = "daycare/decision"
 
-    override fun getPreparatoryDecisionPath(): String = "nokia/preparatory/decision"
+    override fun getPreparatoryDecisionPath(): String = "preparatory/decision"
 }

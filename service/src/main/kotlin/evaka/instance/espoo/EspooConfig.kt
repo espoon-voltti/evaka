@@ -37,7 +37,7 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.PasswordConstraints
 import evaka.core.shared.auth.PasswordSpecification
-import evaka.core.shared.config.PDFConfig
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.db.DevDataInitializer
 import evaka.core.shared.message.EvakaMessageProvider
 import evaka.core.shared.message.IMessageProvider
@@ -126,7 +126,7 @@ class EspooConfig {
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 
-    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine("espoo")
+    @Bean fun templateEngine(): ITemplateEngine = pdfTemplateEngine("espoo")
 
     @Bean
     fun espooScheduledJobEnv(env: Environment): ScheduledJobsEnv<EspooScheduledJob> =

@@ -27,7 +27,7 @@ import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.PersonId
 import evaka.core.shared.VoucherValueDecisionId
-import evaka.core.shared.config.PDFConfig
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.template.EvakaTemplateProvider
@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test
 
 class PdfGenerationTest {
     private val service: PdfGenerator =
-        PdfGenerator(EvakaTemplateProvider(), PDFConfig.templateEngine("espoo"))
+        PdfGenerator(EvakaTemplateProvider(), pdfTemplateEngine("espoo"))
 
     private val normalDecision =
         FeeDecisionDetailed(

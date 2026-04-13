@@ -5,13 +5,16 @@
 package evaka.instance.orivesi.template.config
 
 import evaka.core.decision.DecisionType
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.template.ITemplateProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.thymeleaf.ITemplateEngine
 
 @Configuration
 class TemplateConfiguration {
+    @Bean fun templateEngine(): ITemplateEngine = pdfTemplateEngine("orivesi")
 
     @Bean fun templateProvider(): ITemplateProvider = OrivesiTemplateProvider()
 }
@@ -32,20 +35,19 @@ class OrivesiTemplateProvider : ITemplateProvider {
             DecisionType.PREPARATORY_EDUCATION -> throw Error("Not supported")
         }
 
-    override fun getFeeDecisionPath(): String = "orivesi/fee-decision/decision"
+    override fun getFeeDecisionPath(): String = "fee-decision/decision"
 
-    override fun getVoucherValueDecisionPath(): String =
-        "orivesi/fee-decision/voucher-value-decision"
+    override fun getVoucherValueDecisionPath(): String = "fee-decision/voucher-value-decision"
 
     override fun getClubDecisionPath(): String = throw Error("Not supported")
 
-    override fun getDaycareVoucherDecisionPath(): String = "orivesi/daycare/voucher/decision"
+    override fun getDaycareVoucherDecisionPath(): String = "daycare/voucher/decision"
 
-    override fun getDaycareTransferDecisionPath(): String = "orivesi/daycare/decision"
+    override fun getDaycareTransferDecisionPath(): String = "daycare/decision"
 
-    override fun getDaycareDecisionPath(): String = "orivesi/daycare/decision"
+    override fun getDaycareDecisionPath(): String = "daycare/decision"
 
-    override fun getPreschoolDecisionPath(): String = "orivesi/daycare/decision"
+    override fun getPreschoolDecisionPath(): String = "daycare/decision"
 
     override fun getPreparatoryDecisionPath(): String = throw Error("Not supported")
 }

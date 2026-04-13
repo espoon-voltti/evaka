@@ -5,6 +5,7 @@
 package evaka.instance.pirkkala.template.config
 
 import evaka.core.decision.DecisionType
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.template.ITemplateProvider
 import org.springframework.context.annotation.Bean
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class TemplateConfiguration {
+    @Bean fun templateEngine() = pdfTemplateEngine("pirkkala")
 
     @Bean fun templateProvider(): ITemplateProvider = PirkkalaTemplateProvider()
 }
@@ -32,20 +34,19 @@ class PirkkalaTemplateProvider : ITemplateProvider {
             DecisionType.PREPARATORY_EDUCATION -> "Valmistavan_opetuksen_päätös"
         }
 
-    override fun getFeeDecisionPath(): String = "pirkkala/fee-decision/decision"
+    override fun getFeeDecisionPath(): String = "fee-decision/decision"
 
-    override fun getVoucherValueDecisionPath(): String =
-        "pirkkala/fee-decision/voucher-value-decision"
+    override fun getVoucherValueDecisionPath(): String = "fee-decision/voucher-value-decision"
 
-    override fun getClubDecisionPath(): String = "pirkkala/club/decision"
+    override fun getClubDecisionPath(): String = "club/decision"
 
-    override fun getDaycareVoucherDecisionPath(): String = "pirkkala/daycare/voucher/decision"
+    override fun getDaycareVoucherDecisionPath(): String = "daycare/voucher/decision"
 
-    override fun getDaycareTransferDecisionPath(): String = "pirkkala/daycare/decision"
+    override fun getDaycareTransferDecisionPath(): String = "daycare/decision"
 
-    override fun getDaycareDecisionPath(): String = "pirkkala/daycare/decision"
+    override fun getDaycareDecisionPath(): String = "daycare/decision"
 
-    override fun getPreschoolDecisionPath(): String = "pirkkala/daycare/decision"
+    override fun getPreschoolDecisionPath(): String = "daycare/decision"
 
     override fun getPreparatoryDecisionPath(): String = throw Error("Not supported")
 }

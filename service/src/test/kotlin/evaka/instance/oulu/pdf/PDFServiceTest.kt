@@ -33,7 +33,7 @@ import evaka.core.shared.FeeDecisionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.VoucherValueDecisionId
-import evaka.core.shared.config.PDFConfig
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.OfficialLanguage
@@ -61,7 +61,7 @@ class PDFServiceTest {
 
     @BeforeEach
     fun setup() {
-        pdfService = PdfGenerator(OuluTemplateProvider(), PDFConfig.templateEngine("oulu"))
+        pdfService = PdfGenerator(OuluTemplateProvider(), pdfTemplateEngine("oulu"))
     }
 
     @Test

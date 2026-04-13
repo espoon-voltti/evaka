@@ -24,7 +24,7 @@ import evaka.core.shared.DaycareId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.ServiceNeedOptionId
-import evaka.core.shared.config.PDFConfig
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.template.ITemplateProvider
 import evaka.instance.turku.TurkuTemplateProvider
@@ -52,7 +52,7 @@ class DecisionServiceTest {
     @BeforeEach
     fun setup() {
         templateProvider = TurkuTemplateProvider()
-        pdfService = PdfGenerator(templateProvider, PDFConfig.templateEngine("turku"))
+        pdfService = PdfGenerator(templateProvider, pdfTemplateEngine("turku"))
     }
 
     @ParameterizedTest

@@ -5,13 +5,16 @@
 package evaka.instance.hameenkyro.template.config
 
 import evaka.core.decision.DecisionType
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.template.ITemplateProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.thymeleaf.ITemplateEngine
 
 @Configuration
 class TemplateConfiguration {
+    @Bean fun templateEngine(): ITemplateEngine = pdfTemplateEngine("hameenkyro")
 
     @Bean fun templateProvider(): ITemplateProvider = HameenkyroTemplateProvider()
 }
@@ -32,20 +35,19 @@ class HameenkyroTemplateProvider : ITemplateProvider {
             DecisionType.PREPARATORY_EDUCATION -> "Valmistavan_opetuksen_päätös"
         }
 
-    override fun getFeeDecisionPath(): String = "hameenkyro/fee-decision/decision"
+    override fun getFeeDecisionPath(): String = "fee-decision/decision"
 
-    override fun getVoucherValueDecisionPath(): String =
-        "hameenkyro/fee-decision/voucher-value-decision"
+    override fun getVoucherValueDecisionPath(): String = "fee-decision/voucher-value-decision"
 
-    override fun getClubDecisionPath(): String = "hameenkyro/club/decision"
+    override fun getClubDecisionPath(): String = "club/decision"
 
-    override fun getDaycareVoucherDecisionPath(): String = "hameenkyro/daycare/voucher/decision"
+    override fun getDaycareVoucherDecisionPath(): String = "daycare/voucher/decision"
 
-    override fun getDaycareTransferDecisionPath(): String = "hameenkyro/daycare/decision"
+    override fun getDaycareTransferDecisionPath(): String = "daycare/decision"
 
-    override fun getDaycareDecisionPath(): String = "hameenkyro/daycare/decision"
+    override fun getDaycareDecisionPath(): String = "daycare/decision"
 
-    override fun getPreschoolDecisionPath(): String = "hameenkyro/daycare/decision"
+    override fun getPreschoolDecisionPath(): String = "daycare/decision"
 
-    override fun getPreparatoryDecisionPath(): String = "hameenkyro/preparatory/decision"
+    override fun getPreparatoryDecisionPath(): String = "preparatory/decision"
 }

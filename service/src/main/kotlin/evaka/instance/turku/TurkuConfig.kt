@@ -27,7 +27,7 @@ import evaka.core.shared.FeatureConfig
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.PasswordConstraints
 import evaka.core.shared.auth.PasswordSpecification
-import evaka.core.shared.config.PDFConfig
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.message.IMessageProvider
 import evaka.core.shared.security.actionrule.ActionRuleMapping
 import evaka.core.shared.template.ITemplateProvider
@@ -148,7 +148,7 @@ class TurkuConfig {
 
     @Bean fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
 
-    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine("turku")
+    @Bean fun templateEngine(): ITemplateEngine = pdfTemplateEngine("turku")
 
     @Bean
     fun invoiceIntegrationClient(

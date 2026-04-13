@@ -5,6 +5,7 @@
 package evaka.instance.tampere.template.config
 
 import evaka.core.decision.DecisionType
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.template.ITemplateProvider
 import org.springframework.context.annotation.Bean
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class TemplateConfiguration {
+    @Bean fun templateEngine() = pdfTemplateEngine("tampere")
 
     @Bean fun templateProvider(): ITemplateProvider = TampereTemplateProvider()
 }
@@ -32,20 +34,19 @@ internal class TampereTemplateProvider : ITemplateProvider {
             DecisionType.PREPARATORY_EDUCATION -> throw Error("Not supported")
         }
 
-    override fun getFeeDecisionPath(): String = "tampere/fee-decision/decision"
+    override fun getFeeDecisionPath(): String = "fee-decision/decision"
 
-    override fun getVoucherValueDecisionPath(): String =
-        "tampere/fee-decision/voucher-value-decision"
+    override fun getVoucherValueDecisionPath(): String = "fee-decision/voucher-value-decision"
 
-    override fun getClubDecisionPath(): String = "tampere/club/decision"
+    override fun getClubDecisionPath(): String = "club/decision"
 
-    override fun getDaycareVoucherDecisionPath(): String = "tampere/daycare/voucher/decision"
+    override fun getDaycareVoucherDecisionPath(): String = "daycare/voucher/decision"
 
-    override fun getDaycareTransferDecisionPath(): String = "tampere/daycare/decision"
+    override fun getDaycareTransferDecisionPath(): String = "daycare/decision"
 
-    override fun getDaycareDecisionPath(): String = "tampere/daycare/decision"
+    override fun getDaycareDecisionPath(): String = "daycare/decision"
 
-    override fun getPreschoolDecisionPath(): String = "tampere/daycare/decision"
+    override fun getPreschoolDecisionPath(): String = "daycare/decision"
 
     override fun getPreparatoryDecisionPath(): String = throw Error("Not supported")
 }

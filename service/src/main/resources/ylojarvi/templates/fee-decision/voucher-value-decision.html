@@ -9,14 +9,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <head>
     <meta charset="utf-8"/>
-    <style th:replace="~{ylojarvi/shared/common.html :: css}"></style>
-    <style th:replace="~{ylojarvi/fee-decision/fee-decision-css.html}"></style>
+    <style th:replace="~{shared/common.html :: css}"></style>
+    <style th:replace="~{fee-decision/fee-decision-css.html}"></style>
 </head>
 
 <body>
 
-<header th:replace="~{ylojarvi/shared/common :: feeDecisionHeader}"></header>
-<footer th:replace="~{ylojarvi/shared/common :: footer}"></footer>
+<header th:replace="~{shared/common :: feeDecisionHeader}"></header>
+<footer th:replace="~{shared/common :: footer}"></footer>
 
 <div class="page">
     <h1 th:if="${isReliefDecision}" th:text="#{text.relief.title}"></h1>
@@ -167,7 +167,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 </div>
 
 <div class="page last-page">
-    <div th:replace="~{ylojarvi/shared/daycare-correction :: correction}"></div>
+    <div th:replace="~{shared/daycare-correction :: correction}"></div>
 </div>
 </body>
 </html>

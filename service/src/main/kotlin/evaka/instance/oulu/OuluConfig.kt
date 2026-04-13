@@ -27,7 +27,7 @@ import evaka.core.shared.FeatureConfig
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.PasswordConstraints
 import evaka.core.shared.auth.PasswordSpecification
-import evaka.core.shared.config.PDFConfig
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.shared.message.IMessageProvider
 import evaka.core.shared.security.actionrule.ActionRuleMapping
@@ -152,7 +152,7 @@ class OuluConfig {
 
     @Bean fun templateProvider(): ITemplateProvider = OuluTemplateProvider()
 
-    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine("oulu")
+    @Bean fun templateEngine(): ITemplateEngine = pdfTemplateEngine("oulu")
 
     @Bean fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic // TODO: implement
 

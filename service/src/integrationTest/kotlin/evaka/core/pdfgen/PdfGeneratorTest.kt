@@ -50,7 +50,7 @@ import evaka.core.shared.DaycareId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.DocumentTemplateId
 import evaka.core.shared.PersonId
-import evaka.core.shared.config.PDFConfig
+import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
@@ -304,12 +304,12 @@ class PdfGeneratorTestConfiguration {
 
     @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 
-    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine("espoo")
+    @Bean fun templateEngine(): ITemplateEngine = pdfTemplateEngine("espoo")
 }
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
-    classes = [PdfGeneratorTestConfiguration::class, PDFConfig::class, PdfGenerator::class],
+    classes = [PdfGeneratorTestConfiguration::class, PdfGenerator::class],
 )
 class PdfGeneratorTest {
     @Autowired lateinit var pdfGenerator: PdfGenerator

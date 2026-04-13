@@ -231,14 +231,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div>
         <div class="headerLeft">
             <div class="logo">
-                <img th:replace="~{tampere/shared/tampere-logo :: header-img}" />
+                <img th:replace="~{shared/tampere-logo :: header-img}" />
             </div>
         </div>
         <div class="headerRight">
             <div class="left-column">
                 <div th:text="#{header.1}">PÄÄTÖS</div>
                 <div th:text="${#messages.msgOrNull('header.2.' + decision.type)} ?: #{header.2}"></div>
-                <div><span th:replace="~{tampere/shared/common :: decision-date}"></span></div>
+                <div><span th:replace="~{shared/common :: decision-date}"></span></div>
                 <div th:unless="${decision.type.name() == 'CLUB'}">
                     <span th:text="#{header.decisionNumber}">Päätöksen numero</span>
                     <span th:text="${decision.decisionNumber}"></span>
@@ -256,7 +256,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div>
         <div class="headerLeft">
             <div class="logo">
-                <img th:replace="~{tampere/shared/tampere-logo :: header-img}" />
+                <img th:replace="~{shared/tampere-logo :: header-img}" />
             </div>
         </div>
         <div class="headerRight">
@@ -282,7 +282,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div>
         <div class="headerLeft">
             <div class="logo">
-                <img th:replace="~{tampere/shared/tampere-logo :: header-img}" />
+                <img th:replace="~{shared/tampere-logo :: header-img}" />
             </div>
         </div>
         <div class="headerRight">
@@ -308,7 +308,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div>
         <div class="footerLeft">
             <div class="logo">
-                <img th:replace="~{tampere/shared/tampere-logo :: footer-img}" />
+                <img th:replace="~{shared/tampere-logo :: footer-img}" />
             </div>
         </div>
     </div>
@@ -369,7 +369,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div class="decision-details-container">
         <p>
             <strong th:text="${#messages.msgOrNull('decision.sentDate.' + decision.type)} ?: #{decision.sentDate}">Päätöspäivä</strong>
-            <span th:replace="~{tampere/shared/common :: format-date(${decision.sentDate})}"></span>
+            <span th:replace="~{shared/common :: format-date(${decision.sentDate})}"></span>
         </p>
         <p th:unless="${decision.type.name() == 'PRESCHOOL_DAYCARE'}">
           <strong th:text="#{decision.inform.title}">Tiedoksi:</strong>

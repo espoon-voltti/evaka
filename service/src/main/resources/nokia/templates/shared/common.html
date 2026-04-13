@@ -231,14 +231,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div>
         <div class="headerLeft">
             <div class="logo">
-                <img th:replace="~{nokia/shared/nokia-logo :: header-img}" />
+                <img th:replace="~{shared/nokia-logo :: header-img}" />
             </div>
         </div>
         <div class="headerRight">
             <div class="left-column">
                 <div th:text="#{header.1}">PÄÄTÖS</div>
                 <div th:text="${#messages.msgOrNull('header.2.' + decision.type)} ?: #{header.2}"></div>
-                <div><span th:replace="~{nokia/shared/common :: decision-date(type = ${type})}"></span></div>
+                <div><span th:replace="~{shared/common :: decision-date(type = ${type})}"></span></div>
                 <div th:unless="${type == 'notice'}">
                     <span th:text="#{header.decisionNumber}">Päätöksen numero</span>
                     <span th:text="${decision.decisionNumber}"></span>
@@ -256,7 +256,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div>
         <div class="headerLeft">
             <div class="logo">
-                <img th:replace="~{nokia/shared/nokia-logo :: header-img}" />
+                <img th:replace="~{shared/nokia-logo :: header-img}" />
             </div>
         </div>
         <div class="headerRight">
@@ -282,7 +282,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div>
         <div class="headerLeft">
             <div class="logo">
-                <img th:replace="~{nokia/shared/nokia-logo :: header-img}" />
+                <img th:replace="~{shared/nokia-logo :: header-img}" />
             </div>
         </div>
         <div class="headerRight">
@@ -320,7 +320,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             <span th:utext="#{decision.details.child(${child.firstName}, ${child.lastName}, ${#temporals.format(child.dateOfBirth, 'd.M.yyyy')})}">Lapsellenne</span>
             <br/>
             <span th:utext="${#messages.msgOrNull('decision.details.date.' + decision.type)} ?: #{decision.details.date}">on myönnetty varhaiskasvatuspaikka ajalle</span>
-            <span th:replace="~{nokia/shared/common :: placement-dates}"></span>
+            <span th:replace="~{shared/common :: placement-dates}"></span>
         </p>
     </div>
 
@@ -364,7 +364,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <p>
             <strong th:if="${type == 'notice'}" th:text="#{notice.sentDate}">Ilmoituspäivä</strong>
             <strong th:unless="${type == 'notice'}" th:text="#{decision.sentDate}">Päätöspäivä</strong>
-            <span th:replace="~{nokia/shared/common :: format-date(${decision.sentDate})}"></span>
+            <span th:replace="~{shared/common :: format-date(${decision.sentDate})}"></span>
         </p>
         <p>
             <strong th:text="#{notice.noticeMethodTitle}">Tiedoksiantotapa:</strong>
