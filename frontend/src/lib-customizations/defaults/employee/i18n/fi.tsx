@@ -1545,13 +1545,13 @@ export const fi = {
       editModalTitle: 'Huoltajan eVaka-oikeudet',
       modalInfoParagraph: (
         <>
-          EVaka-oikeuksilla määritetään, näkeekö huoltaja huostaanotettuun
-          lapseensa liittyvät tiedot eVakassa. Oikeudet voi kieltää vain{' '}
+          eVaka-oikeuksilla määritetään, näkeekö huoltaja lapseen liittyvät
+          tiedot eVakassa. Oikeudet voi kieltää{' '}
           <strong>
-            perustelluissa lastensuojelutilanteissa sosiaalityöntekijän
-            kirjallisella ilmoituksella
-          </strong>
-          . Oikeudet tulee palauttaa, mikäli huostaanotto päättyy.
+            esimerkiksi sosiaalityöntekijän tai muun toimivaltaisen viranomaisen
+            ilmoituksen perusteella
+          </strong>{' '}
+          . Oikeudet tulee palauttaa, mikäli kiellolle ei ole enää perustetta.
         </>
       ),
       modalUpdateSubtitle:
