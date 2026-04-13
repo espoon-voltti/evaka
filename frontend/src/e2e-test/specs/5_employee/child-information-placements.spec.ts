@@ -2,21 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { PlacementType } from 'lib-common/generated/api-types/placement'
-import type {
-  DaycareId,
-  PersonId,
-  PlacementId
-} from 'lib-common/generated/api-types/shared'
+import type { DaycareId, PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { evakaUserId, randomId } from 'lib-common/id-type'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
-  createDaycarePlacementFixture,
   testDaycareGroup,
   familyWithTwoGuardians,
   Fixture,
@@ -26,7 +20,6 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
-  createDaycarePlacements,
   createDefaultServiceNeedOptions,
   resetServiceState,
   terminatePlacement
@@ -45,25 +38,8 @@ import { employeeLogin } from '../../utils/user'
 
 test.beforeEach(async (): Promise<void> => resetServiceState())
 
-const setupPlacement = async (
-  placementId: PlacementId,
-  childId: PersonId,
-  unitId: DaycareId,
-  childPlacementType: PlacementType
-) => {
-  await createDaycarePlacements({
-    body: [
-      createDaycarePlacementFixture(
-        placementId,
-        childId,
-        unitId,
-        LocalDate.todayInSystemTz(),
-        LocalDate.todayInSystemTz(),
-        childPlacementType
-      )
-    ]
-  })
-}
+const mockToday = LocalDate.of(2023, 9, 6)
+const mockedTime = HelsinkiDateTime.fromLocal(mockToday, LocalTime.of(9, 35))
 
 async function openChildPlacements(page: Page, childId: UUID) {
   await page.goto(config.employeeUrl + '/child-information/' + childId)
@@ -76,6 +52,10 @@ test.describe('Child Information placement info', () => {
   let page: Page
   let childId: PersonId
   let unitId: DaycareId
+
+  test.use({
+    evakaOptions: { mockedTime }
+  })
 
   test.beforeEach(async ({ evaka }) => {
     await testCareArea.save()
@@ -95,41 +75,46 @@ test.describe('Child Information placement info', () => {
   })
 
   test('A terminated placement is indicated', async () => {
-    const placementId = randomId<PlacementId>()
-    await setupPlacement(placementId, childId, unitId, 'DAYCARE')
+    const placement = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: mockToday,
+      endDate: mockToday,
+      type: 'DAYCARE'
+    }).save()
 
     let childPlacements = await openChildPlacements(page, childId)
-    await childPlacements.assertTerminatedByGuardianIsNotShown(placementId)
+    await childPlacements.assertTerminatedByGuardianIsNotShown(placement.id)
 
     await terminatePlacement({
       body: {
-        placementId,
-        endDate: LocalDate.todayInSystemTz(),
-        terminationRequestedDate: LocalDate.todayInSystemTz(),
+        placementId: placement.id,
+        endDate: mockToday,
+        terminationRequestedDate: mockToday,
         terminatedBy: evakaUserId(familyWithTwoGuardians.guardian.id)
       }
     })
 
     childPlacements = await openChildPlacements(page, childId)
-    await childPlacements.assertTerminatedByGuardianIsShown(placementId)
+    await childPlacements.assertTerminatedByGuardianIsShown(placement.id)
   })
 
   test('Placement source and creator are shown', async () => {
-    const placementId = randomId<PlacementId>()
-    await setupPlacement(placementId, childId, unitId, 'DAYCARE')
+    const placement = await Fixture.placement({
+      childId,
+      unitId,
+      startDate: mockToday,
+      endDate: mockToday,
+      type: 'DAYCARE'
+    }).save()
 
     const childPlacements = await openChildPlacements(page, childId)
-    await childPlacements.assertSource(placementId, 'Työntekijä manuaalisesti')
-    await childPlacements.assertCreatedBy(placementId, 'eVaka')
+    await childPlacements.assertSource(placement.id, 'Työntekijä manuaalisesti')
+    await childPlacements.assertCreatedBy(placement.id, 'eVaka')
   })
 })
 
 test.describe('Child Information placement create (feature flag place guarantee = true)', () => {
-  const mockedTime = HelsinkiDateTime.fromLocal(
-    LocalDate.of(2023, 9, 6),
-    LocalTime.of(9, 35)
-  )
-
   test.use({
     evakaOptions: {
       mockedTime,

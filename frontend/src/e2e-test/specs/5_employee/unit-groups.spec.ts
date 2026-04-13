@@ -37,8 +37,9 @@ import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const groupId = randomId<GroupId>()
-const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
-const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
+const today = LocalDate.of(2026, 4, 13)
+const placementStartDate = today.subWeeks(4)
+const placementEndDate = today.addWeeks(4)
 
 let unitPage: UnitPage
 let child1Fixture: DevPerson
@@ -128,8 +129,8 @@ test.describe('Unit groups - unit supervisor', () => {
     await terminatePlacement({
       body: {
         placementId: child1DaycarePlacementId,
-        endDate: LocalDate.todayInSystemTz(),
-        terminationRequestedDate: LocalDate.todayInSystemTz(),
+        endDate: today,
+        terminationRequestedDate: today,
         terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
@@ -141,8 +142,8 @@ test.describe('Unit groups - unit supervisor', () => {
     await terminatePlacement({
       body: {
         placementId: child1DaycarePlacementId,
-        endDate: LocalDate.todayInSystemTz(),
-        terminationRequestedDate: LocalDate.todayInSystemTz(),
+        endDate: today,
+        terminationRequestedDate: today,
         terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
@@ -150,8 +151,8 @@ test.describe('Unit groups - unit supervisor', () => {
     await terminatePlacement({
       body: {
         placementId: child2DaycarePlacementId,
-        endDate: LocalDate.todayInSystemTz(),
-        terminationRequestedDate: LocalDate.todayInSystemTz(),
+        endDate: today,
+        terminationRequestedDate: today,
         terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
@@ -162,8 +163,8 @@ test.describe('Unit groups - unit supervisor', () => {
     await terminatePlacement({
       body: {
         placementId: child1DaycarePlacementId,
-        endDate: LocalDate.todayInSystemTz(),
-        terminationRequestedDate: LocalDate.todayInSystemTz().subDays(15),
+        endDate: today,
+        terminationRequestedDate: today.subDays(15),
         terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
@@ -298,8 +299,8 @@ test.describe('Unit groups - staff', () => {
     await terminatePlacement({
       body: {
         placementId: child1DaycarePlacementId,
-        endDate: LocalDate.todayInSystemTz(),
-        terminationRequestedDate: LocalDate.todayInSystemTz(),
+        endDate: today,
+        terminationRequestedDate: today,
         terminatedBy: evakaUserId(unitSupervisor.id)
       }
     })
