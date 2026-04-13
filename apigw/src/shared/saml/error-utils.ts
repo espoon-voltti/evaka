@@ -56,7 +56,7 @@ function parseErrorMessage(status: StatusObject): string {
 
 export const samlErrorSchema = z.object({
   message: z.string(),
-  statusXml: z.string()
+  xmlStatus: z.string()
 })
 
 export type SamlError = z.infer<typeof samlErrorSchema>
@@ -65,8 +65,8 @@ export function parseDescriptionFromSamlError(
   error: SamlError,
   req: Request
 ): string | undefined {
-  if (!error.statusXml) {
-    logDebug('No statusXml found from SAML error', req, { error })
+  if (!error.xmlStatus) {
+    logDebug('No xmlStatus found from SAML error', req, { error })
     return
   }
 
@@ -75,7 +75,7 @@ export function parseDescriptionFromSamlError(
     parseAttributeValue: true
   })
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const statusObject: StatusObject = parser.parse(error.statusXml)
+  const statusObject: StatusObject = parser.parse(error.xmlStatus)
 
   if (!statusObject) {
     logError(
