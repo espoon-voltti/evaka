@@ -55,8 +55,7 @@ dependencies {
         api("org.apache.groovy:groovy") { version { strictly("5.0.3") } }
 
         // These constraints are needed for CVE fixes
-        api("ch.qos.logback:logback-classic:1.5.32")
-        api("ch.qos.logback:logback-core:1.5.32")
+        api("org.apache.tomcat.embed:tomcat-embed-core:11.0.21")
     }
 
     api(platform("tools.jackson:jackson-bom:3.1.1"))
