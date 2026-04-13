@@ -41,32 +41,32 @@ val integrationTestImplementation: Configuration by
 val downloadOnly: Configuration by configurations.creating { isTransitive = false }
 
 val xjcTool: Configuration by configurations.creating
-val xjcGenerate = tasks.register<JavaExec>("xjcGenerate") {
-    group = "code generation"
-    description = "Generates Java classes from XML schema using the XJC binding compiler"
+val xjcGenerate =
+    tasks.register<JavaExec>("xjcGenerate") {
+        group = "code generation"
+        description = "Generates Java classes from XML schema using the XJC binding compiler"
 
-    val schemaDirectory = layout.projectDirectory.dir("src/main/schema")
-    val outputDirectory = layout.buildDirectory.dir("generated/sources/xjc/java/main")
+        val schemaDirectory = layout.projectDirectory.dir("src/main/schema")
+        val outputDirectory = layout.buildDirectory.dir("generated/sources/xjc/java/main")
 
-    classpath = xjcTool
-    mainClass = "com.sun.tools.xjc.Driver"
-    args = listOf(
-        "-no-header",
-        "-quiet",
-        "-d",
-        outputDirectory.get().asFile.absolutePath,
-        schemaDirectory.asFile.absolutePath,
-    )
+        classpath = xjcTool
+        mainClass = "com.sun.tools.xjc.Driver"
+        args =
+            listOf(
+                "-no-header",
+                "-quiet",
+                "-d",
+                outputDirectory.get().asFile.absolutePath,
+                schemaDirectory.asFile.absolutePath,
+            )
 
-    inputs.dir(schemaDirectory)
-    outputs.dir(outputDirectory)
-}
-tasks.compileKotlin {
-    dependsOn(xjcGenerate)
-}
-sourceSets.main {
-    java.srcDirs(xjcGenerate)
-}
+        inputs.dir(schemaDirectory)
+        outputs.dir(outputDirectory)
+    }
+
+tasks.compileKotlin { dependsOn(xjcGenerate) }
+
+sourceSets.main { java.srcDirs(xjcGenerate) }
 
 configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
 
