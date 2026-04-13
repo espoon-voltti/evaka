@@ -164,8 +164,7 @@ fun Database.Read.getPersonDuplicateOf(id: PersonId): PersonId? =
         .mapTo<PersonId>()
         .exactlyOneOrNull()
 
-private val personSortColumns =
-    listOf("first_name", "last_name", "date_of_birth", "street_address", "social_security_number")
+private val personSortColumns = listOf("first_name", "last_name", "date_of_birth", "street_address")
 
 data class PersonSummary(
     val id: PersonId,
@@ -178,6 +177,10 @@ data class PersonSummary(
     val restrictedDetailsEnabled: Boolean,
 )
 
+/**
+ * Returns person search results. SSN is intentionally returned as null to avoid exposing sensitive
+ * data.
+ */
 fun Database.Read.searchPeople(
     user: AuthenticatedUser.Employee,
     searchTerms: String,
@@ -217,7 +220,8 @@ fun Database.Read.searchPeople(
                 """
         SELECT
             id,
-            social_security_number,
+            -- SSN is intentionally excluded from search results to avoid exposing sensitive data
+            NULL AS social_security_number,
             first_name,
             last_name,
             date_of_birth,

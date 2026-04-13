@@ -108,10 +108,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val persons =
             db.read { it.searchPeople(adminUser, "010199-8137", "last_name", "ASC", false) }
         assertEquals(1, persons.size)
-        assertEquals(
-            persons[0].socialSecurityNumber,
-            (created.identity as? ExternalIdentifier.SSN)?.ssn,
-        )
+        assertEquals(created.id, persons[0].id)
     }
 
     @Test
@@ -120,10 +117,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val persons =
             db.read { it.searchPeople(adminUser, "230601a329J", "last_name", "ASC", false) }
         assertEquals(1, persons.size)
-        assertEquals(
-            persons[0].socialSecurityNumber,
-            (created.identity as? ExternalIdentifier.SSN)?.ssn,
-        )
+        assertEquals(created.id, persons[0].id)
     }
 
     @Test
@@ -250,10 +244,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             db.read { it.searchPeople(adminUser, "'&Jokut!|&", "last_name", "ASC", false) }
 
         assertEquals(1, persons.size)
-        assertEquals(
-            persons[0].socialSecurityNumber,
-            (created.identity as? ExternalIdentifier.SSN)?.ssn,
-        )
+        assertEquals(created.id, persons[0].id)
     }
 
     @Test
@@ -262,10 +253,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val persons = db.read { it.searchPeople(adminUser, "<Jokut>", "last_name", "ASC", false) }
 
         assertEquals(1, persons.size)
-        assertEquals(
-            persons[0].socialSecurityNumber,
-            (created.identity as? ExternalIdentifier.SSN)?.ssn,
-        )
+        assertEquals(created.id, persons[0].id)
     }
 
     @Test
@@ -274,10 +262,7 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val persons = db.read { it.searchPeople(adminUser, "'O'Brien", "last_name", "ASC", false) }
 
         assertEquals(1, persons.size)
-        assertEquals(
-            persons[0].socialSecurityNumber,
-            (created.identity as? ExternalIdentifier.SSN)?.ssn,
-        )
+        assertEquals(created.id, persons[0].id)
     }
 
     private fun createVtjPerson(

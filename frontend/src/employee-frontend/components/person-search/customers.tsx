@@ -12,7 +12,6 @@ export type SearchColumn =
   | 'last_name,first_name'
   | 'date_of_birth'
   | 'street_address'
-  | 'social_security_number'
 
 export interface CustomersState {
   searchTerm: string
