@@ -4,7 +4,8 @@
     "rootDir": ".",
     "composite": true,
     "jsx": "react-jsx",
-    "outDir": "../../dist/citizen-frontend"
+    "outDir": "../../dist/citizen-frontend",
+    "types": ["node", "@testing-library/jest-dom"]
   },
   "references": [
     { "path": "../lib-common" },

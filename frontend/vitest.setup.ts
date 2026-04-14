@@ -2,9 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { afterEach } from 'vitest'
+
+configure({ testIdAttribute: 'data-qa' })
 
 afterEach(() => {
   cleanup()
