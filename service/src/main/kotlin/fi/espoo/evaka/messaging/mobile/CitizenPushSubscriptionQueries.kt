@@ -61,17 +61,3 @@ fun Database.Read.getCitizenPushSubscription(
             )
         }
         .exactlyOneOrNull<CitizenPushSubscription>()
-
-fun Database.Read.getCitizenPushSubscriptions(
-    citizenId: PersonId
-): List<CitizenPushSubscription> =
-    createQuery {
-            sql(
-                """
-                SELECT citizen_id, device_id, expo_push_token
-                FROM citizen_push_subscription
-                WHERE citizen_id = ${bind(citizenId)}
-                """
-            )
-        }
-        .toList<CitizenPushSubscription>()
