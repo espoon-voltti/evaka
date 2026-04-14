@@ -39,7 +39,7 @@ import { unreadMessagesCountQuery } from '../messages/queries'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import AttentionIndicator from './AttentionIndicator'
-import { headerHeightMobile, logoutUrl, mobileBottomNavHeight } from './const'
+import { headerHeightMobile, logoutUrl } from './const'
 import {
   CircledChar,
   DropDownInfo,
@@ -147,27 +147,43 @@ export default React.memo(function MobileNav() {
 })
 
 const BottomBar = styled.nav`
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 360px;
+  height: 72px;
+  border-radius: 36px;
   z-index: 25;
-  color: ${colors.grayscale.g100};
-  background-color: ${colors.grayscale.g0};
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: ${mobileBottomNavHeight}px;
-  width: 100%;
-  padding: ${defaultMargins.xs};
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.15);
+  padding: 0 12px;
+  background: transparent;
+  isolation: isolate;
+  color: ${colors.grayscale.g100};
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(20px) saturate(1.2);
+    -webkit-backdrop-filter: blur(20px) saturate(1.2);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.12),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    z-index: -1;
+  }
 
   @media (min-width: ${desktopMin}) {
     display: none;
   }
 
   @media screen and (max-width: ${zoomedMobileMax}) {
-    padding: ${defaultMargins.xxs};
-    overflow-x: auto;
+    padding: 0 8px;
   }
 
   @media print {
@@ -446,12 +462,12 @@ const MenuContainer = styled.div`
   position: fixed;
   overflow-y: scroll;
   top: ${headerHeightMobile}px;
-  bottom: ${mobileBottomNavHeight}px;
+  bottom: 0;
   right: 0;
   background: ${colors.grayscale.g0};
   box-sizing: border-box;
   width: 100vw;
-  height: calc(100% - ${headerHeightMobile}px - ${mobileBottomNavHeight}px);
+  height: calc(100% - ${headerHeightMobile}px);
   padding: ${defaultMargins.s};
   display: flex;
   flex-direction: column;
