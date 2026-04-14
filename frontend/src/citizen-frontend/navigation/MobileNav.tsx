@@ -265,10 +265,13 @@ const BottomBar = styled.nav`
     padding: 0 8px;
   }
 
-  /* 360px pill max-width + 24px side gap — refraction only when pill hits its baked 360×72 geometry */
+  /* 360px pill max-width + 24px side gap — refraction only when pill hits its baked 360×72 geometry.
+     The blur() + saturate() are repeated here so Firefox (which parses url() as valid but cannot
+     render filter references in backdrop-filter) still shows the frosted-glass fallback instead
+     of swapping the cascade for an unrenderable url(). */
   @media (min-width: 384px) {
     &::before {
-      backdrop-filter: url(#liquid-glass-bottom-nav);
+      backdrop-filter: blur(20px) saturate(1.2) url(#liquid-glass-bottom-nav);
     }
   }
 
