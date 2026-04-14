@@ -9,11 +9,11 @@ import { usePwaInstall } from './usePwaInstall'
 
 class MockBeforeInstallPromptEvent extends Event {
   prompt = vi.fn().mockResolvedValue(undefined)
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }> =
-    Promise.resolve({ outcome: 'accepted', platform: 'web' })
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
 
-  constructor() {
+  constructor(outcome: 'accepted' | 'dismissed' = 'accepted') {
     super('beforeinstallprompt', { cancelable: true })
+    this.userChoice = Promise.resolve({ outcome, platform: 'web' })
   }
 }
 
@@ -75,10 +75,10 @@ describe('usePwaInstall', () => {
     expect(result.current.kind).toBe('native')
   })
 
-  it('promptInstall calls the deferred event prompt and clears state on accept', async () => {
+  it('promptInstall on accept transitions to standalone', async () => {
     const { result } = renderHook(() => usePwaInstall())
 
-    const event = new MockBeforeInstallPromptEvent()
+    const event = new MockBeforeInstallPromptEvent('accepted')
     act(() => {
       window.dispatchEvent(event)
     })
@@ -92,6 +92,29 @@ describe('usePwaInstall', () => {
     })
 
     expect(event.prompt).toHaveBeenCalledOnce()
+    expect(result.current.kind).toBe('standalone')
+  })
+
+  it('promptInstall on dismiss transitions back to fallback', async () => {
+    const { result } = renderHook(() => usePwaInstall())
+
+    const event = new MockBeforeInstallPromptEvent('dismissed')
+    act(() => {
+      window.dispatchEvent(event)
+    })
+
+    expect(result.current.kind).toBe('native')
+
+    await act(async () => {
+      if (result.current.kind === 'native') {
+        await result.current.promptInstall()
+      }
+    })
+
+    expect(result.current.kind).toBe('fallback')
+    if (result.current.kind === 'fallback') {
+      expect(result.current.platform.os).toBe('ios')
+    }
   })
 
   it('transitions to standalone when appinstalled fires', () => {

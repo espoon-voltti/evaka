@@ -40,7 +40,12 @@ export function usePwaInstall(): PwaInstallState {
     if (!deferred) return
     await deferred.prompt()
     try {
-      await deferred.userChoice
+      const { outcome } = await deferred.userChoice
+      if (outcome === 'accepted') {
+        setState({ kind: 'standalone' })
+      } else {
+        setState({ kind: 'fallback', platform: detectPlatform() })
+      }
     } finally {
       deferredPromptRef.current = null
     }
@@ -48,6 +53,7 @@ export function usePwaInstall(): PwaInstallState {
 
   useEffect(() => {
     const onBeforeInstallPrompt = (event: Event) => {
+      // Suppress the default mini-infobar so we can defer the prompt to our own UI.
       event.preventDefault()
       deferredPromptRef.current = event as BeforeInstallPromptEvent
       setState({ kind: 'native', promptInstall })
@@ -65,7 +71,8 @@ export function usePwaInstall(): PwaInstallState {
       window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt)
       window.removeEventListener('appinstalled', onAppInstalled)
     }
-  }, [promptInstall])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // promptInstall is stable (useCallback with []) — listeners never need re-binding
 
   return state
 }
