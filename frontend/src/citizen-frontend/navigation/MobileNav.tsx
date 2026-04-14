@@ -39,7 +39,9 @@ import { unreadMessagesCountQuery } from '../messages/queries'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import AttentionIndicator from './AttentionIndicator'
-import { headerHeightMobile, logoutUrl, mobileBottomNavHeight } from './const'
+import { headerHeightMobile, logoutUrl } from './const'
+import displacementUrl from './liquid-glass/displacement.png'
+import specularUrl from './liquid-glass/specular.png'
 import {
   CircledChar,
   DropDownInfo,
@@ -52,6 +54,21 @@ import {
   useUnreadChildNotifications,
   useUnreadDecisions
 } from './utils'
+
+// Firefox parses `backdrop-filter: url(#...)` as valid but cannot render
+// filter references in backdrop-filter, so the CSS cascade alone cannot
+// gate the liquid-glass refraction to browsers that actually support it.
+// Tag the <html> element with a class at module load so the refraction
+// tier only activates on Chromium-family browsers; everyone else falls
+// through to the frosted-blur fallback declared on `::before`.
+if (typeof document !== 'undefined' && typeof navigator !== 'undefined') {
+  const isFirefox = /Firefox\//.test(navigator.userAgent)
+  const isChromium =
+    'chrome' in window && !!(window as { chrome?: unknown }).chrome
+  if (!isFirefox && isChromium) {
+    document.documentElement.classList.add('supports-backdrop-filter-url')
+  }
+}
 
 export default React.memo(function MobileNav() {
   const t = useTranslation()
@@ -85,6 +102,7 @@ export default React.memo(function MobileNav() {
       {(user) =>
         user ? (
           <>
+            <LiquidGlassFilter />
             <BottomBar>
               {user.accessibleFeatures.reservations && (
                 <BottomBarLink
@@ -146,28 +164,131 @@ export default React.memo(function MobileNav() {
   )
 })
 
+const LiquidGlassFilter = React.memo(function LiquidGlassFilter() {
+  return (
+    <svg
+      width="0"
+      height="0"
+      style={{ position: 'absolute' }}
+      aria-hidden="true"
+    >
+      <defs>
+        <filter
+          id="liquid-glass-bottom-nav"
+          x="0%"
+          y="0%"
+          width="100%"
+          height="100%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feGaussianBlur
+            in="SourceGraphic"
+            stdDeviation="2.4"
+            result="blurred_source"
+          />
+          <feImage
+            href={displacementUrl}
+            x="0"
+            y="0"
+            width="360"
+            height="72"
+            preserveAspectRatio="none"
+            result="displacement_map"
+          />
+          <feDisplacementMap
+            in="blurred_source"
+            in2="displacement_map"
+            scale="32.376661632244854"
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="displaced"
+          />
+          <feColorMatrix
+            in="displaced"
+            type="saturate"
+            values="14"
+            result="displaced_saturated"
+          />
+          <feImage
+            href={specularUrl}
+            x="0"
+            y="0"
+            width="360"
+            height="72"
+            preserveAspectRatio="none"
+            result="specular_layer"
+          />
+          <feComposite
+            in="displaced_saturated"
+            in2="specular_layer"
+            operator="in"
+            result="specular_saturated"
+          />
+          <feComponentTransfer in="specular_layer" result="specular_faded">
+            <feFuncA type="linear" slope="0.24" />
+          </feComponentTransfer>
+          <feBlend
+            in="specular_saturated"
+            in2="displaced"
+            mode="normal"
+            result="withSaturation"
+          />
+          <feBlend in="specular_faded" in2="withSaturation" mode="normal" />
+        </filter>
+      </defs>
+    </svg>
+  )
+})
+
 const BottomBar = styled.nav`
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 360px;
+  height: 72px;
+  border-radius: 36px;
   z-index: 25;
-  color: ${colors.grayscale.g100};
-  background-color: ${colors.grayscale.g0};
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: ${mobileBottomNavHeight}px;
-  width: 100%;
-  padding: ${defaultMargins.xs};
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.15);
+  padding: 0 12px;
+  background: transparent;
+  isolation: isolate;
+  color: ${colors.grayscale.g100};
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(5px) saturate(1.2);
+    -webkit-backdrop-filter: blur(5px) saturate(1.2);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.12),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    z-index: -1;
+  }
 
   @media (min-width: ${desktopMin}) {
     display: none;
   }
 
   @media screen and (max-width: ${zoomedMobileMax}) {
-    padding: ${defaultMargins.xxs};
-    overflow-x: auto;
+    padding: 0 8px;
+  }
+
+  /* 360px pill max-width + 24px side gap — refraction only when pill hits its baked 360×72 geometry.
+     Gated on .supports-backdrop-filter-url (set on <html> at module load, see module head)
+     because Firefox parses url() in backdrop-filter as valid but cannot render it — leaving
+     the CSS cascade to pick would replace the blur with an unrenderable url() and kill the
+     frosted-glass fallback. */
+  @media (min-width: 384px) {
+    .supports-backdrop-filter-url &::before {
+      backdrop-filter: url(#liquid-glass-bottom-nav);
+    }
   }
 
   @media print {
@@ -446,12 +567,12 @@ const MenuContainer = styled.div`
   position: fixed;
   overflow-y: scroll;
   top: ${headerHeightMobile}px;
-  bottom: ${mobileBottomNavHeight}px;
+  bottom: 0;
   right: 0;
   background: ${colors.grayscale.g0};
   box-sizing: border-box;
   width: 100vw;
-  height: calc(100% - ${headerHeightMobile}px - ${mobileBottomNavHeight}px);
+  height: calc(100% - ${headerHeightMobile}px);
   padding: ${defaultMargins.s};
   display: flex;
   flex-direction: column;
