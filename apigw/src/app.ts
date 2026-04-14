@@ -11,6 +11,8 @@ import mapRoutes from './enduser/mapRoutes.ts'
 import { citizenAuthStatus } from './enduser/routes/auth-status.ts'
 import { authWeakLogin } from './enduser/routes/auth-weak-login.ts'
 import { authWeakUpdateCredentials } from './enduser/routes/auth-weak-update-credentials.ts'
+import { passkeyAuthRoutes } from './enduser/routes/passkey-auth.ts'
+import { passkeyCredentialsRoutes } from './enduser/routes/passkey-credentials.ts'
 import {
   createCitizenSuomiFiIntegration,
   createEmployeeSuomiFiIntegration
@@ -295,6 +297,15 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       redisClient,
       config.citizen.cookieSecret
     )
+  )
+  router.use(
+    '/citizen/auth/passkey',
+    passkeyAuthRoutes(config, citizenSessions, redisClient)
+  )
+  router.use(
+    '/citizen/passkey/credentials',
+    citizenSessions.requireAuthentication,
+    passkeyCredentialsRoutes(citizenSessions)
   )
   router.put(
     '/citizen/personal-data/weak-login-credentials',

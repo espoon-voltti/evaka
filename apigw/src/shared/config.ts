@@ -335,7 +335,21 @@ const envVariables = {
   /**
    * API key for the OpenAI API, used for bulletin message AI review
    */
-  OPENAI_API_KEY: unset<string>()
+  OPENAI_API_KEY: unset<string>(),
+
+  // ----- Passkey (WebAuthn) configuration -----
+  /**
+   * WebAuthn Relying Party ID (domain, e.g. "localhost" or "evaka.example.com")
+   */
+  PASSKEY_RPID: 'localhost',
+  /**
+   * WebAuthn expected origin (e.g. "http://localhost:9099")
+   */
+  PASSKEY_ORIGIN: 'http://localhost:9099',
+  /**
+   * WebAuthn Relying Party display name shown to the user
+   */
+  PASSKEY_RP_NAME: 'eVaka'
 }
 
 // helper function to specify the type of undefined without casting
@@ -397,6 +411,11 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
 export interface Config {
   citizen: SessionConfig & { weakLoginRateLimit: number }
   employee: SessionConfig
+  passkey: {
+    rpId: string
+    origin: string
+    rpName: string
+  }
   ad:
     | { type: 'mock' | 'disabled' }
     | {
@@ -653,6 +672,11 @@ export function configFromEnv(): Config {
       sessionTimeoutMinutes:
         optional('EMPLOYEE_SESSION_TIMEOUT_MINUTES', parseInteger) ??
         defaultSessionTimeoutMinutes
+    },
+    passkey: {
+      rpId: required('PASSKEY_RPID', unchanged),
+      origin: required('PASSKEY_ORIGIN', unchanged),
+      rpName: required('PASSKEY_RP_NAME', unchanged)
     },
     ad,
     sfi,
