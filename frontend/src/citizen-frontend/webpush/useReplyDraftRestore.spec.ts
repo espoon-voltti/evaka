@@ -6,7 +6,7 @@ import 'fake-indexeddb/auto'
 import { renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { saveDraft } from './draftStore'
+import * as draftStore from './draftStore'
 import { useReplyDraftRestore } from './useReplyDraftRestore'
 
 async function resetDb() {
@@ -19,10 +19,13 @@ async function resetDb() {
 }
 
 describe('useReplyDraftRestore', () => {
-  afterEach(resetDb)
+  afterEach(async () => {
+    vi.restoreAllMocks()
+    await resetDb()
+  })
 
   it('loads a saved draft and calls onRestore', async () => {
-    await saveDraft('thread-a', 'saved from notification')
+    await draftStore.saveDraft('thread-a', 'saved from notification')
     const onRestore = vi.fn()
 
     const { result } = renderHook(() =>
@@ -36,18 +39,21 @@ describe('useReplyDraftRestore', () => {
   })
 
   it('does not flip restored when no draft exists', async () => {
+    const loadSpy = vi.spyOn(draftStore, 'loadDraft')
     const onRestore = vi.fn()
+
     const { result } = renderHook(() =>
       useReplyDraftRestore('no-draft', onRestore)
     )
-    // Give the effect a tick to resolve
-    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    await waitFor(() => expect(loadSpy).toHaveBeenCalledWith('no-draft'))
+    // loadDraft has resolved — the effect has observed the null draft.
     expect(onRestore).not.toHaveBeenCalled()
     expect(result.current.restored).toBe(false)
   })
 
   it('discardDraft removes the IDB entry and resets restored', async () => {
-    await saveDraft('thread-b', 'discard me')
+    await draftStore.saveDraft('thread-b', 'discard me')
     const onRestore = vi.fn()
     const { result } = renderHook(() =>
       useReplyDraftRestore('thread-b', onRestore)
@@ -57,10 +63,11 @@ describe('useReplyDraftRestore', () => {
     result.current.discardDraft()
     await waitFor(() => expect(result.current.restored).toBe(false))
 
-    // The IDB entry should be gone. Remount should NOT restore.
+    // Remount — IDB entry should be gone, so loadDraft resolves with null.
+    const loadSpy = vi.spyOn(draftStore, 'loadDraft')
     const onRestore2 = vi.fn()
     renderHook(() => useReplyDraftRestore('thread-b', onRestore2))
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    await waitFor(() => expect(loadSpy).toHaveBeenCalledWith('thread-b'))
     expect(onRestore2).not.toHaveBeenCalled()
   })
 })

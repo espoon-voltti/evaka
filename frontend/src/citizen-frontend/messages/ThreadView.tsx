@@ -280,8 +280,7 @@ export default React.memo(
       if (searchParams.get('focus') === 'reply') {
         showReplyEditor()
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [threadId])
+    }, [threadId, searchParams, showReplyEditor])
 
     const autoScrollRef = useRef<HTMLDivElement>(null)
     useEffect(() => {

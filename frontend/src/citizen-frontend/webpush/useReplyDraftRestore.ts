@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { deleteDraft, loadDraft, purgeOldDrafts } from './draftStore'
 
@@ -19,6 +19,8 @@ export function useReplyDraftRestore(
   onRestore: (text: string) => void
 ): { restored: boolean; clearRestored: () => void; discardDraft: () => void } {
   const [restored, setRestored] = useState(false)
+  const onRestoreRef = useRef(onRestore)
+  onRestoreRef.current = onRestore
 
   useEffect(() => {
     let cancelled = false
@@ -27,7 +29,7 @@ export function useReplyDraftRestore(
         await purgeOldDrafts(DRAFT_TTL_MS)
         const draft = await loadDraft(threadId)
         if (cancelled || !draft) return
-        onRestore(draft.text)
+        onRestoreRef.current(draft.text)
         setRestored(true)
       } catch {
         // IDB unavailable — no draft to restore, not fatal.
@@ -36,7 +38,6 @@ export function useReplyDraftRestore(
     return () => {
       cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threadId])
 
   return {
