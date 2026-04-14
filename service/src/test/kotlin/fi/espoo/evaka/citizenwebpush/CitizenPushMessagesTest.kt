@@ -5,7 +5,6 @@
 package fi.espoo.evaka.citizenwebpush
 
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 
 class CitizenPushMessagesTest {
@@ -15,9 +14,9 @@ class CitizenPushMessagesTest {
         assertEquals("Vastaa", s.actionLabel)
         assertEquals("Kirjoita vastaus…", s.actionPlaceholder)
         assertEquals("Vastaus lähetetty", s.successTitle)
-        assertTrue(s.successBody.isNotBlank())
+        assertEquals("Vastauksesi on toimitettu.", s.successBody)
         assertEquals("Vastauksen lähetys epäonnistui", s.errorTitle)
-        assertTrue(s.errorBody.isNotBlank())
+        assertEquals("Avaa eVaka ja yritä uudelleen.", s.errorBody)
     }
 
     @Test
@@ -26,9 +25,9 @@ class CitizenPushMessagesTest {
         assertEquals("Svara", s.actionLabel)
         assertEquals("Skriv ett svar…", s.actionPlaceholder)
         assertEquals("Svaret skickat", s.successTitle)
-        assertTrue(s.successBody.isNotBlank())
+        assertEquals("Ditt svar har levererats.", s.successBody)
         assertEquals("Svaret kunde inte skickas", s.errorTitle)
-        assertTrue(s.errorBody.isNotBlank())
+        assertEquals("Öppna eVaka och försök igen.", s.errorBody)
     }
 
     @Test
@@ -37,8 +36,8 @@ class CitizenPushMessagesTest {
         assertEquals("Reply", s.actionLabel)
         assertEquals("Type a reply…", s.actionPlaceholder)
         assertEquals("Reply sent", s.successTitle)
-        assertTrue(s.successBody.isNotBlank())
+        assertEquals("Your reply was delivered.", s.successBody)
         assertEquals("Reply not sent", s.errorTitle)
-        assertTrue(s.errorBody.isNotBlank())
+        assertEquals("Open eVaka to retry.", s.errorBody)
     }
 }
