@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2023-2025 Tampere region
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<success>
+    <records>
+        <record>
+            <otherId>8554e2a5-29bb-4e3c-9aca-59c4995c1d86</otherId>
+            <archiveid>archive-record-id-1</archiveid>
+        </record>
+    </records>
+    <files>
+        <entry>
+            <originalId>8554e2a5-29bb-4e3c-9aca-59c4995c1d86</originalId>
+            <name>Varhaiskasvatussuunnitelma 2024-2025.pdf</name>
+            <archiveid>archive-record-id-1</archiveid>
+        </entry>
+    </files>
+</success>

@@ -91,10 +91,6 @@ evaka:
     enabled: true
     vapid_private_key: G3IfWt-tclp_R5d_SIMLl_jjttrC86dwG4Fs8OwMDmg
   titania_enabled: true
-espoo:
-  integration:
-    invoice:
-      enabled: false
 
 debug: true
 
@@ -128,3 +124,121 @@ logging:
             MessageTracing:
               received: TRACE
               sent: DEBUG
+
+espoo:
+  integration:
+    invoice:
+      enabled: false
+
+trevaka:
+  vtj-kysely-api-key: vtj-kysely-api-key-123
+  vtj-mutpa-api-key: vtj-mutpa-api-key-123
+
+tampere:
+  frends:
+    username: frends-user
+    password: frends-pass
+  finance-api-key: finance-api-key-123
+  invoice:
+    url: http://localhost:${wiremock.server.port}/mock/frends/salesOrder
+  payment:
+    url: http://localhost:${wiremock.server.port}/mock/frends/payableAccounting
+  bucket:
+    export: trevaka-export-it
+  bi-export:
+    prefix: bi
+  archival:
+    schedule:
+      daily-document-limit: 20
+    base-url: http://localhost:${wiremock.server.port}/mock/frends/archival
+vesilahti:
+  bucket:
+    export: trevaka-export-it
+hameenkyro:
+  bucket:
+    export: trevaka-export-it
+ylojarvi:
+  invoice:
+    sftp:
+      host: localhost
+      port: 2222
+      host_keys: AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
+      username: foo
+      private-key: |
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+        QyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQAAAJjUgHxz1IB8
+        cwAAAAtzc2gtZWQyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQ
+        AAAEBOKiwR898c7d20IF4F4O6++awDPFfhoeDlH+t09hwEw0pCRF2Rcx+4e//U9YwnpOFy
+        G/Y94T64SRRtul/5x7+ZAAAADmV2YWthX2xvY2FsL2l0AQIDBAUGBw==
+        -----END OPENSSH PRIVATE KEY-----
+      prefix: upload/
+  bucket:
+    export: trevaka-export-it
+pirkkala:
+  bucket:
+    export: trevaka-export-it
+nokia:
+  invoice:
+    sftp:
+      host: localhost
+      port: 2222
+      host_keys: AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
+      username: foo
+      private-key: |
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+        QyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQAAAJjUgHxz1IB8
+        cwAAAAtzc2gtZWQyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQ
+        AAAEBOKiwR898c7d20IF4F4O6++awDPFfhoeDlH+t09hwEw0pCRF2Rcx+4e//U9YwnpOFy
+        G/Y94T64SRRtul/5x7+ZAAAADmV2YWthX2xvY2FsL2l0AQIDBAUGBw==
+        -----END OPENSSH PRIVATE KEY-----
+      prefix: upload/
+  bucket:
+    export: trevaka-export-it
+  archival:
+    sftp:
+      host: localhost
+      port: 2222
+      host_keys: AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
+      username: foo
+      private-key: |
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+        QyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQAAAJjUgHxz1IB8
+        cwAAAAtzc2gtZWQyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQ
+        AAAEBOKiwR898c7d20IF4F4O6++awDPFfhoeDlH+t09hwEw0pCRF2Rcx+4e//U9YwnpOFy
+        G/Y94T64SRRtul/5x7+ZAAAADmV2YWthX2xvY2FsL2l0AQIDBAUGBw==
+        -----END OPENSSH PRIVATE KEY-----
+      prefix: upload/
+kangasala:
+  bucket:
+    export: trevaka-export-it
+lempaala:
+  bucket:
+    export: trevaka-export-it
+orivesi:
+  bucket:
+    export: trevaka-export-it
+
+---
+spring:
+  config:
+    activate:
+      on-profile: "tampere_evaka"
+evaka:
+  integration:
+    archival:
+      enabled: true
+    dvv_modifications:
+      url: http://localhost:${wiremock.server.port}/mock/modifications
+      user_id: user
+      password: pass
+      xroad_client_id: trevaka
+      product_code: trevaka
+    vtj:
+      enabled: true
+      password: pass
+      username: user
+      xroad:
+        address: http://localhost:${wiremock.server.port}/mock/vtj

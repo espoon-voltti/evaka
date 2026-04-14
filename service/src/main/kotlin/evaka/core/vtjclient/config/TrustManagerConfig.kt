@@ -7,15 +7,18 @@ package evaka.core.vtjclient.config
 import evaka.core.VtjXroadEnv
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.UrlResource
 import org.springframework.ws.soap.security.support.KeyStoreFactoryBean
 import org.springframework.ws.soap.security.support.TrustManagersFactoryBean
+import org.springframework.ws.transport.WebServiceMessageSender
 
 @Configuration
 @Profile("production", "vtj-dev", "integration-test")
+@ConditionalOnMissingBean(WebServiceMessageSender::class)
 class TrustManagerConfig {
     @Bean
     fun trustManagers(

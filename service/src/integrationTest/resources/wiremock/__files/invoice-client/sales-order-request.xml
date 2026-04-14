@@ -1,0 +1,73 @@
+<!--
+SPDX-FileCopyrightText: 2023-2025 Tampere region
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+    <env:Header/>
+    <env:Body>
+        <ns4:SendSalesOrderRequest xmlns:ns2="http://www.tampere.fi/messages/ipaas/commontypes/v1.0"
+                                   xmlns:ns3="http://www.tampere.fi/messages/sapsd/salesorder/v11.2"
+                                   xmlns:ns4="http://www.tampere.fi/services/sapsd/salesorder/v1.0">
+            <ns3:SalesOrder>
+                <ns3:Header>
+                    <ns3:Customer>
+                        <ns3:Person>
+                            <ns3:SSN>310382-956D</ns3:SSN>
+                            <ns3:PersonName>
+                                <ns3:FirstNames>Maija</ns3:FirstNames>
+                                <ns3:SurName>Meikäläinen</ns3:SurName>
+                            </ns3:PersonName>
+                        </ns3:Person>
+                        <ns3:Address>
+                            <ns3:Street>Meikäläisenkuja 6 B 7</ns3:Street>
+                            <ns3:Town>TAMPERE</ns3:Town>
+                            <ns3:PostCode>33730</ns3:PostCode>
+                        </ns3:Address>
+                    </ns3:Customer>
+                    <ns3:PaymentTerm>V000</ns3:PaymentTerm>
+                    <ns3:BillingDate>2021-02-04</ns3:BillingDate>
+                    <ns3:SalesOrganisation>1312</ns3:SalesOrganisation>
+                    <ns3:DistributionChannel>00</ns3:DistributionChannel>
+                    <ns3:Division>00</ns3:Division>
+                    <ns3:SalesOrderType>ZPH</ns3:SalesOrderType>
+                    <ns3:InterfaceID>352</ns3:InterfaceID>
+                    <ns3:DueDate>2021-03-06</ns3:DueDate>
+                    <ns3:Items>
+                        <ns3:Item>
+                            <ns3:Description>kuvaus1</ns3:Description>
+                            <ns3:ProfitCenter>131885</ns3:ProfitCenter>
+                            <ns3:Material>500218</ns3:Material>
+                            <ns3:UnitPrice xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                                           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:decimal">
+                                243.00
+                            </ns3:UnitPrice>
+                            <ns3:Quantity>1.0</ns3:Quantity>
+                            <ns3:Plant>1310</ns3:Plant>
+                            <ns3:Text>
+                                <ns3:TextRow>Meikäläinen Matti</ns3:TextRow>
+                                <ns3:TextRow>1.1.2021 - 31.1.2021</ns3:TextRow>
+                            </ns3:Text>
+                        </ns3:Item>
+                        <ns3:Item>
+                            <ns3:Description>kuvaus2</ns3:Description>
+                            <ns3:ProfitCenter>284823</ns3:ProfitCenter>
+                            <ns3:Material>500220</ns3:Material>
+                            <ns3:UnitPrice xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                                           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:decimal">
+                                482.00
+                            </ns3:UnitPrice>
+                            <ns3:Quantity>1.0</ns3:Quantity>
+                            <ns3:Plant>1310</ns3:Plant>
+                            <ns3:Text>
+                                <ns3:TextRow>Meikäläinen Maiju</ns3:TextRow>
+                                <ns3:TextRow>1.1.2021 - 31.1.2021</ns3:TextRow>
+                            </ns3:Text>
+                        </ns3:Item>
+                    </ns3:Items>
+                </ns3:Header>
+            </ns3:SalesOrder>
+        </ns4:SendSalesOrderRequest>
+    </env:Body>
+</env:Envelope>

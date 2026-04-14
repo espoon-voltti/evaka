@@ -107,6 +107,7 @@ import java.time.YearMonth
 import java.util.UUID
 import org.jdbi.v3.json.Json
 import org.springframework.core.io.ClassPathResource
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
 private val logger = KotlinLogging.logger {}
 
@@ -115,6 +116,22 @@ fun Database.Transaction.runSqlScript(path: String) {
     ClassPathResource(path).inputStream.use {
         it.bufferedReader().readText().let { content -> execute { sql(content) } }
     }
+}
+
+/**
+ * Run all SQL scripts from the given directory in lexicographical order.
+ *
+ * Merges files from all classpath roots that contain the directory (emulating Flyway's behavior).
+ */
+fun Database.Transaction.runSqlScripts(dir: String) {
+    PathMatchingResourcePatternResolver()
+        .getResources("classpath*:$dir/*.sql")
+        .sortedBy { it.filename }
+        .forEach { resource ->
+            resource.inputStream.use {
+                it.bufferedReader().readText().let { content -> execute { sql(content) } }
+            }
+        }
 }
 
 fun Database.Transaction.resetDatabase() {

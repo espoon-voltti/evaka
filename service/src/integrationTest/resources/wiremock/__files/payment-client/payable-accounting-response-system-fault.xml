@@ -1,0 +1,26 @@
+<!--
+SPDX-FileCopyrightText: 2023-2024 Tampere region
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+    <env:Header/>
+    <env:Body>
+        <env:Fault>
+            <env:Code>
+                <env:Value>env:Receiver</env:Value>
+            </env:Code>
+            <env:Reason>
+                <env:Text xml:lang="en-US">Processing error</env:Text>
+            </env:Reason>
+            <env:Detail>
+                <ns4:SystemFault xmlns:ns4="http://www.tampere.fi/messages/ipaas/commontypes/v1.0">
+                    <ns4:ErrorCode>1234</ns4:ErrorCode>
+                    <ns4:ErrorMessage>this is error message</ns4:ErrorMessage>
+                    <ns4:TechnicalTrace>stack trace here</ns4:TechnicalTrace>
+                </ns4:SystemFault>
+            </env:Detail>
+        </env:Fault>
+    </env:Body>
+</env:Envelope>

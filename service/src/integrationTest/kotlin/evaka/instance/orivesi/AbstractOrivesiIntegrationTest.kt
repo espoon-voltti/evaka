@@ -4,6 +4,7 @@
 
 package evaka.instance.orivesi
 
+import evaka.OrivesiInstance
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.decision.DecisionType
 import evaka.core.invoicing.domain.FeeDecisionType
@@ -12,10 +13,12 @@ import evaka.core.placement.PlacementType
 import evaka.trevaka.AbstractIntegrationTest
 import java.util.stream.Stream
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 
 @ActiveProfiles(value = ["integration-test", "orivesi_evaka"])
-abstract class AbstractOrivesiIntegrationTest : AbstractIntegrationTest() {
+@Import(OrivesiInstance::class)
+abstract class AbstractOrivesiIntegrationTest : AbstractIntegrationTest("orivesi") {
     @Autowired protected lateinit var properties: OrivesiProperties
 
     protected fun supportedDecisionTypes(): Stream<DecisionType> =

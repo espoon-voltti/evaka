@@ -4,6 +4,7 @@
 
 package evaka.instance.nokia
 
+import evaka.NokiaInstance
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.decision.DecisionType
 import evaka.core.invoicing.domain.FeeDecisionType
@@ -12,10 +13,12 @@ import evaka.core.placement.PlacementType
 import evaka.trevaka.AbstractIntegrationTest
 import java.util.stream.Stream
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 
 @ActiveProfiles(value = ["integration-test", "nokia_evaka"])
-abstract class AbstractNokiaIntegrationTest : AbstractIntegrationTest() {
+@Import(NokiaInstance::class)
+abstract class AbstractNokiaIntegrationTest : AbstractIntegrationTest("nokia") {
     @Autowired protected lateinit var properties: NokiaProperties
 
     protected fun supportedDecisionTypes(): Stream<DecisionType> =

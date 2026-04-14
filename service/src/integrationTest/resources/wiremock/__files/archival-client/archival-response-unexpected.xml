@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!--
+SPDX-FileCopyrightText: 2023-2025 Tampere region
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<unexpected>
+    <description>unexpected response from the server</description>
+</unexpected>

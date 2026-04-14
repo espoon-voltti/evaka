@@ -5,9 +5,10 @@
 package evaka.trevaka
 
 import evaka.core.shared.db.Database
+import evaka.core.shared.dev.resetDatabase
+import evaka.core.shared.dev.runSqlScripts
 import evaka.core.shared.noopTracer
 import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
-import evaka.instance.tampere.database.resetTampereDatabaseForE2ETests
 import java.io.FileOutputStream
 import java.nio.file.Paths
 import org.jdbi.v3.core.Jdbi
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.wiremock.spring.ConfigureWireMock
 import org.wiremock.spring.EnableWireMock
 import software.amazon.awssdk.core.ResponseInputStream
 import software.amazon.awssdk.services.s3.S3Client
@@ -33,8 +35,8 @@ private val reportsPath: String = "${Paths.get("build").toAbsolutePath()}/report
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(classes = [IntegrationTestConfiguration::class])
-@EnableWireMock
-abstract class AbstractIntegrationTest {
+@EnableWireMock(ConfigureWireMock(filesUnderDirectory = ["src/integrationTest/resources/wiremock"]))
+abstract class AbstractIntegrationTest(private val municipality: String) {
     @Autowired private lateinit var jdbi: Jdbi
 
     protected lateinit var db: Database.Connection
@@ -48,7 +50,10 @@ abstract class AbstractIntegrationTest {
 
     @BeforeEach
     fun setup() {
-        db.transaction { tx -> tx.resetTampereDatabaseForE2ETests() }
+        db.transaction {
+            it.resetDatabase()
+            it.runSqlScripts("$municipality/db/migration")
+        }
         clearBucket("trevaka-export-it")
         MockPersonDetailsService.reset()
     }

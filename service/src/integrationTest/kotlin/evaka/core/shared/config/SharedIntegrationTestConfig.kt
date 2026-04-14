@@ -79,7 +79,7 @@ private var testDataSource: TestDataSource? = null
 private val dbPort = System.getenv("EVAKA_DATABASE_PORT")?.toIntOrNull() ?: 5432
 private val dbUrl = "jdbc:postgresql://localhost:$dbPort/evaka_it"
 
-fun getTestDataSource(): TestDataSource =
+fun getTestDataSource(municipality: String? = null): TestDataSource =
     synchronized(globalLock) {
         testDataSource
             ?: TestDataSource(

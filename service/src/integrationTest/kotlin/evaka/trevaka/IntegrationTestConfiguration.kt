@@ -6,9 +6,13 @@ package evaka.trevaka
 
 import com.auth0.jwt.algorithms.Algorithm
 import evaka.core.BucketEnv
+import evaka.core.shared.config.getTestDataSource
+import evaka.core.shared.db.configureJdbi
 import evaka.trevaka.s3.createBucketsIfNeeded
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPublicKey
+import javax.sql.DataSource
+import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
@@ -25,6 +29,9 @@ import software.amazon.awssdk.utils.AttributeMap
 
 @TestConfiguration
 class IntegrationTestConfiguration {
+    @Bean fun jdbi(dataSource: DataSource) = configureJdbi(Jdbi.create(dataSource))
+
+    @Bean fun dataSource(): DataSource = getTestDataSource()
 
     @Bean
     fun s3Client(bucketEnv: BucketEnv): S3Client =

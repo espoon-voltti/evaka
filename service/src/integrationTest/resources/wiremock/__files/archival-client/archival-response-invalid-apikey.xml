@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2023-2025 Tampere region
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<errors>
+    <error>
+        <error_code>invalid_apikey</error_code>
+        <error_summary>API-avaimella ei ole oikeutta kirjoittaa kansioon</error_summary>
+    </error>
+</errors>

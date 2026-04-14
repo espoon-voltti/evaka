@@ -55,7 +55,9 @@ class TamperePaymentClientIT : AbstractTampereIntegrationTest() {
                 .withoutHeader("SOAPAction")
                 .withRequestBody(
                     equalToXml(
-                        ClassPathResource("__files/payment-client/payable-accounting-request.xml")
+                        ClassPathResource(
+                                "wiremock/__files/payment-client/payable-accounting-request.xml"
+                            )
                             .getContentAsString(Charsets.UTF_8)
                     )
                 )

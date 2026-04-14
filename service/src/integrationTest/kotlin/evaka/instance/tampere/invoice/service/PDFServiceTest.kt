@@ -24,9 +24,7 @@ import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.invoicing.domain.toFeeAlterationsWithEffects
 import evaka.core.invoicing.service.FeeDecisionPdfData
 import evaka.core.invoicing.service.VoucherValueDecisionPdfData
-import evaka.core.pdfgen.Page
 import evaka.core.pdfgen.PdfGenerator
-import evaka.core.pdfgen.Template
 import evaka.core.placement.PlacementType
 import evaka.core.setting.SettingType
 import evaka.core.shared.AreaId
@@ -50,7 +48,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.junitpioneer.jupiter.cartesian.CartesianTest
 import org.springframework.beans.factory.annotation.Autowired
-import org.thymeleaf.context.Context
 
 private val settings =
     mapOf(
@@ -61,11 +58,6 @@ private val settings =
 internal class PDFServiceTest : AbstractTampereIntegrationTest() {
 
     @Autowired private lateinit var pdfGenerator: PdfGenerator
-
-    @Test
-    fun render() {
-        pdfGenerator.render(Page(Template("test"), Context()))
-    }
 
     @ParameterizedTest
     @EnumSource(PlacementType::class)

@@ -59,7 +59,7 @@ internal class TampereInvoiceClientIT : AbstractTampereIntegrationTest() {
                 .withoutHeader("SOAPAction")
                 .withRequestBody(
                     equalToXml(
-                        ClassPathResource("__files/invoice-client/sales-order-request.xml")
+                        ClassPathResource("wiremock/__files/invoice-client/sales-order-request.xml")
                             .getContentAsString(Charsets.UTF_8)
                     )
                 )

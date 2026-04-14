@@ -1,0 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2021 City of Tampere
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<ns3:SendSalesOrderResponse xmlns:ns3="http://www.tampere.fi/services/sapsd/salesorder/v1.0"
+                            xmlns:ns4="http://www.tampere.fi/messages/ipaas/commontypes/v1.0">
+    <ns4:StatusMessage>ok</ns4:StatusMessage>
+</ns3:SendSalesOrderResponse>
