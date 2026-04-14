@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.utils.writerFor
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
 
 class WebPushPayloadSerializationTest {
@@ -43,13 +42,29 @@ class WebPushPayloadSerializationTest {
         val json = writer.writeValueAsString(listOf(payload))
         val tree = mapper.readTree(json)
 
-        assertEquals("NotificationV1", tree[0]["type"].asString())
-        val ra = tree[0]["replyAction"]
-        assertNotNull(ra)
-        assertEquals(threadId.raw.toString(), ra["threadId"].asString())
-        assertEquals(1, ra["recipientAccountIds"].size())
-        assertEquals(accountId.raw.toString(), ra["recipientAccountIds"][0].asString())
-        assertEquals("Reply", ra["actionLabel"].asString())
+        val expected =
+            mapper.readTree(
+                """
+                {
+                  "type": "NotificationV1",
+                  "title": "New message",
+                  "body": "Alice sent you a message.",
+                  "tag": "msg-${threadId.raw}",
+                  "url": "/messages/${threadId.raw}",
+                  "replyAction": {
+                    "threadId": "${threadId.raw}",
+                    "recipientAccountIds": ["${accountId.raw}"],
+                    "actionLabel": "Reply",
+                    "actionPlaceholder": "Type a reply…",
+                    "successTitle": "Reply sent",
+                    "successBody": "Your reply was delivered.",
+                    "errorTitle": "Reply not sent",
+                    "errorBody": "Open eVaka to retry."
+                  }
+                }
+                """
+            )
+        assertEquals(expected, tree[0])
     }
 
     @Test
