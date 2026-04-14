@@ -14,4 +14,8 @@ export const getStrongLoginUri = (
 
 export const headerHeightDesktop = 80
 export const headerHeightMobile = 60
-export const mobileBottomNavHeight = 60
+// Total bottom space reserved by the floating mobile nav pill.
+// = 72 (pill height) + 16 (gap above safe-area inset).
+// Consumers (ScrollableMain padding, ActionPickerModal, CalendarListView,
+// ThreadList) use this to keep content clear of the pill.
+export const mobileBottomNavHeight = 88
