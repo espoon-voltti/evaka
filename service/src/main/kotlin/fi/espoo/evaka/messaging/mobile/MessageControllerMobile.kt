@@ -10,6 +10,7 @@ import fi.espoo.evaka.messaging.MessageService
 import fi.espoo.evaka.messaging.getCitizenMessageAccount
 import fi.espoo.evaka.messaging.getMessageThread
 import fi.espoo.evaka.messaging.getThreads
+import fi.espoo.evaka.messaging.getUnreadMessagesCountForAccount
 import fi.espoo.evaka.messaging.markThreadRead
 import fi.espoo.evaka.messaging.messageAttachmentsAllowedForCitizen
 import fi.espoo.evaka.shared.FeatureConfig
@@ -66,7 +67,7 @@ class MessageControllerMobile(
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val accountId = tx.getCitizenMessageAccount(user.id)
-                    tx.getUnreadCountForAccount(accountId)
+                    tx.getUnreadMessagesCountForAccount(accountId)
                 }
             }
             .also { Audit.CitizenMobileMessagingUnreadCount.log(meta = mapOf("count" to it)) }
@@ -216,22 +217,3 @@ class MessageControllerMobile(
             }
     }
 }
-
-private fun Database.Read.getUnreadCountForAccount(accountId: MessageAccountId): Int =
-    createQuery {
-            sql(
-                """
-        SELECT count(mr.message_id)
-        FROM message_recipients mr
-        JOIN message m ON mr.message_id = m.id AND m.sent_at IS NOT NULL
-        JOIN message_thread mt ON m.thread_id = mt.id
-        LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = ${bind(accountId)}
-        LEFT JOIN message_thread_folder mtf ON mtp.folder_id = mtf.id
-        WHERE mr.recipient_id = ${bind(accountId)}
-          AND mr.read_at IS NULL
-          AND NOT mt.is_copy
-          AND (mtp.folder_id IS NULL OR mtf.name != 'ARCHIVE')
-        """
-            )
-        }
-        .exactlyOne<Int>()
