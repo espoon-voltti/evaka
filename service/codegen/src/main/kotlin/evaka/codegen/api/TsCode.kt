@@ -13,7 +13,8 @@ enum class TsProject {
     CitizenFrontend,
     EmployeeFrontend,
     EmployeeMobileFrontend,
-    E2ETest;
+    E2ETest,
+    CitizenMobile;
 
     operator fun div(path: String): TsFile = TsFile(this, Path.of(path))
 
@@ -24,6 +25,7 @@ enum class TsProject {
             EmployeeFrontend -> Path.of("employee-frontend") / path
             EmployeeMobileFrontend -> Path.of("employee-mobile-frontend") / path
             E2ETest -> Path.of("e2e-test") / path
+            CitizenMobile -> Path.of("citizen-mobile") / path
         }
 }
 

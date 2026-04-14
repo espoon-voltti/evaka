@@ -26,10 +26,21 @@ fun generateApiFiles(): Map<TsFile, String> {
                 endpointExcludes.contains(it.path)
         }
 
+    val citizenMobileEndpoints = endpoints.filter { it.path.startsWith("/citizen-mobile/") }
+
+    val webEndpoints = endpoints.filterNot { it.path.startsWith("/citizen-mobile/") }
+
     val metadata =
         discoverMetadata(
             initial = defaultMetadata,
-            rootTypes = endpoints.asSequence().flatMap { it.types() } + forceIncludes.asSequence(),
+            rootTypes =
+                webEndpoints.asSequence().flatMap { it.types() } + forceIncludes.asSequence(),
+        )
+
+    val citizenMobileMetadata =
+        discoverMetadata(
+            initial = defaultMetadata,
+            rootTypes = citizenMobileEndpoints.asSequence().flatMap { it.types() },
         )
 
     val devEndpoints =
@@ -42,7 +53,7 @@ fun generateApiFiles(): Map<TsFile, String> {
             rootTypes = devEndpoints.asSequence().flatMap { it.types() },
         )
 
-    val generator =
+    val generatorForWeb =
         object : TsCodeGenerator(metadata + devMetadata) {
             override fun locateNamedType(namedType: TsNamedType<*>): TsFile =
                 when (namedType.clazz) {
@@ -61,16 +72,39 @@ fun generateApiFiles(): Map<TsFile, String> {
                 }
         }
 
-    val apiTypes =
-        generator
+    val generatorForMobile =
+        object : TsCodeGenerator(citizenMobileMetadata) {
+            override fun locateNamedType(namedType: TsNamedType<*>): TsFile =
+                when (namedType.clazz) {
+                    in citizenMobileMetadata -> {
+                        TsProject.CitizenMobile /
+                            "src/generated/api-types/${getBasePackage(namedType.clazz)}.ts"
+                    }
+
+                    else -> {
+                        error("Unexpected type $namedType")
+                    }
+                }
+        }
+
+    val libCommonApiTypes =
+        generatorForWeb
             .namedTypes()
-            .groupBy { generator.locateNamedType(it) }
+            .groupBy { generatorForWeb.locateNamedType(it) }
             .mapValues { (file, namedTypes) ->
-                generateApiTypes(file, generator, namedTypes.sortedBy { it.name })
+                generateApiTypes(file, generatorForWeb, namedTypes.sortedBy { it.name })
+            }
+
+    val citizenMobileApiTypes =
+        generatorForMobile
+            .namedTypes()
+            .groupBy { generatorForMobile.locateNamedType(it) }
+            .mapValues { (file, namedTypes) ->
+                generateApiTypes(file, generatorForMobile, namedTypes.sortedBy { it.name })
             }
 
     val citizenApiClients =
-        endpoints
+        webEndpoints
             .filter { it.path.startsWith("/citizen/") }
             .groupBy {
                 TsProject.CitizenFrontend /
@@ -79,7 +113,7 @@ fun generateApiFiles(): Map<TsFile, String> {
             .mapValues { (file, citizenEndpoints) ->
                 generateApiClients(
                     ApiClientConfig(mockedTimeSupport = false),
-                    generator,
+                    generatorForWeb,
                     file,
                     TsImport.Named(TsProject.CitizenFrontend / "api-client.ts", "client"),
                     citizenEndpoints,
@@ -87,7 +121,7 @@ fun generateApiFiles(): Map<TsFile, String> {
             }
 
     val employeeApiClients =
-        endpoints
+        webEndpoints
             .filter { it.path.startsWith("/employee/") }
             .groupBy {
                 TsProject.EmployeeFrontend /
@@ -96,7 +130,7 @@ fun generateApiFiles(): Map<TsFile, String> {
             .mapValues { (file, citizenEndpoints) ->
                 generateApiClients(
                     ApiClientConfig(mockedTimeSupport = false),
-                    generator,
+                    generatorForWeb,
                     file,
                     TsImport.Named(TsProject.EmployeeFrontend / "api/client.ts", "client"),
                     citizenEndpoints,
@@ -104,7 +138,7 @@ fun generateApiFiles(): Map<TsFile, String> {
             }
 
     val employeeMobileApiClients =
-        endpoints
+        webEndpoints
             .filter { it.path.startsWith("/employee-mobile/") }
             .groupBy {
                 TsProject.EmployeeMobileFrontend /
@@ -113,7 +147,7 @@ fun generateApiFiles(): Map<TsFile, String> {
             .mapValues { (file, citizenEndpoints) ->
                 generateApiClients(
                     ApiClientConfig(mockedTimeSupport = false),
-                    generator,
+                    generatorForWeb,
                     file,
                     TsImport.Named(TsProject.EmployeeMobileFrontend / "client.ts", "client"),
                     citizenEndpoints,
@@ -126,7 +160,7 @@ fun generateApiFiles(): Map<TsFile, String> {
                 file to
                     generateApiClients(
                         ApiClientConfig(mockedTimeSupport = true),
-                        generator,
+                        generatorForWeb,
                         file,
                         TsImport.Named(TsProject.E2ETest / "dev-api", "devClient"),
                         devEndpoints.map { it.copy(path = it.path.removePrefix("/dev-api")) },
@@ -144,11 +178,29 @@ ${inline(body).prependIndent("  ")}
             )
         }
 
-    return apiTypes +
+    val citizenMobileApiClients =
+        citizenMobileEndpoints
+            .groupBy {
+                TsProject.CitizenMobile /
+                    "src/generated/api-clients/${getBasePackage(it.controllerClass)}.ts"
+            }
+            .mapValues { (file, mobileEndpoints) ->
+                generateApiClients(
+                    ApiClientConfig(mockedTimeSupport = false),
+                    generatorForMobile,
+                    file,
+                    TsImport.Named(TsProject.CitizenMobile / "src/api/client.ts", "client"),
+                    mobileEndpoints,
+                )
+            }
+
+    return libCommonApiTypes +
+        citizenMobileApiTypes +
         citizenApiClients +
         employeeApiClients +
         employeeMobileApiClients +
-        devApiClients
+        devApiClients +
+        citizenMobileApiClients
 }
 
 fun generateApiTypes(

@@ -175,6 +175,12 @@ data class EndpointMetadata(
                 }
             }
 
+            path.startsWith("/citizen-mobile/") -> {
+                if (authenticatedUserType != typeOf<AuthenticatedUser.CitizenMobile>()) {
+                    fail("It must include an AuthenticatedUser.CitizenMobile parameter")
+                }
+            }
+
             else -> {
                 fail("It must have a valid prefix (e.g. /citizen/ or /employee/)")
             }

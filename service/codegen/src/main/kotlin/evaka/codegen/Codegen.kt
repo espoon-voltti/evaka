@@ -13,7 +13,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
-import kotlin.io.path.createDirectory
+import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -34,6 +34,7 @@ fun generate() {
     generateActionEnumTypes(generatedPath)
     generateLanguages(generatedPath / "language.ts")
 
+    val citizenMobilePath = locateCitizenMobileDirectory()
     val apiFiles = generateApiFiles()
     val apiPaths =
         listOf(
@@ -42,13 +43,15 @@ fun generate() {
             srcPath / "employee-frontend" / "generated" / "api-clients",
             srcPath / "employee-mobile-frontend" / "generated" / "api-clients",
             srcPath / "e2e-test" / "generated",
+            citizenMobilePath / "src" / "generated" / "api-types",
+            citizenMobilePath / "src" / "generated" / "api-clients",
         )
     apiPaths.forEach {
         it.toFile().deleteRecursively()
-        it.createDirectory()
+        it.createDirectories()
     }
     apiFiles.forEach { (file, content) ->
-        val path = absolutePath(srcPath, file)
+        val path = absolutePath(srcPath, citizenMobilePath, file)
         path.writeText(content)
     }
 }
@@ -60,11 +63,16 @@ fun check() {
     checkGeneratedActionEnumTypes(generatedPath)
     checkLanguages(generatedPath / "language.ts")
 
+    val citizenMobilePath = locateCitizenMobileDirectory()
     val apiFiles = generateApiFiles()
     apiFiles.forEach { (file, content) ->
-        val path = absolutePath(srcPath, file)
+        val path = absolutePath(srcPath, citizenMobilePath, file)
         val currentContent = path.readText()
-        val relativePath = path.relativeTo(srcPath)
+        val relativePath =
+            when (file.project) {
+                TsProject.CitizenMobile -> path.relativeTo(citizenMobilePath)
+                else -> path.relativeTo(srcPath)
+            }
         if (content == currentContent) {
             logger.info { "Generated api files up to date ($relativePath)" }
         } else {
@@ -81,11 +89,18 @@ private fun locateFrontendSrcDirectory(): Path {
     return path
 }
 
-private fun absolutePath(srcPath: Path, file: TsFile): Path =
+private fun locateCitizenMobileDirectory(): Path {
+    val workingDir = Path("")
+    val path = (workingDir / "../citizen-mobile").absolute().normalize()
+    return path
+}
+
+private fun absolutePath(srcPath: Path, citizenMobilePath: Path, file: TsFile): Path =
     when (file.project) {
         TsProject.LibCommon -> srcPath / "lib-common" / file.path
         TsProject.CitizenFrontend -> srcPath / "citizen-frontend" / file.path
         TsProject.EmployeeFrontend -> srcPath / "employee-frontend" / file.path
         TsProject.EmployeeMobileFrontend -> srcPath / "employee-mobile-frontend" / file.path
         TsProject.E2ETest -> srcPath / "e2e-test" / file.path
+        TsProject.CitizenMobile -> citizenMobilePath / file.path
     }
