@@ -2,7 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+const fs = require('fs')
 const path = require('path')
+
+function readOpenAIKey() {
+  try {
+    return fs.readFileSync(path.resolve(__dirname, '../.env.openai'), 'utf8').trim()
+  } catch {
+    return undefined
+  }
+}
 
 const ports = {
   db: parseInt(process.env.EVAKA_DB_PORT || '5432', 10),
@@ -39,7 +48,8 @@ module.exports = {
       SFI_SAML_CALLBACK_URL: `${frontendBaseUrl}/api/application/auth/saml/login/callback`,
       SFI_SAML_ENTRYPOINT: `${idpBaseUrl}/sso`,
       SFI_SAML_LOGOUT_URL: `${idpBaseUrl}/slo`,
-      SFI_SAML_ISSUER: `${frontendBaseUrl}/api/application/auth/saml/`
+      SFI_SAML_ISSUER: `${frontendBaseUrl}/api/application/auth/saml/`,
+      OPENAI_API_KEY: readOpenAIKey()
     },
     ...defaults
   }, {

@@ -329,7 +329,13 @@ const envVariables = {
   /**
    * API key for the Digitransit API
    */
-  DIGITRANSIT_API_KEY: unset<string>()
+  DIGITRANSIT_API_KEY: unset<string>(),
+
+  // ----- OpenAI API integration -----
+  /**
+   * API key for the OpenAI API, used for bulletin message AI review
+   */
+  OPENAI_API_KEY: unset<string>()
 }
 
 // helper function to specify the type of undefined without casting
@@ -710,3 +716,5 @@ export const digitransitApiEnabled = required(
 )
 export const digitransitApiUrl = required('DIGITRANSIT_API_URL', unchanged)
 export const digitransitApiKey = optional('DIGITRANSIT_API_KEY', unchanged)
+
+export const openaiApiKey = optional('OPENAI_API_KEY', unchanged)
