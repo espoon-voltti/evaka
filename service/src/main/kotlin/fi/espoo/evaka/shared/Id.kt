@@ -184,6 +184,8 @@ sealed interface DatabaseTable {
 
     sealed class VoucherValueDecision : DatabaseTable
 
+    sealed class CitizenPushSubscription : DatabaseTable
+
     sealed class SfiMessage : DatabaseTable
 
     sealed class SfiMessageEvent : DatabaseTable
@@ -360,6 +362,8 @@ typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficie
 typealias TitaniaConflictId = Id<DatabaseTable.TitaniaErrors>
 
 typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
+
+typealias CitizenPushSubscriptionDeviceId = Id<DatabaseTable.CitizenPushSubscription>
 
 typealias SfiMessageId = Id<DatabaseTable.SfiMessage>
 
