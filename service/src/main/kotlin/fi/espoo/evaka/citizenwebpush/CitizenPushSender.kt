@@ -20,6 +20,7 @@ import fi.espoo.evaka.webpush.WebPushPayload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.time.Duration
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -42,6 +43,7 @@ class CitizenPushSender(
         category: CitizenPushCategory,
         senderName: String,
         language: CitizenPushLanguage,
+        replyRecipientAccountIds: List<MessageAccountId>,
         jwtProvider: VapidJwtProvider = defaultJwtProviderOrNoop(),
     ) {
         val wp = webPush ?: return
@@ -50,12 +52,29 @@ class CitizenPushSender(
         if (entries.isEmpty()) return
 
         val titleAndBody = CitizenPushMessages.forMessage(category, language, senderName)
+        val replyAction =
+            if (category != CitizenPushCategory.BULLETIN && replyRecipientAccountIds.isNotEmpty()) {
+                val strings = CitizenPushMessages.forReplyAction(language)
+                WebPushPayload.NotificationV1.ReplyAction(
+                    threadId = MessageThreadId(UUID.fromString(threadId)),
+                    recipientAccountIds = replyRecipientAccountIds.toSet(),
+                    actionLabel = strings.actionLabel,
+                    actionPlaceholder = strings.actionPlaceholder,
+                    successTitle = strings.successTitle,
+                    successBody = strings.successBody,
+                    errorTitle = strings.errorTitle,
+                    errorBody = strings.errorBody,
+                )
+            } else {
+                null
+            }
         val payload =
             WebPushPayload.NotificationV1(
                 title = titleAndBody.title,
                 body = titleAndBody.body,
                 tag = "msg-$threadId",
                 url = "/messages/$threadId",
+                replyAction = replyAction,
             )
 
         entries.forEach { entry -> sendOne(personId, entry, payload, jwtProvider, wp) }
@@ -163,6 +182,7 @@ class CitizenPushSender(
                     category = category,
                     senderName = r.senderName,
                     language = CitizenPushLanguage.fromPersonLanguage(r.language),
+                    replyRecipientAccountIds = r.replyRecipientAccountIds,
                     jwtProvider =
                         VapidJwtProvider { uri ->
                             db.transaction { tx -> webPush.getValidToken(tx, clock, uri) }

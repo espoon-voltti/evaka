@@ -4,20 +4,26 @@
 
 package fi.espoo.evaka.citizenwebpush
 
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.webpush.VapidJwt
 import fi.espoo.evaka.webpush.WebPush
 import fi.espoo.evaka.webpush.WebPushCrypto
+import fi.espoo.evaka.webpush.WebPushNotification
 import fi.espoo.evaka.webpush.WebPushPayload
 import java.net.URI
 import java.security.SecureRandom
 import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.check
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -80,6 +86,7 @@ class CitizenPushSenderTest {
             category = CitizenPushCategory.URGENT_MESSAGE,
             senderName = "Alice",
             language = CitizenPushLanguage.FI,
+            replyRecipientAccountIds = emptyList(),
             jwtProvider = fakeJwtProvider,
         )
 
@@ -109,6 +116,7 @@ class CitizenPushSenderTest {
             category = CitizenPushCategory.MESSAGE,
             senderName = "Alice",
             language = CitizenPushLanguage.FI,
+            replyRecipientAccountIds = emptyList(),
             jwtProvider = fakeJwtProvider,
         )
 
@@ -130,6 +138,7 @@ class CitizenPushSenderTest {
             category = CitizenPushCategory.MESSAGE,
             senderName = "Bob",
             language = CitizenPushLanguage.EN,
+            replyRecipientAccountIds = emptyList(),
             jwtProvider = fakeJwtProvider,
         )
 
@@ -154,8 +163,92 @@ class CitizenPushSenderTest {
             category = CitizenPushCategory.MESSAGE,
             senderName = "Alice",
             language = CitizenPushLanguage.FI,
+            replyRecipientAccountIds = emptyList(),
             jwtProvider = fakeJwtProvider,
         )
         verify(webPush, never()).send(any(), any())
+    }
+
+    @Test
+    fun `notifyMessage includes replyAction for MESSAGE category when recipients present`() {
+        val threadUuid = UUID.randomUUID()
+        val replyAcc = MessageAccountId(UUID.randomUUID())
+        whenever(store.load(personId)).thenReturn(
+            CitizenPushStoreFile(
+                personId,
+                listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.MESSAGE))),
+            )
+        )
+
+        sender.notifyMessage(
+            personId = personId,
+            threadId = threadUuid.toString(),
+            category = CitizenPushCategory.MESSAGE,
+            senderName = "Alice",
+            language = CitizenPushLanguage.EN,
+            replyRecipientAccountIds = listOf(replyAcc),
+            jwtProvider = fakeJwtProvider,
+        )
+
+        val captor = argumentCaptor<WebPushNotification>()
+        verify(webPush).send(any(), captor.capture())
+        val payload = captor.firstValue.payloads.single() as WebPushPayload.NotificationV1
+        val replyAction = payload.replyAction
+        assertNotNull(replyAction)
+        assertEquals(MessageThreadId(threadUuid), replyAction.threadId)
+        assertEquals(setOf(replyAcc), replyAction.recipientAccountIds)
+        assertEquals("Reply", replyAction.actionLabel)
+        assertEquals("Reply sent", replyAction.successTitle)
+    }
+
+    @Test
+    fun `notifyMessage omits replyAction for BULLETIN category`() {
+        val replyAcc = MessageAccountId(UUID.randomUUID())
+        whenever(store.load(personId)).thenReturn(
+            CitizenPushStoreFile(
+                personId,
+                listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.BULLETIN))),
+            )
+        )
+
+        sender.notifyMessage(
+            personId = personId,
+            threadId = UUID.randomUUID().toString(),
+            category = CitizenPushCategory.BULLETIN,
+            senderName = "Alice",
+            language = CitizenPushLanguage.EN,
+            replyRecipientAccountIds = listOf(replyAcc),
+            jwtProvider = fakeJwtProvider,
+        )
+
+        val captor = argumentCaptor<WebPushNotification>()
+        verify(webPush).send(any(), captor.capture())
+        val payload = captor.firstValue.payloads.single() as WebPushPayload.NotificationV1
+        assertNull(payload.replyAction)
+    }
+
+    @Test
+    fun `notifyMessage omits replyAction when reply recipients are empty`() {
+        whenever(store.load(personId)).thenReturn(
+            CitizenPushStoreFile(
+                personId,
+                listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.MESSAGE))),
+            )
+        )
+
+        sender.notifyMessage(
+            personId = personId,
+            threadId = UUID.randomUUID().toString(),
+            category = CitizenPushCategory.MESSAGE,
+            senderName = "Alice",
+            language = CitizenPushLanguage.EN,
+            replyRecipientAccountIds = emptyList(),
+            jwtProvider = fakeJwtProvider,
+        )
+
+        val captor = argumentCaptor<WebPushNotification>()
+        verify(webPush).send(any(), captor.capture())
+        val payload = captor.firstValue.payloads.single() as WebPushPayload.NotificationV1
+        assertNull(payload.replyAction)
     }
 }
