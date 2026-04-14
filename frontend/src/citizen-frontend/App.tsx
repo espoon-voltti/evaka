@@ -23,6 +23,7 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 
 import { useChildrenStartingNotification } from './ChildStartingNotificationHook'
+import { usePasskeyEnrollNudge } from './passkey/usePasskeyEnrollNudge'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import { sessionKeepalive } from './auth/utils'
@@ -97,6 +98,7 @@ const Content = React.memo(function Content({
       user.map((usr) => !!usr).getOrElse(false)
     )
   useChildrenStartingNotification()
+  usePasskeyEnrollNudge()
   return (
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>

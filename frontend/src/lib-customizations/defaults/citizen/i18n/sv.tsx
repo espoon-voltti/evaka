@@ -2409,7 +2409,13 @@ const sv: Translations = {
       rename: 'Byt namn',
       labelLabel: 'Namn',
       labelValidationEmpty: 'Namnet får inte vara tomt',
-      labelValidationTooLong: 'Namnet är för långt'
+      labelValidationTooLong: 'Namnet är för långt',
+      enrollNudge: {
+        title: 'Prova passnyckel-inloggning',
+        body: 'Logga in snabbt och utan lösenord på denna enhet.',
+        action: 'Aktivera',
+        dismiss: 'Stäng'
+      }
     }
   },
   income: {

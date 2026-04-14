@@ -2424,7 +2424,13 @@ export default {
       rename: 'Nimeä uudelleen',
       labelLabel: 'Nimi',
       labelValidationEmpty: 'Nimi ei voi olla tyhjä',
-      labelValidationTooLong: 'Nimi on liian pitkä'
+      labelValidationTooLong: 'Nimi on liian pitkä',
+      enrollNudge: {
+        title: 'Kokeile passkey-kirjautumista',
+        body: 'Kirjaudu nopeasti ja salasanatta tällä laitteella.',
+        action: 'Ota käyttöön',
+        dismiss: 'Sulje'
+      }
     }
   },
   income: {

@@ -2155,7 +2155,13 @@ const en: Translations = {
       rename: 'Rename',
       labelLabel: 'Name',
       labelValidationEmpty: 'Name cannot be empty',
-      labelValidationTooLong: 'Name is too long'
+      labelValidationTooLong: 'Name is too long',
+      enrollNudge: {
+        title: 'Try signing in with a passkey',
+        body: 'Sign in fast and passwordless on this device.',
+        action: 'Set up passkey',
+        dismiss: 'Dismiss'
+      }
     }
   },
   income: {
