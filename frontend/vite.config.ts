@@ -227,6 +227,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
     },
     server: {
       port: parseInt(process.env.EVAKA_FRONTEND_PORT || '9099', 10),
+      allowedHosts: ['.trycloudflare.com'],
       warmup: {
         clientFiles: ['src/**/index.html']
       },
