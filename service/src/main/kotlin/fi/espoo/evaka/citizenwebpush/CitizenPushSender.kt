@@ -4,7 +4,12 @@
 
 package fi.espoo.evaka.citizenwebpush
 
+import fi.espoo.evaka.messaging.MessageType
+import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.webpush.VapidJwt
 import fi.espoo.evaka.webpush.WebPush
 import fi.espoo.evaka.webpush.WebPushCrypto
@@ -38,7 +43,7 @@ class CitizenPushSender(
         language: CitizenPushLanguage,
         jwtProvider: VapidJwtProvider = defaultJwtProviderOrNoop(),
     ) {
-        if (webPush == null) return
+        val wp = webPush ?: return
         val file = store.load(personId) ?: return
         val entries = file.subscriptions.filter { category in it.enabledCategories }
         if (entries.isEmpty()) return
@@ -52,7 +57,7 @@ class CitizenPushSender(
                 url = "/messages/$threadId",
             )
 
-        entries.forEach { entry -> sendOne(personId, entry, payload, jwtProvider) }
+        entries.forEach { entry -> sendOne(personId, entry, payload, jwtProvider, wp) }
     }
 
     fun sendTest(
@@ -60,7 +65,7 @@ class CitizenPushSender(
         language: CitizenPushLanguage,
         jwtProvider: VapidJwtProvider = defaultJwtProviderOrNoop(),
     ) {
-        if (webPush == null) return
+        val wp = webPush ?: return
         val file = store.load(personId) ?: return
         val titleAndBody = CitizenPushMessages.forTest(language)
         val payload =
@@ -70,7 +75,7 @@ class CitizenPushSender(
                 tag = "welcome",
                 url = "/personal-details",
             )
-        file.subscriptions.forEach { entry -> sendOne(personId, entry, payload, jwtProvider) }
+        file.subscriptions.forEach { entry -> sendOne(personId, entry, payload, jwtProvider, wp) }
     }
 
     private fun sendOne(
@@ -78,6 +83,7 @@ class CitizenPushSender(
         entry: CitizenPushSubscriptionEntry,
         payload: WebPushPayload.NotificationV1,
         jwtProvider: VapidJwtProvider,
+        webPush: WebPush,
     ) {
         val endpoint =
             try {
@@ -101,7 +107,7 @@ class CitizenPushSender(
 
         try {
             val vapidJwt = jwtProvider.get(endpoint.uri)
-            webPush!!.send(vapidJwt, notification)
+            webPush.send(vapidJwt, notification)
         } catch (e: WebPush.SubscriptionExpired) {
             logger.warn { "Citizen push subscription expired (${e.status}); removing" }
             store.removeSubscription(personId, entry.endpoint)
@@ -124,11 +130,15 @@ class CitizenPushSender(
      * transaction. Opens its own short read-only transaction to resolve per-recipient context,
      * then releases the connection before doing S3 / HTTP. Best-effort: any exception is caught
      * and logged, never re-thrown.
+     *
+     * Known POC tradeoff: the jwtProvider closure opens one DB transaction per device when
+     * fetching the cached VAPID JWT. For a staging POC this is fine; a production version
+     * should batch JWT acquisition across all distinct push-service origins.
      */
     fun handleSentMessages(
-        db: fi.espoo.evaka.shared.db.Database.Connection,
-        clock: fi.espoo.evaka.shared.domain.EvakaClock,
-        messageIds: List<fi.espoo.evaka.shared.MessageId>,
+        db: Database.Connection,
+        clock: EvakaClock,
+        messageIds: List<MessageId>,
     ) {
         if (webPush == null || messageIds.isEmpty()) return
         val recipients =
@@ -142,8 +152,7 @@ class CitizenPushSender(
             val category =
                 when {
                     r.urgent -> CitizenPushCategory.URGENT_MESSAGE
-                    r.threadType == fi.espoo.evaka.messaging.MessageType.BULLETIN ->
-                        CitizenPushCategory.BULLETIN
+                    r.threadType == MessageType.BULLETIN -> CitizenPushCategory.BULLETIN
                     else -> CitizenPushCategory.MESSAGE
                 }
             try {
@@ -166,16 +175,16 @@ class CitizenPushSender(
 }
 
 data class CitizenPushRecipientRow(
-    val personId: fi.espoo.evaka.shared.PersonId,
-    val threadId: fi.espoo.evaka.shared.MessageThreadId,
+    val personId: PersonId,
+    val threadId: MessageThreadId,
     val language: String?,
     val urgent: Boolean,
-    val threadType: fi.espoo.evaka.messaging.MessageType,
+    val threadType: MessageType,
     val senderName: String,
 )
 
-fun fi.espoo.evaka.shared.db.Database.Read.getCitizenPushRecipients(
-    messageIds: List<fi.espoo.evaka.shared.MessageId>
+fun Database.Read.getCitizenPushRecipients(
+    messageIds: List<MessageId>
 ): List<CitizenPushRecipientRow> =
     createQuery {
             sql(
@@ -186,14 +195,14 @@ SELECT DISTINCT
     lower(p.language) AS language,
     t.urgent,
     t.message_type AS thread_type,
-    coalesce(sender_account.name, '') AS sender_name
+    m.sender_name
 FROM message m
 JOIN message_recipients mr ON mr.message_id = m.id
 JOIN message_account ma ON ma.id = mr.recipient_id
 JOIN person p ON p.id = ma.person_id
 JOIN message_thread t ON m.thread_id = t.id
-LEFT JOIN message_account sender_account ON sender_account.id = m.sender_id
 WHERE m.id = ANY(${bind(messageIds)})
+  AND t.is_copy IS FALSE
 """
             )
         }
