@@ -7,6 +7,11 @@ import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
+import {
+  TestContextProvider,
+  testTranslations
+} from 'lib-components/utils/TestContextProvider'
+
 import { PwaInstallButton } from './PwaInstallButton'
 import { usePwaInstall, type PwaInstallState } from './usePwaInstall'
 
@@ -28,8 +33,8 @@ vi.mock('../localization', () => ({
         iosUseSafariNote: 'Open in Safari',
         notSupported: 'Not supported',
         instructions: {
-          ios: <div data-qa="ios-instructions">iOS steps</div>,
-          android: <div data-qa="android-instructions">Android steps</div>
+          ios: <div data-testid="ios-instructions">iOS steps</div>,
+          android: <div data-testid="android-instructions">Android steps</div>
         }
       }
     }
@@ -42,18 +47,29 @@ const setState = (state: PwaInstallState) => {
   mockedUsePwaInstall.mockReturnValue(state)
 }
 
+const wrap = (child: React.JSX.Element) => (
+  <TestContextProvider translations={testTranslations}>
+    {child}
+  </TestContextProvider>
+)
+
 describe('PwaInstallButton', () => {
   it('renders nothing when running standalone', () => {
     setState({ kind: 'standalone' })
-    const { container } = render(<PwaInstallButton />)
-    expect(container).toBeEmptyDOMElement()
+    const { container } = render(wrap(<PwaInstallButton />))
+    // The TestContextProvider adds a wrapper element, so we check for the
+    // absence of our component's content rather than container emptiness.
+    expect(
+      screen.queryByRole('button', { name: 'Add to home screen' })
+    ).not.toBeInTheDocument()
+    expect(container.querySelector('button')).toBeNull()
   })
 
   it('renders a button that calls promptInstall in native state', async () => {
     const promptInstall = vi.fn().mockResolvedValue(undefined)
     setState({ kind: 'native', promptInstall })
 
-    render(<PwaInstallButton />)
+    render(wrap(<PwaInstallButton />))
 
     const button = screen.getByRole('button', { name: 'Add to home screen' })
     await userEvent.click(button)
@@ -67,7 +83,7 @@ describe('PwaInstallButton', () => {
       platform: { os: 'ios', isSafari: true }
     })
 
-    render(<PwaInstallButton />)
+    render(wrap(<PwaInstallButton />))
     await userEvent.click(
       screen.getByRole('button', { name: 'Add to home screen' })
     )
@@ -83,7 +99,7 @@ describe('PwaInstallButton', () => {
       platform: { os: 'ios', isSafari: false }
     })
 
-    render(<PwaInstallButton />)
+    render(wrap(<PwaInstallButton />))
     await userEvent.click(
       screen.getByRole('button', { name: 'Add to home screen' })
     )
@@ -95,7 +111,7 @@ describe('PwaInstallButton', () => {
   it('shows only Android instructions in fallback state on Android', async () => {
     setState({ kind: 'fallback', platform: { os: 'android' } })
 
-    render(<PwaInstallButton />)
+    render(wrap(<PwaInstallButton />))
     await userEvent.click(
       screen.getByRole('button', { name: 'Add to home screen' })
     )
@@ -107,7 +123,7 @@ describe('PwaInstallButton', () => {
   it('shows the not-supported message in fallback state on other platforms', async () => {
     setState({ kind: 'fallback', platform: { os: 'other' } })
 
-    render(<PwaInstallButton />)
+    render(wrap(<PwaInstallButton />))
     await userEvent.click(
       screen.getByRole('button', { name: 'Add to home screen' })
     )

@@ -4,6 +4,11 @@
 
 import React, { useCallback, useState } from 'react'
 
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
+
 import { useTranslation } from '../localization'
 
 import { usePwaInstall } from './usePwaInstall'
@@ -20,14 +25,14 @@ export const PwaInstallButton = React.memo(function PwaInstallButton() {
 
   if (state.kind === 'native') {
     return (
-      <button
-        type="button"
+      <Button
+        appearance="button"
+        primary
+        text={i18n.loginPage.pwaInstall.button}
         onClick={() => {
           void state.promptInstall()
         }}
-      >
-        {i18n.loginPage.pwaInstall.button}
-      </button>
+      />
     )
   }
 
@@ -35,26 +40,39 @@ export const PwaInstallButton = React.memo(function PwaInstallButton() {
   const platform = state.platform
   return (
     <>
-      <button type="button" onClick={toggleOpen}>
-        {i18n.loginPage.pwaInstall.button}
-      </button>
+      <Button
+        appearance="button"
+        primary
+        text={i18n.loginPage.pwaInstall.button}
+        onClick={toggleOpen}
+      />
       {open && (
-        <div>
-          {platform.os === 'ios' && (
-            <>
-              {!platform.isSafari && (
-                <p>{i18n.loginPage.pwaInstall.iosUseSafariNote}</p>
-              )}
-              {i18n.loginPage.pwaInstall.instructions.ios}
-            </>
-          )}
-          {platform.os === 'android' && (
-            <>{i18n.loginPage.pwaInstall.instructions.android}</>
-          )}
-          {platform.os === 'other' && (
-            <p>{i18n.loginPage.pwaInstall.notSupported}</p>
-          )}
-        </div>
+        <>
+          <Gap $size="s" />
+          <CollapsibleContentArea
+            open
+            toggleOpen={toggleOpen}
+            $opaque={false}
+            title={i18n.loginPage.pwaInstall.button}
+            $paddingHorizontal="0"
+            $paddingVertical="0"
+          >
+            {platform.os === 'ios' && (
+              <>
+                {!platform.isSafari && (
+                  <P $noMargin>{i18n.loginPage.pwaInstall.iosUseSafariNote}</P>
+                )}
+                {i18n.loginPage.pwaInstall.instructions.ios}
+              </>
+            )}
+            {platform.os === 'android' && (
+              <>{i18n.loginPage.pwaInstall.instructions.android}</>
+            )}
+            {platform.os === 'other' && (
+              <P $noMargin>{i18n.loginPage.pwaInstall.notSupported}</P>
+            )}
+          </CollapsibleContentArea>
+        </>
       )}
     </>
   )
