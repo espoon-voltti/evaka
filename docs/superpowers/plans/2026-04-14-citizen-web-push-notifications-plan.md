@@ -241,7 +241,7 @@ object CitizenPushMessages {
             CitizenPushCategory.MESSAGE ->
                 PushTitleAndBody("Nytt meddelande", "$sender har skickat dig ett meddelande.")
             CitizenPushCategory.BULLETIN ->
-                PushTitleAndBody("Nytt meddelande", "$sender har publicerat ett nytt meddelande.")
+                PushTitleAndBody("Nytt meddelande från kommunen", "$sender har publicerat ett nytt meddelande.")
         }
 
     private fun english(category: CitizenPushCategory, sender: String) =
