@@ -4,11 +4,64 @@
 
 /* global self */
 
-import { saveDraft, deleteDraft } from './webpush/draftStore.ts'
-
 /// <reference lib="WebWorker" />
 /** @type {ServiceWorkerGlobalScope} */
 const serviceWorker = self
+
+// Minimal IndexedDB draft store — schema must stay in sync with
+// `./webpush/draftStore.ts` (used by the main thread). The SW can't import
+// that module directly because the vite dev middleware serves this file as a
+// classic script, not an ES module. Duplicating the minimal save/delete code
+// is simpler than wiring up module-mode service workers + dev path resolution.
+const DRAFT_DB_NAME = 'evaka-citizen-webpush'
+const DRAFT_DB_VERSION = 1
+const DRAFT_STORE = 'drafts'
+
+function openDraftDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DRAFT_DB_NAME, DRAFT_DB_VERSION)
+    req.onupgradeneeded = () => {
+      const db = req.result
+      if (!db.objectStoreNames.contains(DRAFT_STORE)) {
+        db.createObjectStore(DRAFT_STORE, { keyPath: 'threadId' })
+      }
+    }
+    req.onsuccess = () => resolve(req.result)
+    req.onerror = () => reject(req.error)
+  })
+}
+
+async function saveDraft(threadId, text) {
+  const db = await openDraftDb()
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(DRAFT_STORE, 'readwrite')
+    tx.objectStore(DRAFT_STORE).put({ threadId, text, savedAt: Date.now() })
+    tx.oncomplete = () => {
+      db.close()
+      resolve()
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
+  })
+}
+
+async function deleteDraft(threadId) {
+  const db = await openDraftDb()
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(DRAFT_STORE, 'readwrite')
+    tx.objectStore(DRAFT_STORE).delete(threadId)
+    tx.oncomplete = () => {
+      db.close()
+      resolve()
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
+  })
+}
 
 serviceWorker.addEventListener('install', (event) => {
   event.waitUntil(serviceWorker.skipWaiting())
