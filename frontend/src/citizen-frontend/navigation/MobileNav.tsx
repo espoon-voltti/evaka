@@ -40,6 +40,8 @@ import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import AttentionIndicator from './AttentionIndicator'
 import { headerHeightMobile, logoutUrl } from './const'
+import displacementUrl from './liquid-glass/displacement.png'
+import specularUrl from './liquid-glass/specular.png'
 import {
   CircledChar,
   DropDownInfo,
@@ -85,6 +87,7 @@ export default React.memo(function MobileNav() {
       {(user) =>
         user ? (
           <>
+            <LiquidGlassFilter />
             <BottomBar>
               {user.accessibleFeatures.reservations && (
                 <BottomBarLink
@@ -146,6 +149,80 @@ export default React.memo(function MobileNav() {
   )
 })
 
+const LiquidGlassFilter = React.memo(function LiquidGlassFilter() {
+  return (
+    <svg
+      width="0"
+      height="0"
+      style={{ position: 'absolute' }}
+      aria-hidden="true"
+    >
+      <defs>
+        <filter
+          id="liquid-glass-bottom-nav"
+          x="0%"
+          y="0%"
+          width="100%"
+          height="100%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feGaussianBlur
+            in="SourceGraphic"
+            stdDeviation="2.4"
+            result="blurred_source"
+          />
+          <feImage
+            href={displacementUrl}
+            x="0"
+            y="0"
+            width="360"
+            height="72"
+            result="displacement_map"
+          />
+          <feDisplacementMap
+            in="blurred_source"
+            in2="displacement_map"
+            scale="32.376661632244854"
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="displaced"
+          />
+          <feColorMatrix
+            in="displaced"
+            type="saturate"
+            values="14"
+            result="displaced_saturated"
+          />
+          <feImage
+            href={specularUrl}
+            x="0"
+            y="0"
+            width="360"
+            height="72"
+            result="specular_layer"
+          />
+          <feComposite
+            in="displaced_saturated"
+            in2="specular_layer"
+            operator="in"
+            result="specular_saturated"
+          />
+          <feComponentTransfer in="specular_layer" result="specular_faded">
+            <feFuncA type="linear" slope="0.24" />
+          </feComponentTransfer>
+          <feBlend
+            in="specular_saturated"
+            in2="displaced"
+            mode="normal"
+            result="withSaturation"
+          />
+          <feBlend in="specular_faded" in2="withSaturation" mode="normal" />
+        </filter>
+      </defs>
+    </svg>
+  )
+})
+
 const BottomBar = styled.nav`
   position: fixed;
   left: 50%;
@@ -184,6 +261,12 @@ const BottomBar = styled.nav`
 
   @media screen and (max-width: ${zoomedMobileMax}) {
     padding: 0 8px;
+  }
+
+  @media (min-width: 384px) {
+    &::before {
+      backdrop-filter: url(#liquid-glass-bottom-nav);
+    }
   }
 
   @media print {
