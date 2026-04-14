@@ -270,7 +270,7 @@ export default React.memo(
     const showReplyEditor = useReplyEditorVisible.on
     useEffect(() => hideReplyEditor(), [hideReplyEditor, threadId])
 
-    const { discardDraft } = useReplyDraftRestore(threadId, (text) => {
+    const { discardDraft, restored } = useReplyDraftRestore(threadId, (text) => {
       setReplyContent(threadId, text)
       showReplyEditor()
     })
@@ -394,6 +394,18 @@ export default React.memo(
         </MessageList>
         {replyEditorVisible ? (
           <ReplyEditorContainer ref={autoScrollRef}>
+            {restored && (
+              <>
+                <InfoBox
+                  message={i18n.messages.thread.restoredReplyDraft}
+                  thin
+                  wide
+                  noMargin
+                  data-qa="restored-reply-draft-banner"
+                />
+                <Gap $size="xs" />
+              </>
+            )}
             <MessageReplyEditor
               mutation={replyToThreadMutation}
               onSubmit={() => ({

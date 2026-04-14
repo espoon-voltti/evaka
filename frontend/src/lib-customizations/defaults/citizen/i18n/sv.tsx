@@ -635,6 +635,8 @@ const sv: Translations = {
       sender: 'Avsändare',
       sentAt: 'Skickat',
       recipients: 'Mottagare',
+      restoredReplyDraft:
+        'Ditt senaste svar har återställts från notiset. Redigera eller skicka det nedan.',
       financeReplyInfo:
         'Det är möjligt att svara endast när din inkomstutredning har skickats eller är under handläggning.'
     },

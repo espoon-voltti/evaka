@@ -646,6 +646,8 @@ const en: Translations = {
       sender: 'Sender',
       sentAt: 'Sent at',
       recipients: 'Recipients',
+      restoredReplyDraft:
+        'Your last reply was restored from the notification. Edit or send it below.',
       financeReplyInfo:
         'Replying is only possible when your income statement has been sent or is being processed.'
     },

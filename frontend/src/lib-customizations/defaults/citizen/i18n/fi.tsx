@@ -648,6 +648,8 @@ export default {
       sender: 'Lähettäjä',
       sentAt: 'Lähetetty',
       recipients: 'Vastaanottajat',
+      restoredReplyDraft:
+        'Viimeinen vastauksesi palautettiin ilmoituksesta. Muokkaa tai lähetä se alla.',
       financeReplyInfo:
         'Vastaaminen on mahdollista vain silloin, kun tuloselvityksesi on lähetetty tai käsittelyssä.'
     },
