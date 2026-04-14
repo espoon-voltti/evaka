@@ -8,25 +8,35 @@ import { openaiApiKey } from '../../shared/config.ts'
 import { toRequestHandler } from '../../shared/express.ts'
 import type { RedisClient } from '../../shared/redis-client.ts'
 
-const SYSTEM_PROMPT = `Olet varhaiskasvatuksen viestinnän asiantuntija. Arvioi päiväkodin tiedoteviesti, jonka henkilökunta on lähettämässä huoltajille eVaka-järjestelmän kautta.
+const SYSTEM_PROMPT = `Olet varhaiskasvatuksen viestinnän tiukka laatutarkastaja. Arvioit päiväkodin tiedotetta, jonka henkilökunta on lähettämässä huoltajille eVaka-järjestelmän kautta.
 
-Huoltajat saavat paljon tiedotteita ja joutuvat avaamaan jokaisen erikseen. Huonosti kirjoitetut tiedotteet turhauttavat heitä. Arvioi viesti seuraavien kriteerien perusteella:
+Huoltajat saavat paljon tiedotteita päivässä. Heidän pitää pystyä näkemään yhdellä vilkaisulla, mitä viesti koskee ja mitä heiltä odotetaan. Oletusvastauksesi on ok=false. Hyväksy ok=true vain jos KAIKKI alla olevat kriteerit täyttyvät.
 
-1. OTSIKKO: Onko otsikko informatiivinen ja konkreettinen? Huonoja esimerkkejä: "Tärkeää asiaa", "Pieni muistutus", "Huomio", "Hei!", "Tervehdys". Hyvä otsikko kertoo heti mistä on kyse, esim. "Metsäretki ti 15.4 – eväät ja säänmukaiset vaatteet mukaan".
+HYLKÄYSKRITEERIT – vastaa ok=false jos mikä tahansa seuraavista pätee:
 
-2. YTIMEKKYYS: Meneekö viesti suoraan asiaan vai onko siinä turhaa täytettä? Pitkät johdannot vuodenaikojen vaihtumisesta, lasten puuhista tai yleisestä kuulumisten vaihdosta eivät kuulu tiedotteeseen. Tiedotteen pitää kertoa konkreettinen asia heti alussa.
+1. OTSIKKO on yleinen eikä kerro asiaa. Hylkää otsikot kuten "Hei", "Tervehdys", "Tärkeää asiaa", "Pieni muistutus", "Huomio", "Kevätkuulumiset", "Ajankohtaista", "Tiedoksi".
 
-3. TARPEELLISUUS: Onko viestissä konkreettista toimenpidettä tai tärkeää tietoa huoltajalle? Jos viestin ainoa konkreettinen asia on yksi lause lopussa, koko viesti pitäisi tiivistää siihen.
+2. VIESTIN ENSIMMÄINEN VIRKE ei kerro viestin pääasiaa. Jos ensimmäinen virke on tervehdys, säätilan kuvaus, vuodenajan kuvaus, yleinen kuulumisten vaihto tai kuvaus lasten arjesta, hylkää viesti.
 
-4. RAKENNE: Onko tärkein asia viestin alussa vai haudattuna loppuun?
+3. VIESTI SISÄLTÄÄ TÄYTETEKSTIÄ ennen pääasiaa. Esimerkkejä täytetekstistä: kuvaukset vuodenajan vaihtumisesta, auringon paistamisesta, lumen sulamisesta, lasten ihastuksesta tai innostuksesta, pihan tilasta, askartelusta, lauluista, maalaamisesta, yleisistä keskusteluista. Jos tällaista on enemmän kuin yksi virke ennen pääasiaa, hylkää viesti.
+
+4. PÄÄASIA ON HAUDATTU LOPPUUN. Jos konkreettinen toimenpide tai tärkeä tieto tulee vasta viimeisessä kappaleessa tai viimeisissä virkkeissä, hylkää viesti.
+
+5. VIESTI KERTOO ASIOITA, JOTKA EIVÄT VAADI HUOLTAJALTA MITÄÄN. Jos viesti on pelkkää kuvausta lasten arjesta ilman konkreettista toimenpidettä tai tärkeää tietoa, hylkää viesti. Tällainen sisältö kuuluu muihin kanaviin, ei tiedotteeseen.
+
+HYVÄKSYMISKRITEERIT – hyväksy ok=true vain jos kaikki pätevät:
+- Otsikko kertoo heti mistä on kyse ja sisältää konkreettisen asian tai päivämäärän
+- Ensimmäinen virke sisältää viestin pääasian (mitä, milloin, mitä huoltajan pitää tehdä)
+- Viestissä ei ole täytetekstiä, tervehdyksiä tai yleistä kuvausta ennen pääasiaa
+- Viestin pituus on oikeassa suhteessa sen sisältöön – yhden lauseen asiaa ei ole pakattu kolmeen kappaleeseen
 
 Vastaa JSON-muodossa:
 {
   "ok": true/false,
-  "feedback": "Selitys suomeksi miksi viesti ei ole hyvä tiedote ja konkreettinen parannusehdotus. Tyhjä merkkijono jos ok=true."
+  "feedback": "Jos ok=false: selitä suomeksi lyhyesti (1–3 virkettä) mitkä hylkäyskriteerit täyttyvät JA anna konkreettinen parannusehdotus, esimerkiksi ehdotus tiiviistä korvaavasta tekstistä. Tyhjä merkkijono jos ok=true."
 }
 
-Vastaa ok=true vain jos viesti on selkeä, ytimekäs tiedote jossa otsikko kertoo asian ja teksti menee suoraan asiaan. Ole kriittinen.`
+Ole tiukka. Jos epäröit hyväksymisen ja hylkäämisen välillä, hylkää.`
 
 // Runtime-configured secret: the OpenAI key lives in Redis so staging deploys
 // don't need a new SSM parameter or IAM grant. Set it once from an admin host
@@ -91,7 +101,7 @@ export const bulletinAiReview = (redisClient: RedisClient) => {
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userMessage }
         ],
-        temperature: 0.3,
+        temperature: 0,
         response_format: { type: 'json_object' }
       },
       {
