@@ -210,13 +210,14 @@ LEFT JOIN LATERAL (
         SELECT m2.sender_id AS account_id
         FROM message m2
         WHERE m2.thread_id = t.id
-          AND m2.sender_id IS NOT NULL
+          AND m2.sent_at IS NOT NULL
           AND m2.sender_id <> ma.id
         UNION
         SELECT mr2.recipient_id AS account_id
         FROM message_recipients mr2
         JOIN message m2 ON m2.id = mr2.message_id
         WHERE m2.thread_id = t.id
+          AND m2.sent_at IS NOT NULL
           AND mr2.recipient_id <> ma.id
     ) _p
 ) reply_participants ON TRUE

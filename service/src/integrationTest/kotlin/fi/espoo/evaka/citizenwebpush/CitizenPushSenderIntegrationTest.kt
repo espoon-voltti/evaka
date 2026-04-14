@@ -136,7 +136,101 @@ class CitizenPushSenderIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
 
         assertEquals(1, rows.size)
         assertEquals(citizen.id, rows.single().personId)
-        assertEquals(emptyList<MessageAccountId>(), rows.single().replyRecipientAccountIds)
+        assertEquals(emptySet<MessageAccountId>(), rows.single().replyRecipientAccountIds.toSet())
+    }
+
+    @Test
+    fun `getCitizenPushRecipients excludes draft messages from reply-all set`() {
+        val employee = DevEmployee(firstName = "Emp", lastName = "Loyee")
+        val citizenA = DevPerson(firstName = "Citizen", lastName = "A")
+        val citizenB = DevPerson(firstName = "Citizen", lastName = "B")
+        val citizenC = DevPerson(firstName = "Citizen", lastName = "C") // draft author
+
+        data class DraftTestFixture(
+            val realMessageId: MessageId,
+            val employeeAccount: MessageAccountId,
+            val citizenBAccount: MessageAccountId,
+        )
+
+        val fixture =
+            db.transaction { tx ->
+                tx.insert(employee)
+                tx.insert(citizenA, DevPersonType.ADULT)
+                tx.insert(citizenB, DevPersonType.ADULT)
+                tx.insert(citizenC, DevPersonType.ADULT)
+                val employeeAccount = tx.upsertEmployeeMessageAccount(employee.id)
+                val citizenAAccount = tx.getCitizenMessageAccount(citizenA.id)
+                val citizenBAccount = tx.getCitizenMessageAccount(citizenB.id)
+                val citizenCAccount = tx.getCitizenMessageAccount(citizenC.id)
+
+                val recipientIds = setOf(citizenAAccount, citizenBAccount)
+                val contentId = tx.insertMessageContent("Hello", employeeAccount)
+                val threadId =
+                    tx.insertThread(
+                        MessageType.MESSAGE,
+                        "Draft-leak test thread",
+                        urgent = false,
+                        sensitive = false,
+                        isCopy = false,
+                    )
+                // Real sent message from employee to A and B
+                val realMessageId =
+                    tx.insertMessage(
+                        now = now,
+                        contentId = contentId,
+                        threadId = threadId,
+                        sender = employeeAccount,
+                        sentAt = now,
+                        recipientNames =
+                            tx.getAccountNames(
+                                recipientIds,
+                                testFeatureConfig.serviceWorkerMessageAccountName,
+                                testFeatureConfig.financeMessageAccountName,
+                            ),
+                        municipalAccountName = "Espoo",
+                        serviceWorkerAccountName = "Espoon palveluohjaus",
+                        financeAccountName = "Espoon asiakasmaksut",
+                    )
+                tx.insertRecipients(listOf(realMessageId to recipientIds))
+
+                // Draft reply from citizen C — inserted with sentAt = now, then nullified
+                val draftContentId = tx.insertMessageContent("Draft reply", citizenCAccount)
+                val draftMessageId =
+                    tx.insertMessage(
+                        now = now,
+                        contentId = draftContentId,
+                        threadId = threadId,
+                        sender = citizenCAccount,
+                        sentAt = now,
+                        recipientNames =
+                            tx.getAccountNames(
+                                setOf(employeeAccount),
+                                testFeatureConfig.serviceWorkerMessageAccountName,
+                                testFeatureConfig.financeMessageAccountName,
+                            ),
+                        municipalAccountName = "Espoo",
+                        serviceWorkerAccountName = "Espoon palveluohjaus",
+                        financeAccountName = "Espoon asiakasmaksut",
+                    )
+                tx.insertRecipients(listOf(draftMessageId to setOf(employeeAccount)))
+                // Retroactively nullify sent_at to simulate a draft (never actually sent)
+                tx.createUpdate {
+                        sql("UPDATE message SET sent_at = NULL WHERE id = ${bind(draftMessageId)}")
+                    }
+                    .execute()
+
+                DraftTestFixture(realMessageId, employeeAccount, citizenBAccount)
+            }
+
+        val rows = db.read { it.getCitizenPushRecipients(listOf(fixture.realMessageId)) }
+
+        assertEquals(2, rows.size)
+        val rowA = rows.single { it.personId == citizenA.id }
+        // Citizen C must NOT appear — C's only participation is via a draft (sent_at IS NULL)
+        assertEquals(
+            setOf<MessageAccountId>(fixture.employeeAccount, fixture.citizenBAccount),
+            rowA.replyRecipientAccountIds.toSet(),
+        )
     }
 
     private data class Tuple4(
