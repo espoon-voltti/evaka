@@ -33,6 +33,7 @@ import org.springframework.http.HttpStatus
 
 class CitizenPushSenderTest {
     private val personId = PersonId(UUID.randomUUID())
+    private val threadId = MessageThreadId(UUID.randomUUID())
     private val now =
         HelsinkiDateTime.from(ZonedDateTime.parse("2026-04-14T10:00:00+03:00[Europe/Helsinki]"))
 
@@ -82,7 +83,7 @@ class CitizenPushSenderTest {
 
         sender.notifyMessage(
             personId = personId,
-            threadId = "thread-123",
+            threadId = threadId,
             category = CitizenPushCategory.URGENT_MESSAGE,
             senderName = "Alice",
             language = CitizenPushLanguage.FI,
@@ -112,7 +113,7 @@ class CitizenPushSenderTest {
 
         sender.notifyMessage(
             personId = personId,
-            threadId = "thread-123",
+            threadId = threadId,
             category = CitizenPushCategory.MESSAGE,
             senderName = "Alice",
             language = CitizenPushLanguage.FI,
@@ -134,7 +135,7 @@ class CitizenPushSenderTest {
 
         sender.notifyMessage(
             personId = personId,
-            threadId = "thread-abc",
+            threadId = threadId,
             category = CitizenPushCategory.MESSAGE,
             senderName = "Bob",
             language = CitizenPushLanguage.EN,
@@ -148,8 +149,8 @@ class CitizenPushSenderTest {
                 val payload = notification.payloads.single() as WebPushPayload.NotificationV1
                 assertEquals("New message", payload.title)
                 assertEquals("Bob sent you a message.", payload.body)
-                assertEquals("msg-thread-abc", payload.tag)
-                assertEquals("/messages/thread-abc", payload.url)
+                assertEquals("msg-$threadId", payload.tag)
+                assertEquals("/messages/$threadId", payload.url)
             },
         )
     }
@@ -159,7 +160,7 @@ class CitizenPushSenderTest {
         whenever(store.load(personId)).thenReturn(null)
         sender.notifyMessage(
             personId = personId,
-            threadId = "t",
+            threadId = threadId,
             category = CitizenPushCategory.MESSAGE,
             senderName = "Alice",
             language = CitizenPushLanguage.FI,
@@ -171,7 +172,6 @@ class CitizenPushSenderTest {
 
     @Test
     fun `notifyMessage includes replyAction for MESSAGE category when recipients present`() {
-        val threadUuid = UUID.randomUUID()
         val replyAcc = MessageAccountId(UUID.randomUUID())
         whenever(store.load(personId)).thenReturn(
             CitizenPushStoreFile(
@@ -182,7 +182,7 @@ class CitizenPushSenderTest {
 
         sender.notifyMessage(
             personId = personId,
-            threadId = threadUuid.toString(),
+            threadId = threadId,
             category = CitizenPushCategory.MESSAGE,
             senderName = "Alice",
             language = CitizenPushLanguage.EN,
@@ -195,7 +195,7 @@ class CitizenPushSenderTest {
         val payload = captor.firstValue.payloads.single() as WebPushPayload.NotificationV1
         val replyAction = payload.replyAction
         assertNotNull(replyAction)
-        assertEquals(MessageThreadId(threadUuid), replyAction.threadId)
+        assertEquals(threadId, replyAction.threadId)
         assertEquals(setOf(replyAcc), replyAction.recipientAccountIds)
         assertEquals("Reply", replyAction.actionLabel)
         assertEquals("Reply sent", replyAction.successTitle)
@@ -213,7 +213,7 @@ class CitizenPushSenderTest {
 
         sender.notifyMessage(
             personId = personId,
-            threadId = UUID.randomUUID().toString(),
+            threadId = threadId,
             category = CitizenPushCategory.BULLETIN,
             senderName = "Alice",
             language = CitizenPushLanguage.EN,
@@ -238,7 +238,7 @@ class CitizenPushSenderTest {
 
         sender.notifyMessage(
             personId = personId,
-            threadId = UUID.randomUUID().toString(),
+            threadId = threadId,
             category = CitizenPushCategory.MESSAGE,
             senderName = "Alice",
             language = CitizenPushLanguage.EN,

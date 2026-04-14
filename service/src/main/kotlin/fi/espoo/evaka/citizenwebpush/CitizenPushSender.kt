@@ -20,7 +20,6 @@ import fi.espoo.evaka.webpush.WebPushPayload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.time.Duration
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -39,7 +38,7 @@ class CitizenPushSender(
 ) {
     fun notifyMessage(
         personId: PersonId,
-        threadId: String,
+        threadId: MessageThreadId,
         category: CitizenPushCategory,
         senderName: String,
         language: CitizenPushLanguage,
@@ -56,7 +55,7 @@ class CitizenPushSender(
             if (category != CitizenPushCategory.BULLETIN && replyRecipientAccountIds.isNotEmpty()) {
                 val strings = CitizenPushMessages.forReplyAction(language)
                 WebPushPayload.NotificationV1.ReplyAction(
-                    threadId = MessageThreadId(UUID.fromString(threadId)),
+                    threadId = threadId,
                     recipientAccountIds = replyRecipientAccountIds.toSet(),
                     actionLabel = strings.actionLabel,
                     actionPlaceholder = strings.actionPlaceholder,
@@ -178,7 +177,7 @@ class CitizenPushSender(
             try {
                 notifyMessage(
                     personId = r.personId,
-                    threadId = r.threadId.toString(),
+                    threadId = r.threadId,
                     category = category,
                     senderName = r.senderName,
                     language = CitizenPushLanguage.fromPersonLanguage(r.language),
