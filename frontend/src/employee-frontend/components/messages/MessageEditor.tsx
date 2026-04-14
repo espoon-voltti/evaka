@@ -87,6 +87,7 @@ import type { DeleteAttachmentResult } from '../../api/attachments'
 import { deleteAttachmentMutation } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 
+import { reviewBulletin } from './bulletin-review'
 import { createMessagePreflightCheckQuery } from './queries'
 import type { Draft } from './useDraft'
 import { useDraft } from './useDraft'
@@ -439,6 +440,10 @@ export default React.memo(function MessageEditor({
     i18n.messages.messageEditor.newMessage
 
   const [confirmLargeSend, setConfirmLargeSend] = useState(false)
+  const [aiReviewState, setAiReviewState] = useState<
+    'idle' | 'reviewing' | 'flagged' | 'error'
+  >('idle')
+  const [aiReviewFeedback, setAiReviewFeedback] = useState('')
 
   const sendHandler = useCallback(() => {
     const {
@@ -464,6 +469,29 @@ export default React.memo(function MessageEditor({
     )
   }, [onSend, message, selectedRecipients, draftId, filters, initialFolder])
 
+  const handleSendWithAiReview = useCallback(() => {
+    if (message.type !== 'BULLETIN') {
+      sendHandler()
+      return
+    }
+    setAiReviewState('reviewing')
+    reviewBulletin(message.title, message.content)
+      .then((result) => {
+        if (result.ok) {
+          sendHandler()
+          setAiReviewState('idle')
+        } else {
+          setAiReviewFeedback(result.feedback)
+          setAiReviewState('flagged')
+        }
+      })
+      .catch(() => {
+        // Don't block sending on AI failure
+        sendHandler()
+        setAiReviewState('idle')
+      })
+  }, [message.type, message.title, message.content, sendHandler])
+
   const onCloseHandler = useCallback(() => {
     if (draftWasModified && draftState === 'dirty') {
       saveDraft()
@@ -488,6 +516,7 @@ export default React.memo(function MessageEditor({
 
   const sendEnabled =
     !sending &&
+    aiReviewState !== 'reviewing' &&
     draftState === 'clean' &&
     areRequiredFieldsFilled(message, selectedRecipients) &&
     isEqual(debouncedRecipients, selectedRecipients) &&
@@ -916,7 +945,9 @@ export default React.memo(function MessageEditor({
                 text={
                   sending
                     ? i18n.messages.messageEditor.sending
-                    : i18n.messages.messageEditor.send
+                    : aiReviewState === 'reviewing'
+                      ? i18n.messages.messageEditor.aiReview.reviewing
+                      : i18n.messages.messageEditor.send
                 }
                 primary
                 disabled={!sendEnabled}
@@ -925,7 +956,7 @@ export default React.memo(function MessageEditor({
                     .map((r) => r.numberOfRecipientAccounts > 2)
                     .getOrElse(false)
                     ? () => setConfirmLargeSend(true)
-                    : sendHandler
+                    : handleSendWithAiReview
                 }
                 data-qa="send-message-btn"
               />
@@ -947,13 +978,35 @@ export default React.memo(function MessageEditor({
               resolve={{
                 label: i18n.messages.messageEditor.send,
                 action: () => {
-                  sendHandler()
+                  handleSendWithAiReview()
                   setConfirmLargeSend(false)
                 }
               }}
               reject={{
                 label: i18n.common.cancel,
                 action: () => setConfirmLargeSend(false)
+              }}
+            />
+          )}
+
+          {aiReviewState === 'flagged' && (
+            <InfoModal
+              type="warning"
+              icon={faQuestion}
+              title={i18n.messages.messageEditor.aiReview.warningTitle}
+              text={aiReviewFeedback}
+              close={() => setAiReviewState('idle')}
+              closeLabel={i18n.messages.messageEditor.aiReview.edit}
+              resolve={{
+                label: i18n.messages.messageEditor.aiReview.sendAnyway,
+                action: () => {
+                  sendHandler()
+                  setAiReviewState('idle')
+                }
+              }}
+              reject={{
+                label: i18n.messages.messageEditor.aiReview.edit,
+                action: () => setAiReviewState('idle')
               }}
             />
           )}

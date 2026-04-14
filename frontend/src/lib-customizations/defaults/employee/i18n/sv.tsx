@@ -4736,7 +4736,15 @@ export const sv: typeof fi = {
       setFolder: 'Flytta till mapp',
       deleteDraft: 'Kassera utkast',
       send: 'Skicka',
-      sending: 'Skickar'
+      sending: 'Skickar',
+      aiReview: {
+        reviewing: 'Kontrollerar...',
+        warningTitle: 'Kvaliteten på nyhetsbrevet',
+        sendAnyway: 'Skicka ändå',
+        edit: 'Redigera meddelandet',
+        error:
+          'Kontroll av meddelandet misslyckades. Du kan skicka meddelandet normalt.'
+      }
     }
   },
   pinCode: {

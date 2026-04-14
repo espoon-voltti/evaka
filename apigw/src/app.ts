@@ -15,6 +15,7 @@ import {
   createCitizenSuomiFiIntegration,
   createEmployeeSuomiFiIntegration
 } from './enduser/suomi-fi-saml.ts'
+import { bulletinAiReview } from './internal/routes/bulletin-ai-review.ts'
 import { createSamlAdIntegration } from './internal/ad-saml.ts'
 import { createDevAdRouter } from './internal/dev-ad-auth.ts'
 import { createDevEmployeeSfiRouter } from './internal/dev-sfi-auth.ts'
@@ -313,6 +314,12 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   router.use('/employee/', employeeSessions.middleware)
   router.get('/employee/auth/status', internalAuthStatus(employeeSessions))
   router.all('/employee/auth/{*rest}', (_, res) => res.redirect('/employee'))
+  router.post(
+    '/employee/bulletin-ai-review',
+    employeeSessions.requireAuthentication,
+    express.json(),
+    bulletinAiReview
+  )
   router.all('/employee/public/{*rest}', employeeProxy)
   router.all(
     '/employee/{*rest}',
