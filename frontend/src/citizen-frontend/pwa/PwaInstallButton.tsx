@@ -5,7 +5,6 @@
 import React, { useCallback, useState } from 'react'
 
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
@@ -49,29 +48,20 @@ export const PwaInstallButton = React.memo(function PwaInstallButton() {
       {open && (
         <>
           <Gap $size="s" />
-          <CollapsibleContentArea
-            open
-            toggleOpen={toggleOpen}
-            $opaque={false}
-            title={i18n.loginPage.pwaInstall.button}
-            $paddingHorizontal="0"
-            $paddingVertical="0"
-          >
-            {platform.os === 'ios' && (
-              <>
-                {!platform.isSafari && (
-                  <P $noMargin>{i18n.loginPage.pwaInstall.iosUseSafariNote}</P>
-                )}
-                {i18n.loginPage.pwaInstall.instructions.ios}
-              </>
-            )}
-            {platform.os === 'android' && (
-              <>{i18n.loginPage.pwaInstall.instructions.android}</>
-            )}
-            {platform.os === 'other' && (
-              <P $noMargin>{i18n.loginPage.pwaInstall.notSupported}</P>
-            )}
-          </CollapsibleContentArea>
+          {platform.os === 'ios' && (
+            <>
+              {!platform.isSafari && (
+                <P $noMargin>{i18n.loginPage.pwaInstall.iosUseSafariNote}</P>
+              )}
+              {i18n.loginPage.pwaInstall.instructions.ios}
+            </>
+          )}
+          {platform.os === 'android' && (
+            <>{i18n.loginPage.pwaInstall.instructions.android}</>
+          )}
+          {platform.os === 'other' && (
+            <P $noMargin>{i18n.loginPage.pwaInstall.notSupported}</P>
+          )}
         </>
       )}
     </>
