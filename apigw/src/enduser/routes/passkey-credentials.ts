@@ -17,6 +17,7 @@ export function passkeyCredentialsRoutes(
   const router = express.Router()
 
   const proxy = createProxy({
+    path: (req) => req.originalUrl,
     getUserHeader: (req) => sessions.getUserHeader(req)
   })
 
