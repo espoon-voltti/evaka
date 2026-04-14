@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@node-saml/node-saml": "5.1.0",
+    "@simplewebauthn/server": "^13.3.0",
     "axios": "1.15.0",
     "connect-redis": "9.0.0",
     "cookie-parser": "1.4.7",

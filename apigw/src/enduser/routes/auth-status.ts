@@ -14,6 +14,7 @@ export interface AuthStatus {
   user?: CitizenUserResponse
   apiVersion: string
   authLevel?: 'STRONG' | 'WEAK'
+  passkeyCredentialId?: string | null
 }
 
 const getAuthLevel = (user: EvakaSessionUser): 'STRONG' | 'WEAK' => {
@@ -37,7 +38,9 @@ export const citizenAuthStatus = (sessions: Sessions<'citizen'>) =>
         loggedIn: true,
         user: data,
         apiVersion: appCommit,
-        authLevel: getAuthLevel(user)
+        authLevel: getAuthLevel(user),
+        passkeyCredentialId:
+          user.authType === 'citizen-passkey' ? user.credentialId : null
       }
     } else {
       status = { loggedIn: false, apiVersion: appCommit }

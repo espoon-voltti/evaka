@@ -15,6 +15,12 @@ export type CitizenSessionUser =
       samlSession: SamlSession
     }
   | { id: string; authType: 'citizen-weak'; userType: 'CITIZEN_WEAK' }
+  | {
+      id: string
+      authType: 'citizen-passkey'
+      userType: 'CITIZEN_WEAK'
+      credentialId: string
+    }
   | { id: string; authType: 'dev'; userType: 'CITIZEN_STRONG' }
 
 export type EmployeeSessionUser =
