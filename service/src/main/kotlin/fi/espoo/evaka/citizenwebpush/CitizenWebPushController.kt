@@ -84,7 +84,7 @@ class CitizenWebPushController(
                     },
             )
         }
-        return SubscribeResponse(sentTest = result.wasFirstWrite)
+        return SubscribeResponse(sentTest = result.wasFirstWrite && wp != null)
     }
 
     @DeleteMapping("/subscription")
@@ -107,6 +107,7 @@ class CitizenWebPushController(
     ) {
         val wp = webPush ?: return
         val language = CitizenPushLanguage.fromPersonLanguage(resolveLanguage(db, user.id))
+        Audit.CitizenWebPushTestSent.log(targetId = AuditId(user.id))
         sender.sendTest(
             personId = user.id,
             language = language,
@@ -115,7 +116,6 @@ class CitizenWebPushController(
                     db.connect { dbc -> dbc.transaction { tx -> wp.getValidToken(tx, clock, uri) } }
                 },
         )
-        Audit.CitizenWebPushTestSent.log(targetId = AuditId(user.id))
     }
 
     private fun resolveLanguage(db: Database, personId: PersonId): String? =
