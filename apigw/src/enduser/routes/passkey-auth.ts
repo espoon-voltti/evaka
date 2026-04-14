@@ -13,6 +13,7 @@ import type { AuthenticatorTransportFuture } from '@simplewebauthn/server'
 
 import type { Config } from '../../shared/config.ts'
 import type { RedisClient } from '../../shared/redis-client.ts'
+import { getCitizenDetails } from '../../shared/service-client.ts'
 import {
   listCitizenPasskeyCredentials,
   touchCitizenPasskeyCredential,
@@ -72,10 +73,23 @@ export function passkeyAuthRoutes(
     }
 
     const existing = await listCitizenPasskeyCredentials(req, user.id)
+    const citizenDetails = (await getCitizenDetails(req, user.id)).details as {
+      firstName?: string
+      lastName?: string
+      preferredName?: string
+    }
+    const given =
+      citizenDetails.preferredName?.trim() ||
+      citizenDetails.firstName?.trim() ||
+      ''
+    const family = citizenDetails.lastName?.trim() ?? ''
+    const displayName =
+      [given, family].filter((part) => part.length > 0).join(' ') || user.id
     const options = await generateRegistrationOptions({
       rpName: config.passkey.rpName,
       rpID: config.passkey.rpId,
-      userName: user.id,
+      userName: displayName,
+      userDisplayName: displayName,
       userID: personIdToUserHandle(user.id),
       attestationType: 'none',
       authenticatorSelection: {
