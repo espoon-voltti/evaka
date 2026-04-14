@@ -41,6 +41,15 @@ function classifyError(err: unknown): 'cancelled' | 'no-credentials' | 'unsuppor
   return 'failed'
 }
 
+const CSRF_HEADERS: Record<string, string> = {
+  'x-evaka-csrf': '1'
+}
+
+const JSON_POST_HEADERS: Record<string, string> = {
+  ...CSRF_HEADERS,
+  'Content-Type': 'application/json'
+}
+
 export function usePasskeyAuth() {
   const [state, setState] = useState<PasskeyAuthState>({ status: 'idle' })
 
@@ -49,7 +58,8 @@ export function usePasskeyAuth() {
     try {
       const optRes = await fetch('/api/citizen/auth/passkey/register/options', {
         method: 'POST',
-        credentials: 'same-origin'
+        credentials: 'same-origin',
+        headers: CSRF_HEADERS
       })
       if (!optRes.ok) throw new Error('register-options')
       const { token, options } = (await optRes.json()) as RegisterOptionsResponse
@@ -57,7 +67,7 @@ export function usePasskeyAuth() {
       const verRes = await fetch('/api/citizen/auth/passkey/register/verify', {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
+        headers: JSON_POST_HEADERS,
         body: JSON.stringify({ token, attestation })
       })
       if (!verRes.ok) throw new Error('register-verify')
@@ -74,7 +84,8 @@ export function usePasskeyAuth() {
     try {
       const optRes = await fetch('/api/citizen/auth/passkey/login/options', {
         method: 'POST',
-        credentials: 'same-origin'
+        credentials: 'same-origin',
+        headers: CSRF_HEADERS
       })
       if (!optRes.ok) throw new Error('login-options')
       const { token, options } = (await optRes.json()) as LoginOptionsResponse
@@ -82,7 +93,7 @@ export function usePasskeyAuth() {
       const verRes = await fetch('/api/citizen/auth/passkey/login/verify', {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
+        headers: JSON_POST_HEADERS,
         body: JSON.stringify({ token, assertion })
       })
       if (!verRes.ok) throw new Error('login-verify')
