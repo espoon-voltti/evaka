@@ -94,6 +94,7 @@ class HttpFilterConfig {
             when {
                 requestURI.startsWith("/system/") -> user is AuthenticatedUser.SystemInternalUser
                 requestURI.startsWith("/citizen/") -> user is AuthenticatedUser.Citizen
+                requestURI.startsWith("/citizen-mobile/") -> user is AuthenticatedUser.CitizenMobile
                 requestURI.startsWith("/employee/") -> user is AuthenticatedUser.Employee
                 requestURI.startsWith("/employee-mobile/") -> user is AuthenticatedUser.MobileDevice
                 requestURI.startsWith("/integration/") -> user is AuthenticatedUser.Integration

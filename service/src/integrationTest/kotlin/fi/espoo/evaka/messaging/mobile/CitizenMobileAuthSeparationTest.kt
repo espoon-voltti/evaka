@@ -82,7 +82,7 @@ class CitizenMobileAuthSeparationTest : FullApplicationTest(resetDbBeforeEach = 
                         .build()
                 )
                 .execute()
-        assertEquals(401, response.code)
+        assertEquals(403, response.code)
     }
 
     @Test
