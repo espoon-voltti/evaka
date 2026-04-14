@@ -177,6 +177,7 @@ const LiquidGlassFilter = React.memo(function LiquidGlassFilter() {
             y="0"
             width="360"
             height="72"
+            preserveAspectRatio="none"
             result="displacement_map"
           />
           <feDisplacementMap
@@ -199,6 +200,7 @@ const LiquidGlassFilter = React.memo(function LiquidGlassFilter() {
             y="0"
             width="360"
             height="72"
+            preserveAspectRatio="none"
             result="specular_layer"
           />
           <feComposite
@@ -263,6 +265,7 @@ const BottomBar = styled.nav`
     padding: 0 8px;
   }
 
+  /* 360px pill max-width + 24px side gap — refraction only when pill hits its baked 360×72 geometry */
   @media (min-width: 384px) {
     &::before {
       backdrop-filter: url(#liquid-glass-bottom-nav);
