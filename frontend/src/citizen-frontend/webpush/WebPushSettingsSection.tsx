@@ -60,7 +60,7 @@ export const WebPushSettingsSection = React.memo(function WebPushSettingsSection
         onChange={() => void handleMasterToggle()}
         data-qa="webpush-master-toggle"
       />
-      <FixedSpaceColumn spacing="xs">
+      <FixedSpaceColumn $spacing="xs">
         <Checkbox
           checked={categories.has('URGENT_MESSAGE')}
           disabled={!masterOn}
