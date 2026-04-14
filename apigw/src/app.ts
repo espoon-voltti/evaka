@@ -318,7 +318,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     '/employee/bulletin-ai-review',
     employeeSessions.requireAuthentication,
     express.json(),
-    bulletinAiReview
+    bulletinAiReview(redisClient)
   )
   router.all('/employee/public/{*rest}', employeeProxy)
   router.all(

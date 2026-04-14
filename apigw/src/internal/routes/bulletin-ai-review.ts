@@ -6,6 +6,7 @@ import axios from 'axios'
 
 import { openaiApiKey } from '../../shared/config.ts'
 import { toRequestHandler } from '../../shared/express.ts'
+import type { RedisClient } from '../../shared/redis-client.ts'
 
 const SYSTEM_PROMPT = `Olet varhaiskasvatuksen viestinnän asiantuntija. Arvioi päiväkodin tiedoteviesti, jonka henkilökunta on lähettämässä huoltajille eVaka-järjestelmän kautta.
 
@@ -27,54 +28,91 @@ Vastaa JSON-muodossa:
 
 Vastaa ok=true vain jos viesti on selkeä, ytimekäs tiedote jossa otsikko kertoo asian ja teksti menee suoraan asiaan. Ole kriittinen.`
 
-export const bulletinAiReview = toRequestHandler(async (req, res) => {
-  const apiKey = openaiApiKey
-  if (!apiKey) {
-    res.json({ ok: true, feedback: '' })
-    return
+// Runtime-configured secret: the OpenAI key lives in Redis so staging deploys
+// don't need a new SSM parameter or IAM grant. Set it once from an admin host
+// with `redis-cli SET openai:api_key <key>`. Falls back to the OPENAI_API_KEY
+// env var (loaded from `.env.openai` in local dev via ecosystem.config.js) so
+// the local flow keeps working without Redis.
+const OPENAI_KEY_REDIS_KEY = 'openai:api_key'
+const KEY_CACHE_TTL_MS = 60_000
+
+async function resolveOpenAiKey(
+  redisClient: RedisClient,
+  cache: { value: string | null; expiresAt: number } | null
+): Promise<{ key: string | null; cache: { value: string | null; expiresAt: number } }> {
+  const now = Date.now()
+  if (cache && cache.expiresAt > now) {
+    return { key: cache.value, cache }
   }
-
-  const { title, content } = req.body as {
-    title: string
-    content: string
+  let key: string | null = null
+  try {
+    key = await redisClient.get(OPENAI_KEY_REDIS_KEY)
+  } catch {
+    // Redis unavailable — fall through to env fallback
   }
-
-  if (!title || !content) {
-    res.status(400).json({ error: 'title and content are required' })
-    return
+  if (!key) {
+    key = openaiApiKey ?? null
   }
+  return {
+    key,
+    cache: { value: key, expiresAt: now + KEY_CACHE_TTL_MS }
+  }
+}
 
-  const userMessage = `Otsikko: ${title}\n\nViesti:\n${content}`
+export const bulletinAiReview = (redisClient: RedisClient) => {
+  let cache: { value: string | null; expiresAt: number } | null = null
+  return toRequestHandler(async (req, res) => {
+    const resolved = await resolveOpenAiKey(redisClient, cache)
+    cache = resolved.cache
+    const apiKey = resolved.key
 
-  const response = await axios.post(
-    'https://api.openai.com/v1/chat/completions',
-    {
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: userMessage }
-      ],
-      temperature: 0.3,
-      response_format: { type: 'json_object' }
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      timeout: 15000
+    if (!apiKey) {
+      res.json({ ok: true, feedback: '' })
+      return
     }
-  )
 
-  const aiResponse = JSON.parse(
-    response.data.choices[0].message.content
-  ) as {
-    ok: boolean
-    feedback: string
-  }
+    const { title, content } = req.body as {
+      title: string
+      content: string
+    }
 
-  res.json({
-    ok: aiResponse.ok,
-    feedback: aiResponse.feedback || ''
+    if (!title || !content) {
+      res.status(400).json({ error: 'title and content are required' })
+      return
+    }
+
+    const userMessage = `Otsikko: ${title}\n\nViesti:\n${content}`
+
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userMessage }
+        ],
+        temperature: 0.3,
+        response_format: { type: 'json_object' }
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 15000
+      }
+    )
+
+    const aiResponse = JSON.parse(
+      response.data.choices[0].message.content
+    ) as {
+      ok: boolean
+      feedback: string
+    }
+
+    res.json({
+      ok: aiResponse.ok,
+      feedback: aiResponse.feedback || ''
+    })
   })
-})
+}
