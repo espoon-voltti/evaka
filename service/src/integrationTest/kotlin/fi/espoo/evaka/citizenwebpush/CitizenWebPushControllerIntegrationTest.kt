@@ -89,7 +89,12 @@ class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBefor
         controller.putSubscription(db = dbInstance(), user = user(), clock = clock(), body = req)
         // Second call — same endpoint, file already exists → wasFirstWrite=false
         val second =
-            controller.putSubscription(db = dbInstance(), user = user(), clock = clock(), body = req)
+            controller.putSubscription(
+                db = dbInstance(),
+                user = user(),
+                clock = clock(),
+                body = req,
+            )
         assertFalse(second.sentTest, "Second upsert for same endpoint must report sentTest=false")
     }
 
@@ -115,7 +120,8 @@ class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBefor
                 body = subscribeRequest(ep = ep2, ecdhKey = validEcdhKey()),
             )
         // wasFirstWrite=true because the file was deleted by the DELETE call
-        // sentTest may be true if WebPush is configured in test env, or the value reflects firstWrite
+        // sentTest may be true if WebPush is configured in test env, or the value reflects
+        // firstWrite
         assertNotNull(reSubscribe)
     }
 
@@ -138,7 +144,10 @@ class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBefor
                 clock = clock(),
                 body = subscribeRequest(ep = ep2, ecdhKey = validEcdhKey()),
             )
-        assertFalse(second.sentTest, "Adding a second endpoint to existing file: sentTest must be false")
+        assertFalse(
+            second.sentTest,
+            "Adding a second endpoint to existing file: sentTest must be false",
+        )
     }
 
     @Test

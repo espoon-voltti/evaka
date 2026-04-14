@@ -20,7 +20,9 @@ export interface SubscribeResponse {
 
 export async function getVapidKey(): Promise<string | null> {
   try {
-    const { data } = await client.get<{ publicKey: string }>('/citizen/web-push/vapid-key')
+    const { data } = await client.get<{ publicKey: string }>(
+      '/citizen/web-push/vapid-key'
+    )
     return data.publicKey
   } catch (err) {
     if (
@@ -38,7 +40,10 @@ export async function getVapidKey(): Promise<string | null> {
 export async function putSubscription(
   body: SubscribeRequest
 ): Promise<SubscribeResponse> {
-  const { data } = await client.put<SubscribeResponse>('/citizen/web-push/subscription', body)
+  const { data } = await client.put<SubscribeResponse>(
+    '/citizen/web-push/subscription',
+    body
+  )
   return data
 }
 

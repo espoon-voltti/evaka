@@ -5,12 +5,7 @@
 import 'fake-indexeddb/auto'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import {
-  deleteDraft,
-  loadDraft,
-  purgeOldDrafts,
-  saveDraft
-} from './draftStore'
+import { deleteDraft, loadDraft, purgeOldDrafts, saveDraft } from './draftStore'
 
 async function resetDb() {
   await new Promise<void>((resolve, reject) => {
@@ -70,7 +65,11 @@ describe('draftStore', () => {
         const db = open.result
         const tx = db.transaction('drafts', 'readwrite')
         const store = tx.objectStore('drafts')
-        const get = store.get('old')
+        const get = store.get('old') as IDBRequest<{
+          threadId: string
+          text: string
+          savedAt: number
+        }>
         get.onsuccess = () => {
           const value = get.result
           value.savedAt = Date.now() - 1000 * 60 * 60 * 24 * 30 // 30 days ago

@@ -47,7 +47,7 @@ function run<T>(
         const req = op(store)
         let result: T | null = null
         req.onsuccess = () => {
-          result = req.result as T
+          result = req.result
         }
         tx.oncomplete = () => {
           db.close()
@@ -67,8 +67,9 @@ export async function saveDraft(threadId: string, text: string): Promise<void> {
 }
 
 export async function loadDraft(threadId: string): Promise<ReplyDraft | null> {
-  const result = await run<ReplyDraft | undefined>('readonly', (store) =>
-    store.get(threadId)
+  const result = await run<ReplyDraft | undefined>(
+    'readonly',
+    (store) => store.get(threadId) as IDBRequest<ReplyDraft | undefined>
   )
   return result ?? null
 }

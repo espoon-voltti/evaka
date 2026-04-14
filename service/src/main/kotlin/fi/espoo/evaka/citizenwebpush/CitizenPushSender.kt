@@ -24,9 +24,9 @@ import java.time.Duration
 private val logger = KotlinLogging.logger {}
 
 /**
- * Caller-supplied strategy for building a VAPID JWT for a given endpoint.
- * Production wiring passes `webPush.getValidToken(tx, clock, uri)` inside a short DB transaction.
- * Tests supply a stub that returns a mock VapidJwt without needing a DB.
+ * Caller-supplied strategy for building a VAPID JWT for a given endpoint. Production wiring passes
+ * `webPush.getValidToken(tx, clock, uri)` inside a short DB transaction. Tests supply a stub that
+ * returns a mock VapidJwt without needing a DB.
  */
 fun interface VapidJwtProvider {
     fun get(uri: URI): VapidJwt
@@ -135,24 +135,23 @@ class CitizenPushSender(
         }
     }
 
-    private fun defaultJwtProviderOrNoop(): VapidJwtProvider =
-        VapidJwtProvider { _ ->
-            error(
-                "No VapidJwtProvider supplied. Production callers must route through " +
-                    "CitizenPushSender.notifyMessage(..., jwtProvider = { uri -> " +
-                    "db.transaction { tx -> webPush.getValidToken(tx, clock, uri) } }).",
-            )
-        }
+    private fun defaultJwtProviderOrNoop(): VapidJwtProvider = VapidJwtProvider { _ ->
+        error(
+            "No VapidJwtProvider supplied. Production callers must route through " +
+                "CitizenPushSender.notifyMessage(..., jwtProvider = { uri -> " +
+                "db.transaction { tx -> webPush.getValidToken(tx, clock, uri) } })."
+        )
+    }
 
     /**
      * Production entry point called from MessageService.handleMarkMessageAsSent, OUTSIDE its main
-     * transaction. Opens its own short read-only transaction to resolve per-recipient context,
-     * then releases the connection before doing S3 / HTTP. Best-effort: any exception is caught
-     * and logged, never re-thrown.
+     * transaction. Opens its own short read-only transaction to resolve per-recipient context, then
+     * releases the connection before doing S3 / HTTP. Best-effort: any exception is caught and
+     * logged, never re-thrown.
      *
-     * Known POC tradeoff: the jwtProvider closure opens one DB transaction per device when
-     * fetching the cached VAPID JWT. For a staging POC this is fine; a production version
-     * should batch JWT acquisition across all distinct push-service origins.
+     * Known POC tradeoff: the jwtProvider closure opens one DB transaction per device when fetching
+     * the cached VAPID JWT. For a staging POC this is fine; a production version should batch JWT
+     * acquisition across all distinct push-service origins.
      */
     fun handleSentMessages(
         db: Database.Connection,

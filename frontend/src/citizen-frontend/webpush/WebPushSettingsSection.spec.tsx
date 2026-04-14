@@ -67,7 +67,11 @@ vi.mock('../localization', () => ({
 }))
 
 function wrap(child: React.JSX.Element) {
-  return <TestContextProvider translations={testTranslations}>{child}</TestContextProvider>
+  return (
+    <TestContextProvider translations={testTranslations}>
+      {child}
+    </TestContextProvider>
+  )
 }
 
 function setState(state: UseWebPushStateResult) {
@@ -138,8 +142,12 @@ describe('WebPushSettingsSection', () => {
       categories: new Set(['MESSAGE'])
     })
     render(wrap(<WebPushSettingsSection />))
-    expect(screen.getByRole('checkbox', { name: /normal messages/i })).not.toBeDisabled()
-    expect(screen.getByRole('button', { name: /send test/i })).not.toBeDisabled()
+    expect(
+      screen.getByRole('checkbox', { name: /normal messages/i })
+    ).not.toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: /send test/i })
+    ).not.toBeDisabled()
   })
 
   it('calls sendTest when the test button is clicked', async () => {

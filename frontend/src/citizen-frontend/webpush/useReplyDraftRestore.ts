@@ -44,7 +44,10 @@ export function useReplyDraftRestore(
     restored,
     clearRestored: () => setRestored(false),
     discardDraft: () => {
-      void deleteDraft(threadId).catch(() => {})
+      void deleteDraft(threadId).catch(() => {
+        // Draft delete failure is non-fatal — the UI state is already reset
+        // and a stale IDB entry will be superseded on the next save.
+      })
       setRestored(false)
     }
   }

@@ -27,7 +27,8 @@ describe('detectBrowser', () => {
   })
 
   it('detects Firefox on Android', () => {
-    const ua = 'Mozilla/5.0 (Android 13; Mobile; rv:120.0) Gecko/120.0 Firefox/120.0'
+    const ua =
+      'Mozilla/5.0 (Android 13; Mobile; rv:120.0) Gecko/120.0 Firefox/120.0'
     expect(detectBrowser(ua)).toMatchObject({
       os: 'android',
       family: 'firefox'

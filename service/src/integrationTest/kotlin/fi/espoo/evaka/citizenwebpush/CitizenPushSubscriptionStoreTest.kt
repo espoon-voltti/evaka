@@ -52,7 +52,10 @@ class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach =
     fun `save creates file on first write and reports wasFirstWrite=true`() {
         store.delete(personId)
         val result =
-            store.save(personId, CitizenPushStoreFile(personId, listOf(entry("https://fcm.example/a"))))
+            store.save(
+                personId,
+                CitizenPushStoreFile(personId, listOf(entry("https://fcm.example/a"))),
+            )
         assertTrue(result.wasFirstWrite)
         assertNotNull(store.load(personId))
     }
@@ -93,10 +96,7 @@ class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach =
     @Test
     fun `removeSubscription deletes file when last entry is removed`() {
         store.delete(personId)
-        store.save(
-            personId,
-            CitizenPushStoreFile(personId, listOf(entry("https://fcm.example/a"))),
-        )
+        store.save(personId, CitizenPushStoreFile(personId, listOf(entry("https://fcm.example/a"))))
         store.removeSubscription(personId, URI("https://fcm.example/a"))
         assertNull(store.load(personId))
     }

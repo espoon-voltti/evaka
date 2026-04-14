@@ -48,7 +48,10 @@ function loadCategories(endpoint: string): Set<CitizenPushCategory> {
   }
 }
 
-function persistCategories(endpoint: string, categories: Set<CitizenPushCategory>): void {
+function persistCategories(
+  endpoint: string,
+  categories: Set<CitizenPushCategory>
+): void {
   if (typeof sessionStorage === 'undefined') return
   try {
     sessionStorage.setItem(
@@ -74,7 +77,7 @@ function base64UrlToUint8Array(base64: string): Uint8Array {
   return out
 }
 
-async function browserSupportsPush(): Promise<boolean> {
+function browserSupportsPush(): boolean {
   if (typeof navigator === 'undefined') return false
   if (!('serviceWorker' in navigator)) return false
   if (typeof window === 'undefined' || !('PushManager' in window)) return false
@@ -90,7 +93,7 @@ export function useWebPushState(): UseWebPushStateResult {
   const [endpoint, setEndpoint] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
-    if (!(await browserSupportsPush())) {
+    if (!browserSupportsPush()) {
       setStatus('unsupported')
       return
     }

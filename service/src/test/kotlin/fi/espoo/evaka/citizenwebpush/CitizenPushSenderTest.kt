@@ -56,10 +56,7 @@ class CitizenPushSenderTest {
         fakeJwtProvider = VapidJwtProvider { _ -> mock<VapidJwt>() }
     }
 
-    private fun entry(
-        endpoint: String,
-        categories: Set<CitizenPushCategory>,
-    ) =
+    private fun entry(endpoint: String, categories: Set<CitizenPushCategory>) =
         CitizenPushSubscriptionEntry(
             endpoint = URI(endpoint),
             ecdhKey = realEcdhKey,
@@ -71,15 +68,16 @@ class CitizenPushSenderTest {
 
     @Test
     fun `notifyMessage skips subscriptions that do not include the category`() {
-        whenever(store.load(personId)).thenReturn(
-            CitizenPushStoreFile(
-                personId,
-                listOf(
-                    entry("https://fcm.example/a", setOf(CitizenPushCategory.URGENT_MESSAGE)),
-                    entry("https://fcm.example/b", setOf(CitizenPushCategory.MESSAGE)),
-                ),
+        whenever(store.load(personId))
+            .thenReturn(
+                CitizenPushStoreFile(
+                    personId,
+                    listOf(
+                        entry("https://fcm.example/a", setOf(CitizenPushCategory.URGENT_MESSAGE)),
+                        entry("https://fcm.example/b", setOf(CitizenPushCategory.MESSAGE)),
+                    ),
+                )
             )
-        )
 
         sender.notifyMessage(
             personId = personId,
@@ -91,25 +89,26 @@ class CitizenPushSenderTest {
             jwtProvider = fakeJwtProvider,
         )
 
-        verify(webPush).send(
-            any(),
-            check { notification ->
-                assertEquals(URI("https://fcm.example/a"), notification.endpoint.uri)
-            },
-        )
+        verify(webPush)
+            .send(
+                any(),
+                check { notification ->
+                    assertEquals(URI("https://fcm.example/a"), notification.endpoint.uri)
+                },
+            )
     }
 
     @Test
     fun `notifyMessage removes subscription when push service returns 410`() {
-        whenever(store.load(personId)).thenReturn(
-            CitizenPushStoreFile(
-                personId,
-                listOf(entry("https://fcm.example/gone", setOf(CitizenPushCategory.MESSAGE))),
+        whenever(store.load(personId))
+            .thenReturn(
+                CitizenPushStoreFile(
+                    personId,
+                    listOf(entry("https://fcm.example/gone", setOf(CitizenPushCategory.MESSAGE))),
+                )
             )
-        )
-        whenever(webPush.send(any(), any())).thenThrow(
-            WebPush.SubscriptionExpired(HttpStatus.GONE, IllegalStateException("gone"))
-        )
+        whenever(webPush.send(any(), any()))
+            .thenThrow(WebPush.SubscriptionExpired(HttpStatus.GONE, IllegalStateException("gone")))
 
         sender.notifyMessage(
             personId = personId,
@@ -126,12 +125,13 @@ class CitizenPushSenderTest {
 
     @Test
     fun `notifyMessage builds a payload with body, tag, and url`() {
-        whenever(store.load(personId)).thenReturn(
-            CitizenPushStoreFile(
-                personId,
-                listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.MESSAGE))),
+        whenever(store.load(personId))
+            .thenReturn(
+                CitizenPushStoreFile(
+                    personId,
+                    listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.MESSAGE))),
+                )
             )
-        )
 
         sender.notifyMessage(
             personId = personId,
@@ -143,16 +143,17 @@ class CitizenPushSenderTest {
             jwtProvider = fakeJwtProvider,
         )
 
-        verify(webPush).send(
-            any(),
-            check { notification ->
-                val payload = notification.payloads.single() as WebPushPayload.NotificationV1
-                assertEquals("New message", payload.title)
-                assertEquals("Bob sent you a message.", payload.body)
-                assertEquals("msg-$threadId", payload.tag)
-                assertEquals("/messages/$threadId", payload.url)
-            },
-        )
+        verify(webPush)
+            .send(
+                any(),
+                check { notification ->
+                    val payload = notification.payloads.single() as WebPushPayload.NotificationV1
+                    assertEquals("New message", payload.title)
+                    assertEquals("Bob sent you a message.", payload.body)
+                    assertEquals("msg-$threadId", payload.tag)
+                    assertEquals("/messages/$threadId", payload.url)
+                },
+            )
     }
 
     @Test
@@ -173,12 +174,13 @@ class CitizenPushSenderTest {
     @Test
     fun `notifyMessage includes replyAction for MESSAGE category when recipients present`() {
         val replyAcc = MessageAccountId(UUID.randomUUID())
-        whenever(store.load(personId)).thenReturn(
-            CitizenPushStoreFile(
-                personId,
-                listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.MESSAGE))),
+        whenever(store.load(personId))
+            .thenReturn(
+                CitizenPushStoreFile(
+                    personId,
+                    listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.MESSAGE))),
+                )
             )
-        )
 
         sender.notifyMessage(
             personId = personId,
@@ -204,12 +206,13 @@ class CitizenPushSenderTest {
     @Test
     fun `notifyMessage omits replyAction for BULLETIN category`() {
         val replyAcc = MessageAccountId(UUID.randomUUID())
-        whenever(store.load(personId)).thenReturn(
-            CitizenPushStoreFile(
-                personId,
-                listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.BULLETIN))),
+        whenever(store.load(personId))
+            .thenReturn(
+                CitizenPushStoreFile(
+                    personId,
+                    listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.BULLETIN))),
+                )
             )
-        )
 
         sender.notifyMessage(
             personId = personId,
@@ -229,12 +232,13 @@ class CitizenPushSenderTest {
 
     @Test
     fun `notifyMessage omits replyAction when reply recipients are empty`() {
-        whenever(store.load(personId)).thenReturn(
-            CitizenPushStoreFile(
-                personId,
-                listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.MESSAGE))),
+        whenever(store.load(personId))
+            .thenReturn(
+                CitizenPushStoreFile(
+                    personId,
+                    listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.MESSAGE))),
+                )
             )
-        )
 
         sender.notifyMessage(
             personId = personId,

@@ -57,7 +57,11 @@ class MessageService(
                 tx.lockMessageContentForUpdate(msg.messageContentId)
                 tx.upsertRecipientThreadParticipants(msg.messageContentId, msg.sentAt)
                 val messages = tx.markMessagesAsSent(msg.messageContentId, msg.sentAt)
-                notificationEmailService.scheduleSendingMessageNotifications(tx, messages, clock.now())
+                notificationEmailService.scheduleSendingMessageNotifications(
+                    tx,
+                    messages,
+                    clock.now(),
+                )
                 asyncJobRunner.plan(
                     tx,
                     messagePushNotifications.getAsyncJobs(tx, messages),

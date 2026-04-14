@@ -5,8 +5,8 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { useWebPushState } from './webpush-state'
 import * as api from './webpush-api'
+import { useWebPushState } from './webpush-state'
 
 vi.mock('./webpush-api')
 
@@ -23,7 +23,8 @@ function mockBrowser(options: {
     ? {
         endpoint: options.existingSubscription.endpoint,
         getKey: (name: 'p256dh' | 'auth') =>
-          new TextEncoder().encode(options.existingSubscription!.keys[name]).buffer,
+          new TextEncoder().encode(options.existingSubscription!.keys[name])
+            .buffer,
         unsubscribe: vi.fn().mockResolvedValue(true)
       }
     : null
@@ -33,7 +34,9 @@ function mockBrowser(options: {
     subscribe: vi.fn().mockResolvedValue({
       endpoint: 'https://fcm.example/new',
       getKey: (name: 'p256dh' | 'auth') =>
-        new TextEncoder().encode(name === 'p256dh' ? 'p256dh-bytes' : 'auth-bytes').buffer,
+        new TextEncoder().encode(
+          name === 'p256dh' ? 'p256dh-bytes' : 'auth-bytes'
+        ).buffer,
       unsubscribe: vi.fn().mockResolvedValue(true)
     })
   }
@@ -61,7 +64,7 @@ function mockBrowser(options: {
     // @ts-expect-error — jsdom doesn't define PushManager globally
     globalThis.PushManager = class {}
   } else {
-    // @ts-expect-error
+    // @ts-expect-error — jsdom doesn't define PushManager globally
     delete globalThis.PushManager
   }
 
@@ -157,8 +160,12 @@ describe('useWebPushState', () => {
     })
     vi.mocked(api.getVapidKey).mockResolvedValue('vapid-public-key-base64')
     vi.mocked(api.putSubscription).mockResolvedValue({ sentTest: true })
-    ;(globalThis.Notification as unknown as { permission: string }).permission = 'default'
-    vi.mocked(globalThis.Notification.requestPermission).mockResolvedValue('granted')
+    ;(globalThis.Notification as unknown as { permission: string }).permission =
+      'default'
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    vi.mocked(globalThis.Notification.requestPermission).mockResolvedValue(
+      'granted'
+    )
 
     const { result } = renderHook(() => useWebPushState())
     await waitFor(() => expect(result.current.status).toBe('unregistered'))

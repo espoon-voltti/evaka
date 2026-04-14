@@ -67,10 +67,7 @@ class CitizenWebPushController(
         Audit.CitizenWebPushSubscriptionUpsert.log(
             targetId = AuditId(user.id),
             meta =
-                mapOf(
-                    "endpoint" to body.endpoint.toString(),
-                    "firstWrite" to result.wasFirstWrite,
-                ),
+                mapOf("endpoint" to body.endpoint.toString(), "firstWrite" to result.wasFirstWrite),
         )
         val wp = webPush
         if (result.wasFirstWrite && wp != null) {
@@ -80,7 +77,9 @@ class CitizenWebPushController(
                 language = language,
                 jwtProvider =
                     VapidJwtProvider { uri ->
-                        db.connect { dbc -> dbc.transaction { tx -> wp.getValidToken(tx, clock, uri) } }
+                        db.connect { dbc ->
+                            dbc.transaction { tx -> wp.getValidToken(tx, clock, uri) }
+                        }
                     },
             )
         }
@@ -88,10 +87,7 @@ class CitizenWebPushController(
     }
 
     @DeleteMapping("/subscription")
-    fun deleteSubscription(
-        user: AuthenticatedUser.Citizen,
-        @RequestBody body: UnsubscribeRequest,
-    ) {
+    fun deleteSubscription(user: AuthenticatedUser.Citizen, @RequestBody body: UnsubscribeRequest) {
         store.removeSubscription(user.id, body.endpoint)
         Audit.CitizenWebPushSubscriptionDelete.log(
             targetId = AuditId(user.id),
@@ -100,11 +96,7 @@ class CitizenWebPushController(
     }
 
     @PostMapping("/test")
-    fun postTest(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
-    ) {
+    fun postTest(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock) {
         val wp = webPush ?: return
         val language = CitizenPushLanguage.fromPersonLanguage(resolveLanguage(db, user.id))
         Audit.CitizenWebPushTestSent.log(targetId = AuditId(user.id))

@@ -33,27 +33,43 @@ vi.mock('../localization', () => ({
 }))
 
 function wrap(child: React.JSX.Element) {
-  return <TestContextProvider translations={testTranslations}>{child}</TestContextProvider>
+  return (
+    <TestContextProvider translations={testTranslations}>
+      {child}
+    </TestContextProvider>
+  )
 }
 
 describe('PermissionGuide', () => {
   it('renders fallback guide when browser family is unknown', () => {
     render(
-      wrap(<PermissionGuide browser={{ os: 'other', family: 'other', isStandalone: false }} />)
+      wrap(
+        <PermissionGuide
+          browser={{ os: 'other', family: 'other', isStandalone: false }}
+        />
+      )
     )
     expect(screen.getByRole('group')).toBeDefined()
   })
 
   it('renders Chrome-on-Android variant', () => {
     render(
-      wrap(<PermissionGuide browser={{ os: 'android', family: 'chrome', isStandalone: false }} />)
+      wrap(
+        <PermissionGuide
+          browser={{ os: 'android', family: 'chrome', isStandalone: false }}
+        />
+      )
     )
     expect(screen.getByRole('group')).toBeDefined()
   })
 
   it('renders iOS Safari variant when not standalone', () => {
     render(
-      wrap(<PermissionGuide browser={{ os: 'ios', family: 'safari', isStandalone: false }} />)
+      wrap(
+        <PermissionGuide
+          browser={{ os: 'ios', family: 'safari', isStandalone: false }}
+        />
+      )
     )
     expect(screen.getByRole('group')).toBeDefined()
   })

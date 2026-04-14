@@ -31,8 +31,7 @@ object CitizenPushMessages {
         when (language) {
             CitizenPushLanguage.FI ->
                 PushTitleAndBody("eVaka", "Push-ilmoitukset on otettu käyttöön.")
-            CitizenPushLanguage.SV ->
-                PushTitleAndBody("eVaka", "Push-notiser har aktiverats.")
+            CitizenPushLanguage.SV -> PushTitleAndBody("eVaka", "Push-notiser har aktiverats.")
             CitizenPushLanguage.EN ->
                 PushTitleAndBody("eVaka", "Push notifications are now enabled.")
         }
@@ -71,7 +70,10 @@ object CitizenPushMessages {
     private fun finnish(category: CitizenPushCategory, sender: String) =
         when (category) {
             CitizenPushCategory.URGENT_MESSAGE ->
-                PushTitleAndBody("Kiireellinen viesti", "$sender lähetti sinulle kiireellisen viestin.")
+                PushTitleAndBody(
+                    "Kiireellinen viesti",
+                    "$sender lähetti sinulle kiireellisen viestin.",
+                )
             CitizenPushCategory.MESSAGE ->
                 PushTitleAndBody("Uusi viesti", "$sender lähetti sinulle viestin.")
             CitizenPushCategory.BULLETIN ->
@@ -81,11 +83,17 @@ object CitizenPushMessages {
     private fun swedish(category: CitizenPushCategory, sender: String) =
         when (category) {
             CitizenPushCategory.URGENT_MESSAGE ->
-                PushTitleAndBody("Brådskande meddelande", "$sender har skickat dig ett brådskande meddelande.")
+                PushTitleAndBody(
+                    "Brådskande meddelande",
+                    "$sender har skickat dig ett brådskande meddelande.",
+                )
             CitizenPushCategory.MESSAGE ->
                 PushTitleAndBody("Nytt meddelande", "$sender har skickat dig ett meddelande.")
             CitizenPushCategory.BULLETIN ->
-                PushTitleAndBody("Nytt meddelande från kommunen", "$sender har publicerat ett nytt meddelande.")
+                PushTitleAndBody(
+                    "Nytt meddelande från kommunen",
+                    "$sender har publicerat ett nytt meddelande.",
+                )
         }
 
     private fun english(category: CitizenPushCategory, sender: String) =

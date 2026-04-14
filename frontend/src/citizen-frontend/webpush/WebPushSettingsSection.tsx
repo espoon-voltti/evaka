@@ -22,79 +22,90 @@ const ALL_CATEGORIES: CitizenPushCategory[] = [
   'BULLETIN'
 ]
 
-export const WebPushSettingsSection = React.memo(function WebPushSettingsSection() {
-  const t = useTranslation().personalDetails.webPushSection
-  const { status, categories, subscribe, updateCategories, unsubscribe, sendTest } =
-    useWebPushState()
-  const browser = useMemo(() => detectBrowser(), [])
+export const WebPushSettingsSection = React.memo(
+  function WebPushSettingsSection() {
+    const t = useTranslation().personalDetails.webPushSection
+    const {
+      status,
+      categories,
+      subscribe,
+      updateCategories,
+      unsubscribe,
+      sendTest
+    } = useWebPushState()
+    const browser = useMemo(() => detectBrowser(), [])
 
-  const masterOn = status === 'subscribed'
-  const masterDisabled = status === 'unsupported' || status === 'denied' || status === 'loading'
+    const masterOn = status === 'subscribed'
+    const masterDisabled =
+      status === 'unsupported' || status === 'denied' || status === 'loading'
 
-  const handleMasterToggle = useCallback(async () => {
-    if (status === 'subscribed') {
-      await unsubscribe()
-    } else if (status === 'unregistered') {
-      await subscribe(new Set(ALL_CATEGORIES))
-    }
-  }, [status, subscribe, unsubscribe])
+    const handleMasterToggle = useCallback(async () => {
+      if (status === 'subscribed') {
+        await unsubscribe()
+      } else if (status === 'unregistered') {
+        await subscribe(new Set(ALL_CATEGORIES))
+      }
+    }, [status, subscribe, unsubscribe])
 
-  const toggleCategory = useCallback(
-    async (category: CitizenPushCategory, nowChecked: boolean) => {
-      const next = new Set(categories)
-      if (nowChecked) next.add(category)
-      else next.delete(category)
-      await updateCategories(next)
-    },
-    [categories, updateCategories]
-  )
+    const toggleCategory = useCallback(
+      async (category: CitizenPushCategory, nowChecked: boolean) => {
+        const next = new Set(categories)
+        if (nowChecked) next.add(category)
+        else next.delete(category)
+        await updateCategories(next)
+      },
+      [categories, updateCategories]
+    )
 
-  return (
-    <div data-qa="webpush-settings-section">
-      <H3>{t.title}</H3>
-      {t.info}
-      <Checkbox
-        checked={masterOn}
-        disabled={masterDisabled}
-        label={t.enable}
-        onChange={() => void handleMasterToggle()}
-        data-qa="webpush-master-toggle"
-      />
-      <FixedSpaceColumn $spacing="xs">
+    return (
+      <div data-qa="webpush-settings-section">
+        <H3>{t.title}</H3>
+        {t.info}
         <Checkbox
-          checked={categories.has('URGENT_MESSAGE')}
-          disabled={!masterOn}
-          label={t.categoryUrgent.label}
-          onChange={(checked) => void toggleCategory('URGENT_MESSAGE', checked)}
-          data-qa="webpush-cat-urgent"
+          checked={masterOn}
+          disabled={masterDisabled}
+          label={t.enable}
+          onChange={() => void handleMasterToggle()}
+          data-qa="webpush-master-toggle"
         />
-        <P>{t.categoryUrgent.description}</P>
-        <Checkbox
-          checked={categories.has('MESSAGE')}
+        <FixedSpaceColumn $spacing="xs">
+          <Checkbox
+            checked={categories.has('URGENT_MESSAGE')}
+            disabled={!masterOn}
+            label={t.categoryUrgent.label}
+            onChange={(checked) =>
+              void toggleCategory('URGENT_MESSAGE', checked)
+            }
+            data-qa="webpush-cat-urgent"
+          />
+          <P>{t.categoryUrgent.description}</P>
+          <Checkbox
+            checked={categories.has('MESSAGE')}
+            disabled={!masterOn}
+            label={t.categoryMessage.label}
+            onChange={(checked) => void toggleCategory('MESSAGE', checked)}
+            data-qa="webpush-cat-message"
+          />
+          <P>{t.categoryMessage.description}</P>
+          <Checkbox
+            checked={categories.has('BULLETIN')}
+            disabled={!masterOn}
+            label={t.categoryBulletin.label}
+            onChange={(checked) => void toggleCategory('BULLETIN', checked)}
+            data-qa="webpush-cat-bulletin"
+          />
+          <P>{t.categoryBulletin.description}</P>
+        </FixedSpaceColumn>
+        <Button
+          text={t.sendTest}
+          onClick={() => void sendTest()}
           disabled={!masterOn}
-          label={t.categoryMessage.label}
-          onChange={(checked) => void toggleCategory('MESSAGE', checked)}
-          data-qa="webpush-cat-message"
+          data-qa="webpush-send-test"
         />
-        <P>{t.categoryMessage.description}</P>
-        <Checkbox
-          checked={categories.has('BULLETIN')}
-          disabled={!masterOn}
-          label={t.categoryBulletin.label}
-          onChange={(checked) => void toggleCategory('BULLETIN', checked)}
-          data-qa="webpush-cat-bulletin"
-        />
-        <P>{t.categoryBulletin.description}</P>
-      </FixedSpaceColumn>
-      <Button
-        text={t.sendTest}
-        onClick={() => void sendTest()}
-        disabled={!masterOn}
-        data-qa="webpush-send-test"
-      />
-      {(status === 'unsupported' || status === 'denied') && (
-        <PermissionGuide browser={browser} />
-      )}
-    </div>
-  )
-})
+        {(status === 'unsupported' || status === 'denied') && (
+          <PermissionGuide browser={browser} />
+        )}
+      </div>
+    )
+  }
+)

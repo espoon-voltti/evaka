@@ -16,10 +16,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
 data class SaveResult(val wasFirstWrite: Boolean)
 
-class CitizenPushSubscriptionStore(
-    private val s3Client: S3Client,
-    private val bucket: String,
-) {
+class CitizenPushSubscriptionStore(private val s3Client: S3Client, private val bucket: String) {
     private val jsonMapper = defaultJsonMapperBuilder().build()
 
     private fun key(personId: PersonId): String = "citizen-push-subscriptions/$personId.json"

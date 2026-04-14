@@ -93,8 +93,10 @@ class CitizenPushSenderIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
     @Test
     fun `getCitizenPushRecipients returns empty reply-all list when thread has only the recipient`() {
         // Defensive edge case: thread in which the only participant is the citizen themself.
-        // The schema allows it when the citizen's own account is both sender and the sole recipient,
-        // so we construct it directly via the low-level inserters. The reply-all set, after removing
+        // The schema allows it when the citizen's own account is both sender and the sole
+        // recipient,
+        // so we construct it directly via the low-level inserters. The reply-all set, after
+        // removing
         // the recipient's own account, should be empty.
         val citizen = DevPerson(firstName = "Lone", lastName = "Citizen")
 

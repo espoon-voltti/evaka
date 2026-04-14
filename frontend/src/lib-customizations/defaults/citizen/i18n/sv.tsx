@@ -2295,8 +2295,8 @@ const sv: Translations = {
       title: 'Push-notiser',
       info: (
         <P>
-          Du kan aktivera push-notiser i webbläsaren för nya meddelanden.
-          Detta kräver att du ger webbläsaren tillåtelse att visa notiser.
+          Du kan aktivera push-notiser i webbläsaren för nya meddelanden. Detta
+          kräver att du ger webbläsaren tillåtelse att visa notiser.
         </P>
       ),
       enable: 'Aktivera push-notiser',
@@ -2317,8 +2317,7 @@ const sv: Translations = {
       sendTest: 'Skicka testnotis',
       testSent: 'Testnotis skickad',
       testFailed: 'Kunde inte skicka testnotis',
-      unsupported:
-        'Push-notiser stöds inte i denna webbläsare eller enhet.',
+      unsupported: 'Push-notiser stöds inte i denna webbläsare eller enhet.',
       denied:
         'Push-notiser är blockerade för denna webbplats. Du kan tillåta dem i webbläsarens eller operativsystemets inställningar.',
       guide: {
@@ -2332,7 +2331,9 @@ const sv: Translations = {
         samsungAndroid: (
           <OrderedList>
             <li>Öppna Samsung Internets meny.</li>
-            <li>Välj Inställningar → Webbplatser och nedladdningar → Notiser.</li>
+            <li>
+              Välj Inställningar → Webbplatser och nedladdningar → Notiser.
+            </li>
             <li>Tillåt notiser för denna webbplats.</li>
           </OrderedList>
         ),
@@ -2366,13 +2367,17 @@ const sv: Translations = {
         ),
         safariMacos: (
           <OrderedList>
-            <li>Öppna Safaris inställningar (Safari → Inställningar → Webbplatser → Notiser).</li>
+            <li>
+              Öppna Safaris inställningar (Safari → Inställningar → Webbplatser
+              → Notiser).
+            </li>
             <li>Tillåt notiser från eVaka.</li>
           </OrderedList>
         ),
         fallback: (
           <P>
-            Kontrollera inställningarna för notiser i webbläsaren och operativsystemet.
+            Kontrollera inställningarna för notiser i webbläsaren och
+            operativsystemet.
           </P>
         )
       }

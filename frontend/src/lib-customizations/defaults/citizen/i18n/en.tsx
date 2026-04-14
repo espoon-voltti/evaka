@@ -2045,8 +2045,8 @@ const en: Translations = {
       title: 'Push notifications',
       info: (
         <P>
-          You can enable browser push notifications for new messages.
-          This requires granting your browser permission to display notifications.
+          You can enable browser push notifications for new messages. This
+          requires granting your browser permission to display notifications.
         </P>
       ),
       enable: 'Enable push notifications',
@@ -2116,14 +2116,15 @@ const en: Translations = {
         ),
         safariMacos: (
           <OrderedList>
-            <li>Open Safari preferences (Safari → Preferences → Websites → Notifications).</li>
+            <li>
+              Open Safari preferences (Safari → Preferences → Websites →
+              Notifications).
+            </li>
             <li>Allow notifications from eVaka.</li>
           </OrderedList>
         ),
         fallback: (
-          <P>
-            Check your browser and operating system notification settings.
-          </P>
+          <P>Check your browser and operating system notification settings.</P>
         )
       }
     }

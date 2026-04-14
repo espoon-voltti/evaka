@@ -2311,8 +2311,8 @@ export default {
       title: 'Push-ilmoitukset',
       info: (
         <P>
-          Voit ottaa käyttöön selaimen push-ilmoitukset uusista viesteistä.
-          Tämä edellyttää, että annat selaimelle luvan ilmoitusten näyttämiseen.
+          Voit ottaa käyttöön selaimen push-ilmoitukset uusista viesteistä. Tämä
+          edellyttää, että annat selaimelle luvan ilmoitusten näyttämiseen.
         </P>
       ),
       enable: 'Ota push-ilmoitukset käyttöön',
@@ -2361,7 +2361,10 @@ export default {
         ),
         safariIOS: (
           <OrderedList>
-            <li>Lisää eVaka Koti-näytölle Safarin jakovalikosta (Lisää Koti-näytölle).</li>
+            <li>
+              Lisää eVaka Koti-näytölle Safarin jakovalikosta (Lisää
+              Koti-näytölle).
+            </li>
             <li>Avaa eVaka Koti-näytöstä (ei Safarista).</li>
             <li>Käytössäoloilmoitus ilmestyy — salli se.</li>
           </OrderedList>
@@ -2382,14 +2385,15 @@ export default {
         ),
         safariMacos: (
           <OrderedList>
-            <li>Avaa Safarin asetukset (Safari → Asetukset → Verkkosivustot → Ilmoitukset).</li>
+            <li>
+              Avaa Safarin asetukset (Safari → Asetukset → Verkkosivustot →
+              Ilmoitukset).
+            </li>
             <li>Salli ilmoitukset eVakalta.</li>
           </OrderedList>
         ),
         fallback: (
-          <P>
-            Tarkista selaimesi ja käyttöjärjestelmäsi ilmoitusasetukset.
-          </P>
+          <P>Tarkista selaimesi ja käyttöjärjestelmäsi ilmoitusasetukset.</P>
         )
       }
     }
