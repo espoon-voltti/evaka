@@ -203,11 +203,12 @@ const sv: Translations = {
   loginPage: {
     title: 'Esbo stads småbarnspedagogik',
     systemNotification: 'Viktigt meddelande',
-    addToHomeScreen: {
-      title: 'Vill du hitta till denna sida lättare?',
-      subTitle: 'Lägg till eVaka på din telefons hemskärm!',
-      ios: 'Lägg till genväg på iOS (Safari)',
-      android: 'Lägg till genväg på Android (Chrome)',
+    pwaInstall: {
+      button: 'Lägg till på hemskärmen',
+      iosUseSafariNote:
+        'För att installera eVaka på hemskärmen, öppna denna sida i Safari.',
+      notSupported:
+        'Den här webbläsaren stöder inte installation av eVaka på hemskärmen. Försök igen med Safari (iOS) eller Chrome (Android).',
       instructions: {
         ios: (
           <>

@@ -205,11 +205,12 @@ const en: Translations = {
   loginPage: {
     title: 'City of Espoo early childhood education',
     systemNotification: 'Important announcement',
-    addToHomeScreen: {
-      title: 'Would you like to find this page more easily?',
-      subTitle: 'Add eVaka to your phone’s home screen!',
-      ios: 'Add a shortcut on iOS (Safari)',
-      android: 'Add a shortcut on Android (Chrome)',
+    pwaInstall: {
+      button: 'Add to home screen',
+      iosUseSafariNote:
+        'To install eVaka to your home screen, open this page in Safari.',
+      notSupported:
+        'This browser does not support installing eVaka to the home screen. Please try again in Safari (iOS) or Chrome (Android).',
       instructions: {
         ios: (
           <>

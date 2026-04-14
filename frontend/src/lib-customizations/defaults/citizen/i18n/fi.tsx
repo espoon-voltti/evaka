@@ -203,11 +203,12 @@ export default {
   loginPage: {
     title: 'Espoon kaupungin varhaiskasvatus',
     systemNotification: 'Tärkeä tiedote',
-    addToHomeScreen: {
-      title: 'Haluatko löytää tälle sivulle helpommin?',
-      subTitle: 'Lisää eVaka puhelimesi kotivalikkoon!',
-      ios: 'Lisää pikakuvake iOS-laitteella (Safari)',
-      android: 'Lisää pikakuvake Android-laitteella (Chrome)',
+    pwaInstall: {
+      button: 'Lisää kotivalikkoon',
+      iosUseSafariNote:
+        'Asentaaksesi eVakan kotivalikkoon avaa tämä sivu Safari-selaimella.',
+      notSupported:
+        'Tämä selain ei tue eVakan asentamista kotivalikkoon. Kokeile uudelleen Safarilla (iOS) tai Chromella (Android).',
       instructions: {
         ios: (
           <>
