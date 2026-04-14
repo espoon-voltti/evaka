@@ -13,7 +13,7 @@ import React, {
   useState
 } from 'react'
 import styled, { css } from 'styled-components'
-import { useLocation } from 'wouter'
+import { useLocation, useSearchParams } from 'wouter'
 
 import { useBoolean } from 'lib-common/form/hooks'
 import type {
@@ -66,6 +66,7 @@ import {
   replyToThreadMutation
 } from './queries'
 import { MessageContext } from './state'
+import { useReplyDraftRestore } from '../webpush/useReplyDraftRestore'
 import { isPrimaryRecipient } from './utils'
 
 const TitleRow = styled.div`
@@ -266,7 +267,21 @@ export default React.memo(
     const [confirmDelete, setConfirmDelete] = useState(false)
 
     const hideReplyEditor = useReplyEditorVisible.off
+    const showReplyEditor = useReplyEditorVisible.on
     useEffect(() => hideReplyEditor(), [hideReplyEditor, threadId])
+
+    const { discardDraft } = useReplyDraftRestore(threadId, (text) => {
+      setReplyContent(threadId, text)
+      showReplyEditor()
+    })
+
+    const [searchParams] = useSearchParams()
+    useEffect(() => {
+      if (searchParams.get('focus') === 'reply') {
+        showReplyEditor()
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [threadId])
 
     const autoScrollRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
@@ -395,6 +410,7 @@ export default React.memo(
               onDiscard={onDiscard}
               onSuccess={() => {
                 hideReplyEditor()
+                discardDraft()
                 addTimedNotification({
                   children: i18n.messages.messageEditor.messageSentNotification,
                   dataQa: 'message-sent-notification'
