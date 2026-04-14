@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2017-2026 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+# Per-user Claude Code permission allow-list — personal state, not shared.
+settings.local.json
+
+# Scratch worktrees spawned by the superpowers skills.
+worktrees/
