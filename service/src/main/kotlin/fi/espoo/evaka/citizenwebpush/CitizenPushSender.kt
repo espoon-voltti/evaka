@@ -5,6 +5,7 @@
 package fi.espoo.evaka.citizenwebpush
 
 import fi.espoo.evaka.messaging.MessageType
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PersonId
@@ -181,6 +182,7 @@ data class CitizenPushRecipientRow(
     val urgent: Boolean,
     val threadType: MessageType,
     val senderName: String,
+    val replyRecipientAccountIds: List<MessageAccountId>,
 )
 
 fun Database.Read.getCitizenPushRecipients(
@@ -195,12 +197,29 @@ SELECT DISTINCT
     lower(p.language) AS language,
     t.urgent,
     t.message_type AS thread_type,
-    m.sender_name
+    m.sender_name,
+    COALESCE(reply_participants.account_ids, ARRAY[]::uuid[]) AS reply_recipient_account_ids
 FROM message m
 JOIN message_recipients mr ON mr.message_id = m.id
 JOIN message_account ma ON ma.id = mr.recipient_id
 JOIN person p ON p.id = ma.person_id
 JOIN message_thread t ON m.thread_id = t.id
+LEFT JOIN LATERAL (
+    SELECT array_agg(DISTINCT account_id) AS account_ids
+    FROM (
+        SELECT m2.sender_id AS account_id
+        FROM message m2
+        WHERE m2.thread_id = t.id
+          AND m2.sender_id IS NOT NULL
+          AND m2.sender_id <> ma.id
+        UNION
+        SELECT mr2.recipient_id AS account_id
+        FROM message_recipients mr2
+        JOIN message m2 ON m2.id = mr2.message_id
+        WHERE m2.thread_id = t.id
+          AND mr2.recipient_id <> ma.id
+    ) _p
+) reply_participants ON TRUE
 WHERE m.id = ANY(${bind(messageIds)})
   AND t.is_copy IS FALSE
 """
