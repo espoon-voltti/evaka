@@ -40,6 +40,17 @@ sealed class AuthenticatedUser {
             }
     }
 
+    data class CitizenMobile(val id: PersonId, val authLevel: CitizenAuthLevel) :
+        AuthenticatedUser() {
+        override fun rawId(): UUID = id.raw
+
+        override val type =
+            when (authLevel) {
+                CitizenAuthLevel.STRONG -> AuthenticatedUserType.citizen_mobile
+                CitizenAuthLevel.WEAK -> AuthenticatedUserType.citizen_mobile_weak
+            }
+    }
+
     data class Employee
     private constructor(
         val id: EmployeeId,
@@ -111,6 +122,8 @@ enum class MobileAuthLevel {
 enum class AuthenticatedUserType {
     citizen,
     citizen_weak,
+    citizen_mobile,
+    citizen_mobile_weak,
     employee,
     mobile,
     system,

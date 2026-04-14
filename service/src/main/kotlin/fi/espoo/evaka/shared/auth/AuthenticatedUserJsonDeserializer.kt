@@ -32,6 +32,14 @@ class AuthenticatedUserJsonDeserializer : ValueDeserializer<AuthenticatedUser>()
                 AuthenticatedUser.Citizen(PersonId(user.id!!), CitizenAuthLevel.WEAK)
             }
 
+            AuthenticatedUserType.citizen_mobile -> {
+                AuthenticatedUser.CitizenMobile(PersonId(user.id!!), CitizenAuthLevel.STRONG)
+            }
+
+            AuthenticatedUserType.citizen_mobile_weak -> {
+                AuthenticatedUser.CitizenMobile(PersonId(user.id!!), CitizenAuthLevel.WEAK)
+            }
+
             AuthenticatedUserType.employee -> {
                 AuthenticatedUser.Employee(
                     EmployeeId(user.id!!),

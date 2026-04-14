@@ -26,6 +26,10 @@ class AuthenticatedUserJsonSerializer : ValueSerializer<AuthenticatedUser>() {
                 gen.writePOJOProperty("id", value.id.toString())
             }
 
+            is AuthenticatedUser.CitizenMobile -> {
+                gen.writePOJOProperty("id", value.id.toString())
+            }
+
             is AuthenticatedUser.Employee -> {
                 gen.writePOJOProperty("id", value.id.toString())
                 gen.writePOJOProperty("globalRoles", value.globalRoles)
