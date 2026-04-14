@@ -40,6 +40,15 @@ serviceWorker.addEventListener('push', (event) => {
     }
   })()
   const title = payload.title ?? 'eVaka'
+  const actions = []
+  if (payload.replyAction) {
+    actions.push({
+      action: 'reply',
+      type: 'text',
+      title: payload.replyAction.actionLabel,
+      placeholder: payload.replyAction.actionPlaceholder
+    })
+  }
   event.waitUntil(
     serviceWorker.registration.showNotification(title, {
       body: payload.body ?? '',
@@ -49,8 +58,11 @@ serviceWorker.addEventListener('push', (event) => {
       // with just the "e" glyph opaque.
       badge: '/citizen/evaka-badge-72.png',
       tag: payload.tag,
-      data: { url: payload.url ?? '/messages' },
-      actions: []
+      data: {
+        url: payload.url ?? '/messages',
+        replyAction: payload.replyAction ?? null
+      },
+      actions
     })
   )
 })
