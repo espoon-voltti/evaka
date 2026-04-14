@@ -42,7 +42,12 @@ enum class Urgency {
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @JsonTypeIdResolver(SealedSubclassSimpleName::class)
 sealed interface WebPushPayload {
-    data class NotificationV1(val title: String) : WebPushPayload
+    data class NotificationV1(
+        val title: String,
+        val body: String? = null,
+        val tag: String? = null,
+        val url: String? = null,
+    ) : WebPushPayload
 }
 
 class WebPushEndpoint(val uri: URI, val ecdhPublicKey: ECPublicKey, val authSecret: ByteArray)
