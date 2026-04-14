@@ -266,7 +266,15 @@ const sv: Translations = {
         'Du kan byta lösenord i dina egna uppgifter genom stark autentisering.',
       noUsername: 'Inget användarnamn?',
       noUsernameInfo:
-        'Du kan skapa ett användarnamn genom att logga in med stark autentisering och tillåta inloggning ned e-post på sidan "Egna uppgifter"'
+        'Du kan skapa ett användarnamn genom att logga in med stark autentisering och tillåta inloggning ned e-post på sidan "Egna uppgifter"',
+      passkey: {
+        title: 'Logga in med passnyckel',
+        subtitle: 'Snabb, lösenordsfri inloggning på denna enhet',
+        noCredentialsHint:
+          'Ingen passnyckel hittades på denna enhet. Logga in med Suomi.fi först för att aktivera passnycklar, eller använd en annan enhet som redan har en.',
+        failed: 'Inloggning misslyckades. Försök igen.',
+        moreOptionsDisclosure: 'Fler inloggningsalternativ'
+      }
     },
     applying: {
       title: 'Logga in via Suomi.fi',

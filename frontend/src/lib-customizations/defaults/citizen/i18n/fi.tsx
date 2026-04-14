@@ -272,7 +272,15 @@ export default {
         'Voit vaihtaa salasanan omissa tiedoissasi kirjautumalla vahvasti.',
       noUsername: 'Ei käyttäjätunnuksia?',
       noUsernameInfo:
-        'Voit luoda käyttäjätunnuksen kirjautumalla vahvasti ja sallimalla kirjautumisen sähköpostilla "Omat tiedot"-sivulla'
+        'Voit luoda käyttäjätunnuksen kirjautumalla vahvasti ja sallimalla kirjautumisen sähköpostilla "Omat tiedot"-sivulla',
+      passkey: {
+        title: 'Kirjaudu passkey-avaimella',
+        subtitle: 'Nopea, salasanaton kirjautuminen tällä laitteella',
+        noCredentialsHint:
+          'Tältä laitteelta ei löytynyt passkey-avainta. Kirjaudu ensin Suomi.fi-tunnistautumisella ottaaksesi passkey käyttöön, tai käytä toista laitetta jolle olet jo tallentanut avaimen.',
+        failed: 'Kirjautuminen epäonnistui. Yritä uudelleen.',
+        moreOptionsDisclosure: 'Muut kirjautumistavat'
+      }
     },
     applying: {
       title: 'Kirjaudu Suomi.fi:ssä',

@@ -276,7 +276,15 @@ const en: Translations = {
         'You can change your password in your profile by logging in using strong authentication',
       noUsername: 'No username?',
       noUsernameInfo:
-        'You can create a username by logging in using strong authentication and enabling login via email on the "Personal information" page.'
+        'You can create a username by logging in using strong authentication and enabling login via email on the "Personal information" page.',
+      passkey: {
+        title: 'Sign in with passkey',
+        subtitle: 'Fast, passwordless sign-in on this device',
+        noCredentialsHint:
+          'No passkeys found on this device. Sign in with suomi.fi first to enrol a passkey, or use another device that has one.',
+        failed: 'Sign-in failed. Please try again.',
+        moreOptionsDisclosure: 'More sign-in options'
+      }
     },
     applying: {
       title: 'Sign in using Suomi.fi',

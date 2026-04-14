@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -28,8 +28,10 @@ import { farMap } from 'lib-icons'
 
 import Footer from '../Footer'
 import { useUser } from '../auth/state'
+import { useIsStandalone } from '../hooks/useIsStandalone'
 import { useLang, useTranslation } from '../localization'
 import { getStrongLoginUri, getWeakLoginUri } from '../navigation/const'
+import { PasskeyLoginButton } from '../passkey/PasskeyLoginButton'
 import { PwaInstallButton } from '../pwa/PwaInstallButton'
 import useTitle from '../useTitle'
 
@@ -44,6 +46,7 @@ export default React.memo(function LoginPage() {
   useTitle(i18n, i18n.common.title)
   const [lang] = useLang()
   const user = useUser()
+  const standalone = useIsStandalone()
 
   const [searchParams] = useSearchParams()
   const unvalidatedNextPath = searchParams.get('next')
@@ -57,6 +60,40 @@ export default React.memo(function LoginPage() {
   if (user) {
     return <Redirect to="/" replace />
   }
+
+  const weakLoginContent = (
+    <>
+      <H2 $noMargin $hyphenate>
+        {i18n.loginPage.login.title}
+      </H2>
+      <Gap $size="m" />
+      <P $noMargin>
+        {i18n.loginPage.login.paragraph}
+        <ParagraphInfoButton
+          aria-label={i18n.common.openExpandingInfo}
+          onClick={() => setShowInfoBoxText1(!showInfoBoxText1)}
+          open={showInfoBoxText1}
+        />
+      </P>
+      {showInfoBoxText1 && (
+        <ExpandingInfoBox
+          info={i18n.loginPage.login.infoBoxText}
+          close={() => setShowInfoBoxText1(false)}
+        />
+      )}
+      <Gap $size="s" />
+      <LinkButton
+        href={getWeakLoginUri(unvalidatedNextPath ?? '/')}
+        onClick={(e) => {
+          e.preventDefault()
+          navigate(getWeakLoginUri(unvalidatedNextPath ?? '/'))
+        }}
+        data-qa="weak-login"
+      >
+        {i18n.loginPage.login.link}
+      </LinkButton>
+    </>
+  )
 
   return (
     <Main>
@@ -107,35 +144,7 @@ export default React.memo(function LoginPage() {
             </MobileOnly>
           </ContentArea>
           <ContentArea $opaque>
-            <H2 $noMargin $hyphenate>
-              {i18n.loginPage.login.title}
-            </H2>
-            <Gap $size="m" />
-            <P $noMargin>
-              {i18n.loginPage.login.paragraph}
-              <ParagraphInfoButton
-                aria-label={i18n.common.openExpandingInfo}
-                onClick={() => setShowInfoBoxText1(!showInfoBoxText1)}
-                open={showInfoBoxText1}
-              />
-            </P>
-            {showInfoBoxText1 && (
-              <ExpandingInfoBox
-                info={i18n.loginPage.login.infoBoxText}
-                close={() => setShowInfoBoxText1(false)}
-              />
-            )}
-            <Gap $size="s" />
-            <LinkButton
-              href={getWeakLoginUri(unvalidatedNextPath ?? '/')}
-              onClick={(e) => {
-                e.preventDefault()
-                navigate(getWeakLoginUri(unvalidatedNextPath ?? '/'))
-              }}
-              data-qa="weak-login"
-            >
-              {i18n.loginPage.login.link}
-            </LinkButton>
+            <PasskeyLoginButton nextUrl={unvalidatedNextPath} />
           </ContentArea>
           <ContentArea $opaque>
             <H2 $noMargin>{i18n.loginPage.applying.title}</H2>
@@ -174,6 +183,16 @@ export default React.memo(function LoginPage() {
               <Gap $size="xs" $horizontal />
               {i18n.loginPage.applying.mapLink}
             </MapLink>
+          </ContentArea>
+          <ContentArea $opaque>
+            {standalone ? (
+              <details data-qa="more-options">
+                <summary>{i18n.loginPage.login.passkey.moreOptionsDisclosure}</summary>
+                {weakLoginContent}
+              </details>
+            ) : (
+              weakLoginContent
+            )}
           </ContentArea>
         </FixedSpaceColumn>
       </Container>
