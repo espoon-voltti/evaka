@@ -15,6 +15,7 @@ export type CitizenSessionUser =
       samlSession: SamlSession
     }
   | { id: string; authType: 'citizen-weak'; userType: 'CITIZEN_WEAK' }
+  | { id: string; authType: 'citizen-mobile-weak'; userType: 'CITIZEN_MOBILE_WEAK' }
   | { id: string; authType: 'dev'; userType: 'CITIZEN_STRONG' }
 
 export type EmployeeSessionUser =
@@ -61,6 +62,8 @@ export function createUserHeader(user: EvakaSessionUser): string {
       switch (user.userType) {
         case 'CITIZEN_WEAK':
           return { type: 'citizen_weak', id: user.id }
+        case 'CITIZEN_MOBILE_WEAK':
+          return { type: 'citizen_mobile_weak', id: user.id }
         case 'CITIZEN_STRONG':
           return { type: 'citizen', id: user.id }
         case 'EMPLOYEE':
