@@ -109,11 +109,16 @@ function serveIndexHtml(): Plugin {
   }
 }
 
-function serviceWorker(): Plugin {
-  const urlPath = '/employee/mobile/service-worker.js'
-  const sourcePath = 'src/employee-mobile-frontend/service-worker.js'
+interface ServiceWorkerConfig {
+  name: string
+  urlPath: string
+  sourcePath: string
+}
+
+function serviceWorker(config: ServiceWorkerConfig): Plugin {
+  const { name, urlPath, sourcePath } = config
   return {
-    name: 'build-service-worker-prod',
+    name: `build-service-worker-prod-${name}`,
     configureServer(server) {
       server.middlewares.use(urlPath, async (_req, res, next) => {
         try {
@@ -173,7 +178,16 @@ export default defineConfig(async (): Promise<UserConfig> => {
         modernPolyfills: true,
         modernTargets: browserslist
       }),
-      serviceWorker(),
+      serviceWorker({
+        name: 'employee-mobile',
+        urlPath: '/employee/mobile/service-worker.js',
+        sourcePath: 'src/employee-mobile-frontend/service-worker.js'
+      }),
+      serviceWorker({
+        name: 'citizen',
+        urlPath: '/service-worker.js',
+        sourcePath: 'src/citizen-frontend/service-worker.js'
+      }),
       sentryVitePlugin({
         disable: process.env.SENTRY_PUBLISH_ENABLED !== 'true',
         org: process.env.SENTRY_ORG,
