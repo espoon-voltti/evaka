@@ -27,7 +27,12 @@ import {
   refreshMobileSession
 } from './internal/mobile-device-session.ts'
 import { internalAuthStatus } from './internal/routes/auth-status.ts'
-import { integrationUserHeader } from './shared/auth/index.ts'
+import { createUserHeader, integrationUserHeader } from './shared/auth/index.ts'
+import type { EvakaSessionUser } from './shared/auth/index.ts'
+import { mobileAuthMiddleware } from './enduser/mobile-auth-middleware.ts'
+import { authMobileLogin } from './enduser/routes/auth-mobile-login.ts'
+import { authMobileLogout } from './enduser/routes/auth-mobile-logout.ts'
+import { authMobileStatus } from './enduser/routes/auth-mobile-status.ts'
 import type { Config } from './shared/config.ts'
 import { appCommit, enableDevApi, titaniaConfig } from './shared/config.ts'
 import { assertStringProp, toRequestHandler } from './shared/express.ts'
@@ -279,6 +284,23 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
 
   // Reject requests matching disabled endpoint patterns stored in Valkey
   router.use(endpointDisabling)
+
+  // citizen-mobile routes use bearer-token auth (no cookies) — mount before CSRF
+  const citizenMobileProxy = createProxy({
+    getUserHeader: (req) => createUserHeader((req as any).user as EvakaSessionUser)
+  })
+  router.post(
+    '/citizen-mobile/auth/login/v1',
+    express.json(),
+    authMobileLogin(redisClient, config.citizen.weakLoginRateLimit)
+  )
+  router.post('/citizen-mobile/auth/logout/v1', authMobileLogout(redisClient))
+  router.get('/citizen-mobile/auth/status/v1', authMobileStatus(redisClient))
+  router.all(
+    '/citizen-mobile/{*rest}',
+    mobileAuthMiddleware(redisClient),
+    citizenMobileProxy
+  )
 
   // CSRF checks apply to all the API endpoints that frontend uses
   router.use(csrf)
