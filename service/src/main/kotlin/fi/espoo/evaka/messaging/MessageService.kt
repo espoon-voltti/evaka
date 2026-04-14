@@ -8,6 +8,7 @@ import fi.espoo.evaka.CitizenCalendarEnv
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.notes.createApplicationNote
 import fi.espoo.evaka.children.getChildrenByParent
+import fi.espoo.evaka.citizenwebpush.CitizenPushSender
 import fi.espoo.evaka.incomestatement.citizenHasUnhandledIncomeStatements
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
@@ -28,11 +29,15 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
+
+private val logger = KotlinLogging.logger {}
 
 @Component
 class MessageService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val citizenPushSender: CitizenPushSender,
     private val notificationEmailService: MessageNotificationEmailService,
     private val messagePushNotifications: MessagePushNotifications,
     private val featureConfig: FeatureConfig,
@@ -47,16 +52,23 @@ class MessageService(
         clock: EvakaClock,
         msg: AsyncJob.MarkMessagesAsSent,
     ) {
-        db.transaction { tx ->
-            tx.lockMessageContentForUpdate(msg.messageContentId)
-            tx.upsertRecipientThreadParticipants(msg.messageContentId, msg.sentAt)
-            val messages = tx.markMessagesAsSent(msg.messageContentId, msg.sentAt)
-            notificationEmailService.scheduleSendingMessageNotifications(tx, messages, clock.now())
-            asyncJobRunner.plan(
-                tx,
-                messagePushNotifications.getAsyncJobs(tx, messages),
-                runAt = clock.now(),
-            )
+        val messages =
+            db.transaction { tx ->
+                tx.lockMessageContentForUpdate(msg.messageContentId)
+                tx.upsertRecipientThreadParticipants(msg.messageContentId, msg.sentAt)
+                val messages = tx.markMessagesAsSent(msg.messageContentId, msg.sentAt)
+                notificationEmailService.scheduleSendingMessageNotifications(tx, messages, clock.now())
+                asyncJobRunner.plan(
+                    tx,
+                    messagePushNotifications.getAsyncJobs(tx, messages),
+                    runAt = clock.now(),
+                )
+                messages
+            }
+        try {
+            citizenPushSender.handleSentMessages(db, clock, messages)
+        } catch (e: Exception) {
+            logger.warn(e) { "Citizen push: top-level failure in handleSentMessages; swallowing" }
         }
     }
 
