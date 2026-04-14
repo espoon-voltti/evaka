@@ -55,6 +55,21 @@ import {
   useUnreadDecisions
 } from './utils'
 
+// Firefox parses `backdrop-filter: url(#...)` as valid but cannot render
+// filter references in backdrop-filter, so the CSS cascade alone cannot
+// gate the liquid-glass refraction to browsers that actually support it.
+// Tag the <html> element with a class at module load so the refraction
+// tier only activates on Chromium-family browsers; everyone else falls
+// through to the frosted-blur fallback declared on `::before`.
+if (typeof document !== 'undefined' && typeof navigator !== 'undefined') {
+  const isFirefox = /Firefox\//.test(navigator.userAgent)
+  const isChromium =
+    'chrome' in window && !!(window as { chrome?: unknown }).chrome
+  if (!isFirefox && isChromium) {
+    document.documentElement.classList.add('supports-backdrop-filter-url')
+  }
+}
+
 export default React.memo(function MobileNav() {
   const t = useTranslation()
   const { user } = useContext(AuthContext)
@@ -266,12 +281,13 @@ const BottomBar = styled.nav`
   }
 
   /* 360px pill max-width + 24px side gap — refraction only when pill hits its baked 360×72 geometry.
-     The blur() + saturate() are repeated here so Firefox (which parses url() as valid but cannot
-     render filter references in backdrop-filter) still shows the frosted-glass fallback instead
-     of swapping the cascade for an unrenderable url(). */
+     Gated on .supports-backdrop-filter-url (set on <html> at module load, see module head)
+     because Firefox parses url() in backdrop-filter as valid but cannot render it — leaving
+     the CSS cascade to pick would replace the blur with an unrenderable url() and kill the
+     frosted-glass fallback. */
   @media (min-width: 384px) {
-    &::before {
-      backdrop-filter: blur(20px) saturate(1.2) url(#liquid-glass-bottom-nav);
+    .supports-backdrop-filter-url &::before {
+      backdrop-filter: url(#liquid-glass-bottom-nav);
     }
   }
 
