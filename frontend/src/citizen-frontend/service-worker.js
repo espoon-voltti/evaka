@@ -26,21 +26,31 @@ serviceWorker.addEventListener('fetch', (event) => {
 })
 
 serviceWorker.addEventListener('push', (event) => {
-  const data = (() => {
+  // Backend sends a JSON array of WebPushPayload entries (sealed class, tagged with
+  // `type`), not a single object, so we pick the first NotificationV1 entry.
+  const payload = (() => {
     try {
-      return event.data ? event.data.json() : {}
+      const parsed = event.data ? event.data.json() : null
+      const list = Array.isArray(parsed) ? parsed : parsed ? [parsed] : []
+      return (
+        list.find((p) => p && p.type === 'NotificationV1') ?? list[0] ?? {}
+      )
     } catch {
       return {}
     }
   })()
-  const title = data.title ?? 'eVaka'
+  const title = payload.title ?? 'eVaka'
   event.waitUntil(
     serviceWorker.registration.showNotification(title, {
-      body: data.body ?? '',
+      body: payload.body ?? '',
       icon: '/citizen/evaka-192px.png',
-      badge: '/citizen/evaka-180px.png',
-      tag: data.tag,
-      data: { url: data.url ?? '/messages' }
+      // Android Chrome uses the alpha channel of the badge image to draw a
+      // monochrome mask in the status bar, so the file is a transparent PNG
+      // with just the "e" glyph opaque.
+      badge: '/citizen/evaka-badge-72.png',
+      tag: payload.tag,
+      data: { url: payload.url ?? '/messages' },
+      actions: []
     })
   )
 })
