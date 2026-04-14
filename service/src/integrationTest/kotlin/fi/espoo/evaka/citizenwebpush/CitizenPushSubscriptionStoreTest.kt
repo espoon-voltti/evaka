@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import software.amazon.awssdk.services.s3.S3Client
 
 class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach = false) {
-    @Autowired lateinit var s3Client: S3Client
-    @Autowired lateinit var bucketEnv: BucketEnv
+    @Autowired private lateinit var s3Client: S3Client
+    @Autowired private lateinit var bucketEnv: BucketEnv
 
     private val store by lazy { CitizenPushSubscriptionStore(s3Client, bucketEnv.data) }
     private val personId = PersonId(UUID.randomUUID())
@@ -116,5 +116,51 @@ class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(original.enabledCategories, loaded.enabledCategories)
         assertEquals(original.ecdhKey, loaded.ecdhKey)
         assertEquals(original.authSecret, loaded.authSecret)
+    }
+
+    @Test
+    fun `upsertSubscription creates file on first call and reports wasFirstWrite=true`() {
+        store.delete(personId)
+        val result = store.upsertSubscription(personId, entry("https://fcm.example/new"))
+        assertTrue(result.wasFirstWrite)
+        val loaded = store.load(personId)
+        assertNotNull(loaded)
+        assertEquals(1, loaded.subscriptions.size)
+        assertEquals(URI("https://fcm.example/new"), loaded.subscriptions[0].endpoint)
+    }
+
+    @Test
+    fun `upsertSubscription replaces entry with matching endpoint and preserves others`() {
+        store.delete(personId)
+        store.save(
+            personId,
+            CitizenPushStoreFile(
+                personId,
+                listOf(
+                    entry("https://fcm.example/a", setOf(CitizenPushCategory.MESSAGE)),
+                    entry("https://fcm.example/b", setOf(CitizenPushCategory.MESSAGE)),
+                ),
+            ),
+        )
+        val replacement =
+            CitizenPushSubscriptionEntry(
+                endpoint = URI("https://fcm.example/a"),
+                ecdhKey = List(65) { (it + 100).toByte() },
+                authSecret = List(16) { (it + 100).toByte() },
+                enabledCategories = setOf(CitizenPushCategory.URGENT_MESSAGE),
+                userAgent = "Updated UA",
+                createdAt = now,
+            )
+        val result = store.upsertSubscription(personId, replacement)
+        assertFalse(result.wasFirstWrite)
+        val loaded = store.load(personId)?.subscriptions
+        assertNotNull(loaded)
+        assertEquals(2, loaded.size)
+        val updated = loaded.single { it.endpoint == URI("https://fcm.example/a") }
+        assertEquals(setOf(CitizenPushCategory.URGENT_MESSAGE), updated.enabledCategories)
+        assertEquals("Updated UA", updated.userAgent)
+        // the "b" entry survives unchanged
+        val untouched = loaded.single { it.endpoint == URI("https://fcm.example/b") }
+        assertEquals(setOf(CitizenPushCategory.MESSAGE), untouched.enabledCategories)
     }
 }
