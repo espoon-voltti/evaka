@@ -90,6 +90,21 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class NotifyCitizenOfNewMessage(
+        val messageId: MessageId,
+        val recipientId: PersonId,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendCitizenMessagePushNotification(
+        val messageId: MessageId,
+        val citizenId: PersonId,
+        val deviceId: CitizenPushSubscriptionDeviceId,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendAbsencePushNotification(val absenceId: AbsenceId, val device: MobileDeviceId) :
         AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -568,8 +583,10 @@ sealed interface AsyncJob : AsyncJobPayload {
                 AsyncJobPool.Config(concurrency = 4),
                 setOf(
                     MarkMessagesAsSent::class,
+                    NotifyCitizenOfNewMessage::class,
                     SendAbsencePushNotification::class,
                     SendCalendarEventReservationPushNotification::class,
+                    SendCitizenMessagePushNotification::class,
                     SendMessagePushNotification::class,
                     UpdateMessageThreadRecipients::class,
                 ),
