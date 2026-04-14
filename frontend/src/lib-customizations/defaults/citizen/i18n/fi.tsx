@@ -2404,6 +2404,27 @@ export default {
           <P>Tarkista selaimesi ja käyttöjärjestelmäsi ilmoitusasetukset.</P>
         )
       }
+    },
+    passkeySection: {
+      title: 'Passkey-avaimet',
+      intro: 'Passkey on nopea ja salasanaton tapa kirjautua tälle laitteelle.',
+      empty: 'Et ole vielä lisännyt passkey-avaimia.',
+      addButton: 'Lisää passkey-avain',
+      strongRequired: 'Vaatii Suomi.fi-tunnistautumisen',
+      thisDevice: 'Tämä laite',
+      createdAt: 'Luotu',
+      lastUsedAt: 'Viimeksi käytetty',
+      neverUsed: 'ei koskaan',
+      revoke: 'Poista',
+      revokeConfirmTitle: 'Poistetaanko passkey-avain?',
+      revokeConfirmText:
+        'Et voi enää kirjautua tällä avaimella sen poistamisen jälkeen.',
+      revokeConfirmLastWarning:
+        'Olet parhaillaan kirjautuneena tällä avaimella. Poistaminen kirjaa sinut ulos.',
+      rename: 'Nimeä uudelleen',
+      labelLabel: 'Nimi',
+      labelValidationEmpty: 'Nimi ei voi olla tyhjä',
+      labelValidationTooLong: 'Nimi on liian pitkä'
     }
   },
   income: {

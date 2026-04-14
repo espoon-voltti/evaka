@@ -2135,6 +2135,27 @@ const en: Translations = {
           <P>Check your browser and operating system notification settings.</P>
         )
       }
+    },
+    passkeySection: {
+      title: 'Passkeys',
+      intro: 'Passkeys are a fast, passwordless way to sign in on this device.',
+      empty: "You haven't added any passkeys yet.",
+      addButton: 'Add passkey',
+      strongRequired: 'Requires suomi.fi identification',
+      thisDevice: 'This device',
+      createdAt: 'Created',
+      lastUsedAt: 'Last used',
+      neverUsed: 'never',
+      revoke: 'Revoke',
+      revokeConfirmTitle: 'Revoke passkey?',
+      revokeConfirmText:
+        'You will no longer be able to sign in with this passkey.',
+      revokeConfirmLastWarning:
+        'You are currently signed in with this passkey. Revoking it will sign you out.',
+      rename: 'Rename',
+      labelLabel: 'Name',
+      labelValidationEmpty: 'Name cannot be empty',
+      labelValidationTooLong: 'Name is too long'
     }
   },
   income: {

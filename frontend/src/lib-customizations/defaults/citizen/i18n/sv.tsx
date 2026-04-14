@@ -2389,6 +2389,27 @@ const sv: Translations = {
           </P>
         )
       }
+    },
+    passkeySection: {
+      title: 'Passnycklar',
+      intro: 'En passnyckel är ett snabbt och lösenordsfritt sätt att logga in på den här enheten.',
+      empty: 'Du har ännu inte lagt till några passnycklar.',
+      addButton: 'Lägg till passnyckel',
+      strongRequired: 'Kräver Suomi.fi-identifiering',
+      thisDevice: 'Den här enheten',
+      createdAt: 'Skapad',
+      lastUsedAt: 'Senast använd',
+      neverUsed: 'aldrig',
+      revoke: 'Ta bort',
+      revokeConfirmTitle: 'Ta bort passnyckeln?',
+      revokeConfirmText:
+        'Du kan inte längre logga in med den här passnyckeln efter att den har tagits bort.',
+      revokeConfirmLastWarning:
+        'Du är för tillfället inloggad med den här passnyckeln. Om du tar bort den loggas du ut.',
+      rename: 'Byt namn',
+      labelLabel: 'Namn',
+      labelValidationEmpty: 'Namnet får inte vara tomt',
+      labelValidationTooLong: 'Namnet är för långt'
     }
   },
   income: {

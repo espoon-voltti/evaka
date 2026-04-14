@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useRef } from 'react'
-import { Redirect } from 'wouter'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { Redirect, useSearchParams } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
@@ -28,6 +28,7 @@ import {
   notificationSettingsQuery,
   passwordConstraintsQuery
 } from './queries'
+import { PasskeySection } from '../passkey/PasskeySection'
 
 export default React.memo(function PersonalDetails() {
   const t = useTranslation()
@@ -37,6 +38,18 @@ export default React.memo(function PersonalDetails() {
   const notificationSettingsSection = useRef<HTMLDivElement>(null)
   const emailVerificationStatus = useQueryResult(emailVerificationStatusQuery())
   const passwordConstraints = useQueryResult(passwordConstraintsQuery())
+
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [autoEnroll, setAutoEnroll] = useState(false)
+
+  useEffect(() => {
+    if (searchParams.get('enroll') === '1') {
+      setAutoEnroll(true)
+      const next = new URLSearchParams(searchParams)
+      next.delete('enroll')
+      setSearchParams(next, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   useEffect(() => {
     if (
@@ -97,6 +110,8 @@ export default React.memo(function PersonalDetails() {
               />
             </>
           ))}
+          <HorizontalLine />
+          <PasskeySection autoEnroll={autoEnroll} />
         </ContentArea>
       </Container>
       <Footer />
