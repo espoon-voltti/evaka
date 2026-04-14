@@ -10,6 +10,8 @@ import React, {
   useState
 } from 'react'
 
+import { useQueryClient } from '@tanstack/react-query'
+
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -49,6 +51,7 @@ export const PasskeySection = React.memo(function PasskeySection({
   const { mutateAsync: rename } = useMutationResult(renamePasskeyMutation)
   const { mutateAsync: revoke } = useMutationResult(revokePasskeyMutation)
   const { enroll } = usePasskeyAuth()
+  const queryClient = useQueryClient()
 
   const [toRevoke, setToRevoke] = useState<string | null>(null)
   const autoEnrollDone = useRef(false)
@@ -57,6 +60,9 @@ export const PasskeySection = React.memo(function PasskeySection({
     if (isStrong) {
       const ok = await enroll()
       if (ok) {
+        await queryClient.invalidateQueries({
+          queryKey: passkeysQuery.prefix
+        })
         await refreshAuthStatus()
       }
     } else {
@@ -64,7 +70,7 @@ export const PasskeySection = React.memo(function PasskeySection({
         '/personal-details?enroll=1#passkeys'
       )
     }
-  }, [enroll, isStrong, refreshAuthStatus])
+  }, [enroll, isStrong, queryClient, refreshAuthStatus])
 
   useEffect(() => {
     if (!autoEnroll || autoEnrollDone.current || !isStrong) return

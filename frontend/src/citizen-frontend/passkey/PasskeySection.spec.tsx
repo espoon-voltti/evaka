@@ -17,6 +17,12 @@ vi.mock('lib-common/query', () => ({
   useMutationResult: () => ({ mutateAsync: vi.fn(async () => undefined) })
 }))
 
+vi.mock('@tanstack/react-query', () => ({
+  useQueryClient: () => ({
+    invalidateQueries: vi.fn(async () => undefined)
+  })
+}))
+
 // Mock queries file (it imports axios client which jsdom can't run)
 vi.mock('./queries', () => ({
   passkeysQuery: () => ({}),
