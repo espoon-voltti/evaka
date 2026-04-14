@@ -2304,6 +2304,92 @@ export default {
           </ul>
         </div>
       )
+    },
+    webPushSection: {
+      title: 'Push-ilmoitukset',
+      info: (
+        <P>
+          Voit ottaa käyttöön selaimen push-ilmoitukset uusista viesteistä.
+          Tämä edellyttää, että annat selaimelle luvan ilmoitusten näyttämiseen.
+        </P>
+      ),
+      enable: 'Ota push-ilmoitukset käyttöön',
+      enabling: 'Otetaan käyttöön…',
+      enabled: 'Push-ilmoitukset käytössä',
+      categoryUrgent: {
+        label: 'Kiireelliset viestit',
+        description: 'Kiireellisiksi merkityt viestit henkilökunnalta'
+      },
+      categoryMessage: {
+        label: 'Tavalliset viestit',
+        description: 'Uudet viestit ja vastaukset keskusteluissa'
+      },
+      categoryBulletin: {
+        label: 'Tiedotteet',
+        description: 'Kunnan yleiset tiedotteet'
+      },
+      sendTest: 'Lähetä testi-ilmoitus',
+      testSent: 'Testi-ilmoitus lähetetty',
+      testFailed: 'Testi-ilmoituksen lähetys epäonnistui',
+      unsupported:
+        'Push-ilmoitukset eivät ole tuettuja tässä selaimessa tai laitteessa.',
+      denied:
+        'Push-ilmoitukset on estetty tältä sivustolta. Voit sallia ne selaimen tai käyttöjärjestelmän asetuksista.',
+      guide: {
+        chromeAndroid: (
+          <OrderedList>
+            <li>Avaa Chromen valikko (kolme pistettä oikeassa yläkulmassa).</li>
+            <li>Valitse Asetukset → Sivuston asetukset → Ilmoitukset.</li>
+            <li>Salli ilmoitukset tälle sivustolle.</li>
+          </OrderedList>
+        ),
+        samsungAndroid: (
+          <OrderedList>
+            <li>Avaa Samsung Internetin valikko.</li>
+            <li>Valitse Asetukset → Sivustot ja lataukset → Ilmoitukset.</li>
+            <li>Salli ilmoitukset tälle sivustolle.</li>
+          </OrderedList>
+        ),
+        firefoxAndroid: (
+          <OrderedList>
+            <li>Avaa Firefoxin valikko.</li>
+            <li>Valitse Asetukset → Sivuston käyttöoikeudet → Ilmoitukset.</li>
+            <li>Salli ilmoitukset tälle sivustolle.</li>
+          </OrderedList>
+        ),
+        safariIOS: (
+          <OrderedList>
+            <li>Lisää eVaka Koti-näytölle Safarin jakovalikosta (Lisää Koti-näytölle).</li>
+            <li>Avaa eVaka Koti-näytöstä (ei Safarista).</li>
+            <li>Käytössäoloilmoitus ilmestyy — salli se.</li>
+          </OrderedList>
+        ),
+        chromeDesktop: (
+          <OrderedList>
+            <li>Klikkaa osoiterivin lukkokuvaketta.</li>
+            <li>Valitse Sivuston asetukset → Ilmoitukset → Salli.</li>
+            <li>Lataa sivu uudelleen.</li>
+          </OrderedList>
+        ),
+        firefoxDesktop: (
+          <OrderedList>
+            <li>Klikkaa osoiterivin lukkokuvaketta.</li>
+            <li>Kohdassa Käyttöoikeudet salli Ilmoitukset.</li>
+            <li>Lataa sivu uudelleen.</li>
+          </OrderedList>
+        ),
+        safariMacos: (
+          <OrderedList>
+            <li>Avaa Safarin asetukset (Safari → Asetukset → Verkkosivustot → Ilmoitukset).</li>
+            <li>Salli ilmoitukset eVakalta.</li>
+          </OrderedList>
+        ),
+        fallback: (
+          <P>
+            Tarkista selaimesi ja käyttöjärjestelmäsi ilmoitusasetukset.
+          </P>
+        )
+      }
     }
   },
   income: {

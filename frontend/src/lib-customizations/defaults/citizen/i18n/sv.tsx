@@ -2288,6 +2288,92 @@ const sv: Translations = {
           </ul>
         </div>
       )
+    },
+    webPushSection: {
+      title: 'Push-notiser',
+      info: (
+        <P>
+          Du kan aktivera push-notiser i webbläsaren för nya meddelanden.
+          Detta kräver att du ger webbläsaren tillåtelse att visa notiser.
+        </P>
+      ),
+      enable: 'Aktivera push-notiser',
+      enabling: 'Aktiverar…',
+      enabled: 'Push-notiser är aktiverade',
+      categoryUrgent: {
+        label: 'Brådskande meddelanden',
+        description: 'Meddelanden markerade som brådskande av personalen'
+      },
+      categoryMessage: {
+        label: 'Vanliga meddelanden',
+        description: 'Nya meddelanden och svar i diskussioner'
+      },
+      categoryBulletin: {
+        label: 'Meddelanden',
+        description: 'Allmänna meddelanden från kommunen'
+      },
+      sendTest: 'Skicka testnotis',
+      testSent: 'Testnotis skickad',
+      testFailed: 'Kunde inte skicka testnotis',
+      unsupported:
+        'Push-notiser stöds inte i denna webbläsare eller enhet.',
+      denied:
+        'Push-notiser är blockerade för denna webbplats. Du kan tillåta dem i webbläsarens eller operativsystemets inställningar.',
+      guide: {
+        chromeAndroid: (
+          <OrderedList>
+            <li>Öppna Chromes meny (tre prickar uppe till höger).</li>
+            <li>Välj Inställningar → Webbplatsinställningar → Notiser.</li>
+            <li>Tillåt notiser för denna webbplats.</li>
+          </OrderedList>
+        ),
+        samsungAndroid: (
+          <OrderedList>
+            <li>Öppna Samsung Internets meny.</li>
+            <li>Välj Inställningar → Webbplatser och nedladdningar → Notiser.</li>
+            <li>Tillåt notiser för denna webbplats.</li>
+          </OrderedList>
+        ),
+        firefoxAndroid: (
+          <OrderedList>
+            <li>Öppna Firefox-menyn.</li>
+            <li>Välj Inställningar → Webbplatsbehörigheter → Notiser.</li>
+            <li>Tillåt notiser för denna webbplats.</li>
+          </OrderedList>
+        ),
+        safariIOS: (
+          <OrderedList>
+            <li>Lägg till eVaka på hemskärmen via Safaris delningsmeny.</li>
+            <li>Öppna eVaka från hemskärmen (inte från Safari).</li>
+            <li>Tillåt aktiveringsnotisen när den visas.</li>
+          </OrderedList>
+        ),
+        chromeDesktop: (
+          <OrderedList>
+            <li>Klicka på låsikonen i adressfältet.</li>
+            <li>Välj Webbplatsinställningar → Notiser → Tillåt.</li>
+            <li>Ladda om sidan.</li>
+          </OrderedList>
+        ),
+        firefoxDesktop: (
+          <OrderedList>
+            <li>Klicka på låsikonen i adressfältet.</li>
+            <li>Tillåt Notiser under Behörigheter.</li>
+            <li>Ladda om sidan.</li>
+          </OrderedList>
+        ),
+        safariMacos: (
+          <OrderedList>
+            <li>Öppna Safaris inställningar (Safari → Inställningar → Webbplatser → Notiser).</li>
+            <li>Tillåt notiser från eVaka.</li>
+          </OrderedList>
+        ),
+        fallback: (
+          <P>
+            Kontrollera inställningarna för notiser i webbläsaren och operativsystemet.
+          </P>
+        )
+      }
     }
   },
   income: {

@@ -2024,7 +2024,7 @@ const en: Translations = {
       attendanceReservation: 'Reminders of missing attendance reservations',
       attendanceReservationInfo:
         'A reminder will be sent before the deadline if you have not registered your child’s attendance/absence for the following two weeks.',
-      discussionTime: 'Notifications related to discussion appointments',
+      discussionTime: ‘Notifications related to discussion appointments’,
       discussionTimeInfo: (
         <div>
           <div>You will receive notifications of the following:</div>
@@ -2038,6 +2038,92 @@ const en: Translations = {
           </ul>
         </div>
       )
+    },
+    webPushSection: {
+      title: ‘Push notifications’,
+      info: (
+        <P>
+          You can enable browser push notifications for new messages.
+          This requires granting your browser permission to display notifications.
+        </P>
+      ),
+      enable: ‘Enable push notifications’,
+      enabling: ‘Enabling…’,
+      enabled: ‘Push notifications enabled’,
+      categoryUrgent: {
+        label: ‘Urgent messages’,
+        description: ‘Messages flagged as urgent by staff’
+      },
+      categoryMessage: {
+        label: ‘Normal messages’,
+        description: ‘New messages and replies in discussions’
+      },
+      categoryBulletin: {
+        label: ‘Bulletins’,
+        description: ‘General bulletins from the municipality’
+      },
+      sendTest: ‘Send test notification’,
+      testSent: ‘Test notification sent’,
+      testFailed: ‘Failed to send test notification’,
+      unsupported:
+        ‘Push notifications are not supported on this browser or device.’,
+      denied:
+        ‘Push notifications are blocked for this site. You can allow them in your browser or OS settings.’,
+      guide: {
+        chromeAndroid: (
+          <OrderedList>
+            <li>Open the Chrome menu (three dots in the top right).</li>
+            <li>Select Settings → Site settings → Notifications.</li>
+            <li>Allow notifications for this site.</li>
+          </OrderedList>
+        ),
+        samsungAndroid: (
+          <OrderedList>
+            <li>Open the Samsung Internet menu.</li>
+            <li>Select Settings → Sites and downloads → Notifications.</li>
+            <li>Allow notifications for this site.</li>
+          </OrderedList>
+        ),
+        firefoxAndroid: (
+          <OrderedList>
+            <li>Open the Firefox menu.</li>
+            <li>Select Settings → Site permissions → Notifications.</li>
+            <li>Allow notifications for this site.</li>
+          </OrderedList>
+        ),
+        safariIOS: (
+          <OrderedList>
+            <li>Add eVaka to your home screen via Safari&apos;s share menu.</li>
+            <li>Open eVaka from the home screen (not from Safari).</li>
+            <li>Allow the enable prompt when it appears.</li>
+          </OrderedList>
+        ),
+        chromeDesktop: (
+          <OrderedList>
+            <li>Click the lock icon in the address bar.</li>
+            <li>Select Site settings → Notifications → Allow.</li>
+            <li>Reload the page.</li>
+          </OrderedList>
+        ),
+        firefoxDesktop: (
+          <OrderedList>
+            <li>Click the lock icon in the address bar.</li>
+            <li>Under Permissions allow Notifications.</li>
+            <li>Reload the page.</li>
+          </OrderedList>
+        ),
+        safariMacos: (
+          <OrderedList>
+            <li>Open Safari preferences (Safari → Preferences → Websites → Notifications).</li>
+            <li>Allow notifications from eVaka.</li>
+          </OrderedList>
+        ),
+        fallback: (
+          <P>
+            Check your browser and operating system notification settings.
+          </P>
+        )
+      }
     }
   },
   income: {
