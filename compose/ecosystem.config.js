@@ -49,7 +49,10 @@ module.exports = {
       SFI_SAML_ENTRYPOINT: `${idpBaseUrl}/sso`,
       SFI_SAML_LOGOUT_URL: `${idpBaseUrl}/slo`,
       SFI_SAML_ISSUER: `${frontendBaseUrl}/api/application/auth/saml/`,
-      OPENAI_API_KEY: readOpenAIKey()
+      OPENAI_API_KEY: readOpenAIKey(),
+      PASSKEY_RPID: tunnelUrl ? new URL(tunnelUrl).hostname : 'localhost',
+      PASSKEY_ORIGIN: frontendBaseUrl,
+      PASSKEY_RP_NAME: 'eVaka'
     },
     ...defaults
   }, {
