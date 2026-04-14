@@ -15,6 +15,13 @@ const ports = {
   frontend: parseInt(process.env.EVAKA_FRONTEND_PORT || '9099', 10)
 }
 
+// Optional: externally-reachable URL (e.g. cloudflared tunnel) for testing on
+// real mobile devices. When set, the frontend must also proxy /idp to localhost:9090
+// (see frontend/vite.config.ts).
+const tunnelUrl = process.env.TUNNEL_URL
+const frontendBaseUrl = tunnelUrl || `http://localhost:${ports.frontend}`
+const idpBaseUrl = tunnelUrl ? `${tunnelUrl}/idp` : `http://localhost:${ports.idp}/idp`
+
 const defaults = {
   autorestart: false
 }
@@ -28,11 +35,11 @@ module.exports = {
       HTTP_PORT: ports.apigw,
       EVAKA_SERVICE_URL: `http://localhost:${ports.service}`,
       REDIS_PORT: ports.redis,
-      EVAKA_BASE_URL: `http://localhost:${ports.frontend}`,
-      SFI_SAML_CALLBACK_URL: `http://localhost:${ports.frontend}/api/application/auth/saml/login/callback`,
-      SFI_SAML_ENTRYPOINT: `http://localhost:${ports.idp}/idp/sso`,
-      SFI_SAML_LOGOUT_URL: `http://localhost:${ports.idp}/idp/slo`,
-      SFI_SAML_ISSUER: `http://localhost:${ports.frontend}/api/application/auth/saml/`
+      EVAKA_BASE_URL: frontendBaseUrl,
+      SFI_SAML_CALLBACK_URL: `${frontendBaseUrl}/api/application/auth/saml/login/callback`,
+      SFI_SAML_ENTRYPOINT: `${idpBaseUrl}/sso`,
+      SFI_SAML_LOGOUT_URL: `${idpBaseUrl}/slo`,
+      SFI_SAML_ISSUER: `${frontendBaseUrl}/api/application/auth/saml/`
     },
     ...defaults
   }, {

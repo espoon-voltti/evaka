@@ -63,9 +63,10 @@ function serveIndexHtml(): Plugin {
     name: 'serve-index-html',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        // Skip api, source code and vite internal paths
+        // Skip api, source code, proxied paths and vite internal paths
         if (
           req.originalUrl?.startsWith('/api/') ||
+          req.originalUrl?.startsWith('/idp/') ||
           req.originalUrl?.startsWith('/src/') ||
           req.originalUrl?.startsWith('/node_modules/') ||
           req.originalUrl?.startsWith('/@')
@@ -232,7 +233,8 @@ export default defineConfig(async (): Promise<UserConfig> => {
         clientFiles: ['src/**/index.html']
       },
       proxy: {
-        '/api': `http://localhost:${process.env.EVAKA_APIGW_PORT || '3000'}`
+        '/api': `http://localhost:${process.env.EVAKA_APIGW_PORT || '3000'}`,
+        '/idp': `http://localhost:${process.env.EVAKA_IDP_PORT || '9090'}`
       }
     },
     resolve: {
