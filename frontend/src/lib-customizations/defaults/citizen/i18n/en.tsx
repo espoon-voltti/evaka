@@ -2024,7 +2024,7 @@ const en: Translations = {
       attendanceReservation: 'Reminders of missing attendance reservations',
       attendanceReservationInfo:
         'A reminder will be sent before the deadline if you have not registered your child’s attendance/absence for the following two weeks.',
-      discussionTime: ‘Notifications related to discussion appointments’,
+      discussionTime: 'Notifications related to discussion appointments',
       discussionTimeInfo: (
         <div>
           <div>You will receive notifications of the following:</div>
@@ -2040,35 +2040,35 @@ const en: Translations = {
       )
     },
     webPushSection: {
-      title: ‘Push notifications’,
+      title: 'Push notifications',
       info: (
         <P>
           You can enable browser push notifications for new messages.
           This requires granting your browser permission to display notifications.
         </P>
       ),
-      enable: ‘Enable push notifications’,
-      enabling: ‘Enabling…’,
-      enabled: ‘Push notifications enabled’,
+      enable: 'Enable push notifications',
+      enabling: 'Enabling…',
+      enabled: 'Push notifications enabled',
       categoryUrgent: {
-        label: ‘Urgent messages’,
-        description: ‘Messages flagged as urgent by staff’
+        label: 'Urgent messages',
+        description: 'Messages flagged as urgent by staff'
       },
       categoryMessage: {
-        label: ‘Normal messages’,
-        description: ‘New messages and replies in discussions’
+        label: 'Normal messages',
+        description: 'New messages and replies in discussions'
       },
       categoryBulletin: {
-        label: ‘Bulletins’,
-        description: ‘General bulletins from the municipality’
+        label: 'Bulletins',
+        description: 'General bulletins from the municipality'
       },
-      sendTest: ‘Send test notification’,
-      testSent: ‘Test notification sent’,
-      testFailed: ‘Failed to send test notification’,
+      sendTest: 'Send test notification',
+      testSent: 'Test notification sent',
+      testFailed: 'Failed to send test notification',
       unsupported:
-        ‘Push notifications are not supported on this browser or device.’,
+        'Push notifications are not supported on this browser or device.',
       denied:
-        ‘Push notifications are blocked for this site. You can allow them in your browser or OS settings.’,
+        'Push notifications are blocked for this site. You can allow them in your browser or OS settings.',
       guide: {
         chromeAndroid: (
           <OrderedList>
