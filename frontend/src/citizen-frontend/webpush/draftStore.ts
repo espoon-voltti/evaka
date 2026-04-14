@@ -37,7 +37,7 @@ function openDb(): Promise<IDBDatabase> {
 
 function run<T>(
   mode: IDBTransactionMode,
-  op: (store: IDBObjectStore) => IDBRequest<T> | null
+  op: (store: IDBObjectStore) => IDBRequest<T>
 ): Promise<T | null> {
   return openDb().then(
     (db) =>
@@ -46,11 +46,8 @@ function run<T>(
         const store = tx.objectStore(STORE)
         const req = op(store)
         let result: T | null = null
-        if (req) {
-          req.onsuccess = () => {
-            result = req.result as T
-          }
-          req.onerror = () => reject(req.error)
+        req.onsuccess = () => {
+          result = req.result as T
         }
         tx.oncomplete = () => {
           db.close()
