@@ -122,7 +122,9 @@ async function handleInlineReply(replyAction, content) {
       }
     )
     if (!response.ok) throw new Error(`reply POST failed: ${response.status}`)
-    await deleteDraft(threadId).catch(() => {})
+    await deleteDraft(threadId).catch((err) =>
+      console.warn('Failed to delete reply draft after successful send', { threadId, err })
+    )
     await serviceWorker.registration.showNotification(replyAction.successTitle, {
       body: replyAction.successBody,
       icon: '/citizen/evaka-192px.png',
@@ -132,7 +134,7 @@ async function handleInlineReply(replyAction, content) {
       actions: []
     })
   } catch (err) {
-    console.warn('Reply POST failed', err)
+    console.warn('Reply POST failed', { threadId, err })
     await serviceWorker.registration.showNotification(replyAction.errorTitle, {
       body: replyAction.errorBody,
       icon: '/citizen/evaka-192px.png',
