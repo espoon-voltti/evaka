@@ -33,6 +33,16 @@ smoothScrollPolyfill()
 const root = createRoot(document.getElementById('app')!)
 root.render(<Root />)
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/service-worker.js', { scope: '/' })
+      .catch((err) => {
+        Sentry.captureException(err)
+      })
+  })
+}
+
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {
   window.evaka = {}
