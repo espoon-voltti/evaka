@@ -1032,7 +1032,7 @@ git commit -m "feat(citizen/service-worker): declare text reply action on push"
 - Modify: `frontend/src/citizen-frontend/service-worker.js`
 
 **Important context for the implementer:**
-- The reply endpoint is `POST /api/application/citizen/messages/reply-to/{threadId}` (the apigw prefix is `/api/application/` — verify by reading `frontend/src/citizen-frontend/api-client.ts` for the exact base URL and by grepping `frontend/src/citizen-frontend/messages/` for how the SPA currently calls `reply-to`).
+- The reply endpoint is `POST /api/citizen/messages/reply-to/{threadId}` (the axios baseURL is `/api` from `frontend/src/citizen-frontend/api-client.ts:10`, and the generated client path is `/citizen/messages/reply-to/{threadId}` — see `frontend/src/citizen-frontend/generated/api-clients/messaging.ts:173`).
 - The CSRF header is `x-evaka-csrf: 1` (any value; presence-check only).
 - `credentials: 'include'` is required to send the session cookie.
 - Request body shape: `{ content: string, recipientAccountIds: string[] }`.
@@ -1091,7 +1091,7 @@ async function handleInlineReply(replyAction, content) {
 
   try {
     const response = await fetch(
-      `/api/application/citizen/messages/reply-to/${threadId}`,
+      `/api/citizen/messages/reply-to/${threadId}`,
       {
         method: 'POST',
         credentials: 'include',
