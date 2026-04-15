@@ -60,20 +60,16 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
-import org.springframework.beans.factory.annotation.Autowired
-import software.amazon.awssdk.services.s3.S3AsyncClient
 
 class ExportBiCsvJobTest : AbstractTampereIntegrationTest() {
     private val clock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 23), LocalTime.of(21, 0)))
 
-    @Autowired private lateinit var s3AsyncClient: S3AsyncClient
-
     private lateinit var exportJob: BiExportJob
 
     @BeforeAll
     fun beforeAll() {
-        val exportClient = FileBiExportS3Client(s3AsyncClient, properties)
+        val exportClient = FileBiExportS3Client(s3Client, properties)
         exportJob = BiExportJob(exportClient)
     }
 

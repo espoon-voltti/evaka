@@ -4,7 +4,6 @@
 
 package evaka.instance.tampere
 
-import evaka.core.BucketEnv
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.application.ApplicationStatus
@@ -43,16 +42,13 @@ import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
-import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.oxm.jaxb.Jaxb2Marshaller
 import org.springframework.ws.client.core.WebServiceTemplate
 import org.springframework.ws.soap.SoapVersion
 import org.springframework.ws.soap.saaj.SaajSoapMessageFactory
 import org.springframework.ws.transport.http.SimpleHttpComponents5MessageSender
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.s3.S3AsyncClient
+import software.amazon.awssdk.services.s3.S3Client
 
 internal val PAYMENT_SOAP_PACKAGES =
     arrayOf(
@@ -124,26 +120,8 @@ class TampereConfig {
         )
 
     @Bean
-    @Profile("production")
-    fun productionS3AsyncClient(
-        bucketEnv: BucketEnv,
-        credentialsProvider: AwsCredentialsProvider,
-    ): S3AsyncClient = S3AsyncClient.crtBuilder().credentialsProvider(credentialsProvider).build()
-
-    @Bean
-    @Profile("local")
-    fun localS3AsyncClient(
-        bucketEnv: BucketEnv,
-        credentialsProvider: AwsCredentialsProvider,
-    ): S3AsyncClient =
-        S3AsyncClient.crtBuilder()
-            .region(Region.EU_WEST_1)
-            .credentialsProvider(credentialsProvider)
-            .build()
-
-    @Bean
-    fun fileS3Client(asyncClient: S3AsyncClient, properties: TampereProperties): BiExportClient =
-        FileBiExportS3Client(asyncClient, properties)
+    fun fileS3Client(s3Client: S3Client, properties: TampereProperties): BiExportClient =
+        FileBiExportS3Client(s3Client, properties)
 
     @Bean
     fun tampereAsyncJobRunner(

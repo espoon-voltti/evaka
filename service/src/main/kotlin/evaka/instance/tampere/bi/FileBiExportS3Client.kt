@@ -14,11 +14,10 @@ import java.time.format.DateTimeFormatter
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.deleteIfExists
-import software.amazon.awssdk.core.async.AsyncRequestBody
-import software.amazon.awssdk.services.s3.S3AsyncClient
+import software.amazon.awssdk.services.s3.S3Client
 
 class FileBiExportS3Client(
-    private val asyncClient: S3AsyncClient,
+    private val s3Client: S3Client,
     private val properties: TampereProperties,
 ) : BiExportClient {
     private val logger = KotlinLogging.logger {}
@@ -48,22 +47,19 @@ class FileBiExportS3Client(
                 }
             }
 
-            val body = AsyncRequestBody.forBlockingInputStream(tempFile.toFile().length())
-
-            val futureResponse =
-                asyncClient.putObject(
-                    { r -> r.bucket(bucket).key(key).contentType("application/zip") },
-                    body,
-                )
-
-            val contentLength = body.writeInputStream(Files.newInputStream(tempFile))
-            val response = futureResponse.join().sdkHttpResponse()
+            val response =
+                s3Client
+                    .putObject(
+                        { r -> r.bucket(bucket).key(key).contentType("application/zip") },
+                        tempFile,
+                    )
+                    .sdkHttpResponse()
 
             if (response.isSuccessful) {
-                logger.info { "BI file '$key' successfully sent ($contentLength bytes)" }
+                logger.info { "BI file '$key' successfully sent" }
             } else {
                 logger.warn {
-                    "BI file '$key' sending failed ($contentLength bytes): ${response.statusCode()} ${response.statusText()}"
+                    "BI file '$key' sending failed: ${response.statusCode()} ${response.statusText()}"
                 }
             }
         } finally {
