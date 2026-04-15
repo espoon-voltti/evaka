@@ -10,7 +10,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 Quick reference for eVaka's database API - executing raw SQL queries with safe parameter binding, managing transactions, and building predicates.
 
-**Implementation**: `service/src/main/kotlin/fi/espoo/evaka/shared/db/Database.kt` and `Predicate.kt`
+**Implementation**: `service/src/main/kotlin/evaka/core/shared/db/Database.kt` and `Predicate.kt`
 
 ## Transaction Types
 

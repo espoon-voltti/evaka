@@ -78,7 +78,7 @@ plugin, and set code style to Kotlinlang.
 
 The service has a dev API in local, dev and test environments.
 The API is used for creating test fixtures for E2E tests.
-The API is defined in [DevApi.kt](src/main/kotlin/fi/espoo/evaka/shared/dev/DevApi.kt).
+The API is defined in [DevApi.kt](src/main/kotlin/evaka/core/shared/dev/DevApi.kt).
 
 ## Debugging integration tests
 

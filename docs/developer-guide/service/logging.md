@@ -61,11 +61,11 @@ User information is automatically included, so it should not be logged manually.
 
 Multiple IDs can be passed as `Audit.OccupancySpeculatedRead.log(targetId = AuditId(listOf(unitId, applicationId)))`
 
-**For detailed documentation**, see [`Audit.kt`](../../../service/src/main/kotlin/fi/espoo/evaka/Audit.kt).
+**For detailed documentation**, see [`Audit.kt`](../../../service/src/main/kotlin/evaka/core/Audit.kt).
 
 ### Finding Event Types
 
-All available audit events are defined in the `Audit` enum in [`Audit.kt`](../../../service/src/main/kotlin/fi/espoo/evaka/Audit.kt).
+All available audit events are defined in the `Audit` enum in [`Audit.kt`](../../../service/src/main/kotlin/evaka/core/Audit.kt).
 
 For operations involving children where child IDs must be explicitly logged, use `ChildAudit`:
 
