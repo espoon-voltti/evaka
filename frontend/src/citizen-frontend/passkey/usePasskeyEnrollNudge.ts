@@ -6,6 +6,7 @@ import { faInfo } from '@fortawesome/free-solid-svg-icons'
 import { useContext, useEffect, useEffectEvent } from 'react'
 
 import { useQueryResult } from 'lib-common/query'
+import { isAutomatedTest } from 'lib-common/utils/helpers'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { colors } from 'lib-customizations/common'
 
@@ -44,7 +45,7 @@ export function usePasskeyEnrollNudge(): void {
   const supported = useWebAuthnSupported()
 
   const listResult = useQueryResult(passkeysQuery(), {
-    enabled: user !== undefined
+    enabled: user !== undefined && !isAutomatedTest
   })
 
   const onDataLoaded = useEffectEvent(
@@ -84,6 +85,7 @@ export function usePasskeyEnrollNudge(): void {
   )
 
   useEffect(() => {
+    if (isAutomatedTest) return
     if (listResult.isSuccess && user) {
       onDataLoaded(user.id, user.authLevel, listResult.value.length > 0)
     }
