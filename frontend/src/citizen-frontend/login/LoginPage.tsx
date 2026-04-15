@@ -246,7 +246,9 @@ const SecondaryRow = styled.div`
     text-align: center;
     line-height: 1.25rem;
     padding: ${defaultMargins.xs} ${defaultMargins.m};
+    height: auto;
     min-height: 56px;
+    overflow: visible;
     gap: ${defaultMargins.xs};
 
     svg {
