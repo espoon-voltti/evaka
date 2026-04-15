@@ -338,14 +338,9 @@ const envVariables = {
   OPENAI_API_KEY: unset<string>(),
 
   // ----- Passkey (WebAuthn) configuration -----
-  /**
-   * WebAuthn Relying Party ID (domain, e.g. "localhost" or "evaka.example.com")
-   */
-  PASSKEY_RPID: 'localhost',
-  /**
-   * WebAuthn expected origin (e.g. "http://localhost:9099")
-   */
-  PASSKEY_ORIGIN: 'http://localhost:9099',
+  // rpId and expected origin are derived from EVAKA_BASE_URL — WebAuthn
+  // requires rpId to match the frontend origin, so a separate env var would
+  // only drift.
   /**
    * WebAuthn Relying Party display name shown to the user
    */
@@ -674,8 +669,8 @@ export function configFromEnv(): Config {
         defaultSessionTimeoutMinutes
     },
     passkey: {
-      rpId: required('PASSKEY_RPID', unchanged),
-      origin: required('PASSKEY_ORIGIN', unchanged),
+      rpId: evakaBaseUrl.hostname,
+      origin: evakaBaseUrl.origin,
       rpName: required('PASSKEY_RP_NAME', unchanged)
     },
     ad,
