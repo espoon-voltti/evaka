@@ -16,16 +16,35 @@ data class PushReplyActionStrings(
 )
 
 object CitizenPushMessages {
+    // Keep the payload well within the per-platform limits Chrome / Safari
+    // actually render without truncation.
+    private const val MAX_TITLE_LENGTH = 80
+    private const val MAX_BODY_LENGTH = 200
+
+    /**
+     * Build a push title + body from the actual message context so the notification shown on the
+     * user's device carries the thread title and a preview of the message text instead of a generic
+     * "Alice sent you a message". Urgency, category and icon are already carried by the payload
+     * separately and rendered by the service worker, so we don't add any text prefix here.
+     *
+     * Title = thread title. Body = "sender: preview". Both are clamped to supported length budgets;
+     * whitespace in the message content is collapsed so multi-paragraph messages still preview as a
+     * single line.
+     */
     fun forMessage(
-        category: CitizenPushCategory,
-        language: CitizenPushLanguage,
         senderName: String,
-    ): PushTitleAndBody =
-        when (language) {
-            CitizenPushLanguage.FI -> finnish(category, senderName)
-            CitizenPushLanguage.SV -> swedish(category, senderName)
-            CitizenPushLanguage.EN -> english(category, senderName)
-        }
+        threadTitle: String,
+        messageContent: String,
+    ): PushTitleAndBody {
+        val normalizedContent = messageContent.replace(Regex("\\s+"), " ").trim()
+        return PushTitleAndBody(
+            title = truncate(threadTitle.trim(), MAX_TITLE_LENGTH),
+            body = truncate("$senderName: $normalizedContent", MAX_BODY_LENGTH),
+        )
+    }
+
+    private fun truncate(s: String, max: Int): String =
+        if (s.length > max) s.take(max - 1).trimEnd() + "…" else s
 
     fun forTest(language: CitizenPushLanguage): PushTitleAndBody =
         when (language) {
@@ -65,44 +84,5 @@ object CitizenPushMessages {
                     errorTitle = "Reply not sent",
                     errorBody = "Open eVaka to retry.",
                 )
-        }
-
-    private fun finnish(category: CitizenPushCategory, sender: String) =
-        when (category) {
-            CitizenPushCategory.URGENT_MESSAGE ->
-                PushTitleAndBody(
-                    "Kiireellinen viesti",
-                    "$sender lähetti sinulle kiireellisen viestin.",
-                )
-            CitizenPushCategory.MESSAGE ->
-                PushTitleAndBody("Uusi viesti", "$sender lähetti sinulle viestin.")
-            CitizenPushCategory.BULLETIN ->
-                PushTitleAndBody("Uusi tiedote", "$sender on lähettänyt uuden tiedotteen.")
-        }
-
-    private fun swedish(category: CitizenPushCategory, sender: String) =
-        when (category) {
-            CitizenPushCategory.URGENT_MESSAGE ->
-                PushTitleAndBody(
-                    "Brådskande meddelande",
-                    "$sender har skickat dig ett brådskande meddelande.",
-                )
-            CitizenPushCategory.MESSAGE ->
-                PushTitleAndBody("Nytt meddelande", "$sender har skickat dig ett meddelande.")
-            CitizenPushCategory.BULLETIN ->
-                PushTitleAndBody(
-                    "Nytt meddelande från kommunen",
-                    "$sender har publicerat ett nytt meddelande.",
-                )
-        }
-
-    private fun english(category: CitizenPushCategory, sender: String) =
-        when (category) {
-            CitizenPushCategory.URGENT_MESSAGE ->
-                PushTitleAndBody("Urgent message", "$sender sent you an urgent message.")
-            CitizenPushCategory.MESSAGE ->
-                PushTitleAndBody("New message", "$sender sent you a message.")
-            CitizenPushCategory.BULLETIN ->
-                PushTitleAndBody("New bulletin", "$sender posted a new bulletin.")
         }
 }

@@ -84,6 +84,8 @@ class CitizenPushSenderTest {
             threadId = threadId,
             category = CitizenPushCategory.URGENT_MESSAGE,
             senderName = "Alice",
+            threadTitle = "Talvilomat",
+            messageContent = "Lapsen poissaoloaika on vahvistettu.",
             language = CitizenPushLanguage.FI,
             replyRecipientAccountIds = emptyList(),
             jwtProvider = fakeJwtProvider,
@@ -115,6 +117,8 @@ class CitizenPushSenderTest {
             threadId = threadId,
             category = CitizenPushCategory.MESSAGE,
             senderName = "Alice",
+            threadTitle = "Retki",
+            messageContent = "Retken aikataulu on päivitetty.",
             language = CitizenPushLanguage.FI,
             replyRecipientAccountIds = emptyList(),
             jwtProvider = fakeJwtProvider,
@@ -138,6 +142,8 @@ class CitizenPushSenderTest {
             threadId = threadId,
             category = CitizenPushCategory.MESSAGE,
             senderName = "Bob",
+            threadTitle = "Field trip",
+            messageContent = "Hi parents, the trip is tomorrow at 9.",
             language = CitizenPushLanguage.EN,
             replyRecipientAccountIds = emptyList(),
             jwtProvider = fakeJwtProvider,
@@ -148,10 +154,51 @@ class CitizenPushSenderTest {
                 any(),
                 check { notification ->
                     val payload = notification.payloads.single() as WebPushPayload.NotificationV1
-                    assertEquals("New message", payload.title)
-                    assertEquals("Bob sent you a message.", payload.body)
+                    assertEquals("Field trip", payload.title)
+                    assertEquals("Bob: Hi parents, the trip is tomorrow at 9.", payload.body)
                     assertEquals("msg-$threadId", payload.tag)
                     assertEquals("/messages/$threadId", payload.url)
+                },
+            )
+    }
+
+    @Test
+    fun `notifyMessage collapses whitespace and truncates long message content`() {
+        whenever(store.load(personId))
+            .thenReturn(
+                CitizenPushStoreFile(
+                    personId,
+                    listOf(entry("https://fcm.example/a", setOf(CitizenPushCategory.MESSAGE))),
+                )
+            )
+
+        val longContent = "Line one.\n\nLine two with   lots   of   spaces.\n" + "x".repeat(400)
+
+        sender.notifyMessage(
+            personId = personId,
+            threadId = threadId,
+            category = CitizenPushCategory.MESSAGE,
+            senderName = "Dan",
+            threadTitle = "Päiväkodin kuulumiset",
+            messageContent = longContent,
+            language = CitizenPushLanguage.EN,
+            replyRecipientAccountIds = emptyList(),
+            jwtProvider = fakeJwtProvider,
+        )
+
+        verify(webPush)
+            .send(
+                any(),
+                check { notification ->
+                    val payload = notification.payloads.single() as WebPushPayload.NotificationV1
+                    assertEquals("Päiväkodin kuulumiset", payload.title)
+                    val body = assertNotNull(payload.body)
+                    // Body stays within the 200-char budget, ends with an ellipsis, and
+                    // has any runs of whitespace collapsed to a single space.
+                    kotlin.test.assertTrue(body.length <= 200)
+                    kotlin.test.assertTrue(body.endsWith("…"))
+                    kotlin.test.assertTrue(body.startsWith("Dan: Line one. Line two"))
+                    kotlin.test.assertFalse(body.contains("   "))
                 },
             )
     }
@@ -164,6 +211,8 @@ class CitizenPushSenderTest {
             threadId = threadId,
             category = CitizenPushCategory.MESSAGE,
             senderName = "Alice",
+            threadTitle = "Retki",
+            messageContent = "Retken aikataulu päivittyy.",
             language = CitizenPushLanguage.FI,
             replyRecipientAccountIds = emptyList(),
             jwtProvider = fakeJwtProvider,
@@ -187,6 +236,8 @@ class CitizenPushSenderTest {
             threadId = threadId,
             category = CitizenPushCategory.MESSAGE,
             senderName = "Alice",
+            threadTitle = "Homework",
+            messageContent = "Remember to return the form.",
             language = CitizenPushLanguage.EN,
             replyRecipientAccountIds = listOf(replyAcc),
             jwtProvider = fakeJwtProvider,
@@ -219,6 +270,8 @@ class CitizenPushSenderTest {
             threadId = threadId,
             category = CitizenPushCategory.BULLETIN,
             senderName = "Alice",
+            threadTitle = "Announcement",
+            messageContent = "The unit is closed next Friday.",
             language = CitizenPushLanguage.EN,
             replyRecipientAccountIds = listOf(replyAcc),
             jwtProvider = fakeJwtProvider,
@@ -245,6 +298,8 @@ class CitizenPushSenderTest {
             threadId = threadId,
             category = CitizenPushCategory.MESSAGE,
             senderName = "Alice",
+            threadTitle = "Wellbeing",
+            messageContent = "Weekly summary attached.",
             language = CitizenPushLanguage.EN,
             replyRecipientAccountIds = emptyList(),
             jwtProvider = fakeJwtProvider,

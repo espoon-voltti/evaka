@@ -41,6 +41,8 @@ class CitizenPushSender(
         threadId: MessageThreadId,
         category: CitizenPushCategory,
         senderName: String,
+        threadTitle: String,
+        messageContent: String,
         language: CitizenPushLanguage,
         replyRecipientAccountIds: List<MessageAccountId>,
         jwtProvider: VapidJwtProvider = defaultJwtProviderOrNoop(),
@@ -50,7 +52,12 @@ class CitizenPushSender(
         val entries = file.subscriptions.filter { category in it.enabledCategories }
         if (entries.isEmpty()) return
 
-        val titleAndBody = CitizenPushMessages.forMessage(category, language, senderName)
+        val titleAndBody =
+            CitizenPushMessages.forMessage(
+                senderName = senderName,
+                threadTitle = threadTitle,
+                messageContent = messageContent,
+            )
         val replyAction =
             if (category != CitizenPushCategory.BULLETIN && replyRecipientAccountIds.isNotEmpty()) {
                 val strings = CitizenPushMessages.forReplyAction(language)
@@ -187,6 +194,8 @@ class CitizenPushSender(
                     threadId = r.threadId,
                     category = category,
                     senderName = r.senderName,
+                    threadTitle = r.threadTitle,
+                    messageContent = r.messageContent,
                     language = CitizenPushLanguage.fromPersonLanguage(r.language),
                     replyRecipientAccountIds = r.replyRecipientAccountIds,
                     jwtProvider =
@@ -208,6 +217,8 @@ data class CitizenPushRecipientRow(
     val urgent: Boolean,
     val threadType: MessageType,
     val senderName: String,
+    val threadTitle: String,
+    val messageContent: String,
     val replyRecipientAccountIds: List<MessageAccountId>,
 )
 
@@ -224,8 +235,11 @@ SELECT DISTINCT
     t.urgent,
     t.message_type AS thread_type,
     m.sender_name,
+    t.title AS thread_title,
+    mc.content AS message_content,
     COALESCE(reply_participants.account_ids, ARRAY[]::uuid[]) AS reply_recipient_account_ids
 FROM message m
+JOIN message_content mc ON mc.id = m.content_id
 JOIN message_recipients mr ON mr.message_id = m.id
 JOIN message_account ma ON ma.id = mr.recipient_id
 JOIN person p ON p.id = ma.person_id
