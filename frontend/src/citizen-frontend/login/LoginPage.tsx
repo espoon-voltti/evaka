@@ -42,6 +42,14 @@ export default React.memo(function LoginPage() {
   const unvalidatedNextPath = searchParams.get('next')
   const [, navigate] = useLocation()
 
+  const reasonParam = searchParams.get('reason')
+  const reasonMessage =
+    reasonParam === 'session-expired-open-thread'
+      ? i18n.loginPage.reasons.sessionExpiredOpenThread
+      : reasonParam === 'session-expired-reply-failed'
+        ? i18n.loginPage.reasons.sessionExpiredReplyFailed
+        : null
+
   const systemNotifications = useQueryResult(systemNotificationsQuery())
 
   const [infoOpen, setInfoOpen] = useState(false)
@@ -63,6 +71,15 @@ export default React.memo(function LoginPage() {
             <Gap $size="xs" />
             <Subtitle>{i18n.loginPage.title}</Subtitle>
           </Heading>
+
+          {!!reasonMessage && (
+            <AlertBox
+              message={reasonMessage}
+              wide
+              noMargin
+              data-qa="login-reason-banner"
+            />
+          )}
 
           {systemNotifications.isSuccess &&
             systemNotifications.value.notification && (

@@ -4,12 +4,14 @@
 
 import { render, screen } from '@testing-library/react'
 import React from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   TestContextProvider,
   testTranslations
 } from 'lib-components/utils/TestContextProvider'
+
+let searchParamsForTest = new URLSearchParams()
 
 // Mock the passkey hook so the button renders even without WebAuthn in jsdom
 vi.mock('../passkey/usePasskeyAuth', () => ({
@@ -38,6 +40,10 @@ vi.mock('../localization', () => ({
       welcomeHeadline: 'Welcome',
       title: 'Login',
       systemNotification: 'Notice',
+      reasons: {
+        sessionExpiredOpenThread: 'Open-thread reason banner',
+        sessionExpiredReplyFailed: 'Reply-failed reason banner'
+      },
       pwaInstall: {
         button: 'Add to home screen',
         iosUseSafariNote: 'Open in Safari',
@@ -112,7 +118,7 @@ vi.mock('lib-common/query', () => ({
 }))
 
 vi.mock('wouter', () => ({
-  useSearchParams: () => [new URLSearchParams(), vi.fn()],
+  useSearchParams: () => [searchParamsForTest, vi.fn()],
   useLocation: () => ['/', vi.fn()],
   Redirect: () => null,
   Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
@@ -129,8 +135,35 @@ const wrap = (child: React.JSX.Element) => (
 )
 
 describe('LoginPage', () => {
+  beforeEach(() => {
+    searchParamsForTest = new URLSearchParams()
+  })
+
   it('renders the passkey primary button', () => {
     render(wrap(<LoginPage />))
     expect(screen.getByTestId('passkey-login-button')).toBeTruthy()
+  })
+
+  it('renders the open-thread reason banner when reason=session-expired-open-thread', () => {
+    searchParamsForTest = new URLSearchParams(
+      'reason=session-expired-open-thread'
+    )
+    render(wrap(<LoginPage />))
+    expect(screen.getByText('Open-thread reason banner')).toBeTruthy()
+  })
+
+  it('renders the reply-failed reason banner when reason=session-expired-reply-failed', () => {
+    searchParamsForTest = new URLSearchParams(
+      'reason=session-expired-reply-failed'
+    )
+    render(wrap(<LoginPage />))
+    expect(screen.getByText('Reply-failed reason banner')).toBeTruthy()
+  })
+
+  it('renders no reason banner for unknown reason values', () => {
+    searchParamsForTest = new URLSearchParams('reason=totally-made-up')
+    render(wrap(<LoginPage />))
+    expect(screen.queryByText('Open-thread reason banner')).toBeNull()
+    expect(screen.queryByText('Reply-failed reason banner')).toBeNull()
   })
 })
