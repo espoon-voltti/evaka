@@ -280,6 +280,8 @@ tasks {
         classpath = sourceSets["integrationTest"].runtimeClasspath
         shouldRunAfter("test")
         outputs.upToDateWhen { false }
+        maxHeapSize = "2g"
+        systemProperty("spring.test.context.cache.maxSize", "8")
     }
 
     bootRun {
