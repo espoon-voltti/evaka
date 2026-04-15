@@ -59,6 +59,37 @@ function deviceHintFromUserAgent(ua: string | undefined): string | null {
   return 'Unknown device'
 }
 
+// Redis-backed per-key hourly rate limit. Returns true when the request is
+// allowed and false when the limit has been exhausted. Pattern mirrors the
+// one used by auth-weak-login: one counter per (key, hour-of-day) bucket
+// auto-expiring after an hour, so there's no state to clean up.
+const PASSKEY_RATE_LIMIT_PER_HOUR = 60
+
+async function checkRateLimit(
+  redis: RedisClient,
+  key: string
+): Promise<boolean> {
+  const hour = new Date().getUTCHours()
+  const fullKey = `${key}:${hour}`
+  const raw = await redis.get(fullKey)
+  const current = Number.parseInt(raw ?? '', 10)
+  if (!Number.isNaN(current) && current >= PASSKEY_RATE_LIMIT_PER_HOUR) {
+    return false
+  }
+  await redis
+    .multi()
+    .incr(fullKey)
+    .expire(fullKey, 60 * 60)
+    .exec()
+  return true
+}
+
+function clientIpForRateLimit(req: express.Request): string {
+  const forwarded = req.header('x-forwarded-for')
+  if (forwarded) return forwarded.split(',')[0].trim()
+  return req.ip ?? 'unknown'
+}
+
 export function passkeyAuthRoutes(
   config: Config,
   sessions: Sessions<'citizen'>,
@@ -74,6 +105,11 @@ export function passkeyAuthRoutes(
       const user = req.user
       if (!user || user.userType !== 'CITIZEN_STRONG') {
         res.status(403).json({ code: 'strong-auth-required' })
+        return
+      }
+
+      if (!(await checkRateLimit(redis, `passkey-register:${user.id}`))) {
+        res.status(429).json({ code: 'rate-limited' })
         return
       }
 
@@ -127,6 +163,11 @@ export function passkeyAuthRoutes(
       const user = req.user
       if (!user || user.userType !== 'CITIZEN_STRONG') {
         res.status(403).json({ code: 'strong-auth-required' })
+        return
+      }
+
+      if (!(await checkRateLimit(redis, `passkey-register:${user.id}`))) {
+        res.status(429).json({ code: 'rate-limited' })
         return
       }
 
@@ -198,7 +239,17 @@ export function passkeyAuthRoutes(
   router.post(
     '/login/options',
     express.json(),
-    toRequestHandler(async (_req, res) => {
+    toRequestHandler(async (req, res) => {
+      if (
+        !(await checkRateLimit(
+          redis,
+          `passkey-login:${clientIpForRateLimit(req)}`
+        ))
+      ) {
+        res.status(429).json({ code: 'rate-limited' })
+        return
+      }
+
       const options = await generateAuthenticationOptions({
         rpID: config.passkey.rpId,
         userVerification: 'preferred'
@@ -219,6 +270,16 @@ export function passkeyAuthRoutes(
     '/login/verify',
     express.json(),
     toRequestHandler(async (req, res) => {
+      if (
+        !(await checkRateLimit(
+          redis,
+          `passkey-login:${clientIpForRateLimit(req)}`
+        ))
+      ) {
+        res.status(429).json({ code: 'rate-limited' })
+        return
+      }
+
       const { token, assertion } = req.body as {
         token: string
         assertion: unknown
