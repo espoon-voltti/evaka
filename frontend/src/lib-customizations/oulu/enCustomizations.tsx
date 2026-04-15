@@ -615,8 +615,6 @@ const fi: DeepPartial<Translations> = {
     title: 'Early childhood education and care in the City of Oulu',
     login: {
       title: 'Sign in with username',
-      paragraph:
-        'Take care of your child’s daily early childhood education affairs in eVaka.',
       link: 'Log in',
       infoBoxText: (
         <>

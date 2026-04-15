@@ -590,8 +590,6 @@ const fi: DeepPartial<Translations> = {
     title: 'Oulun kaupungin varhaiskasvatus',
     login: {
       title: 'Kirjaudu käyttäjätunnuksella',
-      paragraph:
-        'Huoltajat, joiden lapsi on jo varhaiskasvatuksessa tai esiopetuksessa: hoida lapsesi päivittäisiä varhaiskasvatusasioita kuten lue viestejä ja ilmoita lapsen läsnäoloajat ja poissaolot.',
       link: 'Kirjaudu sisään',
       infoBoxText: (
         <>
