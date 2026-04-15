@@ -78,7 +78,7 @@ export const PasskeySection = React.memo(function PasskeySection({
   }, [autoEnroll, isStrong, onAdd])
 
   return (
-    <FixedSpaceColumn spacing="m" data-qa="passkey-section">
+    <FixedSpaceColumn $spacing="m" data-qa="passkey-section">
       <div id="passkeys">
         <H2>{t.title}</H2>
       </div>

@@ -33,7 +33,7 @@ export const PasskeyLoginButton = React.memo(function PasskeyLoginButton({
   if (!supported) return null
 
   return (
-    <FixedSpaceColumn spacing="xs" data-qa="passkey-login-section">
+    <FixedSpaceColumn $spacing="xs" data-qa="passkey-login-section">
       <Button
         appearance="button"
         primary

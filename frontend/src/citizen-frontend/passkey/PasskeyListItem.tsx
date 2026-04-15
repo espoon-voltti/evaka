@@ -36,10 +36,10 @@ export const PasskeyListItem = React.memo(function PasskeyListItem({
 
   return (
     <FixedSpaceColumn
-      spacing="xs"
+      $spacing="xs"
       data-qa={`passkey-${credential.credentialId}`}
     >
-      <FixedSpaceRow alignItems="center" spacing="s">
+      <FixedSpaceRow $alignItems="center" $spacing="s">
         {editing ? (
           <>
             <InputField

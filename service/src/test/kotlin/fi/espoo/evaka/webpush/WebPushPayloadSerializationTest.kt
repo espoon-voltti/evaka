@@ -51,6 +51,7 @@ class WebPushPayloadSerializationTest {
                   "body": "Alice sent you a message.",
                   "tag": "msg-${threadId.raw}",
                   "url": "/messages/${threadId.raw}",
+                  "iconPath": null,
                   "replyAction": {
                     "threadId": "${threadId.raw}",
                     "recipientAccountIds": ["${accountId.raw}"],
