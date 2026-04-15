@@ -4,6 +4,7 @@
 
 import express from 'express'
 
+import { toRequestHandler } from '../../shared/express.ts'
 import { createProxy } from '../../shared/proxy-utils.ts'
 import {
   client,
@@ -29,25 +30,29 @@ export function passkeyCredentialsRoutes(
 
   // DELETE /:id → call Kotlin DELETE /citizen/passkey/credentials/:id directly,
   // then destroy the session if the deleted credential matches the current session.
-  router.delete('/:id', express.json(), async (req, res) => {
-    const credentialId = req.params.id
-    const user = req.user
+  router.delete(
+    '/:id',
+    express.json(),
+    toRequestHandler(async (req, res) => {
+      const credentialId = req.params.id
+      const user = req.user
 
-    const userHeader = sessions.getUserHeader(req)
-    await client.delete(
-      `/citizen/passkey/credentials/${encodeURIComponent(credentialId)}`,
-      { headers: createServiceRequestHeaders(req, userHeader) }
-    )
+      const userHeader = sessions.getUserHeader(req)
+      await client.delete(
+        `/citizen/passkey/credentials/${encodeURIComponent(credentialId)}`,
+        { headers: createServiceRequestHeaders(req, userHeader) }
+      )
 
-    if (
-      user?.authType === 'citizen-passkey' &&
-      user.credentialId === credentialId
-    ) {
-      await sessions.destroy(req, res)
-    }
+      if (
+        user?.authType === 'citizen-passkey' &&
+        user.credentialId === credentialId
+      ) {
+        await sessions.destroy(req, res)
+      }
 
-    res.sendStatus(200)
-  })
+      res.sendStatus(200)
+    })
+  )
 
   return router
 }

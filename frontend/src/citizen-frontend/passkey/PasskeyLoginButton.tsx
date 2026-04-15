@@ -51,7 +51,9 @@ export const PasskeyLoginButton = React.memo(function PasskeyLoginButton({
       {state.status === 'error' &&
         state.code !== 'no-credentials' &&
         state.code !== 'cancelled' && (
-          <P data-qa="passkey-generic-error">{t.loginPage.login.passkey.failed}</P>
+          <P data-qa="passkey-generic-error">
+            {t.loginPage.login.passkey.failed}
+          </P>
         )}
     </FixedSpaceColumn>
   )

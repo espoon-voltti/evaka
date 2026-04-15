@@ -23,7 +23,6 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { theme } from 'lib-customizations/common'
 
 import { useChildrenStartingNotification } from './ChildStartingNotificationHook'
-import { usePasskeyEnrollNudge } from './passkey/usePasskeyEnrollNudge'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import { sessionKeepalive } from './auth/utils'
@@ -34,6 +33,7 @@ import MobileNav from './navigation/MobileNav'
 import { mobileBottomNavHeight } from './navigation/const'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
+import { usePasskeyEnrollNudge } from './passkey/usePasskeyEnrollNudge'
 import { queryClient, QueryClientProvider } from './query'
 
 const GlobalStyle = createGlobalStyle`

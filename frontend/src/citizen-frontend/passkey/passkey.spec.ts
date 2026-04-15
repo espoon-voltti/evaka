@@ -7,9 +7,14 @@
 
 import { it, expect } from 'vitest'
 
-import { passkeysQuery, renamePasskeyMutation, revokePasskeyMutation } from './queries'
-import { usePasskeyAuth, useWebAuthnSupported } from './usePasskeyAuth'
 import { useIsStandalone } from '../hooks/useIsStandalone'
+
+import {
+  passkeysQuery,
+  renamePasskeyMutation,
+  revokePasskeyMutation
+} from './queries'
+import { usePasskeyAuth, useWebAuthnSupported } from './usePasskeyAuth'
 
 it('exports resolve', () => {
   expect(passkeysQuery).toBeDefined()

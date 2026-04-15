@@ -4,8 +4,8 @@
 
 import type express from 'express'
 
-import { client, createServiceRequestHeaders } from './service-client.ts'
 import { systemUserHeader } from './auth/index.ts'
+import { client, createServiceRequestHeaders } from './service-client.ts'
 
 export interface StoredPasskeyCredential {
   credentialId: string
@@ -43,11 +43,9 @@ export async function upsertCitizenPasskeyCredential(
   req: express.Request,
   payload: UpsertPasskeyCredentialPayload
 ): Promise<void> {
-  await client.post(
-    `/system/citizen-passkey/credentials`,
-    payload,
-    { headers: createServiceRequestHeaders(req, systemUserHeader) }
-  )
+  await client.post(`/system/citizen-passkey/credentials`, payload, {
+    headers: createServiceRequestHeaders(req, systemUserHeader)
+  })
 }
 
 export async function touchCitizenPasskeyCredential(

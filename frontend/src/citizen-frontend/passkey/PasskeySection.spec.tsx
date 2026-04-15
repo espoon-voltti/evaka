@@ -14,12 +14,12 @@ import {
 // Mock the query hooks to return an empty list + idle mutations
 vi.mock('lib-common/query', () => ({
   useQueryResult: () => ({ isSuccess: true, value: [] }),
-  useMutationResult: () => ({ mutateAsync: vi.fn(async () => undefined) })
+  useMutationResult: () => ({ mutateAsync: vi.fn(() => Promise.resolve()) })
 }))
 
 vi.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({
-    invalidateQueries: vi.fn(async () => undefined)
+    invalidateQueries: vi.fn(() => Promise.resolve())
   })
 }))
 
@@ -47,7 +47,7 @@ vi.mock('../auth/state', () => ({
         passkeyCredentialId: null
       })
     },
-    refreshAuthStatus: async () => undefined
+    refreshAuthStatus: () => Promise.resolve()
   })
 }))
 

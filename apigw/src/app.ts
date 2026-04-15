@@ -17,7 +17,6 @@ import {
   createCitizenSuomiFiIntegration,
   createEmployeeSuomiFiIntegration
 } from './enduser/suomi-fi-saml.ts'
-import { bulletinAiReview } from './internal/routes/bulletin-ai-review.ts'
 import { createSamlAdIntegration } from './internal/ad-saml.ts'
 import { createDevAdRouter } from './internal/dev-ad-auth.ts'
 import { createDevEmployeeSfiRouter } from './internal/dev-sfi-auth.ts'
@@ -30,6 +29,7 @@ import {
   refreshMobileSession
 } from './internal/mobile-device-session.ts'
 import { internalAuthStatus } from './internal/routes/auth-status.ts'
+import { bulletinAiReview } from './internal/routes/bulletin-ai-review.ts'
 import { integrationUserHeader } from './shared/auth/index.ts'
 import type { Config } from './shared/config.ts'
 import { appCommit, enableDevApi, titaniaConfig } from './shared/config.ts'

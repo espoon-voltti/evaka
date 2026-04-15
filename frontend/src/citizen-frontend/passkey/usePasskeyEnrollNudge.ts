@@ -39,7 +39,8 @@ export function usePasskeyEnrollNudge(): void {
   const t = i18n.personalDetails.passkeySection.enrollNudge
 
   const user = useUser()
-  const { addNotification, removeNotification } = useContext(NotificationsContext)
+  const { addNotification, removeNotification } =
+    useContext(NotificationsContext)
   const supported = useWebAuthnSupported()
 
   const listResult = useQueryResult(passkeysQuery(), {

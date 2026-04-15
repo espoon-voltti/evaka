@@ -2,10 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
-  startAuthentication,
-  startRegistration
-} from '@simplewebauthn/browser'
+import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
 import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON
@@ -15,7 +12,10 @@ import { useCallback, useState } from 'react'
 export type PasskeyAuthState =
   | { status: 'idle' }
   | { status: 'running' }
-  | { status: 'error'; code: 'cancelled' | 'no-credentials' | 'unsupported' | 'failed' }
+  | {
+      status: 'error'
+      code: 'cancelled' | 'no-credentials' | 'unsupported' | 'failed'
+    }
   | { status: 'success' }
 
 interface RegisterOptionsResponse {
@@ -33,7 +33,9 @@ export function useWebAuthnSupported(): boolean {
   return typeof window.PublicKeyCredential === 'function'
 }
 
-function classifyError(err: unknown): 'cancelled' | 'no-credentials' | 'unsupported' | 'failed' {
+function classifyError(
+  err: unknown
+): 'cancelled' | 'no-credentials' | 'unsupported' | 'failed' {
   if (err instanceof Error) {
     if (err.name === 'NotAllowedError') return 'no-credentials'
     if (err.name === 'NotSupportedError') return 'unsupported'
@@ -62,7 +64,8 @@ export function usePasskeyAuth() {
         headers: CSRF_HEADERS
       })
       if (!optRes.ok) throw new Error('register-options')
-      const { token, options } = (await optRes.json()) as RegisterOptionsResponse
+      const { token, options } =
+        (await optRes.json()) as RegisterOptionsResponse
       const attestation = await startRegistration({ optionsJSON: options })
       const verRes = await fetch('/api/citizen/auth/passkey/register/verify', {
         method: 'POST',

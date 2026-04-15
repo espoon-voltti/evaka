@@ -2392,7 +2392,8 @@ const sv: Translations = {
     },
     passkeySection: {
       title: 'Passnycklar',
-      intro: 'En passnyckel är ett snabbt och lösenordsfritt sätt att logga in på den här enheten.',
+      intro:
+        'En passnyckel är ett snabbt och lösenordsfritt sätt att logga in på den här enheten.',
       empty: 'Du har ännu inte lagt till några passnycklar.',
       addButton: 'Lägg till passnyckel',
       strongRequired: 'Kräver Suomi.fi-identifiering',

@@ -49,7 +49,10 @@ const KEY_CACHE_TTL_MS = 60_000
 async function resolveOpenAiKey(
   redisClient: RedisClient,
   cache: { value: string | null; expiresAt: number } | null
-): Promise<{ key: string | null; cache: { value: string | null; expiresAt: number } }> {
+): Promise<{
+  key: string | null
+  cache: { value: string | null; expiresAt: number }
+}> {
   const now = Date.now()
   if (cache && cache.expiresAt > now) {
     return { key: cache.value, cache }
@@ -93,7 +96,11 @@ export const bulletinAiReview = (redisClient: RedisClient) => {
 
     const userMessage = `Otsikko: ${title}\n\nViesti:\n${content}`
 
-    const response = await axios.post(
+    interface OpenAiChatCompletion {
+      choices: { message: { content: string } }[]
+    }
+
+    const response = await axios.post<OpenAiChatCompletion>(
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-4o-mini',
@@ -113,9 +120,7 @@ export const bulletinAiReview = (redisClient: RedisClient) => {
       }
     )
 
-    const aiResponse = JSON.parse(
-      response.data.choices[0].message.content
-    ) as {
+    const aiResponse = JSON.parse(response.data.choices[0].message.content) as {
       ok: boolean
       feedback: string
     }

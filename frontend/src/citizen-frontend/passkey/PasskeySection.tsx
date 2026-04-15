@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { useQueryClient } from '@tanstack/react-query'
 import React, {
   useCallback,
   useContext,
@@ -9,8 +10,6 @@ import React, {
   useRef,
   useState
 } from 'react'
-
-import { useQueryClient } from '@tanstack/react-query'
 
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -63,7 +62,7 @@ export const PasskeySection = React.memo(function PasskeySection({
         await queryClient.invalidateQueries({
           queryKey: passkeysQuery.prefix
         })
-        await refreshAuthStatus()
+        refreshAuthStatus()
       }
     } else {
       window.location.href = getStrongLoginUri(
@@ -105,10 +104,8 @@ export const PasskeySection = React.memo(function PasskeySection({
         onClick={() => void onAdd()}
         data-qa="passkey-add"
       />
-      {!isStrong && (
-        <P data-qa="passkey-strong-required">{t.strongRequired}</P>
-      )}
-      {toRevoke && (
+      {!isStrong && <P data-qa="passkey-strong-required">{t.strongRequired}</P>}
+      {!!toRevoke && (
         <InfoModal
           title={t.revokeConfirmTitle}
           text={t.revokeConfirmText}
@@ -116,7 +113,7 @@ export const PasskeySection = React.memo(function PasskeySection({
             action: async () => {
               await revoke({ credentialId: toRevoke })
               if (toRevoke === currentCredentialId) {
-                await refreshAuthStatus()
+                refreshAuthStatus()
               }
               setToRevoke(null)
             },

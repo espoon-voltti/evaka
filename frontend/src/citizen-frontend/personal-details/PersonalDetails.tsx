@@ -18,6 +18,7 @@ import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
 import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
+import { PasskeySection } from '../passkey/PasskeySection'
 import useTitle from '../useTitle'
 
 import LoginDetailsSection from './LoginDetailsSection'
@@ -28,7 +29,6 @@ import {
   notificationSettingsQuery,
   passwordConstraintsQuery
 } from './queries'
-import { PasskeySection } from '../passkey/PasskeySection'
 
 export default React.memo(function PersonalDetails() {
   const t = useTranslation()

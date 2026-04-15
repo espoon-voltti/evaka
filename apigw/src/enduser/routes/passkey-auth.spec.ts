@@ -2,13 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import * as simplewebauthn from '@simplewebauthn/server'
 import express from 'express'
 import request from 'supertest'
 import { beforeEach, expect, it, vi } from 'vitest'
 
 import type { Config } from '../../shared/config.ts'
 import type { RedisClient } from '../../shared/redis-client.ts'
+import * as service from '../../shared/service-client-passkey.ts'
 import type { Sessions } from '../../shared/session.ts'
+
 import { passkeyAuthRoutes } from './passkey-auth.ts'
 
 // ---------------------------------------------------------------------------
@@ -30,8 +33,17 @@ vi.mock('../../shared/service-client-passkey.ts', () => ({
   touchCitizenPasskeyCredential: vi.fn()
 }))
 
-import * as simplewebauthn from '@simplewebauthn/server'
-import * as service from '../../shared/service-client-passkey.ts'
+vi.mock('../../shared/service-client.ts', () => ({
+  getCitizenDetails: vi.fn(() =>
+    Promise.resolve({
+      details: {
+        firstName: 'Test',
+        lastName: 'Citizen',
+        preferredName: ''
+      }
+    })
+  )
+}))
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -41,52 +53,56 @@ function fakeRedis(): RedisClient {
   const store = new Map<string, string>()
   return {
     isReady: true,
-    get: vi.fn(async (k: string) => store.get(k) ?? null),
-    set: vi.fn(
-      async (k: string, v: string, _opts: { EX: number }) => {
-        store.set(k, v)
-        return null
-      }
-    ),
-    del: vi.fn(async (k: string | string[]) => {
+    get: vi.fn((k: string) => Promise.resolve(store.get(k) ?? null)),
+    set: vi.fn((k: string, v: string, _opts: { EX: number }) => {
+      store.set(k, v)
+      return Promise.resolve(null)
+    }),
+    del: vi.fn((k: string | string[]) => {
       const keys = Array.isArray(k) ? k : [k]
       for (const key of keys) store.delete(key)
-      return keys.length
+      return Promise.resolve(keys.length)
     }),
-    expire: vi.fn(async () => 1),
-    incr: vi.fn(async () => 0),
-    ping: vi.fn(async () => 'PONG'),
+    expire: vi.fn(() => Promise.resolve(1)),
+    incr: vi.fn(() => Promise.resolve(0)),
+    ping: vi.fn(() => Promise.resolve('PONG')),
     multi: vi.fn(() => ({
       incr: vi.fn().mockReturnThis(),
       sAdd: vi.fn().mockReturnThis(),
       expire: vi.fn().mockReturnThis(),
-      exec: vi.fn(async () => [])
+      exec: vi.fn(() => Promise.resolve([]))
     })),
-    sAdd: vi.fn(async () => 1),
-    sMembers: vi.fn(async () => []),
-    sRem: vi.fn(async () => 1)
+    sAdd: vi.fn(() => Promise.resolve(1)),
+    sMembers: vi.fn(() => Promise.resolve([])),
+    sRem: vi.fn(() => Promise.resolve(1))
   } as unknown as RedisClient
 }
 
 const config = {
-  passkey: { rpId: 'localhost', origin: 'http://localhost:9099', rpName: 'eVaka' }
+  passkey: {
+    rpId: 'localhost',
+    origin: 'http://localhost:9099',
+    rpName: 'eVaka'
+  }
 } as unknown as Config
 
 const sessionsMock = {
-  login: vi.fn(async () => undefined),
-  destroy: vi.fn(async () => undefined),
-  save: vi.fn(async () => undefined),
-  saveLogoutToken: vi.fn(async () => undefined),
-  logoutWithToken: vi.fn(async () => undefined),
-  updateUser: vi.fn(async () => undefined),
+  login: vi.fn(() => Promise.resolve()),
+  destroy: vi.fn(() => Promise.resolve()),
+  save: vi.fn(() => Promise.resolve()),
+  saveLogoutToken: vi.fn(() => Promise.resolve()),
+  logoutWithToken: vi.fn(() => Promise.resolve()),
+  updateUser: vi.fn(() => Promise.resolve()),
   getUser: vi.fn(() => undefined),
-  getSecondaryUserIfNewer: vi.fn(async () => undefined),
+  getSecondaryUserIfNewer: vi.fn(() => Promise.resolve(undefined)),
   getUserHeader: vi.fn(() => undefined),
   isAuthenticated: vi.fn(() => false),
   sessionType: 'citizen' as const,
   cookieName: 'evaka.eugw.session',
   middleware: vi.fn((_req: unknown, _res: unknown, next: () => void) => next()),
-  requireAuthentication: vi.fn((_req: unknown, _res: unknown, next: () => void) => next())
+  requireAuthentication: vi.fn(
+    (_req: unknown, _res: unknown, next: () => void) => next()
+  )
 } as unknown as Sessions<'citizen'>
 
 function buildApp(
@@ -100,19 +116,24 @@ function buildApp(
     req.user = user
     next()
   })
-  app.use('/citizen/auth/passkey', passkeyAuthRoutes(config, sessionsMock, redis))
+  app.use(
+    '/citizen/auth/passkey',
+    passkeyAuthRoutes(config, sessionsMock, redis)
+  )
   return app
 }
 
 // ---------------------------------------------------------------------------
 // Reset mocks between tests
 // ---------------------------------------------------------------------------
+/* eslint-disable @typescript-eslint/unbound-method */
 beforeEach(() => {
   vi.mocked(sessionsMock.login).mockReset()
   vi.mocked(service.upsertCitizenPasskeyCredential).mockReset()
   vi.mocked(service.touchCitizenPasskeyCredential).mockReset()
   vi.mocked(service.listCitizenPasskeyCredentials).mockReset()
 })
+/* eslint-enable @typescript-eslint/unbound-method */
 
 // ---------------------------------------------------------------------------
 // Test 1: register options → register verify persists the credential
@@ -131,7 +152,9 @@ it('register options → verify upserts the credential', async () => {
         counter: 0
       }
     }
-  } as unknown as Awaited<ReturnType<typeof simplewebauthn.verifyRegistrationResponse>>)
+  } as unknown as Awaited<
+    ReturnType<typeof simplewebauthn.verifyRegistrationResponse>
+  >)
 
   vi.mocked(service.listCitizenPasskeyCredentials).mockResolvedValue([])
   vi.mocked(service.upsertCitizenPasskeyCredential).mockResolvedValue(undefined)
@@ -174,7 +197,9 @@ it('login options → verify calls sessions.login with passkey variant', async (
   vi.mocked(simplewebauthn.verifyAuthenticationResponse).mockResolvedValue({
     verified: true,
     authenticationInfo: { newCounter: 5 }
-  } as unknown as Awaited<ReturnType<typeof simplewebauthn.verifyAuthenticationResponse>>)
+  } as unknown as Awaited<
+    ReturnType<typeof simplewebauthn.verifyAuthenticationResponse>
+  >)
 
   vi.mocked(service.listCitizenPasskeyCredentials).mockResolvedValue([
     {
@@ -189,6 +214,7 @@ it('login options → verify calls sessions.login with passkey variant', async (
     }
   ])
   vi.mocked(service.touchCitizenPasskeyCredential).mockResolvedValue(undefined)
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   vi.mocked(sessionsMock.login).mockResolvedValue(undefined)
 
   const redis = fakeRedis()
@@ -217,7 +243,9 @@ it('login options → verify calls sessions.login with passkey variant', async (
       }
     })
   expect(verifyRes.status).toBe(200)
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   expect(sessionsMock.login).toHaveBeenCalledTimes(1)
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const loggedInUser = vi.mocked(sessionsMock.login).mock.calls[0][1]
   expect(loggedInUser).toMatchObject({
     authType: 'citizen-passkey',

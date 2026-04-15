@@ -187,7 +187,9 @@ export default React.memo(function LoginPage() {
           <ContentArea $opaque>
             {standalone ? (
               <details data-qa="more-options">
-                <summary>{i18n.loginPage.login.passkey.moreOptionsDisclosure}</summary>
+                <summary>
+                  {i18n.loginPage.login.passkey.moreOptionsDisclosure}
+                </summary>
                 {weakLoginContent}
               </details>
             ) : (

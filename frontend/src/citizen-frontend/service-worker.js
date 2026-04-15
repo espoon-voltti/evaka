@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-/* global self */
+/* global self, indexedDB */
 
 /// <reference lib="WebWorker" />
 /** @type {ServiceWorkerGlobalScope} */
@@ -87,9 +87,7 @@ serviceWorker.addEventListener('push', (event) => {
     try {
       const parsed = event.data ? event.data.json() : null
       const list = Array.isArray(parsed) ? parsed : parsed ? [parsed] : []
-      return (
-        list.find((p) => p && p.type === 'NotificationV1') ?? list[0] ?? {}
-      )
+      return list.find((p) => p && p.type === 'NotificationV1') ?? list[0] ?? {}
     } catch {
       return {}
     }
@@ -159,33 +157,36 @@ async function handleInlineReply(replyAction, content) {
   }
 
   try {
-    const response = await fetch(
-      `/api/citizen/messages/reply-to/${threadId}`,
-      {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'content-type': 'application/json',
-          'x-evaka-csrf': '1'
-        },
-        body: JSON.stringify({
-          content,
-          recipientAccountIds: replyAction.recipientAccountIds
-        })
-      }
-    )
+    const response = await fetch(`/api/citizen/messages/reply-to/${threadId}`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'content-type': 'application/json',
+        'x-evaka-csrf': '1'
+      },
+      body: JSON.stringify({
+        content,
+        recipientAccountIds: replyAction.recipientAccountIds
+      })
+    })
     if (!response.ok) throw new Error(`reply POST failed: ${response.status}`)
     await deleteDraft(threadId).catch((err) =>
-      console.warn('Failed to delete reply draft after successful send', { threadId, err })
+      console.warn('Failed to delete reply draft after successful send', {
+        threadId,
+        err
+      })
     )
-    await serviceWorker.registration.showNotification(replyAction.successTitle, {
-      body: replyAction.successBody,
-      icon: '/citizen/notifications/reply-success.png',
-      badge: '/citizen/evaka-badge-72.png',
-      tag: `msg-${threadId}`,
-      data: { url: `/messages/${threadId}` },
-      actions: []
-    })
+    await serviceWorker.registration.showNotification(
+      replyAction.successTitle,
+      {
+        body: replyAction.successBody,
+        icon: '/citizen/notifications/reply-success.png',
+        badge: '/citizen/evaka-badge-72.png',
+        tag: `msg-${threadId}`,
+        data: { url: `/messages/${threadId}` },
+        actions: []
+      }
+    )
   } catch (err) {
     console.warn('Reply POST failed', { threadId, err })
     await serviceWorker.registration.showNotification(replyAction.errorTitle, {

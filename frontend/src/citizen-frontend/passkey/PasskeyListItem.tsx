@@ -35,7 +35,10 @@ export const PasskeyListItem = React.memo(function PasskeyListItem({
   const [draft, setDraft] = useState(credential.label)
 
   return (
-    <FixedSpaceColumn spacing="xs" data-qa={`passkey-${credential.credentialId}`}>
+    <FixedSpaceColumn
+      spacing="xs"
+      data-qa={`passkey-${credential.credentialId}`}
+    >
       <FixedSpaceRow alignItems="center" spacing="s">
         {editing ? (
           <>
@@ -73,7 +76,7 @@ export const PasskeyListItem = React.memo(function PasskeyListItem({
           </>
         )}
       </FixedSpaceRow>
-      {credential.deviceHint && <P>{credential.deviceHint}</P>}
+      {!!credential.deviceHint && <P>{credential.deviceHint}</P>}
       <P>
         {t.createdAt} {credential.createdAt.slice(0, 10)}
       </P>

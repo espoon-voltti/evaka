@@ -16,7 +16,9 @@ export interface CitizenPasskeyCredentialSummary {
 
 const q = new Queries()
 
-async function getPasskeyCredentials(): Promise<CitizenPasskeyCredentialSummary[]> {
+async function getPasskeyCredentials(): Promise<
+  CitizenPasskeyCredentialSummary[]
+> {
   const { data } = await client.get<CitizenPasskeyCredentialSummary[]>(
     '/citizen/passkey/credentials'
   )

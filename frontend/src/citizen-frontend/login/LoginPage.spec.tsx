@@ -81,7 +81,8 @@ vi.mock('../hooks/useIsStandalone', () => ({
 
 vi.mock('../navigation/const', () => ({
   getWeakLoginUri: (url: string) => `/login/form?next=${url}`,
-  getStrongLoginUri: (url: string) => `/api/citizen/auth/sfi/login?RelayState=${url}`
+  getStrongLoginUri: (url: string) =>
+    `/api/citizen/auth/sfi/login?RelayState=${url}`
 }))
 
 vi.mock('../pwa/PwaInstallButton', () => ({
