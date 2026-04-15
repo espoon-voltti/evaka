@@ -16,6 +16,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import software.amazon.awssdk.services.s3.S3Client
@@ -25,7 +26,7 @@ class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach =
     @Autowired private lateinit var bucketEnv: BucketEnv
 
     private val store by lazy { CitizenPushSubscriptionStore(s3Client, bucketEnv.data) }
-    private val personId = PersonId(UUID.randomUUID())
+    private lateinit var personId: PersonId
     private val now =
         HelsinkiDateTime.from(ZonedDateTime.parse("2026-04-14T10:00:00+03:00[Europe/Helsinki]"))
 
@@ -42,12 +43,16 @@ class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach =
             createdAt = now,
         )
 
-    // Each test method gets a fresh random personId (field initializer + JUnit
-    // PER_METHOD lifecycle), so no defensive store.delete() calls are needed
-    // between tests. `delete` is also a logical / soft delete now (it writes
-    // an empty file instead of a real DeleteObject) because the decisions
-    // bucket denies s3:DeleteObject for the service role, so asserting on
-    // "file is gone" is no longer meaningful.
+    // FullApplicationTest is @TestInstance(PER_CLASS), so generate a fresh
+    // random personId per @Test to keep S3 state from leaking across cases.
+    // `delete` is a logical / soft delete (it writes an empty file instead
+    // of a real DeleteObject) because the decisions bucket denies
+    // s3:DeleteObject for the service role, so asserting on "file is gone"
+    // is no longer meaningful.
+    @BeforeEach
+    fun freshPersonId() {
+        personId = PersonId(UUID.randomUUID())
+    }
 
     @Test
     fun `load returns null when no file exists`() {

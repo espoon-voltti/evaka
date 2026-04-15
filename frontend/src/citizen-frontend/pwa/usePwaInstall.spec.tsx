@@ -5,7 +5,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { usePwaInstall } from './usePwaInstall'
+type UsePwaInstall = typeof import('./usePwaInstall').usePwaInstall
 
 class MockBeforeInstallPromptEvent extends Event {
   prompt = vi.fn().mockResolvedValue(undefined)
@@ -35,7 +35,15 @@ const setMatchMediaStandalone = (matches: boolean) => {
 }
 
 describe('usePwaInstall', () => {
-  beforeEach(() => {
+  let usePwaInstall: UsePwaInstall
+
+  beforeEach(async () => {
+    // The hook keeps `appInstalled` / `deferredPrompt` / `captured` at module
+    // scope so that a `beforeinstallprompt` event fired before any consumer
+    // mounts still reaches the first hook that shows up. That shared state
+    // also leaks between test cases (e.g. the 'on accept' test sets
+    // appInstalled=true), so reset the module between tests and re-import.
+    vi.resetModules()
     setMatchMediaStandalone(false)
     Object.defineProperty(navigator, 'userAgent', {
       writable: true,
@@ -43,6 +51,7 @@ describe('usePwaInstall', () => {
       value:
         'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1'
     })
+    usePwaInstall = (await import('./usePwaInstall')).usePwaInstall
   })
 
   afterEach(() => {

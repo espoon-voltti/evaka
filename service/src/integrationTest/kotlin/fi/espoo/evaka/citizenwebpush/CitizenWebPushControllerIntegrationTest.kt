@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.webpush.WebPushCrypto
 import java.net.URI
 import java.security.SecureRandom
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -22,11 +23,17 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var controller: CitizenWebPushController
+    @Autowired private lateinit var store: CitizenPushSubscriptionStore
 
-    private val adult = DevPerson()
+    // FullApplicationTest is @TestInstance(PER_CLASS), so generate a fresh
+    // person per @Test. Otherwise the citizen-push-subscriptions/<id>.json
+    // file in S3 accumulates entries across tests and wasNewEndpoint /
+    // load() assertions see stale state.
+    private lateinit var adult: DevPerson
 
     @BeforeEach
     fun beforeEach() {
+        adult = DevPerson()
         db.transaction { tx -> tx.insert(adult, DevPersonType.RAW_ROW) }
     }
 
@@ -123,28 +130,24 @@ class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `second distinct endpoint in existing file is not a first write`() {
+    fun `second distinct endpoint is persisted alongside the first`() {
         val ep1 = URI("https://fcm.example.com/push/device-1")
         val ep2 = URI("https://fcm.example.com/push/device-2")
-        // First endpoint creates the file
         controller.putSubscription(
             db = dbInstance(),
             user = user(),
             clock = clock(),
             body = subscribeRequest(ep = ep1, ecdhKey = validEcdhKey()),
         )
-        // Second endpoint — file exists, so wasFirstWrite=false → sentTest=false
-        val second =
-            controller.putSubscription(
-                db = dbInstance(),
-                user = user(),
-                clock = clock(),
-                body = subscribeRequest(ep = ep2, ecdhKey = validEcdhKey()),
-            )
-        assertFalse(
-            second.sentTest,
-            "Adding a second endpoint to existing file: sentTest must be false",
+        controller.putSubscription(
+            db = dbInstance(),
+            user = user(),
+            clock = clock(),
+            body = subscribeRequest(ep = ep2, ecdhKey = validEcdhKey()),
         )
+        val loaded = store.load(adult.id)
+        assertNotNull(loaded)
+        assertEquals(setOf(ep1, ep2), loaded.subscriptions.map { it.endpoint }.toSet())
     }
 
     @Test
