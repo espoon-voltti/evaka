@@ -21,6 +21,7 @@ const MultiLineCheckboxLabel = styled(FixedSpaceColumn).attrs({
 
 const customizations: CitizenCustomizations = {
   appConfig,
+  cityName: 'Espoo',
   langs: ['fi', 'sv', 'en'],
   translations: {
     fi: {

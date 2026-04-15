@@ -13,6 +13,7 @@ import { getEnvironment } from 'lib-common/utils/helpers'
 import 'leaflet/dist/leaflet.css'
 import { appConfig } from 'lib-customizations/citizen'
 
+import { applyPwaName } from './pwa/applyPwaName'
 import Root from './router'
 import './index.css'
 
@@ -24,6 +25,8 @@ Sentry.init({
   environment: getEnvironment()
 })
 Sentry.getGlobalScope().addEventProcessor(sentryEventFilter)
+
+applyPwaName()
 
 // Smooth-scrolling requires polyfilling in Safari, IE and older browsers:
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility

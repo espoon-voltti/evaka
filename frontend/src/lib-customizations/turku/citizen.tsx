@@ -61,6 +61,7 @@ const customizations: CitizenCustomizations = {
     sv: svCustomizations,
     en: enCustomizations
   },
+  cityName: 'Turku',
   cityLogo: {
     src: TurkuLogo,
     alt: 'Turku logo'

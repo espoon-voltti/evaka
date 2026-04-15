@@ -36,6 +36,7 @@ const customizations: CitizenCustomizations = overrides
 const {
   appConfig,
   cityLogo,
+  cityName,
   featureFlags,
   footerLogo,
   langs,
@@ -46,6 +47,7 @@ const {
 export {
   appConfig,
   cityLogo,
+  cityName,
   featureFlags,
   footerLogo,
   langs,
