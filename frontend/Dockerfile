@@ -83,6 +83,7 @@ RUN mkdir /static
 COPY --from=builder /project/dist/bundle/favicon.ico /static
 COPY --from=builder /project/dist/bundle/assets /static/assets
 COPY --from=builder /project/dist/bundle/citizen /static/citizen
+COPY --from=builder /project/dist/bundle/service-worker.js /static/service-worker.js
 COPY --from=builder /project/dist/bundle/employee /static/employee
 COPY --from=builder /project/dist/bundle/src/citizen-frontend/index.html /static
 COPY --from=builder /project/dist/bundle/src/employee-frontend/index.html /static/employee

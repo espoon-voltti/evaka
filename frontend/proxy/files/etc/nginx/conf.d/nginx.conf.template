@@ -230,6 +230,13 @@ server {
     auth_basic off;
   }
 
+  location = /service-worker.js {
+    expires        off;
+    add_header     Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
+    proxy_no_cache 1
+    auth_basic off;
+  }
+
   location / {
     location ~ /employee/mobile/manifest\.json$ {
       auth_basic off;
