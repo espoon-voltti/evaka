@@ -16,7 +16,12 @@ class CitizenWebPushConfig {
     fun citizenPushSubscriptionStore(
         s3Client: S3Client,
         bucketEnv: BucketEnv,
-    ): CitizenPushSubscriptionStore = CitizenPushSubscriptionStore(s3Client, bucketEnv.data)
+    ): CitizenPushSubscriptionStore =
+        // The `data` bucket has a GuardDuty Malware Scan deny policy that
+        // blocks GetObject for any object not yet tagged as NO_THREATS_FOUND,
+        // which permanently breaks the push-subscription round-trip. Use the
+        // `decisions` bucket (no AV deny, same IAM permissions) instead.
+        CitizenPushSubscriptionStore(s3Client, bucketEnv.decisions)
 
     @Bean
     fun citizenPushSender(

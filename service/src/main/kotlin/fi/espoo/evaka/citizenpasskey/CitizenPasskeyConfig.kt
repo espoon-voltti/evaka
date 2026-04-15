@@ -15,5 +15,10 @@ class CitizenPasskeyConfig {
     fun citizenPasskeyCredentialStore(
         s3Client: S3Client,
         bucketEnv: BucketEnv,
-    ): CitizenPasskeyCredentialStore = CitizenPasskeyCredentialStore(s3Client, bucketEnv.data)
+    ): CitizenPasskeyCredentialStore =
+        // The `data` bucket has a GuardDuty Malware Scan deny policy that
+        // blocks GetObject for any object not yet tagged as NO_THREATS_FOUND,
+        // which permanently breaks the passkey credential round-trip. Use the
+        // `decisions` bucket (no AV deny, same IAM permissions) instead.
+        CitizenPasskeyCredentialStore(s3Client, bucketEnv.decisions)
 }
