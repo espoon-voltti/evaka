@@ -7,6 +7,7 @@ import React, { useCallback } from 'react'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { P } from 'lib-components/typography'
+import { faLockAlt } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
@@ -37,6 +38,7 @@ export const PasskeyLoginButton = React.memo(function PasskeyLoginButton({
       <Button
         appearance="button"
         primary
+        icon={faLockAlt}
         text={t.loginPage.login.passkey.title}
         onClick={onClick}
         data-qa="passkey-login-button"

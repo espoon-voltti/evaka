@@ -6,8 +6,9 @@ import React, { useCallback, useMemo } from 'react'
 
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { H3, P } from 'lib-components/typography'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import { H2 } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../localization'
 import { detectBrowser } from '../pwa/detectPlatform'
@@ -59,7 +60,7 @@ export const WebPushSettingsSection = React.memo(
 
     return (
       <div data-qa="webpush-settings-section">
-        <H3>{t.title}</H3>
+        <H2 $noMargin>{t.title}</H2>
         {t.info}
         <Checkbox
           checked={masterOn}
@@ -68,7 +69,8 @@ export const WebPushSettingsSection = React.memo(
           onChange={() => void handleMasterToggle()}
           data-qa="webpush-master-toggle"
         />
-        <FixedSpaceColumn $spacing="xs">
+        <Gap $size="m" />
+        <ExpandingInfo info={t.categoryUrgent.description}>
           <Checkbox
             checked={categories.has('URGENT_MESSAGE')}
             disabled={!masterOn}
@@ -78,7 +80,9 @@ export const WebPushSettingsSection = React.memo(
             }
             data-qa="webpush-cat-urgent"
           />
-          <P>{t.categoryUrgent.description}</P>
+        </ExpandingInfo>
+        <Gap $size="s" />
+        <ExpandingInfo info={t.categoryMessage.description}>
           <Checkbox
             checked={categories.has('MESSAGE')}
             disabled={!masterOn}
@@ -86,7 +90,9 @@ export const WebPushSettingsSection = React.memo(
             onChange={(checked) => void toggleCategory('MESSAGE', checked)}
             data-qa="webpush-cat-message"
           />
-          <P>{t.categoryMessage.description}</P>
+        </ExpandingInfo>
+        <Gap $size="s" />
+        <ExpandingInfo info={t.categoryBulletin.description}>
           <Checkbox
             checked={categories.has('BULLETIN')}
             disabled={!masterOn}
@@ -94,8 +100,8 @@ export const WebPushSettingsSection = React.memo(
             onChange={(checked) => void toggleCategory('BULLETIN', checked)}
             data-qa="webpush-cat-bulletin"
           />
-          <P>{t.categoryBulletin.description}</P>
-        </FixedSpaceColumn>
+        </ExpandingInfo>
+        <Gap $size="m" />
         <Button
           text={t.sendTest}
           onClick={() => void sendTest()}

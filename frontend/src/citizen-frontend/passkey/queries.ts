@@ -25,15 +25,6 @@ async function getPasskeyCredentials(): Promise<
   return data
 }
 
-async function renamePasskeyCredential(arg: {
-  credentialId: string
-  label: string
-}): Promise<void> {
-  await client.patch(`/citizen/passkey/credentials/${arg.credentialId}`, {
-    label: arg.label
-  })
-}
-
 async function revokePasskeyCredential(arg: {
   credentialId: string
 }): Promise<void> {
@@ -41,10 +32,6 @@ async function revokePasskeyCredential(arg: {
 }
 
 export const passkeysQuery = q.query(getPasskeyCredentials)
-
-export const renamePasskeyMutation = q.mutation(renamePasskeyCredential, [
-  passkeysQuery
-])
 
 export const revokePasskeyMutation = q.mutation(revokePasskeyCredential, [
   passkeysQuery

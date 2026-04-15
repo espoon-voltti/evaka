@@ -22,7 +22,6 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { faPen } from 'lib-icons'
 
 import { useTranslation } from '../localization'
-import { WebPushSettingsSection } from '../webpush/WebPushSettingsSection'
 
 import { EditButtonRow } from './components'
 import { updateNotificationSettingsMutation } from './queries'
@@ -259,8 +258,6 @@ export default React.memo(
             />
           </FixedSpaceRow>
         ) : null}
-        <Gap $size="m" />
-        <WebPushSettingsSection />
       </div>
     )
   })

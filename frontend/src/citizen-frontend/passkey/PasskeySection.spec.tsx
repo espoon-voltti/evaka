@@ -26,7 +26,6 @@ vi.mock('@tanstack/react-query', () => ({
 // Mock queries file (it imports axios client which jsdom can't run)
 vi.mock('./queries', () => ({
   passkeysQuery: () => ({}),
-  renamePasskeyMutation: {},
   revokePasskeyMutation: {}
 }))
 

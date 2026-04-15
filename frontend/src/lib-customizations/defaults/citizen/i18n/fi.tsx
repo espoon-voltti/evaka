@@ -245,8 +245,6 @@ export default {
     },
     login: {
       title: 'Kirjaudu käyttäjätunnuksella',
-      paragraph:
-        'Huoltajat, joiden lapsi on jo varhaiskasvatuksessa tai esiopetuksessa: hoida lapsesi päivittäisiä varhaiskasvatusasioita kuten lue viestejä ja ilmoita lapsen läsnäoloajat ja poissaolot.',
       link: 'Kirjaudu sisään',
       infoBoxText: (
         <>
@@ -275,7 +273,7 @@ export default {
         'Voit luoda käyttäjätunnuksen kirjautumalla vahvasti ja sallimalla kirjautumisen sähköpostilla "Omat tiedot"-sivulla',
       passkey: {
         title: 'Kirjaudu passkey-avaimella',
-        subtitle: 'Nopea, salasanaton kirjautuminen tällä laitteella',
+        subtitle: 'Nopea, turvallinen ja salasanaton kirjautuminen',
         noCredentialsHint:
           'Tältä laitteelta ei löytynyt passkey-avainta. Kirjaudu ensin Suomi.fi-tunnistautumisella ottaaksesi passkey käyttöön, tai käytä toista laitetta jolle olet jo tallentanut avaimen.',
         failed: 'Kirjautuminen epäonnistui. Yritä uudelleen.',
@@ -2319,7 +2317,7 @@ export default {
       title: 'Push-ilmoitukset',
       info: (
         <P>
-          Voit ottaa käyttöön selaimen push-ilmoitukset uusista viesteistä. Tämä
+          Voit ottaa käyttöön eVakan push-ilmoitukset seuraavista aiheista. Tämä
           edellyttää, että annat selaimelle luvan ilmoitusten näyttämiseen.
         </P>
       ),
@@ -2407,10 +2405,9 @@ export default {
     },
     passkeySection: {
       title: 'Passkey-avaimet',
-      intro: 'Passkey on nopea ja salasanaton tapa kirjautua tälle laitteelle.',
+      intro: 'Passkey on nopea, turvallinen ja salasanaton tapa kirjautua.',
       empty: 'Et ole vielä lisännyt passkey-avaimia.',
       addButton: 'Lisää passkey-avain',
-      strongRequired: 'Vaatii Suomi.fi-tunnistautumisen',
       thisDevice: 'Tämä laite',
       createdAt: 'Luotu',
       lastUsedAt: 'Viimeksi käytetty',
@@ -2421,13 +2418,9 @@ export default {
         'Et voi enää kirjautua tällä avaimella sen poistamisen jälkeen.',
       revokeConfirmLastWarning:
         'Olet parhaillaan kirjautuneena tällä avaimella. Poistaminen kirjaa sinut ulos.',
-      rename: 'Nimeä uudelleen',
-      labelLabel: 'Nimi',
-      labelValidationEmpty: 'Nimi ei voi olla tyhjä',
-      labelValidationTooLong: 'Nimi on liian pitkä',
       enrollNudge: {
         title: 'Kokeile passkey-kirjautumista',
-        body: 'Kirjaudu nopeasti ja salasanatta tällä laitteella.',
+        body: 'Passkey on nopea, turvallinen ja salasanaton tapa kirjautua.',
         action: 'Ota käyttöön',
         dismiss: 'Sulje'
       }

@@ -249,8 +249,6 @@ const en: Translations = {
     },
     login: {
       title: 'Sign in with username',
-      paragraph:
-        'Take care of your child’s daily early childhood education affairs in eVaka.',
       link: 'Log in',
       infoBoxText: (
         <>
@@ -2141,7 +2139,6 @@ const en: Translations = {
       intro: 'Passkeys are a fast, passwordless way to sign in on this device.',
       empty: "You haven't added any passkeys yet.",
       addButton: 'Add passkey',
-      strongRequired: 'Requires suomi.fi identification',
       thisDevice: 'This device',
       createdAt: 'Created',
       lastUsedAt: 'Last used',
@@ -2152,10 +2149,6 @@ const en: Translations = {
         'You will no longer be able to sign in with this passkey.',
       revokeConfirmLastWarning:
         'You are currently signed in with this passkey. Revoking it will sign you out.',
-      rename: 'Rename',
-      labelLabel: 'Name',
-      labelValidationEmpty: 'Name cannot be empty',
-      labelValidationTooLong: 'Name is too long',
       enrollNudge: {
         title: 'Try signing in with a passkey',
         body: 'Sign in fast and passwordless on this device.',

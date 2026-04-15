@@ -39,7 +39,6 @@ vi.mock('../localization', () => ({
       },
       login: {
         title: 'Sign in with username',
-        paragraph: 'Paragraph text',
         link: 'Log in',
         infoBoxText: 'Info',
         username: 'Username',

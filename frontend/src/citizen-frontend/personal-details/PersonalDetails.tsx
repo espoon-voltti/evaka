@@ -20,6 +20,7 @@ import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
 import { PasskeySection } from '../passkey/PasskeySection'
 import useTitle from '../useTitle'
+import { WebPushSettingsSection } from '../webpush/WebPushSettingsSection'
 
 import LoginDetailsSection from './LoginDetailsSection'
 import NotificationSettingsSection from './NotificationSettingsSection'
@@ -84,6 +85,8 @@ export default React.memo(function PersonalDetails() {
                 <Redirect replace to="/" />
               )
           )}
+          <HorizontalLine />
+          <PasskeySection autoEnroll={autoEnroll} />
           {renderResult(
             combine(user, emailVerificationStatus, passwordConstraints),
             ([user, emailVerificationStatus, passwordConstraints]) =>
@@ -101,6 +104,8 @@ export default React.memo(function PersonalDetails() {
                 <Redirect replace to="/" />
               )
           )}
+          <HorizontalLine />
+          <WebPushSettingsSection />
           {renderResult(notificationSettings, (notificationSettings) => (
             <>
               <HorizontalLine />
@@ -110,8 +115,6 @@ export default React.memo(function PersonalDetails() {
               />
             </>
           ))}
-          <HorizontalLine />
-          <PasskeySection autoEnroll={autoEnroll} />
         </ContentArea>
       </Container>
       <Footer />

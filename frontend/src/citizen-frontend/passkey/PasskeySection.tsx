@@ -10,23 +10,22 @@ import React, {
   useRef,
   useState
 } from 'react'
+import styled from 'styled-components'
 
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { H2, P } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import { faLockAlt } from 'lib-icons'
 
 import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
 
 import { PasskeyListItem } from './PasskeyListItem'
-import {
-  passkeysQuery,
-  renamePasskeyMutation,
-  revokePasskeyMutation
-} from './queries'
+import { passkeysQuery, revokePasskeyMutation } from './queries'
 import { usePasskeyAuth } from './usePasskeyAuth'
 
 interface Props {
@@ -47,7 +46,6 @@ export const PasskeySection = React.memo(function PasskeySection({
   const isStrong = authUser?.authLevel === 'STRONG'
 
   const listResult = useQueryResult(passkeysQuery())
-  const { mutateAsync: rename } = useMutationResult(renamePasskeyMutation)
   const { mutateAsync: revoke } = useMutationResult(revokePasskeyMutation)
   const { enroll } = usePasskeyAuth()
   const queryClient = useQueryClient()
@@ -86,25 +84,25 @@ export const PasskeySection = React.memo(function PasskeySection({
       {listResult.isSuccess && listResult.value.length === 0 && (
         <P data-qa="passkey-empty">{t.empty}</P>
       )}
-      {listResult.isSuccess &&
-        listResult.value.map((c) => (
-          <PasskeyListItem
-            key={c.credentialId}
-            credential={c}
-            isCurrent={c.credentialId === currentCredentialId}
-            onRename={async (label) => {
-              await rename({ credentialId: c.credentialId, label })
-            }}
-            onRevoke={() => setToRevoke(c.credentialId)}
-          />
-        ))}
+      {listResult.isSuccess && listResult.value.length > 0 && (
+        <PasskeyList data-qa="passkey-list">
+          {listResult.value.map((c) => (
+            <PasskeyListItem
+              key={c.credentialId}
+              credential={c}
+              isCurrent={c.credentialId === currentCredentialId}
+              onRevoke={() => setToRevoke(c.credentialId)}
+            />
+          ))}
+        </PasskeyList>
+      )}
       <Button
         text={t.addButton}
         primary
+        icon={isStrong ? undefined : faLockAlt}
         onClick={() => void onAdd()}
         data-qa="passkey-add"
       />
-      {!isStrong && <P data-qa="passkey-strong-required">{t.strongRequired}</P>}
       {!!toRevoke && (
         <InfoModal
           title={t.revokeConfirmTitle}
@@ -128,3 +126,12 @@ export const PasskeySection = React.memo(function PasskeySection({
     </FixedSpaceColumn>
   )
 })
+
+const PasskeyList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: ${defaultMargins.xs};
+`

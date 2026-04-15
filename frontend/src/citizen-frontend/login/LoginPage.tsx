@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { Fragment, useState } from 'react'
+import React, { Fragment } from 'react'
 import styled from 'styled-components'
 import { Link, Redirect, useLocation, useSearchParams } from 'wouter'
 
@@ -17,14 +17,11 @@ import {
   MobileOnly,
   TabletAndDesktop
 } from 'lib-components/layout/responsive-layout'
-import {
-  ExpandingInfoBox,
-  InfoButton
-} from 'lib-components/molecules/ExpandingInfo'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights, H1, H2, P } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
-import { farMap } from 'lib-icons'
+import { Gap } from 'lib-components/white-space'
+import { faSignIn, farMap, farUser } from 'lib-icons'
 
 import Footer from '../Footer'
 import { useUser } from '../auth/state'
@@ -37,10 +34,6 @@ import useTitle from '../useTitle'
 
 import { systemNotificationsQuery } from './queries'
 
-const ParagraphInfoButton = styled(InfoButton)`
-  margin-left: ${defaultMargins.xs};
-`
-
 export default React.memo(function LoginPage() {
   const i18n = useTranslation()
   useTitle(i18n, i18n.common.title)
@@ -51,9 +44,6 @@ export default React.memo(function LoginPage() {
   const [searchParams] = useSearchParams()
   const unvalidatedNextPath = searchParams.get('next')
   const [, navigate] = useLocation()
-
-  const [showInfoBoxText1, setShowInfoBoxText1] = useState(false)
-  const [showInfoBoxText2, setShowInfoBoxText2] = useState(false)
 
   const systemNotifications = useQueryResult(systemNotificationsQuery())
 
@@ -67,22 +57,8 @@ export default React.memo(function LoginPage() {
         {i18n.loginPage.login.title}
       </H2>
       <Gap $size="m" />
-      <P $noMargin>
-        {i18n.loginPage.login.paragraph}
-        <ParagraphInfoButton
-          aria-label={i18n.common.openExpandingInfo}
-          onClick={() => setShowInfoBoxText1(!showInfoBoxText1)}
-          open={showInfoBoxText1}
-        />
-      </P>
-      {showInfoBoxText1 && (
-        <ExpandingInfoBox
-          info={i18n.loginPage.login.infoBoxText}
-          close={() => setShowInfoBoxText1(false)}
-        />
-      )}
-      <Gap $size="s" />
       <LinkButton
+        $style="secondary"
         href={getWeakLoginUri(unvalidatedNextPath ?? '/')}
         onClick={(e) => {
           e.preventDefault()
@@ -90,6 +66,8 @@ export default React.memo(function LoginPage() {
         }}
         data-qa="weak-login"
       >
+        <FontAwesomeIcon icon={farUser} />
+        <Gap $size="xs" $horizontal />
         {i18n.loginPage.login.link}
       </LinkButton>
     </>
@@ -147,32 +125,29 @@ export default React.memo(function LoginPage() {
             <PasskeyLoginButton nextUrl={unvalidatedNextPath} />
           </ContentArea>
           <ContentArea $opaque>
-            <H2 $noMargin>{i18n.loginPage.applying.title}</H2>
+            <ExpandingInfo
+              info={
+                <>
+                  <P $noMargin>{i18n.loginPage.applying.paragraph}</P>
+                  <UnorderedList>
+                    {i18n.loginPage.applying.infoBullets.map((item, index) => (
+                      <li key={`bullet-item-${index}`}>{item}</li>
+                    ))}
+                  </UnorderedList>
+                  <P $noMargin>{i18n.loginPage.applying.infoBoxText}</P>
+                </>
+              }
+            >
+              <H2 $noMargin>{i18n.loginPage.applying.title}</H2>
+            </ExpandingInfo>
             <Gap $size="m" />
-            <P $noMargin>
-              {i18n.loginPage.applying.paragraph}
-              <ParagraphInfoButton
-                aria-label={i18n.common.openExpandingInfo}
-                onClick={() => setShowInfoBoxText2(!showInfoBoxText2)}
-                open={showInfoBoxText2}
-              />
-            </P>
-            {showInfoBoxText2 && (
-              <ExpandingInfoBox
-                info={i18n.loginPage.applying.infoBoxText}
-                close={() => setShowInfoBoxText2(false)}
-              />
-            )}
-            <UnorderedList>
-              {i18n.loginPage.applying.infoBullets.map((item, index) => (
-                <li key={`bullet-item-${index}`}>{item}</li>
-              ))}
-            </UnorderedList>
-            <Gap $size="s" />
             <LinkButton
+              $style="secondary"
               href={getStrongLoginUri(unvalidatedNextPath ?? '/')}
               data-qa="strong-login"
             >
+              <FontAwesomeIcon icon={faSignIn} />
+              <Gap $size="xs" $horizontal />
               {i18n.loginPage.applying.link}
             </LinkButton>
             <Gap $size="m" />
@@ -190,6 +165,7 @@ export default React.memo(function LoginPage() {
                 <summary>
                   {i18n.loginPage.login.passkey.moreOptionsDisclosure}
                 </summary>
+                <Gap $size="s" />
                 {weakLoginContent}
               </details>
             ) : (

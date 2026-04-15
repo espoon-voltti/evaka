@@ -239,8 +239,6 @@ const sv: Translations = {
     },
     login: {
       title: 'Logga in med användarnamn',
-      paragraph:
-        'Sköt ditt barns dagliga ärenden rörande småbarnspedagogiken i eVaka.',
       link: 'Logga in',
       infoBoxText: (
         <>
@@ -2396,7 +2394,6 @@ const sv: Translations = {
         'En passnyckel är ett snabbt och lösenordsfritt sätt att logga in på den här enheten.',
       empty: 'Du har ännu inte lagt till några passnycklar.',
       addButton: 'Lägg till passnyckel',
-      strongRequired: 'Kräver Suomi.fi-identifiering',
       thisDevice: 'Den här enheten',
       createdAt: 'Skapad',
       lastUsedAt: 'Senast använd',
@@ -2407,10 +2404,6 @@ const sv: Translations = {
         'Du kan inte längre logga in med den här passnyckeln efter att den har tagits bort.',
       revokeConfirmLastWarning:
         'Du är för tillfället inloggad med den här passnyckeln. Om du tar bort den loggas du ut.',
-      rename: 'Byt namn',
-      labelLabel: 'Namn',
-      labelValidationEmpty: 'Namnet får inte vara tomt',
-      labelValidationTooLong: 'Namnet är för långt',
       enrollNudge: {
         title: 'Prova passnyckel-inloggning',
         body: 'Logga in snabbt och utan lösenord på denna enhet.',
