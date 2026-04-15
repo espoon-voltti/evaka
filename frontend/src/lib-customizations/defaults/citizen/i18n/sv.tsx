@@ -204,6 +204,13 @@ const sv: Translations = {
     welcomeHeadline: 'Välkommen till eVaka',
     title: 'Esbo stads småbarnspedagogik',
     systemNotification: 'Viktigt meddelande',
+    reasons: {
+      // TODO: copy review — placeholder translation
+      sessionExpiredOpenThread:
+        'Öppnandet av meddelandetråden kräver inloggning. Var vänlig logga in.',
+      // TODO: copy review — placeholder translation
+      sessionExpiredReplyFailed: 'Sändning av svaret kräver inloggning.'
+    },
     pwaInstall: {
       button: 'Lägg till på hemskärmen',
       iosUseSafariNote:

@@ -204,6 +204,11 @@ export default {
     welcomeHeadline: 'Tervetuloa eVakaan',
     title: 'Espoon kaupungin varhaiskasvatus',
     systemNotification: 'Tärkeä tiedote',
+    reasons: {
+      sessionExpiredOpenThread:
+        'Viestiketjun avaaminen vaatii kirjautumisen. Ole hyvä ja kirjaudu sisään.',
+      sessionExpiredReplyFailed: 'Vastauksen lähetys vaatii kirjautumisen.'
+    },
     pwaInstall: {
       button: 'Lisää kotivalikkoon',
       iosUseSafariNote:

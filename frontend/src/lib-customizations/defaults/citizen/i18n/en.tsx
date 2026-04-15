@@ -206,6 +206,13 @@ const en: Translations = {
     welcomeHeadline: 'Welcome to eVaka',
     title: 'City of Espoo early childhood education',
     systemNotification: 'Important announcement',
+    reasons: {
+      // TODO: copy review — placeholder translation
+      sessionExpiredOpenThread:
+        'Opening the message thread requires login. Please log in.',
+      // TODO: copy review — placeholder translation
+      sessionExpiredReplyFailed: 'Sending the reply requires login.'
+    },
     pwaInstall: {
       button: 'Add to home screen',
       iosUseSafariNote:
