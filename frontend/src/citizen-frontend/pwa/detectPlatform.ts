@@ -54,16 +54,19 @@ export interface BrowserInfo {
 }
 
 export function detectBrowser(
-  userAgent: string = typeof navigator !== 'undefined' ? navigator.userAgent : '',
-  mediaQueryMatch: boolean =
-    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-      ? window.matchMedia('(display-mode: standalone)').matches
-      : false
+  userAgent: string = typeof navigator !== 'undefined'
+    ? navigator.userAgent
+    : '',
+  mediaQueryMatch: boolean = typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function'
+    ? window.matchMedia('(display-mode: standalone)').matches
+    : false
 ): BrowserInfo {
   const os: BrowserOs = (() => {
     if (/iPad|iPhone|iPod/.test(userAgent)) return 'ios'
     if (userAgent.includes('Android')) return 'android'
-    if (userAgent.includes('Macintosh') || userAgent.includes('Mac OS X')) return 'macos'
+    if (userAgent.includes('Macintosh') || userAgent.includes('Mac OS X'))
+      return 'macos'
     if (userAgent.includes('Windows')) return 'windows'
     if (userAgent.includes('Linux')) return 'linux'
     return 'other'
@@ -71,13 +74,13 @@ export function detectBrowser(
 
   const family: BrowserFamily = (() => {
     if (os === 'ios') {
-      if (/CriOS/.test(userAgent)) return 'chrome-ios'
-      if (/FxiOS/.test(userAgent)) return 'other'
-      if (/EdgiOS/.test(userAgent)) return 'other'
+      if (userAgent.includes('CriOS')) return 'chrome-ios'
+      if (userAgent.includes('FxiOS')) return 'other'
+      if (userAgent.includes('EdgiOS')) return 'other'
       return 'safari'
     }
     if (userAgent.includes('SamsungBrowser')) return 'samsung-internet'
-    if (/Edg\//.test(userAgent)) return 'edge'
+    if (userAgent.includes('Edg/')) return 'edge'
     if (userAgent.includes('Firefox')) return 'firefox'
     if (userAgent.includes('Chrome')) return 'chrome'
     if (userAgent.includes('Safari')) return 'safari'

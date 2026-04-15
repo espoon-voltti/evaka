@@ -2,10 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { chromium } from 'playwright'
+/* eslint-disable no-console */
+
 import { writeFileSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+
+import { chromium } from 'playwright'
 
 // Regeneration script for the liquid-glass displacement + specular maps.
 // Not invoked at build time. Run manually from the `frontend/` directory:
@@ -81,6 +84,7 @@ const result = await page.evaluate(async (cfg) => {
   }
 
   const mkCanvas = () => {
+    // eslint-disable-next-line no-undef
     const c = document.createElement('canvas')
     c.width = width
     c.height = height

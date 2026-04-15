@@ -62,7 +62,7 @@ import {
 // tier only activates on Chromium-family browsers; everyone else falls
 // through to the frosted-blur fallback declared on `::before`.
 if (typeof document !== 'undefined' && typeof navigator !== 'undefined') {
-  const isFirefox = /Firefox\//.test(navigator.userAgent)
+  const isFirefox = navigator.userAgent.includes('Firefox/')
   const isChromium =
     'chrome' in window && !!(window as { chrome?: unknown }).chrome
   if (!isFirefox && isChromium) {

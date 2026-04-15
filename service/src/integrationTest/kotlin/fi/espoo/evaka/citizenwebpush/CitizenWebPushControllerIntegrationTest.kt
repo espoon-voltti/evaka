@@ -105,10 +105,7 @@ class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBefor
         // Subscribe — first write
         controller.putSubscription(db = dbInstance(), user = user(), clock = clock(), body = req)
         // Delete
-        controller.deleteSubscription(
-            user = user(),
-            body = CitizenWebPushController.UnsubscribeRequest(endpoint),
-        )
+        controller.deleteSubscription(user = user(), endpoint = endpoint)
         // Re-subscribe with a second, different endpoint on same person — the file was deleted
         // when the only entry was removed, so a second endpoint counts as first-write.
         val ep2 = URI("https://fcm.example.com/push/test-device-2")
@@ -161,10 +158,7 @@ class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBefor
     fun `DELETE subscription for non-existent endpoint does not throw`() {
         controller.deleteSubscription(
             user = user(),
-            body =
-                CitizenWebPushController.UnsubscribeRequest(
-                    URI("https://fcm.example.com/push/ghost")
-                ),
+            endpoint = URI("https://fcm.example.com/push/ghost"),
         )
     }
 }

@@ -59,6 +59,7 @@ import { faTrash, faEnvelope } from 'lib-icons'
 import { getAttachmentUrl } from '../attachments/attachments'
 import type { Translations } from '../localization'
 import { useTranslation } from '../localization'
+import { useReplyDraftRestore } from '../webpush/useReplyDraftRestore'
 
 import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import {
@@ -66,7 +67,6 @@ import {
   replyToThreadMutation
 } from './queries'
 import { MessageContext } from './state'
-import { useReplyDraftRestore } from '../webpush/useReplyDraftRestore'
 import { isPrimaryRecipient } from './utils'
 
 const TitleRow = styled.div`
@@ -270,10 +270,13 @@ export default React.memo(
     const showReplyEditor = useReplyEditorVisible.on
     useEffect(() => hideReplyEditor(), [hideReplyEditor, threadId])
 
-    const { discardDraft, restored } = useReplyDraftRestore(threadId, (text) => {
-      setReplyContent(threadId, text)
-      showReplyEditor()
-    })
+    const { discardDraft, restored } = useReplyDraftRestore(
+      threadId,
+      (text) => {
+        setReplyContent(threadId, text)
+        showReplyEditor()
+      }
+    )
 
     const [searchParams] = useSearchParams()
     useEffect(() => {
