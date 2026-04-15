@@ -54,8 +54,8 @@ import java.time.Month
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.zip.ZipInputStream
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest

@@ -26,7 +26,6 @@ import evaka.core.vtjclient.service.persondetails.VTJPersonDetailsService
 import evaka.core.vtjclient.service.vtjclient.IVtjClientService
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -217,8 +216,8 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
             adult1.id,
         )
 
-        Assertions.assertEquals(1, MockVtjClientService.getPERUSSANOMA3RequestCount(child))
-        Assertions.assertEquals(1, MockVtjClientService.getHUOLTAJAHUOLLETTAVARequestCount(parent))
+        assertEquals(1, MockVtjClientService.getPERUSSANOMA3RequestCount(child))
+        assertEquals(1, MockVtjClientService.getHUOLTAJAHUOLLETTAVARequestCount(parent))
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {

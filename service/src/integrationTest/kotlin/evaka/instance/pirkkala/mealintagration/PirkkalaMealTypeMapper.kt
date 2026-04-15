@@ -6,7 +6,7 @@ package evaka.instance.pirkkala.mealintagration
 
 import evaka.core.mealintegration.MealType
 import evaka.instance.pirkkala.mealintegration.PirkkalaMealTypeMapper
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class PirkkalaMealTypeMapper {

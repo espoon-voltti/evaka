@@ -8,7 +8,7 @@ import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.instance.lempaala.AbstractLempaalaIntegrationTest
 import evaka.instance.lempaala.util.FieldType
 import java.time.YearMonth
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 

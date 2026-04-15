@@ -11,8 +11,8 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.DateRange
 import java.time.LocalDate
 import java.time.Month
+import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertTrue
 
 fun assertPlacementToolServiceNeedOptionIdExists(
     db: Database.Connection,

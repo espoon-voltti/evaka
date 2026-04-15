@@ -5,7 +5,7 @@
 package evaka.instance.tampere.archival
 
 import evaka.trevaka.archival.distributeProportionally
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 

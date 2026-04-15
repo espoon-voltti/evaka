@@ -6,7 +6,7 @@ package evaka.instance.kangasala.mealintagration
 
 import evaka.core.mealintegration.MealType
 import evaka.instance.kangasala.mealintegration.KangasalaMealTypeMapper
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class KangasalaMealTypeMapper {

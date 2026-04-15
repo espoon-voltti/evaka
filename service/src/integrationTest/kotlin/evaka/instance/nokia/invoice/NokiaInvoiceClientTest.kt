@@ -10,7 +10,7 @@ import evaka.instance.nokia.invoice.service.validInvoice
 import evaka.instance.nokia.invoice.service.validPerson
 import evaka.trevaka.invoice.expectedRowLength
 import evaka.trevaka.sftp.SftpProperties
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 private val sftpProperties = SftpProperties("localhost", 22, emptyList(), "user", "pass", null, "")

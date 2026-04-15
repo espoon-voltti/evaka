@@ -6,7 +6,7 @@ package evaka.instance.lempaala.mealintagration
 
 import evaka.core.mealintegration.MealType
 import evaka.instance.lempaala.mealintegration.LempaalaMealTypeMapper
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class LempaalaMealTypeMapper {

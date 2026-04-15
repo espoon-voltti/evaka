@@ -12,7 +12,7 @@ import evaka.instance.ylojarvi.AbstractYlojarviIntegrationTest
 import evaka.instance.ylojarvi.invoice.service.validInvoice
 import java.time.LocalDate
 import java.time.LocalTime
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

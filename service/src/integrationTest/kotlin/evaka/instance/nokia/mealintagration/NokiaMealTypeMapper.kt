@@ -6,7 +6,7 @@ package evaka.instance.nokia.mealintagration
 
 import evaka.core.mealintegration.MealType
 import evaka.instance.nokia.mealintegration.NokiaMealTypeMapper
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class NokiaMealTypeMapper {

@@ -6,7 +6,7 @@ package evaka.instance.ylojarvi.mealintagration
 
 import evaka.core.mealintegration.MealType
 import evaka.instance.ylojarvi.mealintegration.YlojarviMealTypeMapper
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class YlojarviMealTypeMapper {

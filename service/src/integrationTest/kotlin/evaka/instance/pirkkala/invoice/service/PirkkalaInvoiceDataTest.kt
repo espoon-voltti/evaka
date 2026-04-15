@@ -4,7 +4,7 @@
 
 package evaka.instance.pirkkala.invoice.service
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class PirkkalaInvoiceDataTest {
@@ -48,8 +48,10 @@ private fun assertInvoiceFieldsAreInOrder(fields: List<InvoiceField>) {
         val previousEndPos = previous.start + previous.length + previous.decimals
         val currentStartPos = current.start
 
-        assertEquals(currentStartPos, previousEndPos) {
-            "Check ${previous.field} & ${current.field} start/length fields"
-        }
+        assertEquals(
+            currentStartPos,
+            previousEndPos,
+            "Check ${previous.field} & ${current.field} start/length fields",
+        )
     }
 }

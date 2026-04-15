@@ -76,7 +76,7 @@ import evaka.instance.tampere.security.TampereActionRuleMapping
 import evaka.instance.vesilahti.security.VesilahtiActionRuleMapping
 import evaka.instance.ylojarvi.security.YlojarviActionRuleMapping
 import java.nio.charset.StandardCharsets
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
 import tools.jackson.dataformat.csv.CsvMapper
