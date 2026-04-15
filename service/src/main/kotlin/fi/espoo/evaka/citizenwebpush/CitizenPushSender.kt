@@ -67,12 +67,19 @@ class CitizenPushSender(
             } else {
                 null
             }
+        val iconPath =
+            when (category) {
+                CitizenPushCategory.URGENT_MESSAGE -> "/citizen/notifications/urgent-message.png"
+                CitizenPushCategory.MESSAGE -> "/citizen/notifications/message.png"
+                CitizenPushCategory.BULLETIN -> "/citizen/notifications/bulletin.png"
+            }
         val payload =
             WebPushPayload.NotificationV1(
                 title = titleAndBody.title,
                 body = titleAndBody.body,
                 tag = "msg-$threadId",
                 url = "/messages/$threadId",
+                iconPath = iconPath,
                 replyAction = replyAction,
             )
 
@@ -93,6 +100,7 @@ class CitizenPushSender(
                 body = titleAndBody.body,
                 tag = "welcome",
                 url = "/personal-details",
+                iconPath = "/citizen/notifications/welcome.png",
             )
         file.subscriptions.forEach { entry -> sendOne(personId, entry, payload, jwtProvider, wp) }
     }

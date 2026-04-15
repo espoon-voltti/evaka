@@ -107,7 +107,7 @@ serviceWorker.addEventListener('push', (event) => {
   event.waitUntil(
     serviceWorker.registration.showNotification(title, {
       body: payload.body ?? '',
-      icon: '/citizen/evaka-192px.png',
+      icon: payload.iconPath ?? '/citizen/evaka-192px.png',
       // Android Chrome uses the alpha channel of the badge image to draw a
       // monochrome mask in the status bar, so the file is a transparent PNG
       // with just the "e" glyph opaque.
@@ -180,7 +180,7 @@ async function handleInlineReply(replyAction, content) {
     )
     await serviceWorker.registration.showNotification(replyAction.successTitle, {
       body: replyAction.successBody,
-      icon: '/citizen/evaka-192px.png',
+      icon: '/citizen/notifications/reply-success.png',
       badge: '/citizen/evaka-badge-72.png',
       tag: `msg-${threadId}`,
       data: { url: `/messages/${threadId}` },
@@ -190,7 +190,7 @@ async function handleInlineReply(replyAction, content) {
     console.warn('Reply POST failed', { threadId, err })
     await serviceWorker.registration.showNotification(replyAction.errorTitle, {
       body: replyAction.errorBody,
-      icon: '/citizen/evaka-192px.png',
+      icon: '/citizen/notifications/reply-error.png',
       badge: '/citizen/evaka-badge-72.png',
       tag: `msg-reply-error-${threadId}`,
       requireInteraction: true,

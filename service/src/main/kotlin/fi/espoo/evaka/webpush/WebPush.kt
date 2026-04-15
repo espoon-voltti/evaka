@@ -49,6 +49,7 @@ sealed interface WebPushPayload {
         val body: String? = null,
         val tag: String? = null,
         val url: String? = null,
+        val iconPath: String? = null,
         val replyAction: ReplyAction? = null,
     ) : WebPushPayload {
         data class ReplyAction(
