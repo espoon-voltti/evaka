@@ -71,13 +71,15 @@ serviceWorker.addEventListener('activate', (event) => {
   event.waitUntil(serviceWorker.clients.claim())
 })
 
-// Pass-through fetch handler. Chrome's PWA installability check requires the
-// service worker to have a `fetch` listener — we don't actually want to cache
-// anything because the citizen app needs live backend connectivity to be
-// useful.
-serviceWorker.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return
-  event.respondWith(fetch(event.request))
+// No-op fetch handler. Chrome's PWA installability check only requires that
+// a `fetch` listener is attached — the listener itself doesn't need to call
+// `respondWith`. Leaving the handler empty lets the browser handle every
+// request normally, avoiding interference with Playwright's navigation
+// response tracking under e2e test runs (which causes spurious
+// "response guid was not bound in the connection" failures on the next
+// page.goto after the SW installs).
+serviceWorker.addEventListener('fetch', () => {
+  // intentionally empty
 })
 
 serviceWorker.addEventListener('push', (event) => {
