@@ -26,7 +26,7 @@ fi
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../service"
 
-for test in $(find src/integrationTest/kotlin/evaka/ -type f \( -iname '*Test*.kt' \) \
+for test in $(find src/integrationTest/kotlin/evaka/ -type f \( -iname '*Test.kt' -o -iname '*Tests.kt' -o -iname '*CI.kt' \) \
     | sed 's/^src\/integrationTest\/kotlin\///g' \
     | sed 's/.kt$//g' \
     | tr / . \
