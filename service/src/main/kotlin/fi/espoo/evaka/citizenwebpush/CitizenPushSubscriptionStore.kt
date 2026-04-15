@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import java.net.URI
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
@@ -46,8 +45,12 @@ class CitizenPushSubscriptionStore(private val s3Client: S3Client, private val b
     }
 
     fun delete(personId: PersonId) {
-        val request = DeleteObjectRequest.builder().bucket(bucket).key(key(personId)).build()
-        s3Client.deleteObject(request)
+        // The decisions bucket (where these PoC files live — see
+        // CitizenWebPushConfig for the reason) denies s3:DeleteObject for the
+        // service role (allow_delete = false in evaka-ecs/s3.tf). Logical-
+        // delete by writing an empty-subscriptions file instead. All readers
+        // treat an empty subscription list identically to a missing file.
+        save(personId, CitizenPushStoreFile(personId, emptyList()))
     }
 
     fun removeSubscription(personId: PersonId, endpoint: URI) {

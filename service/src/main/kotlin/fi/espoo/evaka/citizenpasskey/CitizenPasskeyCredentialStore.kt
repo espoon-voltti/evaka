@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
@@ -42,8 +41,12 @@ class CitizenPasskeyCredentialStore(private val s3Client: S3Client, private val 
     }
 
     fun delete(personId: PersonId) {
-        val request = DeleteObjectRequest.builder().bucket(bucket).key(key(personId)).build()
-        s3Client.deleteObject(request)
+        // The decisions bucket (where these PoC files live — see
+        // CitizenPasskeyConfig for the reason) denies s3:DeleteObject for the
+        // service role (allow_delete = false in evaka-ecs/s3.tf). Logical-
+        // delete by writing an empty-credentials file instead. All readers
+        // treat an empty credentials list identically to a missing file.
+        save(personId, CitizenPasskeyStoreFile(personId, emptyList()))
     }
 
     fun listCredentials(personId: PersonId): List<CitizenPasskeyCredential> =

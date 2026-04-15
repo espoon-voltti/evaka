@@ -11,7 +11,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -68,10 +68,15 @@ class CitizenPasskeyCredentialStoreTest : FullApplicationTest(resetDbBeforeEach 
         assertTrue(revoked1)
         assertEquals(1, store.listCredentials(personId).size)
 
-        // 6. Revoke second credential — file deleted, load returns null
+        // 6. Revoke second credential — credentials list empty.
+        //    The decisions bucket denies s3:DeleteObject for the service, so
+        //    the store logical-deletes by writing an empty-list file instead
+        //    of a real DeleteObject (see CitizenPasskeyCredentialStore.delete).
         val revoked2 = store.revokeCredential(personId, "cred-2")
         assertTrue(revoked2)
-        assertNull(store.load(personId))
+        val afterFinalRevoke = store.load(personId)
+        assertNotNull(afterFinalRevoke)
+        assertTrue(afterFinalRevoke.credentials.isEmpty())
 
         // 7. Revoke on missing credential returns false
         val revokedMissing = store.revokeCredential(personId, "cred-1")

@@ -42,15 +42,20 @@ class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach =
             createdAt = now,
         )
 
+    // Each test method gets a fresh random personId (field initializer + JUnit
+    // PER_METHOD lifecycle), so no defensive store.delete() calls are needed
+    // between tests. `delete` is also a logical / soft delete now (it writes
+    // an empty file instead of a real DeleteObject) because the decisions
+    // bucket denies s3:DeleteObject for the service role, so asserting on
+    // "file is gone" is no longer meaningful.
+
     @Test
     fun `load returns null when no file exists`() {
-        store.delete(personId)
         assertNull(store.load(personId))
     }
 
     @Test
     fun `save creates file on first write and reports wasFirstWrite=true`() {
-        store.delete(personId)
         val result =
             store.save(
                 personId,
@@ -62,7 +67,6 @@ class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `save on existing file reports wasFirstWrite=false`() {
-        store.delete(personId)
         store.save(personId, CitizenPushStoreFile(personId, listOf(entry("https://fcm.example/a"))))
         val result =
             store.save(
@@ -78,7 +82,6 @@ class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `removeSubscription drops the matching endpoint and keeps the rest`() {
-        store.delete(personId)
         store.save(
             personId,
             CitizenPushStoreFile(
@@ -94,16 +97,16 @@ class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
-    fun `removeSubscription deletes file when last entry is removed`() {
-        store.delete(personId)
+    fun `removeSubscription leaves an empty subscriptions list when last entry is removed`() {
         store.save(personId, CitizenPushStoreFile(personId, listOf(entry("https://fcm.example/a"))))
         store.removeSubscription(personId, URI("https://fcm.example/a"))
-        assertNull(store.load(personId))
+        val loaded = store.load(personId)
+        assertNotNull(loaded)
+        assertTrue(loaded.subscriptions.isEmpty())
     }
 
     @Test
     fun `roundtrip preserves categories and byte arrays`() {
-        store.delete(personId)
         val original =
             entry(
                 "https://fcm.example/a",
@@ -120,7 +123,6 @@ class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `upsertSubscription creates file on first call and reports wasFirstWrite=true`() {
-        store.delete(personId)
         val result = store.upsertSubscription(personId, entry("https://fcm.example/new"))
         assertTrue(result.wasFirstWrite)
         val loaded = store.load(personId)
@@ -131,7 +133,6 @@ class CitizenPushSubscriptionStoreTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `upsertSubscription replaces entry with matching endpoint and preserves others`() {
-        store.delete(personId)
         store.save(
             personId,
             CitizenPushStoreFile(
