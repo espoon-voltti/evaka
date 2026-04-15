@@ -20,6 +20,7 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevPreschoolAssistance
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.runSqlScripts
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -47,15 +48,7 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
 
     @BeforeAll
     fun createSqlFunction() {
-        val sql =
-            this::class
-                .java
-                .getResourceAsStream(
-                    "/db/data/turku/afterMigrate__preschool_transfer_document_report.sql"
-                )!!
-                .bufferedReader()
-                .readText()
-        db.transaction { tx -> tx.execute { sql(sql) } }
+        db.transaction { tx -> tx.runSqlScripts("turku/db/migration") }
     }
 
     @BeforeEach
