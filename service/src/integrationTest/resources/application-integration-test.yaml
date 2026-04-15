@@ -242,3 +242,13 @@ evaka:
       username: user
       xroad:
         address: http://localhost:${wiremock.server.port}/mock/vtj
+
+---
+spring:
+  config:
+    activate:
+      on-profile: "nokia_evaka"
+evaka:
+  integration:
+    archival:
+      enabled: true

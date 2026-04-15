@@ -97,7 +97,9 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
 
         val rows =
             db.read { tx ->
-                tx.createQuery { sql("SELECT * FROM preschooler_export(2019, ${bind(date)})") }
+                tx.createQuery {
+                        sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
+                    }
                     .toList<PreschoolerExportRow>()
             }
 
@@ -157,7 +159,9 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
 
         val rows =
             db.read { tx ->
-                tx.createQuery { sql("SELECT * FROM preschooler_export(2019, ${bind(date)})") }
+                tx.createQuery {
+                        sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
+                    }
                     .toList<PreschoolerExportRow>()
             }
 
@@ -183,7 +187,9 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
 
         val rows =
             db.read { tx ->
-                tx.createQuery { sql("SELECT * FROM preschooler_export(2019, ${bind(date)})") }
+                tx.createQuery {
+                        sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
+                    }
                     .toList<PreschoolerExportRow>()
             }
 
@@ -219,7 +225,9 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
 
         val rows =
             db.read { tx ->
-                tx.createQuery { sql("SELECT * FROM preschooler_export(2019, ${bind(date)})") }
+                tx.createQuery {
+                        sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
+                    }
                     .toList<PreschoolerExportRow>()
             }
 
@@ -258,7 +266,9 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
 
         val rows =
             db.read { tx ->
-                tx.createQuery { sql("SELECT * FROM preschooler_export(2019, ${bind(date)})") }
+                tx.createQuery {
+                        sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
+                    }
                     .toList<PreschoolerExportRow>()
             }
 

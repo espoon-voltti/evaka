@@ -20,6 +20,7 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevPreschoolAssistance
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.resetDatabase
 import evaka.core.shared.dev.runSqlScripts
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
@@ -48,7 +49,10 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
 
     @BeforeAll
     fun createSqlFunction() {
-        db.transaction { tx -> tx.runSqlScripts("turku/db/migration") }
+        db.transaction { tx ->
+            tx.resetDatabase()
+            tx.runSqlScripts("turku/db/migration")
+        }
     }
 
     @BeforeEach

@@ -2,11 +2,11 @@
 --
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
--- \copy (SELECT * FROM preschooler_export(2019, current_date)) TO 'evaka_preschooler_export.csv' CSV DELIMITER ';'
+-- \copy (SELECT * FROM kangasala_preschooler_export(2019, current_date)) TO 'evaka_preschooler_export.csv' CSV DELIMITER ';'
 
-DROP FUNCTION IF EXISTS preschooler_export;
+DROP FUNCTION IF EXISTS kangasala_preschooler_export;
 
-CREATE FUNCTION preschooler_export(year_of_birth int, date date)
+CREATE FUNCTION kangasala_preschooler_export(year_of_birth int, date date)
     RETURNS TABLE (
         "esioppilaan henkilötunnus"    TEXT,
         "esioppilaan sukunimi"         TEXT,
