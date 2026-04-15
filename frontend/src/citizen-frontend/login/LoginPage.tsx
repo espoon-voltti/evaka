@@ -23,7 +23,6 @@ import { fontWeights, H1, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faExternalLink, farMap, farUser } from 'lib-icons'
 
-import Footer from '../Footer'
 import { useUser } from '../auth/state'
 import { useLang, useTranslation } from '../localization'
 import { getStrongLoginUri, getWeakLoginUri } from '../navigation/const'
@@ -158,7 +157,16 @@ export default React.memo(function LoginPage() {
           </MapLink>
         </LoginLayout>
       </Container>
-      <Footer />
+      <LoginFooter>
+        <FooterLinks>
+          {i18n.footer.privacyPolicyLink}
+          <Link to="/accessibility">{i18n.footer.accessibilityStatement}</Link>
+          {i18n.footer.sendFeedbackLink}
+        </FooterLinks>
+        <Copyright data-qa="footer-citylabel">
+          {i18n.footer.cityLabel}
+        </Copyright>
+      </LoginFooter>
     </Main>
   )
 })
@@ -258,4 +266,36 @@ const MapLink = styled(Link)`
   align-items: center;
   font-weight: ${fontWeights.semibold};
   color: ${(p) => p.theme.colors.main.m2};
+`
+
+const LoginFooter = styled.footer`
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${defaultMargins.xs};
+  padding: ${defaultMargins.L} ${defaultMargins.s};
+  font-size: 0.875rem;
+`
+
+const FooterLinks = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  row-gap: ${defaultMargins.xs};
+  column-gap: ${defaultMargins.L};
+
+  a {
+    color: ${(p) => p.theme.colors.main.m2};
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+`
+
+const Copyright = styled.p`
+  margin: 0;
+  color: ${(p) => p.theme.colors.grayscale.g70};
 `

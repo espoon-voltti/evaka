@@ -28,6 +28,12 @@ vi.mock('../localization', () => ({
       title: 'eVaka',
       openExpandingInfo: 'open'
     },
+    footer: {
+      cityLabel: '© City of Espoo',
+      privacyPolicyLink: <a href="#">Privacy policy</a>,
+      accessibilityStatement: 'Accessibility statement',
+      sendFeedbackLink: <a href="#">Send feedback</a>
+    },
     loginPage: {
       welcomeHeadline: 'Welcome',
       title: 'Login',
