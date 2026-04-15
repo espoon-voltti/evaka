@@ -62,6 +62,7 @@ RETURNING id, email, expires_at, sent_at
  * - if the code is wrong or verification has expired, BadRequest is thrown
  * - if everything is ok, the e-mail address of the person is updated and the verification is
  *   consumed
+ * - the weak-login username is also synced to the new verified e-mail, if weak credentials exist
  */
 fun Database.Transaction.verifyAndUpdateEmail(
     now: HelsinkiDateTime,
@@ -93,13 +94,14 @@ WHERE id = ${bind(personId)}
 """
         )
     }
+    syncWeakLoginUsername(now, personId)
 }
 
 /**
  * Updates a person's weak login username to be the same as their verified e-mail address, if it has
  * been set.
  */
-fun Database.Transaction.syncWeakLoginUsername(now: HelsinkiDateTime, personId: PersonId) {
+private fun Database.Transaction.syncWeakLoginUsername(now: HelsinkiDateTime, personId: PersonId) {
     execute {
         sql(
             """

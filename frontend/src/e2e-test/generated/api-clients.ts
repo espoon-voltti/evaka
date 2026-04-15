@@ -119,7 +119,7 @@ import type { StaffAttendancePlanId } from './api-types'
 import type { StaffAttendanceRealtimeId } from 'lib-common/generated/api-types/shared'
 import type { StaffMemberAttendance } from 'lib-common/generated/api-types/attendance'
 import type { UpdateIncomeStatementHandledBody } from './api-types'
-import type { UpdateWeakLoginCredentialsRequest } from 'lib-common/generated/api-types/pis'
+import type { UpsertWeakCredentialsRequest } from './api-types'
 import type { VoucherValueDecision } from './api-types'
 import { AxiosProgressEvent } from 'axios'
 import { DevApiError } from '../dev-api'
@@ -2317,7 +2317,7 @@ export async function upsertVtjDataset(
 export async function upsertWeakCredentials(
   request: {
     id: PersonId,
-    body: UpdateWeakLoginCredentialsRequest
+    body: UpsertWeakCredentialsRequest
   },
   options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<void> {
@@ -2326,7 +2326,7 @@ export async function upsertWeakCredentials(
       url: uri`/citizen/${request.id}/weak-credentials`.toString(),
       method: 'POST',
       headers: { EvakaMockedTime: options?.mockedTime?.formatIso() },
-      data: request.body satisfies JsonCompatible<UpdateWeakLoginCredentialsRequest>
+      data: request.body satisfies JsonCompatible<UpsertWeakCredentialsRequest>
     })
     return json
   } catch (e) {

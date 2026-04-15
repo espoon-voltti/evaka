@@ -11,6 +11,7 @@ import {
   upsertPasswordBlacklist
 } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
+import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage, {
   WeakCredentialsModal
 } from '../../pages/citizen/citizen-personal-details'
@@ -86,6 +87,45 @@ test.describe('Citizen weak credentials', () => {
     await expect(section.username).toHaveText(email)
   })
 
+  test('a person with a mixed-case email can activate and log in case-insensitively', async ({
+    evaka
+  }) => {
+    const email = 'Test@Example.com'
+    const citizen = await Fixture.person({
+      email,
+      verifiedEmail: email
+    }).saveAdult({
+      updateMockVtjWithDependants: []
+    })
+    const validPassword = 'aifiefaeC3io?dee'
+
+    const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
+    const section = personalDetailsPage.loginDetailsSection
+    await section.activateCredentials.click()
+
+    const modal = new WeakCredentialsModal(evaka)
+    await modal.username.assertAttributeEquals('value', email)
+    await modal.password.fill(validPassword)
+    await modal.confirmPassword.fill(validPassword)
+    await modal.ok.click()
+    await modal.ok.click()
+    await expect(section.weakLoginEnabled).toBeVisible()
+
+    await new CitizenHeader(evaka).logout()
+
+    await enduserLoginWeak(evaka, {
+      username: email.toLowerCase(),
+      password: validPassword
+    })
+
+    await new CitizenHeader(evaka).logout()
+
+    await enduserLoginWeak(evaka, {
+      username: email,
+      password: validPassword
+    })
+  })
+
   test('a person with weak credentials can change their password', async ({
     evaka
   }) => {
@@ -159,6 +199,12 @@ test.describe('Citizen weak credentials', () => {
     await expect(personalDetailsPage.loginDetailsSection.username).toHaveText(
       newEmail
     )
+
+    await new CitizenHeader(evaka).logout()
+    await enduserLoginWeak(evaka, {
+      username: newEmail,
+      password: 'aifiefaeC3io?dee'
+    })
   })
 
   test('a person with a different email can change their username - email updated elsewhere', async ({
@@ -192,6 +238,12 @@ test.describe('Citizen weak credentials', () => {
     await expect(personalDetailsPage.loginDetailsSection.username).toHaveText(
       newEmail
     )
+
+    await new CitizenHeader(evaka).logout()
+    await enduserLoginWeak(evaka, {
+      username: newEmail,
+      password: 'aifiefaeC3io?dee'
+    })
   })
 
   test('a new password must be valid and acceptable', async ({ evaka }) => {

@@ -175,8 +175,7 @@ export async function citizenWeakLogin(
 }
 
 interface CitizenWeakLoginCredentialsUpdateRequest {
-  username: string | null
-  password: string | null
+  password: string
 }
 
 export async function citizenWeakLoginCredentialsUpdate(
