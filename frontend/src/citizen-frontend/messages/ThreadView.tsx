@@ -285,6 +285,19 @@ export default React.memo(
       }
     }, [threadId, searchParams, showReplyEditor])
 
+    useEffect(() => {
+      if (searchParams.get('scrollTo') !== 'latest') return
+      if (messages.length === 0) return
+      scrollRefIntoView(lastMessageRef, undefined, 'end')
+      const url = new URL(window.location.href)
+      url.searchParams.delete('scrollTo')
+      // Strip the notification marker too: RequireAuth already strips it
+      // from the post-login return URL, but direct notification clicks
+      // when the session is valid land here with the marker still present.
+      url.searchParams.delete('fromNotification')
+      window.history.replaceState(null, '', url.toString())
+    }, [searchParams, messages.length])
+
     const autoScrollRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
       scrollRefIntoView(autoScrollRef, undefined, 'end')
