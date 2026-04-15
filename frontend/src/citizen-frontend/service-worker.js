@@ -63,6 +63,29 @@ async function deleteDraft(threadId) {
   })
 }
 
+// Adds the notification-origin markers the SPA looks for on arrival:
+//   - fromNotification=1: consumed by RequireAuth to append
+//     reason=session-expired-open-thread when the user is not logged in.
+//     Stripped from the post-login return URL.
+//   - scrollTo=latest: consumed by ThreadView to scroll to the last
+//     message on mount. Stripped from the URL via history.replaceState
+//     after the first scroll.
+// Preserves any existing query params on the input URL. Idempotent: safe
+// to call on a URL that already carries the markers (set() replaces).
+function notificationClickUrl(targetUrl) {
+  try {
+    const url = new URL(targetUrl, self.location.origin)
+    url.searchParams.set('fromNotification', '1')
+    url.searchParams.set('scrollTo', 'latest')
+    return url.pathname + url.search + url.hash
+  } catch {
+    // If targetUrl is unparseable (shouldn't happen for the backend-
+    // supplied URLs we see today), return it unchanged so we at least
+    // open something.
+    return targetUrl
+  }
+}
+
 serviceWorker.addEventListener('install', (event) => {
   event.waitUntil(serviceWorker.skipWaiting())
 })
@@ -138,12 +161,16 @@ serviceWorker.addEventListener('notificationclick', (event) => {
     // Platform rendered the action as a plain button (no inline text input).
     // Fall through to opening the thread with the reply textarea focused.
     notification.close()
-    event.waitUntil(openThreadForReply(replyAction.threadId))
+    event.waitUntil(
+      openUrl(
+        notificationClickUrl(`/messages/${replyAction.threadId}?focus=reply`)
+      )
+    )
     return
   }
 
   notification.close()
-  event.waitUntil(openUrl(url))
+  event.waitUntil(openUrl(notificationClickUrl(url)))
 })
 
 async function handleInlineReply(replyAction, content) {
@@ -171,7 +198,12 @@ async function handleInlineReply(replyAction, content) {
         recipientAccountIds: replyAction.recipientAccountIds
       })
     })
-    if (!response.ok) throw new Error(`reply POST failed: ${response.status}`)
+    if (!response.ok) {
+      /** @type {any} */
+      const err = new Error(`reply POST failed: ${response.status}`)
+      err.status = response.status
+      throw err
+    }
     await deleteDraft(threadId).catch((err) =>
       console.warn('Failed to delete reply draft after successful send', {
         threadId,
@@ -185,26 +217,48 @@ async function handleInlineReply(replyAction, content) {
         icon: '/citizen/notifications/reply-success.png',
         badge: '/citizen/evaka-badge-72.png',
         tag: `msg-${threadId}`,
-        data: { url: `/messages/${threadId}` },
+        data: { url: notificationClickUrl(`/messages/${threadId}`) },
         actions: []
       }
     )
   } catch (err) {
     console.warn('Reply POST failed', { threadId, err })
+
+    /** @type {any} */
+    const errAny = err
+    if (errAny && errAny.status === 401) {
+      // Session expired. Open the PWA straight on the login page with the
+      // reason banner so the citizen can re-authenticate without a second
+      // notification tap. The draft was already saved to IDB before the
+      // POST, so useReplyDraftRestore repopulates the reply editor when
+      // the citizen lands back on the thread.
+      const returnUrl = `/messages/${threadId}?focus=reply&scrollTo=latest`
+      const loginUrl =
+        `/login?next=${encodeURIComponent(returnUrl)}` +
+        `&reason=session-expired-reply-failed`
+      try {
+        const win = await serviceWorker.clients.openWindow(loginUrl)
+        if (win) return
+      } catch (openErr) {
+        console.warn('openWindow failed for auth-expired reply', openErr)
+      }
+      // Fall through to the error-notification path so the user is not
+      // left with a silent failure. They'll land on the same thread and
+      // the draft will be restored, they just lose the reason banner.
+    }
+
     await serviceWorker.registration.showNotification(replyAction.errorTitle, {
       body: replyAction.errorBody,
       icon: '/citizen/notifications/reply-error.png',
       badge: '/citizen/evaka-badge-72.png',
       tag: `msg-reply-error-${threadId}`,
       requireInteraction: true,
-      data: { url: `/messages/${threadId}?focus=reply` },
+      data: {
+        url: notificationClickUrl(`/messages/${threadId}?focus=reply`)
+      },
       actions: []
     })
   }
-}
-
-async function openThreadForReply(threadId) {
-  return openUrl(`/messages/${threadId}?focus=reply`)
 }
 
 async function openUrl(url) {
