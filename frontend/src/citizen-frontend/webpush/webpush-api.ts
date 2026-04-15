@@ -48,7 +48,9 @@ export async function putSubscription(
 }
 
 export async function deleteSubscription(endpoint: string): Promise<void> {
-  await client.delete('/citizen/web-push/subscription', { data: { endpoint } })
+  await client.delete('/citizen/web-push/subscription', {
+    params: { endpoint }
+  })
 }
 
 export async function postTest(): Promise<void> {

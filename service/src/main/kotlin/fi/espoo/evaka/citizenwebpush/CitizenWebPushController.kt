@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -39,8 +40,6 @@ class CitizenWebPushController(
     )
 
     data class SubscribeResponse(val sentTest: Boolean)
-
-    data class UnsubscribeRequest(val endpoint: URI)
 
     @GetMapping("/vapid-key")
     fun vapidKey(user: AuthenticatedUser.Citizen): ResponseEntity<VapidKeyResponse> =
@@ -87,11 +86,11 @@ class CitizenWebPushController(
     }
 
     @DeleteMapping("/subscription")
-    fun deleteSubscription(user: AuthenticatedUser.Citizen, @RequestBody body: UnsubscribeRequest) {
-        store.removeSubscription(user.id, body.endpoint)
+    fun deleteSubscription(user: AuthenticatedUser.Citizen, @RequestParam endpoint: URI) {
+        store.removeSubscription(user.id, endpoint)
         Audit.CitizenWebPushSubscriptionDelete.log(
             targetId = AuditId(user.id),
-            meta = mapOf("endpoint" to body.endpoint.toString()),
+            meta = mapOf("endpoint" to endpoint.toString()),
         )
     }
 
