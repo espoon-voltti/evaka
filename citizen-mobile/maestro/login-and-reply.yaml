@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2017-2026 City of Espoo
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+appId: fi.espoo.evaka.citizen
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Kirjaudu sisään"
+- tapOn:
+    id: "username"
+- inputText: "test.citizen@example.com"
+- tapOn:
+    id: "password"
+- inputText: "test-password"
+- tapOn:
+    id: "login-submit"
+- assertVisible: "eVaka"
+- tapOn:
+    index: 0
+    below: "eVaka"
+- assertVisible: "Lähetä"
+- tapOn:
+    id: "reply-input"
+- inputText: "Kiitos viestistä"
+- tapOn: "Lähetä"
+- assertVisible: "Kiitos viestistä"

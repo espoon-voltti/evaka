@@ -51,7 +51,7 @@ export default function LoginScreen() {
           autoCorrect={false}
           keyboardType="email-address"
           style={styles.input}
-          testID="login-username"
+          testID="username"
         />
         <TextInput
           label={t('login.password')}
@@ -59,7 +59,7 @@ export default function LoginScreen() {
           onChangeText={setPassword}
           secureTextEntry
           style={styles.input}
-          testID="login-password"
+          testID="password"
         />
         {error ? (
           <HelperText type="error" visible>
