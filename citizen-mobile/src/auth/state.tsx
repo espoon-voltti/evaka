@@ -12,6 +12,7 @@ import {
 import type { ReactNode } from 'react'
 
 import * as api from '../api/auth'
+import { unregisterFromPushNotifications } from '../push/register'
 
 import { tokenStorage } from './storage'
 
@@ -71,6 +72,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     if (state.status === 'signed-in') {
+      try {
+        await unregisterFromPushNotifications(state.token)
+      } catch {
+        // ignore
+      }
       try {
         await api.logout(state.token)
       } catch {
