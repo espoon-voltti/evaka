@@ -565,8 +565,6 @@ jobs:
           BUILD: "false"
         run: |
           cd compose
-          docker compose -f docker-compose.yml -f docker-compose.e2e.yml pull db evaka-srv
-          docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --wait db s3-mock
           docker compose -f docker-compose.yml -f docker-compose.e2e.yml run -d \
             -e EVAKA_MUNICIPALITY=${{ matrix.municipality }} \
             -p 8888:8888 \
