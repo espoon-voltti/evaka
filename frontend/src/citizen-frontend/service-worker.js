@@ -262,13 +262,35 @@ async function handleInlineReply(replyAction, content) {
 }
 
 async function openUrl(url) {
+  const target = (() => {
+    try {
+      return new URL(url, self.location.origin)
+    } catch {
+      return null
+    }
+  })()
   const list = await serviceWorker.clients.matchAll({
     type: 'window',
     includeUncontrolled: true
   })
-  for (const client of list) {
-    if (client.url.includes(url) && 'focus' in client) {
-      return client.focus()
+  if (target) {
+    for (const client of list) {
+      try {
+        const clientPath = new URL(client.url).pathname
+        // Exact pathname match, or target is a parent of the client path
+        // (e.g. target=/messages matches client=/messages/123). The query
+        // string is intentionally ignored so notification-origin markers
+        // like fromNotification=1 and scrollTo=latest don't prevent the
+        // focus-existing-client path from firing.
+        const isMatch =
+          clientPath === target.pathname ||
+          clientPath.startsWith(`${target.pathname}/`)
+        if (isMatch && 'focus' in client) {
+          return client.focus()
+        }
+      } catch {
+        // client.url unparseable — skip
+      }
     }
   }
   return serviceWorker.clients.openWindow(url)
