@@ -2169,6 +2169,11 @@ const sv: Translations = {
         myndigheten för digitalisering och befolkningsdata (DVV).
       </P>
     ),
+    installSection: {
+      title: 'Installera eVaka på din enhet',
+      description:
+        'Du kan installera eVaka som en app på din enhet. I den installerade appen öppnas eVaka snabbare och du ser nya push-notiser.'
+    },
     detailsSection: {
       noEmailAlert:
         'Din epostadress saknas. Var god och fyll i den nedan, så att du kan ta emot notiser från eVaka.',

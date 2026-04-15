@@ -2184,6 +2184,11 @@ export default {
         muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
       </P>
     ),
+    installSection: {
+      title: 'Asenna eVaka laitteellesi',
+      description:
+        'eVakan voi asentaa laitteellesi sovelluksena. Asennetussa sovelluksessa eVaka on nopeampi avata ja näet uudet push-ilmoitukset.'
+    },
     detailsSection: {
       title: 'Henkilötiedot',
       noEmailAlert:

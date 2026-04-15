@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { detectPlatform, type Platform } from './detectPlatform'
 
@@ -27,52 +27,71 @@ const isStandalone = (): boolean => {
   return nav.standalone === true
 }
 
-export function usePwaInstall(): PwaInstallState {
-  const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null)
+// `beforeinstallprompt` fires once per page load, typically very early — before
+// the user has navigated to any hook consumer. We capture it at module scope so
+// it survives SPA navigation (e.g. from /login to /personal-details) and all
+// usePwaInstall callers see the same deferred prompt.
+let deferredPrompt: BeforeInstallPromptEvent | null = null
+let captured = false
+let appInstalled = false
+const subscribers = new Set<() => void>()
 
-  const [state, setState] = useState<PwaInstallState>(() => {
-    if (isStandalone()) return { kind: 'standalone' }
-    return { kind: 'fallback', platform: detectPlatform() }
+const notify = () => {
+  for (const s of subscribers) s()
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (event) => {
+    // Suppress the default mini-infobar so we can defer the prompt to our own UI.
+    event.preventDefault()
+    deferredPrompt = event as BeforeInstallPromptEvent
+    captured = true
+    notify()
   })
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null
+    appInstalled = true
+    notify()
+  })
+}
 
-  const promptInstall = useCallback(async () => {
-    const deferred = deferredPromptRef.current
-    if (!deferred) return
-    await deferred.prompt()
-    try {
-      const { outcome } = await deferred.userChoice
-      if (outcome === 'accepted') {
-        setState({ kind: 'standalone' })
-      } else {
-        setState({ kind: 'fallback', platform: detectPlatform() })
-      }
-    } finally {
-      deferredPromptRef.current = null
+export function usePwaInstall(): PwaInstallState {
+  const computeState = useCallback((): PwaInstallState => {
+    if (appInstalled || isStandalone()) return { kind: 'standalone' }
+    if (captured && deferredPrompt) {
+      return { kind: 'native', promptInstall }
     }
+    return { kind: 'fallback', platform: detectPlatform() }
   }, [])
 
+  const [state, setState] = useState<PwaInstallState>(computeState)
+
   useEffect(() => {
-    const onBeforeInstallPrompt = (event: Event) => {
-      // Suppress the default mini-infobar so we can defer the prompt to our own UI.
-      event.preventDefault()
-      deferredPromptRef.current = event as BeforeInstallPromptEvent
-      setState({ kind: 'native', promptInstall })
-    }
-
-    const onAppInstalled = () => {
-      deferredPromptRef.current = null
-      setState({ kind: 'standalone' })
-    }
-
-    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt)
-    window.addEventListener('appinstalled', onAppInstalled)
-
+    const update = () => setState(computeState())
+    subscribers.add(update)
+    // Re-sync on mount in case the module-level flags changed between the
+    // initial useState call and the effect running (e.g. StrictMode remount).
+    update()
     return () => {
-      window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt)
-      window.removeEventListener('appinstalled', onAppInstalled)
+      subscribers.delete(update)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // promptInstall is stable (useCallback with []) — listeners never need re-binding
+  }, [computeState])
 
   return state
+}
+
+async function promptInstall(): Promise<void> {
+  const deferred = deferredPrompt
+  if (!deferred) return
+  await deferred.prompt()
+  try {
+    const { outcome } = await deferred.userChoice
+    if (outcome === 'accepted') {
+      appInstalled = true
+    }
+  } finally {
+    deferredPrompt = null
+    captured = false
+    notify()
+  }
 }

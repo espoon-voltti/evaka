@@ -1919,6 +1919,11 @@ const en: Translations = {
         Population Data Services Agency (DVV).
       </P>
     ),
+    installSection: {
+      title: 'Install eVaka on your device',
+      description:
+        'You can install eVaka as an app on your device. In the installed app eVaka opens faster and you see new push notifications.'
+    },
     detailsSection: {
       noEmailAlert:
         'Your email address is missing. Please fill it down below to receive notifications sent by eVaka.',
