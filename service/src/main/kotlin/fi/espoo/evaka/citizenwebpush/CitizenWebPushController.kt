@@ -66,10 +66,14 @@ class CitizenWebPushController(
         Audit.CitizenWebPushSubscriptionUpsert.log(
             targetId = AuditId(user.id),
             meta =
-                mapOf("endpoint" to body.endpoint.toString(), "firstWrite" to result.wasFirstWrite),
+                mapOf(
+                    "endpoint" to body.endpoint.toString(),
+                    "firstWrite" to result.wasFirstWrite,
+                    "newEndpoint" to result.wasNewEndpoint,
+                ),
         )
         val wp = webPush
-        if (result.wasFirstWrite && wp != null) {
+        if (result.wasNewEndpoint && wp != null) {
             val language = CitizenPushLanguage.fromPersonLanguage(resolveLanguage(db, user.id))
             sender.sendTest(
                 personId = user.id,
@@ -82,7 +86,7 @@ class CitizenWebPushController(
                     },
             )
         }
-        return SubscribeResponse(sentTest = result.wasFirstWrite && wp != null)
+        return SubscribeResponse(sentTest = result.wasNewEndpoint && wp != null)
     }
 
     @DeleteMapping("/subscription")

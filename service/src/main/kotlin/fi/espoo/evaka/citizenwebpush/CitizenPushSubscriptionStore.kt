@@ -14,7 +14,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
-data class SaveResult(val wasFirstWrite: Boolean)
+data class SaveResult(val wasFirstWrite: Boolean, val wasNewEndpoint: Boolean = false)
 
 class CitizenPushSubscriptionStore(private val s3Client: S3Client, private val bucket: String) {
     private val jsonMapper = defaultJsonMapperBuilder().build()
@@ -62,8 +62,9 @@ class CitizenPushSubscriptionStore(private val s3Client: S3Client, private val b
 
     fun upsertSubscription(personId: PersonId, entry: CitizenPushSubscriptionEntry): SaveResult {
         val current = load(personId) ?: CitizenPushStoreFile(personId, emptyList())
+        val wasNewEndpoint = current.subscriptions.none { it.endpoint == entry.endpoint }
         val filtered = current.subscriptions.filterNot { it.endpoint == entry.endpoint }
         val next = current.copy(subscriptions = filtered + entry)
-        return save(personId, next)
+        return save(personId, next).copy(wasNewEndpoint = wasNewEndpoint)
     }
 }
