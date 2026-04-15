@@ -201,6 +201,7 @@ const sv: Translations = {
     )
   },
   loginPage: {
+    welcomeHeadline: 'Välkommen till eVaka',
     title: 'Esbo stads småbarnspedagogik',
     systemNotification: 'Viktigt meddelande',
     pwaInstall: {
@@ -267,7 +268,7 @@ const sv: Translations = {
         'Du kan skapa ett användarnamn genom att logga in med stark autentisering och tillåta inloggning ned e-post på sidan "Egna uppgifter"',
       passkey: {
         title: 'Logga in med passnyckel',
-        subtitle: 'Snabb, lösenordsfri inloggning på denna enhet',
+        subtitle: 'Snabb, säker och lösenordsfri inloggning',
         noCredentialsHint:
           'Ingen passnyckel hittades på denna enhet. Logga in med Suomi.fi först för att aktivera passnycklar, eller använd en annan enhet som redan har en.',
         failed: 'Inloggning misslyckades. Försök igen.',
@@ -285,7 +286,7 @@ const sv: Translations = {
         'anmäla ditt eller ditt barns inkomstuppgifter',
         'acceptera eller avslå ett beslut, om du gjort ansökan'
       ],
-      link: 'Autentisera',
+      link: 'Autentisera via Suomi.fi',
       mapText: 'Se en karta över alla eVaka enheter du kan ansöka till.',
       mapLink: 'Enheter på kartan'
     }

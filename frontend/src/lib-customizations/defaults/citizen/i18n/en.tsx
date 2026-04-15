@@ -203,6 +203,7 @@ const en: Translations = {
     )
   },
   loginPage: {
+    welcomeHeadline: 'Welcome to eVaka',
     title: 'City of Espoo early childhood education',
     systemNotification: 'Important announcement',
     pwaInstall: {
@@ -277,7 +278,7 @@ const en: Translations = {
         'You can create a username by logging in using strong authentication and enabling login via email on the "Personal information" page.',
       passkey: {
         title: 'Sign in with passkey',
-        subtitle: 'Fast, passwordless sign-in on this device',
+        subtitle: 'Fast, secure and passwordless sign-in',
         noCredentialsHint:
           'No passkeys found on this device. Sign in with suomi.fi first to enrol a passkey, or use another device that has one.',
         failed: 'Sign-in failed. Please try again.',
@@ -295,7 +296,7 @@ const en: Translations = {
         "report your or your child's income information",
         'accept or reject a decision, if you made the application'
       ],
-      link: 'Authenticate',
+      link: 'Authenticate via Suomi.fi',
       mapText: 'Look up the units that you can apply to in eVaka on the map.',
       mapLink: 'Units on the map'
     }

@@ -29,6 +29,7 @@ vi.mock('../localization', () => ({
       openExpandingInfo: 'open'
     },
     loginPage: {
+      welcomeHeadline: 'Welcome',
       title: 'Login',
       systemNotification: 'Notice',
       pwaInstall: {

@@ -201,6 +201,7 @@ export default {
     )
   },
   loginPage: {
+    welcomeHeadline: 'Tervetuloa eVakaan',
     title: 'Espoon kaupungin varhaiskasvatus',
     systemNotification: 'Tärkeä tiedote',
     pwaInstall: {
@@ -291,7 +292,7 @@ export default {
         'ilmoittaa omat tai lapsesi tulotiedot',
         'hyväksyä tai hylätä päätöksen, jos olet hakemuksen tekijä'
       ],
-      link: 'Tunnistaudu',
+      link: 'Tunnistaudu Suomi.fi:ssä',
       mapText: 'Katso kartalta yksiköt, joihin voit hakea eVakassa.',
       mapLink: 'Yksiköt kartalla'
     }
