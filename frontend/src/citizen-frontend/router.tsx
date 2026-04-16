@@ -32,6 +32,7 @@ import LoginFormPage from './login/WeakLoginFormPage'
 import MapPage from './map/MapPage'
 import MessagesPage from './messages/MessagesPage'
 import PersonalDetails from './personal-details/PersonalDetails'
+import CitizenVideoCallPage from './video-call/VideoCallPage'
 
 interface CitizenRoute {
   path: string
@@ -72,6 +73,11 @@ const routes: CitizenRoute[] = [
   { path: '/messages/:threadId', component: MessagesPage, auth: 'WEAK' },
   { path: '/messages', component: MessagesPage, auth: 'WEAK' },
   { path: '/calendar', component: CalendarPage, auth: 'WEAK' },
+  {
+    path: '/video-call/:roomId',
+    component: CitizenVideoCallPage,
+    auth: 'WEAK'
+  },
   {
     path: '/children/:childId/service-application',
     component: NewServiceApplicationPage,

@@ -5,7 +5,7 @@
 import orderBy from 'lodash/orderBy'
 import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
-import { Link } from 'wouter'
+import { Link, useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
 import type {
@@ -16,10 +16,14 @@ import type { ChildId, PersonId } from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { getAge } from 'lib-common/utils/local-date'
 import { StaticChip } from 'lib-components/atoms/Chip'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -28,6 +32,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faPen } from 'lib-icons'
 
+import { startCall } from '../../generated/api-clients/videocall'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -38,6 +43,8 @@ import { guardiansQuery, updateGuardianEvakaRightsMutation } from './queries'
 export default React.memo(function Guardians() {
   const { i18n } = useTranslation()
   const { childId, permittedActions } = useContext(ChildContext)
+  const [, setLocation] = useLocation()
+  const [startingCall, setStartingCall] = useState(false)
   const guardians = useQueryResult(
     childId && permittedActions.has('READ_GUARDIANS')
       ? guardiansQuery({ personId: childId })
@@ -84,7 +91,27 @@ export default React.memo(function Guardians() {
           stopEditing={stopEditing}
         />
       )}
-      <H3 $noMargin>{i18n.personProfile.guardians}</H3>
+      <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
+        <H3 $noMargin>{i18n.personProfile.guardians}</H3>
+        {childId && (
+          <Button
+            text="Aloita videopuhelu"
+            primary
+            disabled={startingCall}
+            onClick={() => {
+              setStartingCall(true)
+              startCall({ body: { childId } })
+                .then((res) => {
+                  setLocation(`/video-call/${res.roomId}`)
+                })
+                .catch(() => {
+                  setStartingCall(false)
+                })
+            }}
+            data-qa="start-video-call"
+          />
+        )}
+      </FixedSpaceRow>
       {renderResult(allGuardians, (guardians, isReloading) => (
         <Table data-qa="table-of-guardians" data-loading={isReloading}>
           <Thead>

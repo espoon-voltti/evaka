@@ -103,6 +103,7 @@ import DiscussionReservationSurveysPage from './components/unit/tab-calendar/dis
 import CreateUnitPage from './components/unit/unit-details/CreateUnitPage'
 import UnitDetailsPage from './components/unit/unit-details/UnitDetailsPage'
 import UnitFeaturesPage from './components/unit-features/UnitFeaturesPage'
+import EmployeeVideoCallPage from './components/video-call/VideoCallPage'
 import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
 import VoucherValueDecisionsPage from './components/voucher-value-decisions/VoucherValueDecisionsPage'
 
@@ -117,6 +118,7 @@ interface EmployeeRoute {
 
 const routes: EmployeeRoute[] = [
   { path: '/login', component: LoginPage, auth: false, title: 'login' },
+  { path: '/video-call/:roomId', component: EmployeeVideoCallPage },
   { path: '/settings', component: SettingsPage, title: 'settings' },
   {
     path: '/system-notifications',

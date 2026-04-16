@@ -35,6 +35,7 @@ import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { usePasskeyEnrollNudge } from './passkey/usePasskeyEnrollNudge'
 import { queryClient, QueryClientProvider } from './query'
+import IncomingVideoCallBanner from './video-call/IncomingVideoCallBanner'
 
 const GlobalStyle = createGlobalStyle`
   @media screen and (max-width: ${zoomedMobileMax}) {
@@ -104,6 +105,7 @@ const Content = React.memo(function Content({
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
       <Notifications apiVersion={apiVersion} sticky offsetTop />
+      <IncomingVideoCallBanner />
       <MainContainer ariaHidden={modalOpen}>{children}</MainContainer>
       <MobileNav />
       {sessionExpirationDetected && (
