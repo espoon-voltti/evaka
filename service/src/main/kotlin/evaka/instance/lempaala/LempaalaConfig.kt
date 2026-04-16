@@ -4,6 +4,8 @@
 
 package evaka.instance.lempaala
 
+import evaka.core.OphEnv
+import evaka.core.ScheduledJobsEnv
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.mealintegration.MealTypeMapper
@@ -108,4 +110,19 @@ class LempaalaConfig {
     @Bean
     fun archivalIntegrationClient(): ArchivalIntegrationClient =
         ArchivalIntegrationClient.FailingClient()
+
+    @Bean
+    fun lempaalaScheduledJobEnv(env: Environment): ScheduledJobsEnv<LempaalaScheduledJob> =
+        ScheduledJobsEnv.fromEnvironment(
+            LempaalaScheduledJob.entries.associateWith { it.defaultSettings },
+            "lempaala.job",
+            env,
+        )
+
+    @Bean
+    fun lempaalaScheduledJobs(
+        ophEnv: OphEnv,
+        properties: LempaalaProperties,
+        env: ScheduledJobsEnv<LempaalaScheduledJob>,
+    ): LempaalaScheduledJobs = LempaalaScheduledJobs(ophEnv, properties, env)
 }

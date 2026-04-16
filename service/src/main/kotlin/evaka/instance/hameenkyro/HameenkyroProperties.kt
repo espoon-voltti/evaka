@@ -4,10 +4,11 @@
 
 package evaka.instance.hameenkyro
 
+import evaka.trevaka.primus.PrimusProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "hameenkyro")
-data class HameenkyroProperties(val bucket: BucketProperties)
+data class HameenkyroProperties(val bucket: BucketProperties, val primus: PrimusProperties? = null)
 
 data class BucketProperties(val export: String) {
     fun allBuckets() = listOf(export)

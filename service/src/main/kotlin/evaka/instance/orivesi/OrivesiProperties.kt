@@ -4,10 +4,15 @@
 
 package evaka.instance.orivesi
 
+import evaka.trevaka.primus.PrimusProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "orivesi")
-data class OrivesiProperties(val invoice: InvoiceProperties, val bucket: BucketProperties)
+data class OrivesiProperties(
+    val invoice: InvoiceProperties,
+    val bucket: BucketProperties,
+    val primus: PrimusProperties? = null,
+)
 
 data class InvoiceProperties(val municipalityCode: String, val invoiceType: String)
 

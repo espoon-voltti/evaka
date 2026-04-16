@@ -4,6 +4,8 @@
 
 package evaka.instance.orivesi
 
+import evaka.core.OphEnv
+import evaka.core.ScheduledJobsEnv
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.mealintegration.MealTypeMapper
@@ -115,4 +117,19 @@ class OrivesiConfig {
     @Bean
     fun archivalIntegrationClient(): ArchivalIntegrationClient =
         ArchivalIntegrationClient.FailingClient()
+
+    @Bean
+    fun orivesiScheduledJobEnv(env: Environment): ScheduledJobsEnv<OrivesiScheduledJob> =
+        ScheduledJobsEnv.fromEnvironment(
+            OrivesiScheduledJob.entries.associateWith { it.defaultSettings },
+            "orivesi.job",
+            env,
+        )
+
+    @Bean
+    fun orivesiScheduledJobs(
+        ophEnv: OphEnv,
+        properties: OrivesiProperties,
+        env: ScheduledJobsEnv<OrivesiScheduledJob>,
+    ): OrivesiScheduledJobs = OrivesiScheduledJobs(ophEnv, properties, env)
 }

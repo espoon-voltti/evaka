@@ -5,9 +5,13 @@
 package evaka.trevaka.export
 
 import evaka.core.OphEnv
+import evaka.core.reports.REPORT_STATEMENT_TIMEOUT
 import evaka.core.shared.DocumentTemplateId
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.sftp.SftpClient
+import evaka.trevaka.primus.PrimusProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.stereotype.Service
@@ -16,6 +20,69 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
 private val logger = KotlinLogging.logger {}
+
+enum class ChildDocumentTransferType(val templateNamePattern: String, val baseFilename: String) {
+    PRESCHOOL_TO_PRIMARY(
+        "%tiedonsiirto esiopetuksesta perusopetukseen%",
+        "preschool_to_primary_transfer",
+    ),
+    DAYCARE_TO_PRESCHOOL(
+        "%tiedonsiirto varhaiskasvatuksesta esiopetukseen%",
+        "daycare_to_preschool_transfer",
+    ),
+}
+
+data class PreschoolChildDocumentsExport(val filename: String, val documents: String)
+
+private fun readChildDocumentsForExport(
+    tx: Database.Read,
+    timestamp: HelsinkiDateTime,
+    municipalityCode: String,
+    filenamePrefix: String,
+    baseFilename: String,
+    templateNamePattern: String,
+): PreschoolChildDocumentsExport {
+    val date = timestamp.toLocalDate()
+    val templateId = tx.getTemplateIdForExport(date, templateNamePattern)
+    logger.info { "Export child documents for template $templateId" }
+    val documents = tx.getDocumentsJsonForExport(templateId)
+    val filename = "${filenamePrefix}${municipalityCode}_${baseFilename}_$date.json"
+    return PreschoolChildDocumentsExport(filename, documents)
+}
+
+private fun uploadChildDocumentsViaSftp(
+    export: PreschoolChildDocumentsExport,
+    primus: PrimusProperties,
+) {
+    val sftpClient = SftpClient(primus.sftp.toSftpEnv())
+    logger.info { "Uploading ${export.filename} via SFTP to ${primus.sftp.host}" }
+    export.documents.byteInputStream().use { sftpClient.put(it, export.filename) }
+    logger.info { "Uploaded ${export.filename} via SFTP" }
+}
+
+private fun String.ensureTrailingSlash(): String = if (this.endsWith("/")) this else "$this/"
+
+fun exportChildDocumentsViaSftp(
+    db: Database.Connection,
+    clock: EvakaClock,
+    municipalityCode: String,
+    primus: PrimusProperties,
+    transferType: ChildDocumentTransferType,
+) {
+    val export =
+        db.read { tx ->
+            tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+            readChildDocumentsForExport(
+                tx,
+                clock.now(),
+                municipalityCode,
+                primus.sftp.prefix.ensureTrailingSlash(),
+                transferType.baseFilename,
+                transferType.templateNamePattern,
+            )
+        }
+    uploadChildDocumentsViaSftp(export, primus)
+}
 
 @Service
 class ExportPreschoolChildDocumentsService(
@@ -27,31 +94,37 @@ class ExportPreschoolChildDocumentsService(
         timestamp: HelsinkiDateTime,
         bucket: String,
     ): Pair<String, String> {
-        val date = timestamp.toLocalDate()
-        val templateId = tx.getTemplateIdForExport(date)
-        logger.info { "Export child documents for template $templateId" }
-        val documents = tx.getDocumentsJsonForExport(templateId)
-
-        val key = "reporting/preschool/${ophEnv.municipalityCode}_evaka_child_documents_$date.json"
+        val export =
+            readChildDocumentsForExport(
+                tx,
+                timestamp,
+                ophEnv.municipalityCode,
+                "reporting/preschool/",
+                "evaka_child_documents",
+                ChildDocumentTransferType.PRESCHOOL_TO_PRIMARY.templateNamePattern,
+            )
         val request =
             PutObjectRequest.builder()
                 .bucket(bucket)
-                .key(key)
+                .key(export.filename)
                 .contentType("application/json")
                 .build()
-        val body = RequestBody.fromString(documents)
+        val body = RequestBody.fromString(export.documents)
         s3Client.putObject(request, body)
-        return bucket to key
+        return bucket to export.filename
     }
 }
 
-private fun Database.Read.getTemplateIdForExport(date: LocalDate): DocumentTemplateId =
+private fun Database.Read.getTemplateIdForExport(
+    date: LocalDate,
+    templateNamePattern: String,
+): DocumentTemplateId =
     createQuery {
             sql(
                 """
 SELECT id
 FROM document_template
-WHERE name ILIKE '%tiedonsiirto esiopetuksesta perusopetukseen%'
+WHERE name ILIKE ${bind(templateNamePattern)}
   AND upper(validity) <= ${bind(date)}
   AND published
 ORDER BY validity DESC

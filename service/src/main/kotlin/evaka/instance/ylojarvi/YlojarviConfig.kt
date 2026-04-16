@@ -4,6 +4,8 @@
 
 package evaka.instance.ylojarvi
 
+import evaka.core.OphEnv
+import evaka.core.ScheduledJobsEnv
 import evaka.core.application.ApplicationStatus
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
@@ -117,4 +119,19 @@ class YlojarviConfig {
     @Bean
     fun archivalIntegrationClient(): ArchivalIntegrationClient =
         ArchivalIntegrationClient.FailingClient()
+
+    @Bean
+    fun ylojarviScheduledJobEnv(env: Environment): ScheduledJobsEnv<YlojarviScheduledJob> =
+        ScheduledJobsEnv.fromEnvironment(
+            YlojarviScheduledJob.entries.associateWith { it.defaultSettings },
+            "ylojarvi.job",
+            env,
+        )
+
+    @Bean
+    fun ylojarviScheduledJobs(
+        ophEnv: OphEnv,
+        properties: YlojarviProperties,
+        env: ScheduledJobsEnv<YlojarviScheduledJob>,
+    ): YlojarviScheduledJobs = YlojarviScheduledJobs(ophEnv, properties, env)
 }

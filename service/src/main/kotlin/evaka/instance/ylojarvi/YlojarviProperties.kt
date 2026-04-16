@@ -4,11 +4,16 @@
 
 package evaka.instance.ylojarvi
 
+import evaka.trevaka.primus.PrimusProperties
 import evaka.trevaka.sftp.SftpProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "ylojarvi")
-data class YlojarviProperties(val invoice: InvoiceProperties, val bucket: BucketProperties)
+data class YlojarviProperties(
+    val invoice: InvoiceProperties,
+    val bucket: BucketProperties,
+    val primus: PrimusProperties? = null,
+)
 
 data class InvoiceProperties(
     val municipalityCode: String,

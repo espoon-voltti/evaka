@@ -4,6 +4,8 @@
 
 package evaka.instance.vesilahti
 
+import evaka.core.OphEnv
+import evaka.core.ScheduledJobsEnv
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.mealintegration.DefaultMealTypeMapper
@@ -115,4 +117,19 @@ class VesilahtiConfig {
     @Bean
     fun archivalIntegrationClient(): ArchivalIntegrationClient =
         ArchivalIntegrationClient.FailingClient()
+
+    @Bean
+    fun vesilahtiScheduledJobEnv(env: Environment): ScheduledJobsEnv<VesilahtiScheduledJob> =
+        ScheduledJobsEnv.fromEnvironment(
+            VesilahtiScheduledJob.entries.associateWith { it.defaultSettings },
+            "vesilahti.job",
+            env,
+        )
+
+    @Bean
+    fun vesilahtiScheduledJobs(
+        ophEnv: OphEnv,
+        properties: VesilahtiProperties,
+        env: ScheduledJobsEnv<VesilahtiScheduledJob>,
+    ): VesilahtiScheduledJobs = VesilahtiScheduledJobs(ophEnv, properties, env)
 }

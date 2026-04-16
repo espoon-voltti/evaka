@@ -154,72 +154,62 @@ tampere:
 vesilahti:
   bucket:
     export: trevaka-export-it
+  primus:
+    sftp: &test-sftp
+      host: localhost
+      port: 2222
+      host_keys: AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
+      username: foo
+      private-key: |
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+        QyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQAAAJjUgHxz1IB8
+        cwAAAAtzc2gtZWQyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQ
+        AAAEBOKiwR898c7d20IF4F4O6++awDPFfhoeDlH+t09hwEw0pCRF2Rcx+4e//U9YwnpOFy
+        G/Y94T64SRRtul/5x7+ZAAAADmV2YWthX2xvY2FsL2l0AQIDBAUGBw==
+        -----END OPENSSH PRIVATE KEY-----
+      prefix: upload/
 hameenkyro:
   bucket:
     export: trevaka-export-it
+  primus:
+    sftp: *test-sftp
 ylojarvi:
   invoice:
-    sftp:
-      host: localhost
-      port: 2222
-      host_keys: AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
-      username: foo
-      private-key: |
-        -----BEGIN OPENSSH PRIVATE KEY-----
-        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-        QyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQAAAJjUgHxz1IB8
-        cwAAAAtzc2gtZWQyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQ
-        AAAEBOKiwR898c7d20IF4F4O6++awDPFfhoeDlH+t09hwEw0pCRF2Rcx+4e//U9YwnpOFy
-        G/Y94T64SRRtul/5x7+ZAAAADmV2YWthX2xvY2FsL2l0AQIDBAUGBw==
-        -----END OPENSSH PRIVATE KEY-----
-      prefix: upload/
+    sftp: *test-sftp
   bucket:
     export: trevaka-export-it
+  primus:
+    sftp: *test-sftp
 pirkkala:
   bucket:
     export: trevaka-export-it
+  primus:
+    sftp: *test-sftp
 nokia:
   invoice:
-    sftp:
-      host: localhost
-      port: 2222
-      host_keys: AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
-      username: foo
-      private-key: |
-        -----BEGIN OPENSSH PRIVATE KEY-----
-        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-        QyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQAAAJjUgHxz1IB8
-        cwAAAAtzc2gtZWQyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQ
-        AAAEBOKiwR898c7d20IF4F4O6++awDPFfhoeDlH+t09hwEw0pCRF2Rcx+4e//U9YwnpOFy
-        G/Y94T64SRRtul/5x7+ZAAAADmV2YWthX2xvY2FsL2l0AQIDBAUGBw==
-        -----END OPENSSH PRIVATE KEY-----
-      prefix: upload/
+    sftp: *test-sftp
   bucket:
     export: trevaka-export-it
   archival:
-    sftp:
-      host: localhost
-      port: 2222
-      host_keys: AAAAC3NzaC1lZDI1NTE5AAAAICADdlntyAKbOUGQDkdzdhQBu12jZjb0KmxLyrklMXTq
-      username: foo
-      private-key: |
-        -----BEGIN OPENSSH PRIVATE KEY-----
-        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-        QyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQAAAJjUgHxz1IB8
-        cwAAAAtzc2gtZWQyNTUxOQAAACBKQkRdkXMfuHv/1PWMJ6Thchv2PeE+uEkUbbpf+ce/mQ
-        AAAEBOKiwR898c7d20IF4F4O6++awDPFfhoeDlH+t09hwEw0pCRF2Rcx+4e//U9YwnpOFy
-        G/Y94T64SRRtul/5x7+ZAAAADmV2YWthX2xvY2FsL2l0AQIDBAUGBw==
-        -----END OPENSSH PRIVATE KEY-----
-      prefix: upload/
+    sftp: *test-sftp
+  primus:
+    sftp: *test-sftp
 kangasala:
   bucket:
     export: trevaka-export-it
+  primus:
+    sftp: *test-sftp
 lempaala:
   bucket:
     export: trevaka-export-it
+  primus:
+    sftp: *test-sftp
 orivesi:
   bucket:
     export: trevaka-export-it
+  primus:
+    sftp: *test-sftp
 
 ---
 spring:

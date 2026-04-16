@@ -4,6 +4,8 @@
 
 package evaka.instance.hameenkyro
 
+import evaka.core.OphEnv
+import evaka.core.ScheduledJobsEnv
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.mealintegration.DefaultMealTypeMapper
@@ -115,4 +117,19 @@ class HameenkyroConfig {
     @Bean
     fun archivalIntegrationClient(): ArchivalIntegrationClient =
         ArchivalIntegrationClient.FailingClient()
+
+    @Bean
+    fun hameenkyroScheduledJobEnv(env: Environment): ScheduledJobsEnv<HameenkyroScheduledJob> =
+        ScheduledJobsEnv.fromEnvironment(
+            HameenkyroScheduledJob.entries.associateWith { it.defaultSettings },
+            "hameenkyro.job",
+            env,
+        )
+
+    @Bean
+    fun hameenkyroScheduledJobs(
+        ophEnv: OphEnv,
+        properties: HameenkyroProperties,
+        env: ScheduledJobsEnv<HameenkyroScheduledJob>,
+    ): HameenkyroScheduledJobs = HameenkyroScheduledJobs(ophEnv, properties, env)
 }

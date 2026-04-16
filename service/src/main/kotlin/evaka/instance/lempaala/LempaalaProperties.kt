@@ -4,10 +4,15 @@
 
 package evaka.instance.lempaala
 
+import evaka.trevaka.primus.PrimusProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "lempaala")
-data class LempaalaProperties(val invoice: InvoiceProperties, val bucket: BucketProperties)
+data class LempaalaProperties(
+    val invoice: InvoiceProperties,
+    val bucket: BucketProperties,
+    val primus: PrimusProperties? = null,
+)
 
 data class InvoiceProperties(val organizationCode: String, val invoiceType: String)
 

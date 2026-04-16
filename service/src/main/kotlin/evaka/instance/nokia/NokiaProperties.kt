@@ -5,6 +5,7 @@
 package evaka.instance.nokia
 
 import evaka.instance.tampere.ArchivalSchedule
+import evaka.trevaka.primus.PrimusProperties
 import evaka.trevaka.sftp.SftpProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
@@ -13,6 +14,7 @@ data class NokiaProperties(
     val invoice: InvoiceProperties,
     val bucket: BucketProperties,
     val archival: SftpArchivalProperties?,
+    val primus: PrimusProperties? = null,
 )
 
 data class InvoiceProperties(

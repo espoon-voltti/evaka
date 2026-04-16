@@ -5,6 +5,7 @@
 package evaka.instance.pirkkala
 
 import evaka.core.EvakaEnv
+import evaka.core.OphEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
@@ -96,10 +97,11 @@ class PirkkalaConfig {
 
     @Bean
     fun pirkkalaScheduledJobs(
+        ophEnv: OphEnv,
         properties: PirkkalaProperties,
         env: ScheduledJobsEnv<PirkkalaScheduledJob>,
         asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    ): PirkkalaScheduledJobs = PirkkalaScheduledJobs(asyncJobRunner, properties, env)
+    ): PirkkalaScheduledJobs = PirkkalaScheduledJobs(ophEnv, asyncJobRunner, properties, env)
 
     @Bean
     fun paymentIntegrationClient(): PaymentIntegrationClient =

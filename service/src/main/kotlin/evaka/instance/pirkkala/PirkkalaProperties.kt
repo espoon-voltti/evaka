@@ -5,6 +5,7 @@
 package evaka.instance.pirkkala
 
 import evaka.instance.nokia.SftpArchivalProperties
+import evaka.trevaka.primus.PrimusProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "pirkkala")
@@ -12,6 +13,7 @@ data class PirkkalaProperties(
     val invoice: InvoiceProperties,
     val bucket: BucketProperties,
     val archival: SftpArchivalProperties? = null,
+    val primus: PrimusProperties? = null,
 )
 
 data class InvoiceProperties(val municipalityCode: String, val invoiceType: String)

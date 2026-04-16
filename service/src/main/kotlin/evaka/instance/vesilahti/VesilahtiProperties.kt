@@ -4,10 +4,11 @@
 
 package evaka.instance.vesilahti
 
+import evaka.trevaka.primus.PrimusProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "vesilahti")
-data class VesilahtiProperties(val bucket: BucketProperties)
+data class VesilahtiProperties(val bucket: BucketProperties, val primus: PrimusProperties? = null)
 
 data class BucketProperties(val export: String) {
     fun allBuckets() = listOf(export)

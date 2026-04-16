@@ -5,6 +5,7 @@
 package evaka.instance.kangasala
 
 import evaka.core.EvakaEnv
+import evaka.core.OphEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.application.ApplicationStatus
 import evaka.core.document.archival.ArchivalIntegrationClient
@@ -98,10 +99,11 @@ class KangasalaConfig {
 
     @Bean
     fun kangasalaScheduledJobs(
+        ophEnv: OphEnv,
         properties: KangasalaProperties,
         env: ScheduledJobsEnv<KangasalaScheduledJob>,
         asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    ): KangasalaScheduledJobs = KangasalaScheduledJobs(asyncJobRunner, properties, env)
+    ): KangasalaScheduledJobs = KangasalaScheduledJobs(ophEnv, asyncJobRunner, properties, env)
 
     @Bean
     fun paymentIntegrationClient(): PaymentIntegrationClient =

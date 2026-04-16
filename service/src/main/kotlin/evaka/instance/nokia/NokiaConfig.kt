@@ -5,6 +5,7 @@
 package evaka.instance.nokia
 
 import evaka.core.EvakaEnv
+import evaka.core.OphEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.application.ApplicationStatus
 import evaka.core.document.archival.ArchivalIntegrationClient
@@ -98,10 +99,11 @@ class NokiaConfig {
 
     @Bean
     fun nokiaScheduledJobs(
+        ophEnv: OphEnv,
         properties: NokiaProperties,
         env: ScheduledJobsEnv<NokiaScheduledJob>,
         asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    ): NokiaScheduledJobs = NokiaScheduledJobs(asyncJobRunner, properties, env)
+    ): NokiaScheduledJobs = NokiaScheduledJobs(ophEnv, asyncJobRunner, properties, env)
 
     @Bean
     fun paymentIntegrationClient(): PaymentIntegrationClient =
