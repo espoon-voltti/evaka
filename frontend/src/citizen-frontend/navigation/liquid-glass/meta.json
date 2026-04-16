@@ -1,0 +1,14 @@
+{
+  "width": 360,
+  "height": 72,
+  "radius": 36,
+  "bezelWidth": 28,
+  "thickness": 140,
+  "n": 1.5,
+  "light": {
+    "x": -0.707,
+    "y": -0.707
+  },
+  "specularPower": 2,
+  "maxDisplacement": 32.376661632244854
+}

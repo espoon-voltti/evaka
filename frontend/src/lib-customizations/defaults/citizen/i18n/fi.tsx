@@ -201,13 +201,20 @@ export default {
     )
   },
   loginPage: {
+    welcomeHeadline: 'Tervetuloa eVakaan',
     title: 'Espoon kaupungin varhaiskasvatus',
     systemNotification: 'Tärkeä tiedote',
-    addToHomeScreen: {
-      title: 'Haluatko löytää tälle sivulle helpommin?',
-      subTitle: 'Lisää eVaka puhelimesi kotivalikkoon!',
-      ios: 'Lisää pikakuvake iOS-laitteella (Safari)',
-      android: 'Lisää pikakuvake Android-laitteella (Chrome)',
+    reasons: {
+      sessionExpiredOpenThread:
+        'Viestiketjun avaaminen vaatii kirjautumisen. Ole hyvä ja kirjaudu sisään.',
+      sessionExpiredReplyFailed: 'Vastauksen lähetys vaatii kirjautumisen.'
+    },
+    pwaInstall: {
+      button: 'Lisää kotivalikkoon',
+      iosUseSafariNote:
+        'Asentaaksesi eVakan kotivalikkoon avaa tämä sivu Safari-selaimella.',
+      notSupported:
+        'Tämä selain ei tue eVakan asentamista kotivalikkoon. Kokeile uudelleen Safarilla (iOS) tai Chromella (Android).',
       instructions: {
         ios: (
           <>
@@ -244,8 +251,6 @@ export default {
     },
     login: {
       title: 'Kirjaudu käyttäjätunnuksella',
-      paragraph:
-        'Huoltajat, joiden lapsi on jo varhaiskasvatuksessa tai esiopetuksessa: hoida lapsesi päivittäisiä varhaiskasvatusasioita kuten lue viestejä ja ilmoita lapsen läsnäoloajat ja poissaolot.',
       link: 'Kirjaudu sisään',
       infoBoxText: (
         <>
@@ -271,7 +276,15 @@ export default {
         'Voit vaihtaa salasanan omissa tiedoissasi kirjautumalla vahvasti.',
       noUsername: 'Ei käyttäjätunnuksia?',
       noUsernameInfo:
-        'Voit luoda käyttäjätunnuksen kirjautumalla vahvasti ja sallimalla kirjautumisen sähköpostilla "Omat tiedot"-sivulla'
+        'Voit luoda käyttäjätunnuksen kirjautumalla vahvasti ja sallimalla kirjautumisen sähköpostilla "Omat tiedot"-sivulla',
+      passkey: {
+        title: 'Kirjaudu passkey-avaimella',
+        subtitle: 'Nopea, turvallinen ja salasanaton kirjautuminen',
+        noCredentialsHint:
+          'Tältä laitteelta ei löytynyt passkey-avainta. Kirjaudu ensin Suomi.fi-tunnistautumisella ottaaksesi passkey käyttöön, tai käytä toista laitetta jolle olet jo tallentanut avaimen.',
+        failed: 'Kirjautuminen epäonnistui. Yritä uudelleen.',
+        moreOptionsDisclosure: 'Muut kirjautumistavat'
+      }
     },
     applying: {
       title: 'Kirjaudu Suomi.fi:ssä',
@@ -284,7 +297,7 @@ export default {
         'ilmoittaa omat tai lapsesi tulotiedot',
         'hyväksyä tai hylätä päätöksen, jos olet hakemuksen tekijä'
       ],
-      link: 'Tunnistaudu',
+      link: 'Tunnistaudu Suomi.fi:ssä',
       mapText: 'Katso kartalta yksiköt, joihin voit hakea eVakassa.',
       mapLink: 'Yksiköt kartalla'
     }
@@ -647,6 +660,8 @@ export default {
       sender: 'Lähettäjä',
       sentAt: 'Lähetetty',
       recipients: 'Vastaanottajat',
+      restoredReplyDraft:
+        'Viimeinen vastauksesi palautettiin ilmoituksesta. Muokkaa tai lähetä se alla.',
       financeReplyInfo:
         'Vastaaminen on mahdollista vain silloin, kun tuloselvityksesi on lähetetty tai käsittelyssä.'
     },
@@ -2174,6 +2189,11 @@ export default {
         muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
       </P>
     ),
+    installSection: {
+      title: 'Asenna eVaka laitteellesi',
+      description:
+        'eVakan voi asentaa laitteellesi sovelluksena. Asennetussa sovelluksessa eVaka on nopeampi avata ja näet uudet push-ilmoitukset.'
+    },
     detailsSection: {
       title: 'Henkilötiedot',
       noEmailAlert:
@@ -2303,6 +2323,118 @@ export default {
           </ul>
         </div>
       )
+    },
+    webPushSection: {
+      title: 'Push-ilmoitukset',
+      info: (
+        <P>
+          Voit ottaa käyttöön eVakan push-ilmoitukset seuraavista aiheista. Tämä
+          edellyttää, että annat selaimelle luvan ilmoitusten näyttämiseen.
+        </P>
+      ),
+      enable: 'Ota push-ilmoitukset käyttöön',
+      enabling: 'Otetaan käyttöön…',
+      enabled: 'Push-ilmoitukset käytössä',
+      categoryUrgent: {
+        label: 'Kiireelliset viestit',
+        description: 'Kiireellisiksi merkityt viestit henkilökunnalta'
+      },
+      categoryMessage: {
+        label: 'Tavalliset viestit',
+        description: 'Uudet viestit ja vastaukset keskusteluissa'
+      },
+      categoryBulletin: {
+        label: 'Tiedotteet',
+        description: 'Kunnan yleiset tiedotteet'
+      },
+      sendTest: 'Lähetä testi-ilmoitus',
+      testSent: 'Testi-ilmoitus lähetetty',
+      testFailed: 'Testi-ilmoituksen lähetys epäonnistui',
+      unsupported:
+        'Push-ilmoitukset eivät ole tuettuja tässä selaimessa tai laitteessa.',
+      denied:
+        'Push-ilmoitukset on estetty tältä sivustolta. Voit sallia ne selaimen tai käyttöjärjestelmän asetuksista.',
+      guide: {
+        chromeAndroid: (
+          <OrderedList>
+            <li>Avaa Chromen valikko (kolme pistettä oikeassa yläkulmassa).</li>
+            <li>Valitse Asetukset → Sivuston asetukset → Ilmoitukset.</li>
+            <li>Salli ilmoitukset tälle sivustolle.</li>
+          </OrderedList>
+        ),
+        samsungAndroid: (
+          <OrderedList>
+            <li>Avaa Samsung Internetin valikko.</li>
+            <li>Valitse Asetukset → Sivustot ja lataukset → Ilmoitukset.</li>
+            <li>Salli ilmoitukset tälle sivustolle.</li>
+          </OrderedList>
+        ),
+        firefoxAndroid: (
+          <OrderedList>
+            <li>Avaa Firefoxin valikko.</li>
+            <li>Valitse Asetukset → Sivuston käyttöoikeudet → Ilmoitukset.</li>
+            <li>Salli ilmoitukset tälle sivustolle.</li>
+          </OrderedList>
+        ),
+        safariIOS: (
+          <OrderedList>
+            <li>
+              Lisää eVaka Koti-näytölle Safarin jakovalikosta (Lisää
+              Koti-näytölle).
+            </li>
+            <li>Avaa eVaka Koti-näytöstä (ei Safarista).</li>
+            <li>Käytössäoloilmoitus ilmestyy — salli se.</li>
+          </OrderedList>
+        ),
+        chromeDesktop: (
+          <OrderedList>
+            <li>Klikkaa osoiterivin lukkokuvaketta.</li>
+            <li>Valitse Sivuston asetukset → Ilmoitukset → Salli.</li>
+            <li>Lataa sivu uudelleen.</li>
+          </OrderedList>
+        ),
+        firefoxDesktop: (
+          <OrderedList>
+            <li>Klikkaa osoiterivin lukkokuvaketta.</li>
+            <li>Kohdassa Käyttöoikeudet salli Ilmoitukset.</li>
+            <li>Lataa sivu uudelleen.</li>
+          </OrderedList>
+        ),
+        safariMacos: (
+          <OrderedList>
+            <li>
+              Avaa Safarin asetukset (Safari → Asetukset → Verkkosivustot →
+              Ilmoitukset).
+            </li>
+            <li>Salli ilmoitukset eVakalta.</li>
+          </OrderedList>
+        ),
+        fallback: (
+          <P>Tarkista selaimesi ja käyttöjärjestelmäsi ilmoitusasetukset.</P>
+        )
+      }
+    },
+    passkeySection: {
+      title: 'Passkey-avaimet',
+      intro: 'Passkey on nopea, turvallinen ja salasanaton tapa kirjautua.',
+      empty: 'Et ole vielä lisännyt passkey-avaimia.',
+      addButton: 'Lisää passkey-avain',
+      thisDevice: 'Tämä laite',
+      createdAt: 'Luotu',
+      lastUsedAt: 'Viimeksi käytetty',
+      neverUsed: 'ei koskaan',
+      revoke: 'Poista',
+      revokeConfirmTitle: 'Poistetaanko passkey-avain?',
+      revokeConfirmText:
+        'Et voi enää kirjautua tällä avaimella sen poistamisen jälkeen.',
+      revokeConfirmLastWarning:
+        'Olet parhaillaan kirjautuneena tällä avaimella. Poistaminen kirjaa sinut ulos.',
+      enrollNudge: {
+        title: 'Kokeile passkey-kirjautumista',
+        body: 'Passkey on nopea, turvallinen ja salasanaton tapa kirjautua.',
+        action: 'Ota käyttöön',
+        dismiss: 'Sulje'
+      }
     }
   },
   income: {

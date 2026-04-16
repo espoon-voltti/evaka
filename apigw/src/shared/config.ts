@@ -329,7 +329,22 @@ const envVariables = {
   /**
    * API key for the Digitransit API
    */
-  DIGITRANSIT_API_KEY: unset<string>()
+  DIGITRANSIT_API_KEY: unset<string>(),
+
+  // ----- OpenAI API integration -----
+  /**
+   * API key for the OpenAI API, used for bulletin message AI review
+   */
+  OPENAI_API_KEY: unset<string>(),
+
+  // ----- Passkey (WebAuthn) configuration -----
+  // rpId and expected origin are derived from EVAKA_BASE_URL — WebAuthn
+  // requires rpId to match the frontend origin, so a separate env var would
+  // only drift.
+  /**
+   * WebAuthn Relying Party display name shown to the user
+   */
+  PASSKEY_RP_NAME: 'eVaka'
 }
 
 // helper function to specify the type of undefined without casting
@@ -391,6 +406,11 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
 export interface Config {
   citizen: SessionConfig & { weakLoginRateLimit: number }
   employee: SessionConfig
+  passkey: {
+    rpId: string
+    origin: string
+    rpName: string
+  }
   ad:
     | { type: 'mock' | 'disabled' }
     | {
@@ -648,6 +668,11 @@ export function configFromEnv(): Config {
         optional('EMPLOYEE_SESSION_TIMEOUT_MINUTES', parseInteger) ??
         defaultSessionTimeoutMinutes
     },
+    passkey: {
+      rpId: evakaBaseUrl.hostname,
+      origin: evakaBaseUrl.origin,
+      rpName: required('PASSKEY_RP_NAME', unchanged)
+    },
     ad,
     sfi,
     redis: {
@@ -710,3 +735,5 @@ export const digitransitApiEnabled = required(
 )
 export const digitransitApiUrl = required('DIGITRANSIT_API_URL', unchanged)
 export const digitransitApiKey = optional('DIGITRANSIT_API_KEY', unchanged)
+
+export const openaiApiKey = optional('OPENAI_API_KEY', unchanged)

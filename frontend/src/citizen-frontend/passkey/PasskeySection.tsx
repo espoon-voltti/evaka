@@ -1,0 +1,137 @@
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import { useQueryClient } from '@tanstack/react-query'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
+import styled from 'styled-components'
+
+import { useMutationResult, useQueryResult } from 'lib-common/query'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
+import { H2, P } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import { faLockAlt } from 'lib-icons'
+
+import { AuthContext } from '../auth/state'
+import { useTranslation } from '../localization'
+import { getStrongLoginUri } from '../navigation/const'
+
+import { PasskeyListItem } from './PasskeyListItem'
+import { passkeysQuery, revokePasskeyMutation } from './queries'
+import { usePasskeyAuth } from './usePasskeyAuth'
+
+interface Props {
+  autoEnroll?: boolean
+}
+
+export const PasskeySection = React.memo(function PasskeySection({
+  autoEnroll = false
+}: Props) {
+  const i18n = useTranslation()
+  const t = i18n.personalDetails.passkeySection
+
+  const { user, refreshAuthStatus } = useContext(AuthContext)
+  const authUser = user.getOrElse(undefined) ?? null
+  const currentCredentialId =
+    (authUser as unknown as { passkeyCredentialId?: string | null })
+      ?.passkeyCredentialId ?? null
+  const isStrong = authUser?.authLevel === 'STRONG'
+
+  const listResult = useQueryResult(passkeysQuery())
+  const { mutateAsync: revoke } = useMutationResult(revokePasskeyMutation)
+  const { enroll } = usePasskeyAuth()
+  const queryClient = useQueryClient()
+
+  const [toRevoke, setToRevoke] = useState<string | null>(null)
+  const autoEnrollDone = useRef(false)
+
+  const onAdd = useCallback(async () => {
+    if (isStrong) {
+      const ok = await enroll()
+      if (ok) {
+        await queryClient.invalidateQueries({
+          queryKey: passkeysQuery.prefix
+        })
+        refreshAuthStatus()
+      }
+    } else {
+      window.location.href = getStrongLoginUri(
+        '/personal-details?enroll=1#passkeys'
+      )
+    }
+  }, [enroll, isStrong, queryClient, refreshAuthStatus])
+
+  useEffect(() => {
+    if (!autoEnroll || autoEnrollDone.current || !isStrong) return
+    autoEnrollDone.current = true
+    void onAdd()
+  }, [autoEnroll, isStrong, onAdd])
+
+  return (
+    <FixedSpaceColumn $spacing="m" data-qa="passkey-section">
+      <div id="passkeys">
+        <H2>{t.title}</H2>
+      </div>
+      <P>{t.intro}</P>
+      {listResult.isSuccess && listResult.value.length === 0 && (
+        <P data-qa="passkey-empty">{t.empty}</P>
+      )}
+      {listResult.isSuccess && listResult.value.length > 0 && (
+        <PasskeyList data-qa="passkey-list">
+          {listResult.value.map((c) => (
+            <PasskeyListItem
+              key={c.credentialId}
+              credential={c}
+              isCurrent={c.credentialId === currentCredentialId}
+              onRevoke={() => setToRevoke(c.credentialId)}
+            />
+          ))}
+        </PasskeyList>
+      )}
+      <Button
+        text={t.addButton}
+        primary
+        icon={isStrong ? undefined : faLockAlt}
+        onClick={() => void onAdd()}
+        data-qa="passkey-add"
+      />
+      {!!toRevoke && (
+        <InfoModal
+          title={t.revokeConfirmTitle}
+          text={t.revokeConfirmText}
+          resolve={{
+            action: async () => {
+              await revoke({ credentialId: toRevoke })
+              if (toRevoke === currentCredentialId) {
+                refreshAuthStatus()
+              }
+              setToRevoke(null)
+            },
+            label: t.revoke
+          }}
+          reject={{
+            action: () => setToRevoke(null),
+            label: i18n.common.cancel
+          }}
+        />
+      )}
+    </FixedSpaceColumn>
+  )
+})
+
+const PasskeyList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: ${defaultMargins.xs};
+`

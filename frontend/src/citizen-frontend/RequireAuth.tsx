@@ -7,6 +7,7 @@ import { Redirect, useLocation, useSearch } from 'wouter'
 
 import type { CitizenAuthLevel } from 'lib-common/generated/api-types/shared'
 
+import { buildLoginRedirectPath } from './auth/loginRedirect'
 import { AuthContext } from './auth/state'
 import { getStrongLoginUri } from './navigation/const'
 
@@ -37,7 +38,7 @@ export default React.memo(function RequireAuth({
       <>{children}</>
     )
   ) : (
-    <Redirect to={`/login?next=${encodeURIComponent(returnUrl)}`} />
+    <Redirect to={buildLoginRedirectPath(returnUrlPath, params ?? '')} />
   )
 })
 

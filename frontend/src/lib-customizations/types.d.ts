@@ -72,6 +72,11 @@ export interface CitizenCustomizations {
   appConfig: BaseAppConfig
   langs: LangCitizen[]
   translations: Record<LangCitizen, DeepPartial<TranslationsCitizen>>
+  /**
+   * Display name of the municipality. Used for the PWA home-screen title
+   * (e.g. "eVaka Espoo" / "eVaka Turku Staging").
+   */
+  cityName: string
   cityLogo: ImgProps
   footerLogo?: React.JSX.Element
   routeLinkRootUrl?: string

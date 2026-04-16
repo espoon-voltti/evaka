@@ -13,7 +13,7 @@ import React, {
   useState
 } from 'react'
 import styled, { css } from 'styled-components'
-import { useLocation } from 'wouter'
+import { useLocation, useSearchParams } from 'wouter'
 
 import { useBoolean } from 'lib-common/form/hooks'
 import type {
@@ -59,6 +59,7 @@ import { faTrash, faEnvelope } from 'lib-icons'
 import { getAttachmentUrl } from '../attachments/attachments'
 import type { Translations } from '../localization'
 import { useTranslation } from '../localization'
+import { useReplyDraftRestore } from '../webpush/useReplyDraftRestore'
 
 import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import {
@@ -266,7 +267,23 @@ export default React.memo(
     const [confirmDelete, setConfirmDelete] = useState(false)
 
     const hideReplyEditor = useReplyEditorVisible.off
+    const showReplyEditor = useReplyEditorVisible.on
     useEffect(() => hideReplyEditor(), [hideReplyEditor, threadId])
+
+    const { discardDraft, restored } = useReplyDraftRestore(
+      threadId,
+      (text) => {
+        setReplyContent(threadId, text)
+        showReplyEditor()
+      }
+    )
+
+    const [searchParams] = useSearchParams()
+    useEffect(() => {
+      if (searchParams.get('focus') === 'reply') {
+        showReplyEditor()
+      }
+    }, [threadId, searchParams, showReplyEditor])
 
     const autoScrollRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
@@ -288,6 +305,19 @@ export default React.memo(
     }))
 
     const lastMessageRef = useRef<HTMLLIElement>(null)
+
+    useEffect(() => {
+      if (searchParams.get('scrollTo') !== 'latest') return
+      if (messages.length === 0) return
+      scrollRefIntoView(lastMessageRef, undefined, 'end')
+      const url = new URL(window.location.href)
+      url.searchParams.delete('scrollTo')
+      // Strip the notification marker too: RequireAuth already strips it
+      // from the post-login return URL, but direct notification clicks
+      // when the session is valid land here with the marker still present.
+      url.searchParams.delete('fromNotification')
+      window.history.replaceState(null, '', url.toString())
+    }, [searchParams, messages.length])
 
     const onUpdateContent = useCallback(
       (content: string) => setReplyContent(threadId, content),
@@ -380,6 +410,18 @@ export default React.memo(
         </MessageList>
         {replyEditorVisible ? (
           <ReplyEditorContainer ref={autoScrollRef}>
+            {restored && (
+              <>
+                <InfoBox
+                  message={i18n.messages.thread.restoredReplyDraft}
+                  thin
+                  wide
+                  noMargin
+                  data-qa="restored-reply-draft-banner"
+                />
+                <Gap $size="xs" />
+              </>
+            )}
             <MessageReplyEditor
               mutation={replyToThreadMutation}
               onSubmit={() => ({
@@ -395,6 +437,7 @@ export default React.memo(
               onDiscard={onDiscard}
               onSuccess={() => {
                 hideReplyEditor()
+                discardDraft()
                 addTimedNotification({
                   children: i18n.messages.messageEditor.messageSentNotification,
                   dataQa: 'message-sent-notification'

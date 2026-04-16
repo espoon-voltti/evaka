@@ -33,7 +33,9 @@ import MobileNav from './navigation/MobileNav'
 import { mobileBottomNavHeight } from './navigation/const'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
+import { usePasskeyEnrollNudge } from './passkey/usePasskeyEnrollNudge'
 import { queryClient, QueryClientProvider } from './query'
+import IncomingVideoCallBanner from './video-call/IncomingVideoCallBanner'
 
 const GlobalStyle = createGlobalStyle`
   @media screen and (max-width: ${zoomedMobileMax}) {
@@ -97,11 +99,13 @@ const Content = React.memo(function Content({
       user.map((usr) => !!usr).getOrElse(false)
     )
   useChildrenStartingNotification()
+  usePasskeyEnrollNudge()
   return (
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
       <Notifications apiVersion={apiVersion} sticky offsetTop />
+      <IncomingVideoCallBanner />
       <MainContainer ariaHidden={modalOpen}>{children}</MainContainer>
       <MobileNav />
       {sessionExpirationDetected && (

@@ -11,6 +11,8 @@ import mapRoutes from './enduser/mapRoutes.ts'
 import { citizenAuthStatus } from './enduser/routes/auth-status.ts'
 import { authWeakLogin } from './enduser/routes/auth-weak-login.ts'
 import { authWeakUpdateCredentials } from './enduser/routes/auth-weak-update-credentials.ts'
+import { passkeyAuthRoutes } from './enduser/routes/passkey-auth.ts'
+import { passkeyCredentialsRoutes } from './enduser/routes/passkey-credentials.ts'
 import {
   createCitizenSuomiFiIntegration,
   createEmployeeSuomiFiIntegration
@@ -27,6 +29,7 @@ import {
   refreshMobileSession
 } from './internal/mobile-device-session.ts'
 import { internalAuthStatus } from './internal/routes/auth-status.ts'
+import { bulletinAiReview } from './internal/routes/bulletin-ai-review.ts'
 import { integrationUserHeader } from './shared/auth/index.ts'
 import type { Config } from './shared/config.ts'
 import { appCommit, enableDevApi, titaniaConfig } from './shared/config.ts'
@@ -295,6 +298,15 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       config.citizen.cookieSecret
     )
   )
+  router.use(
+    '/citizen/auth/passkey',
+    passkeyAuthRoutes(config, citizenSessions, redisClient)
+  )
+  router.use(
+    '/citizen/passkey/credentials',
+    citizenSessions.requireAuthentication,
+    passkeyCredentialsRoutes(citizenSessions)
+  )
   router.put(
     '/citizen/personal-data/weak-login-credentials',
     citizenSessions.requireAuthentication,
@@ -313,6 +325,12 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
   router.use('/employee/', employeeSessions.middleware)
   router.get('/employee/auth/status', internalAuthStatus(employeeSessions))
   router.all('/employee/auth/{*rest}', (_, res) => res.redirect('/employee'))
+  router.post(
+    '/employee/bulletin-ai-review',
+    employeeSessions.requireAuthentication,
+    express.json(),
+    bulletinAiReview(redisClient)
+  )
   router.all('/employee/public/{*rest}', employeeProxy)
   router.all(
     '/employee/{*rest}',

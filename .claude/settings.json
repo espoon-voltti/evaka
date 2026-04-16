@@ -1,0 +1,10 @@
+{
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Volumes/Evaka/evaka/.claude/statusline-command.sh"
+  }
+}

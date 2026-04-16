@@ -13,6 +13,7 @@ import { getEnvironment } from 'lib-common/utils/helpers'
 import 'leaflet/dist/leaflet.css'
 import { appConfig } from 'lib-customizations/citizen'
 
+import { applyPwaName } from './pwa/applyPwaName'
 import Root from './router'
 import './index.css'
 
@@ -25,6 +26,8 @@ Sentry.init({
 })
 Sentry.getGlobalScope().addEventProcessor(sentryEventFilter)
 
+applyPwaName()
+
 // Smooth-scrolling requires polyfilling in Safari, IE and older browsers:
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
@@ -32,6 +35,16 @@ smoothScrollPolyfill()
 
 const root = createRoot(document.getElementById('app')!)
 root.render(<Root />)
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/service-worker.js', { scope: '/' })
+      .catch((err) => {
+        Sentry.captureException(err)
+      })
+  })
+}
 
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {

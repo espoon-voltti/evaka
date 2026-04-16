@@ -19,6 +19,7 @@ const customizations: CitizenCustomizations = {
     sv: {},
     en: enCustomizations
   },
+  cityName: 'Oulu',
   cityLogo: {
     src: OuluLogo,
     alt: 'Oulu logo'

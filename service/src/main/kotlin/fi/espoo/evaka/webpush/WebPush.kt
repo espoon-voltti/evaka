@@ -6,6 +6,8 @@ package fi.espoo.evaka.webpush
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.WebPushEnv
+import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
 import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
 import fi.espoo.evaka.shared.db.Database
@@ -42,7 +44,25 @@ enum class Urgency {
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @JsonTypeIdResolver(SealedSubclassSimpleName::class)
 sealed interface WebPushPayload {
-    data class NotificationV1(val title: String) : WebPushPayload
+    data class NotificationV1(
+        val title: String,
+        val body: String? = null,
+        val tag: String? = null,
+        val url: String? = null,
+        val iconPath: String? = null,
+        val replyAction: ReplyAction? = null,
+    ) : WebPushPayload {
+        data class ReplyAction(
+            val threadId: MessageThreadId,
+            val recipientAccountIds: Set<MessageAccountId>,
+            val actionLabel: String,
+            val actionPlaceholder: String,
+            val successTitle: String,
+            val successBody: String,
+            val errorTitle: String,
+            val errorBody: String,
+        )
+    }
 }
 
 class WebPushEndpoint(val uri: URI, val ecdhPublicKey: ECPublicKey, val authSecret: ByteArray)

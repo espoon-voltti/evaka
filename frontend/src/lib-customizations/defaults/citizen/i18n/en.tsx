@@ -203,13 +203,22 @@ const en: Translations = {
     )
   },
   loginPage: {
+    welcomeHeadline: 'Welcome to eVaka',
     title: 'City of Espoo early childhood education',
     systemNotification: 'Important announcement',
-    addToHomeScreen: {
-      title: 'Would you like to find this page more easily?',
-      subTitle: 'Add eVaka to your phone’s home screen!',
-      ios: 'Add a shortcut on iOS (Safari)',
-      android: 'Add a shortcut on Android (Chrome)',
+    reasons: {
+      // TODO: copy review — placeholder translation
+      sessionExpiredOpenThread:
+        'Opening the message thread requires login. Please log in.',
+      // TODO: copy review — placeholder translation
+      sessionExpiredReplyFailed: 'Sending the reply requires login.'
+    },
+    pwaInstall: {
+      button: 'Add to home screen',
+      iosUseSafariNote:
+        'To install eVaka to your home screen, open this page in Safari.',
+      notSupported:
+        'This browser does not support installing eVaka to the home screen. Please try again in Safari (iOS) or Chrome (Android).',
       instructions: {
         ios: (
           <>
@@ -248,8 +257,6 @@ const en: Translations = {
     },
     login: {
       title: 'Sign in with username',
-      paragraph:
-        'Take care of your child’s daily early childhood education affairs in eVaka.',
       link: 'Log in',
       infoBoxText: (
         <>
@@ -275,7 +282,15 @@ const en: Translations = {
         'You can change your password in your profile by logging in using strong authentication',
       noUsername: 'No username?',
       noUsernameInfo:
-        'You can create a username by logging in using strong authentication and enabling login via email on the "Personal information" page.'
+        'You can create a username by logging in using strong authentication and enabling login via email on the "Personal information" page.',
+      passkey: {
+        title: 'Sign in with passkey',
+        subtitle: 'Fast, secure and passwordless sign-in',
+        noCredentialsHint:
+          'No passkeys found on this device. Sign in with suomi.fi first to enrol a passkey, or use another device that has one.',
+        failed: 'Sign-in failed. Please try again.',
+        moreOptionsDisclosure: 'More sign-in options'
+      }
     },
     applying: {
       title: 'Sign in using Suomi.fi',
@@ -288,7 +303,7 @@ const en: Translations = {
         "report your or your child's income information",
         'accept or reject a decision, if you made the application'
       ],
-      link: 'Authenticate',
+      link: 'Authenticate via Suomi.fi',
       mapText: 'Look up the units that you can apply to in eVaka on the map.',
       mapLink: 'Units on the map'
     }
@@ -645,6 +660,8 @@ const en: Translations = {
       sender: 'Sender',
       sentAt: 'Sent at',
       recipients: 'Recipients',
+      restoredReplyDraft:
+        'Your last reply was restored from the notification. Edit or send it below.',
       financeReplyInfo:
         'Replying is only possible when your income statement has been sent or is being processed.'
     },
@@ -1909,6 +1926,11 @@ const en: Translations = {
         Population Data Services Agency (DVV).
       </P>
     ),
+    installSection: {
+      title: 'Install eVaka on your device',
+      description:
+        'You can install eVaka as an app on your device. In the installed app eVaka opens faster and you see new push notifications.'
+    },
     detailsSection: {
       noEmailAlert:
         'Your email address is missing. Please fill it down below to receive notifications sent by eVaka.',
@@ -2037,6 +2059,115 @@ const en: Translations = {
           </ul>
         </div>
       )
+    },
+    webPushSection: {
+      title: 'Push notifications',
+      info: (
+        <P>
+          You can enable browser push notifications for new messages. This
+          requires granting your browser permission to display notifications.
+        </P>
+      ),
+      enable: 'Enable push notifications',
+      enabling: 'Enabling…',
+      enabled: 'Push notifications enabled',
+      categoryUrgent: {
+        label: 'Urgent messages',
+        description: 'Messages flagged as urgent by staff'
+      },
+      categoryMessage: {
+        label: 'Normal messages',
+        description: 'New messages and replies in discussions'
+      },
+      categoryBulletin: {
+        label: 'Bulletins',
+        description: 'General bulletins from the municipality'
+      },
+      sendTest: 'Send test notification',
+      testSent: 'Test notification sent',
+      testFailed: 'Failed to send test notification',
+      unsupported:
+        'Push notifications are not supported on this browser or device.',
+      denied:
+        'Push notifications are blocked for this site. You can allow them in your browser or OS settings.',
+      guide: {
+        chromeAndroid: (
+          <OrderedList>
+            <li>Open the Chrome menu (three dots in the top right).</li>
+            <li>Select Settings → Site settings → Notifications.</li>
+            <li>Allow notifications for this site.</li>
+          </OrderedList>
+        ),
+        samsungAndroid: (
+          <OrderedList>
+            <li>Open the Samsung Internet menu.</li>
+            <li>Select Settings → Sites and downloads → Notifications.</li>
+            <li>Allow notifications for this site.</li>
+          </OrderedList>
+        ),
+        firefoxAndroid: (
+          <OrderedList>
+            <li>Open the Firefox menu.</li>
+            <li>Select Settings → Site permissions → Notifications.</li>
+            <li>Allow notifications for this site.</li>
+          </OrderedList>
+        ),
+        safariIOS: (
+          <OrderedList>
+            <li>Add eVaka to your home screen via Safari&apos;s share menu.</li>
+            <li>Open eVaka from the home screen (not from Safari).</li>
+            <li>Allow the enable prompt when it appears.</li>
+          </OrderedList>
+        ),
+        chromeDesktop: (
+          <OrderedList>
+            <li>Click the lock icon in the address bar.</li>
+            <li>Select Site settings → Notifications → Allow.</li>
+            <li>Reload the page.</li>
+          </OrderedList>
+        ),
+        firefoxDesktop: (
+          <OrderedList>
+            <li>Click the lock icon in the address bar.</li>
+            <li>Under Permissions allow Notifications.</li>
+            <li>Reload the page.</li>
+          </OrderedList>
+        ),
+        safariMacos: (
+          <OrderedList>
+            <li>
+              Open Safari preferences (Safari → Preferences → Websites →
+              Notifications).
+            </li>
+            <li>Allow notifications from eVaka.</li>
+          </OrderedList>
+        ),
+        fallback: (
+          <P>Check your browser and operating system notification settings.</P>
+        )
+      }
+    },
+    passkeySection: {
+      title: 'Passkeys',
+      intro: 'Passkeys are a fast, passwordless way to sign in on this device.',
+      empty: "You haven't added any passkeys yet.",
+      addButton: 'Add passkey',
+      thisDevice: 'This device',
+      createdAt: 'Created',
+      lastUsedAt: 'Last used',
+      neverUsed: 'never',
+      revoke: 'Revoke',
+      revokeConfirmTitle: 'Revoke passkey?',
+      revokeConfirmText:
+        'You will no longer be able to sign in with this passkey.',
+      revokeConfirmLastWarning:
+        'You are currently signed in with this passkey. Revoking it will sign you out.',
+      enrollNudge: {
+        title: 'Try signing in with a passkey',
+        body: 'Sign in fast and passwordless on this device.',
+        action: 'Set up passkey',
+        dismiss: 'Dismiss'
+      }
     }
   },
   income: {

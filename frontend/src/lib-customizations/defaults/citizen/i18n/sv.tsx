@@ -201,13 +201,22 @@ const sv: Translations = {
     )
   },
   loginPage: {
+    welcomeHeadline: 'Välkommen till eVaka',
     title: 'Esbo stads småbarnspedagogik',
     systemNotification: 'Viktigt meddelande',
-    addToHomeScreen: {
-      title: 'Vill du hitta till denna sida lättare?',
-      subTitle: 'Lägg till eVaka på din telefons hemskärm!',
-      ios: 'Lägg till genväg på iOS (Safari)',
-      android: 'Lägg till genväg på Android (Chrome)',
+    reasons: {
+      // TODO: copy review — placeholder translation
+      sessionExpiredOpenThread:
+        'Öppnandet av meddelandetråden kräver inloggning. Var vänlig logga in.',
+      // TODO: copy review — placeholder translation
+      sessionExpiredReplyFailed: 'Sändning av svaret kräver inloggning.'
+    },
+    pwaInstall: {
+      button: 'Lägg till på hemskärmen',
+      iosUseSafariNote:
+        'För att installera eVaka på hemskärmen, öppna denna sida i Safari.',
+      notSupported:
+        'Den här webbläsaren stöder inte installation av eVaka på hemskärmen. Försök igen med Safari (iOS) eller Chrome (Android).',
       instructions: {
         ios: (
           <>
@@ -238,8 +247,6 @@ const sv: Translations = {
     },
     login: {
       title: 'Logga in med användarnamn',
-      paragraph:
-        'Sköt ditt barns dagliga ärenden rörande småbarnspedagogiken i eVaka.',
       link: 'Logga in',
       infoBoxText: (
         <>
@@ -265,7 +272,15 @@ const sv: Translations = {
         'Du kan byta lösenord i dina egna uppgifter genom stark autentisering.',
       noUsername: 'Inget användarnamn?',
       noUsernameInfo:
-        'Du kan skapa ett användarnamn genom att logga in med stark autentisering och tillåta inloggning ned e-post på sidan "Egna uppgifter"'
+        'Du kan skapa ett användarnamn genom att logga in med stark autentisering och tillåta inloggning ned e-post på sidan "Egna uppgifter"',
+      passkey: {
+        title: 'Logga in med passnyckel',
+        subtitle: 'Snabb, säker och lösenordsfri inloggning',
+        noCredentialsHint:
+          'Ingen passnyckel hittades på denna enhet. Logga in med Suomi.fi först för att aktivera passnycklar, eller använd en annan enhet som redan har en.',
+        failed: 'Inloggning misslyckades. Försök igen.',
+        moreOptionsDisclosure: 'Fler inloggningsalternativ'
+      }
     },
     applying: {
       title: 'Logga in via Suomi.fi',
@@ -278,7 +293,7 @@ const sv: Translations = {
         'anmäla ditt eller ditt barns inkomstuppgifter',
         'acceptera eller avslå ett beslut, om du gjort ansökan'
       ],
-      link: 'Autentisera',
+      link: 'Autentisera via Suomi.fi',
       mapText: 'Se en karta över alla eVaka enheter du kan ansöka till.',
       mapLink: 'Enheter på kartan'
     }
@@ -634,6 +649,8 @@ const sv: Translations = {
       sender: 'Avsändare',
       sentAt: 'Skickat',
       recipients: 'Mottagare',
+      restoredReplyDraft:
+        'Ditt senaste svar har återställts från notiset. Redigera eller skicka det nedan.',
       financeReplyInfo:
         'Det är möjligt att svara endast när din inkomstutredning har skickats eller är under handläggning.'
     },
@@ -2159,6 +2176,11 @@ const sv: Translations = {
         myndigheten för digitalisering och befolkningsdata (DVV).
       </P>
     ),
+    installSection: {
+      title: 'Installera eVaka på din enhet',
+      description:
+        'Du kan installera eVaka som en app på din enhet. I den installerade appen öppnas eVaka snabbare och du ser nya push-notiser.'
+    },
     detailsSection: {
       noEmailAlert:
         'Din epostadress saknas. Var god och fyll i den nedan, så att du kan ta emot notiser från eVaka.',
@@ -2287,6 +2309,120 @@ const sv: Translations = {
           </ul>
         </div>
       )
+    },
+    webPushSection: {
+      title: 'Push-notiser',
+      info: (
+        <P>
+          Du kan aktivera push-notiser i webbläsaren för nya meddelanden. Detta
+          kräver att du ger webbläsaren tillåtelse att visa notiser.
+        </P>
+      ),
+      enable: 'Aktivera push-notiser',
+      enabling: 'Aktiverar…',
+      enabled: 'Push-notiser är aktiverade',
+      categoryUrgent: {
+        label: 'Brådskande meddelanden',
+        description: 'Meddelanden markerade som brådskande av personalen'
+      },
+      categoryMessage: {
+        label: 'Vanliga meddelanden',
+        description: 'Nya meddelanden och svar i diskussioner'
+      },
+      categoryBulletin: {
+        label: 'Meddelanden',
+        description: 'Allmänna meddelanden från kommunen'
+      },
+      sendTest: 'Skicka testnotis',
+      testSent: 'Testnotis skickad',
+      testFailed: 'Kunde inte skicka testnotis',
+      unsupported: 'Push-notiser stöds inte i denna webbläsare eller enhet.',
+      denied:
+        'Push-notiser är blockerade för denna webbplats. Du kan tillåta dem i webbläsarens eller operativsystemets inställningar.',
+      guide: {
+        chromeAndroid: (
+          <OrderedList>
+            <li>Öppna Chromes meny (tre prickar uppe till höger).</li>
+            <li>Välj Inställningar → Webbplatsinställningar → Notiser.</li>
+            <li>Tillåt notiser för denna webbplats.</li>
+          </OrderedList>
+        ),
+        samsungAndroid: (
+          <OrderedList>
+            <li>Öppna Samsung Internets meny.</li>
+            <li>
+              Välj Inställningar → Webbplatser och nedladdningar → Notiser.
+            </li>
+            <li>Tillåt notiser för denna webbplats.</li>
+          </OrderedList>
+        ),
+        firefoxAndroid: (
+          <OrderedList>
+            <li>Öppna Firefox-menyn.</li>
+            <li>Välj Inställningar → Webbplatsbehörigheter → Notiser.</li>
+            <li>Tillåt notiser för denna webbplats.</li>
+          </OrderedList>
+        ),
+        safariIOS: (
+          <OrderedList>
+            <li>Lägg till eVaka på hemskärmen via Safaris delningsmeny.</li>
+            <li>Öppna eVaka från hemskärmen (inte från Safari).</li>
+            <li>Tillåt aktiveringsnotisen när den visas.</li>
+          </OrderedList>
+        ),
+        chromeDesktop: (
+          <OrderedList>
+            <li>Klicka på låsikonen i adressfältet.</li>
+            <li>Välj Webbplatsinställningar → Notiser → Tillåt.</li>
+            <li>Ladda om sidan.</li>
+          </OrderedList>
+        ),
+        firefoxDesktop: (
+          <OrderedList>
+            <li>Klicka på låsikonen i adressfältet.</li>
+            <li>Tillåt Notiser under Behörigheter.</li>
+            <li>Ladda om sidan.</li>
+          </OrderedList>
+        ),
+        safariMacos: (
+          <OrderedList>
+            <li>
+              Öppna Safaris inställningar (Safari → Inställningar → Webbplatser
+              → Notiser).
+            </li>
+            <li>Tillåt notiser från eVaka.</li>
+          </OrderedList>
+        ),
+        fallback: (
+          <P>
+            Kontrollera inställningarna för notiser i webbläsaren och
+            operativsystemet.
+          </P>
+        )
+      }
+    },
+    passkeySection: {
+      title: 'Passnycklar',
+      intro:
+        'En passnyckel är ett snabbt och lösenordsfritt sätt att logga in på den här enheten.',
+      empty: 'Du har ännu inte lagt till några passnycklar.',
+      addButton: 'Lägg till passnyckel',
+      thisDevice: 'Den här enheten',
+      createdAt: 'Skapad',
+      lastUsedAt: 'Senast använd',
+      neverUsed: 'aldrig',
+      revoke: 'Ta bort',
+      revokeConfirmTitle: 'Ta bort passnyckeln?',
+      revokeConfirmText:
+        'Du kan inte längre logga in med den här passnyckeln efter att den har tagits bort.',
+      revokeConfirmLastWarning:
+        'Du är för tillfället inloggad med den här passnyckeln. Om du tar bort den loggas du ut.',
+      enrollNudge: {
+        title: 'Prova passnyckel-inloggning',
+        body: 'Logga in snabbt och utan lösenord på denna enhet.',
+        action: 'Aktivera',
+        dismiss: 'Stäng'
+      }
     }
   },
   income: {

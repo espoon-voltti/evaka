@@ -4703,7 +4703,15 @@ export const fi = {
       setFolder: 'Siirrä kansioon',
       deleteDraft: 'Hylkää luonnos',
       send: 'Lähetä',
-      sending: 'Lähetetään'
+      sending: 'Lähetetään',
+      aiReview: {
+        reviewing: 'Tarkistetaan...',
+        warningTitle: 'Tiedotteen laatu',
+        sendAnyway: 'Lähetä silti',
+        edit: 'Muokkaa viestiä',
+        error:
+          'Viestin tarkistus epäonnistui. Voit lähettää viestin normaalisti.'
+      }
     }
   },
   pinCode: {

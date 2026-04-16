@@ -637,8 +637,6 @@ const en: DeepPartial<Translations> = {
     title: 'City of Turku early childhood education and care',
     login: {
       title: 'Login with username',
-      paragraph:
-        'Parents or guardians whose child is already in early childhood education and care or pre-primary education: take care of your child’s daily early childhood education and care matters, such as reading messages and informing when your child is and is not present.',
       link: 'Log in',
       infoBoxText: (
         <>

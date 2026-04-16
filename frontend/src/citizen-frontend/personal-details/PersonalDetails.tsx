@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useRef } from 'react'
-import { Redirect } from 'wouter'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { Redirect, useSearchParams } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import { useQueryResult } from 'lib-common/query'
@@ -11,14 +11,18 @@ import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import Container, { ContentArea } from 'lib-components/layout/Container'
-import { H1 } from 'lib-components/typography'
+import { H1, H2, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
 import { AuthContext } from '../auth/state'
+import { useIsStandalone } from '../hooks/useIsStandalone'
 import { useTranslation } from '../localization'
+import { PasskeySection } from '../passkey/PasskeySection'
+import { PwaInstallButton } from '../pwa/PwaInstallButton'
 import useTitle from '../useTitle'
+import { WebPushSettingsSection } from '../webpush/WebPushSettingsSection'
 
 import LoginDetailsSection from './LoginDetailsSection'
 import NotificationSettingsSection from './NotificationSettingsSection'
@@ -37,6 +41,19 @@ export default React.memo(function PersonalDetails() {
   const notificationSettingsSection = useRef<HTMLDivElement>(null)
   const emailVerificationStatus = useQueryResult(emailVerificationStatusQuery())
   const passwordConstraints = useQueryResult(passwordConstraintsQuery())
+  const standalone = useIsStandalone()
+
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [autoEnroll, setAutoEnroll] = useState(false)
+
+  useEffect(() => {
+    if (searchParams.get('enroll') === '1') {
+      setAutoEnroll(true)
+      const next = new URLSearchParams(searchParams)
+      next.delete('enroll')
+      setSearchParams(next, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   useEffect(() => {
     if (
@@ -71,6 +88,8 @@ export default React.memo(function PersonalDetails() {
                 <Redirect replace to="/" />
               )
           )}
+          <HorizontalLine />
+          <PasskeySection autoEnroll={autoEnroll} />
           {renderResult(
             combine(user, emailVerificationStatus, passwordConstraints),
             ([user, emailVerificationStatus, passwordConstraints]) =>
@@ -88,6 +107,18 @@ export default React.memo(function PersonalDetails() {
                 <Redirect replace to="/" />
               )
           )}
+          {!standalone && (
+            <>
+              <HorizontalLine />
+              <div data-qa="pwa-install-section">
+                <H2 $noMargin>{t.personalDetails.installSection.title}</H2>
+                <P>{t.personalDetails.installSection.description}</P>
+                <PwaInstallButton />
+              </div>
+            </>
+          )}
+          <HorizontalLine />
+          <WebPushSettingsSection />
           {renderResult(notificationSettings, (notificationSettings) => (
             <>
               <HorizontalLine />
