@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.dev
 import com.fasterxml.jackson.annotation.JsonIgnore
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.ExcludeCodeGen
+import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.absence.AbsenceCategory
 import fi.espoo.evaka.absence.AbsenceType
 import fi.espoo.evaka.absence.getAbsencesOfChildByDate
@@ -125,7 +126,6 @@ import fi.espoo.evaka.pairing.initPairing
 import fi.espoo.evaka.pairing.respondPairingChallengeCreateDevice
 import fi.espoo.evaka.pis.EmailMessageType
 import fi.espoo.evaka.pis.Employee
-import fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
@@ -1670,14 +1670,16 @@ UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}
         }
     }
 
+    data class UpsertWeakCredentialsRequest(val username: String, val password: Sensitive<String>)
+
     @PostMapping("/citizen/{id}/weak-credentials")
     fun upsertWeakCredentials(
         db: Database,
         clock: EvakaClock,
         @PathVariable id: PersonId,
-        @RequestBody request: PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest,
+        @RequestBody request: UpsertWeakCredentialsRequest,
     ) {
-        val password = request.password?.let { passwordService.encode(it) }
+        val password = passwordService.encode(request.password)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.updateLastStrongLogin(clock.now(), id)

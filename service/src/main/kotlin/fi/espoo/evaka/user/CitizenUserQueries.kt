@@ -72,9 +72,10 @@ fun Database.Transaction.updateWeakLoginCredentials(
     now: HelsinkiDateTime,
     id: PersonId,
     username: String?, // null = don't update
-    password: EncodedPassword?, // null = don't update
-): UpdateWeakLoginCredentialsResult =
-    createUpdate {
+    password: EncodedPassword,
+): UpdateWeakLoginCredentialsResult {
+    val normalizedUsername = username?.lowercase()
+    return createUpdate {
             sql(
                 """
 WITH old AS (
@@ -84,10 +85,10 @@ WITH old AS (
 )
 UPDATE citizen_user
 SET
-    username = coalesce(${bind(username)}, username),
-    username_updated_at = coalesce(${bind(now.takeIf { username != null })}, username_updated_at),
-    password = coalesce(${bindJson(password)}, password),
-    password_updated_at = coalesce(${bind(now.takeIf { password != null })}, password_updated_at)
+    username = coalesce(${bind(normalizedUsername)}, username),
+    username_updated_at = coalesce(${bind(now.takeIf { normalizedUsername != null })}, username_updated_at),
+    password = ${bindJson(password)},
+    password_updated_at = ${bind(now)}
 FROM old
 WHERE id = ${bind(id)}
 RETURNING (old_username IS NOT NULL AND old_username != username) AS username_changed,
@@ -97,6 +98,7 @@ RETURNING (old_username IS NOT NULL AND old_username != username) AS username_ch
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
+}
 
 fun Database.Transaction.hasWeakCredentials(person: PersonId): Boolean =
     createQuery {

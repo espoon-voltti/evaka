@@ -145,14 +145,9 @@ class PersonalDataControllerCitizen(
         Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))
     }
 
-    data class UpdateWeakLoginCredentialsRequest(
-        val username: String?,
-        val password: Sensitive<String>?,
-    ) {
+    data class UpdateWeakLoginCredentialsRequest(val password: Sensitive<String>) {
         init {
-            if (
-                password != null && password.value.length !in PasswordConstraints.SUPPORTED_LENGTH
-            ) {
+            if (password.value.length !in PasswordConstraints.SUPPORTED_LENGTH) {
                 throw BadRequest("Invalid password")
             }
         }
@@ -166,17 +161,13 @@ class PersonalDataControllerCitizen(
         @RequestBody body: UpdateWeakLoginCredentialsRequest,
     ) {
         Audit.CitizenCredentialsUpdateAttempt.log(targetId = AuditId(user.id))
-        if (body.password != null) {
-            if (!passwordSpecification.constraints().isPasswordStructureValid(body.password)) {
-                throw BadRequest("Password is not structurally valid", "PASSWORD_FORMAT")
-            }
+        if (!passwordSpecification.constraints().isPasswordStructureValid(body.password)) {
+            throw BadRequest("Password is not structurally valid", "PASSWORD_FORMAT")
         }
-        val password = body.password?.let { passwordService.encode(it) }
+        val password = passwordService.encode(body.password)
         db.connect { dbc ->
-            if (body.password != null) {
-                if (!passwordSpecification.isPasswordAcceptable(dbc, body.password)) {
-                    throw BadRequest("Password is not acceptable", "PASSWORD_UNACCEPTABLE")
-                }
+            if (!passwordSpecification.isPasswordAcceptable(dbc, body.password)) {
+                throw BadRequest("Password is not acceptable", "PASSWORD_UNACCEPTABLE")
             }
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -186,18 +177,15 @@ class PersonalDataControllerCitizen(
                     Action.Citizen.Person.UPDATE_WEAK_LOGIN_CREDENTIALS,
                     user.id,
                 )
-                val emails = tx.getPersonEmails(user.id)
-                if (body.username != null && emails.verifiedEmail != body.username) {
-                    throw BadRequest("Invalid username")
-                }
+                val isActivation = !tx.hasWeakCredentials(user.id)
+                val username =
+                    if (isActivation) {
+                        tx.getPersonEmails(user.id).verifiedEmail
+                            ?: throw BadRequest("Verified email is required")
+                    } else null
                 try {
                     val updateResult =
-                        tx.updateWeakLoginCredentials(
-                            clock.now(),
-                            user.id,
-                            body.username?.lowercase(),
-                            password,
-                        )
+                        tx.updateWeakLoginCredentials(clock.now(), user.id, username, password)
                     if (updateResult.passwordChanged) {
                         asyncJobRunner.plan(
                             tx,
@@ -285,9 +273,8 @@ class PersonalDataControllerCitizen(
                     Action.Citizen.Person.VERIFY_EMAIL,
                     user.id,
                 )
-                tx.verifyAndUpdateEmail(clock.now(), user.id, request.id, request.code)
                 try {
-                    tx.syncWeakLoginUsername(clock.now(), user.id)
+                    tx.verifyAndUpdateEmail(clock.now(), user.id, request.id, request.code)
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
                 }

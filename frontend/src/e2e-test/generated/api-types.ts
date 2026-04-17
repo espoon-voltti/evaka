@@ -1196,6 +1196,14 @@ export interface UpdateIncomeStatementHandledBody {
 }
 
 /**
+* Generated from fi.espoo.evaka.shared.dev.DevApi.UpsertWeakCredentialsRequest
+*/
+export interface UpsertWeakCredentialsRequest {
+  password: string
+  username: string
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 */
 export interface VoucherValueDecision {

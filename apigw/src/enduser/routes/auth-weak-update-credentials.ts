@@ -10,13 +10,7 @@ import type { RedisClient } from '../../shared/redis-client.ts'
 import { citizenWeakLoginCredentialsUpdate } from '../../shared/service-client.ts'
 
 const Request = z.object({
-  username: z
-    .string()
-    .min(1)
-    .max(128)
-    .transform((email) => email.toLowerCase())
-    .nullable(),
-  password: z.string().min(1).max(128).nullable()
+  password: z.string().min(1).max(128)
 })
 
 export const authWeakUpdateCredentials = (redisClient: RedisClient) =>
@@ -31,12 +25,11 @@ export const authWeakUpdateCredentials = (redisClient: RedisClient) =>
         res.sendStatus(401)
         return
       }
-      const { username, password } = Request.parse(req.body)
+      const { password } = Request.parse(req.body)
       const user = req.session.evaka.user
       const userIdHash = req.session.evaka.userIdHash
 
       await citizenWeakLoginCredentialsUpdate(req, user, {
-        username,
         password
       })
       logAuditEvent(

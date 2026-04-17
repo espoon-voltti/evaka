@@ -281,7 +281,6 @@ const WeakCredentialsFormModal = React.memo(function WeakCredentialsFormModal({
       resolveMutation={updateWeakLoginCredentialsMutation}
       resolveAction={() => ({
         body: {
-          username: hasCredentials ? null : username,
           password: form.value().password
         }
       })}

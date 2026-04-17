@@ -750,8 +750,7 @@ export interface TemporaryEmployee {
 * Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest
 */
 export interface UpdateWeakLoginCredentialsRequest {
-  password: string | null
-  username: string | null
+  password: string
 }
 
 /**

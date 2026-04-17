@@ -7,8 +7,11 @@ package fi.espoo.evaka.pis.controller
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.emailclient.MockEmailClient
+import fi.espoo.evaka.pis.PersonalDataUpdate
 import fi.espoo.evaka.pis.SystemController
+import fi.espoo.evaka.pis.controllers.CONFIRMATION_CODE_LENGTH
 import fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen
+import fi.espoo.evaka.pis.updatePersonalDetails
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -18,6 +21,8 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPersonType
 import fi.espoo.evaka.shared.dev.insert
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
@@ -42,13 +47,26 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     private val user = person.user(CitizenAuthLevel.STRONG)
 
     @Test
+    fun `a person without a verified email cannot activate weak credentials`() {
+        db.transaction { tx -> tx.insert(person.copy(verifiedEmail = null), DevPersonType.ADULT) }
+        MockPersonDetailsService.addPersons(person)
+
+        citizenStrongLogin()
+        val error =
+            assertThrows<BadRequest> {
+                updateWeakLoginCredentials(password = Sensitive("test123123"))
+            }
+        assertEquals("Verified email is required", error.message)
+    }
+
+    @Test
     fun `a person with a verified email can activate weak credentials and log in`() {
         db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
         MockPersonDetailsService.addPersons(person)
 
         citizenStrongLogin()
         val password = Sensitive("test123123")
-        updateWeakLoginCredentials(username = email, password = password)
+        updateWeakLoginCredentials(password = password)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         assertEquals(0, MockEmailClient.emails.size)
@@ -58,46 +76,24 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
     }
 
     @Test
-    fun `a person can update their username to match their new email, and log in with it`() {
-        val newEmail = "new@example.com"
-        val password = Sensitive("test123123")
+    fun `username is derived from verified email and converted to lowercase automatically`() {
+        val mixedCaseEmail = "Verified@Example.Com"
         db.transaction { tx ->
-            tx.insert(person.copy(email = newEmail, verifiedEmail = newEmail), DevPersonType.ADULT)
-            tx.insert(citizenUser(person.id, email, password))
+            tx.insert(
+                person.copy(email = mixedCaseEmail, verifiedEmail = mixedCaseEmail),
+                DevPersonType.ADULT,
+            )
         }
         MockPersonDetailsService.addPersons(person)
 
-        updateWeakLoginCredentials(username = newEmail, password = null)
+        citizenStrongLogin()
+        val password = Sensitive("test123123")
+        updateWeakLoginCredentials(password = password)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         assertEquals(0, MockEmailClient.emails.size)
 
-        val identity = citizenWeakLogin(username = newEmail, password = password)
-        assertEquals(person.id, identity.id)
-    }
-
-    @Test
-    fun `username is converted to lowercase automatically`() {
-        val newEmail = "nEW@eXample.Com"
-        val password = Sensitive("test123123")
-        db.transaction { tx ->
-            tx.insert(person.copy(email = newEmail, verifiedEmail = newEmail), DevPersonType.ADULT)
-            tx.insert(citizenUser(person.id, email, password))
-        }
-        MockPersonDetailsService.addPersons(person)
-
-        updateWeakLoginCredentials(username = newEmail, password = null)
-
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
-        assertEquals(0, MockEmailClient.emails.size)
-
-        // In a real environment apigw converts the username to lowercase when logging in.
-        // This conversion must be in the apigw so the login rate limit is applied correctly to the
-        // lowercase username, and it can't be bypassed by just changing some letter(s) to
-        // uppercase. The service API endpoint expects a lowercase username, so in this test we have
-        // to convert it manually
-        val actualUsername = newEmail.lowercase()
-        val identity = citizenWeakLogin(username = actualUsername, password = password)
+        val identity = citizenWeakLogin(username = mixedCaseEmail.lowercase(), password = password)
         assertEquals(person.id, identity.id)
     }
 
@@ -111,7 +107,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         MockPersonDetailsService.addPersons(person)
 
         val newPassword = Sensitive("test256256")
-        updateWeakLoginCredentials(username = null, password = newPassword)
+        updateWeakLoginCredentials(password = newPassword)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         assertEquals(1, MockEmailClient.emails.size)
@@ -131,10 +127,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
 
         citizenStrongLogin()
         val password = Sensitive("nope")
-        val error =
-            assertThrows<BadRequest> {
-                updateWeakLoginCredentials(username = email, password = password)
-            }
+        val error = assertThrows<BadRequest> { updateWeakLoginCredentials(password = password) }
         assertEquals("PASSWORD_FORMAT", error.errorCode)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -154,10 +147,7 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         MockPersonDetailsService.addPersons(person)
 
         citizenStrongLogin()
-        val error =
-            assertThrows<BadRequest> {
-                updateWeakLoginCredentials(username = email, password = password)
-            }
+        val error = assertThrows<BadRequest> { updateWeakLoginCredentials(password = password) }
         assertEquals("PASSWORD_UNACCEPTABLE", error.errorCode)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -241,12 +231,104 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         assertEquals(0, MockEmailClient.emails.size)
     }
 
-    private fun updateWeakLoginCredentials(username: String?, password: Sensitive<String>?) =
+    @Test
+    fun `username is synced when a person with weak credentials verifies a new email`() {
+        val password = Sensitive("test123123")
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.insert(citizenUser(person.id, email, password))
+        }
+        MockPersonDetailsService.addPersons(person)
+
+        val newEmail = "newemail@example.com"
+        db.transaction { tx ->
+            tx.updatePersonalDetails(
+                person.id,
+                PersonalDataUpdate(
+                    preferredName = person.firstName,
+                    phone = person.phone,
+                    backupPhone = person.backupPhone,
+                    email = newEmail,
+                ),
+            )
+        }
+        sendEmailVerificationCode()
+        val verificationCode = getVerificationCodeFromEmail(newEmail)
+        val verification = getEmailVerificationStatus().latestVerification!!
+        verifyEmail(
+            PersonalDataControllerCitizen.EmailVerificationRequest(
+                verification.id,
+                verificationCode,
+            )
+        )
+
+        val identity = citizenWeakLogin(username = newEmail, password = password)
+        assertEquals(person.id, identity.id)
+
+        assertThrows<Forbidden> { citizenWeakLogin(username = email, password = password) }
+    }
+
+    @Test
+    fun `email verification fails with a conflict if the new email is already another person's weak login username`() {
+        val password = Sensitive("test123123")
+        val otherPassword = Sensitive("test12341234")
+        val otherPersonEmail = "other@example.com"
+        val otherPerson =
+            DevPerson(
+                email = otherPersonEmail,
+                verifiedEmail = otherPersonEmail,
+                firstName = "Other",
+                lastName = "Person",
+            )
+        val otherUser = otherPerson.user(CitizenAuthLevel.STRONG)
+
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.insert(citizenUser(person.id, email, password))
+
+            tx.insert(otherPerson, DevPersonType.ADULT)
+            tx.insert(citizenUser(otherPerson.id, otherPersonEmail, otherPassword))
+
+            tx.updatePersonalDetails(
+                otherPerson.id,
+                PersonalDataUpdate(
+                    preferredName = otherPerson.firstName,
+                    phone = otherPerson.phone,
+                    backupPhone = otherPerson.backupPhone,
+                    email = email,
+                ),
+            )
+        }
+        MockPersonDetailsService.addPersons(person)
+
+        sendEmailVerificationCode(otherUser)
+        val verificationCode = getVerificationCodeFromEmail(email)
+        val verification = getEmailVerificationStatus(otherUser).latestVerification!!
+
+        assertThrows<Conflict> {
+            verifyEmail(
+                PersonalDataControllerCitizen.EmailVerificationRequest(
+                    verification.id,
+                    verificationCode,
+                ),
+                otherUser,
+            )
+        }
+
+        val aIdentity = citizenWeakLogin(username = email, password = password)
+        assertEquals(person.id, aIdentity.id)
+
+        assertThrows<Forbidden> { citizenWeakLogin(username = email, password = otherPassword) }
+        val bIdentity = citizenWeakLogin(username = otherPersonEmail, password = otherPassword)
+        assertEquals(otherPerson.id, bIdentity.id)
+    }
+
+    private fun updateWeakLoginCredentials(password: Sensitive<String>) =
         controller.updateWeakLoginCredentials(
             dbInstance(),
             user,
             clock,
-            PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest(username, password),
+            PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest(password),
         )
 
     private fun citizenStrongLogin() =
@@ -285,4 +367,22 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             password = passwordService.encode(password),
             passwordUpdatedAt = clock.now(),
         )
+
+    private fun sendEmailVerificationCode(citizen: AuthenticatedUser.Citizen = user) {
+        controller.sendEmailVerificationCode(dbInstance(), citizen, clock)
+        asyncJobRunner.runPendingJobsSync(clock)
+    }
+
+    private fun getEmailVerificationStatus(citizen: AuthenticatedUser.Citizen = user) =
+        controller.getEmailVerificationStatus(dbInstance(), citizen, clock)
+
+    private fun getVerificationCodeFromEmail(emailAddress: String): String =
+        MockEmailClient.getEmail(emailAddress)?.let { email ->
+            Regex("[0-9]{$CONFIRMATION_CODE_LENGTH}").find(email.content.text)?.value
+        } ?: error("No verification code found for $emailAddress")
+
+    private fun verifyEmail(
+        request: PersonalDataControllerCitizen.EmailVerificationRequest,
+        citizen: AuthenticatedUser.Citizen = user,
+    ) = controller.verifyEmail(dbInstance(), citizen, clock, request)
 }
