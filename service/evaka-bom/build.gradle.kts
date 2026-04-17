@@ -41,7 +41,7 @@ dependencies {
         api("org.checkerframework:checker-qual:3.55.1")
         api("org.skyscreamer:jsonassert:1.5.3")
         api("org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE")
-        api("org.thymeleaf:thymeleaf:3.1.3.RELEASE")
+        api("org.thymeleaf:thymeleaf:3.1.4.RELEASE")
         api(libs.flyingsaucer.core)
         api(libs.flyingsaucer.pdf)
         api(libs.ktlint.cli.ruleset.core)
