@@ -26,10 +26,9 @@ class FileDwExportClient(
         queryName: String,
         clock: EvakaClock,
         stream: EspooBiJob.CsvInputStream,
-        fileNamePrefix: String,
     ): Pair<String, String> {
         val date = clock.now().toLocalDate()
-        val fileName = "$fileNamePrefix$queryName${date.format(DateTimeFormatter.ISO_DATE)}.csv"
+        val fileName = "$queryName${date.format(DateTimeFormatter.ISO_DATE)}.csv"
         val tempFile = Files.createTempFile("", fileName)
         val bucket = ouluEnv.bucket.export
         val prefix = ouluEnv.dwExport.prefix
