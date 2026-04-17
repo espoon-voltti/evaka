@@ -41,7 +41,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.cancelFullDayAbsence
+* Generated from evaka.core.attendance.ChildAttendanceController.cancelFullDayAbsence
 */
 export async function cancelFullDayAbsence(
   request: {
@@ -58,7 +58,7 @@ export async function cancelFullDayAbsence(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.deleteAbsenceRange
+* Generated from evaka.core.attendance.ChildAttendanceController.deleteAbsenceRange
 */
 export async function deleteAbsenceRange(
   request: {
@@ -82,7 +82,7 @@ export async function deleteAbsenceRange(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.getAttendanceStatuses
+* Generated from evaka.core.attendance.ChildAttendanceController.getAttendanceStatuses
 */
 export async function getAttendanceStatuses(
   request: {
@@ -100,7 +100,7 @@ export async function getAttendanceStatuses(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.getChildren
+* Generated from evaka.core.attendance.ChildAttendanceController.getChildren
 */
 export async function getChildren(
   request: {
@@ -116,7 +116,7 @@ export async function getChildren(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.getExpectedAbsencesOnDepartures
+* Generated from evaka.core.attendance.ChildAttendanceController.getExpectedAbsencesOnDepartures
 */
 export async function getExpectedAbsencesOnDepartures(
   request: {
@@ -134,7 +134,7 @@ export async function getExpectedAbsencesOnDepartures(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.postAbsenceRange
+* Generated from evaka.core.attendance.ChildAttendanceController.postAbsenceRange
 */
 export async function postAbsenceRange(
   request: {
@@ -153,7 +153,7 @@ export async function postAbsenceRange(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.postArrivals
+* Generated from evaka.core.attendance.ChildAttendanceController.postArrivals
 */
 export async function postArrivals(
   request: {
@@ -171,7 +171,7 @@ export async function postArrivals(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.postDepartures
+* Generated from evaka.core.attendance.ChildAttendanceController.postDepartures
 */
 export async function postDepartures(
   request: {
@@ -189,7 +189,7 @@ export async function postDepartures(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.postFullDayAbsence
+* Generated from evaka.core.attendance.ChildAttendanceController.postFullDayAbsence
 */
 export async function postFullDayAbsence(
   request: {
@@ -208,7 +208,7 @@ export async function postFullDayAbsence(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.returnToComing
+* Generated from evaka.core.attendance.ChildAttendanceController.returnToComing
 */
 export async function returnToComing(
   request: {
@@ -225,7 +225,7 @@ export async function returnToComing(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.returnToPresent
+* Generated from evaka.core.attendance.ChildAttendanceController.returnToPresent
 */
 export async function returnToPresent(
   request: {
@@ -242,7 +242,7 @@ export async function returnToPresent(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.getAttendancesByUnit
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.getAttendancesByUnit
 */
 export async function getAttendancesByUnit(
   request: {
@@ -266,7 +266,7 @@ export async function getAttendancesByUnit(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.getEmployeeAttendances
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.getEmployeeAttendances
 */
 export async function getEmployeeAttendances(
   request: {
@@ -292,7 +292,7 @@ export async function getEmployeeAttendances(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.getOpenGroupAttendance
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.getOpenGroupAttendance
 */
 export async function getOpenGroupAttendance(
   request: {
@@ -312,7 +312,7 @@ export async function getOpenGroupAttendance(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.markArrival
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.markArrival
 */
 export async function markArrival(
   request: {
@@ -329,7 +329,7 @@ export async function markArrival(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.markDeparture
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.markDeparture
 */
 export async function markDeparture(
   request: {
@@ -346,7 +346,7 @@ export async function markDeparture(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.markExternalArrival
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.markExternalArrival
 */
 export async function markExternalArrival(
   request: {
@@ -363,7 +363,7 @@ export async function markExternalArrival(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.markExternalDeparture
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.markExternalDeparture
 */
 export async function markExternalDeparture(
   request: {
@@ -380,7 +380,7 @@ export async function markExternalDeparture(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.setAttendances
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.setAttendances
 */
 export async function setAttendances(
   request: {
@@ -402,7 +402,7 @@ export async function setAttendances(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileUnitController.getUnitInfo
+* Generated from evaka.core.attendance.MobileUnitController.getUnitInfo
 */
 export async function getUnitInfo(
   request: {
@@ -418,7 +418,7 @@ export async function getUnitInfo(
 
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileUnitController.getUnitStats
+* Generated from evaka.core.attendance.MobileUnitController.getUnitStats
 */
 export async function getUnitStats(
   request: {

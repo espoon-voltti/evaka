@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<collections xmlns="http://www.profium.com/reception/2022/03" xmlns:ns2="http://www.profium.com/sahke2">
+    <initiator>
+        <source_system>eVaka</source_system>
+        <initiator_id>00000000-0000-0000-0000-000000000000</initiator_id>
+        <initiator_name>eVaka</initiator_name>
+    </initiator>
+    <collection>
+        <type>record</type>
+        <folder>04.01.03.42</folder>
+        <metadata>
+            <ns2:title>Päätös pidennetystä oppivelvollisuudesta;Hylätty;John Smith;081222A9859</ns2:title>
+            <ns2:calculationBaseDate>2024-08-01</ns2:calculationBaseDate>
+            <ns2:created>2025-05-12</ns2:created>
+            <ns2:agent>
+                <ns2:agentRole>Laatija</ns2:agentRole>
+                <ns2:agentName>Esko Esivalmistelija</ns2:agentName>
+            </ns2:agent>
+            <ns2:agent>
+                <ns2:agentRole>Päättäjä</ns2:agentRole>
+                <ns2:agentName>Pänü Päättäjä</ns2:agentName>
+            </ns2:agent>
+        </metadata>
+        <content>
+            <file name="8554e2a5-29bb-4e3c-9aca-59c4995c1d86.txt" originalId="8554e2a5-29bb-4e3c-9aca-59c4995c1d86"/>
+        </content>
+    </collection>
+</collections>

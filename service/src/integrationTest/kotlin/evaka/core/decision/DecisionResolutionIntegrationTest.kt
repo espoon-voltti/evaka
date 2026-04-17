@@ -1,0 +1,591 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.decision
+
+import evaka.core.FullApplicationTest
+import evaka.core.application.AcceptDecisionRequest
+import evaka.core.application.ApplicationControllerCitizen
+import evaka.core.application.ApplicationControllerV2
+import evaka.core.application.ApplicationStatus
+import evaka.core.application.RejectDecisionRequest
+import evaka.core.application.persistence.daycare.Apply
+import evaka.core.application.persistence.daycare.CareDetails
+import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.feeThresholds
+import evaka.core.placement.PlacementType
+import evaka.core.preschoolTerm2020
+import evaka.core.shared.ApplicationId
+import evaka.core.shared.DecisionId
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.auth.CitizenAuthLevel
+import evaka.core.shared.auth.UserRole
+import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevPerson
+import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.DevPlacementPlan
+import evaka.core.shared.dev.TestDecision
+import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertTestApplication
+import evaka.core.shared.dev.insertTestDecision
+import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.test.getApplicationStatus
+import evaka.core.test.getDecisionRowById
+import evaka.core.test.getDecisionRowsByApplication
+import evaka.core.test.getPlacementPlanRowByApplication
+import evaka.core.test.getPlacementRowsByChild
+import evaka.core.toApplicationType
+import evaka.core.toDaycareFormAdult
+import evaka.core.toDaycareFormChild
+import java.time.LocalDate
+import java.util.UUID
+import java.util.stream.Stream
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import org.springframework.beans.factory.annotation.Autowired
+
+data class DecisionResolutionTestCase(val isServiceWorker: Boolean, val isAccept: Boolean)
+
+class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var applicationControllerV2: ApplicationControllerV2
+    @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
+
+    private val clock = MockEvakaClock(2019, 1, 1, 12, 0)
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val employee = DevEmployee()
+    private val adult =
+        DevPerson(
+            ssn = "010180-1232",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+    private val child =
+        DevPerson(
+            dateOfBirth = LocalDate.of(2017, 6, 1),
+            ssn = "010617A123U",
+            streetAddress = "Kamreerintie 2",
+            postalCode = "02770",
+            postOffice = "Espoo",
+        )
+
+    private val serviceWorker =
+        AuthenticatedUser.Employee(employee.id, setOf(UserRole.SERVICE_WORKER))
+    private val endUser = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG)
+    private val applicationId = ApplicationId(UUID.randomUUID())
+
+    @BeforeEach
+    fun beforeEach() {
+        db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(feeThresholds)
+            tx.insert(preschoolTerm2020)
+        }
+    }
+
+    @Suppress("unused")
+    fun testCases(): Stream<Arguments> =
+        listOf(
+                Arguments.of(DecisionResolutionTestCase(isServiceWorker = true, isAccept = true)),
+                Arguments.of(DecisionResolutionTestCase(isServiceWorker = true, isAccept = false)),
+                Arguments.of(DecisionResolutionTestCase(isServiceWorker = false, isAccept = true)),
+                Arguments.of(DecisionResolutionTestCase(isServiceWorker = false, isAccept = false)),
+            )
+            .stream()
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("testCases")
+    fun testDaycareFullTime(test: DecisionResolutionTestCase) {
+        val period = FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 7, 1))
+        val ids =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                type = PlacementType.DAYCARE,
+                period = period,
+            )
+        val user = if (test.isServiceWorker) serviceWorker else endUser
+        if (test.isAccept) {
+            acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
+            db.read { r ->
+                assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
+                r.getPlacementRowsByChild(child.id).exactlyOne().also {
+                    assertEquals(PlacementType.DAYCARE, it.type)
+                    assertEquals(daycare.id, it.unitId)
+                    assertEquals(period, it.period())
+                }
+            }
+        } else {
+            rejectDecisionAndAssert(user, applicationId, ids.primaryId!!)
+            db.read { r ->
+                assertEquals(ApplicationStatus.REJECTED, r.getApplicationStatus(ids.applicationId))
+                assertTrue(r.getPlacementRowsByChild(child.id).toList().isEmpty())
+            }
+        }
+        db.read { r -> assertTrue(r.getPlacementPlanRowByApplication(ids.applicationId).deleted) }
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("testCases")
+    fun testDaycarePartTime(test: DecisionResolutionTestCase) {
+        val period = FiniteDateRange(LocalDate.of(2019, 5, 18), LocalDate.of(2019, 7, 1))
+        val ids =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                type = PlacementType.DAYCARE_PART_TIME,
+                period = period,
+            )
+        val user = if (test.isServiceWorker) serviceWorker else endUser
+        if (test.isAccept) {
+            acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
+            db.read { r ->
+                assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
+                r.getPlacementRowsByChild(child.id).exactlyOne().also {
+                    assertEquals(PlacementType.DAYCARE_PART_TIME, it.type)
+                    assertEquals(daycare.id, it.unitId)
+                    assertEquals(period, it.period())
+                }
+            }
+        } else {
+            rejectDecisionAndAssert(user, applicationId, ids.primaryId!!)
+            db.read {
+                assertEquals(ApplicationStatus.REJECTED, it.getApplicationStatus(ids.applicationId))
+                assertTrue(it.getPlacementRowsByChild(child.id).toList().isEmpty())
+            }
+        }
+        db.read { assertTrue(it.getPlacementPlanRowByApplication(ids.applicationId).deleted) }
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("testCases")
+    fun testPreschoolOnly(test: DecisionResolutionTestCase) {
+        val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
+        val ids =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                type = PlacementType.PRESCHOOL,
+                period = period,
+            )
+        val user = if (test.isServiceWorker) serviceWorker else endUser
+        if (test.isAccept) {
+            acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
+            db.read { r ->
+                assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
+                r.getPlacementRowsByChild(child.id).exactlyOne().also {
+                    assertEquals(PlacementType.PRESCHOOL, it.type)
+                    assertEquals(daycare.id, it.unitId)
+                    assertEquals(period, it.period())
+                }
+            }
+        } else {
+            rejectDecisionAndAssert(user, applicationId, ids.primaryId!!)
+            db.read {
+                assertEquals(ApplicationStatus.REJECTED, it.getApplicationStatus(ids.applicationId))
+                assertTrue(it.getPlacementRowsByChild(child.id).toList().isEmpty())
+            }
+        }
+        db.read { assertTrue(it.getPlacementPlanRowByApplication(ids.applicationId).deleted) }
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("testCases")
+    fun testPreschoolFull(test: DecisionResolutionTestCase) {
+        val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 6, 4))
+        val preschoolDaycarePeriod =
+            FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
+        val ids =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                period = period,
+                preschoolDaycarePeriod = preschoolDaycarePeriod,
+            )
+        val user = if (test.isServiceWorker) serviceWorker else endUser
+        if (test.isAccept) {
+            acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
+            db.read { r ->
+                assertEquals(
+                    ApplicationStatus.WAITING_CONFIRMATION,
+                    r.getApplicationStatus(ids.applicationId),
+                )
+                r.getPlacementRowsByChild(child.id).exactlyOne().also {
+                    assertEquals(PlacementType.PRESCHOOL, it.type)
+                    assertEquals(daycare.id, it.unitId)
+                    assertEquals(period, it.period())
+                }
+            }
+            acceptDecisionAndAssert(
+                user,
+                applicationId,
+                ids.preschoolDaycareId!!,
+                preschoolDaycarePeriod.start,
+            )
+            db.read { r ->
+                assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
+                r.getPlacementRowsByChild(child.id).toList().also {
+                    assertEquals(2, it.size)
+                    assertEquals(PlacementType.PRESCHOOL_DAYCARE, it[0].type)
+                    assertEquals(daycare.id, it[0].unitId)
+                    assertEquals(
+                        FiniteDateRange(preschoolDaycarePeriod.start, period.end),
+                        it[0].period(),
+                    )
+                    assertEquals(PlacementType.DAYCARE, it[1].type)
+                    assertEquals(daycare.id, it[1].unitId)
+                    assertEquals(
+                        FiniteDateRange(period.end.plusDays(1), preschoolDaycarePeriod.end),
+                        it[1].period(),
+                    )
+                }
+                assertTrue(r.getPlacementPlanRowByApplication(ids.applicationId).deleted)
+            }
+        } else {
+            rejectDecisionAndAssert(user, applicationId, ids.primaryId!!)
+            db.read { tx ->
+                assertEquals(ApplicationStatus.REJECTED, tx.getApplicationStatus(ids.applicationId))
+                assertTrue(tx.getPlacementRowsByChild(child.id).toList().isEmpty())
+                assertTrue(
+                    tx.getDecisionRowsByApplication(ids.applicationId).toList().all {
+                        it.status == DecisionStatus.REJECTED
+                    }
+                )
+            }
+        }
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("testCases")
+    fun testPreparatoryFull(test: DecisionResolutionTestCase) {
+        val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 6, 4))
+        val preschoolDaycarePeriod =
+            FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
+        val ids =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                type = PlacementType.PREPARATORY_DAYCARE,
+                period = period,
+                preschoolDaycarePeriod = preschoolDaycarePeriod,
+            )
+        val user = if (test.isServiceWorker) serviceWorker else endUser
+        if (test.isAccept) {
+            acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
+            db.read { r ->
+                assertEquals(
+                    ApplicationStatus.WAITING_CONFIRMATION,
+                    r.getApplicationStatus(ids.applicationId),
+                )
+                r.getPlacementRowsByChild(child.id).exactlyOne().also {
+                    assertEquals(PlacementType.PREPARATORY, it.type)
+                    assertEquals(daycare.id, it.unitId)
+                    assertEquals(period, it.period())
+                }
+            }
+            acceptDecisionAndAssert(
+                user,
+                applicationId,
+                ids.preschoolDaycareId!!,
+                preschoolDaycarePeriod.start,
+            )
+            db.read { r ->
+                assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
+                r.getPlacementRowsByChild(child.id).toList().also {
+                    assertEquals(2, it.size)
+                    assertEquals(PlacementType.PREPARATORY_DAYCARE, it[0].type)
+                    assertEquals(daycare.id, it[0].unitId)
+                    assertEquals(
+                        FiniteDateRange(preschoolDaycarePeriod.start, period.end),
+                        it[0].period(),
+                    )
+                    assertEquals(PlacementType.DAYCARE, it[1].type)
+                    assertEquals(daycare.id, it[1].unitId)
+                    assertEquals(
+                        FiniteDateRange(period.end.plusDays(1), preschoolDaycarePeriod.end),
+                        it[1].period(),
+                    )
+                }
+            }
+        } else {
+            rejectDecisionAndAssert(user, applicationId, ids.primaryId!!)
+            db.read { r ->
+                assertEquals(ApplicationStatus.REJECTED, r.getApplicationStatus(ids.applicationId))
+                assertTrue(r.getPlacementRowsByChild(child.id).toList().isEmpty())
+                assertTrue(
+                    r.getDecisionRowsByApplication(ids.applicationId).toList().all {
+                        it.status == DecisionStatus.REJECTED
+                    }
+                )
+            }
+        }
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("testCases")
+    fun testPreschoolOnlyDaycare(test: DecisionResolutionTestCase) {
+        val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 6, 4))
+        val preschoolDaycarePeriod =
+            FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
+        val ids =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                period = period,
+                preschoolDaycarePeriod = preschoolDaycarePeriod,
+                preschoolDaycareWithoutPreschool = true,
+            )
+        val user = if (test.isServiceWorker) serviceWorker else endUser
+        if (test.isAccept) {
+            acceptDecisionAndAssert(
+                user,
+                applicationId,
+                ids.preschoolDaycareId!!,
+                preschoolDaycarePeriod.start,
+            )
+            db.read { r ->
+                assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
+                r.getPlacementRowsByChild(child.id).toList().also {
+                    assertEquals(PlacementType.PRESCHOOL_DAYCARE, it[0].type)
+                    assertEquals(daycare.id, it[0].unitId)
+                    assertEquals(preschoolDaycarePeriod.copy(end = period.end), it[0].period())
+                    assertEquals(PlacementType.DAYCARE, it[1].type)
+                    assertEquals(daycare.id, it[1].unitId)
+                    assertEquals(
+                        preschoolDaycarePeriod.copy(start = period.end.plusDays(1)),
+                        it[1].period(),
+                    )
+                }
+            }
+        } else {
+            rejectDecisionAndAssert(user, applicationId, ids.preschoolDaycareId!!)
+            db.read { r ->
+                assertEquals(ApplicationStatus.REJECTED, r.getApplicationStatus(ids.applicationId))
+                assertTrue(r.getPlacementRowsByChild(child.id).toList().isEmpty())
+                assertTrue(
+                    r.getDecisionRowsByApplication(ids.applicationId).toList().all {
+                        it.status == DecisionStatus.REJECTED
+                    }
+                )
+            }
+        }
+    }
+
+    private fun acceptDecisionAndAssert(
+        user: AuthenticatedUser,
+        applicationId: ApplicationId,
+        decisionId: DecisionId,
+        requestedStartDate: LocalDate,
+    ) {
+        val body = AcceptDecisionRequest(decisionId, requestedStartDate)
+        when (user) {
+            is AuthenticatedUser.Citizen ->
+                applicationControllerCitizen.acceptDecision(
+                    dbInstance(),
+                    user,
+                    clock,
+                    applicationId,
+                    body,
+                )
+            is AuthenticatedUser.Employee ->
+                applicationControllerV2.acceptDecision(
+                    dbInstance(),
+                    user,
+                    clock,
+                    applicationId,
+                    body,
+                )
+            else -> error("Unsupported user type")
+        }
+
+        db.read { r ->
+            r.getDecisionRowById(decisionId).also {
+                assertEquals(DecisionStatus.ACCEPTED, it.status)
+                assertNotNull(it.resolved)
+                assertEquals(requestedStartDate, it.requestedStartDate)
+                assertEquals(user.evakaUserId, it.resolvedBy)
+            }
+        }
+    }
+
+    private fun rejectDecisionAndAssert(
+        user: AuthenticatedUser,
+        applicationId: ApplicationId,
+        decisionId: DecisionId,
+    ) {
+        val body = RejectDecisionRequest(decisionId)
+        when (user) {
+            is AuthenticatedUser.Citizen ->
+                applicationControllerCitizen.rejectDecision(
+                    dbInstance(),
+                    user,
+                    clock,
+                    applicationId,
+                    body,
+                )
+            is AuthenticatedUser.Employee ->
+                applicationControllerV2.rejectDecision(
+                    dbInstance(),
+                    user,
+                    clock,
+                    applicationId,
+                    body,
+                )
+            else -> error("Unsupported user type")
+        }
+
+        db.read { r ->
+            r.getDecisionRowById(decisionId).also {
+                assertEquals(DecisionStatus.REJECTED, it.status)
+                assertNotNull(it.resolved)
+                assertNull(it.requestedStartDate)
+                assertEquals(user.evakaUserId, it.resolvedBy)
+            }
+        }
+    }
+
+    private fun insertInitialData(
+        status: ApplicationStatus,
+        type: PlacementType,
+        unit: DevDaycare = daycare,
+        adult: DevPerson = this.adult,
+        child: DevPerson = this.child,
+        period: FiniteDateRange,
+        preschoolDaycarePeriod: FiniteDateRange? = null,
+        preschoolDaycareWithoutPreschool: Boolean = false,
+    ): DataIdentifiers =
+        db.transaction { tx ->
+            val preschoolDaycare =
+                type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
+            tx.insertTestApplication(
+                id = applicationId,
+                status = status,
+                confidential =
+                    if (
+                        status in
+                            listOf(
+                                ApplicationStatus.CREATED,
+                                ApplicationStatus.SENT,
+                                ApplicationStatus.WAITING_PLACEMENT,
+                            )
+                    )
+                        null
+                    else true,
+                guardianId = adult.id,
+                childId = child.id,
+                type = type.toApplicationType(),
+                document =
+                    DaycareFormV0(
+                        type = type.toApplicationType(),
+                        partTime = type == PlacementType.DAYCARE_PART_TIME,
+                        connectedDaycare = preschoolDaycare,
+                        serviceStart = "08:00".takeIf { preschoolDaycare },
+                        serviceEnd = "16:00".takeIf { preschoolDaycare },
+                        careDetails =
+                            CareDetails(
+                                preparatory =
+                                    type in
+                                        listOf(
+                                            PlacementType.PREPARATORY,
+                                            PlacementType.PREPARATORY_DAYCARE,
+                                        )
+                            ),
+                        child = child.toDaycareFormChild(),
+                        guardian = adult.toDaycareFormAdult(),
+                        apply = Apply(preferredUnits = listOf(unit.id)),
+                        preferredStartDate = period.start,
+                    ),
+            )
+            tx.insert(
+                DevPlacementPlan(
+                    applicationId = applicationId,
+                    unitId = unit.id,
+                    type = type,
+                    startDate = period.start,
+                    endDate = period.end,
+                    preschoolDaycareStartDate = preschoolDaycarePeriod?.start,
+                    preschoolDaycareEndDate = preschoolDaycarePeriod?.end,
+                )
+            )
+            val primaryId =
+                if (preschoolDaycareWithoutPreschool) {
+                    null
+                } else {
+                    tx.insertTestDecision(
+                        TestDecision(
+                            createdBy = employee.evakaUserId,
+                            unitId = unit.id,
+                            applicationId = applicationId,
+                            type =
+                                when (type) {
+                                    PlacementType.CLUB -> {
+                                        DecisionType.CLUB
+                                    }
+
+                                    PlacementType.DAYCARE,
+                                    PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                                    PlacementType.PRESCHOOL_DAYCARE_ONLY,
+                                    PlacementType.PREPARATORY_DAYCARE_ONLY -> {
+                                        DecisionType.DAYCARE
+                                    }
+
+                                    PlacementType.DAYCARE_PART_TIME,
+                                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> {
+                                        DecisionType.DAYCARE_PART_TIME
+                                    }
+
+                                    PlacementType.PRESCHOOL,
+                                    PlacementType.PRESCHOOL_DAYCARE,
+                                    PlacementType.PRESCHOOL_CLUB -> {
+                                        DecisionType.PRESCHOOL
+                                    }
+
+                                    PlacementType.PREPARATORY,
+                                    PlacementType.PREPARATORY_DAYCARE -> {
+                                        DecisionType.PREPARATORY_EDUCATION
+                                    }
+
+                                    PlacementType.TEMPORARY_DAYCARE,
+                                    PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+                                    PlacementType.SCHOOL_SHIFT_CARE -> {
+                                        error("Unsupported placement type ($type)")
+                                    }
+                                },
+                            startDate = period.start,
+                            endDate = period.end,
+                        )
+                    )
+                }
+            val preschoolDaycareId =
+                preschoolDaycarePeriod?.let {
+                    tx.insertTestDecision(
+                        TestDecision(
+                            createdBy = employee.evakaUserId,
+                            unitId = unit.id,
+                            applicationId = applicationId,
+                            type = DecisionType.PRESCHOOL_DAYCARE,
+                            startDate = it.start,
+                            endDate = it.end,
+                        )
+                    )
+                }
+            DataIdentifiers(applicationId, primaryId, preschoolDaycareId)
+        }
+}
+
+private data class DataIdentifiers(
+    val applicationId: ApplicationId,
+    val primaryId: DecisionId?,
+    val preschoolDaycareId: DecisionId?,
+)

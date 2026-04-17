@@ -13,7 +13,7 @@ import LocalDate from '../../local-date'
 import type { PersonId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.occupancy.ChildCapacityPoint
+* Generated from evaka.core.occupancy.ChildCapacityPoint
 */
 export interface ChildCapacityPoint {
   capacity: number
@@ -21,7 +21,7 @@ export interface ChildCapacityPoint {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.ChildOccupancyAttendance
+* Generated from evaka.core.occupancy.ChildOccupancyAttendance
 */
 export interface ChildOccupancyAttendance {
   arrived: HelsinkiDateTime
@@ -31,7 +31,7 @@ export interface ChildOccupancyAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyController.GetUnitOccupanciesForDayBody
+* Generated from evaka.core.occupancy.OccupancyController.GetUnitOccupanciesForDayBody
 */
 export interface GetUnitOccupanciesForDayBody {
   date: LocalDate
@@ -39,7 +39,7 @@ export interface GetUnitOccupanciesForDayBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyPeriod
+* Generated from evaka.core.occupancy.OccupancyPeriod
 */
 export interface OccupancyPeriod {
   caretakers: number | null
@@ -50,7 +50,7 @@ export interface OccupancyPeriod {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyPoint
+* Generated from evaka.core.occupancy.OccupancyPoint
 */
 export interface OccupancyPoint {
   childCapacity: number
@@ -60,7 +60,7 @@ export interface OccupancyPoint {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyResponse
+* Generated from evaka.core.occupancy.OccupancyResponse
 */
 export interface OccupancyResponse {
   max: OccupancyPeriod | null
@@ -69,7 +69,7 @@ export interface OccupancyResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyResponseSpeculated
+* Generated from evaka.core.occupancy.OccupancyResponseSpeculated
 */
 export interface OccupancyResponseSpeculated {
   max3Months: OccupancyValues | null
@@ -79,7 +79,7 @@ export interface OccupancyResponseSpeculated {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyType
+* Generated from evaka.core.occupancy.OccupancyType
 */
 export type OccupancyType =
   | 'DRAFT'
@@ -88,7 +88,7 @@ export type OccupancyType =
   | 'REALIZED'
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyValues
+* Generated from evaka.core.occupancy.OccupancyValues
 */
 export interface OccupancyValues {
   caretakers: number | null
@@ -100,7 +100,7 @@ export interface OccupancyValues {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.RealtimeOccupancy
+* Generated from evaka.core.occupancy.RealtimeOccupancy
 */
 export interface RealtimeOccupancy {
   childAttendances: ChildOccupancyAttendance[]
@@ -111,7 +111,7 @@ export interface RealtimeOccupancy {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.StaffCapacityPoint
+* Generated from evaka.core.occupancy.StaffCapacityPoint
 */
 export interface StaffCapacityPoint {
   capacity: number
@@ -119,7 +119,7 @@ export interface StaffCapacityPoint {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.StaffOccupancyAttendance
+* Generated from evaka.core.occupancy.StaffOccupancyAttendance
 */
 export interface StaffOccupancyAttendance {
   arrived: HelsinkiDateTime
@@ -128,7 +128,7 @@ export interface StaffOccupancyAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.occupancy.UnitOccupancies
+* Generated from evaka.core.occupancy.UnitOccupancies
 */
 export interface UnitOccupancies {
   caretakers: Caretakers

@@ -1,0 +1,386 @@
+// SPDX-FileCopyrightText: 2024 City of Espoo
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.caseprocess
+
+import evaka.core.application.ApplicationOrigin
+import evaka.core.application.ApplicationType
+import evaka.core.decision.DecisionType
+import evaka.core.shared.ApplicationId
+import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.DecisionId
+import evaka.core.shared.EvakaUserId
+import evaka.core.shared.FeeDecisionId
+import evaka.core.shared.VoucherValueDecisionId
+import evaka.core.shared.db.Database
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.user.EvakaUser
+import org.intellij.lang.annotations.Language
+
+@Language("sql")
+val sfiDeliverySelect =
+    """
+    SELECT coalesce(jsonb_agg(
+        jsonb_build_object(
+            'recipientName', recipient.last_name || ' ' || recipient.first_name,
+            'time', coalesce(delivery.time, sm.created_at),
+            'method', coalesce(delivery.method, 'PENDING')
+        )
+    ), '[]'::jsonb)
+    FROM sfi_message sm
+    JOIN person recipient ON sm.guardian_id = recipient.id
+    LEFT JOIN LATERAL (
+        SELECT
+            sme.created_at AS time,
+            CASE
+                WHEN sme.event_type = 'ELECTRONIC_MESSAGE_CREATED' THEN 'ELECTRONIC'
+                WHEN sme.event_type = 'SENT_FOR_PRINTING_AND_ENVELOPING' THEN 'PAPER_MAIL'
+            END AS method
+        FROM sfi_message_event sme
+        WHERE sme.message_id = sm.id AND sme.event_type IN (
+            'ELECTRONIC_MESSAGE_CREATED',
+            'SENT_FOR_PRINTING_AND_ENVELOPING'
+        )
+        ORDER BY sme.created_at
+        LIMIT 1
+    ) delivery ON true        
+"""
+
+fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): DocumentMetadata =
+    createQuery {
+            sql(
+                """
+        SELECT 
+            dt.id,
+            dt.name,
+            cd.created_at,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            dt.confidential,
+            dt.confidentiality_duration_years,
+            dt.confidentiality_basis,
+            (
+                $sfiDeliverySelect
+                WHERE sm.document_id = cd.id
+            ) AS sfi_deliveries,
+            (
+                SELECT coalesce(jsonb_agg(
+                    jsonb_build_object(
+                        'versionNumber', v.version_number,
+                        'createdAt', v.created_at,
+                        'createdBy', jsonb_build_object(
+                            'id', vu.id,
+                            'name', vu.name,
+                            'type', vu.type
+                        ),
+                        'downloadPath', CASE WHEN v.document_key IS NOT NULL THEN '/employee/child-documents/' || v.child_document_id || '/pdf?version=' || v.version_number END
+                    ) ORDER BY v.version_number DESC
+                ), '[]'::jsonb)
+                FROM child_document_published_version v
+                JOIN evaka_user vu ON v.created_by = vu.id
+                WHERE v.child_document_id = cd.id
+            ) AS published_versions
+        FROM child_document cd
+        JOIN document_template dt ON dt.id = cd.template_id
+        LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
+        WHERE cd.id = ${bind(documentId)}
+    """
+            )
+        }
+        .map {
+            val createdAt = column<HelsinkiDateTime>("created_at")
+            DocumentMetadata(
+                documentId = column("id"),
+                name = column("name"),
+                createdAtDate = createdAt.toLocalDate(),
+                createdAtTime = createdAt.toLocalTime(),
+                createdBy =
+                    column<EvakaUserId?>("created_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        )
+                    },
+                confidential = column("confidential"),
+                confidentiality =
+                    if (column<Boolean>("confidential")) {
+                        DocumentConfidentiality(
+                            durationYears = column("confidentiality_duration_years"),
+                            basis = column("confidentiality_basis"),
+                        )
+                    } else null,
+                downloadPath = "/employee/child-documents/$documentId/pdf",
+                receivedBy = null,
+                sfiDeliveries = jsonColumn("sfi_deliveries"),
+                publishedVersions = jsonColumn("published_versions"),
+            )
+        }
+        .exactlyOne()
+
+fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): DocumentMetadata =
+    createQuery {
+            sql(
+                """
+        SELECT 
+            a.id,
+            a.type,
+            a.sentdate,
+            a.senttime,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            a.confidential AS confidential,
+            a.origin
+        FROM application a
+        LEFT JOIN evaka_user e ON e.id = a.created_by
+        WHERE a.id = ${bind(applicationId)}
+    """
+            )
+        }
+        .map {
+            DocumentMetadata(
+                documentId = column("id"),
+                name =
+                    column<ApplicationType>("type").let { type ->
+                        when (type) {
+                            ApplicationType.DAYCARE -> {
+                                "Varhaiskasvatus- ja palvelusetelihakemus"
+                            }
+
+                            ApplicationType.PRESCHOOL -> {
+                                "Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen"
+                            }
+
+                            ApplicationType.CLUB -> {
+                                "Kerhohakemus"
+                            }
+                        }
+                    },
+                createdAtDate = column("sentdate"),
+                createdAtTime = column("senttime"),
+                createdBy =
+                    column<EvakaUserId?>("created_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        )
+                    },
+                confidential = column("confidential"),
+                confidentiality =
+                    if (column<Boolean?>("confidential") == true) {
+                        DocumentConfidentiality(durationYears = 100, basis = "JulkL 24.1 §")
+                    } else null,
+                downloadPath = null,
+                receivedBy =
+                    column<ApplicationOrigin>("origin").let {
+                        when (it) {
+                            ApplicationOrigin.ELECTRONIC -> DocumentOrigin.ELECTRONIC
+                            ApplicationOrigin.PAPER -> DocumentOrigin.PAPER
+                        }
+                    },
+                sfiDeliveries = emptyList(),
+            )
+        }
+        .exactlyOne()
+
+fun Database.Read.getSentDecisionIdsByApplication(applicationId: ApplicationId): List<DecisionId> =
+    createQuery {
+            sql(
+                """
+        SELECT d.id
+        FROM application a
+        JOIN decision d ON a.id = d.application_id
+        WHERE a.id = ${bind(applicationId)} AND d.sent_date IS NOT NULL   
+    """
+            )
+        }
+        .toList()
+
+fun Database.Read.getApplicationDecisionDocumentMetadata(
+    decisionId: DecisionId,
+    isCitizen: Boolean,
+): DocumentMetadata =
+    createQuery {
+            sql(
+                """
+        SELECT 
+            d.id,
+            d.type,
+            d.sent_date,
+            d.sent_time,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            d.document_key,
+            (
+                $sfiDeliverySelect
+                WHERE sm.decision_id = d.id
+            ) AS sfi_deliveries
+        FROM decision d
+        LEFT JOIN evaka_user e ON e.id = d.created_by
+        WHERE d.id = ${bind(decisionId)}
+    """
+            )
+        }
+        .map {
+            DocumentMetadata(
+                documentId = column("id"),
+                name =
+                    column<DecisionType>("type").let {
+                        when (it) {
+                            DecisionType.DAYCARE -> {
+                                "Päätös varhaiskasvatuksesta"
+                            }
+
+                            DecisionType.DAYCARE_PART_TIME -> {
+                                "Päätös osa-aikaisesta varhaiskasvatuksesta"
+                            }
+
+                            DecisionType.PRESCHOOL -> {
+                                "Päätös esiopetuksesta"
+                            }
+
+                            DecisionType.PREPARATORY_EDUCATION -> {
+                                "Päätös valmistavasta opetuksesta"
+                            }
+
+                            DecisionType.PRESCHOOL_DAYCARE -> {
+                                "Päätös liittyvästä varhaiskasvatuksesta"
+                            }
+
+                            DecisionType.CLUB -> {
+                                "Päätös kerhosta"
+                            }
+
+                            DecisionType.PRESCHOOL_CLUB -> {
+                                "Päätös esiopetuksen kerhosta"
+                            }
+                        }
+                    },
+                createdAtDate = column("sent_date"),
+                createdAtTime = column("sent_time"),
+                createdBy =
+                    column<EvakaUserId?>("created_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        )
+                    },
+                confidential = false,
+                confidentiality = null,
+                downloadPath =
+                    column<String?>("document_key")?.let {
+                        val prefix = if (isCitizen) "citizen" else "employee"
+                        "/$prefix/decisions/$decisionId/download"
+                    },
+                receivedBy = null,
+                sfiDeliveries = jsonColumn("sfi_deliveries"),
+            )
+        }
+        .exactlyOne()
+
+fun Database.Read.getFeeDecisionDocumentMetadata(
+    decisionId: FeeDecisionId,
+    isCitizen: Boolean,
+): DocumentMetadata =
+    createQuery {
+            sql(
+                """
+        SELECT 
+            d.id,
+            d.created,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            (
+                $sfiDeliverySelect
+                WHERE sm.fee_decision_id = d.id
+            ) AS sfi_deliveries
+        FROM fee_decision d
+        LEFT JOIN evaka_user e ON e.employee_id = d.approved_by_id
+        WHERE d.id = ${bind(decisionId)}
+    """
+            )
+        }
+        .map {
+            val createdAt = column<HelsinkiDateTime>("created")
+            DocumentMetadata(
+                documentId = column("id"),
+                name = "Maksupäätös",
+                createdAtDate = createdAt.toLocalDate(),
+                createdAtTime = createdAt.toLocalTime(),
+                createdBy =
+                    column<EvakaUserId?>("created_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        )
+                    },
+                confidential = true,
+                confidentiality =
+                    DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
+                downloadPath =
+                    if (isCitizen) "/citizen/fee-decisions/$decisionId/download"
+                    else "/employee/fee-decisions/pdf/$decisionId",
+                receivedBy = null,
+                sfiDeliveries = jsonColumn("sfi_deliveries"),
+            )
+        }
+        .exactlyOne()
+
+fun Database.Read.getVoucherValueDecisionDocumentMetadata(
+    voucherValueDecisionId: VoucherValueDecisionId,
+    isCitizen: Boolean,
+): DocumentMetadata =
+    createQuery {
+            sql(
+                """
+        SELECT
+            d.id,
+            d.created,
+            e.id AS created_by_id,
+            e.name AS created_by_name,
+            e.type AS created_by_type,
+            d.document_key,
+            (
+                $sfiDeliverySelect
+                WHERE sm.voucher_value_decision_id = d.id
+            ) AS sfi_deliveries
+        FROM voucher_value_decision d
+        LEFT JOIN evaka_user e ON e.employee_id = d.approved_by
+        WHERE d.id = ${bind(voucherValueDecisionId)}
+    """
+            )
+        }
+        .map {
+            val createdAt = column<HelsinkiDateTime?>("created")
+            DocumentMetadata(
+                documentId = column("id"),
+                name = "Arvopäätös",
+                createdAtDate = createdAt?.toLocalDate(),
+                createdAtTime = createdAt?.toLocalTime(),
+                createdBy =
+                    column<EvakaUserId?>("created_by_id")?.let {
+                        EvakaUser(
+                            id = it,
+                            name = column("created_by_name"),
+                            type = column("created_by_type"),
+                        )
+                    },
+                confidential = true,
+                confidentiality =
+                    DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
+                downloadPath =
+                    if (isCitizen)
+                        "/citizen/voucher-value-decisions/$voucherValueDecisionId/download"
+                    else "/employee/value-decisions/pdf/$voucherValueDecisionId",
+                receivedBy = null,
+                sfiDeliveries = jsonColumn("sfi_deliveries"),
+            )
+        }
+        .exactlyOne()

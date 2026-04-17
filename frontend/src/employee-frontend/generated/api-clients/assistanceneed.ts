@@ -18,7 +18,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController.createAssistanceNeedVoucherCoefficient
+* Generated from evaka.core.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController.createAssistanceNeedVoucherCoefficient
 */
 export async function createAssistanceNeedVoucherCoefficient(
   request: {
@@ -36,7 +36,7 @@ export async function createAssistanceNeedVoucherCoefficient(
 
 
 /**
-* Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController.deleteAssistanceNeedVoucherCoefficient
+* Generated from evaka.core.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController.deleteAssistanceNeedVoucherCoefficient
 */
 export async function deleteAssistanceNeedVoucherCoefficient(
   request: {
@@ -52,7 +52,7 @@ export async function deleteAssistanceNeedVoucherCoefficient(
 
 
 /**
-* Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController.getAssistanceNeedVoucherCoefficients
+* Generated from evaka.core.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController.getAssistanceNeedVoucherCoefficients
 */
 export async function getAssistanceNeedVoucherCoefficients(
   request: {
@@ -68,7 +68,7 @@ export async function getAssistanceNeedVoucherCoefficients(
 
 
 /**
-* Generated from fi.espoo.evaka.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController.updateAssistanceNeedVoucherCoefficient
+* Generated from evaka.core.assistanceneed.vouchercoefficient.AssistanceNeedVoucherCoefficientController.updateAssistanceNeedVoucherCoefficient
 */
 export async function updateAssistanceNeedVoucherCoefficient(
   request: {

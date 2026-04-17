@@ -1,0 +1,301 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.messaging
+
+import evaka.core.shared.EmployeeId
+import evaka.core.shared.GroupId
+import evaka.core.shared.MessageAccountId
+import evaka.core.shared.MessageContentId
+import evaka.core.shared.MessageDraftId
+import evaka.core.shared.PersonId
+import evaka.core.shared.db.Database
+import evaka.core.shared.security.actionrule.AccessControlFilter
+import evaka.core.shared.security.actionrule.forTable
+import java.time.LocalDate
+
+fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId {
+    return createQuery {
+            sql(
+                """
+SELECT acc.id FROM message_account acc
+WHERE acc.person_id = ${bind(personId)} AND acc.active = true
+"""
+            )
+        }
+        .exactlyOne<MessageAccountId>()
+}
+
+fun Database.Read.getEmployeeMessageAccountIds(
+    idFilter: AccessControlFilter<MessageAccountId>
+): Set<MessageAccountId> {
+    return createQuery {
+            sql(
+                """
+SELECT id
+FROM message_account
+WHERE (${predicate(idFilter.forTable("message_account"))})
+        """
+            )
+        }
+        .toSet<MessageAccountId>()
+}
+
+private fun messageAccountName(
+    accountType: AccountType,
+    accountName: String?,
+    municipalAccountName: String,
+    serviceWorkerAccountName: String,
+    financeAccountName: String,
+): String {
+    return when (accountType) {
+        AccountType.MUNICIPAL -> municipalAccountName
+        AccountType.SERVICE_WORKER -> serviceWorkerAccountName
+        AccountType.FINANCE -> financeAccountName
+        else -> accountName!!
+    }
+}
+
+fun Database.Read.getAuthorizedMessageAccountsForEmployee(
+    idFilter: AccessControlFilter<MessageAccountId>,
+    municipalAccountName: String,
+    serviceWorkerAccountName: String,
+    financeAccountName: String,
+    today: LocalDate,
+): List<AuthorizedMessageAccount> {
+    return createQuery {
+            sql(
+                """
+SELECT DISTINCT ON (acc.id)
+    acc.id AS account_id,
+    name_view.name AS account_name,
+    acc.type AS account_type,
+    dg.id AS group_id,
+    dg.name AS group_name,
+    dg.end_date IS NOT NULL AND dg.end_date < ${bind(today)} as group_closed,
+    dc.id AS group_unitId,
+    dc.name AS group_unitName
+FROM message_account acc
+    JOIN message_account_view name_view ON name_view.id = acc.id
+    LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
+    LEFT JOIN daycare dc ON dc.id = dg.daycare_id
+    LEFT JOIN daycare_acl acl ON acc.employee_id = acl.employee_id AND (acl.role = 'UNIT_SUPERVISOR' OR acl.role = 'SPECIAL_EDUCATION_TEACHER' OR acl.role = 'EARLY_CHILDHOOD_EDUCATION_SECRETARY')
+    LEFT JOIN daycare supervisor_dc ON supervisor_dc.id = acl.daycare_id
+WHERE ${predicate(idFilter.forTable("acc"))}
+AND (
+    'MESSAGING' = ANY(dc.enabled_pilot_features)
+    OR 'MESSAGING' = ANY(supervisor_dc.enabled_pilot_features)
+    OR acc.type = 'MUNICIPAL'
+    OR acc.type = 'SERVICE_WORKER'
+    OR acc.type = 'FINANCE'
+)
+"""
+            )
+        }
+        .toList {
+            AuthorizedMessageAccount(
+                account =
+                    column<AccountType>("account_type").let { accountType ->
+                        MessageAccount(
+                            id = column("account_id"),
+                            name =
+                                messageAccountName(
+                                    accountType,
+                                    column("account_name"),
+                                    municipalAccountName = municipalAccountName,
+                                    serviceWorkerAccountName = serviceWorkerAccountName,
+                                    financeAccountName = financeAccountName,
+                                ),
+                            type = accountType,
+                            personId = null,
+                        )
+                    },
+                daycareGroup =
+                    column<GroupId?>("group_id")?.let { groupId ->
+                        Group(
+                            id = groupId,
+                            name = column("group_name"),
+                            unitId = column("group_unitId"),
+                            unitName = column("group_unitName"),
+                            closed = column("group_closed"),
+                        )
+                    },
+            )
+        }
+}
+
+fun Database.Read.getAccountNames(
+    accountIds: Set<MessageAccountId>,
+    serviceWorkerAccountName: String,
+    financeAccountName: String,
+): List<String> {
+
+    return createQuery {
+            sql(
+                """
+SELECT CASE mav.type 
+    WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} 
+    WHEN 'FINANCE' THEN ${bind(financeAccountName)} 
+    ELSE mav.name 
+END as name
+FROM message_account_view mav
+WHERE mav.id = ANY(${bind(accountIds)})
+"""
+            )
+        }
+        .toList<String>()
+}
+
+fun Database.Read.getMessageAccount(
+    accountId: MessageAccountId,
+    municipalAccountName: String,
+    serviceWorkerAccountName: String,
+    financeAccountName: String,
+): MessageAccount {
+    return createQuery {
+            sql(
+                """
+SELECT
+    acc.id,
+    acc.name,
+    acc.type,
+    acc.person_id
+FROM message_account_view acc
+WHERE acc.id = ${bind(accountId)}
+"""
+            )
+        }
+        .exactlyOne {
+            column<AccountType>("type").let { accountType ->
+                MessageAccount(
+                    id = column("id"),
+                    name =
+                        messageAccountName(
+                            accountType,
+                            column("name"),
+                            municipalAccountName = municipalAccountName,
+                            serviceWorkerAccountName = serviceWorkerAccountName,
+                            financeAccountName = financeAccountName,
+                        ),
+                    type = accountType,
+                    personId = column("person_id"),
+                )
+            }
+        }
+}
+
+fun Database.Transaction.createMunicipalMessageAccount(): MessageAccountId =
+    createSingletonMessageAccount(AccountType.MUNICIPAL)
+
+fun Database.Transaction.createServiceWorkerMessageAccount(): MessageAccountId =
+    createSingletonMessageAccount(AccountType.SERVICE_WORKER)
+
+fun Database.Transaction.createFinanceMessageAccount(): MessageAccountId =
+    createSingletonMessageAccount(AccountType.FINANCE)
+
+private fun Database.Transaction.createSingletonMessageAccount(
+    accountType: AccountType
+): MessageAccountId {
+    return createUpdate { sql("INSERT INTO message_account (type) VALUES (${bind(accountType)})") }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+}
+
+fun Database.Transaction.createDaycareGroupMessageAccount(
+    daycareGroupId: GroupId
+): MessageAccountId {
+    return createQuery {
+            sql(
+                """
+INSERT INTO message_account (daycare_group_id, type) VALUES (${bind(daycareGroupId)}, 'GROUP')
+RETURNING id
+"""
+            )
+        }
+        .exactlyOne<MessageAccountId>()
+}
+
+fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupId) {
+    createUpdate {
+            sql(
+                """
+DELETE FROM message_account WHERE daycare_group_id = ${bind(daycareGroupId)}
+"""
+            )
+        }
+        .execute()
+}
+
+fun Database.Transaction.createPersonMessageAccount(personId: PersonId): MessageAccountId {
+    return createQuery {
+            sql(
+                """
+INSERT INTO message_account (person_id, type) VALUES (${bind(personId)}, 'CITIZEN')
+RETURNING id
+"""
+            )
+        }
+        .exactlyOne<MessageAccountId>()
+}
+
+fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): MessageAccountId {
+    return createQuery {
+            sql(
+                """
+INSERT INTO message_account (employee_id, type) VALUES (${bind(employeeId)}, ${bind(AccountType.PERSONAL)})
+ON CONFLICT (employee_id) WHERE employee_id IS NOT NULL DO UPDATE SET active = true
+RETURNING id
+"""
+            )
+        }
+        .exactlyOne<MessageAccountId>()
+}
+
+fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId) {
+    createUpdate {
+            sql(
+                """
+UPDATE message_account SET active = false
+WHERE employee_id = ${bind(employeeId)}
+"""
+            )
+        }
+        .execute()
+}
+
+fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountType {
+    return createQuery { sql("SELECT type FROM message_account WHERE id = ${bind(accountId)}") }
+        .exactlyOne<AccountType>()
+}
+
+fun Database.Read.findMessageAccountIdByDraftId(id: MessageDraftId): MessageAccountId? =
+    createQuery { sql("SELECT account_id FROM message_draft WHERE id = ${bind(id)}") }
+        .exactlyOneOrNull<MessageAccountId>()
+
+fun Database.Read.getMessageAccountIdsByContentId(id: MessageContentId): List<MessageAccountId> =
+    createQuery {
+            sql(
+                """
+SELECT msg.sender_id
+FROM message_content content
+JOIN message msg ON content.id = msg.content_id
+WHERE content.id = ${bind(id)}
+UNION
+SELECT rec.recipient_id
+FROM message_content content
+JOIN message msg ON content.id = msg.content_id
+JOIN message_recipients rec ON msg.id = rec.message_id
+WHERE content.id = ${bind(id)}
+"""
+            )
+        }
+        .toList<MessageAccountId>()
+
+fun Database.Read.getServiceWorkerAccountId(): MessageAccountId? =
+    createQuery { sql("SELECT id FROM message_account WHERE type = 'SERVICE_WORKER'") }
+        .exactlyOneOrNull<MessageAccountId>()
+
+fun Database.Read.getFinanceAccountId(): MessageAccountId? =
+    createQuery { sql("SELECT id FROM message_account WHERE type = 'FINANCE'") }
+        .exactlyOneOrNull<MessageAccountId>()

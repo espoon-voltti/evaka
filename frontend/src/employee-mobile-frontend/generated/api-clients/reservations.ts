@@ -22,7 +22,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.getChildReservationsForDay
+* Generated from evaka.core.reservations.AttendanceReservationController.getChildReservationsForDay
 */
 export async function getChildReservationsForDay(
   request: {
@@ -46,7 +46,7 @@ export async function getChildReservationsForDay(
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.getConfirmedRangeData
+* Generated from evaka.core.reservations.AttendanceReservationController.getConfirmedRangeData
 */
 export async function getConfirmedRangeData(
   request: {
@@ -62,7 +62,7 @@ export async function getConfirmedRangeData(
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.getReservationStatisticsForConfirmedDays
+* Generated from evaka.core.reservations.AttendanceReservationController.getReservationStatisticsForConfirmedDays
 */
 export async function getReservationStatisticsForConfirmedDays(
   request: {
@@ -84,7 +84,7 @@ export async function getReservationStatisticsForConfirmedDays(
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.setConfirmedRangeReservations
+* Generated from evaka.core.reservations.AttendanceReservationController.setConfirmedRangeReservations
 */
 export async function setConfirmedRangeReservations(
   request: {

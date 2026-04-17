@@ -1,0 +1,45 @@
+<!--
+SPDX-FileCopyrightText: 2023-2025 Tampere region
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+    <env:Header/>
+    <env:Body>
+        <ns4:SendPayableAccountingRequest xmlns:ns2="http://www.tampere.fi/messages/ipaas/commontypes/v1.0"
+                                          xmlns:ns3="http://www.tampere.fi/messages/sapfico/payableaccounting/v08"
+                                          xmlns:ns4="http://www.tampere.fi/services/sapfico/payableaccounting/v1.0">
+            <ns3:PayableAccounting>
+                <ns3:Invoice>
+                    <ns3:PayableAccountingHeader>
+                        <ns3:SAPVendor>81591</ns3:SAPVendor>
+                        <ns3:IBAN>FIxxxxxxxxxxxx</ns3:IBAN>
+                        <ns3:Customer>1234567-9</ns3:Customer>
+                        <ns3:Organisation>1310</ns3:Organisation>
+                        <ns3:Date>2024-07-31</ns3:Date>
+                        <ns3:ReceiptType>6S</ns3:ReceiptType>
+                        <ns3:DebetKredit>-</ns3:DebetKredit>
+                        <ns3:Reference>134910</ns3:Reference>
+                        <ns3:Currency>EUR</ns3:Currency>
+                        <ns3:Description>Varhaiskasvatus</ns3:Description>
+                        <ns3:BillingDate>2024-07-27</ns3:BillingDate>
+                        <ns3:BillNumber>134910</ns3:BillNumber>
+                        <ns3:BillValue>350.00</ns3:BillValue>
+                        <ns3:BasicDate>2024-08-31</ns3:BasicDate>
+                        <ns3:InterfaceID>383</ns3:InterfaceID>
+                    </ns3:PayableAccountingHeader>
+                    <ns3:PayableAccountingLine>
+                        <ns3:Account>440100</ns3:Account>
+                        <ns3:CostCenter>131111</ns3:CostCenter>
+                        <ns3:ProfitCenter>131111</ns3:ProfitCenter>
+                        <ns3:InternalOrder>20285</ns3:InternalOrder>
+                        <ns3:TaxCode>29</ns3:TaxCode>
+                        <ns3:DebetKredit>+</ns3:DebetKredit>
+                        <ns3:Value>350.00</ns3:Value>
+                    </ns3:PayableAccountingLine>
+                </ns3:Invoice>
+            </ns3:PayableAccounting>
+        </ns4:SendPayableAccountingRequest>
+    </env:Body>
+</env:Envelope>

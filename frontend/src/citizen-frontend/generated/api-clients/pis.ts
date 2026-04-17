@@ -18,7 +18,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.getEmailVerificationStatus
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.getEmailVerificationStatus
 */
 export async function getEmailVerificationStatus(): Promise<EmailVerificationStatusResponse> {
   const { data: json } = await client.request<JsonOf<EmailVerificationStatusResponse>>({
@@ -30,7 +30,7 @@ export async function getEmailVerificationStatus(): Promise<EmailVerificationSta
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.getNotificationSettings
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.getNotificationSettings
 */
 export async function getNotificationSettings(): Promise<EmailMessageType[]> {
   const { data: json } = await client.request<JsonOf<EmailMessageType[]>>({
@@ -42,7 +42,7 @@ export async function getNotificationSettings(): Promise<EmailMessageType[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.getPasswordConstraints
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.getPasswordConstraints
 */
 export async function getPasswordConstraints(): Promise<PasswordConstraints> {
   const { data: json } = await client.request<JsonOf<PasswordConstraints>>({
@@ -54,7 +54,7 @@ export async function getPasswordConstraints(): Promise<PasswordConstraints> {
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.sendEmailVerificationCode
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.sendEmailVerificationCode
 */
 export async function sendEmailVerificationCode(): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
@@ -66,7 +66,7 @@ export async function sendEmailVerificationCode(): Promise<void> {
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.updateNotificationSettings
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.updateNotificationSettings
 */
 export async function updateNotificationSettings(
   request: {
@@ -83,7 +83,7 @@ export async function updateNotificationSettings(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.updatePersonalData
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.updatePersonalData
 */
 export async function updatePersonalData(
   request: {
@@ -100,7 +100,7 @@ export async function updatePersonalData(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.updateWeakLoginCredentials
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.updateWeakLoginCredentials
 */
 export async function updateWeakLoginCredentials(
   request: {
@@ -117,7 +117,7 @@ export async function updateWeakLoginCredentials(
 
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonalDataControllerCitizen.verifyEmail
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.verifyEmail
 */
 export async function verifyEmail(
   request: {

@@ -18,7 +18,7 @@ import type { PreschoolAssistanceId } from './shared'
 import { deserializeJsonAssistanceActionResponse } from './assistanceaction'
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceFactor
+* Generated from evaka.core.assistance.AssistanceFactor
 */
 export interface AssistanceFactor {
   capacityFactor: number
@@ -30,7 +30,7 @@ export interface AssistanceFactor {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.AssistanceFactorResponse
+* Generated from evaka.core.assistance.AssistanceController.AssistanceFactorResponse
 */
 export interface AssistanceFactorResponse {
   data: AssistanceFactor
@@ -38,7 +38,7 @@ export interface AssistanceFactorResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceFactorUpdate
+* Generated from evaka.core.assistance.AssistanceFactorUpdate
 */
 export interface AssistanceFactorUpdate {
   capacityFactor: number
@@ -46,7 +46,7 @@ export interface AssistanceFactorUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.AssistanceResponse
+* Generated from evaka.core.assistance.AssistanceController.AssistanceResponse
 */
 export interface AssistanceResponse {
   assistanceActions: AssistanceActionResponse[]
@@ -57,7 +57,7 @@ export interface AssistanceResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.DaycareAssistance
+* Generated from evaka.core.assistance.DaycareAssistance
 */
 export interface DaycareAssistance {
   childId: PersonId
@@ -69,7 +69,7 @@ export interface DaycareAssistance {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.DaycareAssistanceLevel
+* Generated from evaka.core.assistance.DaycareAssistanceLevel
 */
 export const daycareAssistanceLevels = [
   'GENERAL_SUPPORT',
@@ -81,7 +81,7 @@ export const daycareAssistanceLevels = [
 export type DaycareAssistanceLevel = typeof daycareAssistanceLevels[number]
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.DaycareAssistanceResponse
+* Generated from evaka.core.assistance.AssistanceController.DaycareAssistanceResponse
 */
 export interface DaycareAssistanceResponse {
   data: DaycareAssistance
@@ -89,7 +89,7 @@ export interface DaycareAssistanceResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.DaycareAssistanceUpdate
+* Generated from evaka.core.assistance.DaycareAssistanceUpdate
 */
 export interface DaycareAssistanceUpdate {
   level: DaycareAssistanceLevel
@@ -97,7 +97,7 @@ export interface DaycareAssistanceUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.OtherAssistanceMeasure
+* Generated from evaka.core.assistance.OtherAssistanceMeasure
 */
 export interface OtherAssistanceMeasure {
   childId: PersonId
@@ -109,7 +109,7 @@ export interface OtherAssistanceMeasure {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.OtherAssistanceMeasureResponse
+* Generated from evaka.core.assistance.AssistanceController.OtherAssistanceMeasureResponse
 */
 export interface OtherAssistanceMeasureResponse {
   data: OtherAssistanceMeasure
@@ -117,7 +117,7 @@ export interface OtherAssistanceMeasureResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.OtherAssistanceMeasureType
+* Generated from evaka.core.assistance.OtherAssistanceMeasureType
 */
 export const otherAssistanceMeasureTypes = [
   'TRANSPORT_BENEFIT',
@@ -131,7 +131,7 @@ export const otherAssistanceMeasureTypes = [
 export type OtherAssistanceMeasureType = typeof otherAssistanceMeasureTypes[number]
 
 /**
-* Generated from fi.espoo.evaka.assistance.OtherAssistanceMeasureUpdate
+* Generated from evaka.core.assistance.OtherAssistanceMeasureUpdate
 */
 export interface OtherAssistanceMeasureUpdate {
   type: OtherAssistanceMeasureType
@@ -139,7 +139,7 @@ export interface OtherAssistanceMeasureUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.PreschoolAssistance
+* Generated from evaka.core.assistance.PreschoolAssistance
 */
 export interface PreschoolAssistance {
   childId: PersonId
@@ -151,7 +151,7 @@ export interface PreschoolAssistance {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.PreschoolAssistanceLevel
+* Generated from evaka.core.assistance.PreschoolAssistanceLevel
 */
 export const preschoolAssistanceLevels = [
   'INTENSIFIED_SUPPORT',
@@ -168,7 +168,7 @@ export const preschoolAssistanceLevels = [
 export type PreschoolAssistanceLevel = typeof preschoolAssistanceLevels[number]
 
 /**
-* Generated from fi.espoo.evaka.assistance.AssistanceController.PreschoolAssistanceResponse
+* Generated from evaka.core.assistance.AssistanceController.PreschoolAssistanceResponse
 */
 export interface PreschoolAssistanceResponse {
   data: PreschoolAssistance
@@ -176,7 +176,7 @@ export interface PreschoolAssistanceResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.assistance.PreschoolAssistanceUpdate
+* Generated from evaka.core.assistance.PreschoolAssistanceUpdate
 */
 export interface PreschoolAssistanceUpdate {
   level: PreschoolAssistanceLevel

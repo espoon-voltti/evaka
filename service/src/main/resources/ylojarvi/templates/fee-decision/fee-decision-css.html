@@ -1,0 +1,265 @@
+<!--
+SPDX-FileCopyrightText: 2024 Tampere region
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<style>
+
+
+    .title-container,
+    .details-container {
+      margin: 0;
+      width: 33%;
+      display: inline-block;
+    }
+
+    .title-container {
+      text-align: center;
+    }
+
+    .details-container {
+      text-align: right;
+    }
+
+
+    body {
+        margin: 0;
+    }
+
+    .strong {
+        font-weight: bold;
+    }
+
+    .header {
+
+    }
+
+    .header:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    .logo img {
+        width: 130px;
+        height: auto;
+    }
+
+    .heading {
+        position: absolute;
+        left: 0;
+        display: inline-block;
+    }
+
+    .header {
+        position: absolute;
+        right: 0;
+        padding-right: 8mm;
+        display: inline-block;
+
+        text-align: right;
+    }
+
+    .non-cover-page-header {
+        padding-left: 14mm;
+        padding-top: 5mm;
+        padding-right: 8mm;
+        text-align: right;
+    }
+
+    .non-cover-page-header:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    .non-cover-heading-info {
+        display: inline-block;
+        float: left;
+        padding-top: 2px;
+    }
+
+
+    .non-cover-heading-info.first {
+        width: 70mm;
+        margin-left: 20mm;
+        text-align: left;
+    }
+
+    .non-cover-heading-info.last{
+        width: 48mm;
+    }
+
+    .heading-info .detail {
+        line-height: 20px;
+    }
+
+
+    .content-wrapper {
+        line-height: 1.4;
+        padding-left: 14mm;
+        padding-right: 21mm;
+    }
+
+    .page-title {
+        text-transform: uppercase;
+        font-weight: normal;
+    }
+
+    .page-title-strong {
+        text-transform: uppercase;
+        font-weight: strong;
+    }
+
+    .spacing-before-title {
+        margin-top: 40px;
+    }
+
+    .heading-info .detail {
+        margin-bottom: 16px;
+    }
+
+    .guardian-details {
+        margin-bottom: 30px;
+    }
+
+    .child-details,
+    .club-details,
+    .club-manager{
+        margin-bottom: 12px;
+    }
+
+    .legal-content p span {
+      display: block;
+      margin-top: 12px;
+    }
+
+    .address-details .strong {
+        margin-bottom: 8px;
+    }
+
+    .content-wrapper .correction-content {
+      margin-bottom: 40px;
+    }
+
+    .accept-placement-wrapper {
+        margin-top: 50px;
+    }
+
+    .accept-placement-wrapper .details-section {
+        margin-bottom: 30px;
+    }
+
+    .accept-placement-wrapper .detail-label {
+        display: inline-block;
+        width: 200px;
+        text-align: left;
+        margin-right: 20px;
+    }
+
+    .accept-placement-wrapper .accept-heading {
+        display: block;
+        margin-bottom: 30px;
+    }
+
+    .accept-placement-wrapper .checkbox-heading-wrapper {
+        margin-bottom: 30px;
+    }
+
+    .accept-checkboxes .checkboxes-wrapper {
+        display: block;
+        vertical-align: top;
+    }
+
+    .accept-checkboxes .checkbox-label {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .accept-checkboxes .checkbox {
+        display: inline-block;
+        width: 28px;
+        height: 18px;
+        line-height: 1;
+        margin-right: 8px;
+        border: 1px solid #2d2d2d;
+        border-radius: 1px;
+    }
+
+    .center-text {
+        text-align: center;
+    }
+
+    .big-spacing-before{
+        margin-top: 80px;
+    }
+
+    .column {
+        float: left;
+    }
+
+    .left {
+        width:100px;
+    }
+
+    .right {
+        width:300px;
+    }
+
+    .row:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    .col-row{
+        margin-bottom: 0px;
+    }
+
+    .inform {
+        margin-top: 30px;
+    }
+
+    dt {
+      float: left;
+    }
+
+    dt:after{
+      content: ':'
+    }
+
+    dd {
+      margin-left: 125px;
+    }
+
+    table
+    {
+        border-collapse:collapse;
+        width: 100%;
+    }
+
+    .narrow {
+        width: 80%;
+    }
+    .narrow td {
+        padding: 0;
+    }
+    .narrow tbody + tbody::before {
+        content: '';
+        display: block;
+        height: 1em;
+    }
+
+    th, td {
+        min-width: 33%;
+        white-space: nowrap;
+    }
+    td.text-right {
+        text-align: right;
+    }
+
+
+
+
+</style>

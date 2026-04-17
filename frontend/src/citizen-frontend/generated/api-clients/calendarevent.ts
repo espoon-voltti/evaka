@@ -18,7 +18,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.addCalendarEventTimeReservation
+* Generated from evaka.core.calendarevent.CalendarEventController.addCalendarEventTimeReservation
 */
 export async function addCalendarEventTimeReservation(
   request: {
@@ -35,7 +35,7 @@ export async function addCalendarEventTimeReservation(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.deleteCalendarEventTimeReservation
+* Generated from evaka.core.calendarevent.CalendarEventController.deleteCalendarEventTimeReservation
 */
 export async function deleteCalendarEventTimeReservation(
   request: {
@@ -57,7 +57,7 @@ export async function deleteCalendarEventTimeReservation(
 
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventController.getCitizenCalendarEvents
+* Generated from evaka.core.calendarevent.CalendarEventController.getCitizenCalendarEvents
 */
 export async function getCitizenCalendarEvents(
   request: {

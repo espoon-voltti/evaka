@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns3:collections xmlns:ns2="http://www.profium.com/sahke2" xmlns:ns3="http://www.profium.com/reception/2022/03">
+    <ns3:initiator>
+        <ns3:source_system>eVaka</ns3:source_system>
+        <ns3:initiator_id>00000000-0000-0000-0000-000000000000</ns3:initiator_id>
+        <ns3:initiator_name>eVaka</ns3:initiator_name>
+    </ns3:initiator>
+    <ns3:collection>
+        <ns3:type>record</ns3:type>
+        <ns3:folder>12.06.01.11</ns3:folder>
+        <ns3:metadata>
+            <ns2:title>Varhaiskasvatussuunnitelma 2024-2025, Valmis, John Smith, 08.12.2022</ns2:title>
+            <ns2:calculationBaseDate>2025-05-12</ns2:calculationBaseDate>
+            <ns2:created>2025-05-12</ns2:created>
+            <ns2:agent>
+                <ns2:agentRole>Laatija</ns2:agentRole>
+                <ns2:agentName>Esivalmistelija Esko</ns2:agentName>
+            </ns2:agent>
+            <ns2:agent>
+                <ns2:agentRole>Päättäjä</ns2:agentRole>
+                <ns2:agentName>Päättäjä Pänü</ns2:agentName>
+            </ns2:agent>
+        </ns3:metadata>
+        <ns3:content>
+            <ns3:file name="Varhaiskasvatussuunnitelma 2024-2025.txt" originalId="8554e2a5-29bb-4e3c-9aca-59c4995c1d86"/>
+        </ns3:content>
+    </ns3:collection>
+</ns3:collections>

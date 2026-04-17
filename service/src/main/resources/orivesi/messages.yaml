@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: 2024 Tampere region
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+evaka.instance.orivesi:
+  MessageProvider:
+    DECISION_HEADER:
+      fi: Oriveden varhaiskasvatukseen liittyvät päätökset
+    DECISION_CONTENT:
+      fi: |
+        Olette hakeneet lapsellenne varhaiskasvatus- tai kerhopaikkaa Oriveden varhaiskasvatuksesta. Päätös on luettavissa Suomi.fi-viestit -palvelusta.
+        
+        Varhaiskasvatus tai kerhopaikka on hakemuksen tehneen huoltajan hyväksyttävissä Oriveden kaupungin varhaiskasvatuksen sähköisessä palvelussa osoitteessa evaka.orivesi.fi. Paikkaa ei voi hyväksyä Suomi.fi-viestit -palvelussa.
+        
+        Huomioittehan, että vastaus päätökseen tulee antaa kahden viikon kuluessa.
+    FEE_DECISION_HEADER:
+      fi: Oriveden varhaiskasvatukseen liittyvät päätökset
+    FEE_DECISION_CONTENT:
+      fi: |
+        Olette saaneet päätöksen varhaiskasvatuksen asiakasmaksusta Oriveden kaupungilta. Päätös on luettavissa Suomi.fi-viestit -palvelusta.
+        
+        Varhaiskasvatuksen asiakasmaksu on voimassa toistaiseksi ja perheellä on velvollisuus ilmoittaa, mikäli perheen tulot olennaisesti muuttuvat (+/- 10 %).
+        
+        Lisätietoja varhaiskasvatuksen asiakasmaksuista
+        
+        https://orivesi.fi/asukkaalle/kasvatus-ja-opetuspalvelut/varhaiskasvatus/varhaiskasvatuspaikan-hakeminen/
+    VOUCHER_VALUE_DECISION_HEADER:
+      fi: Oriveden varhaiskasvatukseen liittyvät päätökset
+    VOUCHER_VALUE_DECISION_CONTENT:
+      fi: |
+        Olette saaneet päätöksen palvelusetelin omavastuuosuudesta Oriveden kaupungilta. Päätös on luettavissa Suomi.fi-viestit -palvelusta.
+
+        Omavastuuosuus on voimassa toistaiseksi ja perheellä on velvollisuus ilmoittaa, mikäli perheen tulot olennaisesti muuttuvat (+/- 10 %).
+
+        Lisätietoja:
+
+        https://orivesi.fi/asukkaalle/kasvatus-ja-opetuspalvelut/varhaiskasvatus/varhaiskasvatuspaikan-hakeminen/
+    ASSISTANCE_NEED_DECISION_HEADER:
+      fi: Oriveden varhaiskasvatukseen liittyvät päätökset
+    ASSISTANCE_NEED_DECISION_CONTENT:
+      fi: |
+        Lapsellenne on tehty päätös tuen tarpeesta. Voit katsella päätöstä eVakassa.
+        
+        Koska olette ottanut Suomi.fi -palvelun käyttöönne, on päätös myös luettavissa alla olevista liitteistä.

@@ -15,12 +15,12 @@ Quick reference for writing backend tests in eVaka. See [Design Philosophy](../d
 **Running:**
 ```bash
 cd service
-./gradlew test --tests "fi.espoo.evaka.shared.domain.TimeRangeTest"
+./gradlew test --tests "evaka.core.shared.domain.TimeRangeTest"
 ```
 
 **Example:**
 ```kotlin
-package fi.espoo.evaka.shared.domain
+package evaka.core.shared.domain
 
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -47,7 +47,7 @@ Use unit tests for pure functions with complex logic. Use `kotlin.test` package 
 **Running:**
 ```bash
 cd service
-./gradlew integrationTest --tests "fi.espoo.evaka.absence.AbsenceControllerIntegrationTest"
+./gradlew integrationTest --tests "evaka.core.absence.AbsenceControllerIntegrationTest"
 ```
 
 **Base class:** `FullApplicationTest(resetDbBeforeEach = true)` - runs full Spring application and resets database between tests.

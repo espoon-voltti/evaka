@@ -118,7 +118,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ApplicationsReportController.getApplicationsReport
+* Generated from evaka.core.reports.ApplicationsReportController.getApplicationsReport
 */
 export async function getApplicationsReport(
   request: {
@@ -140,7 +140,7 @@ export async function getApplicationsReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.getAssistanceNeedsAndActionsReport
+* Generated from evaka.core.reports.AssistanceNeedsAndActionsReportController.getAssistanceNeedsAndActionsReport
 */
 export async function getAssistanceNeedsAndActionsReport(
   request: {
@@ -170,7 +170,7 @@ export async function getAssistanceNeedsAndActionsReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.getAssistanceNeedsAndActionsReportByChild
+* Generated from evaka.core.reports.AssistanceNeedsAndActionsReportController.getAssistanceNeedsAndActionsReportByChild
 */
 export async function getAssistanceNeedsAndActionsReportByChild(
   request: {
@@ -200,7 +200,7 @@ export async function getAssistanceNeedsAndActionsReportByChild(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.AttendanceReservationReportController.getAttendanceReservationReportByChild
+* Generated from evaka.core.reports.AttendanceReservationReportController.getAttendanceReservationReportByChild
 */
 export async function getAttendanceReservationReportByChild(
   request: {
@@ -217,7 +217,7 @@ export async function getAttendanceReservationReportByChild(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.AttendanceReservationReportController.getAttendanceReservationReportByUnit
+* Generated from evaka.core.reports.AttendanceReservationReportController.getAttendanceReservationReportByUnit
 */
 export async function getAttendanceReservationReportByUnit(
   request: {
@@ -244,7 +244,7 @@ export async function getAttendanceReservationReportByUnit(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildAgeLanguageReportController.getChildAgeLanguageReport
+* Generated from evaka.core.reports.ChildAgeLanguageReportController.getChildAgeLanguageReport
 */
 export async function getChildAgeLanguageReport(
   request: {
@@ -264,7 +264,7 @@ export async function getChildAgeLanguageReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildAttendanceReportController.getChildAttendanceReport
+* Generated from evaka.core.reports.ChildAttendanceReportController.getChildAttendanceReport
 */
 export async function getChildAttendanceReport(
   request: {
@@ -287,7 +287,7 @@ export async function getChildAttendanceReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildDocumentDecisionsReportController.getChildDocumentDecisionsReport
+* Generated from evaka.core.reports.ChildDocumentDecisionsReportController.getChildDocumentDecisionsReport
 */
 export async function getChildDocumentDecisionsReport(
   request: {
@@ -309,7 +309,7 @@ export async function getChildDocumentDecisionsReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildDocumentDecisionsReportController.getChildDocumentDecisionsReportNotificationCount
+* Generated from evaka.core.reports.ChildDocumentDecisionsReportController.getChildDocumentDecisionsReportNotificationCount
 */
 export async function getChildDocumentDecisionsReportNotificationCount(): Promise<number> {
   const { data: json } = await client.request<JsonOf<number>>({
@@ -321,7 +321,7 @@ export async function getChildDocumentDecisionsReportNotificationCount(): Promis
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildDocumentsReport.getChildDocumentsReport
+* Generated from evaka.core.reports.ChildDocumentsReport.getChildDocumentsReport
 */
 export async function getChildDocumentsReport(
   request: {
@@ -343,7 +343,7 @@ export async function getChildDocumentsReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildDocumentsReport.getChildDocumentsReportTemplateOptions
+* Generated from evaka.core.reports.ChildDocumentsReport.getChildDocumentsReportTemplateOptions
 */
 export async function getChildDocumentsReportTemplateOptions(): Promise<ChildDocumentsReportTemplate[]> {
   const { data: json } = await client.request<JsonOf<ChildDocumentsReportTemplate[]>>({
@@ -355,7 +355,7 @@ export async function getChildDocumentsReportTemplateOptions(): Promise<ChildDoc
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildrenInDifferentAddressReportController.getChildrenInDifferentAddressReport
+* Generated from evaka.core.reports.ChildrenInDifferentAddressReportController.getChildrenInDifferentAddressReport
 */
 export async function getChildrenInDifferentAddressReport(): Promise<ChildrenInDifferentAddressReportRow[]> {
   const { data: json } = await client.request<JsonOf<ChildrenInDifferentAddressReportRow[]>>({
@@ -367,7 +367,7 @@ export async function getChildrenInDifferentAddressReport(): Promise<ChildrenInD
 
 
 /**
-* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReport.getCitizenDocumentResponseReport
+* Generated from evaka.core.reports.CitizenDocumentResponseReport.getCitizenDocumentResponseReport
 */
 export async function getCitizenDocumentResponseReport(
   request: {
@@ -391,7 +391,7 @@ export async function getCitizenDocumentResponseReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReport.getCitizenDocumentResponseReportGroupOptions
+* Generated from evaka.core.reports.CitizenDocumentResponseReport.getCitizenDocumentResponseReportGroupOptions
 */
 export async function getCitizenDocumentResponseReportGroupOptions(
   request: {
@@ -417,7 +417,7 @@ export async function getCitizenDocumentResponseReportGroupOptions(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReport.getCitizenDocumentResponseTemplateOptions
+* Generated from evaka.core.reports.CitizenDocumentResponseReport.getCitizenDocumentResponseTemplateOptions
 */
 export async function getCitizenDocumentResponseTemplateOptions(): Promise<CitizenDocumentResponseReportTemplate[]> {
   const { data: json } = await client.request<JsonOf<CitizenDocumentResponseReportTemplate[]>>({
@@ -429,7 +429,7 @@ export async function getCitizenDocumentResponseTemplateOptions(): Promise<Citiz
 
 
 /**
-* Generated from fi.espoo.evaka.reports.CustomerFeesReport.getCustomerFeesReport
+* Generated from evaka.core.reports.CustomerFeesReport.getCustomerFeesReport
 */
 export async function getCustomerFeesReport(
   request: {
@@ -459,7 +459,7 @@ export async function getCustomerFeesReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.DecisionsReportController.getDecisionsReport
+* Generated from evaka.core.reports.DecisionsReportController.getDecisionsReport
 */
 export async function getDecisionsReport(
   request: {
@@ -483,7 +483,7 @@ export async function getDecisionsReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.DuplicatePeopleReportController.getDuplicatePeopleReport
+* Generated from evaka.core.reports.DuplicatePeopleReportController.getDuplicatePeopleReport
 */
 export async function getDuplicatePeopleReport(): Promise<DuplicatePeopleReportRow[]> {
   const { data: json } = await client.request<JsonOf<DuplicatePeopleReportRow[]>>({
@@ -495,7 +495,7 @@ export async function getDuplicatePeopleReport(): Promise<DuplicatePeopleReportR
 
 
 /**
-* Generated from fi.espoo.evaka.reports.EndedPlacementsReportController.getEndedPlacementsReport
+* Generated from evaka.core.reports.EndedPlacementsReportController.getEndedPlacementsReport
 */
 export async function getEndedPlacementsReport(
   request: {
@@ -517,7 +517,7 @@ export async function getEndedPlacementsReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ExceededServiceNeedsReportController.getExceededServiceNeedReportRows
+* Generated from evaka.core.reports.ExceededServiceNeedsReportController.getExceededServiceNeedReportRows
 */
 export async function getExceededServiceNeedReportRows(
   request: {
@@ -541,7 +541,7 @@ export async function getExceededServiceNeedReportRows(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ExceededServiceNeedsReportController.getExceededServiceNeedReportUnits
+* Generated from evaka.core.reports.ExceededServiceNeedsReportController.getExceededServiceNeedReportUnits
 */
 export async function getExceededServiceNeedReportUnits(): Promise<ExceededServiceNeedReportUnit[]> {
   const { data: json } = await client.request<JsonOf<ExceededServiceNeedReportUnit[]>>({
@@ -553,7 +553,7 @@ export async function getExceededServiceNeedReportUnits(): Promise<ExceededServi
 
 
 /**
-* Generated from fi.espoo.evaka.reports.FamilyConflictReportController.getFamilyConflictsReport
+* Generated from evaka.core.reports.FamilyConflictReportController.getFamilyConflictsReport
 */
 export async function getFamilyConflictsReport(): Promise<FamilyConflictReportRow[]> {
   const { data: json } = await client.request<JsonOf<FamilyConflictReportRow[]>>({
@@ -565,7 +565,7 @@ export async function getFamilyConflictsReport(): Promise<FamilyConflictReportRo
 
 
 /**
-* Generated from fi.espoo.evaka.reports.FamilyContactReportController.getFamilyContactsReport
+* Generated from evaka.core.reports.FamilyContactReportController.getFamilyContactsReport
 */
 export async function getFamilyContactsReport(
   request: {
@@ -587,7 +587,7 @@ export async function getFamilyContactsReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.FamilyDaycareMealReport.getFamilyDaycareMealReport
+* Generated from evaka.core.reports.FamilyDaycareMealReport.getFamilyDaycareMealReport
 */
 export async function getFamilyDaycareMealReport(
   request: {
@@ -609,7 +609,7 @@ export async function getFamilyDaycareMealReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersReport
+* Generated from evaka.core.reports.FuturePreschoolersReport.getFuturePreschoolersReport
 */
 export async function getFuturePreschoolersReport(): Promise<FuturePreschoolersReportRow[]> {
   const { data: json } = await client.request<JsonOf<FuturePreschoolersReportRow[]>>({
@@ -621,7 +621,7 @@ export async function getFuturePreschoolersReport(): Promise<FuturePreschoolersR
 
 
 /**
-* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersSourceUnitsReport
+* Generated from evaka.core.reports.FuturePreschoolersReport.getFuturePreschoolersSourceUnitsReport
 */
 export async function getFuturePreschoolersSourceUnitsReport(): Promise<SourceUnitsReportRow[]> {
   const { data: json } = await client.request<JsonOf<SourceUnitsReportRow[]>>({
@@ -633,7 +633,7 @@ export async function getFuturePreschoolersSourceUnitsReport(): Promise<SourceUn
 
 
 /**
-* Generated from fi.espoo.evaka.reports.FuturePreschoolersReport.getFuturePreschoolersUnitsReport
+* Generated from evaka.core.reports.FuturePreschoolersReport.getFuturePreschoolersUnitsReport
 */
 export async function getFuturePreschoolersUnitsReport(): Promise<PreschoolUnitsReportRow[]> {
   const { data: json } = await client.request<JsonOf<PreschoolUnitsReportRow[]>>({
@@ -645,7 +645,7 @@ export async function getFuturePreschoolersUnitsReport(): Promise<PreschoolUnits
 
 
 /**
-* Generated from fi.espoo.evaka.reports.HolidayPeriodAttendanceReport.getHolidayPeriodAttendanceReport
+* Generated from evaka.core.reports.HolidayPeriodAttendanceReport.getHolidayPeriodAttendanceReport
 */
 export async function getHolidayPeriodAttendanceReport(
   request: {
@@ -669,7 +669,7 @@ export async function getHolidayPeriodAttendanceReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.HolidayQuestionnaireReport.getHolidayQuestionnaireReport
+* Generated from evaka.core.reports.HolidayQuestionnaireReport.getHolidayQuestionnaireReport
 */
 export async function getHolidayQuestionnaireReport(
   request: {
@@ -693,7 +693,7 @@ export async function getHolidayQuestionnaireReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.IncompleteIncomeReport.getIncompleteIncomeReport
+* Generated from evaka.core.reports.IncompleteIncomeReport.getIncompleteIncomeReport
 */
 export async function getIncompleteIncomeReport(): Promise<IncompleteIncomeDbRow[]> {
   const { data: json } = await client.request<JsonOf<IncompleteIncomeDbRow[]>>({
@@ -705,7 +705,7 @@ export async function getIncompleteIncomeReport(): Promise<IncompleteIncomeDbRow
 
 
 /**
-* Generated from fi.espoo.evaka.reports.InvoiceReportController.getInvoiceReport
+* Generated from evaka.core.reports.InvoiceReportController.getInvoiceReport
 */
 export async function getInvoiceReport(
   request: {
@@ -725,7 +725,7 @@ export async function getInvoiceReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.MealReportController.getMealReportByUnit
+* Generated from evaka.core.reports.MealReportController.getMealReportByUnit
 */
 export async function getMealReportByUnit(
   request: {
@@ -746,7 +746,7 @@ export async function getMealReportByUnit(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.MissingHeadOfFamilyReportController.getMissingHeadOfFamilyReport
+* Generated from evaka.core.reports.MissingHeadOfFamilyReportController.getMissingHeadOfFamilyReport
 */
 export async function getMissingHeadOfFamilyReport(
   request: {
@@ -768,7 +768,7 @@ export async function getMissingHeadOfFamilyReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.MissingServiceNeedReportController.getMissingServiceNeedReport
+* Generated from evaka.core.reports.MissingServiceNeedReportController.getMissingServiceNeedReport
 */
 export async function getMissingServiceNeedReport(
   request: {
@@ -790,7 +790,7 @@ export async function getMissingServiceNeedReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.NekkuOrderReportController.getNekkuOrderReportByUnit
+* Generated from evaka.core.reports.NekkuOrderReportController.getNekkuOrderReportByUnit
 */
 export async function getNekkuOrderReportByUnit(
   request: {
@@ -815,7 +815,7 @@ export async function getNekkuOrderReportByUnit(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.NonSsnChildrenReportController.getNonSsnChildrenReportRows
+* Generated from evaka.core.reports.NonSsnChildrenReportController.getNonSsnChildrenReportRows
 */
 export async function getNonSsnChildrenReportRows(): Promise<NonSsnChildrenReportRow[]> {
   const { data: json } = await client.request<JsonOf<NonSsnChildrenReportRow[]>>({
@@ -827,7 +827,7 @@ export async function getNonSsnChildrenReportRows(): Promise<NonSsnChildrenRepor
 
 
 /**
-* Generated from fi.espoo.evaka.reports.OccupancyReportController.getOccupancyGroupReport
+* Generated from evaka.core.reports.OccupancyReportController.getOccupancyGroupReport
 */
 export async function getOccupancyGroupReport(
   request: {
@@ -859,7 +859,7 @@ export async function getOccupancyGroupReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.OccupancyReportController.getOccupancyUnitReport
+* Generated from evaka.core.reports.OccupancyReportController.getOccupancyUnitReport
 */
 export async function getOccupancyUnitReport(
   request: {
@@ -891,7 +891,7 @@ export async function getOccupancyUnitReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.PartnersInDifferentAddressReportController.getPartnersInDifferentAddressReport
+* Generated from evaka.core.reports.PartnersInDifferentAddressReportController.getPartnersInDifferentAddressReport
 */
 export async function getPartnersInDifferentAddressReport(): Promise<PartnersInDifferentAddressReportRow[]> {
   const { data: json } = await client.request<JsonOf<PartnersInDifferentAddressReportRow[]>>({
@@ -903,7 +903,7 @@ export async function getPartnersInDifferentAddressReport(): Promise<PartnersInD
 
 
 /**
-* Generated from fi.espoo.evaka.reports.PlacementCountReportController.getPlacementCountReport
+* Generated from evaka.core.reports.PlacementCountReportController.getPlacementCountReport
 */
 export async function getPlacementCountReport(
   request: {
@@ -927,7 +927,7 @@ export async function getPlacementCountReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.PlacementGuaranteeReportController.getPlacementGuaranteeReport
+* Generated from evaka.core.reports.PlacementGuaranteeReportController.getPlacementGuaranteeReport
 */
 export async function getPlacementGuaranteeReport(
   request: {
@@ -949,7 +949,7 @@ export async function getPlacementGuaranteeReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.PlacementSketchingReportController.getPlacementSketchingReport
+* Generated from evaka.core.reports.PlacementSketchingReportController.getPlacementSketchingReport
 */
 export async function getPlacementSketchingReport(
   request: {
@@ -977,7 +977,7 @@ export async function getPlacementSketchingReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.PreschoolAbsenceReport.getPreschoolAbsenceReport
+* Generated from evaka.core.reports.PreschoolAbsenceReport.getPreschoolAbsenceReport
 */
 export async function getPreschoolAbsenceReport(
   request: {
@@ -994,7 +994,7 @@ export async function getPreschoolAbsenceReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.PreschoolApplicationReport.getPreschoolApplicationReport
+* Generated from evaka.core.reports.PreschoolApplicationReport.getPreschoolApplicationReport
 */
 export async function getPreschoolApplicationReport(): Promise<PreschoolApplicationReportRow[]> {
   const { data: json } = await client.request<JsonOf<PreschoolApplicationReportRow[]>>({
@@ -1006,7 +1006,7 @@ export async function getPreschoolApplicationReport(): Promise<PreschoolApplicat
 
 
 /**
-* Generated from fi.espoo.evaka.reports.RawReportController.getRawReport
+* Generated from evaka.core.reports.RawReportController.getRawReport
 */
 export async function getRawReport(
   request: {
@@ -1028,7 +1028,7 @@ export async function getRawReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ReportPermissions.getPermittedReports
+* Generated from evaka.core.reports.ReportPermissions.getPermittedReports
 */
 export async function getPermittedReports(): Promise<Report[]> {
   const { data: json } = await client.request<JsonOf<Report[]>>({
@@ -1040,7 +1040,7 @@ export async function getPermittedReports(): Promise<Report[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceNeedReport.getServiceNeedReport
+* Generated from evaka.core.reports.ServiceNeedReport.getServiceNeedReport
 */
 export async function getServiceNeedReport(
   request: {
@@ -1066,7 +1066,7 @@ export async function getServiceNeedReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.getServiceVoucherReportForAllUnits
+* Generated from evaka.core.reports.ServiceVoucherValueReportController.getServiceVoucherReportForAllUnits
 */
 export async function getServiceVoucherReportForAllUnits(
   request: {
@@ -1090,7 +1090,7 @@ export async function getServiceVoucherReportForAllUnits(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.getServiceVoucherReportForUnit
+* Generated from evaka.core.reports.ServiceVoucherValueReportController.getServiceVoucherReportForUnit
 */
 export async function getServiceVoucherReportForUnit(
   request: {
@@ -1113,7 +1113,7 @@ export async function getServiceVoucherReportForUnit(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.SextetReportController.getSextetReport
+* Generated from evaka.core.reports.SextetReportController.getSextetReport
 */
 export async function getSextetReport(
   request: {
@@ -1137,7 +1137,7 @@ export async function getSextetReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.StartingPlacementsReportController.getStartingPlacementsReport
+* Generated from evaka.core.reports.StartingPlacementsReportController.getStartingPlacementsReport
 */
 export async function getStartingPlacementsReport(
   request: {
@@ -1159,7 +1159,7 @@ export async function getStartingPlacementsReport(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.getTampereRegionalSurveyAgeStatistics
+* Generated from evaka.core.reports.TampereRegionalSurvey.getTampereRegionalSurveyAgeStatistics
 */
 export async function getTampereRegionalSurveyAgeStatistics(
   request: {
@@ -1179,7 +1179,7 @@ export async function getTampereRegionalSurveyAgeStatistics(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.getTampereRegionalSurveyMonthlyStatistics
+* Generated from evaka.core.reports.TampereRegionalSurvey.getTampereRegionalSurveyMonthlyStatistics
 */
 export async function getTampereRegionalSurveyMonthlyStatistics(
   request: {
@@ -1199,7 +1199,7 @@ export async function getTampereRegionalSurveyMonthlyStatistics(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.getTampereRegionalSurveyMunicipalVoucherDistribution
+* Generated from evaka.core.reports.TampereRegionalSurvey.getTampereRegionalSurveyMunicipalVoucherDistribution
 */
 export async function getTampereRegionalSurveyMunicipalVoucherDistribution(
   request: {
@@ -1219,7 +1219,7 @@ export async function getTampereRegionalSurveyMunicipalVoucherDistribution(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics
+* Generated from evaka.core.reports.TampereRegionalSurvey.getTampereRegionalSurveyYearlyStatistics
 */
 export async function getTampereRegionalSurveyYearlyStatistics(
   request: {
@@ -1239,7 +1239,7 @@ export async function getTampereRegionalSurveyYearlyStatistics(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.TitaniaErrorReport.clearTitaniaErrors
+* Generated from evaka.core.reports.TitaniaErrorReport.clearTitaniaErrors
 */
 export async function clearTitaniaErrors(
   request: {
@@ -1255,7 +1255,7 @@ export async function clearTitaniaErrors(
 
 
 /**
-* Generated from fi.espoo.evaka.reports.TitaniaErrorReport.getTitaniaErrorsReport
+* Generated from evaka.core.reports.TitaniaErrorReport.getTitaniaErrorsReport
 */
 export async function getTitaniaErrorsReport(): Promise<TitaniaErrorReportRow[]> {
   const { data: json } = await client.request<JsonOf<TitaniaErrorReportRow[]>>({
@@ -1267,7 +1267,7 @@ export async function getTitaniaErrorsReport(): Promise<TitaniaErrorReportRow[]>
 
 
 /**
-* Generated from fi.espoo.evaka.reports.UnitsReportController.getUnitsReport
+* Generated from evaka.core.reports.UnitsReportController.getUnitsReport
 */
 export async function getUnitsReport(): Promise<UnitsReportRow[]> {
   const { data: json } = await client.request<JsonOf<UnitsReportRow[]>>({
@@ -1279,7 +1279,7 @@ export async function getUnitsReport(): Promise<UnitsReportRow[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.reports.VardaErrorReport.getVardaChildErrorsReport
+* Generated from evaka.core.reports.VardaErrorReport.getVardaChildErrorsReport
 */
 export async function getVardaChildErrorsReport(): Promise<VardaChildErrorReportRow[]> {
   const { data: json } = await client.request<JsonOf<VardaChildErrorReportRow[]>>({
@@ -1291,7 +1291,7 @@ export async function getVardaChildErrorsReport(): Promise<VardaChildErrorReport
 
 
 /**
-* Generated from fi.espoo.evaka.reports.VardaErrorReport.getVardaUnitErrorsReport
+* Generated from evaka.core.reports.VardaErrorReport.getVardaUnitErrorsReport
 */
 export async function getVardaUnitErrorsReport(): Promise<VardaUnitErrorReportRow[]> {
   const { data: json } = await client.request<JsonOf<VardaUnitErrorReportRow[]>>({
@@ -1303,7 +1303,7 @@ export async function getVardaUnitErrorsReport(): Promise<VardaUnitErrorReportRo
 
 
 /**
-* Generated from fi.espoo.evaka.reports.patu.PatuReportingController.sendPatuReport
+* Generated from evaka.core.reports.patu.PatuReportingController.sendPatuReport
 */
 export async function sendPatuReport(
   request: {

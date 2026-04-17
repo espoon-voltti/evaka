@@ -12,7 +12,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesCitizenController.dismissDailyServiceTimeNotification
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimesCitizenController.dismissDailyServiceTimeNotification
 */
 export async function dismissDailyServiceTimeNotification(
   request: {
@@ -29,7 +29,7 @@ export async function dismissDailyServiceTimeNotification(
 
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesCitizenController.getDailyServiceTimeNotifications
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimesCitizenController.getDailyServiceTimeNotifications
 */
 export async function getDailyServiceTimeNotifications(): Promise<DailyServiceTimeNotificationId[]> {
   const { data: json } = await client.request<JsonOf<DailyServiceTimeNotificationId[]>>({

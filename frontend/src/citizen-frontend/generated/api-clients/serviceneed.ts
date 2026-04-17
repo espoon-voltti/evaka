@@ -23,7 +23,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.getServiceNeedOptionPublicInfos
+* Generated from evaka.core.serviceneed.ServiceNeedController.getServiceNeedOptionPublicInfos
 */
 export async function getServiceNeedOptionPublicInfos(
   request: {
@@ -43,7 +43,7 @@ export async function getServiceNeedOptionPublicInfos(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationControllerCitizen.createServiceApplication
+* Generated from evaka.core.serviceneed.application.ServiceApplicationControllerCitizen.createServiceApplication
 */
 export async function createServiceApplication(
   request: {
@@ -60,7 +60,7 @@ export async function createServiceApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationControllerCitizen.deleteServiceApplication
+* Generated from evaka.core.serviceneed.application.ServiceApplicationControllerCitizen.deleteServiceApplication
 */
 export async function deleteServiceApplication(
   request: {
@@ -76,7 +76,7 @@ export async function deleteServiceApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationControllerCitizen.getChildServiceApplications
+* Generated from evaka.core.serviceneed.application.ServiceApplicationControllerCitizen.getChildServiceApplications
 */
 export async function getChildServiceApplications(
   request: {
@@ -96,7 +96,7 @@ export async function getChildServiceApplications(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationControllerCitizen.getChildServiceNeedOptions
+* Generated from evaka.core.serviceneed.application.ServiceApplicationControllerCitizen.getChildServiceNeedOptions
 */
 export async function getChildServiceNeedOptions(
   request: {

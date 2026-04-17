@@ -11,7 +11,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeControllerCitizen.getExpiringIncome
+* Generated from evaka.core.invoicing.controller.IncomeControllerCitizen.getExpiringIncome
 */
 export async function getExpiringIncome(): Promise<LocalDate[]> {
   const { data: json } = await client.request<JsonOf<LocalDate[]>>({

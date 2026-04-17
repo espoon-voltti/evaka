@@ -1,0 +1,17 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.pis
+
+import evaka.core.shared.PersonEmailVerificationId
+import evaka.core.shared.domain.HelsinkiDateTime
+
+data class EmailVerification(
+    val id: PersonEmailVerificationId,
+    val email: String,
+    val expiresAt: HelsinkiDateTime,
+    val sentAt: HelsinkiDateTime?,
+)
+
+data class NewEmailVerification(val verificationCode: String, val expiresAt: HelsinkiDateTime)

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns3:collections xmlns:ns2="http://www.profium.com/sahke2" xmlns:ns3="http://www.profium.com/reception/2022/03">
+    <ns3:initiator>
+        <ns3:source_system>eVaka</ns3:source_system>
+        <ns3:initiator_id>00000000-0000-0000-0000-000000000000</ns3:initiator_id>
+        <ns3:initiator_name>eVaka</ns3:initiator_name>
+    </ns3:initiator>
+    <ns3:collection>
+        <ns3:type>record</ns3:type>
+        <ns3:folder>12.06.01.17</ns3:folder>
+        <ns3:metadata>
+            <ns2:title>Arvopäätös, Mitätöity, Jane Smith, 02.09.1998</ns2:title>
+            <ns2:calculationBaseDate>2020-01-15</ns2:calculationBaseDate>
+            <ns2:created>2020-01-15</ns2:created>
+            <ns2:agent>
+                <ns2:agentRole>Päättäjä</ns2:agentRole>
+                <ns2:agentName>Maksumestari Marjo</ns2:agentName>
+            </ns2:agent>
+        </ns3:metadata>
+        <ns3:content>
+            <ns3:file name="Arvopäätös.txt" originalId="11479434-12da-4c59-a1e1-d9cd58c203a2"/>
+        </ns3:content>
+    </ns3:collection>
+</ns3:collections>

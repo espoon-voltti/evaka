@@ -11,7 +11,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.childimages.ChildImageController.getImageCitizen
+* Generated from evaka.core.childimages.ChildImageController.getImageCitizen
 */
 export function getImageCitizen(
   request: {

@@ -48,14 +48,14 @@ export type ChildImageId = Id<'ChildImage'>
 export type ChildStickyNoteId = Id<'ChildStickyNote'>
 
 /**
-* Generated from fi.espoo.evaka.shared.auth.CitizenAuthLevel
+* Generated from evaka.core.shared.auth.CitizenAuthLevel
 */
 export type CitizenAuthLevel =
   | 'WEAK'
   | 'STRONG'
 
 /**
-* Generated from fi.espoo.evaka.shared.security.CitizenFeatures
+* Generated from evaka.core.shared.security.CitizenFeatures
 */
 export interface CitizenFeatures {
   childDocumentation: boolean
@@ -67,7 +67,7 @@ export interface CitizenFeatures {
 export type ClubTermId = Id<'ClubTerm'>
 
 /**
-* Generated from fi.espoo.evaka.shared.domain.Coordinate
+* Generated from evaka.core.shared.domain.Coordinate
 */
 export interface Coordinate {
   lat: number
@@ -79,7 +79,7 @@ export type DailyServiceTimeId = Id<'DailyServiceTime'>
 export type DailyServiceTimeNotificationId = Id<'DailyServiceTimeNotification'>
 
 /**
-* Generated from fi.espoo.evaka.shared.auth.DaycareAclRow
+* Generated from evaka.core.shared.auth.DaycareAclRow
 */
 export interface DaycareAclRow {
   employee: DaycareAclRowEmployee
@@ -89,7 +89,7 @@ export interface DaycareAclRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.auth.DaycareAclRowEmployee
+* Generated from evaka.core.shared.auth.DaycareAclRowEmployee
 */
 export interface DaycareAclRowEmployee {
   active: boolean
@@ -113,7 +113,7 @@ export type DecisionId = Id<'Decision'>
 export type DocumentTemplateId = Id<'DocumentTemplate'>
 
 /**
-* Generated from fi.espoo.evaka.shared.security.EmployeeFeatures
+* Generated from evaka.core.shared.security.EmployeeFeatures
 */
 export interface EmployeeFeatures {
   applications: boolean
@@ -162,7 +162,7 @@ export type GroupNoteId = Id<'GroupNote'>
 export type GroupPlacementId = Id<'GroupPlacement'>
 
 /**
-* Generated from fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+* Generated from evaka.core.shared.domain.HelsinkiDateTimeRange
 */
 export interface HelsinkiDateTimeRange {
   end: HelsinkiDateTime
@@ -208,7 +208,7 @@ export type ParentshipId = Id<'Parentship'>
 export type PartnershipId = Id<'Partnership'>
 
 /**
-* Generated from fi.espoo.evaka.shared.auth.PasswordConstraints
+* Generated from evaka.core.shared.auth.PasswordConstraints
 */
 export interface PasswordConstraints {
   maxLength: number
@@ -228,7 +228,7 @@ export type PersonEmailVerificationId = Id<'PersonEmailVerification'>
 export type PersonId = Id<'Person'>
 
 /**
-* Generated from fi.espoo.evaka.shared.security.PilotFeature
+* Generated from evaka.core.shared.security.PilotFeature
 */
 export const pilotFeatures = [
   'MESSAGING',
@@ -256,7 +256,7 @@ export type PreschoolAssistanceId = Id<'PreschoolAssistance'>
 export type PreschoolTermId = Id<'PreschoolTerm'>
 
 /**
-* Generated from fi.espoo.evaka.shared.auth.ScheduledDaycareAclRow
+* Generated from evaka.core.shared.auth.ScheduledDaycareAclRow
 */
 export interface ScheduledDaycareAclRow {
   email: string | null
@@ -284,7 +284,7 @@ export type StaffAttendanceRealtimeId = Id<'StaffAttendanceRealtime'>
 export type TitaniaErrorsId = Id<'TitaniaErrors'>
 
 /**
-* Generated from fi.espoo.evaka.shared.domain.Translatable
+* Generated from evaka.core.shared.domain.Translatable
 */
 export interface Translatable {
   en: string
@@ -293,7 +293,7 @@ export interface Translatable {
 }
 
 /**
-* Generated from fi.espoo.evaka.shared.domain.UiLanguage
+* Generated from evaka.core.shared.domain.UiLanguage
 */
 export const uiLanguages = [
   'FI',
@@ -304,7 +304,7 @@ export const uiLanguages = [
 export type UiLanguage = typeof uiLanguages[number]
 
 /**
-* Generated from fi.espoo.evaka.shared.auth.UserRole
+* Generated from evaka.core.shared.auth.UserRole
 */
 export type UserRole =
   | 'ADMIN'

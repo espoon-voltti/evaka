@@ -1,0 +1,72 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.s3
+
+import evaka.core.decision.DecisionType
+import evaka.core.shared.AttachmentId
+import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.ChildImageId
+import evaka.core.shared.DecisionId
+import evaka.core.shared.FeeDecisionId
+import evaka.core.shared.VoucherValueDecisionId
+import evaka.core.shared.domain.OfficialLanguage
+
+sealed interface DocumentKey {
+    val value: String
+
+    data class Attachment(override val value: String) : DocumentKey {
+        constructor(id: AttachmentId) : this(id.toString())
+    }
+
+    data class ChildDocument(override val value: String) : DocumentKey {
+        constructor(
+            id: ChildDocumentId,
+            version: Int? = null,
+        ) : this(
+            if (version != null) {
+                "child-documents/child_document_${id}_v$version.pdf"
+            } else {
+                "child-documents/child_document_$id.pdf"
+            }
+        )
+    }
+
+    data class ChildImage(override val value: String) : DocumentKey {
+        constructor(id: ChildImageId) : this("child-images/$id")
+    }
+
+    data class Decision(override val value: String) : DocumentKey {
+        constructor(
+            id: DecisionId,
+            type: DecisionType,
+            lang: OfficialLanguage,
+        ) : this(
+            when (type) {
+                DecisionType.CLUB -> "clubdecision"
+
+                DecisionType.DAYCARE,
+                DecisionType.DAYCARE_PART_TIME -> "daycaredecision"
+
+                DecisionType.PRESCHOOL -> "preschooldecision"
+
+                DecisionType.PRESCHOOL_DAYCARE,
+                DecisionType.PRESCHOOL_CLUB -> "connectingdaycaredecision"
+
+                DecisionType.PREPARATORY_EDUCATION -> "preparatorydecision"
+            }.let { "${it}_${id}_$lang" }
+        )
+    }
+
+    data class FeeDecision(override val value: String) : DocumentKey {
+        constructor(
+            id: FeeDecisionId,
+            lang: OfficialLanguage,
+        ) : this("feedecision_${id}_${lang.isoLanguage.alpha2}.pdf")
+    }
+
+    data class VoucherValueDecision(override val value: String) : DocumentKey {
+        constructor(id: VoucherValueDecisionId) : this("value_decision_$id.pdf")
+    }
+}

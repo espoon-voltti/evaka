@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: 2023 Tampere region
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+evaka:
+  database:
+    flyway:
+      locations:
+        - db/migration
+        - hameenkyro/db/migration
+  oph:
+    organizer_oid: "1.2.246.562.10.64495287985"
+    organizer_id: "243"
+    municipality_code: "108"
+  integration:
+    sfi:
+      contact_organization:
+        name: "eVaka Hämeenkyrö"
+        street_address: "Härkikuja 7"
+        postal_code: "39100"
+        post_office: "Hämeenkyrö"
+  planned_absence:
+    enabled_for_hour_based_service_needs: true
+
+---
+spring.config.activate.on-profile: local
+evaka:
+  email:
+    sender_address: evaka@localhost
+    sender_name:
+      fi: evaka_local_fi
+      sv: evaka_local_sv
+  integration:
+    koski:
+      enabled: false
+    archival:
+      enabled: true
+hameenkyro:
+  bucket:
+    export: trevaka-export-dev

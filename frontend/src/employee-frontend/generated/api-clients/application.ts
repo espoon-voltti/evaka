@@ -56,7 +56,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.acceptDecision
+* Generated from evaka.core.application.ApplicationControllerV2.acceptDecision
 */
 export async function acceptDecision(
   request: {
@@ -74,7 +74,7 @@ export async function acceptDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.acceptPlacementProposal
+* Generated from evaka.core.application.ApplicationControllerV2.acceptPlacementProposal
 */
 export async function acceptPlacementProposal(
   request: {
@@ -92,7 +92,7 @@ export async function acceptPlacementProposal(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.cancelApplication
+* Generated from evaka.core.application.ApplicationControllerV2.cancelApplication
 */
 export async function cancelApplication(
   request: {
@@ -113,7 +113,7 @@ export async function cancelApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.createPaperApplication
+* Generated from evaka.core.application.ApplicationControllerV2.createPaperApplication
 */
 export async function createPaperApplication(
   request: {
@@ -130,7 +130,7 @@ export async function createPaperApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.createPlacementPlan
+* Generated from evaka.core.application.ApplicationControllerV2.createPlacementPlan
 */
 export async function createPlacementPlan(
   request: {
@@ -148,7 +148,7 @@ export async function createPlacementPlan(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.getApplicationDetails
+* Generated from evaka.core.application.ApplicationControllerV2.getApplicationDetails
 */
 export async function getApplicationDetails(
   request: {
@@ -164,7 +164,7 @@ export async function getApplicationDetails(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.getApplicationSummaries
+* Generated from evaka.core.application.ApplicationControllerV2.getApplicationSummaries
 */
 export async function getApplicationSummaries(
   request: {
@@ -181,7 +181,7 @@ export async function getApplicationSummaries(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.getChildApplicationSummaries
+* Generated from evaka.core.application.ApplicationControllerV2.getChildApplicationSummaries
 */
 export async function getChildApplicationSummaries(
   request: {
@@ -197,7 +197,7 @@ export async function getChildApplicationSummaries(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.getDecisionDrafts
+* Generated from evaka.core.application.ApplicationControllerV2.getDecisionDrafts
 */
 export async function getDecisionDrafts(
   request: {
@@ -213,7 +213,7 @@ export async function getDecisionDrafts(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.getGuardianApplicationSummaries
+* Generated from evaka.core.application.ApplicationControllerV2.getGuardianApplicationSummaries
 */
 export async function getGuardianApplicationSummaries(
   request: {
@@ -229,7 +229,7 @@ export async function getGuardianApplicationSummaries(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.getPlacementPlanDraft
+* Generated from evaka.core.application.ApplicationControllerV2.getPlacementPlanDraft
 */
 export async function getPlacementPlanDraft(
   request: {
@@ -245,7 +245,7 @@ export async function getPlacementPlanDraft(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.getUnitApplications
+* Generated from evaka.core.application.ApplicationControllerV2.getUnitApplications
 */
 export async function getUnitApplications(
   request: {
@@ -261,7 +261,7 @@ export async function getUnitApplications(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.rejectDecision
+* Generated from evaka.core.application.ApplicationControllerV2.rejectDecision
 */
 export async function rejectDecision(
   request: {
@@ -279,7 +279,7 @@ export async function rejectDecision(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.respondToPlacementProposal
+* Generated from evaka.core.application.ApplicationControllerV2.respondToPlacementProposal
 */
 export async function respondToPlacementProposal(
   request: {
@@ -297,7 +297,7 @@ export async function respondToPlacementProposal(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.sendApplication
+* Generated from evaka.core.application.ApplicationControllerV2.sendApplication
 */
 export async function sendApplication(
   request: {
@@ -313,7 +313,7 @@ export async function sendApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.setApplicationVerified
+* Generated from evaka.core.application.ApplicationControllerV2.setApplicationVerified
 */
 export async function setApplicationVerified(
   request: {
@@ -334,7 +334,7 @@ export async function setApplicationVerified(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.simpleApplicationAction
+* Generated from evaka.core.application.ApplicationControllerV2.simpleApplicationAction
 */
 export async function simpleApplicationAction(
   request: {
@@ -351,7 +351,7 @@ export async function simpleApplicationAction(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.simpleBatchAction
+* Generated from evaka.core.application.ApplicationControllerV2.simpleBatchAction
 */
 export async function simpleBatchAction(
   request: {
@@ -369,7 +369,7 @@ export async function simpleBatchAction(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.updateAndSendApplication
+* Generated from evaka.core.application.ApplicationControllerV2.updateAndSendApplication
 */
 export async function updateAndSendApplication(
   request: {
@@ -387,7 +387,7 @@ export async function updateAndSendApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.updateApplication
+* Generated from evaka.core.application.ApplicationControllerV2.updateApplication
 */
 export async function updateApplication(
   request: {
@@ -405,7 +405,7 @@ export async function updateApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerV2.updateDecisionDrafts
+* Generated from evaka.core.application.ApplicationControllerV2.updateDecisionDrafts
 */
 export async function updateDecisionDrafts(
   request: {
@@ -423,7 +423,7 @@ export async function updateDecisionDrafts(
 
 
 /**
-* Generated from fi.espoo.evaka.application.PlacementToolController.createPlacementToolApplications
+* Generated from evaka.core.application.PlacementToolController.createPlacementToolApplications
 */
 export async function createPlacementToolApplications(
   request: {
@@ -450,7 +450,7 @@ export async function createPlacementToolApplications(
 
 
 /**
-* Generated from fi.espoo.evaka.application.PlacementToolController.getNextPreschoolTerm
+* Generated from evaka.core.application.PlacementToolController.getNextPreschoolTerm
 */
 export async function getNextPreschoolTerm(): Promise<PreschoolTerm[]> {
   const { data: json } = await client.request<JsonOf<PreschoolTerm[]>>({
@@ -462,7 +462,7 @@ export async function getNextPreschoolTerm(): Promise<PreschoolTerm[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.application.PlacementToolController.validatePlacementToolApplications
+* Generated from evaka.core.application.PlacementToolController.validatePlacementToolApplications
 */
 export async function validatePlacementToolApplications(
   request: {
@@ -489,7 +489,7 @@ export async function validatePlacementToolApplications(
 
 
 /**
-* Generated from fi.espoo.evaka.application.notes.NoteController.createNote
+* Generated from evaka.core.application.notes.NoteController.createNote
 */
 export async function createNote(
   request: {
@@ -507,7 +507,7 @@ export async function createNote(
 
 
 /**
-* Generated from fi.espoo.evaka.application.notes.NoteController.deleteNote
+* Generated from evaka.core.application.notes.NoteController.deleteNote
 */
 export async function deleteNote(
   request: {
@@ -523,7 +523,7 @@ export async function deleteNote(
 
 
 /**
-* Generated from fi.espoo.evaka.application.notes.NoteController.getNotes
+* Generated from evaka.core.application.notes.NoteController.getNotes
 */
 export async function getNotes(
   request: {
@@ -539,7 +539,7 @@ export async function getNotes(
 
 
 /**
-* Generated from fi.espoo.evaka.application.notes.NoteController.updateNote
+* Generated from evaka.core.application.notes.NoteController.updateNote
 */
 export async function updateNote(
   request: {
@@ -557,7 +557,7 @@ export async function updateNote(
 
 
 /**
-* Generated from fi.espoo.evaka.application.notes.NoteController.updateServiceWorkerNote
+* Generated from evaka.core.application.notes.NoteController.updateServiceWorkerNote
 */
 export async function updateServiceWorkerNote(
   request: {
@@ -575,7 +575,7 @@ export async function updateServiceWorkerNote(
 
 
 /**
-* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.deleteApplicationPlacementDraft
+* Generated from evaka.core.application.placementdesktop.PlacementDesktopController.deleteApplicationPlacementDraft
 */
 export async function deleteApplicationPlacementDraft(
   request: {
@@ -591,7 +591,7 @@ export async function deleteApplicationPlacementDraft(
 
 
 /**
-* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.getPlacementDesktopDaycare
+* Generated from evaka.core.application.placementdesktop.PlacementDesktopController.getPlacementDesktopDaycare
 */
 export async function getPlacementDesktopDaycare(
   request: {
@@ -612,7 +612,7 @@ export async function getPlacementDesktopDaycare(
 
 
 /**
-* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.getPlacementDesktopDaycares
+* Generated from evaka.core.application.placementdesktop.PlacementDesktopController.getPlacementDesktopDaycares
 */
 export async function getPlacementDesktopDaycares(
   request: {
@@ -634,7 +634,7 @@ export async function getPlacementDesktopDaycares(
 
 
 /**
-* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.upsertApplicationPlacementDraft
+* Generated from evaka.core.application.placementdesktop.PlacementDesktopController.upsertApplicationPlacementDraft
 */
 export async function upsertApplicationPlacementDraft(
   request: {

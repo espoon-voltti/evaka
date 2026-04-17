@@ -12,7 +12,7 @@ import type { MobileDeviceId } from './shared'
 import type { PairingId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.pairing.MobileDevice
+* Generated from evaka.core.pairing.MobileDevice
 */
 export interface MobileDevice {
   id: MobileDeviceId
@@ -20,7 +20,7 @@ export interface MobileDevice {
 }
 
 /**
-* Generated from fi.espoo.evaka.pairing.MobileDeviceDetails
+* Generated from evaka.core.pairing.MobileDeviceDetails
 */
 export interface MobileDeviceDetails {
   employeeId: EmployeeId | null
@@ -32,7 +32,7 @@ export interface MobileDeviceDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.pairing.Pairing
+* Generated from evaka.core.pairing.Pairing
 */
 export interface Pairing {
   challengeKey: string
@@ -46,7 +46,7 @@ export interface Pairing {
 }
 
 /**
-* Generated from fi.espoo.evaka.pairing.PairingStatus
+* Generated from evaka.core.pairing.PairingStatus
 */
 export type PairingStatus =
   | 'WAITING_CHALLENGE'
@@ -55,14 +55,14 @@ export type PairingStatus =
   | 'PAIRED'
 
 /**
-* Generated from fi.espoo.evaka.pairing.PairingsController.PairingStatusRes
+* Generated from evaka.core.pairing.PairingsController.PairingStatusRes
 */
 export interface PairingStatusRes {
   status: PairingStatus
 }
 
 /**
-* Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingChallengeReq
+* Generated from evaka.core.pairing.PairingsController.PostPairingChallengeReq
 */
 export interface PostPairingChallengeReq {
   challengeKey: string
@@ -71,14 +71,14 @@ export interface PostPairingChallengeReq {
 
 export namespace PostPairingReq {
   /**
-  * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq.Employee
+  * Generated from evaka.core.pairing.PairingsController.PostPairingReq.Employee
   */
   export interface Employee {
     employeeId: EmployeeId
   }
 
   /**
-  * Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq.Unit
+  * Generated from evaka.core.pairing.PairingsController.PostPairingReq.Unit
   */
   export interface Unit {
     unitId: DaycareId
@@ -86,13 +86,13 @@ export namespace PostPairingReq {
 }
 
 /**
-* Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingReq
+* Generated from evaka.core.pairing.PairingsController.PostPairingReq
 */
 export type PostPairingReq = PostPairingReq.Employee | PostPairingReq.Unit
 
 
 /**
-* Generated from fi.espoo.evaka.pairing.PairingsController.PostPairingResponseReq
+* Generated from evaka.core.pairing.PairingsController.PostPairingResponseReq
 */
 export interface PostPairingResponseReq {
   challengeKey: string
@@ -100,7 +100,7 @@ export interface PostPairingResponseReq {
 }
 
 /**
-* Generated from fi.espoo.evaka.pairing.MobileDevicesController.RenameRequest
+* Generated from evaka.core.pairing.MobileDevicesController.RenameRequest
 */
 export interface RenameRequest {
   name: string

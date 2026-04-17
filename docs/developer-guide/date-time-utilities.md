@@ -22,7 +22,7 @@ Immutable date without timezone (year, month, day). Frontend uses a TypeScript c
 
 **Files:**
 - Frontend: `frontend/src/lib-common/local-date.ts`
-- Backend: `java.time.LocalDate` with extensions in `service/src/main/kotlin/fi/espoo/evaka/shared/domain/Time.kt`
+- Backend: `java.time.LocalDate` with extensions in `service/src/main/kotlin/evaka/core/shared/domain/Time.kt`
 
 ### LocalTime
 
@@ -30,7 +30,7 @@ Time of day (hour:minute:second.nanosecond) without date or timezone. Frontend u
 
 **Files:**
 - Frontend: `frontend/src/lib-common/local-time.ts`
-- Backend: `java.time.LocalTime` with extensions in `service/src/main/kotlin/fi/espoo/evaka/shared/domain/Time.kt`
+- Backend: `java.time.LocalTime` with extensions in `service/src/main/kotlin/evaka/core/shared/domain/Time.kt`
 
 ### YearMonth
 
@@ -48,7 +48,7 @@ Timestamp in Europe/Helsinki timezone. Wraps a UTC timestamp (backend: `Instant`
 
 **Files:**
 - Frontend: `frontend/src/lib-common/helsinki-date-time.ts`
-- Backend: `service/src/main/kotlin/fi/espoo/evaka/shared/domain/HelsinkiDateTime.kt`
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/HelsinkiDateTime.kt`
 
 ## Range Types
 
@@ -60,7 +60,7 @@ Date range with finite start and nullable end.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/date-range.ts`
-- Backend: `service/src/main/kotlin/fi/espoo/evaka/shared/domain/Time.kt` (data class)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/Time.kt` (data class)
 
 **Structure:** `DateRange(start: LocalDate, end: LocalDate | null)`
 
@@ -73,7 +73,7 @@ Date range with both start and end required.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/finite-date-range.ts`
-- Backend: `service/src/main/kotlin/fi/espoo/evaka/shared/domain/Time.kt` (data class implementing `BoundedRange`)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/Time.kt` (data class implementing `BoundedRange`)
 
 **Structure:** `FiniteDateRange(start: LocalDate, end: LocalDate)`
 
@@ -88,7 +88,7 @@ Time range with both start and end required.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/time-range.ts`
-- Backend: `service/src/main/kotlin/fi/espoo/evaka/shared/domain/TimeRange.kt` (data class)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/TimeRange.kt` (data class)
 
 **Structure:** `TimeRange(start: TimeRangeEndpoint.Start, end: TimeRangeEndpoint.End)` (convenience constructor accepts `LocalTime` values)
 
@@ -101,7 +101,7 @@ Time range with finite start and nullable end.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/time-interval.ts`
-- Backend: `service/src/main/kotlin/fi/espoo/evaka/shared/domain/TimeInterval.kt` (data class)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/TimeInterval.kt` (data class)
 
 **Structure:** `TimeInterval(start: TimeRangeEndpoint.Start, end: TimeRangeEndpoint.End?)` (convenience constructor accepts `LocalTime` values)
 
@@ -116,7 +116,7 @@ Start/End endpoint markers for time ranges. Supports inclusive/exclusive semanti
 
 **Files:**
 - Frontend: `frontend/src/lib-common/time-range-endpoint.ts` (namespace with functions)
-- Backend: `service/src/main/kotlin/fi/espoo/evaka/shared/domain/TimeRangeEndpoint.kt` (sealed interface)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/TimeRangeEndpoint.kt` (sealed interface)
 
 ### HelsinkiDateTimeRange
 
@@ -124,7 +124,7 @@ Date and time range with both start and end required.
 
 **Files:**
 - Frontend: `frontend/src/lib-common/generated/api-types/shared.ts` (generated interface)
-- Backend: `service/src/main/kotlin/fi/espoo/evaka/shared/domain/Time.kt` (data class)
+- Backend: `service/src/main/kotlin/evaka/core/shared/domain/Time.kt` (data class)
 
 **Structure:** `HelsinkiDateTimeRange(start: HelsinkiDateTime, end: HelsinkiDateTime)`
 
@@ -171,7 +171,7 @@ These operations are used heavily by range-based collections (DateSet, DateMap, 
 
 Clock abstraction for testable time operations. Provides `today()` and `now()` methods that can be controlled during testing.
 
-**Location:** `service/src/main/kotlin/fi/espoo/evaka/shared/domain/EvakaClock.kt`
+**Location:** `service/src/main/kotlin/evaka/core/shared/domain/EvakaClock.kt`
 
 **Critical E2E Testing Note:** EvakaClock can be controlled in the browser during E2E tests to set system time freely. This also affects `LocalDate.todayInHelsinkiTz()` and `HelsinkiDateTime.now()` in the frontend. Therefore, always use the injected `EvakaClock` instance in backend controllers to get current time, not `LocalDate.now()` or `HelsinkiDateTime.now()`.
 
@@ -188,7 +188,7 @@ fun getCurrentDate(clock: EvakaClock): LocalDate {
 
 Finnish holiday calculations. Determines if a date is a Finnish public holiday.
 
-**Location:** `service/src/main/kotlin/fi/espoo/evaka/shared/domain/Holidays.kt`
+**Location:** `service/src/main/kotlin/evaka/core/shared/domain/Holidays.kt`
 
 **Usage:** Used by `LocalDate.isHoliday()` extension function.
 
@@ -198,13 +198,13 @@ Determines child-specific operational days.
 
 **Context**: Units are typically open Monday-Friday. Some are open on weekends/holidays too, but only for children with shift care allowed in their service need.
 
-**Location:** `service/src/main/kotlin/fi/espoo/evaka/shared/domain/OperationalDays.kt`
+**Location:** `service/src/main/kotlin/evaka/core/shared/domain/OperationalDays.kt`
 
 ### Range-Based Collections
 
 Immutable data structures that optimize operations on date/time ranges. Use when working with many consecutive dates/times that share properties.
 
-**Location:** `service/src/main/kotlin/fi/espoo/evaka/shared/data/`
+**Location:** `service/src/main/kotlin/evaka/core/shared/data/`
 
 **Types:** DateSet, DateMap, DateTimeSet, DateTimeMap, TimeSet
 

@@ -37,7 +37,7 @@ import type { VoucherValueDecisionId } from './shared'
 import { deserializeJsonDocumentContent } from './document'
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.AgeStatisticsResult
+* Generated from evaka.core.reports.TampereRegionalSurvey.AgeStatisticsResult
 */
 export interface AgeStatisticsResult {
   clubOver3Count: number
@@ -55,7 +55,7 @@ export interface AgeStatisticsResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ApplicationsReportRow
+* Generated from evaka.core.reports.ApplicationsReportRow
 */
 export interface ApplicationsReportRow {
   careAreaName: string
@@ -70,7 +70,7 @@ export interface ApplicationsReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReport
+* Generated from evaka.core.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReport
 */
 export interface AssistanceNeedsAndActionsReport {
   rows: AssistanceNeedsAndActionsReportRow[]
@@ -78,7 +78,7 @@ export interface AssistanceNeedsAndActionsReport {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportByChild
+* Generated from evaka.core.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportByChild
 */
 export interface AssistanceNeedsAndActionsReportByChild {
   rows: AssistanceNeedsAndActionsReportRowByChild[]
@@ -86,7 +86,7 @@ export interface AssistanceNeedsAndActionsReportByChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow
+* Generated from evaka.core.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow
 */
 export interface AssistanceNeedsAndActionsReportRow {
   actionCounts: Partial<Record<string, number>>
@@ -106,7 +106,7 @@ export interface AssistanceNeedsAndActionsReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild
+* Generated from evaka.core.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild
 */
 export interface AssistanceNeedsAndActionsReportRowByChild {
   actions: string[]
@@ -129,7 +129,7 @@ export interface AssistanceNeedsAndActionsReportRowByChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AttendanceReservationReportController.AttendanceReservationReportByChildBody
+* Generated from evaka.core.reports.AttendanceReservationReportController.AttendanceReservationReportByChildBody
 */
 export interface AttendanceReservationReportByChildBody {
   groupIds: GroupId[]
@@ -139,7 +139,7 @@ export interface AttendanceReservationReportByChildBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AttendanceReservationReportByChildGroup
+* Generated from evaka.core.reports.AttendanceReservationReportByChildGroup
 */
 export interface AttendanceReservationReportByChildGroup {
   groupId: GroupId | null
@@ -148,7 +148,7 @@ export interface AttendanceReservationReportByChildGroup {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AttendanceReservationReportByChildItem
+* Generated from evaka.core.reports.AttendanceReservationReportByChildItem
 */
 export interface AttendanceReservationReportByChildItem {
   backupCare: boolean
@@ -163,7 +163,7 @@ export interface AttendanceReservationReportByChildItem {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AttendanceReservationReportRow
+* Generated from evaka.core.reports.AttendanceReservationReportRow
 */
 export interface AttendanceReservationReportRow {
   capacityFactor: number
@@ -179,7 +179,7 @@ export interface AttendanceReservationReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildAgeLanguageReportRow
+* Generated from evaka.core.reports.ChildAgeLanguageReportRow
 */
 export interface ChildAgeLanguageReportRow {
   careAreaName: string
@@ -214,7 +214,7 @@ export interface ChildAgeLanguageReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildAttendanceReportRow
+* Generated from evaka.core.reports.ChildAttendanceReportRow
 */
 export interface ChildAttendanceReportRow {
   attendances: TimeInterval[]
@@ -225,7 +225,7 @@ export interface ChildAttendanceReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildDocumentsReport.ChildDocumentsReportTemplate
+* Generated from evaka.core.reports.ChildDocumentsReport.ChildDocumentsReportTemplate
 */
 export interface ChildDocumentsReportTemplate {
   id: DocumentTemplateId
@@ -234,7 +234,7 @@ export interface ChildDocumentsReportTemplate {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildPreschoolAbsenceRowWithUnitAndGroup
+* Generated from evaka.core.reports.ChildPreschoolAbsenceRowWithUnitAndGroup
 */
 export interface ChildPreschoolAbsenceRowWithUnitAndGroup {
   childId: PersonId
@@ -247,7 +247,7 @@ export interface ChildPreschoolAbsenceRowWithUnitAndGroup {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildWithName
+* Generated from evaka.core.reports.ChildWithName
 */
 export interface ChildWithName {
   firstName: string
@@ -256,7 +256,7 @@ export interface ChildWithName {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildrenInDifferentAddressReportRow
+* Generated from evaka.core.reports.ChildrenInDifferentAddressReportRow
 */
 export interface ChildrenInDifferentAddressReportRow {
   addressChild: string
@@ -273,7 +273,7 @@ export interface ChildrenInDifferentAddressReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReportRow
+* Generated from evaka.core.reports.CitizenDocumentResponseReportRow
 */
 export interface CitizenDocumentResponseReportRow {
   answeredAt: HelsinkiDateTime | null
@@ -286,7 +286,7 @@ export interface CitizenDocumentResponseReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.CitizenDocumentResponseReportTemplate
+* Generated from evaka.core.reports.CitizenDocumentResponseReportTemplate
 */
 export interface CitizenDocumentResponseReportTemplate {
   content: DocumentTemplateContent
@@ -295,7 +295,7 @@ export interface CitizenDocumentResponseReportTemplate {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.Contact
+* Generated from evaka.core.reports.Contact
 */
 export interface Contact {
   email: string | null
@@ -306,7 +306,7 @@ export interface Contact {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.CustomerFeesReport.CustomerFeesReportRow
+* Generated from evaka.core.reports.CustomerFeesReport.CustomerFeesReportRow
 */
 export interface CustomerFeesReportRow {
   count: number
@@ -314,7 +314,7 @@ export interface CustomerFeesReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.DecisionsReportRow
+* Generated from evaka.core.reports.DecisionsReportRow
 */
 export interface DecisionsReportRow {
   careAreaName: string
@@ -337,7 +337,7 @@ export interface DecisionsReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.DuplicatePeopleReportRow
+* Generated from evaka.core.reports.DuplicatePeopleReportRow
 */
 export interface DuplicatePeopleReportRow {
   dateOfBirth: LocalDate
@@ -352,7 +352,7 @@ export interface DuplicatePeopleReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.EndedPlacementsReportRow
+* Generated from evaka.core.reports.EndedPlacementsReportRow
 */
 export interface EndedPlacementsReportRow {
   areaName: string
@@ -367,7 +367,7 @@ export interface EndedPlacementsReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ExceededServiceNeedReportRow
+* Generated from evaka.core.reports.ExceededServiceNeedReportRow
 */
 export interface ExceededServiceNeedReportRow {
   childFirstName: string
@@ -382,7 +382,7 @@ export interface ExceededServiceNeedReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ExceededServiceNeedReportUnit
+* Generated from evaka.core.reports.ExceededServiceNeedReportUnit
 */
 export interface ExceededServiceNeedReportUnit {
   id: DaycareId
@@ -390,7 +390,7 @@ export interface ExceededServiceNeedReportUnit {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.FamilyConflictReportRow
+* Generated from evaka.core.reports.FamilyConflictReportRow
 */
 export interface FamilyConflictReportRow {
   careAreaName: string
@@ -405,7 +405,7 @@ export interface FamilyConflictReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.FamilyContactReportRow
+* Generated from evaka.core.reports.FamilyContactReportRow
 */
 export interface FamilyContactReportRow {
   firstName: string
@@ -421,7 +421,7 @@ export interface FamilyContactReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.FamilyDaycareMealReport.FamilyDaycareMealAreaResult
+* Generated from evaka.core.reports.FamilyDaycareMealReport.FamilyDaycareMealAreaResult
 */
 export interface FamilyDaycareMealAreaResult {
   areaId: AreaId
@@ -433,7 +433,7 @@ export interface FamilyDaycareMealAreaResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.FamilyDaycareMealReport.FamilyDaycareMealChildResult
+* Generated from evaka.core.reports.FamilyDaycareMealReport.FamilyDaycareMealChildResult
 */
 export interface FamilyDaycareMealChildResult {
   breakfastCount: number
@@ -445,7 +445,7 @@ export interface FamilyDaycareMealChildResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.FamilyDaycareMealReport.FamilyDaycareMealDaycareResult
+* Generated from evaka.core.reports.FamilyDaycareMealReport.FamilyDaycareMealDaycareResult
 */
 export interface FamilyDaycareMealDaycareResult {
   breakfastCount: number
@@ -457,7 +457,7 @@ export interface FamilyDaycareMealDaycareResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.FamilyDaycareMealReport.FamilyDaycareMealReportResult
+* Generated from evaka.core.reports.FamilyDaycareMealReport.FamilyDaycareMealReportResult
 */
 export interface FamilyDaycareMealReportResult {
   areaResults: FamilyDaycareMealAreaResult[]
@@ -467,7 +467,7 @@ export interface FamilyDaycareMealReportResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.FuturePreschoolersReportRow
+* Generated from evaka.core.reports.FuturePreschoolersReportRow
 */
 export interface FuturePreschoolersReportRow {
   childAddress: string
@@ -484,7 +484,7 @@ export interface FuturePreschoolersReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildDocumentsReport.GroupRow
+* Generated from evaka.core.reports.ChildDocumentsReport.GroupRow
 */
 export interface GroupRow {
   completed: number
@@ -497,7 +497,7 @@ export interface GroupRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.HolidayReportRow
+* Generated from evaka.core.reports.HolidayReportRow
 */
 export interface HolidayReportRow {
   absentCount: number
@@ -510,7 +510,7 @@ export interface HolidayReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.IncompleteIncomeDbRow
+* Generated from evaka.core.reports.IncompleteIncomeDbRow
 */
 export interface IncompleteIncomeDbRow {
   careareaName: string
@@ -522,7 +522,7 @@ export interface IncompleteIncomeDbRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.InvoiceReport
+* Generated from evaka.core.reports.InvoiceReport
 */
 export interface InvoiceReport {
   reportRows: InvoiceReportRow[]
@@ -534,7 +534,7 @@ export interface InvoiceReport {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.InvoiceReportRow
+* Generated from evaka.core.reports.InvoiceReportRow
 */
 export interface InvoiceReportRow {
   amountOfInvoices: number
@@ -546,7 +546,7 @@ export interface InvoiceReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.MealReportData
+* Generated from evaka.core.reports.MealReportData
 */
 export interface MealReportData {
   date: LocalDate
@@ -555,7 +555,7 @@ export interface MealReportData {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.MealReportRow
+* Generated from evaka.core.reports.MealReportRow
 */
 export interface MealReportRow {
   additionalInfo: string | null
@@ -569,7 +569,7 @@ export interface MealReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.MissingHeadOfFamilyReportRow
+* Generated from evaka.core.reports.MissingHeadOfFamilyReportRow
 */
 export interface MissingHeadOfFamilyReportRow {
   childId: PersonId
@@ -579,7 +579,7 @@ export interface MissingHeadOfFamilyReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.MissingServiceNeedReportResultRow
+* Generated from evaka.core.reports.MissingServiceNeedReportResultRow
 */
 export interface MissingServiceNeedReportResultRow {
   careAreaName: string
@@ -593,7 +593,7 @@ export interface MissingServiceNeedReportResultRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.MunicipalVoucherCount
+* Generated from evaka.core.reports.TampereRegionalSurvey.MunicipalVoucherCount
 */
 export interface MunicipalVoucherCount {
   municipality: string
@@ -602,7 +602,7 @@ export interface MunicipalVoucherCount {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.NekkuOrderRow
+* Generated from evaka.core.reports.NekkuOrderRow
 */
 export interface NekkuOrderRow {
   createdAt: HelsinkiDateTime
@@ -617,7 +617,7 @@ export interface NekkuOrderRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.NonSsnChildrenReportRow
+* Generated from evaka.core.reports.NonSsnChildrenReportRow
 */
 export interface NonSsnChildrenReportRow {
   childId: PersonId
@@ -630,7 +630,7 @@ export interface NonSsnChildrenReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.OccupancyGroupReportResultRow
+* Generated from evaka.core.reports.OccupancyGroupReportResultRow
 */
 export interface OccupancyGroupReportResultRow {
   areaId: AreaId
@@ -643,7 +643,7 @@ export interface OccupancyGroupReportResultRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.OccupancyUnitReportResultRow
+* Generated from evaka.core.reports.OccupancyUnitReportResultRow
 */
 export interface OccupancyUnitReportResultRow {
   areaId: AreaId
@@ -654,7 +654,7 @@ export interface OccupancyUnitReportResultRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.PartnersInDifferentAddressReportRow
+* Generated from evaka.core.reports.PartnersInDifferentAddressReportRow
 */
 export interface PartnersInDifferentAddressReportRow {
   address1: string
@@ -671,7 +671,7 @@ export interface PartnersInDifferentAddressReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.PlacementCountReportController.PlacementCountAreaResult
+* Generated from evaka.core.reports.PlacementCountReportController.PlacementCountAreaResult
 */
 export interface PlacementCountAreaResult {
   areaId: AreaId
@@ -684,7 +684,7 @@ export interface PlacementCountAreaResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.PlacementCountReportController.PlacementCountDaycareResult
+* Generated from evaka.core.reports.PlacementCountReportController.PlacementCountDaycareResult
 */
 export interface PlacementCountDaycareResult {
   calculatedPlacements: number
@@ -696,7 +696,7 @@ export interface PlacementCountDaycareResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.PlacementCountReportController.PlacementCountReportResult
+* Generated from evaka.core.reports.PlacementCountReportController.PlacementCountReportResult
 */
 export interface PlacementCountReportResult {
   areaResults: PlacementCountAreaResult[]
@@ -707,7 +707,7 @@ export interface PlacementCountReportResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.PlacementGuaranteeReportRow
+* Generated from evaka.core.reports.PlacementGuaranteeReportRow
 */
 export interface PlacementGuaranteeReportRow {
   areaId: AreaId
@@ -722,7 +722,7 @@ export interface PlacementGuaranteeReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.PlacementSketchingReportRow
+* Generated from evaka.core.reports.PlacementSketchingReportRow
 */
 export interface PlacementSketchingReportRow {
   additionalInfo: string
@@ -756,7 +756,7 @@ export interface PlacementSketchingReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.PreschoolAbsenceReport.PreschoolAbsenceReportBody
+* Generated from evaka.core.reports.PreschoolAbsenceReport.PreschoolAbsenceReportBody
 */
 export interface PreschoolAbsenceReportBody {
   areaId: AreaId | null
@@ -766,7 +766,7 @@ export interface PreschoolAbsenceReportBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.PreschoolApplicationReportRow
+* Generated from evaka.core.reports.PreschoolApplicationReportRow
 */
 export interface PreschoolApplicationReportRow {
   applicationId: ApplicationId
@@ -784,7 +784,7 @@ export interface PreschoolApplicationReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.PreschoolUnitsReportRow
+* Generated from evaka.core.reports.PreschoolUnitsReportRow
 */
 export interface PreschoolUnitsReportRow {
   address: string
@@ -797,7 +797,7 @@ export interface PreschoolUnitsReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.RawReportRow
+* Generated from evaka.core.reports.RawReportRow
 */
 export interface RawReportRow {
   absenceFree: AbsenceType | null
@@ -843,7 +843,7 @@ export interface RawReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ReferenceCount
+* Generated from evaka.core.reports.ReferenceCount
 */
 export interface ReferenceCount {
   column: string
@@ -852,7 +852,7 @@ export interface ReferenceCount {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyMunicipalVoucherDistributionResult
+* Generated from evaka.core.reports.TampereRegionalSurvey.RegionalSurveyMunicipalVoucherDistributionResult
 */
 export interface RegionalSurveyMunicipalVoucherDistributionResult {
   voucherCounts: MunicipalVoucherCount[]
@@ -860,7 +860,7 @@ export interface RegionalSurveyMunicipalVoucherDistributionResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyReportAgeStatisticsResult
+* Generated from evaka.core.reports.TampereRegionalSurvey.RegionalSurveyReportAgeStatisticsResult
 */
 export interface RegionalSurveyReportAgeStatisticsResult {
   ageStatistics: AgeStatisticsResult[]
@@ -868,7 +868,7 @@ export interface RegionalSurveyReportAgeStatisticsResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyReportMonthlyStatistics
+* Generated from evaka.core.reports.TampereRegionalSurvey.RegionalSurveyReportMonthlyStatistics
 */
 export interface RegionalSurveyReportMonthlyStatistics {
   assistanceCount: number
@@ -883,7 +883,7 @@ export interface RegionalSurveyReportMonthlyStatistics {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyReportResult
+* Generated from evaka.core.reports.TampereRegionalSurvey.RegionalSurveyReportResult
 */
 export interface RegionalSurveyReportResult {
   monthlyCounts: RegionalSurveyReportMonthlyStatistics[]
@@ -891,7 +891,7 @@ export interface RegionalSurveyReportResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.RegionalSurveyReportYearlyStatisticsResult
+* Generated from evaka.core.reports.TampereRegionalSurvey.RegionalSurveyReportYearlyStatisticsResult
 */
 export interface RegionalSurveyReportYearlyStatisticsResult {
   year: number
@@ -899,7 +899,7 @@ export interface RegionalSurveyReportYearlyStatisticsResult {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.Report
+* Generated from evaka.core.reports.Report
 */
 export type Report =
   | 'APPLICATIONS'
@@ -948,14 +948,14 @@ export type Report =
   | 'CITIZEN_DOCUMENT_RESPONSE'
 
 /**
-* Generated from fi.espoo.evaka.reports.ReservationType
+* Generated from evaka.core.reports.ReservationType
 */
 export type ReservationType =
   | 'RESERVATION'
   | 'REALIZATION'
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceNeedReportRow
+* Generated from evaka.core.reports.ServiceNeedReportRow
 */
 export interface ServiceNeedReportRow {
   age: number
@@ -973,7 +973,7 @@ export interface ServiceNeedReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceVoucherReport
+* Generated from evaka.core.reports.ServiceVoucherReport
 */
 export interface ServiceVoucherReport {
   locked: LocalDate | null
@@ -981,7 +981,7 @@ export interface ServiceVoucherReport {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceVoucherValueReportController.ServiceVoucherUnitReport
+* Generated from evaka.core.reports.ServiceVoucherValueReportController.ServiceVoucherUnitReport
 */
 export interface ServiceVoucherUnitReport {
   locked: LocalDate | null
@@ -990,7 +990,7 @@ export interface ServiceVoucherUnitReport {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceVoucherValueRow
+* Generated from evaka.core.reports.ServiceVoucherValueRow
 */
 export interface ServiceVoucherValueRow {
   areaId: AreaId
@@ -1017,7 +1017,7 @@ export interface ServiceVoucherValueRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceVoucherValueUnitAggregate
+* Generated from evaka.core.reports.ServiceVoucherValueUnitAggregate
 */
 export interface ServiceVoucherValueUnitAggregate {
   childCount: number
@@ -1027,7 +1027,7 @@ export interface ServiceVoucherValueUnitAggregate {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.SextetReportRow
+* Generated from evaka.core.reports.SextetReportRow
 */
 export interface SextetReportRow {
   attendanceDays: number
@@ -1037,7 +1037,7 @@ export interface SextetReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.SourceUnitsReportRow
+* Generated from evaka.core.reports.SourceUnitsReportRow
 */
 export interface SourceUnitsReportRow {
   address: string
@@ -1048,7 +1048,7 @@ export interface SourceUnitsReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.StartingPlacementsRow
+* Generated from evaka.core.reports.StartingPlacementsRow
 */
 export interface StartingPlacementsRow {
   careAreaName: string
@@ -1062,7 +1062,7 @@ export interface StartingPlacementsRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TitaniaErrorConflict
+* Generated from evaka.core.reports.TitaniaErrorConflict
 */
 export interface TitaniaErrorConflict {
   id: TitaniaErrorsId
@@ -1074,7 +1074,7 @@ export interface TitaniaErrorConflict {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TitaniaErrorEmployee
+* Generated from evaka.core.reports.TitaniaErrorEmployee
 */
 export interface TitaniaErrorEmployee {
   conflictingShifts: TitaniaErrorConflict[]
@@ -1083,7 +1083,7 @@ export interface TitaniaErrorEmployee {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TitaniaErrorReportRow
+* Generated from evaka.core.reports.TitaniaErrorReportRow
 */
 export interface TitaniaErrorReportRow {
   requestTime: HelsinkiDateTime
@@ -1091,7 +1091,7 @@ export interface TitaniaErrorReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.TitaniaErrorUnit
+* Generated from evaka.core.reports.TitaniaErrorUnit
 */
 export interface TitaniaErrorUnit {
   employees: TitaniaErrorEmployee[]
@@ -1099,7 +1099,7 @@ export interface TitaniaErrorUnit {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ServiceVoucherValueUnitAggregate.UnitData
+* Generated from evaka.core.reports.ServiceVoucherValueUnitAggregate.UnitData
 */
 export interface UnitData {
   areaId: AreaId
@@ -1109,7 +1109,7 @@ export interface UnitData {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.ChildDocumentsReport.UnitRow
+* Generated from evaka.core.reports.ChildDocumentsReport.UnitRow
 */
 export interface UnitRow {
   completed: number
@@ -1123,7 +1123,7 @@ export interface UnitRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.UnitType
+* Generated from evaka.core.reports.UnitType
 */
 export type UnitType =
   | 'DAYCARE'
@@ -1132,7 +1132,7 @@ export type UnitType =
   | 'CLUB'
 
 /**
-* Generated from fi.espoo.evaka.reports.UnitsReportRow
+* Generated from evaka.core.reports.UnitsReportRow
 */
 export interface UnitsReportRow {
   address: string
@@ -1168,7 +1168,7 @@ export interface UnitsReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.VardaChildErrorReportRow
+* Generated from evaka.core.reports.VardaChildErrorReportRow
 */
 export interface VardaChildErrorReportRow {
   childId: PersonId
@@ -1178,7 +1178,7 @@ export interface VardaChildErrorReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.VardaUnitErrorReportRow
+* Generated from evaka.core.reports.VardaUnitErrorReportRow
 */
 export interface VardaUnitErrorReportRow {
   error: string
@@ -1189,7 +1189,7 @@ export interface VardaUnitErrorReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.VoucherReportRowType
+* Generated from evaka.core.reports.VoucherReportRowType
 */
 export type VoucherReportRowType =
   | 'REFUND'
@@ -1197,7 +1197,7 @@ export type VoucherReportRowType =
   | 'ORIGINAL'
 
 /**
-* Generated from fi.espoo.evaka.reports.TampereRegionalSurvey.YearlyStatisticsResult
+* Generated from evaka.core.reports.TampereRegionalSurvey.YearlyStatisticsResult
 */
 export interface YearlyStatisticsResult {
   club5YearOldCount: number

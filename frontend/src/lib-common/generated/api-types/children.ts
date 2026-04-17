@@ -14,14 +14,14 @@ import type { PersonId } from './shared'
 import type { PlacementType } from './placement'
 
 /**
-* Generated from fi.espoo.evaka.children.AttendanceSummary
+* Generated from evaka.core.children.AttendanceSummary
 */
 export interface AttendanceSummary {
   attendanceDays: number
 }
 
 /**
-* Generated from fi.espoo.evaka.children.ChildAndPermittedActions
+* Generated from evaka.core.children.ChildAndPermittedActions
 */
 export interface ChildAndPermittedActions {
   absenceApplicationCreationPossible: boolean
@@ -42,7 +42,7 @@ export interface ChildAndPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.children.Group
+* Generated from evaka.core.children.Group
 */
 export interface Group {
   id: GroupId
@@ -50,7 +50,7 @@ export interface Group {
 }
 
 /**
-* Generated from fi.espoo.evaka.children.Unit
+* Generated from evaka.core.children.Unit
 */
 export interface Unit {
   id: DaycareId

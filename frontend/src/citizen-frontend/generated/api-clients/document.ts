@@ -20,7 +20,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.downloadChildDocument
+* Generated from evaka.core.document.childdocument.ChildDocumentControllerCitizen.downloadChildDocument
 */
 export function downloadChildDocument(
   request: {
@@ -34,7 +34,7 @@ export function downloadChildDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.getDocument
+* Generated from evaka.core.document.childdocument.ChildDocumentControllerCitizen.getDocument
 */
 export async function getDocument(
   request: {
@@ -50,7 +50,7 @@ export async function getDocument(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.getDocuments
+* Generated from evaka.core.document.childdocument.ChildDocumentControllerCitizen.getDocuments
 */
 export async function getDocuments(
   request: {
@@ -70,7 +70,7 @@ export async function getDocuments(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.getUnansweredChildDocuments
+* Generated from evaka.core.document.childdocument.ChildDocumentControllerCitizen.getUnansweredChildDocuments
 */
 export async function getUnansweredChildDocuments(): Promise<ChildDocumentCitizenSummary[]> {
   const { data: json } = await client.request<JsonOf<ChildDocumentCitizenSummary[]>>({
@@ -82,7 +82,7 @@ export async function getUnansweredChildDocuments(): Promise<ChildDocumentCitize
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.getUnreadDocumentsCount
+* Generated from evaka.core.document.childdocument.ChildDocumentControllerCitizen.getUnreadDocumentsCount
 */
 export async function getUnreadDocumentsCount(): Promise<Partial<Record<PersonId, number>>> {
   const { data: json } = await client.request<JsonOf<Partial<Record<PersonId, number>>>>({
@@ -94,7 +94,7 @@ export async function getUnreadDocumentsCount(): Promise<Partial<Record<PersonId
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.putDocumentRead
+* Generated from evaka.core.document.childdocument.ChildDocumentControllerCitizen.putDocumentRead
 */
 export async function putDocumentRead(
   request: {
@@ -110,7 +110,7 @@ export async function putDocumentRead(
 
 
 /**
-* Generated from fi.espoo.evaka.document.childdocument.ChildDocumentControllerCitizen.updateChildDocument
+* Generated from evaka.core.document.childdocument.ChildDocumentControllerCitizen.updateChildDocument
 */
 export async function updateChildDocument(
   request: {

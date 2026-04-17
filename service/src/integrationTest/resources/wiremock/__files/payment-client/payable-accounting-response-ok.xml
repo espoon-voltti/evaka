@@ -1,0 +1,15 @@
+<!--
+SPDX-FileCopyrightText: 2023-2024 Tampere region
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+    <env:Header/>
+    <env:Body>
+        <ns3:SendPayableAccountingResponse xmlns:ns3="http://www.tampere.fi/services/sapfico/payableaccounting/v1.0"
+                                           xmlns:ns4="http://www.tampere.fi/messages/ipaas/commontypes/v1.0">
+            <ns4:StatusMessage>ok</ns4:StatusMessage>
+        </ns3:SendPayableAccountingResponse>
+    </env:Body>
+</env:Envelope>

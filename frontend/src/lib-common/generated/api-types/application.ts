@@ -45,7 +45,7 @@ import { deserializeJsonPersonJSON } from './pis'
 import { deserializeJsonPlacementPlanDetails } from './placement'
 
 /**
-* Generated from fi.espoo.evaka.application.AcceptDecisionRequest
+* Generated from evaka.core.application.AcceptDecisionRequest
 */
 export interface AcceptDecisionRequest {
   decisionId: DecisionId
@@ -53,14 +53,14 @@ export interface AcceptDecisionRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.AcceptPlacementProposalRequest
+* Generated from evaka.core.application.AcceptPlacementProposalRequest
 */
 export interface AcceptPlacementProposalRequest {
   rejectReasonTranslations: Partial<Record<PlacementPlanRejectReason, string>>
 }
 
 /**
-* Generated from fi.espoo.evaka.application.Address
+* Generated from evaka.core.application.Address
 */
 export interface Address {
   postOffice: string
@@ -69,7 +69,7 @@ export interface Address {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationAttachment
+* Generated from evaka.core.application.ApplicationAttachment
 */
 export interface ApplicationAttachment {
   contentType: string
@@ -82,7 +82,7 @@ export interface ApplicationAttachment {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationAttachmentType
+* Generated from evaka.core.application.ApplicationAttachmentType
 */
 export type ApplicationAttachmentType =
   | 'URGENCY'
@@ -90,7 +90,7 @@ export type ApplicationAttachmentType =
   | 'SERVICE_WORKER_ATTACHMENT'
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationBasis
+* Generated from evaka.core.application.ApplicationBasis
 */
 export const applicationBasisOptions = [
   'ADDITIONAL_INFO',
@@ -108,7 +108,7 @@ export const applicationBasisOptions = [
 export type ApplicationBasis = typeof applicationBasisOptions[number]
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationDateType
+* Generated from evaka.core.application.ApplicationDateType
 */
 export const applicationDateTypeOptions = [
   'DUE',
@@ -119,7 +119,7 @@ export const applicationDateTypeOptions = [
 export type ApplicationDateType = typeof applicationDateTypeOptions[number]
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationDecisions
+* Generated from evaka.core.application.ApplicationDecisions
 */
 export interface ApplicationDecisions {
   decidableApplications: ApplicationId[]
@@ -128,7 +128,7 @@ export interface ApplicationDecisions {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationDetails
+* Generated from evaka.core.application.ApplicationDetails
 */
 export interface ApplicationDetails {
   additionalDaycareApplication: boolean
@@ -161,13 +161,13 @@ export interface ApplicationDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationDistinctions
+* Generated from evaka.core.application.ApplicationDistinctions
 */
 export type ApplicationDistinctions =
   | 'SECONDARY'
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationForm
+* Generated from evaka.core.application.ApplicationForm
 */
 export interface ApplicationForm {
   child: ChildDetails
@@ -182,7 +182,7 @@ export interface ApplicationForm {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationFormUpdate
+* Generated from evaka.core.application.ApplicationFormUpdate
 */
 export interface ApplicationFormUpdate {
   child: ChildDetailsUpdate
@@ -197,7 +197,7 @@ export interface ApplicationFormUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationNote
+* Generated from evaka.core.application.ApplicationNote
 */
 export interface ApplicationNote {
   applicationId: ApplicationId
@@ -214,7 +214,7 @@ export interface ApplicationNote {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.notes.ApplicationNoteResponse
+* Generated from evaka.core.application.notes.ApplicationNoteResponse
 */
 export interface ApplicationNoteResponse {
   note: ApplicationNote
@@ -222,14 +222,14 @@ export interface ApplicationNoteResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationOrigin
+* Generated from evaka.core.application.ApplicationOrigin
 */
 export type ApplicationOrigin =
   | 'ELECTRONIC'
   | 'PAPER'
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationPreschoolTypeToggle
+* Generated from evaka.core.application.ApplicationPreschoolTypeToggle
 */
 export type ApplicationPreschoolTypeToggle =
   | 'PRESCHOOL_ONLY'
@@ -240,7 +240,7 @@ export type ApplicationPreschoolTypeToggle =
   | 'DAYCARE_ONLY'
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationResponse
+* Generated from evaka.core.application.ApplicationResponse
 */
 export interface ApplicationResponse {
   application: ApplicationDetails
@@ -251,7 +251,7 @@ export interface ApplicationResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationSortColumn
+* Generated from evaka.core.application.ApplicationSortColumn
 */
 export type ApplicationSortColumn =
   | 'APPLICATION_TYPE'
@@ -262,14 +262,14 @@ export type ApplicationSortColumn =
   | 'UNIT_NAME'
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationSortDirection
+* Generated from evaka.core.application.ApplicationSortDirection
 */
 export type ApplicationSortDirection =
   | 'ASC'
   | 'DESC'
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationStatus
+* Generated from evaka.core.application.ApplicationStatus
 */
 export type ApplicationStatus =
   | 'CREATED'
@@ -284,7 +284,7 @@ export type ApplicationStatus =
   | 'CANCELLED'
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationStatusOption
+* Generated from evaka.core.application.ApplicationStatusOption
 */
 export const applicationStatusOptions = [
   'SENT',
@@ -301,7 +301,7 @@ export const applicationStatusOptions = [
 export type ApplicationStatusOption = typeof applicationStatusOptions[number]
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationSummary
+* Generated from evaka.core.application.ApplicationSummary
 */
 export interface ApplicationSummary {
   additionalDaycareApplication: boolean
@@ -344,7 +344,7 @@ export interface ApplicationSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationSummaryPlacementDraft
+* Generated from evaka.core.application.ApplicationSummaryPlacementDraft
 */
 export interface ApplicationSummaryPlacementDraft {
   startDate: LocalDate
@@ -352,7 +352,7 @@ export interface ApplicationSummaryPlacementDraft {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationType
+* Generated from evaka.core.application.ApplicationType
 */
 export const applicationTypes = [
   'CLUB',
@@ -363,7 +363,7 @@ export const applicationTypes = [
 export type ApplicationType = typeof applicationTypes[number]
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationTypeToggle
+* Generated from evaka.core.application.ApplicationTypeToggle
 */
 export type ApplicationTypeToggle =
   | 'CLUB'
@@ -372,7 +372,7 @@ export type ApplicationTypeToggle =
   | 'ALL'
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationUnitSummary
+* Generated from evaka.core.application.ApplicationUnitSummary
 */
 export interface ApplicationUnitSummary {
   applicationId: ApplicationId
@@ -392,7 +392,7 @@ export interface ApplicationUnitSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationUpdate
+* Generated from evaka.core.application.ApplicationUpdate
 */
 export interface ApplicationUpdate {
   dueDate: LocalDate | null
@@ -400,7 +400,7 @@ export interface ApplicationUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationsOfChild
+* Generated from evaka.core.application.ApplicationsOfChild
 */
 export interface ApplicationsOfChild {
   applicationSummaries: CitizenApplicationSummary[]
@@ -412,7 +412,7 @@ export interface ApplicationsOfChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ChildDetails
+* Generated from evaka.core.application.ChildDetails
 */
 export interface ChildDetails {
   address: Address | null
@@ -428,7 +428,7 @@ export interface ChildDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ChildDetailsUpdate
+* Generated from evaka.core.application.ChildDetailsUpdate
 */
 export interface ChildDetailsUpdate {
   allergies: string
@@ -439,7 +439,7 @@ export interface ChildDetailsUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ChildInfo
+* Generated from evaka.core.application.ChildInfo
 */
 export interface ChildInfo {
   firstName: string
@@ -448,7 +448,7 @@ export interface ChildInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.CitizenApplicationSummary
+* Generated from evaka.core.application.CitizenApplicationSummary
 */
 export interface CitizenApplicationSummary {
   allPreferredUnitNames: string[]
@@ -465,7 +465,7 @@ export interface CitizenApplicationSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.CitizenApplicationUpdate
+* Generated from evaka.core.application.CitizenApplicationUpdate
 */
 export interface CitizenApplicationUpdate {
   allowOtherGuardianAccess: boolean
@@ -473,7 +473,7 @@ export interface CitizenApplicationUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.CitizenChildren
+* Generated from evaka.core.application.CitizenChildren
 */
 export interface CitizenChildren {
   dateOfBirth: LocalDate
@@ -485,7 +485,7 @@ export interface CitizenChildren {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.CitizenDecisionDetails
+* Generated from evaka.core.application.CitizenDecisionDetails
 */
 export interface CitizenDecisionDetails {
   endDate: LocalDate
@@ -496,7 +496,7 @@ export interface CitizenDecisionDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ClubDetails
+* Generated from evaka.core.application.ClubDetails
 */
 export interface ClubDetails {
   wasOnClubCare: boolean
@@ -504,7 +504,7 @@ export interface ClubDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.CreateApplicationBody
+* Generated from evaka.core.application.CreateApplicationBody
 */
 export interface CreateApplicationBody {
   childId: PersonId
@@ -512,7 +512,7 @@ export interface CreateApplicationBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.DaycarePlacementPlan
+* Generated from evaka.core.application.DaycarePlacementPlan
 */
 export interface DaycarePlacementPlan {
   period: FiniteDateRange
@@ -521,7 +521,7 @@ export interface DaycarePlacementPlan {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.DecisionDraftGroup
+* Generated from evaka.core.application.DecisionDraftGroup
 */
 export interface DecisionDraftGroup {
   child: ChildInfo
@@ -533,7 +533,7 @@ export interface DecisionDraftGroup {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.DecisionSummary
+* Generated from evaka.core.application.DecisionSummary
 */
 export interface DecisionSummary {
   applicationId: ApplicationId
@@ -546,7 +546,7 @@ export interface DecisionSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ApplicationControllerCitizen.DecisionWithValidStartDatePeriod
+* Generated from evaka.core.application.ApplicationControllerCitizen.DecisionWithValidStartDatePeriod
 */
 export interface DecisionWithValidStartDatePeriod {
   decision: Decision
@@ -555,7 +555,7 @@ export interface DecisionWithValidStartDatePeriod {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.FinanceDecisionChildInfo
+* Generated from evaka.core.application.FinanceDecisionChildInfo
 */
 export interface FinanceDecisionChildInfo {
   firstName: string
@@ -564,7 +564,7 @@ export interface FinanceDecisionChildInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.FinanceDecisionCitizenInfo
+* Generated from evaka.core.application.FinanceDecisionCitizenInfo
 */
 export interface FinanceDecisionCitizenInfo {
   coDebtors: LiableCitizenInfo[]
@@ -577,7 +577,7 @@ export interface FinanceDecisionCitizenInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.FutureAddress
+* Generated from evaka.core.application.FutureAddress
 */
 export interface FutureAddress {
   movingDate: LocalDate | null
@@ -587,7 +587,7 @@ export interface FutureAddress {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.Guardian
+* Generated from evaka.core.application.Guardian
 */
 export interface Guardian {
   address: Address | null
@@ -598,7 +598,7 @@ export interface Guardian {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.GuardianInfo
+* Generated from evaka.core.application.GuardianInfo
 */
 export interface GuardianInfo {
   firstName: string
@@ -609,7 +609,7 @@ export interface GuardianInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.GuardianUpdate
+* Generated from evaka.core.application.GuardianUpdate
 */
 export interface GuardianUpdate {
   email: string | null
@@ -618,7 +618,7 @@ export interface GuardianUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.LiableCitizenInfo
+* Generated from evaka.core.application.LiableCitizenInfo
 */
 export interface LiableCitizenInfo {
   firstName: string
@@ -627,14 +627,14 @@ export interface LiableCitizenInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.notes.NoteRequest
+* Generated from evaka.core.application.notes.NoteRequest
 */
 export interface NoteRequest {
   text: string
 }
 
 /**
-* Generated from fi.espoo.evaka.application.OtherGuardianAgreementStatus
+* Generated from evaka.core.application.OtherGuardianAgreementStatus
 */
 export type OtherGuardianAgreementStatus =
   | 'AGREED'
@@ -643,7 +643,7 @@ export type OtherGuardianAgreementStatus =
   | 'AUTOMATED'
 
 /**
-* Generated from fi.espoo.evaka.application.PagedApplicationSummaries
+* Generated from evaka.core.application.PagedApplicationSummaries
 */
 export interface PagedApplicationSummaries {
   data: ApplicationSummary[]
@@ -652,7 +652,7 @@ export interface PagedApplicationSummaries {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.PaperApplicationCreateRequest
+* Generated from evaka.core.application.PaperApplicationCreateRequest
 */
 export interface PaperApplicationCreateRequest {
   childId: PersonId
@@ -666,7 +666,7 @@ export interface PaperApplicationCreateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.PersonApplicationSummary
+* Generated from evaka.core.application.PersonApplicationSummary
 */
 export interface PersonApplicationSummary {
   applicationId: ApplicationId
@@ -686,7 +686,7 @@ export interface PersonApplicationSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.PersonBasics
+* Generated from evaka.core.application.PersonBasics
 */
 export interface PersonBasics {
   firstName: string
@@ -695,7 +695,7 @@ export interface PersonBasics {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopDaycare
+* Generated from evaka.core.application.placementdesktop.PlacementDesktopDaycare
 */
 export interface PlacementDesktopDaycare {
   id: DaycareId
@@ -708,7 +708,7 @@ export interface PlacementDesktopDaycare {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDraft
+* Generated from evaka.core.application.placementdesktop.PlacementDraft
 */
 export interface PlacementDraft {
   applicationId: ApplicationId
@@ -722,7 +722,7 @@ export interface PlacementDraft {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.PlacementDraftUpdateRequest
+* Generated from evaka.core.application.placementdesktop.PlacementDesktopController.PlacementDraftUpdateRequest
 */
 export interface PlacementDraftUpdateRequest {
   startDate: LocalDate | null
@@ -730,14 +730,14 @@ export interface PlacementDraftUpdateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.placementdesktop.PlacementDesktopController.PlacementDraftUpdateResponse
+* Generated from evaka.core.application.placementdesktop.PlacementDesktopController.PlacementDraftUpdateResponse
 */
 export interface PlacementDraftUpdateResponse {
   startDate: LocalDate
 }
 
 /**
-* Generated from fi.espoo.evaka.application.PlacementProposalConfirmationUpdate
+* Generated from evaka.core.application.PlacementProposalConfirmationUpdate
 */
 export interface PlacementProposalConfirmationUpdate {
   otherReason: string | null
@@ -746,7 +746,7 @@ export interface PlacementProposalConfirmationUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.PlacementProposalStatus
+* Generated from evaka.core.application.PlacementProposalStatus
 */
 export interface PlacementProposalStatus {
   modifiedAt: HelsinkiDateTime | null
@@ -757,7 +757,7 @@ export interface PlacementProposalStatus {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.PlacementToolValidation
+* Generated from evaka.core.application.PlacementToolValidation
 */
 export interface PlacementToolValidation {
   count: number
@@ -765,7 +765,7 @@ export interface PlacementToolValidation {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.Preferences
+* Generated from evaka.core.application.Preferences
 */
 export interface Preferences {
   connectedDaycarePreferredStartDate: LocalDate | null
@@ -778,7 +778,7 @@ export interface Preferences {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.PreferredUnit
+* Generated from evaka.core.application.PreferredUnit
 */
 export interface PreferredUnit {
   id: DaycareId
@@ -786,14 +786,14 @@ export interface PreferredUnit {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.RejectDecisionRequest
+* Generated from evaka.core.application.RejectDecisionRequest
 */
 export interface RejectDecisionRequest {
   decisionId: DecisionId
 }
 
 /**
-* Generated from fi.espoo.evaka.application.SearchApplicationRequest
+* Generated from evaka.core.application.SearchApplicationRequest
 */
 export interface SearchApplicationRequest {
   areas: AreaId[] | null
@@ -815,7 +815,7 @@ export interface SearchApplicationRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.SecondGuardian
+* Generated from evaka.core.application.SecondGuardian
 */
 export interface SecondGuardian {
   agreementStatus: OtherGuardianAgreementStatus | null
@@ -824,7 +824,7 @@ export interface SecondGuardian {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ServiceNeed
+* Generated from evaka.core.application.ServiceNeed
 */
 export interface ServiceNeed {
   endTime: string
@@ -835,7 +835,7 @@ export interface ServiceNeed {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.ServiceNeedOption
+* Generated from evaka.core.application.ServiceNeedOption
 */
 export interface ServiceNeedOption {
   id: ServiceNeedOptionId
@@ -846,7 +846,7 @@ export interface ServiceNeedOption {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.SiblingBasis
+* Generated from evaka.core.application.SiblingBasis
 */
 export interface SiblingBasis {
   siblingName: string
@@ -855,7 +855,7 @@ export interface SiblingBasis {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.SimpleApplicationAction
+* Generated from evaka.core.application.SimpleApplicationAction
 */
 export type SimpleApplicationAction =
   | 'MOVE_TO_WAITING_PLACEMENT'
@@ -867,14 +867,14 @@ export type SimpleApplicationAction =
   | 'CONFIRM_DECISION_MAILED'
 
 /**
-* Generated from fi.espoo.evaka.application.SimpleBatchRequest
+* Generated from evaka.core.application.SimpleBatchRequest
 */
 export interface SimpleBatchRequest {
   applicationIds: ApplicationId[]
 }
 
 /**
-* Generated from fi.espoo.evaka.application.TransferApplicationFilter
+* Generated from evaka.core.application.TransferApplicationFilter
 */
 export type TransferApplicationFilter =
   | 'TRANSFER_ONLY'
@@ -882,7 +882,7 @@ export type TransferApplicationFilter =
   | 'ALL'
 
 /**
-* Generated from fi.espoo.evaka.application.TransferApplicationUnitSummary
+* Generated from evaka.core.application.TransferApplicationUnitSummary
 */
 export interface TransferApplicationUnitSummary {
   applicationId: ApplicationId
@@ -893,7 +893,7 @@ export interface TransferApplicationUnitSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.UnitApplications
+* Generated from evaka.core.application.UnitApplications
 */
 export interface UnitApplications {
   applications: ApplicationUnitSummary[]
@@ -903,7 +903,7 @@ export interface UnitApplications {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.VoucherApplicationFilter
+* Generated from evaka.core.application.VoucherApplicationFilter
 */
 export type VoucherApplicationFilter =
   | 'VOUCHER_FIRST_CHOICE'

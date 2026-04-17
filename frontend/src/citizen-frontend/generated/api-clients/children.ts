@@ -19,7 +19,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.children.ChildControllerCitizen.getChildAttendanceSummary
+* Generated from evaka.core.children.ChildControllerCitizen.getChildAttendanceSummary
 */
 export async function getChildAttendanceSummary(
   request: {
@@ -36,7 +36,7 @@ export async function getChildAttendanceSummary(
 
 
 /**
-* Generated from fi.espoo.evaka.children.ChildControllerCitizen.getChildDailyServiceTimes
+* Generated from evaka.core.children.ChildControllerCitizen.getChildDailyServiceTimes
 */
 export async function getChildDailyServiceTimes(
   request: {
@@ -52,7 +52,7 @@ export async function getChildDailyServiceTimes(
 
 
 /**
-* Generated from fi.espoo.evaka.children.ChildControllerCitizen.getChildServiceNeeds
+* Generated from evaka.core.children.ChildControllerCitizen.getChildServiceNeeds
 */
 export async function getChildServiceNeeds(
   request: {
@@ -68,7 +68,7 @@ export async function getChildServiceNeeds(
 
 
 /**
-* Generated from fi.espoo.evaka.children.ChildControllerCitizen.getChildren
+* Generated from evaka.core.children.ChildControllerCitizen.getChildren
 */
 export async function getChildren(): Promise<ChildAndPermittedActions[]> {
   const { data: json } = await client.request<JsonOf<ChildAndPermittedActions[]>>({

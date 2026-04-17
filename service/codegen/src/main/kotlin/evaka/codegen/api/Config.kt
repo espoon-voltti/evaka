@@ -6,19 +6,19 @@ package evaka.codegen.api
 
 import evaka.codegen.api.TsProject.E2ETest
 import evaka.codegen.api.TsProject.LibCommon
-import fi.espoo.evaka.Sensitive
-import fi.espoo.evaka.identity.ExternalId
-import fi.espoo.evaka.invoicing.service.ProductKey
-import fi.espoo.evaka.pairing.MobileDeviceDetails
-import fi.espoo.evaka.pis.SystemController
-import fi.espoo.evaka.shared.Id
-import fi.espoo.evaka.shared.data.DateSet
-import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.TimeInterval
-import fi.espoo.evaka.shared.domain.TimeRange
-import fi.espoo.evaka.shared.security.Action
+import evaka.core.Sensitive
+import evaka.core.identity.ExternalId
+import evaka.core.invoicing.service.ProductKey
+import evaka.core.pairing.MobileDeviceDetails
+import evaka.core.pis.SystemController
+import evaka.core.shared.Id
+import evaka.core.shared.data.DateSet
+import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.TimeInterval
+import evaka.core.shared.domain.TimeRange
+import evaka.core.shared.security.Action
 import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
@@ -29,7 +29,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 import org.springframework.web.multipart.MultipartFile
 
-const val basePackage = "fi.espoo.evaka"
+const val basePackage = "evaka.core"
 
 val forceIncludes: Set<KType> =
     setOf(

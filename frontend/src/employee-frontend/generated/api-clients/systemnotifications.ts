@@ -18,7 +18,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.deleteSystemNotification
+* Generated from evaka.core.systemnotifications.SystemNotificationsController.deleteSystemNotification
 */
 export async function deleteSystemNotification(
   request: {
@@ -34,7 +34,7 @@ export async function deleteSystemNotification(
 
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.getAllSystemNotifications
+* Generated from evaka.core.systemnotifications.SystemNotificationsController.getAllSystemNotifications
 */
 export async function getAllSystemNotifications(): Promise<SystemNotificationsResponse> {
   const { data: json } = await client.request<JsonOf<SystemNotificationsResponse>>({
@@ -46,7 +46,7 @@ export async function getAllSystemNotifications(): Promise<SystemNotificationsRe
 
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.getCurrentSystemNotificationEmployee
+* Generated from evaka.core.systemnotifications.SystemNotificationsController.getCurrentSystemNotificationEmployee
 */
 export async function getCurrentSystemNotificationEmployee(): Promise<CurrentNotificationResponseEmployee> {
   const { data: json } = await client.request<JsonOf<CurrentNotificationResponseEmployee>>({
@@ -58,7 +58,7 @@ export async function getCurrentSystemNotificationEmployee(): Promise<CurrentNot
 
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.putSystemNotificationCitizens
+* Generated from evaka.core.systemnotifications.SystemNotificationsController.putSystemNotificationCitizens
 */
 export async function putSystemNotificationCitizens(
   request: {
@@ -75,7 +75,7 @@ export async function putSystemNotificationCitizens(
 
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.putSystemNotificationEmployees
+* Generated from evaka.core.systemnotifications.SystemNotificationsController.putSystemNotificationEmployees
 */
 export async function putSystemNotificationEmployees(
   request: {

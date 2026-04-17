@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<collections xmlns="http://www.profium.com/reception/2022/03" xmlns:ns2="http://www.profium.com/sahke2">
+    <initiator>
+        <source_system>eVaka</source_system>
+        <initiator_id>00000000-0000-0000-0000-000000000000</initiator_id>
+        <initiator_name>eVaka</initiator_name>
+    </initiator>
+    <collection>
+        <type>record</type>
+        <folder>04.01.00.11</folder>
+        <metadata>
+            <ns2:title>Varhaiskasvatuspäätös;Hyväksytty;John Smith;081222A9859</ns2:title>
+            <ns2:calculationBaseDate>2022-08-01</ns2:calculationBaseDate>
+            <ns2:created>2022-01-08</ns2:created>
+        </metadata>
+        <content>
+            <file name="c74c1dad-f448-41ce-83af-e37d0c095286.txt" originalId="c74c1dad-f448-41ce-83af-e37d0c095286"/>
+        </content>
+    </collection>
+</collections>

@@ -23,7 +23,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.getAttendanceReservations
+* Generated from evaka.core.reservations.AttendanceReservationController.getAttendanceReservations
 */
 export async function getAttendanceReservations(
   request: {
@@ -49,7 +49,7 @@ export async function getAttendanceReservations(
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.getExpectedAbsences
+* Generated from evaka.core.reservations.AttendanceReservationController.getExpectedAbsences
 */
 export async function getExpectedAbsences(
   request: {
@@ -66,7 +66,7 @@ export async function getExpectedAbsences(
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.getOngoingChildAttendance
+* Generated from evaka.core.reservations.AttendanceReservationController.getOngoingChildAttendance
 */
 export async function getOngoingChildAttendance(
   request: {
@@ -86,7 +86,7 @@ export async function getOngoingChildAttendance(
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.postChildDatePresence
+* Generated from evaka.core.reservations.AttendanceReservationController.postChildDatePresence
 */
 export async function postChildDatePresence(
   request: {
@@ -103,7 +103,7 @@ export async function postChildDatePresence(
 
 
 /**
-* Generated from fi.espoo.evaka.reservations.AttendanceReservationController.postReservations
+* Generated from evaka.core.reservations.AttendanceReservationController.postReservations
 */
 export async function postReservations(
   request: {

@@ -10,7 +10,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 eVaka provides a framework for executing background tasks safely with transactional guarantees. The framework handles two types of jobs: one-off asynchronous jobs planned during transaction processing, and scheduled recurring jobs triggered by cron expressions or daily schedules.
 
-**Implementation**: `service/src/main/kotlin/fi/espoo/evaka/shared/async/AsyncJobRunner.kt`, `AsyncJob.kt`, `service/src/main/kotlin/fi/espoo/evaka/shared/job/ScheduledJobRunner.kt`, `ScheduledJobs.kt`
+**Implementation**: `service/src/main/kotlin/evaka/core/shared/async/AsyncJobRunner.kt`, `AsyncJob.kt`, `service/src/main/kotlin/evaka/core/shared/job/ScheduledJobRunner.kt`, `ScheduledJobs.kt`
 
 ## Architecture & Transactional Safety
 

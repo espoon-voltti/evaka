@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.tampere.fi/services/sapsd/salesorder/v1.0" xmlns:common="http://www.tampere.fi/messages/ipaas/commontypes/v1.0" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions" xmlns:msg="http://www.tampere.fi/messages/sapsd/salesorder/v11.2" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:tns="http://www.tampere.fi/services/sapsd/salesorder/v1.0" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+      <xsd:import namespace="http://www.tampere.fi/messages/ipaas/commontypes/v1.0" schemaLocation="iPaaS_Common_Types_v1_0.xsd"/>
+      <xsd:import namespace="http://www.tampere.fi/messages/sapsd/salesorder/v11.2" schemaLocation="SalesOrder_iPaaS_v11_2.xsd"/>
+	  <xsd:complexType name="AttachmentType">
+	  	<xsd:sequence>
+	  		<xsd:element name="Filename" type="xsd:string"/>
+	  		<xsd:element name="Content" type="xsd:base64Binary"/>
+	  	</xsd:sequence>
+	  </xsd:complexType>
+      <xsd:element ibmSchExtn:docRoot="true" name="SendSalesOrderRequest">
+      	<xsd:complexType>
+      		<xsd:sequence>
+      			<xsd:element ref="msg:SalesOrder"/>
+      			<xsd:element maxOccurs="unbounded" minOccurs="0" name="Attachment" type="tns:AttachmentType"/>
+      		</xsd:sequence>      		
+      	</xsd:complexType>
+      </xsd:element>        
+      <xsd:element ibmSchExtn:docRoot="true" name="SendSalesOrderResponse" type="common:SimpleAcknowledgementResponseType"/>        
+    </xsd:schema>

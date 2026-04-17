@@ -9,7 +9,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
 
 /**
-* Generated from fi.espoo.evaka.webpush.PushNotificationCategory
+* Generated from evaka.core.webpush.PushNotificationCategory
 */
 export const pushNotificationCategories = [
   'RECEIVED_MESSAGE',
@@ -20,7 +20,7 @@ export const pushNotificationCategories = [
 export type PushNotificationCategory = typeof pushNotificationCategories[number]
 
 /**
-* Generated from fi.espoo.evaka.webpush.WebPushController.PushSettings
+* Generated from evaka.core.webpush.WebPushController.PushSettings
 */
 export interface PushSettings {
   categories: PushNotificationCategory[]
@@ -28,7 +28,7 @@ export interface PushSettings {
 }
 
 /**
-* Generated from fi.espoo.evaka.webpush.WebPushSubscription
+* Generated from evaka.core.webpush.WebPushSubscription
 */
 export interface WebPushSubscription {
   authSecret: number[]

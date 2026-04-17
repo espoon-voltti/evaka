@@ -32,7 +32,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.deleteServiceNeed
+* Generated from evaka.core.serviceneed.ServiceNeedController.deleteServiceNeed
 */
 export async function deleteServiceNeed(
   request: {
@@ -48,7 +48,7 @@ export async function deleteServiceNeed(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.getChildServiceNeeds
+* Generated from evaka.core.serviceneed.ServiceNeedController.getChildServiceNeeds
 */
 export async function getChildServiceNeeds(
   request: {
@@ -69,7 +69,7 @@ export async function getChildServiceNeeds(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.getServiceNeedOptionPublicInfos
+* Generated from evaka.core.serviceneed.ServiceNeedController.getServiceNeedOptionPublicInfos
 */
 export async function getServiceNeedOptionPublicInfos(
   request: {
@@ -89,7 +89,7 @@ export async function getServiceNeedOptionPublicInfos(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.getServiceNeedOptions
+* Generated from evaka.core.serviceneed.ServiceNeedController.getServiceNeedOptions
 */
 export async function getServiceNeedOptions(): Promise<ServiceNeedOption[]> {
   const { data: json } = await client.request<JsonOf<ServiceNeedOption[]>>({
@@ -101,7 +101,7 @@ export async function getServiceNeedOptions(): Promise<ServiceNeedOption[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.postServiceNeed
+* Generated from evaka.core.serviceneed.ServiceNeedController.postServiceNeed
 */
 export async function postServiceNeed(
   request: {
@@ -118,7 +118,7 @@ export async function postServiceNeed(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.ServiceNeedController.putServiceNeed
+* Generated from evaka.core.serviceneed.ServiceNeedController.putServiceNeed
 */
 export async function putServiceNeed(
   request: {
@@ -136,7 +136,7 @@ export async function putServiceNeed(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.acceptServiceApplication
+* Generated from evaka.core.serviceneed.application.ServiceApplicationController.acceptServiceApplication
 */
 export async function acceptServiceApplication(
   request: {
@@ -154,7 +154,7 @@ export async function acceptServiceApplication(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.getChildServiceApplications
+* Generated from evaka.core.serviceneed.application.ServiceApplicationController.getChildServiceApplications
 */
 export async function getChildServiceApplications(
   request: {
@@ -174,7 +174,7 @@ export async function getChildServiceApplications(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.getUndecidedServiceApplications
+* Generated from evaka.core.serviceneed.application.ServiceApplicationController.getUndecidedServiceApplications
 */
 export async function getUndecidedServiceApplications(
   request: {
@@ -194,7 +194,7 @@ export async function getUndecidedServiceApplications(
 
 
 /**
-* Generated from fi.espoo.evaka.serviceneed.application.ServiceApplicationController.rejectServiceApplication
+* Generated from evaka.core.serviceneed.application.ServiceApplicationController.rejectServiceApplication
 */
 export async function rejectServiceApplication(
   request: {

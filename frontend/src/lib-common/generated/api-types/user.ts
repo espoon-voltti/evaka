@@ -7,7 +7,7 @@
 import type { EvakaUserId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.user.EvakaUser
+* Generated from evaka.core.user.EvakaUser
 */
 export interface EvakaUser {
   id: EvakaUserId
@@ -16,7 +16,7 @@ export interface EvakaUser {
 }
 
 /**
-* Generated from fi.espoo.evaka.user.EvakaUserType
+* Generated from evaka.core.user.EvakaUserType
 */
 export type EvakaUserType =
   | 'SYSTEM'

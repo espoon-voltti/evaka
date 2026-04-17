@@ -24,7 +24,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.deleteAttachment
+* Generated from evaka.core.attachment.AttachmentsController.deleteAttachment
 */
 export async function deleteAttachment(
   request: {
@@ -40,7 +40,7 @@ export async function deleteAttachment(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.getAttachment
+* Generated from evaka.core.attachment.AttachmentsController.getAttachment
 */
 export function getAttachment(
   request: {
@@ -55,7 +55,7 @@ export function getAttachment(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadApplicationAttachmentEmployee
+* Generated from evaka.core.attachment.AttachmentsController.uploadApplicationAttachmentEmployee
 */
 export async function uploadApplicationAttachmentEmployee(
   request: {
@@ -88,7 +88,7 @@ export async function uploadApplicationAttachmentEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadFeeAlterationAttachment
+* Generated from evaka.core.attachment.AttachmentsController.uploadFeeAlterationAttachment
 */
 export async function uploadFeeAlterationAttachment(
   request: {
@@ -116,7 +116,7 @@ export async function uploadFeeAlterationAttachment(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadIncomeAttachment
+* Generated from evaka.core.attachment.AttachmentsController.uploadIncomeAttachment
 */
 export async function uploadIncomeAttachment(
   request: {
@@ -144,7 +144,7 @@ export async function uploadIncomeAttachment(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadIncomeStatementAttachmentEmployee
+* Generated from evaka.core.attachment.AttachmentsController.uploadIncomeStatementAttachmentEmployee
 */
 export async function uploadIncomeStatementAttachmentEmployee(
   request: {
@@ -177,7 +177,7 @@ export async function uploadIncomeStatementAttachmentEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadInvoiceAttachmentEmployee
+* Generated from evaka.core.attachment.AttachmentsController.uploadInvoiceAttachmentEmployee
 */
 export async function uploadInvoiceAttachmentEmployee(
   request: {
@@ -205,7 +205,7 @@ export async function uploadInvoiceAttachmentEmployee(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadMessageAttachment
+* Generated from evaka.core.attachment.AttachmentsController.uploadMessageAttachment
 */
 export async function uploadMessageAttachment(
   request: {
@@ -233,7 +233,7 @@ export async function uploadMessageAttachment(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadOrphanFeeAlterationAttachment
+* Generated from evaka.core.attachment.AttachmentsController.uploadOrphanFeeAlterationAttachment
 */
 export async function uploadOrphanFeeAlterationAttachment(
   request: {
@@ -260,7 +260,7 @@ export async function uploadOrphanFeeAlterationAttachment(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadOrphanIncomeAttachment
+* Generated from evaka.core.attachment.AttachmentsController.uploadOrphanIncomeAttachment
 */
 export async function uploadOrphanIncomeAttachment(
   request: {
@@ -287,7 +287,7 @@ export async function uploadOrphanIncomeAttachment(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadPedagogicalDocumentAttachment
+* Generated from evaka.core.attachment.AttachmentsController.uploadPedagogicalDocumentAttachment
 */
 export async function uploadPedagogicalDocumentAttachment(
   request: {

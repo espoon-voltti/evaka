@@ -24,7 +24,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyController.getOccupancyPeriodsSpeculated
+* Generated from evaka.core.occupancy.OccupancyController.getOccupancyPeriodsSpeculated
 */
 export async function getOccupancyPeriodsSpeculated(
   request: {
@@ -52,7 +52,7 @@ export async function getOccupancyPeriodsSpeculated(
 
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyController.getUnitOccupancies
+* Generated from evaka.core.occupancy.OccupancyController.getUnitOccupancies
 */
 export async function getUnitOccupancies(
   request: {
@@ -77,7 +77,7 @@ export async function getUnitOccupancies(
 
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyController.getUnitPlannedOccupanciesForDay
+* Generated from evaka.core.occupancy.OccupancyController.getUnitPlannedOccupanciesForDay
 */
 export async function getUnitPlannedOccupanciesForDay(
   request: {
@@ -95,7 +95,7 @@ export async function getUnitPlannedOccupanciesForDay(
 
 
 /**
-* Generated from fi.espoo.evaka.occupancy.OccupancyController.getUnitRealizedOccupanciesForDay
+* Generated from evaka.core.occupancy.OccupancyController.getUnitRealizedOccupanciesForDay
 */
 export async function getUnitRealizedOccupanciesForDay(
   request: {

@@ -13,7 +13,7 @@ import type { PersonId } from './shared'
 import TimeRange from '../../time-range'
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimes
 */
 export interface DailyServiceTimes {
   childId: PersonId
@@ -22,14 +22,14 @@ export interface DailyServiceTimes {
 }
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.DailyServiceTimesEndDate
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimesController.DailyServiceTimesEndDate
 */
 export interface DailyServiceTimesEndDate {
   endDate: LocalDate | null
 }
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.DailyServiceTimesResponse
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimesController.DailyServiceTimesResponse
 */
 export interface DailyServiceTimesResponse {
   dailyServiceTimes: DailyServiceTimes
@@ -37,7 +37,7 @@ export interface DailyServiceTimesResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimesType
 */
 export type DailyServiceTimesType =
   | 'REGULAR'
@@ -47,7 +47,7 @@ export type DailyServiceTimesType =
 
 export namespace DailyServiceTimesValue {
   /**
-  * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue.IrregularTimes
+  * Generated from evaka.core.dailyservicetimes.DailyServiceTimesValue.IrregularTimes
   */
   export interface IrregularTimes {
     type: 'IRREGULAR'
@@ -62,7 +62,7 @@ export namespace DailyServiceTimesValue {
   }
 
   /**
-  * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue.RegularTimes
+  * Generated from evaka.core.dailyservicetimes.DailyServiceTimesValue.RegularTimes
   */
   export interface RegularTimes {
     type: 'REGULAR'
@@ -71,7 +71,7 @@ export namespace DailyServiceTimesValue {
   }
 
   /**
-  * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue.VariableTimes
+  * Generated from evaka.core.dailyservicetimes.DailyServiceTimesValue.VariableTimes
   */
   export interface VariableTimes {
     type: 'VARIABLE_TIME'
@@ -80,7 +80,7 @@ export namespace DailyServiceTimesValue {
 }
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
+* Generated from evaka.core.dailyservicetimes.DailyServiceTimesValue
 */
 export type DailyServiceTimesValue = DailyServiceTimesValue.IrregularTimes | DailyServiceTimesValue.RegularTimes | DailyServiceTimesValue.VariableTimes
 
@@ -88,14 +88,14 @@ export type DailyServiceTimesValue = DailyServiceTimesValue.IrregularTimes | Dai
 
 export namespace ServiceTimesPresenceStatus {
   /**
-  * Generated from fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus.Absent
+  * Generated from evaka.core.dailyservicetimes.ServiceTimesPresenceStatus.Absent
   */
   export interface Absent {
     type: 'ABSENT'
   }
 
   /**
-  * Generated from fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus.Present
+  * Generated from evaka.core.dailyservicetimes.ServiceTimesPresenceStatus.Present
   */
   export interface Present {
     type: 'PRESENT'
@@ -103,7 +103,7 @@ export namespace ServiceTimesPresenceStatus {
   }
 
   /**
-  * Generated from fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus.Unknown
+  * Generated from evaka.core.dailyservicetimes.ServiceTimesPresenceStatus.Unknown
   */
   export interface Unknown {
     type: 'UNKNOWN'
@@ -111,7 +111,7 @@ export namespace ServiceTimesPresenceStatus {
 }
 
 /**
-* Generated from fi.espoo.evaka.dailyservicetimes.ServiceTimesPresenceStatus
+* Generated from evaka.core.dailyservicetimes.ServiceTimesPresenceStatus
 */
 export type ServiceTimesPresenceStatus = ServiceTimesPresenceStatus.Absent | ServiceTimesPresenceStatus.Present | ServiceTimesPresenceStatus.Unknown
 

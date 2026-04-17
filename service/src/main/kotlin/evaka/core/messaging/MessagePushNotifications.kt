@@ -1,0 +1,183 @@
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.messaging
+
+import evaka.core.shared.GroupId
+import evaka.core.shared.MessageId
+import evaka.core.shared.MessageRecipientId
+import evaka.core.shared.MobileDeviceId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.db.Database
+import evaka.core.shared.db.QuerySql
+import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.security.AccessControl
+import evaka.core.shared.security.Action
+import evaka.core.webpush.WebPush
+import evaka.core.webpush.WebPushCrypto
+import evaka.core.webpush.WebPushEndpoint
+import evaka.core.webpush.WebPushNotification
+import evaka.core.webpush.WebPushPayload
+import evaka.core.webpush.deletePushSubscription
+import fi.espoo.voltti.logging.loggers.info
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Duration
+import org.springframework.stereotype.Service
+
+@Service
+class MessagePushNotifications(
+    private val webPush: WebPush?,
+    private val accessControl: AccessControl,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+) {
+    init {
+        asyncJobRunner.registerHandler { db, clock, job: AsyncJob.SendMessagePushNotification ->
+            send(db, clock, job.recipient, job.device)
+        }
+    }
+
+    private val logger = KotlinLogging.logger {}
+
+    private fun getPendingPushNotifications() = QuerySql {
+        sql(
+            """
+SELECT mr.message_id AS message, mr.id AS recipient, md.id AS device, dg.id AS group_id, dg.name AS group_name, sender.name AS sender_name
+FROM message_recipients mr
+JOIN message_account ma ON mr.recipient_id = ma.id
+JOIN message m ON mr.message_id = m.id
+JOIN message_account_view sender ON sender.id = m.sender_id
+JOIN message_thread mt ON m.thread_id = mt.id
+JOIN daycare_group dg ON ma.daycare_group_id = dg.id
+JOIN daycare d ON d.id = dg.daycare_id
+JOIN mobile_device_push_group mdpg ON mdpg.daycare_group = dg.id
+JOIN mobile_device md ON mdpg.device = md.id
+WHERE mr.read_at IS NULL
+AND ma.type = 'GROUP'
+AND mt.is_copy IS FALSE
+AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
+AND 'RECEIVED_MESSAGE' = ANY(md.push_notification_categories)
+AND EXISTS (
+    SELECT FROM mobile_device_push_subscription mdps
+    WHERE mdps.device = md.id
+)
+AND CASE
+    WHEN md.employee_id IS NULL THEN TRUE
+    ELSE (
+        EXISTS (
+            SELECT FROM daycare_group_acl dgacl
+            WHERE dgacl.daycare_group_id = dg.id AND dgacl.employee_id = md.employee_id
+        ) OR
+        EXISTS (
+            SELECT FROM daycare_acl dacl
+            WHERE dacl.daycare_id = dg.daycare_id AND dacl.employee_id = md.employee_id
+        )
+    )
+END
+"""
+        )
+    }
+
+    fun getAsyncJobs(
+        tx: Database.Read,
+        messages: Collection<MessageId>,
+    ): List<AsyncJob.SendMessagePushNotification> =
+        tx.createQuery {
+                sql(
+                    """
+SELECT recipient, device
+FROM (${subquery(getPendingPushNotifications())}) notification
+WHERE notification.message = ANY(${bind(messages)})
+"""
+                )
+            }
+            .toList<AsyncJob.SendMessagePushNotification>()
+
+    data class GroupMessageNotification(
+        val groupId: GroupId,
+        val groupName: String,
+        val senderName: String?,
+        val endpoint: WebPushEndpoint,
+    )
+
+    private fun Database.Read.getNotification(
+        messageRecipient: MessageRecipientId,
+        device: MobileDeviceId,
+    ): GroupMessageNotification? =
+        createQuery {
+                sql(
+                    """
+SELECT group_id, group_name, sender_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
+FROM (${subquery(getPendingPushNotifications())}) notification
+JOIN mobile_device_push_subscription mdps ON mdps.device = notification.device
+WHERE notification.recipient = ${bind(messageRecipient)}
+AND notification.device = ${bind(device)}
+"""
+                )
+            }
+            .exactlyOneOrNull {
+                GroupMessageNotification(
+                    groupId = column("group_id"),
+                    groupName = column("group_name"),
+                    senderName = column("sender_name"),
+                    WebPushEndpoint(
+                        uri = column("endpoint"),
+                        ecdhPublicKey =
+                            WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
+                        authSecret = column("auth_secret"),
+                    ),
+                )
+            }
+
+    fun send(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        recipient: MessageRecipientId,
+        device: MobileDeviceId,
+    ) {
+        if (webPush == null) return
+
+        val (vapidJwt, notification) =
+            dbc.transaction { tx ->
+                tx.getNotification(recipient, device)
+                    ?.takeIf {
+                        accessControl.hasPermissionFor(
+                            tx,
+                            AuthenticatedUser.MobileDevice(device),
+                            clock,
+                            Action.Group.RECEIVE_PUSH_NOTIFICATIONS,
+                            it.groupId,
+                        )
+                    }
+                    ?.let { Pair(webPush.getValidToken(tx, clock, it.endpoint.uri), it) }
+            } ?: return
+        dbc.close()
+
+        logger.info(mapOf("endpoint" to notification.endpoint.uri)) {
+            "Sending push notification to $device"
+        }
+        try {
+            webPush.send(
+                vapidJwt,
+                WebPushNotification(
+                    notification.endpoint,
+                    ttl = Duration.ofDays(1),
+                    payloads =
+                        listOf(
+                            WebPushPayload.NotificationV1(
+                                title =
+                                    "Uusi viesti ryhmälle ${notification.groupName}${notification.senderName?.let { " ($it)" } ?: ""}"
+                            )
+                        ),
+                ),
+            )
+        } catch (e: WebPush.SubscriptionExpired) {
+            logger.warn {
+                "Subscription expired for device $device (HTTP status ${e.status}) -> deleting"
+            }
+            dbc.transaction { it.deletePushSubscription(device) }
+        }
+    }
+}

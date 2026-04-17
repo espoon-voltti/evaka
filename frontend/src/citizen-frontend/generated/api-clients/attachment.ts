@@ -19,7 +19,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.deleteAttachment
+* Generated from evaka.core.attachment.AttachmentsController.deleteAttachment
 */
 export async function deleteAttachment(
   request: {
@@ -35,7 +35,7 @@ export async function deleteAttachment(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.getAttachment
+* Generated from evaka.core.attachment.AttachmentsController.getAttachment
 */
 export function getAttachment(
   request: {
@@ -50,7 +50,7 @@ export function getAttachment(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadApplicationAttachmentCitizen
+* Generated from evaka.core.attachment.AttachmentsController.uploadApplicationAttachmentCitizen
 */
 export async function uploadApplicationAttachmentCitizen(
   request: {
@@ -83,7 +83,7 @@ export async function uploadApplicationAttachmentCitizen(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadIncomeStatementAttachmentCitizen
+* Generated from evaka.core.attachment.AttachmentsController.uploadIncomeStatementAttachmentCitizen
 */
 export async function uploadIncomeStatementAttachmentCitizen(
   request: {
@@ -116,7 +116,7 @@ export async function uploadIncomeStatementAttachmentCitizen(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadMessageAttachmentCitizen
+* Generated from evaka.core.attachment.AttachmentsController.uploadMessageAttachmentCitizen
 */
 export async function uploadMessageAttachmentCitizen(
   request: {
@@ -143,7 +143,7 @@ export async function uploadMessageAttachmentCitizen(
 
 
 /**
-* Generated from fi.espoo.evaka.attachment.AttachmentsController.uploadOrphanIncomeStatementAttachmentCitizen
+* Generated from evaka.core.attachment.AttachmentsController.uploadOrphanIncomeStatementAttachmentCitizen
 */
 export async function uploadOrphanIncomeStatementAttachmentCitizen(
   request: {

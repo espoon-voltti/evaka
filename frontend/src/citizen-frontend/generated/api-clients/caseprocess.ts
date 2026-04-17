@@ -15,7 +15,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataControllerCitizen.getApplicationMetadata
+* Generated from evaka.core.caseprocess.ProcessMetadataControllerCitizen.getApplicationMetadata
 */
 export async function getApplicationMetadata(
   request: {
@@ -31,7 +31,7 @@ export async function getApplicationMetadata(
 
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataControllerCitizen.getFeeDecisionMetadata
+* Generated from evaka.core.caseprocess.ProcessMetadataControllerCitizen.getFeeDecisionMetadata
 */
 export async function getFeeDecisionMetadata(
   request: {
@@ -47,7 +47,7 @@ export async function getFeeDecisionMetadata(
 
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataControllerCitizen.getVoucherValueDecisionMetadata
+* Generated from evaka.core.caseprocess.ProcessMetadataControllerCitizen.getVoucherValueDecisionMetadata
 */
 export async function getVoucherValueDecisionMetadata(
   request: {

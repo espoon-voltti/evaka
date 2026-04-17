@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.tampere.fi/messages/ipaas/commontypes/v1.0" xmlns="http://www.tampere.fi/messages/ipaas/commontypes/v1.0" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions" xmlns:tns="http://www.tampere.fi/messages/ipaas/commontypes/v1.0">
+	
+	<!-- Request Type Definitions -->
+	
+	<!-- Response Type Definitions -->
+	
+	<xsd:complexType name="SimpleAcknowledgementResponseType">
+		<xsd:sequence>
+        	<xsd:element name="StatusMessage" type="xsd:string"/>
+        	<xsd:element minOccurs="0" name="DetailMessage" type="xsd:string"/>
+       	</xsd:sequence>
+	</xsd:complexType>
+	
+	<!-- Fault Type and Element Definitions -->
+	<xsd:complexType abstract="true" name="FaultType">
+		<xsd:sequence>
+			<xsd:element name="ErrorCode" type="xsd:string"/>
+			<xsd:element name="ErrorMessage" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="DetailMessage" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element ibmSchExtn:docRoot="true" name="ApplicationFault">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="FaultType"/>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element ibmSchExtn:docRoot="true" name="SystemFault">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="FaultType">
+					<xsd:sequence>
+						<xsd:element minOccurs="0" name="TechnicalTrace">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:any/>
+								</xsd:sequence>								
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:extension>
+			</xsd:complexContent>			
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!-- Common Datatype Definitions (enumerations etc.) -->
+	
+</xsd:schema>

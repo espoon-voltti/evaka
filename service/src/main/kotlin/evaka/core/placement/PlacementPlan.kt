@@ -1,0 +1,97 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.placement
+
+import evaka.core.occupancy.OccupancyInput
+import evaka.core.shared.ApplicationId
+import evaka.core.shared.ChildId
+import evaka.core.shared.DaycareId
+import evaka.core.shared.Id
+import evaka.core.shared.PlacementId
+import evaka.core.shared.PlacementPlanId
+import evaka.core.shared.db.DatabaseEnum
+import evaka.core.shared.domain.FiniteDateRange
+import java.time.LocalDate
+
+data class PlacementPlan(
+    val id: PlacementPlanId,
+    val unitId: DaycareId,
+    val applicationId: ApplicationId,
+    val type: PlacementType,
+    val period: FiniteDateRange,
+    val preschoolDaycarePeriod: FiniteDateRange?,
+)
+
+sealed interface PlacementPlanExtent {
+    /** Simple placement plan that corresponds to a single placement */
+    data class FullSingle(val period: FiniteDateRange) : PlacementPlanExtent
+
+    /** Double placement plan, only preschool */
+    data class OnlyPreschool(val period: FiniteDateRange) : PlacementPlanExtent
+
+    /** Double placement plan, only preschool+daycare */
+    data class OnlyPreschoolDaycare(val period: FiniteDateRange) : PlacementPlanExtent
+
+    /** Double placement plan, both parts */
+    data class FullDouble(
+        val period: FiniteDateRange,
+        val preschoolDaycarePeriod: FiniteDateRange,
+    ) : PlacementPlanExtent
+}
+
+data class PlacementPlanDetails(
+    val id: PlacementPlanId,
+    val unitId: DaycareId,
+    val applicationId: ApplicationId,
+    val type: PlacementType,
+    val period: FiniteDateRange,
+    val preschoolDaycarePeriod: FiniteDateRange?,
+    val child: PlacementPlanChild,
+    val unitConfirmationStatus: PlacementPlanConfirmationStatus =
+        PlacementPlanConfirmationStatus.PENDING,
+    val unitAcceptDisabled: Boolean,
+    val unitRejectReason: PlacementPlanRejectReason? = null,
+    val unitRejectOtherReason: String? = null,
+    val rejectedByCitizen: Boolean = false,
+)
+
+data class PlacementPlanChild(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate,
+)
+
+enum class PlacementPlanConfirmationStatus : DatabaseEnum {
+    PENDING,
+    ACCEPTED,
+    REJECTED,
+    REJECTED_NOT_CONFIRMED;
+
+    override val sqlType: String = "confirmation_status"
+}
+
+enum class PlacementPlanRejectReason : DatabaseEnum {
+    OTHER,
+    REASON_1,
+    REASON_2,
+    REASON_3;
+
+    override val sqlType: String = "placement_reject_reason"
+}
+
+class SpeculatedPlacement(
+    override val type: PlacementType,
+    override val childId: ChildId,
+    override val unitId: DaycareId,
+    override val period: FiniteDateRange,
+    override val familyUnitPlacement: Boolean,
+) : OccupancyInput {
+    override val placementId: PlacementId?
+        get() = null
+
+    override val groupingId: Id<*>
+        get() = unitId
+}

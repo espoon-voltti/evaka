@@ -40,6 +40,34 @@ val integrationTestImplementation: Configuration by
 
 val downloadOnly: Configuration by configurations.creating { isTransitive = false }
 
+val xjcTool: Configuration by configurations.creating
+val xjcGenerate =
+    tasks.register<JavaExec>("xjcGenerate") {
+        group = "code generation"
+        description = "Generates Java classes from XML schema using the XJC binding compiler"
+
+        val schemaDirectory = layout.projectDirectory.dir("src/main/schema")
+        val outputDirectory = layout.buildDirectory.dir("generated/sources/xjc/java/main")
+
+        classpath = xjcTool
+        mainClass = "com.sun.tools.xjc.Driver"
+        args =
+            listOf(
+                "-no-header",
+                "-quiet",
+                "-d",
+                outputDirectory.get().asFile.absolutePath,
+                schemaDirectory.asFile.absolutePath,
+            )
+
+        inputs.dir(schemaDirectory)
+        outputs.dir(outputDirectory)
+    }
+
+tasks.compileKotlin { dependsOn(xjcGenerate) }
+
+sourceSets.main { java.srcDirs(xjcGenerate) }
+
 configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
 
 idea {
@@ -47,6 +75,10 @@ idea {
 }
 
 dependencies {
+    xjcTool(platform(project(":evaka-bom")))
+    xjcTool("com.sun.xml.bind:jaxb-xjc")
+    xjcTool("com.sun.xml.bind:jaxb-impl")
+
     api(platform(project(":evaka-bom")))
     implementation(platform(project(":evaka-bom")))
     testImplementation(platform(project(":evaka-bom")))
@@ -98,6 +130,8 @@ dependencies {
 
     // Apache HttpClient
     implementation("org.apache.httpcomponents:httpclient")
+    implementation("org.apache.httpcomponents.core5:httpcore5")
+    implementation("org.apache.httpcomponents.client5:httpclient5")
 
     // SFTP
     implementation("com.github.mwiede:jsch")
@@ -106,6 +140,7 @@ dependencies {
     implementation("tools.jackson.core:jackson-core")
     implementation("tools.jackson.core:jackson-databind")
     implementation("tools.jackson.module:jackson-module-kotlin")
+    implementation("tools.jackson.dataformat:jackson-dataformat-csv")
 
     // AWS SDK
     implementation("software.amazon.awssdk:s3")
@@ -245,16 +280,18 @@ tasks {
         classpath = sourceSets["integrationTest"].runtimeClasspath
         shouldRunAfter("test")
         outputs.upToDateWhen { false }
+        maxHeapSize = "2g"
+        systemProperty("spring.test.context.cache.maxSize", "8")
     }
 
     bootRun {
-        mainClass.set("fi.espoo.evaka.MainKt")
+        mainClass.set("evaka.MainKt")
         // If you want to develop against VTJ, add vtj-dev here
         systemProperty("spring.profiles.active", "local")
     }
 
     register("bootRunTest", org.springframework.boot.gradle.tasks.run.BootRun::class) {
-        mainClass.set("fi.espoo.evaka.MainKt")
+        mainClass.set("evaka.MainKt")
         classpath = sourceSets["main"].runtimeClasspath
         systemProperty("spring.profiles.active", "local")
         systemProperty("evaka.database.url", "jdbc:postgresql://localhost:5432/evaka_it")
@@ -264,13 +301,13 @@ tasks {
 
     register("generateVapidKey", JavaExec::class) {
         description = "Generate VAPID key for use with push notifications"
-        mainClass.set("fi.espoo.evaka.webpush.VapidKeyGeneratorKt")
+        mainClass.set("evaka.core.webpush.VapidKeyGeneratorKt")
         classpath = sourceSets["test"].runtimeClasspath
     }
 
     register("encodePassword", JavaExec::class) {
         description = "Encode a password with the default password hash algorithm"
-        mainClass.set("fi.espoo.evaka.shared.auth.PasswordHasherCliKt")
+        mainClass.set("evaka.core.shared.auth.PasswordHasherCliKt")
         classpath = sourceSets["test"].runtimeClasspath
     }
 

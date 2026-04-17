@@ -27,7 +27,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.note.NotesController.getNotesByGroup
+* Generated from evaka.core.note.NotesController.getNotesByGroup
 */
 export async function getNotesByGroup(
   request: {
@@ -43,7 +43,7 @@ export async function getNotesByGroup(
 
 
 /**
-* Generated from fi.espoo.evaka.note.child.daily.ChildDailyNoteController.createChildDailyNote
+* Generated from evaka.core.note.child.daily.ChildDailyNoteController.createChildDailyNote
 */
 export async function createChildDailyNote(
   request: {
@@ -61,7 +61,7 @@ export async function createChildDailyNote(
 
 
 /**
-* Generated from fi.espoo.evaka.note.child.daily.ChildDailyNoteController.deleteChildDailyNote
+* Generated from evaka.core.note.child.daily.ChildDailyNoteController.deleteChildDailyNote
 */
 export async function deleteChildDailyNote(
   request: {
@@ -77,7 +77,7 @@ export async function deleteChildDailyNote(
 
 
 /**
-* Generated from fi.espoo.evaka.note.child.daily.ChildDailyNoteController.updateChildDailyNote
+* Generated from evaka.core.note.child.daily.ChildDailyNoteController.updateChildDailyNote
 */
 export async function updateChildDailyNote(
   request: {
@@ -95,7 +95,7 @@ export async function updateChildDailyNote(
 
 
 /**
-* Generated from fi.espoo.evaka.note.child.sticky.ChildStickyNoteController.createChildStickyNote
+* Generated from evaka.core.note.child.sticky.ChildStickyNoteController.createChildStickyNote
 */
 export async function createChildStickyNote(
   request: {
@@ -113,7 +113,7 @@ export async function createChildStickyNote(
 
 
 /**
-* Generated from fi.espoo.evaka.note.child.sticky.ChildStickyNoteController.deleteChildStickyNote
+* Generated from evaka.core.note.child.sticky.ChildStickyNoteController.deleteChildStickyNote
 */
 export async function deleteChildStickyNote(
   request: {
@@ -129,7 +129,7 @@ export async function deleteChildStickyNote(
 
 
 /**
-* Generated from fi.espoo.evaka.note.child.sticky.ChildStickyNoteController.updateChildStickyNote
+* Generated from evaka.core.note.child.sticky.ChildStickyNoteController.updateChildStickyNote
 */
 export async function updateChildStickyNote(
   request: {
@@ -147,7 +147,7 @@ export async function updateChildStickyNote(
 
 
 /**
-* Generated from fi.espoo.evaka.note.group.GroupNoteController.createGroupNote
+* Generated from evaka.core.note.group.GroupNoteController.createGroupNote
 */
 export async function createGroupNote(
   request: {
@@ -165,7 +165,7 @@ export async function createGroupNote(
 
 
 /**
-* Generated from fi.espoo.evaka.note.group.GroupNoteController.deleteGroupNote
+* Generated from evaka.core.note.group.GroupNoteController.deleteGroupNote
 */
 export async function deleteGroupNote(
   request: {
@@ -181,7 +181,7 @@ export async function deleteGroupNote(
 
 
 /**
-* Generated from fi.espoo.evaka.note.group.GroupNoteController.updateGroupNote
+* Generated from evaka.core.note.group.GroupNoteController.updateGroupNote
 */
 export async function updateGroupNote(
   request: {

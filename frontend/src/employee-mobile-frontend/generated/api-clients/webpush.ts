@@ -13,7 +13,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.webpush.WebPushController.getPushSettings
+* Generated from evaka.core.webpush.WebPushController.getPushSettings
 */
 export async function getPushSettings(): Promise<PushSettings> {
   const { data: json } = await client.request<JsonOf<PushSettings>>({
@@ -25,7 +25,7 @@ export async function getPushSettings(): Promise<PushSettings> {
 
 
 /**
-* Generated from fi.espoo.evaka.webpush.WebPushController.setPushSettings
+* Generated from evaka.core.webpush.WebPushController.setPushSettings
 */
 export async function setPushSettings(
   request: {
@@ -42,7 +42,7 @@ export async function setPushSettings(
 
 
 /**
-* Generated from fi.espoo.evaka.webpush.WebPushController.upsertPushSubscription
+* Generated from evaka.core.webpush.WebPushController.upsertPushSubscription
 */
 export async function upsertPushSubscription(
   request: {

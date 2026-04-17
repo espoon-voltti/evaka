@@ -8,21 +8,21 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.CurrentNotificationResponseCitizen
+* Generated from evaka.core.systemnotifications.SystemNotificationsController.CurrentNotificationResponseCitizen
 */
 export interface CurrentNotificationResponseCitizen {
   notification: SystemNotificationCitizens | null
 }
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.CurrentNotificationResponseEmployee
+* Generated from evaka.core.systemnotifications.SystemNotificationsController.CurrentNotificationResponseEmployee
 */
 export interface CurrentNotificationResponseEmployee {
   notification: SystemNotificationEmployees | null
 }
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationCitizens
+* Generated from evaka.core.systemnotifications.SystemNotificationCitizens
 */
 export interface SystemNotificationCitizens {
   text: string
@@ -32,7 +32,7 @@ export interface SystemNotificationCitizens {
 }
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationEmployees
+* Generated from evaka.core.systemnotifications.SystemNotificationEmployees
 */
 export interface SystemNotificationEmployees {
   text: string
@@ -40,14 +40,14 @@ export interface SystemNotificationEmployees {
 }
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationTargetGroup
+* Generated from evaka.core.systemnotifications.SystemNotificationTargetGroup
 */
 export type SystemNotificationTargetGroup =
   | 'CITIZENS'
   | 'EMPLOYEES'
 
 /**
-* Generated from fi.espoo.evaka.systemnotifications.SystemNotificationsController.SystemNotificationsResponse
+* Generated from evaka.core.systemnotifications.SystemNotificationsController.SystemNotificationsResponse
 */
 export interface SystemNotificationsResponse {
   citizens: SystemNotificationCitizens | null

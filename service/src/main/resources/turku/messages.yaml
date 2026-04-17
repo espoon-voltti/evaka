@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-fi.espoo.evaka.turku:
+evaka.instance.turku:
   MessageProvider:
     DECISION_HEADER:
       fi: Turun varhaiskasvatukseen liittyvät päätökset

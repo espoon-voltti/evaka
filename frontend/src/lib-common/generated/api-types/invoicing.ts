@@ -35,7 +35,7 @@ import type { VoucherValueDecisionId } from './shared'
 import YearMonth from '../../year-month'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
+* Generated from evaka.core.invoicing.domain.ChildWithDateOfBirth
 */
 export interface ChildWithDateOfBirth {
   dateOfBirth: LocalDate
@@ -43,14 +43,14 @@ export interface ChildWithDateOfBirth {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.CreateRetroactiveFeeDecisionsBody
+* Generated from evaka.core.invoicing.controller.CreateRetroactiveFeeDecisionsBody
 */
 export interface CreateRetroactiveFeeDecisionsBody {
   from: LocalDate
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.DecisionIncome
+* Generated from evaka.core.invoicing.domain.DecisionIncome
 */
 export interface DecisionIncome {
   data: Partial<Record<string, number>>
@@ -63,7 +63,7 @@ export interface DecisionIncome {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.DistinctiveParams
+* Generated from evaka.core.invoicing.controller.DistinctiveParams
 */
 export const feeDecisionDistinctiveParams = [
   'UNCONFIRMED_HOURS',
@@ -78,7 +78,7 @@ export const feeDecisionDistinctiveParams = [
 export type DistinctiveParams = typeof feeDecisionDistinctiveParams[number]
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.EmployeeWithName
+* Generated from evaka.core.invoicing.domain.EmployeeWithName
 */
 export interface EmployeeWithName {
   firstName: string
@@ -87,7 +87,7 @@ export interface EmployeeWithName {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeAlteration
+* Generated from evaka.core.invoicing.domain.FeeAlteration
 */
 export interface FeeAlteration {
   amount: number
@@ -104,7 +104,7 @@ export interface FeeAlteration {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeAlterationType
+* Generated from evaka.core.invoicing.domain.FeeAlterationType
 */
 export const feeAlterationTypes = [
   'DISCOUNT',
@@ -115,7 +115,7 @@ export const feeAlterationTypes = [
 export type FeeAlterationType = typeof feeAlterationTypes[number]
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeAlterationWithEffect
+* Generated from evaka.core.invoicing.domain.FeeAlterationWithEffect
 */
 export interface FeeAlterationWithEffect {
   amount: number
@@ -125,7 +125,7 @@ export interface FeeAlterationWithEffect {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeAlterationController.FeeAlterationWithPermittedActions
+* Generated from evaka.core.invoicing.controller.FeeAlterationController.FeeAlterationWithPermittedActions
 */
 export interface FeeAlterationWithPermittedActions {
   data: FeeAlteration
@@ -133,7 +133,7 @@ export interface FeeAlterationWithPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeDecision
+* Generated from evaka.core.invoicing.domain.FeeDecision
 */
 export interface FeeDecision {
   approvedAt: HelsinkiDateTime | null
@@ -162,7 +162,7 @@ export interface FeeDecision {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionChild
+* Generated from evaka.core.invoicing.domain.FeeDecisionChild
 */
 export interface FeeDecisionChild {
   baseFee: number
@@ -177,7 +177,7 @@ export interface FeeDecisionChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionChildDetailed
+* Generated from evaka.core.invoicing.domain.FeeDecisionChildDetailed
 */
 export interface FeeDecisionChildDetailed {
   baseFee: number
@@ -197,7 +197,7 @@ export interface FeeDecisionChildDetailed {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
+* Generated from evaka.core.invoicing.domain.FeeDecisionDetailed
 */
 export interface FeeDecisionDetailed {
   approvedAt: HelsinkiDateTime | null
@@ -230,7 +230,7 @@ export interface FeeDecisionDetailed {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
+* Generated from evaka.core.invoicing.domain.FeeDecisionDifference
 */
 export const feeDecisionDifferences = [
   'GUARDIANS',
@@ -247,7 +247,7 @@ export const feeDecisionDifferences = [
 export type FeeDecisionDifference = typeof feeDecisionDifferences[number]
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionPlacement
+* Generated from evaka.core.invoicing.domain.FeeDecisionPlacement
 */
 export interface FeeDecisionPlacement {
   type: PlacementType
@@ -255,7 +255,7 @@ export interface FeeDecisionPlacement {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.FeeDecisionResponse
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.FeeDecisionResponse
 */
 export interface FeeDecisionResponse {
   data: FeeDecisionDetailed
@@ -263,7 +263,7 @@ export interface FeeDecisionResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
+* Generated from evaka.core.invoicing.domain.FeeDecisionServiceNeed
 */
 export interface FeeDecisionServiceNeed {
   contractDaysPerMonth: number | null
@@ -275,7 +275,7 @@ export interface FeeDecisionServiceNeed {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
+* Generated from evaka.core.invoicing.controller.FeeDecisionSortParam
 */
 export type FeeDecisionSortParam =
   | 'HEAD_OF_FAMILY'
@@ -287,7 +287,7 @@ export type FeeDecisionSortParam =
   | 'FINAL_PRICE'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
+* Generated from evaka.core.invoicing.domain.FeeDecisionStatus
 */
 export type FeeDecisionStatus =
   | 'DRAFT'
@@ -298,7 +298,7 @@ export type FeeDecisionStatus =
   | 'ANNULLED'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
+* Generated from evaka.core.invoicing.domain.FeeDecisionSummary
 */
 export interface FeeDecisionSummary {
   annullingDecision: boolean
@@ -316,7 +316,7 @@ export interface FeeDecisionSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionThresholds
+* Generated from evaka.core.invoicing.domain.FeeDecisionThresholds
 */
 export interface FeeDecisionThresholds {
   incomeMultiplier: number
@@ -327,7 +327,7 @@ export interface FeeDecisionThresholds {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionType
+* Generated from evaka.core.invoicing.domain.FeeDecisionType
 */
 export type FeeDecisionType =
   | 'NORMAL'
@@ -336,14 +336,14 @@ export type FeeDecisionType =
   | 'RELIEF_ACCEPTED'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionTypeRequest
+* Generated from evaka.core.invoicing.controller.FeeDecisionTypeRequest
 */
 export interface FeeDecisionTypeRequest {
   type: FeeDecisionType
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeDecisionController.FeeDecisionWithPermittedActions
+* Generated from evaka.core.invoicing.controller.FeeDecisionController.FeeDecisionWithPermittedActions
 */
 export interface FeeDecisionWithPermittedActions {
   data: FeeDecision
@@ -351,7 +351,7 @@ export interface FeeDecisionWithPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FeeThresholds
+* Generated from evaka.core.invoicing.domain.FeeThresholds
 */
 export interface FeeThresholds {
   incomeMultiplier2: number
@@ -382,7 +382,7 @@ export interface FeeThresholds {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.FeeThresholdsWithId
+* Generated from evaka.core.invoicing.controller.FeeThresholdsWithId
 */
 export interface FeeThresholdsWithId {
   id: FeeThresholdsId
@@ -390,7 +390,7 @@ export interface FeeThresholdsWithId {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.FinanceDecisionType
+* Generated from evaka.core.invoicing.domain.FinanceDecisionType
 */
 export const financeDecisionTypes = [
   'FEE_DECISION',
@@ -400,7 +400,7 @@ export const financeDecisionTypes = [
 export type FinanceDecisionType = typeof financeDecisionTypes[number]
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.Income
+* Generated from evaka.core.invoicing.domain.Income
 */
 export interface Income {
   applicationId: ApplicationId | null
@@ -424,7 +424,7 @@ export interface Income {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.IncomeCoefficient
+* Generated from evaka.core.invoicing.domain.IncomeCoefficient
 */
 export const incomeCoefficients = [
   'MONTHLY_WITH_HOLIDAY_BONUS',
@@ -439,7 +439,7 @@ export const incomeCoefficients = [
 export type IncomeCoefficient = typeof incomeCoefficients[number]
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.IncomeEffect
+* Generated from evaka.core.invoicing.domain.IncomeEffect
 */
 export type IncomeEffect =
   | 'MAX_FEE_ACCEPTED'
@@ -448,7 +448,7 @@ export type IncomeEffect =
   | 'NOT_AVAILABLE'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.service.IncomeNotification
+* Generated from evaka.core.invoicing.service.IncomeNotification
 */
 export interface IncomeNotification {
   created: HelsinkiDateTime
@@ -457,7 +457,7 @@ export interface IncomeNotification {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.service.IncomeNotificationType
+* Generated from evaka.core.invoicing.service.IncomeNotificationType
 */
 export type IncomeNotificationType =
   | 'INITIAL_EMAIL'
@@ -466,7 +466,7 @@ export type IncomeNotificationType =
   | 'NEW_CUSTOMER'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.IncomeOption
+* Generated from evaka.core.invoicing.controller.IncomeController.IncomeOption
 */
 export interface IncomeOption {
   isSubType: boolean
@@ -477,7 +477,7 @@ export interface IncomeOption {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.IncomeRequest
+* Generated from evaka.core.invoicing.domain.IncomeRequest
 */
 export interface IncomeRequest {
   attachments: Attachment[]
@@ -492,7 +492,7 @@ export interface IncomeRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.IncomeTypeOptions
+* Generated from evaka.core.invoicing.controller.IncomeController.IncomeTypeOptions
 */
 export interface IncomeTypeOptions {
   expenseTypes: IncomeOption[]
@@ -500,7 +500,7 @@ export interface IncomeTypeOptions {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.IncomeValue
+* Generated from evaka.core.invoicing.domain.IncomeValue
 */
 export interface IncomeValue {
   amount: number
@@ -510,7 +510,7 @@ export interface IncomeValue {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.IncomeController.IncomeWithPermittedActions
+* Generated from evaka.core.invoicing.controller.IncomeController.IncomeWithPermittedActions
 */
 export interface IncomeWithPermittedActions {
   data: Income
@@ -518,7 +518,7 @@ export interface IncomeWithPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.service.InvoiceCodes
+* Generated from evaka.core.invoicing.service.InvoiceCodes
 */
 export interface InvoiceCodes {
   products: ProductWithName[]
@@ -526,7 +526,7 @@ export interface InvoiceCodes {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.service.InvoiceCorrection
+* Generated from evaka.core.invoicing.service.InvoiceCorrection
 */
 export interface InvoiceCorrection {
   amount: number
@@ -548,7 +548,7 @@ export interface InvoiceCorrection {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.service.InvoiceCorrectionInsert
+* Generated from evaka.core.invoicing.service.InvoiceCorrectionInsert
 */
 export interface InvoiceCorrectionInsert {
   amount: number
@@ -563,7 +563,7 @@ export interface InvoiceCorrectionInsert {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.InvoiceCorrectionWithPermittedActions
+* Generated from evaka.core.invoicing.controller.InvoiceCorrectionsController.InvoiceCorrectionWithPermittedActions
 */
 export interface InvoiceCorrectionWithPermittedActions {
   data: InvoiceCorrection
@@ -571,7 +571,7 @@ export interface InvoiceCorrectionWithPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.service.InvoiceDaycare
+* Generated from evaka.core.invoicing.service.InvoiceDaycare
 */
 export interface InvoiceDaycare {
   costCenter: string | null
@@ -580,7 +580,7 @@ export interface InvoiceDaycare {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.InvoiceDetailed
+* Generated from evaka.core.invoicing.domain.InvoiceDetailed
 */
 export interface InvoiceDetailed {
   account: number
@@ -608,7 +608,7 @@ export interface InvoiceDetailed {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.InvoiceDetailedResponse
+* Generated from evaka.core.invoicing.controller.InvoiceController.InvoiceDetailedResponse
 */
 export interface InvoiceDetailedResponse {
   invoice: InvoiceDetailed
@@ -618,13 +618,13 @@ export interface InvoiceDetailedResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceDistinctiveParams
+* Generated from evaka.core.invoicing.controller.InvoiceDistinctiveParams
 */
 export type InvoiceDistinctiveParams =
   | 'MISSING_ADDRESS'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoicePayload
+* Generated from evaka.core.invoicing.controller.InvoicePayload
 */
 export interface InvoicePayload {
   areas: string[]
@@ -635,7 +635,7 @@ export interface InvoicePayload {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.InvoiceReplacementReason
+* Generated from evaka.core.invoicing.domain.InvoiceReplacementReason
 */
 export const invoiceReplacementReasons = [
   'SERVICE_NEED',
@@ -649,7 +649,7 @@ export const invoiceReplacementReasons = [
 export type InvoiceReplacementReason = typeof invoiceReplacementReasons[number]
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.InvoiceRowDetailed
+* Generated from evaka.core.invoicing.domain.InvoiceRowDetailed
 */
 export interface InvoiceRowDetailed {
   amount: number
@@ -673,7 +673,7 @@ export interface InvoiceRowDetailed {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceSortParam
+* Generated from evaka.core.invoicing.controller.InvoiceSortParam
 */
 export type InvoiceSortParam =
   | 'HEAD_OF_FAMILY'
@@ -685,7 +685,7 @@ export type InvoiceSortParam =
   | 'CREATED_AT'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.InvoiceStatus
+* Generated from evaka.core.invoicing.domain.InvoiceStatus
 */
 export type InvoiceStatus =
   | 'DRAFT'
@@ -695,7 +695,7 @@ export type InvoiceStatus =
   | 'REPLACED'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.InvoiceSummary
+* Generated from evaka.core.invoicing.domain.InvoiceSummary
 */
 export interface InvoiceSummary {
   children: PersonBasic[]
@@ -712,7 +712,7 @@ export interface InvoiceSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.InvoiceSummaryResponse
+* Generated from evaka.core.invoicing.controller.InvoiceController.InvoiceSummaryResponse
 */
 export interface InvoiceSummaryResponse {
   data: InvoiceSummary
@@ -720,7 +720,7 @@ export interface InvoiceSummaryResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.service.InvoiceWithCorrection
+* Generated from evaka.core.invoicing.service.InvoiceWithCorrection
 */
 export interface InvoiceWithCorrection {
   id: InvoiceId
@@ -728,7 +728,7 @@ export interface InvoiceWithCorrection {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.MarkReplacementDraftSentRequest
+* Generated from evaka.core.invoicing.controller.InvoiceController.MarkReplacementDraftSentRequest
 */
 export interface MarkReplacementDraftSentRequest {
   notes: string
@@ -736,14 +736,14 @@ export interface MarkReplacementDraftSentRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.NoteUpdateBody
+* Generated from evaka.core.invoicing.controller.InvoiceCorrectionsController.NoteUpdateBody
 */
 export interface NoteUpdateBody {
   note: string
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.data.PagedFeeDecisionSummaries
+* Generated from evaka.core.invoicing.data.PagedFeeDecisionSummaries
 */
 export interface PagedFeeDecisionSummaries {
   data: FeeDecisionSummary[]
@@ -752,7 +752,7 @@ export interface PagedFeeDecisionSummaries {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.PagedInvoiceSummaryResponses
+* Generated from evaka.core.invoicing.controller.InvoiceController.PagedInvoiceSummaryResponses
 */
 export interface PagedInvoiceSummaryResponses {
   data: InvoiceSummaryResponse[]
@@ -761,7 +761,7 @@ export interface PagedInvoiceSummaryResponses {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.data.PagedPayments
+* Generated from evaka.core.invoicing.data.PagedPayments
 */
 export interface PagedPayments {
   data: Payment[]
@@ -770,7 +770,7 @@ export interface PagedPayments {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.data.PagedVoucherValueDecisionSummaries
+* Generated from evaka.core.invoicing.data.PagedVoucherValueDecisionSummaries
 */
 export interface PagedVoucherValueDecisionSummaries {
   data: VoucherValueDecisionSummary[]
@@ -779,7 +779,7 @@ export interface PagedVoucherValueDecisionSummaries {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.Payment
+* Generated from evaka.core.invoicing.domain.Payment
 */
 export interface Payment {
   amount: number
@@ -797,13 +797,13 @@ export interface Payment {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.PaymentDistinctiveParams
+* Generated from evaka.core.invoicing.controller.PaymentDistinctiveParams
 */
 export type PaymentDistinctiveParams =
   | 'MISSING_PAYMENT_DETAILS'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.PaymentSortParam
+* Generated from evaka.core.invoicing.controller.PaymentSortParam
 */
 export type PaymentSortParam =
   | 'UNIT'
@@ -813,7 +813,7 @@ export type PaymentSortParam =
   | 'AMOUNT'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.PaymentStatus
+* Generated from evaka.core.invoicing.domain.PaymentStatus
 */
 export type PaymentStatus =
   | 'DRAFT'
@@ -821,7 +821,7 @@ export type PaymentStatus =
   | 'SENT'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.PaymentUnit
+* Generated from evaka.core.invoicing.domain.PaymentUnit
 */
 export interface PaymentUnit {
   businessId: string | null
@@ -835,7 +835,7 @@ export interface PaymentUnit {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.PersonBasic
+* Generated from evaka.core.invoicing.domain.PersonBasic
 */
 export interface PersonBasic {
   dateOfBirth: LocalDate
@@ -846,7 +846,7 @@ export interface PersonBasic {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.PersonDetailed
+* Generated from evaka.core.invoicing.domain.PersonDetailed
 */
 export interface PersonDetailed {
   dateOfBirth: LocalDate
@@ -871,7 +871,7 @@ export interface PersonDetailed {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.service.ProductWithName
+* Generated from evaka.core.invoicing.service.ProductWithName
 */
 export interface ProductWithName {
   key: string
@@ -879,7 +879,7 @@ export interface ProductWithName {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.RelatedFeeDecision
+* Generated from evaka.core.invoicing.domain.RelatedFeeDecision
 */
 export interface RelatedFeeDecision {
   decisionNumber: number
@@ -887,7 +887,7 @@ export interface RelatedFeeDecision {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.SearchFeeDecisionRequest
+* Generated from evaka.core.invoicing.controller.SearchFeeDecisionRequest
 */
 export interface SearchFeeDecisionRequest {
   area: string[] | null
@@ -906,7 +906,7 @@ export interface SearchFeeDecisionRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.SearchInvoicesRequest
+* Generated from evaka.core.invoicing.controller.SearchInvoicesRequest
 */
 export interface SearchInvoicesRequest {
   area: string[] | null
@@ -922,7 +922,7 @@ export interface SearchInvoicesRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.SearchPaymentsRequest
+* Generated from evaka.core.invoicing.controller.SearchPaymentsRequest
 */
 export interface SearchPaymentsRequest {
   area: string[]
@@ -938,7 +938,7 @@ export interface SearchPaymentsRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.SearchVoucherValueDecisionRequest
+* Generated from evaka.core.invoicing.controller.SearchVoucherValueDecisionRequest
 */
 export interface SearchVoucherValueDecisionRequest {
   area: string[] | null
@@ -957,7 +957,7 @@ export interface SearchVoucherValueDecisionRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.PaymentController.SendPaymentsRequest
+* Generated from evaka.core.invoicing.controller.PaymentController.SendPaymentsRequest
 */
 export interface SendPaymentsRequest {
   dueDate: LocalDate
@@ -966,7 +966,7 @@ export interface SendPaymentsRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.service.generator.ServiceNeedOptionVoucherValueRange
+* Generated from evaka.core.invoicing.service.generator.ServiceNeedOptionVoucherValueRange
 */
 export interface ServiceNeedOptionVoucherValueRange {
   baseValue: number
@@ -980,7 +980,7 @@ export interface ServiceNeedOptionVoucherValueRange {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.ServiceNeedOptionVoucherValueRangeWithId
+* Generated from evaka.core.invoicing.controller.ServiceNeedOptionVoucherValueRangeWithId
 */
 export interface ServiceNeedOptionVoucherValueRangeWithId {
   id: ServiceNeedOptionVoucherValueId
@@ -988,14 +988,14 @@ export interface ServiceNeedOptionVoucherValueRangeWithId {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.SortDirection
+* Generated from evaka.core.invoicing.controller.SortDirection
 */
 export type SortDirection =
   | 'ASC'
   | 'DESC'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.UnitData
+* Generated from evaka.core.invoicing.domain.UnitData
 */
 export interface UnitData {
   areaId: AreaId
@@ -1006,7 +1006,7 @@ export interface UnitData {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
+* Generated from evaka.core.invoicing.domain.VoucherValueDecisionDetailed
 */
 export interface VoucherValueDecisionDetailed {
   approvedAt: HelsinkiDateTime | null
@@ -1051,7 +1051,7 @@ export interface VoucherValueDecisionDetailed {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
+* Generated from evaka.core.invoicing.domain.VoucherValueDecisionDifference
 */
 export const voucherValueDecisionDifferences = [
   'GUARDIANS',
@@ -1071,7 +1071,7 @@ export const voucherValueDecisionDifferences = [
 export type VoucherValueDecisionDifference = typeof voucherValueDecisionDifferences[number]
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionDistinctiveParams
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionDistinctiveParams
 */
 export const voucherValueDecisionDistinctiveParams = [
   'UNCONFIRMED_HOURS',
@@ -1085,7 +1085,7 @@ export const voucherValueDecisionDistinctiveParams = [
 export type VoucherValueDecisionDistinctiveParams = typeof voucherValueDecisionDistinctiveParams[number]
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacementDetailed
+* Generated from evaka.core.invoicing.domain.VoucherValueDecisionPlacementDetailed
 */
 export interface VoucherValueDecisionPlacementDetailed {
   type: PlacementType
@@ -1093,7 +1093,7 @@ export interface VoucherValueDecisionPlacementDetailed {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.VoucherValueDecisionResponse
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.VoucherValueDecisionResponse
 */
 export interface VoucherValueDecisionResponse {
   data: VoucherValueDecisionDetailed
@@ -1101,7 +1101,7 @@ export interface VoucherValueDecisionResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
+* Generated from evaka.core.invoicing.domain.VoucherValueDecisionServiceNeed
 */
 export interface VoucherValueDecisionServiceNeed {
   feeCoefficient: number
@@ -1114,7 +1114,7 @@ export interface VoucherValueDecisionServiceNeed {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionSortParam
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionSortParam
 */
 export type VoucherValueDecisionSortParam =
   | 'HEAD_OF_FAMILY'
@@ -1128,7 +1128,7 @@ export type VoucherValueDecisionSortParam =
   | 'STATUS'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
+* Generated from evaka.core.invoicing.domain.VoucherValueDecisionStatus
 */
 export type VoucherValueDecisionStatus =
   | 'DRAFT'
@@ -1139,7 +1139,7 @@ export type VoucherValueDecisionStatus =
   | 'ANNULLED'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
+* Generated from evaka.core.invoicing.domain.VoucherValueDecisionSummary
 */
 export interface VoucherValueDecisionSummary {
   annullingDecision: boolean
@@ -1160,7 +1160,7 @@ export interface VoucherValueDecisionSummary {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionController.VoucherValueDecisionSummaryWithPermittedActions
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionController.VoucherValueDecisionSummaryWithPermittedActions
 */
 export interface VoucherValueDecisionSummaryWithPermittedActions {
   data: VoucherValueDecisionSummary
@@ -1168,7 +1168,7 @@ export interface VoucherValueDecisionSummaryWithPermittedActions {
 }
 
 /**
-* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
+* Generated from evaka.core.invoicing.domain.VoucherValueDecisionType
 */
 export type VoucherValueDecisionType =
   | 'NORMAL'
@@ -1177,7 +1177,7 @@ export type VoucherValueDecisionType =
   | 'RELIEF_ACCEPTED'
 
 /**
-* Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionTypeRequest
+* Generated from evaka.core.invoicing.controller.VoucherValueDecisionTypeRequest
 */
 export interface VoucherValueDecisionTypeRequest {
   type: VoucherValueDecisionType

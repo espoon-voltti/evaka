@@ -20,7 +20,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodController.createHolidayPeriod
+* Generated from evaka.core.holidayperiod.HolidayPeriodController.createHolidayPeriod
 */
 export async function createHolidayPeriod(
   request: {
@@ -37,7 +37,7 @@ export async function createHolidayPeriod(
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodController.deleteHolidayPeriod
+* Generated from evaka.core.holidayperiod.HolidayPeriodController.deleteHolidayPeriod
 */
 export async function deleteHolidayPeriod(
   request: {
@@ -53,7 +53,7 @@ export async function deleteHolidayPeriod(
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodController.getHolidayPeriod
+* Generated from evaka.core.holidayperiod.HolidayPeriodController.getHolidayPeriod
 */
 export async function getHolidayPeriod(
   request: {
@@ -69,7 +69,7 @@ export async function getHolidayPeriod(
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodController.getHolidayPeriods
+* Generated from evaka.core.holidayperiod.HolidayPeriodController.getHolidayPeriods
 */
 export async function getHolidayPeriods(): Promise<HolidayPeriod[]> {
   const { data: json } = await client.request<JsonOf<HolidayPeriod[]>>({
@@ -81,7 +81,7 @@ export async function getHolidayPeriods(): Promise<HolidayPeriod[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayPeriodController.updateHolidayPeriod
+* Generated from evaka.core.holidayperiod.HolidayPeriodController.updateHolidayPeriod
 */
 export async function updateHolidayPeriod(
   request: {
@@ -99,7 +99,7 @@ export async function updateHolidayPeriod(
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireController.createHolidayQuestionnaire
+* Generated from evaka.core.holidayperiod.HolidayQuestionnaireController.createHolidayQuestionnaire
 */
 export async function createHolidayQuestionnaire(
   request: {
@@ -116,7 +116,7 @@ export async function createHolidayQuestionnaire(
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireController.deleteHolidayQuestionnaire
+* Generated from evaka.core.holidayperiod.HolidayQuestionnaireController.deleteHolidayQuestionnaire
 */
 export async function deleteHolidayQuestionnaire(
   request: {
@@ -132,7 +132,7 @@ export async function deleteHolidayQuestionnaire(
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireController.getQuestionnaire
+* Generated from evaka.core.holidayperiod.HolidayQuestionnaireController.getQuestionnaire
 */
 export async function getQuestionnaire(
   request: {
@@ -148,7 +148,7 @@ export async function getQuestionnaire(
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireController.getQuestionnaires
+* Generated from evaka.core.holidayperiod.HolidayQuestionnaireController.getQuestionnaires
 */
 export async function getQuestionnaires(): Promise<HolidayQuestionnaire[]> {
   const { data: json } = await client.request<JsonOf<HolidayQuestionnaire[]>>({
@@ -160,7 +160,7 @@ export async function getQuestionnaires(): Promise<HolidayQuestionnaire[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.holidayperiod.HolidayQuestionnaireController.updateHolidayQuestionnaire
+* Generated from evaka.core.holidayperiod.HolidayQuestionnaireController.updateHolidayQuestionnaire
 */
 export async function updateHolidayQuestionnaire(
   request: {

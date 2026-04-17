@@ -146,3 +146,23 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2017-2025 City of Espoo"
 SPDX-License-Identifier = "LGPL-2.1-or-later"
 
+[[annotations]]
+path = "service/src/integrationTest/resources/archival-client/**.xml"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023-2025 Tampere region"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = [
+    "service/src/integrationTest/resources/invoice-client/**.xml",
+    "service/src/integrationTest/resources/invoice-client/**.dat",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2021 City of Tampere"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "service/src/integrationTest/resources/payment-client/**.xml"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023-2024 Tampere region"
+SPDX-License-Identifier = "LGPL-2.1-or-later"

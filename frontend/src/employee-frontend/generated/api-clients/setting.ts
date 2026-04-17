@@ -12,7 +12,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.setting.SettingController.getSettings
+* Generated from evaka.core.setting.SettingController.getSettings
 */
 export async function getSettings(): Promise<Partial<Record<SettingType, string>>> {
   const { data: json } = await client.request<JsonOf<Partial<Record<SettingType, string>>>>({
@@ -24,7 +24,7 @@ export async function getSettings(): Promise<Partial<Record<SettingType, string>
 
 
 /**
-* Generated from fi.espoo.evaka.setting.SettingController.putSettings
+* Generated from evaka.core.setting.SettingController.putSettings
 */
 export async function putSettings(
   request: {

@@ -1,0 +1,33 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.invoicing.integration
+
+import evaka.core.invoicing.domain.InvoiceDetailed
+import evaka.core.shared.domain.HelsinkiDateTime
+import io.github.oshai.kotlinlogging.KotlinLogging
+import tools.jackson.databind.json.JsonMapper
+
+private val logger = KotlinLogging.logger {}
+
+interface InvoiceIntegrationClient {
+    data class SendResult(
+        val succeeded: List<InvoiceDetailed> = listOf(),
+        val failed: List<InvoiceDetailed> = listOf(),
+        val manuallySent: List<InvoiceDetailed> = listOf(),
+    )
+
+    fun send(now: HelsinkiDateTime, invoices: List<InvoiceDetailed>): SendResult
+
+    class MockClient(private val jsonMapper: JsonMapper) : InvoiceIntegrationClient {
+        override fun send(now: HelsinkiDateTime, invoices: List<InvoiceDetailed>): SendResult {
+            logger.info {
+                "Mock invoice integration client got invoices ${jsonMapper.writeValueAsString(invoices)}"
+            }
+            val (withSSN, withoutSSN) =
+                invoices.partition { invoice -> invoice.headOfFamily.ssn != null }
+            return SendResult(succeeded = withSSN, manuallySent = withoutSSN)
+        }
+    }
+}

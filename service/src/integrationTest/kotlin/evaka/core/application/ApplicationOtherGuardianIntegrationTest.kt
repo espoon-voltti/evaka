@@ -1,0 +1,364 @@
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.application
+
+import evaka.core.FullApplicationTest
+import evaka.core.application.persistence.daycare.Apply
+import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.decision.getDecisionsByApplication
+import evaka.core.pis.service.blockGuardian
+import evaka.core.pis.updateFosterParentRelationshipValidity
+import evaka.core.sficlient.MockSfiMessagesClient
+import evaka.core.shared.ApplicationId
+import evaka.core.shared.PersonId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.auth.CitizenAuthLevel
+import evaka.core.shared.auth.UserRole
+import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevFosterParent
+import evaka.core.shared.dev.DevPerson
+import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertTestApplication
+import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.security.actionrule.AccessControlFilter
+import evaka.core.test.getApplicationStatus
+import evaka.core.toDaycareFormAdult
+import evaka.core.toDaycareFormChild
+import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
+import java.time.Duration
+import java.time.LocalDate
+import java.util.UUID
+import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
+import org.springframework.beans.factory.annotation.Autowired
+
+class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var applicationStateService: ApplicationStateService
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
+    private val guardian =
+        DevPerson(
+            ssn = "070644-937X",
+            streetAddress = "Kamreerintie 1",
+            postalCode = "00340",
+            postOffice = "Espoo",
+        )
+    private val otherVtjGuardian =
+        DevPerson(
+            ssn = "311299-999E",
+            streetAddress = "Toistie 33",
+            postalCode = "02230",
+            postOffice = "Espoo",
+        )
+    private val fosterParent = DevPerson(ssn = "010106A981M")
+    private val child =
+        DevPerson(
+            ssn = "070714A9126",
+            dateOfBirth = LocalDate.of(2018, 11, 13),
+            streetAddress = "Kamreerintie 1",
+            postalCode = "00340",
+            postOffice = "Espoo",
+        )
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
+
+    private val application: ApplicationId = ApplicationId(UUID.randomUUID())
+
+    @BeforeEach
+    fun beforeEach() {
+        MockSfiMessagesClient.reset()
+
+        db.transaction { tx ->
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(otherVtjGuardian, DevPersonType.ADULT)
+            tx.insert(fosterParent, DevPersonType.ADULT)
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(serviceWorker)
+        }
+        MockPersonDetailsService.addPersons(guardian, child, otherVtjGuardian)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherVtjGuardian, child)
+    }
+
+    @Test
+    fun `sfi messages are sent to guardians and foster parents`() {
+        val expectedOtherGuardians = setOf(otherVtjGuardian.id, fosterParent.id)
+        val clock = MockEvakaClock(2024, 1, 1, 12, 0)
+        insertFosterParent(clock)
+
+        executeTestApplicationProcess(clock) {
+            assertEquals(expectedOtherGuardians, getOtherGuardians())
+        }
+        assertEquals(expectedOtherGuardians + guardian.id, getSfiMessageRecipients())
+    }
+
+    @Test
+    fun `legacy sensitive decisions are sent only to the application guardian`() {
+        val expectedOtherGuardians = setOf(otherVtjGuardian.id, fosterParent.id)
+        val clock = MockEvakaClock(2024, 1, 1, 12, 0)
+        insertFosterParent(clock)
+
+        val preferredStartDate = LocalDate.of(2024, 2, 1)
+        insertTestApplication(preferredStartDate)
+
+        sendApplication(clock)
+        moveToWaitingPlacement(clock)
+        createPlacementPlan(
+            clock,
+            period = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1)),
+        )
+        sendDecisionsWithoutProposal(clock)
+        asyncJobRunner.runPendingJobsSync(clock, maxCount = 1) // create, but don't send yet
+        db.transaction { tx ->
+            tx.createUpdate {
+                    sql(
+                        "UPDATE decision SET document_contains_contact_info = TRUE WHERE application_id = ${bind(application)}"
+                    )
+                }
+                .execute()
+        }
+        asyncJobRunner.runPendingJobsSync(clock) // send
+        acceptDecisions(clock)
+
+        assertEquals(expectedOtherGuardians, getOtherGuardians())
+        assertEquals(setOf(guardian.id), getSfiMessageRecipients())
+    }
+
+    @ParameterizedTest(
+        name =
+            "sfi messages are sent to all guardians and foster parents - foster parent added during the process {0}"
+    )
+    @EnumSource(names = ["SENT", "WAITING_PLACEMENT", "WAITING_DECISION"])
+    fun `sfi messages are sent to guardians and foster parents - foster parent added during the process`(
+        addDuring: ApplicationStatus
+    ) {
+        val expectedOtherGuardians = mutableSetOf(otherVtjGuardian.id)
+        val clock = MockEvakaClock(2024, 1, 1, 12, 0)
+
+        executeTestApplicationProcess(clock) { status ->
+            assertEquals(expectedOtherGuardians, getOtherGuardians())
+            if (status == addDuring) {
+                insertFosterParent(clock)
+                expectedOtherGuardians += fosterParent.id
+            }
+        }
+
+        assertEquals(expectedOtherGuardians + guardian.id, getSfiMessageRecipients())
+    }
+
+    @Test
+    fun `sfi messages are sent to guardians and foster parents - foster parent added after decisions sent is not affected`() {
+        val expectedOtherGuardians = setOf(otherVtjGuardian.id)
+        val clock = MockEvakaClock(2024, 1, 1, 12, 0)
+        executeTestApplicationProcess(clock) { status ->
+            assertEquals(expectedOtherGuardians, getOtherGuardians())
+            if (status == ApplicationStatus.WAITING_CONFIRMATION) {
+                insertFosterParent(clock)
+            }
+        }
+
+        assertEquals(expectedOtherGuardians + guardian.id, getSfiMessageRecipients())
+    }
+
+    @ParameterizedTest(
+        name =
+            "sfi messages are sent to all guardians and foster parents - guardian blocked during the process {0}"
+    )
+    @EnumSource(names = ["SENT", "WAITING_PLACEMENT", "WAITING_DECISION"])
+    fun `sfi messages are sent to guardians - guardian blocked during the process`(
+        blockDuring: ApplicationStatus
+    ) {
+        val expectedOtherGuardians = mutableSetOf(otherVtjGuardian.id, fosterParent.id)
+        val clock = MockEvakaClock(2024, 1, 1, 12, 0)
+
+        insertFosterParent(clock)
+        executeTestApplicationProcess(clock) { status ->
+            assertEquals(expectedOtherGuardians, getOtherGuardians())
+            if (status == blockDuring) {
+                db.transaction { it.blockGuardian(child.id, otherVtjGuardian.id) }
+                expectedOtherGuardians -= otherVtjGuardian.id
+            }
+        }
+
+        assertEquals(expectedOtherGuardians + guardian.id, getSfiMessageRecipients())
+    }
+
+    @ParameterizedTest(
+        name =
+            "sfi messages are sent to all guardians and foster parents - foster parent relationship expired during the process {0}"
+    )
+    @EnumSource(names = ["SENT", "WAITING_PLACEMENT", "WAITING_DECISION"])
+    fun `sfi messages are sent to guardians - foster parent relationship expired during the process`(
+        expireDuring: ApplicationStatus
+    ) {
+        val expectedOtherGuardians = mutableSetOf(otherVtjGuardian.id, fosterParent.id)
+        val clock = MockEvakaClock(2024, 1, 1, 12, 0)
+
+        val fosterParentRelationship = insertFosterParent(clock)
+        executeTestApplicationProcess(clock) { status ->
+            assertEquals(expectedOtherGuardians, getOtherGuardians())
+            if (status == expireDuring) {
+                db.transaction {
+                    it.updateFosterParentRelationshipValidity(
+                        fosterParentRelationship,
+                        DateRange(clock.today(), clock.today()),
+                        serviceWorker.user,
+                        clock.now(),
+                    )
+                }
+                clock.tick(Duration.ofDays(1))
+                expectedOtherGuardians -= fosterParent.id
+            }
+        }
+
+        assertEquals(expectedOtherGuardians + guardian.id, getSfiMessageRecipients())
+    }
+
+    private fun insertTestApplication(preferredStartDate: LocalDate): ApplicationId =
+        db.transaction { tx ->
+            tx.insertTestApplication(
+                id = application,
+                type = ApplicationType.DAYCARE,
+                status = ApplicationStatus.CREATED,
+                guardianId = guardian.id,
+                childId = child.id,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        guardian = guardian.toDaycareFormAdult(),
+                        child = child.toDaycareFormChild(),
+                        apply = Apply(preferredUnits = listOf(daycare.id)),
+                        preferredStartDate = preferredStartDate,
+                    ),
+            )
+        }
+
+    private fun insertFosterParent(clock: EvakaClock) =
+        db.transaction {
+            it.insert(
+                DevFosterParent(
+                    childId = child.id,
+                    parentId = fosterParent.id,
+                    validDuring = DateRange(clock.today(), null),
+                    modifiedAt = clock.now(),
+                    modifiedBy = serviceWorker.evakaUserId,
+                )
+            )
+        }
+
+    private fun getOtherGuardians(): Set<PersonId> =
+        db.read { it.getApplicationOtherGuardians(application) }
+
+    private fun sendApplication(clock: EvakaClock) =
+        db.transaction { tx ->
+            applicationStateService.sendApplication(
+                tx,
+                guardian.user(CitizenAuthLevel.STRONG),
+                clock,
+                application,
+            )
+        }
+
+    private fun moveToWaitingPlacement(clock: EvakaClock) =
+        db.transaction { tx ->
+            applicationStateService.moveToWaitingPlacement(
+                tx,
+                serviceWorker.user,
+                clock,
+                application,
+            )
+        }
+
+    private fun createPlacementPlan(clock: EvakaClock, period: FiniteDateRange) =
+        db.transaction { tx ->
+            applicationStateService.createPlacementPlan(
+                tx,
+                serviceWorker.user,
+                clock,
+                application,
+                DaycarePlacementPlan(daycare.id, period),
+            )
+        }
+
+    private fun sendDecisionsWithoutProposal(clock: EvakaClock) {
+        db.transaction { tx ->
+            applicationStateService.sendDecisionsWithoutProposal(
+                tx,
+                serviceWorker.user,
+                clock,
+                application,
+            )
+        }
+    }
+
+    private fun acceptDecisions(clock: EvakaClock) {
+        db.transaction { tx ->
+            tx.getDecisionsByApplication(application, AccessControlFilter.PermitAll).forEach {
+                decision ->
+                applicationStateService.acceptDecision(
+                    tx,
+                    guardian.user(CitizenAuthLevel.STRONG),
+                    clock,
+                    application,
+                    decision.id,
+                    requestedStartDate = decision.startDate,
+                )
+            }
+        }
+    }
+
+    private fun getSfiMessageRecipients(): Set<PersonId> =
+        MockSfiMessagesClient.getMessages()
+            .map {
+                when (it.ssn) {
+                    guardian.ssn -> guardian.id
+                    otherVtjGuardian.ssn -> otherVtjGuardian.id
+                    fosterParent.ssn -> fosterParent.id
+                    else -> error("Unknown Suomi.fi message recipient SSN $it.ssn")
+                }
+            }
+            .toSet()
+
+    // Creates a test application and performs the following state transitions on it:
+    // CREATED -> SENT -> WAITING_PLACEMENT -> WAITING_DECISION -> WAITING_CONFIRMATION -> ACTIVE
+    // The given callback is called after every transition
+    private fun executeTestApplicationProcess(
+        clock: EvakaClock,
+        callback: (ApplicationStatus) -> Unit,
+    ) {
+        val preferredStartDate = LocalDate.of(2024, 2, 1)
+        insertTestApplication(preferredStartDate)
+
+        fun checkpoint() = callback(db.read { it.getApplicationStatus(application) })
+
+        sendApplication(clock)
+        checkpoint()
+        moveToWaitingPlacement(clock)
+        checkpoint()
+        createPlacementPlan(
+            clock,
+            period = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1)),
+        )
+        checkpoint()
+        sendDecisionsWithoutProposal(clock)
+        asyncJobRunner.runPendingJobsSync(clock)
+        checkpoint()
+        acceptDecisions(clock)
+        checkpoint()
+    }
+}

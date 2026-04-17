@@ -105,3 +105,7 @@ logging:
       springframework:
         boot:
           autoconfigure: INFO
+
+trevaka:
+  vtj-kysely-api-key: vtj-kysely-api-key-123
+  vtj-mutpa-api-key: vtj-mutpa-api-key-123

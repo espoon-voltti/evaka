@@ -16,7 +16,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.finance.notes.FinanceNoteController.createFinanceNote
+* Generated from evaka.core.finance.notes.FinanceNoteController.createFinanceNote
 */
 export async function createFinanceNote(
   request: {
@@ -33,7 +33,7 @@ export async function createFinanceNote(
 
 
 /**
-* Generated from fi.espoo.evaka.finance.notes.FinanceNoteController.deleteFinanceNote
+* Generated from evaka.core.finance.notes.FinanceNoteController.deleteFinanceNote
 */
 export async function deleteFinanceNote(
   request: {
@@ -49,7 +49,7 @@ export async function deleteFinanceNote(
 
 
 /**
-* Generated from fi.espoo.evaka.finance.notes.FinanceNoteController.getFinanceNotes
+* Generated from evaka.core.finance.notes.FinanceNoteController.getFinanceNotes
 */
 export async function getFinanceNotes(
   request: {
@@ -65,7 +65,7 @@ export async function getFinanceNotes(
 
 
 /**
-* Generated from fi.espoo.evaka.finance.notes.FinanceNoteController.updateFinanceNote
+* Generated from evaka.core.finance.notes.FinanceNoteController.updateFinanceNote
 */
 export async function updateFinanceNote(
   request: {

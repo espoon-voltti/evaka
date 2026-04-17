@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: 2023 Tampere region
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+evaka:
+  database:
+    flyway:
+      locations:
+        - db/migration
+        - vesilahti/db/migration
+  oph:
+    organizer_oid: "1.2.246.562.10.81321154148"
+    organizer_id: "240"
+    municipality_code: "922"
+  integration:
+    sfi:
+      contact_organization:
+        name: "eVaka Vesilahti"
+        street_address: "Rautialantie 60"
+        postal_code: "37470"
+        post_office: "Vesilahti"
+  planned_absence:
+    enabled_for_hour_based_service_needs: true
+
+---
+spring.config.activate.on-profile: local
+evaka:
+  email:
+    sender_address: evaka@localhost
+    sender_name:
+      fi: evaka_local_fi
+      sv: evaka_local_sv
+  integration:
+    koski:
+      enabled: false
+    archival:
+      enabled: true
+vesilahti:
+  bucket:
+    export: trevaka-export-dev

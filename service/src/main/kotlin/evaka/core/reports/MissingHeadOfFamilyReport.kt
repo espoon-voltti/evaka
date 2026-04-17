@@ -1,0 +1,121 @@
+// SPDX-FileCopyrightText: 2017-2020 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.reports
+
+import evaka.core.Audit
+import evaka.core.shared.ChildId
+import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.data.DateSet
+import evaka.core.shared.db.Database
+import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.security.AccessControl
+import evaka.core.shared.security.Action
+import java.time.LocalDate
+import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+
+@RestController
+class MissingHeadOfFamilyReportController(private val accessControl: AccessControl) {
+    @GetMapping("/employee/reports/missing-head-of-family")
+    fun getMissingHeadOfFamilyReport(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
+    ): List<MissingHeadOfFamilyReportRow> {
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT,
+                    )
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getMissingHeadOfFamilyRows(from = from, to = to)
+                }
+            }
+            .also {
+                Audit.MissingHeadOfFamilyReportRead.log(
+                    meta = mapOf("from" to from, "to" to to, "count" to it.size)
+                )
+            }
+    }
+}
+
+private fun Database.Read.getMissingHeadOfFamilyRows(
+    from: LocalDate,
+    to: LocalDate?,
+): List<MissingHeadOfFamilyReportRow> =
+    createQuery {
+            val dateRange = DateRange(from, to)
+            sql(
+                """
+SELECT child_id, first_name, last_name, without_head
+FROM (
+    SELECT
+        p.id AS child_id,
+        p.first_name,
+        p.last_name,
+        -- all placement days
+        (
+            SELECT range_agg(daterange(start_date, end_date, '[]') * ${bind(dateRange)})
+            FROM placement
+            WHERE
+                child_id = p.id AND
+                daterange(start_date, end_date, '[]') && ${bind(dateRange)} AND
+                type <> 'CLUB'
+        )
+        -- remove days with head of family
+        - coalesce((
+            SELECT range_agg(daterange(start_date, end_date, '[]'))
+            FROM fridge_child
+            WHERE child_id = p.id AND conflict = false
+        ), '{}')
+        -- remove days with foster parent
+        - coalesce((
+            SELECT range_agg(valid_during)
+            FROM foster_parent
+            WHERE child_id = p.id
+        ), '{}')
+        AS without_head
+    FROM person p
+    JOIN child c ON c.id = p.id
+    WHERE
+        EXISTS (
+            SELECT 1 FROM placement
+            WHERE
+                child_id = p.id AND
+                daterange(start_date, end_date, '[]') && ${bind(dateRange)} AND
+                type <> 'CLUB'
+        ) AND
+        p.duplicate_of IS NULL
+        AND p.date_of_death IS NULL
+) s
+WHERE NOT isempty(without_head)
+ORDER BY last_name, first_name
+        """
+            )
+        }
+        .toList {
+            MissingHeadOfFamilyReportRow(
+                childId = column("child_id"),
+                firstName = column("first_name"),
+                lastName = column("last_name"),
+                rangesWithoutHead = column<DateSet>("without_head").ranges().toList(),
+            )
+        }
+
+data class MissingHeadOfFamilyReportRow(
+    val childId: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val rangesWithoutHead: List<FiniteDateRange>,
+)

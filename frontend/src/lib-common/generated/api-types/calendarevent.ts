@@ -19,7 +19,7 @@ import type { PersonId } from './shared'
 import TimeRange from '../../time-range'
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.AttendanceType
+* Generated from evaka.core.calendarevent.AttendanceType
 */
 export type AttendanceType =
   | 'INDIVIDUAL'
@@ -27,7 +27,7 @@ export type AttendanceType =
   | 'UNIT'
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.AttendingChild
+* Generated from evaka.core.calendarevent.AttendingChild
 */
 export interface AttendingChild {
   groupName: string | null
@@ -37,7 +37,7 @@ export interface AttendingChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEvent
+* Generated from evaka.core.calendarevent.CalendarEvent
 */
 export interface CalendarEvent {
   contentModifiedAt: HelsinkiDateTime
@@ -55,7 +55,7 @@ export interface CalendarEvent {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventForm
+* Generated from evaka.core.calendarevent.CalendarEventForm
 */
 export interface CalendarEventForm {
   description: string
@@ -69,7 +69,7 @@ export interface CalendarEventForm {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventTime
+* Generated from evaka.core.calendarevent.CalendarEventTime
 */
 export interface CalendarEventTime {
   childId: PersonId | null
@@ -80,7 +80,7 @@ export interface CalendarEventTime {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeCitizenReservationForm
+* Generated from evaka.core.calendarevent.CalendarEventTimeCitizenReservationForm
 */
 export interface CalendarEventTimeCitizenReservationForm {
   calendarEventTimeId: CalendarEventTimeId
@@ -88,7 +88,7 @@ export interface CalendarEventTimeCitizenReservationForm {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeClearingForm
+* Generated from evaka.core.calendarevent.CalendarEventTimeClearingForm
 */
 export interface CalendarEventTimeClearingForm {
   calendarEventId: CalendarEventId
@@ -96,7 +96,7 @@ export interface CalendarEventTimeClearingForm {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeEmployeeReservationForm
+* Generated from evaka.core.calendarevent.CalendarEventTimeEmployeeReservationForm
 */
 export interface CalendarEventTimeEmployeeReservationForm {
   calendarEventTimeId: CalendarEventTimeId
@@ -104,7 +104,7 @@ export interface CalendarEventTimeEmployeeReservationForm {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventTimeForm
+* Generated from evaka.core.calendarevent.CalendarEventTimeForm
 */
 export interface CalendarEventTimeForm {
   date: LocalDate
@@ -112,14 +112,14 @@ export interface CalendarEventTimeForm {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventType
+* Generated from evaka.core.calendarevent.CalendarEventType
 */
 export type CalendarEventType =
   | 'DAYCARE_EVENT'
   | 'DISCUSSION_SURVEY'
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CalendarEventUpdateForm
+* Generated from evaka.core.calendarevent.CalendarEventUpdateForm
 */
 export interface CalendarEventUpdateForm {
   description: string
@@ -129,7 +129,7 @@ export interface CalendarEventUpdateForm {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CitizenCalendarEvent
+* Generated from evaka.core.calendarevent.CitizenCalendarEvent
 */
 export interface CitizenCalendarEvent {
   attendingChildren: Partial<Record<PersonId, AttendingChild[]>>
@@ -142,7 +142,7 @@ export interface CitizenCalendarEvent {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.CitizenCalendarEventTime
+* Generated from evaka.core.calendarevent.CitizenCalendarEventTime
 */
 export interface CitizenCalendarEventTime {
   childId: PersonId | null
@@ -154,7 +154,7 @@ export interface CitizenCalendarEventTime {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.DiscussionReservationDay
+* Generated from evaka.core.calendarevent.DiscussionReservationDay
 */
 export interface DiscussionReservationDay {
   date: LocalDate
@@ -164,7 +164,7 @@ export interface DiscussionReservationDay {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.GroupInfo
+* Generated from evaka.core.calendarevent.GroupInfo
 */
 export interface GroupInfo {
   id: GroupId
@@ -172,7 +172,7 @@ export interface GroupInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.calendarevent.IndividualChild
+* Generated from evaka.core.calendarevent.IndividualChild
 */
 export interface IndividualChild {
   firstName: string

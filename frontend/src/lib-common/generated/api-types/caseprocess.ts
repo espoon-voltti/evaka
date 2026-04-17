@@ -13,7 +13,7 @@ import LocalTime from '../../local-time'
 import type { UUID } from '../../types'
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.CaseProcess
+* Generated from evaka.core.caseprocess.CaseProcess
 */
 export interface CaseProcess {
   archiveDurationMonths: number | null
@@ -28,7 +28,7 @@ export interface CaseProcess {
 }
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.CaseProcessHistoryRow
+* Generated from evaka.core.caseprocess.CaseProcessHistoryRow
 */
 export interface CaseProcessHistoryRow {
   enteredAt: HelsinkiDateTime
@@ -38,7 +38,7 @@ export interface CaseProcessHistoryRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.CaseProcessState
+* Generated from evaka.core.caseprocess.CaseProcessState
 */
 export type CaseProcessState =
   | 'INITIAL'
@@ -47,7 +47,7 @@ export type CaseProcessState =
   | 'COMPLETED'
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.DocumentConfidentiality
+* Generated from evaka.core.caseprocess.DocumentConfidentiality
 */
 export interface DocumentConfidentiality {
   basis: string
@@ -55,7 +55,7 @@ export interface DocumentConfidentiality {
 }
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.DocumentMetadata
+* Generated from evaka.core.caseprocess.DocumentMetadata
 */
 export interface DocumentMetadata {
   confidential: boolean | null
@@ -72,14 +72,14 @@ export interface DocumentMetadata {
 }
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.DocumentOrigin
+* Generated from evaka.core.caseprocess.DocumentOrigin
 */
 export type DocumentOrigin =
   | 'ELECTRONIC'
   | 'PAPER'
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.DocumentVersion
+* Generated from evaka.core.caseprocess.DocumentVersion
 */
 export interface DocumentVersion {
   createdAt: HelsinkiDateTime
@@ -89,7 +89,7 @@ export interface DocumentVersion {
 }
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.ProcessMetadata
+* Generated from evaka.core.caseprocess.ProcessMetadata
 */
 export interface ProcessMetadata {
   primaryDocument: DocumentMetadata
@@ -99,14 +99,14 @@ export interface ProcessMetadata {
 }
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.ProcessMetadataResponse
+* Generated from evaka.core.caseprocess.ProcessMetadataResponse
 */
 export interface ProcessMetadataResponse {
   data: ProcessMetadata | null
 }
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.SfiDelivery
+* Generated from evaka.core.caseprocess.SfiDelivery
 */
 export interface SfiDelivery {
   method: SfiMethod
@@ -115,7 +115,7 @@ export interface SfiDelivery {
 }
 
 /**
-* Generated from fi.espoo.evaka.caseprocess.SfiMethod
+* Generated from evaka.core.caseprocess.SfiMethod
 */
 export type SfiMethod =
   | 'ELECTRONIC'

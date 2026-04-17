@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuMealType
+* Generated from evaka.core.nekku.NekkuMealType
 */
 export interface NekkuMealType {
   name: string
@@ -13,7 +13,7 @@ export interface NekkuMealType {
 }
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuProductMealTime
+* Generated from evaka.core.nekku.NekkuProductMealTime
 */
 export type NekkuProductMealTime =
   | 'BREAKFAST'
@@ -23,7 +23,7 @@ export type NekkuProductMealTime =
   | 'SUPPER'
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuProductMealType
+* Generated from evaka.core.nekku.NekkuProductMealType
 */
 export const nekku_product_meal_type = [
   'VEGAN',
@@ -33,7 +33,7 @@ export const nekku_product_meal_type = [
 export type NekkuProductMealType = typeof nekku_product_meal_type[number]
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuSpecialDietChoices
+* Generated from evaka.core.nekku.NekkuSpecialDietChoices
 */
 export interface NekkuSpecialDietChoices {
   dietId: string
@@ -42,7 +42,7 @@ export interface NekkuSpecialDietChoices {
 }
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuSpecialDietOptionWithFieldId
+* Generated from evaka.core.nekku.NekkuSpecialDietOptionWithFieldId
 */
 export interface NekkuSpecialDietOptionWithFieldId {
   fieldId: string
@@ -52,7 +52,7 @@ export interface NekkuSpecialDietOptionWithFieldId {
 }
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuSpecialDietType
+* Generated from evaka.core.nekku.NekkuSpecialDietType
 */
 export const nekku_special_diet_type = [
   'TEXT',
@@ -66,7 +66,7 @@ export const nekku_special_diet_type = [
 export type NekkuSpecialDietType = typeof nekku_special_diet_type[number]
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuSpecialDietWithoutFields
+* Generated from evaka.core.nekku.NekkuSpecialDietWithoutFields
 */
 export interface NekkuSpecialDietWithoutFields {
   id: string
@@ -74,7 +74,7 @@ export interface NekkuSpecialDietWithoutFields {
 }
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuSpecialDietsFieldWithoutOptions
+* Generated from evaka.core.nekku.NekkuSpecialDietsFieldWithoutOptions
 */
 export interface NekkuSpecialDietsFieldWithoutOptions {
   diet_id: string
@@ -84,7 +84,7 @@ export interface NekkuSpecialDietsFieldWithoutOptions {
 }
 
 /**
-* Generated from fi.espoo.evaka.nekku.NekkuUnitNumber
+* Generated from evaka.core.nekku.NekkuUnitNumber
 */
 export interface NekkuUnitNumber {
   name: string

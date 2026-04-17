@@ -5,7 +5,7 @@
 package evaka.codegen.api
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import fi.espoo.evaka.shared.config.SealedSubclassSimpleName
+import evaka.core.shared.config.SealedSubclassSimpleName
 import java.time.LocalDate
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf

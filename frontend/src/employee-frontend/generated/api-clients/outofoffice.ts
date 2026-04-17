@@ -15,7 +15,7 @@ import { uri } from 'lib-common/uri'
 
 
 /**
-* Generated from fi.espoo.evaka.outofoffice.OutOfOfficeController.deleteOutOfOfficePeriod
+* Generated from evaka.core.outofoffice.OutOfOfficeController.deleteOutOfOfficePeriod
 */
 export async function deleteOutOfOfficePeriod(
   request: {
@@ -31,7 +31,7 @@ export async function deleteOutOfOfficePeriod(
 
 
 /**
-* Generated from fi.espoo.evaka.outofoffice.OutOfOfficeController.getOutOfOfficePeriods
+* Generated from evaka.core.outofoffice.OutOfOfficeController.getOutOfOfficePeriods
 */
 export async function getOutOfOfficePeriods(): Promise<OutOfOfficePeriod[]> {
   const { data: json } = await client.request<JsonOf<OutOfOfficePeriod[]>>({
@@ -43,7 +43,7 @@ export async function getOutOfOfficePeriods(): Promise<OutOfOfficePeriod[]> {
 
 
 /**
-* Generated from fi.espoo.evaka.outofoffice.OutOfOfficeController.upsertOutOfOfficePeriod
+* Generated from evaka.core.outofoffice.OutOfOfficeController.upsertOutOfOfficePeriod
 */
 export async function upsertOutOfOfficePeriod(
   request: {

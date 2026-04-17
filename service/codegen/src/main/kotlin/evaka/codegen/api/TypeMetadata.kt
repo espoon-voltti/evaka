@@ -4,9 +4,9 @@
 
 package evaka.codegen.api
 
-import fi.espoo.evaka.ExcludeCodeGen
-import fi.espoo.evaka.shared.DatabaseTable
-import fi.espoo.evaka.shared.config.defaultJsonMapperBuilder
+import evaka.core.ExcludeCodeGen
+import evaka.core.shared.DatabaseTable
+import evaka.core.shared.config.defaultJsonMapperBuilder
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.allSuperclasses

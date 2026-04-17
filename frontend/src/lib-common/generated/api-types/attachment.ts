@@ -7,7 +7,7 @@
 import type { AttachmentId } from './shared'
 
 /**
-* Generated from fi.espoo.evaka.attachment.Attachment
+* Generated from evaka.core.attachment.Attachment
 */
 export interface Attachment {
   contentType: string

@@ -5,7 +5,7 @@
 // GENERATED FILE: no manual modifications
 
 /**
-* Generated from fi.espoo.evaka.vtjclient.dto.Nationality
+* Generated from evaka.core.vtjclient.dto.Nationality
 */
 export interface Nationality {
   countryCode: string
@@ -13,7 +13,7 @@ export interface Nationality {
 }
 
 /**
-* Generated from fi.espoo.evaka.vtjclient.dto.NativeLanguage
+* Generated from evaka.core.vtjclient.dto.NativeLanguage
 */
 export interface NativeLanguage {
   code: string

@@ -35,7 +35,7 @@ import { deserializeJsonHelsinkiDateTimeRange } from './shared'
 import { deserializeJsonReservationResponse } from './reservations'
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.AbsenceRangeRequest
+* Generated from evaka.core.attendance.ChildAttendanceController.AbsenceRangeRequest
 */
 export interface AbsenceRangeRequest {
   absenceType: AbsenceType
@@ -43,7 +43,7 @@ export interface AbsenceRangeRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ArrivalsRequest
+* Generated from evaka.core.attendance.ChildAttendanceController.ArrivalsRequest
 */
 export interface ArrivalsRequest {
   arrived: LocalTime
@@ -51,7 +51,7 @@ export interface ArrivalsRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.Attendance
+* Generated from evaka.core.attendance.Attendance
 */
 export interface Attendance {
   arrived: HelsinkiDateTime
@@ -72,7 +72,7 @@ export interface Attendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.AttendanceChild
+* Generated from evaka.core.attendance.AttendanceChild
 */
 export interface AttendanceChild {
   backup: boolean
@@ -95,7 +95,7 @@ export interface AttendanceChild {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.AttendanceStatus
+* Generated from evaka.core.attendance.AttendanceStatus
 */
 export type AttendanceStatus =
   | 'COMING'
@@ -104,7 +104,7 @@ export type AttendanceStatus =
   | 'ABSENT'
 
 /**
-* Generated from fi.espoo.evaka.attendance.AttendanceTimes
+* Generated from evaka.core.attendance.AttendanceTimes
 */
 export interface AttendanceTimes {
   arrived: HelsinkiDateTime
@@ -114,7 +114,7 @@ export interface AttendanceTimes {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAbsence
+* Generated from evaka.core.attendance.ChildAbsence
 */
 export interface ChildAbsence {
   category: AbsenceCategory
@@ -122,7 +122,7 @@ export interface ChildAbsence {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ChildAttendanceStatusResponse
+* Generated from evaka.core.attendance.ChildAttendanceController.ChildAttendanceStatusResponse
 */
 export interface ChildAttendanceStatusResponse {
   absences: ChildAbsence[]
@@ -131,7 +131,7 @@ export interface ChildAttendanceStatusResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ChildDeparture
+* Generated from evaka.core.attendance.ChildAttendanceController.ChildDeparture
 */
 export interface ChildDeparture {
   absenceTypeBillable: AbsenceType | null
@@ -140,7 +140,7 @@ export interface ChildDeparture {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ContactInfo
+* Generated from evaka.core.attendance.ContactInfo
 */
 export interface ContactInfo {
   backupPhone: string
@@ -153,7 +153,7 @@ export interface ContactInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.CurrentDayStaffAttendanceResponse
+* Generated from evaka.core.attendance.CurrentDayStaffAttendanceResponse
 */
 export interface CurrentDayStaffAttendanceResponse {
   extraAttendances: ExternalStaffMember[]
@@ -162,7 +162,7 @@ export interface CurrentDayStaffAttendanceResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.DeparturesRequest
+* Generated from evaka.core.attendance.ChildAttendanceController.DeparturesRequest
 */
 export interface DeparturesRequest {
   departed: LocalTime
@@ -170,7 +170,7 @@ export interface DeparturesRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.EmployeeAttendance
+* Generated from evaka.core.attendance.EmployeeAttendance
 */
 export interface EmployeeAttendance {
   allowedToEdit: boolean
@@ -184,7 +184,7 @@ export interface EmployeeAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ExpectedAbsencesOnDeparturesRequest
+* Generated from evaka.core.attendance.ChildAttendanceController.ExpectedAbsencesOnDeparturesRequest
 */
 export interface ExpectedAbsencesOnDeparturesRequest {
   childIds: PersonId[]
@@ -192,14 +192,14 @@ export interface ExpectedAbsencesOnDeparturesRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ExpectedAbsencesOnDeparturesResponse
+* Generated from evaka.core.attendance.ChildAttendanceController.ExpectedAbsencesOnDeparturesResponse
 */
 export interface ExpectedAbsencesOnDeparturesResponse {
   categoriesByChild: Partial<Record<PersonId, AbsenceCategory[] | null>>
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ExternalAttendance
+* Generated from evaka.core.attendance.ExternalAttendance
 */
 export interface ExternalAttendance {
   arrived: HelsinkiDateTime
@@ -213,7 +213,7 @@ export interface ExternalAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.ExternalAttendanceBody
+* Generated from evaka.core.attendance.RealtimeStaffAttendanceController.ExternalAttendanceBody
 */
 export interface ExternalAttendanceBody {
   date: LocalDate
@@ -223,7 +223,7 @@ export interface ExternalAttendanceBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.ExternalAttendanceUpsert
+* Generated from evaka.core.attendance.RealtimeStaffAttendanceController.ExternalAttendanceUpsert
 */
 export interface ExternalAttendanceUpsert {
   arrived: HelsinkiDateTime
@@ -234,7 +234,7 @@ export interface ExternalAttendanceUpsert {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.ExternalStaffArrivalRequest
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.ExternalStaffArrivalRequest
 */
 export interface ExternalStaffArrivalRequest {
   arrived: LocalTime
@@ -244,7 +244,7 @@ export interface ExternalStaffArrivalRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.ExternalStaffDepartureRequest
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.ExternalStaffDepartureRequest
 */
 export interface ExternalStaffDepartureRequest {
   attendanceId: StaffAttendanceExternalId
@@ -252,7 +252,7 @@ export interface ExternalStaffDepartureRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ExternalStaffMember
+* Generated from evaka.core.attendance.ExternalStaffMember
 */
 export interface ExternalStaffMember {
   arrived: HelsinkiDateTime
@@ -263,14 +263,14 @@ export interface ExternalStaffMember {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.FullDayAbsenceRequest
+* Generated from evaka.core.attendance.ChildAttendanceController.FullDayAbsenceRequest
 */
 export interface FullDayAbsenceRequest {
   absenceType: AbsenceType
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.GroupInfo
+* Generated from evaka.core.attendance.GroupInfo
 */
 export interface GroupInfo {
   childCapacity: number
@@ -281,7 +281,7 @@ export interface GroupInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.OngoingAttendanceWithUnit
+* Generated from evaka.core.attendance.OngoingAttendanceWithUnit
 */
 export interface OngoingAttendanceWithUnit {
   date: LocalDate
@@ -291,7 +291,7 @@ export interface OngoingAttendanceWithUnit {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.OpenGroupAttendance
+* Generated from evaka.core.attendance.OpenGroupAttendance
 */
 export interface OpenGroupAttendance {
   date: LocalDate
@@ -301,14 +301,14 @@ export interface OpenGroupAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.OpenGroupAttendanceResponse
+* Generated from evaka.core.attendance.RealtimeStaffAttendanceController.OpenGroupAttendanceResponse
 */
 export interface OpenGroupAttendanceResponse {
   openGroupAttendance: OpenGroupAttendance | null
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.PlannedStaffAttendance
+* Generated from evaka.core.attendance.PlannedStaffAttendance
 */
 export interface PlannedStaffAttendance {
   description: string | null
@@ -318,7 +318,7 @@ export interface PlannedStaffAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.Staff
+* Generated from evaka.core.attendance.Staff
 */
 export interface Staff {
   firstName: string
@@ -330,7 +330,7 @@ export interface Staff {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffArrivalRequest
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.StaffArrivalRequest
 */
 export interface StaffArrivalRequest {
   employeeId: EmployeeId
@@ -342,7 +342,7 @@ export interface StaffArrivalRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.StaffAttendanceBody
+* Generated from evaka.core.attendance.RealtimeStaffAttendanceController.StaffAttendanceBody
 */
 export interface StaffAttendanceBody {
   date: LocalDate
@@ -352,7 +352,7 @@ export interface StaffAttendanceBody {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.StaffAttendanceResponse
+* Generated from evaka.core.attendance.StaffAttendanceResponse
 */
 export interface StaffAttendanceResponse {
   extraAttendances: ExternalAttendance[]
@@ -360,7 +360,7 @@ export interface StaffAttendanceResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.StaffAttendanceType
+* Generated from evaka.core.attendance.StaffAttendanceType
 */
 export const staffAttendanceTypes = [
   'PRESENT',
@@ -375,7 +375,7 @@ export const staffAttendanceTypes = [
 export type StaffAttendanceType = typeof staffAttendanceTypes[number]
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateRequest
 */
 export interface StaffAttendanceUpdateRequest {
   date: LocalDate
@@ -385,7 +385,7 @@ export interface StaffAttendanceUpdateRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateResponse
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.StaffAttendanceUpdateResponse
 */
 export interface StaffAttendanceUpdateResponse {
   deleted: StaffAttendanceRealtimeId[]
@@ -393,7 +393,7 @@ export interface StaffAttendanceUpdateResponse {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.StaffAttendanceUpsert
+* Generated from evaka.core.attendance.RealtimeStaffAttendanceController.StaffAttendanceUpsert
 */
 export interface StaffAttendanceUpsert {
   arrived: HelsinkiDateTime
@@ -405,7 +405,7 @@ export interface StaffAttendanceUpsert {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffDepartureRequest
+* Generated from evaka.core.attendance.MobileRealtimeStaffAttendanceController.StaffDepartureRequest
 */
 export interface StaffDepartureRequest {
   employeeId: EmployeeId
@@ -416,7 +416,7 @@ export interface StaffDepartureRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.StaffMember
+* Generated from evaka.core.attendance.StaffMember
 */
 export interface StaffMember {
   attendances: StaffMemberAttendance[]
@@ -434,7 +434,7 @@ export interface StaffMember {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.StaffMemberAttendance
+* Generated from evaka.core.attendance.StaffMemberAttendance
 */
 export interface StaffMemberAttendance {
   arrived: HelsinkiDateTime
@@ -448,7 +448,7 @@ export interface StaffMemberAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.StaffMemberWithOperationalDays
+* Generated from evaka.core.attendance.StaffMemberWithOperationalDays
 */
 export interface StaffMemberWithOperationalDays {
   operationalDays: LocalDate[]
@@ -456,7 +456,7 @@ export interface StaffMemberWithOperationalDays {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.UnitInfo
+* Generated from evaka.core.attendance.UnitInfo
 */
 export interface UnitInfo {
   features: PilotFeature[]
@@ -469,7 +469,7 @@ export interface UnitInfo {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.UnitStats
+* Generated from evaka.core.attendance.UnitStats
 */
 export interface UnitStats {
   id: DaycareId
