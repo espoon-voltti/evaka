@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { Language } from 'lib-common/generated/api-types/daycare'
+
 import type { DevDaycare } from '../../generated/api-types'
 import { expect } from '../../playwright'
 import type { Page } from '../../utils/page'
@@ -14,7 +16,8 @@ export default class CitizenMapPage {
   unitDetailsPanel: UnitDetailsPanel
   map: Map
   searchInput: MapSearchInput
-  languageChips: { fi: SelectionChip; sv: SelectionChip }
+  languageChips: Record<Language, SelectionChip>
+  languageFilterGroup: Element
   constructor(private readonly page: Page) {
     this.daycareFilter = new Radio(page.findByDataQa('map-filter-DAYCARE'))
     this.preschoolFilter = new Radio(page.findByDataQa('map-filter-PRESCHOOL'))
@@ -25,15 +28,25 @@ export default class CitizenMapPage {
     this.map = new Map(page.findByDataQa('map-view'))
     this.searchInput = new MapSearchInput(page.findByDataQa('map-search-input'))
     this.languageChips = {
-      fi: new SelectionChip(page.findByDataQa('map-filter-fi')),
-      sv: new SelectionChip(page.findByDataQa('map-filter-sv'))
+      fi: new SelectionChip(page.findByDataQa('map-language-filter-fi')),
+      sv: new SelectionChip(page.findByDataQa('map-language-filter-sv')),
+      en: new SelectionChip(page.findByDataQa('map-language-filter-en'))
     }
+    this.languageFilterGroup = page.findByDataQa('map-language-filter')
   }
 
-  async setLanguageFilter(language: 'fi' | 'sv', selected: boolean) {
+  async setLanguageFilter(language: Language, selected: boolean) {
     const chip = this.languageChips[language]
     if ((await chip.checked) !== selected) {
       await chip.click()
+    }
+  }
+
+  async assertLanguageFilterVisible(visible: boolean) {
+    if (visible) {
+      await expect(this.languageFilterGroup).toBeVisible()
+    } else {
+      await expect(this.languageFilterGroup).toBeHidden()
     }
   }
 

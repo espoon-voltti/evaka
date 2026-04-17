@@ -82,12 +82,33 @@ export default React.memo(function MapView() {
 
   const allUnits = useQueryResult(unitsQuery({ applicationType: careType }))
 
-  const filteredUnits = useMemo(
+  const careTypeFilteredUnits = useMemo(
     () =>
       allUnits.map((units) =>
-        filterAndSortUnits(units, careType, languages, providerTypes, shiftCare)
+        units.filter((u) => matchesCareType(u, careType))
       ),
-    [allUnits, careType, languages, providerTypes, shiftCare]
+    [allUnits, careType]
+  )
+
+  const availableLanguages = useMemo(
+    () => new Set(careTypeFilteredUnits.getOrElse([]).map((u) => u.language)),
+    [careTypeFilteredUnits]
+  )
+
+  // Any selected language chip that's no longer available (e.g., after a
+  // careType switch) is ignored so the user never ends up filtering against
+  // a hidden chip with no way to clear it.
+  const effectiveLanguages = useMemo(
+    () => languages.filter((l) => availableLanguages.has(l)),
+    [languages, availableLanguages]
+  )
+
+  const filteredUnits = useMemo(
+    () =>
+      careTypeFilteredUnits.map((units) =>
+        filterAndSortUnits(units, effectiveLanguages, providerTypes, shiftCare)
+      ),
+    [careTypeFilteredUnits, effectiveLanguages, providerTypes, shiftCare]
   )
 
   const unitsWithDistances = useChainedQuery(
@@ -128,6 +149,7 @@ export default React.memo(function MapView() {
           <PanelWrapper>
             <SearchSection
               allUnits={allUnits}
+              availableLanguages={availableLanguages}
               careType={careType}
               setCareType={setCareType}
               languages={languages}
@@ -166,32 +188,35 @@ export default React.memo(function MapView() {
   )
 })
 
+const matchesCareType = (
+  unit: PublicUnit,
+  careType: CareTypeOption
+): boolean => {
+  switch (careType) {
+    case 'DAYCARE':
+      return (
+        unit.type.includes('CENTRE') ||
+        unit.type.includes('FAMILY') ||
+        unit.type.includes('GROUP_FAMILY')
+      )
+    case 'CLUB':
+      return unit.type.includes('CLUB')
+    case 'PRESCHOOL':
+      return (
+        unit.type.includes('PRESCHOOL') ||
+        unit.type.includes('PREPARATORY_EDUCATION')
+      )
+  }
+}
+
 const filterAndSortUnits = (
   units: PublicUnit[],
-  careType: CareTypeOption,
   languages: Language[],
   providerTypes: ProviderType[],
   shiftCare: boolean
 ): PublicUnit[] => {
   const filteredUnits = units
-    .filter((u) =>
-      careType === 'DAYCARE'
-        ? u.type.includes('CENTRE') ||
-          u.type.includes('FAMILY') ||
-          u.type.includes('GROUP_FAMILY')
-        : careType === 'CLUB'
-          ? u.type.includes('CLUB')
-          : careType === 'PRESCHOOL'
-            ? u.type.includes('PRESCHOOL') ||
-              u.type.includes('PREPARATORY_EDUCATION')
-            : false
-    )
-    .filter(
-      (u) =>
-        languages.length === 0 ||
-        (!(u.language === 'fi' && !languages.includes('fi')) &&
-          !(u.language === 'sv' && !languages.includes('sv')))
-    )
+    .filter((u) => languages.length === 0 || languages.includes(u.language))
     .filter(
       (u) =>
         providerTypes.length === 0 ||

@@ -35,6 +35,24 @@ const swedishDaycare: DevDaycare = {
   }
 }
 
+const englishDaycare: DevDaycare = {
+  ...testDaycare2,
+  name: 'Black hole english daycare',
+  id: fromUuid('1d4ca4f9-e3d2-4c0c-9b56-9e72b41f8c2a'),
+  language: 'en',
+  location: {
+    lat: 60.200745762705296,
+    lon: 24.785286409387005
+  }
+}
+
+const swedishPreschool: DevDaycare = {
+  ...testPreschool,
+  name: 'Svart hål svenska förskola',
+  id: fromUuid('6c8e1f4b-3a52-4d7a-a8d6-5b1c0e2f9a73'),
+  language: 'sv'
+}
+
 const testStreet: DigitransitFeature = {
   geometry: {
     coordinates: [24.700883345430185, 60.18686533339131]
@@ -69,6 +87,8 @@ test.describe('Citizen map page', () => {
     await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
     await Fixture.daycare({ ...testPreschool, areaId: careArea.id }).save()
     await Fixture.daycare({ ...swedishDaycare, areaId: careArea.id }).save()
+    await Fixture.daycare({ ...englishDaycare, areaId: careArea.id }).save()
+    await Fixture.daycare({ ...swedishPreschool, areaId: careArea.id }).save()
     await Fixture.daycare({
       ...privateDaycareWithoutPeriods,
       areaId: careArea.id
@@ -104,13 +124,81 @@ test.describe('Citizen map page', () => {
     expect(await mapPage.daycareFilter.checked).toBe(true)
     await expect(mapPage.listItemFor(testDaycare2)).toBeVisible()
     await expect(mapPage.listItemFor(swedishDaycare)).toBeVisible()
+    await expect(mapPage.listItemFor(englishDaycare)).toBeVisible()
 
     await mapPage.setLanguageFilter('fi', true)
     await expect(mapPage.listItemFor(swedishDaycare)).toBeHidden()
+    await expect(mapPage.listItemFor(englishDaycare)).toBeHidden()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeVisible()
+
+    await mapPage.setLanguageFilter('en', true)
+    await expect(mapPage.listItemFor(swedishDaycare)).toBeHidden()
+    await expect(mapPage.listItemFor(englishDaycare)).toBeVisible()
     await expect(mapPage.listItemFor(testDaycare2)).toBeVisible()
 
     await mapPage.setLanguageFilter('sv', true)
     await mapPage.setLanguageFilter('fi', false)
+    await mapPage.setLanguageFilter('en', false)
+    await expect(mapPage.listItemFor(swedishDaycare)).toBeVisible()
+    await expect(mapPage.listItemFor(englishDaycare)).toBeHidden()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeHidden()
+
+    await mapPage.setLanguageFilter('sv', false)
+    await expect(mapPage.listItemFor(testDaycare2)).toBeVisible()
+    await expect(mapPage.listItemFor(swedishDaycare)).toBeVisible()
+    await expect(mapPage.listItemFor(englishDaycare)).toBeVisible()
+  })
+
+  test('Language filter is hidden when only one language exists in the current care type', async () => {
+    // The shared seed has only the Finnish testClub for CLUB care type
+    await mapPage.clubFilter.check()
+    await mapPage.assertLanguageFilterVisible(false)
+
+    // Switching back to DAYCARE (which has fi + sv + en units) shows the filter again
+    await mapPage.daycareFilter.check()
+    await mapPage.assertLanguageFilterVisible(true)
+  })
+
+  test('Language filter chips reflect available languages in the current care type', async () => {
+    // DAYCARE has fi (testDaycare2) + sv (swedishDaycare) + en (englishDaycare)
+    await expect(mapPage.languageChips.fi).toBeVisible()
+    await expect(mapPage.languageChips.sv).toBeVisible()
+    await expect(mapPage.languageChips.en).toBeVisible()
+
+    // PRESCHOOL has fi (testPreschool) + sv (swedishPreschool) but no English unit
+    await mapPage.preschoolFilter.check()
+    await expect(mapPage.languageChips.fi).toBeVisible()
+    await expect(mapPage.languageChips.sv).toBeVisible()
+    await expect(mapPage.languageChips.en).toBeHidden()
+
+    // Switching back to DAYCARE re-introduces the en chip
+    await mapPage.daycareFilter.check()
+    await expect(mapPage.languageChips.en).toBeVisible()
+  })
+
+  test('Language selections for unavailable languages are ignored on care type switch', async () => {
+    // Select en in DAYCARE — only the English unit should remain
+    await mapPage.setLanguageFilter('en', true)
+    await expect(mapPage.listItemFor(englishDaycare)).toBeVisible()
+    await expect(mapPage.listItemFor(testDaycare2)).toBeHidden()
+    await expect(mapPage.listItemFor(swedishDaycare)).toBeHidden()
+
+    // Switch to PRESCHOOL — no English preschools exist, so the stale en
+    // selection is ignored and all preschool units are shown.
+    await mapPage.preschoolFilter.check()
+    await expect(mapPage.listItemFor(testPreschool)).toBeVisible()
+    await expect(mapPage.listItemFor(swedishPreschool)).toBeVisible()
+
+    // Adding an applicable chip (sv) filters normally; the stale en is still
+    // ignored, so only the Swedish preschool matches
+    await mapPage.setLanguageFilter('sv', true)
+    await expect(mapPage.listItemFor(swedishPreschool)).toBeVisible()
+    await expect(mapPage.listItemFor(testPreschool)).toBeHidden()
+
+    // Switching back to DAYCARE reactivates both selections — en and sv
+    // are both applicable there, so English and Swedish daycares show
+    await mapPage.daycareFilter.check()
+    await expect(mapPage.listItemFor(englishDaycare)).toBeVisible()
     await expect(mapPage.listItemFor(swedishDaycare)).toBeVisible()
     await expect(mapPage.listItemFor(testDaycare2)).toBeHidden()
   })

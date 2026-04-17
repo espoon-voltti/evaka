@@ -22,6 +22,7 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import LanguageFilterChips from 'lib-components/molecules/LanguageFilterChips'
 import { fontWeights, H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { mapConfig } from 'lib-customizations/citizen'
@@ -35,6 +36,7 @@ import SearchInput from './SearchInput'
 
 interface Props {
   allUnits: Result<PublicUnit[]>
+  availableLanguages: Set<Language>
   careType: CareTypeOption
   setCareType: (c: CareTypeOption) => void
   languages: Language[]
@@ -51,6 +53,7 @@ interface Props {
 
 export default React.memo(function SearchSection({
   allUnits,
+  availableLanguages,
   careType,
   setCareType,
   languages,
@@ -122,35 +125,15 @@ export default React.memo(function SearchSection({
 
       <Gap $size="xs" />
 
-      <FixedSpaceColumn
-        $spacing="xs"
-        role="group"
-        aria-labelledby="map-language-label"
-      >
-        <Label id="map-language-label">{t.map.language}</Label>
-        <FixedSpaceRow>
-          <SelectionChip
-            data-qa="map-filter-fi"
-            text={t.common.unit.languagesShort.fi}
-            selected={languages.includes('fi')}
-            onChange={(selected) => {
-              const nextValue: Language[] = languages.filter((l) => l !== 'fi')
-              if (selected) nextValue.push('fi')
-              setLanguages(nextValue)
-            }}
-          />
-          <SelectionChip
-            data-qa="map-filter-sv"
-            text={t.common.unit.languagesShort.sv}
-            selected={languages.includes('sv')}
-            onChange={(selected) => {
-              const nextValue: Language[] = languages.filter((l) => l !== 'sv')
-              if (selected) nextValue.push('sv')
-              setLanguages(nextValue)
-            }}
-          />
-        </FixedSpaceRow>
-      </FixedSpaceColumn>
+      <LanguageFilterChips
+        availableLanguages={availableLanguages}
+        selected={languages}
+        onChange={setLanguages}
+        getLabel={(lang) => t.common.unit.languagesShort[lang]}
+        label={t.map.language}
+        labelId="map-language-label"
+        dataQa="map-language-filter"
+      />
 
       {showMoreFilters && (
         <>
