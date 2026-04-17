@@ -1661,6 +1661,7 @@ export default function UnitEditor(props: Props) {
                 label={i18n.language[value]}
                 checked={form.language === value}
                 onChange={() => updateForm({ language: value })}
+                data-qa={`language-${value}`}
               />
             ))}
           </FixedSpaceColumn>

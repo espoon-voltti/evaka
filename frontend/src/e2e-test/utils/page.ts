@@ -624,6 +624,11 @@ export class MultiSelect extends Element {
     const actualOptions = this.findAllByDataQa('option')
     await expect(actualOptions.locator).toHaveText(options)
   }
+
+  async assertOptionsContain(options: string[]) {
+    const actualOptions = this.findAllByDataQa('option')
+    await expect(actualOptions.locator).toContainText(options)
+  }
 }
 
 export class Collapsible extends Element {

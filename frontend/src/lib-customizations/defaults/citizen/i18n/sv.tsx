@@ -1406,7 +1406,8 @@ const sv: Translations = {
           languageFilter: {
             label: 'Enhetens språk:',
             fi: 'finska',
-            sv: 'svenska'
+            sv: 'svenska',
+            en: 'engelska'
           },
           select: {
             label: (maxUnits: number) =>

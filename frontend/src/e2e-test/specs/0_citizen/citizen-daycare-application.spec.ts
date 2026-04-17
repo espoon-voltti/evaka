@@ -2,12 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
 
 import { execSimpleApplicationActions } from '../../dev-api'
 import {
   applicationFixture,
+  clubTerm2021,
+  testClub,
   testDaycare,
+  testDaycare2,
   testAdult,
   Fixture,
   testAdult2,
@@ -26,6 +31,7 @@ import {
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
+import { UnitEditor } from '../../pages/employee/units/unit'
 import { test, expect } from '../../playwright'
 import {
   fullDaycareForm,
@@ -33,7 +39,7 @@ import {
 } from '../../utils/application-forms'
 import { getVerificationCodeFromEmail } from '../../utils/email'
 import type { Page } from '../../utils/page'
-import { enduserLogin } from '../../utils/user'
+import { employeeLogin, enduserLogin } from '../../utils/user'
 
 const testFileName = 'test_file.png'
 const testFilePath = `src/e2e-test/assets/${testFileName}`
@@ -392,5 +398,227 @@ test.describe('Citizen daycare applications', () => {
     // then the email in the application updates and cannot be edited
     await editorPage.openSection('contactInfo')
     await editorPage.assertVerifiedReadOnlyEmail('new-email@example.com')
+  })
+
+  test('Language filter limits selectable units to chosen languages', async () => {
+    const swedishDaycare = {
+      ...testDaycare2,
+      id: randomId<DaycareId>(),
+      areaId: testCareArea.id,
+      name: 'Svensk daghem',
+      language: 'sv' as const,
+      daycareApplyPeriod: testDaycare.daycareApplyPeriod
+    }
+    const englishDaycare = {
+      ...testDaycare2,
+      id: randomId<DaycareId>(),
+      areaId: testCareArea.id,
+      name: 'English Daycare',
+      language: 'en' as const,
+      daycareApplyPeriod: testDaycare.daycareApplyPeriod
+    }
+    await Fixture.daycare(swedishDaycare).save()
+    await Fixture.daycare(englishDaycare).save()
+
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'DAYCARE'
+    )
+    await editorPage.fillData({
+      serviceNeed: {
+        preferredStartDate: '16.08.2021',
+        startTime: '09:00',
+        endTime: '17:00'
+      },
+      contactInfo: {
+        guardianPhone: '040123456',
+        noGuardianEmail: true
+      }
+    })
+    await editorPage.openSection('unitPreference')
+
+    // All three language chips should be visible
+    await expect(editorPage.unitLanguageFilterChip('fi')).toBeVisible()
+    await expect(editorPage.unitLanguageFilterChip('sv')).toBeVisible()
+    await expect(editorPage.unitLanguageFilterChip('en')).toBeVisible()
+
+    // Default: fi pre-selected → only Finnish unit is selectable
+    await editorPage.assertPreferredUnitOptions([testDaycare.name])
+
+    // Deselecting all chips empties the dropdown
+    await editorPage.setUnitLanguageFilter('fi', false)
+    await editorPage.assertNoPreferredUnitOptions()
+    await editorPage.setUnitLanguageFilter('fi', true)
+
+    // Add sv → fi + sv units selectable
+    await editorPage.setUnitLanguageFilter('sv', true)
+    await editorPage.assertPreferredUnitOptions([
+      testDaycare.name,
+      swedishDaycare.name
+    ])
+
+    // Remove fi → only sv units selectable
+    await editorPage.setUnitLanguageFilter('fi', false)
+    await editorPage.assertPreferredUnitOptions([swedishDaycare.name])
+
+    // Switch to en only → only English units selectable
+    await editorPage.setUnitLanguageFilter('sv', false)
+    await editorPage.setUnitLanguageFilter('en', true)
+    await editorPage.assertPreferredUnitOptions([englishDaycare.name])
+    await editorPage.assertHiddenFromPreferredUnits([
+      testDaycare.name,
+      swedishDaycare.name
+    ])
+
+    // The filtered unit is still selectable
+    await editorPage.selectUnit('English Daycare')
+    await editorPage.assertSelectedPreferredUnits([englishDaycare.id])
+  })
+
+  test('Language filter is hidden when only one language exists', async () => {
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'DAYCARE'
+    )
+    await editorPage.fillData({
+      serviceNeed: {
+        preferredStartDate: '16.08.2021',
+        startTime: '09:00',
+        endTime: '17:00'
+      },
+      contactInfo: {
+        guardianPhone: '040123456',
+        noGuardianEmail: true
+      }
+    })
+    await editorPage.openSection('unitPreference')
+
+    // Only Finnish units exist, so the language filter should be hidden
+    await editorPage.assertLanguageFilterVisible(false)
+
+    // The Finnish unit must still be selectable when the filter is hidden
+    await editorPage.selectUnit(testDaycare.name)
+    await editorPage.assertSelectedPreferredUnits([testDaycare.id])
+  })
+
+  test('Default chip selection includes all available languages when no Finnish units exist', async () => {
+    // testDaycare (Finnish) does not match a CLUB application, so this scenario
+    // exercises the no-fi-units fallback path of the language filter default.
+    const swedishClub = {
+      ...testClub,
+      id: randomId<DaycareId>(),
+      areaId: testCareArea.id,
+      name: 'Svensk klubb',
+      language: 'sv' as const
+    }
+    const englishClub = {
+      ...testClub,
+      id: randomId<DaycareId>(),
+      areaId: testCareArea.id,
+      name: 'English Club',
+      language: 'en' as const
+    }
+    await Fixture.daycare(swedishClub).save()
+    await Fixture.daycare(englishClub).save()
+    await clubTerm2021.save()
+
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'CLUB'
+    )
+    await editorPage.fillData({
+      serviceNeed: { preferredStartDate: '16.08.2021' },
+      contactInfo: { guardianPhone: '040123456', noGuardianEmail: true }
+    })
+    await editorPage.openSection('unitPreference')
+
+    // No Finnish units → fi chip hidden, sv + en chips visible
+    await expect(editorPage.unitLanguageFilterChip('fi')).toBeHidden()
+    await expect(editorPage.unitLanguageFilterChip('sv')).toBeVisible()
+    await expect(editorPage.unitLanguageFilterChip('en')).toBeVisible()
+
+    // Default selection is ['fi'], but no Finnish units exist in the CLUB
+    // care type → the stale-selection fallback shows all units rather than
+    // locking the user out of an empty dropdown.
+    await editorPage.assertPreferredUnitOptions([
+      englishClub.name,
+      swedishClub.name
+    ])
+
+    // The fallback default lets the user actually apply
+    await editorPage.selectUnit(englishClub.name)
+    await editorPage.assertSelectedPreferredUnits([englishClub.id])
+  })
+
+  test('Language filter chip is shown only if there is at least one unit with that language', async ({
+    newEvakaPage
+  }) => {
+    const swedishDaycare = {
+      ...testDaycare2,
+      id: randomId<DaycareId>(),
+      areaId: testCareArea.id,
+      name: 'Svensk daghem',
+      language: 'sv' as const,
+      daycareApplyPeriod: testDaycare.daycareApplyPeriod
+    }
+    await Fixture.daycare(swedishDaycare).save()
+
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'DAYCARE'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+    await editorPage.fillData({
+      serviceNeed: {
+        preferredStartDate: '16.08.2021',
+        startTime: '09:00',
+        endTime: '17:00'
+      },
+      contactInfo: {
+        guardianPhone: '040123456',
+        noGuardianEmail: true
+      }
+    })
+    await editorPage.openSection('unitPreference')
+
+    // Initially: fi + sv chips visible, en chip hidden
+    await expect(editorPage.unitLanguageFilterChip('fi')).toBeVisible()
+    await expect(editorPage.unitLanguageFilterChip('sv')).toBeVisible()
+    await expect(editorPage.unitLanguageFilterChip('en')).toBeHidden()
+
+    // Persist the draft so the form state survives the reload below
+    await editorPage.saveAsDraftButton.click()
+    await editorPage.modalOkBtn.click()
+
+    // Admin updates the Finnish unit's language to English
+    const admin = await Fixture.employee().admin().save()
+    const adminPage = await newEvakaPage({ mockedTime: mockedNow })
+    await employeeLogin(adminPage, admin)
+    const unitEditor = await UnitEditor.openById(adminPage, testDaycare.id)
+    await unitEditor.selectLanguage('en')
+    await unitEditor.fillManagerData(
+      'Päiväkodin Johtaja',
+      '01234567',
+      'manager@example.com'
+    )
+    await unitEditor.setInvoiceByMunicipality(false)
+    await unitEditor.submit()
+
+    // Citizen re-enters the draft and revisits the unit preference section
+    await applicationsPage.editApplication(applicationId)
+    await editorPage.openSection('unitPreference')
+
+    // Now: sv + en chips visible, fi chip hidden
+    await expect(editorPage.unitLanguageFilterChip('fi')).toBeHidden()
+    await expect(editorPage.unitLanguageFilterChip('sv')).toBeVisible()
+    await expect(editorPage.unitLanguageFilterChip('en')).toBeVisible()
+
+    // The persisted ['fi'] chip selection no longer overlaps with available
+    // languages → the stale-selection fallback fires and the dropdown still
+    // shows the (now-English) unit and the Swedish unit, instead of being empty.
+    await editorPage.assertPreferredUnitOptions([
+      testDaycare.name,
+      swedishDaycare.name
+    ])
   })
 })
