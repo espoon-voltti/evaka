@@ -94,7 +94,7 @@
     "make-error-cause": "2.3.0",
     "playwright": "1.59.1",
     "postcss": "8.5.9",
-    "postcss-preset-env": "11.2.0",
+    "postcss-preset-env": "11.2.1",
     "prettier": "3.8.2",
     "terser": "5.46.1",
     "ts-node": "10.9.2",
