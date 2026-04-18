@@ -13,7 +13,7 @@ ktfmt = "0.25.0"
 ktlint = "1.8.0"
 ktlint-gradle = "14.2.0"
 mockito = "5.23.0"
-owasp = "12.2.0"
+owasp = "12.2.1"
 spring-boot = "4.0.5"
 versions = "0.53.0"
 
