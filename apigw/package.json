@@ -67,7 +67,7 @@
     "prettier": "3.8.2",
     "tough-cookie": "6.0.1",
     "typescript": "6.0.2",
-    "typescript-eslint": "8.58.0",
+    "typescript-eslint": "8.58.1",
     "vitest": "latest",
     "xml-crypto": "6.1.2",
     "xml2js": "0.6.2"
