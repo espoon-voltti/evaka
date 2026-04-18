@@ -59,7 +59,7 @@ dependencies {
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.21")
     }
 
-    api(platform("tools.jackson:jackson-bom:3.1.1"))
+    api(platform("tools.jackson:jackson-bom:3.1.2"))
     api(platform("com.squareup.okhttp3:okhttp-bom:5.3.2"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.60.1"))
     api(platform("io.netty:netty-bom:4.2.12.Final"))
