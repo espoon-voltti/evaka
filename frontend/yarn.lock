@@ -2979,10 +2979,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/babel-plugin-component-annotate@npm:5.1.1":
-  version: 5.1.1
-  resolution: "@sentry/babel-plugin-component-annotate@npm:5.1.1"
-  checksum: 10/8c7da826dc2dd4a3335628fb9094d3976354a0a72ca46e8bebe4945402225fdca868f9717843c640ca381278f62d7798b697843a3add3422f409702ebca094cc
+"@sentry/babel-plugin-component-annotate@npm:5.2.0":
+  version: 5.2.0
+  resolution: "@sentry/babel-plugin-component-annotate@npm:5.2.0"
+  checksum: 10/b06c1a13e2fd2a22224038258306f304ab9305459bd385f336b5937b003462f206e7e31b0030f5953ceaa9addac96336b6fbba96f1ffd215afc784ccc2cc18c4
   languageName: node
   linkType: hard
 
@@ -2999,18 +2999,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/bundler-plugin-core@npm:5.1.1":
-  version: 5.1.1
-  resolution: "@sentry/bundler-plugin-core@npm:5.1.1"
+"@sentry/bundler-plugin-core@npm:5.2.0":
+  version: 5.2.0
+  resolution: "@sentry/bundler-plugin-core@npm:5.2.0"
   dependencies:
     "@babel/core": "npm:^7.18.5"
-    "@sentry/babel-plugin-component-annotate": "npm:5.1.1"
+    "@sentry/babel-plugin-component-annotate": "npm:5.2.0"
     "@sentry/cli": "npm:^2.58.5"
     dotenv: "npm:^16.3.1"
     find-up: "npm:^5.0.0"
     glob: "npm:^13.0.6"
     magic-string: "npm:~0.30.8"
-  checksum: 10/6d08a02ed44d15ce4905be33d573787b75689d75c9fdc4026a6fce4c9f62e4539d2f281e10b57dd97ceddb0b52a34c091f57cfd8b96d20993a0cbc83b25c26d0
+  checksum: 10/e8a9107d2ebef61e0ad9ee070e6164b41004b2365a68de8b28096424a396376af25b7d530f21d230b5fdf8fe6231a435f7bae87e7dc546cf395c031e85f618b8
   languageName: node
   linkType: hard
 
@@ -3129,25 +3129,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/rollup-plugin@npm:5.1.1":
-  version: 5.1.1
-  resolution: "@sentry/rollup-plugin@npm:5.1.1"
+"@sentry/rollup-plugin@npm:5.2.0":
+  version: 5.2.0
+  resolution: "@sentry/rollup-plugin@npm:5.2.0"
   dependencies:
-    "@sentry/bundler-plugin-core": "npm:5.1.1"
+    "@sentry/bundler-plugin-core": "npm:5.2.0"
     magic-string: "npm:~0.30.8"
   peerDependencies:
     rollup: ">=3.2.0"
-  checksum: 10/588c8e1f672562824a3fe6aaaa92090fbe9885d7f0e1826e8716a7b9889a290437bfbdb9ae7f87740590242407792ede3170199aadd38d04ead4b3ae21e94d08
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+  checksum: 10/e5bd2a823fbea4ae76186a7cf43bd8ec121074f3dbe1a5cc4c5d1cf31e8b301514e40f53bf9e8acb3ec998aeadb64736769db299fb555d441d9af5dc5d0053a7
   languageName: node
   linkType: hard
 
-"@sentry/vite-plugin@npm:5.1.1":
-  version: 5.1.1
-  resolution: "@sentry/vite-plugin@npm:5.1.1"
+"@sentry/vite-plugin@npm:5.2.0":
+  version: 5.2.0
+  resolution: "@sentry/vite-plugin@npm:5.2.0"
   dependencies:
-    "@sentry/bundler-plugin-core": "npm:5.1.1"
-    "@sentry/rollup-plugin": "npm:5.1.1"
-  checksum: 10/2a4b83538b130f0fda4559b4928face3e5706bec74f7edd560a8ab086ca7e152fac22970be7c23b7e84a9da735b1e673848d3bc4047f981520d24d180c074c85
+    "@sentry/bundler-plugin-core": "npm:5.2.0"
+    "@sentry/rollup-plugin": "npm:5.2.0"
+  checksum: 10/05e82dcd2ae09d8512497b2f2527f1c290c2403c16d3a68e9508ef89abef6f7cb03d98b5d5ace28ddf1e612e017e834a03fdbfcd9109b0ae2d351368f461b1da
   languageName: node
   linkType: hard
 
@@ -5467,7 +5470,7 @@ __metadata:
     "@react-spring/web": "npm:10.0.3"
     "@sentry/browser": "npm:10.47.0"
     "@sentry/react": "npm:10.47.0"
-    "@sentry/vite-plugin": "npm:5.1.1"
+    "@sentry/vite-plugin": "npm:5.2.0"
     "@tanstack/react-query": "npm:5.96.2"
     "@testing-library/dom": "npm:10.4.1"
     "@testing-library/jest-dom": "npm:6.9.1"
