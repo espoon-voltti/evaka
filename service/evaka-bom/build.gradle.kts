@@ -64,7 +64,7 @@ dependencies {
     api(platform("io.opentelemetry:opentelemetry-bom:1.60.1"))
     api(platform("io.netty:netty-bom:4.2.12.Final"))
     api(platform("org.apache.cxf:cxf-bom:4.2.0"))
-    api(platform("org.jdbi:jdbi3-bom:3.52.0"))
+    api(platform("org.jdbi:jdbi3-bom:3.52.1"))
     api(platform(libs.kotlin.bom))
     api(platform("org.junit:junit-bom:6.0.3"))
     api(platform(libs.spring.boot.dependencies))
