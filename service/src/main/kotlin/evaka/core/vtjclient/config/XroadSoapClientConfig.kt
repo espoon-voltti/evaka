@@ -4,6 +4,7 @@
 
 package evaka.core.vtjclient.config
 
+import evaka.core.KeystoreEnv
 import evaka.core.VtjXroadEnv
 import evaka.core.vtjclient.mapper.toClientHeader
 import evaka.core.vtjclient.mapper.toServiceHeader
@@ -12,13 +13,15 @@ import evaka.core.vtjclient.soap.ObjectFactory
 import fi.espoo.voltti.logging.MdcKey
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.xml.bind.helpers.DefaultValidationEventHandler
+import java.security.KeyStore
 import javax.net.ssl.KeyManager
+import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.TrustManager
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import javax.net.ssl.TrustManagerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
+import org.springframework.core.io.UrlResource
 import org.springframework.oxm.jaxb.Jaxb2Marshaller
 import org.springframework.ws.FaultAwareWebServiceMessage
 import org.springframework.ws.WebServiceMessage
@@ -27,8 +30,6 @@ import org.springframework.ws.client.core.FaultMessageResolver
 import org.springframework.ws.client.core.WebServiceMessageCallback
 import org.springframework.ws.client.core.WebServiceTemplate
 import org.springframework.ws.soap.SoapMessage
-import org.springframework.ws.soap.security.support.KeyManagersFactoryBean
-import org.springframework.ws.soap.security.support.TrustManagersFactoryBean
 import org.springframework.ws.transport.WebServiceMessageSender
 import org.springframework.ws.transport.http.HttpsUrlConnectionMessageSender
 
@@ -93,38 +94,6 @@ class XroadSoapClientConfig {
     @Bean fun vtjObjectFactory() = ObjectFactory()
 
     @Bean
-    @ConditionalOnExpression("'\${voltti.env}' != 'prod' && '\${voltti.env}' != 'staging'")
-    @ConditionalOnMissingBean(WebServiceMessageSender::class)
-    fun httpsMessageSender(trustManagersFactoryBean: TrustManagersFactoryBean) =
-        HttpsUrlConnectionMessageSender().apply {
-            setTrustManagers(trustManagersFactoryBean.`object` ?: emptyArray<TrustManager>())
-            // We skip FQDN matching to cert CN/subject alternative names and just trust the
-            // certificate.
-            // The trust store must only contain end-entity certificates (no CA certificates)
-            // TODO: Either keep using single certs or fix the certs and host names for security
-            // servers
-            setHostnameVerifier { _, _ -> true }
-        }
-
-    @Bean
-    @ConditionalOnExpression("'\${voltti.env}' == 'prod' || '\${voltti.env}' == 'staging'")
-    @ConditionalOnMissingBean(WebServiceMessageSender::class)
-    fun httpsClientAuthMessageSender(
-        trustManagersFactoryBean: TrustManagersFactoryBean,
-        keyManagersFactoryBean: KeyManagersFactoryBean,
-    ) =
-        HttpsUrlConnectionMessageSender().apply {
-            setTrustManagers(trustManagersFactoryBean.`object` ?: emptyArray<TrustManager>())
-            setKeyManagers(keyManagersFactoryBean.`object` ?: emptyArray<KeyManager>())
-            // We skip FQDN matching to cert CN/subject alternative names and just trust the
-            // certificate.
-            // The trust store must only contain end-entity certificates (no CA certificates)
-            // TODO: Either keep using single certs or fix the certs and host names for security
-            // servers
-            setHostnameVerifier { _, _ -> true }
-        }
-
-    @Bean
     fun vtjSoapHeaderCallback(
         xRoadEnv: VtjXroadEnv,
         factory: ObjectFactory,
@@ -150,4 +119,46 @@ class XroadSoapClientConfig {
 interface SoapRequestAdapter {
 
     fun createCallback(query: VTJQuery): WebServiceMessageCallback
+}
+
+private fun getKeyStore(store: KeystoreEnv): KeyStore {
+    val keyStore = KeyStore.getInstance(store.type)
+    val inputStream = UrlResource(store.location).inputStream
+    keyStore.load(inputStream, store.password?.value?.toCharArray())
+    return keyStore
+}
+
+private fun getTrustManagers(store: KeystoreEnv): Array<TrustManager>? {
+    val algorithm = TrustManagerFactory.getDefaultAlgorithm()
+    val trustManagerFactory = TrustManagerFactory.getInstance(algorithm)
+    trustManagerFactory.init(getKeyStore(store))
+    return trustManagerFactory.trustManagers
+}
+
+private fun getKeyManagers(store: KeystoreEnv): Array<KeyManager>? {
+    val keyStore = getKeyStore(store)
+    val algorithm = KeyManagerFactory.getDefaultAlgorithm()
+    val keyManagerFactory = KeyManagerFactory.getInstance(algorithm)
+    keyManagerFactory.init(keyStore, store.password?.value?.toCharArray())
+    return keyManagerFactory.keyManagers
+}
+
+fun httpsMessageSender(
+    trustManagerEnv: KeystoreEnv?,
+    keyManagerEnv: KeystoreEnv?,
+): WebServiceMessageSender {
+    val trustManagers = trustManagerEnv?.let { getTrustManagers(it) } ?: emptyArray<TrustManager>()
+    val keyManagers = keyManagerEnv?.let { getKeyManagers(it) } ?: emptyArray<KeyManager>()
+
+    return HttpsUrlConnectionMessageSender().apply {
+        setTrustManagers(trustManagers)
+        setKeyManagers(keyManagers)
+
+        // We skip FQDN matching to cert CN/subject alternative names and just trust the
+        // certificate.
+        // The trust store must only contain end-entity certificates (no CA certificates)
+        // TODO: Either keep using single certs or fix the certs and host names for security
+        // servers
+        setHostnameVerifier { _, _ -> true }
+    }
 }
