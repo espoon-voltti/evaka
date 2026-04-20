@@ -6,6 +6,7 @@ package evaka.instance.espoo.bi
 
 import evaka.core.FullApplicationTest
 import evaka.core.Sensitive
+import evaka.core.bi.CSV_CHARSET
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock

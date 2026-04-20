@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package evaka.instance.tampere.bi
+package evaka.core.bi
 
 import evaka.core.absence.AbsenceCategory
 import evaka.core.absence.AbsenceType

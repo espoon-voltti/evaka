@@ -12,7 +12,6 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 import org.unbescape.csv.CsvEscape
 
-val CSV_CHARSET = Charsets.UTF_8
 const val CSV_FIELD_SEPARATOR = ","
 const val CSV_RECORD_SEPARATOR = "\r\n"
 

@@ -4,12 +4,12 @@
 
 package evaka.instance.tampere
 
+import evaka.core.bi.BiExportJob
+import evaka.core.bi.BiTable
 import evaka.core.shared.async.AsyncJobPayload
 import evaka.core.shared.async.AsyncJobPool
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
-import evaka.instance.tampere.bi.BiExportJob
-import evaka.instance.tampere.bi.BiTable
 
 sealed interface TampereAsyncJob : AsyncJobPayload {
     data class SendBiTable(val table: BiTable) : TampereAsyncJob {
@@ -31,6 +31,8 @@ class TampereAsyncJobRegistration(
     biExportJob: BiExportJob,
 ) {
     init {
-        biExportJob.let { runner.registerHandler(it::sendBiTable) }
+        runner.registerHandler { db, clock, msg: TampereAsyncJob.SendBiTable ->
+            biExportJob.sendBiTable(db, clock, msg.table.fileName, msg.table.query)
+        }
     }
 }

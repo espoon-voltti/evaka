@@ -5,6 +5,7 @@
 package evaka.instance.espoo.bi
 
 import evaka.core.Sensitive
+import evaka.core.bi.CsvInputStream
 import evaka.instance.espoo.EspooBiEnv
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
@@ -43,7 +44,7 @@ class EspooBiHttpClientTest {
         val client = EspooBiHttpClient(env)
 
         val csvContent = "header1,header2\nvalue1,value2\n"
-        val csvStream = EspooBiJob.CsvInputStream(StandardCharsets.UTF_8, sequenceOf(csvContent))
+        val csvStream = CsvInputStream(StandardCharsets.UTF_8, sequenceOf(csvContent))
 
         client.sendBiCsvFile("test-report.csv", csvStream)
 

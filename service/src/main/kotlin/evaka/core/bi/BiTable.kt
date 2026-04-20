@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-package evaka.instance.tampere.bi
+package evaka.core.bi
 
 enum class BiTable(val fileName: String, val query: BiQueries.CsvQuery) {
     Absence("absence_DELTA", BiQueries.getAbsencesDelta),

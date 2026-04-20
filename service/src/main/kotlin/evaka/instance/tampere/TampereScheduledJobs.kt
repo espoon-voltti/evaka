@@ -5,6 +5,7 @@
 package evaka.instance.tampere
 
 import evaka.core.ScheduledJobsEnv
+import evaka.core.bi.BiTable
 import evaka.core.reports.REPORT_STATEMENT_TIMEOUT
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -15,7 +16,6 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.job.JobSchedule
 import evaka.core.shared.job.ScheduledJobDefinition
 import evaka.core.shared.job.ScheduledJobSettings
-import evaka.instance.tampere.bi.BiTable
 import evaka.instance.tampere.export.ExportUnitsAclService
 import evaka.trevaka.archival.planDocumentArchival
 import evaka.trevaka.export.ExportPreschoolChildDocumentsService

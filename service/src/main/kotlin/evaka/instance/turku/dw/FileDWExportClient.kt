@@ -4,8 +4,8 @@
 
 package evaka.instance.turku.dw
 
+import evaka.core.bi.CsvInputStream
 import evaka.core.shared.domain.EvakaClock
-import evaka.instance.espoo.bi.EspooBiJob
 import evaka.instance.turku.TurkuEnv
 import evaka.instance.turku.invoice.service.SftpSender
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -25,7 +25,7 @@ class FileDWExportClient(
     override fun sendDwCsvFile(
         queryName: String,
         clock: EvakaClock,
-        stream: EspooBiJob.CsvInputStream,
+        stream: CsvInputStream,
     ): Pair<String, String> {
         val date = clock.now().toLocalDate()
         val fileName = "$queryName${date.format(DateTimeFormatter.ISO_DATE)}.csv"
