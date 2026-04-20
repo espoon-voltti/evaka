@@ -8,6 +8,7 @@ import evaka.core.ChildDocumentArchivalEnv
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.Sensitive
+import evaka.core.VtjXroadEnv
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.emailclient.EvakaEmailMessageProvider
 import evaka.core.emailclient.IEmailMessageProvider
@@ -45,6 +46,7 @@ import evaka.core.shared.security.actionrule.ActionRuleMapping
 import evaka.core.shared.template.EvakaTemplateProvider
 import evaka.core.shared.template.ITemplateProvider
 import evaka.core.titania.TitaniaEmployeeIdConverter
+import evaka.core.vtjclient.config.httpsMessageSender
 import evaka.instance.espoo.bi.EspooBiHttpClient
 import evaka.instance.espoo.bi.EspooBiJob
 import evaka.instance.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
@@ -52,6 +54,7 @@ import io.opentelemetry.api.trace.Tracer
 import java.net.URI
 import org.jdbi.v3.core.Jdbi
 import org.springframework.beans.factory.ObjectProvider
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.annotation.Bean
@@ -60,6 +63,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
+import org.springframework.ws.transport.WebServiceMessageSender
 import org.thymeleaf.ITemplateEngine
 import tools.jackson.databind.json.JsonMapper
 
@@ -118,6 +122,23 @@ class EspooConfig {
     @Profile("production")
     fun paymentIntegrationClient(): PaymentIntegrationClient =
         PaymentIntegrationClient.FailingClient()
+
+    @Bean
+    @Profile("local & vtj-dev")
+    fun localWebServiceMessageSender(xroadEnv: VtjXroadEnv): WebServiceMessageSender =
+        httpsMessageSender(xroadEnv.trustStore, null)
+
+    @Bean
+    @Profile("production")
+    @ConditionalOnExpression("'\${voltti.env}' != 'prod' && '\${voltti.env}' != 'staging'")
+    fun devWebServiceMessageSender(xroadEnv: VtjXroadEnv): WebServiceMessageSender =
+        httpsMessageSender(xroadEnv.trustStore, null)
+
+    @Bean
+    @Profile("production")
+    @ConditionalOnExpression("'\${voltti.env}' == 'prod' || '\${voltti.env}' == 'staging'")
+    fun webServiceMessageSender(xroadEnv: VtjXroadEnv): WebServiceMessageSender =
+        httpsMessageSender(xroadEnv.trustStore, xroadEnv.keyStore)
 
     @Bean fun messageProvider(): IMessageProvider = EvakaMessageProvider()
 

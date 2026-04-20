@@ -19,6 +19,8 @@ import evaka.core.titania.TitaniaEmployeeIdConverter
 import evaka.instance.espoo.DefaultPasswordSpecification
 import evaka.instance.lempaala.mealintegration.LempaalaMealTypeMapper
 import evaka.instance.lempaala.security.LempaalaActionRuleMapping
+import evaka.trevaka.TrevakaProperties
+import evaka.trevaka.frends.frendsWebServiceMessageSender
 import evaka.trevaka.security.TrevakaActionRuleMapping
 import evaka.trevaka.titania.PrefixTitaniaEmployeeIdConverter
 import evaka.trevaka.tomcat.tomcatAccessLoggingCustomizer
@@ -26,6 +28,7 @@ import java.time.MonthDay
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
+import org.springframework.ws.transport.WebServiceMessageSender
 
 @Configuration
 class LempaalaConfig {
@@ -82,6 +85,10 @@ class LempaalaConfig {
     @Bean
     fun paymentIntegrationClient(): PaymentIntegrationClient =
         PaymentIntegrationClient.FailingClient()
+
+    @Bean
+    fun webServiceMessageSender(trevakaProperties: TrevakaProperties): WebServiceMessageSender =
+        frendsWebServiceMessageSender(trevakaProperties.vtjKyselyApiKey)
 
     @Bean
     fun actionRuleMapping(): ActionRuleMapping =

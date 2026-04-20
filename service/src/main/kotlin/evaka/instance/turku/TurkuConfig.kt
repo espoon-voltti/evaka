@@ -6,6 +6,7 @@ package evaka.instance.turku
 
 import com.jcraft.jsch.JSch
 import evaka.core.ScheduledJobsEnv
+import evaka.core.VtjXroadEnv
 import evaka.core.application.ApplicationStatus
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.emailclient.IEmailMessageProvider
@@ -32,6 +33,7 @@ import evaka.core.shared.message.IMessageProvider
 import evaka.core.shared.security.actionrule.ActionRuleMapping
 import evaka.core.shared.template.ITemplateProvider
 import evaka.core.titania.TitaniaEmployeeIdConverter
+import evaka.core.vtjclient.config.httpsMessageSender
 import evaka.instance.espoo.DefaultPasswordSpecification
 import evaka.instance.turku.database.DevDataInitializer
 import evaka.instance.turku.dw.DwExportClient
@@ -57,6 +59,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.io.ClassPathResource
+import org.springframework.ws.transport.WebServiceMessageSender
 import org.thymeleaf.ITemplateEngine
 import software.amazon.awssdk.services.s3.S3Client
 
@@ -181,6 +184,11 @@ class TurkuConfig {
         val sftpSender = SftpSender(evakaProperties.sapPayments, sftpConnector)
         return TurkuPaymentIntegrationClient(paymentGenerator, sftpSender)
     }
+
+    @Bean
+    @Profile("production")
+    fun webServiceMessageSender(xroadEnv: VtjXroadEnv): WebServiceMessageSender =
+        httpsMessageSender(xroadEnv.trustStore, xroadEnv.keyStore)
 
     @Bean
     fun tomcatCustomizer(env: Environment) =

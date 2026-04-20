@@ -9,9 +9,14 @@ import okhttp3.Credentials
 import okhttp3.Interceptor
 import org.apache.hc.client5.http.classic.HttpClient
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
+import org.springframework.ws.transport.WebServiceMessageSender
 import org.springframework.ws.transport.http.HttpComponents5ClientFactory
+import org.springframework.ws.transport.http.SimpleHttpComponents5MessageSender
 
 private const val HEADER_NAME_API_KEY = "X-API-KEY"
+
+fun frendsWebServiceMessageSender(apiKey: String): WebServiceMessageSender =
+    SimpleHttpComponents5MessageSender(newFrendsHttpClient(apiKey))
 
 fun newFrendsHttpClient(apiKey: String): HttpClient =
     HttpClientBuilder.create()
