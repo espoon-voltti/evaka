@@ -16,7 +16,6 @@ import evaka.core.serviceneed.ShiftCareType
 import evaka.core.shared.ChildId
 import evaka.core.shared.HolidayQuestionnaireId
 import evaka.core.shared.ServiceNeedOptionId
-import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevCareArea
@@ -27,7 +26,6 @@ import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevServiceNeed
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertServiceNeedOption
-import evaka.core.shared.dev.insertServiceNeedOptions
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -41,6 +39,7 @@ import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.AccessControlTest.TestActionRuleMapping
 import evaka.core.shared.security.Action
 import evaka.core.shared.security.actionrule.IsCitizen
+import evaka.core.snDefaultDaycare
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -89,19 +88,19 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         )
     private val mockToday: LocalDate = freePeriodQuestionnaire.active.end.minusWeeks(1)
 
-    final val area = DevCareArea()
-    val daycare = DevDaycare(areaId = area.id)
-    val voucherDaycare =
+    private val area = DevCareArea()
+    private val daycare = DevDaycare(areaId = area.id)
+    private val voucherDaycare =
         DevDaycare(areaId = area.id, providerType = ProviderType.PRIVATE_SERVICE_VOUCHER)
-    val child1 = DevPerson(id = ChildId(UUID.randomUUID()))
-    val child2 = DevPerson(id = ChildId(UUID.randomUUID()))
-    val child3 = DevPerson(id = ChildId(UUID.randomUUID()))
-    val child4 = DevPerson(id = ChildId(UUID.randomUUID()))
+    private val child1 = DevPerson()
+    private val child2 = DevPerson()
+    private val child3 = DevPerson()
+    private val child4 = DevPerson()
     private val parent = DevPerson()
-    private val authenticatedParent = AuthenticatedUser.Citizen(parent.id, CitizenAuthLevel.STRONG)
+    private val authenticatedParent = parent.user(CitizenAuthLevel.STRONG)
 
     @BeforeEach
-    fun setUp() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insert(area)
             tx.insert(daycare)
@@ -118,18 +117,13 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     endDate = mockToday.plusYears(1),
                 )
             tx.insert(placement)
-            tx.insertServiceNeedOptions()
+            tx.insertServiceNeedOption(snDefaultDaycare)
             tx.insert(
                 DevServiceNeed(
                     placementId = placement.id,
                     startDate = placement.startDate,
                     endDate = placement.endDate,
-                    optionId =
-                        ServiceNeedOptionId(
-                            UUID.fromString(
-                                "7406df92-e715-11ec-9ec2-9b7ff580dcb4"
-                            ) // full time daycare
-                        ),
+                    optionId = snDefaultDaycare.id,
                     confirmedBy = authenticatedParent.evakaUserId,
                 )
             )
@@ -357,14 +351,12 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     endDate = mockToday.plusYears(1),
                 )
             tx.insert(placement)
-            val fullTimeDaycareOption =
-                ServiceNeedOptionId(UUID.fromString("7406df92-e715-11ec-9ec2-9b7ff580dcb4"))
             tx.insert(
                 DevServiceNeed(
                     placementId = placement.id,
                     startDate = placement.startDate,
                     endDate = firstOption.start.minusDays(1),
-                    optionId = fullTimeDaycareOption,
+                    optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.NONE,
                     confirmedBy = authenticatedParent.evakaUserId,
                 )
@@ -374,7 +366,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     placementId = placement.id,
                     startDate = firstOption.start,
                     endDate = placement.endDate,
-                    optionId = fullTimeDaycareOption,
+                    optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = authenticatedParent.evakaUserId,
                 )
@@ -696,12 +688,7 @@ class HolidayPeriodControllerCitizenIntegrationTest :
                     placementId = placement.id,
                     startDate = placement.startDate,
                     endDate = placement.endDate,
-                    optionId =
-                        ServiceNeedOptionId(
-                            UUID.fromString(
-                                "7406df92-e715-11ec-9ec2-9b7ff580dcb4"
-                            ) // full time daycare
-                        ),
+                    optionId = snDefaultDaycare.id,
                     shiftCare = ShiftCareType.FULL,
                     confirmedBy = authenticatedParent.evakaUserId,
                 )
