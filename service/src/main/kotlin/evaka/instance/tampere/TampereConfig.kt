@@ -7,6 +7,8 @@ package evaka.instance.tampere
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.application.ApplicationStatus
+import evaka.core.bi.BiExportClient
+import evaka.core.bi.BiExportJob
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.mealintegration.DefaultMealTypeMapper
@@ -22,8 +24,6 @@ import evaka.core.shared.security.actionrule.ActionRuleMapping
 import evaka.core.titania.TitaniaEmployeeIdConverter
 import evaka.instance.espoo.DefaultPasswordSpecification
 import evaka.instance.tampere.archival.TampereArchivalClient
-import evaka.instance.tampere.bi.BiExportClient
-import evaka.instance.tampere.bi.BiExportJob
 import evaka.instance.tampere.bi.FileBiExportS3Client
 import evaka.instance.tampere.export.ExportUnitsAclService
 import evaka.instance.tampere.payment.TamperePaymentClient

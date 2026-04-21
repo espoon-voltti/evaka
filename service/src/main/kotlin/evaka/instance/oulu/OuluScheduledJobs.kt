@@ -14,8 +14,6 @@ import evaka.core.shared.job.JobSchedule
 import evaka.core.shared.job.ScheduledJobDefinition
 import evaka.core.shared.job.ScheduledJobSettings
 import evaka.instance.oulu.dw.DwQuery
-import evaka.instance.oulu.dw.FabricHistoryQuery
-import evaka.instance.oulu.dw.FabricQuery
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalTime
 
@@ -24,17 +22,9 @@ enum class OuluScheduledJob(
     val defaultSettings: ScheduledJobSettings,
 ) {
     PlanDwExportJobs(
-        { jobs, db, clock -> jobs.planDwJobs(db, clock, DwQuery.entries) },
+        { jobs, db, clock -> jobs.planDwJobs(db, clock) },
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(20, 0))),
-    ),
-    PlanFabricExportJobs(
-        { jobs, db, clock -> jobs.planFabricJobs(db, clock, FabricQuery.entries) },
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(20, 0))),
-    ),
-    PlanFabricHistoryJobs(
-        { jobs, db, clock -> jobs.planFabricHistoryJobs(db, clock, FabricHistoryQuery.entries) },
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(20, 0))),
-    ),
+    )
 }
 
 class OuluScheduledJobs(
@@ -48,50 +38,13 @@ class OuluScheduledJobs(
             ScheduledJobDefinition(it.key, it.value) { db, clock -> it.key.fn(this, db, clock) }
         }
 
-    fun planDwJobs(db: Database.Connection, clock: EvakaClock, selectedQueries: List<DwQuery>?) {
-        val queries = selectedQueries ?: DwQuery.entries
-        logger.info { "Planning DW jobs for ${queries.size} queries" }
+    fun planDwJobs(db: Database.Connection, clock: EvakaClock) {
+        logger.info { "Planning DW jobs for ${DwQuery.entries.size} queries" }
         db.transaction { tx ->
             tx.removeUnclaimedJobs(setOf(AsyncJobType(OuluAsyncJob.SendDWQuery::class)))
             asyncJobRunner.plan(
                 tx,
-                queries.asSequence().map(OuluAsyncJob::SendDWQuery),
-                runAt = clock.now(),
-                retryCount = 1,
-            )
-        }
-    }
-
-    fun planFabricJobs(
-        db: Database.Connection,
-        clock: EvakaClock,
-        selectedQueries: List<FabricQuery>?,
-    ) {
-        val queries = selectedQueries ?: FabricQuery.entries
-        logger.info { "Planning Fabric jobs for ${queries.size} queries" }
-        db.transaction { tx ->
-            tx.removeUnclaimedJobs(setOf(AsyncJobType(OuluAsyncJob.SendFabricQuery::class)))
-            asyncJobRunner.plan(
-                tx,
-                queries.asSequence().map(OuluAsyncJob::SendFabricQuery),
-                runAt = clock.now(),
-                retryCount = 1,
-            )
-        }
-    }
-
-    fun planFabricHistoryJobs(
-        db: Database.Connection,
-        clock: EvakaClock,
-        selectedQueries: List<FabricHistoryQuery>?,
-    ) {
-        val queries = selectedQueries ?: FabricHistoryQuery.entries
-        logger.info { "Planning Fabric History jobs for ${queries.size} queries" }
-        db.transaction { tx ->
-            tx.removeUnclaimedJobs(setOf(AsyncJobType(OuluAsyncJob.SendFabricHistoryQuery::class)))
-            asyncJobRunner.plan(
-                tx,
-                queries.asSequence().map(OuluAsyncJob::SendFabricHistoryQuery),
+                DwQuery.entries.asSequence().map(OuluAsyncJob::SendDWQuery),
                 runAt = clock.now(),
                 retryCount = 1,
             )

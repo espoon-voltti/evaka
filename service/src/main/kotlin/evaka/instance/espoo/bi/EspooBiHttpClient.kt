@@ -4,6 +4,7 @@
 
 package evaka.instance.espoo.bi
 
+import evaka.core.bi.CsvInputStream
 import evaka.core.shared.TimeoutConfig
 import evaka.core.shared.buildHttpClient
 import evaka.core.shared.utils.basicAuthInterceptor
@@ -26,7 +27,7 @@ class EspooBiHttpClient(env: EspooBiEnv) {
             timeouts = TimeoutConfig(readTimeout = Duration.ofMinutes(5)),
         )
 
-    fun sendBiCsvFile(fileName: String, stream: EspooBiJob.CsvInputStream) {
+    fun sendBiCsvFile(fileName: String, stream: CsvInputStream) {
         logger.info { "Sending BI CSV file $fileName" }
 
         val body = streamRequestBody("text/csv".toMediaType(), stream)

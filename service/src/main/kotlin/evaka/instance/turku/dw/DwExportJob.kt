@@ -4,10 +4,10 @@
 
 package evaka.instance.turku.dw
 
+import evaka.core.bi.CSV_CHARSET
+import evaka.core.bi.CsvInputStream
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
-import evaka.instance.espoo.bi.CSV_CHARSET
-import evaka.instance.espoo.bi.EspooBiJob
 import evaka.instance.turku.TurkuAsyncJob
 import java.time.Duration
 
@@ -25,7 +25,7 @@ class DwExportJob(private val client: DwExportClient) {
             tx.setStatementTimeout(Duration.ofMinutes(10))
 
             query(tx) { records ->
-                val stream = EspooBiJob.CsvInputStream(CSV_CHARSET, records)
+                val stream = CsvInputStream(CSV_CHARSET, records)
                 client.sendDwCsvFile(queryName, clock, stream)
             }
         }

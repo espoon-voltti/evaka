@@ -4,8 +4,9 @@
 
 package evaka.instance.tampere.bi
 
+import evaka.core.bi.BiExportClient
+import evaka.core.bi.CsvInputStream
 import evaka.core.shared.domain.EvakaClock
-import evaka.instance.espoo.bi.EspooBiJob
 import evaka.instance.tampere.TampereProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedOutputStream
@@ -25,7 +26,7 @@ class FileBiExportS3Client(
     override fun sendBiCsvFile(
         tableName: String,
         clock: EvakaClock,
-        stream: EspooBiJob.CsvInputStream,
+        stream: CsvInputStream,
     ): Pair<String, String> {
         val date = clock.now().toLocalDate()
         val entryName = "$tableName.csv"

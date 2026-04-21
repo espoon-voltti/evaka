@@ -112,24 +112,8 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
         }
 
-    @TestFactory
-    fun testFabricExports() =
-        FabricQuery.entries.map {
-            DynamicTest.dynamicTest("Test Fabric '${it.queryName}' export") {
-                sendAndAssertQueryCsv(it.queryName, it.query)
-            }
-        }
-
-    @TestFactory
-    fun testFabricHistoryExports() =
-        FabricHistoryQuery.entries.map {
-            DynamicTest.dynamicTest("Test Fabric History '${it.queryName}' export") {
-                sendAndAssertQueryCsv(it.queryName, it.query)
-            }
-        }
-
     private fun sendAndAssertQueryCsv(name: String, query: CsvQuery) {
-        job.sendQuery(db, clock, name, query, "test")
+        job.sendQuery(db, clock, name, query)
     }
 
     private fun insertCriticalTestData() {
