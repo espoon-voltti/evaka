@@ -468,7 +468,10 @@ class HolidayPeriodControllerCitizen(
 
         val daycare = daycares[placement.unitId] ?: return false
         val serviceNeed =
-            serviceNeeds.find { serviceNeed -> serviceNeed.placementId == placement.id }
+            serviceNeeds.find { serviceNeed ->
+                serviceNeed.placementId == placement.id &&
+                    FiniteDateRange(serviceNeed.startDate, serviceNeed.endDate).includes(date)
+            }
 
         return isUnitOperationDay(
             daycare.operationDays,

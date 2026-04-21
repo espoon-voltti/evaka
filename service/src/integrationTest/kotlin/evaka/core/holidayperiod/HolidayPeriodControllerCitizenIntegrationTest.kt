@@ -330,6 +330,66 @@ class HolidayPeriodControllerCitizenIntegrationTest :
     }
 
     @Test
+    fun `free absences are saved on weekends for a shift care child that has an earlier non-shift-care service need on the same placement`() {
+        val id = createFixedPeriodQuestionnaire(freePeriodQuestionnaire)
+        val firstOption = freePeriodQuestionnaire.periodOptions[0]
+
+        val fullDay = TimeRange(LocalTime.parse("00:00"), LocalTime.parse("23:59"))
+        db.transaction { tx ->
+            val daycareId =
+                tx.insert(
+                    DevDaycare(
+                        areaId = area.id,
+                        operationTimes =
+                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                        shiftCareOperationTimes =
+                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, fullDay),
+                        shiftCareOpenOnHolidays = true,
+                    )
+                )
+            tx.insertGuardian(parent.id, child2.id)
+
+            val placement =
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycareId,
+                    startDate = mockToday.minusYears(2),
+                    endDate = mockToday.plusYears(1),
+                )
+            tx.insert(placement)
+            val fullTimeDaycareOption =
+                ServiceNeedOptionId(UUID.fromString("7406df92-e715-11ec-9ec2-9b7ff580dcb4"))
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placement.id,
+                    startDate = placement.startDate,
+                    endDate = firstOption.start.minusDays(1),
+                    optionId = fullTimeDaycareOption,
+                    shiftCare = ShiftCareType.NONE,
+                    confirmedBy = authenticatedParent.evakaUserId,
+                )
+            )
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placement.id,
+                    startDate = firstOption.start,
+                    endDate = placement.endDate,
+                    optionId = fullTimeDaycareOption,
+                    shiftCare = ShiftCareType.FULL,
+                    confirmedBy = authenticatedParent.evakaUserId,
+                )
+            )
+        }
+
+        reportFreePeriods(id, FixedPeriodsBody(mapOf(child2.id to firstOption)))
+
+        assertEquals(
+            firstOption.dates().map { Absence(child2.id, it, AbsenceType.FREE_ABSENCE) }.toList(),
+            db.read { it.getAllAbsences().filter { absence -> absence.childId == child2.id } },
+        )
+    }
+
+    @Test
     fun `free absences cannot be saved if a child is not eligible`() {
         db.transaction { tx ->
             tx.insertGuardian(parent.id, child2.id)
