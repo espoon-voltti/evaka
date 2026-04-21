@@ -126,6 +126,9 @@ data class FeatureConfig(
 
     /** Accept preschool decision without asking guardian confirmation */
     val skipGuardianPreschoolDecisionApproval: Boolean = false,
+
+    /** Allow English as a language for every child document type, not only `CITIZEN_BASIC` */
+    val allowEnglishChildDocumentsForAllTypes: Boolean = false,
 )
 
 enum class ArchiveProcessType {

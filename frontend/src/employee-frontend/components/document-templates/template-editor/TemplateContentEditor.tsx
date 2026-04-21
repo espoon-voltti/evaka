@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -52,6 +52,7 @@ import {
 import { faPen } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
+import { UserContext } from '../../../state/user'
 import {
   documentTemplateForm,
   getTemplateFormInitialState,
@@ -323,6 +324,9 @@ const BasicsEditor = React.memo(function BasicsEditor({
   onClose: () => void
 }) {
   const { i18n, lang } = useTranslation()
+  const { user } = useContext(UserContext)
+  const allowEnglishForAllTypes =
+    user?.accessibleFeatures.allowEnglishChildDocumentsForAllTypes
 
   const typeOptions = useMemo(
     () =>
@@ -335,15 +339,17 @@ const BasicsEditor = React.memo(function BasicsEditor({
   )
 
   const getLanguageOptions = useCallback(
-    (type: ChildDocumentType) =>
-      uiLanguages
-        .filter((option) => type === 'CITIZEN_BASIC' || option !== 'EN')
+    (type: ChildDocumentType) => {
+      const englishAllowed = type === 'CITIZEN_BASIC' || allowEnglishForAllTypes
+      return uiLanguages
+        .filter((option) => option !== 'EN' || englishAllowed)
         .map((option) => ({
           domValue: option,
           value: option,
           label: i18n.documentTemplates.languages[option]
-        })),
-    [i18n.documentTemplates]
+        }))
+    },
+    [i18n.documentTemplates, allowEnglishForAllTypes]
   )
 
   const form = useForm(

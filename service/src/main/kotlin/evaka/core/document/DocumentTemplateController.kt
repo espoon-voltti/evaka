@@ -15,6 +15,7 @@ import evaka.core.daycare.getDaycare
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
 import evaka.core.shared.DocumentTemplateId
+import evaka.core.shared.FeatureConfig
 import evaka.core.shared.GroupId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
@@ -47,6 +48,7 @@ class DocumentTemplateController(
     private val accessControl: AccessControl,
     private val evakaEnv: EvakaEnv,
     private val citizenCalendarEnv: CitizenCalendarEnv,
+    private val featureConfig: FeatureConfig,
 ) {
     @PostMapping
     fun createTemplate(
@@ -449,11 +451,15 @@ class DocumentTemplateController(
             }
             .also { Audit.DocumentTemplateDelete.log(targetId = AuditId(templateId)) }
     }
-}
 
-private fun validateLanguage(lang: UiLanguage, type: ChildDocumentType) {
-    if (type != ChildDocumentType.CITIZEN_BASIC && lang == UiLanguage.EN) {
-        throw BadRequest("English is not supported for this document type")
+    private fun validateLanguage(lang: UiLanguage, type: ChildDocumentType) {
+        if (
+            lang == UiLanguage.EN &&
+                type != ChildDocumentType.CITIZEN_BASIC &&
+                !featureConfig.allowEnglishChildDocumentsForAllTypes
+        ) {
+            throw BadRequest("English is not supported for this document type")
+        }
     }
 }
 

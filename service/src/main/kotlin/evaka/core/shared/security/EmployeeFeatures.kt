@@ -29,4 +29,5 @@ data class EmployeeFeatures(
     val openRangesHolidayQuestionnaire: Boolean,
     val outOfOffice: Boolean,
     val decisionReasonings: Boolean,
+    val allowEnglishChildDocumentsForAllTypes: Boolean,
 )

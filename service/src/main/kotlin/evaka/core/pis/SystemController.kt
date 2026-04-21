@@ -338,6 +338,8 @@ class SystemController(
                                 permittedGlobalActions.contains(
                                     Action.Global.WRITE_DECISION_REASONINGS
                                 ),
+                            allowEnglishChildDocumentsForAllTypes =
+                                featureConfig.allowEnglishChildDocumentsForAllTypes,
                         )
 
                     EmployeeUserResponse(
