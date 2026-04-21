@@ -1258,6 +1258,445 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS excludes decisions with open statements during decision period`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+
+        val decisionWithMidPeriodOpenStatement =
+            createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = clock.today().plusMonths(1),
+                validTo = clock.today().plusMonths(6),
+                headOfFamilyId = adult1.id,
+                partnerId = null,
+                childId = child1.id,
+                dateOfBirth = child1.dateOfBirth,
+                unitId = daycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+            )
+        val decisionWithNoOpenStatements =
+            createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = clock.today().plusMonths(1),
+                validTo = clock.today().plusMonths(6),
+                headOfFamilyId = adult3.id,
+                partnerId = null,
+                childId = child2.id,
+                dateOfBirth = child2.dateOfBirth,
+                unitId = daycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+            )
+
+        db.transaction { tx ->
+            tx.upsertValueDecisions(
+                listOf(decisionWithMidPeriodOpenStatement, decisionWithNoOpenStatements)
+            )
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().plusMonths(3),
+                            clock.today().plusMonths(5),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock = clock,
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    difference = emptySet(),
+                    financeDecisionHandlerId = null,
+                    distinctiveParams =
+                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            }
+
+        assertThat(result.data.map { it.child.id }).containsExactly(child2.id)
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS excludes decisions when statement starts exactly on decision end`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decisionStart = clock.today().plusMonths(1)
+        val decisionEnd = clock.today().plusMonths(6)
+
+        val decision =
+            createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = decisionStart,
+                validTo = decisionEnd,
+                headOfFamilyId = adult1.id,
+                partnerId = null,
+                childId = child1.id,
+                dateOfBirth = child1.dateOfBirth,
+                unitId = daycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+            )
+
+        db.transaction { tx ->
+            tx.upsertValueDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult1.id,
+                    data = IncomeStatementBody.HighestFee(decisionEnd, decisionEnd.plusMonths(2)),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock = clock,
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    difference = emptySet(),
+                    financeDecisionHandlerId = null,
+                    distinctiveParams =
+                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            }
+
+        assertThat(result.data).isEmpty()
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS excludes decisions when statement ends exactly on decision start`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decisionStart = clock.today().plusMonths(1)
+        val decisionEnd = clock.today().plusMonths(6)
+
+        val decision =
+            createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = decisionStart,
+                validTo = decisionEnd,
+                headOfFamilyId = adult1.id,
+                partnerId = null,
+                childId = child1.id,
+                dateOfBirth = child1.dateOfBirth,
+                unitId = daycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+            )
+
+        db.transaction { tx ->
+            tx.upsertValueDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(decisionStart.minusMonths(2), decisionStart),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock = clock,
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    difference = emptySet(),
+                    financeDecisionHandlerId = null,
+                    distinctiveParams =
+                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            }
+
+        assertThat(result.data).isEmpty()
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS excludes decisions when open statement belongs to partner`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decision =
+            createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = clock.today().plusMonths(1),
+                validTo = clock.today().plusMonths(6),
+                headOfFamilyId = adult1.id,
+                partnerId = adult2.id,
+                childId = child1.id,
+                dateOfBirth = child1.dateOfBirth,
+                unitId = daycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+            )
+
+        db.transaction { tx ->
+            tx.upsertValueDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult2.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().plusMonths(3),
+                            clock.today().plusMonths(5),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock = clock,
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    difference = emptySet(),
+                    financeDecisionHandlerId = null,
+                    distinctiveParams =
+                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            }
+
+        assertThat(result.data).isEmpty()
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS excludes decisions when open statement belongs to child`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decision =
+            createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = clock.today().plusMonths(1),
+                validTo = clock.today().plusMonths(6),
+                headOfFamilyId = adult1.id,
+                partnerId = null,
+                childId = child1.id,
+                dateOfBirth = child1.dateOfBirth,
+                unitId = daycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+            )
+
+        db.transaction { tx ->
+            tx.upsertValueDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = child1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().plusMonths(3),
+                            clock.today().plusMonths(5),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock = clock,
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    difference = emptySet(),
+                    financeDecisionHandlerId = null,
+                    distinctiveParams =
+                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            }
+
+        assertThat(result.data).isEmpty()
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS includes decisions when in-period statement is HANDLED`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decision =
+            createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = clock.today().plusMonths(1),
+                validTo = clock.today().plusMonths(6),
+                headOfFamilyId = adult1.id,
+                partnerId = null,
+                childId = child1.id,
+                dateOfBirth = child1.dateOfBirth,
+                unitId = daycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+            )
+
+        db.transaction { tx ->
+            tx.insert(decisionMaker)
+            tx.upsertValueDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().plusMonths(3),
+                            clock.today().plusMonths(5),
+                        ),
+                    status = IncomeStatementStatus.HANDLED,
+                    handledAt = clock.now(),
+                    handlerId = decisionMaker.id,
+                )
+            )
+        }
+
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock = clock,
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    difference = emptySet(),
+                    financeDecisionHandlerId = null,
+                    distinctiveParams =
+                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            }
+
+        assertThat(result.data.map { it.child.id }).containsExactly(child1.id)
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS includes decisions when open statement starts the day after decision end`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decisionStart = clock.today().plusMonths(1)
+        val decisionEnd = clock.today().plusMonths(6)
+
+        val decision =
+            createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = decisionStart,
+                validTo = decisionEnd,
+                headOfFamilyId = adult1.id,
+                partnerId = null,
+                childId = child1.id,
+                dateOfBirth = child1.dateOfBirth,
+                unitId = daycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+            )
+
+        db.transaction { tx ->
+            tx.upsertValueDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            decisionEnd.plusDays(1),
+                            decisionEnd.plusMonths(2),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock = clock,
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    difference = emptySet(),
+                    financeDecisionHandlerId = null,
+                    distinctiveParams =
+                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            }
+
+        assertThat(result.data.map { it.child.id }).containsExactly(child1.id)
+    }
+
+    @Test
     fun `search with status`() {
         db.transaction { tx ->
             val baseDecision = { child: DevPerson ->
