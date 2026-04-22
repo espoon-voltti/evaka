@@ -473,6 +473,8 @@ data class SfiPrintingEnv(
     val billingId: String,
     /** Billing password, if required by the printing provider */
     val billingPassword: Sensitive<String>?,
+    /** Optional cost pool identifier sent to the printing provider */
+    val costPool: String? = null,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
