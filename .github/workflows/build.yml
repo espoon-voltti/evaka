@@ -415,11 +415,12 @@ jobs:
 
       - name: Load OWASP cache
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/owasp-cache-get@feature/owasp-cache-get
+        uses: espoon-voltti/voltti-actions/owasp-cache-get@master
         with:
           gh_token: ${{ secrets.VOLTTI_OWASP_TOKEN }}
           t_cache_base: "./"
           t_cache_dir: "dependency-check-data"
+          fail_on_miss: "true"
 
       - name: Run service OWASP tests
         if: ${{ !github.event.pull_request.head.repo.fork }}
