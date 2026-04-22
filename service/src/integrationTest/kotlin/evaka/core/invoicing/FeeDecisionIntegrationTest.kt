@@ -72,6 +72,7 @@ import evaka.core.snDaycarePartDay25
 import evaka.core.snDefaultDaycare
 import evaka.core.toFeeDecisionServiceNeed
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -907,6 +908,304 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
 
         assertEqualEnough(listOf(toSummary(decisionWithHandledStatements)), result.data)
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS excludes decisions with open statements during decision period`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decisionWithMidPeriodOpenStatement =
+            createFeeDecisionsForFamily(
+                headOfFamily = adult1,
+                partner = null,
+                familyChildren = listOf(child1),
+                period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
+            )
+        val decisionWithNoOpenStatements =
+            createFeeDecisionsForFamily(
+                headOfFamily = adult3,
+                partner = null,
+                familyChildren = listOf(child2),
+                period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
+            )
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(
+                listOf(decisionWithMidPeriodOpenStatement, decisionWithNoOpenStatements)
+            )
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().plusMonths(3),
+                            clock.today().plusMonths(5),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            )
+
+        assertEqualEnough(listOf(toSummary(decisionWithNoOpenStatements)), result.data)
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS excludes decisions when statement starts exactly on decision end`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decisionStart = clock.today().plusMonths(1)
+        val decisionEnd = clock.today().plusMonths(6)
+
+        val decision =
+            createFeeDecisionsForFamily(
+                headOfFamily = adult1,
+                partner = null,
+                familyChildren = listOf(child1),
+                period = FiniteDateRange(decisionStart, decisionEnd),
+            )
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult1.id,
+                    data = IncomeStatementBody.HighestFee(decisionEnd, decisionEnd.plusMonths(2)),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            )
+
+        assertEqualEnough(listOf(), result.data)
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS excludes decisions when statement ends exactly on decision start`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decisionStart = clock.today().plusMonths(1)
+        val decisionEnd = clock.today().plusMonths(6)
+
+        val decision =
+            createFeeDecisionsForFamily(
+                headOfFamily = adult1,
+                partner = null,
+                familyChildren = listOf(child1),
+                period = FiniteDateRange(decisionStart, decisionEnd),
+            )
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(decisionStart.minusMonths(2), decisionStart),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            )
+
+        assertEqualEnough(listOf(), result.data)
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS excludes decisions when open statement belongs to partner`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decision =
+            createFeeDecisionsForFamily(
+                headOfFamily = adult1,
+                partner = adult2,
+                familyChildren = listOf(child1),
+                period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
+            )
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult2.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().plusMonths(3),
+                            clock.today().plusMonths(5),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            )
+
+        assertEqualEnough(listOf(), result.data)
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS excludes decisions when open statement belongs to child`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decision =
+            createFeeDecisionsForFamily(
+                headOfFamily = adult1,
+                partner = null,
+                familyChildren = listOf(child1),
+                period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
+            )
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = child1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().plusMonths(3),
+                            clock.today().plusMonths(5),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            )
+
+        assertEqualEnough(listOf(), result.data)
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS includes decisions when in-period statement is HANDLED`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decision =
+            createFeeDecisionsForFamily(
+                headOfFamily = adult1,
+                partner = null,
+                familyChildren = listOf(child1),
+                period = FiniteDateRange(clock.today().plusMonths(1), clock.today().plusMonths(6)),
+            )
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            clock.today().plusMonths(3),
+                            clock.today().plusMonths(5),
+                        ),
+                    status = IncomeStatementStatus.HANDLED,
+                    handledAt = clock.now(),
+                    handlerId = decisionMaker1.id,
+                )
+            )
+        }
+
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            )
+
+        assertEqualEnough(listOf(toSummary(decision)), result.data)
+    }
+
+    @Test
+    fun `search with NO_OPEN_INCOME_STATEMENTS includes decisions when open statement starts the day after decision end`() {
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 6, 15), LocalTime.of(12, 0)))
+        val decisionStart = clock.today().plusMonths(1)
+        val decisionEnd = clock.today().plusMonths(6)
+
+        val decision =
+            createFeeDecisionsForFamily(
+                headOfFamily = adult1,
+                partner = null,
+                familyChildren = listOf(child1),
+                period = FiniteDateRange(decisionStart, decisionEnd),
+            )
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(listOf(decision))
+
+            tx.insert(
+                DevIncomeStatement(
+                    personId = adult1.id,
+                    data =
+                        IncomeStatementBody.HighestFee(
+                            decisionEnd.plusDays(1),
+                            decisionEnd.plusMonths(2),
+                        ),
+                    status = IncomeStatementStatus.SENT,
+                    handledAt = null,
+                    handlerId = null,
+                )
+            )
+        }
+
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    distinctions = listOf(DistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+                )
+            )
+
+        assertEqualEnough(listOf(toSummary(decision)), result.data)
     }
 
     @Test
