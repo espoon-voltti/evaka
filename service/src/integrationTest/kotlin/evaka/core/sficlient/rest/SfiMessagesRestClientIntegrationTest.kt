@@ -13,11 +13,14 @@ import evaka.core.SfiPrintingEnv
 import evaka.core.s3.Document
 import evaka.core.sficlient.SfiMessage
 import evaka.core.shared.SfiMessageId
+import evaka.core.shared.config.defaultJsonMapperBuilder
 import java.net.URI
 import java.util.UUID
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -168,6 +171,53 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
+    fun `it sends a sfi message with costPool when configured`() {
+        val costPoolValue = "test-cost-pool-123"
+        val envWithCostPool =
+            createEnv().let {
+                it.copy(printing = it.printing.copy(costPool = costPoolValue))
+            }
+        val costPoolClient =
+            SfiMessagesRestClient(
+                envWithCostPool,
+                getDocument = { location ->
+                    assertEquals(message.documentBucket, location.bucket)
+                    assertEquals(message.documentKey, location.key)
+                    Document(location.key, fileContent, contentType = "content-type")
+                },
+                passwordStore =
+                    MockPasswordStore(
+                        initialPassword = MockSfiMessagesRestEndpoint.DEFAULT_PASSWORD
+                    ),
+            )
+
+        costPoolClient.send(message)
+
+        MockSfiMessagesRestEndpoint.getCapturedMessages().entries.let {
+            assertEquals(1, it.size)
+            val (_, captured) = it.first().value
+            assertEquals(
+                costPoolValue,
+                captured.paperMail.printingAndEnvelopingService.costPool,
+            )
+        }
+    }
+
+    @Test
+    fun `it sends a sfi message without costPool when not configured`() {
+        client.send(message)
+
+        MockSfiMessagesRestEndpoint.getCapturedMessages().entries.let {
+            assertEquals(1, it.size)
+            val (_, captured) = it.first().value
+            assertEquals(
+                null,
+                captured.paperMail.printingAndEnvelopingService.costPool,
+            )
+        }
+    }
+
+    @Test
     fun `it handles duplicate message status 409 correctly`() {
         client.send(message)
         assertEquals(1, MockSfiMessagesRestEndpoint.getCapturedMessages().size)
@@ -209,5 +259,77 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
         // sending a message should still work after password change
         client.send(message)
         assertEquals(1, MockSfiMessagesRestEndpoint.getCapturedMessages().size)
+    }
+
+    @Test
+    fun `costPool is omitted from JSON when null`() {
+        val jsonMapper = defaultJsonMapperBuilder().build()
+        val service =
+            PrintingAndEnvelopingService(
+                postiMessaging =
+                    PostiMessaging(
+                        contactDetails = ContactDetails(email = "test@example.com"),
+                        username = "billing-username",
+                        password = "billing-password",
+                    )
+            )
+        val json = jsonMapper.writeValueAsString(service)
+
+        assertFalse(json.contains("costPool"), "costPool should not appear in JSON when null")
+        assertTrue(json.contains("postiMessaging"))
+    }
+
+    @Test
+    fun `costPool is included in JSON when set`() {
+        val jsonMapper = defaultJsonMapperBuilder().build()
+        val service =
+            PrintingAndEnvelopingService(
+                postiMessaging =
+                    PostiMessaging(
+                        contactDetails = ContactDetails(email = "test@example.com"),
+                        username = "billing-username",
+                        password = "billing-password",
+                    ),
+                costPool = "my-cost-pool",
+            )
+        val json = jsonMapper.writeValueAsString(service)
+
+        assertTrue(json.contains("\"costPool\""), "costPool should appear in JSON when set")
+        assertTrue(json.contains("\"my-cost-pool\""))
+    }
+
+    @Test
+    fun `costPool round-trips through serialization`() {
+        val jsonMapper = defaultJsonMapperBuilder().build()
+        val service =
+            PrintingAndEnvelopingService(
+                postiMessaging =
+                    PostiMessaging(
+                        contactDetails = ContactDetails(email = "test@example.com"),
+                        username = "billing-username",
+                        password = "billing-password",
+                    ),
+                costPool = "department-42",
+            )
+        val json = jsonMapper.writeValueAsString(service)
+        val deserialized = jsonMapper.readValue(json, PrintingAndEnvelopingService::class.java)
+        assertEquals(service, deserialized)
+    }
+
+    @Test
+    fun `costPool defaults to null when absent in JSON`() {
+        val jsonMapper = defaultJsonMapperBuilder().build()
+        val service =
+            PrintingAndEnvelopingService(
+                postiMessaging =
+                    PostiMessaging(
+                        contactDetails = ContactDetails(email = "test@example.com"),
+                        username = "billing-username",
+                        password = "billing-password",
+                    )
+            )
+        val json = jsonMapper.writeValueAsString(service)
+        val deserialized = jsonMapper.readValue(json, PrintingAndEnvelopingService::class.java)
+        assertEquals(null, deserialized.costPool)
     }
 }
