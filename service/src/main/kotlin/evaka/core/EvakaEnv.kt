@@ -473,7 +473,7 @@ data class SfiPrintingEnv(
     val billingId: String,
     /** Billing password, if required by the printing provider */
     val billingPassword: Sensitive<String>?,
-    /** Optional cost pool identifier sent to the printing provider */
+    /** Optional costpool identifier sent to the printing provider */
     val costPool: String? = null,
 ) {
     companion object {
@@ -483,6 +483,7 @@ data class SfiPrintingEnv(
                 billingPassword =
                     env.lookup<String?>("evaka.integration.sfi.printing.billing.password")
                         ?.let(::Sensitive),
+                costPool = env.lookup("evaka.integration.sfi.printing.billing.costpool"),
             )
     }
 }
