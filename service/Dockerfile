@@ -76,8 +76,8 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 ENV USERNAME=evaka
 ENV HOME_DIR=/home/${USERNAME}
-ENV USER_ID=1000
-ENV GROUP_ID=1000
+ENV USER_ID=2000
+ENV GROUP_ID=2000
 
 RUN addgroup --gid ${GROUP_ID} ${USERNAME} \
  && adduser --uid ${USER_ID} --gid ${GROUP_ID} --gecos "" -q --home ${HOME_DIR} --disabled-password ${USERNAME} \
