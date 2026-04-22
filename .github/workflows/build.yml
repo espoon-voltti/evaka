@@ -413,14 +413,13 @@ jobs:
         with:
           mask-password: 'true'
 
-      - name: Cache dependency check database
+      - name: Load OWASP cache
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: actions/cache@v5
+        uses: espoon-voltti/voltti-actions/owasp-cache-get@feature/owasp-cache-get
         with:
-          path: dependency-check-data
-          key: dependency-check-data-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: |
-            dependency-check-data-
+          gh_token: ${{ secrets.VOLTTI_OWASP_TOKEN }}
+          t_cache_base: "./"
+          t_cache_dir: "dependency-check-data"
 
       - name: Run service OWASP tests
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -431,7 +430,7 @@ jobs:
               -e OSS_INDEX_USERNAME=${{ secrets.OSS_INDEX_USERNAME }} -e OSS_INDEX_PASSWORD=${{ secrets.OSS_INDEX_PASSWORD }} \
               -v $(pwd)/dependency-check-data:/root/.gradle/dependency-check-data \
               ${{ needs.service.outputs.builder_image }} \
-              sh -c "./gradlew --no-daemon dependencyCheckUpdate && ./gradlew --no-daemon dependencyCheckAnalyze"
+              sh -c "./gradlew --no-daemon dependencyCheckAnalyze"
 
   check-schema:
     needs:
