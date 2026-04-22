@@ -153,9 +153,11 @@ class DocumentTemplateController(
                         it.published &&
                             it.validity.includes(clock.today()) &&
                             it.placementTypes.contains(placement.type) &&
+                            // English-language units can issue documents in any language
                             (it.language.name.uppercase() ==
                                 placement.unitLanguage.name.uppercase() ||
-                                it.language == UiLanguage.EN) &&
+                                it.language == UiLanguage.EN ||
+                                placement.unitLanguage == Language.en) &&
                             (placement.enabledPilotFeatures.contains(
                                 PilotFeature.VASU_AND_PEDADOC
                             ) || !isPedagogicalDocument((it.type))) &&
@@ -196,7 +198,9 @@ class DocumentTemplateController(
                         it.published &&
                             it.validity.includes(clock.today()) &&
                             (types.isEmpty() || types.contains(it.type)) &&
-                            (it.language.name.uppercase() == unit.language.name.uppercase())
+                            // English-language units can issue documents in any language
+                            (it.language.name.uppercase() == unit.language.name.uppercase() ||
+                                unit.language == Language.en)
                     }
                 }
             }

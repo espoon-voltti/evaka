@@ -15,6 +15,7 @@ import evaka.core.shared.auth.UserRole
 import evaka.core.shared.config.testFeatureConfig
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
@@ -562,6 +563,152 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val active = controller.getActiveTemplates(dbInstance(), employee.user, now, childId)
         assertTrue(active.isEmpty())
+    }
+
+    @Test
+    fun `active templates endpoint returns templates in all languages when placement unit is english`() {
+        val childId = insertChildInUnitWithLanguage(Language.en, name = "English Daycare")
+        listOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN).forEach { lang ->
+            publishPedagogicalAssessmentTemplate(lang)
+        }
+
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, childId)
+        assertEquals(
+            setOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN),
+            active.map { it.language }.toSet(),
+        )
+    }
+
+    @Test
+    fun `active templates endpoint returns finnish and english templates only when placement unit is finnish`() {
+        val childId = insertChildInUnitWithLanguage(Language.fi, name = "Finnish Daycare")
+        listOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN).forEach { lang ->
+            publishPedagogicalAssessmentTemplate(lang)
+        }
+
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, childId)
+        assertEquals(setOf(UiLanguage.FI, UiLanguage.EN), active.map { it.language }.toSet())
+    }
+
+    @Test
+    fun `active templates by group id endpoint returns templates in all languages when group unit is english`() {
+        val groupId = insertGroupInUnitWithLanguage(Language.en, name = "English Daycare")
+        listOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN).forEach { lang ->
+            publishCitizenBasicTemplate(lang)
+        }
+
+        val active =
+            controller.getActiveTemplatesByGroupId(
+                dbInstance(),
+                employee.user,
+                now,
+                groupId,
+                emptySet(),
+            )
+        assertEquals(
+            setOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN),
+            active.map { it.language }.toSet(),
+        )
+    }
+
+    @Test
+    fun `active templates by group id endpoint returns only matching language templates when group unit is finnish`() {
+        val groupId = insertGroupInUnitWithLanguage(Language.fi, name = "Finnish Daycare")
+        listOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN).forEach { lang ->
+            publishCitizenBasicTemplate(lang)
+        }
+
+        val active =
+            controller.getActiveTemplatesByGroupId(
+                dbInstance(),
+                employee.user,
+                now,
+                groupId,
+                emptySet(),
+            )
+        assertEquals(setOf(UiLanguage.FI), active.map { it.language }.toSet())
+    }
+
+    private fun insertChildInUnitWithLanguage(language: Language, name: String) =
+        db.transaction { tx ->
+            val areaId =
+                tx.insert(DevCareArea(name = "Area for $name", shortName = "area_${language.name}"))
+            val daycareId =
+                tx.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        name = name,
+                        language = language,
+                        enabledPilotFeatures =
+                            setOf(
+                                PilotFeature.VASU_AND_PEDADOC,
+                                PilotFeature.OTHER_DECISION,
+                                PilotFeature.CITIZEN_BASIC_DOCUMENT,
+                            ),
+                    )
+                )
+            val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = now.today(),
+                    endDate = now.today().plusDays(5),
+                )
+            )
+            childId
+        }
+
+    private fun insertGroupInUnitWithLanguage(language: Language, name: String) =
+        db.transaction { tx ->
+            val areaId =
+                tx.insert(
+                    DevCareArea(name = "Area for $name", shortName = "area_group_${language.name}")
+                )
+            val daycareId =
+                tx.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        name = name,
+                        language = language,
+                        enabledPilotFeatures = setOf(PilotFeature.CITIZEN_BASIC_DOCUMENT),
+                    )
+                )
+            tx.insert(DevDaycareGroup(daycareId = daycareId))
+        }
+
+    private fun publishPedagogicalAssessmentTemplate(language: UiLanguage) {
+        val template =
+            controllerWithEnglishFlag(enabled = true)
+                .createTemplate(
+                    dbInstance(),
+                    employee.user,
+                    now,
+                    testCreationRequest.copy(
+                        name = "PA-${language.name}",
+                        type = ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
+                        language = language,
+                        validity = DateRange(now.today(), null),
+                    ),
+                )
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
+    }
+
+    private fun publishCitizenBasicTemplate(language: UiLanguage) {
+        val template =
+            controller.createTemplate(
+                dbInstance(),
+                employee.user,
+                now,
+                testCreationRequest.copy(
+                    name = "CB-${language.name}",
+                    type = ChildDocumentType.CITIZEN_BASIC,
+                    language = language,
+                    confidentiality = null,
+                    validity = DateRange(now.today(), null),
+                ),
+            )
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
     }
 
     @Test

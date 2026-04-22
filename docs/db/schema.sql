@@ -716,7 +716,8 @@ CREATE TYPE public.ui_language AS ENUM (
 
 CREATE TYPE public.unit_language AS ENUM (
     'fi',
-    'sv'
+    'sv',
+    'en'
 );
 
 -- Name: unit_provider_type; Type: TYPE; Schema: public
