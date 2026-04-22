@@ -10,7 +10,7 @@ cd "$( dirname "${BASH_SOURCE[0]}")"
 
 if [ "${1:-}" = "test" ] || [ "${1:-}" = "builder" ]; then
     docker build -t evaka/frontend-builder \
-        --target=builder \
+        --target=builder-single \
         --build-arg build=0 \
         --build-arg commit="$(git rev-parse HEAD)" \
         --build-context customizations=src/lib-customizations/espoo \

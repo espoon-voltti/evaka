@@ -1,11 +1,13 @@
 # syntax=docker/dockerfile:1.23.0
-# SPDX-FileCopyrightText: 2017-2023 City of Espoo
+# SPDX-FileCopyrightText: 2017-2026 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 ARG NGINX_VERSION=1.29.2
 
-FROM node:24.15.0-trixie-slim AS builder
+# ---------- Base ----------
+
+FROM node:24.15.0-trixie-slim AS base
 ARG CACHE_BUST
 
 USER root
@@ -23,18 +25,12 @@ RUN yarn install --immutable
 
 COPY . .
 
-ARG EVAKA_CUSTOMIZATIONS=espoo
-COPY --from=customizations . src/lib-customizations/${EVAKA_CUSTOMIZATIONS}/
-
-ARG ICONS=free
 ARG SENTRY_PUBLISH_ENABLED="false"
 ARG SENTRY_AUTH_TOKEN=""
 ARG SENTRY_ORG="espoo-voltti"
 ARG build=none
 ARG commit=none
 
-ENV EVAKA_CUSTOMIZATIONS="$EVAKA_CUSTOMIZATIONS"
-ENV ICONS="$ICONS"
 ENV SENTRY_PUBLISH_ENABLED="$SENTRY_PUBLISH_ENABLED"
 ENV SENTRY_ORG="$SENTRY_ORG"
 ENV SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN"
@@ -42,9 +38,48 @@ ENV SENTRY_NO_PROGRESS_BAR="1"
 ENV APP_BUILD="$build"
 ENV APP_COMMIT="$commit"
 
-RUN yarn build
+# ---------- Multi-municipality builder ----------
+#
+# Run build for all customizations under src/lib-customizations/
 
-FROM nginx:${NGINX_VERSION}-otel
+FROM base AS builder-multi
+RUN set -e; \
+    mkdir -p /out/static; \
+    for muni_dir in src/lib-customizations/*/; do \
+      name=$(basename "$muni_dir"); \
+      case "$name" in defaults) continue ;; esac; \
+      icons_file="$muni_dir/icons"; \
+      if [ ! -f "$icons_file" ]; then \
+        echo "ERROR: $icons_file is missing" >&2; \
+        exit 1; \
+      fi; \
+      icons=$(cat "$icons_file"); \
+      echo "Building $name (icons=$icons)"; \
+      EVAKA_CUSTOMIZATIONS="$name" ICONS="$icons" yarn build; \
+      /project/assemble-static-bundle.sh "$name"; \
+      rm -rf dist; \
+    done
+
+# ---------- Single-municipality builder ----------
+#
+# Run build for src/lib-customizations/$EVAKA_CUSTOMIZATIONS
+
+FROM base AS builder-single
+ARG EVAKA_CUSTOMIZATIONS=espoo
+ARG ICONS=free
+
+COPY --from=customizations . src/lib-customizations/${EVAKA_CUSTOMIZATIONS}/
+
+ENV EVAKA_CUSTOMIZATIONS="$EVAKA_CUSTOMIZATIONS"
+ENV ICONS="$ICONS"
+
+RUN yarn build \
+ && mkdir -p /out/static \
+ && /project/assemble-static-bundle.sh "${EVAKA_CUSTOMIZATIONS}"
+
+# ---------- Shared runtime base ----------
+
+FROM nginx:${NGINX_VERSION}-otel AS runtime-base
 ARG CACHE_BUST
 
 LABEL maintainer="https://github.com/espoon-voltti/evaka"
@@ -72,25 +107,11 @@ COPY ./proxy/files/web/ /web/
 COPY ./proxy/files/etc/ /etc/
 
 RUN mkdir -p /nginx /internal && chown nginx:nginx /nginx /internal
+RUN mkdir /static
 
 VOLUME /nginx
 VOLUME /internal
 
-ENTRYPOINT ["/bin/proxy-entrypoint.sh"]
-CMD ["nginx", "-c", "/nginx/config/nginx.conf", "-g", "daemon off;"]
-
-RUN mkdir /static
-COPY --from=builder /project/dist/bundle/favicon.ico /static
-COPY --from=builder /project/dist/bundle/assets /static/assets
-COPY --from=builder /project/dist/bundle/employee /static/employee
-COPY --from=builder /project/dist/bundle/src/citizen-frontend/index.html /static
-COPY --from=builder /project/dist/bundle/src/employee-frontend/index.html /static/employee
-COPY --from=builder /project/dist/bundle/src/employee-mobile-frontend/index.html /static/employee/mobile
-
-COPY --from=builder /project/src/maintenance-page-frontend /static/maintenance-page
-
-# Add build and commit environment variables and labels
-# for tracing the image to the commit and build from which the image has been built.
 ARG build=none
 ARG commit=none
 ENV APP_BUILD="$build" \
@@ -98,4 +119,19 @@ ENV APP_BUILD="$build" \
 LABEL fi.espoo.build="$build" \
       fi.espoo.commit="$commit"
 
+ENTRYPOINT ["/bin/proxy-entrypoint.sh"]
+CMD ["nginx", "-c", "/nginx/config/nginx.conf", "-g", "daemon off;"]
+
+# ---------- Multi-municipality runtime ----------
+
+FROM runtime-base AS runtime-multi
+COPY --from=builder-multi /out/static /static
+USER nginx
+
+# ---------- Single-municipality runtime ----------
+
+FROM runtime-base AS runtime-single
+ARG EVAKA_CUSTOMIZATIONS=espoo
+ENV EVAKA_MUNICIPALITY=${EVAKA_CUSTOMIZATIONS}
+COPY --from=builder-single /out/static /static
 USER nginx

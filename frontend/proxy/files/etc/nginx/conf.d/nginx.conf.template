@@ -147,7 +147,7 @@ log_format json_access escape=json
 
 server {
   # Basic configs
-  root /static;
+  root /static/{{ .Env.EVAKA_MUNICIPALITY }};
   index index.html;
 
   listen 8080;
