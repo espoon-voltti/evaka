@@ -8,6 +8,7 @@ import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.application.ApplicationStatus
 import evaka.core.bi.BiExportClient
+import evaka.core.bi.BiExportConfig
 import evaka.core.bi.BiExportJob
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
@@ -135,7 +136,8 @@ class TampereConfig {
         AsyncJobRunner(TampereAsyncJob::class, listOf(TampereAsyncJob.pool), jdbi, tracer)
 
     @Bean
-    fun tampereBiJob(biExportClient: BiExportClient): BiExportJob = BiExportJob(biExportClient)
+    fun tampereBiJob(biExportClient: BiExportClient): BiExportJob =
+        BiExportJob(biExportClient, BiExportConfig(includePII = true, includeLegacyColumns = true))
 
     @Bean
     fun paymentIntegrationClient(properties: TampereProperties): PaymentIntegrationClient {

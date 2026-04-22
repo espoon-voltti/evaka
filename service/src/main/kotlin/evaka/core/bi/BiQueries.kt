@@ -439,7 +439,7 @@ object BiQueries {
         csvQuery<BiAbsence> {
             sql(
                 """
-            SELECT id, child_id, date, absence_type, modified_at::text, modified_by, category, questionnaire_id 
+            SELECT id, child_id, date, absence_type, modified_at::text, modified_by, category, questionnaire_id
             FROM absence
             WHERE modified_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - interval '60 days')::date
             """
@@ -447,7 +447,11 @@ object BiQueries {
         }
 
     interface CsvQuery {
-        operator fun <R> invoke(tx: Database.Read, useResults: (records: Sequence<String>) -> R): R
+        operator fun <R> invoke(
+            tx: Database.Read,
+            config: BiExportConfig,
+            useResults: (records: Sequence<String>) -> R,
+        ): R
     }
 
     class StreamingCsvQuery<T : Any>(
@@ -456,9 +460,12 @@ object BiQueries {
     ) : CsvQuery {
         override operator fun <R> invoke(
             tx: Database.Read,
+            config: BiExportConfig,
             useResults: (records: Sequence<String>) -> R,
         ): R =
-            query(tx).useSequence { rows -> useResults(toCsvRecords(::convertToCsv, clazz, rows)) }
+            query(tx).useSequence { rows ->
+                useResults(toCsvRecords(::convertToCsv, clazz, rows, config))
+            }
     }
 
     private const val QUERY_STREAM_CHUNK_SIZE = 10_000
