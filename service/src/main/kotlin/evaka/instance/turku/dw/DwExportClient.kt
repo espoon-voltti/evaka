@@ -8,9 +8,5 @@ import evaka.core.bi.CsvInputStream
 import evaka.core.shared.domain.EvakaClock
 
 interface DwExportClient {
-    fun sendDwCsvFile(
-        queryName: String,
-        clock: EvakaClock,
-        stream: CsvInputStream,
-    ): Pair<String, String>
+    fun sendDwCsvFile(queryName: String, clock: EvakaClock, stream: CsvInputStream)
 }

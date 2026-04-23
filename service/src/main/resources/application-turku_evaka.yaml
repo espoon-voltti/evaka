@@ -45,10 +45,7 @@ evakaturku:
     password: pass
     address: address
     path: path
-  bucket:
-    export: evakaturku-export-it
   dw_export:
-    prefix: reports
     sftp:
       username: user
       password: pass

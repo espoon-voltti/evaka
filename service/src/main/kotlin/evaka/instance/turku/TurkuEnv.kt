@@ -11,7 +11,6 @@ import org.springframework.core.env.Environment
 data class TurkuEnv(
     val sapInvoicing: SftpProperties,
     val sapPayments: SftpProperties,
-    val bucket: BucketProperties,
     val dwExport: DwExportProperties,
 ) {
     companion object {
@@ -19,11 +18,9 @@ data class TurkuEnv(
             TurkuEnv(
                 sapInvoicing = SftpProperties.fromEnvironment(env, "evakaturku.sap_invoicing"),
                 sapPayments = SftpProperties.fromEnvironment(env, "evakaturku.sap_payments"),
-                bucket = BucketProperties(export = env.lookup("evakaturku.bucket.export")),
                 dwExport =
                     DwExportProperties(
-                        prefix = env.lookup("evakaturku.dw_export.prefix"),
-                        sftp = SftpProperties.fromEnvironment(env, "evakaturku.dw_export.sftp"),
+                        sftp = SftpProperties.fromEnvironment(env, "evakaturku.dw_export.sftp")
                     ),
             )
     }
@@ -52,4 +49,4 @@ data class BucketProperties(val export: String) {
     fun allBuckets() = listOf(export)
 }
 
-data class DwExportProperties(val prefix: String, val sftp: SftpProperties)
+data class DwExportProperties(val sftp: SftpProperties)
