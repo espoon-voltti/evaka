@@ -10,6 +10,7 @@ import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.CareDetails
 import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.bi.BiExportConfig
 import evaka.core.bi.BiExportJob
 import evaka.core.bi.BiTable
 import evaka.core.bi.CSV_CHARSET
@@ -73,7 +74,11 @@ class ExportBiCsvJobTest : AbstractTampereIntegrationTest() {
     @BeforeAll
     fun beforeAll() {
         val exportClient = FileBiExportS3Client(s3Client, properties)
-        exportJob = BiExportJob(exportClient)
+        exportJob =
+            BiExportJob(
+                exportClient,
+                BiExportConfig(includePII = true, includeLegacyColumns = true),
+            )
     }
 
     @BeforeEach

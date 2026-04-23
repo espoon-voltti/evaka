@@ -55,10 +55,10 @@ data class BiApplication(
     val status: ApplicationStatus,
     val origin: ApplicationOrigin,
     val duedate_set_manually_at: String?,
-    val service_worker_note: String,
+    @Pii val service_worker_note: String,
     val type: ApplicationType,
     val allow_other_guardian_access: Boolean,
-    val document: String?,
+    @Pii val document: String?,
     val form_modified: String?,
 )
 
@@ -74,11 +74,11 @@ data class BiArea(
 
 data class BiPerson(
     val id: UUID,
-    val social_security_number: String?,
-    val first_name: String,
-    val last_name: String,
-    val email: String?,
-    val aad_object_id: UUID?,
+    @Pii val social_security_number: String?,
+    @Pii val first_name: String,
+    @Pii val last_name: String,
+    @Pii val email: String?,
+    @Pii val aad_object_id: UUID?,
     val language: String?,
     val date_of_birth: LocalDate,
     val created: String,
@@ -89,26 +89,26 @@ data class BiPerson(
     val nationalities: List<String>,
     val restricted_details_enabled: Boolean,
     val restricted_details_end_date: LocalDate?,
-    val phone: String,
+    @Pii val phone: String,
     val updated_from_vtj: String?,
-    val invoicing_street_address: String,
-    val invoicing_postal_code: String,
-    val invoicing_post_office: String,
-    val invoice_recipient_name: String,
+    @Pii val invoicing_street_address: String,
+    @Pii val invoicing_postal_code: String,
+    @Pii val invoicing_post_office: String,
+    @Pii val invoice_recipient_name: String,
     val date_of_death: LocalDate?,
     val residence_code: String,
     val force_manual_fee_decisions: Boolean,
-    val backup_phone: String,
+    @Pii val backup_phone: String,
     val last_login: String?,
-    val freetext_vec: String? = "", // BI should have no need for this
+    @LegacyColumn val freetext_vec: String? = "", // BI should have no need for this
     val oph_person_oid: String?,
     val vtj_guardians_queried: String?,
     val vtj_dependants_queried: String?,
     val ssn_adding_disabled: Boolean,
-    val preferred_name: String,
+    @Pii val preferred_name: String,
     val duplicate_of: UUID?,
-    val enabled_email_types: List<String>?,
-    val keycloak_email: String?,
+    @LegacyColumn val enabled_email_types: List<String>?,
+    @Pii @LegacyColumn val keycloak_email: String?,
 )
 
 data class BiAbsence(
@@ -126,10 +126,10 @@ data class BiApplicationForm(
     val id: UUID,
     val application_id: UUID,
     val created: String,
-    val revision: Long,
-    val document: String,
+    @LegacyColumn val revision: Long,
+    @Pii val document: String,
     val updated: String,
-    val latest: Boolean,
+    @LegacyColumn val latest: Boolean,
 )
 
 data class BiAssistanceAction(
@@ -140,7 +140,8 @@ data class BiAssistanceAction(
     val child_id: UUID,
     val start_date: LocalDate,
     val end_date: LocalDate,
-    val other_action: String,
+    @Pii val other_action: String,
+    @LegacyColumn
     val measures: String, // no db enum type in kotlin, string representation of db enum array
 )
 
@@ -224,7 +225,7 @@ data class BiDaycare(
     val created: String,
     val updated: String,
     val backup_location: String?,
-    val language_emphasis_id: UUID?,
+    @LegacyColumn val language_emphasis_id: UUID?,
     val opening_date: LocalDate?,
     val closing_date: LocalDate?,
     val email: String?,
@@ -342,16 +343,16 @@ data class BiDecision(
 
 data class BiEmployee(
     val id: UUID,
-    val first_name: String,
-    val last_name: String,
-    val email: String?,
+    @Pii val first_name: String,
+    @Pii val last_name: String,
+    @Pii val email: String?,
     val created: String,
     val updated: String,
     val roles: List<UserRole>,
-    val external_id: String?,
+    @Pii val external_id: String?,
     val last_login: String,
-    val employee_number: String?,
-    val preferred_first_name: String?,
+    @Pii val employee_number: String?,
+    @Pii val preferred_first_name: String?,
     val temporary_in_unit_id: UUID?,
     val active: Boolean,
 )
@@ -373,7 +374,7 @@ data class BiFeeAlteration(
     val is_absolute: Boolean,
     val valid_from: LocalDate,
     val valid_to: LocalDate?,
-    val notes: String,
+    @Pii val notes: String,
     val updated_at: String,
     val updated_by: UUID,
 )
@@ -626,7 +627,7 @@ data class BiStaffAttendance(
     val date: LocalDate,
     val count: BigDecimal,
     val created: String?,
-    val count_other: BigDecimal,
+    @LegacyColumn val count_other: BigDecimal,
     val updated: String,
 )
 

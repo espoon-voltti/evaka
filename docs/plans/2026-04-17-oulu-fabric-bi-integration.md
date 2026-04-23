@@ -2,9 +2,9 @@
 
 **Goal:** Ship an Oulu Fabric BI integration that pushes zipped-CSV extracts via SFTP to Oulu's Fabric ingest endpoint, reusing Tampere's BI query catalog via a new shared `evaka.core.bi` module with a small `BiExportConfig` (`includePII`, `includeLegacyColumns`, `windowMonths`, `excludedTables`). Preserve Tampere's existing behavior exactly.
 
-**Architecture:** Extract Tampere's `evaka.instance.tampere.bi` into a shared `evaka.core.bi` module. Add `@Pii` / `@LegacyColumn` annotations that `BiCsvUtils` honors against `BiExportConfig`. Add `QueryKind` (Reference, Temporal, RangeBearing) and window-parameterized queries. Tampere wires `includePII=true, windowMonths=0` (full snapshots, no filter) — bit-for-bit behavior preserved. Oulu wires `includePII=false, windowMonths=3`, an SFTP-based `BiExportClient`, and Oulu-specific async/scheduled jobs.
+**Architecture:** Extract Tampere's `evaka.instance.tampere.bi` into a shared `evaka.core.bi` module. Add `@Pii` / `@LegacyColumn` annotations that `BiCsvUtils` honors against `BiExportConfig`. Add `QueryKind` (Reference, Temporal, RangeBearing) and window-parameterized queries. Tampere wires `includePII=true, windowMonths=null` (full snapshots, no filter) — bit-for-bit behavior preserved. Oulu wires `includePII=false, windowMonths=3`, an SFTP-based `BiExportClient`, and Oulu-specific async/scheduled jobs.
 
-**Tech Stack:** Kotlin, Spring Boot, Jdbi3, JSch (SFTP via existing `evaka.core.shared.sftp.SftpClient`), JUnit5, Apache MINA SSHD (for SFTP integration tests — verify availability in test deps during Task 13).
+**Tech Stack:** Kotlin, Spring Boot, Jdbi3, JSch (SFTP via existing `evaka.core.shared.sftp.SftpClient`), JUnit5, Apache MINA SSHD (for SFTP integration tests — verify availability in test deps during Task 12).
 
 **Design doc:** `docs/plans/2026-04-17-oulu-fabric-bi-integration-design.md`
 
@@ -195,7 +195,7 @@ annotation class LegacyColumn
 data class BiExportConfig(
     val includePII: Boolean,
     val includeLegacyColumns: Boolean = true,
-    val windowMonths: Int = 0,
+    val windowMonths: Int? = null,
     val excludedTables: Set<BiTable> = emptySet(),
 )
 ```
@@ -334,102 +334,9 @@ Expected: green. Tampere tests pass because Tampere still passes `includePII=tru
 
 ---
 
-## Task 5: Add audit regression test for PII leaks
+## Task 5: Add QueryKind sealed interface and update BiTable
 
-**Context:** Iterate every `BiTable`, and assert that with `includePII=false` and `includeLegacyColumns=false`, the generated CSV header exactly matches the set of non-`@Pii`, non-`@LegacyColumn` data-class properties. A regression signal for accidental annotation strips or ordering drift.
-
-**Files:**
-- Test (create): `service/src/test/kotlin/evaka/core/bi/BiCsvUtilsAuditTest.kt`
-
-**Step 1: Write the test:**
-
-```kotlin
-// SPDX-FileCopyrightText: 2026 City of Espoo
-// SPDX-License-Identifier: LGPL-2.1-or-later
-
-package evaka.core.bi
-
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.jvm.javaField
-import kotlin.test.assertEquals
-import org.junit.jupiter.api.Test
-
-class BiCsvUtilsAuditTest {
-    @Test
-    fun `generated header for every BiTable excludes @Pii and @LegacyColumn properties when both flags are false`() {
-        for (table in BiTable.entries) {
-            val modelClass = modelClassOf(table)
-            val expected = modelClass.declaredMemberProperties
-                .filter { prop ->
-                    val anns = (prop.javaField?.annotations ?: prop.annotations).toList()
-                    anns.none { it is Pii || it is LegacyColumn }
-                }
-                .map { it.name }
-                .joinToString(CSV_FIELD_SEPARATOR, postfix = CSV_RECORD_SEPARATOR)
-
-            val header = renderHeader(table, BiExportConfig(includePII = false, includeLegacyColumns = false))
-            assertEquals(expected, header, "BiTable.${table.name} header mismatch")
-        }
-    }
-
-    // helper to pull the data class bound to each BiTable entry; may require
-    // adding a `val modelClass: KClass<*>` to CsvQuery (see Step 3).
-    private fun modelClassOf(table: BiTable): kotlin.reflect.KClass<*> =
-        table.query.modelClass
-
-    private fun renderHeader(table: BiTable, config: BiExportConfig): String {
-        @Suppress("UNCHECKED_CAST")
-        val clazz = table.query.modelClass as kotlin.reflect.KClass<Any>
-        return toCsvRecords(::convertToCsv, clazz, emptySequence(), config).first()
-    }
-}
-```
-
-**Step 2: Run test to verify it fails (compile error):**
-
-```bash
-./gradlew test --tests "evaka.core.bi.BiCsvUtilsAuditTest"
-```
-
-Expected: FAIL with unresolved `modelClass` on `CsvQuery`.
-
-**Step 3: Make it executable.**
-
-`CsvQuery` currently doesn't expose its `T::class`. Modify `BiQueries.CsvQuery` (now `evaka.core.bi.CsvQuery`) to expose the model class. Update `StreamingCsvQuery` and the `csvQuery<T>` DSL so `T::class` is retained:
-
-```kotlin
-interface CsvQuery {
-    val modelClass: KClass<*>
-    operator fun <R> invoke(tx: ..., use: (Sequence<String>) -> R): R
-}
-
-class StreamingCsvQuery<T : Any>(
-    override val modelClass: KClass<T>,
-    private val sql: QuerySql,
-) : CsvQuery { ... }
-```
-
-Also pass the `KClass` in `csvQuery<T>` helper:
-
-```kotlin
-private inline fun <reified T : Any> csvQuery(
-    noinline builder: QuerySql.Builder.() -> Unit,
-): CsvQuery = StreamingCsvQuery(T::class, QuerySql.of(builder))
-```
-
-**Step 4: Run tests:**
-
-```bash
-./gradlew test --tests "evaka.core.bi.*"
-```
-
-Expected: PASS. The test confirms every `BiTable`'s header, when both flags are false, consists exactly of the non-annotated properties.
-
----
-
-## Task 6: Add QueryKind sealed interface and update BiTable
-
-**Context:** Introduce the three query kinds. No filtering logic yet — just mark each table with a kind. Queries still ignore the marker until Task 7.
+**Context:** Introduce the three query kinds. No filtering logic yet — just mark each table with a kind. Queries still ignore the marker until Task 6.
 
 **Files:**
 - Modify: `service/src/main/kotlin/evaka/core/bi/BiTable.kt`
@@ -518,7 +425,7 @@ enum class BiTable(
 }
 ```
 
-Note on kind assignment — **read each query's actual SQL before deciding a kind**. If a query lacks a date column or date range, it's `Reference`. If it has a single date (`date`, `occurred_at`, `departed`), it's `Temporal`. If it has `daterange`/`start_date`+`end_date`, it's `RangeBearing`. The list above is a first pass — verify in Task 6 Step 3.
+Note on kind assignment — **read each query's actual SQL before deciding a kind**. If a query lacks a date column or date range, it's `Reference`. If it has a single date (`date`, `occurred_at`, `departed`), it's `Temporal`. If it has `daterange`/`start_date`+`end_date`, it's `RangeBearing`. The list above is a first pass — verify in Task 5 Step 3.
 
 **Step 3: Verify kind assignments.** Open `BiQueries.kt` and cross-check each query's SQL against the kind in the `BiTable` entry. Fix any mismatches.
 
@@ -532,7 +439,7 @@ Expected: green. No behavior change — `kind` is just metadata.
 
 ---
 
-## Task 7: Parameterize queries with a `since` window and apply it in BiExportJob
+## Task 6: Parameterize queries with a `since` window and apply it in BiExportJob
 
 **Context:** Add a `since: LocalDate?` parameter to `CsvQuery` invocation. When `since == null` (Tampere), queries run unfiltered. When `since` is set (Oulu), Temporal and RangeBearing queries filter by it; Reference queries ignore it.
 
@@ -557,8 +464,8 @@ import org.junit.jupiter.api.Test
 
 class BiExportJobTest {
     @Test
-    fun `windowMonths = 0 yields null since`() {
-        val config = BiExportConfig(includePII = true, windowMonths = 0)
+    fun `windowMonths = null yields null since`() {
+        val config = BiExportConfig(includePII = true, windowMonths = null)
         val clock = MockEvakaClock(2026, 4, 17, 1, 0)
         assertNull(resolveSince(clock, config))
     }
@@ -591,9 +498,9 @@ Expected: FAIL with "unresolved reference: resolveSince".
 
 ```kotlin
 internal fun resolveSince(clock: EvakaClock, config: BiExportConfig): LocalDate? =
-    if (config.windowMonths > 0)
-        clock.now().toLocalDate().minusMonths(config.windowMonths.toLong())
-    else null
+    config.windowMonths?.let { months ->
+        clock.now().toLocalDate().minusMonths(months.toLong())
+    }
 ```
 
 **Step 4: Extend the `CsvQuery` interface to accept `since`:**
@@ -669,13 +576,13 @@ class BiExportJob(private val client: BiExportClient, private val config: BiExpo
 ./gradlew test --tests "evaka.core.bi.*" --tests "*Tampere*"
 ```
 
-Expected: green. Temporary shim: if Tampere still constructs `BiExportJob(client)` without config at this point, add a temporary default: `class BiExportJob(private val client: BiExportClient, private val config: BiExportConfig = BiExportConfig(includePII = true))`. Remove the default in Task 10.
+Expected: green. Temporary shim: if Tampere still constructs `BiExportJob(client)` without config at this point, add a temporary default: `class BiExportJob(private val client: BiExportClient, private val config: BiExportConfig = BiExportConfig(includePII = true))`. Remove the default in Task 9.
 
 ---
 
-## Task 8: Apply window filters to Temporal and RangeBearing queries
+## Task 7: Apply window filters to Temporal and RangeBearing queries
 
-**Context:** For every `Temporal` / `RangeBearing` query (per Task 6 classification), edit the SQL so that when `since != null`, the WHERE clause filters appropriately.
+**Context:** For every `Temporal` / `RangeBearing` query (per Task 5 classification), edit the SQL so that when `since != null`, the WHERE clause filters appropriately.
 
 **Files:**
 - Modify: `service/src/main/kotlin/evaka/core/bi/BiQueries.kt`
@@ -724,7 +631,7 @@ Expected: green.
 
 ---
 
-## Task 9: Tag PII and legacy fields in BiModels
+## Task 8: Tag PII and legacy fields in BiModels
 
 **Context:** Apply `@Pii` to identifier and sensitive-text fields; `@LegacyColumn` to always-null fields (those selected as `NULL AS ...` in `BiQueries`).
 
@@ -746,15 +653,7 @@ Expected: green.
 - `BiAssistanceAction.otherAction`: `@Pii` (free-text).
 - `BiAssistanceNeedDecision` (if exists): free-text reasoning → `@Pii`.
 
-**Step 4: Run the audit regression test** (`BiCsvUtilsAuditTest`):
-
-```bash
-./gradlew test --tests "evaka.core.bi.BiCsvUtilsAuditTest"
-```
-
-Expected: green.
-
-**Step 5: Run full BI tests and Tampere tests:**
+**Step 4: Run full BI tests and Tampere tests:**
 
 ```bash
 ./gradlew test --tests "evaka.core.bi.*" --tests "*Tampere*"
@@ -765,7 +664,7 @@ Expected: green. Tampere's output is unchanged because its config has `includePI
 
 ---
 
-## Task 10: Wire Tampere to the new BiExportConfig — behavior preserved
+## Task 9: Wire Tampere to the new BiExportConfig — behavior preserved
 
 **Context:** Tampere must behave exactly as before: full snapshots, all columns, legacy columns included.
 
@@ -784,10 +683,10 @@ grep -rn "BiExportJob(" service/src/main/kotlin/evaka/instance/tampere/
 ```kotlin
 @Bean
 fun biExportJob(client: BiExportClient): BiExportJob =
-    BiExportJob(client, BiExportConfig(includePII = true, includeLegacyColumns = true, windowMonths = 0))
+    BiExportJob(client, BiExportConfig(includePII = true, includeLegacyColumns = true, windowMonths = null))
 ```
 
-**Step 3: Remove the temporary default value** added in Task 7 (`BiExportJob(client, config = BiExportConfig(includePII = true))`) so all call sites must pass config explicitly.
+**Step 3: Remove the temporary default value** added in Task 6 (`BiExportJob(client, config = BiExportConfig(includePII = true))`) so all call sites must pass config explicitly.
 
 **Step 4: Compile and test:**
 
@@ -800,7 +699,7 @@ Expected: green.
 
 ---
 
-## Task 11: Add staff_attendance_realtime to the shared catalog
+## Task 10: Add staff_attendance_realtime to the shared catalog
 
 **Context:** Tampere currently exports `staff_attendance` (old), not `staff_attendance_realtime`. Oulu needs the realtime table. Per design, adding to the shared catalog adds for Tampere too — Tampere's product owner can opt out via `excludedTables` if they don't want it.
 
@@ -864,7 +763,7 @@ Expected: green.
 
 ---
 
-## Task 12: Add Oulu BI properties to OuluEnv
+## Task 11: Add Oulu BI properties to OuluEnv
 
 **Context:** Introduce `evakaoulu.bi.*` configuration (window, SFTP creds, remote path). Reuses `evaka.core.SftpEnv`.
 
@@ -917,7 +816,7 @@ Expected: green.
 
 ---
 
-## Task 13: Create OuluBiSftpExportClient
+## Task 12: Create OuluBiSftpExportClient
 
 **Context:** Implement the `BiExportClient` interface for Oulu — zip the CSV, push via SFTP using the shared `SftpClient`.
 
@@ -996,7 +895,7 @@ Expected: green. If Apache MINA SSHD isn't in test deps, the existing `SftpClien
 
 ---
 
-## Task 14: Add OuluAsyncJob.SendBiTable
+## Task 13: Add OuluAsyncJob.SendBiTable
 
 **Context:** Oulu's async job pool currently only handles DW queries. Add a new `SendBiTable` case for shared `BiTable` entries.
 
@@ -1051,11 +950,11 @@ class OuluAsyncJobRegistration(
 ./gradlew compileKotlin
 ```
 
-Expected: green (BiExportJob bean for Oulu is wired in Task 16).
+Expected: green (BiExportJob bean for Oulu is wired in Task 15).
 
 ---
 
-## Task 15: Add OuluScheduledJob.PlanBiExportJobs
+## Task 14: Add OuluScheduledJob.PlanBiExportJobs
 
 **Files:**
 - Modify: `service/src/main/kotlin/evaka/instance/oulu/OuluScheduledJobs.kt`
@@ -1101,7 +1000,7 @@ Expected: green.
 
 ---
 
-## Task 16: Wire Oulu BI beans in OuluConfig
+## Task 15: Wire Oulu BI beans in OuluConfig
 
 **Context:** Create the beans so Spring can assemble the Oulu BI pipeline.
 
@@ -1150,7 +1049,7 @@ Expected: green.
 
 ---
 
-## Task 17: End-to-end smoke test for Oulu BI pipeline
+## Task 16: End-to-end smoke test for Oulu BI pipeline
 
 **Context:** Verify the full pipeline — config → `BiExportJob` → `OuluBiSftpExportClient` → test SFTP server — produces a zipped CSV with no PII columns.
 
@@ -1177,7 +1076,7 @@ Expected: green.
 
 ---
 
-## Task 18: Final verification
+## Task 17: Final verification
 
 **Step 1: Full build:**
 
