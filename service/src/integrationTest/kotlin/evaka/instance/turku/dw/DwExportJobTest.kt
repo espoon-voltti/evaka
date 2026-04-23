@@ -27,7 +27,6 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
-import evaka.instance.turku.BucketProperties
 import evaka.instance.turku.DwExportProperties
 import evaka.instance.turku.SftpProperties
 import evaka.instance.turku.TurkuEnv
@@ -77,10 +76,8 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                         username = Sensitive("user"),
                         password = Sensitive("pass"),
                     ),
-                bucket = BucketProperties(export = EXPORT_BUCKET),
                 dwExport =
                     DwExportProperties(
-                        prefix = "reports",
                         sftp =
                             SftpProperties(
                                 address = "localhost",
@@ -88,7 +85,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 path = "upload",
                                 username = Sensitive("foo"),
                                 password = Sensitive("pass"),
-                            ),
+                            )
                     ),
             )
 
@@ -98,7 +95,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         val sftpSender = SftpSender(turkuEnv.dwExport.sftp, SftpConnector(JSch()))
-        val exportClient = FileDWExportClient(s3Client, sftpSender, turkuEnv)
+        val exportClient = FileDWExportClient(sftpSender)
         job = DwExportJob(exportClient)
     }
 

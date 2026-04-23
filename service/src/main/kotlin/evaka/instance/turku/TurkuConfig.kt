@@ -61,7 +61,6 @@ import org.springframework.core.env.Environment
 import org.springframework.core.io.ClassPathResource
 import org.springframework.ws.transport.WebServiceMessageSender
 import org.thymeleaf.ITemplateEngine
-import software.amazon.awssdk.services.s3.S3Client
 
 @Configuration
 @Import(TurkuAsyncJobRegistration::class)
@@ -205,16 +204,8 @@ class TurkuConfig {
     @Bean fun mealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
 
     @Bean
-    fun fileDwExportClient(
-        s3Client: S3Client,
-        sftpConnector: SftpConnector,
-        properties: TurkuEnv,
-    ): DwExportClient =
-        FileDWExportClient(
-            s3Client,
-            SftpSender(properties.dwExport.sftp, sftpConnector),
-            properties,
-        )
+    fun fileDwExportClient(sftpConnector: SftpConnector, properties: TurkuEnv): DwExportClient =
+        FileDWExportClient(SftpSender(properties.dwExport.sftp, sftpConnector))
 
     @Bean
     fun evakaTurkuAsyncJobRunner(
