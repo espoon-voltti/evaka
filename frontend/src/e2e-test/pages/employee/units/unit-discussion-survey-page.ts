@@ -130,6 +130,7 @@ export class DiscussionSurveyReadView {
     await dayEditor.startTimeInput.fill(eventTime.startTime)
     await dayEditor.endTimeInput.fill(eventTime.endTime)
     await dayEditor.submitButton.click()
+    await expect(dayEditor).toBeHidden()
   }
 
   async openReservationModal(index: number, date: LocalDate) {
