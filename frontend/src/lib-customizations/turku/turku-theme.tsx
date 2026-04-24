@@ -30,6 +30,7 @@ const theme: Theme = {
     status: {
       danger: '#CB181A',
       warning: '#EB6A00',
+      warningBackground: '#ffeee0',
       success: '#799E3D',
       info: '#5390B5'
     },

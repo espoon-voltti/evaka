@@ -20,7 +20,7 @@ export const Status = styled.span`
 export const iconPropsByStatus: Record<DecisionStatus, IconChipVisualProps> = {
   PENDING: {
     icon: faGavel,
-    backgroundColor: '#ffeee0',
+    backgroundColor: colors.status.warningBackground,
     textColor: '#814113',
     iconColor: colors.grayscale.g0,
     iconBackgroundColor: colors.status.warning

@@ -348,7 +348,7 @@ const applicationDecisionIsUnread = (decision: DecisionSummary) =>
 const UnconfirmedDecisionsBox = styled.div`
   display: flex;
   gap: ${defaultMargins.s};
-  background-color: #ffeee0;
+  background-color: ${colors.status.warningBackground};
   border: 1px solid ${colors.status.warning};
   border-radius: ${defaultMargins.xxs};
   padding: ${defaultMargins.s};
