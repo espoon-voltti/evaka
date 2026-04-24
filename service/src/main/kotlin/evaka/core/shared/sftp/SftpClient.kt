@@ -13,6 +13,7 @@ import evaka.core.SftpEnv
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedReader
 import java.io.InputStream
+import java.io.OutputStream
 import java.nio.charset.Charset
 import java.util.*
 
@@ -22,6 +23,11 @@ class SftpClient(private val sftpEnv: SftpEnv) {
     fun put(inputStream: InputStream, filename: String) = execute { channel ->
         logger.info { "Uploading $filename to ${sftpEnv.host}:${sftpEnv.port}" }
         channel.put(inputStream, filename)
+    }
+
+    fun put(filename: String, write: (OutputStream) -> Unit) = execute { channel ->
+        logger.info { "Uploading $filename to ${sftpEnv.host}:${sftpEnv.port}" }
+        channel.put(filename).use(write)
     }
 
     fun getAsString(filename: String, encoding: Charset): String = execute { channel ->
