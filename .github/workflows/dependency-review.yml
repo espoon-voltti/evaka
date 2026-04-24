@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2017-2026 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: Dependency review
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 25
+      - uses: gradle/actions/dependency-submission@v4
+        with:
+          build-root-directory: service
+      - if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure

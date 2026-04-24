@@ -23,7 +23,6 @@ plugins {
     alias(libs.plugins.versions)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.ktlint.gradle)
-    alias(libs.plugins.owasp)
 
     idea
 }
@@ -317,20 +316,6 @@ tasks {
         into(layout.buildDirectory.dir("download-only"))
         // remove version numbers from jar filenames
         rename(Pattern.compile("-([0-9]+[.]?)+.jar"), ".jar")
-    }
-
-    dependencyCheck {
-        failBuildOnCVSS = 0.0f
-        analyzers.apply {
-            assemblyEnabled = false
-            centralEnabled = false
-            nodeAuditEnabled = false
-            nodeEnabled = false
-            nuspecEnabled = false
-            ossIndex.apply { enabled = false }
-        }
-        nvd.apply { apiKey = System.getenv("NVD_API_KEY") }
-        suppressionFile = "$projectDir/owasp-suppressions.xml"
     }
 }
 
