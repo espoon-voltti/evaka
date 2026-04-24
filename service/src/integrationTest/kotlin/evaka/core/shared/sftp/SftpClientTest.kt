@@ -4,10 +4,13 @@
 
 package evaka.core.shared.sftp
 
+import com.jcraft.jsch.JSchException
 import evaka.core.Sensitive
 import evaka.core.SftpEnv
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 private val sftpPort = System.getenv("EVAKA_SFTP_PORT")?.toIntOrNull() ?: 2222
 
@@ -46,5 +49,23 @@ class SftpClientTest {
         val client = SftpClient(env.copy(password = null, privateKey = Sensitive(privateKey)))
         "hello world".byteInputStream(Charsets.UTF_8).use { client.put(it, "upload/test.txt") }
         assertEquals("hello world", client.getAsString("upload/test.txt", Charsets.UTF_8))
+    }
+
+    @Test
+    fun `refuses to connect when the server host key is not pinned`() {
+        val wrongKey = "AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        val client =
+            SftpClient(
+                env.copy(
+                    hostKeys = listOf(wrongKey),
+                    password = Sensitive(password),
+                    privateKey = null,
+                )
+            )
+        val exception =
+            assertThrows<JSchException> {
+                "hello".byteInputStream(Charsets.UTF_8).use { client.put(it, "upload/test.txt") }
+            }
+        assertContains(exception.message ?: "", "UnknownHostKey")
     }
 }
