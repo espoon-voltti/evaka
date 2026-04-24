@@ -2626,6 +2626,8 @@ export const sv: typeof fi = {
       addedAt: 'Anteckning skapad',
       modifiedAt: 'Redigerad',
       departedAutomatically: 'Automatiskt avbruten',
+      departedAutomaticallyBanner: (count: number) =>
+        `${count} automatiska avbrott av närvaro denna vecka.`,
       hasStaffOccupancyEffect: 'Ansvarig för fostran'
     },
     error: {

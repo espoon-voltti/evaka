@@ -204,6 +204,16 @@ export class UnitStaffAttendancesTable extends Element {
     return this.findAllByDataQa('person-count-sum').nth(nth)
   }
 
+  get automaticDeparturesBanner() {
+    return this.page.findByDataQa('automatic-departures-banner')
+  }
+
+  departedAutomaticallyIcon(rowIx: number, date: LocalDate) {
+    return this.#attendanceCell(date, rowIx).findByDataQa(
+      'departed-automatically-icon'
+    )
+  }
+
   #attendanceCell = (date: LocalDate, row: number) =>
     this.findByDataQa(`attendance-${date.formatIso()}-${row}`)
 

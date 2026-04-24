@@ -4,6 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect } from 'react'
+import styled from 'styled-components'
 
 import { useThrottledEventHandler } from './button-commons'
 import type { BaseIconOnlyButtonVisualProps } from './icon-only-button-visuals'
@@ -11,6 +12,10 @@ import { renderBaseIconOnlyButton } from './icon-only-button-visuals'
 
 export type IconOnlyButtonProps = BaseIconOnlyButtonVisualProps & {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
+  /**
+   * Show a bubble in the top right corner of the button
+   */
+  bubble?: 'warning' | undefined
 }
 export type IconOnlyRefButtonProps = IconOnlyButtonProps & {
   ref?: React.Ref<HTMLButtonElement>
@@ -22,13 +27,31 @@ export type IconOnlyRefButtonProps = IconOnlyButtonProps & {
  */
 export const IconOnlyButton = React.memo(function IconOnlyButton({
   onClick,
+  bubble,
   ...props
 }: IconOnlyButtonProps) {
   const handleOnClick = useThrottledEventHandler(onClick)
   return renderBaseIconOnlyButton(props, handleOnClick, (icon) => (
-    <FontAwesomeIcon icon={icon} />
+    <IconWrapper>
+      <FontAwesomeIcon icon={icon} />
+      {bubble === 'warning' && <Bubble />}
+    </IconWrapper>
   ))
 })
+
+const IconWrapper = styled.div`
+  position: relative;
+`
+
+const Bubble = styled.div`
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: ${(props) => props.theme.colors.status.warning};
+`
 
 export const IconOnlyRefButton = React.memo(function IconOnlyRefButton({
   onClick,
