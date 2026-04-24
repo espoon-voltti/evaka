@@ -446,6 +446,17 @@ object BiQueries {
             )
         }
 
+    val getStaffAttendanceRealtimeDelta =
+        csvQuery<BiStaffAttendanceRealtime> {
+            sql(
+                """
+            select id, created_at::text AS created, updated_at::text AS updated, employee_id, group_id, arrived::text, departed::text, type, occupancy_coefficient, departed_automatically, arrived_added_at::text, arrived_added_by, arrived_modified_at::text, arrived_modified_by, departed_added_at::text, departed_added_by, departed_modified_at::text, departed_modified_by
+            FROM staff_attendance_realtime
+            WHERE updated_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - interval '60 days')::date
+        """
+            )
+        }
+
     interface CsvQuery {
         operator fun <R> invoke(
             tx: Database.Read,

@@ -10,6 +10,7 @@ import evaka.core.application.ApplicationStatus
 import evaka.core.bi.BiExportClient
 import evaka.core.bi.BiExportConfig
 import evaka.core.bi.BiExportJob
+import evaka.core.bi.BiTable
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.mealintegration.DefaultMealTypeMapper
@@ -202,6 +203,7 @@ class TampereConfig {
             asyncJobRunner,
             properties,
             env,
+            biTables = BiTable.entries - setOf(BiTable.StaffAttendanceRealtime),
         )
 
     @Bean

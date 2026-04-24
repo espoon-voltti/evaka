@@ -654,6 +654,27 @@ data class BiStaffAttendancePlan(
     val description: String?,
 )
 
+data class BiStaffAttendanceRealtime(
+    val id: UUID,
+    val created: String,
+    val updated: String,
+    val employee_id: UUID,
+    val group_id: UUID?,
+    val arrived: String,
+    val departed: String?,
+    val type: StaffAttendanceType,
+    val occupancy_coefficient: BigDecimal,
+    val departed_automatically: Boolean,
+    val arrived_added_at: String?,
+    val arrived_added_by: UUID?,
+    val arrived_modified_at: String?,
+    val arrived_modified_by: UUID?,
+    val departed_added_at: String?,
+    val departed_added_by: UUID?,
+    val departed_modified_at: String?,
+    val departed_modified_by: UUID?,
+)
+
 data class BiStaffOccupancyCoefficient(
     val id: UUID,
     val created: String,

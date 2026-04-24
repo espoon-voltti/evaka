@@ -59,6 +59,10 @@ enum class BiTable(val fileName: String, val query: BiQueries.CsvQuery) {
     StaffAttendance("staff_attendance", BiQueries.getStaffAttendance),
     StaffAttendanceExternal("staff_attendance_external", BiQueries.getStaffAttendanceExternals),
     StaffAttendancePlan("staff_attendance_plan", BiQueries.getStaffAttendancePlans),
+    StaffAttendanceRealtime(
+        "staff_attendance_realtime_DELTA",
+        query = BiQueries.getStaffAttendanceRealtimeDelta,
+    ),
     StaffOccupancyCoefficient(
         "staff_occupancy_coefficient",
         BiQueries.getStaffOccupancyCoefficients,
