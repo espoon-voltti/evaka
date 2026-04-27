@@ -834,12 +834,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express-session@npm:1.18.2":
-  version: 1.18.2
-  resolution: "@types/express-session@npm:1.18.2"
+"@types/express-session@npm:1.19.0":
+  version: 1.19.0
+  resolution: "@types/express-session@npm:1.19.0"
   dependencies:
     "@types/express": "npm:*"
-  checksum: 10/c1711976d089fd6da58c0262e2b21b71ee64d508ee0f9f1b90e7658b712fc59874e03f799757843d2300c1dd127813cd16ce806c208bc4975f0f7ed700f2db94
+  checksum: 10/cc2d693a3a40a1c5d0739acec811b5a5d1e6be3fcb7513d920e6d0f604e7f8a6ac54509d604c6d32bde6a2ca57aa84d5dee067433a5ac9859ab47b7f2a855010
   languageName: node
   linkType: hard
 
@@ -2488,7 +2488,7 @@ __metadata:
     "@types/cookie-parser": "npm:1.4.10"
     "@types/cookie-signature": "npm:1.1.2"
     "@types/express-http-proxy": "npm:1.6.7"
-    "@types/express-session": "npm:1.18.2"
+    "@types/express-session": "npm:1.19.0"
     "@types/jsonwebtoken": "npm:9.0.10"
     "@types/lodash": "npm:4.17.24"
     "@types/node": "npm:24.12.2"
