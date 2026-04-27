@@ -34,7 +34,7 @@ class DecisionReasoningController(private val accessControl: AccessControl) {
                         clock,
                         Action.Global.READ_DECISION_REASONINGS,
                     )
-                    tx.getGenericReasonings(collectionType)
+                    tx.getGenericReasonings(collectionType, clock.today())
                 }
             }
             .also { Audit.DecisionReasoningGenericRead.log() }
@@ -45,7 +45,7 @@ class DecisionReasoningController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: DecisionGenericReasoningBody,
+        @RequestBody body: DecisionGenericReasoningRequest,
     ): DecisionGenericReasoningId {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -67,7 +67,7 @@ class DecisionReasoningController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable id: DecisionGenericReasoningId,
-        @RequestBody body: DecisionGenericReasoningBody,
+        @RequestBody body: DecisionGenericReasoningRequest,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -130,7 +130,7 @@ class DecisionReasoningController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: DecisionIndividualReasoningBody,
+        @RequestBody body: DecisionIndividualReasoningRequest,
     ): DecisionIndividualReasoningId {
         return db.connect { dbc ->
                 dbc.transaction { tx ->

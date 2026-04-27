@@ -67,16 +67,22 @@ export interface DecisionDraftUpdate {
 * Generated from evaka.core.decision.reasoning.DecisionGenericReasoning
 */
 export interface DecisionGenericReasoning {
-  body: DecisionGenericReasoningBody
+  collectionType: DecisionReasoningCollectionType
   createdAt: HelsinkiDateTime
+  endDate: LocalDate | null
   id: DecisionGenericReasoningId
   modifiedAt: HelsinkiDateTime
+  outdated: boolean
+  ready: boolean
+  textFi: string
+  textSv: string
+  validFrom: LocalDate
 }
 
 /**
-* Generated from evaka.core.decision.reasoning.DecisionGenericReasoningBody
+* Generated from evaka.core.decision.reasoning.DecisionGenericReasoningRequest
 */
-export interface DecisionGenericReasoningBody {
+export interface DecisionGenericReasoningRequest {
   collectionType: DecisionReasoningCollectionType
   ready: boolean
   textFi: string
@@ -88,17 +94,21 @@ export interface DecisionGenericReasoningBody {
 * Generated from evaka.core.decision.reasoning.DecisionIndividualReasoning
 */
 export interface DecisionIndividualReasoning {
-  body: DecisionIndividualReasoningBody
+  collectionType: DecisionReasoningCollectionType
   createdAt: HelsinkiDateTime
   id: DecisionIndividualReasoningId
   modifiedAt: HelsinkiDateTime
   removedAt: HelsinkiDateTime | null
+  textFi: string
+  textSv: string
+  titleFi: string
+  titleSv: string
 }
 
 /**
-* Generated from evaka.core.decision.reasoning.DecisionIndividualReasoningBody
+* Generated from evaka.core.decision.reasoning.DecisionIndividualReasoningRequest
 */
-export interface DecisionIndividualReasoningBody {
+export interface DecisionIndividualReasoningRequest {
   collectionType: DecisionReasoningCollectionType
   textFi: string
   textSv: string
@@ -194,14 +204,15 @@ export function deserializeJsonDecisionDraftUpdate(json: JsonOf<DecisionDraftUpd
 export function deserializeJsonDecisionGenericReasoning(json: JsonOf<DecisionGenericReasoning>): DecisionGenericReasoning {
   return {
     ...json,
-    body: deserializeJsonDecisionGenericReasoningBody(json.body),
     createdAt: HelsinkiDateTime.parseIso(json.createdAt),
-    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    validFrom: LocalDate.parseIso(json.validFrom)
   }
 }
 
 
-export function deserializeJsonDecisionGenericReasoningBody(json: JsonOf<DecisionGenericReasoningBody>): DecisionGenericReasoningBody {
+export function deserializeJsonDecisionGenericReasoningRequest(json: JsonOf<DecisionGenericReasoningRequest>): DecisionGenericReasoningRequest {
   return {
     ...json,
     validFrom: LocalDate.parseIso(json.validFrom)

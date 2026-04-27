@@ -33,7 +33,7 @@ export class DecisionReasoningsPage {
 
   modalOkButton: Element
 
-  constructor(private readonly page: Page) {
+  constructor(page: Page) {
     this.daycareTab = page.findByDataQa('DAYCARE-tab')
     this.preschoolTab = page.findByDataQa('PRESCHOOL-tab')
     this.modalOkButton = page.findByDataQa('modal-okBtn')

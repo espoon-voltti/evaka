@@ -5,12 +5,12 @@
 // GENERATED FILE: no manual modifications
 
 import type { DecisionGenericReasoning } from 'lib-common/generated/api-types/decision'
-import type { DecisionGenericReasoningBody } from 'lib-common/generated/api-types/decision'
 import type { DecisionGenericReasoningId } from 'lib-common/generated/api-types/shared'
+import type { DecisionGenericReasoningRequest } from 'lib-common/generated/api-types/decision'
 import type { DecisionId } from 'lib-common/generated/api-types/shared'
 import type { DecisionIndividualReasoning } from 'lib-common/generated/api-types/decision'
-import type { DecisionIndividualReasoningBody } from 'lib-common/generated/api-types/decision'
 import type { DecisionIndividualReasoningId } from 'lib-common/generated/api-types/shared'
+import type { DecisionIndividualReasoningRequest } from 'lib-common/generated/api-types/decision'
 import type { DecisionReasoningCollectionType } from 'lib-common/generated/api-types/decision'
 import type { DecisionUnit } from 'lib-common/generated/api-types/decision'
 import type { DecisionWithPermittedActions } from 'lib-common/generated/api-types/decision'
@@ -93,13 +93,13 @@ export async function planArchiveDecision(
 */
 export async function createGenericReasoning(
   request: {
-    body: DecisionGenericReasoningBody
+    body: DecisionGenericReasoningRequest
   }
 ): Promise<DecisionGenericReasoningId> {
   const { data: json } = await client.request<JsonOf<DecisionGenericReasoningId>>({
     url: uri`/employee/decision-reasonings/generic`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<DecisionGenericReasoningBody>
+    data: request.body satisfies JsonCompatible<DecisionGenericReasoningRequest>
   })
   return json
 }
@@ -110,13 +110,13 @@ export async function createGenericReasoning(
 */
 export async function createIndividualReasoning(
   request: {
-    body: DecisionIndividualReasoningBody
+    body: DecisionIndividualReasoningRequest
   }
 ): Promise<DecisionIndividualReasoningId> {
   const { data: json } = await client.request<JsonOf<DecisionIndividualReasoningId>>({
     url: uri`/employee/decision-reasonings/individual`.toString(),
     method: 'POST',
-    data: request.body satisfies JsonCompatible<DecisionIndividualReasoningBody>
+    data: request.body satisfies JsonCompatible<DecisionIndividualReasoningRequest>
   })
   return json
 }
@@ -200,13 +200,13 @@ export async function removeIndividualReasoning(
 export async function updateGenericReasoning(
   request: {
     id: DecisionGenericReasoningId,
-    body: DecisionGenericReasoningBody
+    body: DecisionGenericReasoningRequest
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/decision-reasonings/generic/${request.id}`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<DecisionGenericReasoningBody>
+    data: request.body satisfies JsonCompatible<DecisionGenericReasoningRequest>
   })
   return json
 }

@@ -9,31 +9,71 @@ import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
+import java.time.LocalDate
+
+private data class DecisionGenericReasoningRow(
+    val id: DecisionGenericReasoningId,
+    val collectionType: DecisionReasoningCollectionType,
+    val validFrom: LocalDate,
+    val textFi: String,
+    val textSv: String,
+    val ready: Boolean,
+    val createdAt: HelsinkiDateTime,
+    val modifiedAt: HelsinkiDateTime,
+)
 
 fun Database.Read.getGenericReasonings(
-    collectionType: DecisionReasoningCollectionType
-): List<DecisionGenericReasoning> =
-    createQuery {
-            sql(
-                """
+    collectionType: DecisionReasoningCollectionType,
+    today: LocalDate,
+): List<DecisionGenericReasoning> {
+    val rows =
+        createQuery {
+                sql(
+                    """
 SELECT id, collection_type, valid_from, text_fi, text_sv, ready, created_at, modified_at
 FROM decision_reasoning_generic
 WHERE collection_type = ${bind(collectionType)}
 ORDER BY valid_from DESC, created_at DESC
 """
-            )
-        }
-        .toList<DecisionGenericReasoning>()
+                )
+            }
+            .toList<DecisionGenericReasoningRow>()
+    val sortedUniqueValidFrom = rows.map { it.validFrom }.distinct().sorted()
+    return rows.map { row ->
+        val idx = sortedUniqueValidFrom.indexOf(row.validFrom)
+        val endDate =
+            if (idx < 0 || idx == sortedUniqueValidFrom.lastIndex) null
+            else sortedUniqueValidFrom[idx + 1].minusDays(1)
+        val supersededBy =
+            rows.any {
+                it.id != row.id &&
+                    it.validFrom == row.validFrom &&
+                    it.createdAt > row.createdAt
+            }
+        DecisionGenericReasoning(
+            id = row.id,
+            collectionType = row.collectionType,
+            validFrom = row.validFrom,
+            textFi = row.textFi,
+            textSv = row.textSv,
+            ready = row.ready,
+            createdAt = row.createdAt,
+            modifiedAt = row.modifiedAt,
+            endDate = endDate,
+            outdated = (endDate != null && endDate.isBefore(today)) || supersededBy,
+        )
+    }
+}
 
 fun Database.Transaction.insertGenericReasoning(
-    body: DecisionGenericReasoningBody,
+    request: DecisionGenericReasoningRequest,
     now: HelsinkiDateTime,
 ): DecisionGenericReasoningId =
     createUpdate {
             sql(
                 """
 INSERT INTO decision_reasoning_generic (collection_type, valid_from, text_fi, text_sv, ready, created_at, modified_at)
-VALUES (${bind(body.collectionType)}, ${bind(body.validFrom)}, ${bind(body.textFi)}, ${bind(body.textSv)}, ${bind(body.ready)}, ${bind(now)}, ${bind(now)})
+VALUES (${bind(request.collectionType)}, ${bind(request.validFrom)}, ${bind(request.textFi)}, ${bind(request.textSv)}, ${bind(request.ready)}, ${bind(now)}, ${bind(now)})
 RETURNING id
 """
             )
@@ -43,7 +83,7 @@ RETURNING id
 
 fun Database.Transaction.updateGenericReasoning(
     id: DecisionGenericReasoningId,
-    body: DecisionGenericReasoningBody,
+    request: DecisionGenericReasoningRequest,
     now: HelsinkiDateTime,
 ) {
     val updated =
@@ -51,10 +91,10 @@ fun Database.Transaction.updateGenericReasoning(
                 sql(
                     """
 UPDATE decision_reasoning_generic
-SET valid_from = ${bind(body.validFrom)},
-    text_fi = ${bind(body.textFi)},
-    text_sv = ${bind(body.textSv)},
-    ready = ${bind(body.ready)},
+SET valid_from = ${bind(request.validFrom)},
+    text_fi = ${bind(request.textFi)},
+    text_sv = ${bind(request.textSv)},
+    ready = ${bind(request.ready)},
     modified_at = ${bind(now)}
 WHERE id = ${bind(id)} AND ready = false
 """
@@ -98,14 +138,14 @@ ORDER BY created_at DESC
         .toList<DecisionIndividualReasoning>()
 
 fun Database.Transaction.insertIndividualReasoning(
-    body: DecisionIndividualReasoningBody,
+    request: DecisionIndividualReasoningRequest,
     now: HelsinkiDateTime,
 ): DecisionIndividualReasoningId =
     createUpdate {
             sql(
                 """
 INSERT INTO decision_reasoning_individual (collection_type, title_fi, title_sv, text_fi, text_sv, created_at, modified_at)
-VALUES (${bind(body.collectionType)}, ${bind(body.titleFi)}, ${bind(body.titleSv)}, ${bind(body.textFi)}, ${bind(body.textSv)}, ${bind(now)}, ${bind(now)})
+VALUES (${bind(request.collectionType)}, ${bind(request.titleFi)}, ${bind(request.titleSv)}, ${bind(request.textFi)}, ${bind(request.textSv)}, ${bind(now)}, ${bind(now)})
 RETURNING id
 """
             )

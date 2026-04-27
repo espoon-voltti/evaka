@@ -13,11 +13,9 @@ import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
 import type {
   DecisionGenericReasoning,
-  DecisionGenericReasoningBody,
   DecisionReasoningCollectionType
 } from 'lib-common/generated/api-types/decision'
 import type { DecisionGenericReasoningId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
 import { first, second, useSelectMutation } from 'lib-common/query'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -46,6 +44,7 @@ import { useTranslation } from '../../state/i18n'
 import {
   CollapsibleHeader,
   LanguageGrid,
+  PreWrap,
   ReasoningCard,
   chipColors
 } from './common'
@@ -64,39 +63,6 @@ type EditMode =
   | { type: 'none' }
   | { type: 'create' }
   | { type: 'edit'; id: DecisionGenericReasoningId }
-
-// Compute the end date for each reasoning entry.
-// End date = next unique validFrom date - 1 day, or null if open-ended.
-function computeEndDate(
-  validFrom: LocalDate,
-  sortedUniqueDates: LocalDate[]
-): LocalDate | null {
-  const idx = sortedUniqueDates.findIndex((d) => d.isEqual(validFrom))
-  if (idx === -1 || idx === sortedUniqueDates.length - 1) return null
-  return sortedUniqueDates[idx + 1].subDays(1)
-}
-
-function isOutdated(
-  reasoning: DecisionGenericReasoning,
-  endDate: LocalDate | null,
-  allReasonings: DecisionGenericReasoning[]
-): boolean {
-  const today = LocalDate.todayInSystemTz()
-  // Outdated if end date is before today
-  if (endDate !== null && endDate.isBefore(today)) return true
-  // Outdated if superseded: another entry with same validFrom has a newer createdAt
-  const sameValidFrom = allReasonings.filter((r) =>
-    r.body.validFrom.isEqual(reasoning.body.validFrom)
-  )
-  if (
-    sameValidFrom.some(
-      (r) => r.id !== reasoning.id && r.createdAt.isAfter(reasoning.createdAt)
-    )
-  ) {
-    return true
-  }
-  return false
-}
 
 const WarningText = styled.span`
   color: ${(p) => p.theme.colors.grayscale.g70};
@@ -129,38 +95,44 @@ function GenericReasoningForm({
     genericReasoningForm,
     () => ({
       validFrom: existing
-        ? localDate.fromDate(existing.body.validFrom)
+        ? localDate.fromDate(existing.validFrom)
         : localDate.empty(),
-      textFi: existing?.body.textFi ?? '',
-      textSv: existing?.body.textSv ?? ''
+      textFi: existing?.textFi ?? '',
+      textSv: existing?.textSv ?? ''
     }),
     i18n.validationErrors
   )
 
   const { validFrom, textFi, textSv } = useFormFields(form)
 
-  const bodyWithReady = (ready: boolean): DecisionGenericReasoningBody => ({
-    ...form.value(),
-    collectionType,
-    ready
-  })
-
   const [saveAsNotReadyMutation, saveAsNotReady] = useSelectMutation(
     () => (existing ? first(existing.id) : second()),
     [
       updateGenericReasoningMutation,
-      (id) => ({ id, body: bodyWithReady(false) })
+      (id) => ({
+        id,
+        body: { ...form.value(), collectionType, ready: false }
+      })
     ],
-    [createGenericReasoningMutation, () => ({ body: bodyWithReady(false) })]
+    [
+      createGenericReasoningMutation,
+      () => ({ body: { ...form.value(), collectionType, ready: false } })
+    ]
   )
 
   const [saveAndActivateMutation, saveAndActivate] = useSelectMutation(
     () => (existing ? first(existing.id) : second()),
     [
       updateGenericReasoningMutation,
-      (id) => ({ id, body: bodyWithReady(true) })
+      (id) => ({
+        id,
+        body: { ...form.value(), collectionType, ready: true }
+      })
     ],
-    [createGenericReasoningMutation, () => ({ body: bodyWithReady(true) })]
+    [
+      createGenericReasoningMutation,
+      () => ({ body: { ...form.value(), collectionType, ready: true } })
+    ]
   )
 
   return (
@@ -232,24 +204,20 @@ function GenericReasoningForm({
 
 interface GenericReasoningCardProps {
   reasoning: DecisionGenericReasoning
-  endDate: LocalDate | null
   dateSuffix: string
   editMode: EditMode
   onEdit: () => void
   onEditSuccess: () => void
   onEditCancel: () => void
-  isOutdated?: boolean
 }
 
 function GenericReasoningCard({
   reasoning,
-  endDate,
   dateSuffix,
   editMode,
   onEdit,
   onEditSuccess,
-  onEditCancel,
-  isOutdated: outdated
+  onEditCancel
 }: GenericReasoningCardProps) {
   const { i18n } = useTranslation()
   const t = i18n.decisionReasonings.generic
@@ -257,12 +225,12 @@ function GenericReasoningCard({
 
   const isEditing = editMode.type === 'edit' && editMode.id === reasoning.id
 
-  const dateRangeHeading = `${new DateRange(reasoning.body.validFrom, endDate).format()} ${dateSuffix}`
+  const dateRangeHeading = `${new DateRange(reasoning.validFrom, reasoning.endDate).format()} ${dateSuffix}`
 
   if (isEditing) {
     return (
       <GenericReasoningForm
-        collectionType={reasoning.body.collectionType}
+        collectionType={reasoning.collectionType}
         existing={reasoning}
         onCancel={onEditCancel}
         onSuccess={onEditSuccess}
@@ -274,40 +242,44 @@ function GenericReasoningCard({
     <ReasoningCard
       data-qa="generic-reasoning-card"
       $state={
-        outdated ? 'inactive' : !reasoning.body.ready ? 'warning' : 'active'
+        reasoning.outdated
+          ? 'inactive'
+          : !reasoning.ready
+            ? 'warning'
+            : 'active'
       }
     >
       <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
         <FixedSpaceRow $alignItems="center" $spacing="s">
           <StaticChip
             $color={
-              outdated
+              reasoning.outdated
                 ? theme.colors.grayscale.g15
-                : reasoning.body.ready
+                : reasoning.ready
                   ? chipColors.active.background
                   : chipColors.notReady.background
             }
             $textColor={
-              outdated
+              reasoning.outdated
                 ? undefined
-                : reasoning.body.ready
+                : reasoning.ready
                   ? chipColors.active.text
                   : chipColors.notReady.text
             }
             $fitContent
             data-qa="generic-reasoning-status"
           >
-            {outdated
+            {reasoning.outdated
               ? t.statusOutdated
-              : reasoning.body.ready
+              : reasoning.ready
                 ? t.statusReady
                 : t.statusNotReady}
           </StaticChip>
-          {!reasoning.body.ready && !outdated && (
+          {!reasoning.ready && !reasoning.outdated && (
             <WarningText>{t.notReadyWarning}</WarningText>
           )}
         </FixedSpaceRow>
-        {!reasoning.body.ready && !outdated && (
+        {!reasoning.ready && !reasoning.outdated && (
           <FixedSpaceRow $spacing="s">
             <IconOnlyButton
               icon={faPen}
@@ -335,15 +307,11 @@ function GenericReasoningCard({
       <LanguageGrid>
         <FixedSpaceColumn>
           <Label>{i18n.decisionReasonings.fi}</Label>
-          <span style={{ whiteSpace: 'pre-wrap' }}>
-            {reasoning.body.textFi}
-          </span>
+          <PreWrap>{reasoning.textFi}</PreWrap>
         </FixedSpaceColumn>
         <FixedSpaceColumn>
           <Label>{i18n.decisionReasonings.sv}</Label>
-          <span style={{ whiteSpace: 'pre-wrap' }}>
-            {reasoning.body.textSv}
-          </span>
+          <PreWrap>{reasoning.textSv}</PreWrap>
         </FixedSpaceColumn>
       </LanguageGrid>
     </ReasoningCard>
@@ -360,44 +328,13 @@ export default React.memo(function GenericReasoningsSection({
   const [editMode, setEditMode] = useState<EditMode>({ type: 'none' })
   const [showOutdated, setShowOutdated] = useState(false)
 
-  // Compute unique validFrom dates sorted ascending
-  // Sort by validFrom DESC, createdAt DESC to avoid relying on backend order
-  const sorted = useMemo(
-    () =>
-      [...reasonings].sort((a, b) => {
-        const dateCompare = a.body.validFrom.compareTo(b.body.validFrom)
-        if (dateCompare !== 0) return -dateCompare
-        return a.createdAt.isBefore(b.createdAt)
-          ? 1
-          : a.createdAt.isEqual(b.createdAt)
-            ? 0
-            : -1
-      }),
+  const { activeEntries, outdatedEntries } = useMemo(
+    () => ({
+      activeEntries: reasonings.filter((r) => !r.outdated),
+      outdatedEntries: reasonings.filter((r) => r.outdated)
+    }),
     [reasonings]
   )
-
-  const sortedUniqueDates = useMemo(
-    () =>
-      Array.from(
-        new Map(
-          sorted.map((r) => [r.body.validFrom.formatIso(), r.body.validFrom])
-        ).values()
-      ).sort((a, b) => (a.isBefore(b) ? -1 : a.isEqual(b) ? 0 : 1)),
-    [sorted]
-  )
-
-  // Annotate each reasoning with its end date and outdated flag
-  const { activeEntries, outdatedEntries } = useMemo(() => {
-    const annotated = sorted.map((r) => {
-      const endDate = computeEndDate(r.body.validFrom, sortedUniqueDates)
-      const outdated = isOutdated(r, endDate, sorted)
-      return { reasoning: r, endDate, outdated }
-    })
-    return {
-      activeEntries: annotated.filter((a) => !a.outdated),
-      outdatedEntries: annotated.filter((a) => a.outdated)
-    }
-  }, [sorted, sortedUniqueDates])
 
   const closeForm = () => setEditMode({ type: 'none' })
 
@@ -429,11 +366,10 @@ export default React.memo(function GenericReasoningsSection({
       <Gap $size="m" />
 
       <FixedSpaceColumn $spacing="m">
-        {activeEntries.map(({ reasoning, endDate }) => (
+        {activeEntries.map((reasoning) => (
           <GenericReasoningCard
             key={reasoning.id}
             reasoning={reasoning}
-            endDate={endDate}
             dateSuffix={t.dateSuffix}
             editMode={editMode}
             onEdit={() => setEditMode({ type: 'edit', id: reasoning.id })}
@@ -460,11 +396,10 @@ export default React.memo(function GenericReasoningsSection({
             <>
               <Gap $size="m" />
               <FixedSpaceColumn $spacing="m">
-                {outdatedEntries.map(({ reasoning, endDate }) => (
+                {outdatedEntries.map((reasoning) => (
                   <GenericReasoningCard
                     key={reasoning.id}
                     reasoning={reasoning}
-                    endDate={endDate}
                     dateSuffix={t.dateSuffix}
                     editMode={editMode}
                     onEdit={() =>
@@ -472,7 +407,6 @@ export default React.memo(function GenericReasoningsSection({
                     }
                     onEditSuccess={closeForm}
                     onEditCancel={closeForm}
-                    isOutdated
                   />
                 ))}
               </FixedSpaceColumn>

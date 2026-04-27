@@ -230,13 +230,13 @@ export default React.memo(function IndividualReasoningsSection({
             <LanguageGrid>
               <FixedSpaceColumn>
                 <Label>{i18n.decisionReasonings.fi}</Label>
-                <ReasoningTitle>{reasoning.body.titleFi}</ReasoningTitle>
-                <span>{reasoning.body.textFi}</span>
+                <ReasoningTitle>{reasoning.titleFi}</ReasoningTitle>
+                <span>{reasoning.textFi}</span>
               </FixedSpaceColumn>
               <FixedSpaceColumn>
                 <Label>{i18n.decisionReasonings.sv}</Label>
-                <ReasoningTitle>{reasoning.body.titleSv}</ReasoningTitle>
-                <span>{reasoning.body.textSv}</span>
+                <ReasoningTitle>{reasoning.titleSv}</ReasoningTitle>
+                <span>{reasoning.textSv}</span>
               </FixedSpaceColumn>
             </LanguageGrid>
           </ReasoningCard>
@@ -277,17 +277,13 @@ export default React.memo(function IndividualReasoningsSection({
                     <LanguageGrid>
                       <FixedSpaceColumn>
                         <Label>{i18n.decisionReasonings.fi}</Label>
-                        <ReasoningTitle>
-                          {reasoning.body.titleFi}
-                        </ReasoningTitle>
-                        <span>{reasoning.body.textFi}</span>
+                        <ReasoningTitle>{reasoning.titleFi}</ReasoningTitle>
+                        <span>{reasoning.textFi}</span>
                       </FixedSpaceColumn>
                       <FixedSpaceColumn>
                         <Label>{i18n.decisionReasonings.sv}</Label>
-                        <ReasoningTitle>
-                          {reasoning.body.titleSv}
-                        </ReasoningTitle>
-                        <span>{reasoning.body.textSv}</span>
+                        <ReasoningTitle>{reasoning.titleSv}</ReasoningTitle>
+                        <span>{reasoning.textSv}</span>
                       </FixedSpaceColumn>
                     </LanguageGrid>
                   </ReasoningCard>

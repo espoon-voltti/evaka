@@ -33,6 +33,10 @@ export const chipColors = {
   active: { background: '#DEF2DF', text: '#2A6A2C' }
 }
 
+export const PreWrap = styled.span`
+  white-space: pre-wrap;
+`
+
 export const CollapsibleHeader = styled.button`
   background: none;
   border: none;

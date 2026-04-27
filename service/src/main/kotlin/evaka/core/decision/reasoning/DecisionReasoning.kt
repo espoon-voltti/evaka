@@ -9,7 +9,6 @@ import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.db.DatabaseEnum
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
-import org.jdbi.v3.core.mapper.Nested
 
 enum class DecisionReasoningCollectionType : DatabaseEnum {
     DAYCARE,
@@ -18,7 +17,7 @@ enum class DecisionReasoningCollectionType : DatabaseEnum {
     override val sqlType = "decision_reasoning_collection_type"
 }
 
-data class DecisionGenericReasoningBody(
+data class DecisionGenericReasoningRequest(
     val collectionType: DecisionReasoningCollectionType,
     val validFrom: LocalDate,
     val textFi: String,
@@ -28,12 +27,18 @@ data class DecisionGenericReasoningBody(
 
 data class DecisionGenericReasoning(
     val id: DecisionGenericReasoningId,
-    @Nested("") val body: DecisionGenericReasoningBody,
+    val collectionType: DecisionReasoningCollectionType,
+    val validFrom: LocalDate,
+    val textFi: String,
+    val textSv: String,
+    val ready: Boolean,
     val createdAt: HelsinkiDateTime,
     val modifiedAt: HelsinkiDateTime,
+    val endDate: LocalDate?,
+    val outdated: Boolean,
 )
 
-data class DecisionIndividualReasoningBody(
+data class DecisionIndividualReasoningRequest(
     val collectionType: DecisionReasoningCollectionType,
     val titleFi: String,
     val titleSv: String,
@@ -43,7 +48,11 @@ data class DecisionIndividualReasoningBody(
 
 data class DecisionIndividualReasoning(
     val id: DecisionIndividualReasoningId,
-    @Nested("") val body: DecisionIndividualReasoningBody,
+    val collectionType: DecisionReasoningCollectionType,
+    val titleFi: String,
+    val titleSv: String,
+    val textFi: String,
+    val textSv: String,
     val removedAt: HelsinkiDateTime?,
     val createdAt: HelsinkiDateTime,
     val modifiedAt: HelsinkiDateTime,
