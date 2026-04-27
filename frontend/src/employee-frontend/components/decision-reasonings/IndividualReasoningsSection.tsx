@@ -120,7 +120,6 @@ function IndividualReasoningCreateForm({
       <Gap $size="m" />
       <FixedSpaceRow $justifyContent="flex-end">
         <Button
-          appearance="inline"
           text={t.cancel}
           onClick={cancelCreate}
           data-qa="cancel-individual-reasoning-button"

@@ -169,7 +169,6 @@ function GenericReasoningForm({
       <Gap $size="m" />
       <FixedSpaceRow $justifyContent="flex-end">
         <Button
-          appearance="inline"
           text={t.cancel}
           onClick={onCancel}
           data-qa="cancel-generic-reasoning-button"
