@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useMemo, useState } from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled from 'styled-components'
 
 import { object, required, validated, value } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
@@ -13,7 +13,7 @@ import type {
   DecisionIndividualReasoning,
   DecisionReasoningCollectionType
 } from 'lib-common/generated/api-types/decision'
-import { StaticChip } from 'lib-components/atoms/Chip'
+import { Chip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { TextAreaF } from 'lib-components/atoms/form/TextArea'
@@ -34,12 +34,7 @@ import {
 
 import { useTranslation } from '../../state/i18n'
 
-import {
-  CollapsibleHeader,
-  LanguageGrid,
-  ReasoningCard,
-  chipColors
-} from './common'
+import { CollapsibleHeader, LanguageGrid, ReasoningCard } from './common'
 import {
   createIndividualReasoningMutation,
   removeIndividualReasoningMutation
@@ -157,7 +152,6 @@ export default React.memo(function IndividualReasoningsSection({
 }: Props) {
   const { i18n } = useTranslation()
   const t = i18n.decisionReasonings.individual
-  const theme = useTheme()
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showRemoved, setShowRemoved] = useState(false)
 
@@ -206,14 +200,12 @@ export default React.memo(function IndividualReasoningsSection({
         {activeReasonings.map((reasoning) => (
           <ReasoningCard key={reasoning.id} data-qa="individual-reasoning-card">
             <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
-              <StaticChip
-                $color={chipColors.active.background}
-                $textColor={chipColors.active.text}
-                $fitContent
+              <Chip
+                label={t.statusActive}
+                size="small"
+                colorPalette="green"
                 data-qa="individual-reasoning-status"
-              >
-                {t.statusActive}
-              </StaticChip>
+              />
               <ConfirmedMutation
                 buttonStyle="ICON"
                 icon={faTrash}
@@ -266,13 +258,12 @@ export default React.memo(function IndividualReasoningsSection({
                     $state="inactive"
                     data-qa="individual-reasoning-card"
                   >
-                    <StaticChip
-                      $color={theme.colors.grayscale.g15}
-                      $fitContent
+                    <Chip
+                      label={t.statusRemoved}
+                      size="small"
+                      colorPalette="gray"
                       data-qa="individual-reasoning-status"
-                    >
-                      {t.statusRemoved}
-                    </StaticChip>
+                    />
                     <Gap $size="s" />
                     <LanguageGrid>
                       <FixedSpaceColumn>

@@ -27,12 +27,6 @@ export const LanguageGrid = styled.div`
   gap: ${defaultMargins.L};
 `
 
-// Custom colors for status chips
-export const chipColors = {
-  notReady: { background: '#FFEEE0', text: '#A84C00' },
-  active: { background: '#DEF2DF', text: '#2A6A2C' }
-}
-
 export const PreWrap = styled.span`
   white-space: pre-wrap;
 `

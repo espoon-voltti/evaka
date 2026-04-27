@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useMemo, useState } from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
 import { localDate } from 'lib-common/form/fields'
@@ -17,7 +17,7 @@ import type {
 } from 'lib-common/generated/api-types/decision'
 import type { DecisionGenericReasoningId } from 'lib-common/generated/api-types/shared'
 import { first, second, useSelectMutation } from 'lib-common/query'
-import { StaticChip } from 'lib-components/atoms/Chip'
+import { Chip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -45,8 +45,7 @@ import {
   CollapsibleHeader,
   LanguageGrid,
   PreWrap,
-  ReasoningCard,
-  chipColors
+  ReasoningCard
 } from './common'
 import {
   createGenericReasoningMutation,
@@ -221,7 +220,6 @@ function GenericReasoningCard({
 }: GenericReasoningCardProps) {
   const { i18n } = useTranslation()
   const t = i18n.decisionReasonings.generic
-  const theme = useTheme()
 
   const isEditing = editMode.type === 'edit' && editMode.id === reasoning.id
 
@@ -251,30 +249,20 @@ function GenericReasoningCard({
     >
       <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
         <FixedSpaceRow $alignItems="center" $spacing="s">
-          <StaticChip
-            $color={
+          <Chip
+            label={
               reasoning.outdated
-                ? theme.colors.grayscale.g15
+                ? t.statusOutdated
                 : reasoning.ready
-                  ? chipColors.active.background
-                  : chipColors.notReady.background
+                  ? t.statusReady
+                  : t.statusNotReady
             }
-            $textColor={
-              reasoning.outdated
-                ? undefined
-                : reasoning.ready
-                  ? chipColors.active.text
-                  : chipColors.notReady.text
+            size="small"
+            colorPalette={
+              reasoning.outdated ? 'gray' : reasoning.ready ? 'green' : 'orange'
             }
-            $fitContent
             data-qa="generic-reasoning-status"
-          >
-            {reasoning.outdated
-              ? t.statusOutdated
-              : reasoning.ready
-                ? t.statusReady
-                : t.statusNotReady}
-          </StaticChip>
+          />
           {!reasoning.ready && !reasoning.outdated && (
             <WarningText>{t.notReadyWarning}</WarningText>
           )}
