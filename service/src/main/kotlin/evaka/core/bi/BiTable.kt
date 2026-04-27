@@ -20,6 +20,10 @@ enum class BiTable(val fileName: String, val query: BiQueries.CsvQuery) {
         BiQueries.getAssistanceNeedVoucherCoefficients,
     ),
     AttendanceReservation("attendance_reservation", BiQueries.getAttendanceReservations),
+    AttendanceReservationDelta(
+        "attendance_reservation_DELTA",
+        BiQueries.getAttendanceReservationsDelta,
+    ),
     BackupCare("backup_care", BiQueries.getBackupCares),
     CareArea("care_area", BiQueries.getAreas),
     Child("child", BiQueries.getChildren),

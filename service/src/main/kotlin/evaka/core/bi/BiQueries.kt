@@ -458,6 +458,17 @@ object BiQueries {
             )
         }
 
+    val getAttendanceReservationsDelta =
+        csvQuery<BiAttendanceReservationDelta> { config ->
+            sql(
+                """
+            SELECT id, created_at::text, updated_at::text, child_id, date, start_time, end_time, created_by
+            FROM attendance_reservation
+            WHERE updated_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.deltaWindowDays)}))::date
+        """
+            )
+        }
+
     interface CsvQuery {
         operator fun <R> invoke(
             tx: Database.Read,

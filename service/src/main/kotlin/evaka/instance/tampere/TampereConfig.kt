@@ -206,7 +206,9 @@ class TampereConfig {
             asyncJobRunner,
             properties,
             env,
-            biTables = BiTable.entries - setOf(BiTable.StaffAttendanceRealtime),
+            biTables =
+                BiTable.entries -
+                    setOf(BiTable.StaffAttendanceRealtime, BiTable.AttendanceReservationDelta),
         )
 
     @Bean

@@ -183,6 +183,17 @@ data class BiAssistanceNeedVoucherCoefficient(
 
 data class BiAttendanceReservation(val child_id: String, val date: LocalDate)
 
+data class BiAttendanceReservationDelta(
+    val id: UUID,
+    val created_at: String,
+    val updated_at: String,
+    val child_id: UUID,
+    val date: LocalDate,
+    val start_time: LocalTime?,
+    val end_time: LocalTime?,
+    val created_by: UUID,
+)
+
 data class BiBackupCare(
     val id: UUID,
     val created: String,
