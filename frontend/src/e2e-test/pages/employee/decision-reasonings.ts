@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { Page } from '../../utils/page'
+import type { Page, ElementCollection } from '../../utils/page'
 import { DatePicker, Element, TextInput } from '../../utils/page'
 
 export class DecisionReasoningsPage {
@@ -11,31 +11,37 @@ export class DecisionReasoningsPage {
 
   // Generic section
   addGenericButton: Element
-  genericCards: Element
+  genericCards: ElementCollection
   genericValidFrom: DatePicker
   genericTextFi: TextInput
   genericTextSv: TextInput
   genericCancelButton: Element
   genericSaveAsNotReadyButton: Element
   genericSaveAndActivateButton: Element
+  toggleOutdatedGeneric: Element
 
   // Individual section
   addIndividualButton: Element
-  individualCards: Element
+  individualCards: ElementCollection
   individualTitleFi: TextInput
   individualTitleSv: TextInput
   individualTextFi: TextInput
   individualTextSv: TextInput
   individualCancelButton: Element
   individualSaveAndActivateButton: Element
+  toggleRemovedIndividual: Element
+
+  modalOkButton: Element
 
   constructor(private readonly page: Page) {
     this.daycareTab = page.findByDataQa('DAYCARE-tab')
     this.preschoolTab = page.findByDataQa('PRESCHOOL-tab')
+    this.modalOkButton = page.findByDataQa('modal-okBtn')
 
     // Generic section
     this.addGenericButton = page.findByDataQa('add-generic-reasoning-button')
-    this.genericCards = page.findByDataQa('generic-reasoning-card')
+    this.genericCards = page.findAllByDataQa('generic-reasoning-card')
+    this.toggleOutdatedGeneric = page.findByDataQa('toggle-outdated-reasonings')
     this.genericValidFrom = new DatePicker(
       page.findByDataQa('generic-reasoning-valid-from')
     )
@@ -59,7 +65,10 @@ export class DecisionReasoningsPage {
     this.addIndividualButton = page.findByDataQa(
       'add-individual-reasoning-button'
     )
-    this.individualCards = page.findByDataQa('individual-reasoning-card')
+    this.individualCards = page.findAllByDataQa('individual-reasoning-card')
+    this.toggleRemovedIndividual = page.findByDataQa(
+      'toggle-removed-reasonings'
+    )
     this.individualTitleFi = new TextInput(
       page.findByDataQa('individual-reasoning-title-fi')
     )
@@ -81,27 +90,15 @@ export class DecisionReasoningsPage {
   }
 
   genericCard(index: number): GenericReasoningCard {
-    return new GenericReasoningCard(
-      this.page.findAllByDataQa('generic-reasoning-card').nth(index)
-    )
+    return new GenericReasoningCard(this.genericCards.nth(index))
   }
 
   individualCard(index: number): IndividualReasoningCard {
-    return new IndividualReasoningCard(
-      this.page.findAllByDataQa('individual-reasoning-card').nth(index)
-    )
+    return new IndividualReasoningCard(this.individualCards.nth(index))
   }
 
   async confirmModal() {
-    await this.page.findByDataQa('modal-okBtn').click()
-  }
-
-  toggleOutdatedGeneric(): Element {
-    return this.page.findByDataQa('toggle-outdated-reasonings')
-  }
-
-  toggleRemovedIndividual(): Element {
-    return this.page.findByDataQa('toggle-removed-reasonings')
+    await this.modalOkButton.click()
   }
 }
 

@@ -67,9 +67,7 @@ test.describe('Employee - Decision reasonings', () => {
     await decisionReasoningsPage.confirmModal()
 
     // Only the first (activated) card should remain
-    await expect(
-      page.findAllByDataQa('generic-reasoning-card').locator
-    ).toHaveCount(1)
+    await expect(decisionReasoningsPage.genericCards).toHaveCount(1)
   })
 
   test('Individual reasoning can be created and removed', async () => {
@@ -91,15 +89,11 @@ test.describe('Employee - Decision reasonings', () => {
     await decisionReasoningsPage.confirmModal()
 
     // Card should no longer be in the active list
-    await expect(
-      page.findAllByDataQa('individual-reasoning-card').locator
-    ).toHaveCount(0)
+    await expect(decisionReasoningsPage.individualCards).toHaveCount(0)
 
     // It should appear in the removed section
-    await decisionReasoningsPage.toggleRemovedIndividual().click()
-    await expect(
-      page.findAllByDataQa('individual-reasoning-card').locator
-    ).toHaveCount(1)
+    await decisionReasoningsPage.toggleRemovedIndividual.click()
+    await expect(decisionReasoningsPage.individualCards).toHaveCount(1)
   })
 
   test('Tab switching shows separate data per collection', async () => {
@@ -109,20 +103,14 @@ test.describe('Employee - Decision reasonings', () => {
     await decisionReasoningsPage.genericTextFi.fill('Varhaiskasvatus perustelu')
     await decisionReasoningsPage.genericTextSv.fill('Småbarnspedagogik')
     await decisionReasoningsPage.genericSaveAsNotReadyButton.click()
-    await expect(
-      page.findAllByDataQa('generic-reasoning-card').locator
-    ).toHaveCount(1)
+    await expect(decisionReasoningsPage.genericCards).toHaveCount(1)
 
     // Switch to preschool tab — should be empty
     await decisionReasoningsPage.preschoolTab.click()
-    await expect(
-      page.findAllByDataQa('generic-reasoning-card').locator
-    ).toHaveCount(0)
+    await expect(decisionReasoningsPage.genericCards).toHaveCount(0)
 
     // Switch back to daycare — reasoning should still be there
     await decisionReasoningsPage.daycareTab.click()
-    await expect(
-      page.findAllByDataQa('generic-reasoning-card').locator
-    ).toHaveCount(1)
+    await expect(decisionReasoningsPage.genericCards).toHaveCount(1)
   })
 })
