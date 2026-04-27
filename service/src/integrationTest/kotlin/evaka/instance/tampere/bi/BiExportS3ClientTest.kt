@@ -32,7 +32,10 @@ class BiExportS3ClientTest : AbstractTampereIntegrationTest() {
         val table = BiTable.CareArea
         val client = FileBiExportS3Client(s3Client, properties)
         val job =
-            BiExportJob(client, BiExportConfig(includePII = true, includeLegacyColumns = true))
+            BiExportJob(
+                client,
+                BiExportConfig(includePII = true, includeLegacyColumns = true, deltaWindowDays = 60),
+            )
 
         job.sendBiTable(db, clock, table.fileName, table.query)
 

@@ -30,7 +30,8 @@ import org.junit.jupiter.api.Test
  * passing the resulting string straight through.
  */
 class BiCsvFormatTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val config = BiExportConfig(includePII = true, includeLegacyColumns = true)
+    private val config =
+        BiExportConfig(includePII = true, includeLegacyColumns = true, deltaWindowDays = 60)
 
     @Test
     fun `LocalDate field matches text-cast date column in CSV`() {
@@ -153,11 +154,15 @@ class BiCsvFormatTest : PureJdbiTest(resetDbBeforeEach = true) {
         textSql: String,
     ) {
         val typedCsv = db.read { tx ->
-            BiQueries.StreamingCsvQuery(A::class) { it.createQuery { sql(typedSql) }.mapTo<A>() }
+            BiQueries.StreamingCsvQuery(A::class) { tx2, _ ->
+                    tx2.createQuery { sql(typedSql) }.mapTo<A>()
+                }
                 .invoke(tx, config) { it.toList() }
         }
         val textCsv = db.read { tx ->
-            BiQueries.StreamingCsvQuery(B::class) { it.createQuery { sql(textSql) }.mapTo<B>() }
+            BiQueries.StreamingCsvQuery(B::class) { tx2, _ ->
+                    tx2.createQuery { sql(textSql) }.mapTo<B>()
+                }
                 .invoke(tx, config) { it.toList() }
         }
         assertEquals(typedCsv, textCsv)

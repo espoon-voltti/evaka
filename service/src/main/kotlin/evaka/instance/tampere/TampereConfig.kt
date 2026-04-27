@@ -138,7 +138,10 @@ class TampereConfig {
 
     @Bean
     fun tampereBiJob(biExportClient: BiExportClient): BiExportJob =
-        BiExportJob(biExportClient, BiExportConfig(includePII = true, includeLegacyColumns = true))
+        BiExportJob(
+            biExportClient,
+            BiExportConfig(includePII = true, includeLegacyColumns = true, deltaWindowDays = 60),
+        )
 
     @Bean
     fun paymentIntegrationClient(properties: TampereProperties): PaymentIntegrationClient {

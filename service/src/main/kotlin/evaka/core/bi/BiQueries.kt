@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 object BiQueries {
     val getAreas =
-        csvQuery<BiArea> {
+        csvQuery<BiArea> { _ ->
             sql(
                 """
             SELECT id, name, created::text, updated::text, area_code, sub_cost_center, short_name
@@ -20,7 +20,7 @@ object BiQueries {
         }
 
     val getPersons =
-        csvQuery<BiPerson> {
+        csvQuery<BiPerson> { _ ->
             sql(
                 """
             SELECT id, social_security_number, first_name, last_name, email, aad_object_id, language, date_of_birth, created::text, updated::text, street_address, postal_code, post_office, nationalities, restricted_details_enabled, restricted_details_end_date, phone, updated_from_vtj::text, invoicing_street_address, invoicing_postal_code, invoicing_post_office, invoice_recipient_name, date_of_death, residence_code, force_manual_fee_decisions, backup_phone, last_login::text, oph_person_oid, vtj_guardians_queried::text, vtj_dependants_queried::text, ssn_adding_disabled, preferred_name, duplicate_of, NULL AS enabled_email_types
@@ -30,7 +30,7 @@ object BiQueries {
         }
 
     val getApplications =
-        csvQuery<BiApplication> {
+        csvQuery<BiApplication> { _ ->
             sql(
                 """
             select id, created_at::text AS created, updated_at::text AS updated, sentdate, duedate, guardian_id, child_id, checkedbyadmin, hidefromguardian, transferapplication, additionaldaycareapplication, status, origin, duedate_set_manually_at::text, service_worker_note, type, allow_other_guardian_access, document::text, modified_at::text AS form_modified
@@ -40,7 +40,7 @@ object BiQueries {
         }
 
     val getApplicationForms =
-        csvQuery<BiApplicationForm> {
+        csvQuery<BiApplicationForm> { _ ->
             sql(
                 """
             select id, id AS application_id, created_by::text AS created, 1 AS revision, document::text, updated_at::text AS updated, true AS latest
@@ -50,7 +50,7 @@ object BiQueries {
         }
 
     val getAssistanceActions =
-        csvQuery<BiAssistanceAction> {
+        csvQuery<BiAssistanceAction> { _ ->
             sql(
                 """
             select id, created_at::text AS created, updated_at::text AS updated, modified_by AS updated_by, child_id, start_date, end_date, other_action, '' AS measures
@@ -60,7 +60,7 @@ object BiQueries {
         }
 
     val getAssistanceActionOptions =
-        csvQuery<BiAssistanceActionOption> {
+        csvQuery<BiAssistanceActionOption> { _ ->
             sql(
                 """
             select id, created_at::text AS created, updated_at::text AS updated, value, name_fi, display_order, description_fi
@@ -70,7 +70,7 @@ object BiQueries {
         }
 
     val getAssistanceActionOptionRefs =
-        csvQuery<BiAssistanceActionOptionRef> {
+        csvQuery<BiAssistanceActionOptionRef> { _ ->
             sql(
                 """
             select action_id, option_id, created_at::text AS created
@@ -80,7 +80,7 @@ object BiQueries {
         }
 
     val getAssistanceFactors =
-        csvQuery<BiAssistanceFactor> {
+        csvQuery<BiAssistanceFactor> { _ ->
             sql(
                 """
             select id, created_at::text AS created, updated_at::text AS updated, child_id, modified_at::text AS modified, modified_by, valid_during::text, capacity_factor
@@ -90,7 +90,7 @@ object BiQueries {
         }
 
     val getAssistanceNeedVoucherCoefficients =
-        csvQuery<BiAssistanceNeedVoucherCoefficient> {
+        csvQuery<BiAssistanceNeedVoucherCoefficient> { _ ->
             sql(
                 """
             select id, created_at::text AS created, updated_at::text AS updated, child_id, validity_period::text, coefficient
@@ -100,12 +100,12 @@ object BiQueries {
         }
 
     val getAttendanceReservations =
-        csvQuery<BiAttendanceReservation> {
+        csvQuery<BiAttendanceReservation> { _ ->
             sql("SELECT DISTINCT child_id, date FROM attendance_reservation")
         }
 
     val getBackupCares =
-        csvQuery<BiBackupCare> {
+        csvQuery<BiBackupCare> { _ ->
             sql(
                 """
             select id, created_at::text AS created, updated_at::text AS updated, child_id, unit_id, group_id, start_date, end_date
@@ -115,7 +115,7 @@ object BiQueries {
         }
 
     val getChildren =
-        csvQuery<BiChild> {
+        csvQuery<BiChild> { _ ->
             sql(
                 """
             select id, allergies, diet, additionalinfo, medication, language_at_home, language_at_home_details
@@ -125,7 +125,7 @@ object BiQueries {
         }
 
     val getDaycares =
-        csvQuery<BiDaycare> {
+        csvQuery<BiDaycare> { _ ->
             sql(
                 """
             select id, name, type, care_area_id, phone, url, created::text, updated::text, backup_location, NULL AS language_emphasis_id, opening_date, closing_date, email, schedule, additional_info, cost_center, upload_to_varda, capacity, decision_daycare_name, decision_preschool_name, decision_handler, decision_handler_address, street_address, postal_code, post_office, mailing_po_box, location::text, mailing_street_address, mailing_postal_code, mailing_post_office, invoiced_by_municipality, provider_type, language, upload_to_koski, oph_unit_oid, oph_organizer_oid, ghost_unit, daycare_apply_period, preschool_apply_period, club_apply_period, finance_decision_handler, provides_shift_care AS round_the_clock, enabled_pilot_features, upload_children_to_varda, business_id, iban, provider_id, operation_times, unit_manager_name, unit_manager_phone, unit_manager_email, dw_cost_center, mealtime_breakfast, mealtime_evening_snack, mealtime_lunch, mealtime_snack, mealtime_supper
@@ -135,7 +135,7 @@ object BiQueries {
         }
 
     val getDaycareAssistances =
-        csvQuery<BiDaycareAssistance> {
+        csvQuery<BiDaycareAssistance> { _ ->
             sql(
                 """
             select id, created::text, updated::text, child_id, modified::text, modified_by, valid_during::text, level
@@ -145,7 +145,7 @@ object BiQueries {
         }
 
     val getDaycareCaretakers =
-        csvQuery<BiDaycareCaretaker> {
+        csvQuery<BiDaycareCaretaker> { _ ->
             sql(
                 """
             select id, created::text, updated::text, group_id, amount, start_date, end_date
@@ -155,7 +155,7 @@ object BiQueries {
         }
 
     val getDaycareGroups =
-        csvQuery<BiDaycareGroup> {
+        csvQuery<BiDaycareGroup> { _ ->
             sql(
                 """
             select id, daycare_id, name, start_date, end_date, jamix_customer_number
@@ -165,7 +165,7 @@ object BiQueries {
         }
 
     val getDaycareGroupPlacements =
-        csvQuery<BiDaycareGroupPlacement> {
+        csvQuery<BiDaycareGroupPlacement> { _ ->
             sql(
                 """
             select id, created::text, updated::text, daycare_placement_id, daycare_group_id, start_date, end_date
@@ -175,7 +175,7 @@ object BiQueries {
         }
 
     val getDecisions =
-        csvQuery<BiDecision> {
+        csvQuery<BiDecision> { _ ->
             sql(
                 """
             select id, number, created::text, updated::text, created_by, sent_date, unit_id, application_id, type, start_date, end_date, status, requested_start_date, resolved::text, resolved_by, planned, pending_decision_emails_sent_count, pending_decision_email_sent::text, document_key, other_guardian_document_key, document_contains_contact_info
@@ -185,7 +185,7 @@ object BiQueries {
         }
 
     val getEmployees =
-        csvQuery<BiEmployee> {
+        csvQuery<BiEmployee> { _ ->
             sql(
                 """
             select id, active, first_name, last_name, email, created::text, updated::text, roles, external_id, coalesce(last_login::text, '2020-12-31 22:00:00+00') AS last_login, employee_number, preferred_first_name, temporary_in_unit_id
@@ -195,7 +195,7 @@ object BiQueries {
         }
 
     val getEvakaUsers =
-        csvQuery<BiEvakaUser> {
+        csvQuery<BiEvakaUser> { _ ->
             sql(
                 """
             select id, type, citizen_id, employee_id, mobile_device_id, name
@@ -205,7 +205,7 @@ object BiQueries {
         }
 
     val getFeeAlterations =
-        csvQuery<BiFeeAlteration> {
+        csvQuery<BiFeeAlteration> { _ ->
             sql(
                 """
             select id, person_id, type, amount, is_absolute, valid_from, valid_to, notes, modified_at::text AS updated_at, modified_by AS updated_by
@@ -213,8 +213,9 @@ object BiQueries {
         """
             )
         }
+
     val getFeeDecisions =
-        csvQuery<BiFeeDecision> {
+        csvQuery<BiFeeDecision> { _ ->
             sql(
                 """
             select id, created::text, updated::text, status, valid_during::text, decision_type, head_of_family_id, head_of_family_income::text, partner_id, partner_income::text, family_size, fee_thresholds::text, decision_number, document_key, approved_at::text, approved_by_id, decision_handler_id, sent_at::text, cancelled_at::text, total_fee, difference, document_contains_contact_info
@@ -224,7 +225,7 @@ object BiQueries {
         }
 
     val getFeeDecisionChildren =
-        csvQuery<BiFeeDecisionChild> {
+        csvQuery<BiFeeDecisionChild> { _ ->
             sql(
                 """
             select id, created::text, updated::text, fee_decision_id, child_id, child_date_of_birth, sibling_discount, placement_unit_id, placement_type, service_need_fee_coefficient, service_need_description_fi, service_need_description_sv, base_fee, fee, fee_alterations, final_fee, service_need_missing, service_need_contract_days_per_month, child_income, service_need_option_id
@@ -234,7 +235,7 @@ object BiQueries {
         }
 
     val getFeeThresholds =
-        csvQuery<BiFeeThresholds> {
+        csvQuery<BiFeeThresholds> { _ ->
             sql(
                 """
             select id, valid_during::text, min_income_threshold_2, min_income_threshold_3, min_income_threshold_4, min_income_threshold_5, min_income_threshold_6, income_multiplier_2, income_multiplier_3, income_multiplier_4, income_multiplier_5, income_multiplier_6, max_income_threshold_2, max_income_threshold_3, max_income_threshold_4, max_income_threshold_5, max_income_threshold_6, income_threshold_increase_6_plus, sibling_discount_2, sibling_discount_2_plus, max_fee, min_fee, created::text, updated::text, temporary_fee, temporary_fee_part_day, temporary_fee_sibling, temporary_fee_sibling_part_day
@@ -244,7 +245,7 @@ object BiQueries {
         }
 
     val getFridgeChildren =
-        csvQuery<BiFridgeChild> {
+        csvQuery<BiFridgeChild> { _ ->
             sql(
                 """
             select id, child_id, head_of_child, start_date, end_date, created_at::text, updated::text, conflict
@@ -254,7 +255,7 @@ object BiQueries {
         }
 
     val getFridgePartners =
-        csvQuery<BiFridgePartner> {
+        csvQuery<BiFridgePartner> { _ ->
             sql(
                 """
             select partnership_id, indx, person_id, start_date, end_date, created_at::text, updated::text, conflict, other_indx, create_source, created_by, modify_source, modified_at::text, modified_by, created_from_application
@@ -264,7 +265,7 @@ object BiQueries {
         }
 
     val getGuardians =
-        csvQuery<BiGuardian> {
+        csvQuery<BiGuardian> { _ ->
             sql(
                 """
             select guardian_id, child_id, created::text
@@ -274,7 +275,7 @@ object BiQueries {
         }
 
     val getGuardianBlockLists =
-        csvQuery<BiGuardianBlocklist> {
+        csvQuery<BiGuardianBlocklist> { _ ->
             sql(
                 """
             select guardian_id, child_id, created::text, updated::text
@@ -284,7 +285,7 @@ object BiQueries {
         }
 
     val getHolidayPeriods =
-        csvQuery<BiHolidayPeriod> {
+        csvQuery<BiHolidayPeriod> { _ ->
             sql(
                 """
             select id, created::text, updated::text, period::text, reservation_deadline
@@ -294,7 +295,7 @@ object BiQueries {
         }
 
     val getHolidayQuestionnaireAnswers =
-        csvQuery<BiHolidayQuestionnaireAnswer> {
+        csvQuery<BiHolidayQuestionnaireAnswer> { _ ->
             sql(
                 """
             select id, created::text, updated::text, modified_by, questionnaire_id, child_id, fixed_period::text
@@ -304,7 +305,7 @@ object BiQueries {
         }
 
     val getIncomes =
-        csvQuery<BiIncome> {
+        csvQuery<BiIncome> { _ ->
             sql(
                 """
             select id, person_id, data::text, valid_from, valid_to, notes, modified_at::text AS updated_at, effect, is_entrepreneur, works_at_echa, application_id, modified_by AS updated_by
@@ -314,7 +315,7 @@ object BiQueries {
         }
 
     val getOtherAssistanceMeasures =
-        csvQuery<BiOtherAssistanceMeasure> {
+        csvQuery<BiOtherAssistanceMeasure> { _ ->
             sql(
                 """
             select id, created::text, updated::text, child_id, modified::text, modified_by, valid_during::text, type
@@ -324,7 +325,7 @@ object BiQueries {
         }
 
     val getPlacements =
-        csvQuery<BiPlacement> {
+        csvQuery<BiPlacement> { _ ->
             sql(
                 """
             select id, created_at::text AS created, updated_at::text AS updated, type, child_id, unit_id, start_date, end_date, termination_requested_date, terminated_by, place_guarantee
@@ -334,7 +335,7 @@ object BiQueries {
         }
 
     val getPreschoolAssistances =
-        csvQuery<BiPreschoolAssistance> {
+        csvQuery<BiPreschoolAssistance> { _ ->
             sql(
                 """
             select id, created::text, updated::text, child_id, modified::text, modified_by, valid_during::text, level
@@ -344,7 +345,7 @@ object BiQueries {
         }
 
     val getServiceNeeds =
-        csvQuery<BiServiceNeed> {
+        csvQuery<BiServiceNeed> { _ ->
             sql(
                 """
             select id, created::text, updated::text, option_id, placement_id, start_date, end_date, confirmed_by, confirmed_at::text, shift_care
@@ -354,7 +355,7 @@ object BiQueries {
         }
 
     val getServiceNeedOptions =
-        csvQuery<BiServiceNeedOption> {
+        csvQuery<BiServiceNeedOption> { _ ->
             sql(
                 """
             select id, created::text, updated::text, name_fi, valid_placement_type, fee_coefficient, occupancy_coefficient, part_day, part_week, daycare_hours_per_week, default_option, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, display_order, name_sv, name_en, contract_days_per_month, occupancy_coefficient_under_3y, show_for_citizen, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_month, valid_from, valid_to
@@ -364,7 +365,7 @@ object BiQueries {
         }
 
     val getServiceNeedOptionVoucherValues =
-        csvQuery<BiServiceNeedOptionVoucherValue> {
+        csvQuery<BiServiceNeedOptionVoucherValue> { _ ->
             sql(
                 """
             select id, created::text, updated::text, service_need_option_id, validity::text, base_value, coefficient, value, base_value_under_3y, coefficient_under_3y, value_under_3y
@@ -374,7 +375,7 @@ object BiQueries {
         }
 
     val getStaffAttendance =
-        csvQuery<BiStaffAttendance> {
+        csvQuery<BiStaffAttendance> { _ ->
             sql(
                 """
             select id, group_id, date, count, created::text, 0::numeric AS count_other, updated::text
@@ -384,7 +385,7 @@ object BiQueries {
         }
 
     val getStaffAttendanceExternals =
-        csvQuery<BiStaffAttendanceExternal> {
+        csvQuery<BiStaffAttendanceExternal> { _ ->
             sql(
                 """
             select id, created::text, updated::text, name, group_id, arrived::text, departed::text, occupancy_coefficient, departed_automatically
@@ -394,7 +395,7 @@ object BiQueries {
         }
 
     val getStaffAttendancePlans =
-        csvQuery<BiStaffAttendancePlan> {
+        csvQuery<BiStaffAttendancePlan> { _ ->
             sql(
                 """
             select id, created::text, updated::text, employee_id, type, start_time::text, end_time::text, description
@@ -404,7 +405,7 @@ object BiQueries {
         }
 
     val getStaffOccupancyCoefficients =
-        csvQuery<BiStaffOccupancyCoefficient> {
+        csvQuery<BiStaffOccupancyCoefficient> { _ ->
             sql(
                 """
             select id, created::text, updated::text, employee_id, daycare_id, coefficient
@@ -414,7 +415,7 @@ object BiQueries {
         }
 
     val getVoucherValueDecisions =
-        csvQuery<BiVoucherValueDecision> {
+        csvQuery<BiVoucherValueDecision> { _ ->
             sql(
                 """
             select id, status, valid_from, valid_to, decision_number, head_of_family_id, partner_id, head_of_family_income::text, partner_income::text, family_size, fee_thresholds::text, document_key, created::text, approved_by, approved_at::text, sent_at::text, cancelled_at::text, decision_handler, child_id, child_date_of_birth, base_co_payment, sibling_discount, placement_unit_id, placement_type, co_payment, fee_alterations::text, base_value, voucher_value, final_co_payment, service_need_fee_coefficient, service_need_voucher_value_coefficient, service_need_fee_description_fi, service_need_fee_description_sv, service_need_voucher_value_description_fi, service_need_voucher_value_description_sv, updated::text, assistance_need_coefficient, decision_type, annulled_at::text, validity_updated_at::text, child_income::text, difference, service_need_missing, document_contains_contact_info
@@ -425,34 +426,34 @@ object BiQueries {
 
     // delta queries
     val getChildAttendanceDelta =
-        csvQuery<BiChildAttendance> {
+        csvQuery<BiChildAttendance> { config ->
             sql(
                 """
             select id, child_id, created_at::text AS created, modified_at::text AS updated, unit_id, date, start_time, end_time
             FROM child_attendance
-            WHERE modified_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - interval '60 days')::date
+            WHERE modified_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.deltaWindowDays)}))::date
         """
             )
         }
 
     val getAbsencesDelta =
-        csvQuery<BiAbsence> {
+        csvQuery<BiAbsence> { config ->
             sql(
                 """
             SELECT id, child_id, date, absence_type, modified_at::text, modified_by, category, questionnaire_id
             FROM absence
-            WHERE modified_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - interval '60 days')::date
+            WHERE modified_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.deltaWindowDays)}))::date
             """
             )
         }
 
     val getStaffAttendanceRealtimeDelta =
-        csvQuery<BiStaffAttendanceRealtime> {
+        csvQuery<BiStaffAttendanceRealtime> { config ->
             sql(
                 """
             select id, created_at::text AS created, updated_at::text AS updated, employee_id, group_id, arrived::text, departed::text, type, occupancy_coefficient, departed_automatically, arrived_added_at::text, arrived_added_by, arrived_modified_at::text, arrived_modified_by, departed_added_at::text, departed_added_by, departed_modified_at::text, departed_modified_by
             FROM staff_attendance_realtime
-            WHERE updated_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - interval '60 days')::date
+            WHERE updated_at >= (current_date AT TIME ZONE 'Europe/Helsinki' - make_interval(days => ${bind(config.deltaWindowDays)}))::date
         """
             )
         }
@@ -467,14 +468,14 @@ object BiQueries {
 
     class StreamingCsvQuery<T : Any>(
         private val clazz: KClass<T>,
-        private val query: (Database.Read) -> Database.Result<T>,
+        private val query: (Database.Read, BiExportConfig) -> Database.Result<T>,
     ) : CsvQuery {
         override operator fun <R> invoke(
             tx: Database.Read,
             config: BiExportConfig,
             useResults: (records: Sequence<String>) -> R,
         ): R =
-            query(tx).useSequence { rows ->
+            query(tx, config).useSequence { rows ->
                 useResults(toCsvRecords(::convertToCsv, clazz, rows, config))
             }
     }
@@ -482,9 +483,9 @@ object BiQueries {
     private const val QUERY_STREAM_CHUNK_SIZE = 10_000
 
     private inline fun <reified T : Any> csvQuery(
-        crossinline f: QuerySql.Builder.() -> QuerySql
+        crossinline f: QuerySql.Builder.(BiExportConfig) -> QuerySql
     ): CsvQuery =
-        StreamingCsvQuery(T::class) { tx ->
-            tx.createQuery { f() }.setFetchSize(QUERY_STREAM_CHUNK_SIZE).mapTo<T>()
+        StreamingCsvQuery(T::class) { tx, config ->
+            tx.createQuery { f(config) }.setFetchSize(QUERY_STREAM_CHUNK_SIZE).mapTo<T>()
         }
 }
