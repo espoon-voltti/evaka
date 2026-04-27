@@ -37,13 +37,13 @@ export class DecisionReasoningsPage {
     this.addGenericButton = page.findByDataQa('add-generic-reasoning-button')
     this.genericCards = page.findByDataQa('generic-reasoning-card')
     this.genericValidFrom = new DatePicker(
-      page.findByDataQa('generic-reasoning-valid-from').locator
+      page.findByDataQa('generic-reasoning-valid-from')
     )
     this.genericTextFi = new TextInput(
-      page.findByDataQa('generic-reasoning-text-fi').locator
+      page.findByDataQa('generic-reasoning-text-fi')
     )
     this.genericTextSv = new TextInput(
-      page.findByDataQa('generic-reasoning-text-sv').locator
+      page.findByDataQa('generic-reasoning-text-sv')
     )
     this.genericCancelButton = page.findByDataQa(
       'cancel-generic-reasoning-button'
@@ -61,16 +61,16 @@ export class DecisionReasoningsPage {
     )
     this.individualCards = page.findByDataQa('individual-reasoning-card')
     this.individualTitleFi = new TextInput(
-      page.findByDataQa('individual-reasoning-title-fi').locator
+      page.findByDataQa('individual-reasoning-title-fi')
     )
     this.individualTitleSv = new TextInput(
-      page.findByDataQa('individual-reasoning-title-sv').locator
+      page.findByDataQa('individual-reasoning-title-sv')
     )
     this.individualTextFi = new TextInput(
-      page.findByDataQa('individual-reasoning-text-fi').locator
+      page.findByDataQa('individual-reasoning-text-fi')
     )
     this.individualTextSv = new TextInput(
-      page.findByDataQa('individual-reasoning-text-sv').locator
+      page.findByDataQa('individual-reasoning-text-sv')
     )
     this.individualCancelButton = page.findByDataQa(
       'cancel-individual-reasoning-button'
@@ -82,13 +82,13 @@ export class DecisionReasoningsPage {
 
   genericCard(index: number): GenericReasoningCard {
     return new GenericReasoningCard(
-      this.page.findAllByDataQa('generic-reasoning-card').nth(index).locator
+      this.page.findAllByDataQa('generic-reasoning-card').nth(index)
     )
   }
 
   individualCard(index: number): IndividualReasoningCard {
     return new IndividualReasoningCard(
-      this.page.findAllByDataQa('individual-reasoning-card').nth(index).locator
+      this.page.findAllByDataQa('individual-reasoning-card').nth(index)
     )
   }
 
