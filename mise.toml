@@ -10,7 +10,7 @@ node = "24.14.1"
 "npm:pm2" = "6.0.14"
 uv = "0.11.6"
 "pipx:reuse" = "6.2.0"
-yarn = "4.12.0"
+yarn = "4.14.1"
 
 [tasks.start]
 description = "Start the development environment"
