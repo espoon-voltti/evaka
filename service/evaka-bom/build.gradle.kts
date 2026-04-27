@@ -13,7 +13,7 @@ dependencies {
         api("com.github.kagkarlsson:db-scheduler:16.7.1")
         api("com.github.mwiede:jsch:2.28.0")
         api("com.google.guava:guava:33.5.0-jre")
-        api("com.networknt:json-schema-validator:3.0.1")
+        api("com.networknt:json-schema-validator:3.0.2")
         api("com.zaxxer:HikariCP:7.0.2")
         api("io.github.oshai:kotlin-logging-jvm:8.0.01")
         api("io.kotest:kotest-property:6.1.11")
