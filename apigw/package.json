@@ -64,7 +64,7 @@
     "eslint-plugin-prettier": "5.5.5",
     "nock": "14.0.13",
     "node-forge": "1.4.0",
-    "prettier": "3.8.2",
+    "prettier": "3.8.3",
     "tough-cookie": "6.0.1",
     "typescript": "6.0.2",
     "typescript-eslint": "8.58.2",
