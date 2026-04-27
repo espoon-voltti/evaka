@@ -31,6 +31,12 @@ This document captures the core principles and design philosophies that guide te
 
 **Domain-Driven Organization**: Code is organized by business domain rather than technical layers.
 
+In the Kotlin service, each domain typically lives under its own package (e.g. `evaka.core.decision.reasoning`). Conventions are not strict — historical code varies — but a few patterns are common:
+
+- **Related small types — enums, data classes, request/response bodies — usually live together in one feature-named file** (e.g. `DecisionReasoning.kt`), rather than each type getting its own file.
+- **Larger separable concerns may get their own files.** Typical suffixes: `*Controller.kt` for employee-facing HTTP endpoints and `*ControllerCitizen.kt` for citizen-facing ones; `*Queries.kt` for SQL extension functions on `Database.Read` / `Database.Transaction`.
+- **`*Service.kt` is reserved for actual Spring `@Service` beans.** Prefer plain extension functions and top-level functions; only introduce a `*Service.kt` when something genuinely needs to be a bean (e.g. to autowire a dependency).
+
 **Database for Structure, Code for Logic**: Database schema (defined in migrations) is the source of truth. JSONB columns may be used selectively, but we prefer relational structures. DB constraints are used heavily for data integrity. Business logic lives in application code - we avoid stored procedures and complex triggers.
 
 **Security at API Boundaries**: Each controller endpoint must first authorize the request. Every successful request must be logged.

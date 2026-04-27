@@ -6,9 +6,17 @@ package evaka.core.decision.reasoning
 
 import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionIndividualReasoningId
+import evaka.core.shared.db.DatabaseEnum
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
+
+enum class DecisionReasoningCollectionType : DatabaseEnum {
+    DAYCARE,
+    PRESCHOOL;
+
+    override val sqlType = "decision_reasoning_collection_type"
+}
 
 data class DecisionGenericReasoningBody(
     val collectionType: DecisionReasoningCollectionType,
