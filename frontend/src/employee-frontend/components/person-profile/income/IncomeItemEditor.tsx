@@ -73,7 +73,7 @@ function incomeFormFromIncome(value: IncomeRequest): IncomeForm {
 
 const emptyIncome: IncomeForm = {
   effect: 'INCOME',
-  data: {} as IncomeTableData,
+  data: {},
   isEntrepreneur: false,
   worksAtECHA: false,
   notes: '',

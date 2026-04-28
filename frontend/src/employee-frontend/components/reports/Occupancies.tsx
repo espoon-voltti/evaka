@@ -593,19 +593,19 @@ export default React.memo(function Occupancies() {
                 <Combobox
                   items={[
                     {
-                      value: 'percentage' as ValueOnReport,
+                      value: 'percentage' as const,
                       label:
                         i18n.reports.occupancies.filters.valuesOnReport
                           .percentage
                     },
                     {
-                      value: 'headcount' as ValueOnReport,
+                      value: 'headcount' as const,
                       label:
                         i18n.reports.occupancies.filters.valuesOnReport
                           .headcount
                     },
                     {
-                      value: 'raw' as ValueOnReport,
+                      value: 'raw' as const,
                       label: i18n.reports.occupancies.filters.valuesOnReport.raw
                     }
                   ]}

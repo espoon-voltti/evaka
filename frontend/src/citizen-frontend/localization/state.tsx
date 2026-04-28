@@ -20,11 +20,8 @@ const getDefaultLanguage: () => Lang = () => {
     return lang as Lang
   } else {
     const language = window.navigator.language.split('-')[0]
-    if (
-      (language === 'fi' || language === 'sv') &&
-      langs.includes(language as Lang)
-    ) {
-      return language as Lang
+    if ((language === 'fi' || language === 'sv') && langs.includes(language)) {
+      return language
     } else {
       return 'fi' as const
     }

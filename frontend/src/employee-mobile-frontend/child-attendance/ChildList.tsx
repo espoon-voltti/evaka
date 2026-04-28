@@ -77,14 +77,14 @@ export default React.memo(function ChildList({
 
     if (type === 'COMING') {
       baseOptions.push({
-        value: 'RESERVATION_START_TIME' as SortType,
+        value: 'RESERVATION_START_TIME',
         label: i18n.attendances.actions.sortType.RESERVATION_START_TIME
       })
     }
 
     if (type === 'PRESENT') {
       baseOptions.push({
-        value: 'RESERVATION_END_TIME' as SortType,
+        value: 'RESERVATION_END_TIME',
         label: i18n.attendances.actions.sortType.RESERVATION_END_TIME
       })
     }

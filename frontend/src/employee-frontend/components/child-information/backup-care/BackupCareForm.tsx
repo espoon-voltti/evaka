@@ -118,7 +118,7 @@ export default function BackupCareForm({
         ? unitOperationPeriodsQuery({
             unitIds: unitStubs.map((unit) => unit.id)
           })
-        : constantQuery({} as Partial<Record<DaycareId, UnitOperationPeriod>>)
+        : constantQuery<Partial<Record<DaycareId, UnitOperationPeriod>>>({})
     )
   )
 

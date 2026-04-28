@@ -20,7 +20,7 @@ export function useCheckedState<T extends string>() {
       ...Object.fromEntries(idsChecked)
     })
   }
-  const clearChecked = () => setChecked({} as Checked<T>)
+  const clearChecked = () => setChecked({})
   const isChecked = (id: T) => checked[id] ?? false
   const getCheckedIds = () =>
     Object.entries(checked).flatMap(([id, checked]) =>

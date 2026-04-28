@@ -963,9 +963,9 @@ const ReportByGroupTable = ({
   const documentDecisionKeys = useMemo(() => {
     const keys = new Set<string>()
     report.rows.forEach((row) => {
-      Object.keys(
-        (row.documentDecisionCounts ?? {}) as DocumentDecisionCounts
-      ).forEach((key) => keys.add(key))
+      Object.keys(row.documentDecisionCounts ?? {}).forEach((key) =>
+        keys.add(key)
+      )
     })
     return Array.from(keys).sort()
   }, [report.rows])
@@ -1018,7 +1018,7 @@ const ReportByGroupTable = ({
               groupData.documentDecisionCounts,
               row.documentDecisionCounts ?? {},
               add
-            ) as DocumentDecisionCounts
+            )
           }
           return data
         },
@@ -1401,9 +1401,9 @@ const ReportByChildTable = ({
   const documentDecisionKeys = useMemo(() => {
     const keys = new Set<string>()
     report.rows.forEach((row) => {
-      Object.keys(
-        (row.documentDecisionCounts ?? {}) as DocumentDecisionCounts
-      ).forEach((key) => keys.add(key))
+      Object.keys(row.documentDecisionCounts ?? {}).forEach((key) =>
+        keys.add(key)
+      )
     })
     return Array.from(keys).sort()
   }, [report.rows])
@@ -1442,7 +1442,7 @@ const ReportByChildTable = ({
               groupData.documentDecisionCounts,
               row.documentDecisionCounts ?? {},
               add
-            ) as DocumentDecisionCounts
+            )
           }
           return data
         },

@@ -15,7 +15,6 @@ import type {
   Gross,
   IncomeStatement,
   IncomeStatementAttachment,
-  IncomeStatementStatus,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
 import type { EstimatedIncome } from 'lib-common/generated/api-types/incomestatement'
@@ -586,7 +585,7 @@ function HandlerNotesForm({
             return {
               incomeStatementId,
               body: {
-                status: 'HANDLING' as IncomeStatementStatus,
+                status: 'HANDLING' as const,
                 handlerNote: state.handlerNote
               }
             }
@@ -606,7 +605,7 @@ function HandlerNotesForm({
               return {
                 incomeStatementId,
                 body: {
-                  status: 'SENT' as IncomeStatementStatus,
+                  status: 'SENT' as const,
                   handlerNote: state.handlerNote
                 }
               }
@@ -621,7 +620,7 @@ function HandlerNotesForm({
               return {
                 incomeStatementId,
                 body: {
-                  status: 'HANDLED' as IncomeStatementStatus,
+                  status: 'HANDLED' as const,
                   handlerNote: state.handlerNote
                 }
               }
@@ -640,7 +639,7 @@ function HandlerNotesForm({
             return {
               incomeStatementId,
               body: {
-                status: 'HANDLING' as IncomeStatementStatus,
+                status: 'HANDLING' as const,
                 handlerNote: state.handlerNote
               }
             }
