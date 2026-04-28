@@ -217,8 +217,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val laterId = createGenericReasoning(genericRequest(laterStart), time = now.minusDays(1L))
 
         val result =
-            getGenericReasonings(DecisionReasoningCollectionType.DAYCARE)
-                .associateBy { it.id }
+            getGenericReasonings(DecisionReasoningCollectionType.DAYCARE).associateBy { it.id }
 
         assertEquals(laterStart.minusDays(1), result.getValue(earlierId).endDate)
         assertNull(result.getValue(laterId).endDate)
@@ -231,8 +230,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val newerId = createGenericReasoning(genericRequest(validFrom), time = now)
 
         val result =
-            getGenericReasonings(DecisionReasoningCollectionType.DAYCARE)
-                .associateBy { it.id }
+            getGenericReasonings(DecisionReasoningCollectionType.DAYCARE).associateBy { it.id }
 
         assertTrue(result.getValue(olderId).outdated)
         assertFalse(result.getValue(newerId).outdated)
@@ -246,8 +244,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         createGenericReasoning(genericRequest(currentStart), time = now.minusDays(1L))
 
         val result =
-            getGenericReasonings(DecisionReasoningCollectionType.DAYCARE)
-                .associateBy { it.id }
+            getGenericReasonings(DecisionReasoningCollectionType.DAYCARE).associateBy { it.id }
 
         assertTrue(result.getValue(pastId).outdated)
         assertEquals(currentStart.minusDays(1), result.getValue(pastId).endDate)
@@ -263,8 +260,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val thirdId = createGenericReasoning(genericRequest(third), time = now.minusDays(1L))
 
         val result =
-            getGenericReasonings(DecisionReasoningCollectionType.DAYCARE)
-                .associateBy { it.id }
+            getGenericReasonings(DecisionReasoningCollectionType.DAYCARE).associateBy { it.id }
 
         with(result.getValue(firstId)) {
             assertEquals(second.minusDays(1), endDate)
@@ -413,10 +409,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val daycareResult = getGenericReasonings(DecisionReasoningCollectionType.DAYCARE)
         assertEquals(1, daycareResult.size)
-        assertEquals(
-            DecisionReasoningCollectionType.DAYCARE,
-            daycareResult.first().collectionType,
-        )
+        assertEquals(DecisionReasoningCollectionType.DAYCARE, daycareResult.first().collectionType)
 
         val preschoolResult = getGenericReasonings(DecisionReasoningCollectionType.PRESCHOOL)
         assertEquals(1, preschoolResult.size)

@@ -46,9 +46,7 @@ ORDER BY valid_from DESC, created_at DESC
             else sortedUniqueValidFrom[idx + 1].minusDays(1)
         val supersededBy =
             rows.any {
-                it.id != row.id &&
-                    it.validFrom == row.validFrom &&
-                    it.createdAt > row.createdAt
+                it.id != row.id && it.validFrom == row.validFrom && it.createdAt > row.createdAt
             }
         DecisionGenericReasoning(
             id = row.id,
