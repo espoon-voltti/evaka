@@ -344,6 +344,14 @@ export class StaffAttendanceDetailsModal extends Element {
   continuationAttendance = this.findByDataQa('continuation-attendance')
   newAttendanceButton = this.findByDataQa('new-attendance')
 
+  departedAutomaticallyTime(index: number) {
+    return this.findAllByDataQa('departed-automatically-time').nth(index)
+  }
+
+  departedAutomaticallyLabel(index: number) {
+    return this.findAllByDataQa('departed-automatically-label').nth(index)
+  }
+
   async setGroup(row: number, groupId: UUID) {
     await new Select(
       this.findAllByDataQa('group-indicator')

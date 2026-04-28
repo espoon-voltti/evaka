@@ -396,6 +396,10 @@ test.describe('Realtime staff attendances', () => {
       )
 
       const modal = await staffAttendances.openDetails(0, yesterday)
+      await expect(modal.departedAutomaticallyTime(0)).toHaveText('20:00')
+      await expect(modal.departedAutomaticallyLabel(0)).toHaveText(
+        'Automaattikatkaistu'
+      )
       await modal.setDepartureTime(0, '15:00')
       await modal.save()
       await staffAttendances.assertTableRow({
