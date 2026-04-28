@@ -178,11 +178,10 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(0, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
         assertEquals(2, attemptCount)
 
-        val completedAt =
-            db.read {
-                it.createQuery { sql("SELECT completed_at FROM async_job") }
-                    .exactlyOneOrNull<HelsinkiDateTime>()
-            }
+        val completedAt = db.read {
+            it.createQuery { sql("SELECT completed_at FROM async_job") }
+                .exactlyOneOrNull<HelsinkiDateTime>()
+        }
         assertEquals(null, completedAt)
     }
 
@@ -194,11 +193,9 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
             asyncJobRunner.plan(it, listOf(job), 1, Duration.ZERO, runAt = HelsinkiDateTime.now())
         }
 
-        val initialRetryCount =
-            db.read {
-                it.createQuery { sql("SELECT initial_retry_count FROM async_job") }
-                    .exactlyOne<Int>()
-            }
+        val initialRetryCount = db.read {
+            it.createQuery { sql("SELECT initial_retry_count FROM async_job") }.exactlyOne<Int>()
+        }
         assertEquals(1, initialRetryCount)
 
         val failingFuture = this.setAsyncJobCallback { throw LetsRollbackException() }

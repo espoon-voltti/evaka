@@ -96,10 +96,9 @@ class CalendarEventNotificationService(
         msg: AsyncJob.SendDiscussionSurveyCreationNotificationEmail,
     ) {
 
-        val eventData =
-            db.read {
-                it.getCalendarEventById(msg.eventId) ?: throw NotFound("No discussion survey found")
-            }
+        val eventData = db.read {
+            it.getCalendarEventById(msg.eventId) ?: throw NotFound("No discussion survey found")
+        }
         val fromAddress = emailEnv.sender(Language.fi)
         val content =
             emailMessageProvider.discussionSurveyCreationNotification(
@@ -183,11 +182,10 @@ class CalendarEventNotificationService(
             "Sending discussion time reservation email for (recipientId: ${msg.recipientId}, eventTimeId: ${eventTime.id})"
         }
 
-        val child =
-            db.read {
-                it.getPersonById(msg.childId)
-                    ?: throw NotFound("Child for discussion time reservation not found")
-            }
+        val child = db.read {
+            it.getPersonById(msg.childId)
+                ?: throw NotFound("Child for discussion time reservation not found")
+        }
         val fromAddress = emailEnv.sender(Language.fi)
         val content =
             emailMessageProvider.discussionSurveyReservationNotification(
@@ -219,11 +217,10 @@ class CalendarEventNotificationService(
         logger.info {
             "Sending discussion time reservation cancellation email for (recipientId: ${msg.recipientId}, eventTimeId: ${eventTime.id})"
         }
-        val child =
-            db.read {
-                it.getPersonById(msg.childId)
-                    ?: throw NotFound("Child for discussion time reservation not found")
-            }
+        val child = db.read {
+            it.getPersonById(msg.childId)
+                ?: throw NotFound("Child for discussion time reservation not found")
+        }
         val fromAddress = emailEnv.sender(Language.fi)
         val content =
             emailMessageProvider.discussionSurveyReservationCancellationNotification(

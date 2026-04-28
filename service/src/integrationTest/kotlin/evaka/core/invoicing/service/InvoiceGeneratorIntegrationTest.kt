@@ -4333,24 +4333,22 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
             )
         insertDecisionsAndPlacementsAndServiceNeeds(decisions)
-        val correctionId =
-            db.transaction {
-                it.insert(
-                    DevInvoiceCorrection(
-                        targetMonth = null,
-                        headOfFamilyId = adult1.id,
-                        childId = child1.id,
-                        amount = 1,
-                        unitPrice = -28900,
-                        period =
-                            FiniteDateRange(LocalDate.of(2018, 12, 1), LocalDate.of(2018, 12, 31)),
-                        unitId = daycare.id,
-                        product = productProvider.mapToProduct(PlacementType.DAYCARE),
-                        description = "",
-                        note = "",
-                    )
+        val correctionId = db.transaction {
+            it.insert(
+                DevInvoiceCorrection(
+                    targetMonth = null,
+                    headOfFamilyId = adult1.id,
+                    childId = child1.id,
+                    amount = 1,
+                    unitPrice = -28900,
+                    period = FiniteDateRange(LocalDate.of(2018, 12, 1), LocalDate.of(2018, 12, 31)),
+                    unitId = daycare.id,
+                    product = productProvider.mapToProduct(PlacementType.DAYCARE),
+                    description = "",
+                    note = "",
                 )
-            }
+            )
+        }
 
         db.transaction { generator.generateAllDraftInvoices(it, month) }
 
@@ -5611,37 +5609,36 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private fun insertDecisionsAndPlacementsAndServiceNeeds(
         feeDecisions: List<FeeDecision>,
         shiftCare: ShiftCareType = ShiftCareType.NONE,
-    ) =
-        db.transaction { tx ->
-            tx.upsertFeeDecisions(feeDecisions)
-            feeDecisions.forEach { decision ->
-                decision.children.forEach { part ->
-                    tx.insert(
-                            DevPlacement(
-                                type = part.placement.type,
-                                childId = part.child.id,
-                                unitId = part.placement.unitId,
-                                startDate = decision.validFrom,
-                                endDate = decision.validTo,
-                            )
+    ) = db.transaction { tx ->
+        tx.upsertFeeDecisions(feeDecisions)
+        feeDecisions.forEach { decision ->
+            decision.children.forEach { part ->
+                tx.insert(
+                        DevPlacement(
+                            type = part.placement.type,
+                            childId = part.child.id,
+                            unitId = part.placement.unitId,
+                            startDate = decision.validFrom,
+                            endDate = decision.validTo,
                         )
-                        .also { placementId ->
-                            if (part.serviceNeed.optionId != null && !part.serviceNeed.missing) {
-                                tx.insert(
-                                    DevServiceNeed(
-                                        placementId = placementId,
-                                        startDate = decision.validFrom,
-                                        endDate = decision.validTo,
-                                        optionId = part.serviceNeed.optionId!!,
-                                        shiftCare = shiftCare,
-                                        confirmedBy = employee.evakaUserId,
-                                    )
+                    )
+                    .also { placementId ->
+                        if (part.serviceNeed.optionId != null && !part.serviceNeed.missing) {
+                            tx.insert(
+                                DevServiceNeed(
+                                    placementId = placementId,
+                                    startDate = decision.validFrom,
+                                    endDate = decision.validTo,
+                                    optionId = part.serviceNeed.optionId!!,
+                                    shiftCare = shiftCare,
+                                    confirmedBy = employee.evakaUserId,
                                 )
-                            }
+                            )
                         }
-                }
+                    }
             }
         }
+    }
 
     private fun insertPlacement(
         childId: ChildId,

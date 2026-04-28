@@ -190,10 +190,9 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val date: LocalDate,
         val entries: List<StaffAttendanceUpsert>,
     ) {
-        fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean =
-            entries.any {
-                it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
-            }
+        fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean = entries.any {
+            it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
+        }
     }
 
     @PostMapping("/employee/staff-attendances/realtime/upsert")
@@ -282,10 +281,9 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val date: LocalDate,
         val entries: List<ExternalAttendanceUpsert>,
     ) {
-        fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean =
-            entries.any {
-                it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
-            }
+        fun anyAttendanceAfter(timestamp: HelsinkiDateTime): Boolean = entries.any {
+            it.arrived > timestamp || (it.departed != null && it.departed > timestamp)
+        }
     }
 
     @PostMapping("/employee/staff-attendances/realtime/upsert-external")
@@ -302,35 +300,34 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             throw BadRequest("Date cannot be in the future")
         }
 
-        val externalAttendanceIds =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.UPDATE_STAFF_ATTENDANCES,
-                        body.unitId,
-                    )
-                    tx.deleteExternalAttendancesOnDateExcept(
+        val externalAttendanceIds = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_STAFF_ATTENDANCES,
+                    body.unitId,
+                )
+                tx.deleteExternalAttendancesOnDateExcept(
+                    body.name,
+                    body.date,
+                    body.entries.mapNotNull { it.id },
+                )
+                body.entries.map {
+                    tx.upsertExternalStaffAttendance(
+                        it.id,
                         body.name,
-                        body.date,
-                        body.entries.mapNotNull { it.id },
+                        it.groupId,
+                        it.arrived,
+                        it.departed,
+                        if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
+                        else occupancyCoefficientZero,
+                        false,
                     )
-                    body.entries.map {
-                        tx.upsertExternalStaffAttendance(
-                            it.id,
-                            body.name,
-                            it.groupId,
-                            it.arrived,
-                            it.departed,
-                            if (it.hasStaffOccupancyEffect) occupancyCoefficientSeven
-                            else occupancyCoefficientZero,
-                            false,
-                        )
-                    }
                 }
             }
+        }
         Audit.StaffAttendanceExternalUpdate.log(
             targetId = AuditId(body.unitId),
             objectId = AuditId(externalAttendanceIds),

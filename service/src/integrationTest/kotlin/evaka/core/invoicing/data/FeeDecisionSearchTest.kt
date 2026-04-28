@@ -468,30 +468,29 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
         searchByStartDate: Boolean = false,
         financeDecisionHandlerId: EmployeeId? = null,
         difference: Set<FeeDecisionDifference> = emptySet(),
-    ) =
-        db.read { tx ->
-            tx.searchFeeDecisions(
-                    clock = clock,
-                    postOffice = "ESPOO",
-                    searchTerms = searchTerm,
-                    page = 0,
-                    pageSize = 100,
-                    statuses = listOfNotNull(status),
-                    areas = areas,
-                    sortBy = sortBy,
-                    sortDirection = sortDirection,
-                    distinctiveParams = distinctiveParams,
-                    unit = unit,
-                    startDate = startDate,
-                    endDate = endDate,
-                    searchByStartDate = searchByStartDate,
-                    financeDecisionHandlerId = financeDecisionHandlerId,
-                    difference = difference,
-                )
-                .let { result ->
-                    assertEquals(1, result.pages)
-                    assertEquals(result.total, result.data.size)
-                    result.data
-                }
-        }
+    ) = db.read { tx ->
+        tx.searchFeeDecisions(
+                clock = clock,
+                postOffice = "ESPOO",
+                searchTerms = searchTerm,
+                page = 0,
+                pageSize = 100,
+                statuses = listOfNotNull(status),
+                areas = areas,
+                sortBy = sortBy,
+                sortDirection = sortDirection,
+                distinctiveParams = distinctiveParams,
+                unit = unit,
+                startDate = startDate,
+                endDate = endDate,
+                searchByStartDate = searchByStartDate,
+                financeDecisionHandlerId = financeDecisionHandlerId,
+                difference = difference,
+            )
+            .let { result ->
+                assertEquals(1, result.pages)
+                assertEquals(result.total, result.data.size)
+                result.data
+            }
+    }
 }

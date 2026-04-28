@@ -72,31 +72,30 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val adult = DevPerson()
         val child = DevPerson()
 
-        val applicationId =
-            db.transaction { tx ->
-                tx.insert(employee)
-                tx.insert(area)
-                tx.insert(unit)
-                tx.insert(adult, DevPersonType.ADULT)
-                tx.insert(child, DevPersonType.CHILD)
+        val applicationId = db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
 
-                tx.insertTestApplication(
-                    status = ApplicationStatus.CREATED,
-                    sentDate = null,
-                    dueDate = null,
-                    guardianId = adult.id,
-                    childId = child.id,
-                    type = ApplicationType.DAYCARE,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            guardian = adult.toDaycareFormAdult(),
-                            child = child.toDaycareFormChild(),
-                            apply = Apply(preferredUnits = listOf(unit.id)),
-                            preferredStartDate = today.plusMonths(4),
-                        ),
-                )
-            }
+            tx.insertTestApplication(
+                status = ApplicationStatus.CREATED,
+                sentDate = null,
+                dueDate = null,
+                guardianId = adult.id,
+                childId = child.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        guardian = adult.toDaycareFormAdult(),
+                        child = child.toDaycareFormChild(),
+                        apply = Apply(preferredUnits = listOf(unit.id)),
+                        preferredStartDate = today.plusMonths(4),
+                    ),
+            )
+        }
 
         migrateProcessMetadata(db, clock, featureConfig)
 
@@ -117,31 +116,30 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val adult = DevPerson()
         val child = DevPerson()
 
-        val applicationId =
-            db.transaction { tx ->
-                tx.insert(employee)
-                tx.insert(area)
-                tx.insert(unit)
-                tx.insert(adult, DevPersonType.ADULT)
-                tx.insert(child, DevPersonType.CHILD)
+        val applicationId = db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
 
-                tx.insertTestApplication(
-                    status = ApplicationStatus.CREATED,
-                    sentDate = today,
-                    dueDate = null,
-                    guardianId = adult.id,
-                    childId = child.id,
-                    type = ApplicationType.DAYCARE,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            guardian = adult.toDaycareFormAdult(),
-                            child = child.toDaycareFormChild(),
-                            apply = Apply(preferredUnits = listOf(unit.id)),
-                            preferredStartDate = today.plusMonths(4),
-                        ),
-                )
-            }
+            tx.insertTestApplication(
+                status = ApplicationStatus.CREATED,
+                sentDate = today,
+                dueDate = null,
+                guardianId = adult.id,
+                childId = child.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        guardian = adult.toDaycareFormAdult(),
+                        child = child.toDaycareFormChild(),
+                        apply = Apply(preferredUnits = listOf(unit.id)),
+                        preferredStartDate = today.plusMonths(4),
+                    ),
+            )
+        }
 
         applicationController.sendApplication(dbInstance(), employee.user, clock, applicationId)
         clearApplicationMetadata()
@@ -177,31 +175,30 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val adult = DevPerson()
         val child = DevPerson()
 
-        val applicationId =
-            db.transaction { tx ->
-                tx.insert(employee)
-                tx.insert(area)
-                tx.insert(unit)
-                tx.insert(adult, DevPersonType.ADULT)
-                tx.insert(child, DevPersonType.CHILD)
+        val applicationId = db.transaction { tx ->
+            tx.insert(employee)
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
 
-                tx.insertTestApplication(
-                    status = ApplicationStatus.CREATED,
-                    sentDate = today,
-                    dueDate = null,
-                    guardianId = adult.id,
-                    childId = child.id,
-                    type = ApplicationType.DAYCARE,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            guardian = adult.toDaycareFormAdult(),
-                            child = child.toDaycareFormChild(),
-                            apply = Apply(preferredUnits = listOf(unit.id)),
-                            preferredStartDate = today.plusMonths(4),
-                        ),
-                )
-            }
+            tx.insertTestApplication(
+                status = ApplicationStatus.CREATED,
+                sentDate = today,
+                dueDate = null,
+                guardianId = adult.id,
+                childId = child.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        guardian = adult.toDaycareFormAdult(),
+                        child = child.toDaycareFormChild(),
+                        apply = Apply(preferredUnits = listOf(unit.id)),
+                        preferredStartDate = today.plusMonths(4),
+                    ),
+            )
+        }
 
         applicationController.sendApplication(dbInstance(), employee.user, clock, applicationId)
         clock.tick(Duration.ofDays(1))
@@ -234,10 +231,9 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             applicationId,
             SimpleApplicationAction.CONFIRM_DECISION_MAILED,
         )
-        val decision =
-            db.read {
-                it.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll).single()
-            }
+        val decision = db.read {
+            it.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll).single()
+        }
         applicationControllerCitizen.acceptDecision(
             dbInstance(),
             adult.user(CitizenAuthLevel.STRONG),

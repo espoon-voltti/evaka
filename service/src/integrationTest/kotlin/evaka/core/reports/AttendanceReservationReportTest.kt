@@ -845,18 +845,16 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     @Test
     fun `group ids filter works`() {
         val date = LocalDate.of(2020, 5, 28)
-        val group1 =
-            db.transaction { tx ->
-                tx.insert(DevDaycareGroup(daycareId = daycare.id, name = "Testiläiset 1")).let {
-                    Group(it, "Testiläiset 1")
-                }
+        val group1 = db.transaction { tx ->
+            tx.insert(DevDaycareGroup(daycareId = daycare.id, name = "Testiläiset 1")).let {
+                Group(it, "Testiläiset 1")
             }
-        val group2 =
-            db.transaction { tx ->
-                tx.insert(DevDaycareGroup(daycareId = daycare.id, name = "Testiläiset 2")).let {
-                    Group(it, "Testiläiset 2")
-                }
+        }
+        val group2 = db.transaction { tx ->
+            tx.insert(DevDaycareGroup(daycareId = daycare.id, name = "Testiläiset 2")).let {
+                Group(it, "Testiläiset 2")
             }
+        }
         db.transaction { tx ->
             tx.insert(
                 DevDaycareGroupPlacement(

@@ -35,8 +35,9 @@ sourceSets {
     }
 }
 
-val integrationTestImplementation: Configuration by
-    configurations.getting { extendsFrom(configurations.testImplementation.get()) }
+val integrationTestImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+}
 
 val downloadOnly: Configuration by configurations.creating { isTransitive = false }
 

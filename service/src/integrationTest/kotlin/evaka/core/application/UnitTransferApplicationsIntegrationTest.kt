@@ -57,10 +57,12 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
 
         @BeforeEach
         fun insertTestData() {
-            val guardian =
-                db.transaction { tx -> DevPerson().also { tx.insert(it, DevPersonType.ADULT) } }
-            val child =
-                db.transaction { tx -> DevPerson().also { tx.insert(it, DevPersonType.CHILD) } }
+            val guardian = db.transaction { tx ->
+                DevPerson().also { tx.insert(it, DevPersonType.ADULT) }
+            }
+            val child = db.transaction { tx ->
+                DevPerson().also { tx.insert(it, DevPersonType.CHILD) }
+            }
             db.transaction { tx ->
                 tx.insert(
                     DevPlacement(
@@ -72,24 +74,23 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
                 )
             }
             val preferredStartDate = LocalDate.of(2021, 1, 1)
-            val applicationId =
-                db.transaction { tx ->
-                    tx.insertTestApplication(
-                        type = ApplicationType.DAYCARE,
-                        status = ApplicationStatus.SENT,
-                        guardianId = guardian.id,
-                        childId = child.id,
-                        transferApplication = true,
-                        document =
-                            DaycareFormV0(
-                                type = ApplicationType.DAYCARE,
-                                child = child.toDaycareFormChild(),
-                                guardian = guardian.toDaycareFormAdult(restricted = false),
-                                apply = Apply(preferredUnits = listOf(applicationUnit1.id)),
-                                preferredStartDate = preferredStartDate,
-                            ),
-                    )
-                }
+            val applicationId = db.transaction { tx ->
+                tx.insertTestApplication(
+                    type = ApplicationType.DAYCARE,
+                    status = ApplicationStatus.SENT,
+                    guardianId = guardian.id,
+                    childId = child.id,
+                    transferApplication = true,
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = child.toDaycareFormChild(),
+                            guardian = guardian.toDaycareFormAdult(restricted = false),
+                            apply = Apply(preferredUnits = listOf(applicationUnit1.id)),
+                            preferredStartDate = preferredStartDate,
+                        ),
+                )
+            }
             expected =
                 listOf(
                     TransferApplicationUnitSummary(
@@ -109,26 +110,24 @@ class UnitTransferApplicationsIntegrationTest : FullApplicationTest(resetDbBefor
 
         @Test
         fun `getUnitApplications returns null transfer applications for unit supervisor`() {
-            val unitSupervisor =
-                db.transaction { tx ->
-                    val employee = DevEmployee()
-                    tx.insert(
-                        employee,
-                        unitRoles = mapOf(placementUnit1.id to UserRole.UNIT_SUPERVISOR),
-                    )
-                    employee.user
-                }
+            val unitSupervisor = db.transaction { tx ->
+                val employee = DevEmployee()
+                tx.insert(
+                    employee,
+                    unitRoles = mapOf(placementUnit1.id to UserRole.UNIT_SUPERVISOR),
+                )
+                employee.user
+            }
             assertEquals(null, getUnitApplications(user = unitSupervisor).transferApplications)
         }
 
         @Test
         fun `getUnitApplications throws forbidden for staff`() {
-            val staff =
-                db.transaction { tx ->
-                    val employee = DevEmployee()
-                    tx.insert(employee, unitRoles = mapOf(placementUnit1.id to UserRole.STAFF))
-                    employee.user
-                }
+            val staff = db.transaction { tx ->
+                val employee = DevEmployee()
+                tx.insert(employee, unitRoles = mapOf(placementUnit1.id to UserRole.STAFF))
+                employee.user
+            }
             assertThrows<Forbidden> { getUnitApplications(user = staff) }
         }
 

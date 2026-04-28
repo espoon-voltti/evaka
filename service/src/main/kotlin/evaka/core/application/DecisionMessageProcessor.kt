@@ -29,23 +29,22 @@ class DecisionMessageProcessor(
         db: Database.Connection,
         clock: EvakaClock,
         msg: AsyncJob.NotifyDecisionCreated,
-    ) =
-        db.transaction { tx ->
-            val decisionId = msg.decisionId
-            val skipGuardianApproval = msg.skipGuardianApproval
+    ) = db.transaction { tx ->
+        val decisionId = msg.decisionId
+        val skipGuardianApproval = msg.skipGuardianApproval
 
-            decisionService.createDecisionPdf(tx, decisionId)
+        decisionService.createDecisionPdf(tx, decisionId)
 
-            logger.info { "Successfully created decision pdf(s) for decision (id: $decisionId)." }
-            if (msg.sendAsMessage) {
-                logger.info { "Sending decision pdf(s) for decision (id: $decisionId)." }
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(AsyncJob.SendDecision(decisionId, skipGuardianApproval)),
-                    runAt = clock.now(),
-                )
-            }
+        logger.info { "Successfully created decision pdf(s) for decision (id: $decisionId)." }
+        if (msg.sendAsMessage) {
+            logger.info { "Sending decision pdf(s) for decision (id: $decisionId)." }
+            asyncJobRunner.plan(
+                tx,
+                listOf(AsyncJob.SendDecision(decisionId, skipGuardianApproval)),
+                runAt = clock.now(),
+            )
         }
+    }
 
     fun runSendJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendDecision) =
         db.transaction { tx ->

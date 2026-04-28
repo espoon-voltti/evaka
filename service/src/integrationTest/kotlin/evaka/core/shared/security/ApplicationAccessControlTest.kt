@@ -107,16 +107,15 @@ class ApplicationAccessControlTest : AccessControlTest() {
     fun `HasUnitRole inPlacementPlanUnitOfApplication`() {
         val action = Action.Application.READ
         rules.add(action, HasUnitRole(UserRole.UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication())
-        val daycareId =
-            db.transaction { tx ->
-                tx.execute {
-                    sql(
-                        "UPDATE application SET status = 'ACTIVE', confidential = TRUE WHERE id = ${bind(applicationId)}"
-                    )
-                }
-                tx.insert(DevPlacementPlan(applicationId = applicationId, unitId = daycare.id))
-                daycare.id
+        val daycareId = db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE application SET status = 'ACTIVE', confidential = TRUE WHERE id = ${bind(applicationId)}"
+                )
             }
+            tx.insert(DevPlacementPlan(applicationId = applicationId, unitId = daycare.id))
+            daycare.id
+        }
         val unitSupervisor =
             createTestEmployee(
                 globalRoles = emptySet(),

@@ -207,17 +207,17 @@ class PlacementQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(child.id, today)
         }
 
-        val reservationIds =
-            db.read {
-                it.createQuery { sql("SELECT id FROM attendance_reservation") }
-                    .toSet<AttendanceReservationId>()
-            }
+        val reservationIds = db.read {
+            it.createQuery { sql("SELECT id FROM attendance_reservation") }
+                .toSet<AttendanceReservationId>()
+        }
         assertTrue(reservationIds.contains(reservationYesterday.id))
         assertEquals(hasReservations, reservationIds.contains(reservationDuringPlacement.id))
         assertFalse(reservationIds.contains(reservationAfterPlacement.id))
 
-        val absenceIds =
-            db.read { it.createQuery { sql("SELECT id FROM absence") }.toSet<AbsenceId>() }
+        val absenceIds = db.read {
+            it.createQuery { sql("SELECT id FROM absence") }.toSet<AbsenceId>()
+        }
         assertTrue(absenceIds.contains(billableAbsenceYesterday.id))
         assertTrue(absenceIds.contains(nonbillableAbsenceYesterday.id))
         assertEquals(hasBillableAbsences, absenceIds.contains(billableAbsenceDuringPlacement.id))

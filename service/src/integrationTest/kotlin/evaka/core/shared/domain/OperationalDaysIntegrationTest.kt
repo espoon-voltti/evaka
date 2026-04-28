@@ -40,26 +40,24 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `daycare without shift care`() {
-        val daycareId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                tx.insert(
-                    DevDaycare(
-                        areaId = areaId,
-                        operationTimes =
-                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
-                        shiftCareOperationTimes = null,
-                        shiftCareOpenOnHolidays = false,
-                    )
+        val daycareId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            tx.insert(
+                DevDaycare(
+                    areaId = areaId,
+                    operationTimes =
+                        listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                    shiftCareOperationTimes = null,
+                    shiftCareOpenOnHolidays = false,
                 )
-            }
+            )
+        }
         val normalChild = db.transaction { tx -> insertChild(tx, daycareId, ShiftCareType.NONE) }
         val shiftCareChild = db.transaction { tx -> insertChild(tx, daycareId, ShiftCareType.FULL) }
 
-        val result =
-            db.transaction {
-                it.getOperationalDatesForChildren(month, setOf(normalChild, shiftCareChild))
-            }
+        val result = db.transaction {
+            it.getOperationalDatesForChildren(month, setOf(normalChild, shiftCareChild))
+        }
 
         // 20 mon-fri days during placement range minus two holidays
         assertEquals(18, result[normalChild]!!.size)
@@ -70,24 +68,25 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `every day with intermittent shift care is an operational day`() {
-        val daycareId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                tx.insert(
-                    DevDaycare(
-                        areaId = areaId,
-                        operationTimes =
-                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
-                        shiftCareOperationTimes = null,
-                        shiftCareOpenOnHolidays = false,
-                    )
+        val daycareId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            tx.insert(
+                DevDaycare(
+                    areaId = areaId,
+                    operationTimes =
+                        listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                    shiftCareOperationTimes = null,
+                    shiftCareOpenOnHolidays = false,
                 )
-            }
-        val shiftCareChild =
-            db.transaction { tx -> insertChild(tx, daycareId, ShiftCareType.INTERMITTENT) }
+            )
+        }
+        val shiftCareChild = db.transaction { tx ->
+            insertChild(tx, daycareId, ShiftCareType.INTERMITTENT)
+        }
 
-        val result =
-            db.transaction { it.getOperationalDatesForChildren(month, setOf(shiftCareChild)) }
+        val result = db.transaction {
+            it.getOperationalDatesForChildren(month, setOf(shiftCareChild))
+        }
 
         assertEquals(
             month.intersection(placementRange)!!.durationInDays().toInt(),
@@ -97,27 +96,25 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `daycare with shift care, not open on holidays`() {
-        val daycareId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                tx.insert(
-                    DevDaycare(
-                        areaId = areaId,
-                        operationTimes =
-                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
-                        shiftCareOperationTimes =
-                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, fullDay),
-                        shiftCareOpenOnHolidays = false,
-                    )
+        val daycareId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            tx.insert(
+                DevDaycare(
+                    areaId = areaId,
+                    operationTimes =
+                        listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                    shiftCareOperationTimes =
+                        listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, fullDay),
+                    shiftCareOpenOnHolidays = false,
                 )
-            }
+            )
+        }
         val normalChild = db.transaction { tx -> insertChild(tx, daycareId, ShiftCareType.NONE) }
         val shiftCareChild = db.transaction { tx -> insertChild(tx, daycareId, ShiftCareType.FULL) }
 
-        val result =
-            db.transaction {
-                it.getOperationalDatesForChildren(month, setOf(normalChild, shiftCareChild))
-            }
+        val result = db.transaction {
+            it.getOperationalDatesForChildren(month, setOf(normalChild, shiftCareChild))
+        }
 
         // 20 mon-fri days during placement range minus two holidays
         assertEquals(18, result[normalChild]!!.size)
@@ -128,27 +125,25 @@ class OperationalDaysIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `daycare with shift care, shift care also open on holidays`() {
-        val daycareId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                tx.insert(
-                    DevDaycare(
-                        areaId = areaId,
-                        operationTimes =
-                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
-                        shiftCareOperationTimes =
-                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, fullDay),
-                        shiftCareOpenOnHolidays = true,
-                    )
+        val daycareId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            tx.insert(
+                DevDaycare(
+                    areaId = areaId,
+                    operationTimes =
+                        listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                    shiftCareOperationTimes =
+                        listOf(fullDay, fullDay, fullDay, fullDay, fullDay, fullDay, fullDay),
+                    shiftCareOpenOnHolidays = true,
                 )
-            }
+            )
+        }
         val normalChild = db.transaction { tx -> insertChild(tx, daycareId, ShiftCareType.NONE) }
         val shiftCareChild = db.transaction { tx -> insertChild(tx, daycareId, ShiftCareType.FULL) }
 
-        val result =
-            db.transaction {
-                it.getOperationalDatesForChildren(month, setOf(normalChild, shiftCareChild))
-            }
+        val result = db.transaction {
+            it.getOperationalDatesForChildren(month, setOf(normalChild, shiftCareChild))
+        }
 
         // 20 mon-fri days during placement range minus two holidays
         assertEquals(18, result[normalChild]!!.size)

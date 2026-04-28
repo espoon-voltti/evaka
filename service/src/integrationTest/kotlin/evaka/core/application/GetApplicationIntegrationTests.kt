@@ -126,15 +126,14 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `application found returns 200`() {
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    childId = child1.id,
-                    guardianId = adult1.id,
-                    type = ApplicationType.DAYCARE,
-                    document = daycareForm,
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                childId = child1.id,
+                guardianId = adult1.id,
+                type = ApplicationType.DAYCARE,
+                document = daycareForm,
+            )
+        }
 
         val data = getApplication(applicationId)
 
@@ -164,31 +163,29 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `restricted child address is hidden`() {
-        val childId =
-            db.transaction {
-                it.insert(DevPerson(restrictedDetailsEnabled = true), DevPersonType.RAW_ROW)
-            }
+        val childId = db.transaction {
+            it.insert(DevPerson(restrictedDetailsEnabled = true), DevPersonType.RAW_ROW)
+        }
 
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    childId = childId,
-                    guardianId = adult1.id,
-                    type = ApplicationType.DAYCARE,
-                    document =
-                        daycareForm.copy(
-                            child =
-                                daycareForm.child.copy(
-                                    address =
-                                        evaka.core.application.persistence.daycare.Address(
-                                            street = "foo",
-                                            postalCode = "00200",
-                                            city = "Espoo",
-                                        )
-                                )
-                        ),
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                childId = childId,
+                guardianId = adult1.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    daycareForm.copy(
+                        child =
+                            daycareForm.child.copy(
+                                address =
+                                    evaka.core.application.persistence.daycare.Address(
+                                        street = "foo",
+                                        postalCode = "00200",
+                                        city = "Espoo",
+                                    )
+                            )
+                    ),
+            )
+        }
 
         val data = getApplication(applicationId)
         assertEquals(null, data.application.form.child.address)
@@ -197,31 +194,29 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `restricted guardian address is hidden`() {
-        val guardianId =
-            db.transaction {
-                it.insert(DevPerson(restrictedDetailsEnabled = true), DevPersonType.RAW_ROW)
-            }
+        val guardianId = db.transaction {
+            it.insert(DevPerson(restrictedDetailsEnabled = true), DevPersonType.RAW_ROW)
+        }
 
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    childId = child1.id,
-                    guardianId = guardianId,
-                    type = ApplicationType.DAYCARE,
-                    document =
-                        daycareForm.copy(
-                            guardian =
-                                daycareForm.guardian.copy(
-                                    address =
-                                        evaka.core.application.persistence.daycare.Address(
-                                            street = "foo",
-                                            postalCode = "00200",
-                                            city = "Espoo",
-                                        )
-                                )
-                        ),
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                childId = child1.id,
+                guardianId = guardianId,
+                type = ApplicationType.DAYCARE,
+                document =
+                    daycareForm.copy(
+                        guardian =
+                            daycareForm.guardian.copy(
+                                address =
+                                    evaka.core.application.persistence.daycare.Address(
+                                        street = "foo",
+                                        postalCode = "00200",
+                                        city = "Espoo",
+                                    )
+                            )
+                    ),
+            )
+        }
 
         val data = getApplication(applicationId)
         assertEquals(null, data.application.form.guardian.address)
@@ -341,36 +336,35 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `other guardian does not see sensitive info`() {
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                        childId = child1.id,
-                        guardianId = adult1.id,
-                        type = ApplicationType.DAYCARE,
-                        otherGuardians = setOf(adult2.id),
-                        allowOtherGuardianAccess = true,
-                        document =
-                            daycareForm.copy(
-                                apply =
-                                    daycareForm.apply.copy(
-                                        siblingBasis = true,
-                                        siblingSsn = "secret",
-                                        siblingName = "secret",
-                                        siblingUnit = "secret",
-                                    ),
-                                hasOtherChildren = true,
-                                otherChildren =
-                                    listOf(
-                                        OtherPerson(
-                                            firstName = "secret",
-                                            lastName = "secret",
-                                            socialSecurityNumber = "secret",
-                                        )
-                                    ),
-                            ),
-                    )
-                    .also { tx.insert(DevGuardian(guardianId = adult2.id, childId = child1.id)) }
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                    childId = child1.id,
+                    guardianId = adult1.id,
+                    type = ApplicationType.DAYCARE,
+                    otherGuardians = setOf(adult2.id),
+                    allowOtherGuardianAccess = true,
+                    document =
+                        daycareForm.copy(
+                            apply =
+                                daycareForm.apply.copy(
+                                    siblingBasis = true,
+                                    siblingSsn = "secret",
+                                    siblingName = "secret",
+                                    siblingUnit = "secret",
+                                ),
+                            hasOtherChildren = true,
+                            otherChildren =
+                                listOf(
+                                    OtherPerson(
+                                        firstName = "secret",
+                                        lastName = "secret",
+                                        socialSecurityNumber = "secret",
+                                    )
+                                ),
+                        ),
+                )
+                .also { tx.insert(DevGuardian(guardianId = adult2.id, childId = child1.id)) }
+        }
 
         val guardianResult =
             getApplication(
@@ -437,16 +431,15 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     }
 
     private fun createPlacementProposalWithAttachments(unitId: DaycareId): ApplicationId {
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    childId = child1.id,
-                    guardianId = citizen.id,
-                    status = ApplicationStatus.CREATED,
-                    type = ApplicationType.DAYCARE,
-                    document = daycareForm,
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                childId = child1.id,
+                guardianId = citizen.id,
+                status = ApplicationStatus.CREATED,
+                type = ApplicationType.DAYCARE,
+                document = daycareForm,
+            )
+        }
         attachmentsController.uploadApplicationAttachment(
             dbInstance(),
             applicationId,

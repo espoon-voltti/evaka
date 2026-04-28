@@ -143,27 +143,26 @@ val yearMonthArgumentFactory =
 val productKeyArgumentFactory =
     customArgumentFactory<ProductKey>(Types.VARCHAR) { CustomStringArgument(it.value) }
 
-val databaseEnumArgumentFactory =
-    ArgumentFactory.Preparable { type, _ ->
-        val erasedType = GenericTypes.getErasedType(type)
-        if (DatabaseEnum::class.java.isAssignableFrom(erasedType) && erasedType.isEnum) {
-            val sqlType = (erasedType.enumConstants[0] as DatabaseEnum).sqlType
-            Optional.of(
-                Function { nullableValue ->
-                    CustomObjectArgument(
-                        PGobject().apply {
-                            this.type = sqlType
-                            if (nullableValue != null) {
-                                this.value = nullableValue.toString()
-                            }
+val databaseEnumArgumentFactory = ArgumentFactory.Preparable { type, _ ->
+    val erasedType = GenericTypes.getErasedType(type)
+    if (DatabaseEnum::class.java.isAssignableFrom(erasedType) && erasedType.isEnum) {
+        val sqlType = (erasedType.enumConstants[0] as DatabaseEnum).sqlType
+        Optional.of(
+            Function { nullableValue ->
+                CustomObjectArgument(
+                    PGobject().apply {
+                        this.type = sqlType
+                        if (nullableValue != null) {
+                            this.value = nullableValue.toString()
                         }
-                    )
-                }
-            )
-        } else {
-            Optional.empty()
-        }
+                    }
+                )
+            }
+        )
+    } else {
+        Optional.empty()
     }
+}
 
 private class Parser(private var text: CharSequence) {
     fun peekChar(): Char? = this.text.firstOrNull()

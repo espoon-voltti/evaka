@@ -38,17 +38,16 @@ class AttachmentService(
         contentType: String,
         type: T? = null,
     ): AttachmentId {
-        val id =
-            dbc.transaction { tx ->
-                tx.insertAttachment(
-                    user,
-                    clock.now(),
-                    fileName,
-                    contentType,
-                    AttachmentParent.None,
-                    type = type,
-                )
-            }
+        val id = dbc.transaction { tx ->
+            tx.insertAttachment(
+                user,
+                clock.now(),
+                fileName,
+                contentType,
+                AttachmentParent.None,
+                type = type,
+            )
+        }
         dbc.close() // avoid hogging the connection while we access S3
         documentClient.upload(DocumentKey.Attachment(id), bytes, contentType)
         return id

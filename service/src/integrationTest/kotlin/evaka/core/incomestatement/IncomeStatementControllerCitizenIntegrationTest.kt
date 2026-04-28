@@ -826,11 +826,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
         id: IncomeStatementId,
         handlerId: EmployeeId,
         note: String,
-    ) =
-        db.transaction { tx ->
-            tx.execute {
-                sql(
-                    """
+    ) = db.transaction { tx ->
+        tx.execute {
+            sql(
+                """
 UPDATE income_statement
 SET handler_id = ${bind(handlerId)}, 
     handler_note = ${bind(note)}, 
@@ -838,9 +837,9 @@ SET handler_id = ${bind(handlerId)},
     handled_at = ${bind(clock.now())}
 WHERE id = ${bind(id)}
 """
-                )
-            }
+            )
         }
+    }
 
     @Test
     fun `employee attachments are not visible to citizen`() {

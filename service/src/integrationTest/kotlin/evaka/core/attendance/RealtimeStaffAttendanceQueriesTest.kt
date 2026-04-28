@@ -666,21 +666,20 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         val arrivalTime = clock.now()
         val arrivalAddedAt = arrivalTime.plusMinutes(2)
 
-        val attendance =
-            db.transaction { tx ->
-                tx.upsertStaffAttendance(
-                    attendanceId = null,
-                    employeeId = user.id,
-                    groupId = groupId,
-                    arrivalTime = arrivalTime,
-                    departureTime = null,
-                    occupancyCoefficient = BigDecimal.ZERO,
-                    type = StaffAttendanceType.PRESENT,
-                    departedAutomatically = false,
-                    modifiedAt = arrivalAddedAt,
-                    modifiedBy = user.evakaUserId,
-                )
-            }
+        val attendance = db.transaction { tx ->
+            tx.upsertStaffAttendance(
+                attendanceId = null,
+                employeeId = user.id,
+                groupId = groupId,
+                arrivalTime = arrivalTime,
+                departureTime = null,
+                occupancyCoefficient = BigDecimal.ZERO,
+                type = StaffAttendanceType.PRESENT,
+                departedAutomatically = false,
+                modifiedAt = arrivalAddedAt,
+                modifiedBy = user.evakaUserId,
+            )
+        }
 
         assertThat(
                 db.read { tx ->
@@ -709,21 +708,20 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         val departureTime = arrivalTime.plusHours(7)
         val addedAt = departureTime.plusMinutes(2)
 
-        val attendance =
-            db.transaction { tx ->
-                tx.upsertStaffAttendance(
-                    attendanceId = null,
-                    employeeId = user.id,
-                    groupId = groupId,
-                    arrivalTime = arrivalTime,
-                    departureTime = departureTime,
-                    occupancyCoefficient = BigDecimal.ZERO,
-                    type = StaffAttendanceType.PRESENT,
-                    departedAutomatically = false,
-                    modifiedAt = addedAt,
-                    modifiedBy = user.evakaUserId,
-                )
-            }
+        val attendance = db.transaction { tx ->
+            tx.upsertStaffAttendance(
+                attendanceId = null,
+                employeeId = user.id,
+                groupId = groupId,
+                arrivalTime = arrivalTime,
+                departureTime = departureTime,
+                occupancyCoefficient = BigDecimal.ZERO,
+                type = StaffAttendanceType.PRESENT,
+                departedAutomatically = false,
+                modifiedAt = addedAt,
+                modifiedBy = user.evakaUserId,
+            )
+        }
 
         assertThat(
                 db.read { tx ->
@@ -750,19 +748,18 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 12, 20), LocalTime.of(8, 0)))
         val arrivalTime = clock.now()
         val arrivalAddedAt = arrivalTime.plusMinutes(2)
-        val attendanceId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevStaffAttendance(
-                        employeeId = user.id,
-                        groupId = groupId,
-                        arrived = arrivalTime,
-                        departed = null,
-                        modifiedAt = arrivalAddedAt,
-                        modifiedBy = user.evakaUserId,
-                    )
+        val attendanceId = db.transaction { tx ->
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = user.id,
+                    groupId = groupId,
+                    arrived = arrivalTime,
+                    departed = null,
+                    modifiedAt = arrivalAddedAt,
+                    modifiedBy = user.evakaUserId,
                 )
-            }
+            )
+        }
 
         val arrivalModifiedAt = arrivalTime.plusHours(1)
         db.transaction { tx ->
@@ -805,19 +802,18 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 12, 20), LocalTime.of(8, 0)))
         val arrivalTime = clock.now()
         val arrivalAddedAt = arrivalTime.plusMinutes(2)
-        val attendanceId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevStaffAttendance(
-                        employeeId = user.id,
-                        groupId = groupId,
-                        arrived = arrivalTime,
-                        departed = null,
-                        modifiedAt = arrivalAddedAt,
-                        modifiedBy = user.evakaUserId,
-                    )
+        val attendanceId = db.transaction { tx ->
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = user.id,
+                    groupId = groupId,
+                    arrived = arrivalTime,
+                    departed = null,
+                    modifiedAt = arrivalAddedAt,
+                    modifiedBy = user.evakaUserId,
                 )
-            }
+            )
+        }
 
         val departureTime = arrivalTime.plusHours(7)
         val departureAddedAt = departureTime.plusMinutes(2)
@@ -870,19 +866,18 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         val arrival = clock.now()
         val departure = arrival.plusHours(7)
         val addedAt = arrival.plusMinutes(2)
-        val attendanceId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevStaffAttendance(
-                        employeeId = user.id,
-                        groupId = groupId,
-                        arrived = arrival,
-                        departed = departure,
-                        modifiedAt = addedAt,
-                        modifiedBy = user.evakaUserId,
-                    )
+        val attendanceId = db.transaction { tx ->
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = user.id,
+                    groupId = groupId,
+                    arrived = arrival,
+                    departed = departure,
+                    modifiedAt = addedAt,
+                    modifiedBy = user.evakaUserId,
                 )
-            }
+            )
+        }
 
         val departureModifiedAt = departure.plusMinutes(2)
         db.transaction { tx ->
@@ -924,19 +919,18 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
         val clock =
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 12, 20), LocalTime.of(8, 0)))
         val arrival = clock.now()
-        val attendanceId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevStaffAttendance(
-                        employeeId = user.id,
-                        groupId = groupId,
-                        arrived = arrival,
-                        departed = null,
-                        modifiedAt = null,
-                        modifiedBy = null,
-                    )
+        val attendanceId = db.transaction { tx ->
+            tx.insert(
+                DevStaffAttendance(
+                    employeeId = user.id,
+                    groupId = groupId,
+                    arrived = arrival,
+                    departed = null,
+                    modifiedAt = null,
+                    modifiedBy = null,
                 )
-            }
+            )
+        }
 
         val departure = arrival.plusHours(7)
         val departureModifiedAt = departure.plusMinutes(2)
@@ -1036,12 +1030,10 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
                 val groupId = tx.insert(DevDaycareGroup(daycareId = unitId))
                 unitId to groupId
             }
-        val user =
-            db.transaction { tx ->
-                val employeeId =
-                    tx.insert(DevEmployee(), unitRoles = mapOf(unitId to UserRole.STAFF))
-                AuthenticatedUser.Employee(employeeId, roles = emptySet())
-            }
+        val user = db.transaction { tx ->
+            val employeeId = tx.insert(DevEmployee(), unitRoles = mapOf(unitId to UserRole.STAFF))
+            AuthenticatedUser.Employee(employeeId, roles = emptySet())
+        }
         return Triple(unitId, groupId, user)
     }
 }

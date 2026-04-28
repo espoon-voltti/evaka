@@ -65,34 +65,33 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @Test
     fun `fetchApplicationSummaries returns service need information from applications correctly`() {
-        val applications =
-            db.read {
-                it.fetchApplicationSummaries(
-                    today = LocalDate.of(2022, 1, 1),
-                    params =
-                        SearchApplicationRequest(
-                            page = 1,
-                            sortBy = ApplicationSortColumn.STATUS,
-                            sortDir = ApplicationSortDirection.ASC,
-                            areas = emptyList(),
-                            units = emptyList(),
-                            basis = emptyList(),
-                            type = ApplicationTypeToggle.ALL,
-                            preschoolType = emptyList(),
-                            statuses = ApplicationStatusOption.entries.toList(),
-                            dateType = emptyList(),
-                            distinctions = emptyList(),
-                            periodStart = null,
-                            periodEnd = null,
-                            searchTerms = null,
-                            transferApplications = TransferApplicationFilter.ALL,
-                            voucherApplications = null,
-                        ),
-                    readWithAssistanceNeed = AccessControlFilter.PermitAll,
-                    readWithoutAssistanceNeed = AccessControlFilter.PermitAll,
-                    canReadServiceWorkerNotes = true,
-                )
-            }
+        val applications = db.read {
+            it.fetchApplicationSummaries(
+                today = LocalDate.of(2022, 1, 1),
+                params =
+                    SearchApplicationRequest(
+                        page = 1,
+                        sortBy = ApplicationSortColumn.STATUS,
+                        sortDir = ApplicationSortDirection.ASC,
+                        areas = emptyList(),
+                        units = emptyList(),
+                        basis = emptyList(),
+                        type = ApplicationTypeToggle.ALL,
+                        preschoolType = emptyList(),
+                        statuses = ApplicationStatusOption.entries.toList(),
+                        dateType = emptyList(),
+                        distinctions = emptyList(),
+                        periodStart = null,
+                        periodEnd = null,
+                        searchTerms = null,
+                        transferApplications = TransferApplicationFilter.ALL,
+                        voucherApplications = null,
+                    ),
+                readWithAssistanceNeed = AccessControlFilter.PermitAll,
+                readWithoutAssistanceNeed = AccessControlFilter.PermitAll,
+                canReadServiceWorkerNotes = true,
+            )
+        }
         val application = applications.data.single()
         assertEquals(form.serviceNeedOption, application.serviceNeed)
     }

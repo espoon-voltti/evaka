@@ -15,7 +15,9 @@ import org.postgresql.util.PSQLState
 
 class DaysInRangeSqlTest : PureJdbiTest(resetDbBeforeEach = false) {
     private fun daysInRange(@Language("SQL", prefix = "SELECT ") dateRangeSql: String): Int? =
-        db.read { it.createQuery { sql("SELECT days_in_range($dateRangeSql)") }.exactlyOne<Int?>() }
+        db.read {
+            it.createQuery { sql("SELECT days_in_range($dateRangeSql)") }.exactlyOne<Int?>()
+        }
 
     @Test
     fun `it works correctly with all endpoint inclusivity combinations`() {

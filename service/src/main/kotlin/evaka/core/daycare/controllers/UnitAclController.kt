@@ -347,68 +347,63 @@ class UnitAclController(
         if (update.groupIds == null && update.hasStaffOccupancyEffect == null) {
             throw BadRequest("Request is missing all update content")
         }
-        val occupancyCoefficientId =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
+        val occupancyCoefficientId = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_STAFF_GROUP_ACL,
+                    unitId,
+                )
+                validateIsPermanentEmployee(tx, employeeId)
+
+                val currentEndDate = tx.getDaycareAclEndDate(unitId, employeeId)
+                if (update.endDate != currentEndDate) {
+                    if (user.id == employeeId) {
+                        throw Forbidden("Cannot modify own end date")
+                    }
+                    val actualRole =
+                        tx.getDaycareAclRole(unitId, employeeId)
+                            ?: throw NotFound("ACL row not found")
+                    if (update.role != actualRole) {
+                        throw BadRequest("Role mismatch: expected $actualRole, got ${update.role}")
+                    }
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
-                        Action.Unit.UPDATE_STAFF_GROUP_ACL,
+                        update.updateAclAction,
                         unitId,
                     )
-                    validateIsPermanentEmployee(tx, employeeId)
+                    if (update.endDate?.isBefore(clock.today()) == true) {
+                        throw BadRequest("End date cannot be in the past")
+                    }
+                    tx.updateAclRowEndDate(unitId, employeeId, update.endDate)
+                }
 
-                    val currentEndDate = tx.getDaycareAclEndDate(unitId, employeeId)
-                    if (update.endDate != currentEndDate) {
-                        if (user.id == employeeId) {
-                            throw Forbidden("Cannot modify own end date")
-                        }
-                        val actualRole =
-                            tx.getDaycareAclRole(unitId, employeeId)
-                                ?: throw NotFound("ACL row not found")
-                        if (update.role != actualRole) {
-                            throw BadRequest(
-                                "Role mismatch: expected $actualRole, got ${update.role}"
-                            )
-                        }
+                update.groupIds?.let { tx.syncDaycareGroupAcl(unitId, employeeId, it, clock.now()) }
+
+                val occupancyCoefficientId =
+                    update.hasStaffOccupancyEffect?.let {
                         accessControl.requirePermissionFor(
                             tx,
                             user,
                             clock,
-                            update.updateAclAction,
+                            Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
                             unitId,
                         )
-                        if (update.endDate?.isBefore(clock.today()) == true) {
-                            throw BadRequest("End date cannot be in the past")
-                        }
-                        tx.updateAclRowEndDate(unitId, employeeId, update.endDate)
-                    }
-
-                    update.groupIds?.let {
-                        tx.syncDaycareGroupAcl(unitId, employeeId, it, clock.now())
-                    }
-
-                    val occupancyCoefficientId =
-                        update.hasStaffOccupancyEffect?.let {
-                            accessControl.requirePermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
-                                unitId,
+                        tx.upsertOccupancyCoefficient(
+                            OccupancyCoefficientUpsert(
+                                unitId = unitId,
+                                employeeId = employeeId,
+                                coefficient = parseCoefficientValue(it),
                             )
-                            tx.upsertOccupancyCoefficient(
-                                OccupancyCoefficientUpsert(
-                                    unitId = unitId,
-                                    employeeId = employeeId,
-                                    coefficient = parseCoefficientValue(it),
-                                )
-                            )
-                        }
-                    occupancyCoefficientId
-                }
+                        )
+                    }
+                occupancyCoefficientId
             }
+        }
         if (update.groupIds != null) {
             Audit.UnitGroupAclUpdate.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
         }
@@ -431,50 +426,43 @@ class UnitAclController(
         @RequestBody update: AclUpdate,
     ) {
         if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
-        val occupancyCoefficientId =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
+        val occupancyCoefficientId = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, update.roleAddAction, unitId)
+                validateIsPermanentEmployee(tx, employeeId)
+                tx.deleteScheduledDaycareAclRow(employeeId, unitId)
+                tx.insertDaycareAclRow(unitId, employeeId, update.role, update.endDate)
+                tx.upsertEmployeeMessageAccount(employeeId)
+                update.groupIds?.let {
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
-                        update.roleAddAction,
+                        Action.Unit.UPDATE_STAFF_GROUP_ACL,
                         unitId,
                     )
-                    validateIsPermanentEmployee(tx, employeeId)
-                    tx.deleteScheduledDaycareAclRow(employeeId, unitId)
-                    tx.insertDaycareAclRow(unitId, employeeId, update.role, update.endDate)
-                    tx.upsertEmployeeMessageAccount(employeeId)
-                    update.groupIds?.let {
+                    tx.syncDaycareGroupAcl(unitId, employeeId, it, clock.now())
+                }
+                val occupancyCoefficientId =
+                    update.hasStaffOccupancyEffect?.let {
                         accessControl.requirePermissionFor(
                             tx,
                             user,
                             clock,
-                            Action.Unit.UPDATE_STAFF_GROUP_ACL,
+                            Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
                             unitId,
                         )
-                        tx.syncDaycareGroupAcl(unitId, employeeId, it, clock.now())
+                        tx.upsertOccupancyCoefficient(
+                            OccupancyCoefficientUpsert(
+                                unitId = unitId,
+                                employeeId = employeeId,
+                                coefficient = parseCoefficientValue(it),
+                            )
+                        )
                     }
-                    val occupancyCoefficientId =
-                        update.hasStaffOccupancyEffect?.let {
-                            accessControl.requirePermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
-                                unitId,
-                            )
-                            tx.upsertOccupancyCoefficient(
-                                OccupancyCoefficientUpsert(
-                                    unitId = unitId,
-                                    employeeId = employeeId,
-                                    coefficient = parseCoefficientValue(it),
-                                )
-                            )
-                        }
-                    occupancyCoefficientId
-                }
+                occupancyCoefficientId
             }
+        }
         Audit.UnitAclCreate.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
         if (update.groupIds != null) {
             Audit.UnitGroupAclUpdate.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
@@ -494,19 +482,18 @@ class UnitAclController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
     ): List<Employee> {
-        val employees =
-            db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.READ_TEMPORARY_EMPLOYEE,
-                        unitId,
-                    )
-                    tx.getTemporaryEmployees(unitId).filter { it.active }
-                }
+        val employees = db.connect { dbc ->
+            dbc.read { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.READ_TEMPORARY_EMPLOYEE,
+                    unitId,
+                )
+                tx.getTemporaryEmployees(unitId).filter { it.active }
             }
+        }
         Audit.TemporaryEmployeesRead.log(meta = mapOf("unitId" to unitId))
         return employees
     }
@@ -519,32 +506,31 @@ class UnitAclController(
         @PathVariable unitId: DaycareId,
         @RequestBody input: TemporaryEmployee,
     ): EmployeeId {
-        val employeeId =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.CREATE_TEMPORARY_EMPLOYEE,
-                        unitId,
-                    )
-                    val employee =
-                        tx.createEmployee(
-                            NewEmployee(
-                                firstName = input.firstName,
-                                lastName = input.lastName,
-                                email = null,
-                                externalId = null,
-                                employeeNumber = null,
-                                temporaryInUnitId = unitId,
-                                active = true,
-                            )
+        val employeeId = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.CREATE_TEMPORARY_EMPLOYEE,
+                    unitId,
+                )
+                val employee =
+                    tx.createEmployee(
+                        NewEmployee(
+                            firstName = input.firstName,
+                            lastName = input.lastName,
+                            email = null,
+                            externalId = null,
+                            employeeNumber = null,
+                            temporaryInUnitId = unitId,
+                            active = true,
                         )
-                    setTemporaryEmployeeDetails(tx, unitId, employee.id, input, clock.now())
-                    employee.id
-                }
+                    )
+                setTemporaryEmployeeDetails(tx, unitId, employee.id, input, clock.now())
+                employee.id
             }
+        }
         Audit.TemporaryEmployeeCreate.log(
             targetId = AuditId(employeeId),
             meta = mapOf("unitId" to unitId),
@@ -560,41 +546,40 @@ class UnitAclController(
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
     ): TemporaryEmployee {
-        val employee =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    val employee = getTemporaryEmployee(tx, unitId, employeeId)
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.READ_TEMPORARY_EMPLOYEE,
-                        unitId,
-                    )
-                    val groupIds =
-                        tx.getDaycareAclRows(
-                                daycareId = unitId,
-                                includeStaffOccupancy = false,
-                                includeStaffEmployeeNumber = false,
-                            )
-                            .filter { it.employee.id == employee.id && it.role == UserRole.STAFF }
-                            .flatMap { it.groupIds }
-                            .toSet()
-                    val occupancyCoefficient =
-                        tx.getOccupancyCoefficientForEmployeeInUnit(
-                            employeeId = employeeId,
-                            unitId = unitId,
-                        ) ?: BigDecimal.ZERO
-                    val pinCode = tx.getPinCode(employee.id)
-                    TemporaryEmployee(
-                        firstName = employee.firstName,
-                        lastName = employee.lastName,
-                        groupIds = groupIds,
-                        hasStaffOccupancyEffect = occupancyCoefficient > BigDecimal.ZERO,
-                        pinCode = pinCode,
-                    )
-                }
+        val employee = db.connect { dbc ->
+            dbc.transaction { tx ->
+                val employee = getTemporaryEmployee(tx, unitId, employeeId)
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.READ_TEMPORARY_EMPLOYEE,
+                    unitId,
+                )
+                val groupIds =
+                    tx.getDaycareAclRows(
+                            daycareId = unitId,
+                            includeStaffOccupancy = false,
+                            includeStaffEmployeeNumber = false,
+                        )
+                        .filter { it.employee.id == employee.id && it.role == UserRole.STAFF }
+                        .flatMap { it.groupIds }
+                        .toSet()
+                val occupancyCoefficient =
+                    tx.getOccupancyCoefficientForEmployeeInUnit(
+                        employeeId = employeeId,
+                        unitId = unitId,
+                    ) ?: BigDecimal.ZERO
+                val pinCode = tx.getPinCode(employee.id)
+                TemporaryEmployee(
+                    firstName = employee.firstName,
+                    lastName = employee.lastName,
+                    groupIds = groupIds,
+                    hasStaffOccupancyEffect = occupancyCoefficient > BigDecimal.ZERO,
+                    pinCode = pinCode,
+                )
             }
+        }
         Audit.TemporaryEmployeeRead.log(
             targetId = AuditId(employeeId),
             meta = mapOf("unitId" to unitId),

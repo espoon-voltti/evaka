@@ -116,10 +116,9 @@ class TampereArchivalClient(
     private fun postRecord(collections: Collections, content: Map<String, Document>): Success? {
         val xml = marshal(collections)
         val metadata = xml.toRequestBody("application/xml".toMediaType())
-        val files =
-            content.mapValues { (_, document) ->
-                document.bytes.toRequestBody(document.contentType.toMediaType())
-            }
+        val files = content.mapValues { (_, document) ->
+            document.bytes.toRequestBody(document.contentType.toMediaType())
+        }
         val body =
             MultipartBody.Builder()
                 .setType(MultipartBody.FORM)

@@ -85,23 +85,22 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
             )
         }
 
-        val id =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Child.CREATE_DAILY_SERVICE_TIME,
-                        childId,
-                    )
-                    updateOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
-                    val id = tx.createChildDailyServiceTimes(childId, body)
-                    notifyOfServiceTimeChange(tx, today, childId, body.validityPeriod)
-                    generateAbsencesFromIrregularDailyServiceTimes(tx, now, childId)
-                    id
-                }
+        val id = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Child.CREATE_DAILY_SERVICE_TIME,
+                    childId,
+                )
+                updateOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
+                val id = tx.createChildDailyServiceTimes(childId, body)
+                notifyOfServiceTimeChange(tx, today, childId, body.validityPeriod)
+                generateAbsencesFromIrregularDailyServiceTimes(tx, now, childId)
+                id
             }
+        }
         Audit.ChildDailyServiceTimesEdit.log(targetId = AuditId(childId), objectId = AuditId(id))
     }
 

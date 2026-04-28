@@ -239,18 +239,17 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (rangeStart, rangeEnd) =
             expectedCaretakers.map { it.first }.let { it.minOrNull()!! to it.maxOrNull()!! }
 
-        val occupancies =
-            db.read { tx ->
-                tx.calculateDailyGroupOccupancyValues(
-                        today,
-                        FiniteDateRange(rangeStart, rangeEnd),
-                        OccupancyType.REALIZED,
-                        AccessControlFilter.PermitAll,
-                        unitIds = setOf(daycareInArea1.id),
-                    )
-                    .find { it.key.groupId == daycareGroup1 }!!
-                    .occupancies
-            }
+        val occupancies = db.read { tx ->
+            tx.calculateDailyGroupOccupancyValues(
+                    today,
+                    FiniteDateRange(rangeStart, rangeEnd),
+                    OccupancyType.REALIZED,
+                    AccessControlFilter.PermitAll,
+                    unitIds = setOf(daycareInArea1.id),
+                )
+                .find { it.key.groupId == daycareGroup1 }!!
+                .occupancies
+        }
 
         expectedCaretakers.forEach { (date, expectedValue) ->
             assertEquals(expectedValue.sum, occupancies[date]?.sum, message = "bad sum")

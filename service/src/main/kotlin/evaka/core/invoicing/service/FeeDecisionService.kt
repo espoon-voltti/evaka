@@ -112,8 +112,9 @@ class FeeDecisionService(
         val approvedAt = confirmDateTime
         val lastPossibleDecisionValidFromDate =
             today.plusDays(env.nrOfDaysFeeDecisionCanBeSentInAdvance)
-        val decisionsNotValidForConfirmation =
-            decisions.filter { it.validFrom > lastPossibleDecisionValidFromDate }
+        val decisionsNotValidForConfirmation = decisions.filter {
+            it.validFrom > lastPossibleDecisionValidFromDate
+        }
         if (decisionsNotValidForConfirmation.isNotEmpty()) {
             throw BadRequest(
                 "Some of the fee decisions are not valid yet",
@@ -155,15 +156,13 @@ class FeeDecisionService(
             }
         }
 
-        val remainingDecisions =
-            decisions.filter { fd ->
-                waitingForSending.none { wfd -> wfd.headOfFamilyId == fd.headOfFamilyId }
-            }
+        val remainingDecisions = decisions.filter { fd ->
+            waitingForSending.none { wfd -> wfd.headOfFamilyId == fd.headOfFamilyId }
+        }
 
-        val remainingConflicts =
-            conflicts.filter { conflict ->
-                waitingForSending.none { wfd -> wfd.headOfFamilyId == conflict.headOfFamilyId }
-            }
+        val remainingConflicts = conflicts.filter { conflict ->
+            waitingForSending.none { wfd -> wfd.headOfFamilyId == conflict.headOfFamilyId }
+        }
 
         val updatedConflicts =
             updateEndDatesOrAnnulConflictingDecisions(remainingDecisions, remainingConflicts)

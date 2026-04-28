@@ -64,63 +64,62 @@ internal class InvoiceConfigurationIT : AbstractTampereIntegrationTest() {
 
     @BeforeEach
     fun insertBaseData() {
-        val serviceNeedOption =
-            db.transaction { tx ->
-                tx.createUpdate {
-                        sql(
-                            """
+        val serviceNeedOption = db.transaction { tx ->
+            tx.createUpdate {
+                    sql(
+                        """
                 INSERT INTO holiday_period_questionnaire(id, type, absence_type, requires_strong_auth, active, title, description, description_link, condition_continuous_placement, period_options, period_option_label)
                 VALUES (:questionnaireId, 'FIXED_PERIOD', 'FREE_ABSENCE', false, daterange('2022-04-13', '2022-04-29'), '{"fi": "title"}', '{"fi": "description"}', '{"fi": "link"}', daterange('2021-08-31', '2022-06-30'), array[daterange('2022-06-06', '2022-07-31', '[]'), daterange('2022-06-13', '2022-08-07', '[]'), daterange('2022-06-20', '2022-08-14', '[]'), daterange('2022-06-27', '2022-08-21', '[]'), daterange('2022-07-04', '2022-08-28', '[]')], '{"fi": "period option label"}')
                 """
-                        )
-                    }
-                    .bind("questionnaireId", questionnaireId)
-                    .execute()
-                tx.insert(
-                    FeeThresholds(
-                        validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
-                        minIncomeThreshold2 = 210200,
-                        minIncomeThreshold3 = 271300,
-                        minIncomeThreshold4 = 308000,
-                        minIncomeThreshold5 = 344700,
-                        minIncomeThreshold6 = 381300,
-                        maxIncomeThreshold2 = 479900,
-                        maxIncomeThreshold3 = 541000,
-                        maxIncomeThreshold4 = 577700,
-                        maxIncomeThreshold5 = 614400,
-                        maxIncomeThreshold6 = 651000,
-                        incomeMultiplier2 = BigDecimal("0.1070"),
-                        incomeMultiplier3 = BigDecimal("0.1070"),
-                        incomeMultiplier4 = BigDecimal("0.1070"),
-                        incomeMultiplier5 = BigDecimal("0.1070"),
-                        incomeMultiplier6 = BigDecimal("0.1070"),
-                        incomeThresholdIncrease6Plus = 14200,
-                        siblingDiscount2 = BigDecimal("0.5"),
-                        siblingDiscount2Plus = BigDecimal("0.8"),
-                        maxFee = 28900,
-                        minFee = 2700,
-                        temporaryFee = 2900,
-                        temporaryFeePartDay = 1500,
-                        temporaryFeeSibling = 1500,
-                        temporaryFeeSiblingPartDay = 800,
                     )
+                }
+                .bind("questionnaireId", questionnaireId)
+                .execute()
+            tx.insert(
+                FeeThresholds(
+                    validDuring = DateRange(LocalDate.of(2000, 1, 1), null),
+                    minIncomeThreshold2 = 210200,
+                    minIncomeThreshold3 = 271300,
+                    minIncomeThreshold4 = 308000,
+                    minIncomeThreshold5 = 344700,
+                    minIncomeThreshold6 = 381300,
+                    maxIncomeThreshold2 = 479900,
+                    maxIncomeThreshold3 = 541000,
+                    maxIncomeThreshold4 = 577700,
+                    maxIncomeThreshold5 = 614400,
+                    maxIncomeThreshold6 = 651000,
+                    incomeMultiplier2 = BigDecimal("0.1070"),
+                    incomeMultiplier3 = BigDecimal("0.1070"),
+                    incomeMultiplier4 = BigDecimal("0.1070"),
+                    incomeMultiplier5 = BigDecimal("0.1070"),
+                    incomeMultiplier6 = BigDecimal("0.1070"),
+                    incomeThresholdIncrease6Plus = 14200,
+                    siblingDiscount2 = BigDecimal("0.5"),
+                    siblingDiscount2Plus = BigDecimal("0.8"),
+                    maxFee = 28900,
+                    minFee = 2700,
+                    temporaryFee = 2900,
+                    temporaryFeePartDay = 1500,
+                    temporaryFeeSibling = 1500,
+                    temporaryFeeSiblingPartDay = 800,
                 )
-                tx.insert(testDaycare)
-                tx.insert(testChild, DevPersonType.CHILD)
-                tx.insert(DevChild(testChild.id))
-                tx.insert(testAdult, DevPersonType.ADULT)
-                tx.insert(testParentship)
-                tx.createUpdate {
-                        sql(
-                            "INSERT INTO evaka_user (id, type, name) VALUES (:id, 'UNKNOWN', 'integration-test')"
-                        )
-                    }
-                    .bind("id", evakaUserId)
-                    .execute()
-                tx.findServiceNeedOptionById(
-                    ServiceNeedOptionId(UUID.fromString("86ef70a0-bf85-11eb-91e6-1fb57a101161"))
-                )!!
-            }
+            )
+            tx.insert(testDaycare)
+            tx.insert(testChild, DevPersonType.CHILD)
+            tx.insert(DevChild(testChild.id))
+            tx.insert(testAdult, DevPersonType.ADULT)
+            tx.insert(testParentship)
+            tx.createUpdate {
+                    sql(
+                        "INSERT INTO evaka_user (id, type, name) VALUES (:id, 'UNKNOWN', 'integration-test')"
+                    )
+                }
+                .bind("id", evakaUserId)
+                .execute()
+            tx.findServiceNeedOptionById(
+                ServiceNeedOptionId(UUID.fromString("86ef70a0-bf85-11eb-91e6-1fb57a101161"))
+            )!!
+        }
         val decisions =
             listOf(
                 createFeeDecisionFixture(

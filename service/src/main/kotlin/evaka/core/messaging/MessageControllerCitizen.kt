@@ -320,8 +320,9 @@ class MessageControllerCitizen(
                 val receivers =
                     dbc.read { it.getCitizenRecipients(today, senderId) }
                         .mapValues { entry -> entry.value.newMessage }
-                val validRecipients =
-                    receivers.mapValues { entry -> entry.value.map { it.account.id }.toSet() }
+                val validRecipients = receivers.mapValues { entry ->
+                    entry.value.map { it.account.id }.toSet()
+                }
                 val recipientTypes =
                     receivers.values.flatten().associate { it.account.id to it.account.type }
                 val allRecipientsValid =

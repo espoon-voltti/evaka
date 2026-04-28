@@ -807,150 +807,143 @@ class ArchivalSchedulingIntegrationTest : AbstractTampereIntegrationTest() {
         status: FeeDecisionStatus = FeeDecisionStatus.SENT,
         approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(today, LocalTime.of(0, 0)),
         documentKey: String? = "test-key",
-    ): FeeDecisionId =
-        db.transaction { tx ->
-            tx.insert(
-                DevFeeDecision(
-                    headOfFamilyId = guardian.id,
-                    status = status,
-                    validDuring = FiniteDateRange(today, today.plusMonths(1)),
-                    approvedAt = approvedAt,
-                    documentKey = documentKey,
-                )
+    ): FeeDecisionId = db.transaction { tx ->
+        tx.insert(
+            DevFeeDecision(
+                headOfFamilyId = guardian.id,
+                status = status,
+                validDuring = FiniteDateRange(today, today.plusMonths(1)),
+                approvedAt = approvedAt,
+                documentKey = documentKey,
             )
-        }
+        )
+    }
 
     private fun insertVoucherValueDecision(
         status: VoucherValueDecisionStatus = VoucherValueDecisionStatus.SENT,
         approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(today, LocalTime.of(0, 0)),
         documentKey: String? = "test-key",
-    ): VoucherValueDecisionId =
-        db.transaction { tx ->
-            tx.insert(
-                DevVoucherValueDecision(
-                    headOfFamilyId = guardian.id,
-                    status = status,
-                    validFrom = today,
-                    validTo = today.plusMonths(1),
-                    approvedAt = approvedAt,
-                    childId = childId,
-                    placementUnitId = daycare.id,
-                    documentKey = documentKey,
-                )
+    ): VoucherValueDecisionId = db.transaction { tx ->
+        tx.insert(
+            DevVoucherValueDecision(
+                headOfFamilyId = guardian.id,
+                status = status,
+                validFrom = today,
+                validTo = today.plusMonths(1),
+                approvedAt = approvedAt,
+                childId = childId,
+                placementUnitId = daycare.id,
+                documentKey = documentKey,
             )
-        }
+        )
+    }
 
     private fun insertDecisionData(
         status: DecisionStatus = DecisionStatus.ACCEPTED,
         type: DecisionType = DecisionType.DAYCARE,
         resolvedAt: HelsinkiDateTime = HelsinkiDateTime.of(today, LocalTime.of(0, 0)),
         documentKey: String? = "test-key",
-    ): DecisionId =
-        db.transaction { tx ->
-            val appId =
-                tx.insertTestApplication(
-                    type =
-                        when (type) {
-                            DecisionType.DAYCARE -> ApplicationType.DAYCARE
-                            DecisionType.PRESCHOOL -> ApplicationType.PRESCHOOL
-                            DecisionType.CLUB -> ApplicationType.CLUB
-                            DecisionType.PRESCHOOL_DAYCARE -> ApplicationType.DAYCARE
-                            DecisionType.PRESCHOOL_CLUB -> ApplicationType.CLUB
-                            DecisionType.PREPARATORY_EDUCATION -> ApplicationType.PRESCHOOL
-                            DecisionType.DAYCARE_PART_TIME -> ApplicationType.DAYCARE
-                        },
-                    status = ApplicationStatus.ACTIVE,
-                    guardianId = guardian.id,
-                    childId = childId,
-                    confidential = true,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            connectedDaycare = false,
-                            urgent = true,
-                            careDetails = CareDetails(assistanceNeeded = true),
-                            extendedCare = true,
-                            child = Child(dateOfBirth = null),
-                            guardian = Adult(),
-                            apply = Apply(preferredUnits = listOf(daycare.id)),
-                            preferredStartDate = LocalDate.of(2026, 1, 1),
-                        ),
-                )
-            tx.insertTestDecision(
-                TestDecision(
-                    applicationId = appId,
-                    unitId = daycare.id,
-                    status = status,
-                    createdBy = user.evakaUserId,
-                    type = type,
-                    startDate = today,
-                    endDate = today.plusMonths(1),
-                    resolved = resolvedAt,
-                    resolvedBy = user.evakaUserId.raw,
-                    documentKey = documentKey,
-                )
+    ): DecisionId = db.transaction { tx ->
+        val appId =
+            tx.insertTestApplication(
+                type =
+                    when (type) {
+                        DecisionType.DAYCARE -> ApplicationType.DAYCARE
+                        DecisionType.PRESCHOOL -> ApplicationType.PRESCHOOL
+                        DecisionType.CLUB -> ApplicationType.CLUB
+                        DecisionType.PRESCHOOL_DAYCARE -> ApplicationType.DAYCARE
+                        DecisionType.PRESCHOOL_CLUB -> ApplicationType.CLUB
+                        DecisionType.PREPARATORY_EDUCATION -> ApplicationType.PRESCHOOL
+                        DecisionType.DAYCARE_PART_TIME -> ApplicationType.DAYCARE
+                    },
+                status = ApplicationStatus.ACTIVE,
+                guardianId = guardian.id,
+                childId = childId,
+                confidential = true,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        connectedDaycare = false,
+                        urgent = true,
+                        careDetails = CareDetails(assistanceNeeded = true),
+                        extendedCare = true,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(daycare.id)),
+                        preferredStartDate = LocalDate.of(2026, 1, 1),
+                    ),
             )
-        }
+        tx.insertTestDecision(
+            TestDecision(
+                applicationId = appId,
+                unitId = daycare.id,
+                status = status,
+                createdBy = user.evakaUserId,
+                type = type,
+                startDate = today,
+                endDate = today.plusMonths(1),
+                resolved = resolvedAt,
+                resolvedBy = user.evakaUserId.raw,
+                documentKey = documentKey,
+            )
+        )
+    }
 
-    private fun getScheduledDecisionArchivalJobs(): List<AsyncJobInfo> =
-        db.read { tx ->
-            tx.createQuery {
-                    sql(
-                        """
+    private fun getScheduledDecisionArchivalJobs(): List<AsyncJobInfo> = db.read { tx ->
+        tx.createQuery {
+                sql(
+                    """
                         SELECT payload->>'decisionId' as document_id
                         FROM async_job
                         WHERE type = 'ArchiveDecision'
                         ORDER BY id
                         """
-                    )
-                }
-                .toList<AsyncJobInfo>()
-        }
+                )
+            }
+            .toList<AsyncJobInfo>()
+    }
 
-    private fun getScheduledFeeDecisionArchivalJobs(): List<AsyncJobInfo> =
-        db.read { tx ->
-            tx.createQuery {
-                    sql(
-                        """
+    private fun getScheduledFeeDecisionArchivalJobs(): List<AsyncJobInfo> = db.read { tx ->
+        tx.createQuery {
+                sql(
+                    """
                         SELECT payload->>'feeDecisionId' as document_id
                         FROM async_job
                         WHERE type = 'ArchiveFeeDecision'
                         ORDER BY id
                         """
-                    )
-                }
-                .toList<AsyncJobInfo>()
-        }
+                )
+            }
+            .toList<AsyncJobInfo>()
+    }
 
-    private fun getScheduledVoucherValueDecisionArchivalJobs(): List<AsyncJobInfo> =
-        db.read { tx ->
-            tx.createQuery {
-                    sql(
-                        """
+    private fun getScheduledVoucherValueDecisionArchivalJobs(): List<AsyncJobInfo> = db.read { tx ->
+        tx.createQuery {
+                sql(
+                    """
                         SELECT payload->>'voucherValueDecisionId' as document_id
                         FROM async_job
                         WHERE type = 'ArchiveVoucherValueDecision'
                         ORDER BY id
                         """
-                    )
-                }
-                .toList<AsyncJobInfo>()
-        }
+                )
+            }
+            .toList<AsyncJobInfo>()
+    }
 
-    private fun getScheduledChildDocumentArchivalJobs(): List<AsyncJobInfo> =
-        db.read { tx ->
-            tx.createQuery {
-                    sql(
-                        """
+    private fun getScheduledChildDocumentArchivalJobs(): List<AsyncJobInfo> = db.read { tx ->
+        tx.createQuery {
+                sql(
+                    """
                         SELECT payload->>'documentId' as document_id
                         FROM async_job
                         WHERE type = 'ArchiveChildDocument'
                         ORDER BY id
                         """
-                    )
-                }
-                .toList<AsyncJobInfo>()
-        }
+                )
+            }
+            .toList<AsyncJobInfo>()
+    }
 
     data class AsyncJobInfo(val documentId: String)
 }

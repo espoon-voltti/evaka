@@ -190,44 +190,40 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 8), LocalTime.of(12, 15)))
         val testData = initTestData(mockToday.today())
 
-        val childMId =
-            db.transaction { tx ->
-                val childMId =
-                    tx.insert(
-                        DevPerson(firstName = "Mark", lastName = "Multiple"),
-                        DevPersonType.CHILD,
-                    )
-                tx.insert(
-                    DevPlacement(
-                        type = PlacementType.DAYCARE,
-                        childId = childMId,
-                        unitId = testData.daycareBId,
-                        startDate = mockToday.today().minusMonths(1),
-                        endDate = mockToday.today().plusMonths(1),
-                    )
+        val childMId = db.transaction { tx ->
+            val childMId =
+                tx.insert(DevPerson(firstName = "Mark", lastName = "Multiple"), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = childMId,
+                    unitId = testData.daycareBId,
+                    startDate = mockToday.today().minusMonths(1),
+                    endDate = mockToday.today().plusMonths(1),
                 )
-                tx.insertTestChildAttendance(
-                    childMId,
-                    testData.daycareBId,
-                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(10, 30)),
-                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(11, 0)),
-                )
+            )
+            tx.insertTestChildAttendance(
+                childMId,
+                testData.daycareBId,
+                HelsinkiDateTime.of(mockToday.today(), LocalTime.of(10, 30)),
+                HelsinkiDateTime.of(mockToday.today(), LocalTime.of(11, 0)),
+            )
 
-                tx.insertTestChildAttendance(
-                    childMId,
-                    testData.daycareBId,
-                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(11, 30)),
-                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(12, 0)),
-                )
+            tx.insertTestChildAttendance(
+                childMId,
+                testData.daycareBId,
+                HelsinkiDateTime.of(mockToday.today(), LocalTime.of(11, 30)),
+                HelsinkiDateTime.of(mockToday.today(), LocalTime.of(12, 0)),
+            )
 
-                tx.insertTestChildAttendance(
-                    childMId,
-                    testData.daycareBId,
-                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(12, 0)),
-                    HelsinkiDateTime.of(mockToday.today(), LocalTime.of(12, 30)),
-                )
-                childMId
-            }
+            tx.insertTestChildAttendance(
+                childMId,
+                testData.daycareBId,
+                HelsinkiDateTime.of(mockToday.today(), LocalTime.of(12, 0)),
+                HelsinkiDateTime.of(mockToday.today(), LocalTime.of(12, 30)),
+            )
+            childMId
+        }
         val reportAll =
             familyDaycareMealReport.getFamilyDaycareMealReport(
                 dbInstance(),
@@ -295,47 +291,43 @@ internal class FamilyDaycareMealReportTest : FullApplicationTest(resetDbBeforeEa
         val testData = initTestData(examinationDay)
 
         val previousAttendanceDay = examinationDay.minusDays(3)
-        val childPId =
-            db.transaction { tx ->
-                val childPId =
-                    tx.insert(
-                        DevPerson(firstName = "Peter", lastName = "Placer"),
-                        DevPersonType.CHILD,
-                    )
-                tx.insert(
-                    DevPlacement(
-                        type = PlacementType.DAYCARE,
-                        childId = childPId,
-                        unitId = testData.daycareBId,
-                        startDate = previousAttendanceDay.minusMonths(1),
-                        endDate = previousAttendanceDay.plusDays(1),
-                    )
+        val childPId = db.transaction { tx ->
+            val childPId =
+                tx.insert(DevPerson(firstName = "Peter", lastName = "Placer"), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = childPId,
+                    unitId = testData.daycareBId,
+                    startDate = previousAttendanceDay.minusMonths(1),
+                    endDate = previousAttendanceDay.plusDays(1),
                 )
-                tx.insert(
-                    DevPlacement(
-                        type = PlacementType.DAYCARE,
-                        childId = childPId,
-                        unitId = testData.daycareBId,
-                        startDate = previousAttendanceDay.plusDays(2),
-                        endDate = examinationDay.plusMonths(1),
-                    )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = childPId,
+                    unitId = testData.daycareBId,
+                    startDate = previousAttendanceDay.plusDays(2),
+                    endDate = examinationDay.plusMonths(1),
                 )
-                tx.insertTestChildAttendance(
-                    childPId,
-                    testData.daycareBId,
-                    HelsinkiDateTime.of(previousAttendanceDay, LocalTime.of(8, 0)),
-                    HelsinkiDateTime.of(previousAttendanceDay, LocalTime.of(16, 0)),
-                )
+            )
+            tx.insertTestChildAttendance(
+                childPId,
+                testData.daycareBId,
+                HelsinkiDateTime.of(previousAttendanceDay, LocalTime.of(8, 0)),
+                HelsinkiDateTime.of(previousAttendanceDay, LocalTime.of(16, 0)),
+            )
 
-                tx.insertTestChildAttendance(
-                    childPId,
-                    testData.daycareBId,
-                    HelsinkiDateTime.of(examinationDay, LocalTime.of(8, 0)),
-                    HelsinkiDateTime.of(examinationDay, LocalTime.of(16, 0)),
-                )
+            tx.insertTestChildAttendance(
+                childPId,
+                testData.daycareBId,
+                HelsinkiDateTime.of(examinationDay, LocalTime.of(8, 0)),
+                HelsinkiDateTime.of(examinationDay, LocalTime.of(16, 0)),
+            )
 
-                childPId
-            }
+            childPId
+        }
         val reportAll =
             familyDaycareMealReport.getFamilyDaycareMealReport(
                 dbInstance(),

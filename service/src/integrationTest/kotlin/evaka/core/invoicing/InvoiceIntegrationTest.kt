@@ -693,19 +693,18 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         createDraftInvoices()
 
-        val drafts =
-            db.read { tx ->
-                tx.paginatedSearch(
-                    1,
-                    50,
-                    InvoiceSortParam.STATUS,
-                    SortDirection.DESC,
-                    InvoiceStatus.DRAFT,
-                    listOf(),
-                    null,
-                    listOf(),
-                )
-            }
+        val drafts = db.read { tx ->
+            tx.paginatedSearch(
+                1,
+                50,
+                InvoiceSortParam.STATUS,
+                SortDirection.DESC,
+                InvoiceStatus.DRAFT,
+                listOf(),
+                null,
+                listOf(),
+            )
+        }
 
         assertEquals(1, drafts.data.size)
     }
@@ -717,19 +716,18 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         createDraftInvoices()
 
-        val drafts =
-            db.read { tx ->
-                tx.paginatedSearch(
-                    1,
-                    50,
-                    InvoiceSortParam.STATUS,
-                    SortDirection.DESC,
-                    InvoiceStatus.DRAFT,
-                    listOf(),
-                    null,
-                    listOf(),
-                )
-            }
+        val drafts = db.read { tx ->
+            tx.paginatedSearch(
+                1,
+                50,
+                InvoiceSortParam.STATUS,
+                SortDirection.DESC,
+                InvoiceStatus.DRAFT,
+                listOf(),
+                null,
+                listOf(),
+            )
+        }
 
         assertEquals(2, drafts.data.size)
     }
@@ -743,19 +741,18 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             createDraftInvoices()
         }
 
-        val drafts =
-            db.read { tx ->
-                tx.paginatedSearch(
-                    1,
-                    50,
-                    InvoiceSortParam.STATUS,
-                    SortDirection.DESC,
-                    InvoiceStatus.DRAFT,
-                    listOf(),
-                    null,
-                    listOf(),
-                )
-            }
+        val drafts = db.read { tx ->
+            tx.paginatedSearch(
+                1,
+                50,
+                InvoiceSortParam.STATUS,
+                SortDirection.DESC,
+                InvoiceStatus.DRAFT,
+                listOf(),
+                null,
+                listOf(),
+            )
+        }
 
         assertEquals(1, drafts.data.size)
     }
@@ -827,30 +824,29 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(0, newDrafts.size)
     }
 
-    private fun insertDecisions(decisions: List<FeeDecision>) =
-        db.transaction { tx ->
-            tx.upsertFeeDecisions(decisions)
-            decisions.forEach { decision ->
-                decision.children.forEach { part ->
-                    tx.insert(
-                        DevPlacement(
-                            childId = part.child.id,
-                            unitId = part.placement.unitId,
-                            startDate = decision.validFrom,
-                            endDate = decision.validTo,
-                        )
+    private fun insertDecisions(decisions: List<FeeDecision>) = db.transaction { tx ->
+        tx.upsertFeeDecisions(decisions)
+        decisions.forEach { decision ->
+            decision.children.forEach { part ->
+                tx.insert(
+                    DevPlacement(
+                        childId = part.child.id,
+                        unitId = part.placement.unitId,
+                        startDate = decision.validFrom,
+                        endDate = decision.validTo,
                     )
-                    tx.insert(
-                        DevParentship(
-                            childId = part.child.id,
-                            headOfChildId = decision.headOfFamilyId,
-                            startDate = decision.validFrom,
-                            endDate = decision.validTo,
-                        )
+                )
+                tx.insert(
+                    DevParentship(
+                        childId = part.child.id,
+                        headOfChildId = decision.headOfFamilyId,
+                        startDate = decision.validFrom,
+                        endDate = decision.validTo,
                     )
-                }
+                )
             }
         }
+    }
 
     private fun createDraftInvoices() {
         invoiceController.createDraftInvoices(dbInstance(), employee.user, RealEvakaClock())
@@ -891,7 +887,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun getInvoicesWithStatus(status: InvoiceStatus): List<InvoiceDetailed> =
-        db.transaction { tx -> tx.searchInvoices(status) }
+        db.transaction { tx ->
+            tx.searchInvoices(status)
+        }
 
     private fun DevPerson.toPersonBasic() =
         PersonBasic(

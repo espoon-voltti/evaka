@@ -2935,21 +2935,20 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         data class QueryResult(val date: LocalDate, val count: Int)
 
         val expected = counts.map { QueryResult(it.first, it.second) }
-        val actual =
-            db.read {
-                it.createQuery {
-                        sql(
-                            """
+        val actual = db.read {
+            it.createQuery {
+                    sql(
+                        """
                             SELECT date, COUNT(category) as count
                             FROM absence WHERE
                             child_id = ${bind(childId)}
                             GROUP BY date
                             ORDER BY date
                             """
-                        )
-                    }
-                    .toList<QueryResult>()
-            }
+                    )
+                }
+                .toList<QueryResult>()
+        }
 
         assertEquals(expected, actual)
     }
@@ -2958,21 +2957,20 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
         data class QueryResult(val date: LocalDate, val count: Int)
 
         val expected = counts.map { QueryResult(it.first, it.second) }
-        val actual =
-            db.read {
-                it.createQuery {
-                        sql(
-                            """
+        val actual = db.read {
+            it.createQuery {
+                    sql(
+                        """
                             SELECT date, COUNT(*) as count
                             FROM attendance_reservation
                             WHERE child_id = ${bind(childId)}
                             GROUP BY date
                             ORDER BY date
                             """
-                        )
-                    }
-                    .toList<QueryResult>()
-            }
+                    )
+                }
+                .toList<QueryResult>()
+        }
         assertEquals(expected, actual)
     }
 }

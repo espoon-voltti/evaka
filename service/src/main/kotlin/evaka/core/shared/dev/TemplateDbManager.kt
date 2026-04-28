@@ -88,20 +88,19 @@ class TemplateDbManager(dataSource: DataSource, private val env: DatabaseEnv) {
 
         mgmt().connect { dbc ->
             // Drop stale databases from previous runs
-            val dbNames =
-                dbc.read { tx ->
-                    tx.createQuery {
-                            sql(
-                                """
+            val dbNames = dbc.read { tx ->
+                tx.createQuery {
+                        sql(
+                            """
 SELECT datname FROM pg_database
 WHERE
     datname LIKE ${bind("${baseDbName}_%")} AND
     datname != ${bind(templateDbName)}
 """
-                            )
-                        }
-                        .toList<String>()
-                }
+                        )
+                    }
+                    .toList<String>()
+            }
 
             for (name in dbNames) {
                 dbc.executeOutsideTransaction {
@@ -145,22 +144,21 @@ WHERE
         nextDb = preCreateNextDb()
     }
 
-    private fun preCreateNextDb(): CompletableFuture<PreparedDb> =
-        CompletableFuture.supplyAsync {
-            val count = counter.incrementAndGet()
-            val newDbName = "${baseDbName}_$count"
-            mgmt().connect { dbc ->
-                dbc.executeOutsideTransaction {
-                    sql("CREATE DATABASE \"$newDbName\" TEMPLATE \"$templateDbName\"")
-                }
+    private fun preCreateNextDb(): CompletableFuture<PreparedDb> = CompletableFuture.supplyAsync {
+        val count = counter.incrementAndGet()
+        val newDbName = "${baseDbName}_$count"
+        mgmt().connect { dbc ->
+            dbc.executeOutsideTransaction {
+                sql("CREATE DATABASE \"$newDbName\" TEMPLATE \"$templateDbName\"")
             }
-
-            // Create the pool now so connections are warm by the time reset needs it
-            val newJdbcUrl = "$baseJdbcUrl/$newDbName"
-            val pool = swappableDataSource.createPool(newJdbcUrl)
-            logger.info { "Pre-created database '$newDbName' with warm pool" }
-            PreparedDb(newDbName, pool)
         }
+
+        // Create the pool now so connections are warm by the time reset needs it
+        val newJdbcUrl = "$baseJdbcUrl/$newDbName"
+        val pool = swappableDataSource.createPool(newJdbcUrl)
+        logger.info { "Pre-created database '$newDbName' with warm pool" }
+        PreparedDb(newDbName, pool)
+    }
 
     private fun dropOldDb(oldPool: HikariDataSource, oldDbName: String) {
         try {

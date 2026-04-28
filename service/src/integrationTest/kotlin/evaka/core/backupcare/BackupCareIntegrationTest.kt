@@ -122,8 +122,9 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     @Test
     fun testChildBackupCare() {
         val groupName = "Test Group"
-        val groupId =
-            db.transaction { it.insert(DevDaycareGroup(daycareId = daycare.id, name = groupName)) }
+        val groupId = db.transaction {
+            it.insert(DevDaycareGroup(daycareId = daycare.id, name = groupName))
+        }
         val id = createBackupCareAndAssert(groupId = groupId)
         val backupCares =
             backupCareController
@@ -185,20 +186,18 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
     @Test
     fun `backup care must be created for unit that is open the whole period`() {
-        val otherArea =
-            db.transaction { tx ->
-                tx.insert(DevCareArea(name = "Other Area", shortName = "other_area"))
-            }
-        val daycareId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevDaycare(
-                        openingDate = backupCareStart,
-                        closingDate = backupCareEnd,
-                        areaId = otherArea,
-                    )
+        val otherArea = db.transaction { tx ->
+            tx.insert(DevCareArea(name = "Other Area", shortName = "other_area"))
+        }
+        val daycareId = db.transaction { tx ->
+            tx.insert(
+                DevDaycare(
+                    openingDate = backupCareStart,
+                    closingDate = backupCareEnd,
+                    areaId = otherArea,
                 )
-            }
+            )
+        }
 
         // Backup care starts before daycare opening
         assertThrows<BadRequest> {

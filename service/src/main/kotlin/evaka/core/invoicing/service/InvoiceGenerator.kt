@@ -172,25 +172,24 @@ class InvoiceGenerator(
         val sentInvoices =
             tx.getSentInvoicesOfMonth(month, headOfFamilyId).associateBy { it.headOfFamily.id }
 
-        val newOrReplacedInvoices =
-            invoicesWithCorrections.mapNotNull { invoice ->
-                val sentInvoice = sentInvoices[invoice.headOfFamily]
-                if (sentInvoice == null) {
-                    // No corresponding sent invoice -> add a new replacement draft. Revision number
-                    // starts from 1 to distinguish replacement invoices (manual processing) from
-                    // normal invoices (sent through invoice integration).
-                    invoice.copy(revisionNumber = 1)
-                } else if (invoice.totalPrice != sentInvoice.totalPrice) {
-                    // The corresponding sent invoice has a different price -> replace it
-                    invoice.copy(
-                        replacedInvoiceId = sentInvoice.id,
-                        revisionNumber = sentInvoice.revisionNumber + 1,
-                    )
-                } else {
-                    // Price didn't change, no need to replace
-                    null
-                }
+        val newOrReplacedInvoices = invoicesWithCorrections.mapNotNull { invoice ->
+            val sentInvoice = sentInvoices[invoice.headOfFamily]
+            if (sentInvoice == null) {
+                // No corresponding sent invoice -> add a new replacement draft. Revision number
+                // starts from 1 to distinguish replacement invoices (manual processing) from
+                // normal invoices (sent through invoice integration).
+                invoice.copy(revisionNumber = 1)
+            } else if (invoice.totalPrice != sentInvoice.totalPrice) {
+                // The corresponding sent invoice has a different price -> replace it
+                invoice.copy(
+                    replacedInvoiceId = sentInvoice.id,
+                    revisionNumber = sentInvoice.revisionNumber + 1,
+                )
+            } else {
+                // Price didn't change, no need to replace
+                null
             }
+        }
         val zeroInvoices =
             // Sent non-zero invoices that don't have a corresponding draft invoice -> add a
             // zero-priced replacement draft
@@ -375,18 +374,17 @@ class InvoiceGenerator(
                 val partnerAsHead = childrenByHead[partnerId] ?: emptyMap()
                 if (partnerAsGuardian.isEmpty() && partnerAsHead.isEmpty()) return@mapNotNull null
 
-                val hasCommonChildrenOnAllDecisions =
-                    decisions.all { decision ->
-                        decision.children.any {
-                            if (partnerAsGuardian.contains(it.child.id)) {
-                                true
-                            } else {
-                                val partnerAsHeadRange = partnerAsHead[it.child.id]
-                                partnerAsHeadRange != null &&
-                                    partnerAsHeadRange.overlaps(decision.validDuring)
-                            }
+                val hasCommonChildrenOnAllDecisions = decisions.all { decision ->
+                    decision.children.any {
+                        if (partnerAsGuardian.contains(it.child.id)) {
+                            true
+                        } else {
+                            val partnerAsHeadRange = partnerAsHead[it.child.id]
+                            partnerAsHeadRange != null &&
+                                partnerAsHeadRange.overlaps(decision.validDuring)
                         }
                     }
+                }
 
                 if (hasCommonChildrenOnAllDecisions) {
                     headOfFamilyId to partnerId
@@ -485,10 +483,9 @@ class InvoiceGenerator(
                 }
                 .filter { it.rows.isNotEmpty() }
 
-        val invoicesWithoutCorrections =
-            invoices.filterNot { invoice ->
-                invoicesWithCorrections.any { it.headOfFamily == invoice.headOfFamily }
-            }
+        val invoicesWithoutCorrections = invoices.filterNot { invoice ->
+            invoicesWithCorrections.any { it.headOfFamily == invoice.headOfFamily }
+        }
 
         return invoicesWithCorrections + invoicesWithoutCorrections
     }
@@ -603,12 +600,11 @@ private fun Database.Read.getInvoiceableTemporaryPlacements(
 
     return familyCompositions
         .map { (headOfFamily, families) ->
-            val relevantPlacements =
-                families.flatMap { (period, children) ->
-                    children.flatMap { child ->
-                        (placements[child.id] ?: listOf()).filter { it.first.overlaps(period) }
-                    }
+            val relevantPlacements = families.flatMap { (period, children) ->
+                children.flatMap { child ->
+                    (placements[child.id] ?: listOf()).filter { it.first.overlaps(period) }
                 }
+            }
 
             val allPeriods =
                 families.map { (period, _) -> period } + relevantPlacements.map { it.first }

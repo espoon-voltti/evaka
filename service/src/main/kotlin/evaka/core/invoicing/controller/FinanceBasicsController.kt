@@ -69,40 +69,38 @@ class FinanceBasicsController(private val accessControl: AccessControl) {
         @RequestBody body: FeeThresholds,
     ) {
         validateFeeThresholds(body)
-        val id =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Global.CREATE_FEE_THRESHOLDS,
-                    )
+        val id = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Global.CREATE_FEE_THRESHOLDS,
+                )
 
-                    val latest =
-                        tx.getFeeThresholds().maxByOrNull { it.thresholds.validDuring.start }
+                val latest = tx.getFeeThresholds().maxByOrNull { it.thresholds.validDuring.start }
 
-                    if (latest != null) {
-                        if (
-                            latest.thresholds.validDuring.end != null &&
-                                latest.thresholds.validDuring.overlaps(body.validDuring)
-                        ) {
-                            throwDateOverlapEx()
-                        }
-
-                        if (latest.thresholds.validDuring.end == null) {
-                            tx.updateFeeThresholdsValidity(
-                                latest.id,
-                                latest.thresholds.validDuring.copy(
-                                    end = body.validDuring.start.minusDays(1)
-                                ),
-                            )
-                        }
+                if (latest != null) {
+                    if (
+                        latest.thresholds.validDuring.end != null &&
+                            latest.thresholds.validDuring.overlaps(body.validDuring)
+                    ) {
+                        throwDateOverlapEx()
                     }
 
-                    mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
+                    if (latest.thresholds.validDuring.end == null) {
+                        tx.updateFeeThresholdsValidity(
+                            latest.id,
+                            latest.thresholds.validDuring.copy(
+                                end = body.validDuring.start.minusDays(1)
+                            ),
+                        )
+                    }
                 }
+
+                mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
             }
+        }
         Audit.FinanceBasicsFeeThresholdsCreate.log(targetId = AuditId(id))
     }
 
@@ -152,51 +150,44 @@ class FinanceBasicsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: ServiceNeedOptionVoucherValueRange,
     ) {
-        val id =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Global.CREATE_VOUCHER_VALUE,
-                    )
+        val id = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Global.CREATE_VOUCHER_VALUE,
+                )
 
-                    val serviceNeedOption =
-                        tx.getServiceNeedOptions().firstOrNull { it.id == body.serviceNeedOptionId }
-                    if (serviceNeedOption == null)
-                        throw BadRequest("Invalid service need option ID")
+                val serviceNeedOption =
+                    tx.getServiceNeedOptions().firstOrNull { it.id == body.serviceNeedOptionId }
+                if (serviceNeedOption == null) throw BadRequest("Invalid service need option ID")
 
-                    val currentVoucherValues = tx.getVoucherValuesByServiceNeedOption()
+                val currentVoucherValues = tx.getVoucherValuesByServiceNeedOption()
 
-                    currentVoucherValues
-                        .getOrDefault(body.serviceNeedOptionId, emptyList())
-                        .maxByOrNull { it.voucherValues.range.start }
-                        ?.let { latest ->
-                            if (!body.range.start.isAfter(latest.voucherValues.range.start))
-                                throw BadRequest(
-                                    "New voucher value range must start after existing ones"
-                                )
-
-                            if (
-                                latest.voucherValues.range.end != null &&
-                                    body.range.start != latest.voucherValues.range.end.plusDays(1)
+                currentVoucherValues
+                    .getOrDefault(body.serviceNeedOptionId, emptyList())
+                    .maxByOrNull { it.voucherValues.range.start }
+                    ?.let { latest ->
+                        if (!body.range.start.isAfter(latest.voucherValues.range.start))
+                            throw BadRequest(
+                                "New voucher value range must start after existing ones"
                             )
-                                throw BadRequest(
-                                    "New voucher value can't leave a gap in validities"
-                                )
 
-                            if (latest.voucherValues.range.overlaps(body.range)) {
-                                tx.updateVoucherValueEndDate(
-                                    latest.id,
-                                    body.range.start.minusDays(1),
-                                )
-                            }
+                        if (
+                            latest.voucherValues.range.end != null &&
+                                body.range.start != latest.voucherValues.range.end.plusDays(1)
+                        )
+                            throw BadRequest("New voucher value can't leave a gap in validities")
+
+                        if (latest.voucherValues.range.overlaps(body.range)) {
+                            tx.updateVoucherValueEndDate(latest.id, body.range.start.minusDays(1))
                         }
+                    }
 
-                    tx.insertNewVoucherValue(body)
-                }
+                tx.insertNewVoucherValue(body)
             }
+        }
         Audit.FinanceBasicsVoucherValueCreate.log(targetId = AuditId(id))
     }
 

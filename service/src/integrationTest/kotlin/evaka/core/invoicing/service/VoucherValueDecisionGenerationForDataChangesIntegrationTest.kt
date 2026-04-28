@@ -379,17 +379,16 @@ class VoucherValueDecisionGenerationForDataChangesIntegrationTest :
         assertDrafts(emptyList())
 
         // non identical drafts are not ignored
-        val secondParentshipId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevParentship(
-                        childId = child2.id,
-                        headOfChildId = adult.id,
-                        startDate = originalRange.start.minusYears(1),
-                        endDate = originalRange.end.plusYears(1),
-                    )
+        val secondParentshipId = db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = child2.id,
+                    headOfChildId = adult.id,
+                    startDate = originalRange.start.minusYears(1),
+                    endDate = originalRange.end.plusYears(1),
                 )
-            }
+            )
+        }
         generate()
         assertDrafts(listOf(dateRange(10, 25) to false))
 

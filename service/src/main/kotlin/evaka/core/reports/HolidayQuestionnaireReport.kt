@@ -177,12 +177,12 @@ class HolidayQuestionnaireReport(
 
                     questionnaireDays.map { h ->
                         val date = h.date
-                        val dailyDirectlyPlacedData =
-                            directlyPlacedChildData.filter { sn ->
-                                sn.validity.includes(date) &&
-                                    (backupCareOutgoingDataByChild[sn.child.id] ?: emptyList())
-                                        .none { it.range.includes(date) }
-                            }
+                        val dailyDirectlyPlacedData = directlyPlacedChildData.filter { sn ->
+                            sn.validity.includes(date) &&
+                                (backupCareOutgoingDataByChild[sn.child.id] ?: emptyList()).none {
+                                    it.range.includes(date)
+                                }
+                        }
                         val dailyBackupPlacedData =
                             incomingBackupCaresByChild.mapNotNull { (key, value) ->
                                 val bc = value.getValue(date) ?: return@mapNotNull null
@@ -205,19 +205,17 @@ class HolidayQuestionnaireReport(
                             dailyPlacedData.partition {
                                 questionnaireAnswersByChild.containsKey(it.child.id)
                             }
-                        val present =
-                            answered.filter {
-                                !dailyQuestionnaireAnswersByChild.containsKey(it.child.id)
-                            }
+                        val present = answered.filter {
+                            !dailyQuestionnaireAnswersByChild.containsKey(it.child.id)
+                        }
 
-                        val dailyOccupancyCoefficient =
-                            present.sumOf {
-                                val ageAtDate = Period.between(it.child.dateOfBirth, date).years
-                                val assistanceFactor =
-                                    assistanceFactorsByChild[it.child.id]?.getValue(date) ?: 1.0
-                                if (ageAtDate < 3) it.coefficientUnder3y * assistanceFactor
-                                else it.coefficient * assistanceFactor
-                            }
+                        val dailyOccupancyCoefficient = present.sumOf {
+                            val ageAtDate = Period.between(it.child.dateOfBirth, date).years
+                            val assistanceFactor =
+                                assistanceFactorsByChild[it.child.id]?.getValue(date) ?: 1.0
+                            if (ageAtDate < 3) it.coefficientUnder3y * assistanceFactor
+                            else it.coefficient * assistanceFactor
+                        }
                         val staffNeedAtDate =
                             ceil(
                                     dailyOccupancyCoefficient.div(

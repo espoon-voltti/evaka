@@ -417,16 +417,15 @@ class MessageController(
                     dbc.read { it.getServiceWorkerAccountId() }
                         ?: throw NotFound("No account found")
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                val thread =
-                    dbc.read {
-                        it.getMessageThreadByApplicationId(
-                            accountId,
-                            applicationId,
-                            featureConfig.municipalMessageAccountName,
-                            featureConfig.serviceWorkerMessageAccountName,
-                            featureConfig.financeMessageAccountName,
-                        )
-                    }
+                val thread = dbc.read {
+                    it.getMessageThreadByApplicationId(
+                        accountId,
+                        applicationId,
+                        featureConfig.municipalMessageAccountName,
+                        featureConfig.serviceWorkerMessageAccountName,
+                        featureConfig.financeMessageAccountName,
+                    )
+                }
                 accountId to thread
             }
             .let { (accountId, thread) ->
@@ -448,33 +447,31 @@ class MessageController(
                 val accountId =
                     dbc.read { it.getFinanceAccountId() } ?: throw NotFound("No account found")
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                val threads =
-                    dbc.read {
-                        val personAccountId = it.getCitizenMessageAccount(personId)
-                        val filter =
-                            accessControl.requireAuthorizationFilter(
-                                it,
-                                user,
-                                clock,
-                                Action.MessageAccount.ACCESS,
+                val threads = dbc.read {
+                    val personAccountId = it.getCitizenMessageAccount(personId)
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                        )
+                    val folderIds = listOf(null) + it.getFolders(filter).map { folder -> folder.id }
+                    folderIds.flatMap { folderId ->
+                        it.getThreads(
+                                accountId,
+                                pageSize = 200,
+                                page = 1,
+                                featureConfig.municipalMessageAccountName,
+                                featureConfig.serviceWorkerMessageAccountName,
+                                featureConfig.financeMessageAccountName,
+                                personAccountId = personAccountId,
+                                messagesSortDirection = SortDirection.DESC,
+                                folderId = folderId,
                             )
-                        val folderIds =
-                            listOf(null) + it.getFolders(filter).map { folder -> folder.id }
-                        folderIds.flatMap { folderId ->
-                            it.getThreads(
-                                    accountId,
-                                    pageSize = 200,
-                                    page = 1,
-                                    featureConfig.municipalMessageAccountName,
-                                    featureConfig.serviceWorkerMessageAccountName,
-                                    featureConfig.financeMessageAccountName,
-                                    personAccountId = personAccountId,
-                                    messagesSortDirection = SortDirection.DESC,
-                                    folderId = folderId,
-                                )
-                                .data
-                        }
+                            .data
                     }
+                }
                 accountId to threads
             }
             .let { (accountId, threads) ->
@@ -1003,16 +1000,15 @@ class MessageController(
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
-        val threadId =
-            db.connect { dbc ->
-                requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.read {
-                    it.createQuery {
-                            sql("""SELECT thread_id FROM message WHERE id = ${bind(messageId)}""")
-                        }
-                        .exactlyOneOrNull<MessageThreadId>()
-                } ?: throw NotFound("Message not found in the specified account")
-            }
+        val threadId = db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.read {
+                it.createQuery {
+                        sql("""SELECT thread_id FROM message WHERE id = ${bind(messageId)}""")
+                    }
+                    .exactlyOneOrNull<MessageThreadId>()
+            } ?: throw NotFound("Message not found in the specified account")
+        }
         return replyToThread(db, user, clock, accountId, threadId, body)
     }
 

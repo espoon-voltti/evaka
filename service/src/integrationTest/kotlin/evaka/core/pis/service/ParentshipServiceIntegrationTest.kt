@@ -59,10 +59,9 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
             assertEquals(2, headsByChild.size)
 
-            val childByHeads =
-                headsByChild.map {
-                    tx.getParentships(headOfChildId = it.headOfChildId, childId = null)
-                }
+            val childByHeads = headsByChild.map {
+                tx.getParentships(headOfChildId = it.headOfChildId, childId = null)
+            }
 
             assertEquals(2, childByHeads.size)
         }

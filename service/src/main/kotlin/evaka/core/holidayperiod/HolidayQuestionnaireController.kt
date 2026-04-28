@@ -81,30 +81,29 @@ class HolidayQuestionnaireController(
         clock: EvakaClock,
         @RequestBody body: QuestionnaireBody,
     ) {
-        val id =
-            db.connect { dbc ->
-                dbc.transaction {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.CREATE_HOLIDAY_QUESTIONNAIRE,
-                    )
-                    try {
-                        when (body) {
-                            is QuestionnaireBody.FixedPeriodQuestionnaireBody -> {
-                                it.createFixedPeriodQuestionnaire(body)
-                            }
-
-                            is QuestionnaireBody.OpenRangesQuestionnaireBody -> {
-                                it.createOpenRangesQuestionnaire(body)
-                            }
+        val id = db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Global.CREATE_HOLIDAY_QUESTIONNAIRE,
+                )
+                try {
+                    when (body) {
+                        is QuestionnaireBody.FixedPeriodQuestionnaireBody -> {
+                            it.createFixedPeriodQuestionnaire(body)
                         }
-                    } catch (e: Exception) {
-                        throw mapPSQLException(e)
+
+                        is QuestionnaireBody.OpenRangesQuestionnaireBody -> {
+                            it.createOpenRangesQuestionnaire(body)
+                        }
                     }
+                } catch (e: Exception) {
+                    throw mapPSQLException(e)
                 }
             }
+        }
         Audit.HolidayQuestionnaireCreate.log(targetId = AuditId(id))
     }
 

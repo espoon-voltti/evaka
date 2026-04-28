@@ -858,28 +858,26 @@ class AromiControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `forbidden director`() {
-        val director =
-            db.transaction { tx ->
-                val employee = DevEmployee(roles = setOf(UserRole.DIRECTOR))
-                tx.insert(employee)
-                employee.user
-            }
+        val director = db.transaction { tx ->
+            val employee = DevEmployee(roles = setOf(UserRole.DIRECTOR))
+            tx.insert(employee)
+            employee.user
+        }
 
         assertThrows<Forbidden> { getMealOrders(director, FiniteDateRange.ofYear(2024)) }
     }
 
     @Test
     fun `forbidden staff`() {
-        val staff =
-            db.transaction { tx ->
-                val employee = DevEmployee()
-                tx.insert(
-                    employee,
-                    unitRoles = mapOf(daycare1.id to UserRole.STAFF),
-                    groupAcl = mapOf(daycare1.id to listOf(group1.id, group2.id)),
-                )
-                employee.user
-            }
+        val staff = db.transaction { tx ->
+            val employee = DevEmployee()
+            tx.insert(
+                employee,
+                unitRoles = mapOf(daycare1.id to UserRole.STAFF),
+                groupAcl = mapOf(daycare1.id to listOf(group1.id, group2.id)),
+            )
+            employee.user
+        }
 
         assertThrows<Forbidden> { getMealOrders(staff, FiniteDateRange.ofYear(2024)) }
     }

@@ -84,12 +84,11 @@ class DraftInvoiceGenerator(
         return headsOfFamily.mapNotNull { headOfFamilyId ->
             try {
                 val headOfFamilyDecisions = invoiceInput.decisions[headOfFamilyId] ?: listOf()
-                val feeDecisionPlacements =
-                    headOfFamilyDecisions.flatMap { decision ->
-                        decision.children.flatMap { child ->
-                            invoiceInput.permanentPlacements[child.child.id] ?: listOf()
-                        }
+                val feeDecisionPlacements = headOfFamilyDecisions.flatMap { decision ->
+                    decision.children.flatMap { child ->
+                        invoiceInput.permanentPlacements[child.child.id] ?: listOf()
                     }
+                }
 
                 tracer.withSpan(
                     "generateDraftInvoice",
@@ -636,16 +635,15 @@ class DraftInvoiceGenerator(
         }
 
         fun getInvoiceMaxFee(childId: ChildId, capMaxFeeAtDefault: Boolean): Int {
-            val childDecisions =
-                decisions.mapNotNull { decision ->
-                    val childDecisionPart = decision.children.find { it.child.id == childId }
-                    val dateRange = invoiceInput.invoicePeriod.intersection(decision.validDuring)
-                    if (dateRange != null && childDecisionPart != null) {
-                        dateRange to childDecisionPart
-                    } else {
-                        null
-                    }
+            val childDecisions = decisions.mapNotNull { decision ->
+                val childDecisionPart = decision.children.find { it.child.id == childId }
+                val dateRange = invoiceInput.invoicePeriod.intersection(decision.validDuring)
+                if (dateRange != null && childDecisionPart != null) {
+                    dateRange to childDecisionPart
+                } else {
+                    null
                 }
+            }
 
             val getDecisionPartMaxFee: (FeeDecisionChild) -> Int = { part ->
                 val maxFeeBeforeFeeAlterations = calculateMaxFee(part.baseFee, part.siblingDiscount)
@@ -668,17 +666,16 @@ class DraftInvoiceGenerator(
                 (feeCoefficient * BigDecimal(discountedFee)).toInt()
             }
 
-            val childDecisionMaxFees =
-                childDecisions.map { (dateRange, decisionPart) ->
-                    val decisionPartMaxFee = getDecisionPartMaxFee(decisionPart)
-                    dateRange to
-                        minOf(
-                            decisionPartMaxFee,
-                            if (capMaxFeeAtDefault) {
-                                getDefaultMaxFee(decisionPart.placement.type, decisionPartMaxFee)
-                            } else Int.MAX_VALUE,
-                        )
-                }
+            val childDecisionMaxFees = childDecisions.map { (dateRange, decisionPart) ->
+                val decisionPartMaxFee = getDecisionPartMaxFee(decisionPart)
+                dateRange to
+                    minOf(
+                        decisionPartMaxFee,
+                        if (capMaxFeeAtDefault) {
+                            getDefaultMaxFee(decisionPart.placement.type, decisionPartMaxFee)
+                        } else Int.MAX_VALUE,
+                    )
+            }
 
             return if (config.useContractDaysAsDailyFeeDivisor) {
                 childDecisionMaxFees.maxOf { (_, maxFee) -> maxFee }
@@ -815,8 +812,9 @@ class DraftInvoiceGenerator(
         val fullMonthAbsenceType: FullMonthAbsenceType by lazy {
             val operationalDays = operationalDays.ranges().flatMap { it.dates() }.toSet()
 
-            val allSickLeaves =
-                operationalDays.all { date -> hasAbsenceOnDate(date, AbsenceType.SICKLEAVE) }
+            val allSickLeaves = operationalDays.all { date ->
+                hasAbsenceOnDate(date, AbsenceType.SICKLEAVE)
+            }
             val atLeast11SickLeaves =
                 operationalDays.count { date -> hasAbsenceOnDate(date, AbsenceType.SICKLEAVE) } >=
                     11

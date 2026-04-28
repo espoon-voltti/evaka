@@ -436,6 +436,7 @@ class DvvModificationsServiceIntegrationTest :
             restrictedDetailsEnabled = false,
         )
 
-    private fun createTestPerson(devPerson: DevPerson): PersonId =
-        db.transaction { tx -> tx.insert(devPerson, DevPersonType.RAW_ROW) }
+    private fun createTestPerson(devPerson: DevPerson): PersonId = db.transaction { tx ->
+        tx.insert(devPerson, DevPersonType.RAW_ROW)
+    }
 }

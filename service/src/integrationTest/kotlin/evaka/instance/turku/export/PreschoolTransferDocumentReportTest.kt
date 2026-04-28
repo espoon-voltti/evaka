@@ -111,13 +111,12 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
-                    }
-                    .toList<PreschoolTransferDocumentReportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
+                }
+                .toList<PreschoolTransferDocumentReportRow>()
+        }
 
         assertThat(rows)
             .containsExactly(
@@ -190,13 +189,12 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
-                    }
-                    .toList<PreschoolTransferDocumentReportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
+                }
+                .toList<PreschoolTransferDocumentReportRow>()
+        }
 
         assertThat(rows)
             .containsExactly(
@@ -278,13 +276,12 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
-                    }
-                    .toList<PreschoolTransferDocumentReportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
+                }
+                .toList<PreschoolTransferDocumentReportRow>()
+        }
 
         assertThat(rows).hasSize(1)
         assertThat(rows[0].henkilötunnus).isEqualTo("010119A9555")
@@ -310,13 +307,12 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
-                    }
-                    .toList<PreschoolTransferDocumentReportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
+                }
+                .toList<PreschoolTransferDocumentReportRow>()
+        }
 
         assertThat(rows).isEmpty()
     }
@@ -360,13 +356,12 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
-                    }
-                    .toList<PreschoolTransferDocumentReportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
+                }
+                .toList<PreschoolTransferDocumentReportRow>()
+        }
 
         assertThat(rows).isEmpty()
     }
@@ -418,13 +413,12 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
-                    }
-                    .toList<PreschoolTransferDocumentReportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
+                }
+                .toList<PreschoolTransferDocumentReportRow>()
+        }
 
         assertThat(rows)
             .containsExactly(
@@ -484,13 +478,12 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
-                    }
-                    .toList<PreschoolTransferDocumentReportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
+                }
+                .toList<PreschoolTransferDocumentReportRow>()
+        }
 
         assertThat(rows)
             .containsExactly(
@@ -550,13 +543,12 @@ class PreschoolTransferDocumentReportTest : PureJdbiTest(resetDbBeforeEach = tru
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
-                    }
-                    .toList<PreschoolTransferDocumentReportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM preschool_transfer_document_report(${bind(date)})")
+                }
+                .toList<PreschoolTransferDocumentReportRow>()
+        }
 
         assertThat(rows)
             .containsExactly(

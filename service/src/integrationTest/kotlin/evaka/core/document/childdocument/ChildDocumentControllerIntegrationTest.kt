@@ -213,10 +213,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             tx.insert(daycare)
             tx.insert(employeeUser)
             val unitSupervisorId = tx.insert(DevEmployee())
-            unitSupervisorUser =
-                unitSupervisorId.let {
-                    AuthenticatedUser.Employee(it, setOf(UserRole.UNIT_SUPERVISOR))
-                }
+            unitSupervisorUser = unitSupervisorId.let {
+                AuthenticatedUser.Employee(it, setOf(UserRole.UNIT_SUPERVISOR))
+            }
             tx.insertDaycareAclRow(
                 daycareId = daycare.id,
                 employeeId = unitSupervisorId,
@@ -238,17 +237,16 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         endDate: LocalDate = clock.today().plusDays(5),
         childId: PersonId = child.id,
         unitId: DaycareId = daycare.id,
-    ) =
-        db.transaction { tx ->
-            tx.insert(
-                DevPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = startDate,
-                    endDate = endDate,
-                )
+    ) = db.transaction { tx ->
+        tx.insert(
+            DevPlacement(
+                childId = childId,
+                unitId = unitId,
+                startDate = startDate,
+                endDate = endDate,
             )
-        }
+        )
+    }
 
     private fun createPlacementWithGroup(
         startDate: LocalDate = clock.today(),
@@ -481,31 +479,28 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
     @Test
     fun `creating new document not allowed for expired document`() {
-        val template2 =
-            db.transaction {
-                it.insert(
-                    DevDocumentTemplate(
-                        validity =
-                            DateRange(clock.today().minusDays(9), clock.today().minusDays(1)),
-                        content = templateContent,
-                    )
+        val template2 = db.transaction {
+            it.insert(
+                DevDocumentTemplate(
+                    validity = DateRange(clock.today().minusDays(9), clock.today().minusDays(1)),
+                    content = templateContent,
                 )
-            }
+            )
+        }
         assertThrows<BadRequest> { createDocument(templateId = template2) }
     }
 
     @Test
     fun `creating new document not allowed for unpublished document`() {
-        val template2 =
-            db.transaction {
-                it.insert(
-                    DevDocumentTemplate(
-                        validity = DateRange(clock.today(), clock.today()),
-                        published = false,
-                        content = templateContent,
-                    )
+        val template2 = db.transaction {
+            it.insert(
+                DevDocumentTemplate(
+                    validity = DateRange(clock.today(), clock.today()),
+                    published = false,
+                    content = templateContent,
                 )
-            }
+            )
+        }
         assertThrows<BadRequest> { createDocument(templateId = template2) }
     }
 
@@ -682,15 +677,14 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         }
 
         // Verify read marker exists
-        val readMarkersAfterReading =
-            db.read { tx ->
-                tx.createQuery {
-                        sql(
-                            "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
-                        )
-                    }
-                    .exactlyOne<Int>()
-            }
+        val readMarkersAfterReading = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
+                    )
+                }
+                .exactlyOne<Int>()
+        }
         assertEquals(1, readMarkersAfterReading)
 
         // Make a change to the document content
@@ -703,37 +697,36 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         publishDocument(documentId)
 
         // Read markers should still exist before async job processing (PDF not regenerated yet)
-        val readMarkersAfterRepublish =
-            db.read { tx ->
-                tx.createQuery {
-                        sql(
-                            "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
-                        )
-                    }
-                    .exactlyOne<Int>()
-            }
+        val readMarkersAfterRepublish = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
+                    )
+                }
+                .exactlyOne<Int>()
+        }
         assertEquals(1, readMarkersAfterRepublish)
 
         // Process async jobs to generate PDF for the new version
         asyncJobRunner.runPendingJobsSync(clock)
 
         // Verify new version was created with PDF
-        val versionsAfterSecondPublish =
-            db.read { it.getChildDocumentPublishedVersions(documentId) }
+        val versionsAfterSecondPublish = db.read {
+            it.getChildDocumentPublishedVersions(documentId)
+        }
         assertEquals(2, versionsAfterSecondPublish.size)
         val latestVersion = versionsAfterSecondPublish.find { it.versionNumber == 2 }!!
         assertNotNull(latestVersion.documentKey)
 
         // Read markers should be deleted after PDF generation completes
-        val readMarkersAfterPdf =
-            db.read { tx ->
-                tx.createQuery {
-                        sql(
-                            "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
-                        )
-                    }
-                    .exactlyOne<Int>()
-            }
+        val readMarkersAfterPdf = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT COUNT(*) FROM child_document_read WHERE document_id = ${bind(documentId)}"
+                    )
+                }
+                .exactlyOne<Int>()
+        }
         assertEquals(0, readMarkersAfterPdf)
     }
 
@@ -820,15 +813,14 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         deleteDraftDocument(documentId)
         assertThrows<NotFound> { getDocument(documentId) }
 
-        val scheduledDeleteKeys =
-            db.read { tx ->
-                tx.createQuery {
-                        sql(
-                            "SELECT payload::json->>'key' as key FROM async_job WHERE type = 'DeleteChildDocumentPdf'"
-                        )
-                    }
-                    .toList<String>()
-            }
+        val scheduledDeleteKeys = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT payload::json->>'key' as key FROM async_job WHERE type = 'DeleteChildDocumentPdf'"
+                    )
+                }
+                .toList<String>()
+        }
 
         assertEquals(pdfKeys.toSet(), scheduledDeleteKeys.toSet())
     }
@@ -1250,21 +1242,19 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
     @Test
     fun `unit supervisor doesn't see pedagogical assessment document from duplicate`() {
-        val duplicateId =
-            db.transaction { tx ->
-                val unitId = tx.insert(DevDaycare(areaId = area.id))
-                val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = clock.today(),
-                        endDate = clock.today().plusDays(5),
-                    )
+        val duplicateId = db.transaction { tx ->
+            val unitId = tx.insert(DevDaycare(areaId = area.id))
+            val childId = tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5),
                 )
-                childId
-            }
+            )
+            childId
+        }
         val documentId = createDocument(childId = duplicateId)
         assertThrows<Forbidden> {
             controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId)
@@ -1273,21 +1263,19 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
     @Test
     fun `unit supervisor doesn't see pedagogical report document from duplicate`() {
-        val duplicateId =
-            db.transaction { tx ->
-                val unitId = tx.insert(DevDaycare(areaId = area.id))
-                val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = clock.today(),
-                        endDate = clock.today().plusDays(5),
-                    )
+        val duplicateId = db.transaction { tx ->
+            val unitId = tx.insert(DevDaycare(areaId = area.id))
+            val childId = tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5),
                 )
-                childId
-            }
+            )
+            childId
+        }
         val documentId =
             createDocument(childId = duplicateId, templateId = templateIdPedagogicalReport)
         assertThrows<Forbidden> {
@@ -1298,27 +1286,25 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     @Test
     fun `unit supervisor sees hojks document from duplicate`() {
         createPlacement()
-        val duplicateId =
-            db.transaction { tx ->
-                val unitId =
-                    tx.insert(
-                        DevDaycare(
-                            areaId = area.id,
-                            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
-                        )
-                    )
-                val childId =
-                    tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
+        val duplicateId = db.transaction { tx ->
+            val unitId =
                 tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = clock.today(),
-                        endDate = clock.today().plusDays(5),
+                    DevDaycare(
+                        areaId = area.id,
+                        enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
                     )
                 )
-                childId
-            }
+            val childId = tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5),
+                )
+            )
+            childId
+        }
         val documentId = createDocument(childId = duplicateId, templateId = templateIdHojks)
         assertNotNull(controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId))
     }
@@ -1360,13 +1346,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             )
 
         val staffEmployee = DevEmployee()
-        val staffUser =
-            db.transaction { tx ->
-                val staffId = tx.insert(staffEmployee)
-                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
-                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
-                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
-            }
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(staffEmployee)
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
 
         // Create an ordinary child document (PEDAGOGICAL_ASSESSMENT)
         val ordinaryDocumentId = createDocument()
@@ -1506,13 +1491,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         val groupId = createPlacementWithGroup(startDate = futureStartDate, endDate = futureEndDate)
 
         // Create STAFF employee with group access
-        val staffUser =
-            db.transaction { tx ->
-                val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
-                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
-                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
-            }
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
 
         // Create a CITIZEN_BASIC document
         val documentId =
@@ -1542,13 +1526,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         val groupId = createPlacementWithGroup(startDate = futureStartDate, endDate = futureEndDate)
 
-        val staffUser =
-            db.transaction { tx ->
-                val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
-                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
-                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
-            }
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
 
         // Create a document as admin
         val documentId =
@@ -1578,13 +1561,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         val groupId = createPlacementWithGroup(startDate = pastStartDate, endDate = pastEndDate)
 
-        val staffUser =
-            db.transaction { tx ->
-                val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
-                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
-                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
-            }
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
 
         val documentId =
             controller.createDocument(
@@ -1612,13 +1594,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         val groupId = createPlacementWithGroup(startDate = futureStartDate, endDate = futureEndDate)
 
-        val staffUser =
-            db.transaction { tx ->
-                val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
-                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
-                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
-            }
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
 
         // STAFF should be able to create a document for future placement
         val documentId =
@@ -1644,13 +1625,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         val groupId = createPlacementWithGroup(startDate = futureStartDate, endDate = futureEndDate)
 
-        val staffUser =
-            db.transaction { tx ->
-                val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
-                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
-                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
-            }
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
 
         // Create a decision document as admin
         val decisionDocumentId =
@@ -1687,13 +1667,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 endDate = clock.today().plusDays(10),
             )
 
-        val staffUser =
-            db.transaction { tx ->
-                val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
-                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
-                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
-            }
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
 
         // Test different document types that STAFF should be able to manage
         val documentTypes =
@@ -1765,13 +1744,12 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                 endDate = clock.today().plusDays(10),
             )
 
-        val staffUser =
-            db.transaction { tx ->
-                val staffId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
-                tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
-                AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
-            }
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(groupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
 
         val decisionDocumentId =
             controller.createDecisionDocument(

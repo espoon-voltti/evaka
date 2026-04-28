@@ -776,18 +776,17 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `deleting all placements voids the study right`() {
-        val placementId =
-            db.transaction {
-                it.insert(
-                    DevPlacement(
-                        childId = child1.id,
-                        unitId = daycare.id,
-                        startDate = preschoolTerm2019.start,
-                        endDate = preschoolTerm2019.end,
-                        type = PlacementType.PRESCHOOL,
-                    )
+        val placementId = db.transaction {
+            it.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = preschoolTerm2019.start,
+                    endDate = preschoolTerm2019.end,
+                    type = PlacementType.PRESCHOOL,
                 )
-            }
+            )
+        }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
 

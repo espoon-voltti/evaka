@@ -155,17 +155,16 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         startDate: LocalDate,
         endDate: LocalDate,
         unitId: DaycareId = daycare.id,
-    ) =
-        db.transaction { tx ->
-            tx.insert(
-                DevPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = startDate,
-                    endDate = endDate,
-                )
+    ) = db.transaction { tx ->
+        tx.insert(
+            DevPlacement(
+                childId = childId,
+                unitId = unitId,
+                startDate = startDate,
+                endDate = endDate,
             )
-        }
+        )
+    }
 
     private fun toReportRow(
         person: DevPerson,

@@ -27,28 +27,27 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val today = placementEnd.plusDays(1)
         val assistanceFactorStart = LocalDate.of(2024, 1, 2)
         val assistanceFactorEnd = LocalDate.of(2024, 2, 29)
-        val childId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                val unitId = tx.insert(DevDaycare(areaId = areaId))
-                val childId =
-                    tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = placementStart,
-                        endDate = placementEnd,
-                    )
+        val childId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId))
+            val childId =
+                tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = placementStart,
+                    endDate = placementEnd,
                 )
-                tx.insert(
-                    DevAssistanceFactor(
-                        childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
-                    )
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = childId,
+                    validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                 )
-                childId
-            }
+            )
+            childId
+        }
 
         db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
 
@@ -66,36 +65,35 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val today = placement2End.plusDays(1)
         val assistanceFactorStart = LocalDate.of(2024, 1, 2)
         val assistanceFactorEnd = LocalDate.of(2024, 12, 31)
-        val childId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                val unitId = tx.insert(DevDaycare(areaId = areaId))
-                val childId =
-                    tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = placement1Start,
-                        endDate = placement1End,
-                    )
+        val childId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId))
+            val childId =
+                tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = placement1Start,
+                    endDate = placement1End,
                 )
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = placement2Start,
-                        endDate = placement2End,
-                    )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = placement2Start,
+                    endDate = placement2End,
                 )
-                tx.insert(
-                    DevAssistanceFactor(
-                        childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
-                    )
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = childId,
+                    validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                 )
-                childId
-            }
+            )
+            childId
+        }
 
         db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
 
@@ -113,37 +111,36 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val today = placement1End.plusDays(1)
         val assistanceFactorStart = LocalDate.of(2024, 1, 2)
         val assistanceFactorEnd = LocalDate.of(2024, 12, 31)
-        val childId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                val unit1Id = tx.insert(DevDaycare(areaId = areaId))
-                val unit2Id = tx.insert(DevDaycare(areaId = areaId))
-                val childId =
-                    tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unit1Id,
-                        startDate = placement1Start,
-                        endDate = placement1End,
-                    )
+        val childId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val unit1Id = tx.insert(DevDaycare(areaId = areaId))
+            val unit2Id = tx.insert(DevDaycare(areaId = areaId))
+            val childId =
+                tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unit1Id,
+                    startDate = placement1Start,
+                    endDate = placement1End,
                 )
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unit2Id,
-                        startDate = placement2Start,
-                        endDate = placement2End,
-                    )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unit2Id,
+                    startDate = placement2Start,
+                    endDate = placement2End,
                 )
-                tx.insert(
-                    DevAssistanceFactor(
-                        childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
-                    )
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = childId,
+                    validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                 )
-                childId
-            }
+            )
+            childId
+        }
 
         db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
 
@@ -161,34 +158,33 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val assistanceFactor1End = LocalDate.of(2024, 1, 31)
         val assistanceFactor2Start = LocalDate.of(2024, 2, 1)
         val assistanceFactor2End = LocalDate.of(2024, 2, 29)
-        val childId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                val unitId = tx.insert(DevDaycare(areaId = areaId))
-                val childId =
-                    tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = placementStart,
-                        endDate = placementEnd,
-                    )
+        val childId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId))
+            val childId =
+                tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = placementStart,
+                    endDate = placementEnd,
                 )
-                tx.insert(
-                    DevAssistanceFactor(
-                        childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactor1Start, assistanceFactor1End),
-                    )
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = childId,
+                    validDuring = FiniteDateRange(assistanceFactor1Start, assistanceFactor1End),
                 )
-                tx.insert(
-                    DevAssistanceFactor(
-                        childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactor2Start, assistanceFactor2End),
-                    )
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = childId,
+                    validDuring = FiniteDateRange(assistanceFactor2Start, assistanceFactor2End),
                 )
-                childId
-            }
+            )
+            childId
+        }
 
         db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
 
@@ -207,28 +203,27 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val today = placementEnd.plusDays(1)
         val assistanceFactorStart = LocalDate.of(2024, 2, 1)
         val assistanceFactorEnd = LocalDate.of(2024, 2, 29)
-        val childId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                val unitId = tx.insert(DevDaycare(areaId = areaId))
-                val childId =
-                    tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = placementStart,
-                        endDate = placementEnd,
-                    )
+        val childId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId))
+            val childId =
+                tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = placementStart,
+                    endDate = placementEnd,
                 )
-                tx.insert(
-                    DevAssistanceFactor(
-                        childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
-                    )
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = childId,
+                    validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                 )
-                childId
-            }
+            )
+            childId
+        }
 
         db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
 
@@ -244,28 +239,27 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val today = placementEnd.plusDays(1)
         val assistanceFactorStart = LocalDate.of(2024, 1, 1)
         val assistanceFactorEnd = LocalDate.of(2024, 1, 31)
-        val childId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                val unitId = tx.insert(DevDaycare(areaId = areaId))
-                val childId =
-                    tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = placementStart,
-                        endDate = placementEnd,
-                    )
+        val childId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val unitId = tx.insert(DevDaycare(areaId = areaId))
+            val childId =
+                tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = placementStart,
+                    endDate = placementEnd,
                 )
-                tx.insert(
-                    DevAssistanceFactor(
-                        childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
-                    )
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = childId,
+                    validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                 )
-                childId
-            }
+            )
+            childId
+        }
 
         db.transaction { it.endAssistanceFactorsWhichBelongToPastPlacements(today) }
 
@@ -282,51 +276,48 @@ class AssistanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val child2PlacementEnd = LocalDate.of(2024, 2, 1)
         val assistanceFactorStart = LocalDate.of(2024, 1, 2)
         val assistanceFactorEnd = LocalDate.of(2024, 2, 29)
-        val unitId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                tx.insert(DevDaycare(areaId = areaId))
-            }
-        val child1Id =
-            db.transaction { tx ->
-                val childId =
-                    tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = child1PlacementStart,
-                        endDate = child1PlacementEnd,
-                    )
+        val unitId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            tx.insert(DevDaycare(areaId = areaId))
+        }
+        val child1Id = db.transaction { tx ->
+            val childId =
+                tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = child1PlacementStart,
+                    endDate = child1PlacementEnd,
                 )
-                tx.insert(
-                    DevAssistanceFactor(
-                        childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
-                    )
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = childId,
+                    validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                 )
-                childId
-            }
-        val child2Id =
-            db.transaction { tx ->
-                val childId =
-                    tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = child2PlacementStart,
-                        endDate = child2PlacementEnd,
-                    )
+            )
+            childId
+        }
+        val child2Id = db.transaction { tx ->
+            val childId =
+                tx.insert(DevPerson(), DevPersonType.CHILD).let { tx.insert(DevChild(id = it)) }
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = child2PlacementStart,
+                    endDate = child2PlacementEnd,
                 )
-                tx.insert(
-                    DevAssistanceFactor(
-                        childId = childId,
-                        validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
-                    )
+            )
+            tx.insert(
+                DevAssistanceFactor(
+                    childId = childId,
+                    validDuring = FiniteDateRange(assistanceFactorStart, assistanceFactorEnd),
                 )
-                childId
-            }
+            )
+            childId
+        }
 
         db.transaction {
             it.endAssistanceFactorsWhichBelongToPastPlacements(child1PlacementEnd.plusDays(1))

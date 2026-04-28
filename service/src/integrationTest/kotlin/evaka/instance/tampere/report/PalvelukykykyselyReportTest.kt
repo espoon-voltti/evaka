@@ -26,11 +26,10 @@ class PalvelukykykyselyReportTest : AbstractTampereIntegrationTest() {
         val childUrl = "https://varhaiskasvatus.tampere.fi/employee/child-information/"
         val adultUrl = "https://varhaiskasvatus.tampere.fi/employee/profile/"
 
-        val areaId =
-            db.read { tx ->
-                tx.createQuery { sql("select id from care_area order by name limit 1") }
-                    .exactlyOne<AreaId>()
-            }
+        val areaId = db.read { tx ->
+            tx.createQuery { sql("select id from care_area order by name limit 1") }
+                .exactlyOne<AreaId>()
+        }
         val unit =
             DevDaycare(
                 name = "Yksikkö",
@@ -122,11 +121,9 @@ class PalvelukykykyselyReportTest : AbstractTampereIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery { sql("SELECT * FROM palvelukykykysely") }
-                    .toList<PalvelukykykyselyRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM palvelukykykysely") }.toList<PalvelukykykyselyRow>()
+        }
 
         assertThat(rows)
             .containsExactlyInAnyOrder(

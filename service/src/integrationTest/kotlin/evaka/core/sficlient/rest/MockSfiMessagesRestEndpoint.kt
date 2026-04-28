@@ -48,18 +48,17 @@ class MockSfiMessagesRestEndpoint {
     fun changePassword(
         @RequestHeader("Authorization") authorization: String?,
         @RequestBody body: ChangePasswordRequestBody,
-    ): ResponseEntity<Any> =
-        lock.withLock {
-            val accessToken = body.accessToken
-            if (!tokens.contains(accessToken)) {
-                ResponseEntity.status(400).body(ApiError("Invalid token"))
-            } else if (body.currentPassword != password) {
-                ResponseEntity.status(400).body(ApiError("Invalid password"))
-            } else {
-                password = body.newPassword
-                ResponseEntity.ok(null)
-            }
+    ): ResponseEntity<Any> = lock.withLock {
+        val accessToken = body.accessToken
+        if (!tokens.contains(accessToken)) {
+            ResponseEntity.status(400).body(ApiError("Invalid token"))
+        } else if (body.currentPassword != password) {
+            ResponseEntity.status(400).body(ApiError("Invalid password"))
+        } else {
+            password = body.newPassword
+            ResponseEntity.ok(null)
         }
+    }
 
     @PostMapping(
         "/v2/attachments",
@@ -69,16 +68,15 @@ class MockSfiMessagesRestEndpoint {
     fun uploadFile(
         @RequestHeader("Authorization") authorization: String?,
         @RequestPart file: MultipartFile,
-    ): ResponseEntity<Any> =
-        lock.withLock {
-            if (!tokens.contains(authorization?.removePrefix("Bearer "))) {
-                ResponseEntity.status(401).body(ApiError("Invalid token"))
-            } else {
-                val id = UUID.randomUUID()
-                files[id] = CapturedFile(file.originalFilename, file.bytes)
-                ResponseEntity.ok(AttachmentReference(id))
-            }
+    ): ResponseEntity<Any> = lock.withLock {
+        if (!tokens.contains(authorization?.removePrefix("Bearer "))) {
+            ResponseEntity.status(401).body(ApiError("Invalid token"))
+        } else {
+            val id = UUID.randomUUID()
+            files[id] = CapturedFile(file.originalFilename, file.bytes)
+            ResponseEntity.ok(AttachmentReference(id))
         }
+    }
 
     @PostMapping(
         "/v2/messages",
@@ -88,18 +86,17 @@ class MockSfiMessagesRestEndpoint {
     fun sendMessage(
         @RequestHeader("Authorization") authorization: String?,
         @RequestBody body: MultichannelMessageRequestBody,
-    ): ResponseEntity<Any> =
-        lock.withLock {
-            if (!tokens.contains(authorization?.removePrefix("Bearer "))) {
-                ResponseEntity.status(401).body(ApiError("Invalid token"))
-            } else if (messages.contains(body.externalId)) {
-                ResponseEntity.status(409).body(ApiError("Message already sent"))
-            } else {
-                val id = nextMessageId++
-                messages[body.externalId] = id to body
-                ResponseEntity.ok(MessageResponse(id))
-            }
+    ): ResponseEntity<Any> = lock.withLock {
+        if (!tokens.contains(authorization?.removePrefix("Bearer "))) {
+            ResponseEntity.status(401).body(ApiError("Invalid token"))
+        } else if (messages.contains(body.externalId)) {
+            ResponseEntity.status(409).body(ApiError("Message already sent"))
+        } else {
+            val id = nextMessageId++
+            messages[body.externalId] = id to body
+            ResponseEntity.ok(MessageResponse(id))
         }
+    }
 
     companion object {
         const val USERNAME = "test-user"
@@ -114,14 +111,13 @@ class MockSfiMessagesRestEndpoint {
         private var nextMessageId: MessageId = 1L
         private var password: String = DEFAULT_PASSWORD
 
-        fun reset() =
-            lock.withLock {
-                tokens.clear()
-                files.clear()
-                messages.clear()
-                nextMessageId = 1L
-                password = DEFAULT_PASSWORD
-            }
+        fun reset() = lock.withLock {
+            tokens.clear()
+            files.clear()
+            messages.clear()
+            nextMessageId = 1L
+            password = DEFAULT_PASSWORD
+        }
 
         fun clearTokens() = lock.withLock { tokens.clear() }
 

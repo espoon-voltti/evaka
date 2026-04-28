@@ -480,26 +480,25 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         dueDate: LocalDate?,
         urgent: Boolean,
         shiftCare: Boolean = false,
-    ): ApplicationDetails =
-        db.transaction { tx ->
-            val applicationId =
-                tx.insertTestApplication(
-                    status = status,
-                    sentDate = sentDate,
-                    dueDate = dueDate,
-                    childId = child.id,
-                    guardianId = adult.id,
-                    type = ApplicationType.DAYCARE,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            child = Child(dateOfBirth = null),
-                            guardian = Adult(),
-                            apply = Apply(preferredUnits = listOf(daycare.id)),
-                            urgent = urgent,
-                            extendedCare = shiftCare,
-                        ),
-                )
-            tx.fetchApplicationDetails(applicationId)!!
-        }
+    ): ApplicationDetails = db.transaction { tx ->
+        val applicationId =
+            tx.insertTestApplication(
+                status = status,
+                sentDate = sentDate,
+                dueDate = dueDate,
+                childId = child.id,
+                guardianId = adult.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(daycare.id)),
+                        urgent = urgent,
+                        extendedCare = shiftCare,
+                    ),
+            )
+        tx.fetchApplicationDetails(applicationId)!!
+    }
 }

@@ -347,12 +347,11 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
         }
 
-        val violations =
-            db.read {
-                it.sanityCheckChildInOverlappingFeeDecisions(
-                    listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
-                )
-            }
+        val violations = db.read {
+            it.sanityCheckChildInOverlappingFeeDecisions(
+                listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
+            )
+        }
         assertEquals(1, violations.size)
     }
 
@@ -410,12 +409,11 @@ class SanityChecksTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
         }
 
-        val violations =
-            db.read {
-                it.sanityCheckChildInOverlappingFeeDecisions(
-                    listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
-                )
-            }
+        val violations = db.read {
+            it.sanityCheckChildInOverlappingFeeDecisions(
+                listOf(FeeDecisionStatus.SENT, FeeDecisionStatus.WAITING_FOR_SENDING)
+            )
+        }
         assertEquals(0, violations.size)
     }
 

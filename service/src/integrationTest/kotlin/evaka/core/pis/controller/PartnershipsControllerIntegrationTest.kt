@@ -129,30 +129,29 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     private fun canDeletePartnership(user: AuthenticatedUser.Employee) {
-        val partnership1 =
-            db.transaction { tx ->
-                tx.createPartnership(
+        val partnership1 = db.transaction { tx ->
+            tx.createPartnership(
+                    person.id,
+                    partner.id,
+                    LocalDate.now(),
+                    LocalDate.now().plusDays(100),
+                    false,
+                    Creator.User(partnershipCreator),
+                    clock.now(),
+                )
+                .also {
+                    tx.createPartnership(
                         person.id,
                         partner.id,
-                        LocalDate.now(),
-                        LocalDate.now().plusDays(100),
+                        LocalDate.now().plusDays(200),
+                        LocalDate.now().plusDays(300),
                         false,
                         Creator.User(partnershipCreator),
                         clock.now(),
                     )
-                    .also {
-                        tx.createPartnership(
-                            person.id,
-                            partner.id,
-                            LocalDate.now().plusDays(200),
-                            LocalDate.now().plusDays(300),
-                            false,
-                            Creator.User(partnershipCreator),
-                            clock.now(),
-                        )
-                        assertEquals(2, tx.getPartnershipsForPerson(person.id).size)
-                    }
-            }
+                    assertEquals(2, tx.getPartnershipsForPerson(person.id).size)
+                }
+        }
 
         controller.deletePartnership(dbInstance(), user, clock, partnership1.id)
         db.read { r -> assertEquals(1, r.getPartnershipsForPerson(person.id).size) }
@@ -176,29 +175,28 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     }
 
     private fun canUpdatePartnershipDuration(user: AuthenticatedUser.Employee) {
-        val partnership1 =
-            db.transaction { tx ->
-                tx.createPartnership(
+        val partnership1 = db.transaction { tx ->
+            tx.createPartnership(
+                    person.id,
+                    partner.id,
+                    LocalDate.now(),
+                    LocalDate.now().plusDays(200),
+                    false,
+                    Creator.User(partnershipCreator),
+                    clock.now(),
+                )
+                .also {
+                    tx.createPartnership(
                         person.id,
                         partner.id,
-                        LocalDate.now(),
-                        LocalDate.now().plusDays(200),
+                        LocalDate.now().plusDays(500),
+                        LocalDate.now().plusDays(700),
                         false,
                         Creator.User(partnershipCreator),
                         clock.now(),
                     )
-                    .also {
-                        tx.createPartnership(
-                            person.id,
-                            partner.id,
-                            LocalDate.now().plusDays(500),
-                            LocalDate.now().plusDays(700),
-                            false,
-                            Creator.User(partnershipCreator),
-                            clock.now(),
-                        )
-                    }
-            }
+                }
+        }
 
         val newStartDate = LocalDate.now().plusDays(100)
         val newEndDate = LocalDate.now().plusDays(300)
@@ -218,29 +216,28 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
                 EmployeeId(UUID.randomUUID()),
                 setOf(UserRole.SERVICE_WORKER),
             )
-        val partnership1 =
-            db.transaction { tx ->
-                tx.createPartnership(
+        val partnership1 = db.transaction { tx ->
+            tx.createPartnership(
+                    person.id,
+                    partner.id,
+                    LocalDate.now(),
+                    LocalDate.now().plusDays(200),
+                    false,
+                    Creator.User(partnershipCreator),
+                    clock.now(),
+                )
+                .also {
+                    tx.createPartnership(
                         person.id,
                         partner.id,
-                        LocalDate.now(),
-                        LocalDate.now().plusDays(200),
+                        LocalDate.now().plusDays(500),
+                        LocalDate.now().plusDays(700),
                         false,
                         Creator.User(partnershipCreator),
                         clock.now(),
                     )
-                    .also {
-                        tx.createPartnership(
-                            person.id,
-                            partner.id,
-                            LocalDate.now().plusDays(500),
-                            LocalDate.now().plusDays(700),
-                            false,
-                            Creator.User(partnershipCreator),
-                            clock.now(),
-                        )
-                    }
-            }
+                }
+        }
 
         val newStartDate = LocalDate.now().plusDays(100)
         val newEndDate = LocalDate.now().plusDays(600)
@@ -252,18 +249,17 @@ class PartnershipsControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `clearing conflict flag works`() {
-        val partnership1 =
-            db.transaction { tx ->
-                tx.createPartnership(
-                    person.id,
-                    partner.id,
-                    LocalDate.now(),
-                    LocalDate.now().plusDays(200),
-                    true,
-                    Creator.User(partnershipCreator),
-                    clock.now(),
-                )
-            }
+        val partnership1 = db.transaction { tx ->
+            tx.createPartnership(
+                person.id,
+                partner.id,
+                LocalDate.now(),
+                LocalDate.now().plusDays(200),
+                true,
+                Creator.User(partnershipCreator),
+                clock.now(),
+            )
+        }
 
         controller.retryPartnership(dbInstance(), financeAdmin.user, clock, partnership1.id)
 

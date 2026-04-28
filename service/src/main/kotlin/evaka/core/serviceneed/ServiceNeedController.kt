@@ -53,34 +53,33 @@ class ServiceNeedController(
         clock: EvakaClock,
         @RequestBody body: ServiceNeedCreateRequest,
     ) {
-        val serviceNeedId =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Placement.CREATE_SERVICE_NEED,
-                        body.placementId,
-                    )
+        val serviceNeedId = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Placement.CREATE_SERVICE_NEED,
+                    body.placementId,
+                )
 
-                    createServiceNeed(
-                            tx = tx,
-                            user = user,
-                            placementId = body.placementId,
-                            startDate = body.startDate,
-                            endDate = body.endDate,
-                            optionId = body.optionId,
-                            shiftCare = body.shiftCare,
-                            partWeek = body.partWeek,
-                            confirmedAt = HelsinkiDateTime.now(),
-                        )
-                        .also { id ->
-                            val range = tx.getServiceNeedChildRange(id)
-                            notifyServiceNeedUpdated(tx, clock, asyncJobRunner, range)
-                        }
-                }
+                createServiceNeed(
+                        tx = tx,
+                        user = user,
+                        placementId = body.placementId,
+                        startDate = body.startDate,
+                        endDate = body.endDate,
+                        optionId = body.optionId,
+                        shiftCare = body.shiftCare,
+                        partWeek = body.partWeek,
+                        confirmedAt = HelsinkiDateTime.now(),
+                    )
+                    .also { id ->
+                        val range = tx.getServiceNeedChildRange(id)
+                        notifyServiceNeedUpdated(tx, clock, asyncJobRunner, range)
+                    }
             }
+        }
         Audit.PlacementServiceNeedCreate.log(
             targetId = AuditId(body.placementId),
             objectId = AuditId(serviceNeedId),

@@ -410,8 +410,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(monday, reservations.first())
 
         // and 1st absence has been removed
-        val absences =
-            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        val absences = db.read {
+            it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday))
+        }
         assertEquals(1, absences.size)
         assertEquals(tuesday, absences.first().date)
     }
@@ -456,8 +457,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(0, reservations.size)
 
         // and absence has been added
-        val absences =
-            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        val absences = db.read {
+            it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday))
+        }
         assertEquals(1, absences.size)
         assertEquals(monday, absences.first().date)
     }
@@ -506,8 +508,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(monday, reservations.first())
 
         // and absence has been added
-        val absences =
-            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        val absences = db.read {
+            it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday))
+        }
         assertEquals(1, absences.size)
         assertEquals(monday, absences.first().date)
     }
@@ -624,8 +627,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(listOf(), reservations)
 
         // and no absences exist
-        val absences =
-            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        val absences = db.read {
+            it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday))
+        }
         assertEquals(listOf(), absences)
     }
 
@@ -792,8 +796,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(monday, reservations.first())
 
         // and 1st absence has been removed
-        val absences =
-            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, wednesday)) }
+        val absences = db.read {
+            it.getAbsencesOfChildByRange(child.id, DateRange(monday, wednesday))
+        }
         assertEquals(listOf(tuesday, wednesday), absences.map { it.date })
         assertEquals(
             listOf(AbsenceType.FREE_ABSENCE, AbsenceType.FREE_ABSENCE),
@@ -975,10 +980,12 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         }
 
         // then
-        val reservations =
-            db.read { it.getReservationsCitizen(monday, adult.id, FiniteDateRange(monday, monday)) }
-        val absences =
-            db.read { it.getAbsencesCitizen(monday, adult.id, FiniteDateRange(monday, monday)) }
+        val reservations = db.read {
+            it.getReservationsCitizen(monday, adult.id, FiniteDateRange(monday, monday))
+        }
+        val absences = db.read {
+            it.getAbsencesCitizen(monday, adult.id, FiniteDateRange(monday, monday))
+        }
         assertEquals(0, reservations.size)
         assertEquals(0, absences.size)
     }
@@ -1075,8 +1082,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         }
 
         // then
-        val dailyReservations =
-            db.read { it.getReservationsCitizen(monday, adult.id, holidayPeriod) }
+        val dailyReservations = db.read {
+            it.getReservationsCitizen(monday, adult.id, holidayPeriod)
+        }
         assertEquals(1, dailyReservations.size)
         dailyReservations.first().let {
             assertEquals(holidayPeriodStart, it.date)
@@ -1129,8 +1137,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         }
 
         // then
-        val dailyReservations =
-            db.read { it.getReservationsCitizen(monday, adult.id, holidayPeriod) }
+        val dailyReservations = db.read {
+            it.getReservationsCitizen(monday, adult.id, holidayPeriod)
+        }
         assertEquals(2, dailyReservations.size)
         dailyReservations.first().let {
             assertEquals(holidayPeriodStart, it.date)
@@ -1579,8 +1588,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(0, reservations.size)
 
         // and absence has not been removed
-        val absences =
-            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        val absences = db.read {
+            it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday))
+        }
         assertEquals(2, absences.size)
     }
 
@@ -1644,8 +1654,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(2, reservations.size)
 
         // and absences have been removed
-        val absences =
-            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        val absences = db.read {
+            it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday))
+        }
         assertEquals(0, absences.size)
     }
 
@@ -2029,8 +2040,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(0, reservations.size)
 
         // and absence has not been removed
-        val absences =
-            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        val absences = db.read {
+            it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday))
+        }
         assertEquals(2, absences.size)
     }
 
@@ -2097,8 +2109,9 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
         assertEquals(2, reservations.size)
 
         // and absences have been removed
-        val absences =
-            db.read { it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday)) }
+        val absences = db.read {
+            it.getAbsencesOfChildByRange(child.id, DateRange(monday, tuesday))
+        }
         assertEquals(0, absences.size)
     }
 }

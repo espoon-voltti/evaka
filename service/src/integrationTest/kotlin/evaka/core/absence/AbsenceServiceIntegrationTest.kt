@@ -146,18 +146,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `calendar without placements`() {
         val today = now.toLocalDate()
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    today,
-                    group.id,
-                    today.year,
-                    today.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                today,
+                group.id,
+                today.year,
+                today.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         assertEquals(
             GroupMonthCalendar(
@@ -197,18 +196,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             serviceNeedOptionId = snDaycareContractDays15.id,
             placementPeriod = FiniteDateRange(placementStart.plusWeeks(2), placementEnd),
         )
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    placementStart,
-                    group.id,
-                    placementStart.year,
-                    placementStart.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                placementStart,
+                group.id,
+                placementStart.year,
+                placementStart.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         assertEquals(
             listOf(
@@ -303,18 +301,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             // total attendance: 4 + 3 = 7 hours
         }
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    firstOfMonth,
-                    group.id,
-                    firstOfMonth.year,
-                    firstOfMonth.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                firstOfMonth,
+                group.id,
+                firstOfMonth.year,
+                firstOfMonth.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         assertEquals(
             listOf(child(child1).copy(reservationTotalHours = 36, attendanceTotalHours = 7)),
@@ -324,23 +321,22 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `calendar has correct absence categories`() {
-        val roundTheClockGroupId =
-            db.transaction { tx ->
-                tx.insertPreschoolTerm(
-                    finnishPreschool = FiniteDateRange(placementStart, placementEnd),
-                    swedishPreschool = FiniteDateRange(placementStart, placementEnd),
-                    extendedTerm = FiniteDateRange(placementStart, placementEnd),
-                    applicationPeriod = FiniteDateRange(placementStart, placementEnd),
-                    termBreaks = DateSet.empty(),
+        val roundTheClockGroupId = db.transaction { tx ->
+            tx.insertPreschoolTerm(
+                finnishPreschool = FiniteDateRange(placementStart, placementEnd),
+                swedishPreschool = FiniteDateRange(placementStart, placementEnd),
+                extendedTerm = FiniteDateRange(placementStart, placementEnd),
+                applicationPeriod = FiniteDateRange(placementStart, placementEnd),
+                termBreaks = DateSet.empty(),
+            )
+            tx.insert(
+                DevDaycareGroup(
+                    daycareId = roundTheClockDaycare.id,
+                    startDate = placementStart,
+                    name = "testiryhmä",
                 )
-                tx.insert(
-                    DevDaycareGroup(
-                        daycareId = roundTheClockDaycare.id,
-                        startDate = placementStart,
-                        name = "testiryhmä",
-                    )
-                )
-            }
+            )
+        }
         insertGroupPlacement(
             childId = child1.id,
             placementType = PlacementType.PRESCHOOL,
@@ -363,18 +359,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         )
 
         val placementDate = placementStart
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    placementDate,
-                    roundTheClockGroupId,
-                    placementDate.year,
-                    placementDate.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                placementDate,
+                roundTheClockGroupId,
+                placementDate.year,
+                placementDate.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         assertEquals(
             GroupMonthCalendar(
@@ -464,18 +459,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         insertGroupPlacement(child1.id, PlacementType.PRESCHOOL)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    placementStart,
-                    group.id,
-                    placementStart.year,
-                    placementStart.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                placementStart,
+                group.id,
+                placementStart.year,
+                placementStart.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         assertEquals(
             GroupMonthCalendar(
@@ -529,18 +523,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    placementStart,
-                    group.id,
-                    placementStart.year,
-                    placementStart.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                placementStart,
+                group.id,
+                placementStart.year,
+                placementStart.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         assertEquals(
             (backupCarePeriod.dates().map { date ->
@@ -626,18 +619,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 placementStart.plusMonths(1).minusDays(1),
             )
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    placementStart,
-                    group.id,
-                    placementStart.year,
-                    placementStart.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                placementStart,
+                group.id,
+                placementStart.year,
+                placementStart.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         assertEquals(
             // missing reservations
@@ -788,18 +780,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    placementStart,
-                    group.id,
-                    placementStart.year,
-                    placementStart.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                placementStart,
+                group.id,
+                placementStart.year,
+                placementStart.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         assertEquals(
             FiniteDateRange(placementStart, placementStart.plusMonths(1).minusDays(1))
@@ -841,18 +832,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    placementStart,
-                    group.id,
-                    placementStart.year,
-                    placementStart.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                placementStart,
+                group.id,
+                placementStart.year,
+                placementStart.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         assertEquals(
             FiniteDateRange(placementStart, placementStart.plusMonths(1).minusDays(1))
@@ -905,18 +895,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    placementStart,
-                    group.id,
-                    placementStart.year,
-                    placementStart.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                placementStart,
+                group.id,
+                placementStart.year,
+                placementStart.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         assertEquals(
             (dailyServiceTimesPeriod1.dates().map { date ->
@@ -979,19 +968,18 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         val initialAbsenceList = listOf(initialAbsence)
 
-        val result =
-            db.transaction { tx ->
-                tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
-                getGroupMonthCalendar(
-                    tx,
-                    absenceDate,
-                    group.id,
-                    absenceDate.year,
-                    absenceDate.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.transaction { tx ->
+            tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
+            getGroupMonthCalendar(
+                tx,
+                absenceDate,
+                group.id,
+                absenceDate.year,
+                absenceDate.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         val child =
             result.days.find { it.date == absenceDate }?.children?.find { it.childId == child1.id }
                 ?: error("Day or child not found")
@@ -1020,19 +1008,18 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             AbsenceUpsert(child1.id, absenceDate, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val result =
-            db.transaction { tx ->
-                tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
-                getGroupMonthCalendar(
-                    tx,
-                    absenceDate,
-                    group.id,
-                    absenceDate.year,
-                    absenceDate.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.transaction { tx ->
+            tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
+            getGroupMonthCalendar(
+                tx,
+                absenceDate,
+                group.id,
+                absenceDate.year,
+                absenceDate.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         val child =
             result.days.find { it.date == absenceDate }?.children?.find { it.childId == child1.id }
@@ -1050,19 +1037,18 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             AbsenceUpsert(child1.id, absenceDate, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE)
         val initialAbsenceList = listOf(initialAbsence)
 
-        var result =
-            db.transaction { tx ->
-                tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
-                getGroupMonthCalendar(
-                    tx,
-                    absenceDate,
-                    group.id,
-                    absenceDate.year,
-                    absenceDate.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        var result = db.transaction { tx ->
+            tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
+            getGroupMonthCalendar(
+                tx,
+                absenceDate,
+                group.id,
+                absenceDate.year,
+                absenceDate.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         var child =
             result.days.find { it.date == absenceDate }?.children?.find { it.childId == child1.id }
@@ -1078,19 +1064,18 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 absenceType = newAbsenceType,
             )
 
-        result =
-            db.transaction { tx ->
-                tx.upsertAbsences(now, employee.evakaUserId, listOf(updatedAbsence))
-                getGroupMonthCalendar(
-                    tx,
-                    absenceDate,
-                    group.id,
-                    absenceDate.year,
-                    absenceDate.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        result = db.transaction { tx ->
+            tx.upsertAbsences(now, employee.evakaUserId, listOf(updatedAbsence))
+            getGroupMonthCalendar(
+                tx,
+                absenceDate,
+                group.id,
+                absenceDate.year,
+                absenceDate.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         child =
             result.days.find { it.date == absenceDate }?.children?.find { it.childId == child1.id }
@@ -1116,11 +1101,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val absences =
-            db.transaction { tx ->
-                tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
-                getAbsencesOfChildByMonth(tx, child1.id, absenceDate.year, absenceDate.monthValue)
-            }
+        val absences = db.transaction { tx ->
+            tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
+            getAbsencesOfChildByMonth(tx, child1.id, absenceDate.year, absenceDate.monthValue)
+        }
         assertEquals(initialAbsenceList.size, absences.size)
     }
 
@@ -1142,16 +1126,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val absences =
-            db.transaction { tx ->
-                tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
-                getAbsencesOfChildByMonth(
-                    tx,
-                    otherChild.id,
-                    absenceDate.year,
-                    absenceDate.monthValue,
-                )
-            }
+        val absences = db.transaction { tx ->
+            tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
+            getAbsencesOfChildByMonth(tx, otherChild.id, absenceDate.year, absenceDate.monthValue)
+        }
         assertEquals(0, absences.size)
     }
 
@@ -1176,11 +1154,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val absences =
-            db.transaction { tx ->
-                tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
-                getAbsencesOfChildByMonth(tx, child1.id, 2019, 9)
-            }
+        val absences = db.transaction { tx ->
+            tx.upsertAbsences(now, employee.evakaUserId, initialAbsenceList)
+            getAbsencesOfChildByMonth(tx, child1.id, 2019, 9)
+        }
         assertEquals(1, absences.size)
     }
 
@@ -1188,18 +1165,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `group operational days do not include holidays`() {
         val firstOfJanuary2020 = LocalDate.of(2020, 1, 1)
         val epiphany2020 = LocalDate.of(2020, 1, 6)
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    firstOfJanuary2020,
-                    group.id,
-                    firstOfJanuary2020.year,
-                    firstOfJanuary2020.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                firstOfJanuary2020,
+                group.id,
+                firstOfJanuary2020.year,
+                firstOfJanuary2020.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         val operationDays = result.days.filter { it.isOperationDay }.map { it.date }
         assertFalse(operationDays.contains(epiphany2020))
@@ -1211,18 +1187,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val epiphany2020 = LocalDate.of(2020, 1, 6)
 
         db.transaction { it.updateDaycareOperationTimes(daycare.id, allWeekOpTimes) }
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    firstOfJanuary2020,
-                    group.id,
-                    firstOfJanuary2020.year,
-                    firstOfJanuary2020.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                firstOfJanuary2020,
+                group.id,
+                firstOfJanuary2020.year,
+                firstOfJanuary2020.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         val operationDays = result.days.map { it.date }
         assertTrue(operationDays.contains(epiphany2020))
@@ -1241,18 +1216,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 .toList()
         insertReservations(child1.id, reservations)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(40), result.children.map { it.reservationTotalHours })
     }
 
@@ -1276,18 +1250,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 .toList()
         insertReservations(child1.id, reservations)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(60), result.children.map { it.reservationTotalHours })
     }
 
@@ -1303,18 +1276,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             ),
         )
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
 
@@ -1330,18 +1302,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             ),
         )
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
 
@@ -1360,18 +1331,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             ),
         )
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
 
@@ -1390,18 +1360,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             ),
         )
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(12), result.children.map { it.reservationTotalHours })
     }
 
@@ -1421,18 +1390,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val backupPeriod = FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(2))
         insertBackupPlacement(child1.id, backupUnit, backupGroup, backupPeriod)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(40), result.children.map { it.reservationTotalHours })
     }
 
@@ -1452,18 +1420,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val backupPeriod = FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(2))
         insertBackupPlacement(child1.id, backupUnit, backupGroup, backupPeriod)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    backupGroup,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                backupGroup,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(16), result.children.map { it.reservationTotalHours })
     }
 
@@ -1491,18 +1458,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         // 1 operational day * 0 h + 1 operational day * 8 h
         assertEquals(listOf(8), result.children.map { it.reservationTotalHours })
@@ -1531,18 +1497,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         // 22 operational days * 8h
         assertEquals(listOf(176), result.children.map { it.reservationTotalHours })
     }
@@ -1566,18 +1531,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         insertDailyServiceTimes(child1.id, dailyServiceTimes)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         // 8-16 + 8-14 (saturday is not included because the unit is not operational on saturdays)
         assertEquals(listOf(14), result.children.map { it.reservationTotalHours })
     }
@@ -1602,18 +1566,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         insertDailyServiceTimes(child1.id, dailyServiceTimes)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         // 21 operational days * 8h + 12h
         assertEquals(listOf(180), result.children.map { it.reservationTotalHours })
     }
@@ -1635,18 +1598,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         insertDailyServiceTimes(child1.id, dailyServiceTimes)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         // 21-9 + 9-15 (overlapping 2 hours are left out)
         assertEquals(listOf(18), result.children.map { it.reservationTotalHours })
     }
@@ -1675,18 +1637,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             it.upsertAbsences(now, employee.evakaUserId, listOf(absence))
         }
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         // the start and end of absence date overlaps with two reservations but only one reservation
         // is left out
         assertEquals(listOf(4 * 12), result.children.map { it.reservationTotalHours })
@@ -1708,18 +1669,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         insertDailyServiceTimes(child1.id, dailyServiceTimes)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(21 + 20 * 8), result.children.map { it.reservationTotalHours })
     }
 
@@ -1763,18 +1723,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             ),
         )
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(
             listOf(
                 2 + // reservation
@@ -1805,18 +1764,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 .toList()
         insertAttendances(child1.id, daycare.id, attendances)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(40), result.children.map { it.attendanceTotalHours })
     }
 
@@ -1840,18 +1798,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 .toList()
         insertAttendances(child1.id, daycare.id, attendances)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(60), result.children.map { it.attendanceTotalHours })
     }
 
@@ -1868,18 +1825,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             ),
         )
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(12), result.children.map { it.attendanceTotalHours })
     }
 
@@ -1896,18 +1852,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             ),
         )
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(12), result.children.map { it.attendanceTotalHours })
     }
 
@@ -1927,18 +1882,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             ),
         )
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(24), result.children.map { it.attendanceTotalHours })
     }
 
@@ -1958,18 +1912,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertBackupPlacement(child1.id, backupUnit, backupGroup, backupPeriod)
         insertAttendances(child1.id, backupUnit, attendances)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(40), result.children.map { it.attendanceTotalHours })
     }
 
@@ -1989,18 +1942,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertBackupPlacement(child1.id, backupUnit, backupGroup, backupPeriod)
         insertAttendances(child1.id, backupUnit, attendances)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    backupGroup,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                backupGroup,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(16), result.children.map { it.attendanceTotalHours })
     }
 
@@ -2010,18 +1962,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val attendances = listOf(HelsinkiDateTime.of(placementStart, LocalTime.of(9, 0)) to null)
         insertAttendances(child1.id, daycare.id, attendances)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(0), result.children.map { it.attendanceTotalHours })
     }
 
@@ -2047,18 +1998,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 .toList()
         insertAttendances(child1.id, daycare.id, attendances)
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 1),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 1),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(listOf(6), result.children.map { it.attendanceTotalHours })
     }
 
@@ -2088,18 +2038,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 .toList(),
         )
 
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 31),
-                    group.id,
-                    2019,
-                    8,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 31),
+                group.id,
+                2019,
+                8,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
         assertEquals(1, result.children.size)
         assertEquals(
             // 22 operation days
@@ -2147,18 +2096,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
 
         val placementDate = placementStart
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    placementDate,
-                    group.id,
-                    placementDate.year,
-                    placementDate.monthValue,
-                    testFeatureConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                placementDate,
+                group.id,
+                placementDate.year,
+                placementDate.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         assertEquals(group.id, result.groupId)
         assertEquals(daycare.name, result.daycareName)
@@ -2358,18 +2306,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val openRangesConfig =
             testFeatureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES)
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 15),
-                    group.id,
-                    2019,
-                    8,
-                    openRangesConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 15),
+                group.id,
+                2019,
+                8,
+                openRangesConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         val holidayDays = result.days.filter { holidayWeek.includes(it.date) }
         holidayDays.forEach { day ->
@@ -2422,18 +2369,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val openRangesConfig =
             testFeatureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES)
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 15),
-                    group.id,
-                    2019,
-                    8,
-                    openRangesConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 15),
+                group.id,
+                2019,
+                8,
+                openRangesConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         val holidayDays = result.days.filter { holidayWeek.includes(it.date) }
         holidayDays.forEach { day ->
@@ -2513,18 +2459,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val openRangesConfig =
             testFeatureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES)
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 15),
-                    group.id,
-                    2019,
-                    8,
-                    openRangesConfig,
-                    calendarOpenBeforePlacementDays = 0,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 15),
+                group.id,
+                2019,
+                8,
+                openRangesConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
 
         val holidayDays = result.days.filter { holidayWeek.includes(it.date) }
         holidayDays.forEach { day ->
@@ -2577,18 +2522,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val openRangesConfig =
             testFeatureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES)
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 15),
-                    group.id,
-                    2019,
-                    8,
-                    openRangesConfig,
-                    calendarOpenBeforePlacementDays = 30,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 15),
+                group.id,
+                2019,
+                8,
+                openRangesConfig,
+                calendarOpenBeforePlacementDays = 30,
+            )
+        }
 
         val holidayDays = result.days.filter { holidayWeek.includes(it.date) }
         holidayDays.forEach { day ->
@@ -2641,18 +2585,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val openRangesConfig =
             testFeatureConfig.copy(holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES)
-        val result =
-            db.read {
-                getGroupMonthCalendar(
-                    it,
-                    LocalDate.of(2019, 8, 15),
-                    group.id,
-                    2019,
-                    8,
-                    openRangesConfig,
-                    calendarOpenBeforePlacementDays = 14,
-                )
-            }
+        val result = db.read {
+            getGroupMonthCalendar(
+                it,
+                LocalDate.of(2019, 8, 15),
+                group.id,
+                2019,
+                8,
+                openRangesConfig,
+                calendarOpenBeforePlacementDays = 14,
+            )
+        }
 
         val holidayDays = result.days.filter { holidayWeek.includes(it.date) }
         holidayDays.forEach { day ->

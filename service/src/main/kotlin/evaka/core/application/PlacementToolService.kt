@@ -190,10 +190,9 @@ WHERE application.type = 'PRESCHOOL'
         clock: EvakaClock,
         ssn: String,
     ): PersonId {
-        val child =
-            db.transaction { tx ->
-                personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))
-            }
+        val child = db.transaction { tx ->
+            personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))
+        }
         fridgeFamilyService.updateChildAndFamilyFromVtj(db, user, clock, child!!.id)
         return child.id
     }

@@ -389,13 +389,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
 
         // then 4 reservathions
-        val reservations =
-            db.read {
-                it.getReservationsForChildInRange(
-                    childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd),
-                )
-            }
+        val reservations = db.read {
+            it.getReservationsForChildInRange(
+                childId,
+                FiniteDateRange(activePlacementStart, activePlacementEnd),
+            )
+        }
         assertEquals(4, reservations.size)
         assertTrue(reservations.containsKey(firstReservation))
         assertTrue(reservations.containsKey(secondReservation))
@@ -440,13 +439,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertNotNull(secondGroupPlacementId)
 
         // Verify that the future absences in new placement period has been deleted
-        val updatedReservations =
-            db.read {
-                it.getReservationsForChildInRange(
-                    childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd),
-                )
-            }
+        val updatedReservations = db.read {
+            it.getReservationsForChildInRange(
+                childId,
+                FiniteDateRange(activePlacementStart, activePlacementEnd),
+            )
+        }
         assertEquals(2, updatedReservations.size)
         assertTrue(updatedReservations.containsKey(firstReservation))
         assertTrue(updatedReservations.containsKey(secondReservation))
@@ -579,13 +577,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
 
         // then 4 reservathions
-        val reservations =
-            db.read {
-                it.getReservationsForChildInRange(
-                    childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd),
-                )
-            }
+        val reservations = db.read {
+            it.getReservationsForChildInRange(
+                childId,
+                FiniteDateRange(activePlacementStart, activePlacementEnd),
+            )
+        }
         assertEquals(4, reservations.size)
         assertTrue(reservations.containsKey(firstReservation))
         assertTrue(reservations.containsKey(secondReservation))
@@ -611,13 +608,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(updatedPlacement.endDate, newEndDate)
 
         // Verify that the future reservations in new placement period has been deleted
-        val updatedReservations =
-            db.read {
-                it.getReservationsForChildInRange(
-                    childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd),
-                )
-            }
+        val updatedReservations = db.read {
+            it.getReservationsForChildInRange(
+                childId,
+                FiniteDateRange(activePlacementStart, activePlacementEnd),
+            )
+        }
         assertEquals(2, updatedReservations.size)
         assertTrue(updatedReservations.containsKey(firstReservation))
         assertTrue(updatedReservations.containsKey(secondReservation))
@@ -736,13 +732,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             )
         }
 
-        val reservations =
-            db.read {
-                it.getReservationsForChildInRange(
-                    childId,
-                    FiniteDateRange(activePlacementStart, futurePlacementEnd),
-                )
-            }
+        val reservations = db.read {
+            it.getReservationsForChildInRange(
+                childId,
+                FiniteDateRange(activePlacementStart, futurePlacementEnd),
+            )
+        }
         assertEquals(2, reservations.size)
         assertTrue(reservations.containsKey(firstReservation))
         assertTrue(reservations.containsKey(secondReservation))
@@ -751,13 +746,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertNull(db.read { r -> r.getPlacement(futurePlacement.id) })
 
         // Verify that the future reservations in new placement period has been deleted
-        val updatedReservations =
-            db.read {
-                it.getReservationsForChildInRange(
-                    childId,
-                    FiniteDateRange(activePlacementStart, futurePlacementEnd),
-                )
-            }
+        val updatedReservations = db.read {
+            it.getReservationsForChildInRange(
+                childId,
+                FiniteDateRange(activePlacementStart, futurePlacementEnd),
+            )
+        }
         assertEquals(1, updatedReservations.size)
         assertTrue(updatedReservations.containsKey(firstReservation))
     }
@@ -814,13 +808,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
 
         // then 4 reservathions
-        val reservations =
-            db.read {
-                it.getReservationsForChildInRange(
-                    childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd),
-                )
-            }
+        val reservations = db.read {
+            it.getReservationsForChildInRange(
+                childId,
+                FiniteDateRange(activePlacementStart, activePlacementEnd),
+            )
+        }
         assertEquals(4, reservations.size)
         assertTrue(reservations.containsKey(firstReservation))
         assertTrue(reservations.containsKey(secondReservation))
@@ -834,13 +827,12 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertNull(db.read { r -> r.getPlacement(activePlacement.id) })
 
         // Verify that the future reservations in new placement period has been deleted
-        val updatedReservations =
-            db.read {
-                it.getReservationsForChildInRange(
-                    childId,
-                    FiniteDateRange(activePlacementStart, activePlacementEnd),
-                )
-            }
+        val updatedReservations = db.read {
+            it.getReservationsForChildInRange(
+                childId,
+                FiniteDateRange(activePlacementStart, activePlacementEnd),
+            )
+        }
         assertEquals(2, updatedReservations.size)
         assertTrue(updatedReservations.containsKey(firstReservation))
         assertTrue(updatedReservations.containsKey(secondReservation))
@@ -884,10 +876,9 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `deleting group placement works`() {
-        val groupPlacementId =
-            db.transaction { tx ->
-                tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
-            }
+        val groupPlacementId = db.transaction { tx ->
+            tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
+        }
 
         deleteGroupPlacement(groupPlacementId)
 
@@ -899,29 +890,27 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `unit supervisor sees placements to her unit only`() {
-        val allowedId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = daycareId,
-                        startDate = LocalDate.now(),
-                        endDate = LocalDate.now().plusDays(1),
-                    )
+        val allowedId = db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = LocalDate.now(),
+                    endDate = LocalDate.now().plusDays(1),
                 )
-            }
+            )
+        }
 
-        val restrictedId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = daycare2.id,
-                        startDate = LocalDate.now().minusDays(2),
-                        endDate = LocalDate.now().minusDays(1),
-                    )
+        val restrictedId = db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycare2.id,
+                    startDate = LocalDate.now().minusDays(2),
+                    endDate = LocalDate.now().minusDays(1),
                 )
-            }
+            )
+        }
 
         val response = getChildPlacements(user = unitSupervisor)
 
@@ -938,17 +927,16 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val newStart = placementStart.plusDays(1)
         val newEnd = placementEnd.minusDays(2)
         val allowedId = testPlacement.id
-        val restrictedId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = daycare2.id,
-                        startDate = placementEnd.plusDays(1),
-                        endDate = placementEnd.plusMonths(2),
-                    )
+        val restrictedId = db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycare2.id,
+                    startDate = placementEnd.plusDays(1),
+                    endDate = placementEnd.plusMonths(2),
                 )
-            }
+            )
+        }
         val body = PlacementUpdateRequestBody(startDate = newStart, endDate = newEnd)
 
         assertThrows<Forbidden> { updatePlacement(restrictedId, body) }
@@ -987,24 +975,23 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `unit supervisor can modify placement if it overlaps with another that supervisor has the rights to`() {
         val newEnd = placementEnd.plusDays(1)
-        val secondPlacement =
-            db.transaction { tx ->
-                tx.insert(
-                        DevPlacement(
-                            childId = childId,
-                            unitId = daycare2.id,
-                            startDate = newEnd,
-                            endDate = newEnd.plusMonths(2),
-                        )
+        val secondPlacement = db.transaction { tx ->
+            tx.insert(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycare2.id,
+                        startDate = newEnd,
+                        endDate = newEnd.plusMonths(2),
                     )
-                    .also {
-                        tx.updateDaycareAclWithEmployee(
-                            daycare2.id,
-                            unitSupervisor.id,
-                            UserRole.UNIT_SUPERVISOR,
-                        )
-                    }
-            }
+                )
+                .also {
+                    tx.updateDaycareAclWithEmployee(
+                        daycare2.id,
+                        unitSupervisor.id,
+                        UserRole.UNIT_SUPERVISOR,
+                    )
+                }
+        }
 
         val body =
             PlacementUpdateRequestBody(
@@ -1035,10 +1022,9 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `service worker cannot remove placements`() {
-        val groupPlacementId =
-            db.transaction { tx ->
-                tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
-            }
+        val groupPlacementId = db.transaction { tx ->
+            tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
+        }
 
         assertThrows<Forbidden> { deleteGroupPlacement(groupPlacementId, serviceWorker) }
     }
@@ -1194,11 +1180,9 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 )
             )
         }
-        val placement =
-            db.read { r ->
-                r.getDaycarePlacements(daycareId, childId, placementStartDate, placementEndDate)
-                    .first()
-            }
+        val placement = db.read { r ->
+            r.getDaycarePlacements(daycareId, childId, placementStartDate, placementEndDate).first()
+        }
         val groupPlacementId =
             placementController.createGroupPlacement(
                 dbInstance(),
@@ -1212,9 +1196,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         return placement
     }
 
-    private fun getAbsencesOfChildByRange(range: DateRange) =
-        db.read { tx ->
-            tx.getAbsencesOfChildByRange(childId, range)
-                .sortedWith(compareBy({ it.date }, { it.category }))
-        }
+    private fun getAbsencesOfChildByRange(range: DateRange) = db.read { tx ->
+        tx.getAbsencesOfChildByRange(childId, range)
+            .sortedWith(compareBy({ it.date }, { it.category }))
+    }
 }

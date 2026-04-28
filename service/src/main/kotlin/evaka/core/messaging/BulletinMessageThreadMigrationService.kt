@@ -48,8 +48,9 @@ class BulletinMessageThreadMigrationService(asyncJobRunner: AsyncJobRunner<Async
 
         // Migrate all bulletin staff copy threads
         while (total < msg.batchSize) {
-            val contentId =
-                db.read { tx -> tx.findBulletinContentIdWithDuplicateStaffCopyThreads() }
+            val contentId = db.read { tx ->
+                tx.findBulletinContentIdWithDuplicateStaffCopyThreads()
+            }
 
             if (contentId == null) {
                 logger.info { "No more bulletin staff copy threads to migrate" }

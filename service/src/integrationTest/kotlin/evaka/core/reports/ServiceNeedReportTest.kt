@@ -108,14 +108,11 @@ class ServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `value filters`() {
         val today = clock.today()
-        val unitSupervisor =
-            db.transaction { tx ->
-                DevEmployee()
-                    .also {
-                        tx.insert(it, unitRoles = mapOf(unit11.id to UserRole.UNIT_SUPERVISOR))
-                    }
-                    .user
-            }
+        val unitSupervisor = db.transaction { tx ->
+            DevEmployee()
+                .also { tx.insert(it, unitRoles = mapOf(unit11.id to UserRole.UNIT_SUPERVISOR)) }
+                .user
+        }
         val rowsByAge =
             (0..8).associateWith { age ->
                 ServiceNeedReportRow(

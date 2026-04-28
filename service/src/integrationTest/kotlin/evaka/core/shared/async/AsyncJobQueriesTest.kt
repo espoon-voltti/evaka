@@ -33,11 +33,9 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 JobParams(TestJob(id), 1234, Duration.ofMinutes(42), HelsinkiDateTime.now())
             )
         }
-        val runAt =
-            db.read {
-                it.createQuery { sql("SELECT run_at FROM async_job") }
-                    .exactlyOne<HelsinkiDateTime>()
-            }
+        val runAt = db.read {
+            it.createQuery { sql("SELECT run_at FROM async_job") }.exactlyOne<HelsinkiDateTime>()
+        }
 
         val ref = db.transaction { it.claimJob(HelsinkiDateTime.now(), listOf(jobType))!! }
         assertEquals(jobType, ref.jobType)
@@ -56,11 +54,10 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.completeJob(ref, HelsinkiDateTime.now())
         }
 
-        val completedAt =
-            db.read {
-                it.createQuery { sql("SELECT completed_at FROM async_job") }
-                    .exactlyOne<HelsinkiDateTime>()
-            }
+        val completedAt = db.read {
+            it.createQuery { sql("SELECT completed_at FROM async_job") }
+                .exactlyOne<HelsinkiDateTime>()
+        }
         assertTrue(completedAt > runAt)
     }
 
@@ -130,20 +127,19 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.removeOldAsyncJobs(now)
 
-        val remainingJobs =
-            db.read {
-                it.createQuery {
-                        sql(
-                            "SELECT run_at, completed_at IS NOT NULL AS completed FROM async_job ORDER BY 1,2"
-                        )
-                    }
-                    .toList {
-                        TestJobParams(
-                            runAt = column<HelsinkiDateTime>("run_at").toLocalDate(),
-                            completed = column("completed"),
-                        )
-                    }
-            }
+        val remainingJobs = db.read {
+            it.createQuery {
+                    sql(
+                        "SELECT run_at, completed_at IS NOT NULL AS completed FROM async_job ORDER BY 1,2"
+                    )
+                }
+                .toList {
+                    TestJobParams(
+                        runAt = column<HelsinkiDateTime>("run_at").toLocalDate(),
+                        completed = column("completed"),
+                    )
+                }
+        }
         assertEquals(
             listOf(
                 TestJobParams(recent, completed = false),

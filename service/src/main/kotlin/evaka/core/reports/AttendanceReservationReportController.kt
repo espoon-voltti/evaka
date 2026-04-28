@@ -366,10 +366,9 @@ data class DailyChildData(
     fun isPresent(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15): PresenceStatus {
         if (fullDayAbsence) return PresenceStatus.ABSENT
         if (reservations.isNotEmpty()) {
-            val hasReservation =
-                reservations.any {
-                    it.copy(end = it.end.plusMinutes(bufferMinutes)).overlaps(during)
-                }
+            val hasReservation = reservations.any {
+                it.copy(end = it.end.plusMinutes(bufferMinutes)).overlaps(during)
+            }
             return if (hasReservation) PresenceStatus.PRESENT else PresenceStatus.ABSENT
         } else if (serviceTimes != null) {
             when (serviceTimes) {
@@ -393,8 +392,9 @@ data class DailyChildData(
         return PresenceStatus.UNKNOWN
     }
 
-    fun wasPresent(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15) =
-        reservations.any { it.copy(end = it.end.plusMinutes(bufferMinutes)).overlaps(during) }
+    fun wasPresent(during: HelsinkiDateTimeRange, bufferMinutes: Long = 15) = reservations.any {
+        it.copy(end = it.end.plusMinutes(bufferMinutes)).overlaps(during)
+    }
 }
 
 private data class Group(val id: GroupId?, val name: String?)
@@ -450,58 +450,55 @@ fun getAttendanceReservationReport(
             }
         }
 
-    val dailyChildData =
-        placementStuff.map { placementInfo ->
-            val date = placementInfo.date
-            val childId = placementInfo.childId
+    val dailyChildData = placementStuff.map { placementInfo ->
+        val date = placementInfo.date
+        val childId = placementInfo.childId
 
-            val serviceNeed = serviceNeedsMap[childId]?.firstOrNull { it.range.includes(date) }
-            val childAgeYears = Period.between(childInfoMap[childId]!!.dateOfBirth, date).years
-            val serviceNeedFactor =
-                when {
-                    daycare.type.any {
-                        listOf(CareType.FAMILY, CareType.GROUP_FAMILY).contains(it)
-                    } -> {
-                        familyUnitPlacementCoefficient.toDouble()
-                    }
-
-                    childAgeYears < 3 -> {
-                        serviceNeed?.occupancyCoefficientUnder
-                            ?: placementInfo.occupancyCoefficientUnder
-                    }
-
-                    else -> {
-                        serviceNeed?.occupancyCoefficientOver
-                            ?: placementInfo.occupancyCoefficientOver
-                    }
+        val serviceNeed = serviceNeedsMap[childId]?.firstOrNull { it.range.includes(date) }
+        val childAgeYears = Period.between(childInfoMap[childId]!!.dateOfBirth, date).years
+        val serviceNeedFactor =
+            when {
+                daycare.type.any {
+                    listOf(CareType.FAMILY, CareType.GROUP_FAMILY).contains(it)
+                } -> {
+                    familyUnitPlacementCoefficient.toDouble()
                 }
-            val assistanceNeedFactor =
-                assistanceNeedsMap[childId]?.firstOrNull { it.range.includes(date) }?.capacityFactor
-                    ?: 1.0
-            val capacityFactor = serviceNeedFactor * assistanceNeedFactor
-            val reservations =
-                reservationsMap[childId]?.filter { it.start.toLocalDate() == date } ?: emptyList()
-            val absenceCategories = absences[childId]?.get(date) ?: emptySet()
-            val fullDayAbsence =
-                absenceCategories == placementInfo.placementType.absenceCategories()
-            val serviceTimes =
-                serviceTimesMap[childId]
-                    ?.firstOrNull { it.validityPeriod.includes(date) }
-                    ?.getTimesOnDate(date)
 
-            DailyChildData(
-                childId = childId,
-                date = date,
-                groupId = placementInfo.groupId,
-                groupName = placementInfo.groupName,
-                age = childAgeYears,
-                capacityFactor = capacityFactor,
-                serviceTimes = serviceTimes,
-                reservations = reservations,
-                fullDayAbsence = fullDayAbsence,
-                hasShiftCare = placementInfo.hasShiftCare,
-            )
-        }
+                childAgeYears < 3 -> {
+                    serviceNeed?.occupancyCoefficientUnder
+                        ?: placementInfo.occupancyCoefficientUnder
+                }
+
+                else -> {
+                    serviceNeed?.occupancyCoefficientOver ?: placementInfo.occupancyCoefficientOver
+                }
+            }
+        val assistanceNeedFactor =
+            assistanceNeedsMap[childId]?.firstOrNull { it.range.includes(date) }?.capacityFactor
+                ?: 1.0
+        val capacityFactor = serviceNeedFactor * assistanceNeedFactor
+        val reservations =
+            reservationsMap[childId]?.filter { it.start.toLocalDate() == date } ?: emptyList()
+        val absenceCategories = absences[childId]?.get(date) ?: emptySet()
+        val fullDayAbsence = absenceCategories == placementInfo.placementType.absenceCategories()
+        val serviceTimes =
+            serviceTimesMap[childId]
+                ?.firstOrNull { it.validityPeriod.includes(date) }
+                ?.getTimesOnDate(date)
+
+        DailyChildData(
+            childId = childId,
+            date = date,
+            groupId = placementInfo.groupId,
+            groupName = placementInfo.groupName,
+            age = childAgeYears,
+            capacityFactor = capacityFactor,
+            serviceTimes = serviceTimes,
+            reservations = reservations,
+            fullDayAbsence = fullDayAbsence,
+            hasShiftCare = placementInfo.hasShiftCare,
+        )
+    }
 
     val seqEnd = HelsinkiDateTime.atStartOfDay(end).plusDays(1).minusMinutes(15)
     return dailyChildData
@@ -623,60 +620,57 @@ fun getAttendanceReservationReportByChild(
             }
     val serviceTimesMap = tx.getDailyServiceTimesForChildren(allChildren.toSet())
 
-    val rows =
-        placementStuff.flatMap { placementInfo ->
-            val serviceNeed =
-                serviceNeedsMap[placementInfo.childId]?.firstOrNull {
-                    it.range.includes(placementInfo.date)
-                }
-            val operationDays =
-                daycare.shiftCareOperationDays.takeIf {
-                    serviceNeed != null && serviceNeed.shiftCare != ShiftCareType.NONE
-                } ?: daycare.operationDays
-            if (!operationDays.contains(placementInfo.date.dayOfWeek.value)) {
-                return@flatMap emptyList()
+    val rows = placementStuff.flatMap { placementInfo ->
+        val serviceNeed =
+            serviceNeedsMap[placementInfo.childId]?.firstOrNull {
+                it.range.includes(placementInfo.date)
             }
+        val operationDays =
+            daycare.shiftCareOperationDays.takeIf {
+                serviceNeed != null && serviceNeed.shiftCare != ShiftCareType.NONE
+            } ?: daycare.operationDays
+        if (!operationDays.contains(placementInfo.date.dayOfWeek.value)) {
+            return@flatMap emptyList()
+        }
 
-            val reservations =
-                (reservationsMap[placementInfo.childId] ?: emptyList())
-                    .filter { it.start.toLocalDate() == placementInfo.date }
-                    .sortedBy { it.start }
-                    .map { TimeRange(it.start.toLocalTime(), it.end.toLocalTime()) }
-            val serviceTimes =
-                serviceTimesMap[placementInfo.childId]
-                    ?.firstOrNull { it.validityPeriod.includes(placementInfo.date) }
-                    ?.getTimesOnDate(placementInfo.date)
-            val absenceCategories =
-                absences[placementInfo.childId]?.get(placementInfo.date) ?: emptySet()
-            val fullDayAbsence =
-                absenceCategories == placementInfo.placementType.absenceCategories()
+        val reservations =
+            (reservationsMap[placementInfo.childId] ?: emptyList())
+                .filter { it.start.toLocalDate() == placementInfo.date }
+                .sortedBy { it.start }
+                .map { TimeRange(it.start.toLocalTime(), it.end.toLocalTime()) }
+        val serviceTimes =
+            serviceTimesMap[placementInfo.childId]
+                ?.firstOrNull { it.validityPeriod.includes(placementInfo.date) }
+                ?.getTimesOnDate(placementInfo.date)
+        val absenceCategories =
+            absences[placementInfo.childId]?.get(placementInfo.date) ?: emptySet()
+        val fullDayAbsence = absenceCategories == placementInfo.placementType.absenceCategories()
 
-            val entry = { reservation: TimeRange?, absent: Boolean ->
-                AttendanceReservationByChildEntry(
-                    childId = placementInfo.childId,
-                    groupId = placementInfo.groupId,
-                    groupName = placementInfo.groupName,
-                    date = placementInfo.date,
-                    reservation = reservation,
-                    fullDayAbsence = absent,
-                    backupCare = placementInfo.backupCare,
-                    hasShiftCare = placementInfo.hasShiftCare,
-                )
+        val entry = { reservation: TimeRange?, absent: Boolean ->
+            AttendanceReservationByChildEntry(
+                childId = placementInfo.childId,
+                groupId = placementInfo.groupId,
+                groupName = placementInfo.groupName,
+                date = placementInfo.date,
+                reservation = reservation,
+                fullDayAbsence = absent,
+                backupCare = placementInfo.backupCare,
+                hasShiftCare = placementInfo.hasShiftCare,
+            )
+        }
+        if (fullDayAbsence) {
+            listOf(entry(null, true))
+        } else {
+            val effectiveReservations = reservations.ifEmpty {
+                listOfNotNull((serviceTimes as? ServiceTimesPresenceStatus.Present)?.times)
             }
-            if (fullDayAbsence) {
-                listOf(entry(null, true))
+            if (effectiveReservations.isEmpty()) {
+                listOf(entry(null, false))
             } else {
-                val effectiveReservations =
-                    reservations.ifEmpty {
-                        listOfNotNull((serviceTimes as? ServiceTimesPresenceStatus.Present)?.times)
-                    }
-                if (effectiveReservations.isEmpty()) {
-                    listOf(entry(null, false))
-                } else {
-                    effectiveReservations.map { entry(it, false) }
-                }
+                effectiveReservations.map { entry(it, false) }
             }
         }
+    }
 
     return if (groupIds == null) {
         // Whole unit as one "group"

@@ -162,18 +162,16 @@ class SystemController(
         user: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @PathVariable id: PersonId,
-    ): CitizenUserResponse =
-        db.connect { dbc ->
-            dbc.read { tx ->
-                    val details = tx.getCitizenUserDetails(id) ?: throw NotFound()
-                    val accessibleFeatures =
-                        accessControlCitizen.getPermittedFeatures(tx, clock, id)
-                    // TODO: remove this extra field, which is only for backwards compatibility
-                    val authLevel = CitizenAuthLevel.WEAK // dummy value, which isn't really used
-                    CitizenUserResponse(details, accessibleFeatures, authLevel)
-                }
-                .also { Audit.CitizenUserDetailsRead.log(targetId = AuditId(id)) }
-        }
+    ): CitizenUserResponse = db.connect { dbc ->
+        dbc.read { tx ->
+                val details = tx.getCitizenUserDetails(id) ?: throw NotFound()
+                val accessibleFeatures = accessControlCitizen.getPermittedFeatures(tx, clock, id)
+                // TODO: remove this extra field, which is only for backwards compatibility
+                val authLevel = CitizenAuthLevel.WEAK // dummy value, which isn't really used
+                CitizenUserResponse(details, accessibleFeatures, authLevel)
+            }
+            .also { Audit.CitizenUserDetailsRead.log(targetId = AuditId(id)) }
+    }
 
     @PostMapping("/system/employee-login")
     fun employeeLogin(

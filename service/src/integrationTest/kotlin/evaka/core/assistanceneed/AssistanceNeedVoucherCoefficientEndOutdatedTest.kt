@@ -324,25 +324,22 @@ class AssistanceNeedVoucherCoefficientEndOutdatedTest : PureJdbiTest(resetDbBefo
         assertEquals(listOf(now), getModifiedAtValues())
     }
 
-    private fun getCoefficientRanges() =
-        db.read {
-            it.createQuery {
-                    sql(
-                        "SELECT validity_period FROM assistance_need_voucher_coefficient ORDER BY validity_period"
-                    )
-                }
-                .toList<FiniteDateRange>()
-        }
+    private fun getCoefficientRanges() = db.read {
+        it.createQuery {
+                sql(
+                    "SELECT validity_period FROM assistance_need_voucher_coefficient ORDER BY validity_period"
+                )
+            }
+            .toList<FiniteDateRange>()
+    }
 
-    private fun getModifiedByValues() =
-        db.read {
-            it.createQuery { sql("SELECT modified_by FROM assistance_need_voucher_coefficient") }
-                .toList<EvakaUserId>()
-        }
+    private fun getModifiedByValues() = db.read {
+        it.createQuery { sql("SELECT modified_by FROM assistance_need_voucher_coefficient") }
+            .toList<EvakaUserId>()
+    }
 
-    private fun getModifiedAtValues() =
-        db.read {
-            it.createQuery { sql("SELECT modified_at FROM assistance_need_voucher_coefficient") }
-                .toList<HelsinkiDateTime>()
-        }
+    private fun getModifiedAtValues() = db.read {
+        it.createQuery { sql("SELECT modified_at FROM assistance_need_voucher_coefficient") }
+            .toList<HelsinkiDateTime>()
+    }
 }

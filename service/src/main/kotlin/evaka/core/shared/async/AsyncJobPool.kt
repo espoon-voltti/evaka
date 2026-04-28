@@ -66,37 +66,36 @@ class AsyncJobPool<T : AsyncJobPayload>(
     private val metrics: AtomicReference<Metrics> = AtomicReference()
 
     private val throttleInterval = config.throttleInterval ?: Duration.ZERO
-    private val executor =
-        config.let {
-            val corePoolSize = 1
-            val maximumPoolSize = it.concurrency
-            val keepAliveTime = Pair(1L, TimeUnit.MINUTES)
-            val workQueue = SynchronousQueue<Runnable>()
-            val threadNumber = AtomicInteger(1)
-            val threadFactory = { r: Runnable ->
-                thread(
-                    start = false,
-                    name = "$fullName.worker-${threadNumber.getAndIncrement()}",
-                    priority = Thread.MIN_PRIORITY,
-                    block = {
-                        try {
-                            r.run()
-                        } catch (e: Exception) {
-                            logger.error(e) { "Error running pool $fullName worker" }
-                        }
-                    },
-                )
-            }
-            ThreadPoolExecutor(
-                corePoolSize,
-                maximumPoolSize,
-                keepAliveTime.first,
-                keepAliveTime.second,
-                workQueue,
-                threadFactory,
-                ThreadPoolExecutor.DiscardPolicy(),
+    private val executor = config.let {
+        val corePoolSize = 1
+        val maximumPoolSize = it.concurrency
+        val keepAliveTime = Pair(1L, TimeUnit.MINUTES)
+        val workQueue = SynchronousQueue<Runnable>()
+        val threadNumber = AtomicInteger(1)
+        val threadFactory = { r: Runnable ->
+            thread(
+                start = false,
+                name = "$fullName.worker-${threadNumber.getAndIncrement()}",
+                priority = Thread.MIN_PRIORITY,
+                block = {
+                    try {
+                        r.run()
+                    } catch (e: Exception) {
+                        logger.error(e) { "Error running pool $fullName worker" }
+                    }
+                },
             )
         }
+        ThreadPoolExecutor(
+            corePoolSize,
+            maximumPoolSize,
+            keepAliveTime.first,
+            keepAliveTime.second,
+            workQueue,
+            threadFactory,
+            ThreadPoolExecutor.DiscardPolicy(),
+        )
+    }
 
     val activeWorkerCount: Int
         get() = executor.activeCount
@@ -120,8 +119,9 @@ class AsyncJobPool<T : AsyncJobPayload>(
         )
     }
 
-    fun runPendingJobs(clock: EvakaClock, maxCount: Int) =
-        executor.execute { runWorker(clock, maxCount) }
+    fun runPendingJobs(clock: EvakaClock, maxCount: Int) = executor.execute {
+        runWorker(clock, maxCount)
+    }
 
     fun runPendingJobsSync(clock: EvakaClock, maxCount: Int): Int {
         val task = FutureTask { runWorker(clock, maxCount) }
@@ -194,22 +194,21 @@ class AsyncJobPool<T : AsyncJobPayload>(
             MdcKey.SPAN_ID.set(randomTracingId())
             Span.current().setAttribute(Tracing.evakaTraceId, traceId)
             logger.info(logMeta) { "Running async job $job" }
-            val completed =
-                db.transaction { tx ->
-                    tx.setLockTimeout(Duration.ofSeconds(5))
-                    tx.startJob(job, clock.now())?.let { msg ->
-                        msg.user?.let {
-                            MdcKey.USER_ID.set(it.rawId().toString())
-                            MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
-                            Span.current().setAttribute(Tracing.enduserIdHash, it.rawIdHash)
-                        }
-                        registration
-                            .handlerFor(job.jobType)
-                            .run(Database(jdbi, tracer), clock, msg, job.remainingAttempts)
-                        tx.completeJob(job, clock.now())
-                        true
-                    } ?: false
-                }
+            val completed = db.transaction { tx ->
+                tx.setLockTimeout(Duration.ofSeconds(5))
+                tx.startJob(job, clock.now())?.let { msg ->
+                    msg.user?.let {
+                        MdcKey.USER_ID.set(it.rawId().toString())
+                        MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
+                        Span.current().setAttribute(Tracing.enduserIdHash, it.rawIdHash)
+                    }
+                    registration
+                        .handlerFor(job.jobType)
+                        .run(Database(jdbi, tracer), clock, msg, job.remainingAttempts)
+                    tx.completeJob(job, clock.now())
+                    true
+                } ?: false
+            }
             if (completed) {
                 logger.info(logMeta) { "Completed async job $job" }
             } else {

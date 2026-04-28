@@ -353,13 +353,12 @@ class ChildControllerCitizenTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `getChildren permitted actions contains READ_DAILY_SERVICE_TIMES in Espoo`() {
-        val guardianId =
-            db.transaction { tx ->
-                val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
-                tx.insertGuardian(guardianId = guardianId, childId = childId)
-                guardianId
-            }
+        val guardianId = db.transaction { tx ->
+            val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+            val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insertGuardian(guardianId = guardianId, childId = childId)
+            guardianId
+        }
 
         val espooChildControllerCitizen =
             ChildControllerCitizen(

@@ -1476,39 +1476,38 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         serviceNeedOption: ServiceNeedOption = snDefaultDaycare,
         assistanceNeedCoefficient: BigDecimal = BigDecimal("1.00"),
     ): VoucherValueDecision {
-        val id =
-            db.transaction {
-                val decision =
-                    createVoucherValueDecisionFixture(
-                        status = VoucherValueDecisionStatus.DRAFT,
-                        validFrom = validFrom,
-                        validTo = validTo,
-                        headOfFamilyId = adult.id,
-                        childId = child.id,
-                        dateOfBirth = child.dateOfBirth,
-                        unitId = unitId,
-                        value = value,
-                        coPayment = coPayment,
-                        placementType = PlacementType.DAYCARE,
-                        assistanceNeedCoefficient = assistanceNeedCoefficient,
-                        serviceNeed = serviceNeedOption.toValueDecisionServiceNeed(),
-                        feeAlterations = feeAlterations,
-                    )
-                it.upsertValueDecisions(listOf(decision))
-
-                sendVoucherValueDecisions(
-                    tx = it,
-                    asyncJobRunner = asyncJobRunner,
-                    user = financeUser,
-                    evakaEnv = evakaEnv,
-                    metadata = CaseProcessMetadataService(featureConfig),
-                    now = approvedAt,
-                    ids = listOf(decision.id),
-                    decisionHandlerId = null,
-                    alwaysUseDaycareFinanceDecisionHandler,
+        val id = db.transaction {
+            val decision =
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = validFrom,
+                    validTo = validTo,
+                    headOfFamilyId = adult.id,
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = unitId,
+                    value = value,
+                    coPayment = coPayment,
+                    placementType = PlacementType.DAYCARE,
+                    assistanceNeedCoefficient = assistanceNeedCoefficient,
+                    serviceNeed = serviceNeedOption.toValueDecisionServiceNeed(),
+                    feeAlterations = feeAlterations,
                 )
-                decision.id
-            }
+            it.upsertValueDecisions(listOf(decision))
+
+            sendVoucherValueDecisions(
+                tx = it,
+                asyncJobRunner = asyncJobRunner,
+                user = financeUser,
+                evakaEnv = evakaEnv,
+                metadata = CaseProcessMetadataService(featureConfig),
+                now = approvedAt,
+                ids = listOf(decision.id),
+                decisionHandlerId = null,
+                alwaysUseDaycareFinanceDecisionHandler,
+            )
+            decision.id
+        }
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 

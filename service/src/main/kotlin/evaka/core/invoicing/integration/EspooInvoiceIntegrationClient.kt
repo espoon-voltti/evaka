@@ -131,23 +131,22 @@ class EspooInvoiceIntegrationClient(
                                                         emptyRow(
                                                             "${child.lastName.take(invoicingLastNameMaxLength)} ${child.firstName}"
                                                         )
-                                                    val rowsWithContent =
-                                                        rows.map { row ->
-                                                            invoiceRow(
-                                                                lang,
-                                                                agType,
-                                                                invoice.account,
-                                                                row.product,
-                                                                row.periodStart,
-                                                                row.periodEnd,
-                                                                row.amount,
-                                                                row.unitPrice,
-                                                                row.price,
-                                                                row.description.trim(),
-                                                                row.costCenter.trim(),
-                                                                row.subCostCenter?.trim(),
-                                                            )
-                                                        }
+                                                    val rowsWithContent = rows.map { row ->
+                                                        invoiceRow(
+                                                            lang,
+                                                            agType,
+                                                            invoice.account,
+                                                            row.product,
+                                                            row.periodStart,
+                                                            row.periodEnd,
+                                                            row.amount,
+                                                            row.unitPrice,
+                                                            row.price,
+                                                            row.description.trim(),
+                                                            row.costCenter.trim(),
+                                                            row.subCostCenter?.trim(),
+                                                        )
+                                                    }
                                                     listOf(nameRow) +
                                                         rowsWithContent +
                                                         listOf(emptyRow())

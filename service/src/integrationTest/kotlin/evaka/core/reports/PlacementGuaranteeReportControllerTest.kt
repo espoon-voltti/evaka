@@ -36,34 +36,32 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
         val date = LocalDate.of(2023, 9, 12)
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val clock = MockEvakaClock(HelsinkiDateTime.of(date, LocalTime.of(8, 8)))
-        val unitId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                tx.insert(DevDaycare(areaId = areaId))
-            }
-        val childId =
-            db.transaction { tx ->
-                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = date.minusDays(1),
-                        endDate = date.minusDays(1),
-                        placeGuarantee = false,
-                    )
+        val unitId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            tx.insert(DevDaycare(areaId = areaId))
+        }
+        val childId = db.transaction { tx ->
+            val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = date.minusDays(1),
+                    endDate = date.minusDays(1),
+                    placeGuarantee = false,
                 )
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = unitId,
-                        startDate = date.plusDays(1),
-                        endDate = date.plusDays(1),
-                        placeGuarantee = true,
-                    )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = date.plusDays(1),
+                    endDate = date.plusDays(1),
+                    placeGuarantee = true,
                 )
-                childId
-            }
+            )
+            childId
+        }
 
         val yesterdayReport =
             placementGuaranteeReportController.getPlacementGuaranteeReport(
@@ -101,58 +99,56 @@ class PlacementGuaranteeReportControllerTest : FullApplicationTest(resetDbBefore
         val areaId = db.transaction { tx -> tx.insert(DevCareArea()) }
         val unitId1 = db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId)) }
         val unitId2 = db.transaction { tx -> tx.insert(DevDaycare(areaId = areaId)) }
-        val childId =
-            db.transaction { tx ->
-                val childId1 = tx.insert(DevPerson(), DevPersonType.CHILD)
-                tx.insert(
-                    DevPlacement(
-                        childId = childId1,
-                        unitId = unitId1,
-                        startDate = date.minusDays(1),
-                        endDate = date.minusDays(1),
-                        placeGuarantee = false,
-                    )
+        val childId = db.transaction { tx ->
+            val childId1 = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childId1,
+                    unitId = unitId1,
+                    startDate = date.minusDays(1),
+                    endDate = date.minusDays(1),
+                    placeGuarantee = false,
                 )
-                tx.insert(
-                    DevPlacement(
-                        childId = childId1,
-                        unitId = unitId1,
-                        startDate = date.plusDays(1),
-                        endDate = date.plusDays(1),
-                        placeGuarantee = true,
-                    )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = childId1,
+                    unitId = unitId1,
+                    startDate = date.plusDays(1),
+                    endDate = date.plusDays(1),
+                    placeGuarantee = true,
                 )
-                val childId2 = tx.insert(DevPerson(), DevPersonType.CHILD)
-                tx.insert(
-                    DevPlacement(
-                        childId = childId2,
-                        unitId = unitId2,
-                        startDate = date.minusDays(1),
-                        endDate = date.minusDays(1),
-                        placeGuarantee = false,
-                    )
+            )
+            val childId2 = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childId2,
+                    unitId = unitId2,
+                    startDate = date.minusDays(1),
+                    endDate = date.minusDays(1),
+                    placeGuarantee = false,
                 )
-                tx.insert(
-                    DevPlacement(
-                        childId = childId2,
-                        unitId = unitId2,
-                        startDate = date.plusDays(1),
-                        endDate = date.plusDays(1),
-                        placeGuarantee = true,
-                    )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = childId2,
+                    unitId = unitId2,
+                    startDate = date.plusDays(1),
+                    endDate = date.plusDays(1),
+                    placeGuarantee = true,
                 )
-                childId1
-            }
-        val employeeId =
-            db.transaction { tx ->
-                val employeeId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(
-                    daycareId = unitId1,
-                    employeeId = employeeId,
-                    role = UserRole.UNIT_SUPERVISOR,
-                )
-                employeeId
-            }
+            )
+            childId1
+        }
+        val employeeId = db.transaction { tx ->
+            val employeeId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(
+                daycareId = unitId1,
+                employeeId = employeeId,
+                role = UserRole.UNIT_SUPERVISOR,
+            )
+            employeeId
+        }
 
         val unit1Rows =
             placementGuaranteeReportController.getPlacementGuaranteeReport(

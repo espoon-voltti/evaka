@@ -464,124 +464,122 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
         preschoolDaycareWithoutPreschool: Boolean = false,
-    ): DataIdentifiers =
-        db.transaction { tx ->
-            val preschoolDaycare =
-                type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
-            tx.insertTestApplication(
-                id = applicationId,
-                status = status,
-                confidential =
-                    if (
-                        status in
-                            listOf(
-                                ApplicationStatus.CREATED,
-                                ApplicationStatus.SENT,
-                                ApplicationStatus.WAITING_PLACEMENT,
-                            )
-                    )
-                        null
-                    else true,
-                guardianId = adult.id,
-                childId = child.id,
-                type = type.toApplicationType(),
-                document =
-                    DaycareFormV0(
-                        type = type.toApplicationType(),
-                        partTime = type == PlacementType.DAYCARE_PART_TIME,
-                        connectedDaycare = preschoolDaycare,
-                        serviceStart = "08:00".takeIf { preschoolDaycare },
-                        serviceEnd = "16:00".takeIf { preschoolDaycare },
-                        careDetails =
-                            CareDetails(
-                                preparatory =
-                                    type in
-                                        listOf(
-                                            PlacementType.PREPARATORY,
-                                            PlacementType.PREPARATORY_DAYCARE,
-                                        )
-                            ),
-                        child = child.toDaycareFormChild(),
-                        guardian = adult.toDaycareFormAdult(),
-                        apply = Apply(preferredUnits = listOf(unit.id)),
-                        preferredStartDate = period.start,
-                    ),
+    ): DataIdentifiers = db.transaction { tx ->
+        val preschoolDaycare =
+            type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
+        tx.insertTestApplication(
+            id = applicationId,
+            status = status,
+            confidential =
+                if (
+                    status in
+                        listOf(
+                            ApplicationStatus.CREATED,
+                            ApplicationStatus.SENT,
+                            ApplicationStatus.WAITING_PLACEMENT,
+                        )
+                )
+                    null
+                else true,
+            guardianId = adult.id,
+            childId = child.id,
+            type = type.toApplicationType(),
+            document =
+                DaycareFormV0(
+                    type = type.toApplicationType(),
+                    partTime = type == PlacementType.DAYCARE_PART_TIME,
+                    connectedDaycare = preschoolDaycare,
+                    serviceStart = "08:00".takeIf { preschoolDaycare },
+                    serviceEnd = "16:00".takeIf { preschoolDaycare },
+                    careDetails =
+                        CareDetails(
+                            preparatory =
+                                type in
+                                    listOf(
+                                        PlacementType.PREPARATORY,
+                                        PlacementType.PREPARATORY_DAYCARE,
+                                    )
+                        ),
+                    child = child.toDaycareFormChild(),
+                    guardian = adult.toDaycareFormAdult(),
+                    apply = Apply(preferredUnits = listOf(unit.id)),
+                    preferredStartDate = period.start,
+                ),
+        )
+        tx.insert(
+            DevPlacementPlan(
+                applicationId = applicationId,
+                unitId = unit.id,
+                type = type,
+                startDate = period.start,
+                endDate = period.end,
+                preschoolDaycareStartDate = preschoolDaycarePeriod?.start,
+                preschoolDaycareEndDate = preschoolDaycarePeriod?.end,
             )
-            tx.insert(
-                DevPlacementPlan(
-                    applicationId = applicationId,
+        )
+        val primaryId =
+            if (preschoolDaycareWithoutPreschool) {
+                null
+            } else {
+                tx.insertTestDecision(
+                    TestDecision(
+                        createdBy = employee.evakaUserId,
+                        unitId = unit.id,
+                        applicationId = applicationId,
+                        type =
+                            when (type) {
+                                PlacementType.CLUB -> {
+                                    DecisionType.CLUB
+                                }
+
+                                PlacementType.DAYCARE,
+                                PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                                PlacementType.PRESCHOOL_DAYCARE_ONLY,
+                                PlacementType.PREPARATORY_DAYCARE_ONLY -> {
+                                    DecisionType.DAYCARE
+                                }
+
+                                PlacementType.DAYCARE_PART_TIME,
+                                PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> {
+                                    DecisionType.DAYCARE_PART_TIME
+                                }
+
+                                PlacementType.PRESCHOOL,
+                                PlacementType.PRESCHOOL_DAYCARE,
+                                PlacementType.PRESCHOOL_CLUB -> {
+                                    DecisionType.PRESCHOOL
+                                }
+
+                                PlacementType.PREPARATORY,
+                                PlacementType.PREPARATORY_DAYCARE -> {
+                                    DecisionType.PREPARATORY_EDUCATION
+                                }
+
+                                PlacementType.TEMPORARY_DAYCARE,
+                                PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+                                PlacementType.SCHOOL_SHIFT_CARE -> {
+                                    error("Unsupported placement type ($type)")
+                                }
+                            },
+                        startDate = period.start,
+                        endDate = period.end,
+                    )
+                )
+            }
+        val preschoolDaycareId = preschoolDaycarePeriod?.let {
+            tx.insertTestDecision(
+                TestDecision(
+                    createdBy = employee.evakaUserId,
                     unitId = unit.id,
-                    type = type,
-                    startDate = period.start,
-                    endDate = period.end,
-                    preschoolDaycareStartDate = preschoolDaycarePeriod?.start,
-                    preschoolDaycareEndDate = preschoolDaycarePeriod?.end,
+                    applicationId = applicationId,
+                    type = DecisionType.PRESCHOOL_DAYCARE,
+                    startDate = it.start,
+                    endDate = it.end,
                 )
             )
-            val primaryId =
-                if (preschoolDaycareWithoutPreschool) {
-                    null
-                } else {
-                    tx.insertTestDecision(
-                        TestDecision(
-                            createdBy = employee.evakaUserId,
-                            unitId = unit.id,
-                            applicationId = applicationId,
-                            type =
-                                when (type) {
-                                    PlacementType.CLUB -> {
-                                        DecisionType.CLUB
-                                    }
-
-                                    PlacementType.DAYCARE,
-                                    PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                                    PlacementType.PRESCHOOL_DAYCARE_ONLY,
-                                    PlacementType.PREPARATORY_DAYCARE_ONLY -> {
-                                        DecisionType.DAYCARE
-                                    }
-
-                                    PlacementType.DAYCARE_PART_TIME,
-                                    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> {
-                                        DecisionType.DAYCARE_PART_TIME
-                                    }
-
-                                    PlacementType.PRESCHOOL,
-                                    PlacementType.PRESCHOOL_DAYCARE,
-                                    PlacementType.PRESCHOOL_CLUB -> {
-                                        DecisionType.PRESCHOOL
-                                    }
-
-                                    PlacementType.PREPARATORY,
-                                    PlacementType.PREPARATORY_DAYCARE -> {
-                                        DecisionType.PREPARATORY_EDUCATION
-                                    }
-
-                                    PlacementType.TEMPORARY_DAYCARE,
-                                    PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-                                    PlacementType.SCHOOL_SHIFT_CARE -> {
-                                        error("Unsupported placement type ($type)")
-                                    }
-                                },
-                            startDate = period.start,
-                            endDate = period.end,
-                        )
-                    )
-                }
-            val preschoolDaycareId =
-                preschoolDaycarePeriod?.let {
-                    tx.insertTestDecision(
-                        TestDecision(
-                            createdBy = employee.evakaUserId,
-                            unitId = unit.id,
-                            applicationId = applicationId,
-                            type = DecisionType.PRESCHOOL_DAYCARE,
-                            startDate = it.start,
-                            endDate = it.end,
-                        )
-                    )
-                }
-            DataIdentifiers(applicationId, primaryId, preschoolDaycareId)
         }
+        DataIdentifiers(applicationId, primaryId, preschoolDaycareId)
+    }
 }
 
 private data class DataIdentifiers(

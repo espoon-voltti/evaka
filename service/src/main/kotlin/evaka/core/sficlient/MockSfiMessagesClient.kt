@@ -68,17 +68,17 @@ class MockSfiMessagesClient : SfiMessagesClient {
 
         fun getMessages() = lock.read { data.values.toList() }
 
-        fun reset() =
-            lock.write {
-                data.clear()
-                events.clear()
-                messageId = 0
-            }
+        fun reset() = lock.write {
+            data.clear()
+            events.clear()
+            messageId = 0
+        }
 
         fun getEvents() = lock.read { events.toList() }
 
-        fun addEventsResponse(getEventsResponse: GetEventsResponse) =
-            lock.write { events.add(getEventsResponse) }
+        fun addEventsResponse(getEventsResponse: GetEventsResponse) = lock.write {
+            events.add(getEventsResponse)
+        }
 
         fun getNextMessageId(): Long {
             return lock.write { messageId++ }

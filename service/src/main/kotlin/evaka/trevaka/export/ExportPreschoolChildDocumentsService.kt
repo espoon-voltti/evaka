@@ -69,18 +69,17 @@ fun exportChildDocumentsViaSftp(
     primus: PrimusProperties,
     transferType: ChildDocumentTransferType,
 ) {
-    val export =
-        db.read { tx ->
-            tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-            readChildDocumentsForExport(
-                tx,
-                clock.now(),
-                municipalityCode,
-                primus.sftp.prefix.ensureTrailingSlash(),
-                transferType.baseFilename,
-                transferType.templateNamePattern,
-            )
-        }
+    val export = db.read { tx ->
+        tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+        readChildDocumentsForExport(
+            tx,
+            clock.now(),
+            municipalityCode,
+            primus.sftp.prefix.ensureTrailingSlash(),
+            transferType.baseFilename,
+            transferType.templateNamePattern,
+        )
+    }
     uploadChildDocumentsViaSftp(export, primus)
 }
 

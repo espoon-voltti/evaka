@@ -38,28 +38,27 @@ class DvvModificationsBatchRefreshService(
     }
 
     fun scheduleBatch(db: Database.Connection, clock: EvakaClock): Int {
-        val jobCount =
-            db.transaction { tx ->
-                tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.DvvModificationsRefresh::class)))
+        val jobCount = db.transaction { tx ->
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.DvvModificationsRefresh::class)))
 
-                val ssns = tx.getPersonSsnsToUpdate()
+            val ssns = tx.getPersonSsnsToUpdate()
 
-                asyncJobRunner.plan(
-                    tx,
-                    payloads =
-                        listOf(
-                            AsyncJob.DvvModificationsRefresh(
-                                ssns = ssns,
-                                requestingUserId =
-                                    UUID.fromString("00000000-0000-0000-0000-000000000000"),
-                            )
-                        ),
-                    runAt = clock.now(),
-                    retryCount = 10,
-                )
+            asyncJobRunner.plan(
+                tx,
+                payloads =
+                    listOf(
+                        AsyncJob.DvvModificationsRefresh(
+                            ssns = ssns,
+                            requestingUserId =
+                                UUID.fromString("00000000-0000-0000-0000-000000000000"),
+                        )
+                    ),
+                runAt = clock.now(),
+                retryCount = 10,
+            )
 
-                ssns.size
-            }
+            ssns.size
+        }
 
         return jobCount
     }

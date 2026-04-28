@@ -156,12 +156,11 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `admin can see the report`() {
-        val user =
-            db.transaction { tx ->
-                val employee = DevEmployee().copy(roles = setOf(UserRole.ADMIN))
-                tx.insert(employee)
-                employee.user
-            }
+        val user = db.transaction { tx ->
+            val employee = DevEmployee().copy(roles = setOf(UserRole.ADMIN))
+            tx.insert(employee)
+            employee.user
+        }
 
         val rows =
             preschoolApplicationReport.getPreschoolApplicationReport(dbInstance(), user, clock)
@@ -182,12 +181,11 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `unit supervisor can see the report`() {
-        val user =
-            db.transaction { tx ->
-                val employee = DevEmployee()
-                tx.insert(employee, unitRoles = mapOf(daycare1.id to UserRole.UNIT_SUPERVISOR))
-                employee.user
-            }
+        val user = db.transaction { tx ->
+            val employee = DevEmployee()
+            tx.insert(employee, unitRoles = mapOf(daycare1.id to UserRole.UNIT_SUPERVISOR))
+            employee.user
+        }
 
         val rows =
             preschoolApplicationReport.getPreschoolApplicationReport(dbInstance(), user, clock)
@@ -205,12 +203,11 @@ class PreschoolApplicationReportTest : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `staff cannot see the report`() {
-        val user =
-            db.transaction { tx ->
-                val employee = DevEmployee()
-                tx.insert(employee, unitRoles = mapOf(daycare1.id to UserRole.STAFF))
-                employee.user
-            }
+        val user = db.transaction { tx ->
+            val employee = DevEmployee()
+            tx.insert(employee, unitRoles = mapOf(daycare1.id to UserRole.STAFF))
+            employee.user
+        }
 
         val rows =
             preschoolApplicationReport.getPreschoolApplicationReport(dbInstance(), user, clock)

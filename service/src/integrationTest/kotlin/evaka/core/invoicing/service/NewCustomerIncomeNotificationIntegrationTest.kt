@@ -529,8 +529,9 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         return emails
     }
 
-    private fun getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> =
-        db.read { it.getIncomeNotifications(receiverId) }
+    private fun getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> = db.read {
+        it.getIncomeNotifications(receiverId)
+    }
 
     private fun createGrossIncome(startDate: LocalDate) =
         IncomeStatementBody.Income(

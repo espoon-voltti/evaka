@@ -66,8 +66,9 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `image round trip`() {
         uploadImage(child.id, image1)
 
-        val images =
-            db.read { it.createQuery { sql("SELECT * FROM child_images") }.toList<ChildImage>() }
+        val images = db.read {
+            it.createQuery { sql("SELECT * FROM child_images") }.toList<ChildImage>()
+        }
         assertEquals(1, images.size)
 
         val receivedData = downloadImage(images.first().id)
@@ -77,17 +78,15 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `replacing image`() {
         uploadImage(child.id, image1)
-        val oldImage =
-            db.read {
-                it.createQuery { sql("SELECT * FROM child_images") }.exactlyOne<ChildImage>()
-            }
+        val oldImage = db.read {
+            it.createQuery { sql("SELECT * FROM child_images") }.exactlyOne<ChildImage>()
+        }
 
         uploadImage(child.id, image2)
 
-        val newImage =
-            db.read {
-                it.createQuery { sql("SELECT * FROM child_images") }.exactlyOne<ChildImage>()
-            }
+        val newImage = db.read {
+            it.createQuery { sql("SELECT * FROM child_images") }.exactlyOne<ChildImage>()
+        }
         assertNotEquals(oldImage.id, newImage.id)
 
         val receivedData = downloadImage(newImage.id)
@@ -99,8 +98,9 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
         uploadImage(child.id, image1)
         deleteImage(child.id)
 
-        val newImages =
-            db.read { it.createQuery { sql("SELECT * FROM child_images") }.toList<ChildImage>() }
+        val newImages = db.read {
+            it.createQuery { sql("SELECT * FROM child_images") }.toList<ChildImage>()
+        }
 
         assertEquals(0, newImages.size)
     }

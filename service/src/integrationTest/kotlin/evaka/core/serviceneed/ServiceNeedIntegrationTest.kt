@@ -512,51 +512,48 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     @Test
     fun `get child future service needs returns only future service needs`() {
         val today = LocalDate.of(2024, 1, 15)
-        val pastServiceNeedId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevServiceNeed(
-                        placementId = placementId,
-                        startDate = LocalDate.of(2024, 1, 1),
-                        endDate = LocalDate.of(2024, 1, 10),
-                        optionId = snDefaultDaycare.id,
-                        shiftCare = ShiftCareType.NONE,
-                        partWeek = false,
-                        confirmedBy = unitSupervisor.evakaUserId,
-                        confirmedAt = HelsinkiDateTime.now(),
-                    )
+        val pastServiceNeedId = db.transaction { tx ->
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = LocalDate.of(2024, 1, 1),
+                    endDate = LocalDate.of(2024, 1, 10),
+                    optionId = snDefaultDaycare.id,
+                    shiftCare = ShiftCareType.NONE,
+                    partWeek = false,
+                    confirmedBy = unitSupervisor.evakaUserId,
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
-            }
-        val currentServiceNeedId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevServiceNeed(
-                        placementId = placementId,
-                        startDate = LocalDate.of(2024, 1, 11),
-                        endDate = LocalDate.of(2024, 1, 20),
-                        optionId = snDaycareFullDay35.id,
-                        shiftCare = ShiftCareType.FULL,
-                        partWeek = false,
-                        confirmedBy = unitSupervisor.evakaUserId,
-                        confirmedAt = HelsinkiDateTime.now(),
-                    )
+            )
+        }
+        val currentServiceNeedId = db.transaction { tx ->
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = LocalDate.of(2024, 1, 11),
+                    endDate = LocalDate.of(2024, 1, 20),
+                    optionId = snDaycareFullDay35.id,
+                    shiftCare = ShiftCareType.FULL,
+                    partWeek = false,
+                    confirmedBy = unitSupervisor.evakaUserId,
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
-            }
-        val futureServiceNeedId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevServiceNeed(
-                        placementId = placementId,
-                        startDate = LocalDate.of(2024, 1, 21),
-                        endDate = LocalDate.of(2024, 1, 30),
-                        optionId = snDaycareFullDay25to35.id,
-                        shiftCare = ShiftCareType.NONE,
-                        partWeek = true,
-                        confirmedBy = unitSupervisor.evakaUserId,
-                        confirmedAt = HelsinkiDateTime.now(),
-                    )
+            )
+        }
+        val futureServiceNeedId = db.transaction { tx ->
+            tx.insert(
+                DevServiceNeed(
+                    placementId = placementId,
+                    startDate = LocalDate.of(2024, 1, 21),
+                    endDate = LocalDate.of(2024, 1, 30),
+                    optionId = snDaycareFullDay25to35.id,
+                    shiftCare = ShiftCareType.NONE,
+                    partWeek = true,
+                    confirmedBy = unitSupervisor.evakaUserId,
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
-            }
+            )
+        }
 
         val result =
             serviceNeedController.getChildServiceNeeds(

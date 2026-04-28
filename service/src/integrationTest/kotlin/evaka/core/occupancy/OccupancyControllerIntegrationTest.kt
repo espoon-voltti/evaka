@@ -1264,31 +1264,30 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         childId: PersonId,
         type: ApplicationType = ApplicationType.DAYCARE,
         connectedDaycare: Boolean = false,
-    ): ApplicationId =
-        db.transaction { tx ->
-            tx.createParentship(
-                childId = childId,
-                headOfChildId = adult.id,
-                startDate = startDate,
-                endDate = endDate,
-                creator = Creator.DVV,
-            )
-            tx.insertTestApplication(
-                status = ApplicationStatus.WAITING_PLACEMENT,
-                childId = childId,
-                guardianId = adult.id,
-                type = type,
-                document =
-                    DaycareFormV0(
-                        type = type,
-                        child = Child(dateOfBirth = null),
-                        guardian = Adult(),
-                        apply = Apply(preferredUnits = listOf(daycare.id)),
-                        connectedDaycare =
-                            if (type == ApplicationType.PRESCHOOL) connectedDaycare else null,
-                    ),
-            )
-        }
+    ): ApplicationId = db.transaction { tx ->
+        tx.createParentship(
+            childId = childId,
+            headOfChildId = adult.id,
+            startDate = startDate,
+            endDate = endDate,
+            creator = Creator.DVV,
+        )
+        tx.insertTestApplication(
+            status = ApplicationStatus.WAITING_PLACEMENT,
+            childId = childId,
+            guardianId = adult.id,
+            type = type,
+            document =
+                DaycareFormV0(
+                    type = type,
+                    child = Child(dateOfBirth = null),
+                    guardian = Adult(),
+                    apply = Apply(preferredUnits = listOf(daycare.id)),
+                    connectedDaycare =
+                        if (type == ApplicationType.PRESCHOOL) connectedDaycare else null,
+                ),
+        )
+    }
 
     private fun getSpeculatedOccupancies(
         unitId: DaycareId,

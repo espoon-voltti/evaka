@@ -71,52 +71,50 @@ fun mapToTerminatablePlacements(
             val sorted = childPlacements.sortedBy { it.startDate }
             // all daycare placements after preschool/preparatory are grouped under
             // preschool/preparatory
-            val maybePreschoolOrPreparatoryPlacement =
-                sorted.find {
-                    listOf(
-                            PRESCHOOL_DAYCARE,
-                            PRESCHOOL,
-                            PRESCHOOL_CLUB,
-                            PREPARATORY,
-                            PREPARATORY_DAYCARE,
-                        )
-                        .contains(it.type)
-                }
-            val placementsByType =
-                sorted.groupBy {
-                    toTerminatablePlacementType(
-                        when (it.type) {
-                            PlacementType.CLUB,
-                            PRESCHOOL,
-                            PRESCHOOL_DAYCARE,
-                            PRESCHOOL_CLUB,
-                            PREPARATORY,
-                            PREPARATORY_DAYCARE -> {
+            val maybePreschoolOrPreparatoryPlacement = sorted.find {
+                listOf(
+                        PRESCHOOL_DAYCARE,
+                        PRESCHOOL,
+                        PRESCHOOL_CLUB,
+                        PREPARATORY,
+                        PREPARATORY_DAYCARE,
+                    )
+                    .contains(it.type)
+            }
+            val placementsByType = sorted.groupBy {
+                toTerminatablePlacementType(
+                    when (it.type) {
+                        PlacementType.CLUB,
+                        PRESCHOOL,
+                        PRESCHOOL_DAYCARE,
+                        PRESCHOOL_CLUB,
+                        PREPARATORY,
+                        PREPARATORY_DAYCARE -> {
+                            it.type
+                        }
+
+                        PlacementType.DAYCARE,
+                        PlacementType.DAYCARE_PART_TIME,
+                        PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+                        PlacementType.PRESCHOOL_DAYCARE_ONLY,
+                        PlacementType.PREPARATORY_DAYCARE_ONLY,
+                        PlacementType.TEMPORARY_DAYCARE,
+                        PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+                        PlacementType.SCHOOL_SHIFT_CARE -> {
+                            if (
+                                maybePreschoolOrPreparatoryPlacement
+                                    ?.startDate
+                                    ?.isBefore(it.startDate) == true
+                            ) {
+                                maybePreschoolOrPreparatoryPlacement.type
+                            } else {
                                 it.type
                             }
-
-                            PlacementType.DAYCARE,
-                            PlacementType.DAYCARE_PART_TIME,
-                            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                            PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
-                            PlacementType.PRESCHOOL_DAYCARE_ONLY,
-                            PlacementType.PREPARATORY_DAYCARE_ONLY,
-                            PlacementType.TEMPORARY_DAYCARE,
-                            PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-                            PlacementType.SCHOOL_SHIFT_CARE -> {
-                                if (
-                                    maybePreschoolOrPreparatoryPlacement
-                                        ?.startDate
-                                        ?.isBefore(it.startDate) == true
-                                ) {
-                                    maybePreschoolOrPreparatoryPlacement.type
-                                } else {
-                                    it.type
-                                }
-                            }
                         }
-                    )
-                }
+                    }
+                )
+            }
             acc +
                 placementsByType.map { (type, placements) ->
                     val (placementsOfSameType, additional) =

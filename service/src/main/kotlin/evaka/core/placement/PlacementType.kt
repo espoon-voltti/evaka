@@ -224,12 +224,15 @@ enum class PlacementType : DatabaseEnum {
     companion object {
         val temporary = listOf(TEMPORARY_DAYCARE, TEMPORARY_DAYCARE_PART_DAY)
         val invoiced = entries.filter { it.isInvoiced() }.filterNot { temporary.contains(it) }
-        val requiringAttendanceReservations =
-            entries.filter { it != CLUB && it != PRESCHOOL && it != PREPARATORY }
-        val withBillableAbsences =
-            entries.filter { it.absenceCategories().contains(AbsenceCategory.BILLABLE) }
-        val withNonbillableAbsences =
-            entries.filter { it.absenceCategories().contains(AbsenceCategory.NONBILLABLE) }
+        val requiringAttendanceReservations = entries.filter {
+            it != CLUB && it != PRESCHOOL && it != PREPARATORY
+        }
+        val withBillableAbsences = entries.filter {
+            it.absenceCategories().contains(AbsenceCategory.BILLABLE)
+        }
+        val withNonbillableAbsences = entries.filter {
+            it.absenceCategories().contains(AbsenceCategory.NONBILLABLE)
+        }
         val preschool = entries.filter { it.isRelevantToKoski() }
 
         fun fromMessagingCategories(categories: List<MessagingCategory>): List<PlacementType> {

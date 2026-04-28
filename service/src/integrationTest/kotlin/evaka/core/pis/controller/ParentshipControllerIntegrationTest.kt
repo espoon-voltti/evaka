@@ -157,23 +157,22 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     fun `can update parentship duration`(user: AuthenticatedUser.Employee) {
-        val parentship =
-            db.transaction { tx ->
-                tx.createParentship(
-                    child.id,
-                    parent.id,
-                    child.dateOfBirth.plusDays(500),
-                    child.dateOfBirth.plusDays(700),
-                    Creator.DVV,
-                )
-                tx.createParentship(
-                    child.id,
-                    parent.id,
-                    child.dateOfBirth,
-                    child.dateOfBirth.plusDays(200),
-                    Creator.DVV,
-                )
-            }
+        val parentship = db.transaction { tx ->
+            tx.createParentship(
+                child.id,
+                parent.id,
+                child.dateOfBirth.plusDays(500),
+                child.dateOfBirth.plusDays(700),
+                Creator.DVV,
+            )
+            tx.createParentship(
+                child.id,
+                parent.id,
+                child.dateOfBirth,
+                child.dateOfBirth.plusDays(200),
+                Creator.DVV,
+            )
+        }
         val newStartDate = child.dateOfBirth.plusDays(100)
         val newEndDate = child.dateOfBirth.plusDays(300)
         val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
@@ -205,29 +204,28 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     fun `can delete parentship`(user: AuthenticatedUser.Employee) {
-        val parentship =
-            db.transaction { tx ->
-                tx.createParentship(
+        val parentship = db.transaction { tx ->
+            tx.createParentship(
+                    child.id,
+                    parent.id,
+                    child.dateOfBirth,
+                    child.dateOfBirth.plusDays(100),
+                    Creator.DVV,
+                )
+                .also {
+                    tx.createParentship(
                         child.id,
                         parent.id,
-                        child.dateOfBirth,
-                        child.dateOfBirth.plusDays(100),
+                        child.dateOfBirth.plusDays(200),
+                        child.dateOfBirth.plusDays(300),
                         Creator.DVV,
                     )
-                    .also {
-                        tx.createParentship(
-                            child.id,
-                            parent.id,
-                            child.dateOfBirth.plusDays(200),
-                            child.dateOfBirth.plusDays(300),
-                            Creator.DVV,
-                        )
-                        assertEquals(
-                            2,
-                            tx.getParentships(headOfChildId = parent.id, childId = null).size,
-                        )
-                    }
-            }
+                    assertEquals(
+                        2,
+                        tx.getParentships(headOfChildId = parent.id, childId = null).size,
+                    )
+                }
+        }
 
         controller.deleteParentship(dbInstance(), user, clock, parentship.id)
         db.read { r ->
@@ -236,29 +234,28 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     fun `cannot delete parentship`(user: AuthenticatedUser.Employee) {
-        val parentship =
-            db.transaction { tx ->
-                tx.createParentship(
+        val parentship = db.transaction { tx ->
+            tx.createParentship(
+                    child.id,
+                    parent.id,
+                    child.dateOfBirth,
+                    child.dateOfBirth.plusDays(100),
+                    Creator.DVV,
+                )
+                .also {
+                    tx.createParentship(
                         child.id,
                         parent.id,
-                        child.dateOfBirth,
-                        child.dateOfBirth.plusDays(100),
+                        child.dateOfBirth.plusDays(200),
+                        child.dateOfBirth.plusDays(300),
                         Creator.DVV,
                     )
-                    .also {
-                        tx.createParentship(
-                            child.id,
-                            parent.id,
-                            child.dateOfBirth.plusDays(200),
-                            child.dateOfBirth.plusDays(300),
-                            Creator.DVV,
-                        )
-                        assertEquals(
-                            2,
-                            tx.getParentships(headOfChildId = parent.id, childId = null).size,
-                        )
-                    }
-            }
+                    assertEquals(
+                        2,
+                        tx.getParentships(headOfChildId = parent.id, childId = null).size,
+                    )
+                }
+        }
         assertThrows<Forbidden> {
             controller.deleteParentship(dbInstance(), user, clock, parentship.id)
         }

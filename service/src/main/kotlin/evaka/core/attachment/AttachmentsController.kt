@@ -497,28 +497,27 @@ class AttachmentsController(
         attachTo: AttachmentParent,
         user: AuthenticatedUser.Citizen,
     ) {
-        val count =
-            db.read {
-                when (attachTo) {
-                    is AttachmentParent.None,
-                    is AttachmentParent.Application,
-                    is AttachmentParent.IncomeStatement,
-                    is AttachmentParent.Income,
-                    is AttachmentParent.Invoice,
-                    is AttachmentParent.PedagogicalDocument -> {
-                        it.userAttachmentCount(user.evakaUserId, attachTo)
-                    }
+        val count = db.read {
+            when (attachTo) {
+                is AttachmentParent.None,
+                is AttachmentParent.Application,
+                is AttachmentParent.IncomeStatement,
+                is AttachmentParent.Income,
+                is AttachmentParent.Invoice,
+                is AttachmentParent.PedagogicalDocument -> {
+                    it.userAttachmentCount(user.evakaUserId, attachTo)
+                }
 
-                    is AttachmentParent.MessageDraft,
-                    is AttachmentParent.MessageContent -> {
-                        0
-                    }
+                is AttachmentParent.MessageDraft,
+                is AttachmentParent.MessageContent -> {
+                    0
+                }
 
-                    is AttachmentParent.FeeAlteration -> {
-                        Integer.MAX_VALUE
-                    }
+                is AttachmentParent.FeeAlteration -> {
+                    Integer.MAX_VALUE
                 }
             }
+        }
         if (count >= maxAttachmentsPerUser) {
             throw Forbidden(
                 "Too many uploaded files for ${user.evakaUserId}: $maxAttachmentsPerUser"
@@ -638,109 +637,108 @@ class AttachmentsController(
         @PathVariable attachmentId: AttachmentId,
         @PathVariable requestedFilename: String,
     ): ResponseEntity<Any> {
-        val attachment =
-            db.connect { dbc ->
-                dbc.read {
-                    val (attachment, attachedTo) =
-                        it.getAttachment(attachmentId)
-                            ?: throw NotFound("Attachment $attachmentId not found")
-                    when (attachedTo) {
-                        is AttachmentParent.Application -> {
-                            accessControl.requirePermissionFor(
-                                it,
-                                user,
-                                clock,
-                                Action.Attachment.READ_APPLICATION_ATTACHMENT,
-                                attachment.id,
-                            )
-                        }
+        val attachment = db.connect { dbc ->
+            dbc.read {
+                val (attachment, attachedTo) =
+                    it.getAttachment(attachmentId)
+                        ?: throw NotFound("Attachment $attachmentId not found")
+                when (attachedTo) {
+                    is AttachmentParent.Application -> {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.READ_APPLICATION_ATTACHMENT,
+                            attachment.id,
+                        )
+                    }
 
-                        is AttachmentParent.Income -> {
-                            accessControl.requirePermissionFor(
-                                it,
-                                user,
-                                clock,
-                                Action.Attachment.READ_INCOME_ATTACHMENT,
-                                attachment.id,
-                            )
-                        }
+                    is AttachmentParent.Income -> {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.READ_INCOME_ATTACHMENT,
+                            attachment.id,
+                        )
+                    }
 
-                        is AttachmentParent.IncomeStatement -> {
-                            accessControl.requirePermissionFor(
-                                it,
-                                user,
-                                clock,
-                                Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
-                                attachment.id,
-                            )
-                        }
+                    is AttachmentParent.IncomeStatement -> {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
+                            attachment.id,
+                        )
+                    }
 
-                        is AttachmentParent.Invoice -> {
-                            accessControl.requirePermissionFor(
-                                it,
-                                user,
-                                clock,
-                                Action.Attachment.READ_INVOICE_ATTACHMENT,
-                                attachment.id,
-                            )
-                        }
+                    is AttachmentParent.Invoice -> {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.READ_INVOICE_ATTACHMENT,
+                            attachment.id,
+                        )
+                    }
 
-                        is AttachmentParent.MessageContent -> {
-                            val accountIds =
-                                it.getMessageAccountIdsByContentId(attachedTo.messageContentId)
-                            accessControl.requirePermissionForSomeTarget(
-                                it,
-                                user,
-                                clock,
-                                Action.MessageAccount.ACCESS,
-                                accountIds,
-                            )
-                        }
+                    is AttachmentParent.MessageContent -> {
+                        val accountIds =
+                            it.getMessageAccountIdsByContentId(attachedTo.messageContentId)
+                        accessControl.requirePermissionForSomeTarget(
+                            it,
+                            user,
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                            accountIds,
+                        )
+                    }
 
-                        is AttachmentParent.MessageDraft -> {
-                            val accountId = it.findMessageAccountIdByDraftId(attachedTo.draftId)
-                            accessControl.requirePermissionFor(
-                                it,
-                                user,
-                                clock,
-                                Action.MessageAccount.ACCESS,
-                                accountId!!,
-                            )
-                        }
+                    is AttachmentParent.MessageDraft -> {
+                        val accountId = it.findMessageAccountIdByDraftId(attachedTo.draftId)
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                            accountId!!,
+                        )
+                    }
 
-                        is AttachmentParent.PedagogicalDocument -> {
-                            accessControl.requirePermissionFor(
-                                it,
-                                user,
-                                clock,
-                                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
-                                attachment.id,
-                            )
-                        }
+                    is AttachmentParent.PedagogicalDocument -> {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
+                            attachment.id,
+                        )
+                    }
 
-                        is AttachmentParent.FeeAlteration -> {
-                            accessControl.requirePermissionFor(
-                                it,
-                                user,
-                                clock,
-                                Action.Attachment.READ_FEE_ALTERATION_ATTACHMENT,
-                                attachment.id,
-                            )
-                        }
+                    is AttachmentParent.FeeAlteration -> {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.READ_FEE_ALTERATION_ATTACHMENT,
+                            attachment.id,
+                        )
+                    }
 
-                        is AttachmentParent.None -> {
-                            accessControl.requirePermissionFor(
-                                it,
-                                user,
-                                clock,
-                                Action.Attachment.READ_ORPHAN_ATTACHMENT,
-                                attachment.id,
-                            )
-                        }
-                    }.exhaust()
-                    attachment
-                }
+                    is AttachmentParent.None -> {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.READ_ORPHAN_ATTACHMENT,
+                            attachment.id,
+                        )
+                    }
+                }.exhaust()
+                attachment
             }
+        }
 
         if (requestedFilename != attachment.name)
             throw BadRequest("Requested file name doesn't match actual file name for $attachmentId")

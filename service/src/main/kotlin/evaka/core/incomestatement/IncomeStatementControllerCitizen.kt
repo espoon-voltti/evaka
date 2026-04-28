@@ -208,26 +208,25 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @RequestBody body: IncomeStatementBody,
         @RequestParam draft: Boolean,
     ) {
-        val id =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.Person.CREATE_INCOME_STATEMENT,
-                        user.id,
-                    )
-                    createValidatedIncomeStatement(
-                        tx = tx,
-                        user = user,
-                        now = clock.now(),
-                        personId = user.id,
-                        body = body,
-                        draft = draft,
-                    )
-                }
+        val id = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Person.CREATE_INCOME_STATEMENT,
+                    user.id,
+                )
+                createValidatedIncomeStatement(
+                    tx = tx,
+                    user = user,
+                    now = clock.now(),
+                    personId = user.id,
+                    body = body,
+                    draft = draft,
+                )
             }
+        }
         Audit.IncomeStatementCreate.log(targetId = AuditId(user.id), objectId = AuditId(id))
     }
 
@@ -240,26 +239,25 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @RequestBody body: IncomeStatementBody,
         @RequestParam draft: Boolean?,
     ) {
-        val id =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.Child.CREATE_INCOME_STATEMENT,
-                        childId,
-                    )
-                    createValidatedIncomeStatement(
-                        tx = tx,
-                        user = user,
-                        now = clock.now(),
-                        personId = childId,
-                        body = body,
-                        draft = draft ?: false,
-                    )
-                }
+        val id = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Child.CREATE_INCOME_STATEMENT,
+                    childId,
+                )
+                createValidatedIncomeStatement(
+                    tx = tx,
+                    user = user,
+                    now = clock.now(),
+                    personId = childId,
+                    body = body,
+                    draft = draft ?: false,
+                )
             }
+        }
         Audit.IncomeStatementCreateForChild.log(targetId = AuditId(user.id), objectId = AuditId(id))
     }
 

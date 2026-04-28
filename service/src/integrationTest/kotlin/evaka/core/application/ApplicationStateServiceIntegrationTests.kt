@@ -238,18 +238,17 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
     @Test
     fun `initialize daycare application form with null service need option`() {
-        val applicationId =
-            db.transaction { tx ->
-                service.createApplication(
-                    tx,
-                    AuthenticatedUser.Citizen(adult1.id, CitizenAuthLevel.STRONG),
-                    now,
-                    type = ApplicationType.DAYCARE,
-                    child = tx.getPersonById(child1.id)!!,
-                    guardian = tx.getPersonById(adult1.id)!!,
-                    origin = ApplicationOrigin.PAPER,
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            service.createApplication(
+                tx,
+                AuthenticatedUser.Citizen(adult1.id, CitizenAuthLevel.STRONG),
+                now,
+                type = ApplicationType.DAYCARE,
+                child = tx.getPersonById(child1.id)!!,
+                guardian = tx.getPersonById(adult1.id)!!,
+                origin = ApplicationOrigin.PAPER,
+            )
+        }
 
         db.read {
             val application = it.fetchApplicationDetails(applicationId)!!
@@ -2483,115 +2482,110 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         val guardian = DevPerson()
         val child = DevPerson()
         val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
-        val testApplicationId =
-            db.transaction { tx ->
-                tx.insert(guardian, DevPersonType.ADULT)
-                tx.insert(child, DevPersonType.RAW_ROW)
-                tx.insert(admin)
-                service.createApplication(
-                    tx = tx,
-                    user = guardian.user(CitizenAuthLevel.STRONG),
-                    now = clock.now(),
-                    origin = ApplicationOrigin.ELECTRONIC,
-                    type = ApplicationType.DAYCARE,
-                    guardian = tx.getPersonById(guardian.id)!!,
-                    child = tx.getPersonById(child.id)!!,
-                )
-            }
-        val decisionId =
-            db.transaction { tx ->
-                service.updateOwnApplicationContentsCitizen(
-                    tx = tx,
-                    user = guardian.user(CitizenAuthLevel.STRONG),
-                    now = clock.now(),
-                    applicationId = testApplicationId,
-                    update =
-                        CitizenApplicationUpdate(
-                            form =
-                                ApplicationFormUpdate(
-                                    child =
-                                        ChildDetailsUpdate(
-                                            futureAddress = null,
-                                            allergies = "",
-                                            diet = "",
-                                            assistanceNeeded = false,
-                                            assistanceDescription = "",
-                                        ),
-                                    guardian =
-                                        GuardianUpdate(
-                                            futureAddress = null,
-                                            phoneNumber = "",
-                                            email = null,
-                                        ),
-                                    secondGuardian = null,
-                                    otherPartner = null,
-                                    otherChildren = emptyList(),
-                                    preferences =
-                                        Preferences(
-                                            preferredUnits =
-                                                listOf(PreferredUnit(daycare.id, daycare.name)),
-                                            preferredStartDate = clock.today().plusMonths(5),
-                                            connectedDaycarePreferredStartDate = null,
-                                            serviceNeed =
-                                                ServiceNeed(
-                                                    startTime = "09:00",
-                                                    endTime = "17:00",
-                                                    shiftCare = false,
-                                                    partTime = false,
-                                                    serviceNeedOption = null,
-                                                ),
-                                            siblingBasis = null,
-                                            preparatory = false,
-                                            urgent = false,
-                                        ),
-                                    maxFeeAccepted = false,
-                                    otherInfo = "",
-                                    clubDetails = null,
-                                ),
-                            allowOtherGuardianAccess = true,
-                        ),
-                )
-                service.sendApplication(
-                    tx,
-                    guardian.user(CitizenAuthLevel.STRONG),
-                    clock,
-                    testApplicationId,
-                )
-                service.moveToWaitingPlacement(tx, serviceWorker, clock, testApplicationId)
-                service.createPlacementPlan(
-                    tx,
-                    serviceWorker,
-                    clock,
-                    testApplicationId,
-                    DaycarePlacementPlan(
-                        unitId = daycare.id,
-                        period =
-                            FiniteDateRange(
-                                clock.today().plusMonths(5),
-                                clock.today().plusYears(3),
+        val testApplicationId = db.transaction { tx ->
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.RAW_ROW)
+            tx.insert(admin)
+            service.createApplication(
+                tx = tx,
+                user = guardian.user(CitizenAuthLevel.STRONG),
+                now = clock.now(),
+                origin = ApplicationOrigin.ELECTRONIC,
+                type = ApplicationType.DAYCARE,
+                guardian = tx.getPersonById(guardian.id)!!,
+                child = tx.getPersonById(child.id)!!,
+            )
+        }
+        val decisionId = db.transaction { tx ->
+            service.updateOwnApplicationContentsCitizen(
+                tx = tx,
+                user = guardian.user(CitizenAuthLevel.STRONG),
+                now = clock.now(),
+                applicationId = testApplicationId,
+                update =
+                    CitizenApplicationUpdate(
+                        form =
+                            ApplicationFormUpdate(
+                                child =
+                                    ChildDetailsUpdate(
+                                        futureAddress = null,
+                                        allergies = "",
+                                        diet = "",
+                                        assistanceNeeded = false,
+                                        assistanceDescription = "",
+                                    ),
+                                guardian =
+                                    GuardianUpdate(
+                                        futureAddress = null,
+                                        phoneNumber = "",
+                                        email = null,
+                                    ),
+                                secondGuardian = null,
+                                otherPartner = null,
+                                otherChildren = emptyList(),
+                                preferences =
+                                    Preferences(
+                                        preferredUnits =
+                                            listOf(PreferredUnit(daycare.id, daycare.name)),
+                                        preferredStartDate = clock.today().plusMonths(5),
+                                        connectedDaycarePreferredStartDate = null,
+                                        serviceNeed =
+                                            ServiceNeed(
+                                                startTime = "09:00",
+                                                endTime = "17:00",
+                                                shiftCare = false,
+                                                partTime = false,
+                                                serviceNeedOption = null,
+                                            ),
+                                        siblingBasis = null,
+                                        preparatory = false,
+                                        urgent = false,
+                                    ),
+                                maxFeeAccepted = false,
+                                otherInfo = "",
+                                clubDetails = null,
                             ),
-                        preschoolDaycarePeriod = null,
+                        allowOtherGuardianAccess = true,
                     ),
-                )
-                service.sendDecisionsWithoutProposal(tx, serviceWorker, clock, testApplicationId)
-                service.confirmDecisionMailed(tx, serviceWorker, clock, testApplicationId)
-                val decisionId =
-                    tx.createQuery {
-                            sql(
-                                "SELECT id FROM decision WHERE application_id = ${bind(testApplicationId)}"
-                            )
-                        }
-                        .exactlyOne<DecisionId>()
-                service.acceptDecision(
-                    tx = tx,
-                    user = guardian.user(CitizenAuthLevel.STRONG),
-                    clock = clock,
-                    applicationId = testApplicationId,
-                    decisionId = decisionId,
-                    requestedStartDate = clock.today().plusMonths(5),
-                )
-                decisionId
-            }
+            )
+            service.sendApplication(
+                tx,
+                guardian.user(CitizenAuthLevel.STRONG),
+                clock,
+                testApplicationId,
+            )
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, testApplicationId)
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                clock,
+                testApplicationId,
+                DaycarePlacementPlan(
+                    unitId = daycare.id,
+                    period =
+                        FiniteDateRange(clock.today().plusMonths(5), clock.today().plusYears(3)),
+                    preschoolDaycarePeriod = null,
+                ),
+            )
+            service.sendDecisionsWithoutProposal(tx, serviceWorker, clock, testApplicationId)
+            service.confirmDecisionMailed(tx, serviceWorker, clock, testApplicationId)
+            val decisionId =
+                tx.createQuery {
+                        sql(
+                            "SELECT id FROM decision WHERE application_id = ${bind(testApplicationId)}"
+                        )
+                    }
+                    .exactlyOne<DecisionId>()
+            service.acceptDecision(
+                tx = tx,
+                user = guardian.user(CitizenAuthLevel.STRONG),
+                clock = clock,
+                applicationId = testApplicationId,
+                decisionId = decisionId,
+                requestedStartDate = clock.today().plusMonths(5),
+            )
+            decisionId
+        }
         asyncJobRunner.runPendingJobsSync(clock)
 
         val metadata =

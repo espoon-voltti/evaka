@@ -24,8 +24,9 @@ class ServiceNeedQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun getOnlyShownServiceNeedOptionPublicInfos() {
         db.transaction { tx -> tx.insertServiceNeedOptions() }
         db.transaction { tx -> tx.updateShowForCitizen() }
-        val queriedOptions =
-            db.read { tx -> tx.getServiceNeedOptionPublicInfos(PlacementType.entries) }
+        val queriedOptions = db.read { tx ->
+            tx.getServiceNeedOptionPublicInfos(PlacementType.entries)
+        }
         // I couln't get any of the fancy asssertj list assertions to work in Kotlin, so test the
         // stupid way
         queriedOptions.forEach {

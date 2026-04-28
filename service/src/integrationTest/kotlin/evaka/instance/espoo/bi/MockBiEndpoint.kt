@@ -54,6 +54,7 @@ class MockBiEndpoint(env: EspooBiEnv) {
 
     fun clearData() = lock.withLock { capturedRequests.clear() }
 
-    fun getCapturedRequests(): Map<String, CapturedRequest> =
-        lock.withLock { capturedRequests.toMap() }
+    fun getCapturedRequests(): Map<String, CapturedRequest> = lock.withLock {
+        capturedRequests.toMap()
+    }
 }

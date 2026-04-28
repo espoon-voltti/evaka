@@ -317,37 +317,35 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         fosterPeriods: List<Pair<Int, Int>> = listOf(),
         expected: List<Pair<Int, Int>>,
     ) {
-        val headIds =
-            db.transaction { tx ->
-                headPeriods.map { (start, end) ->
-                    tx.insert(
-                        DevFridgeChild(
-                            childId = child1.id,
-                            headOfChild = adult.id,
-                            startDate = startDate.plusDays(start.toLong()),
-                            endDate = startDate.plusDays(end.toLong()),
-                        )
+        val headIds = db.transaction { tx ->
+            headPeriods.map { (start, end) ->
+                tx.insert(
+                    DevFridgeChild(
+                        childId = child1.id,
+                        headOfChild = adult.id,
+                        startDate = startDate.plusDays(start.toLong()),
+                        endDate = startDate.plusDays(end.toLong()),
                     )
-                }
+                )
             }
-        val fosterIds =
-            db.transaction { tx ->
-                fosterPeriods.map { (start, end) ->
-                    tx.insert(
-                        DevFosterParent(
-                            childId = child1.id,
-                            parentId = adult.id,
-                            validDuring =
-                                DateRange(
-                                    startDate.plusDays(start.toLong()),
-                                    startDate.plusDays(end.toLong()),
-                                ),
-                            modifiedAt = clock.now(),
-                            modifiedBy = employee.evakaUserId,
-                        )
+        }
+        val fosterIds = db.transaction { tx ->
+            fosterPeriods.map { (start, end) ->
+                tx.insert(
+                    DevFosterParent(
+                        childId = child1.id,
+                        parentId = adult.id,
+                        validDuring =
+                            DateRange(
+                                startDate.plusDays(start.toLong()),
+                                startDate.plusDays(end.toLong()),
+                            ),
+                        modifiedAt = clock.now(),
+                        modifiedBy = employee.evakaUserId,
                     )
-                }
+                )
             }
+        }
         assertEquals(
             if (expected.isEmpty()) listOf()
             else

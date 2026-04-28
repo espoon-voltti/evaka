@@ -135,33 +135,32 @@ class OccupancyController(
             throw BadRequest("Too long time range")
         }
         val period = FiniteDateRange(from, to)
-        val occupancies =
-            db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.READ_OCCUPANCIES,
-                        unitId,
-                    )
-                    getUnitOccupancies(
-                        tx = tx,
-                        now = clock.now(),
-                        unitId = unitId,
-                        period = period,
-                        unitFilter = AccessControlFilter.PermitAll,
-                        groupId = groupId,
-                        includeDraftOccupancies =
-                            accessControl.hasPermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.Global.READ_DRAFT_OCCUPANCIES,
-                            ),
-                    )
-                }
+        val occupancies = db.connect { dbc ->
+            dbc.read { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.READ_OCCUPANCIES,
+                    unitId,
+                )
+                getUnitOccupancies(
+                    tx = tx,
+                    now = clock.now(),
+                    unitId = unitId,
+                    period = period,
+                    unitFilter = AccessControlFilter.PermitAll,
+                    groupId = groupId,
+                    includeDraftOccupancies =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Global.READ_DRAFT_OCCUPANCIES,
+                        ),
+                )
             }
+        }
         Audit.OccupancyRead.log(targetId = AuditId(unitId))
         return occupancies
     }
@@ -176,29 +175,28 @@ class OccupancyController(
         @PathVariable unitId: DaycareId,
         @RequestBody body: GetUnitOccupanciesForDayBody,
     ): RealtimeOccupancy {
-        val occupancies =
-            db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.READ_OCCUPANCIES,
-                        unitId,
+        val occupancies = db.connect { dbc ->
+            dbc.read { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.READ_OCCUPANCIES,
+                    unitId,
+                )
+                val queryTimeRange =
+                    HelsinkiDateTimeRange(
+                        HelsinkiDateTime.of(body.date, LocalTime.MIN),
+                        HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.MIN),
                     )
-                    val queryTimeRange =
-                        HelsinkiDateTimeRange(
-                            HelsinkiDateTime.of(body.date, LocalTime.MIN),
-                            HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.MIN),
-                        )
-                    RealtimeOccupancy(
-                        childAttendances =
-                            tx.getChildOccupancyAttendances(unitId, queryTimeRange, body.groupIds),
-                        staffAttendances =
-                            tx.getStaffOccupancyAttendances(unitId, queryTimeRange, body.groupIds),
-                    )
-                }
+                RealtimeOccupancy(
+                    childAttendances =
+                        tx.getChildOccupancyAttendances(unitId, queryTimeRange, body.groupIds),
+                    staffAttendances =
+                        tx.getStaffOccupancyAttendances(unitId, queryTimeRange, body.groupIds),
+                )
             }
+        }
         Audit.OccupancyRead.log(targetId = AuditId(unitId))
         return occupancies
     }

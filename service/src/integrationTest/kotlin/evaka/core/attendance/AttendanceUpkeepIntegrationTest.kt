@@ -237,9 +237,8 @@ class AttendanceUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(LocalTime.of(23, 59), attendanceEndTimes.first())
     }
 
-    private fun getAttendanceEndTimes() =
-        db.read {
-            it.createQuery { sql("SELECT id, end_time FROM child_attendance") }
-                .toList { column<LocalTime?>("end_time") }
-        }
+    private fun getAttendanceEndTimes() = db.read {
+        it.createQuery { sql("SELECT id, end_time FROM child_attendance") }
+            .toList { column<LocalTime?>("end_time") }
+    }
 }

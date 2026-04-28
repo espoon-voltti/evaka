@@ -66,8 +66,9 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(0, db.read { it.getDrafts(accountId) }.size)
     }
 
-    private fun update(draftId: MessageDraftId, content: UpdatableDraftContent) =
-        db.transaction { it.updateDraft(accountId, draftId, content, clock.now()) }
+    private fun update(draftId: MessageDraftId, content: UpdatableDraftContent) = db.transaction {
+        it.updateDraft(accountId, draftId, content, clock.now())
+    }
 
     private fun assertContent(expected: UpdatableDraftContent) {
         val actual = db.read { it.getDrafts(accountId)[0] }

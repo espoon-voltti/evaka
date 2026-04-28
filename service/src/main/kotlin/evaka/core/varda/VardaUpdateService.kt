@@ -138,13 +138,12 @@ class VardaUpdateService(
         val today = clock.today()
         val updater = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
 
-        val childIds =
-            dbc.transaction { tx ->
-                val count = tx.addNewChildrenForVardaUpdate()
-                logger.info { "Added $count new children for Varda update" }
+        val childIds = dbc.transaction { tx ->
+            val count = tx.addNewChildrenForVardaUpdate()
+            logger.info { "Added $count new children for Varda update" }
 
-                tx.getVardaUpdateChildIds()
-            }
+            tx.getVardaUpdateChildIds()
+        }
 
         val childIdsRequiringUpdate =
             // Process children in chunks to avoid running out of memory
@@ -757,11 +756,10 @@ class DryRunClient : VardaWriteClient {
         get() = _operations.map { "${it.op} ${it.type ?: ""}: ${it.data}" }
 
     val operations: List<Pair<String, Any>>
-        get() =
-            _operations.map {
-                when (it.op) {
-                    "Delete" -> Pair("Delete", (it.data as VardaEntity).url)
-                    else -> Pair(it.op, it.data)
-                }
+        get() = _operations.map {
+            when (it.op) {
+                "Delete" -> Pair("Delete", (it.data as VardaEntity).url)
+                else -> Pair(it.op, it.data)
             }
+        }
 }

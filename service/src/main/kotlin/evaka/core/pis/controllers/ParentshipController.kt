@@ -43,27 +43,26 @@ class ParentshipController(
         clock: EvakaClock,
         @RequestBody body: ParentshipRequest,
     ) {
-        val parentship =
-            db.connect { dbc ->
-                dbc.transaction {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Person.CREATE_PARENTSHIP,
-                        body.headOfChildId,
-                    )
-                    parentshipService.createParentship(
-                        it,
-                        clock,
-                        body.childId,
-                        body.headOfChildId,
-                        body.startDate,
-                        body.endDate,
-                        Creator.User(user.evakaUserId),
-                    )
-                }
+        val parentship = db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Person.CREATE_PARENTSHIP,
+                    body.headOfChildId,
+                )
+                parentshipService.createParentship(
+                    it,
+                    clock,
+                    body.childId,
+                    body.headOfChildId,
+                    body.startDate,
+                    body.endDate,
+                    Creator.User(user.evakaUserId),
+                )
             }
+        }
         Audit.ParentShipsCreate.log(
             targetId = AuditId(listOf(body.headOfChildId, body.childId)),
             objectId = AuditId(parentship.id),

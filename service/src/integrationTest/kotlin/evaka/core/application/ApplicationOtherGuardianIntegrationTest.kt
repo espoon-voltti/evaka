@@ -248,41 +248,34 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             )
         }
 
-    private fun insertFosterParent(clock: EvakaClock) =
-        db.transaction {
-            it.insert(
-                DevFosterParent(
-                    childId = child.id,
-                    parentId = fosterParent.id,
-                    validDuring = DateRange(clock.today(), null),
-                    modifiedAt = clock.now(),
-                    modifiedBy = serviceWorker.evakaUserId,
-                )
+    private fun insertFosterParent(clock: EvakaClock) = db.transaction {
+        it.insert(
+            DevFosterParent(
+                childId = child.id,
+                parentId = fosterParent.id,
+                validDuring = DateRange(clock.today(), null),
+                modifiedAt = clock.now(),
+                modifiedBy = serviceWorker.evakaUserId,
             )
-        }
+        )
+    }
 
-    private fun getOtherGuardians(): Set<PersonId> =
-        db.read { it.getApplicationOtherGuardians(application) }
+    private fun getOtherGuardians(): Set<PersonId> = db.read {
+        it.getApplicationOtherGuardians(application)
+    }
 
-    private fun sendApplication(clock: EvakaClock) =
-        db.transaction { tx ->
-            applicationStateService.sendApplication(
-                tx,
-                guardian.user(CitizenAuthLevel.STRONG),
-                clock,
-                application,
-            )
-        }
+    private fun sendApplication(clock: EvakaClock) = db.transaction { tx ->
+        applicationStateService.sendApplication(
+            tx,
+            guardian.user(CitizenAuthLevel.STRONG),
+            clock,
+            application,
+        )
+    }
 
-    private fun moveToWaitingPlacement(clock: EvakaClock) =
-        db.transaction { tx ->
-            applicationStateService.moveToWaitingPlacement(
-                tx,
-                serviceWorker.user,
-                clock,
-                application,
-            )
-        }
+    private fun moveToWaitingPlacement(clock: EvakaClock) = db.transaction { tx ->
+        applicationStateService.moveToWaitingPlacement(tx, serviceWorker.user, clock, application)
+    }
 
     private fun createPlacementPlan(clock: EvakaClock, period: FiniteDateRange) =
         db.transaction { tx ->

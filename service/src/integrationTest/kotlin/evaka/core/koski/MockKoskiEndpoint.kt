@@ -81,87 +81,87 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
             }
         }
 
-        val response =
-            lock.withLock {
-                val personOid =
-                    when (oppija.henkilö) {
-                        is OidHenkilö -> {
-                            (oppija.henkilö as OidHenkilö).oid
-                        }
-
-                        is UusiHenkilö -> {
-                            val ssn = (oppija.henkilö as UusiHenkilö).hetu
-                            persons.getOrPut(ssn) { "1.2.246.562.24.${personOid++}" }
-                        }
+        val response = lock.withLock {
+            val personOid =
+                when (oppija.henkilö) {
+                    is OidHenkilö -> {
+                        (oppija.henkilö as OidHenkilö).oid
                     }
-                // Raw Jackson databind API is used to generate the response, because we want to add
-                // some fields
-                // that are missing in our data class -based representation to simulate a real
-                // response more accurately
-                jsonMapper.createObjectNode().apply {
-                    putObject("henkilö").apply { put("oid", personOid) }
-                    putArray("opiskeluoikeudet").apply {
-                        addAll(
-                            oppija.opiskeluoikeudet.map {
-                                val studyRightOid = it.oid ?: "1.2.246.562.15.${studyRightOid++}"
-                                val version =
-                                    studyRights[studyRightOid]?.version?.let { v -> v + 1 } ?: 0
 
-                                if (
-                                    it.tila.opiskeluoikeusjaksot.any { jakso ->
-                                        jakso.tila.koodiarvo == OpiskeluoikeusjaksonTilaKoodi.VOIDED
-                                    }
-                                ) {
-                                    studyRights.remove(studyRightOid)
-                                    personStudyRights.get(personOid).remove(studyRightOid)
-                                } else {
-                                    studyRights[studyRightOid] =
-                                        MockStudyRight(
-                                            version,
-                                            opiskeluoikeus = it.copy(oid = studyRightOid),
-                                        )
-                                    personStudyRights.get(personOid).add(studyRightOid)
+                    is UusiHenkilö -> {
+                        val ssn = (oppija.henkilö as UusiHenkilö).hetu
+                        persons.getOrPut(ssn) { "1.2.246.562.24.${personOid++}" }
+                    }
+                }
+            // Raw Jackson databind API is used to generate the response, because we want to add
+            // some fields
+            // that are missing in our data class -based representation to simulate a real
+            // response more accurately
+            jsonMapper.createObjectNode().apply {
+                putObject("henkilö").apply { put("oid", personOid) }
+                putArray("opiskeluoikeudet").apply {
+                    addAll(
+                        oppija.opiskeluoikeudet.map {
+                            val studyRightOid = it.oid ?: "1.2.246.562.15.${studyRightOid++}"
+                            val version =
+                                studyRights[studyRightOid]?.version?.let { v -> v + 1 } ?: 0
+
+                            if (
+                                it.tila.opiskeluoikeusjaksot.any { jakso ->
+                                    jakso.tila.koodiarvo == OpiskeluoikeusjaksonTilaKoodi.VOIDED
                                 }
+                            ) {
+                                studyRights.remove(studyRightOid)
+                                personStudyRights.get(personOid).remove(studyRightOid)
+                            } else {
+                                studyRights[studyRightOid] =
+                                    MockStudyRight(
+                                        version,
+                                        opiskeluoikeus = it.copy(oid = studyRightOid),
+                                    )
+                                personStudyRights.get(personOid).add(studyRightOid)
+                            }
 
-                                jsonMapper.createObjectNode().apply {
-                                    put("oid", studyRightOid)
-                                    put("versionumero", version)
-                                    putObject("lähdejärjestelmänId").apply {
-                                        put("id", it.lähdejärjestelmänId.id.toString())
-                                        putObject("lähdejärjestelmä").apply {
-                                            put(
-                                                "koodiarvo",
-                                                it.lähdejärjestelmänId.lähdejärjestelmä.koodiarvo,
-                                            )
-                                            put(
-                                                "koodistoUri",
-                                                it.lähdejärjestelmänId.lähdejärjestelmä.koodistoUri,
-                                            )
-                                            put("koodistoVersio", 1)
-                                            putObject("nimi").apply { put("fi", "EvakaEspoo") }
-                                            putObject("lyhytNimi").apply { put("fi", "EvakaEspoo") }
-                                        }
+                            jsonMapper.createObjectNode().apply {
+                                put("oid", studyRightOid)
+                                put("versionumero", version)
+                                putObject("lähdejärjestelmänId").apply {
+                                    put("id", it.lähdejärjestelmänId.id.toString())
+                                    putObject("lähdejärjestelmä").apply {
+                                        put(
+                                            "koodiarvo",
+                                            it.lähdejärjestelmänId.lähdejärjestelmä.koodiarvo,
+                                        )
+                                        put(
+                                            "koodistoUri",
+                                            it.lähdejärjestelmänId.lähdejärjestelmä.koodistoUri,
+                                        )
+                                        put("koodistoVersio", 1)
+                                        putObject("nimi").apply { put("fi", "EvakaEspoo") }
+                                        putObject("lyhytNimi").apply { put("fi", "EvakaEspoo") }
                                     }
                                 }
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
+        }
         return ResponseEntity.ok(response)
     }
 
-    fun getStudyRights(): HashMap<StudyRightOid, MockStudyRight> =
-        lock.withLock { HashMap(studyRights) }
+    fun getStudyRights(): HashMap<StudyRightOid, MockStudyRight> = lock.withLock {
+        HashMap(studyRights)
+    }
 
-    fun getPersonStudyRights(oid: PersonOid): Set<StudyRightOid> =
-        lock.withLock { personStudyRights.get(oid) }
+    fun getPersonStudyRights(oid: PersonOid): Set<StudyRightOid> = lock.withLock {
+        personStudyRights.get(oid)
+    }
 
-    fun clearData() =
-        lock.withLock {
-            persons.clear()
-            studyRights.clear()
-        }
+    fun clearData() = lock.withLock {
+        persons.clear()
+        studyRights.clear()
+    }
 
     companion object {
         const val UNIT_OID_THAT_TRIGGERS_400 = "SIMULATE_BAD_REQUEST"

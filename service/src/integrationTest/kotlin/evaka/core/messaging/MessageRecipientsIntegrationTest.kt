@@ -248,19 +248,18 @@ class MessageRecipientsIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 enabledPilotFeatures = setOf(),
             )
 
-        val municipalAccountId =
-            db.transaction { tx ->
-                tx.insert(area1)
-                tx.insert(area2)
-                tx.insert(daycare1)
-                tx.insert(daycare2)
-                tx.insert(daycare3)
-                tx.insert(daycare4)
-                tx.insert(daycare5)
+        val municipalAccountId = db.transaction { tx ->
+            tx.insert(area1)
+            tx.insert(area2)
+            tx.insert(daycare1)
+            tx.insert(daycare2)
+            tx.insert(daycare3)
+            tx.insert(daycare4)
+            tx.insert(daycare5)
 
-                tx.insert(employee)
-                tx.createMunicipalMessageAccount()
-            }
+            tx.insert(employee)
+            tx.createMunicipalMessageAccount()
+        }
         val expectations = mapOf(area1 to listOf(daycare1, daycare2), area2 to listOf(daycare3))
 
         val response =

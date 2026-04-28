@@ -328,36 +328,35 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `application summary has details of sibling basis`() {
-        val applicationId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevPlacement(
-                        type = PlacementType.DAYCARE,
-                        childId = child2.id,
-                        unitId = daycare.id,
-                        startDate = now.today().minusMonths(12),
-                        endDate = now.today().plusMonths(6),
-                    )
+        val applicationId = db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    startDate = now.today().minusMonths(12),
+                    endDate = now.today().plusMonths(6),
                 )
-                tx.insertTestApplication(
-                    childId = child4.id,
-                    guardianId = adult.id,
-                    type = ApplicationType.DAYCARE,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            child = Child(dateOfBirth = null),
-                            guardian = Adult(),
-                            apply =
-                                Apply(
-                                    preferredUnits = listOf(daycare.id),
-                                    siblingBasis = true,
-                                    siblingSsn = child2.ssn!!,
-                                    siblingName = "does not matter",
-                                ),
-                        ),
-                )
-            }
+            )
+            tx.insertTestApplication(
+                childId = child4.id,
+                guardianId = adult.id,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply =
+                            Apply(
+                                preferredUnits = listOf(daycare.id),
+                                siblingBasis = true,
+                                siblingSsn = child2.ssn!!,
+                                siblingName = "does not matter",
+                            ),
+                    ),
+            )
+        }
         val summary =
             getApplicationSummaries(
                     type = ApplicationTypeToggle.ALL,
@@ -424,32 +423,31 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         additionalDaycareApplication: Boolean = false,
         serviceNeedOption: ServiceNeedOption? = null,
     ): ApplicationId {
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    childId = child.id,
-                    guardianId = guardian.id,
-                    type = type,
-                    additionalDaycareApplication = additionalDaycareApplication,
-                    document =
-                        DaycareFormV0(
-                            type = type,
-                            child = Child(dateOfBirth = null),
-                            guardian = Adult(),
-                            apply = Apply(preferredUnits = listOf(daycare.id)),
-                            urgent = urgent,
-                            extendedCare = extendedCare,
-                            connectedDaycare =
-                                if (type == ApplicationType.PRESCHOOL) connectedDaycare else null,
-                            serviceNeedOption = serviceNeedOption,
-                            careDetails =
-                                CareDetails(
-                                    preparatory =
-                                        if (type == ApplicationType.PRESCHOOL) preparatory else null
-                                ),
-                        ),
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                childId = child.id,
+                guardianId = guardian.id,
+                type = type,
+                additionalDaycareApplication = additionalDaycareApplication,
+                document =
+                    DaycareFormV0(
+                        type = type,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(daycare.id)),
+                        urgent = urgent,
+                        extendedCare = extendedCare,
+                        connectedDaycare =
+                            if (type == ApplicationType.PRESCHOOL) connectedDaycare else null,
+                        serviceNeedOption = serviceNeedOption,
+                        careDetails =
+                            CareDetails(
+                                preparatory =
+                                    if (type == ApplicationType.PRESCHOOL) preparatory else null
+                            ),
+                    ),
+            )
+        }
 
         if (attachment) {
             attachmentsController.uploadApplicationAttachment(

@@ -126,34 +126,32 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val group1AccountName = "Test Daycare - Testiläiset"
         val group2AccountName = "Test Daycare - Koekaniinit"
 
-        val accounts =
-            db.transaction {
-                it.getEmployeeMessageAccountIds(
-                    accessControl.requireAuthorizationFilter(
-                        it,
-                        AuthenticatedUser.Employee(supervisorId, emptySet()),
-                        clock,
-                        Action.MessageAccount.ACCESS,
-                    )
+        val accounts = db.transaction {
+            it.getEmployeeMessageAccountIds(
+                accessControl.requireAuthorizationFilter(
+                    it,
+                    AuthenticatedUser.Employee(supervisorId, emptySet()),
+                    clock,
+                    Action.MessageAccount.ACCESS,
                 )
-            }
+            )
+        }
         assertEquals(3, accounts.size)
 
-        val accounts2 =
-            db.read {
-                it.getAuthorizedMessageAccountsForEmployee(
-                    accessControl.requireAuthorizationFilter(
-                        it,
-                        AuthenticatedUser.Employee(supervisorId, emptySet()),
-                        clock,
-                        Action.MessageAccount.ACCESS,
-                    ),
-                    "Espoo",
-                    "Espoo palveluohjaus",
-                    "Espoo asiakasmaksut",
-                    today = clock.today(),
-                )
-            }
+        val accounts2 = db.read {
+            it.getAuthorizedMessageAccountsForEmployee(
+                accessControl.requireAuthorizationFilter(
+                    it,
+                    AuthenticatedUser.Employee(supervisorId, emptySet()),
+                    clock,
+                    Action.MessageAccount.ACCESS,
+                ),
+                "Espoo",
+                "Espoo palveluohjaus",
+                "Espoo asiakasmaksut",
+                today = clock.today(),
+            )
+        }
         assertEquals(3, accounts2.size)
         val personalAccount =
             accounts2.find { it.account.type == AccountType.PERSONAL }
@@ -181,34 +179,32 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `employee gets access to the accounts of his groups`() {
         val groupAccountName = "Test Daycare - Testiläiset"
 
-        val accounts =
-            db.transaction {
-                it.getEmployeeMessageAccountIds(
-                    accessControl.requireAuthorizationFilter(
-                        it,
-                        AuthenticatedUser.Employee(employee1Id, emptySet()),
-                        clock,
-                        Action.MessageAccount.ACCESS,
-                    )
+        val accounts = db.transaction {
+            it.getEmployeeMessageAccountIds(
+                accessControl.requireAuthorizationFilter(
+                    it,
+                    AuthenticatedUser.Employee(employee1Id, emptySet()),
+                    clock,
+                    Action.MessageAccount.ACCESS,
                 )
-            }
+            )
+        }
         assertEquals(1, accounts.size)
 
-        val accounts2 =
-            db.read {
-                it.getAuthorizedMessageAccountsForEmployee(
-                    accessControl.requireAuthorizationFilter(
-                        it,
-                        AuthenticatedUser.Employee(employee1Id, emptySet()),
-                        clock,
-                        Action.MessageAccount.ACCESS,
-                    ),
-                    "Espoo",
-                    "Espoo palveluohjaus",
-                    "Espoo asiakasmaksut",
-                    today = clock.today(),
-                )
-            }
+        val accounts2 = db.read {
+            it.getAuthorizedMessageAccountsForEmployee(
+                accessControl.requireAuthorizationFilter(
+                    it,
+                    AuthenticatedUser.Employee(employee1Id, emptySet()),
+                    clock,
+                    Action.MessageAccount.ACCESS,
+                ),
+                "Espoo",
+                "Espoo palveluohjaus",
+                "Espoo asiakasmaksut",
+                today = clock.today(),
+            )
+        }
         assertEquals(1, accounts2.size)
         assertNull(accounts2.find { it.account.type == AccountType.PERSONAL })
 
@@ -222,34 +218,32 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `employee not in any groups sees no accounts`() {
-        val accounts =
-            db.transaction {
-                it.getEmployeeMessageAccountIds(
-                    accessControl.requireAuthorizationFilter(
-                        it,
-                        AuthenticatedUser.Employee(employee2Id, emptySet()),
-                        clock,
-                        Action.MessageAccount.ACCESS,
-                    )
+        val accounts = db.transaction {
+            it.getEmployeeMessageAccountIds(
+                accessControl.requireAuthorizationFilter(
+                    it,
+                    AuthenticatedUser.Employee(employee2Id, emptySet()),
+                    clock,
+                    Action.MessageAccount.ACCESS,
                 )
-            }
+            )
+        }
         assertEquals(0, accounts.size)
 
-        val accounts2 =
-            db.read {
-                it.getAuthorizedMessageAccountsForEmployee(
-                    accessControl.requireAuthorizationFilter(
-                        it,
-                        AuthenticatedUser.Employee(employee2Id, emptySet()),
-                        clock,
-                        Action.MessageAccount.ACCESS,
-                    ),
-                    "Espoo",
-                    "Espoo palveluohjaus",
-                    "Espoo asiakasmaksut",
-                    today = clock.today(),
-                )
-            }
+        val accounts2 = db.read {
+            it.getAuthorizedMessageAccountsForEmployee(
+                accessControl.requireAuthorizationFilter(
+                    it,
+                    AuthenticatedUser.Employee(employee2Id, emptySet()),
+                    clock,
+                    Action.MessageAccount.ACCESS,
+                ),
+                "Espoo",
+                "Espoo palveluohjaus",
+                "Espoo asiakasmaksut",
+                today = clock.today(),
+            )
+        }
         assertEquals(0, accounts2.size)
     }
 
@@ -271,35 +265,33 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
         db.transaction { it.deactivateEmployeeMessageAccount(supervisorId) }
 
-        val accounts =
-            db.transaction {
-                it.getEmployeeMessageAccountIds(
-                    accessControl.requireAuthorizationFilter(
-                        it,
-                        AuthenticatedUser.Employee(supervisorId, emptySet()),
-                        clock,
-                        Action.MessageAccount.ACCESS,
-                    )
+        val accounts = db.transaction {
+            it.getEmployeeMessageAccountIds(
+                accessControl.requireAuthorizationFilter(
+                    it,
+                    AuthenticatedUser.Employee(supervisorId, emptySet()),
+                    clock,
+                    Action.MessageAccount.ACCESS,
                 )
-            }
+            )
+        }
         assertEquals(2, accounts.size)
     }
 
     @Test
     fun `unread counts`() {
         val now = HelsinkiDateTime.of(LocalDate.of(2022, 5, 14), LocalTime.of(12, 11))
-        val counts =
-            db.read {
-                it.getUnreadMessagesCountsEmployee(
-                    accessControl.requireAuthorizationFilter(
-                        it,
-                        AuthenticatedUser.Employee(supervisorId, emptySet()),
-                        clock,
-                        Action.MessageAccount.ACCESS,
-                    ),
-                    supervisorId,
-                )
-            }
+        val counts = db.read {
+            it.getUnreadMessagesCountsEmployee(
+                accessControl.requireAuthorizationFilter(
+                    it,
+                    AuthenticatedUser.Employee(supervisorId, emptySet()),
+                    clock,
+                    Action.MessageAccount.ACCESS,
+                ),
+                supervisorId,
+            )
+        }
         assertEquals(0, counts.size)
 
         db.transaction { tx ->

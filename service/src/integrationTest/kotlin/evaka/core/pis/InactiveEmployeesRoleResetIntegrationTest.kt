@@ -35,10 +35,9 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
     @Test
     fun `global roles are not reset when last_login is now`() {
-        val employeeId =
-            db.transaction {
-                it.insert(DevEmployee(lastLogin = firstOfAugust2021, roles = setOf(UserRole.ADMIN)))
-            }
+        val employeeId = db.transaction {
+            it.insert(DevEmployee(lastLogin = firstOfAugust2021, roles = setOf(UserRole.ADMIN)))
+        }
 
         val resetEmployeeIds = db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
 
@@ -49,15 +48,14 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
     @Test
     fun `global roles are reset when last_login is over 45 days ago`() {
-        val employeeId =
-            db.transaction {
-                it.insert(
-                    DevEmployee(
-                        lastLogin = firstOfAugust2021.minusDays(daysToDeactivation),
-                        roles = setOf(UserRole.ADMIN),
-                    )
+        val employeeId = db.transaction {
+            it.insert(
+                DevEmployee(
+                    lastLogin = firstOfAugust2021.minusDays(daysToDeactivation),
+                    roles = setOf(UserRole.ADMIN),
                 )
-            }
+            )
+        }
 
         db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
 
@@ -67,18 +65,17 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
     @Test
     fun `scoped roles are not reset when last_login is now`() {
-        val employeeId =
-            db.transaction {
-                val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021))
-                val areaId = it.insert(DevCareArea())
-                val unitId = it.insert(DevDaycare(areaId = areaId))
-                it.insertDaycareAclRow(
-                    daycareId = unitId,
-                    employeeId = employeeId,
-                    role = UserRole.STAFF,
-                )
-                employeeId
-            }
+        val employeeId = db.transaction {
+            val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021))
+            val areaId = it.insert(DevCareArea())
+            val unitId = it.insert(DevDaycare(areaId = areaId))
+            it.insertDaycareAclRow(
+                daycareId = unitId,
+                employeeId = employeeId,
+                role = UserRole.STAFF,
+            )
+            employeeId
+        }
 
         db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
 
@@ -89,26 +86,23 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
     @Test
     fun `scoped roles are reset when last_login is over 45 days ago`() {
-        val employeeId =
-            db.transaction {
-                val employeeId =
-                    it.insert(
-                        DevEmployee(lastLogin = firstOfAugust2021.minusDays(daysToDeactivation))
-                    )
-                val areaId = it.insert(DevCareArea())
-                val unitId = it.insert(DevDaycare(areaId = areaId))
-                it.insertDaycareAclRow(
-                    daycareId = unitId,
-                    employeeId = employeeId,
-                    role = UserRole.STAFF,
-                )
-                it.setDaycareAclUpdated(
-                    unitId,
-                    employeeId,
-                    firstOfAugust2021.minusDays(daysToDeactivation),
-                )
-                employeeId
-            }
+        val employeeId = db.transaction {
+            val employeeId =
+                it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(daysToDeactivation)))
+            val areaId = it.insert(DevCareArea())
+            val unitId = it.insert(DevDaycare(areaId = areaId))
+            it.insertDaycareAclRow(
+                daycareId = unitId,
+                employeeId = employeeId,
+                role = UserRole.STAFF,
+            )
+            it.setDaycareAclUpdated(
+                unitId,
+                employeeId,
+                firstOfAugust2021.minusDays(daysToDeactivation),
+            )
+            employeeId
+        }
 
         db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
 
@@ -119,20 +113,18 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
     @Test
     fun `scoped roles are not reset when last_login is distant past but daycare acl has been recently updated`() {
-        val employeeId =
-            db.transaction {
-                val employeeId =
-                    it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(1000)))
-                val areaId = it.insert(DevCareArea())
-                val unitId = it.insert(DevDaycare(areaId = areaId))
-                it.insertDaycareAclRow(
-                    daycareId = unitId,
-                    employeeId = employeeId,
-                    role = UserRole.STAFF,
-                )
-                it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(5))
-                employeeId
-            }
+        val employeeId = db.transaction {
+            val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(1000)))
+            val areaId = it.insert(DevCareArea())
+            val unitId = it.insert(DevDaycare(areaId = areaId))
+            it.insertDaycareAclRow(
+                daycareId = unitId,
+                employeeId = employeeId,
+                role = UserRole.STAFF,
+            )
+            it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(5))
+            employeeId
+        }
 
         db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
 
@@ -143,28 +135,26 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
     @Test
     fun `scoped roles are not reset when last_login is in distant past but daycare group acl has been recently updated`() {
-        val employeeId =
-            db.transaction {
-                val employeeId =
-                    it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(1000)))
-                val areaId = it.insert(DevCareArea())
-                val unitId = it.insert(DevDaycare(areaId = areaId))
-                val groupId = it.insert(DevDaycareGroup(daycareId = unitId))
-                it.insertDaycareAclRow(
-                    daycareId = unitId,
-                    employeeId = employeeId,
-                    role = UserRole.STAFF,
-                )
-                it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(1000))
-                it.syncDaycareGroupAcl(
-                    daycareId = unitId,
-                    employeeId = employeeId,
-                    groupIds = listOf(groupId),
-                    firstOfAugust2021,
-                )
-                it.setDaycareGroupAclUpdated(groupId, employeeId, firstOfAugust2021.minusDays(5))
-                employeeId
-            }
+        val employeeId = db.transaction {
+            val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(1000)))
+            val areaId = it.insert(DevCareArea())
+            val unitId = it.insert(DevDaycare(areaId = areaId))
+            val groupId = it.insert(DevDaycareGroup(daycareId = unitId))
+            it.insertDaycareAclRow(
+                daycareId = unitId,
+                employeeId = employeeId,
+                role = UserRole.STAFF,
+            )
+            it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(1000))
+            it.syncDaycareGroupAcl(
+                daycareId = unitId,
+                employeeId = employeeId,
+                groupIds = listOf(groupId),
+                firstOfAugust2021,
+            )
+            it.setDaycareGroupAclUpdated(groupId, employeeId, firstOfAugust2021.minusDays(5))
+            employeeId
+        }
 
         db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
 
@@ -175,27 +165,24 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
     @Test
     fun `pin code is reset when last_login is over 45 days ago`() {
-        val employeeId =
-            db.transaction {
-                val employeeId =
-                    it.insert(
-                        DevEmployee(lastLogin = firstOfAugust2021.minusDays(daysToDeactivation))
-                    )
-                val areaId = it.insert(DevCareArea())
-                val unitId = it.insert(DevDaycare(areaId = areaId))
-                it.insertDaycareAclRow(
-                    daycareId = unitId,
-                    employeeId = employeeId,
-                    role = UserRole.STAFF,
-                )
-                it.setDaycareAclUpdated(
-                    unitId,
-                    employeeId,
-                    firstOfAugust2021.minusDays(daysToDeactivation),
-                )
-                it.upsertPinCode(userId = employeeId, pinCode = PinCode("6712"))
-                employeeId
-            }
+        val employeeId = db.transaction {
+            val employeeId =
+                it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(daysToDeactivation)))
+            val areaId = it.insert(DevCareArea())
+            val unitId = it.insert(DevDaycare(areaId = areaId))
+            it.insertDaycareAclRow(
+                daycareId = unitId,
+                employeeId = employeeId,
+                role = UserRole.STAFF,
+            )
+            it.setDaycareAclUpdated(
+                unitId,
+                employeeId,
+                firstOfAugust2021.minusDays(daysToDeactivation),
+            )
+            it.upsertPinCode(userId = employeeId, pinCode = PinCode("6712"))
+            employeeId
+        }
 
         db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
 
@@ -205,27 +192,24 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
     @Test
     fun `personal mobile pairing is removed when last_login is over 45 days ago`() {
-        val employeeId =
-            db.transaction {
-                val employeeId =
-                    it.insert(
-                        DevEmployee(lastLogin = firstOfAugust2021.minusDays(daysToDeactivation))
-                    )
-                val areaId = it.insert(DevCareArea())
-                val unitId = it.insert(DevDaycare(areaId = areaId))
-                it.insertDaycareAclRow(
-                    daycareId = unitId,
-                    employeeId = employeeId,
-                    role = UserRole.STAFF,
-                )
-                it.setDaycareAclUpdated(
-                    unitId,
-                    employeeId,
-                    firstOfAugust2021.minusDays(daysToDeactivation),
-                )
-                it.insert(DevPersonalMobileDevice(employeeId = employeeId))
-                employeeId
-            }
+        val employeeId = db.transaction {
+            val employeeId =
+                it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(daysToDeactivation)))
+            val areaId = it.insert(DevCareArea())
+            val unitId = it.insert(DevDaycare(areaId = areaId))
+            it.insertDaycareAclRow(
+                daycareId = unitId,
+                employeeId = employeeId,
+                role = UserRole.STAFF,
+            )
+            it.setDaycareAclUpdated(
+                unitId,
+                employeeId,
+                firstOfAugust2021.minusDays(daysToDeactivation),
+            )
+            it.insert(DevPersonalMobileDevice(employeeId = employeeId))
+            employeeId
+        }
         assertEquals(1, db.read { it.listPersonalDevices(employeeId).size })
 
         db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
@@ -235,20 +219,19 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
     @Test
     fun `personal mobile pairing is not removed when last_login is less than 45 days ago`() {
-        val employeeId =
-            db.transaction {
-                val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(44)))
-                val areaId = it.insert(DevCareArea())
-                val unitId = it.insert(DevDaycare(areaId = areaId))
-                it.insertDaycareAclRow(
-                    daycareId = unitId,
-                    employeeId = employeeId,
-                    role = UserRole.STAFF,
-                )
-                it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(44))
-                it.insert(DevPersonalMobileDevice(employeeId = employeeId))
-                employeeId
-            }
+        val employeeId = db.transaction {
+            val employeeId = it.insert(DevEmployee(lastLogin = firstOfAugust2021.minusDays(44)))
+            val areaId = it.insert(DevCareArea())
+            val unitId = it.insert(DevDaycare(areaId = areaId))
+            it.insertDaycareAclRow(
+                daycareId = unitId,
+                employeeId = employeeId,
+                role = UserRole.STAFF,
+            )
+            it.setDaycareAclUpdated(unitId, employeeId, firstOfAugust2021.minusDays(44))
+            it.insert(DevPersonalMobileDevice(employeeId = employeeId))
+            employeeId
+        }
         assertEquals(1, db.read { it.listPersonalDevices(employeeId).size })
 
         db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }

@@ -451,15 +451,14 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun cancelOutdatedTransferApplications(db: Database.Connection, clock: EvakaClock) {
-        val canceledApplications =
-            db.transaction {
-                val applicationIds =
-                    it.cancelOutdatedSentTransferApplications(
-                        clock,
-                        AuthenticatedUser.SystemInternalUser.evakaUserId,
-                    )
-                applicationIds
-            }
+        val canceledApplications = db.transaction {
+            val applicationIds =
+                it.cancelOutdatedSentTransferApplications(
+                    clock,
+                    AuthenticatedUser.SystemInternalUser.evakaUserId,
+                )
+            applicationIds
+        }
         logger.info {
             "Canceled ${canceledApplications.size} outdated transfer applications (ids: ${canceledApplications.joinToString(", ")})"
         }
@@ -600,7 +599,9 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun scheduleOrphanAttachmentDeletion(db: Database.Connection, clock: EvakaClock) =
-        db.transaction { attachmentService.scheduleOrphanAttachmentDeletion(it, clock) }
+        db.transaction {
+            attachmentService.scheduleOrphanAttachmentDeletion(it, clock)
+        }
 
     fun scheduleMigrateBulletinMessageThreads(db: Database.Connection, clock: EvakaClock) =
         db.transaction { tx ->
@@ -612,14 +613,16 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             )
         }
 
-    fun databaseSanityChecks(db: Database.Connection, clock: EvakaClock) =
-        db.transaction { runSanityChecks(it, clock) }
+    fun databaseSanityChecks(db: Database.Connection, clock: EvakaClock) = db.transaction {
+        runSanityChecks(it, clock)
+    }
 
     fun rotateSfiMessagesPassword(db: Database.Connection, clock: EvakaClock) =
         sfiMessagesClient?.rotatePassword()
 
-    fun cleanTitaniaErrors(db: Database.Connection, clock: EvakaClock) =
-        db.transaction { it.cleanTitaniaErrors(clock.now()) }
+    fun cleanTitaniaErrors(db: Database.Connection, clock: EvakaClock) = db.transaction {
+        it.cleanTitaniaErrors(clock.now())
+    }
 
     fun generateReplacementDraftInvoices(db: Database.Connection, clock: EvakaClock) =
         invoiceGenerator.generateAllReplacementDraftInvoices(db, clock.today())
@@ -629,25 +632,17 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             passwordBlacklist.importBlacklists(db, Path.of(directory))
         }
 
-    fun syncAclRows(db: Database.Connection, clock: EvakaClock) =
-        db.transaction { tx ->
-            val now = clock.now()
-            val today = now.toLocalDate()
+    fun syncAclRows(db: Database.Connection, clock: EvakaClock) = db.transaction { tx ->
+        val now = clock.now()
+        val today = now.toLocalDate()
 
-            tx.getEndedDaycareAclRows(today).forEach {
-                removeDaycareAclForRole(
-                    tx,
-                    asyncJobRunner,
-                    now,
-                    it.daycareId,
-                    it.employeeId,
-                    it.role,
-                )
-            }
-
-            val employeeIds = tx.upsertAclRowsFromScheduled(today)
-            employeeIds.forEach { tx.upsertEmployeeMessageAccount(it) }
+        tx.getEndedDaycareAclRows(today).forEach {
+            removeDaycareAclForRole(tx, asyncJobRunner, now, it.daycareId, it.employeeId, it.role)
         }
+
+        val employeeIds = tx.upsertAclRowsFromScheduled(today)
+        employeeIds.forEach { tx.upsertEmployeeMessageAccount(it) }
+    }
 
     fun getSfiEvents(db: Database.Connection, clock: EvakaClock) {
         sfiAsyncJobs.getEvents(db, clock)

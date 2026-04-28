@@ -80,8 +80,9 @@ class IsCitizenTest : AccessControlTest() {
     @Test
     fun `IsCitizen and isPermittedForSomeTarget check`() {
         val action = Action.Child.READ
-        fun isPermittedForSomeTarget(user: AuthenticatedUser) =
-            db.read { accessControl.isPermittedForSomeTarget(it, user, clock, action) }
+        fun isPermittedForSomeTarget(user: AuthenticatedUser) = db.read {
+            accessControl.isPermittedForSomeTarget(it, user, clock, action)
+        }
 
         rules.add(action, IsCitizen(allowWeakLogin = false).guardianOfChild())
 

@@ -100,15 +100,14 @@ WHERE m.id = ANY(${bind(messageIds)})
                 }
             } ?: return
 
-        val sender =
-            db.read { tx ->
-                tx.getMessageAccount(
-                    msg.senderId,
-                    municipalAccountName = featureConfig.municipalMessageAccountName,
-                    serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
-                    financeAccountName = featureConfig.financeMessageAccountName,
-                )
-            }
+        val sender = db.read { tx ->
+            tx.getMessageAccount(
+                msg.senderId,
+                municipalAccountName = featureConfig.municipalMessageAccountName,
+                serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
+                financeAccountName = featureConfig.financeMessageAccountName,
+            )
+        }
         val isSenderMunicipalAccount = sender.type == AccountType.MUNICIPAL
 
         Email.create(

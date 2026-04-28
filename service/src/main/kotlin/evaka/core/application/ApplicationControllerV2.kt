@@ -515,8 +515,9 @@ class ApplicationControllerV2(
                             ?: throw NotFound("Child ${application.childId} not found")
                     val vtjGuardians = personService.getGuardians(tx, user, child.id)
 
-                    val applicationGuardianIsVtjGuardian: Boolean =
-                        vtjGuardians.any { it.id == application.guardianId }
+                    val applicationGuardianIsVtjGuardian: Boolean = vtjGuardians.any {
+                        it.id == application.guardianId
+                    }
                     val otherGuardian =
                         tx.getApplicationOtherGuardians(applicationId).firstOrNull()?.let {
                             tx.getPersonById(it)
@@ -617,25 +618,18 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan,
     ) {
-        val placementPlanId =
-            db.connect { dbc ->
-                dbc.transaction {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Application.CREATE_PLACEMENT_PLAN,
-                        applicationId,
-                    )
-                    applicationStateService.createPlacementPlan(
-                        it,
-                        user,
-                        clock,
-                        applicationId,
-                        body,
-                    )
-                }
+        val placementPlanId = db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Application.CREATE_PLACEMENT_PLAN,
+                    applicationId,
+                )
+                applicationStateService.createPlacementPlan(it, user, clock, applicationId, body)
             }
+        }
         Audit.PlacementPlanCreate.log(
             targetId = AuditId(listOf(applicationId, body.unitId)),
             objectId = AuditId(placementPlanId),

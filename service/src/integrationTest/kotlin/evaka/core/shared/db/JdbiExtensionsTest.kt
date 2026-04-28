@@ -38,10 +38,9 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testCoordinate() {
         val input = Coordinate(lat = 11.0, lon = 22.0)
 
-        val match =
-            db.read {
-                it.checkMatch(QuerySql { sql("SELECT ${bind(input)} ~= point(22.0, 11.0)") }, input)
-            }
+        val match = db.read {
+            it.checkMatch(QuerySql { sql("SELECT ${bind(input)} ~= point(22.0, 11.0)") }, input)
+        }
         assertTrue(match)
 
         val output = db.read { it.passThrough(input) }
@@ -52,10 +51,9 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testNullCoordinate() {
         data class QueryResult(val value: Coordinate?)
 
-        val result =
-            db.read {
-                it.createQuery { sql("SELECT NULL::point AS value") }.exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery { sql("SELECT NULL::point AS value") }.exactlyOne<QueryResult>()
+        }
         assertNull(result.value)
     }
 
@@ -63,13 +61,12 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testCoordinateListResult() {
         data class QueryResult(val values: List<Coordinate>)
 
-        val result =
-            db.read {
-                it.createQuery {
-                        sql("SELECT array[point(22.0, 11.0), point(44.0, 33.0)]::point[] AS values")
-                    }
-                    .exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery {
+                    sql("SELECT array[point(22.0, 11.0), point(44.0, 33.0)]::point[] AS values")
+                }
+                .exactlyOne<QueryResult>()
+        }
         assertEquals(
             listOf(Coordinate(lat = 11.0, lon = 22.0), Coordinate(lat = 33.0, lon = 44.0)),
             result.values,
@@ -80,15 +77,14 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testDateRange() {
         val input = DateRange(LocalDate.of(2020, 1, 2), LocalDate.of(2020, 3, 4))
 
-        val match =
-            db.read {
-                it.checkMatch(
-                    QuerySql {
-                        sql("SELECT ${bind(input)} = daterange('2020-01-02', '2020-03-04', '[]')")
-                    },
-                    input,
-                )
-            }
+        val match = db.read {
+            it.checkMatch(
+                QuerySql {
+                    sql("SELECT ${bind(input)} = daterange('2020-01-02', '2020-03-04', '[]')")
+                },
+                input,
+            )
+        }
         assertTrue(match)
 
         val output = db.read { it.passThrough(input) }
@@ -99,15 +95,14 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testDateRangeWithIsoMax() {
         val input = DateRange(LocalDate.of(1, 1, 1), LocalDate.of(9999, 12, 31))
 
-        val match =
-            db.read {
-                it.checkMatch(
-                    QuerySql {
-                        sql("SELECT ${bind(input)} = daterange('0001-01-01', '9999-12-31', '[]')")
-                    },
-                    input,
-                )
-            }
+        val match = db.read {
+            it.checkMatch(
+                QuerySql {
+                    sql("SELECT ${bind(input)} = daterange('0001-01-01', '9999-12-31', '[]')")
+                },
+                input,
+            )
+        }
         assertTrue(match)
 
         val output = db.read { it.passThrough(input) }
@@ -118,13 +113,12 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testDateRangeWithoutEnd() {
         val input = DateRange(LocalDate.of(2020, 6, 7), null)
 
-        val match =
-            db.read {
-                it.checkMatch(
-                    QuerySql { sql("SELECT ${bind(input)} = daterange('2020-06-07', NULL, '[]')") },
-                    input,
-                )
-            }
+        val match = db.read {
+            it.checkMatch(
+                QuerySql { sql("SELECT ${bind(input)} = daterange('2020-06-07', NULL, '[]')") },
+                input,
+            )
+        }
         assertTrue(match)
 
         val output = db.read { it.passThrough(input) }
@@ -135,10 +129,9 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testNullDateRange() {
         data class QueryResult(val value: DateRange?)
 
-        val result =
-            db.read {
-                it.createQuery { sql("SELECT NULL::daterange AS value") }.exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery { sql("SELECT NULL::daterange AS value") }.exactlyOne<QueryResult>()
+        }
         assertNull(result.value)
     }
 
@@ -146,15 +139,14 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testDateRangeListResult() {
         data class QueryResult(val values: List<DateRange>)
 
-        val result =
-            db.read {
-                it.createQuery {
-                        sql(
-                            "SELECT array[daterange('2020-06-07', NULL, '[]'), daterange('2021-01-01', '2021-01-02', '[]')]::daterange[] AS values"
-                        )
-                    }
-                    .exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery {
+                    sql(
+                        "SELECT array[daterange('2020-06-07', NULL, '[]'), daterange('2021-01-01', '2021-01-02', '[]')]::daterange[] AS values"
+                    )
+                }
+                .exactlyOne<QueryResult>()
+        }
         assertEquals(
             listOf(
                 DateRange(LocalDate.of(2020, 6, 7), null),
@@ -168,15 +160,14 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testFiniteDateRange() {
         val input = FiniteDateRange(LocalDate.of(2020, 9, 10), LocalDate.of(2020, 11, 12))
 
-        val match =
-            db.read {
-                it.checkMatch(
-                    QuerySql {
-                        sql("SELECT ${bind(input)} = daterange('2020-09-10', '2020-11-12', '[]')")
-                    },
-                    input,
-                )
-            }
+        val match = db.read {
+            it.checkMatch(
+                QuerySql {
+                    sql("SELECT ${bind(input)} = daterange('2020-09-10', '2020-11-12', '[]')")
+                },
+                input,
+            )
+        }
         assertTrue(match)
 
         val output = db.read { it.passThrough(input) }
@@ -187,10 +178,9 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testNullFiniteDateRange() {
         data class QueryResult(val value: FiniteDateRange?)
 
-        val result =
-            db.read {
-                it.createQuery { sql("SELECT NULL::daterange AS value") }.exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery { sql("SELECT NULL::daterange AS value") }.exactlyOne<QueryResult>()
+        }
         assertNull(result.value)
     }
 
@@ -198,15 +188,14 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun testFiniteDateRangeListResult() {
         data class QueryResult(val values: List<FiniteDateRange>)
 
-        val result =
-            db.read {
-                it.createQuery {
-                        sql(
-                            "SELECT array[daterange('2020-06-07', '2021-01-01', '[]'), daterange('2021-01-01', '2021-01-02', '[]')]::daterange[] AS values"
-                        )
-                    }
-                    .exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery {
+                    sql(
+                        "SELECT array[daterange('2020-06-07', '2021-01-01', '[]'), daterange('2021-01-01', '2021-01-02', '[]')]::daterange[] AS values"
+                    )
+                }
+                .exactlyOne<QueryResult>()
+        }
         assertEquals(
             listOf(
                 FiniteDateRange(LocalDate.of(2020, 6, 7), LocalDate.of(2021, 1, 1)),
@@ -225,22 +214,21 @@ class JdbiExtensionsTest : PureJdbiTest(resetDbBeforeEach = false) {
                 FiniteDateRange.ofMonth(2020, Month.APRIL),
             )
 
-        val match =
-            db.read {
-                it.checkMatch(
-                    QuerySql {
-                        sql(
-                            """
+        val match = db.read {
+            it.checkMatch(
+                QuerySql {
+                    sql(
+                        """
 SELECT ${bind(input)} = datemultirange(
     daterange('2020-01-01', '2020-01-31', '[]'),
     daterange('2020-02-01', '2020-02-29', '[]'),
     daterange('2020-04-01', '2020-04-30', '[]')
 )"""
-                        )
-                    },
-                    input,
-                )
-            }
+                    )
+                },
+                input,
+            )
+        }
         assertTrue(match)
 
         val output = db.read { it.passThrough(input) }
@@ -251,11 +239,9 @@ SELECT ${bind(input)} = datemultirange(
     fun testNullDateSet() {
         data class QueryResult(val value: DateSet?)
 
-        val result =
-            db.read {
-                it.createQuery { sql("SELECT NULL::datemultirange AS value") }
-                    .exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery { sql("SELECT NULL::datemultirange AS value") }.exactlyOne<QueryResult>()
+        }
         assertNull(result.value)
     }
 
@@ -263,10 +249,9 @@ SELECT ${bind(input)} = datemultirange(
     fun testExternalId() {
         val input = ExternalId.of(namespace = "test", value = "123456")
 
-        val match =
-            db.read {
-                it.checkMatch(QuerySql { sql("SELECT ${bind(input)} = 'test:123456'") }, input)
-            }
+        val match = db.read {
+            it.checkMatch(QuerySql { sql("SELECT ${bind(input)} = 'test:123456'") }, input)
+        }
         assertTrue(match)
 
         val output = db.read { it.passThrough(input) }
@@ -277,10 +262,9 @@ SELECT ${bind(input)} = datemultirange(
     fun testNullExternalId() {
         data class QueryResult(val value: ExternalId?)
 
-        val result =
-            db.read {
-                it.createQuery { sql("SELECT NULL::text AS value") }.exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery { sql("SELECT NULL::text AS value") }.exactlyOne<QueryResult>()
+        }
         assertNull(result.value)
     }
 
@@ -288,11 +272,10 @@ SELECT ${bind(input)} = datemultirange(
     fun testExternalIdListResult() {
         data class QueryResult(val values: List<ExternalId>)
 
-        val result =
-            db.read {
-                it.createQuery { sql("SELECT array['test:123456', 'more:42']::text[] AS values") }
-                    .exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery { sql("SELECT array['test:123456', 'more:42']::text[] AS values") }
+                .exactlyOne<QueryResult>()
+        }
         assertEquals(
             listOf(
                 ExternalId.of(namespace = "test", value = "123456"),
@@ -306,15 +289,12 @@ SELECT ${bind(input)} = datemultirange(
     fun testId() {
         val input = PersonId(UUID.fromString("5ea2618c-3e9d-4fd3-8094-8d2f35311962"))
 
-        val match =
-            db.read {
-                it.checkMatch(
-                    QuerySql {
-                        sql("SELECT ${bind(input)} = '5ea2618c-3e9d-4fd3-8094-8d2f35311962'")
-                    },
-                    input,
-                )
-            }
+        val match = db.read {
+            it.checkMatch(
+                QuerySql { sql("SELECT ${bind(input)} = '5ea2618c-3e9d-4fd3-8094-8d2f35311962'") },
+                input,
+            )
+        }
         assertTrue(match)
 
         val output = db.read { it.passThrough(input) }
@@ -325,10 +305,9 @@ SELECT ${bind(input)} = datemultirange(
     fun testNullId() {
         data class QueryResult(val value: PersonId?)
 
-        val result =
-            db.read {
-                it.createQuery { sql("SELECT NULL::uuid AS value") }.exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery { sql("SELECT NULL::uuid AS value") }.exactlyOne<QueryResult>()
+        }
         assertNull(result.value)
     }
 
@@ -336,15 +315,14 @@ SELECT ${bind(input)} = datemultirange(
     fun testIdListResult() {
         data class QueryResult(val values: List<PersonId>)
 
-        val result =
-            db.read {
-                it.createQuery {
-                        sql(
-                            "SELECT array['5ea2618c-3e9d-4fd3-8094-8d2f35311962', '2db6c1c7-402f-4d86-a308-a7f1b19bb313']::uuid[] AS values"
-                        )
-                    }
-                    .exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery {
+                    sql(
+                        "SELECT array['5ea2618c-3e9d-4fd3-8094-8d2f35311962', '2db6c1c7-402f-4d86-a308-a7f1b19bb313']::uuid[] AS values"
+                    )
+                }
+                .exactlyOne<QueryResult>()
+        }
         assertEquals(
             listOf(
                 PersonId(UUID.fromString("5ea2618c-3e9d-4fd3-8094-8d2f35311962")),
@@ -359,15 +337,14 @@ SELECT ${bind(input)} = datemultirange(
         data class JsonbObject(val value: PersonId)
         data class QueryResult(@Json val jsonb: JsonbObject)
 
-        val result =
-            db.read {
-                it.createQuery {
-                        sql(
-                            "SELECT jsonb_build_object('value', '5ea2618c-3e9d-4fd3-8094-8d2f35311962'::uuid) AS jsonb"
-                        )
-                    }
-                    .exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery {
+                    sql(
+                        "SELECT jsonb_build_object('value', '5ea2618c-3e9d-4fd3-8094-8d2f35311962'::uuid) AS jsonb"
+                    )
+                }
+                .exactlyOne<QueryResult>()
+        }
         val expected = PersonId(UUID.fromString("5ea2618c-3e9d-4fd3-8094-8d2f35311962"))
         assertEquals(expected, result.jsonb.value)
     }
@@ -379,13 +356,9 @@ SELECT ${bind(input)} = datemultirange(
                 ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(13, 59), europeHelsinki)
             )
 
-        val match =
-            db.read {
-                it.checkMatch(
-                    QuerySql { sql("SELECT ${bind(input)} = '2020-05-07T10:59Z'") },
-                    input,
-                )
-            }
+        val match = db.read {
+            it.checkMatch(QuerySql { sql("SELECT ${bind(input)} = '2020-05-07T10:59Z'") }, input)
+        }
         assertTrue(match)
 
         val output = db.read { it.passThrough(input) }
@@ -396,11 +369,9 @@ SELECT ${bind(input)} = datemultirange(
     fun testNullHelsinkiDateTime() {
         data class QueryResult(val value: HelsinkiDateTime?)
 
-        val result =
-            db.read {
-                it.createQuery { sql("SELECT NULL::timestamptz AS value") }
-                    .exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery { sql("SELECT NULL::timestamptz AS value") }.exactlyOne<QueryResult>()
+        }
         assertNull(result.value)
     }
 
@@ -408,15 +379,14 @@ SELECT ${bind(input)} = datemultirange(
     fun testHelsinkiDateTimeListResult() {
         data class QueryResult(val values: List<HelsinkiDateTime>)
 
-        val result =
-            db.read {
-                it.createQuery {
-                        sql(
-                            "SELECT array['2020-05-07T10:59Z', '2021-01-10T06:42Z']::timestamptz[] AS values"
-                        )
-                    }
-                    .exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery {
+                    sql(
+                        "SELECT array['2020-05-07T10:59Z', '2021-01-10T06:42Z']::timestamptz[] AS values"
+                    )
+                }
+                .exactlyOne<QueryResult>()
+        }
         val values = result.values.map { it.toZonedDateTime().withZoneSameInstant(utc) }
         assertEquals(
             listOf(
@@ -432,15 +402,14 @@ SELECT ${bind(input)} = datemultirange(
         data class JsonbObject(val value: HelsinkiDateTime)
         data class QueryResult(@Json val jsonb: JsonbObject)
 
-        val result =
-            db.read {
-                it.createQuery {
-                        sql(
-                            "SELECT jsonb_build_object('value', '2020-05-07T10:59Z'::timestamptz) AS jsonb"
-                        )
-                    }
-                    .exactlyOne<QueryResult>()
-            }
+        val result = db.read {
+            it.createQuery {
+                    sql(
+                        "SELECT jsonb_build_object('value', '2020-05-07T10:59Z'::timestamptz) AS jsonb"
+                    )
+                }
+                .exactlyOne<QueryResult>()
+        }
         val expected = ZonedDateTime.of(LocalDate.of(2020, 5, 7), LocalTime.of(10, 59), utc)
         assertEquals(expected, result.jsonb.value.toZonedDateTime().withZoneSameInstant(utc))
     }

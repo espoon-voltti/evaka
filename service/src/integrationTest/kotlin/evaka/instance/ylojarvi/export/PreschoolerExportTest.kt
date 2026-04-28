@@ -56,13 +56,10 @@ class PreschoolerExportTest : AbstractYlojarviIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM ylojarvi_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM ylojarvi_preschooler_export(2019, ${bind(date)})") }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows).hasSize(1)
     }
@@ -95,13 +92,10 @@ class PreschoolerExportTest : AbstractYlojarviIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM ylojarvi_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM ylojarvi_preschooler_export(2019, ${bind(date)})") }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows).isEmpty()
     }
@@ -123,13 +117,10 @@ class PreschoolerExportTest : AbstractYlojarviIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM ylojarvi_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM ylojarvi_preschooler_export(2019, ${bind(date)})") }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows).isEmpty()
     }
@@ -161,13 +152,10 @@ class PreschoolerExportTest : AbstractYlojarviIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM ylojarvi_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM ylojarvi_preschooler_export(2019, ${bind(date)})") }
+                .toList<PreschoolerExportRow>()
+        }
 
         val extendedCompulsoryEducation = hasExtendedCompulsoryEducation(level)
         if (extendedCompulsoryEducation) {
@@ -208,13 +196,10 @@ class PreschoolerExportTest : AbstractYlojarviIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM ylojarvi_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM ylojarvi_preschooler_export(2019, ${bind(date)})") }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows)
             .extracting<String?> { it.`esioppilaan voimassa oleva tuen taso` }

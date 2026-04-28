@@ -48,17 +48,14 @@ class PendingDecisionEmailService(
     data class GuardianDecisions(val guardianId: PersonId, val decisionIds: List<DecisionId>)
 
     fun scheduleSendPendingDecisionsEmails(db: Database.Connection, clock: EvakaClock): Int {
-        val jobCount =
-            db.transaction { tx ->
-                tx.removeUnclaimedJobs(
-                    setOf(AsyncJobType(AsyncJob.SendPendingDecisionEmail::class))
-                )
+        val jobCount = db.transaction { tx ->
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SendPendingDecisionEmail::class)))
 
-                val today = clock.today()
-                val pendingGuardianDecisions =
-                    tx.createQuery {
-                            sql(
-                                """
+            val today = clock.today()
+            val pendingGuardianDecisions =
+                tx.createQuery {
+                        sql(
+                            """
 WITH pending_decisions AS (
 SELECT id, application_id
 FROM decision d
@@ -77,54 +74,54 @@ WHERE EXISTS (
 )
 GROUP BY application.guardian_id
 """
-                            )
-                        }
-                        .toList<GuardianDecisions>()
+                        )
+                    }
+                    .toList<GuardianDecisions>()
 
-                val createdJobCount =
-                    pendingGuardianDecisions.fold(0) { count, pendingDecision ->
-                        tx.getPersonById(pendingDecision.guardianId).let { guardian ->
-                            when {
-                                guardian == null -> {
-                                    logger.warn {
-                                        "Could not send pending decision email to guardian ${pendingDecision.guardianId}: guardian not found"
-                                    }
-                                    count
+            val createdJobCount =
+                pendingGuardianDecisions.fold(0) { count, pendingDecision ->
+                    tx.getPersonById(pendingDecision.guardianId).let { guardian ->
+                        when {
+                            guardian == null -> {
+                                logger.warn {
+                                    "Could not send pending decision email to guardian ${pendingDecision.guardianId}: guardian not found"
                                 }
+                                count
+                            }
 
-                                guardian.email.isNullOrBlank() -> {
-                                    logger.warn {
-                                        "Could not send pending decision email to guardian ${guardian.id}: invalid email"
-                                    }
-                                    count
+                            guardian.email.isNullOrBlank() -> {
+                                logger.warn {
+                                    "Could not send pending decision email to guardian ${guardian.id}: invalid email"
                                 }
+                                count
+                            }
 
-                                else -> {
-                                    asyncJobRunner.plan(
-                                        tx,
-                                        payloads =
-                                            listOf(
-                                                AsyncJob.SendPendingDecisionEmail(
-                                                    guardianId = pendingDecision.guardianId,
-                                                    language = guardian.language,
-                                                    decisionIds = pendingDecision.decisionIds,
-                                                )
-                                            ),
-                                        runAt = clock.now(),
-                                        retryCount = 3,
-                                        retryInterval = Duration.ofHours(1),
-                                    )
-                                    count + 1
-                                }
+                            else -> {
+                                asyncJobRunner.plan(
+                                    tx,
+                                    payloads =
+                                        listOf(
+                                            AsyncJob.SendPendingDecisionEmail(
+                                                guardianId = pendingDecision.guardianId,
+                                                language = guardian.language,
+                                                decisionIds = pendingDecision.decisionIds,
+                                            )
+                                        ),
+                                    runAt = clock.now(),
+                                    retryCount = 3,
+                                    retryInterval = Duration.ofHours(1),
+                                )
+                                count + 1
                             }
                         }
                     }
-
-                logger.info {
-                    "PendingDecisionEmailService: Scheduled sending $createdJobCount pending decision emails"
                 }
-                createdJobCount
+
+            logger.info {
+                "PendingDecisionEmailService: Scheduled sending $createdJobCount pending decision emails"
             }
+            createdJobCount
+        }
 
         return jobCount
     }

@@ -67,14 +67,13 @@ class InvoiceService(
         }
 
         val nextInvoiceNumber = numberProvider.getNextInvoiceNumber(tx)
-        val updatedInvoices =
-            invoices.mapIndexed { index, invoice ->
-                invoice.copy(
-                    number = nextInvoiceNumber + index,
-                    invoiceDate = invoiceDate ?: invoice.invoiceDate,
-                    dueDate = dueDate ?: invoice.dueDate,
-                )
-            }
+        val updatedInvoices = invoices.mapIndexed { index, invoice ->
+            invoice.copy(
+                number = nextInvoiceNumber + index,
+                invoiceDate = invoiceDate ?: invoice.invoiceDate,
+                dueDate = dueDate ?: invoice.dueDate,
+            )
+        }
 
         val sendResult = integrationClient.send(now, updatedInvoices)
         tx.setDraftsSent(now, sendResult.succeeded, sentBy)

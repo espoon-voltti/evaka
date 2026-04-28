@@ -52,17 +52,16 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `inserting caretaker row`() {
         val start2 = LocalDate.of(2000, 6, 1)
-        val caretakers =
-            db.transaction { tx ->
-                insertCaretakers(
-                    tx,
-                    groupId = group.id,
-                    startDate = start2,
-                    endDate = null,
-                    amount = 5.0,
-                )
-                getCaretakers(tx, group.id)
-            }
+        val caretakers = db.transaction { tx ->
+            insertCaretakers(
+                tx,
+                groupId = group.id,
+                startDate = start2,
+                endDate = null,
+                amount = 5.0,
+            )
+            getCaretakers(tx, group.id)
+        }
         assertEquals(2, caretakers.size)
 
         assertEquals(start2, caretakers[0].startDate)
@@ -76,20 +75,19 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `updating caretaker row`() {
-        val rows =
-            db.transaction { tx ->
-                val id = getCaretakers(tx, group.id).first().id
-                updateCaretakers(
-                    tx,
-                    groupId = group.id,
-                    id = id,
-                    startDate = LocalDate.of(2000, 7, 1),
-                    endDate = LocalDate.of(2000, 8, 1),
-                    amount = 2.0,
-                )
+        val rows = db.transaction { tx ->
+            val id = getCaretakers(tx, group.id).first().id
+            updateCaretakers(
+                tx,
+                groupId = group.id,
+                id = id,
+                startDate = LocalDate.of(2000, 7, 1),
+                endDate = LocalDate.of(2000, 8, 1),
+                amount = 2.0,
+            )
 
-                getCaretakers(tx, group.id)
-            }
+            getCaretakers(tx, group.id)
+        }
         assertEquals(1, rows.size)
         val updated = rows.first()
         assertEquals(LocalDate.of(2000, 7, 1), updated.startDate)
