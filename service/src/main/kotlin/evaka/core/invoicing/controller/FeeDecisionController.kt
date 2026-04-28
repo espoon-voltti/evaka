@@ -268,10 +268,9 @@ class FeeDecisionController(
                         listOfNotNull(decision.headOfFamily.id, decision.partner?.id) +
                             decision.children.map { part -> part.child.id }
 
-                    val restrictedDetails =
-                        personIds.any { personId ->
-                            tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
-                        }
+                    val restrictedDetails = personIds.any { personId ->
+                        tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
+                    }
                     if (
                         restrictedDetails && decision.documentContainsContactInfo && !user.isAdmin
                     ) {

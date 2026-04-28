@@ -80,12 +80,11 @@ fun createPaymentDrafts(tx: Database.Transaction) {
         )
     if (report.locked == null) throw BadRequest("Voucher value report is not locked")
 
-    val period =
-        lastSnapshot.let {
-            val start = LocalDate.of(it.year, it.month, 1)
-            val end = start.with(TemporalAdjusters.lastDayOfMonth())
-            FiniteDateRange(start, end)
-        }
+    val period = lastSnapshot.let {
+        val start = LocalDate.of(it.year, it.month, 1)
+        val end = start.with(TemporalAdjusters.lastDayOfMonth())
+        FiniteDateRange(start, end)
+    }
 
     val unitsAlreadyInProgress =
         tx.readPaymentUnits(

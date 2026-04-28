@@ -291,20 +291,19 @@ class DecisionService(
         clock: EvakaClock,
         applicationId: ApplicationId,
     ) {
-        val guardianId =
-            db.transaction { tx ->
-                val application =
-                    tx.fetchApplicationDetails(applicationId)
-                        ?: throw NotFound("Application $applicationId was not found")
-                val childId = application.childId
+        val guardianId = db.transaction { tx ->
+            val application =
+                tx.fetchApplicationDetails(applicationId)
+                    ?: throw NotFound("Application $applicationId was not found")
+            val childId = application.childId
 
-                // make sure VTJ guardians are up-to-date
-                personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, childId)
+            // make sure VTJ guardians are up-to-date
+            personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, childId)
 
-                val currentGuardians = tx.getChildGuardiansAndFosterParents(childId, clock.today())
+            val currentGuardians = tx.getChildGuardiansAndFosterParents(childId, clock.today())
 
-                application.guardianId.takeIf { currentGuardians.contains(it) }
-            }
+            application.guardianId.takeIf { currentGuardians.contains(it) }
+        }
 
         if (guardianId != null) {
             // simplified to get rid of superfluous language requirement

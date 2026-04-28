@@ -120,101 +120,92 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `test getGroupStats`() =
-        db.transaction { tx ->
-            val groupStats =
-                tx.getGroupStats(
-                    daycareId,
-                    FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1)),
-                )
-            assertEquals(3, groupStats.keys.size)
-            assertEquals(Caretakers(3.0, 5.0), groupStats[groupId1])
-            assertEquals(Caretakers(1.0, 3.0), groupStats[groupId2])
-            assertEquals(Caretakers(4.0, 6.0), groupStats[groupId3])
-        }
+    fun `test getGroupStats`() = db.transaction { tx ->
+        val groupStats =
+            tx.getGroupStats(
+                daycareId,
+                FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1)),
+            )
+        assertEquals(3, groupStats.keys.size)
+        assertEquals(Caretakers(3.0, 5.0), groupStats[groupId1])
+        assertEquals(Caretakers(1.0, 3.0), groupStats[groupId2])
+        assertEquals(Caretakers(4.0, 6.0), groupStats[groupId3])
+    }
 
     @Test
-    fun `test getGroupStats with limited range`() =
-        db.transaction { tx ->
-            val groupStats =
-                tx.getGroupStats(
-                    daycareId,
-                    FiniteDateRange(LocalDate.of(2000, 2, 3), LocalDate.of(2000, 4, 1)),
-                )
-            assertEquals(3, groupStats.keys.size)
-            assertEquals(Caretakers(4.0, 5.0), groupStats[groupId1])
-            assertEquals(Caretakers(1.0, 3.0), groupStats[groupId2])
-            assertEquals(Caretakers(4.0, 4.0), groupStats[groupId3])
-        }
+    fun `test getGroupStats with limited range`() = db.transaction { tx ->
+        val groupStats =
+            tx.getGroupStats(
+                daycareId,
+                FiniteDateRange(LocalDate.of(2000, 2, 3), LocalDate.of(2000, 4, 1)),
+            )
+        assertEquals(3, groupStats.keys.size)
+        assertEquals(Caretakers(4.0, 5.0), groupStats[groupId1])
+        assertEquals(Caretakers(1.0, 3.0), groupStats[groupId2])
+        assertEquals(Caretakers(4.0, 4.0), groupStats[groupId3])
+    }
 
     @Test
-    fun `test getGroupStats with limited range 2`() =
-        db.transaction { tx ->
-            val singleDate = LocalDate.of(2000, 2, 1)
-            val groupStats = tx.getGroupStats(daycareId, singleDate.toFiniteDateRange())
-            assertEquals(Caretakers(3.0, 3.0), groupStats[groupId1])
-        }
+    fun `test getGroupStats with limited range 2`() = db.transaction { tx ->
+        val singleDate = LocalDate.of(2000, 2, 1)
+        val groupStats = tx.getGroupStats(daycareId, singleDate.toFiniteDateRange())
+        assertEquals(Caretakers(3.0, 3.0), groupStats[groupId1])
+    }
 
     @Test
-    fun `test getGroupStats with limited range 3`() =
-        db.transaction { tx ->
-            val singleDate = LocalDate.of(2000, 2, 2)
-            val groupStats = tx.getGroupStats(daycareId, singleDate.toFiniteDateRange())
-            assertEquals(Caretakers(5.0, 5.0), groupStats[groupId1])
-        }
+    fun `test getGroupStats with limited range 3`() = db.transaction { tx ->
+        val singleDate = LocalDate.of(2000, 2, 2)
+        val groupStats = tx.getGroupStats(daycareId, singleDate.toFiniteDateRange())
+        assertEquals(Caretakers(5.0, 5.0), groupStats[groupId1])
+    }
 
     @Test
-    fun `test getUnitStats`() =
-        db.transaction { tx ->
-            val unitStats =
-                tx.getUnitStats(
-                    daycareId,
-                    FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1)),
-                )
-            assertEquals(Caretakers(9.0, 13.0), unitStats)
-        }
+    fun `test getUnitStats`() = db.transaction { tx ->
+        val unitStats =
+            tx.getUnitStats(
+                daycareId,
+                FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1)),
+            )
+        assertEquals(Caretakers(9.0, 13.0), unitStats)
+    }
 
     @Test
-    fun `test getUnitStats with no groups`() =
-        db.transaction { tx ->
-            val unitStats =
-                tx.getUnitStats(
-                    daycareId2,
-                    FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1)),
-                )
-            assertEquals(Caretakers(0.0, 0.0), unitStats)
-        }
+    fun `test getUnitStats with no groups`() = db.transaction { tx ->
+        val unitStats =
+            tx.getUnitStats(
+                daycareId2,
+                FiniteDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1)),
+            )
+        assertEquals(Caretakers(0.0, 0.0), unitStats)
+    }
 
     @Test
-    fun `test getUnitStats with limited range 1`() =
-        db.transaction { tx ->
-            val unitStats =
-                tx.getUnitStats(
-                    daycareId,
-                    FiniteDateRange(LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 2)),
-                )
-            assertEquals(Caretakers(9.0, 10.0), unitStats)
-        }
+    fun `test getUnitStats with limited range 1`() = db.transaction { tx ->
+        val unitStats =
+            tx.getUnitStats(
+                daycareId,
+                FiniteDateRange(LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 2)),
+            )
+        assertEquals(Caretakers(9.0, 10.0), unitStats)
+    }
 
     @Test
-    fun `test getUnitStats with limited range 2`() =
-        db.transaction { tx ->
-            val unitStats =
-                tx.getUnitStats(
-                    daycareId,
-                    FiniteDateRange(LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 1)),
-                )
-            assertEquals(Caretakers(10.0, 10.0), unitStats)
-        }
+    fun `test getUnitStats with limited range 2`() = db.transaction { tx ->
+        val unitStats =
+            tx.getUnitStats(
+                daycareId,
+                FiniteDateRange(LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 1)),
+            )
+        assertEquals(Caretakers(10.0, 10.0), unitStats)
+    }
 
     @Test
-    fun `test getUnitStats with limited range 3`() =
-        db.transaction { tx ->
-            val unitStats =
-                tx.getUnitStats(
-                    daycareId,
-                    FiniteDateRange(LocalDate.of(2000, 3, 2), LocalDate.of(2000, 3, 2)),
-                )
-            assertEquals(Caretakers(9.0, 9.0), unitStats)
-        }
+    fun `test getUnitStats with limited range 3`() = db.transaction { tx ->
+        val unitStats =
+            tx.getUnitStats(
+                daycareId,
+                FiniteDateRange(LocalDate.of(2000, 3, 2), LocalDate.of(2000, 3, 2)),
+            )
+        assertEquals(Caretakers(9.0, 9.0), unitStats)
+    }
 }

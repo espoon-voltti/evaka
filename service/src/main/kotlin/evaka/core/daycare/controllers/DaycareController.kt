@@ -424,25 +424,24 @@ class DaycareController(
         @PathVariable groupId: GroupId,
         @RequestBody body: CaretakerRequest,
     ) {
-        val daycareCaretakerId =
-            db.connect { dbc ->
-                dbc.transaction {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Group.CREATE_CARETAKERS,
-                        groupId,
-                    )
-                    insertCaretakers(
-                        it,
-                        groupId = groupId,
-                        startDate = body.startDate,
-                        endDate = body.endDate,
-                        amount = body.amount,
-                    )
-                }
+        val daycareCaretakerId = db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Group.CREATE_CARETAKERS,
+                    groupId,
+                )
+                insertCaretakers(
+                    it,
+                    groupId = groupId,
+                    startDate = body.startDate,
+                    endDate = body.endDate,
+                    amount = body.amount,
+                )
             }
+        }
         Audit.UnitGroupsCaretakersCreate.log(
             targetId = AuditId(groupId),
             objectId = AuditId(daycareCaretakerId),
@@ -913,16 +912,15 @@ private fun getGroupOccupancyResponses(
     return occupancies
         .groupBy { it.groupId }
         .mapValues { (_, value) ->
-            val occupancyPeriods =
-                value.map {
-                    OccupancyPeriod(
-                        period = it.period,
-                        sum = it.sum,
-                        headcount = it.headcount,
-                        caretakers = it.caretakers,
-                        percentage = it.percentage,
-                    )
-                }
+            val occupancyPeriods = value.map {
+                OccupancyPeriod(
+                    period = it.period,
+                    sum = it.sum,
+                    headcount = it.headcount,
+                    caretakers = it.caretakers,
+                    percentage = it.percentage,
+                )
+            }
 
             OccupancyResponse(
                 occupancies = occupancyPeriods,

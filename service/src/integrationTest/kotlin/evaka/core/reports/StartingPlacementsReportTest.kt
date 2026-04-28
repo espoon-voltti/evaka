@@ -227,17 +227,16 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
         startDate: LocalDate,
         endDate: LocalDate = startDate.plusYears(1),
         unit: DevDaycare = daycare,
-    ) =
-        db.transaction { tx ->
-            tx.insert(
-                DevPlacement(
-                    childId = childId,
-                    unitId = unit.id,
-                    startDate = startDate,
-                    endDate = endDate,
-                )
+    ) = db.transaction { tx ->
+        tx.insert(
+            DevPlacement(
+                childId = childId,
+                unitId = unit.id,
+                startDate = startDate,
+                endDate = endDate,
             )
-        }
+        )
+    }
 
     private fun toReportRow(
         child: DevPerson,

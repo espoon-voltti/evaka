@@ -50,6 +50,7 @@ class MockWebPushEndpoint {
 
     fun clearData() = lock.withLock { capturedRequests.clear() }
 
-    fun getCapturedRequests(id: String): List<CapturedRequest> =
-        lock.withLock { capturedRequests[id]?.toList() ?: emptyList() }
+    fun getCapturedRequests(id: String): List<CapturedRequest> = lock.withLock {
+        capturedRequests[id]?.toList() ?: emptyList()
+    }
 }

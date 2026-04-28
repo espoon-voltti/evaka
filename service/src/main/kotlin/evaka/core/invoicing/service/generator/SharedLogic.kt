@@ -112,11 +112,9 @@ fun <Decision : FinanceDecision<Decision>> existsActiveDuplicateThatWillRemainEf
             it.validDuring.contains(draft.validDuring) && it.contentEquals(draft)
         } ?: return false
 
-    val nonIdenticalDraftsOverlappingActive =
-        drafts.filter {
-            it.validDuring.overlaps(activeDuplicate.validDuring) &&
-                !it.contentEquals(activeDuplicate)
-        }
+    val nonIdenticalDraftsOverlappingActive = drafts.filter {
+        it.validDuring.overlaps(activeDuplicate.validDuring) && !it.contentEquals(activeDuplicate)
+    }
 
     val activeValidUntil =
         nonIdenticalDraftsOverlappingActive.minOfOrNull { it.validFrom.minusDays(1) }
@@ -182,10 +180,9 @@ fun <Decision : FinanceDecision<Decision>, Difference> Decision.getDifferencesTo
 fun <Decision : FinanceDecision<Decision>> Decision.withMetadataFromExisting(
     existingDrafts: List<Decision>
 ): Decision {
-    val duplicateOldDraft =
-        existingDrafts.find { oldDraft ->
-            contentEquals(oldDraft) && validDuring == oldDraft.validDuring
-        }
+    val duplicateOldDraft = existingDrafts.find { oldDraft ->
+        contentEquals(oldDraft) && validDuring == oldDraft.validDuring
+    }
 
     return duplicateOldDraft?.let { this.withId(it.id.raw).withCreated(it.created) } ?: this
 }

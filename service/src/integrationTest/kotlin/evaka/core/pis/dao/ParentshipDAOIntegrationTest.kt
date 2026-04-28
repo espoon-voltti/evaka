@@ -27,10 +27,9 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val parent = testPerson2()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
-        val parentship =
-            db.transaction { tx ->
-                tx.createParentship(child.id, parent.id, startDate, endDate, Creator.DVV)
-            }
+        val parentship = db.transaction { tx ->
+            tx.createParentship(child.id, parent.id, startDate, endDate, Creator.DVV)
+        }
         assertNotNull(parentship.id)
         assertEquals(
             child.copy(updatedFromVtj = null),
@@ -53,8 +52,9 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
         }
 
-        val fetchedRelations =
-            db.read { r -> r.getParentships(headOfChildId = parent.id, childId = null) }
+        val fetchedRelations = db.read { r ->
+            r.getParentships(headOfChildId = parent.id, childId = null)
+        }
         assertEquals(3, fetchedRelations.size)
     }
 

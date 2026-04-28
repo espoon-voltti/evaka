@@ -51,8 +51,9 @@ class FamilyInitializerService(
             db.read { it.fetchApplicationDetails(msg.applicationId) }
                 ?: error("Could not initialize family, application ${msg.applicationId} not found")
 
-        val members =
-            db.transaction { parseFridgeFamilyMembersFromApplication(it, clock, user, application) }
+        val members = db.transaction {
+            parseFridgeFamilyMembersFromApplication(it, clock, user, application)
+        }
         db.transaction { initFamilyFromApplication(it, clock, members, msg.applicationId) }
     }
 

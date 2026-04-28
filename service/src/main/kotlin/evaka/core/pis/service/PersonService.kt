@@ -852,21 +852,20 @@ fun createAddressPagePdf(
     envelopeWindowPosition: Rectangle,
     guardian: PersonDTO,
 ): Document {
-    val personDetails =
-        guardian.let {
-            val firstWordOfFirstName = it.firstName.trim().substringBefore(' ')
+    val personDetails = guardian.let {
+        val firstWordOfFirstName = it.firstName.trim().substringBefore(' ')
 
-            PersonDetailed(
-                dateOfBirth = it.dateOfBirth,
-                postOffice = it.postOffice,
-                streetAddress = it.streetAddress,
-                postalCode = it.postalCode,
-                firstName = firstWordOfFirstName,
-                lastName = it.lastName,
-                restrictedDetailsEnabled = it.restrictedDetailsEnabled,
-                id = it.id,
-            )
-        }
+        PersonDetailed(
+            dateOfBirth = it.dateOfBirth,
+            postOffice = it.postOffice,
+            streetAddress = it.streetAddress,
+            postalCode = it.postalCode,
+            firstName = firstWordOfFirstName,
+            lastName = it.lastName,
+            restrictedDetailsEnabled = it.restrictedDetailsEnabled,
+            id = it.id,
+        )
+    }
 
     val sendAddress = DecisionSendAddress.fromPerson(personDetails)
     val window = envelopeWindowPosition

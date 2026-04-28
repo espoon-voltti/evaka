@@ -1017,8 +1017,9 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `children over 18 years old are not included in families when determining base fee`() {
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val birthday = LocalDate.of(2001, 7, 1)
-        val childTurning18Id =
-            db.transaction { it.insert(DevPerson(dateOfBirth = birthday), DevPersonType.RAW_ROW) }
+        val childTurning18Id = db.transaction {
+            it.insert(DevPerson(dateOfBirth = birthday), DevPersonType.RAW_ROW)
+        }
 
         insertPlacement(child1.id, placementPeriod, DAYCARE, daycare.id)
         insertFamilyRelations(adult1.id, listOf(child1.id, childTurning18Id), placementPeriod)

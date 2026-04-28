@@ -174,10 +174,9 @@ class ReservationControllerCitizen(
                                                     }
                                                     ?.let { placementDay ->
                                                         val key = Pair(child.id, date)
-                                                        val holidayPeriod =
-                                                            holidayPeriods.find {
-                                                                it.period.includes(date)
-                                                            }
+                                                        val holidayPeriod = holidayPeriods.find {
+                                                            it.period.includes(date)
+                                                        }
                                                         val childAbsences =
                                                             absences[key] ?: listOf()
                                                         val childReservations =
@@ -489,8 +488,9 @@ data class ReservationChild(
             placements: List<ReservationPlacement>,
             today: LocalDate,
         ): ReservationChild {
-            val hasHourBasedServiceNeeds =
-                placements.any { p -> p.serviceNeeds.any { sn -> sn.daycareHoursPerMonth != null } }
+            val hasHourBasedServiceNeeds = placements.any { p ->
+                p.serviceNeeds.any { sn -> sn.daycareHoursPerMonth != null }
+            }
             val currentOrNextPlacement =
                 placements.find { it.range.includes(today) }
                     ?: placements.minByOrNull { it.range.start }

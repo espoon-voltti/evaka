@@ -181,18 +181,17 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 documentTemplateId = templateData.first().id,
             )
 
-        val expectedResults =
-            testPersonData.map {
-                CitizenDocumentResponseReportRow(
-                    childId = it.first.id,
-                    answeredAt = it.second?.answeredAt,
-                    firstName = it.first.firstName,
-                    lastName = it.first.lastName,
-                    documentStatus = it.second?.status,
-                    documentContent = it.second?.content,
-                    isBackup = it.first.email == "demetrius@notadomain",
-                )
-            }
+        val expectedResults = testPersonData.map {
+            CitizenDocumentResponseReportRow(
+                childId = it.first.id,
+                answeredAt = it.second?.answeredAt,
+                firstName = it.first.firstName,
+                lastName = it.first.lastName,
+                documentStatus = it.second?.status,
+                documentContent = it.second?.content,
+                isBackup = it.first.email == "demetrius@notadomain",
+            )
+        }
 
         assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults)
     }

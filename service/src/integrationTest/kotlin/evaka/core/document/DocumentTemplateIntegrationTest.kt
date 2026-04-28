@@ -518,28 +518,23 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `active templates endpoint does not return templates in swedish when placement unit is finnish`() {
-        val childId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea(name = "Other Area", shortName = "other_area"))
-                val daycareId =
-                    tx.insert(
-                        DevDaycare(
-                            areaId = areaId,
-                            name = "Finnish Daycare",
-                            language = Language.fi,
-                        )
-                    )
-                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+        val childId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea(name = "Other Area", shortName = "other_area"))
+            val daycareId =
                 tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = daycareId,
-                        startDate = now.today(),
-                        endDate = now.today().plusDays(5),
-                    )
+                    DevDaycare(areaId = areaId, name = "Finnish Daycare", language = Language.fi)
                 )
-                childId
-            }
+            val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = now.today(),
+                    endDate = now.today().plusDays(5),
+                )
+            )
+            childId
+        }
         val template =
             controller.createTemplate(
                 dbInstance(),
@@ -577,39 +572,38 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `active templates endpoint returns templates when placement is changing`() {
-        val childId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea(name = "Other Area", shortName = "other_area"))
-                val daycareId =
-                    tx.insert(
-                        DevDaycare(
-                            areaId = areaId,
-                            name = "Finnish Daycare",
-                            language = Language.fi,
-                            enabledPilotFeatures = setOf(PilotFeature.CITIZEN_BASIC_DOCUMENT),
-                        )
-                    )
-                val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+        val childId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea(name = "Other Area", shortName = "other_area"))
+            val daycareId =
                 tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = daycareId,
-                        startDate = now.today().minusMonths(2),
-                        endDate = now.today().plusDays(5),
-                        type = PlacementType.DAYCARE,
+                    DevDaycare(
+                        areaId = areaId,
+                        name = "Finnish Daycare",
+                        language = Language.fi,
+                        enabledPilotFeatures = setOf(PilotFeature.CITIZEN_BASIC_DOCUMENT),
                     )
                 )
-                tx.insert(
-                    DevPlacement(
-                        childId = childId,
-                        unitId = daycareId,
-                        startDate = now.today().plusDays(6),
-                        endDate = now.today().plusMonths(3),
-                        type = PlacementType.DAYCARE,
-                    )
+            val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = now.today().minusMonths(2),
+                    endDate = now.today().plusDays(5),
+                    type = PlacementType.DAYCARE,
                 )
-                childId
-            }
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = now.today().plusDays(6),
+                    endDate = now.today().plusMonths(3),
+                    type = PlacementType.DAYCARE,
+                )
+            )
+            childId
+        }
         val template =
             controller.createTemplate(
                 dbInstance(),

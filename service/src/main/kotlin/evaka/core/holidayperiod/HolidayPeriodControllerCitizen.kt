@@ -352,10 +352,9 @@ class HolidayPeriodControllerCitizen(
                     }
                     val validPeriods =
                         eligibleChildren[childId] ?: return@mapNotNull childId to periods
-                    val invalidPeriods =
-                        periods.filterNot { period ->
-                            validPeriods.any { validPeriod -> validPeriod.contains(period) }
-                        }
+                    val invalidPeriods = periods.filterNot { period ->
+                        validPeriods.any { validPeriod -> validPeriod.contains(period) }
+                    }
                     if (invalidPeriods.isNotEmpty()) childId to invalidPeriods else null
                 }
                 .toMap()
@@ -400,8 +399,9 @@ class HolidayPeriodControllerCitizen(
                 eligibleChildren
                     .mapNotNull { childId ->
                         placementRangesByChild[childId]?.let { placementRanges ->
-                            val dates =
-                                periodOptions.filter { option -> placementRanges.contains(option) }
+                            val dates = periodOptions.filter { option ->
+                                placementRanges.contains(option)
+                            }
                             if (dates.isNotEmpty()) childId to dates else null
                         }
                     }
@@ -467,11 +467,10 @@ class HolidayPeriodControllerCitizen(
             } ?: return false
 
         val daycare = daycares[placement.unitId] ?: return false
-        val serviceNeed =
-            serviceNeeds.find { serviceNeed ->
-                serviceNeed.placementId == placement.id &&
-                    FiniteDateRange(serviceNeed.startDate, serviceNeed.endDate).includes(date)
-            }
+        val serviceNeed = serviceNeeds.find { serviceNeed ->
+            serviceNeed.placementId == placement.id &&
+                FiniteDateRange(serviceNeed.startDate, serviceNeed.endDate).includes(date)
+        }
 
         return isUnitOperationDay(
             daycare.operationDays,

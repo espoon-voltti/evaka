@@ -1249,10 +1249,9 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         val result = searchDecisions(SearchFeeDecisionRequest(page = 0, unit = daycare1.id))
 
-        val expected =
-            testDecisions.filter { decision ->
-                decision.children.any { it.placement.unitId == daycare1.id }
-            }
+        val expected = testDecisions.filter { decision ->
+            decision.children.any { it.placement.unitId == daycare1.id }
+        }
         assertEqualEnough(expected.map(::toSummary), result.data)
     }
 
@@ -1885,10 +1884,9 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `confirmDrafts ignores decisions that have related manual sending decisions`() {
-        val toBeCreatedDecisions =
-            testDecisions.filter {
-                it.status == FeeDecisionStatus.DRAFT && it.decisionType == FeeDecisionType.NORMAL
-            }
+        val toBeCreatedDecisions = testDecisions.filter {
+            it.status == FeeDecisionStatus.DRAFT && it.decisionType == FeeDecisionType.NORMAL
+        }
         db.transaction { tx -> tx.upsertFeeDecisions(toBeCreatedDecisions) }
         val notToBeCreated = toBeCreatedDecisions.first()
         val requiresManualSending =
@@ -1912,10 +1910,9 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `confirmDrafts ignores decisions that have related decision waiting for sending`() {
-        val toBeCreatedDecisions =
-            testDecisions.filter {
-                it.status == FeeDecisionStatus.DRAFT && it.decisionType == FeeDecisionType.NORMAL
-            }
+        val toBeCreatedDecisions = testDecisions.filter {
+            it.status == FeeDecisionStatus.DRAFT && it.decisionType == FeeDecisionType.NORMAL
+        }
         db.transaction { tx -> tx.upsertFeeDecisions(toBeCreatedDecisions) }
         val notToBeCreated = toBeCreatedDecisions.first()
         val requiresSending =

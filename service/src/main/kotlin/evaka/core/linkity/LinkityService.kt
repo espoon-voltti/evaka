@@ -72,20 +72,19 @@ fun updateStaffAttendancePlansFromLinkity(
 
         val shifts = filterValidShifts(linkityShifts, sarastiaIdToEmployeeId)
 
-        val staffAttendancePlans =
-            shifts.mapNotNull {
-                StaffAttendancePlan(
-                    employeeId = sarastiaIdToEmployeeId[it.sarastiaId] ?: return@mapNotNull null,
-                    type =
-                        when (it.type) {
-                            ShiftType.PRESENT -> StaffAttendanceType.PRESENT
-                            ShiftType.TRAINING -> StaffAttendanceType.TRAINING
-                        },
-                    startTime = it.startDateTime,
-                    endTime = it.endDateTime,
-                    description = it.notes,
-                )
-            }
+        val staffAttendancePlans = shifts.mapNotNull {
+            StaffAttendancePlan(
+                employeeId = sarastiaIdToEmployeeId[it.sarastiaId] ?: return@mapNotNull null,
+                type =
+                    when (it.type) {
+                        ShiftType.PRESENT -> StaffAttendanceType.PRESENT
+                        ShiftType.TRAINING -> StaffAttendanceType.TRAINING
+                    },
+                startTime = it.startDateTime,
+                endTime = it.endDateTime,
+                description = it.notes,
+            )
+        }
 
         tx.deleteStaffAttendancePlansBy(period = period)
         logger.debug { "Deleted all staff attendance plans for period $period" }

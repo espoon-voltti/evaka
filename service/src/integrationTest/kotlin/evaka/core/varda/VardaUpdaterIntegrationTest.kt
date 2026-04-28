@@ -3027,15 +3027,14 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             val erroredSince: HelsinkiDateTime?,
             val error: String?,
         )
-        val result =
-            db.read { tx ->
-                tx.createQuery {
-                        sql(
-                            "SELECT state, last_success_at, errored_at, errored_since, error FROM varda_state"
-                        )
-                    }
-                    .exactlyOne<Result>()
-            }
+        val result = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT state, last_success_at, errored_at, errored_since, error FROM varda_state"
+                    )
+                }
+                .exactlyOne<Result>()
+        }
 
         assertNull(result.state)
         assertNull(result.lastSuccessAt)
@@ -3061,15 +3060,14 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         data class Result(val erroredAt: HelsinkiDateTime?, val erroredSince: HelsinkiDateTime?)
 
-        fun readState(): Result =
-            db.read { tx ->
-                tx.createQuery {
-                        sql(
-                            "SELECT errored_at, errored_since FROM varda_state WHERE child_id = ${bind(child.id)}"
-                        )
-                    }
-                    .exactlyOne<Result>()
-            }
+        fun readState(): Result = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT errored_at, errored_since FROM varda_state WHERE child_id = ${bind(child.id)}"
+                    )
+                }
+                .exactlyOne<Result>()
+        }
 
         db.transaction { it.setVardaUpdateError(child.id, t1, "error1") }
         readState().let {
@@ -3112,15 +3110,14 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         data class Result(val erroredAt: HelsinkiDateTime?, val erroredSince: HelsinkiDateTime?)
 
-        fun readState(): Result =
-            db.read { tx ->
-                tx.createQuery {
-                        sql(
-                            "SELECT errored_at, errored_since FROM varda_unit WHERE evaka_daycare_id = ${bind(daycare.id)}"
-                        )
-                    }
-                    .exactlyOne<Result>()
-            }
+        fun readState(): Result = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT errored_at, errored_since FROM varda_unit WHERE evaka_daycare_id = ${bind(daycare.id)}"
+                    )
+                }
+                .exactlyOne<Result>()
+        }
 
         db.transaction { setUnitUploadFailed(it, t1, daycare.id, "error1") }
         readState().let {
@@ -3159,10 +3156,9 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
         }
 
-        val states =
-            db.read { tx ->
-                tx.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child.id))
-            }
+        val states = db.read { tx ->
+            tx.getVardaUpdateState<VardaUpdater.EvakaHenkiloNode>(listOf(child.id))
+        }
         assertEquals(mapOf(child.id to null), states)
     }
 

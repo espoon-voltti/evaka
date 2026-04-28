@@ -248,10 +248,9 @@ fun getGroupMonthCalendar(
                         date.dayOfWeek.value
                     ) && (daycare.shiftCareOpenOnHolidays || !holidays.contains(date))
                 val isHolidayPeriodDate = holidayPeriods.any { it.period.includes(date) }
-                val isQuestionnaireDate =
-                    questionnaires.any {
-                        it.getPeriods().any { dateRange -> dateRange.includes(date) }
-                    }
+                val isQuestionnaireDate = questionnaires.any {
+                    it.getPeriods().any { dateRange -> dateRange.includes(date) }
+                }
                 GroupMonthCalendarDay(
                     date = date,
                     isOperationDay = isOperationDay || isShiftCareOperationDay,
@@ -276,11 +275,10 @@ fun getGroupMonthCalendar(
                                             placements,
                                             calendarOpenBeforePlacementDays,
                                         )
-                                val noAnswersForChild =
-                                    answers.none {
-                                        it.childId == child.id &&
-                                            (it.fixedPeriod != null || it.openRanges.isNotEmpty())
-                                    }
+                                val noAnswersForChild = answers.none {
+                                    it.childId == child.id &&
+                                        (it.fixedPeriod != null || it.openRanges.isNotEmpty())
+                                }
                                 val scheduleType =
                                     placement.type.scheduleType(date, clubTerms, preschoolTerms)
 
@@ -558,48 +556,43 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
         val unitIds = placements.map { it.unitId }.toSet()
         val units = tx.getDaycaresById(unitIds)
 
-        val absencesToAdd =
-            irregularDailyServiceTimes.flatMap dst@{ dailyServiceTimes ->
-                val validityPeriod =
-                    period.intersection(dailyServiceTimes.validityPeriod) ?: return@dst listOf()
-                placements.flatMap pl@{ placement ->
-                    val effectivePeriod =
-                        FiniteDateRange(placement.startDate, placement.endDate)
-                            .intersection(validityPeriod) ?: return@pl listOf()
-                    val unit = units[placement.unitId] ?: return@pl listOf()
+        val absencesToAdd = irregularDailyServiceTimes.flatMap dst@{ dailyServiceTimes ->
+            val validityPeriod =
+                period.intersection(dailyServiceTimes.validityPeriod) ?: return@dst listOf()
+            placements.flatMap pl@{ placement ->
+                val effectivePeriod =
+                    FiniteDateRange(placement.startDate, placement.endDate)
+                        .intersection(validityPeriod) ?: return@pl listOf()
+                val unit = units[placement.unitId] ?: return@pl listOf()
 
-                    effectivePeriod.dates().toList().flatMap date@{ date ->
-                        val serviceNeed =
-                            serviceNeeds.find {
-                                FiniteDateRange(it.startDate, it.endDate).includes(date)
-                            }
-                        val effectiveOperationDays =
-                            if (
-                                serviceNeed == null || serviceNeed.shiftCare == ShiftCareType.NONE
-                            ) {
-                                unit.operationDays
-                            } else {
-                                unit.shiftCareOperationDays ?: unit.operationDays
-                            }
-
-                        if (!effectiveOperationDays.contains(date.dayOfWeek.value))
-                            return@date listOf()
-
-                        val isIrregularAbsenceDay =
-                            dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek) == null
-                        if (!isIrregularAbsenceDay) return@date listOf()
-
-                        placement.type.absenceCategories().map { category ->
-                            AbsenceUpsert(
-                                childId = childId,
-                                date = date,
-                                absenceType = OTHER_ABSENCE,
-                                category = category,
-                            )
+                effectivePeriod.dates().toList().flatMap date@{ date ->
+                    val serviceNeed = serviceNeeds.find {
+                        FiniteDateRange(it.startDate, it.endDate).includes(date)
+                    }
+                    val effectiveOperationDays =
+                        if (serviceNeed == null || serviceNeed.shiftCare == ShiftCareType.NONE) {
+                            unit.operationDays
+                        } else {
+                            unit.shiftCareOperationDays ?: unit.operationDays
                         }
+
+                    if (!effectiveOperationDays.contains(date.dayOfWeek.value)) return@date listOf()
+
+                    val isIrregularAbsenceDay =
+                        dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek) == null
+                    if (!isIrregularAbsenceDay) return@date listOf()
+
+                    placement.type.absenceCategories().map { category ->
+                        AbsenceUpsert(
+                            childId = childId,
+                            date = date,
+                            absenceType = OTHER_ABSENCE,
+                            category = category,
+                        )
                     }
                 }
             }
+        }
         tx.upsertGeneratedAbsences(now, absencesToAdd)
     }
     tx.deleteOldGeneratedAbsencesInRange(now, childId, period)
@@ -769,19 +762,18 @@ private fun wasQuestionnaireVisibleForChild(
     questionnaires: List<HolidayQuestionnaire>,
     placements: List<AbsencePlacement>,
     calendarOpenBeforePlacementDays: Int,
-): Boolean =
-    questionnaires.any { q ->
-        q.getPeriods().any { it.includes(date) } &&
-            placements.any { p ->
-                val visibilityRange =
-                    FiniteDateRange(
-                        p.range.start.minusDays(calendarOpenBeforePlacementDays.toLong()),
-                        p.range.end,
-                    )
-                q.active.overlaps(visibilityRange) &&
-                    !today.isBefore(maxOf(q.active.start, visibilityRange.start))
-            }
-    }
+): Boolean = questionnaires.any { q ->
+    q.getPeriods().any { it.includes(date) } &&
+        placements.any { p ->
+            val visibilityRange =
+                FiniteDateRange(
+                    p.range.start.minusDays(calendarOpenBeforePlacementDays.toLong()),
+                    p.range.end,
+                )
+            q.active.overlaps(visibilityRange) &&
+                !today.isBefore(maxOf(q.active.start, visibilityRange.start))
+        }
+}
 
 data class Absence(
     val childId: ChildId,

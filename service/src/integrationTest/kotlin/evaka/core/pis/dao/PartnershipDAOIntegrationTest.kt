@@ -39,18 +39,17 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val person2 = testPerson2()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
-        val partnership =
-            db.transaction { tx ->
-                tx.createPartnership(
-                    person1.id,
-                    person2.id,
-                    startDate,
-                    endDate,
-                    false,
-                    Creator.User(partnershipCreator),
-                    clock.now(),
-                )
-            }
+        val partnership = db.transaction { tx ->
+            tx.createPartnership(
+                person1.id,
+                person2.id,
+                startDate,
+                endDate,
+                false,
+                Creator.User(partnershipCreator),
+                clock.now(),
+            )
+        }
         assertNotNull(partnership.id)
         assertEquals(2, partnership.partners.size)
         assertEquals(startDate, partnership.startDate)
@@ -63,30 +62,28 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val person2 = testPerson2()
         val person3 = testPerson3()
 
-        val partnership1 =
-            db.transaction {
-                it.createPartnership(
-                    person1.id,
-                    person2.id,
-                    LocalDate.now(),
-                    LocalDate.now().plusDays(200),
-                    false,
-                    Creator.User(partnershipCreator),
-                    clock.now(),
-                )
-            }
-        val partnership2 =
-            db.transaction {
-                it.createPartnership(
-                    person2.id,
-                    person3.id,
-                    LocalDate.now().plusDays(300),
-                    LocalDate.now().plusDays(400),
-                    false,
-                    Creator.User(partnershipCreator),
-                    clock.now(),
-                )
-            }
+        val partnership1 = db.transaction {
+            it.createPartnership(
+                person1.id,
+                person2.id,
+                LocalDate.now(),
+                LocalDate.now().plusDays(200),
+                false,
+                Creator.User(partnershipCreator),
+                clock.now(),
+            )
+        }
+        val partnership2 = db.transaction {
+            it.createPartnership(
+                person2.id,
+                person3.id,
+                LocalDate.now().plusDays(300),
+                LocalDate.now().plusDays(400),
+                false,
+                Creator.User(partnershipCreator),
+                clock.now(),
+            )
+        }
 
         val person1Partnerships = db.read { it.getPartnershipsForPerson(person1.id) }
         assertEquals(listOf(partnership1), person1Partnerships)
@@ -106,18 +103,17 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val person1 = testPerson1()
         val person2 = testPerson2()
         val startDate = LocalDate.now()
-        val partnership =
-            db.transaction {
-                it.createPartnership(
-                    person1.id,
-                    person2.id,
-                    startDate,
-                    endDate = null,
-                    false,
-                    Creator.User(partnershipCreator),
-                    clock.now(),
-                )
-            }
+        val partnership = db.transaction {
+            it.createPartnership(
+                person1.id,
+                person2.id,
+                startDate,
+                endDate = null,
+                false,
+                Creator.User(partnershipCreator),
+                clock.now(),
+            )
+        }
         assertNotNull(partnership.id)
         assertEquals(2, partnership.partners.size)
         assertEquals(startDate, partnership.startDate)
@@ -130,21 +126,20 @@ class PartnershipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(null, fetched.endDate)
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonDTO =
-        db.transaction { tx ->
-            tx.insert(
-                    DevPerson(
-                        ssn = ssn,
-                        dateOfBirth = getDobFromSsn(ssn),
-                        firstName = firstName,
-                        lastName = "Meikäläinen",
-                        email = "${firstName.lowercase()}.meikalainen@example.com",
-                        language = "fi",
-                    ),
-                    DevPersonType.RAW_ROW,
-                )
-                .let { tx.getPersonById(it)!! }
-        }
+    private fun createPerson(ssn: String, firstName: String): PersonDTO = db.transaction { tx ->
+        tx.insert(
+                DevPerson(
+                    ssn = ssn,
+                    dateOfBirth = getDobFromSsn(ssn),
+                    firstName = firstName,
+                    lastName = "Meikäläinen",
+                    email = "${firstName.lowercase()}.meikalainen@example.com",
+                    language = "fi",
+                ),
+                DevPersonType.RAW_ROW,
+            )
+            .let { tx.getPersonById(it)!! }
+    }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
 

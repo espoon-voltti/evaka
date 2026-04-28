@@ -552,9 +552,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         )
     }
 
-    private fun getReservationDates(): List<LocalDate> =
-        db.read {
-            it.createQuery { sql("SELECT date FROM attendance_reservation ORDER BY date") }
-                .toList<LocalDate>()
-        }
+    private fun getReservationDates(): List<LocalDate> = db.read {
+        it.createQuery { sql("SELECT date FROM attendance_reservation ORDER BY date") }
+            .toList<LocalDate>()
+    }
 }

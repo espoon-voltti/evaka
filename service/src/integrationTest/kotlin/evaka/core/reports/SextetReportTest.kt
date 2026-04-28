@@ -222,15 +222,14 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        val report1 =
-            db.read {
-                it.sextetReport(
-                    from = LocalDate.of(2021, 1, 1),
-                    to = LocalDate.of(2021, 12, 31),
-                    placementType = PlacementType.DAYCARE,
-                    unitProviderTypes = null,
-                )
-            }
+        val report1 = db.read {
+            it.sextetReport(
+                from = LocalDate.of(2021, 1, 1),
+                to = LocalDate.of(2021, 12, 31),
+                placementType = PlacementType.DAYCARE,
+                unitProviderTypes = null,
+            )
+        }
 
         assertEquals(
             listOf(
@@ -246,15 +245,14 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             report1,
         )
 
-        val report2 =
-            db.read {
-                it.sextetReport(
-                    from = LocalDate.of(2021, 1, 1),
-                    to = LocalDate.of(2021, 12, 31),
-                    placementType = PlacementType.PRESCHOOL_DAYCARE,
-                    unitProviderTypes = null,
-                )
-            }
+        val report2 = db.read {
+            it.sextetReport(
+                from = LocalDate.of(2021, 1, 1),
+                to = LocalDate.of(2021, 12, 31),
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+                unitProviderTypes = null,
+            )
+        }
 
         assertEquals(
             listOf(
@@ -269,15 +267,14 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             report2,
         )
 
-        val report3 =
-            db.read {
-                it.sextetReport(
-                    from = LocalDate.of(2021, 1, 1),
-                    to = LocalDate.of(2021, 12, 31),
-                    placementType = PlacementType.PRESCHOOL_DAYCARE,
-                    unitProviderTypes = setOf(ProviderType.MUNICIPAL),
-                )
-            }
+        val report3 = db.read {
+            it.sextetReport(
+                from = LocalDate.of(2021, 1, 1),
+                to = LocalDate.of(2021, 12, 31),
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+                unitProviderTypes = setOf(ProviderType.MUNICIPAL),
+            )
+        }
 
         assertEquals(
             listOf(
@@ -291,30 +288,28 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             report3,
         )
 
-        val report4 =
-            db.read {
-                it.sextetReport(
-                    from = LocalDate.of(2021, 1, 1),
-                    to = LocalDate.of(2021, 12, 31),
-                    placementType = PlacementType.PRESCHOOL_DAYCARE,
-                    unitProviderTypes = setOf(ProviderType.PURCHASED),
-                )
-            }
+        val report4 = db.read {
+            it.sextetReport(
+                from = LocalDate.of(2021, 1, 1),
+                to = LocalDate.of(2021, 12, 31),
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+                unitProviderTypes = setOf(ProviderType.PURCHASED),
+            )
+        }
 
         assertEquals(
             listOf(SextetReportRow(daycare2.id, daycare2.name, PlacementType.PRESCHOOL_DAYCARE, 5)),
             report4,
         )
 
-        val report5 =
-            db.read {
-                it.sextetReport(
-                    from = LocalDate.of(2021, 1, 1),
-                    to = LocalDate.of(2021, 12, 31),
-                    placementType = PlacementType.PRESCHOOL_DAYCARE,
-                    unitProviderTypes = setOf(ProviderType.MUNICIPAL, ProviderType.PURCHASED),
-                )
-            }
+        val report5 = db.read {
+            it.sextetReport(
+                from = LocalDate.of(2021, 1, 1),
+                to = LocalDate.of(2021, 12, 31),
+                placementType = PlacementType.PRESCHOOL_DAYCARE,
+                unitProviderTypes = setOf(ProviderType.MUNICIPAL, ProviderType.PURCHASED),
+            )
+        }
 
         assertEquals(
             listOf(

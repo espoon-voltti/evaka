@@ -103,26 +103,25 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
         )
 
-    private val feeDecisions =
-        testFeeDecisions.map {
-            FinanceDecisionCitizenInfo(
-                id = it.id.raw,
-                type = FinanceDecisionType.FEE_DECISION,
-                validFrom = it.validFrom,
-                validTo = it.validTo,
-                sentAt = feeDecisionSentAt,
-                coDebtors =
-                    listOf(
-                        LiableCitizenInfo(partner.id, partner.firstName, partner.lastName),
-                        LiableCitizenInfo(
-                            headOfFamily.id,
-                            headOfFamily.firstName,
-                            headOfFamily.lastName,
-                        ),
+    private val feeDecisions = testFeeDecisions.map {
+        FinanceDecisionCitizenInfo(
+            id = it.id.raw,
+            type = FinanceDecisionType.FEE_DECISION,
+            validFrom = it.validFrom,
+            validTo = it.validTo,
+            sentAt = feeDecisionSentAt,
+            coDebtors =
+                listOf(
+                    LiableCitizenInfo(partner.id, partner.firstName, partner.lastName),
+                    LiableCitizenInfo(
+                        headOfFamily.id,
+                        headOfFamily.firstName,
+                        headOfFamily.lastName,
                     ),
-                decisionChildren = emptyList(),
-            )
-        }
+                ),
+            decisionChildren = emptyList(),
+        )
+    }
 
     private val testVoucherValueDecisions =
         listOf(
@@ -139,26 +138,25 @@ class FinanceDecisionCitizenIntegrationTest : FullApplicationTest(resetDbBeforeE
             )
         )
 
-    private val voucherValueDecisions =
-        testVoucherValueDecisions.map {
-            FinanceDecisionCitizenInfo(
-                id = it.id.raw,
-                type = FinanceDecisionType.VOUCHER_VALUE_DECISION,
-                validFrom = it.validFrom,
-                validTo = it.validTo,
-                sentAt = voucherValueSentAt,
-                coDebtors =
-                    listOf(
-                        LiableCitizenInfo(
-                            headOfFamily.id,
-                            headOfFamily.firstName,
-                            headOfFamily.lastName,
-                        )
-                    ),
-                decisionChildren =
-                    listOf(FinanceDecisionChildInfo(child.id, child.firstName, child.lastName)),
-            )
-        }
+    private val voucherValueDecisions = testVoucherValueDecisions.map {
+        FinanceDecisionCitizenInfo(
+            id = it.id.raw,
+            type = FinanceDecisionType.VOUCHER_VALUE_DECISION,
+            validFrom = it.validFrom,
+            validTo = it.validTo,
+            sentAt = voucherValueSentAt,
+            coDebtors =
+                listOf(
+                    LiableCitizenInfo(
+                        headOfFamily.id,
+                        headOfFamily.firstName,
+                        headOfFamily.lastName,
+                    )
+                ),
+            decisionChildren =
+                listOf(FinanceDecisionChildInfo(child.id, child.firstName, child.lastName)),
+        )
+    }
 
     @BeforeEach
     fun beforeEach() {

@@ -769,10 +769,9 @@ data class TestDecision(
     val status: DecisionStatus = DecisionStatus.PENDING,
     val requestedStartDate: LocalDate? = null,
     val resolvedBy: UUID? = null,
-    val resolved: HelsinkiDateTime? =
-        resolvedBy?.let {
-            HelsinkiDateTime.from(Instant.ofEpochSecond(1546300800))
-        }, // 2019-01-01 midnight
+    val resolved: HelsinkiDateTime? = resolvedBy?.let {
+        HelsinkiDateTime.from(Instant.ofEpochSecond(1546300800))
+    }, // 2019-01-01 midnight
     val pendingDecisionEmailsSentCount: Int? = 0,
     val pendingDecisionEmailSent: HelsinkiDateTime? = null,
     val documentKey: String? = null,

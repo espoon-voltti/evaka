@@ -390,100 +390,98 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `search with max fee accepted`() {
-        val decisions =
-            db.transaction { tx ->
-                val baseDecision = { child: DevPerson ->
-                    createFeeDecisionFixture(
-                        status = FeeDecisionStatus.DRAFT,
-                        decisionType = FeeDecisionType.NORMAL,
-                        period = testPeriod,
-                        headOfFamilyId = PersonId(UUID.randomUUID()),
-                        children =
-                            listOf(
-                                createFeeDecisionChildFixture(
-                                    childId = child.id,
-                                    dateOfBirth = child.dateOfBirth,
-                                    placementUnitId = daycare.id,
-                                    placementType = PlacementType.DAYCARE,
-                                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                                )
-                            ),
-                    )
-                }
-                tx.upsertFeeDecisions(
-                    listOf(
-                        baseDecision(child1)
-                            .copy(headOfFamilyId = adult1.id, headOfFamilyIncome = null),
-                        baseDecision(child2)
-                            .copy(
-                                headOfFamilyId = adult2.id,
-                                headOfFamilyIncome =
-                                    DecisionIncome(
-                                        effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        data = emptyMap(),
-                                        totalIncome = 0,
-                                        totalExpenses = 0,
-                                        total = 0,
-                                        worksAtECHA = false,
-                                    ),
-                            ),
-                        baseDecision(child3)
-                            .copy(
-                                headOfFamilyId = adult3.id,
-                                headOfFamilyIncome = null,
-                                partnerId = adult4.id,
-                                partnerIncome =
-                                    DecisionIncome(
-                                        effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        data = emptyMap(),
-                                        totalIncome = 0,
-                                        totalExpenses = 0,
-                                        total = 0,
-                                        worksAtECHA = false,
-                                    ),
-                            ),
-                        baseDecision(child4)
-                            .copy(
-                                headOfFamilyId = adult5.id,
-                                headOfFamilyIncome =
-                                    DecisionIncome(
-                                        effect = IncomeEffect.INCOME,
-                                        data = emptyMap(),
-                                        totalIncome = 200000,
-                                        totalExpenses = 0,
-                                        total = 200000,
-                                        worksAtECHA = false,
-                                    ),
-                            ),
-                        baseDecision(child5)
-                            .copy(
-                                headOfFamilyId = adult6.id,
-                                headOfFamilyIncome =
-                                    DecisionIncome(
-                                        effect = IncomeEffect.INCOME,
-                                        data = emptyMap(),
-                                        totalIncome = 200000,
-                                        totalExpenses = 0,
-                                        total = 200000,
-                                        worksAtECHA = false,
-                                    ),
-                                partnerId = adult7.id,
-                                partnerIncome =
-                                    DecisionIncome(
-                                        effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        data = emptyMap(),
-                                        totalIncome = 0,
-                                        totalExpenses = 0,
-                                        total = 0,
-                                        worksAtECHA = false,
-                                    ),
-                            ),
-                    )
+        val decisions = db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createFeeDecisionFixture(
+                    status = FeeDecisionStatus.DRAFT,
+                    decisionType = FeeDecisionType.NORMAL,
+                    period = testPeriod,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    children =
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = child.id,
+                                dateOfBirth = child.dateOfBirth,
+                                placementUnitId = daycare.id,
+                                placementType = PlacementType.DAYCARE,
+                                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            )
+                        ),
                 )
-                val ids =
-                    tx.createQuery { sql("SELECT id FROM fee_decision") }.toList<FeeDecisionId>()
-                tx.getDetailedFeeDecisionsByIds(ids)
             }
+            tx.upsertFeeDecisions(
+                listOf(
+                    baseDecision(child1)
+                        .copy(headOfFamilyId = adult1.id, headOfFamilyIncome = null),
+                    baseDecision(child2)
+                        .copy(
+                            headOfFamilyId = adult2.id,
+                            headOfFamilyIncome =
+                                DecisionIncome(
+                                    effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                                    data = emptyMap(),
+                                    totalIncome = 0,
+                                    totalExpenses = 0,
+                                    total = 0,
+                                    worksAtECHA = false,
+                                ),
+                        ),
+                    baseDecision(child3)
+                        .copy(
+                            headOfFamilyId = adult3.id,
+                            headOfFamilyIncome = null,
+                            partnerId = adult4.id,
+                            partnerIncome =
+                                DecisionIncome(
+                                    effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                                    data = emptyMap(),
+                                    totalIncome = 0,
+                                    totalExpenses = 0,
+                                    total = 0,
+                                    worksAtECHA = false,
+                                ),
+                        ),
+                    baseDecision(child4)
+                        .copy(
+                            headOfFamilyId = adult5.id,
+                            headOfFamilyIncome =
+                                DecisionIncome(
+                                    effect = IncomeEffect.INCOME,
+                                    data = emptyMap(),
+                                    totalIncome = 200000,
+                                    totalExpenses = 0,
+                                    total = 200000,
+                                    worksAtECHA = false,
+                                ),
+                        ),
+                    baseDecision(child5)
+                        .copy(
+                            headOfFamilyId = adult6.id,
+                            headOfFamilyIncome =
+                                DecisionIncome(
+                                    effect = IncomeEffect.INCOME,
+                                    data = emptyMap(),
+                                    totalIncome = 200000,
+                                    totalExpenses = 0,
+                                    total = 200000,
+                                    worksAtECHA = false,
+                                ),
+                            partnerId = adult7.id,
+                            partnerIncome =
+                                DecisionIncome(
+                                    effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                                    data = emptyMap(),
+                                    totalIncome = 0,
+                                    totalExpenses = 0,
+                                    total = 0,
+                                    worksAtECHA = false,
+                                ),
+                        ),
+                )
+            )
+            val ids = tx.createQuery { sql("SELECT id FROM fee_decision") }.toList<FeeDecisionId>()
+            tx.getDetailedFeeDecisionsByIds(ids)
+        }
         assertThat(decisions)
             .extracting(
                 { it.headOfFamily.lastName },
@@ -498,26 +496,24 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 Tuple(adult6.lastName, adult6.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
             )
 
-        val result =
-            db.read { tx ->
-                tx.searchFeeDecisions(
-                    clock =
-                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(13, 37))),
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = emptyList(),
-                    areas = emptyList(),
-                    unit = null,
-                    distinctiveParams = listOf(DistinctiveParams.MAX_FEE_ACCEPTED),
-                    startDate = null,
-                    endDate = null,
-                    financeDecisionHandlerId = null,
-                    difference = emptySet(),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchFeeDecisions(
+                clock = MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(13, 37))),
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = emptyList(),
+                areas = emptyList(),
+                unit = null,
+                distinctiveParams = listOf(DistinctiveParams.MAX_FEE_ACCEPTED),
+                startDate = null,
+                endDate = null,
+                financeDecisionHandlerId = null,
+                difference = emptySet(),
+            )
+        }
 
         assertThat(result.data)
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
@@ -575,26 +571,24 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchFeeDecisions(
-                    clock =
-                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(17, 16))),
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = emptyList(),
-                    areas = emptyList(),
-                    unit = null,
-                    distinctiveParams = emptyList(),
-                    startDate = null,
-                    endDate = null,
-                    financeDecisionHandlerId = null,
-                    difference = setOf(FeeDecisionDifference.INCOME),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchFeeDecisions(
+                clock = MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(17, 16))),
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = emptyList(),
+                areas = emptyList(),
+                unit = null,
+                distinctiveParams = emptyList(),
+                startDate = null,
+                endDate = null,
+                financeDecisionHandlerId = null,
+                difference = setOf(FeeDecisionDifference.INCOME),
+            )
+        }
 
         assertThat(result.data)
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
@@ -681,26 +675,25 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun searchAndAssert(searchTerms: String, expectedChildLastName: String) {
-        val result =
-            db.read { tx ->
-                tx.searchFeeDecisions(
-                    clock = RealEvakaClock(),
-                    postOffice = "ESPOO",
-                    searchTerms = searchTerms,
-                    page = 0,
-                    pageSize = 100,
-                    statuses = emptyList(),
-                    areas = emptyList(),
-                    sortBy = FeeDecisionSortParam.CREATED,
-                    sortDirection = SortDirection.ASC,
-                    distinctiveParams = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    financeDecisionHandlerId = null,
-                    difference = emptySet(),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchFeeDecisions(
+                clock = RealEvakaClock(),
+                postOffice = "ESPOO",
+                searchTerms = searchTerms,
+                page = 0,
+                pageSize = 100,
+                statuses = emptyList(),
+                areas = emptyList(),
+                sortBy = FeeDecisionSortParam.CREATED,
+                sortDirection = SortDirection.ASC,
+                distinctiveParams = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                financeDecisionHandlerId = null,
+                difference = emptySet(),
+            )
+        }
         assertEquals(1, result.data.size)
         assertEquals(expectedChildLastName, result.data[0].children[0].lastName)
     }

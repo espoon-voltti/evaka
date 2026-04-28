@@ -49,21 +49,20 @@ fun updateUnits(
             states to units
         }
 
-    val unitsToSend =
-        units.mapNotNull { unit ->
-            val prevState = states[unit.evakaDaycareId]
-            val currState =
-                unit.toVardaUnitRequest(
-                    lahdejarjestelma = lahdejarjestelma,
-                    vakajarjestaja = vakajarjestajaUrl,
-                    kuntakoodi = kuntakoodi,
-                )
-            if (prevState != currState) {
-                Triple(unit.evakaDaycareId, unit.ophUnitOid, currState)
-            } else {
-                null
-            }
+    val unitsToSend = units.mapNotNull { unit ->
+        val prevState = states[unit.evakaDaycareId]
+        val currState =
+            unit.toVardaUnitRequest(
+                lahdejarjestelma = lahdejarjestelma,
+                vakajarjestaja = vakajarjestajaUrl,
+                kuntakoodi = kuntakoodi,
+            )
+        if (prevState != currState) {
+            Triple(unit.evakaDaycareId, unit.ophUnitOid, currState)
+        } else {
+            null
         }
+    }
 
     logger.info { "Sending ${unitsToSend.size} new or updated units to Varda" }
     unitsToSend.forEach { (evakaDaycareId, organisaatioOid, request) ->

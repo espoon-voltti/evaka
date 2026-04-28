@@ -600,12 +600,11 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getRealizedP
     // remove periods where child is away in backup care
     val periodsAwayByChild =
         getPeriodsAwayInBackupCareByChildId(period, placements.map { it.childId }.toSet())
-    val placementsWithChildPresent =
-        placements.flatMap { placement ->
-            val periodsAway = periodsAwayByChild.getOrDefault(placement.childId, emptyList())
-            val periodsPresent = placement.period.complement(periodsAway)
-            periodsPresent.map { period -> placement.copy(period = period) }
-        }
+    val placementsWithChildPresent = placements.flatMap { placement ->
+        val periodsAway = periodsAwayByChild.getOrDefault(placement.childId, emptyList())
+        val periodsPresent = placement.period.complement(periodsAway)
+        periodsPresent.map { period -> placement.copy(period = period) }
+    }
 
     // add backup care placements into these units/groups
     return placementsWithChildPresent + getBackupCarePlacements(keys, period)

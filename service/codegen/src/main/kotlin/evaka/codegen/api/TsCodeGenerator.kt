@@ -211,26 +211,25 @@ ${join(props, "\n").prependIndent("  ")}
     private fun sealedClass(sealed: TsSealedClass): TsCode {
         val serializer = sealed.jacksonSerializer
         val variants = sealed.variants.map { metadata[it] as TsSealedVariant }
-        val tsVariants =
-            variants.map { variant ->
-                val discriminantProp =
-                    serializer.propertyName?.let {
-                        TsCode("$it: '${serializer.discriminantValue(variant.obj.clazz)}'")
-                    }
-                val props =
-                    listOfNotNull(discriminantProp) +
-                        variant.obj.properties.entries
-                            .sortedBy { it.key }
-                            .map { (name, prop) ->
-                                tsProperty(name, prop, value = tsType(prop.type, compact = true))
-                            }
-                TsCode {
-                    """${variant.obj.docHeader()}
+        val tsVariants = variants.map { variant ->
+            val discriminantProp =
+                serializer.propertyName?.let {
+                    TsCode("$it: '${serializer.discriminantValue(variant.obj.clazz)}'")
+                }
+            val props =
+                listOfNotNull(discriminantProp) +
+                    variant.obj.properties.entries
+                        .sortedBy { it.key }
+                        .map { (name, prop) ->
+                            tsProperty(name, prop, value = tsType(prop.type, compact = true))
+                        }
+            TsCode {
+                """${variant.obj.docHeader()}
 export interface ${variant.obj.name} {
 ${join(props, "\n").prependIndent("  ")}
 }"""
-                }
             }
+        }
         return TsCode {
             """
 export namespace ${sealed.name} {
@@ -255,7 +254,9 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
         }
 
     fun typeAliases(targetType: String, aliases: List<String>): List<TsCode> =
-        aliases.map { alias -> TsCode("export type $alias = $targetType") }
+        aliases.map { alias ->
+            TsCode("export type $alias = $targetType")
+        }
 
     private fun needsJsonDeserializer(type: KType): Boolean {
         val cache = mutableMapOf<KType, Boolean>()
@@ -398,10 +399,9 @@ ${cases.prependIndent("    ")}
         extraArguments: List<TsCode>,
         props: Map<String, TsProperty>,
     ): TsCode? {
-        val propDeserializers =
-            props.mapNotNull { (name, prop) ->
-                jsonDeserializerExpression(prop.type, TsCode("json.$name"))?.let { name to it }
-            }
+        val propDeserializers = props.mapNotNull { (name, prop) ->
+            jsonDeserializerExpression(prop.type, TsCode("json.$name"))?.let { name to it }
+        }
         if (propDeserializers.isEmpty()) return null
         val propCodes =
             listOf(TsCode("...json")) +

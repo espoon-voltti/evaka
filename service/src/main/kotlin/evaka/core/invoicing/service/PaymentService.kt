@@ -48,34 +48,33 @@ class PaymentService(
 
         var nextPaymentNumber =
             tx.getMaxPaymentNumber().let { if (it >= seriesStart) it + 1 else seriesStart }
-        val updatedPayments =
-            payments.flatMap { payment ->
-                // Skip payments whose unit has missing payment details
-                val missingDetails =
-                    listOf(
-                            payment.unit.name,
-                            payment.unit.businessId,
-                            payment.unit.iban,
-                            payment.unit.providerId,
-                        )
-                        .any { it.isNullOrBlank() }
-                if (missingDetails) {
-                    logger.warn {
-                        "Skipping payment ${payment.id} because unit ${payment.unit.id} has missing payment details"
-                    }
-                    return@flatMap listOf()
-                }
-
-                val updatedPayment =
-                    payment.copy(
-                        number = nextPaymentNumber,
-                        paymentDate = paymentDate,
-                        dueDate = dueDate,
-                        sentBy = user.evakaUserId,
+        val updatedPayments = payments.flatMap { payment ->
+            // Skip payments whose unit has missing payment details
+            val missingDetails =
+                listOf(
+                        payment.unit.name,
+                        payment.unit.businessId,
+                        payment.unit.iban,
+                        payment.unit.providerId,
                     )
-                nextPaymentNumber += 1
-                listOf(updatedPayment)
+                    .any { it.isNullOrBlank() }
+            if (missingDetails) {
+                logger.warn {
+                    "Skipping payment ${payment.id} because unit ${payment.unit.id} has missing payment details"
+                }
+                return@flatMap listOf()
             }
+
+            val updatedPayment =
+                payment.copy(
+                    number = nextPaymentNumber,
+                    paymentDate = paymentDate,
+                    dueDate = dueDate,
+                    sentBy = user.evakaUserId,
+                )
+            nextPaymentNumber += 1
+            listOf(updatedPayment)
+        }
 
         val sendResult = integrationClient.send(updatedPayments, tx)
         logger.info {

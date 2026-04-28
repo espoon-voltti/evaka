@@ -946,43 +946,36 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     decidedBy = null,
                     rejectedReason = null,
                 )
-            val application1 =
-                db.transaction { tx ->
-                    tx.insert(
-                        base.copy(
-                            id = AbsenceApplicationId(UUID.randomUUID()),
-                            endDate = clock.today().plusWeeks(1).minusDays(1),
-                        )
+            val application1 = db.transaction { tx ->
+                tx.insert(
+                    base.copy(
+                        id = AbsenceApplicationId(UUID.randomUUID()),
+                        endDate = clock.today().plusWeeks(1).minusDays(1),
                     )
-                }
-            val application2 =
-                db.transaction { tx ->
-                    tx.insert(
-                        base.copy(
-                            id = AbsenceApplicationId(UUID.randomUUID()),
-                            endDate = clock.today().plusWeeks(1),
-                        )
+                )
+            }
+            val application2 = db.transaction { tx ->
+                tx.insert(
+                    base.copy(
+                        id = AbsenceApplicationId(UUID.randomUUID()),
+                        endDate = clock.today().plusWeeks(1),
                     )
-                }
-            val application3 =
-                db.transaction { tx ->
-                    tx.insert(
-                        base.copy(
-                            id = AbsenceApplicationId(UUID.randomUUID()),
-                            childId = child12.id,
-                        )
+                )
+            }
+            val application3 = db.transaction { tx ->
+                tx.insert(
+                    base.copy(id = AbsenceApplicationId(UUID.randomUUID()), childId = child12.id)
+                )
+            }
+            val application4 = db.transaction { tx ->
+                tx.insert(
+                    base.copy(
+                        id = AbsenceApplicationId(UUID.randomUUID()),
+                        startDate = clock.today().plusYears(1).plusDays(1),
+                        endDate = clock.today().plusYears(1).plusDays(3),
                     )
-                }
-            val application4 =
-                db.transaction { tx ->
-                    tx.insert(
-                        base.copy(
-                            id = AbsenceApplicationId(UUID.randomUUID()),
-                            startDate = clock.today().plusYears(1).plusDays(1),
-                            endDate = clock.today().plusYears(1).plusDays(3),
-                        )
-                    )
-                }
+                )
+            }
 
             // unit supervisor
             assertThrows<Forbidden> { getAbsenceApplications(unitSupervisor.user) }

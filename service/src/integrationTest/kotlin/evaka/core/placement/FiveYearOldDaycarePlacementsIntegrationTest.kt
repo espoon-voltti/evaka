@@ -47,21 +47,20 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val startDate = LocalDate.of(yearChildTurnsFive - 1, 8, 1)
         val endDate = LocalDate.of(yearChildTurnsFive + 2, 7, 31)
 
-        val newPlacements =
-            db.transaction {
-                createPlacement(
-                    it,
-                    childId,
-                    daycare.id,
-                    FiniteDateRange(startDate, endDate),
-                    PlacementType.DAYCARE,
-                    useFiveYearsOldDaycare = true,
-                    placeGuarantee = true,
-                    now = now,
-                    userId = employee.evakaUserId,
-                    source = PlacementSource.MANUAL,
-                )
-            }
+        val newPlacements = db.transaction {
+            createPlacement(
+                it,
+                childId,
+                daycare.id,
+                FiniteDateRange(startDate, endDate),
+                PlacementType.DAYCARE,
+                useFiveYearsOldDaycare = true,
+                placeGuarantee = true,
+                now = now,
+                userId = employee.evakaUserId,
+                source = PlacementSource.MANUAL,
+            )
+        }
 
         assertEquals(3, newPlacements.size)
         newPlacements[0].let { placement ->
@@ -89,21 +88,20 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val startDate = LocalDate.of(yearChildTurnsFive - 1, 8, 1)
         val endDate = LocalDate.of(yearChildTurnsFive + 2, 7, 31)
 
-        val newPlacements =
-            db.transaction {
-                createPlacement(
-                    it,
-                    childId,
-                    daycare.id,
-                    FiniteDateRange(startDate, endDate),
-                    PlacementType.DAYCARE,
-                    useFiveYearsOldDaycare = false,
-                    placeGuarantee = false,
-                    now = now,
-                    userId = employee.evakaUserId,
-                    source = PlacementSource.MANUAL,
-                )
-            }
+        val newPlacements = db.transaction {
+            createPlacement(
+                it,
+                childId,
+                daycare.id,
+                FiniteDateRange(startDate, endDate),
+                PlacementType.DAYCARE,
+                useFiveYearsOldDaycare = false,
+                placeGuarantee = false,
+                now = now,
+                userId = employee.evakaUserId,
+                source = PlacementSource.MANUAL,
+            )
+        }
 
         assertEquals(1, newPlacements.size)
         newPlacements[0].let { placement ->
@@ -118,21 +116,20 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val startDate = LocalDate.of(yearChildTurnsFive, 8, 1)
         val endDate = LocalDate.of(yearChildTurnsFive + 1, 7, 31)
 
-        val newPlacements =
-            db.transaction {
-                createPlacement(
-                    it,
-                    childId,
-                    daycare.id,
-                    FiniteDateRange(startDate, endDate),
-                    PlacementType.DAYCARE_PART_TIME,
-                    useFiveYearsOldDaycare = true,
-                    placeGuarantee = false,
-                    now = now,
-                    userId = employee.evakaUserId,
-                    source = PlacementSource.MANUAL,
-                )
-            }
+        val newPlacements = db.transaction {
+            createPlacement(
+                it,
+                childId,
+                daycare.id,
+                FiniteDateRange(startDate, endDate),
+                PlacementType.DAYCARE_PART_TIME,
+                useFiveYearsOldDaycare = true,
+                placeGuarantee = false,
+                now = now,
+                userId = employee.evakaUserId,
+                source = PlacementSource.MANUAL,
+            )
+        }
 
         assertEquals(1, newPlacements.size)
         newPlacements.first().let { placement ->

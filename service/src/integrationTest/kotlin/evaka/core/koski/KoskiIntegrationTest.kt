@@ -192,13 +192,10 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `voiding considers status 404 as success`() {
         val placementId = insertPlacement()
 
-        fun countActiveStudyRights() =
-            db.read {
-                it.createQuery {
-                        sql("SELECT count(*) FROM koski_study_right WHERE void_date IS NULL")
-                    }
-                    .exactlyOne<Long>()
-            }
+        fun countActiveStudyRights() = db.read {
+            it.createQuery { sql("SELECT count(*) FROM koski_study_right WHERE void_date IS NULL") }
+                .exactlyOne<Long>()
+        }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
         assertEquals(1, koskiEndpoint.getStudyRights().values.size)
@@ -761,10 +758,9 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `a daycare with purchased provider type is marked as such in study rights`() {
-        val daycareId =
-            db.transaction {
-                it.insert(DevDaycare(areaId = area.id, providerType = ProviderType.PURCHASED))
-            }
+        val daycareId = db.transaction {
+            it.insert(DevDaycare(areaId = area.id, providerType = ProviderType.PURCHASED))
+        }
         insertPlacement(daycareId = daycareId)
 
         val today = preschoolTerm2019.end.plusDays(1)
@@ -779,10 +775,9 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `a daycare with private provider type is marked as purchased in study rights`() {
-        val daycareId =
-            db.transaction {
-                it.insert(DevDaycare(areaId = area.id, providerType = ProviderType.PRIVATE))
-            }
+        val daycareId = db.transaction {
+            it.insert(DevDaycare(areaId = area.id, providerType = ProviderType.PRIVATE))
+        }
         insertPlacement(daycareId = daycareId)
 
         val today = preschoolTerm2019.end.plusDays(1)
@@ -1114,26 +1109,24 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `moving from last preparatory placement to preschool qualifies the preparatory study right`() {
-        val daycare3 =
-            db.transaction {
-                it.insert(
-                    DevDaycare(
-                        areaId = area.id,
-                        uploadToKoski = true,
-                        ophUnitOid = "1.2.246.562.10.3333333333",
-                    )
+        val daycare3 = db.transaction {
+            it.insert(
+                DevDaycare(
+                    areaId = area.id,
+                    uploadToKoski = true,
+                    ophUnitOid = "1.2.246.562.10.3333333333",
                 )
-            }
-        val daycare4 =
-            db.transaction {
-                it.insert(
-                    DevDaycare(
-                        areaId = area.id,
-                        uploadToKoski = true,
-                        ophUnitOid = "1.2.246.562.10.4444444444",
-                    )
+            )
+        }
+        val daycare4 = db.transaction {
+            it.insert(
+                DevDaycare(
+                    areaId = area.id,
+                    uploadToKoski = true,
+                    ophUnitOid = "1.2.246.562.10.4444444444",
                 )
-            }
+            )
+        }
         val placements =
             listOf(
                 testPeriod(0L to 9L) to Pair(daycare.id, PlacementType.PREPARATORY),
@@ -1170,38 +1163,36 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         daycareId: DaycareId = daycare.id,
         period: FiniteDateRange = preschoolTerm2019,
         type: PlacementType = PlacementType.PRESCHOOL,
-    ): PlacementId =
-        db.transaction {
-            it.insert(
-                DevPlacement(
-                    childId = child.id,
-                    unitId = daycareId,
-                    startDate = period.start,
-                    endDate = period.end,
-                    type = type,
-                )
+    ): PlacementId = db.transaction {
+        it.insert(
+            DevPlacement(
+                childId = child.id,
+                unitId = daycareId,
+                startDate = period.start,
+                endDate = period.end,
+                type = type,
             )
-        }
+        )
+    }
 
     private fun insertAbsences(
         childId: ChildId,
         absenceType: AbsenceType,
         vararg periods: FiniteDateRange,
-    ) =
-        db.transaction { tx ->
-            for (period in periods) {
-                for (date in period.dates()) {
-                    tx.insert(
-                        DevAbsence(
-                            childId = childId,
-                            date = date,
-                            absenceType = absenceType,
-                            absenceCategory = AbsenceCategory.NONBILLABLE,
-                        )
+    ) = db.transaction { tx ->
+        for (period in periods) {
+            for (date in period.dates()) {
+                tx.insert(
+                    DevAbsence(
+                        childId = childId,
+                        date = date,
+                        absenceType = absenceType,
+                        absenceCategory = AbsenceCategory.NONBILLABLE,
                     )
-                }
+                )
             }
         }
+    }
 }
 
 private fun Database.Transaction.clearKoskiInputCache() = execute {

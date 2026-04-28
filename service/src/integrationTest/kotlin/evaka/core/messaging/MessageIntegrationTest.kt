@@ -820,27 +820,26 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         @Test
         fun `citizen can send a new messages to multiple accounts if they are related to all selected children`() {
             val groupId3 = GroupId(UUID.randomUUID())
-            val group3Account =
-                db.transaction { tx ->
-                    child2.let {
-                        insertChild(tx, it, groupId2)
-                        tx.insertGuardian(person2.id, it.id)
-                    }
-
-                    tx.insert(
-                        DevDaycareGroup(
-                            id = groupId3,
-                            daycareId = daycare2.id,
-                            startDate = placementStart,
-                        )
-                    )
-                    child7.let {
-                        insertChild(tx, it, groupId3, daycare2.id)
-                        tx.insertGuardian(person2.id, it.id)
-                    }
-
-                    tx.createDaycareGroupMessageAccount(groupId3)
+            val group3Account = db.transaction { tx ->
+                child2.let {
+                    insertChild(tx, it, groupId2)
+                    tx.insertGuardian(person2.id, it.id)
                 }
+
+                tx.insert(
+                    DevDaycareGroup(
+                        id = groupId3,
+                        daycareId = daycare2.id,
+                        startDate = placementStart,
+                    )
+                )
+                child7.let {
+                    insertChild(tx, it, groupId3, daycare2.id)
+                    tx.insertGuardian(person2.id, it.id)
+                }
+
+                tx.createDaycareGroupMessageAccount(groupId3)
+            }
 
             // Both children in group 1 -> ok
             postNewThread(
@@ -886,18 +885,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         @Test
         fun `citizen cannot send message to group when NONE of selected children are in that group`() {
             val groupId3 = GroupId(UUID.randomUUID())
-            val group3Account =
-                db.transaction { tx ->
-                    tx.insert(
-                        DevDaycareGroup(
-                            id = groupId3,
-                            daycareId = daycare.id,
-                            startDate = placementStart,
-                            name = "Group 3",
-                        )
+            val group3Account = db.transaction { tx ->
+                tx.insert(
+                    DevDaycareGroup(
+                        id = groupId3,
+                        daycareId = daycare.id,
+                        startDate = placementStart,
+                        name = "Group 3",
                     )
-                    tx.createDaycareGroupMessageAccount(groupId3)
-                }
+                )
+                tx.createDaycareGroupMessageAccount(groupId3)
+            }
 
             db.transaction { tx ->
                 child2.let {
@@ -1238,22 +1236,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         @Test
         fun `sending a message with a relatedApplicationId creates a note on the application with the contents and a link to the thread`() {
-            val applicationId =
-                db.transaction { tx ->
-                    tx.insertTestApplication(
-                        childId = child1.id,
-                        guardianId = adult1.id,
-                        type = ApplicationType.DAYCARE,
-                        document =
-                            DaycareFormV0(
-                                type = ApplicationType.DAYCARE,
-                                child = Child(dateOfBirth = null),
-                                guardian = Adult(),
-                                apply = Apply(preferredUnits = listOf(daycare.id)),
-                                preferredStartDate = placementStart,
-                            ),
-                    )
-                }
+            val applicationId = db.transaction { tx ->
+                tx.insertTestApplication(
+                    childId = child1.id,
+                    guardianId = adult1.id,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            preferredStartDate = placementStart,
+                        ),
+                )
+            }
 
             val messageContent = "Hakemuksesta puuttuu tietoja, täydennäthän ne"
             // when a message thread related to an application is created
@@ -1289,22 +1286,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         @Test
         fun `the citizen recipient can reply to a message regarding their application, sent by a service worker`() {
-            val applicationId =
-                db.transaction { tx ->
-                    tx.insertTestApplication(
-                        childId = child1.id,
-                        guardianId = adult1.id,
-                        type = ApplicationType.DAYCARE,
-                        document =
-                            DaycareFormV0(
-                                type = ApplicationType.DAYCARE,
-                                child = Child(dateOfBirth = null),
-                                guardian = Adult(),
-                                apply = Apply(preferredUnits = listOf(daycare.id)),
-                                preferredStartDate = placementStart,
-                            ),
-                    )
-                }
+            val applicationId = db.transaction { tx ->
+                tx.insertTestApplication(
+                    childId = child1.id,
+                    guardianId = adult1.id,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            preferredStartDate = placementStart,
+                        ),
+                )
+            }
 
             val messageContent = "Tähän viestiin pitäisi pystyä vastaamaan"
             // when a message thread related to an application is created
@@ -1356,22 +1352,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 getFolders(serviceWorker.user).toSet(),
             )
 
-            val applicationId =
-                db.transaction { tx ->
-                    tx.insertTestApplication(
-                        childId = child1.id,
-                        guardianId = adult1.id,
-                        type = ApplicationType.DAYCARE,
-                        document =
-                            DaycareFormV0(
-                                type = ApplicationType.DAYCARE,
-                                child = Child(dateOfBirth = null),
-                                guardian = Adult(),
-                                apply = Apply(preferredUnits = listOf(daycare.id)),
-                                preferredStartDate = placementStart,
-                            ),
-                    )
-                }
+            val applicationId = db.transaction { tx ->
+                tx.insertTestApplication(
+                    childId = child1.id,
+                    guardianId = adult1.id,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            preferredStartDate = placementStart,
+                        ),
+                )
+            }
 
             postNewThread(
                 title = "Vastaa heti",
@@ -1537,22 +1532,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         @Test
         fun `non-service worker accounts cannot have a related application`() {
-            val applicationId =
-                db.transaction { tx ->
-                    tx.insertTestApplication(
-                        childId = child1.id,
-                        guardianId = adult1.id,
-                        type = ApplicationType.DAYCARE,
-                        document =
-                            DaycareFormV0(
-                                type = ApplicationType.DAYCARE,
-                                child = Child(dateOfBirth = null),
-                                guardian = Adult(),
-                                apply = Apply(preferredUnits = listOf(daycare.id)),
-                                preferredStartDate = placementStart,
-                            ),
-                    )
-                }
+            val applicationId = db.transaction { tx ->
+                tx.insertTestApplication(
+                    childId = child1.id,
+                    guardianId = adult1.id,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            preferredStartDate = placementStart,
+                        ),
+                )
+            }
 
             assertThrows<BadRequest> {
                 postNewThread(
@@ -1569,22 +1563,21 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         @Test
         fun `service workers cannot send messages to a citizen who has not sent the application identified by related application id`() {
-            val applicationId =
-                db.transaction { tx ->
-                    tx.insertTestApplication(
-                        childId = child1.id,
-                        guardianId = adult1.id,
-                        type = ApplicationType.DAYCARE,
-                        document =
-                            DaycareFormV0(
-                                type = ApplicationType.DAYCARE,
-                                child = Child(dateOfBirth = null),
-                                guardian = Adult(),
-                                apply = Apply(preferredUnits = listOf(daycare.id)),
-                                preferredStartDate = placementStart,
-                            ),
-                    )
-                }
+            val applicationId = db.transaction { tx ->
+                tx.insertTestApplication(
+                    childId = child1.id,
+                    guardianId = adult1.id,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            preferredStartDate = placementStart,
+                        ),
+                )
+            }
 
             // when a message thread related to an application is created
             assertThrows<BadRequest> {
@@ -1649,12 +1642,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         .map { message -> message.readAt }
                 },
             )
-            val person1ThreadsWithoutReadAt =
-                person1Threads.map { thread ->
-                    thread.copy(
-                        messages = thread.messages.map { message -> message.copy(readAt = null) }
-                    )
-                }
+            val person1ThreadsWithoutReadAt = person1Threads.map { thread ->
+                thread.copy(
+                    messages = thread.messages.map { message -> message.copy(readAt = null) }
+                )
+            }
             val person2Threads = getRegularMessageThreads(person2)
             assertEquals(person1ThreadsWithoutReadAt, person2Threads)
             assertEquals(
@@ -1879,12 +1871,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         .map { message -> message.readAt }
                 },
             )
-            val person1ThreadsWithoutReadAt =
-                person1ThreadsAfterReply.map { thread ->
-                    thread.copy(
-                        messages = thread.messages.map { message -> message.copy(readAt = null) }
-                    )
-                }
+            val person1ThreadsWithoutReadAt = person1ThreadsAfterReply.map { thread ->
+                thread.copy(
+                    messages = thread.messages.map { message -> message.copy(readAt = null) }
+                )
+            }
             assertEquals(
                 employeeThreads.map { messageThread ->
                     CitizenMessageThread.Regular(
@@ -2182,18 +2173,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         fun `getMessageCopiesByAccount filters recipient names by group names`() {
             // Test with STAFF employee assigned to group1 but not group2
             val staffEmployee = DevEmployee(firstName = "Staff", lastName = "Member")
-            val staffUser =
-                db.transaction { tx ->
-                    tx.insert(staffEmployee)
-                    tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
-                    tx.syncDaycareGroupAcl(
-                        daycare.id,
-                        staffEmployee.id,
-                        listOf(groupId1),
-                        readTime.minusMonths(1),
-                    )
-                    staffEmployee.user
-                }
+            val staffUser = db.transaction { tx ->
+                tx.insert(staffEmployee)
+                tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
+                tx.syncDaycareGroupAcl(
+                    daycare.id,
+                    staffEmployee.id,
+                    listOf(groupId1),
+                    readTime.minusMonths(1),
+                )
+                staffEmployee.user
+            }
 
             val allRecipientNames =
                 listOf(
@@ -2227,18 +2217,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         fun `getMessageCopiesByAccount prefers unit name over group names in recipient names`() {
             // Test with STAFF employee assigned to group1
             val staffEmployee = DevEmployee(firstName = "Staff", lastName = "Member")
-            val staffUser =
-                db.transaction { tx ->
-                    tx.insert(staffEmployee)
-                    tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
-                    tx.syncDaycareGroupAcl(
-                        daycare.id,
-                        staffEmployee.id,
-                        listOf(groupId1),
-                        readTime.minusMonths(1),
-                    )
-                    staffEmployee.user
-                }
+            val staffUser = db.transaction { tx ->
+                tx.insert(staffEmployee)
+                tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
+                tx.syncDaycareGroupAcl(
+                    daycare.id,
+                    staffEmployee.id,
+                    listOf(groupId1),
+                    readTime.minusMonths(1),
+                )
+                staffEmployee.user
+            }
 
             // Send bulletin to unit
             postNewThread(
@@ -2265,18 +2254,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         fun `getMessageCopiesByAccount prefers area name over other names in recipient names`() {
             // Test with STAFF employee assigned to group1
             val staffEmployee = DevEmployee(firstName = "Staff", lastName = "Member")
-            val staffUser =
-                db.transaction { tx ->
-                    tx.insert(staffEmployee)
-                    tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
-                    tx.syncDaycareGroupAcl(
-                        daycare.id,
-                        staffEmployee.id,
-                        listOf(groupId1),
-                        readTime.minusMonths(1),
-                    )
-                    staffEmployee.user
-                }
+            val staffUser = db.transaction { tx ->
+                tx.insert(staffEmployee)
+                tx.insertDaycareAclRow(daycare.id, staffEmployee.id, UserRole.STAFF)
+                tx.syncDaycareGroupAcl(
+                    daycare.id,
+                    staffEmployee.id,
+                    listOf(groupId1),
+                    readTime.minusMonths(1),
+                )
+                staffEmployee.user
+            }
 
             // Send bulletin to area
             postNewThread(
@@ -2591,8 +2579,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
             }
 
-            val groupAccount =
-                db.transaction { tx -> tx.createDaycareGroupMessageAccount(group.id) }
+            val groupAccount = db.transaction { tx ->
+                tx.createDaycareGroupMessageAccount(group.id)
+            }
 
             // Message thread beyond employee access limit (1 week before daycare group acl
             // creation)
@@ -3241,18 +3230,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             guardianAccounts.forEach { guardianAccount ->
-                val threads =
-                    db.read {
-                        it.getThreads(
-                            accountId = guardianAccount,
-                            folderId = null,
-                            pageSize = 20,
-                            page = 1,
-                            municipalAccountName = "Municipal Account",
-                            serviceWorkerAccountName = "Service Worker",
-                            financeAccountName = "Finance",
-                        )
-                    }
+                val threads = db.read {
+                    it.getThreads(
+                        accountId = guardianAccount,
+                        folderId = null,
+                        pageSize = 20,
+                        page = 1,
+                        municipalAccountName = "Municipal Account",
+                        serviceWorkerAccountName = "Service Worker",
+                        financeAccountName = "Finance",
+                    )
+                }
                 assertEquals(1, threads.data.size)
                 val thread = threads.data.first()
                 assertEquals("Municipal Bulletin", thread.title)
@@ -3264,14 +3252,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
             }
 
-            val sentMessages =
-                db.read {
-                    it.getMessagesSentByAccount(
-                        accountId = municipalAccount,
-                        pageSize = 20,
-                        page = 1,
-                    )
-                }
+            val sentMessages = db.read {
+                it.getMessagesSentByAccount(accountId = municipalAccount, pageSize = 20, page = 1)
+            }
             assertEquals(1, sentMessages.data.size)
             assertEquals("Municipal Bulletin", sentMessages.data.first().threadTitle)
             assertEquals(MessageType.BULLETIN, sentMessages.data.first().type)

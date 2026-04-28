@@ -161,8 +161,9 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `createIncome ends earlier income without end date`() {
         val firstIncome = testIncomeRequest().copy(validTo = null)
-        val firstIncomeId =
-            db.transaction { tx -> tx.insertIncome(clock.now(), firstIncome, employee.evakaUserId) }
+        val firstIncomeId = db.transaction { tx ->
+            tx.insertIncome(clock.now(), firstIncome, employee.evakaUserId)
+        }
 
         val secondIncome = firstIncome.copy(validFrom = firstIncome.validFrom.plusDays(1))
         createIncome(secondIncome)
@@ -183,8 +184,9 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `createIncome ends earlier income with end date`() {
         val firstIncome = testIncomeRequest()
-        val firstIncomeId =
-            db.transaction { tx -> tx.insertIncome(clock.now(), firstIncome, employee.evakaUserId) }
+        val firstIncomeId = db.transaction { tx ->
+            tx.insertIncome(clock.now(), firstIncome, employee.evakaUserId)
+        }
 
         val secondIncome =
             firstIncome.copy(
@@ -261,10 +263,9 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `updateIncome works with valid income`() {
-        val incomeId =
-            db.transaction { tx ->
-                tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
-            }
+        val incomeId = db.transaction { tx ->
+            tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
+        }
 
         val updateRequest =
             testIncomeRequest()
@@ -308,10 +309,9 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `updateIncome throws with invalid date rage`() {
-        val incomeId =
-            db.transaction { tx ->
-                tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
-            }
+        val incomeId = db.transaction { tx ->
+            tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
+        }
 
         val updated = testIncomeRequest().copy(validTo = testIncomeRequest().validFrom.minusDays(1))
         assertThrows<BadRequest> { updateIncome(incomeId, updated) }
@@ -319,10 +319,9 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `updateIncome throws with overlapping date rage`() {
-        val incomeId =
-            db.transaction { tx ->
-                tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
-            }
+        val incomeId = db.transaction { tx ->
+            tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
+        }
 
         val anotherIncome =
             with(testIncomeRequest()) {
@@ -336,10 +335,9 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `updateIncome removes data if effect is not INCOME`() {
-        val incomeId =
-            db.transaction { tx ->
-                tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
-            }
+        val incomeId = db.transaction { tx ->
+            tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
+        }
 
         val updated =
             with(testIncomeRequest()) { this.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED) }
@@ -357,18 +355,16 @@ class IncomeIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `deleteIncome works with multiple incomes in DB`() {
-        val incomeId =
-            db.transaction { tx ->
-                tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
-            }
+        val incomeId = db.transaction { tx ->
+            tx.insertIncome(clock.now(), testIncomeRequest(), employee.evakaUserId)
+        }
         val anotherIncome =
             with(testIncomeRequest()) {
                 this.copy(validFrom = validFrom.plusYears(1), validTo = validTo!!.plusYears(1))
             }
-        val incomeId2 =
-            db.transaction { tx ->
-                tx.insertIncome(clock.now(), anotherIncome, employee.evakaUserId)
-            }
+        val incomeId2 = db.transaction { tx ->
+            tx.insertIncome(clock.now(), anotherIncome, employee.evakaUserId)
+        }
 
         deleteIncome(incomeId)
 

@@ -73,20 +73,17 @@ class ArchivalService(
 
         val user = getUser(db, msg.user)
 
-        val decision =
-            db.read { tx ->
-                tx.getDecision(msg.decisionId)
-                    ?: throw NotFound("Decision ${msg.decisionId} not found")
-            }
+        val decision = db.read { tx ->
+            tx.getDecision(msg.decisionId) ?: throw NotFound("Decision ${msg.decisionId} not found")
+        }
         validateArchivability(decision)
         val child = getPerson(db, decision.childId)
-        val caseProcess =
-            db.read { tx ->
-                tx.getCaseProcessByApplicationId(decision.applicationId)
-                    ?: throw NotFound(
-                        "Case process not found for application ${decision.applicationId}"
-                    )
-            }
+        val caseProcess = db.read { tx ->
+            tx.getCaseProcessByApplicationId(decision.applicationId)
+                ?: throw NotFound(
+                    "Case process not found for application ${decision.applicationId}"
+                )
+        }
         val documentKey =
             decision.documentKey
                 ?: throw NotFound("Document key not found for decision ${decision.id}")
@@ -114,17 +111,15 @@ class ArchivalService(
 
         val user = getUser(db, msg.user)
 
-        val decision =
-            db.read { tx ->
-                tx.getFeeDecision(msg.feeDecisionId)
-                    ?: throw NotFound("Fee decision ${msg.feeDecisionId} not found")
-            }
+        val decision = db.read { tx ->
+            tx.getFeeDecision(msg.feeDecisionId)
+                ?: throw NotFound("Fee decision ${msg.feeDecisionId} not found")
+        }
         validateArchivability(decision)
-        val caseProcess =
-            db.read { tx ->
-                tx.getCaseProcessByFeeDecisionId(decision.id)
-                    ?: throw NotFound("Case process not found for fee decision ${decision.id}")
-            }
+        val caseProcess = db.read { tx ->
+            tx.getCaseProcessByFeeDecisionId(decision.id)
+                ?: throw NotFound("Case process not found for fee decision ${decision.id}")
+        }
         val documentKey =
             decision.documentKey
                 ?: throw NotFound("Document key not found for fee decision ${decision.id}")
@@ -153,21 +148,17 @@ class ArchivalService(
 
         val user = getUser(db, msg.user)
 
-        val decision =
-            db.read { tx ->
-                tx.getVoucherValueDecision(msg.voucherValueDecisionId)
-                    ?: throw NotFound(
-                        "Voucher value decision ${msg.voucherValueDecisionId} not found"
-                    )
-            }
+        val decision = db.read { tx ->
+            tx.getVoucherValueDecision(msg.voucherValueDecisionId)
+                ?: throw NotFound("Voucher value decision ${msg.voucherValueDecisionId} not found")
+        }
         validateArchivability(decision)
-        val caseProcess =
-            db.read { tx ->
-                tx.getCaseProcessByVoucherValueDecisionId(decision.id)
-                    ?: throw NotFound(
-                        "Case process not found for voucher value decision ${decision.id}"
-                    )
-            }
+        val caseProcess = db.read { tx ->
+            tx.getCaseProcessByVoucherValueDecisionId(decision.id)
+                ?: throw NotFound(
+                    "Case process not found for voucher value decision ${decision.id}"
+                )
+        }
         val documentKey =
             decision.documentKey
                 ?: throw NotFound(
@@ -195,11 +186,9 @@ class ArchivalService(
 
         val evakaUser = getUser(db, user)
 
-        val document =
-            db.read { tx ->
-                tx.getChildDocument(msg.documentId)
-                    ?: throw NotFound("document $documentId not found")
-            }
+        val document = db.read { tx ->
+            tx.getChildDocument(msg.documentId) ?: throw NotFound("document $documentId not found")
+        }
         val childInfo = getPerson(db, document.child.id)
         val caseProcess = db.read { tx -> tx.getCaseProcessByChildDocumentId(documentId) }
         val documentMetadata = db.read { tx -> tx.getChildDocumentMetadata(documentId) }
@@ -241,11 +230,9 @@ class ArchivalService(
             }
         }
 
-    private fun getPerson(db: Database.Connection, personId: PersonId) =
-        db.read { tx ->
-            tx.getPersonById(personId)
-                ?: throw IllegalStateException("No person found with $personId")
-        }
+    private fun getPerson(db: Database.Connection, personId: PersonId) = db.read { tx ->
+        tx.getPersonById(personId) ?: throw IllegalStateException("No person found with $personId")
+    }
 
     private fun getDocument(key: DocumentKey) = documentClient.get(documentClient.locate(key))
 }

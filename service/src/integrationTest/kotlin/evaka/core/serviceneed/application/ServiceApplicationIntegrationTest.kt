@@ -364,20 +364,19 @@ class ServiceApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     fun `employee rejects an application`() {
         MockEmailClient.clear()
 
-        val applicationId =
-            db.transaction { tx ->
-                tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
-                tx.insert(
-                    DevServiceApplication(
-                        childId = child.id,
-                        personId = adult.id,
-                        startDate = startDate,
-                        serviceNeedOptionId = snDaycareFullDay35.id,
-                        additionalInfo = "Sain uuden duunin",
-                        sentAt = now.minusDays(1),
-                    )
+        val applicationId = db.transaction { tx ->
+            tx.insert(DevGuardian(guardianId = adult.id, childId = child.id))
+            tx.insert(
+                DevServiceApplication(
+                    childId = child.id,
+                    personId = adult.id,
+                    startDate = startDate,
+                    serviceNeedOptionId = snDaycareFullDay35.id,
+                    additionalInfo = "Sain uuden duunin",
+                    sentAt = now.minusDays(1),
                 )
-            }
+            )
+        }
 
         rejectServiceApplication(applicationId, "Onnistuu vasta ensi kuussa")
 

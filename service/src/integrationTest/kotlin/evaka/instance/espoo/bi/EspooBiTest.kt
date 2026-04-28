@@ -116,32 +116,30 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getGroupPlacements() {
-        val id =
-            db.transaction {
-                it.insertTestDaycare().let { daycare ->
-                    it.insert(
-                        DevDaycareGroupPlacement(
-                            daycarePlacementId = it.insertTestPlacement(daycare),
-                            daycareGroupId = it.insertTestGroup(daycare),
-                        )
+        val id = db.transaction {
+            it.insertTestDaycare().let { daycare ->
+                it.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = it.insertTestPlacement(daycare),
+                        daycareGroupId = it.insertTestGroup(daycare),
                     )
-                }
+                )
             }
+        }
         assertSingleRowContainingId(EspooBi.getGroupPlacements, id)
     }
 
     @Test
     fun getAbsences() {
-        val id =
-            db.transaction {
-                it.insert(
-                    DevAbsence(
-                        childId = it.insertTestChild(),
-                        date = LocalDate.of(2020, 1, 1),
-                        absenceCategory = AbsenceCategory.BILLABLE,
-                    )
+        val id = db.transaction {
+            it.insert(
+                DevAbsence(
+                    childId = it.insertTestChild(),
+                    date = LocalDate.of(2020, 1, 1),
+                    absenceCategory = AbsenceCategory.BILLABLE,
                 )
-            }
+            )
+        }
         assertSingleRowContainingId(EspooBi.getAbsences, id)
     }
 
@@ -159,21 +157,20 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getDecisions() {
-        val id =
-            db.transaction {
-                val daycare = it.insertTestDaycare()
-                it.insertTestDecision(
-                    TestDecision(
-                        applicationId = it.insertTestApplicationWithForm(daycare),
-                        createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                        startDate = LocalDate.of(2019, 3, 1),
-                        endDate = LocalDate.of(2019, 4, 1),
-                        type = DecisionType.DAYCARE,
-                        unitId = daycare,
-                        status = DecisionStatus.ACCEPTED,
-                    )
+        val id = db.transaction {
+            val daycare = it.insertTestDaycare()
+            it.insertTestDecision(
+                TestDecision(
+                    applicationId = it.insertTestApplicationWithForm(daycare),
+                    createdBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    startDate = LocalDate.of(2019, 3, 1),
+                    endDate = LocalDate.of(2019, 4, 1),
+                    type = DecisionType.DAYCARE,
+                    unitId = daycare,
+                    status = DecisionStatus.ACCEPTED,
                 )
-            }
+            )
+        }
         assertSingleRowContainingId(EspooBi.getDecisions, id)
     }
 
@@ -185,20 +182,19 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getServiceNeeds() {
-        val id =
-            db.transaction {
-                val period = FiniteDateRange.ofMonth(2019, Month.JANUARY)
-                it.insert(
-                    DevServiceNeed(
-                        placementId = it.insertTestPlacement(),
-                        startDate = period.start,
-                        endDate = period.end,
-                        optionId = it.insertTestServiceNeedOption(),
-                        confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
-                        confirmedAt = HelsinkiDateTime.now(),
-                    )
+        val id = db.transaction {
+            val period = FiniteDateRange.ofMonth(2019, Month.JANUARY)
+            it.insert(
+                DevServiceNeed(
+                    placementId = it.insertTestPlacement(),
+                    startDate = period.start,
+                    endDate = period.end,
+                    optionId = it.insertTestServiceNeedOption(),
+                    confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    confirmedAt = HelsinkiDateTime.now(),
                 )
-            }
+            )
+        }
         assertSingleRowContainingId(EspooBi.getServiceNeeds, id)
     }
 
@@ -223,16 +219,15 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getPedagogicalDocuments() {
-        val id =
-            db.transaction {
-                it.insert(
-                    DevPedagogicalDocument(
-                        id = PedagogicalDocumentId(UUID.randomUUID()),
-                        childId = it.insertTestChild(),
-                        description = "Test",
-                    )
+        val id = db.transaction {
+            it.insert(
+                DevPedagogicalDocument(
+                    id = PedagogicalDocumentId(UUID.randomUUID()),
+                    childId = it.insertTestChild(),
+                    description = "Test",
                 )
-            }
+            )
+        }
         assertSingleRowContainingId(EspooBi.getPedagogicalDocuments, id)
     }
 
@@ -250,42 +245,41 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun getPreschoolAssistanceEntries() {
-        val id =
-            db.transaction { it.insert(DevPreschoolAssistance(childId = it.insertTestChild())) }
+        val id = db.transaction {
+            it.insert(DevPreschoolAssistance(childId = it.insertTestChild()))
+        }
         assertSingleRowContainingId(EspooBi.getPreschoolAssistanceEntries, id)
     }
 
     @Test
     fun getOtherAssistanceMeasureEntries() {
-        val id =
-            db.transaction {
-                it.insert(
-                    DevOtherAssistanceMeasure(
-                        childId = it.insertTestChild(),
-                        type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT,
-                    )
+        val id = db.transaction {
+            it.insert(
+                DevOtherAssistanceMeasure(
+                    childId = it.insertTestChild(),
+                    type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT,
                 )
-            }
+            )
+        }
         assertSingleRowContainingId(EspooBi.getOtherAssistanceMeasureEntries, id)
     }
 
     @Test
     fun getAssistanceNeedVoucherCoefficients() {
-        val id =
-            db.transaction {
-                val employee = DevEmployee()
-                it.insert(employee)
-                it.insertAssistanceNeedVoucherCoefficient(
-                        user = employee.user,
-                        now = clock.now(),
-                        childId = it.insertTestChild(),
-                        AssistanceNeedVoucherCoefficientRequest(
-                            coefficient = 2.0,
-                            validityPeriod = FiniteDateRange.ofMonth(2019, Month.JANUARY),
-                        ),
-                    )
-                    .id
-            }
+        val id = db.transaction {
+            val employee = DevEmployee()
+            it.insert(employee)
+            it.insertAssistanceNeedVoucherCoefficient(
+                    user = employee.user,
+                    now = clock.now(),
+                    childId = it.insertTestChild(),
+                    AssistanceNeedVoucherCoefficientRequest(
+                        coefficient = 2.0,
+                        validityPeriod = FiniteDateRange.ofMonth(2019, Month.JANUARY),
+                    ),
+                )
+                .id
+        }
         assertSingleRowContainingId(EspooBi.getAssistanceNeedVoucherCoefficients, id)
     }
 
@@ -300,24 +294,18 @@ class EspooBiTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun assertSingleRowContainingId(query: CsvQuery, id: Id<*>) {
-        val lines =
-            db.read { tx ->
-                query(tx) { records ->
-                    records.map { it.trim() }.filter { it.isNotEmpty() }.toList()
-                }
-            }
+        val lines = db.read { tx ->
+            query(tx) { records -> records.map { it.trim() }.filter { it.isNotEmpty() }.toList() }
+        }
 
         assertTrue(lines.first().looksLikeHeaderRow())
         assertTrue(lines.drop(1).single().contains(id.toString()))
     }
 
     private fun assertHeaderOnly(query: CsvQuery) {
-        val lines =
-            db.read { tx ->
-                query(tx) { records ->
-                    records.map { it.trim() }.filter { it.isNotEmpty() }.toList()
-                }
-            }
+        val lines = db.read { tx ->
+            query(tx) { records -> records.map { it.trim() }.filter { it.isNotEmpty() }.toList() }
+        }
 
         assertTrue(lines.first().looksLikeHeaderRow())
         assertEquals(1, lines.size)

@@ -55,8 +55,9 @@ fun generateAndInsertVoucherValueDecisionsV2(
 ) {
     val existingDecisions = tx.findValueDecisionsForChild(childId = childId, lockForUpdate = true)
 
-    val activeDecisions =
-        existingDecisions.filter { VoucherValueDecisionStatus.effective.contains(it.status) }
+    val activeDecisions = existingDecisions.filter {
+        VoucherValueDecisionStatus.effective.contains(it.status)
+    }
     val existingDrafts = existingDecisions.filter { it.status == VoucherValueDecisionStatus.DRAFT }
     val ignoredDrafts = existingDecisions.filter { it.status == VoucherValueDecisionStatus.IGNORED }
 
@@ -397,8 +398,9 @@ private fun getChildFamilyRelations(
 ): List<ChildFamilyRelations> {
     val headOfChildRelations = tx.getHeadOfChildRelations(targetChildId)
     val headOfChildIds = headOfChildRelations.map { it.headOfChild }.toSet()
-    val partnerRelations =
-        headOfChildIds.associateWith { headOfChildId -> tx.getPartnerRelations(headOfChildId) }
+    val partnerRelations = headOfChildIds.associateWith { headOfChildId ->
+        tx.getPartnerRelations(headOfChildId)
+    }
     val partnerIds = partnerRelations.values.flatMap { it.map { p -> p.partnerId } }.toSet()
     val adultIds = headOfChildIds + partnerIds
     val childRelationsByParent = tx.getChildRelations(adultIds)

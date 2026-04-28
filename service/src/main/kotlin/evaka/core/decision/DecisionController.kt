@@ -51,39 +51,33 @@ class DecisionController(
         clock: EvakaClock,
         @RequestParam id: PersonId,
     ): List<DecisionWithPermittedActions> {
-        val decisions =
-            db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
+        val decisions = db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Person.READ_DECISIONS,
+                    id,
+                )
+                val filter =
+                    accessControl.requireAuthorizationFilter(it, user, clock, Action.Decision.READ)
+                val decisions = it.getDecisionsByGuardian(id, filter)
+                val permittedActions =
+                    accessControl.getPermittedActions<DecisionId, Action.Decision>(
                         it,
                         user,
                         clock,
-                        Action.Person.READ_DECISIONS,
-                        id,
+                        decisions.map(Decision::id),
                     )
-                    val filter =
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            user,
-                            clock,
-                            Action.Decision.READ,
-                        )
-                    val decisions = it.getDecisionsByGuardian(id, filter)
-                    val permittedActions =
-                        accessControl.getPermittedActions<DecisionId, Action.Decision>(
-                            it,
-                            user,
-                            clock,
-                            decisions.map(Decision::id),
-                        )
-                    decisions.map { decision ->
-                        DecisionWithPermittedActions(
-                            decision,
-                            permittedActions[decision.id] ?: emptySet(),
-                        )
-                    }
+                decisions.map { decision ->
+                    DecisionWithPermittedActions(
+                        decision,
+                        permittedActions[decision.id] ?: emptySet(),
+                    )
                 }
             }
+        }
         Audit.DecisionRead.log(targetId = AuditId(id), meta = mapOf("count" to decisions.size))
         return decisions
     }
@@ -116,45 +110,41 @@ class DecisionController(
         @PathVariable id: DecisionId,
     ): ResponseEntity<Any> {
         return db.connect { dbc ->
-                val decision =
-                    dbc.transaction { tx ->
-                        accessControl.requirePermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Decision.DOWNLOAD_PDF,
-                            id,
+                val decision = dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Decision.DOWNLOAD_PDF,
+                        id,
+                    )
+
+                    val decision =
+                        tx.getDecision(id) ?: error("Cannot find decision for decision id '$id'")
+                    val application =
+                        tx.fetchApplicationDetails(decision.applicationId)
+                            ?: error("Cannot find application for decision id '$id'")
+
+                    val child =
+                        tx.getPersonById(application.childId)
+                            ?: error("Cannot find user for child id '${application.childId}'")
+
+                    val guardian =
+                        tx.getPersonById(application.guardianId)
+                            ?: error("Cannot find user for guardian id '${application.guardianId}'")
+
+                    if (
+                        (child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) &&
+                            decision.documentContainsContactInfo &&
+                            !user.isAdmin
+                    ) {
+                        throw Forbidden(
+                            "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen."
                         )
-
-                        val decision =
-                            tx.getDecision(id)
-                                ?: error("Cannot find decision for decision id '$id'")
-                        val application =
-                            tx.fetchApplicationDetails(decision.applicationId)
-                                ?: error("Cannot find application for decision id '$id'")
-
-                        val child =
-                            tx.getPersonById(application.childId)
-                                ?: error("Cannot find user for child id '${application.childId}'")
-
-                        val guardian =
-                            tx.getPersonById(application.guardianId)
-                                ?: error(
-                                    "Cannot find user for guardian id '${application.guardianId}'"
-                                )
-
-                        if (
-                            (child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) &&
-                                decision.documentContainsContactInfo &&
-                                !user.isAdmin
-                        ) {
-                            throw Forbidden(
-                                "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen."
-                            )
-                        }
-
-                        decision
                     }
+
+                    decision
+                }
                 decisionService.getDecisionPdf(dbc, decision)
             }
             .also { Audit.DecisionDownloadPdf.log(targetId = AuditId(id)) }

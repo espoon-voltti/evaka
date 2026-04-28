@@ -152,18 +152,14 @@ class BiCsvFormatTest : PureJdbiTest(resetDbBeforeEach = true) {
         typedSql: String,
         textSql: String,
     ) {
-        val typedCsv =
-            db.read { tx ->
-                BiQueries.StreamingCsvQuery(A::class) {
-                        it.createQuery { sql(typedSql) }.mapTo<A>()
-                    }
-                    .invoke(tx, config) { it.toList() }
-            }
-        val textCsv =
-            db.read { tx ->
-                BiQueries.StreamingCsvQuery(B::class) { it.createQuery { sql(textSql) }.mapTo<B>() }
-                    .invoke(tx, config) { it.toList() }
-            }
+        val typedCsv = db.read { tx ->
+            BiQueries.StreamingCsvQuery(A::class) { it.createQuery { sql(typedSql) }.mapTo<A>() }
+                .invoke(tx, config) { it.toList() }
+        }
+        val textCsv = db.read { tx ->
+            BiQueries.StreamingCsvQuery(B::class) { it.createQuery { sql(textSql) }.mapTo<B>() }
+                .invoke(tx, config) { it.toList() }
+        }
         assertEquals(typedCsv, textCsv)
     }
 

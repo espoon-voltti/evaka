@@ -108,10 +108,9 @@ class AttachmentQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             wrongUser = tx.insertAttachment(admin.user, AttachmentParent.None)
         }
 
-        fun associateGuardianAttachmentsToApplication(vararg ids: AttachmentId) =
-            db.transaction {
-                it.associateOrphanAttachments(guardian.evakaUserId(), application, ids.toList())
-            }
+        fun associateGuardianAttachmentsToApplication(vararg ids: AttachmentId) = db.transaction {
+            it.associateOrphanAttachments(guardian.evakaUserId(), application, ids.toList())
+        }
 
         assertThrows<BadRequest> {
             associateGuardianAttachmentsToApplication(validTarget, notOrphan)

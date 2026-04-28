@@ -201,35 +201,34 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
         dailyPreschoolTime: TimeRange,
         dailyPreparatoryTime: TimeRange,
     ): List<ChildPreschoolAbsenceRow> {
-        val hourlyRows =
-            absenceRows.map { r ->
-                val dailyTimeInMinutes =
-                    when (r.placementType) {
-                        PlacementType.PREPARATORY,
-                        PlacementType.PREPARATORY_DAYCARE -> {
-                            dailyPreparatoryTime.duration.toMinutes()
-                        }
-
-                        else -> {
-                            dailyPreschoolTime.duration.toMinutes()
-                        }
+        val hourlyRows = absenceRows.map { r ->
+            val dailyTimeInMinutes =
+                when (r.placementType) {
+                    PlacementType.PREPARATORY,
+                    PlacementType.PREPARATORY_DAYCARE -> {
+                        dailyPreparatoryTime.duration.toMinutes()
                     }
-                val childAttendanceDeviationMinutes =
-                    if (r.absenceType == AbsenceType.OTHER_ABSENCE) {
-                        val childDeviations = deviationsByChild[r.childId] ?: emptyList()
-                        childDeviations.sumOf { it.missingMinutes }
-                    } else 0
-                PreschoolAbsenceReportRow(
-                    r.childId,
-                    r.firstName,
-                    r.lastName,
-                    r.placementType,
-                    r.absenceType,
-                    (r.absenceCount * dailyTimeInMinutes + childAttendanceDeviationMinutes)
-                        .floorDiv(60)
-                        .toInt(),
-                )
-            }
+
+                    else -> {
+                        dailyPreschoolTime.duration.toMinutes()
+                    }
+                }
+            val childAttendanceDeviationMinutes =
+                if (r.absenceType == AbsenceType.OTHER_ABSENCE) {
+                    val childDeviations = deviationsByChild[r.childId] ?: emptyList()
+                    childDeviations.sumOf { it.missingMinutes }
+                } else 0
+            PreschoolAbsenceReportRow(
+                r.childId,
+                r.firstName,
+                r.lastName,
+                r.placementType,
+                r.absenceType,
+                (r.absenceCount * dailyTimeInMinutes + childAttendanceDeviationMinutes)
+                    .floorDiv(60)
+                    .toInt(),
+            )
+        }
 
         return hourlyRows
             .groupBy { row -> row.childId }

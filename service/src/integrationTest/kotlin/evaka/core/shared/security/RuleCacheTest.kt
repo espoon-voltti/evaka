@@ -57,14 +57,13 @@ class RuleCacheTest : AccessControlTest() {
                 createUnscopedRule(idx, cacheKey = Unit) { deferred.also { executionCount += 1 } },
             )
         }
-        val permittedActions =
-            db.read { tx ->
-                accessControl.getPermittedActions<Action.Global>(
-                    tx,
-                    AuthenticatedUser.SystemInternalUser,
-                    clock,
-                )
-            }
+        val permittedActions = db.read { tx ->
+            accessControl.getPermittedActions<Action.Global>(
+                tx,
+                AuthenticatedUser.SystemInternalUser,
+                clock,
+            )
+        }
         // Without a cache all rules would be executed, but with the cache it should keep the
         // deferred data of the first execution, which is evaluated multiple times (with different
         // results)
@@ -92,14 +91,13 @@ class RuleCacheTest : AccessControlTest() {
                 },
             )
         }
-        val permittedActions =
-            db.read { tx ->
-                accessControl.getPermittedActions<Action.Global>(
-                    tx,
-                    AuthenticatedUser.SystemInternalUser,
-                    clock,
-                )
-            }
+        val permittedActions = db.read { tx ->
+            accessControl.getPermittedActions<Action.Global>(
+                tx,
+                AuthenticatedUser.SystemInternalUser,
+                clock,
+            )
+        }
         assertEquals(actions, executed)
         assertEquals(actions, permittedActions)
     }

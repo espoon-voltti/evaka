@@ -34,12 +34,11 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `service need works`() {
-        val user =
-            db.transaction { tx ->
-                val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
-                tx.insert(admin)
-                admin.user
-            }
+        val user = db.transaction { tx ->
+            val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+            tx.insert(admin)
+            admin.user
+        }
         val clock =
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 10, 23), LocalTime.of(8, 47)))
         db.transaction { tx ->
@@ -103,12 +102,11 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         val clock =
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 10, 23), LocalTime.of(8, 47)))
 
-        val user =
-            db.transaction { tx ->
-                val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
-                tx.insert(admin)
-                admin.user
-            }
+        val user = db.transaction { tx ->
+            val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+            tx.insert(admin)
+            admin.user
+        }
 
         db.transaction { tx ->
             tx.insertServiceNeedOption(snDefaultDaycare)
@@ -171,12 +169,11 @@ class RawReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         val clock =
             MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 10, 23), LocalTime.of(8, 47)))
 
-        val user =
-            db.transaction { tx ->
-                val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
-                tx.insert(admin)
-                admin.user
-            }
+        val user = db.transaction { tx ->
+            val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+            tx.insert(admin)
+            admin.user
+        }
         val testArea = DevCareArea()
         val testUnit = DevDaycare(areaId = testArea.id)
         val aromiGroup =

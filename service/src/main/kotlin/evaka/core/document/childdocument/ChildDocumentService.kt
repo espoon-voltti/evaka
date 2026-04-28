@@ -286,8 +286,9 @@ class ChildDocumentService(
         ids: List<ChildDocumentId>,
         now: HelsinkiDateTime,
     ) {
-        val payloads: List<AsyncJob.SendChildDocumentNotificationEmail> =
-            ids.flatMap { getChildDocumentNotifications(tx, it, now.toLocalDate()) }
+        val payloads: List<AsyncJob.SendChildDocumentNotificationEmail> = ids.flatMap {
+            getChildDocumentNotifications(tx, it, now.toLocalDate())
+        }
 
         logger.info { "Scheduling sending of ${payloads.size} child document notification emails" }
         asyncJobRunner.plan(tx, payloads = payloads, runAt = now, retryCount = 10)
@@ -417,12 +418,11 @@ WHERE person.email IS NOT NULL AND person.email != ''
         clock: EvakaClock,
         msg: AsyncJob.SendChildDocumentNotificationEmail,
     ) {
-        val childHasPlacement =
-            db.read { tx ->
-                tx.getPlacementsForChild(msg.childId).any {
-                    FiniteDateRange(it.startDate, it.endDate).includes(clock.today())
-                }
+        val childHasPlacement = db.read { tx ->
+            tx.getPlacementsForChild(msg.childId).any {
+                FiniteDateRange(it.startDate, it.endDate).includes(clock.today())
             }
+        }
         if (!childHasPlacement) {
             logger.info {
                 "Child ${msg.childId} has no active placement, skipping notification email for document ${msg.documentId}"

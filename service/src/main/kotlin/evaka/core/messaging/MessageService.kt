@@ -303,14 +303,13 @@ class MessageService(
             val validRecipients =
                 db.read { it.getCitizenRecipients(today, senderAccount) }
                     .mapValues { entry -> entry.value.reply.map { it.account.id }.toSet() }
-            val allRecipientsValid =
-                recipientAccountIds.all { recipient ->
-                    thread.children.any { child ->
-                        validRecipients[child]?.contains(recipient) ?: false
-                    } ||
-                        (recipient == financeAccountId &&
-                            db.read { it.citizenHasUnhandledIncomeStatements(user.id) })
-                }
+            val allRecipientsValid = recipientAccountIds.all { recipient ->
+                thread.children.any { child ->
+                    validRecipients[child]?.contains(recipient) ?: false
+                } ||
+                    (recipient == financeAccountId &&
+                        db.read { it.citizenHasUnhandledIncomeStatements(user.id) })
+            }
             if (!isApplication && !allRecipientsValid)
                 throw Forbidden("Not authorized to send to all recipients")
             val selectedChildren =
@@ -326,46 +325,45 @@ class MessageService(
             if (!isApplication && !selectedChildrenInSameUnit)
                 throw Forbidden("Selected children not in same unit")
         }
-        val message =
-            db.transaction { tx ->
-                tx.upsertSenderThreadParticipants(senderAccount, listOf(threadId), now)
-                val recipientNames =
-                    tx.getAccountNames(
-                        recipientAccountIds,
-                        serviceWorkerAccountName,
-                        financeAccountName,
-                    )
-                val contentId = tx.insertMessageContent(content, senderAccount)
-                val messageId =
-                    tx.insertMessage(
-                        now = now,
-                        contentId = contentId,
-                        threadId = threadId,
-                        sender = senderAccount,
-                        recipientNames = recipientNames,
-                        municipalAccountName = municipalAccountName,
-                        serviceWorkerAccountName = serviceWorkerAccountName,
-                        financeAccountName = financeAccountName,
-                    )
-                tx.insertRecipients(listOf(messageId to recipientAccountIds))
-                asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
-                tx.markThreadRead(now, senderAccount, threadId)
-                if (thread.applicationId != null) {
-                    tx.createApplicationNote(
-                        now = now,
-                        applicationId = thread.applicationId,
-                        content = content,
-                        createdBy = user.evakaUserId,
-                        messageContentId = contentId,
-                    )
-                }
-                tx.getSentMessage(
-                    senderAccount,
-                    messageId,
+        val message = db.transaction { tx ->
+            tx.upsertSenderThreadParticipants(senderAccount, listOf(threadId), now)
+            val recipientNames =
+                tx.getAccountNames(
+                    recipientAccountIds,
                     serviceWorkerAccountName,
                     financeAccountName,
                 )
+            val contentId = tx.insertMessageContent(content, senderAccount)
+            val messageId =
+                tx.insertMessage(
+                    now = now,
+                    contentId = contentId,
+                    threadId = threadId,
+                    sender = senderAccount,
+                    recipientNames = recipientNames,
+                    municipalAccountName = municipalAccountName,
+                    serviceWorkerAccountName = serviceWorkerAccountName,
+                    financeAccountName = financeAccountName,
+                )
+            tx.insertRecipients(listOf(messageId to recipientAccountIds))
+            asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
+            tx.markThreadRead(now, senderAccount, threadId)
+            if (thread.applicationId != null) {
+                tx.createApplicationNote(
+                    now = now,
+                    applicationId = thread.applicationId,
+                    content = content,
+                    createdBy = user.evakaUserId,
+                    messageContentId = contentId,
+                )
             }
+            tx.getSentMessage(
+                senderAccount,
+                messageId,
+                serviceWorkerAccountName,
+                financeAccountName,
+            )
+        }
         return ThreadReply(threadId, message)
     }
 }

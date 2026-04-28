@@ -85,17 +85,16 @@ internal fun toInvoiceData(
 internal fun toInvoiceRows(
     header: String,
     rows: List<InvoiceRowDetailed>,
-): List<List<FixedLengthField>> =
-    rows.flatMap { row ->
-        listOfNotNull(
-            toDescriptionRow(
-                header,
-                "${row.periodStart.format(DATE_FORMATTER)} - ${row.periodEnd.format(DATE_FORMATTER)}",
-            ),
-            toInvoiceRow(header, row),
-            if (row.description.isNotEmpty()) toDescriptionRow(header, row.description) else null,
-        )
-    }
+): List<List<FixedLengthField>> = rows.flatMap { row ->
+    listOfNotNull(
+        toDescriptionRow(
+            header,
+            "${row.periodStart.format(DATE_FORMATTER)} - ${row.periodEnd.format(DATE_FORMATTER)}",
+        ),
+        toInvoiceRow(header, row),
+        if (row.description.isNotEmpty()) toDescriptionRow(header, row.description) else null,
+    )
+}
 
 /** 3.1 Laskun otsikkotietue */
 fun toInvoiceHeaderRow(

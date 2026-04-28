@@ -118,18 +118,17 @@ class MessageNotificationEmailServiceIntegrationTest :
 
     @Test
     fun `notifications are sent to citizens`() {
-        val employeeAccount =
-            db.read {
-                it.getEmployeeMessageAccountIds(
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            employee,
-                            clock,
-                            Action.MessageAccount.ACCESS,
-                        )
+        val employeeAccount = db.read {
+            it.getEmployeeMessageAccountIds(
+                    accessControl.requireAuthorizationFilter(
+                        it,
+                        employee,
+                        clock,
+                        Action.MessageAccount.ACCESS,
                     )
-                    .first()
-            }
+                )
+                .first()
+        }
 
         postNewThread(
             sender = employeeAccount,
@@ -158,13 +157,12 @@ class MessageNotificationEmailServiceIntegrationTest :
     fun `bulletin notifications are sent to citizens`() {
         val municipalAccountId = db.transaction { tx -> tx.createMunicipalMessageAccount() }
 
-        val adminUser =
-            db.transaction { tx ->
-                AuthenticatedUser.Employee(
-                    tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN))),
-                    roles = setOf(UserRole.ADMIN),
-                )
-            }
+        val adminUser = db.transaction { tx ->
+            AuthenticatedUser.Employee(
+                tx.insert(DevEmployee(roles = setOf(UserRole.ADMIN))),
+                roles = setOf(UserRole.ADMIN),
+            )
+        }
 
         postNewThread(
             sender = municipalAccountId,
@@ -201,18 +199,17 @@ class MessageNotificationEmailServiceIntegrationTest :
 
     @Test
     fun `a notification is not sent when the message has been already read`() {
-        val employeeAccount =
-            db.read {
-                it.getEmployeeMessageAccountIds(
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            employee,
-                            clock,
-                            Action.MessageAccount.ACCESS,
-                        )
+        val employeeAccount = db.read {
+            it.getEmployeeMessageAccountIds(
+                    accessControl.requireAuthorizationFilter(
+                        it,
+                        employee,
+                        clock,
+                        Action.MessageAccount.ACCESS,
                     )
-                    .first()
-            }
+                )
+                .first()
+        }
 
         val contentId =
             postNewThread(
@@ -234,33 +231,31 @@ class MessageNotificationEmailServiceIntegrationTest :
     @Test
     fun `notifications related to an application are sent to citizens`() {
         val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
-        val serviceWorkerAccount =
-            db.transaction { tx ->
-                tx.insert(serviceWorker)
-                tx.createServiceWorkerMessageAccount()
-            }
+        val serviceWorkerAccount = db.transaction { tx ->
+            tx.insert(serviceWorker)
+            tx.createServiceWorkerMessageAccount()
+        }
 
         val guardian = testPersons.first()
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    sentDate = clock.today(),
-                    dueDate = null,
-                    guardianId = guardian.id,
-                    childId = child.id,
-                    type = PlacementType.DAYCARE.toApplicationType(),
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            serviceStart = "08:00",
-                            serviceEnd = "16:00",
-                            child = Child(dateOfBirth = clock.today().minusYears(3)),
-                            guardian = Adult(),
-                            apply = Apply(preferredUnits = listOf(daycare.id)),
-                            preferredStartDate = clock.today().plusMonths(5),
-                        ),
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                sentDate = clock.today(),
+                dueDate = null,
+                guardianId = guardian.id,
+                childId = child.id,
+                type = PlacementType.DAYCARE.toApplicationType(),
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        serviceStart = "08:00",
+                        serviceEnd = "16:00",
+                        child = Child(dateOfBirth = clock.today().minusYears(3)),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(daycare.id)),
+                        preferredStartDate = clock.today().plusMonths(5),
+                    ),
+            )
+        }
 
         postNewThread(
             sender = serviceWorkerAccount,

@@ -18,31 +18,30 @@ import org.junit.jupiter.api.Test
 class PersonIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `creating a person creates a message account`() {
-        val person =
-            db.transaction {
-                createPersonFromVtj(
-                    it,
-                    PersonDTO(
-                        id = PersonId(UUID.randomUUID()),
-                        duplicateOf = null,
-                        identity = ExternalIdentifier.SSN.getInstance("080512A918W"),
-                        ssnAddingDisabled = false,
-                        dateOfBirth = LocalDate.of(2012, 5, 8),
-                        firstName = "Matti",
-                        lastName = "Meikäläinen",
-                        preferredName = "",
-                        email = "matti.meikalainen@example.com",
-                        phone = "1234567890",
-                        backupPhone = "",
-                        language = "fi",
-                        streetAddress = "",
-                        postalCode = "",
-                        postOffice = "",
-                        residenceCode = "",
-                        municipalityOfResidence = "",
-                    ),
-                )
-            }
+        val person = db.transaction {
+            createPersonFromVtj(
+                it,
+                PersonDTO(
+                    id = PersonId(UUID.randomUUID()),
+                    duplicateOf = null,
+                    identity = ExternalIdentifier.SSN.getInstance("080512A918W"),
+                    ssnAddingDisabled = false,
+                    dateOfBirth = LocalDate.of(2012, 5, 8),
+                    firstName = "Matti",
+                    lastName = "Meikäläinen",
+                    preferredName = "",
+                    email = "matti.meikalainen@example.com",
+                    phone = "1234567890",
+                    backupPhone = "",
+                    language = "fi",
+                    streetAddress = "",
+                    postalCode = "",
+                    postOffice = "",
+                    residenceCode = "",
+                    municipalityOfResidence = "",
+                ),
+            )
+        }
 
         assertTrue(personHasMessageAccount(person.id))
     }

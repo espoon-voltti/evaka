@@ -159,17 +159,16 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .data
                 .size,
         )
-        val personResult =
-            db.read {
-                it.getThreads(
-                    accounts.employee1.id,
-                    10,
-                    1,
-                    "Espoo",
-                    "Espoon palveluohjaus",
-                    "Espoon asiakasmaksut",
-                )
-            }
+        val personResult = db.read {
+            it.getThreads(
+                accounts.employee1.id,
+                10,
+                1,
+                "Espoo",
+                "Espoon palveluohjaus",
+                "Espoon asiakasmaksut",
+            )
+        }
         assertEquals(2, personResult.data.size)
 
         val thread = personResult.data.first()
@@ -180,17 +179,16 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { it.markThreadRead(clock.now(), accounts.person1.id, thread1Id) }
 
         // then the message has correct readAt
-        val person1Threads =
-            db.read {
-                it.getThreads(
-                    accounts.person1.id,
-                    10,
-                    1,
-                    "Espoo",
-                    "Espoon palveluohjaus",
-                    "Espoon asiakasmaksut",
-                )
-            }
+        val person1Threads = db.read {
+            it.getThreads(
+                accounts.person1.id,
+                10,
+                1,
+                "Espoo",
+                "Espoon palveluohjaus",
+                "Espoon asiakasmaksut",
+            )
+        }
         assertEquals(2, person1Threads.data.size)
         val readMessages = person1Threads.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }
         assertEquals(1, readMessages.size)
@@ -224,33 +222,31 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         // then employee sees the thread
-        val employeeResult =
-            db.read {
-                it.getReceivedThreads(
-                    accounts.employee1.id,
-                    10,
-                    1,
-                    "Espoo",
-                    "Espoon palveluohjaus",
-                    "Espoon asiakasmaksut",
-                )
-            }
+        val employeeResult = db.read {
+            it.getReceivedThreads(
+                accounts.employee1.id,
+                10,
+                1,
+                "Espoo",
+                "Espoon palveluohjaus",
+                "Espoon asiakasmaksut",
+            )
+        }
         assertEquals(1, employeeResult.data.size)
         assertEquals("Newest thread", employeeResult.data[0].title)
         assertEquals(2, employeeResult.data[0].messages.size)
 
         // person 1 is recipient in both threads
-        val person1Result =
-            db.read {
-                it.getThreads(
-                    accounts.person1.id,
-                    10,
-                    1,
-                    "Espoo",
-                    "Espoon palveluohjaus",
-                    "Espoon asiakasmaksut",
-                )
-            }
+        val person1Result = db.read {
+            it.getThreads(
+                accounts.person1.id,
+                10,
+                1,
+                "Espoo",
+                "Espoon palveluohjaus",
+                "Espoon asiakasmaksut",
+            )
+        }
         assertEquals(2, person1Result.data.size)
 
         val newestThread = person1Result.data[0]
@@ -271,33 +267,31 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertNull(oldestThread.messages.find { it.content == "Just replying here" }?.readAt)
 
         // person 2 is recipient in the oldest thread only
-        val person2Result =
-            db.read {
-                it.getThreads(
-                    accounts.person2.id,
-                    10,
-                    1,
-                    "Espoo",
-                    "Espoon palveluohjaus",
-                    "Espoon asiakasmaksut",
-                )
-            }
+        val person2Result = db.read {
+            it.getThreads(
+                accounts.person2.id,
+                10,
+                1,
+                "Espoo",
+                "Espoon palveluohjaus",
+                "Espoon asiakasmaksut",
+            )
+        }
         assertEquals(1, person2Result.data.size)
         assertEquals(oldestThread.id, person2Result.data[0].id)
         assertEquals(0, person2Result.data.flatMap { it.messages }.mapNotNull { it.readAt }.size)
 
         // employee 2 is participating with himself
-        val employee2Result =
-            db.read {
-                it.getReceivedThreads(
-                    accounts.employee2.id,
-                    10,
-                    1,
-                    "Espoo",
-                    "Espoon palveluohjaus",
-                    "Espoon asiakasmaksut",
-                )
-            }
+        val employee2Result = db.read {
+            it.getReceivedThreads(
+                accounts.employee2.id,
+                10,
+                1,
+                "Espoo",
+                "Espoon palveluohjaus",
+                "Espoon asiakasmaksut",
+            )
+        }
         assertEquals(1, employee2Result.data.size)
         assertEquals(1, employee2Result.data[0].messages.size)
         assertEquals(accounts.employee2, employee2Result.data[0].messages[0].sender)
@@ -309,17 +303,16 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         createThread("t1", "c1", accounts.employee1, listOf(accounts.person1))
         createThread("t2", "c2", accounts.employee1, listOf(accounts.person1))
 
-        val messages =
-            db.read {
-                it.getThreads(
-                    accounts.person1.id,
-                    10,
-                    1,
-                    "Espoo",
-                    "Espoon palveluohjaus",
-                    "Espoon asiakasmaksut",
-                )
-            }
+        val messages = db.read {
+            it.getThreads(
+                accounts.person1.id,
+                10,
+                1,
+                "Espoo",
+                "Espoon palveluohjaus",
+                "Espoon asiakasmaksut",
+            )
+        }
         assertEquals(2, messages.total)
         assertEquals(2, messages.data.size)
         assertEquals(setOf("t1", "t2"), messages.data.map { it.title }.toSet())
@@ -429,29 +422,28 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         val now = HelsinkiDateTime.now()
-        val participants2 =
-            db.transaction { tx ->
-                val contentId = tx.insertMessageContent("foo", accounts.person2.id)
-                val messageId =
-                    tx.insertMessage(
-                        now = now,
-                        contentId = contentId,
-                        threadId = threadId,
-                        sender = accounts.person2.id,
-                        sentAt = now,
-                        recipientNames =
-                            tx.getAccountNames(
-                                setOf(accounts.employee1.id),
-                                testFeatureConfig.serviceWorkerMessageAccountName,
-                                testFeatureConfig.financeMessageAccountName,
-                            ),
-                        municipalAccountName = "Espoo",
-                        serviceWorkerAccountName = "Espoon palveluohjaus",
-                        financeAccountName = "Espoon asiakasmaksut",
-                    )
-                tx.insertRecipients(listOf(messageId to setOf(accounts.employee1.id)))
-                tx.getThreadWithParticipants(threadId)
-            }
+        val participants2 = db.transaction { tx ->
+            val contentId = tx.insertMessageContent("foo", accounts.person2.id)
+            val messageId =
+                tx.insertMessage(
+                    now = now,
+                    contentId = contentId,
+                    threadId = threadId,
+                    sender = accounts.person2.id,
+                    sentAt = now,
+                    recipientNames =
+                        tx.getAccountNames(
+                            setOf(accounts.employee1.id),
+                            testFeatureConfig.serviceWorkerMessageAccountName,
+                            testFeatureConfig.financeMessageAccountName,
+                        ),
+                    municipalAccountName = "Espoo",
+                    serviceWorkerAccountName = "Espoon palveluohjaus",
+                    financeAccountName = "Espoon asiakasmaksut",
+                )
+            tx.insertRecipients(listOf(messageId to setOf(accounts.employee1.id)))
+            tx.getThreadWithParticipants(threadId)
+        }
         assertEquals(
             ThreadWithParticipants(
                 id = threadId,
@@ -752,8 +744,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
                 )
         }
-        fun recipientsOf(account: MessageAccount) =
-            db.read { it.getCitizenRecipients(now.toLocalDate(), account.id) }
+        fun recipientsOf(account: MessageAccount) = db.read {
+            it.getCitizenRecipients(now.toLocalDate(), account.id)
+        }
 
         fun accountsToAccountSetWithPresence(vararg accounts: MessageAccount) =
             accounts
@@ -1047,14 +1040,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             }
 
-        val recipients =
-            db.transaction { tx ->
-                tx.getStaffCopyRecipients(
-                    accounts.employee1.id,
-                    setOf(MessageRecipient.Area(area.id)),
-                    today,
-                )
-            }
+        val recipients = db.transaction { tx ->
+            tx.getStaffCopyRecipients(
+                accounts.employee1.id,
+                setOf(MessageRecipient.Area(area.id)),
+                today,
+            )
+        }
 
         assertEquals(
             setOf(
@@ -1076,40 +1068,39 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         sender: MessageAccount,
         recipientAccounts: List<MessageAccount>,
         now: HelsinkiDateTime = sendTime,
-    ): MessageThreadId =
-        db.transaction { tx ->
-            val recipientIds = recipientAccounts.map { it.id }.toSet()
-            val contentId = tx.insertMessageContent(content, sender.id)
-            val threadId =
-                tx.insertThread(
-                    MessageType.MESSAGE,
-                    title,
-                    urgent = false,
-                    sensitive = false,
-                    isCopy = false,
-                )
-            val messageId =
-                tx.insertMessage(
-                    now = now,
-                    contentId = contentId,
-                    threadId = threadId,
-                    sender = sender.id,
-                    sentAt = now,
-                    recipientNames =
-                        tx.getAccountNames(
-                            recipientIds,
-                            testFeatureConfig.serviceWorkerMessageAccountName,
-                            testFeatureConfig.financeMessageAccountName,
-                        ),
-                    municipalAccountName = "Espoo",
-                    serviceWorkerAccountName = "Espoon palveluohjaus",
-                    financeAccountName = "Espoon asiakasmaksut",
-                )
-            tx.insertRecipients(listOf(messageId to recipientAccounts.map { it.id }.toSet()))
-            tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
-            tx.upsertRecipientThreadParticipants(contentId, now)
-            threadId
-        }
+    ): MessageThreadId = db.transaction { tx ->
+        val recipientIds = recipientAccounts.map { it.id }.toSet()
+        val contentId = tx.insertMessageContent(content, sender.id)
+        val threadId =
+            tx.insertThread(
+                MessageType.MESSAGE,
+                title,
+                urgent = false,
+                sensitive = false,
+                isCopy = false,
+            )
+        val messageId =
+            tx.insertMessage(
+                now = now,
+                contentId = contentId,
+                threadId = threadId,
+                sender = sender.id,
+                sentAt = now,
+                recipientNames =
+                    tx.getAccountNames(
+                        recipientIds,
+                        testFeatureConfig.serviceWorkerMessageAccountName,
+                        testFeatureConfig.financeMessageAccountName,
+                    ),
+                municipalAccountName = "Espoo",
+                serviceWorkerAccountName = "Espoon palveluohjaus",
+                financeAccountName = "Espoon asiakasmaksut",
+            )
+        tx.insertRecipients(listOf(messageId to recipientAccounts.map { it.id }.toSet()))
+        tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
+        tx.upsertRecipientThreadParticipants(contentId, now)
+        threadId
+    }
 
     /*
      * TODO: Tests in this file should be moved to MessageIntegrationTest because replying to a thread like this
@@ -1121,40 +1112,38 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         recipients: Set<MessageAccount>,
         content: String,
         now: HelsinkiDateTime = sendTime,
-    ) =
-        db.transaction { tx ->
-            val recipientIds = recipients.map { it.id }.toSet()
-            val contentId = tx.insertMessageContent(content = content, sender = sender.id)
-            val messageId =
-                tx.insertMessage(
-                    now = now,
-                    contentId = contentId,
-                    threadId = threadId,
-                    sender = sender.id,
-                    sentAt = now,
-                    recipientNames = listOf(),
-                    municipalAccountName = "Espoo",
-                    serviceWorkerAccountName = "Espoon palveluohjaus",
-                    financeAccountName = "Espoon asiakasmaksut",
-                )
-            tx.insertRecipients(listOf(messageId to recipientIds))
-            tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
-            tx.upsertRecipientThreadParticipants(contentId, now)
-        }
+    ) = db.transaction { tx ->
+        val recipientIds = recipients.map { it.id }.toSet()
+        val contentId = tx.insertMessageContent(content = content, sender = sender.id)
+        val messageId =
+            tx.insertMessage(
+                now = now,
+                contentId = contentId,
+                threadId = threadId,
+                sender = sender.id,
+                sentAt = now,
+                recipientNames = listOf(),
+                municipalAccountName = "Espoo",
+                serviceWorkerAccountName = "Espoon palveluohjaus",
+                financeAccountName = "Espoon asiakasmaksut",
+            )
+        tx.insertRecipients(listOf(messageId to recipientIds))
+        tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
+        tx.upsertRecipientThreadParticipants(contentId, now)
+    }
 
-    private fun unreadMessagesCount(personId: PersonId) =
-        db.read { tx ->
-            tx.getUnreadMessagesCountsCitizen(
-                    accessControl.requireAuthorizationFilter(
-                        tx,
-                        AuthenticatedUser.Citizen(personId, CitizenAuthLevel.WEAK),
-                        clock,
-                        Action.MessageAccount.ACCESS,
-                    )
+    private fun unreadMessagesCount(personId: PersonId) = db.read { tx ->
+        tx.getUnreadMessagesCountsCitizen(
+                accessControl.requireAuthorizationFilter(
+                    tx,
+                    AuthenticatedUser.Citizen(personId, CitizenAuthLevel.WEAK),
+                    clock,
+                    Action.MessageAccount.ACCESS,
                 )
-                .firstOrNull()
-                ?.unreadCount ?: 0
-        }
+            )
+            .firstOrNull()
+            ?.unreadCount ?: 0
+    }
 
     private fun Database.Transaction.getAccount(person: DevPerson) =
         MessageAccount(
@@ -1180,10 +1169,9 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             personId = null,
         )
 
-    private fun deletePlacement(placement: PlacementId) =
-        db.transaction {
-            it.createUpdate { sql("DELETE FROM placement WHERE id = ${bind(placement)}") }.execute()
-        }
+    private fun deletePlacement(placement: PlacementId) = db.transaction {
+        it.createUpdate { sql("DELETE FROM placement WHERE id = ${bind(placement)}") }.execute()
+    }
 
     private data class RecipientTestData(
         val personId: PersonId,

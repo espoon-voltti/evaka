@@ -192,63 +192,56 @@ class CalendarEventController(
         clock: EvakaClock,
         @RequestBody body: CalendarEventForm,
     ): CalendarEventId {
-        val eventId =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
+        val eventId = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.CREATE_CALENDAR_EVENT,
+                    body.unitId,
+                )
+
+                if (body.tree != null) {
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
-                        Action.Unit.CREATE_CALENDAR_EVENT,
-                        body.unitId,
+                        Action.Group.CREATE_CALENDAR_EVENT,
+                        body.tree.keys,
                     )
 
-                    if (body.tree != null) {
-                        accessControl.requirePermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Group.CREATE_CALENDAR_EVENT,
-                            body.tree.keys,
-                        )
+                    val unitGroupIds =
+                        tx.getDaycareGroups(body.unitId, body.period.start, body.period.end)
 
-                        val unitGroupIds =
-                            tx.getDaycareGroups(body.unitId, body.period.start, body.period.end)
-
-                        if (
-                            body.tree.keys.any { groupId ->
-                                !unitGroupIds.any { unitGroup -> unitGroup.id == groupId }
-                            }
-                        ) {
-                            throw BadRequest("Group ID is not of the specified unit's")
+                    if (
+                        body.tree.keys.any { groupId ->
+                            !unitGroupIds.any { unitGroup -> unitGroup.id == groupId }
                         }
+                    ) {
+                        throw BadRequest("Group ID is not of the specified unit's")
+                    }
 
-                        body.tree.forEach { (groupId, childIds) ->
-                            if (childIds != null) {
-                                val groupChildIds =
-                                    tx.getGroupPlacementChildren(groupId, body.period)
-                                val backupCareChildren =
-                                    tx.getBackupCareChildrenInGroup(
-                                        body.unitId,
-                                        groupId,
-                                        body.period,
-                                    )
+                    body.tree.forEach { (groupId, childIds) ->
+                        if (childIds != null) {
+                            val groupChildIds = tx.getGroupPlacementChildren(groupId, body.period)
+                            val backupCareChildren =
+                                tx.getBackupCareChildrenInGroup(body.unitId, groupId, body.period)
 
-                                if (
-                                    childIds.any {
-                                        !groupChildIds.contains(it) &&
-                                            !backupCareChildren.contains(it)
-                                    }
-                                ) {
-                                    throw BadRequest("Child is not placed into the selected group")
+                            if (
+                                childIds.any {
+                                    !groupChildIds.contains(it) && !backupCareChildren.contains(it)
                                 }
+                            ) {
+                                throw BadRequest("Child is not placed into the selected group")
                             }
                         }
                     }
-
-                    tx.createCalendarEvent(body, clock.now(), user.evakaUserId)
                 }
+
+                tx.createCalendarEvent(body, clock.now(), user.evakaUserId)
             }
+        }
         Audit.CalendarEventCreate.log(targetId = AuditId(body.unitId), objectId = AuditId(eventId))
         return eventId
     }
@@ -547,59 +540,56 @@ class CalendarEventController(
         clock: EvakaClock,
         @RequestBody body: CalendarEventTimeClearingForm,
     ) {
-        val removedIds =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.CalendarEvent.UPDATE,
-                        body.calendarEventId,
-                    )
-                    val eventTimesToRemove =
-                        tx.getCalendarEventTimesByChildAndEvent(body.childId, body.calendarEventId)
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.CalendarEventTime.UPDATE_RESERVATION,
-                        eventTimesToRemove.map { it.id },
-                    )
-                    val discussionSurvey =
-                        tx.getCalendarEventById(body.calendarEventId)
-                            ?: throw BadRequest("Calendar event not found")
-                    val cancellationRecipients = getRecipientsForChild(tx, body.childId)
+        val removedIds = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.CalendarEvent.UPDATE,
+                    body.calendarEventId,
+                )
+                val eventTimesToRemove =
+                    tx.getCalendarEventTimesByChildAndEvent(body.childId, body.calendarEventId)
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.CalendarEventTime.UPDATE_RESERVATION,
+                    eventTimesToRemove.map { it.id },
+                )
+                val discussionSurvey =
+                    tx.getCalendarEventById(body.calendarEventId)
+                        ?: throw BadRequest("Calendar event not found")
+                val cancellationRecipients = getRecipientsForChild(tx, body.childId)
 
-                    tx.freeCalendarEventTimeReservations(
-                        user,
-                        clock.now(),
-                        eventTimesToRemove.map { it.id }.toSet(),
-                    )
+                tx.freeCalendarEventTimeReservations(
+                    user,
+                    clock.now(),
+                    eventTimesToRemove.map { it.id }.toSet(),
+                )
 
-                    // only discussion times in the future should result in cancellation messages
-                    asyncJobRunner.plan(
-                        tx,
-                        eventTimesToRemove
-                            .filter {
-                                HelsinkiDateTime.of(it.date, it.endTime).isAfter(clock.now())
+                // only discussion times in the future should result in cancellation messages
+                asyncJobRunner.plan(
+                    tx,
+                    eventTimesToRemove
+                        .filter { HelsinkiDateTime.of(it.date, it.endTime).isAfter(clock.now()) }
+                        .flatMap { time ->
+                            cancellationRecipients.map { recipient ->
+                                AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
+                                    eventTitle = discussionSurvey.title,
+                                    childId = body.childId,
+                                    language = Language.fi,
+                                    calendarEventTime = time,
+                                    recipientId = recipient.id,
+                                )
                             }
-                            .flatMap { time ->
-                                cancellationRecipients.map { recipient ->
-                                    AsyncJob.SendDiscussionSurveyReservationCancellationEmail(
-                                        eventTitle = discussionSurvey.title,
-                                        childId = body.childId,
-                                        language = Language.fi,
-                                        calendarEventTime = time,
-                                        recipientId = recipient.id,
-                                    )
-                                }
-                            },
-                        runAt = clock.now(),
-                    )
-                    eventTimesToRemove.map { it.id }
-                }
+                        },
+                    runAt = clock.now(),
+                )
+                eventTimesToRemove.map { it.id }
             }
+        }
         Audit.CalendarEventChildTimesCancellation.log(
             targetId = AuditId(body.calendarEventId),
             objectId = AuditId(body.childId),

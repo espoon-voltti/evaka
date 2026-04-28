@@ -343,10 +343,9 @@ fun Database.Transaction.insertMessageContent(
 fun Database.Transaction.insertRecipients(
     messageRecipientsPairs: List<Pair<MessageId, Set<MessageAccountId>>>
 ) {
-    val rows =
-        messageRecipientsPairs.flatMap { (messageId, recipients) ->
-            recipients.map { recipient -> messageId to recipient }
-        }
+    val rows = messageRecipientsPairs.flatMap { (messageId, recipients) ->
+        recipients.map { recipient -> messageId to recipient }
+    }
     if (rows.isEmpty()) return
 
     rows.chunked(500).forEach { chunk ->
@@ -979,8 +978,9 @@ fun Database.Read.getMessageCopiesByAccount(
                     accountContext.daycareGroupNames +
                         accountContext.daycareGroupNames.map { "$it (aloittavat lapset)" }
                 )
-            val filteredRecipients =
-                areaRecipients.ifEmpty { unitRecipients.ifEmpty { groupRecipients } }
+            val filteredRecipients = areaRecipients.ifEmpty {
+                unitRecipients.ifEmpty { groupRecipients }
+            }
             messageCopy.copy(recipientNames = filteredRecipients.toList())
         }
 }
@@ -1222,19 +1222,18 @@ ORDER BY type, name  -- groups first
                             outOfOffice = it.oooPeriod,
                         )
                     }
-            val reply =
-                accounts.map {
-                    MessageAccountWithPresence(
-                        account =
-                            MessageAccount(
-                                id = it.id,
-                                name = it.name,
-                                type = it.type,
-                                personId = it.personId,
-                            ),
-                        outOfOffice = it.oooPeriod,
-                    )
-                }
+            val reply = accounts.map {
+                MessageAccountWithPresence(
+                    account =
+                        MessageAccount(
+                            id = it.id,
+                            name = it.name,
+                            type = it.type,
+                            personId = it.personId,
+                        ),
+                    outOfOffice = it.oooPeriod,
+                )
+            }
             MessageAccountAccess(newMessage.toSet(), reply.toSet())
         }
         .filterValues { accounts ->

@@ -402,8 +402,9 @@ class TitaniaService(private val idConverter: TitaniaEmployeeIdConverter, evakaE
     private fun calculateFromPlan(
         plans: List<StaffAttendancePlan>?,
         event: HelsinkiDateTime?,
-    ): List<Pair<HelsinkiDateTime, StaffAttendancePlan?>>? =
-        event?.let { calculateFromPlans(plans, it) }
+    ): List<Pair<HelsinkiDateTime, StaffAttendancePlan?>>? = event?.let {
+        calculateFromPlans(plans, it)
+    }
 
     private fun calculateFromPlans(
         plans: List<StaffAttendancePlan>?,

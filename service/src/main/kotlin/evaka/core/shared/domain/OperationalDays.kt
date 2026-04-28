@@ -103,16 +103,14 @@ fun Database.Read.getOperationalDatesForChildren(
             .toList<ShiftCareRange>()
             .groupBy { it.childId }
 
-    val fullShiftCareRanges: Map<ChildId, DateSet> =
-        shiftCareRanges.mapValues { entry ->
-            DateSet.of(entry.value.filter { it.shiftCare == ShiftCareType.FULL }.map { it.range })
-        }
-    val intermittentShiftCareRanges: Map<ChildId, DateSet> =
-        shiftCareRanges.mapValues { entry ->
-            DateSet.of(
-                entry.value.filter { it.shiftCare == ShiftCareType.INTERMITTENT }.map { it.range }
-            )
-        }
+    val fullShiftCareRanges: Map<ChildId, DateSet> = shiftCareRanges.mapValues { entry ->
+        DateSet.of(entry.value.filter { it.shiftCare == ShiftCareType.FULL }.map { it.range })
+    }
+    val intermittentShiftCareRanges: Map<ChildId, DateSet> = shiftCareRanges.mapValues { entry ->
+        DateSet.of(
+            entry.value.filter { it.shiftCare == ShiftCareType.INTERMITTENT }.map { it.range }
+        )
+    }
 
     return children.associate { childId ->
         val operationalDays =

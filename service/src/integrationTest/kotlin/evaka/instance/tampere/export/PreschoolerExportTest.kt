@@ -58,13 +58,10 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})") }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows).hasSize(1)
     }
@@ -132,13 +129,10 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})") }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows).containsExactly(expected)
     }
@@ -171,13 +165,10 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})") }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows).isEmpty()
     }
@@ -199,13 +190,10 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})") }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows).isEmpty()
     }
@@ -237,13 +225,10 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})") }
+                .toList<PreschoolerExportRow>()
+        }
 
         val extendedCompulsoryEducation = extendedCompulsoryEducationFn(level)
         if (extendedCompulsoryEducation) {
@@ -284,13 +269,10 @@ class PreschoolerExportTest : AbstractTampereIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM tampere_preschooler_export(2019, ${bind(date)})") }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows)
             .extracting<String?> { it.`esioppilaan voimassa oleva tuen taso` }

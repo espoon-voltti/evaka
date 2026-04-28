@@ -615,12 +615,11 @@ Seuraavien lasten erityisruokavaliot on poistettu johtuen erityisruokavalioiden 
         }
     }
 
-    private fun getJobs() =
-        db.read { tx ->
-            tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'SendJamixOrder'") }
-                .map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
-                .toList()
-        }
+    private fun getJobs() = db.read { tx ->
+        tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'SendJamixOrder'") }
+            .map { jsonColumn<AsyncJob.SendJamixOrder>("payload") }
+            .toList()
+    }
 
     private fun sendOrders(
         client: JamixClient,

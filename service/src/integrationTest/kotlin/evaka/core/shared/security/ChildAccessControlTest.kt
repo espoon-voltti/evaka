@@ -62,19 +62,18 @@ class ChildAccessControlTest : AccessControlTest() {
     fun `HasUnitRole inPlacementUnitOfChild`() {
         val action = Action.Child.READ
         rules.add(action, HasUnitRole(UserRole.UNIT_SUPERVISOR).inPlacementUnitOfChild())
-        val daycareId =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                val daycareId = tx.insert(DevDaycare(areaId = areaId))
-                tx.insert(
-                    DevPlacement(
-                        childId = child.id,
-                        unitId = daycareId,
-                        endDate = LocalDate.of(2100, 1, 1),
-                    )
+        val daycareId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val daycareId = tx.insert(DevDaycare(areaId = areaId))
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycareId,
+                    endDate = LocalDate.of(2100, 1, 1),
                 )
-                daycareId
-            }
+            )
+            daycareId
+        }
         val unitSupervisor =
             createTestEmployee(emptySet(), mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
         db.read { tx ->

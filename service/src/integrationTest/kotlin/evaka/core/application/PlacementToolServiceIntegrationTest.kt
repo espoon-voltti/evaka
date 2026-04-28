@@ -345,19 +345,18 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val messagingAccount = db.read { it.getCitizenMessageAccount(adult.id) }
         assertNotNull(messagingAccount)
-        val messageCount =
-            db.read {
-                it.getUnreadMessagesCountsCitizen(
-                        accessCpontrol.requireAuthorizationFilter(
-                            it,
-                            AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
-                            clock,
-                            Action.MessageAccount.ACCESS,
-                        )
+        val messageCount = db.read {
+            it.getUnreadMessagesCountsCitizen(
+                    accessCpontrol.requireAuthorizationFilter(
+                        it,
+                        AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
+                        clock,
+                        Action.MessageAccount.ACCESS,
                     )
-                    .firstOrNull()
-                    ?.unreadCount ?: 0
-            }
+                )
+                .firstOrNull()
+                ?.unreadCount ?: 0
+        }
         assertEquals(1, messageCount)
     }
 
@@ -443,19 +442,18 @@ class PlacementToolServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         val messagingAccount = db.read { it.getCitizenMessageAccount(adult.id) }
         assertNotNull(messagingAccount)
-        val messageCount =
-            db.read {
-                it.getUnreadMessagesCountsCitizen(
-                        accessCpontrol.requireAuthorizationFilter(
-                            it,
-                            AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
-                            clock,
-                            Action.MessageAccount.ACCESS,
-                        )
+        val messageCount = db.read {
+            it.getUnreadMessagesCountsCitizen(
+                    accessCpontrol.requireAuthorizationFilter(
+                        it,
+                        AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
+                        clock,
+                        Action.MessageAccount.ACCESS,
                     )
-                    .firstOrNull()
-                    ?.unreadCount ?: 0
-            }
+                )
+                .firstOrNull()
+                ?.unreadCount ?: 0
+        }
         assertEquals(0, messageCount)
     }
 
@@ -520,11 +518,10 @@ ${child.ssn!!};${unit.id}
         controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
         asyncJobRunner.runPendingJobsSync(clock)
 
-        val applicationSummaries =
-            db.read {
-                val person = it.getPersonBySSN(adult.ssn!!)
-                it.fetchApplicationSummariesForGuardian(person!!.id)
-            }
+        val applicationSummaries = db.read {
+            val person = it.getPersonBySSN(adult.ssn!!)
+            it.fetchApplicationSummariesForGuardian(person!!.id)
+        }
         assertEquals(1, applicationSummaries.size)
         val summary = applicationSummaries.first()
         assertEquals(summary.preferredUnitId, unit.id)
@@ -573,11 +570,10 @@ ${child.ssn!!};${unit.id}
         controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
         asyncJobRunner.runPendingJobsSync(clock)
 
-        val applicationSummaries =
-            db.read {
-                val person = it.getPersonBySSN(adult.ssn!!)
-                it.fetchApplicationSummariesForGuardian(person!!.id)
-            }
+        val applicationSummaries = db.read {
+            val person = it.getPersonBySSN(adult.ssn!!)
+            it.fetchApplicationSummariesForGuardian(person!!.id)
+        }
         assertEquals(1, applicationSummaries.size)
         val summary = applicationSummaries.first()
         assertEquals(summary.preferredUnitId, unit.id)
@@ -610,11 +606,10 @@ ${child.id};${unit.id}
         controller.createPlacementToolApplications(dbInstance(), admin, clock, file)
         asyncJobRunner.runPendingJobsSync(clock)
 
-        val applicationSummaries =
-            db.read {
-                val person = it.getPersonBySSN(adult.ssn!!)
-                it.fetchApplicationSummariesForGuardian(person!!.id)
-            }
+        val applicationSummaries = db.read {
+            val person = it.getPersonBySSN(adult.ssn!!)
+            it.fetchApplicationSummariesForGuardian(person!!.id)
+        }
         assertEquals(1, applicationSummaries.size)
         val summary = applicationSummaries.first()
         val application = db.read { tx -> tx.fetchApplicationDetails(summary.applicationId) }

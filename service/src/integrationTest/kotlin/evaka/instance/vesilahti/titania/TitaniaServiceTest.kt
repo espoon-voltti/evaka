@@ -176,8 +176,9 @@ class TitaniaServiceTest : AbstractVesilahtiIntegrationTest() {
                 TitaniaPeriod.from(date),
                 TitaniaStampedPersonRequest(employeeId = "1234"),
             )
-        val response =
-            db.transaction { tx -> titaniaService.getStampedWorkingTimeEvents(tx, request) }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(tx, request)
+        }
         assertThat(response)
             .isEqualTo(
                 newGetResponse(

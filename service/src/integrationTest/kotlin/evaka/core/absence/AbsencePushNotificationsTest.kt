@@ -145,16 +145,15 @@ class AbsencePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
         assertEquals(0, mockEndpoint.getCapturedRequests("1234").size)
     }
 
-    private fun upsertSubscription(device: MobileDeviceId, endpoint: URI) =
-        db.transaction { tx ->
-            tx.upsertPushSubscription(
-                device,
-                WebPushSubscription(
-                    endpoint = endpoint,
-                    expires = null,
-                    ecdhKey = WebPushCrypto.encode(keyPair.publicKey).toList(),
-                    authSecret = listOf(0x00, 0x11, 0x22, 0x33),
-                ),
-            )
-        }
+    private fun upsertSubscription(device: MobileDeviceId, endpoint: URI) = db.transaction { tx ->
+        tx.upsertPushSubscription(
+            device,
+            WebPushSubscription(
+                endpoint = endpoint,
+                expires = null,
+                ecdhKey = WebPushCrypto.encode(keyPair.publicKey).toList(),
+                authSecret = listOf(0x00, 0x11, 0x22, 0x33),
+            ),
+        )
+    }
 }

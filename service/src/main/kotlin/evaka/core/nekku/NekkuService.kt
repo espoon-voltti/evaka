@@ -499,8 +499,9 @@ fun createAndSendNekkuOrder(
             }
         val nekkuWeekday = getNekkuWeekday(date)
 
-        val nekkuDaycareCustomerMapping =
-            dbc.read { tx -> tx.getNekkuGroupCustomerMapping(groupId, nekkuWeekday) }
+        val nekkuDaycareCustomerMapping = dbc.read { tx ->
+            tx.getNekkuGroupCustomerMapping(groupId, nekkuWeekday)
+        }
 
         val nekkuProducts = dbc.read { tx -> tx.getNekkuProducts() }
 
@@ -697,13 +698,12 @@ private fun getNekkuProductNumber(
     customerType: String,
 ): String? {
 
-    val filteredNekkuProducts =
-        nekkuProducts.filter {
-            it.mealTime?.contains(nekkuProductMealTime) ?: false &&
-                it.mealType == nekkuChildInfo.mealType &&
-                it.optionsId == nekkuChildInfo.optionsId &&
-                it.customerTypes.contains(customerType)
-        }
+    val filteredNekkuProducts = nekkuProducts.filter {
+        it.mealTime?.contains(nekkuProductMealTime) ?: false &&
+            it.mealType == nekkuChildInfo.mealType &&
+            it.optionsId == nekkuChildInfo.optionsId &&
+            it.customerTypes.contains(customerType)
+    }
 
     if (filteredNekkuProducts.count() > 1) {
         logger.info {
@@ -844,8 +844,9 @@ fun addUnderOneYearOldDiet(
         )
     // if the child's special diet choices already contain the free text field
     // we append to it, otherwise we will create a new free text field
-    val textField =
-        nekkuSpecialDietChoices.find { it.fieldId == textFieldsPerSpecialDiet[it.dietId] }
+    val textField = nekkuSpecialDietChoices.find {
+        it.fieldId == textFieldsPerSpecialDiet[it.dietId]
+    }
     return if (textField == null) {
         nekkuSpecialDietChoices +
             NekkuSpecialDietChoices(

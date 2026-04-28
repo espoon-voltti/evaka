@@ -3186,10 +3186,9 @@ class NekkuOrderIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         )
         val plannedJobs = getNekkuJobs(db)
 
-        val expectedJobs =
-            expectedOrders.flatMap { (groupId, days) ->
-                days.map { day -> AsyncJob.SendNekkuOrder(groupId, day) }
-            }
+        val expectedJobs = expectedOrders.flatMap { (groupId, days) ->
+            days.map { day -> AsyncJob.SendNekkuOrder(groupId, day) }
+        }
 
         assertEquals(expectedJobs.toSet(), plannedJobs.toSet())
     }

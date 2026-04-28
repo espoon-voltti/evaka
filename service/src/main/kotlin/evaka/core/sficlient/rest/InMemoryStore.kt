@@ -23,12 +23,11 @@ class InMemoryStore<T : Any>(private val requestValue: () -> T) {
      * If the value has already changed, this method does nothing. This avoids unnecessary
      * expiration if another thread has already requested a new perfectly valid value.
      */
-    fun expire(value: T): Unit =
-        lock.withLock {
-            if (this.value == value) {
-                this.value = null
-            }
+    fun expire(value: T): Unit = lock.withLock {
+        if (this.value == value) {
+            this.value = null
         }
+    }
 
     /**
      * Returns the current value, requesting a new one if necessary.

@@ -81,44 +81,36 @@ class BackupCareController(private val accessControl: AccessControl) {
         @RequestBody body: NewBackupCare,
     ): BackupCareCreateResponse {
         try {
-            val id =
-                db.connect { dbc ->
-                    dbc.transaction { tx ->
-                        accessControl.requirePermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Child.CREATE_BACKUP_CARE,
-                            childId,
+            val id = db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.CREATE_BACKUP_CARE,
+                        childId,
+                    )
+                    if (!tx.childPlacementsHasConsecutiveRange(childId, body.period)) {
+                        throw BadRequest(
+                            "The new backup care period is not contained within a placement"
                         )
-                        if (!tx.childPlacementsHasConsecutiveRange(childId, body.period)) {
-                            throw BadRequest(
-                                "The new backup care period is not contained within a placement"
-                            )
-                        }
-                        if (!tx.isDaycareOpenForPeriod(body.unitId, body.period)) {
-                            throw BadRequest(
-                                "The unit is not open during the whole backup care period"
-                            )
-                        }
-                        tx.getPlacementsForChildDuring(childId, body.period.start, body.period.end)
-                            .forEach { placement ->
-                                tx.clearCalendarEventAttendees(
-                                    childId,
-                                    placement.unitId,
-                                    body.period,
-                                )
-                            }
-                        if (body.period.includes(clock.today())) {
-                            val currentUnit =
-                                tx.getOngoingAttendanceInAnyUnitForChild(childId)?.unitId
-                            if (currentUnit != null && currentUnit != body.unitId) {
-                                throw BadRequest("Child has ongoing attendance in another unit")
-                            }
-                        }
-                        tx.createBackupCare(user.evakaUserId, clock.now(), childId, body)
                     }
+                    if (!tx.isDaycareOpenForPeriod(body.unitId, body.period)) {
+                        throw BadRequest("The unit is not open during the whole backup care period")
+                    }
+                    tx.getPlacementsForChildDuring(childId, body.period.start, body.period.end)
+                        .forEach { placement ->
+                            tx.clearCalendarEventAttendees(childId, placement.unitId, body.period)
+                        }
+                    if (body.period.includes(clock.today())) {
+                        val currentUnit = tx.getOngoingAttendanceInAnyUnitForChild(childId)?.unitId
+                        if (currentUnit != null && currentUnit != body.unitId) {
+                            throw BadRequest("Child has ongoing attendance in another unit")
+                        }
+                    }
+                    tx.createBackupCare(user.evakaUserId, clock.now(), childId, body)
                 }
+            }
             Audit.ChildBackupCareCreate.log(
                 targetId = AuditId(childId),
                 objectId = AuditId(body.unitId),

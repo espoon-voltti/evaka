@@ -26,14 +26,12 @@ class HolidayPeriodIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `holiday periods can be created, updated and deleted`() {
-        val summer =
-            db.transaction {
-                it.insertHolidayPeriod(summerRange, summerReservationsOpen, summerDeadline)
-            }
-        val christmas =
-            db.transaction {
-                it.insertHolidayPeriod(christmasRange, summerReservationsOpen, christmasDeadline)
-            }
+        val summer = db.transaction {
+            it.insertHolidayPeriod(summerRange, summerReservationsOpen, summerDeadline)
+        }
+        val christmas = db.transaction {
+            it.insertHolidayPeriod(christmasRange, summerReservationsOpen, christmasDeadline)
+        }
 
         assertEquals(summer, db.read { it.getHolidayPeriod(summer.id) })
 

@@ -19,11 +19,10 @@ class PatuReportingService(private val patuIntegrationClient: EspooPatuIntegrati
             logger.info { "Patu integration client not configured, skipping sending" }
             return
         }
-        val rows =
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getRawRows(dateRange.start, dateRange.end ?: dateRange.start)
-            }
+        val rows = dbc.read {
+            it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+            it.getRawRows(dateRange.start, dateRange.end ?: dateRange.start)
+        }
         patuIntegrationClient.send(rows)
     }
 }

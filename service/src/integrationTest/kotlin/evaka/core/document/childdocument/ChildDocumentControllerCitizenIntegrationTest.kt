@@ -230,33 +230,32 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 validity = DateRange(clock.today(), clock.today()),
                 content = templateContent,
             )
-        val documentId =
-            db.transaction { tx ->
-                val templateId = tx.insert(template)
-                tx.insert(
-                    DevChildDocument(
-                        status = DocumentStatus.CITIZEN_DRAFT,
-                        childId = child.id,
-                        templateId = templateId,
-                        content = documentContent,
-                        modifiedAt = clock.now(),
-                        modifiedBy = employeeUser.evakaUserId,
-                        contentLockedAt = clock.now(),
-                        contentLockedBy = employeeUser.id,
-                        answeredAt = null,
-                        answeredBy = null,
-                        publishedVersions =
-                            listOf(
-                                DevChildDocumentPublishedVersion(
-                                    versionNumber = 1,
-                                    createdAt = clock.now(),
-                                    createdBy = employeeUser.evakaUserId,
-                                    publishedContent = documentContent,
-                                )
-                            ),
-                    )
+        val documentId = db.transaction { tx ->
+            val templateId = tx.insert(template)
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.CITIZEN_DRAFT,
+                    childId = child.id,
+                    templateId = templateId,
+                    content = documentContent,
+                    modifiedAt = clock.now(),
+                    modifiedBy = employeeUser.evakaUserId,
+                    contentLockedAt = clock.now(),
+                    contentLockedBy = employeeUser.id,
+                    answeredAt = null,
+                    answeredBy = null,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = clock.now(),
+                                createdBy = employeeUser.evakaUserId,
+                                publishedContent = documentContent,
+                            )
+                        ),
                 )
-            }
+            )
+        }
         assertEquals(
             listOf(
                 ChildDocumentCitizenSummary(
@@ -357,69 +356,67 @@ class ChildDocumentControllerCitizenIntegrationTest :
         val adult2 = DevPerson()
         val child2 = DevPerson(dateOfBirth = java.time.LocalDate.of(2016, 3, 1))
 
-        val child1DocumentId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevChildDocument(
-                        status = DocumentStatus.CITIZEN_DRAFT,
-                        childId = child.id,
-                        templateId = template.id,
-                        content = documentContent,
-                        modifiedAt = clock.now(),
-                        modifiedBy = employeeUser.evakaUserId,
-                        contentLockedAt = clock.now(),
-                        contentLockedBy = employeeUser.id,
-                        answeredAt = null,
-                        answeredBy = null,
-                        publishedVersions =
-                            listOf(
-                                DevChildDocumentPublishedVersion(
-                                    versionNumber = 1,
-                                    createdAt = clock.now(),
-                                    createdBy = employeeUser.evakaUserId,
-                                    publishedContent = documentContent,
-                                )
-                            ),
-                    )
+        val child1DocumentId = db.transaction { tx ->
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.CITIZEN_DRAFT,
+                    childId = child.id,
+                    templateId = template.id,
+                    content = documentContent,
+                    modifiedAt = clock.now(),
+                    modifiedBy = employeeUser.evakaUserId,
+                    contentLockedAt = clock.now(),
+                    contentLockedBy = employeeUser.id,
+                    answeredAt = null,
+                    answeredBy = null,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = clock.now(),
+                                createdBy = employeeUser.evakaUserId,
+                                publishedContent = documentContent,
+                            )
+                        ),
                 )
-            }
-        val child2DocumentId =
-            db.transaction { tx ->
-                tx.insert(child2, DevPersonType.CHILD)
-                tx.insert(adult2, DevPersonType.ADULT)
-                tx.insert(DevGuardian(adult2.id, child2.id))
-                tx.insert(
-                    DevPlacement(
-                        childId = child2.id,
-                        unitId = daycare.id,
-                        startDate = clock.today(),
-                        endDate = clock.today().plusDays(5),
-                    )
+            )
+        }
+        val child2DocumentId = db.transaction { tx ->
+            tx.insert(child2, DevPersonType.CHILD)
+            tx.insert(adult2, DevPersonType.ADULT)
+            tx.insert(DevGuardian(adult2.id, child2.id))
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5),
                 )
-                tx.insert(
-                    DevChildDocument(
-                        status = DocumentStatus.CITIZEN_DRAFT,
-                        childId = child2.id,
-                        templateId = template.id,
-                        content = documentContent,
-                        modifiedAt = clock.now(),
-                        modifiedBy = employeeUser.evakaUserId,
-                        contentLockedAt = clock.now(),
-                        contentLockedBy = employeeUser.id,
-                        answeredAt = null,
-                        answeredBy = null,
-                        publishedVersions =
-                            listOf(
-                                DevChildDocumentPublishedVersion(
-                                    versionNumber = 1,
-                                    createdAt = clock.now(),
-                                    createdBy = employeeUser.evakaUserId,
-                                    publishedContent = documentContent,
-                                )
-                            ),
-                    )
+            )
+            tx.insert(
+                DevChildDocument(
+                    status = DocumentStatus.CITIZEN_DRAFT,
+                    childId = child2.id,
+                    templateId = template.id,
+                    content = documentContent,
+                    modifiedAt = clock.now(),
+                    modifiedBy = employeeUser.evakaUserId,
+                    contentLockedAt = clock.now(),
+                    contentLockedBy = employeeUser.id,
+                    answeredAt = null,
+                    answeredBy = null,
+                    publishedVersions =
+                        listOf(
+                            DevChildDocumentPublishedVersion(
+                                versionNumber = 1,
+                                createdAt = clock.now(),
+                                createdBy = employeeUser.evakaUserId,
+                                publishedContent = documentContent,
+                            )
+                        ),
                 )
-            }
+            )
+        }
 
         val summary11 =
             ChildDocumentCitizenSummary(
@@ -585,24 +582,22 @@ class ChildDocumentControllerCitizenIntegrationTest :
                         )
                     ),
             )
-        val answeredByCitizenId =
-            db.transaction { tx ->
-                tx.insert(
-                    childDocumentBase.copy(
-                        id = ChildDocumentId(UUID.randomUUID()),
-                        answeredBy = citizen.evakaUserId,
-                    )
+        val answeredByCitizenId = db.transaction { tx ->
+            tx.insert(
+                childDocumentBase.copy(
+                    id = ChildDocumentId(UUID.randomUUID()),
+                    answeredBy = citizen.evakaUserId,
                 )
-            }
-        val answeredByEmployeeId =
-            db.transaction { tx ->
-                tx.insert(
-                    childDocumentBase.copy(
-                        id = ChildDocumentId(UUID.randomUUID()),
-                        answeredBy = employeeUser.evakaUserId,
-                    )
+            )
+        }
+        val answeredByEmployeeId = db.transaction { tx ->
+            tx.insert(
+                childDocumentBase.copy(
+                    id = ChildDocumentId(UUID.randomUUID()),
+                    answeredBy = employeeUser.evakaUserId,
                 )
-            }
+            )
+        }
 
         assertThat(getUnansweredChildDocuments()).isEmpty()
         assertThat(getDocumentsByChild(child.id))

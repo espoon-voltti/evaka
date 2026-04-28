@@ -173,8 +173,9 @@ fun Henkilo.mapGuardians() =
                2 kertaa, 98=tieto selvakielisena, 99=tuntematon.
                Asiointikielen osalta mahdolliset arvot: fi (suomi) ja sv (ruotsi)."
 */
-fun Henkilo.mapNativeLanguage(): NativeLanguage =
-    aidinkieli.let { NativeLanguage(languageName = it.kieliS ?: "", code = it.kielikoodi ?: "") }
+fun Henkilo.mapNativeLanguage(): NativeLanguage = aidinkieli.let {
+    NativeLanguage(languageName = it.kieliS ?: "", code = it.kielikoodi ?: "")
+}
 
 /*  Possible values for turvakieltoTieto:
     empty -> no restriction

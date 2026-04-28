@@ -201,38 +201,37 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
         child: DevPerson,
         approvedAt: HelsinkiDateTime = HelsinkiDateTime.of(validFrom, LocalTime.of(15, 0)),
     ): VoucherValueDecision {
-        val decision =
-            db.transaction {
-                val decision =
-                    createVoucherValueDecisionFixture(
-                        status = VoucherValueDecisionStatus.DRAFT,
-                        validFrom = validFrom,
-                        validTo = validFrom.plusYears(1),
-                        headOfFamilyId = adultId,
-                        childId = child.id,
-                        dateOfBirth = child.dateOfBirth,
-                        unitId = unitId,
-                        value = value,
-                        coPayment = coPayment,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
-                    )
-                it.upsertValueDecisions(listOf(decision))
-
-                sendVoucherValueDecisions(
-                    tx = it,
-                    asyncJobRunner = asyncJobRunner,
-                    user = financeUser,
-                    evakaEnv = evakaEnv,
-                    metadata = CaseProcessMetadataService(featureConfig),
-                    now = approvedAt,
-                    ids = listOf(decision.id),
-                    decisionHandlerId = null,
-                    false,
+        val decision = db.transaction {
+            val decision =
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = validFrom,
+                    validTo = validFrom.plusYears(1),
+                    headOfFamilyId = adultId,
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = unitId,
+                    value = value,
+                    coPayment = coPayment,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
                 )
+            it.upsertValueDecisions(listOf(decision))
 
-                decision
-            }
+            sendVoucherValueDecisions(
+                tx = it,
+                asyncJobRunner = asyncJobRunner,
+                user = financeUser,
+                evakaEnv = evakaEnv,
+                metadata = CaseProcessMetadataService(featureConfig),
+                now = approvedAt,
+                ids = listOf(decision.id),
+                decisionHandlerId = null,
+                false,
+            )
+
+            decision
+        }
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 

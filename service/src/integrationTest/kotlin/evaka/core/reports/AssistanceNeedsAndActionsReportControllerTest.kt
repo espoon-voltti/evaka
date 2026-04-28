@@ -1045,130 +1045,127 @@ class AssistanceNeedsAndActionsReportControllerTest :
         groups: List<DevDaycareGroup>,
         placementType: PlacementType = PlacementType.DAYCARE,
     ): List<DevPerson> {
-        val child1 =
-            db.transaction { tx ->
-                val child = DevPerson(firstName = "Test 1", dateOfBirth = date.minusYears(3))
-                tx.insert(child, DevPersonType.CHILD)
-                val placementId =
-                    tx.insert(
-                        DevPlacement(
-                            childId = child.id,
-                            unitId = unit.id,
-                            startDate = date,
-                            endDate = date,
-                            type = placementType,
-                        )
-                    )
+        val child1 = db.transaction { tx ->
+            val child = DevPerson(firstName = "Test 1", dateOfBirth = date.minusYears(3))
+            tx.insert(child, DevPersonType.CHILD)
+            val placementId =
                 tx.insert(
-                    DevDaycareGroupPlacement(
-                        daycarePlacementId = placementId,
-                        daycareGroupId = groups[0].id,
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = unit.id,
                         startDate = date,
                         endDate = date,
+                        type = placementType,
                     )
                 )
-                tx.insert(
-                    DevDaycareAssistance(
-                        childId = child.id,
-                        validDuring = FiniteDateRange(date, date),
-                        level = DaycareAssistanceLevel.GENERAL_SUPPORT,
-                    )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groups[0].id,
+                    startDate = date,
+                    endDate = date,
                 )
+            )
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = child.id,
+                    validDuring = FiniteDateRange(date, date),
+                    level = DaycareAssistanceLevel.GENERAL_SUPPORT,
+                )
+            )
+            tx.insert(
+                DevAssistanceAction(
+                    childId = child.id,
+                    startDate = date,
+                    endDate = date,
+                    actions = setOf("ASSISTANCE_SERVICE_CHILD"),
+                )
+            )
+            tx.insert(
+                DevAssistanceNeedVoucherCoefficient(
+                    childId = child.id,
+                    validityPeriod = FiniteDateRange(date, date),
+                    coefficient = BigDecimal(1.50),
+                )
+            )
+            child
+        }
+        val child2 = db.transaction { tx ->
+            val child = DevPerson(firstName = "Test 2", dateOfBirth = date.minusYears(3))
+            tx.insert(child, DevPersonType.CHILD)
+            val placementId =
                 tx.insert(
-                    DevAssistanceAction(
+                    DevPlacement(
                         childId = child.id,
+                        unitId = unit.id,
                         startDate = date,
                         endDate = date,
-                        actions = setOf("ASSISTANCE_SERVICE_CHILD"),
+                        type = placementType,
                     )
                 )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groups[0].id,
+                    startDate = date,
+                    endDate = date,
+                )
+            )
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = child.id,
+                    validDuring = FiniteDateRange(date, date),
+                    level = DaycareAssistanceLevel.GENERAL_SUPPORT,
+                )
+            )
+            tx.insert(
+                DevAssistanceAction(
+                    childId = child.id,
+                    startDate = date,
+                    endDate = date,
+                    otherAction = "other action test",
+                )
+            )
+            child
+        }
+        val child3 = db.transaction { tx ->
+            val child = DevPerson(firstName = "Test 3", dateOfBirth = date.minusYears(3))
+            tx.insert(child, DevPersonType.CHILD)
+            val placementId =
                 tx.insert(
-                    DevAssistanceNeedVoucherCoefficient(
+                    DevPlacement(
                         childId = child.id,
-                        validityPeriod = FiniteDateRange(date, date),
-                        coefficient = BigDecimal(1.50),
-                    )
-                )
-                child
-            }
-        val child2 =
-            db.transaction { tx ->
-                val child = DevPerson(firstName = "Test 2", dateOfBirth = date.minusYears(3))
-                tx.insert(child, DevPersonType.CHILD)
-                val placementId =
-                    tx.insert(
-                        DevPlacement(
-                            childId = child.id,
-                            unitId = unit.id,
-                            startDate = date,
-                            endDate = date,
-                            type = placementType,
-                        )
-                    )
-                tx.insert(
-                    DevDaycareGroupPlacement(
-                        daycarePlacementId = placementId,
-                        daycareGroupId = groups[0].id,
+                        unitId = unit.id,
                         startDate = date,
                         endDate = date,
+                        type = placementType,
                     )
                 )
-                tx.insert(
-                    DevDaycareAssistance(
-                        childId = child.id,
-                        validDuring = FiniteDateRange(date, date),
-                        level = DaycareAssistanceLevel.GENERAL_SUPPORT,
-                    )
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    daycareGroupId = groups[1].id,
+                    startDate = date,
+                    endDate = date,
                 )
-                tx.insert(
-                    DevAssistanceAction(
-                        childId = child.id,
-                        startDate = date,
-                        endDate = date,
-                        otherAction = "other action test",
-                    )
+            )
+            tx.insert(
+                DevDaycareAssistance(
+                    childId = child.id,
+                    validDuring = FiniteDateRange(date, date),
+                    level = DaycareAssistanceLevel.GENERAL_SUPPORT,
                 )
-                child
-            }
-        val child3 =
-            db.transaction { tx ->
-                val child = DevPerson(firstName = "Test 3", dateOfBirth = date.minusYears(3))
-                tx.insert(child, DevPersonType.CHILD)
-                val placementId =
-                    tx.insert(
-                        DevPlacement(
-                            childId = child.id,
-                            unitId = unit.id,
-                            startDate = date,
-                            endDate = date,
-                            type = placementType,
-                        )
-                    )
-                tx.insert(
-                    DevDaycareGroupPlacement(
-                        daycarePlacementId = placementId,
-                        daycareGroupId = groups[1].id,
-                        startDate = date,
-                        endDate = date,
-                    )
+            )
+            tx.insert(
+                DevAssistanceAction(
+                    childId = child.id,
+                    startDate = date,
+                    endDate = date,
+                    actions = setOf("ASSISTANCE_SERVICE_CHILD"),
                 )
-                tx.insert(
-                    DevDaycareAssistance(
-                        childId = child.id,
-                        validDuring = FiniteDateRange(date, date),
-                        level = DaycareAssistanceLevel.GENERAL_SUPPORT,
-                    )
-                )
-                tx.insert(
-                    DevAssistanceAction(
-                        childId = child.id,
-                        startDate = date,
-                        endDate = date,
-                        actions = setOf("ASSISTANCE_SERVICE_CHILD"),
-                    )
-                )
-                child
-            }
+            )
+            child
+        }
         return listOf(child1, child2, child3)
     }
 }

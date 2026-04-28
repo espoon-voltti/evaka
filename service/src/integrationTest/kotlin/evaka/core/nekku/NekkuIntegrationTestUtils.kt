@@ -61,17 +61,16 @@ fun getAuthenticatedEmployee(db: Database.Connection): AuthenticatedUser.Employe
 fun getClock(): MockEvakaClock =
     MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2025, 4, 15), LocalTime.of(12, 0)))
 
-fun insertCustomerNumbers(db: Database.Connection) =
-    db.transaction { tx ->
-        tx.createUpdate {
-                sql(
-                    "INSERT INTO nekku_customer VALUES" +
-                        "('1234', 'Lönnrotinkadun päiväkoti', 'Varhaiskasvatus')," +
-                        "('5678', 'Rubeberginkadun päiväkoti', 'Varhaiskasvatus')"
-                )
-            }
-            .execute()
-    }
+fun insertCustomerNumbers(db: Database.Connection) = db.transaction { tx ->
+    tx.createUpdate {
+            sql(
+                "INSERT INTO nekku_customer VALUES" +
+                    "('1234', 'Lönnrotinkadun päiväkoti', 'Varhaiskasvatus')," +
+                    "('5678', 'Rubeberginkadun päiväkoti', 'Varhaiskasvatus')"
+            )
+        }
+        .execute()
+}
 
 fun insertSpecialDiets(db: Database.Connection) {
     db.transaction { tx ->
@@ -120,12 +119,11 @@ fun insertNekkuSpecialDietChoice(
     }
 }
 
-fun getNekkuJobs(db: Database.Connection) =
-    db.read { tx ->
-        tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'SendNekkuOrder'") }
-            .map { jsonColumn<AsyncJob.SendNekkuOrder>("payload") }
-            .toList()
-    }
+fun getNekkuJobs(db: Database.Connection) = db.read { tx ->
+    tx.createQuery { sql("SELECT payload FROM async_job WHERE type = 'SendNekkuOrder'") }
+        .map { jsonColumn<AsyncJob.SendNekkuOrder>("payload") }
+        .toList()
+}
 
 fun getServiceNeedOptionId(db: Database.Connection, nameFi: String): ServiceNeedOptionId =
     db.read { tx ->
@@ -140,32 +138,31 @@ fun createChildrenWithGroupPlacement(
     startDate: LocalDate,
     endDate: LocalDate,
     count: Int,
-): List<DevPerson> =
-    db.transaction { tx ->
-        List(count) {
-            val child = DevPerson()
-            tx.insert(child, DevPersonType.CHILD)
-            tx.insert(
-                    DevPlacement(
-                        childId = child.id,
-                        unitId = daycareId,
+): List<DevPerson> = db.transaction { tx ->
+    List(count) {
+        val child = DevPerson()
+        tx.insert(child, DevPersonType.CHILD)
+        tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycareId,
+                    startDate = startDate,
+                    endDate = endDate,
+                )
+            )
+            .also { placementId ->
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = groupId,
                         startDate = startDate,
                         endDate = endDate,
                     )
                 )
-                .also { placementId ->
-                    tx.insert(
-                        DevDaycareGroupPlacement(
-                            daycarePlacementId = placementId,
-                            daycareGroupId = groupId,
-                            startDate = startDate,
-                            endDate = endDate,
-                        )
-                    )
-                }
-            child
-        }
+            }
+        child
     }
+}
 
 class TestNekkuClient(
     private val customers: List<NekkuApiCustomer> = emptyList(),

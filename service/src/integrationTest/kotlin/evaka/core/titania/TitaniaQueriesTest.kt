@@ -138,14 +138,13 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `findStaffAttendancePlansBy should return all with empty criteria`() {
-        val inserted =
-            db.transaction { tx ->
-                val employee = tx.createEmployee(testEmployee)
-                tx.insertStaffAttendancePlans(
-                    listOf(testStaffAttendancePlan.copy(employeeId = employee.id))
-                )
-                employee
-            }
+        val inserted = db.transaction { tx ->
+            val employee = tx.createEmployee(testEmployee)
+            tx.insertStaffAttendancePlans(
+                listOf(testStaffAttendancePlan.copy(employeeId = employee.id))
+            )
+            employee
+        }
 
         val selected = db.read { tx -> tx.findStaffAttendancePlansBy() }
 
@@ -169,14 +168,13 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `deleteStaffAttendancePlansBy should return all with empty criteria`() {
-        val inserted =
-            db.transaction { tx ->
-                val employee = tx.createEmployee(testEmployee)
-                tx.insertStaffAttendancePlans(
-                    listOf(testStaffAttendancePlan.copy(employeeId = employee.id))
-                )
-                employee
-            }
+        val inserted = db.transaction { tx ->
+            val employee = tx.createEmployee(testEmployee)
+            tx.insertStaffAttendancePlans(
+                listOf(testStaffAttendancePlan.copy(employeeId = employee.id))
+            )
+            employee
+        }
 
         val deleted = db.transaction { tx -> tx.deleteStaffAttendancePlansBy() }
 
@@ -193,8 +191,9 @@ internal class TitaniaQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             employee
         }
 
-        val deleted =
-            db.transaction { tx -> tx.deleteStaffAttendancePlansBy(employeeIds = emptyList()) }
+        val deleted = db.transaction { tx ->
+            tx.deleteStaffAttendancePlansBy(employeeIds = emptyList())
+        }
 
         assertThat(deleted).isEmpty()
     }

@@ -357,55 +357,54 @@ class CalendarEventNotificationQueriesTest : PureJdbiTest(resetDbBeforeEach = tr
         unitId: DaycareId,
         groupIds: List<GroupId> = listOf(),
         groupChildIds: List<Pair<GroupId, ChildId>> = listOf(),
-    ): CalendarEventId =
-        db.transaction { tx ->
-            val eventId =
-                tx.insert(
-                    DevCalendarEvent(
-                        title = title,
-                        description = description,
-                        period = period,
-                        modifiedAt = created,
-                        modifiedBy = createdBy,
-                        eventType = CalendarEventType.DAYCARE_EVENT,
-                    )
+    ): CalendarEventId = db.transaction { tx ->
+        val eventId =
+            tx.insert(
+                DevCalendarEvent(
+                    title = title,
+                    description = description,
+                    period = period,
+                    modifiedAt = created,
+                    modifiedBy = createdBy,
+                    eventType = CalendarEventType.DAYCARE_EVENT,
                 )
+            )
 
-            tx.createUpdate {
-                    sql(
-                        """
+        tx.createUpdate {
+                sql(
+                    """
                     UPDATE calendar_event
                     SET created_at = ${bind(created)} WHERE id = ${bind(eventId)}
                     """
-                    )
-                }
-                .execute()
-
-            groupIds.forEach { groupId ->
-                tx.insert(
-                    DevCalendarEventAttendee(
-                        calendarEventId = eventId,
-                        unitId = unitId,
-                        groupId = groupId,
-                    )
                 )
             }
-            groupChildIds.forEach { (groupId, childId) ->
-                tx.insert(
-                    DevCalendarEventAttendee(
-                        calendarEventId = eventId,
-                        unitId = unitId,
-                        groupId = groupId,
-                        childId = childId,
-                    )
+            .execute()
+
+        groupIds.forEach { groupId ->
+            tx.insert(
+                DevCalendarEventAttendee(
+                    calendarEventId = eventId,
+                    unitId = unitId,
+                    groupId = groupId,
                 )
-            }
-
-            if (groupIds.isEmpty() && groupChildIds.isEmpty()) {
-                // Unit-wide event
-                tx.insert(DevCalendarEventAttendee(calendarEventId = eventId, unitId = unitId))
-            }
-
-            eventId
+            )
         }
+        groupChildIds.forEach { (groupId, childId) ->
+            tx.insert(
+                DevCalendarEventAttendee(
+                    calendarEventId = eventId,
+                    unitId = unitId,
+                    groupId = groupId,
+                    childId = childId,
+                )
+            )
+        }
+
+        if (groupIds.isEmpty() && groupChildIds.isEmpty()) {
+            // Unit-wide event
+            tx.insert(DevCalendarEventAttendee(calendarEventId = eventId, unitId = unitId))
+        }
+
+        eventId
+    }
 }

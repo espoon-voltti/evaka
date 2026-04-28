@@ -29,14 +29,13 @@ class PasswordBlacklist(private val passwordSpecification: PasswordSpecification
                     file.name,
                     HelsinkiDateTime.from(Instant.ofEpochMilli(file.lastModified())),
                 )
-            total +=
-                dbc.transaction { tx ->
-                    importPasswords(
-                        tx,
-                        source,
-                        file.bufferedReader(Charsets.UTF_8).lineSequence().map { it.trim() },
-                    )
-                }
+            total += dbc.transaction { tx ->
+                importPasswords(
+                    tx,
+                    source,
+                    file.bufferedReader(Charsets.UTF_8).lineSequence().map { it.trim() },
+                )
+            }
         }
 
         logger.info { "Imported $total blacklisted passwords" }

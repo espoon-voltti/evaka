@@ -666,8 +666,9 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @PostMapping("/child")
-    fun insertChild(db: Database, @RequestBody body: DevPerson): ChildId =
-        db.connect { dbc -> dbc.transaction { it.insert(body, DevPersonType.CHILD) } }
+    fun insertChild(db: Database, @RequestBody body: DevPerson): ChildId = db.connect { dbc ->
+        dbc.transaction { it.insert(body, DevPersonType.CHILD) }
+    }
 
     @PostMapping("/message-account/upsert-all")
     fun createMessageAccounts(db: Database) {
@@ -737,46 +738,45 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db: Database,
         clock: EvakaClock,
         @RequestBody applications: List<DevApplicationWithForm>,
-    ): List<ApplicationId> =
-        db.connect { dbc ->
-            val metadata = CaseProcessMetadataService(featureConfig)
-            val enteredBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
-            dbc.transaction { tx ->
-                applications.map { application ->
-                    val id = tx.insertApplication(application)
-                    if (application.status != ApplicationStatus.CREATED) {
-                        metadata
-                            .getProcessParams(
-                                ArchiveProcessType.fromApplicationType(application.type),
-                                clock.today().year,
-                            )
-                            ?.let { tx.insertCaseProcess(it) }
-                            ?.also { tx.setApplicationProcessId(id, it.id, clock.now(), enteredBy) }
-                        tx.updateApplicationDates(
-                            id,
-                            sentDate = application.sentDate ?: application.createdAt.toLocalDate(),
-                            sentTime = application.sentTime ?: application.createdAt.toLocalTime(),
-                            dueDate = application.dueDate,
-                            now = clock.now(),
-                            modifiedBy = enteredBy,
+    ): List<ApplicationId> = db.connect { dbc ->
+        val metadata = CaseProcessMetadataService(featureConfig)
+        val enteredBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
+        dbc.transaction { tx ->
+            applications.map { application ->
+                val id = tx.insertApplication(application)
+                if (application.status != ApplicationStatus.CREATED) {
+                    metadata
+                        .getProcessParams(
+                            ArchiveProcessType.fromApplicationType(application.type),
+                            clock.today().year,
                         )
-                    }
-                    application.otherGuardians.forEach { otherGuardianId ->
-                        tx.createUpdate {
-                                sql(
-                                    "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(id)}, ${
+                        ?.let { tx.insertCaseProcess(it) }
+                        ?.also { tx.setApplicationProcessId(id, it.id, clock.now(), enteredBy) }
+                    tx.updateApplicationDates(
+                        id,
+                        sentDate = application.sentDate ?: application.createdAt.toLocalDate(),
+                        sentTime = application.sentTime ?: application.createdAt.toLocalTime(),
+                        dueDate = application.dueDate,
+                        now = clock.now(),
+                        modifiedBy = enteredBy,
+                    )
+                }
+                application.otherGuardians.forEach { otherGuardianId ->
+                    tx.createUpdate {
+                            sql(
+                                "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(id)}, ${
                                     bind(
                                         otherGuardianId
                                     )
                                 })"
-                                )
-                            }
-                            .execute()
-                    }
-                    id
+                            )
+                        }
+                        .execute()
                 }
+                id
             }
         }
+    }
 
     @PostMapping("/placement-plan/{applicationId}")
     fun createPlacementPlan(
@@ -1313,7 +1313,9 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
     @PostMapping("/attendances")
     fun postAttendances(db: Database, @RequestBody attendances: List<DevChildAttendance>) =
-        db.connect { dbc -> dbc.transaction { tx -> attendances.forEach { tx.insert(it) } } }
+        db.connect { dbc ->
+            dbc.transaction { tx -> attendances.forEach { tx.insert(it) } }
+        }
 
     @PostMapping("/occupancy-coefficient")
     fun upsertStaffOccupancyCoefficient(
@@ -1337,63 +1339,78 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coeff
     }
 
     @GetMapping("/realtime-staff-attendance")
-    fun getStaffAttendances(db: Database) =
-        db.connect { dbc -> dbc.transaction { it.getRealtimeStaffAttendances() } }
+    fun getStaffAttendances(db: Database) = db.connect { dbc ->
+        dbc.transaction { it.getRealtimeStaffAttendances() }
+    }
 
     @PostMapping("/realtime-staff-attendance")
     fun addStaffAttendance(db: Database, @RequestBody body: DevStaffAttendance) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+        db.connect { dbc ->
+            dbc.transaction { it.insert(body) }
+        }
 
     @PostMapping("/staff-attendance-plan")
     fun addStaffAttendancePlan(db: Database, @RequestBody body: DevStaffAttendancePlan) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+        db.connect { dbc ->
+            dbc.transaction { it.insert(body) }
+        }
 
     @PostMapping("/daily-service-time")
     fun addDailyServiceTime(db: Database, @RequestBody body: DevDailyServiceTimes) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+        db.connect { dbc ->
+            dbc.transaction { it.insert(body) }
+        }
 
     @PostMapping("/daily-service-time-notification")
     fun addDailyServiceTimeNotification(
         db: Database,
         @RequestBody body: DevDailyServiceTimeNotification,
-    ) =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate {
-                        sql(
-                            """
+    ) = db.connect { dbc ->
+        dbc.transaction {
+            it.createUpdate {
+                    sql(
+                        """
 INSERT INTO daily_service_time_notification (id, guardian_id)
 VALUES (${bind(body.id)}, ${bind(body.guardianId)})
 """
-                        )
-                    }
-                    .execute()
-            }
+                    )
+                }
+                .execute()
         }
+    }
 
     @PostMapping("/payments")
-    fun addPayment(db: Database, @RequestBody body: DevPayment) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    fun addPayment(db: Database, @RequestBody body: DevPayment) = db.connect { dbc ->
+        dbc.transaction { it.insert(body) }
+    }
 
     @PostMapping("/calendar-event")
-    fun addCalendarEvent(db: Database, @RequestBody body: DevCalendarEvent) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    fun addCalendarEvent(db: Database, @RequestBody body: DevCalendarEvent) = db.connect { dbc ->
+        dbc.transaction { it.insert(body) }
+    }
 
     @PostMapping("/calendar-event-attendee")
     fun addCalendarEventAttendee(db: Database, @RequestBody body: DevCalendarEventAttendee) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+        db.connect { dbc ->
+            dbc.transaction { it.insert(body) }
+        }
 
     @PostMapping("/calendar-event-time")
     fun addCalendarEventTime(db: Database, @RequestBody body: DevCalendarEventTime) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+        db.connect { dbc ->
+            dbc.transaction { it.insert(body) }
+        }
 
     @PostMapping("/absence")
-    fun addAbsence(db: Database, @RequestBody body: DevAbsence) =
-        db.connect { dbc -> dbc.transaction { it.insert(body) } }
+    fun addAbsence(db: Database, @RequestBody body: DevAbsence) = db.connect { dbc ->
+        dbc.transaction { it.insert(body) }
+    }
 
     @GetMapping("/absences")
     fun getAbsences(db: Database, @RequestParam childId: ChildId, @RequestParam date: LocalDate) =
-        db.connect { dbc -> dbc.transaction { it.getAbsencesOfChildByDate(childId, date) } }
+        db.connect { dbc ->
+            dbc.transaction { it.getAbsencesOfChildByDate(childId, date) }
+        }
 
     @PostMapping("/club-term")
     fun createClubTerm(db: Database, @RequestBody body: DevClubTerm) {
@@ -1649,19 +1666,18 @@ $form
     data class DevPersonEmail(val personId: PersonId, val email: String?)
 
     @PostMapping("/person-email")
-    fun setPersonEmail(db: Database, @RequestBody body: DevPersonEmail) =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.createUpdate {
-                        sql(
-                            """
+    fun setPersonEmail(db: Database, @RequestBody body: DevPersonEmail) = db.connect { dbc ->
+        dbc.transaction {
+            it.createUpdate {
+                    sql(
+                        """
 UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}            
 """
-                        )
-                    }
-                    .execute()
-            }
+                    )
+                }
+                .execute()
         }
+    }
 
     @PostMapping("/generate-replacement-draft-invoices")
     fun generateReplacementDraftInvoices(db: Database, clock: EvakaClock) {

@@ -55,29 +55,25 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
             } ?: emptySequence()
     }
 
-    protected fun createTestCitizen(authLevel: CitizenAuthLevel) =
-        db.transaction { tx ->
-            val id = tx.insert(DevPerson(), DevPersonType.ADULT)
-            AuthenticatedUser.Citizen(id, authLevel)
-        }
+    protected fun createTestCitizen(authLevel: CitizenAuthLevel) = db.transaction { tx ->
+        val id = tx.insert(DevPerson(), DevPersonType.ADULT)
+        AuthenticatedUser.Citizen(id, authLevel)
+    }
 
     protected fun createTestEmployee(
         globalRoles: Set<UserRole>,
         unitRoles: Map<DaycareId, UserRole> = emptyMap(),
-    ) =
-        db.transaction { tx ->
-            assert(globalRoles.all { it.isGlobalRole() })
-            val id = tx.insert(DevEmployee(roles = globalRoles))
-            tx.upsertEmployeeUser(id)
-            unitRoles.forEach { (daycareId, role) -> tx.insertDaycareAclRow(daycareId, id, role) }
-            val globalAndUnitRoles =
-                unitRoles.values.fold(globalRoles) { acc, roles -> acc + roles }
-            AuthenticatedUser.Employee(id, globalAndUnitRoles)
-        }
+    ) = db.transaction { tx ->
+        assert(globalRoles.all { it.isGlobalRole() })
+        val id = tx.insert(DevEmployee(roles = globalRoles))
+        tx.upsertEmployeeUser(id)
+        unitRoles.forEach { (daycareId, role) -> tx.insertDaycareAclRow(daycareId, id, role) }
+        val globalAndUnitRoles = unitRoles.values.fold(globalRoles) { acc, roles -> acc + roles }
+        AuthenticatedUser.Employee(id, globalAndUnitRoles)
+    }
 
-    protected fun createTestMobile(daycareId: DaycareId) =
-        db.transaction { tx ->
-            val mobileId = tx.insert(DevMobileDevice(unitId = daycareId))
-            AuthenticatedUser.MobileDevice(mobileId)
-        }
+    protected fun createTestMobile(daycareId: DaycareId) = db.transaction { tx ->
+        val mobileId = tx.insert(DevMobileDevice(unitId = daycareId))
+        AuthenticatedUser.MobileDevice(mobileId)
+    }
 }

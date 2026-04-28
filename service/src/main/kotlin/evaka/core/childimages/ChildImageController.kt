@@ -55,20 +55,19 @@ class ChildImageController(
             throw BadRequest("Image size must not exceed $maxImageSize pixels")
         }
 
-        val imageId =
-            db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Child.UPLOAD_IMAGE,
-                        childId,
-                    )
-                }
-
-                replaceImage(dbc, documentClient, childId, file, contentType)
+        val imageId = db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Child.UPLOAD_IMAGE,
+                    childId,
+                )
             }
+
+            replaceImage(dbc, documentClient, childId, file, contentType)
+        }
         Audit.ChildImageUpload.log(
             targetId = AuditId(childId),
             objectId = AuditId(imageId),
@@ -83,19 +82,18 @@ class ChildImageController(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ) {
-        val imageId =
-            db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Child.DELETE_IMAGE,
-                        childId,
-                    )
-                }
-                dbc.transaction { tx -> removeImage(tx, documentClient, childId) }
+        val imageId = db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Child.DELETE_IMAGE,
+                    childId,
+                )
             }
+            dbc.transaction { tx -> removeImage(tx, documentClient, childId) }
+        }
         Audit.ChildImageDelete.log(
             targetId = AuditId(childId),
             objectId = imageId?.let(AuditId::invoke),

@@ -47,40 +47,39 @@ class PartnershipsController(
         clock: EvakaClock,
         @RequestBody body: PartnershipRequest,
     ) {
-        val partnership =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
+        val partnership = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Person.CREATE_PARTNERSHIP,
+                    body.person1Id,
+                )
+                partnershipService
+                    .createPartnership(
                         tx,
-                        user,
-                        clock,
-                        Action.Person.CREATE_PARTNERSHIP,
                         body.person1Id,
+                        body.person2Id,
+                        body.startDate,
+                        body.endDate,
+                        user.evakaUserId,
+                        clock.now(),
                     )
-                    partnershipService
-                        .createPartnership(
+                    .also {
+                        asyncJobRunner.plan(
                             tx,
-                            body.person1Id,
-                            body.person2Id,
-                            body.startDate,
-                            body.endDate,
-                            user.evakaUserId,
-                            clock.now(),
+                            listOf(
+                                AsyncJob.GenerateFinanceDecisions.forAdult(
+                                    body.person1Id,
+                                    DateRange(body.startDate, body.endDate),
+                                )
+                            ),
+                            runAt = clock.now(),
                         )
-                        .also {
-                            asyncJobRunner.plan(
-                                tx,
-                                listOf(
-                                    AsyncJob.GenerateFinanceDecisions.forAdult(
-                                        body.person1Id,
-                                        DateRange(body.startDate, body.endDate),
-                                    )
-                                ),
-                                runAt = clock.now(),
-                            )
-                        }
-                }
+                    }
             }
+        }
         Audit.PartnerShipsCreate.log(
             targetId = AuditId(listOf(body.person1Id, body.person2Id)),
             objectId = AuditId(partnership.id),

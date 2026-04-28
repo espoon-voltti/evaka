@@ -23,13 +23,14 @@ class MockPasswordStore(initialPassword: String) : PasswordStore {
             )
         }
 
-    override fun putPassword(password: Sensitive<String>): PasswordStore.Version =
-        lock.withLock {
-            val index = passwords.size
-            passwords += password.value
-            PasswordStore.Version(index.toLong())
-        }
+    override fun putPassword(password: Sensitive<String>): PasswordStore.Version = lock.withLock {
+        val index = passwords.size
+        passwords += password.value
+        PasswordStore.Version(index.toLong())
+    }
 
     override fun moveLabel(version: PasswordStore.Version, label: PasswordStore.Label) =
-        lock.withLock { indexByLabel[label] = version.value.toInt() }
+        lock.withLock {
+            indexByLabel[label] = version.value.toInt()
+        }
 }

@@ -259,8 +259,9 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `getPerson returns basic person info`() {
-        val personId =
-            db.transaction { tx -> tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW) }
+        val personId = db.transaction { tx ->
+            tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW)
+        }
 
         val response = controller.getPerson(dbInstance(), admin.user, clock, personId)
 
@@ -274,16 +275,18 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(true, response.person.hasSsn)
         assertEquals(false, response.person.ssnAddingDisabled)
 
-        val noSsnPersonId =
-            db.transaction { tx -> tx.insert(DevPerson(ssn = null), DevPersonType.RAW_ROW) }
+        val noSsnPersonId = db.transaction { tx ->
+            tx.insert(DevPerson(ssn = null), DevPersonType.RAW_ROW)
+        }
         val noSsnResponse = controller.getPerson(dbInstance(), admin.user, clock, noSsnPersonId)
         assertEquals(false, noSsnResponse.person.hasSsn)
     }
 
     @Test
     fun `getChild returns basic person info`() {
-        val personId =
-            db.transaction { tx -> tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW) }
+        val personId = db.transaction { tx ->
+            tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW)
+        }
 
         val response =
             childController.getChild(dbInstance(), admin.user, clock, ChildId(personId.raw))
@@ -298,8 +301,9 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             response.person.restrictedDetailsEnabled,
         )
 
-        val noSsnPersonId =
-            db.transaction { tx -> tx.insert(DevPerson(ssn = null), DevPersonType.RAW_ROW) }
+        val noSsnPersonId = db.transaction { tx ->
+            tx.insert(DevPerson(ssn = null), DevPersonType.RAW_ROW)
+        }
         val noSsnResponse =
             childController.getChild(dbInstance(), admin.user, clock, ChildId(noSsnPersonId.raw))
         assertEquals(false, noSsnResponse.person.hasSsn)
@@ -307,8 +311,9 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `getPersonSensitiveDetails returns sensitive data for admin`() {
-        val personId =
-            db.transaction { tx -> tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW) }
+        val personId = db.transaction { tx ->
+            tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW)
+        }
         controller.updatePersonDetails(dbInstance(), admin.user, clock, personId, invoicePatch)
 
         val response =
@@ -333,8 +338,9 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `getPersonSensitiveDetails redacts invoice and OPH fields for service worker`() {
-        val personId =
-            db.transaction { tx -> tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW) }
+        val personId = db.transaction { tx ->
+            tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW)
+        }
         controller.updatePersonDetails(dbInstance(), admin.user, clock, personId, invoicePatch)
 
         val response =
@@ -357,8 +363,9 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `getPersonSensitiveDetails returns 403 for unauthorized user`() {
         val unauthorizedEmployee = DevEmployee()
         db.transaction { tx -> tx.insert(unauthorizedEmployee) }
-        val personId =
-            db.transaction { tx -> tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW) }
+        val personId = db.transaction { tx ->
+            tx.insert(sensitiveTestPerson, DevPersonType.RAW_ROW)
+        }
 
         assertThrows<Forbidden> {
             controller.getPersonSensitiveDetails(

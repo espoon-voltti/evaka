@@ -105,8 +105,9 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can be found by ssn`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons =
-            db.read { it.searchPeople(adminUser, "010199-8137", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(adminUser, "010199-8137", "last_name", "ASC", false)
+        }
         assertEquals(1, persons.size)
         assertEquals(created.id, persons[0].id)
     }
@@ -114,8 +115,9 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can be found by case-insensitive ssn`() {
         val created = db.transaction { createVtjPerson(it, "230601A329J") }
-        val persons =
-            db.read { it.searchPeople(adminUser, "230601a329J", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(adminUser, "230601a329J", "last_name", "ASC", false)
+        }
         assertEquals(1, persons.size)
         assertEquals(created.id, persons[0].id)
     }
@@ -154,19 +156,18 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `restricted search cannot find a child without acl access`() {
         db.transaction { createVtjPerson(it) }
-        val persons =
-            db.read {
-                it.searchPeople(
-                    AuthenticatedUser.Employee(
-                        EmployeeId(UUID.randomUUID()),
-                        setOf(UserRole.UNIT_SUPERVISOR),
-                    ),
-                    "Matti",
-                    "last_name",
-                    "ASC",
-                    true,
-                )
-            }
+        val persons = db.read {
+            it.searchPeople(
+                AuthenticatedUser.Employee(
+                    EmployeeId(UUID.randomUUID()),
+                    setOf(UserRole.UNIT_SUPERVISOR),
+                ),
+                "Matti",
+                "last_name",
+                "ASC",
+                true,
+            )
+        }
 
         assertEquals(0, persons.size)
     }
@@ -174,8 +175,9 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person with multiple first names can be found`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons =
-            db.read { it.searchPeople(adminUser, "Matti Jari-Ville", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(adminUser, "Matti Jari-Ville", "last_name", "ASC", false)
+        }
 
         assertEquals(persons[0].firstName, created.firstName)
     }
@@ -183,8 +185,9 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can be found with the full address`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons =
-            db.read { it.searchPeople(adminUser, "Jokutie 66", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(adminUser, "Jokutie 66", "last_name", "ASC", false)
+        }
 
         assertEquals(persons[0].streetAddress, created.streetAddress)
     }
@@ -240,8 +243,9 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `PostgreSQL text search operator characters are ignored in search terms`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons =
-            db.read { it.searchPeople(adminUser, "'&Jokut!|&", "last_name", "ASC", false) }
+        val persons = db.read {
+            it.searchPeople(adminUser, "'&Jokut!|&", "last_name", "ASC", false)
+        }
 
         assertEquals(1, persons.size)
         assertEquals(created.id, persons[0].id)

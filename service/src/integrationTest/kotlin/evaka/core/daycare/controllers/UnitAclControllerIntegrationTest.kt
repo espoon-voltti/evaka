@@ -575,10 +575,9 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             val updated: HelsinkiDateTime,
         )
 
-        fun readAllGroupAcls() =
-            db.read { tx ->
-                tx.createQuery { sql("SELECT * FROM daycare_group_acl") }.toList<DaycareGroupAcl>()
-            }
+        fun readAllGroupAcls() = db.read { tx ->
+            tx.createQuery { sql("SELECT * FROM daycare_group_acl") }.toList<DaycareGroupAcl>()
+        }
 
         // add access to two groups in daycare 1
         // daycare 2 has no groups
@@ -778,8 +777,9 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 endDate = endDate,
             ),
         )
-        val staffAcl =
-            db.read { tx -> tx.getDaycareAclRows(daycare.id, false, false, UserRole.STAFF) }
+        val staffAcl = db.read { tx ->
+            tx.getDaycareAclRows(daycare.id, false, false, UserRole.STAFF)
+        }
         assertEquals(endDate, staffAcl.first().endDate)
 
         // Supervisor can edit another supervisor's groups without changing end date

@@ -1194,40 +1194,38 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     @Test
     fun `set attendances with overlapping times`() {
         val employeeId = addEmployee()
-        val staffAttendance1Id =
-            db.transaction { tx ->
-                tx.insert(
-                    DevStaffAttendance(
-                        id = StaffAttendanceRealtimeId(UUID.randomUUID()),
-                        employeeId = employeeId,
-                        groupId = group.id,
-                        arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
-                        departed = HelsinkiDateTime.of(today, LocalTime.of(12, 0)),
-                        occupancyCoefficient = occupancyCoefficientSeven,
-                        type = StaffAttendanceType.PRESENT,
-                        departedAutomatically = false,
-                        modifiedAt = now,
-                        modifiedBy = mobileUser.evakaUserId,
-                    )
+        val staffAttendance1Id = db.transaction { tx ->
+            tx.insert(
+                DevStaffAttendance(
+                    id = StaffAttendanceRealtimeId(UUID.randomUUID()),
+                    employeeId = employeeId,
+                    groupId = group.id,
+                    arrived = HelsinkiDateTime.of(today, LocalTime.of(8, 0)),
+                    departed = HelsinkiDateTime.of(today, LocalTime.of(12, 0)),
+                    occupancyCoefficient = occupancyCoefficientSeven,
+                    type = StaffAttendanceType.PRESENT,
+                    departedAutomatically = false,
+                    modifiedAt = now,
+                    modifiedBy = mobileUser.evakaUserId,
                 )
-            }
-        val staffAttendance2Id =
-            db.transaction { tx ->
-                tx.insert(
-                    DevStaffAttendance(
-                        id = StaffAttendanceRealtimeId(UUID.randomUUID()),
-                        employeeId = employeeId,
-                        groupId = group.id,
-                        arrived = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
-                        departed = HelsinkiDateTime.of(today, LocalTime.of(18, 0)),
-                        occupancyCoefficient = occupancyCoefficientSeven,
-                        type = StaffAttendanceType.PRESENT,
-                        departedAutomatically = false,
-                        modifiedAt = now,
-                        modifiedBy = mobileUser.evakaUserId,
-                    )
+            )
+        }
+        val staffAttendance2Id = db.transaction { tx ->
+            tx.insert(
+                DevStaffAttendance(
+                    id = StaffAttendanceRealtimeId(UUID.randomUUID()),
+                    employeeId = employeeId,
+                    groupId = group.id,
+                    arrived = HelsinkiDateTime.of(today, LocalTime.of(14, 0)),
+                    departed = HelsinkiDateTime.of(today, LocalTime.of(18, 0)),
+                    occupancyCoefficient = occupancyCoefficientSeven,
+                    type = StaffAttendanceType.PRESENT,
+                    departedAutomatically = false,
+                    modifiedAt = now,
+                    modifiedBy = mobileUser.evakaUserId,
                 )
-            }
+            )
+        }
 
         val response =
             mobileRealtimeStaffAttendanceController.setAttendances(
@@ -1301,24 +1299,15 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
 
     @Test
     fun `set attendances for other unit doesn't remove attendances`() {
-        val employeeId =
-            db.transaction { tx ->
-                val employeeId = tx.insert(DevEmployee())
-                tx.insertDaycareAclRow(
-                    daycareId = daycare.id,
-                    employeeId = employeeId,
-                    UserRole.STAFF,
-                )
-                tx.insert(DevDaycareGroupAcl(groupId = group.id, employeeId = employeeId))
-                tx.insertDaycareAclRow(
-                    daycareId = daycare2.id,
-                    employeeId = employeeId,
-                    UserRole.STAFF,
-                )
-                tx.insert(DevDaycareGroupAcl(groupId = group2.id, employeeId = employeeId))
-                tx.insert(DevEmployeePin(userId = employeeId, pin = "1122"))
-                employeeId
-            }
+        val employeeId = db.transaction { tx ->
+            val employeeId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycareId = daycare.id, employeeId = employeeId, UserRole.STAFF)
+            tx.insert(DevDaycareGroupAcl(groupId = group.id, employeeId = employeeId))
+            tx.insertDaycareAclRow(daycareId = daycare2.id, employeeId = employeeId, UserRole.STAFF)
+            tx.insert(DevDaycareGroupAcl(groupId = group2.id, employeeId = employeeId))
+            tx.insert(DevEmployeePin(userId = employeeId, pin = "1122"))
+            employeeId
+        }
 
         val response1 =
             mobileRealtimeStaffAttendanceController.setAttendances(

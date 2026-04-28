@@ -1916,26 +1916,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val userId2 = adult2.id.raw.let(::EvakaUserId)
 
         val sentAt = HelsinkiDateTime.of(today.minusDays(2), LocalTime.of(12, 0))
-        val id1 =
-            db.transaction { tx ->
-                tx.insertIncomeStatement(
-                    userId1,
-                    sentAt.minusHours(1),
-                    adult1.id,
-                    body,
-                    draft = true,
-                )
-            }
-        val id2 =
-            db.transaction { tx ->
-                tx.insertIncomeStatement(
-                    userId2,
-                    sentAt.minusHours(1),
-                    adult2.id,
-                    body,
-                    draft = true,
-                )
-            }
+        val id1 = db.transaction { tx ->
+            tx.insertIncomeStatement(userId1, sentAt.minusHours(1), adult1.id, body, draft = true)
+        }
+        val id2 = db.transaction { tx ->
+            tx.insertIncomeStatement(userId2, sentAt.minusHours(1), adult2.id, body, draft = true)
+        }
 
         db.transaction { tx ->
             tx.updateIncomeStatement(userId1, sentAt, id1, body, draft = false)

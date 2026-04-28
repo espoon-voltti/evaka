@@ -498,8 +498,9 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         val groupPlacementsBefore = getChildGroupPlacements(child.id)
         assertEquals(3, groupPlacementsBefore.size)
         allPlacementsBefore.forEach { placement ->
-            val groupPlacements =
-                groupPlacementsBefore.filter { it.daycarePlacementId == placement.id }
+            val groupPlacements = groupPlacementsBefore.filter {
+                it.daycarePlacementId == placement.id
+            }
             assertEquals(1, groupPlacements.size)
             assertEquals(placement.startDate, groupPlacements[0].startDate)
             assertEquals(placement.endDate, groupPlacements[0].endDate)
@@ -545,8 +546,9 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         val childGroupPlacements = getChildGroupPlacements(child.id)
         assertEquals(2, childGroupPlacements.size)
 
-        val currentGroupPlacements =
-            childGroupPlacements.filter { it.daycarePlacementId == currentPlacement.id }
+        val currentGroupPlacements = childGroupPlacements.filter {
+            it.daycarePlacementId == currentPlacement.id
+        }
         assertNotNull(currentGroupPlacements)
         assertEquals(1, currentGroupPlacements.size)
         assertEquals(currentPlacement.startDate, currentGroupPlacements[0].startDate)
@@ -559,8 +561,9 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(startNextPreschoolDaycare, nextPreschool.startDate)
         assertEquals(endNextPreschoolDaycare, nextPreschool.endDate)
 
-        val nextGroupPlacements =
-            childGroupPlacements.filter { it.daycarePlacementId == nextPreschool.id }
+        val nextGroupPlacements = childGroupPlacements.filter {
+            it.daycarePlacementId == nextPreschool.id
+        }
         assertNotNull(nextGroupPlacements)
         assertEquals(1, nextGroupPlacements.size)
         assertEquals(nextPreschool.startDate, nextGroupPlacements[0].startDate)
@@ -949,43 +952,41 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
         val placementTerminationDate = today.plusDays(1)
 
-        val applicationBeforeTermination =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    type = ApplicationType.DAYCARE,
-                    guardianId = parent.id,
-                    childId = child.id,
-                    transferApplication = true,
-                    status = ApplicationStatus.SENT,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            child = Child(dateOfBirth = null),
-                            guardian = Adult(),
-                            apply = Apply(preferredUnits = listOf(daycare.id)),
-                            preferredStartDate = placementTerminationDate.plusDays(-1),
-                        ),
-                )
-            }
+        val applicationBeforeTermination = db.transaction { tx ->
+            tx.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                guardianId = parent.id,
+                childId = child.id,
+                transferApplication = true,
+                status = ApplicationStatus.SENT,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(daycare.id)),
+                        preferredStartDate = placementTerminationDate.plusDays(-1),
+                    ),
+            )
+        }
 
-        val applicationAfterTermination =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    type = ApplicationType.DAYCARE,
-                    guardianId = parent.id,
-                    childId = child.id,
-                    transferApplication = true,
-                    status = ApplicationStatus.SENT,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            child = Child(dateOfBirth = null),
-                            guardian = Adult(),
-                            apply = Apply(preferredUnits = listOf(daycare.id)),
-                            preferredStartDate = placementTerminationDate.plusDays(1),
-                        ),
-                )
-            }
+        val applicationAfterTermination = db.transaction { tx ->
+            tx.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                guardianId = parent.id,
+                childId = child.id,
+                transferApplication = true,
+                status = ApplicationStatus.SENT,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(daycare.id)),
+                        preferredStartDate = placementTerminationDate.plusDays(1),
+                    ),
+            )
+        }
 
         terminatePlacements(
             child.id,

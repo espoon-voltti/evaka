@@ -95,13 +95,12 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
+                }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows).hasSize(1)
         val row = rows.first()
@@ -157,13 +156,12 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
+                }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows).isEmpty()
     }
@@ -185,13 +183,12 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
+                }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows).isEmpty()
     }
@@ -223,13 +220,12 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
+                }
+                .toList<PreschoolerExportRow>()
+        }
 
         val extendedCompulsoryEducation = hasExtendedCompulsoryEducation(level)
         if (extendedCompulsoryEducation) {
@@ -264,13 +260,12 @@ class PreschoolerExportTest : AbstractKangasalaIntegrationTest() {
             )
         }
 
-        val rows =
-            db.read { tx ->
-                tx.createQuery {
-                        sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
-                    }
-                    .toList<PreschoolerExportRow>()
-            }
+        val rows = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT * FROM kangasala_preschooler_export(2019, ${bind(date)})")
+                }
+                .toList<PreschoolerExportRow>()
+        }
 
         assertThat(rows).hasSize(1)
     }

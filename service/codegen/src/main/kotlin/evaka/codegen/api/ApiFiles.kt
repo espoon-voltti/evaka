@@ -18,13 +18,12 @@ fun generateApiFiles(): Map<TsFile, String> {
     val allEndpoints = scanEndpoints("evaka.core")
     allEndpoints.forEach { it.validate() }
 
-    val endpoints =
-        allEndpoints.filterNot {
-            it.isDeprecated ||
-                it.path.startsWith("/integration/") ||
-                it.path.startsWith("/system/") ||
-                endpointExcludes.contains(it.path)
-        }
+    val endpoints = allEndpoints.filterNot {
+        it.isDeprecated ||
+            it.path.startsWith("/integration/") ||
+            it.path.startsWith("/system/") ||
+            endpointExcludes.contains(it.path)
+    }
 
     val metadata =
         discoverMetadata(
@@ -321,10 +320,9 @@ private fun TsCodeGenerator.tsBuildQueryParams(
     // Function must return a TS expression that evaluates to the value of the given query parameter
     tsQueryParamValue: (queryParam: String) -> TsCode,
 ): TsTypedExpression {
-    val nameValuePairs =
-        parameters.map { param ->
-            toRequestParamPairs(param.toOptionalType(), param.name, tsQueryParamValue(param.name))
-        }
+    val nameValuePairs = parameters.map { param ->
+        toRequestParamPairs(param.toOptionalType(), param.name, tsQueryParamValue(param.name))
+    }
     return TsTypedExpression(
         type = TsCode("URLSearchParams"),
         value =
@@ -344,10 +342,9 @@ private fun TsCodeGenerator.tsBuildFormData(
     // Function must return a TS expression that evaluates to the value of the given query parameter
     tsParamValue: (queryParam: String) -> TsCode,
 ): TsTypedExpression {
-    val nameValuePairs =
-        parameters.map { param ->
-            toRequestParamPairs(param.toOptionalType(), param.name, tsParamValue(param.name))
-        }
+    val nameValuePairs = parameters.map { param ->
+        toRequestParamPairs(param.toOptionalType(), param.name, tsParamValue(param.name))
+    }
     return TsTypedExpression(
         type = TsCode("FormData"),
         value =

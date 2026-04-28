@@ -353,8 +353,9 @@ class InvoiceCorrectionsIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val invoice = applyCorrections(createTestInvoice(100_00, month), month)
         insertAndSendInvoice(invoice)
 
-        val correction =
-            db.read { tx -> tx.getInvoiceCorrectionsByIds(setOf(correctionId)).single() }
+        val correction = db.read { tx ->
+            tx.getInvoiceCorrectionsByIds(setOf(correctionId)).single()
+        }
         assertEquals(correctionId, correction.id)
         assertEquals(1, correction.amount)
         assertEquals(-50_00, correction.unitPrice)
@@ -404,12 +405,11 @@ class InvoiceCorrectionsIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private fun applyCorrections(
         invoices: List<DraftInvoice>,
         month: YearMonth,
-    ): List<DraftInvoice> =
-        db.read { tx ->
-            generator
-                .applyUnappliedCorrections(tx, month, invoices, mapOf(daycare.id to area.id))
-                .shuffled()
-        }
+    ): List<DraftInvoice> = db.read { tx ->
+        generator
+            .applyUnappliedCorrections(tx, month, invoices, mapOf(daycare.id to area.id))
+            .shuffled()
+    }
 
     private fun createTestInvoice(total: Int, month: YearMonth): DraftInvoice =
         DraftInvoice(
@@ -450,23 +450,22 @@ class InvoiceCorrectionsIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         amount: Int,
         unitPrice: Int,
         month: YearMonth,
-    ): InvoiceCorrectionId =
-        db.transaction {
-            it.insert(
-                DevInvoiceCorrection(
-                    headOfFamilyId = adult.id,
-                    targetMonth = null,
-                    childId = child.id,
-                    amount = amount,
-                    unitPrice = unitPrice,
-                    period = FiniteDateRange.ofMonth(month),
-                    unitId = daycare.id,
-                    product = productProvider.mapToProduct(PlacementType.DAYCARE),
-                    description = "",
-                    note = "",
-                )
+    ): InvoiceCorrectionId = db.transaction {
+        it.insert(
+            DevInvoiceCorrection(
+                headOfFamilyId = adult.id,
+                targetMonth = null,
+                childId = child.id,
+                amount = amount,
+                unitPrice = unitPrice,
+                period = FiniteDateRange.ofMonth(month),
+                unitId = daycare.id,
+                product = productProvider.mapToProduct(PlacementType.DAYCARE),
+                description = "",
+                note = "",
             )
-        }
+        )
+    }
 
     private fun getUnappliedCorrection() = db.read { it.getUnappliedInvoiceCorrections() }.single()
 }

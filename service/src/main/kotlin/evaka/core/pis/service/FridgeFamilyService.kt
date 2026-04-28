@@ -77,15 +77,9 @@ class FridgeFamilyService(
         personId: PersonId,
     ) {
         logger.info { "Refreshing $personId from VTJ" }
-        val targetPerson =
-            db.transaction {
-                personService.getPersonWithChildren(
-                    it,
-                    user = user,
-                    id = personId,
-                    forceRefresh = true,
-                )
-            }
+        val targetPerson = db.transaction {
+            personService.getPersonWithChildren(it, user = user, id = personId, forceRefresh = true)
+        }
         if (targetPerson != null) {
             logger.info { "Person to refresh has ${targetPerson.children.size} children" }
 
@@ -130,28 +124,27 @@ class FridgeFamilyService(
 
             val children = targetPerson.children + (partner?.children ?: emptyList())
 
-            val newChildrenInSameAddressWithoutFosterParent =
-                db.read { tx ->
-                    val currentFridgeChildren = getCurrentFridgeChildren(tx, clock, head.id)
-                    children
-                        .asSequence()
-                        .distinct()
-                        .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
-                        .filter { child -> child.dateOfBirth.isAfter(clock.today().minusYears(18)) }
-                        .filter {
-                            personService.personsLiveInTheSameAddress(
-                                it.toPersonDTO(),
-                                head.toPersonDTO(),
-                            )
+            val newChildrenInSameAddressWithoutFosterParent = db.read { tx ->
+                val currentFridgeChildren = getCurrentFridgeChildren(tx, clock, head.id)
+                children
+                    .asSequence()
+                    .distinct()
+                    .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
+                    .filter { child -> child.dateOfBirth.isAfter(clock.today().minusYears(18)) }
+                    .filter {
+                        personService.personsLiveInTheSameAddress(
+                            it.toPersonDTO(),
+                            head.toPersonDTO(),
+                        )
+                    }
+                    .filter { !currentFridgeChildren.contains(it.id) }
+                    .filter { child ->
+                        tx.getFosterParents(child.id).none {
+                            it.validDuring.includes(clock.today())
                         }
-                        .filter { !currentFridgeChildren.contains(it.id) }
-                        .filter { child ->
-                            tx.getFosterParents(child.id).none {
-                                it.validDuring.includes(clock.today())
-                            }
-                        }
-                        .toList()
-                }
+                    }
+                    .toList()
+            }
 
             newChildrenInSameAddressWithoutFosterParent.forEach { child ->
                 try {

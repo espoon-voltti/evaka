@@ -70,14 +70,12 @@ fun decisionIncomesEqual(income1: DecisionIncome?, income2: DecisionIncome?): Bo
     }
 
     // Old logic: compare contents only
-    val i1 =
-        income1?.takeIf {
-            it.effect != IncomeEffect.NOT_AVAILABLE && it.effect != IncomeEffect.INCOMPLETE
-        }
-    val i2 =
-        income2?.takeIf {
-            it.effect != IncomeEffect.NOT_AVAILABLE && it.effect != IncomeEffect.INCOMPLETE
-        }
+    val i1 = income1?.takeIf {
+        it.effect != IncomeEffect.NOT_AVAILABLE && it.effect != IncomeEffect.INCOMPLETE
+    }
+    val i2 = income2?.takeIf {
+        it.effect != IncomeEffect.NOT_AVAILABLE && it.effect != IncomeEffect.INCOMPLETE
+    }
     return i1?.copy(id = null) == i2?.copy(id = null)
 }
 

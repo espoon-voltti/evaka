@@ -43,77 +43,75 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `it works`() {
-        val keepId =
-            db.transaction { tx ->
-                tx.insert(
-                    DevPlacement(
-                        childId = child1.id,
-                        unitId = daycare.id,
-                        startDate = LocalDate.of(2019, 1, 1),
-                        endDate = LocalDate.of(2019, 12, 31),
-                    )
+        val keepId = db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2019, 12, 31),
                 )
+            )
 
-                // Before placement starts
-                tx.insert(
-                    DevReservation(
-                        childId = child1.id,
-                        date = LocalDate.of(2018, 12, 31),
-                        startTime = LocalTime.of(8, 0),
-                        endTime = LocalTime.of(16, 0),
-                        createdBy = adult.evakaUserId(),
-                    )
+            // Before placement starts
+            tx.insert(
+                DevReservation(
+                    childId = child1.id,
+                    date = LocalDate.of(2018, 12, 31),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = adult.evakaUserId(),
                 )
-                // After placement ends
-                tx.insert(
-                    DevReservation(
-                        childId = child1.id,
-                        date = LocalDate.of(2020, 1, 2),
-                        startTime = LocalTime.of(8, 0),
-                        endTime = LocalTime.of(16, 0),
-                        createdBy = adult.evakaUserId(),
-                    )
+            )
+            // After placement ends
+            tx.insert(
+                DevReservation(
+                    childId = child1.id,
+                    date = LocalDate.of(2020, 1, 2),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = adult.evakaUserId(),
                 )
-                // After placement ends, has no times
-                tx.insert(
-                    DevReservation(
-                        childId = child1.id,
-                        date = LocalDate.of(2020, 1, 2),
-                        startTime = null,
-                        endTime = null,
-                        createdBy = adult.evakaUserId(),
-                    )
+            )
+            // After placement ends, has no times
+            tx.insert(
+                DevReservation(
+                    childId = child1.id,
+                    date = LocalDate.of(2020, 1, 2),
+                    startTime = null,
+                    endTime = null,
+                    createdBy = adult.evakaUserId(),
                 )
-                // No placement at all
-                tx.insert(
-                    DevReservation(
-                        childId = child2.id,
-                        date = LocalDate.of(2019, 1, 2),
-                        startTime = LocalTime.of(8, 0),
-                        endTime = LocalTime.of(16, 0),
-                        createdBy = adult.evakaUserId(),
-                    )
+            )
+            // No placement at all
+            tx.insert(
+                DevReservation(
+                    childId = child2.id,
+                    date = LocalDate.of(2019, 1, 2),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = adult.evakaUserId(),
                 )
+            )
 
-                // Valid - will be kept
-                tx.insert(
-                    DevReservation(
-                        childId = child1.id,
-                        date = LocalDate.of(2019, 1, 2),
-                        startTime = LocalTime.of(8, 0),
-                        endTime = LocalTime.of(16, 0),
-                        createdBy = adult.evakaUserId(),
-                    )
+            // Valid - will be kept
+            tx.insert(
+                DevReservation(
+                    childId = child1.id,
+                    date = LocalDate.of(2019, 1, 2),
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = adult.evakaUserId(),
                 )
-            }
+            )
+        }
 
         scheduledJobs.endOfDayReservationUpkeep(db, RealEvakaClock())
 
-        val reservations =
-            db.read { tx ->
-                tx.createQuery { sql("SELECT id FROM attendance_reservation") }
-                    .toSet<AttendanceReservationId>()
-            }
+        val reservations = db.read { tx ->
+            tx.createQuery { sql("SELECT id FROM attendance_reservation") }
+                .toSet<AttendanceReservationId>()
+        }
 
         assertEquals(setOf(keepId), reservations)
     }

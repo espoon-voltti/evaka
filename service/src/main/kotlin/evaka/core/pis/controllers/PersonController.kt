@@ -295,76 +295,75 @@ class PersonController(
         }
 
         return db.connect { dbc ->
-                val userEditablePersonData =
-                    dbc.read { tx ->
-                        accessControl.requirePermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Person.UPDATE,
-                            personId,
-                        )
-                        data
-                            .let {
-                                if (
-                                    accessControl.hasPermissionFor(
-                                        tx,
-                                        user,
-                                        clock,
-                                        Action.Person.UPDATE_PERSONAL_DETAILS,
-                                        personId,
-                                    )
-                                ) {
-                                    it
-                                } else {
-                                    it.copy(
-                                        firstName = null,
-                                        lastName = null,
-                                        dateOfBirth = null,
-                                        streetAddress = null,
-                                        postalCode = null,
-                                        postOffice = null,
-                                        municipalityOfResidence = null,
-                                    )
-                                }
+                val userEditablePersonData = dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.UPDATE,
+                        personId,
+                    )
+                    data
+                        .let {
+                            if (
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Person.UPDATE_PERSONAL_DETAILS,
+                                    personId,
+                                )
+                            ) {
+                                it
+                            } else {
+                                it.copy(
+                                    firstName = null,
+                                    lastName = null,
+                                    dateOfBirth = null,
+                                    streetAddress = null,
+                                    postalCode = null,
+                                    postOffice = null,
+                                    municipalityOfResidence = null,
+                                )
                             }
-                            .let {
-                                if (
-                                    accessControl.hasPermissionFor(
-                                        tx,
-                                        user,
-                                        clock,
-                                        Action.Person.UPDATE_INVOICE_ADDRESS,
-                                        personId,
-                                    )
-                                ) {
-                                    it
-                                } else {
-                                    it.copy(
-                                        invoiceRecipientName = null,
-                                        invoicingStreetAddress = null,
-                                        invoicingPostalCode = null,
-                                        invoicingPostOffice = null,
-                                        forceManualFeeDecisions = null,
-                                    )
-                                }
+                        }
+                        .let {
+                            if (
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Person.UPDATE_INVOICE_ADDRESS,
+                                    personId,
+                                )
+                            ) {
+                                it
+                            } else {
+                                it.copy(
+                                    invoiceRecipientName = null,
+                                    invoicingStreetAddress = null,
+                                    invoicingPostalCode = null,
+                                    invoicingPostOffice = null,
+                                    forceManualFeeDecisions = null,
+                                )
                             }
-                            .let {
-                                if (
-                                    accessControl.hasPermissionFor(
-                                        tx,
-                                        user,
-                                        clock,
-                                        Action.Person.UPDATE_OPH_OID,
-                                        personId,
-                                    )
-                                ) {
-                                    it
-                                } else {
-                                    it.copy(ophPersonOid = null)
-                                }
+                        }
+                        .let {
+                            if (
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Person.UPDATE_OPH_OID,
+                                    personId,
+                                )
+                            ) {
+                                it
+                            } else {
+                                it.copy(ophPersonOid = null)
                             }
-                    }
+                        }
+                }
 
                 dbc.transaction {
                         personService.patchUserDetails(it, personId, userEditablePersonData)

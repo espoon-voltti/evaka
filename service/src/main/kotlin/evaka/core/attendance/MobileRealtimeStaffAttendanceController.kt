@@ -192,21 +192,20 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                                     body.groupId,
                                 )
                                 ?: BigDecimal.ZERO
-                        val updates =
-                            attendances.mapNotNull { attendance ->
-                                tx.upsertStaffAttendance(
-                                    attendance.id,
-                                    attendance.employeeId,
-                                    attendance.groupId,
-                                    attendance.arrived,
-                                    attendance.departed,
-                                    occupancyCoefficient,
-                                    attendance.type,
-                                    false,
-                                    clock.now(),
-                                    user.evakaUserId,
-                                )
-                            }
+                        val updates = attendances.mapNotNull { attendance ->
+                            tx.upsertStaffAttendance(
+                                attendance.id,
+                                attendance.employeeId,
+                                attendance.groupId,
+                                attendance.arrived,
+                                attendance.departed,
+                                occupancyCoefficient,
+                                attendance.type,
+                                false,
+                                clock.now(),
+                                user.evakaUserId,
+                            )
+                        }
                         updates to
                             updates.map {
                                 changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields)
@@ -265,21 +264,20 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             body,
                         )
                     val occupancyCoefficient = ongoingAttendance.occupancyCoefficient
-                    val updates =
-                        attendances.mapNotNull { attendance ->
-                            tx.upsertStaffAttendance(
-                                attendance.id,
-                                attendance.employeeId,
-                                attendance.groupId,
-                                attendance.arrived,
-                                attendance.departed,
-                                occupancyCoefficient,
-                                attendance.type,
-                                false,
-                                clock.now(),
-                                user.evakaUserId,
-                            )
-                        }
+                    val updates = attendances.mapNotNull { attendance ->
+                        tx.upsertStaffAttendance(
+                            attendance.id,
+                            attendance.employeeId,
+                            attendance.groupId,
+                            attendance.arrived,
+                            attendance.departed,
+                            occupancyCoefficient,
+                            attendance.type,
+                            false,
+                            clock.now(),
+                            user.evakaUserId,
+                        )
+                    }
                     updates to
                         updates.map { changes(it.old, it.new, StaffAttendanceRealtimeAudit.fields) }
                 }

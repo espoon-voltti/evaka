@@ -722,28 +722,27 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         preschoolDaycare: Boolean = false,
         preferredUnits: List<DevDaycare> = listOf(daycare1, daycare2),
         preparatory: Boolean = false,
-    ): ApplicationId =
-        db.transaction { tx ->
-            val careDetails = if (preparatory) CareDetails(preparatory = true) else CareDetails()
-            tx.insertTestApplication(
-                status = status,
-                guardianId = adult.id,
-                childId = child.id,
-                type = type,
-                document =
-                    DaycareFormV0(
-                        type = type,
-                        partTime = partTime,
-                        serviceNeedOption = serviceNeedOption,
-                        connectedDaycare = preschoolDaycare,
-                        serviceStart = "08:00".takeIf { preschoolDaycare },
-                        serviceEnd = "16:00".takeIf { preschoolDaycare },
-                        child = child.toDaycareFormChild(),
-                        guardian = adult.toDaycareFormAdult(adult.restrictedDetailsEnabled),
-                        apply = Apply(preferredUnits = preferredUnits.map { it.id }),
-                        preferredStartDate = preferredStartDate,
-                        careDetails = careDetails,
-                    ),
-            )
-        }
+    ): ApplicationId = db.transaction { tx ->
+        val careDetails = if (preparatory) CareDetails(preparatory = true) else CareDetails()
+        tx.insertTestApplication(
+            status = status,
+            guardianId = adult.id,
+            childId = child.id,
+            type = type,
+            document =
+                DaycareFormV0(
+                    type = type,
+                    partTime = partTime,
+                    serviceNeedOption = serviceNeedOption,
+                    connectedDaycare = preschoolDaycare,
+                    serviceStart = "08:00".takeIf { preschoolDaycare },
+                    serviceEnd = "16:00".takeIf { preschoolDaycare },
+                    child = child.toDaycareFormChild(),
+                    guardian = adult.toDaycareFormAdult(adult.restrictedDetailsEnabled),
+                    apply = Apply(preferredUnits = preferredUnits.map { it.id }),
+                    preferredStartDate = preferredStartDate,
+                    careDetails = careDetails,
+                ),
+        )
+    }
 }

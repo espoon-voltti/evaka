@@ -302,10 +302,9 @@ class VoucherValueDecisionController(
                             decision.partner?.id,
                             decision.child.id,
                         )
-                    val restrictedDetails =
-                        personIds.any { personId ->
-                            tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
-                        }
+                    val restrictedDetails = personIds.any { personId ->
+                        tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
+                    }
                     if (
                         restrictedDetails && decision.documentContainsContactInfo && !user.isAdmin
                     ) {

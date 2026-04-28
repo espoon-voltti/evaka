@@ -38,10 +38,9 @@ data class RealtimeOccupancy(
                 }
             }
         val arrivals = attns.map { child -> ChildCapacityPoint(child.arrived, child.capacity) }
-        val departures =
-            attns.mapNotNull { child ->
-                child.departed?.let { ChildCapacityPoint(it, -child.capacity) }
-            }
+        val departures = attns.mapNotNull { child ->
+            child.departed?.let { ChildCapacityPoint(it, -child.capacity) }
+        }
         val deltas = (arrivals + departures).sortedBy { it.time }
         deltas.fold(listOf()) { list, event ->
             if (list.isEmpty()) {
@@ -56,12 +55,12 @@ data class RealtimeOccupancy(
     }
 
     val staffCapacitySumSeries: List<StaffCapacityPoint> by lazy {
-        val arrivals =
-            staffAttendances.map { staff -> StaffCapacityPoint(staff.arrived, staff.capacity) }
-        val departures =
-            staffAttendances.mapNotNull { staff ->
-                staff.departed?.let { StaffCapacityPoint(it, -staff.capacity) }
-            }
+        val arrivals = staffAttendances.map { staff ->
+            StaffCapacityPoint(staff.arrived, staff.capacity)
+        }
+        val departures = staffAttendances.mapNotNull { staff ->
+            staff.departed?.let { StaffCapacityPoint(it, -staff.capacity) }
+        }
         val deltas = (arrivals + departures).sortedBy { it.time }
         deltas.fold(listOf()) { list, event ->
             if (list.isEmpty()) {

@@ -116,16 +116,15 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `email is sent after end user sends application`() {
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    childId = child1.id,
-                    guardianId = guardian.id,
-                    status = ApplicationStatus.CREATED,
-                    type = ApplicationType.DAYCARE,
-                    document = validDaycareForm,
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                childId = child1.id,
+                guardianId = guardian.id,
+                status = ApplicationStatus.CREATED,
+                type = ApplicationType.DAYCARE,
+                document = validDaycareForm,
+            )
+        }
 
         citizenApplicationController.sendApplication(dbInstance(), endUser, clock, applicationId)
         assertApplicationIsSent(applicationId)
@@ -147,18 +146,17 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     @Test
     fun `swedish email from address is used after end user sends application to svebi daycare`() {
         val daycareSv = DevDaycare(areaId = area.id, language = Language.sv)
-        val applicationId =
-            db.transaction { tx ->
-                tx.insert(daycareSv)
-                tx.insertTestApplication(
-                    childId = child1.id,
-                    guardianId = guardian.id,
-                    status = ApplicationStatus.CREATED,
-                    type = ApplicationType.DAYCARE,
-                    document =
-                        validDaycareForm.copy(apply = Apply(preferredUnits = listOf(daycareSv.id))),
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insert(daycareSv)
+            tx.insertTestApplication(
+                childId = child1.id,
+                guardianId = guardian.id,
+                status = ApplicationStatus.CREATED,
+                type = ApplicationType.DAYCARE,
+                document =
+                    validDaycareForm.copy(apply = Apply(preferredUnits = listOf(daycareSv.id))),
+            )
+        }
 
         citizenApplicationController.sendApplication(dbInstance(), endUser, clock, applicationId)
         assertApplicationIsSent(applicationId)
@@ -182,17 +180,16 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `email is sent after service worker sends application`() {
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    childId = child1.id,
-                    guardianId = guardian.id,
-                    status = ApplicationStatus.CREATED,
-                    hideFromGuardian = false,
-                    type = ApplicationType.DAYCARE,
-                    document = validDaycareForm,
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                childId = child1.id,
+                guardianId = guardian.id,
+                status = ApplicationStatus.CREATED,
+                hideFromGuardian = false,
+                type = ApplicationType.DAYCARE,
+                document = validDaycareForm,
+            )
+        }
 
         employeeApplicationController.sendApplication(
             dbInstance(),
@@ -238,18 +235,17 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
                 wasOnClubCare = true,
                 wasOnDaycare = true,
             )
-        val applicationId =
-            db.transaction { tx ->
-                tx.insert(clubTerm2021)
-                tx.insert(club)
-                tx.insertTestApplication(
-                    childId = child1.id,
-                    guardianId = guardian.id,
-                    status = ApplicationStatus.CREATED,
-                    type = ApplicationType.CLUB,
-                    document = clubForm,
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insert(clubTerm2021)
+            tx.insert(club)
+            tx.insertTestApplication(
+                childId = child1.id,
+                guardianId = guardian.id,
+                status = ApplicationStatus.CREATED,
+                type = ApplicationType.CLUB,
+                document = clubForm,
+            )
+        }
 
         citizenApplicationController.sendApplication(dbInstance(), endUser, clock, applicationId)
         assertApplicationIsSent(applicationId)
@@ -310,17 +306,16 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `email is not sent when service workers sends hidden application`() {
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    childId = child1.id,
-                    guardianId = guardian.id,
-                    status = ApplicationStatus.CREATED,
-                    hideFromGuardian = true,
-                    type = ApplicationType.DAYCARE,
-                    document = validDaycareForm,
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                childId = child1.id,
+                guardianId = guardian.id,
+                status = ApplicationStatus.CREATED,
+                hideFromGuardian = true,
+                type = ApplicationType.DAYCARE,
+                document = validDaycareForm,
+            )
+        }
 
         employeeApplicationController.sendApplication(
             dbInstance(),
@@ -337,17 +332,16 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `email is not sent to invalid email`() {
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    childId = child1.id,
-                    guardianId = guardian.id,
-                    status = ApplicationStatus.CREATED,
-                    type = ApplicationType.DAYCARE,
-                    document =
-                        validDaycareForm.copy(guardian = guardianAsAdult.copy(email = "not@valid")),
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                childId = child1.id,
+                guardianId = guardian.id,
+                status = ApplicationStatus.CREATED,
+                type = ApplicationType.DAYCARE,
+                document =
+                    validDaycareForm.copy(guardian = guardianAsAdult.copy(email = "not@valid")),
+            )
+        }
 
         citizenApplicationController.sendApplication(dbInstance(), endUser, clock, applicationId)
         assertApplicationIsSent(applicationId)
@@ -361,17 +355,16 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     @Test
     fun `application keeps its manually set sent date after it is sent`() {
         val manuallySetSentDate = LocalDate.of(2020, 1, 1)
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    childId = child1.id,
-                    guardianId = guardian.id,
-                    status = ApplicationStatus.CREATED,
-                    sentDate = manuallySetSentDate,
-                    type = ApplicationType.DAYCARE,
-                    document = validDaycareForm,
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                childId = child1.id,
+                guardianId = guardian.id,
+                status = ApplicationStatus.CREATED,
+                sentDate = manuallySetSentDate,
+                type = ApplicationType.DAYCARE,
+                document = validDaycareForm,
+            )
+        }
 
         citizenApplicationController.sendApplication(dbInstance(), endUser, clock, applicationId)
         assertApplicationIsSent(applicationId)

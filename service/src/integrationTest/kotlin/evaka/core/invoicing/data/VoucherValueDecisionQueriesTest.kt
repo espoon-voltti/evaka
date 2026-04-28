@@ -89,96 +89,95 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
     @Test
     fun `search with max fee accepted`() {
-        val decisions =
-            db.transaction { tx ->
-                val baseDecision = { child: DevPerson ->
-                    createVoucherValueDecisionFixture(
-                        status = VoucherValueDecisionStatus.DRAFT,
-                        validFrom = testPeriod.start,
-                        validTo = testPeriod.end,
-                        headOfFamilyId = PersonId(UUID.randomUUID()),
-                        childId = child.id,
-                        dateOfBirth = child.dateOfBirth,
-                        unitId = daycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
-                    )
-                }
-                tx.upsertValueDecisions(
-                    listOf(
-                        baseDecision(child1)
-                            .copy(headOfFamilyId = adult1.id, headOfFamilyIncome = null),
-                        baseDecision(child2)
-                            .copy(
-                                headOfFamilyId = adult2.id,
-                                headOfFamilyIncome =
-                                    DecisionIncome(
-                                        effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        data = emptyMap(),
-                                        totalIncome = 0,
-                                        totalExpenses = 0,
-                                        total = 0,
-                                        worksAtECHA = false,
-                                    ),
-                            ),
-                        baseDecision(child3)
-                            .copy(
-                                headOfFamilyId = adult3.id,
-                                headOfFamilyIncome = null,
-                                partnerId = adult4.id,
-                                partnerIncome =
-                                    DecisionIncome(
-                                        effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        data = emptyMap(),
-                                        totalIncome = 0,
-                                        totalExpenses = 0,
-                                        total = 0,
-                                        worksAtECHA = false,
-                                    ),
-                            ),
-                        baseDecision(child4)
-                            .copy(
-                                headOfFamilyId = adult5.id,
-                                headOfFamilyIncome =
-                                    DecisionIncome(
-                                        effect = IncomeEffect.INCOME,
-                                        data = emptyMap(),
-                                        totalIncome = 200000,
-                                        totalExpenses = 0,
-                                        total = 200000,
-                                        worksAtECHA = false,
-                                    ),
-                            ),
-                        baseDecision(child5)
-                            .copy(
-                                headOfFamilyId = adult6.id,
-                                headOfFamilyIncome =
-                                    DecisionIncome(
-                                        effect = IncomeEffect.INCOME,
-                                        data = emptyMap(),
-                                        totalIncome = 200000,
-                                        totalExpenses = 0,
-                                        total = 200000,
-                                        worksAtECHA = false,
-                                    ),
-                                partnerId = adult7.id,
-                                partnerIncome =
-                                    DecisionIncome(
-                                        effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                                        data = emptyMap(),
-                                        totalIncome = 0,
-                                        totalExpenses = 0,
-                                        total = 0,
-                                        worksAtECHA = false,
-                                    ),
-                            ),
-                    )
+        val decisions = db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = daycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
                 )
-                val ids =
-                    tx.createQuery { sql("SELECT id FROM voucher_value_decision") }
-                        .toList<VoucherValueDecisionId>()
-                ids.map { id -> tx.getVoucherValueDecision(id)!! }
             }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(child1)
+                        .copy(headOfFamilyId = adult1.id, headOfFamilyIncome = null),
+                    baseDecision(child2)
+                        .copy(
+                            headOfFamilyId = adult2.id,
+                            headOfFamilyIncome =
+                                DecisionIncome(
+                                    effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                                    data = emptyMap(),
+                                    totalIncome = 0,
+                                    totalExpenses = 0,
+                                    total = 0,
+                                    worksAtECHA = false,
+                                ),
+                        ),
+                    baseDecision(child3)
+                        .copy(
+                            headOfFamilyId = adult3.id,
+                            headOfFamilyIncome = null,
+                            partnerId = adult4.id,
+                            partnerIncome =
+                                DecisionIncome(
+                                    effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                                    data = emptyMap(),
+                                    totalIncome = 0,
+                                    totalExpenses = 0,
+                                    total = 0,
+                                    worksAtECHA = false,
+                                ),
+                        ),
+                    baseDecision(child4)
+                        .copy(
+                            headOfFamilyId = adult5.id,
+                            headOfFamilyIncome =
+                                DecisionIncome(
+                                    effect = IncomeEffect.INCOME,
+                                    data = emptyMap(),
+                                    totalIncome = 200000,
+                                    totalExpenses = 0,
+                                    total = 200000,
+                                    worksAtECHA = false,
+                                ),
+                        ),
+                    baseDecision(child5)
+                        .copy(
+                            headOfFamilyId = adult6.id,
+                            headOfFamilyIncome =
+                                DecisionIncome(
+                                    effect = IncomeEffect.INCOME,
+                                    data = emptyMap(),
+                                    totalIncome = 200000,
+                                    totalExpenses = 0,
+                                    total = 200000,
+                                    worksAtECHA = false,
+                                ),
+                            partnerId = adult7.id,
+                            partnerIncome =
+                                DecisionIncome(
+                                    effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                                    data = emptyMap(),
+                                    totalIncome = 0,
+                                    totalExpenses = 0,
+                                    total = 0,
+                                    worksAtECHA = false,
+                                ),
+                        ),
+                )
+            )
+            val ids =
+                tx.createQuery { sql("SELECT id FROM voucher_value_decision") }
+                    .toList<VoucherValueDecisionId>()
+            ids.map { id -> tx.getVoucherValueDecision(id)!! }
+        }
         assertThat(decisions)
             .extracting(
                 { it.headOfFamily.lastName },
@@ -193,27 +192,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 Tuple(adult6.lastName, adult6.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
             )
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock =
-                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(13, 37))),
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    financeDecisionHandlerId = null,
-                    difference = emptySet(),
-                    distinctiveParams =
-                        listOf(VoucherValueDecisionDistinctiveParams.MAX_FEE_ACCEPTED),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock =
+                    MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(13, 37))),
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                financeDecisionHandlerId = null,
+                difference = emptySet(),
+                distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.MAX_FEE_ACCEPTED),
+            )
+        }
 
         assertThat(result.data)
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
@@ -266,26 +263,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock =
-                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    financeDecisionHandlerId = null,
-                    difference = setOf(VoucherValueDecisionDifference.INCOME),
-                    distinctiveParams = emptyList(),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock =
+                    MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                financeDecisionHandlerId = null,
+                difference = setOf(VoucherValueDecisionDifference.INCOME),
+                distinctiveParams = emptyList(),
+            )
+        }
 
         assertThat(result.data)
             .extracting(
@@ -352,27 +348,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock =
-                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    financeDecisionHandlerId = null,
-                    difference = emptySet(),
-                    distinctiveParams =
-                        listOf(VoucherValueDecisionDistinctiveParams.UNCONFIRMED_HOURS),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock =
+                    MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                financeDecisionHandlerId = null,
+                difference = emptySet(),
+                distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.UNCONFIRMED_HOURS),
+            )
+        }
 
         assertThat(result.data)
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
@@ -408,26 +402,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock =
-                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    financeDecisionHandlerId = null,
-                    difference = emptySet(),
-                    distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.EXTERNAL_CHILD),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock =
+                    MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                financeDecisionHandlerId = null,
+                difference = emptySet(),
+                distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.EXTERNAL_CHILD),
+            )
+        }
 
         assertThat(result.data)
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
@@ -482,26 +475,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock =
-                        MockEvakaClock(HelsinkiDateTime.of(testPeriod2.start, LocalTime.of(15, 6))),
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    financeDecisionHandlerId = null,
-                    difference = emptySet(),
-                    distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.RETROACTIVE),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock =
+                    MockEvakaClock(HelsinkiDateTime.of(testPeriod2.start, LocalTime.of(15, 6))),
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                financeDecisionHandlerId = null,
+                difference = emptySet(),
+                distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.RETROACTIVE),
+            )
+        }
 
         assertThat(result.data)
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
@@ -1309,26 +1301,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock = clock,
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    difference = emptySet(),
-                    financeDecisionHandlerId = null,
-                    distinctiveParams =
-                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock = clock,
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                difference = emptySet(),
+                financeDecisionHandlerId = null,
+                distinctiveParams =
+                    listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+            )
+        }
 
         assertThat(result.data.map { it.child.id }).containsExactly(child2.id)
     }
@@ -1368,26 +1359,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock = clock,
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    difference = emptySet(),
-                    financeDecisionHandlerId = null,
-                    distinctiveParams =
-                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock = clock,
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                difference = emptySet(),
+                financeDecisionHandlerId = null,
+                distinctiveParams =
+                    listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+            )
+        }
 
         assertThat(result.data).isEmpty()
     }
@@ -1428,26 +1418,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock = clock,
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    difference = emptySet(),
-                    financeDecisionHandlerId = null,
-                    distinctiveParams =
-                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock = clock,
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                difference = emptySet(),
+                financeDecisionHandlerId = null,
+                distinctiveParams =
+                    listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+            )
+        }
 
         assertThat(result.data).isEmpty()
     }
@@ -1488,26 +1477,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock = clock,
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    difference = emptySet(),
-                    financeDecisionHandlerId = null,
-                    distinctiveParams =
-                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock = clock,
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                difference = emptySet(),
+                financeDecisionHandlerId = null,
+                distinctiveParams =
+                    listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+            )
+        }
 
         assertThat(result.data).isEmpty()
     }
@@ -1548,26 +1536,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock = clock,
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    difference = emptySet(),
-                    financeDecisionHandlerId = null,
-                    distinctiveParams =
-                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock = clock,
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                difference = emptySet(),
+                financeDecisionHandlerId = null,
+                distinctiveParams =
+                    listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+            )
+        }
 
         assertThat(result.data).isEmpty()
     }
@@ -1609,26 +1596,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock = clock,
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    difference = emptySet(),
-                    financeDecisionHandlerId = null,
-                    distinctiveParams =
-                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock = clock,
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                difference = emptySet(),
+                financeDecisionHandlerId = null,
+                distinctiveParams =
+                    listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+            )
+        }
 
         assertThat(result.data.map { it.child.id }).containsExactly(child1.id)
     }
@@ -1672,26 +1658,25 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             )
         }
 
-        val result =
-            db.read { tx ->
-                tx.searchValueDecisions(
-                    evakaClock = clock,
-                    postOffice = "ESPOO",
-                    page = 0,
-                    pageSize = 100,
-                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                    sortDirection = SortDirection.ASC,
-                    statuses = listOf(VoucherValueDecisionStatus.DRAFT),
-                    areas = emptyList(),
-                    unit = null,
-                    startDate = null,
-                    endDate = null,
-                    difference = emptySet(),
-                    financeDecisionHandlerId = null,
-                    distinctiveParams =
-                        listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
-                )
-            }
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock = clock,
+                postOffice = "ESPOO",
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = listOf(VoucherValueDecisionStatus.DRAFT),
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                difference = emptySet(),
+                financeDecisionHandlerId = null,
+                distinctiveParams =
+                    listOf(VoucherValueDecisionDistinctiveParams.NO_OPEN_INCOME_STATEMENTS),
+            )
+        }
 
         assertThat(result.data.map { it.child.id }).containsExactly(child1.id)
     }

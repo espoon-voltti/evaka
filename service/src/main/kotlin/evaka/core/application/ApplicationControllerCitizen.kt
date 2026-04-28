@@ -101,11 +101,10 @@ class ApplicationControllerCitizen(
                     // Some children might not have applications, so add 0 application children
                     tx.getCitizenChildren(clock.today(), user.id).map { child ->
                         val applications = existingApplicationsByChild[child.id] ?: emptyList()
-                        val permittedActions =
-                            applications.associate { application ->
-                                application.applicationId to
-                                    (allPermittedActions[application.applicationId] ?: emptySet())
-                            }
+                        val permittedActions = applications.associate { application ->
+                            application.applicationId to
+                                (allPermittedActions[application.applicationId] ?: emptySet())
+                        }
                         ApplicationsOfChild(
                             childId = child.id,
                             childName = "${child.firstName} ${child.lastName}",
@@ -167,50 +166,48 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
     ): ApplicationDetails {
-        val application =
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
+        val application = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Application.READ,
+                    applicationId,
+                )
+
+                val attachmentFilter =
+                    accessControl.getAuthorizationFilter(
                         tx,
                         user,
                         clock,
-                        Action.Citizen.Application.READ,
-                        applicationId,
+                        Action.Attachment.READ_APPLICATION_ATTACHMENT,
                     )
-
-                    val attachmentFilter =
-                        accessControl.getAuthorizationFilter(
+                tx.fetchApplicationDetails(applicationId, attachmentFilter)?.let { application ->
+                    val otherGuardian =
+                        personService.getOtherGuardian(
                             tx,
                             user,
-                            clock,
-                            Action.Attachment.READ_APPLICATION_ATTACHMENT,
+                            application.guardianId,
+                            application.childId,
                         )
-                    tx.fetchApplicationDetails(applicationId, attachmentFilter)?.let { application
-                        ->
-                        val otherGuardian =
-                            personService.getOtherGuardian(
-                                tx,
-                                user,
-                                application.guardianId,
-                                application.childId,
-                            )
-                        application.copy(
-                            hasOtherGuardian = otherGuardian != null,
-                            otherGuardianLivesInSameAddress =
-                                otherGuardian?.id?.let { otherGuardianId ->
-                                    personService.personsLiveInTheSameAddress(
-                                        tx,
-                                        application.guardianId,
-                                        otherGuardianId,
-                                    )
-                                },
-                            // hide modification info from citizen
-                            modifiedAt = null,
-                            modifiedBy = null,
-                        )
-                    }
+                    application.copy(
+                        hasOtherGuardian = otherGuardian != null,
+                        otherGuardianLivesInSameAddress =
+                            otherGuardian?.id?.let { otherGuardianId ->
+                                personService.personsLiveInTheSameAddress(
+                                    tx,
+                                    application.guardianId,
+                                    otherGuardianId,
+                                )
+                            },
+                        // hide modification info from citizen
+                        modifiedAt = null,
+                        modifiedBy = null,
+                    )
                 }
             }
+        }
 
         return if (application?.hideFromGuardian == false) {
                 if (user.id == application.guardianId) {
@@ -564,8 +561,9 @@ class ApplicationControllerCitizen(
                             clock,
                             pendingDecisions.map { it.applicationId }.toSet(),
                         )
-                    val actionableDecisions =
-                        pendingDecisions.filter { it.applicationId in decidableApplications }
+                    val actionableDecisions = pendingDecisions.filter {
+                        it.applicationId in decidableApplications
+                    }
                     val permittedActions =
                         accessControl.getPermittedActions<DecisionId, Action.Citizen.Decision>(
                             tx,
@@ -746,70 +744,67 @@ class ApplicationControllerCitizen(
                     val childIds = voucherValueDecisionRows.map { it.childId }.toSet()
                     val personMap =
                         tx.getPersonNameDetailsById(citizenIds + childIds).associateBy { it.id }
-                    val voucherValueDecisionInfos =
-                        voucherValueDecisionRows.map { row ->
-                            val childInfo =
-                                personMap[row.childId]
-                                    ?: throw IllegalStateException("Voucher value child not found")
-                            FinanceDecisionCitizenInfo(
-                                id = row.id.raw,
-                                type = FinanceDecisionType.VOUCHER_VALUE_DECISION,
-                                decisionChildren =
-                                    listOf(
-                                        FinanceDecisionChildInfo(
-                                            childInfo.id,
-                                            childInfo.firstName,
-                                            childInfo.lastName,
+                    val voucherValueDecisionInfos = voucherValueDecisionRows.map { row ->
+                        val childInfo =
+                            personMap[row.childId]
+                                ?: throw IllegalStateException("Voucher value child not found")
+                        FinanceDecisionCitizenInfo(
+                            id = row.id.raw,
+                            type = FinanceDecisionType.VOUCHER_VALUE_DECISION,
+                            decisionChildren =
+                                listOf(
+                                    FinanceDecisionChildInfo(
+                                        childInfo.id,
+                                        childInfo.firstName,
+                                        childInfo.lastName,
+                                    )
+                                ),
+                            validFrom = row.validFrom,
+                            validTo = row.validTo,
+                            sentAt = row.sentAt,
+                            coDebtors =
+                                listOfNotNull(
+                                        personMap[row.headOfFamilyId],
+                                        personMap[row.partnerId],
+                                    )
+                                    .map {
+                                        LiableCitizenInfo(
+                                            id = it.id,
+                                            firstName = it.firstName,
+                                            lastName = it.lastName,
                                         )
-                                    ),
-                                validFrom = row.validFrom,
-                                validTo = row.validTo,
-                                sentAt = row.sentAt,
-                                coDebtors =
-                                    listOfNotNull(
-                                            personMap[row.headOfFamilyId],
-                                            personMap[row.partnerId],
+                                    },
+                        )
+                    }
+                    val feeDecisionInfos = feeDecisionRows.map { row ->
+                        FinanceDecisionCitizenInfo(
+                            id = row.id.raw,
+                            decisionChildren = emptyList(),
+                            type = FinanceDecisionType.FEE_DECISION,
+                            validFrom = row.validDuring.start,
+                            validTo = row.validDuring.end,
+                            sentAt = row.sentAt,
+                            coDebtors =
+                                listOfNotNull(
+                                        personMap[row.headOfFamilyId],
+                                        personMap[row.partnerId],
+                                    )
+                                    .map {
+                                        LiableCitizenInfo(
+                                            id = it.id,
+                                            firstName = it.firstName,
+                                            lastName = it.lastName,
                                         )
-                                        .map {
-                                            LiableCitizenInfo(
-                                                id = it.id,
-                                                firstName = it.firstName,
-                                                lastName = it.lastName,
-                                            )
-                                        },
-                            )
-                        }
-                    val feeDecisionInfos =
-                        feeDecisionRows.map { row ->
-                            FinanceDecisionCitizenInfo(
-                                id = row.id.raw,
-                                decisionChildren = emptyList(),
-                                type = FinanceDecisionType.FEE_DECISION,
-                                validFrom = row.validDuring.start,
-                                validTo = row.validDuring.end,
-                                sentAt = row.sentAt,
-                                coDebtors =
-                                    listOfNotNull(
-                                            personMap[row.headOfFamilyId],
-                                            personMap[row.partnerId],
-                                        )
-                                        .map {
-                                            LiableCitizenInfo(
-                                                id = it.id,
-                                                firstName = it.firstName,
-                                                lastName = it.lastName,
-                                            )
-                                        },
-                            )
-                        }
+                                    },
+                        )
+                    }
                     voucherValueDecisionInfos + feeDecisionInfos
                 }
             }
             .also { financeDecisionCitizenInfoList ->
-                val childIds =
-                    financeDecisionCitizenInfoList.flatMap { decision ->
-                        decision.decisionChildren.map { child -> child.id }
-                    }
+                val childIds = financeDecisionCitizenInfoList.flatMap { decision ->
+                    decision.decisionChildren.map { child -> child.id }
+                }
                 Audit.FinanceDecisionCitizenRead.log(
                     targetId = AuditId(user.id),
                     objectId = AuditId(childIds),

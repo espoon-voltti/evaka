@@ -101,45 +101,36 @@ WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN ${bind(range.start)} AND
             val applicationDecisionCount =
                 rows.groupBy { it.applicationId }.mapValues { it.value.size }
 
-            val daycareUnder3 =
-                rows.filter {
-                    it.age < 3 &&
-                        it.decisionType in
-                            setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)
-                }
-            val daycareOver3 =
-                rows.filter {
-                    it.age >= 3 &&
-                        it.decisionType in
-                            setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)
-                }
-            val preschool =
-                rows.filter {
-                    it.decisionType == DecisionType.PRESCHOOL &&
-                        applicationDecisionCount.getValue(it.applicationId) == 1
-                }
-            val preschoolDaycare =
-                rows.filter {
-                    it.decisionType == DecisionType.PRESCHOOL &&
-                        applicationDecisionCount.getValue(it.applicationId) == 2
-                }
-            val preparatory =
-                rows.filter {
-                    it.decisionType == DecisionType.PREPARATORY_EDUCATION &&
-                        applicationDecisionCount.getValue(it.applicationId) == 1
-                }
-            val preparatoryDaycare =
-                rows.filter {
-                    it.decisionType == DecisionType.PREPARATORY_EDUCATION &&
-                        applicationDecisionCount.getValue(it.applicationId) == 2
-                }
-            val connectedDaycareOnly =
-                rows.filter {
-                    // PRESCHOOL_DAYCARE is used for connected daycare for both preschool and
-                    // preparatory
-                    it.decisionType == DecisionType.PRESCHOOL_DAYCARE &&
-                        applicationDecisionCount.getValue(it.applicationId) == 1
-                }
+            val daycareUnder3 = rows.filter {
+                it.age < 3 &&
+                    it.decisionType in setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)
+            }
+            val daycareOver3 = rows.filter {
+                it.age >= 3 &&
+                    it.decisionType in setOf(DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME)
+            }
+            val preschool = rows.filter {
+                it.decisionType == DecisionType.PRESCHOOL &&
+                    applicationDecisionCount.getValue(it.applicationId) == 1
+            }
+            val preschoolDaycare = rows.filter {
+                it.decisionType == DecisionType.PRESCHOOL &&
+                    applicationDecisionCount.getValue(it.applicationId) == 2
+            }
+            val preparatory = rows.filter {
+                it.decisionType == DecisionType.PREPARATORY_EDUCATION &&
+                    applicationDecisionCount.getValue(it.applicationId) == 1
+            }
+            val preparatoryDaycare = rows.filter {
+                it.decisionType == DecisionType.PREPARATORY_EDUCATION &&
+                    applicationDecisionCount.getValue(it.applicationId) == 2
+            }
+            val connectedDaycareOnly = rows.filter {
+                // PRESCHOOL_DAYCARE is used for connected daycare for both preschool and
+                // preparatory
+                it.decisionType == DecisionType.PRESCHOOL_DAYCARE &&
+                    applicationDecisionCount.getValue(it.applicationId) == 1
+            }
             val club = rows.filter { it.decisionType == DecisionType.CLUB }
 
             // Number of applications (not decisions) that have Nth preference for this unit

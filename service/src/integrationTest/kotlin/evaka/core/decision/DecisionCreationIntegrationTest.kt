@@ -87,32 +87,31 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insert(employee) }
-        testDaycare =
-            db.transaction { tx ->
-                val areaId = tx.insert(DevCareArea())
-                val unitId =
-                    tx.insert(
-                        DevDaycare(
-                            areaId = areaId,
-                            name = "Test Daycare",
-                            decisionCustomization =
-                                DaycareDecisionCustomization(
-                                    daycareName = "Test Daycare / daycare",
-                                    preschoolName = "Test Daycare / preschool",
-                                    handler = "Test decision handler",
-                                    handlerAddress = "Test decision handler address",
-                                ),
-                            visitingAddress =
-                                VisitingAddress(
-                                    streetAddress = "Test address",
-                                    postalCode = "Test postal code",
-                                    postOffice = "Test post office",
-                                ),
-                            phone = "Test phone",
-                        )
+        testDaycare = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea())
+            val unitId =
+                tx.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        name = "Test Daycare",
+                        decisionCustomization =
+                            DaycareDecisionCustomization(
+                                daycareName = "Test Daycare / daycare",
+                                preschoolName = "Test Daycare / preschool",
+                                handler = "Test decision handler",
+                                handlerAddress = "Test decision handler address",
+                            ),
+                        visitingAddress =
+                            VisitingAddress(
+                                streetAddress = "Test address",
+                                postalCode = "Test postal code",
+                                postOffice = "Test post office",
+                            ),
+                        phone = "Test phone",
                     )
-                tx.getDaycare(unitId)!!
-            }
+                )
+            tx.getDaycare(unitId)!!
+        }
         db.transaction { tx ->
             tx.insert(testArea2)
             tx.insert(testDaycare2)
@@ -526,12 +525,11 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `citizen can fetch decision details`() {
         val guardian = DevPerson(ssn = "070644-937X")
         val child = DevPerson(ssn = "070714A9126")
-        val citizen =
-            db.transaction { tx ->
-                tx.insert(guardian, DevPersonType.ADULT)
-                tx.insert(child, DevPersonType.CHILD)
-                AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
-            }
+        val citizen = db.transaction { tx ->
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
+        }
         MockPersonDetailsService.addPersons(guardian, child)
         MockPersonDetailsService.addDependants(guardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
@@ -581,13 +579,12 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val guardian = DevPerson(ssn = "070644-937X")
         val otherPerson = DevPerson(ssn = "311299-999E")
         val child = DevPerson(ssn = "070714A9126")
-        val otherCitizen =
-            db.transaction { tx ->
-                tx.insert(guardian, DevPersonType.ADULT)
-                tx.insert(otherPerson, DevPersonType.ADULT)
-                tx.insert(child, DevPersonType.CHILD)
-                AuthenticatedUser.Citizen(otherPerson.id, CitizenAuthLevel.STRONG)
-            }
+        val otherCitizen = db.transaction { tx ->
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(otherPerson, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            AuthenticatedUser.Citizen(otherPerson.id, CitizenAuthLevel.STRONG)
+        }
         MockPersonDetailsService.addPersons(guardian, otherPerson, child)
         MockPersonDetailsService.addDependants(guardian, child)
         val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
@@ -902,12 +899,11 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val guardian = DevPerson(ssn = "070644-937X")
         val otherGuardian = DevPerson(ssn = "311299-999E")
         val child = DevPerson(ssn = "070714A9126")
-        val citizen =
-            db.transaction { tx ->
-                listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
-                tx.insert(child, DevPersonType.CHILD)
-                AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
-            }
+        val citizen = db.transaction { tx ->
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+            AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
+        }
         MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
         MockPersonDetailsService.addDependants(guardian, child)
         MockPersonDetailsService.addDependants(otherGuardian, child)
@@ -983,12 +979,11 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val guardian = DevPerson(ssn = "070644-937X")
         val otherGuardian = DevPerson(ssn = "311299-999E")
         val child = DevPerson(ssn = "070714A9126")
-        val citizen =
-            db.transaction { tx ->
-                listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
-                tx.insert(child, DevPersonType.CHILD)
-                AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
-            }
+        val citizen = db.transaction { tx ->
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+            AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
+        }
         MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
         MockPersonDetailsService.addDependants(guardian, child)
         MockPersonDetailsService.addDependants(otherGuardian, child)
@@ -1242,47 +1237,46 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         preschoolDaycarePeriod: FiniteDateRange? = null,
         preparatoryEducation: Boolean = false,
         hideFromGuardian: Boolean = false,
-    ): ApplicationId =
-        db.transaction { tx ->
-            // make sure guardians are up-to-date
-            personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, child.id)
+    ): ApplicationId = db.transaction { tx ->
+        // make sure guardians are up-to-date
+        personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, child.id)
 
-            val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
-            val applicationId =
-                tx.insertTestApplication(
-                    status = ApplicationStatus.WAITING_PLACEMENT,
-                    guardianId = adult.id,
-                    childId = child.id,
-                    type = type.toApplicationType(),
-                    hideFromGuardian = hideFromGuardian,
-                    document =
-                        DaycareFormV0(
-                            type = type.toApplicationType(),
-                            partTime = type == PlacementType.DAYCARE_PART_TIME,
-                            connectedDaycare = preschoolDaycare,
-                            serviceStart = "08:00".takeIf { preschoolDaycare },
-                            serviceEnd = "16:00".takeIf { preschoolDaycare },
-                            careDetails = CareDetails(preparatory = preparatoryEducation),
-                            child = child.toDaycareFormChild(),
-                            guardian = adult.toDaycareFormAdult(),
-                            apply = Apply(preferredUnits = listOf(unitId)),
-                            preferredStartDate = period.start,
-                        ),
-                )
-
-            applicationStateService.setVerified(tx, employee.user, clock, applicationId, false)
-            applicationStateService.createPlacementPlan(
-                tx,
-                employee.user,
-                clock,
-                applicationId,
-                DaycarePlacementPlan(
-                    unitId = unitId,
-                    period = period,
-                    preschoolDaycarePeriod = preschoolDaycarePeriod,
-                ),
+        val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
+        val applicationId =
+            tx.insertTestApplication(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                guardianId = adult.id,
+                childId = child.id,
+                type = type.toApplicationType(),
+                hideFromGuardian = hideFromGuardian,
+                document =
+                    DaycareFormV0(
+                        type = type.toApplicationType(),
+                        partTime = type == PlacementType.DAYCARE_PART_TIME,
+                        connectedDaycare = preschoolDaycare,
+                        serviceStart = "08:00".takeIf { preschoolDaycare },
+                        serviceEnd = "16:00".takeIf { preschoolDaycare },
+                        careDetails = CareDetails(preparatory = preparatoryEducation),
+                        child = child.toDaycareFormChild(),
+                        guardian = adult.toDaycareFormAdult(),
+                        apply = Apply(preferredUnits = listOf(unitId)),
+                        preferredStartDate = period.start,
+                    ),
             )
 
-            applicationId
-        }
+        applicationStateService.setVerified(tx, employee.user, clock, applicationId, false)
+        applicationStateService.createPlacementPlan(
+            tx,
+            employee.user,
+            clock,
+            applicationId,
+            DaycarePlacementPlan(
+                unitId = unitId,
+                period = period,
+                preschoolDaycarePeriod = preschoolDaycarePeriod,
+            ),
+        )
+
+        applicationId
+    }
 }

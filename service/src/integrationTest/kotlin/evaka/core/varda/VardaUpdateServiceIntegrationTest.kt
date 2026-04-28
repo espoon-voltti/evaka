@@ -131,10 +131,9 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private fun getVardaStateChildIds(): Set<ChildId> =
         db.read { tx -> tx.getVardaUpdateChildIds() }.toSet()
 
-    private fun getPlannedChildIds(): Set<ChildId> =
-        db.read { tx ->
-            tx.createQuery { sql("SELECT (payload->>'childId')::uuid FROM async_job") }
-                .mapTo<ChildId>()
-                .toSet()
-        }
+    private fun getPlannedChildIds(): Set<ChildId> = db.read { tx ->
+        tx.createQuery { sql("SELECT (payload->>'childId')::uuid FROM async_job") }
+            .mapTo<ChildId>()
+            .toSet()
+    }
 }

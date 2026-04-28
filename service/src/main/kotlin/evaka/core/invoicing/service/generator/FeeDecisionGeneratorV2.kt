@@ -52,8 +52,9 @@ fun generateAndInsertFeeDecisionsV2(
     val existingDecisions =
         tx.findFeeDecisionsForHeadOfFamily(headOfFamilyId = headOfFamilyId, lockForUpdate = true)
 
-    val activeDecisions =
-        existingDecisions.filter { FeeDecisionStatus.effective.contains(it.status) }
+    val activeDecisions = existingDecisions.filter {
+        FeeDecisionStatus.effective.contains(it.status)
+    }
     val existingDrafts = existingDecisions.filter { it.status == FeeDecisionStatus.DRAFT }
     val ignoredDrafts = existingDecisions.filter { it.status == FeeDecisionStatus.IGNORED }
 

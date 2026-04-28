@@ -93,8 +93,9 @@ fun generateInvoiceCorrectionChanges(
     sentInvoices: List<InvoiceDetailed>,
 ): Pair<List<InvoiceCorrectionUpdate>, List<InvoiceCorrectionInsert>> {
     val correctionsById = corrections.associateBy { it.id }
-    val rows =
-        sentInvoices.flatMap { invoice -> invoice.rows.map { row -> invoice.targetMonth() to row } }
+    val rows = sentInvoices.flatMap { invoice ->
+        invoice.rows.map { row -> invoice.targetMonth() to row }
+    }
 
     return rows
         .mapNotNull { (targetMonth, row) ->

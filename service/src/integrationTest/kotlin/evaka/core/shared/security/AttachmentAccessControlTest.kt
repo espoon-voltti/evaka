@@ -119,30 +119,29 @@ class AttachmentAccessControlTest : AccessControlTest() {
         }
     }
 
-    private fun insertApplicationAttachment(user: AuthenticatedUser) =
-        db.transaction { tx ->
-            val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
-            val applicationId =
-                tx.insertTestApplication(
-                    guardianId = guardianId,
-                    childId = childId,
-                    type = ApplicationType.DAYCARE,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            child = Child(dateOfBirth = null),
-                            guardian = Adult(),
-                            apply = Apply(preferredUnits = listOf(unit.id)),
-                        ),
-                )
-            tx.insertAttachment(
-                user,
-                clock.now(),
-                "test.pdf",
-                "application/pdf",
-                AttachmentParent.Application(applicationId),
-                type = null,
+    private fun insertApplicationAttachment(user: AuthenticatedUser) = db.transaction { tx ->
+        val guardianId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+        val childId = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+        val applicationId =
+            tx.insertTestApplication(
+                guardianId = guardianId,
+                childId = childId,
+                type = ApplicationType.DAYCARE,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(unit.id)),
+                    ),
             )
-        }
+        tx.insertAttachment(
+            user,
+            clock.now(),
+            "test.pdf",
+            "application/pdf",
+            AttachmentParent.Application(applicationId),
+            type = null,
+        )
+    }
 }

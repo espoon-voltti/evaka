@@ -33,23 +33,20 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun updateWorkingTimeEvents() {
-        val employeeId =
-            db.transaction { tx ->
-                tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
-            }
+        val employeeId = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+        }
 
-        val response1 =
-            db.transaction { tx ->
-                titaniaService.updateWorkingTimeEvents(tx, titaniaUpdateRequestValidExampleData)
-            }
+        val response1 = db.transaction { tx ->
+            titaniaService.updateWorkingTimeEvents(tx, titaniaUpdateRequestValidExampleData)
+        }
         assertThat(response1).returns("OK") { it.updateWorkingTimeEventsResponse.message }
         val plans1 = db.transaction { tx -> tx.findStaffAttendancePlansBy() }
         assertThat(plans1).extracting<EmployeeId> { it.employeeId }.containsExactly(employeeId)
 
-        val response2 =
-            db.transaction { tx ->
-                titaniaService.updateWorkingTimeEvents(tx, titaniaUpdateRequestValidExampleData)
-            }
+        val response2 = db.transaction { tx ->
+            titaniaService.updateWorkingTimeEvents(tx, titaniaUpdateRequestValidExampleData)
+        }
         assertThat(response2).returns("OK") { it.updateWorkingTimeEventsResponse.message }
         val plans2 = db.transaction { tx -> tx.findStaffAttendancePlansBy() }
         assertThat(plans2).extracting<EmployeeId> { it.employeeId }.containsExactly(employeeId)
@@ -57,18 +54,13 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun updateWorkingTimeEventsInternal() {
-        val employeeId =
-            db.transaction { tx ->
-                tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
-            }
+        val employeeId = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+        }
 
-        val response1 =
-            db.transaction { tx ->
-                titaniaService.updateWorkingTimeEventsInternal(
-                    tx,
-                    titaniaUpdateRequestValidExampleData,
-                )
-            }
+        val response1 = db.transaction { tx ->
+            titaniaService.updateWorkingTimeEventsInternal(tx, titaniaUpdateRequestValidExampleData)
+        }
         assertThat(response1.deleted).isEmpty()
         assertThat(response1.inserted)
             .containsExactlyInAnyOrder(
@@ -81,27 +73,21 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 )
             )
 
-        val response2 =
-            db.transaction { tx ->
-                titaniaService.updateWorkingTimeEventsInternal(
-                    tx,
-                    titaniaUpdateRequestValidExampleData,
-                )
-            }
+        val response2 = db.transaction { tx ->
+            titaniaService.updateWorkingTimeEventsInternal(tx, titaniaUpdateRequestValidExampleData)
+        }
         assertThat(response2.deleted).isEqualTo(response1.inserted)
         assertThat(response2.inserted).isEqualTo(response1.inserted)
     }
 
     @Test
     fun `updateWorkingTimeEventsInternal merge overnight events`() {
-        val employee1Id =
-            db.transaction { tx ->
-                tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
-            }
-        val employee2Id =
-            db.transaction { tx ->
-                tx.createEmployee(testEmployee.copy(employeeNumber = "949382")).id
-            }
+        val employee1Id = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+        }
+        val employee2Id = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "949382")).id
+        }
 
         val request =
             UpdateWorkingTimeEventsRequest(
@@ -218,8 +204,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     ),
             )
 
-        val response =
-            db.transaction { tx -> titaniaService.updateWorkingTimeEventsInternal(tx, request) }
+        val response = db.transaction { tx ->
+            titaniaService.updateWorkingTimeEventsInternal(tx, request)
+        }
 
         assertThat(response.deleted).isEmpty()
         assertThat(response.inserted)
@@ -271,13 +258,82 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
         givenEventCode: String,
         expectedType: StaffAttendanceType,
     ) {
-        val employeeId =
-            db.transaction { tx ->
-                tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
-            }
+        val employeeId = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+        }
 
-        val response =
-            db.transaction { tx ->
+        val response = db.transaction { tx ->
+            titaniaService.updateWorkingTimeEventsInternal(
+                tx,
+                UpdateWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2022, 10, 12),
+                            endDate = LocalDate.of(2022, 10, 12),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaSchedulingUnit(
+                                code = "",
+                                occupation =
+                                    listOf(
+                                        TitaniaOccupation(
+                                            code = "",
+                                            name = "",
+                                            person =
+                                                listOf(
+                                                    TitaniaPerson(
+                                                        employeeId = "176716",
+                                                        name = "",
+                                                        actualWorkingTimeEvents =
+                                                            TitaniaWorkingTimeEvents(
+                                                                event =
+                                                                    listOf(
+                                                                        TitaniaWorkingTimeEvent(
+                                                                            date =
+                                                                                LocalDate.of(
+                                                                                    2022,
+                                                                                    10,
+                                                                                    12,
+                                                                                ),
+                                                                            code = givenEventCode,
+                                                                            beginTime = "0942",
+                                                                            endTime = "0944",
+                                                                        )
+                                                                    )
+                                                            ),
+                                                    )
+                                                ),
+                                        )
+                                    ),
+                            )
+                        ),
+                ),
+            )
+        }
+
+        assertThat(response.deleted).isEmpty()
+        assertThat(response.inserted)
+            .containsExactlyInAnyOrder(
+                StaffAttendancePlan(
+                    employeeId = employeeId,
+                    type = expectedType,
+                    HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 42)),
+                    HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 44)),
+                    description = null,
+                )
+            )
+    }
+
+    @Test
+    fun `deduplicates identical events in the request`() {
+        val employeeId = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+        }
+
+        lateinit var response: TitaniaUpdateResponse
+        assertDoesNotThrow {
+            response = db.transaction { tx ->
                 titaniaService.updateWorkingTimeEventsInternal(
                     tx,
                     UpdateWorkingTimeEventsRequest(
@@ -311,11 +367,19 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                                                                                         10,
                                                                                         12,
                                                                                     ),
-                                                                                code =
-                                                                                    givenEventCode,
-                                                                                beginTime = "0942",
-                                                                                endTime = "0944",
-                                                                            )
+                                                                                beginTime = "0800",
+                                                                                endTime = "0900",
+                                                                            ),
+                                                                            TitaniaWorkingTimeEvent(
+                                                                                date =
+                                                                                    LocalDate.of(
+                                                                                        2022,
+                                                                                        10,
+                                                                                        12,
+                                                                                    ),
+                                                                                beginTime = "0800",
+                                                                                endTime = "0900",
+                                                                            ),
                                                                         )
                                                                 ),
                                                         )
@@ -327,92 +391,6 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     ),
                 )
             }
-
-        assertThat(response.deleted).isEmpty()
-        assertThat(response.inserted)
-            .containsExactlyInAnyOrder(
-                StaffAttendancePlan(
-                    employeeId = employeeId,
-                    type = expectedType,
-                    HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 42)),
-                    HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(9, 44)),
-                    description = null,
-                )
-            )
-    }
-
-    @Test
-    fun `deduplicates identical events in the request`() {
-        val employeeId =
-            db.transaction { tx ->
-                tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
-            }
-
-        lateinit var response: TitaniaUpdateResponse
-        assertDoesNotThrow {
-            response =
-                db.transaction { tx ->
-                    titaniaService.updateWorkingTimeEventsInternal(
-                        tx,
-                        UpdateWorkingTimeEventsRequest(
-                            period =
-                                TitaniaPeriod(
-                                    beginDate = LocalDate.of(2022, 10, 12),
-                                    endDate = LocalDate.of(2022, 10, 12),
-                                ),
-                            schedulingUnit =
-                                listOf(
-                                    TitaniaSchedulingUnit(
-                                        code = "",
-                                        occupation =
-                                            listOf(
-                                                TitaniaOccupation(
-                                                    code = "",
-                                                    name = "",
-                                                    person =
-                                                        listOf(
-                                                            TitaniaPerson(
-                                                                employeeId = "176716",
-                                                                name = "",
-                                                                actualWorkingTimeEvents =
-                                                                    TitaniaWorkingTimeEvents(
-                                                                        event =
-                                                                            listOf(
-                                                                                TitaniaWorkingTimeEvent(
-                                                                                    date =
-                                                                                        LocalDate
-                                                                                            .of(
-                                                                                                2022,
-                                                                                                10,
-                                                                                                12,
-                                                                                            ),
-                                                                                    beginTime =
-                                                                                        "0800",
-                                                                                    endTime = "0900",
-                                                                                ),
-                                                                                TitaniaWorkingTimeEvent(
-                                                                                    date =
-                                                                                        LocalDate
-                                                                                            .of(
-                                                                                                2022,
-                                                                                                10,
-                                                                                                12,
-                                                                                            ),
-                                                                                    beginTime =
-                                                                                        "0800",
-                                                                                    endTime = "0900",
-                                                                                ),
-                                                                            )
-                                                                    ),
-                                                            )
-                                                        ),
-                                                )
-                                            ),
-                                    )
-                                ),
-                        ),
-                    )
-                }
         }
 
         assertThat(response.deleted).isEmpty()
@@ -524,8 +502,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                     ),
             )
 
-        val response =
-            db.transaction { tx -> titaniaService.updateWorkingTimeEventsInternal(tx, request) }
+        val response = db.transaction { tx ->
+            titaniaService.updateWorkingTimeEventsInternal(tx, request)
+        }
 
         assertThat(response.deleted).isEmpty()
         assertThat(response.inserted).isEmpty()
@@ -541,150 +520,133 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `checks for conflicting shifts`() {
-        val employeeId1 =
-            db.transaction { tx ->
-                tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
-            }
-        val employeeId2 =
-            db.transaction { tx ->
-                tx.createEmployee(testEmployee.copy(employeeNumber = "176167")).id
-            }
+        val employeeId1 = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+        }
+        val employeeId2 = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176167")).id
+        }
 
         lateinit var response: TitaniaUpdateResponse
         assertDoesNotThrow {
-            response =
-                db.transaction { tx ->
-                    titaniaService.updateWorkingTimeEventsInternal(
-                        tx,
-                        UpdateWorkingTimeEventsRequest(
-                            period =
-                                TitaniaPeriod(
-                                    beginDate = LocalDate.of(2022, 10, 12),
-                                    endDate = LocalDate.of(2022, 10, 13),
-                                ),
-                            schedulingUnit =
-                                listOf(
-                                    TitaniaSchedulingUnit(
-                                        code = "",
-                                        occupation =
-                                            listOf(
-                                                TitaniaOccupation(
-                                                    code = "",
-                                                    name = "",
-                                                    person =
-                                                        listOf(
-                                                            TitaniaPerson(
-                                                                employeeId = "176716",
-                                                                name = "",
-                                                                actualWorkingTimeEvents =
-                                                                    TitaniaWorkingTimeEvents(
-                                                                        event =
-                                                                            listOf(
-                                                                                TitaniaWorkingTimeEvent(
-                                                                                    date =
-                                                                                        LocalDate
-                                                                                            .of(
-                                                                                                2022,
-                                                                                                10,
-                                                                                                12,
-                                                                                            ),
-                                                                                    beginTime =
-                                                                                        "0800",
-                                                                                    endTime = "0900",
-                                                                                ),
-                                                                                TitaniaWorkingTimeEvent(
-                                                                                    date =
-                                                                                        LocalDate
-                                                                                            .of(
-                                                                                                2022,
-                                                                                                10,
-                                                                                                12,
-                                                                                            ),
-                                                                                    beginTime =
-                                                                                        "0830",
-                                                                                    endTime = "1400",
-                                                                                ),
-                                                                                TitaniaWorkingTimeEvent(
-                                                                                    date =
-                                                                                        LocalDate
-                                                                                            .of(
-                                                                                                2022,
-                                                                                                10,
-                                                                                                12,
-                                                                                            ),
-                                                                                    beginTime =
-                                                                                        "1400",
-                                                                                    endTime = "1530",
-                                                                                ),
-                                                                            )
-                                                                    ),
-                                                            ),
-                                                            TitaniaPerson(
-                                                                employeeId = "176167",
-                                                                name = "",
-                                                                actualWorkingTimeEvents =
-                                                                    TitaniaWorkingTimeEvents(
-                                                                        event =
-                                                                            listOf(
-                                                                                TitaniaWorkingTimeEvent(
-                                                                                    date =
-                                                                                        LocalDate
-                                                                                            .of(
-                                                                                                2022,
-                                                                                                10,
-                                                                                                12,
-                                                                                            ),
-                                                                                    beginTime =
-                                                                                        "0800",
-                                                                                    endTime = "0900",
-                                                                                ),
-                                                                                TitaniaWorkingTimeEvent(
-                                                                                    date =
-                                                                                        LocalDate
-                                                                                            .of(
-                                                                                                2022,
-                                                                                                10,
-                                                                                                12,
-                                                                                            ),
-                                                                                    beginTime =
-                                                                                        "0800",
-                                                                                    endTime = "0900",
-                                                                                ),
-                                                                                TitaniaWorkingTimeEvent(
-                                                                                    date =
-                                                                                        LocalDate
-                                                                                            .of(
-                                                                                                2022,
-                                                                                                10,
-                                                                                                13,
-                                                                                            ),
-                                                                                    beginTime =
-                                                                                        "0700",
-                                                                                    endTime = "1130",
-                                                                                ),
-                                                                                TitaniaWorkingTimeEvent(
-                                                                                    date =
-                                                                                        LocalDate
-                                                                                            .of(
-                                                                                                2022,
-                                                                                                10,
-                                                                                                13,
-                                                                                            ),
-                                                                                    beginTime =
-                                                                                        "1045",
-                                                                                    endTime = "1300",
-                                                                                ),
-                                                                            )
-                                                                    ),
-                                                            ),
+            response = db.transaction { tx ->
+                titaniaService.updateWorkingTimeEventsInternal(
+                    tx,
+                    UpdateWorkingTimeEventsRequest(
+                        period =
+                            TitaniaPeriod(
+                                beginDate = LocalDate.of(2022, 10, 12),
+                                endDate = LocalDate.of(2022, 10, 13),
+                            ),
+                        schedulingUnit =
+                            listOf(
+                                TitaniaSchedulingUnit(
+                                    code = "",
+                                    occupation =
+                                        listOf(
+                                            TitaniaOccupation(
+                                                code = "",
+                                                name = "",
+                                                person =
+                                                    listOf(
+                                                        TitaniaPerson(
+                                                            employeeId = "176716",
+                                                            name = "",
+                                                            actualWorkingTimeEvents =
+                                                                TitaniaWorkingTimeEvents(
+                                                                    event =
+                                                                        listOf(
+                                                                            TitaniaWorkingTimeEvent(
+                                                                                date =
+                                                                                    LocalDate.of(
+                                                                                        2022,
+                                                                                        10,
+                                                                                        12,
+                                                                                    ),
+                                                                                beginTime = "0800",
+                                                                                endTime = "0900",
+                                                                            ),
+                                                                            TitaniaWorkingTimeEvent(
+                                                                                date =
+                                                                                    LocalDate.of(
+                                                                                        2022,
+                                                                                        10,
+                                                                                        12,
+                                                                                    ),
+                                                                                beginTime = "0830",
+                                                                                endTime = "1400",
+                                                                            ),
+                                                                            TitaniaWorkingTimeEvent(
+                                                                                date =
+                                                                                    LocalDate.of(
+                                                                                        2022,
+                                                                                        10,
+                                                                                        12,
+                                                                                    ),
+                                                                                beginTime = "1400",
+                                                                                endTime = "1530",
+                                                                            ),
+                                                                        )
+                                                                ),
                                                         ),
-                                                )
-                                            ),
-                                    )
-                                ),
-                        ),
-                    )
-                }
+                                                        TitaniaPerson(
+                                                            employeeId = "176167",
+                                                            name = "",
+                                                            actualWorkingTimeEvents =
+                                                                TitaniaWorkingTimeEvents(
+                                                                    event =
+                                                                        listOf(
+                                                                            TitaniaWorkingTimeEvent(
+                                                                                date =
+                                                                                    LocalDate.of(
+                                                                                        2022,
+                                                                                        10,
+                                                                                        12,
+                                                                                    ),
+                                                                                beginTime = "0800",
+                                                                                endTime = "0900",
+                                                                            ),
+                                                                            TitaniaWorkingTimeEvent(
+                                                                                date =
+                                                                                    LocalDate.of(
+                                                                                        2022,
+                                                                                        10,
+                                                                                        12,
+                                                                                    ),
+                                                                                beginTime = "0800",
+                                                                                endTime = "0900",
+                                                                            ),
+                                                                            TitaniaWorkingTimeEvent(
+                                                                                date =
+                                                                                    LocalDate.of(
+                                                                                        2022,
+                                                                                        10,
+                                                                                        13,
+                                                                                    ),
+                                                                                beginTime = "0700",
+                                                                                endTime = "1130",
+                                                                            ),
+                                                                            TitaniaWorkingTimeEvent(
+                                                                                date =
+                                                                                    LocalDate.of(
+                                                                                        2022,
+                                                                                        10,
+                                                                                        13,
+                                                                                    ),
+                                                                                beginTime = "1045",
+                                                                                endTime = "1300",
+                                                                            ),
+                                                                        )
+                                                                ),
+                                                        ),
+                                                    ),
+                                            )
+                                        ),
+                                )
+                            ),
+                    ),
+                )
+            }
         }
 
         assertThat(response.inserted).isEmpty()
@@ -712,14 +674,12 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `stores conflicting shifts in the error report table`() {
-        val employeeId1 =
-            db.transaction { tx ->
-                tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
-            }
-        val employeeId2 =
-            db.transaction { tx ->
-                tx.createEmployee(testEmployee.copy(employeeNumber = "176167")).id
-            }
+        val employeeId1 = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176716")).id
+        }
+        val employeeId2 = db.transaction { tx ->
+            tx.createEmployee(testEmployee.copy(employeeNumber = "176167")).id
+        }
 
         db.transaction { tx ->
             titaniaService.updateWorkingTimeEventsInternal(
@@ -1026,10 +986,9 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val response =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(tx, titaniaGetRequestValidExampleData)
-            }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(tx, titaniaGetRequestValidExampleData)
+        }
 
         assertThat(
                 response.copy(
@@ -1068,27 +1027,26 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val response =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period =
-                            TitaniaPeriod(
-                                beginDate = LocalDate.of(2023, 2, 6),
-                                endDate = LocalDate.of(2023, 2, 6),
-                            ),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2023, 2, 6),
+                            endDate = LocalDate.of(2023, 2, 6),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person =
+                                    listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                            )
+                        ),
+                ),
+            )
+        }
 
         assertThat(response)
             .isEqualTo(
@@ -1176,27 +1134,26 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val response =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period =
-                            TitaniaPeriod(
-                                beginDate = LocalDate.of(2022, 10, 19),
-                                endDate = LocalDate.of(2022, 10, 19),
-                            ),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2022, 10, 19),
+                            endDate = LocalDate.of(2022, 10, 19),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person =
+                                    listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                            )
+                        ),
+                ),
+            )
+        }
 
         assertThat(response)
             .isEqualTo(
@@ -1290,27 +1247,26 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val response =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period =
-                            TitaniaPeriod(
-                                beginDate = LocalDate.of(2022, 10, 19),
-                                endDate = LocalDate.of(2022, 10, 19),
-                            ),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2022, 10, 19),
+                            endDate = LocalDate.of(2022, 10, 19),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person =
+                                    listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                            )
+                        ),
+                ),
+            )
+        }
 
         assertThat(response)
             .isEqualTo(
@@ -1418,27 +1374,26 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val response =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period =
-                            TitaniaPeriod(
-                                beginDate = LocalDate.of(2022, 10, 19),
-                                endDate = LocalDate.of(2022, 10, 19),
-                            ),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2022, 10, 19),
+                            endDate = LocalDate.of(2022, 10, 19),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person =
+                                    listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                            )
+                        ),
+                ),
+            )
+        }
 
         assertThat(response)
             .isEqualTo(
@@ -1553,27 +1508,26 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val response =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period =
-                            TitaniaPeriod(
-                                beginDate = LocalDate.of(2022, 10, 19),
-                                endDate = LocalDate.of(2022, 10, 19),
-                            ),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2022, 10, 19),
+                            endDate = LocalDate.of(2022, 10, 19),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person =
+                                    listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                            )
+                        ),
+                ),
+            )
+        }
 
         assertThat(response)
             .isEqualTo(
@@ -1661,27 +1615,26 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val response =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period =
-                            TitaniaPeriod(
-                                beginDate = LocalDate.of(2022, 10, 19),
-                                endDate = LocalDate.of(2022, 10, 19),
-                            ),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2022, 10, 19),
+                            endDate = LocalDate.of(2022, 10, 19),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person =
+                                    listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                            )
+                        ),
+                ),
+            )
+        }
 
         assertThat(response)
             .isEqualTo(
@@ -1756,27 +1709,26 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val response =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period =
-                            TitaniaPeriod(
-                                beginDate = LocalDate.of(2022, 10, 20),
-                                endDate = LocalDate.of(2022, 10, 20),
-                            ),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2022, 10, 20),
+                            endDate = LocalDate.of(2022, 10, 20),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person =
+                                    listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                            )
+                        ),
+                ),
+            )
+        }
 
         assertThat(response)
             .isEqualTo(
@@ -1877,27 +1829,26 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val response =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period =
-                            TitaniaPeriod(
-                                beginDate = LocalDate.of(2022, 10, 20),
-                                endDate = LocalDate.of(2022, 10, 21),
-                            ),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2022, 10, 20),
+                            endDate = LocalDate.of(2022, 10, 21),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person =
+                                    listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                            )
+                        ),
+                ),
+            )
+        }
 
         val actual =
             response.schedulingUnit.flatMap { unit ->
@@ -1977,27 +1928,26 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val response =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period =
-                            TitaniaPeriod(
-                                beginDate = LocalDate.of(2022, 10, 20),
-                                endDate = LocalDate.of(2022, 10, 20),
-                            ),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period =
+                        TitaniaPeriod(
+                            beginDate = LocalDate.of(2022, 10, 20),
+                            endDate = LocalDate.of(2022, 10, 20),
+                        ),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person =
+                                    listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                            )
+                        ),
+                ),
+            )
+        }
 
         assertThat(response)
             .isEqualTo(
@@ -2084,23 +2034,22 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val response =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period = TitaniaPeriod(beginDate = date, endDate = date),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val response = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period = TitaniaPeriod(beginDate = date, endDate = date),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person =
+                                    listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                            )
+                        ),
+                ),
+            )
+        }
 
         assertThat(response)
             .isEqualTo(
@@ -2216,41 +2165,38 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
                 }
         }
 
-        val responseIines =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period = TitaniaPeriod(beginDate = date, endDate = date),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val responseIines = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period = TitaniaPeriod(beginDate = date, endDate = date),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person =
+                                    listOf(TitaniaStampedPersonRequest(employeeId = "00177111")),
+                            )
+                        ),
+                ),
+            )
+        }
 
-        val responseHessu =
-            db.transaction { tx ->
-                titaniaService.getStampedWorkingTimeEvents(
-                    tx,
-                    GetStampedWorkingTimeEventsRequest(
-                        period = TitaniaPeriod(beginDate = date, endDate = date),
-                        schedulingUnit =
-                            listOf(
-                                TitaniaStampedUnitRequest(
-                                    code = "from titania",
-                                    person =
-                                        listOf(TitaniaStampedPersonRequest(employeeId = "255145")),
-                                )
-                            ),
-                    ),
-                )
-            }
+        val responseHessu = db.transaction { tx ->
+            titaniaService.getStampedWorkingTimeEvents(
+                tx,
+                GetStampedWorkingTimeEventsRequest(
+                    period = TitaniaPeriod(beginDate = date, endDate = date),
+                    schedulingUnit =
+                        listOf(
+                            TitaniaStampedUnitRequest(
+                                code = "from titania",
+                                person = listOf(TitaniaStampedPersonRequest(employeeId = "255145")),
+                            )
+                        ),
+                ),
+            )
+        }
 
         assertThat(responseIines)
             .isEqualTo(

@@ -107,25 +107,24 @@ class FamilyInitializerServiceIntegrationTest : FullApplicationTest(resetDbBefor
             )
         }
 
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    type = ApplicationType.DAYCARE,
-                    guardianId = adult.id,
-                    childId = child.id,
-                    status = ApplicationStatus.WAITING_PLACEMENT,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            child =
-                                Child(
-                                    dateOfBirth = child.dateOfBirth,
-                                    socialSecurityNumber = child.ssn ?: "",
-                                ),
-                            guardian = Adult(socialSecurityNumber = adult.ssn ?: ""),
-                        ),
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                guardianId = adult.id,
+                childId = child.id,
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        child =
+                            Child(
+                                dateOfBirth = child.dateOfBirth,
+                                socialSecurityNumber = child.ssn ?: "",
+                            ),
+                        guardian = Adult(socialSecurityNumber = adult.ssn ?: ""),
+                    ),
+            )
+        }
 
         familyInitializerService.handleInitializeFamilyFromApplication(
             db,
@@ -164,34 +163,33 @@ class FamilyInitializerServiceIntegrationTest : FullApplicationTest(resetDbBefor
             )
         }
 
-        val applicationId =
-            db.transaction { tx ->
-                tx.insertTestApplication(
-                    type = ApplicationType.DAYCARE,
-                    guardianId = adult.id,
-                    childId = child.id,
-                    status = ApplicationStatus.WAITING_PLACEMENT,
-                    document =
-                        DaycareFormV0(
-                            type = ApplicationType.DAYCARE,
-                            child =
-                                Child(
-                                    dateOfBirth = child.dateOfBirth,
-                                    socialSecurityNumber = child.ssn ?: "",
-                                ),
-                            guardian = Adult(socialSecurityNumber = adult.ssn ?: ""),
-                            hasOtherChildren = true,
-                            otherChildren =
-                                listOf(
-                                    evaka.core.application.persistence.daycare.OtherPerson(
-                                        firstName = child2.firstName,
-                                        lastName = child2.lastName,
-                                        socialSecurityNumber = child2.ssn ?: "",
-                                    )
-                                ),
-                        ),
-                )
-            }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                type = ApplicationType.DAYCARE,
+                guardianId = adult.id,
+                childId = child.id,
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        child =
+                            Child(
+                                dateOfBirth = child.dateOfBirth,
+                                socialSecurityNumber = child.ssn ?: "",
+                            ),
+                        guardian = Adult(socialSecurityNumber = adult.ssn ?: ""),
+                        hasOtherChildren = true,
+                        otherChildren =
+                            listOf(
+                                evaka.core.application.persistence.daycare.OtherPerson(
+                                    firstName = child2.firstName,
+                                    lastName = child2.lastName,
+                                    socialSecurityNumber = child2.ssn ?: "",
+                                )
+                            ),
+                    ),
+            )
+        }
 
         familyInitializerService.handleInitializeFamilyFromApplication(
             db,
