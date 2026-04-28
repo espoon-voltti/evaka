@@ -112,7 +112,7 @@ const features: Features = {
     urgencyAttachments: true,
     financeDecisionHandlerSelect: false,
     feeDecisionPreschoolClubFilter: true,
-    placementGuarantee: false,
+    placementGuarantee: true,
     voucherUnitPayments: true,
     extendedPreschoolTerm: false,
     intermittentShiftCare: false,
