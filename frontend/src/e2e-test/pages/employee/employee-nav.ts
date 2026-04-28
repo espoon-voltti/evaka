@@ -32,6 +32,7 @@ export default class EmployeeNav {
       | 'holiday-periods'
       | 'preferred-first-name'
       | 'system-notifications'
+      | 'decision-reasonings'
   ) {
     await this.#userNameBtn.click()
     return this.page.findByDataQa(`user-popup-${item}`).click()

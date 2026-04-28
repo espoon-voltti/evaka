@@ -76,6 +76,8 @@
 ;"Palveluseteliarvon muokkaus";UPDATE_VOUCHER_VALUE;x;;;x;;;;;;;
 ;"Palveluseteliarvon poisto";DELETE_VOUCHER_VALUE;x;;;x;;;;;;;
 ;"Päätösluonnoksen yksiköiden luku";READ_DECISION_UNITS;x;;x;;;x;;x;;;x
+;"Päätösten perustelujen luku";READ_DECISION_REASONINGS;x;;;;;x;;;;;
+;"Päätösten perustelujen muokkaus";"WRITE_DECISION_REASONINGS";x;;;;;;;;;;
 ;Sijoittelutyöpöytä;"READ_PLACEMENT_DESKTOP_DAYCARES";x;;;;;x;;;;;
 ;"Talouden maksuasetuksien luku";READ_FEE_THRESHOLDS;x;;x;x;x;;;;;;
 ;"Talouden maksuasetuksien luonti";CREATE_FEE_THRESHOLDS;x;;;x;;;;;;;

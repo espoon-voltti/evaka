@@ -336,6 +336,10 @@ class SystemController(
                                     QuestionnaireType.OPEN_RANGES,
                             outOfOffice =
                                 permittedGlobalActions.contains(Action.Global.OUT_OF_OFFICE_PAGE),
+                            decisionReasonings =
+                                permittedGlobalActions.contains(
+                                    Action.Global.WRITE_DECISION_REASONINGS
+                                ),
                         )
 
                     EmployeeUserResponse(

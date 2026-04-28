@@ -64,7 +64,8 @@ export const sv: typeof fi = {
     clubTerm: 'Klubbtermin',
     clubTerms: 'Klubbterminer',
     placementTool: 'Optimeringsverktyg',
-    outOfOffice: 'Frånvaromeddelande'
+    outOfOffice: 'Frånvaromeddelande',
+    decisionReasonings: 'Beslutsmotiveringar'
   },
   common: {
     yes: 'Ja',
@@ -5247,6 +5248,72 @@ export const sv: typeof fi = {
     validationErrors: {
       endBeforeToday: 'Kan inte upphöra i det förflutna'
     }
+  },
+  decisionReasonings: {
+    tabs: {
+      DAYCARE: 'Småbarnspedagogik',
+      PRESCHOOL: 'Förskoleundervisning'
+    },
+    collectionInfo: {
+      DAYCARE:
+        'Småbarnspedagogikmotiveringar används i beslut som gäller placeringstyper:',
+      PRESCHOOL:
+        'Förskolemotiveringar används i beslut som gäller placeringstyper:'
+    },
+    placementTypes: {
+      DAYCARE: [
+        'Småbarnspedagogikbeslut',
+        'Deltid småbarnspedagogik',
+        'Ansluten småbarnspedagogik',
+        'Klubb'
+      ],
+      PRESCHOOL: ['Förskoleundervisning', 'Förberedande undervisning']
+    },
+    generic: {
+      title: 'Allmänna motiveringar',
+      addNew: 'Lägg till allmän motivering',
+      dateSuffix: 'begynnande placeringar',
+      dateLabel: 'Gäller placeringar som börjar',
+      textFi: 'Text för beslutet',
+      textSv: 'Text för beslutet',
+      statusReady: 'I bruk',
+      statusNotReady: 'Inte i bruk',
+      statusOutdated: 'Föråldrad',
+      notReadyWarning:
+        'Beslut kan inte skickas innan motiveringen har tagits i bruk',
+      outdated: 'Föråldrade',
+      cancel: 'Avbryt',
+      saveAsNotReady: 'Spara utan att aktivera',
+      saveAndActivate: 'Ta i bruk',
+      saveAndActivateConfirmTitle: 'Ta motivering i bruk',
+      saveAndActivateConfirmText:
+        'Observera att en allmän motivering som tagits i bruk inte kan tas bort. En befintlig allmän motivering kan dock ersättas med en ny allmän motivering som tas i bruk för samma period. Vill du ta den allmänna motiveringen i bruk?',
+      edit: 'Redigera',
+      delete: 'Ta bort',
+      deleteConfirmTitle: 'Ta bort motivering',
+      deleteConfirmText: 'Vill du ta bort den allmänna motiveringen?'
+    },
+    individual: {
+      title: 'Individuella motiveringar',
+      addNew: 'Lägg till individuell motivering',
+      statusActive: 'Tillgänglig',
+      statusRemoved: 'Borttagen från bruk',
+      titleFi: 'Internt namn',
+      titleSv: 'Internt namn',
+      textFi: 'Text för beslutet',
+      textSv: 'Text för beslutet',
+      removed: 'Borttagen från bruk',
+      cancel: 'Avbryt',
+      saveAndActivate: 'Ta i bruk',
+      saveAndActivateConfirmTitle: 'Ta motivering i bruk',
+      saveAndActivateConfirmText:
+        'Observera att om en individuell motivering tas bort från bruk senare, försvinner den inte från beslut där den redan valts. Vill du ta den individuella motiveringen i bruk?',
+      removeConfirmTitle: 'Ta bort motivering från bruk',
+      removeConfirmText:
+        'Vill du ta bort den individuella motiveringen från bruk?'
+    },
+    fi: 'FI',
+    sv: 'SV'
   },
   components
 }

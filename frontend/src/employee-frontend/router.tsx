@@ -22,6 +22,7 @@ import ChildDocumentEditView from './components/child-documents/ChildDocumentEdi
 import ChildDocumentReadView from './components/child-documents/ChildDocumentReadView'
 import ChildInformation from './components/child-information/ChildInformation'
 import DecisionPage from './components/decision-draft/DecisionDraft'
+import DecisionReasoningsPage from './components/decision-reasonings/DecisionReasoningsPage'
 import DocumentTemplatesPage from './components/document-templates/template-editor/DocumentTemplatesPage'
 import TemplateEditorPage from './components/document-templates/template-editor/TemplateEditorPage'
 import EmployeePinCodePage from './components/employee-pin-code/EmployeePinCodePage'
@@ -416,6 +417,12 @@ const routes: EmployeeRoute[] = [
   { path: '/employees', component: EmployeesPage, title: 'employees' },
   { path: '/employees/:id', component: EmployeePage, title: 'employees' },
   { path: '/welcome', component: WelcomePage, title: 'welcomePage' },
+  {
+    path: '/decision-reasonings',
+    component: DecisionReasoningsPage,
+    title: 'decisionReasonings',
+    disabled: !featureFlags.decisionReasoningOptions
+  },
   {
     path: '/document-templates',
     component: DocumentTemplatesPage,

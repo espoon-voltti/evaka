@@ -272,6 +272,7 @@ sealed interface Action {
             IsEmployee.andIsDecisionMakerForAnyChildDocumentDecision(),
         ),
         READ_DECISIONS_REPORT(HasGlobalRole(ADMIN, SERVICE_WORKER, DIRECTOR, REPORT_VIEWER)),
+        READ_DECISION_REASONINGS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_DUPLICATE_PEOPLE_REPORT(HasGlobalRole(ADMIN)),
         READ_ENDED_PLACEMENTS_REPORT(HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN)),
         READ_INCOMPLETE_INCOMES_REPORT(HasGlobalRole(ADMIN, FINANCE_ADMIN, FINANCE_STAFF)),
@@ -337,7 +338,8 @@ sealed interface Action {
         READ_AROMI_ORDERS(HasGlobalRole(ADMIN)),
         READ_PLACEMENT_DESKTOP_DAYCARES(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_DRAFT_OCCUPANCIES(HasGlobalRole(ADMIN, SERVICE_WORKER)),
-        READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA(HasGlobalRole(ADMIN));
+        READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA(HasGlobalRole(ADMIN)),
+        WRITE_DECISION_REASONINGS(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

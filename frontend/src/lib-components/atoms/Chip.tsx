@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import type { Property } from 'csstype'
 import { readableColor } from 'polished'
 import React, { useCallback } from 'react'
-import styled, { css } from 'styled-components'
+import styled, { css, useTheme } from 'styled-components'
 
 import { faCheck } from 'lib-icons'
 
@@ -206,3 +207,172 @@ export const ChipWrapper = styled.div<{
     }
   `};
 `
+
+// ---- Chip ----
+
+type ChipColorPaletteKey =
+  | 'green'
+  | 'orange'
+  | 'purple'
+  | 'red'
+  | 'blue'
+  | 'gray'
+
+interface ChipColorPalette {
+  backgroundColor: string
+  textColor: string
+  borderColor?: string
+  iconColor: string
+  iconColorInner?: string
+}
+
+type ChipSize = 'small' | 'large'
+
+export type ChipProps = {
+  label: string
+  icon?: IconDefinition
+  size: ChipSize
+  colorPalette: ChipColorPaletteKey
+  iconCircle?: boolean
+  'data-qa'?: string
+}
+
+const chipSizes: Record<
+  ChipSize,
+  {
+    height: string
+    fontSize: string
+    iconSize: string
+    circleSize: string
+    iconInCircleSize: string
+  }
+> = {
+  small: {
+    height: '24px',
+    fontSize: '14px',
+    iconSize: '16px',
+    circleSize: '18px',
+    iconInCircleSize: '12px'
+  },
+  large: {
+    height: '32px',
+    fontSize: '16px',
+    iconSize: '16px',
+    circleSize: '24px',
+    iconInCircleSize: '16px'
+  }
+}
+
+const ChipContainer = styled.div<{
+  $size: ChipSize
+  $backgroundColor: string
+  $textColor: string
+  $borderColor: string
+  $iconCircle: boolean
+}>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: ${(p) => chipSizes[p.$size].height};
+  padding: 0 ${defaultMargins.xs} 0
+    ${(p) => (p.$iconCircle ? defaultMargins.xxs : defaultMargins.xs)};
+  border-radius: ${defaultMargins.s};
+  border: 2px solid ${(p) => p.$borderColor};
+  background-color: ${(p) => p.$backgroundColor};
+  color: ${(p) => p.$textColor};
+  font-family: 'Open Sans', sans-serif;
+  font-weight: ${fontWeights.semibold};
+  font-size: ${(p) => chipSizes[p.$size].fontSize};
+  white-space: nowrap;
+  width: fit-content;
+`
+
+const ChipIconCircle = styled.div<{ $size: ChipSize; $color: string }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: ${(p) => chipSizes[p.$size].circleSize};
+  height: ${(p) => chipSizes[p.$size].circleSize};
+  border-radius: 100%;
+  background-color: ${(p) => p.$color};
+`
+
+const ChipIcon = styled(FontAwesomeIcon)<{ $px: string }>`
+  width: ${(p) => p.$px};
+  height: ${(p) => p.$px};
+`
+
+export const Chip = React.memo(function Chip({
+  label,
+  icon,
+  size,
+  colorPalette,
+  iconCircle,
+  'data-qa': dataQa
+}: ChipProps) {
+  const { colors } = useTheme()
+
+  const palettes: Record<ChipColorPaletteKey, ChipColorPalette> = {
+    green: {
+      backgroundColor: '#E9F6EA',
+      textColor: '#2A6A2C',
+      iconColor: colors.status.success
+    },
+    orange: {
+      backgroundColor: '#FFEEE0',
+      textColor: '#814113',
+      iconColor: colors.status.warning
+    },
+    purple: {
+      backgroundColor: '#F0E5F6',
+      textColor: '#693088',
+      iconColor: colors.accents.a4violet
+    },
+    red: {
+      backgroundColor: '#FDECEA',
+      textColor: '#820014',
+      iconColor: colors.status.danger
+    },
+    blue: {
+      backgroundColor: '#e3eaf6',
+      textColor: colors.main.m1,
+      iconColor: colors.status.info
+    },
+    gray: {
+      backgroundColor: colors.grayscale.g15,
+      textColor: colors.grayscale.g100,
+      iconColor: colors.grayscale.g70
+    }
+  }
+
+  const palette = palettes[colorPalette]
+  const iconColorInner = palette.iconColorInner ?? colors.grayscale.g0
+  const borderColor = palette.borderColor ?? palette.backgroundColor
+  const sizes = chipSizes[size]
+
+  return (
+    <ChipContainer
+      $size={size}
+      $backgroundColor={palette.backgroundColor}
+      $textColor={palette.textColor}
+      $borderColor={borderColor}
+      $iconCircle={!!iconCircle}
+      data-qa={dataQa}
+    >
+      {icon && iconCircle && (
+        <ChipIconCircle $size={size} $color={palette.iconColor}>
+          <ChipIcon
+            icon={icon}
+            $px={sizes.iconInCircleSize}
+            color={iconColorInner}
+          />
+        </ChipIconCircle>
+      )}
+      {icon && !iconCircle && (
+        <ChipIcon icon={icon} $px={sizes.iconSize} color={palette.iconColor} />
+      )}
+      <span>{label}</span>
+    </ChipContainer>
+  )
+})

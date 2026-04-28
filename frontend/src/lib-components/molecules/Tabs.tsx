@@ -196,6 +196,7 @@ const Tab = styled.div<{
   $mobile?: boolean
 }>`
   ${tabStyles}
+  cursor: pointer;
 `
 
 const TabLink = styled(NavLink)<{

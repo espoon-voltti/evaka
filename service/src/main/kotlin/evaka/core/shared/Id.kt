@@ -74,6 +74,10 @@ sealed interface DatabaseTable {
 
     sealed class Decision : DatabaseTable
 
+    sealed class DecisionGenericReasoning : DatabaseTable
+
+    sealed class DecisionIndividualReasoning : DatabaseTable
+
     sealed class DocumentTemplate : DatabaseTable
 
     sealed class Employee : DatabaseTable
@@ -250,6 +254,10 @@ typealias DaycareCaretakerId = Id<DatabaseTable.DaycareCaretaker>
 typealias DaycareId = Id<DatabaseTable.Daycare>
 
 typealias DecisionId = Id<DatabaseTable.Decision>
+
+typealias DecisionGenericReasoningId = Id<DatabaseTable.DecisionGenericReasoning>
+
+typealias DecisionIndividualReasoningId = Id<DatabaseTable.DecisionIndividualReasoning>
 
 typealias DocumentTemplateId = Id<DatabaseTable.DocumentTemplate>
 

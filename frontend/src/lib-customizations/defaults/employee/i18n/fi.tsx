@@ -63,7 +63,8 @@ export const fi = {
     clubTerm: 'Kerhon lukukausi',
     clubTerms: 'Kerhojen lukukaudet',
     placementTool: 'Optimointityökalu',
-    outOfOffice: 'Poissaoloviesti'
+    outOfOffice: 'Poissaoloviesti',
+    decisionReasonings: 'Päätösten perustelut'
   },
   common: {
     yes: 'Kyllä',
@@ -5218,6 +5219,71 @@ export const fi = {
     validationErrors: {
       endBeforeToday: 'Ei voi päättyä menneisyydessä'
     }
+  },
+  decisionReasonings: {
+    tabs: {
+      DAYCARE: 'Varhaiskasvatus',
+      PRESCHOOL: 'Esiopetus'
+    },
+    collectionInfo: {
+      DAYCARE:
+        'Varhaiskasvatusperusteluja käytetään päätöksissä, jotka koskevat sijoitustyyppejä:',
+      PRESCHOOL:
+        'Esiopetusperusteluja käytetään päätöksissä, jotka koskevat sijoitustyyppejä:'
+    },
+    placementTypes: {
+      DAYCARE: [
+        'Varhaiskasvatuspäätökset',
+        'Osa-aikainen varhaiskasvatus',
+        'Liittyvä varhaiskasvatus',
+        'Kerho'
+      ],
+      PRESCHOOL: ['Esiopetus', 'Valmistava opetus']
+    },
+    generic: {
+      title: 'Yleiset perustelut',
+      addNew: 'Lisää yleinen perustelu',
+      dateSuffix: 'alkavat sijoitukset',
+      dateLabel: 'Koskee sijoituksia, jotka alkavat',
+      textFi: 'Päätökselle tuleva teksti',
+      textSv: 'Päätökselle tuleva teksti',
+      statusReady: 'Käytössä',
+      statusNotReady: 'Ei käytössä',
+      statusOutdated: 'Vanhentunut',
+      notReadyWarning:
+        'Päätöksiä ei voi lähettää ennen kuin perustelu on otettu käyttöön',
+      outdated: 'Vanhentuneet',
+      cancel: 'Peruuta',
+      saveAsNotReady: 'Tallenna otamatta käyttöön',
+      saveAndActivate: 'Ota käyttöön',
+      saveAndActivateConfirmTitle: 'Ota perustelu käyttöön',
+      saveAndActivateConfirmText:
+        'Huomaathan, että käyttöön otettua yleistä perustelua ei voi poistaa. Käytössä oleva yleinen perustelu voidaan kuitenkin korvata uudella yleisellä perustelulla, joka otetaan käyttöön samalla ajanjaksolla. Haluatko ottaa yleisen perustelun käyttöön?',
+      edit: 'Muokkaa',
+      delete: 'Poista',
+      deleteConfirmTitle: 'Poista perustelu',
+      deleteConfirmText: 'Haluatko poistaa yleisen perustelun?'
+    },
+    individual: {
+      title: 'Yksilölliset perustelut',
+      addNew: 'Lisää yksilöllinen perustelu',
+      statusActive: 'Käytettävissä',
+      statusRemoved: 'Poistettu käytöstä',
+      titleFi: 'Sisäinen nimi',
+      titleSv: 'Sisäinen nimi',
+      textFi: 'Päätökselle tuleva teksti',
+      textSv: 'Päätökselle tuleva teksti',
+      removed: 'Poistettu käytöstä',
+      cancel: 'Peruuta',
+      saveAndActivate: 'Ota käyttöön',
+      saveAndActivateConfirmTitle: 'Ota perustelu käyttöön',
+      saveAndActivateConfirmText:
+        'Huomaathan, että jos yksilöllinen perustelu poistetaan myöhemmin käytöstä, se ei poistu päätöksiltä, joille se on jo valittu. Haluatko ottaa yksilöllisen perustelun käyttöön?',
+      removeConfirmTitle: 'Poista perustelu käytöstä',
+      removeConfirmText: 'Haluatko poistaa yksilöllisen perustelun käytöstä?'
+    },
+    fi: 'FI',
+    sv: 'SV'
   },
   components
 }

@@ -7,7 +7,9 @@
 import type { Action } from '../action'
 import type { ApplicationId } from './shared'
 import type { DaycareId } from './shared'
+import type { DecisionGenericReasoningId } from './shared'
 import type { DecisionId } from './shared'
+import type { DecisionIndividualReasoningId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
 import LocalDate from '../../local-date'
@@ -60,6 +62,66 @@ export interface DecisionDraftUpdate {
   startDate: LocalDate
   unitId: DaycareId
 }
+
+/**
+* Generated from evaka.core.decision.reasoning.DecisionGenericReasoning
+*/
+export interface DecisionGenericReasoning {
+  collectionType: DecisionReasoningCollectionType
+  createdAt: HelsinkiDateTime
+  endDate: LocalDate | null
+  id: DecisionGenericReasoningId
+  modifiedAt: HelsinkiDateTime
+  outdated: boolean
+  ready: boolean
+  textFi: string
+  textSv: string
+  validFrom: LocalDate
+}
+
+/**
+* Generated from evaka.core.decision.reasoning.DecisionGenericReasoningRequest
+*/
+export interface DecisionGenericReasoningRequest {
+  collectionType: DecisionReasoningCollectionType
+  ready: boolean
+  textFi: string
+  textSv: string
+  validFrom: LocalDate
+}
+
+/**
+* Generated from evaka.core.decision.reasoning.DecisionIndividualReasoning
+*/
+export interface DecisionIndividualReasoning {
+  collectionType: DecisionReasoningCollectionType
+  createdAt: HelsinkiDateTime
+  id: DecisionIndividualReasoningId
+  modifiedAt: HelsinkiDateTime
+  removedAt: HelsinkiDateTime | null
+  textFi: string
+  textSv: string
+  titleFi: string
+  titleSv: string
+}
+
+/**
+* Generated from evaka.core.decision.reasoning.DecisionIndividualReasoningRequest
+*/
+export interface DecisionIndividualReasoningRequest {
+  collectionType: DecisionReasoningCollectionType
+  textFi: string
+  textSv: string
+  titleFi: string
+  titleSv: string
+}
+
+/**
+* Generated from evaka.core.decision.reasoning.DecisionReasoningCollectionType
+*/
+export type DecisionReasoningCollectionType =
+  | 'DAYCARE'
+  | 'PRESCHOOL'
 
 /**
 * Generated from evaka.core.decision.DecisionStatus
@@ -135,6 +197,35 @@ export function deserializeJsonDecisionDraftUpdate(json: JsonOf<DecisionDraftUpd
     ...json,
     endDate: LocalDate.parseIso(json.endDate),
     startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonDecisionGenericReasoning(json: JsonOf<DecisionGenericReasoning>): DecisionGenericReasoning {
+  return {
+    ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    validFrom: LocalDate.parseIso(json.validFrom)
+  }
+}
+
+
+export function deserializeJsonDecisionGenericReasoningRequest(json: JsonOf<DecisionGenericReasoningRequest>): DecisionGenericReasoningRequest {
+  return {
+    ...json,
+    validFrom: LocalDate.parseIso(json.validFrom)
+  }
+}
+
+
+export function deserializeJsonDecisionIndividualReasoning(json: JsonOf<DecisionIndividualReasoning>): DecisionIndividualReasoning {
+  return {
+    ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    removedAt: (json.removedAt != null) ? HelsinkiDateTime.parseIso(json.removedAt) : null
   }
 }
 
