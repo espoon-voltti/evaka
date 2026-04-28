@@ -440,11 +440,12 @@ class DocumentTemplateController(
                         Action.DocumentTemplate.DELETE,
                         templateId,
                     )
-                    tx.getTemplate(templateId)?.also {
-                        if (it.published) throw BadRequest("Cannot delete published template")
-                    } ?: throw NotFound("Template $templateId not found")
+                    if (tx.getTemplate(templateId) == null)
+                        throw NotFound("Template $templateId not found")
+                    if (tx.templateHasDocuments(templateId))
+                        throw BadRequest("Cannot delete template that has documents")
 
-                    tx.deleteDraftTemplate(templateId)
+                    tx.deleteUnusedTemplate(templateId)
                 }
             }
             .also { Audit.DocumentTemplateDelete.log(targetId = AuditId(templateId)) }
