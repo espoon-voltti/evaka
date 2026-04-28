@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: 2017-2025 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: Test push api-gateway to Oulu ECR
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: eu-west-1
+  ECR_REGISTRY: 463484918991.dkr.ecr.eu-west-1.amazonaws.com
+  ECR_REPOSITORY: evakaoulu/api-gateway
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  push-apigw-oulu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_OULU }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build api-gateway image
+        run: |
+          docker build \
+            --build-arg "build=${{ github.run_number }}" \
+            --build-arg "commit=${{ github.sha }}" \
+            -t "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}" \
+            -t "$ECR_REGISTRY/$ECR_REPOSITORY:test" \
+            ./apigw
+
+      - name: Push api-gateway image
+        run: |
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:test"
