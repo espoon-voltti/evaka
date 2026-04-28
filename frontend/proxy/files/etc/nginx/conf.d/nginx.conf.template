@@ -226,19 +226,25 @@ server {
   location ~ ^/employee/mobile/service-worker.js {
     expires        off;
     add_header     Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
-    proxy_no_cache 1
+    proxy_no_cache 1;
     auth_basic off;
   }
 
   location = /service-worker.js {
     expires        off;
     add_header     Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
-    proxy_no_cache 1
+    proxy_no_cache 1;
     auth_basic off;
   }
 
   location / {
     location ~ /employee/mobile/manifest\.json$ {
+      auth_basic off;
+    }
+
+    # Citizen PWA assets fetched without session credentials (manifest by
+    # browsers, push notification icons by service worker on push events).
+    location ~ ^/citizen/(manifest\.json|evaka-[0-9a-z-]+\.png|notifications/[^/]+\.png)$ {
       auth_basic off;
     }
 
