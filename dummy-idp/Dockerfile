@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM node:24.14.1-trixie-slim AS base
+FROM node:24.15.0-trixie-slim AS base
 
 WORKDIR /project
 

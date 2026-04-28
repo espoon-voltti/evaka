@@ -6,7 +6,7 @@
 devcontainer-cli = "0.83.2"
 java = "zulu-25"
 lefthook = "2.1.6"
-node = "24.14.1"
+node = "24.15.0"
 "npm:pm2" = "6.0.14"
 uv = "0.11.7"
 "pipx:reuse" = "6.2.0"
