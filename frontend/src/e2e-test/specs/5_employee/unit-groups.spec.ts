@@ -7,8 +7,8 @@ import type {
   GroupId,
   PlacementId
 } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { evakaUserId, randomId } from 'lib-common/id-type'
-import LocalDate from 'lib-common/local-date'
 
 import {
   familyWithTwoGuardians,
@@ -37,9 +37,12 @@ import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 const groupId = randomId<GroupId>()
-const today = LocalDate.of(2026, 4, 13)
+const mockedNow = HelsinkiDateTime.of(2026, 4, 13, 12, 0)
+const today = mockedNow.toLocalDate()
 const placementStartDate = today.subWeeks(4)
 const placementEndDate = today.addWeeks(4)
+
+test.use({ evakaOptions: { mockedTime: mockedNow } })
 
 let unitPage: UnitPage
 let child1Fixture: DevPerson
@@ -275,7 +278,9 @@ test.describe('Unit groups - unit supervisor', () => {
     await Fixture.serviceNeed({
       placementId: child2DaycarePlacementId,
       optionId: specialServiceNeed.id,
-      confirmedBy: evakaUserId(unitSupervisor.id)
+      confirmedBy: evakaUserId(unitSupervisor.id),
+      startDate: placementStartDate,
+      endDate: placementEndDate
     }).save()
 
     await page.reload()

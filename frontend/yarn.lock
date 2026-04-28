@@ -5264,9 +5264,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react-hooks@npm:7.0.1":
-  version: 7.0.1
-  resolution: "eslint-plugin-react-hooks@npm:7.0.1"
+"eslint-plugin-react-hooks@npm:7.1.1":
+  version: 7.1.1
+  resolution: "eslint-plugin-react-hooks@npm:7.1.1"
   dependencies:
     "@babel/core": "npm:^7.24.4"
     "@babel/parser": "npm:^7.24.4"
@@ -5274,8 +5274,8 @@ __metadata:
     zod: "npm:^3.25.0 || ^4.0.0"
     zod-validation-error: "npm:^3.5.0 || ^4.0.0"
   peerDependencies:
-    eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
-  checksum: 10/12e96c68d58c6588305fd17d660524a1ef1e872650ec591d5b138f059431290831c373d4b1c9ae8991fb25f96c43935497d2149678c027e65d0417d3d99ecc85
+    eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0 || ^10.0.0
+  checksum: 10/9dfe543af9813343f7cc7c5079b02da94a3b4c15df5cefdeef731f220120df26471d0db24c943222d2d9c6b43c3b78faea47ada9acc9dfd9c28492153cbc6902
   languageName: node
   linkType: hard
 
@@ -5488,7 +5488,7 @@ __metadata:
     eslint-plugin-lodash: "npm:8.0.0"
     eslint-plugin-prettier: "npm:5.5.5"
     eslint-plugin-react: "npm:7.37.5"
-    eslint-plugin-react-hooks: "npm:7.0.1"
+    eslint-plugin-react-hooks: "npm:7.1.1"
     globals: "npm:17.5.0"
     ical-generator: "npm:10.2.0"
     jsdom: "npm:29.0.2"
