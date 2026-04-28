@@ -20,9 +20,7 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler =
   (includeErrorMessage: boolean) => (error, req, res, next) => {
     if (error instanceof InvalidAntiCsrfToken) {
       if (!res.headersSent) {
-        res
-          .status(403)
-          .send({ message: 'Anti-CSRF token error' } as LogResponse)
+        res.status(403).send({ message: 'Anti-CSRF token error' })
       }
       return
     }

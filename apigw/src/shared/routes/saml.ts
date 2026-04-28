@@ -275,7 +275,13 @@ export function createSamlIntegration<T extends SessionType>(
   ): Promise<void> =>
     new Promise((resolve, reject) => {
       middleware(req, res, (err?: unknown) =>
-        err ? reject(err as Error) : resolve()
+        err
+          ? reject(
+              err instanceof Error
+                ? err
+                : new Error('Middleware error', { cause: err })
+            )
+          : resolve()
       )
     })
 
