@@ -93,7 +93,7 @@ export function useApiState<T, Deps extends DependencyList>(
         message: 'Cancelled'
       })
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/use-memo
   }, deps)
 
   useEffect(() => {
