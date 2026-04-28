@@ -278,7 +278,9 @@ test.describe('Unit groups - unit supervisor', () => {
     await Fixture.serviceNeed({
       placementId: child2DaycarePlacementId,
       optionId: specialServiceNeed.id,
-      confirmedBy: evakaUserId(unitSupervisor.id)
+      confirmedBy: evakaUserId(unitSupervisor.id),
+      startDate: placementStartDate,
+      endDate: placementEndDate
     }).save()
 
     await page.reload()
