@@ -226,6 +226,8 @@ class HolidayPeriodControllerCitizen(
         val now = clock.now()
         val today = now.toLocalDate()
         val childIds = body.openRanges.keys
+        val nonEmptyOpenRanges = body.openRanges.filterValues { it.isNotEmpty() }
+        val answeredChildIds = nonEmptyOpenRanges.keys
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -241,13 +243,13 @@ class HolidayPeriodControllerCitizen(
                         if (!it.active.includes(today))
                             throw BadRequest("Questionnaire is not open")
                     } ?: throw BadRequest("Questionnaire not found")
-                validate(questionnaire, tx, today, user, body.openRanges)
+                validate(questionnaire, tx, today, user, nonEmptyOpenRanges)
 
-                val allRanges = body.openRanges.values.flatten()
+                val allRanges = nonEmptyOpenRanges.values.flatten()
                 val plannedAbsenceEnabledRanges =
                     if (allRanges.isNotEmpty()) {
                         tx.getPlannedAbsenceEnabledRanges(
-                            childIds,
+                            answeredChildIds,
                             FiniteDateRange(
                                 allRanges.minOf { it.start },
                                 allRanges.maxOf { it.end },
@@ -257,7 +259,7 @@ class HolidayPeriodControllerCitizen(
                     } else emptyMap()
 
                 val absences =
-                    body.openRanges.entries.flatMap { (childId, ranges) ->
+                    nonEmptyOpenRanges.entries.flatMap { (childId, ranges) ->
                         val placements =
                             tx.getPlacementsForChildDuring(
                                 childId,
@@ -317,10 +319,10 @@ class HolidayPeriodControllerCitizen(
                         }
                     }
 
-                upsertAbsences(tx, now, user, absences, questionnaire, childIds)
+                upsertAbsences(tx, now, user, absences, questionnaire, answeredChildIds)
                 tx.insertQuestionnaireAnswers(
                     user.id,
-                    body.openRanges.entries.map { (childId, ranges) ->
+                    nonEmptyOpenRanges.entries.map { (childId, ranges) ->
                         HolidayQuestionnaireAnswer(questionnaire.id, childId, null, ranges)
                     },
                 )
@@ -347,7 +349,7 @@ class HolidayPeriodControllerCitizen(
         val invalid =
             data
                 .mapNotNull { (childId, periods) ->
-                    if (periods == null) {
+                    if (periods.isNullOrEmpty()) {
                         return@mapNotNull null
                     }
                     val validPeriods =
