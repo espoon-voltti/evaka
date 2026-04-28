@@ -23,7 +23,7 @@ export const mergeCustomizer = (
   _original: unknown,
   customized: unknown
 ): unknown =>
-  isArray(customized) || React.isValidElement(customized as never)
+  isArray(customized) || React.isValidElement(customized)
     ? customized
     : undefined // fall back to default merge logic
 

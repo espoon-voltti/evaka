@@ -8,10 +8,7 @@ import { useLocation } from 'wouter'
 
 import type { BoundForm } from 'lib-common/form/hooks'
 import { useFormFields } from 'lib-common/form/hooks'
-import type {
-  CalendarEvent,
-  CalendarEventType
-} from 'lib-common/generated/api-types/calendarevent'
+import type { CalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import type {
   ChildId,
   DaycareId,
@@ -235,7 +232,7 @@ export default React.memo(function DiscussionSurveyForm({
                     title: values.title,
                     description: values.description,
                     times: values.times,
-                    eventType: 'DISCUSSION_SURVEY' as CalendarEventType,
+                    eventType: 'DISCUSSION_SURVEY' as const,
                     tree: getTreeSelectionAsRecord(values.attendees),
                     period: getPeriodFromDatesOrToday(
                       values.times.map((t) => t.date)

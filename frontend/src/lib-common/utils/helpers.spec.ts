@@ -14,7 +14,7 @@ function withHost(host: string, fn: () => void) {
     hostname: host.split(':')[0],
     host,
     href: `http://${host}`
-  } as Location)
+  })
   try {
     fn()
   } finally {
