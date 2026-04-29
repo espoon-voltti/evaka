@@ -74,6 +74,14 @@ const envVariables = {
   PIN_SESSION_TIMEOUT_SECONDS: 10 * 60,
 
   /**
+   * Timeout (in days) for citizen messaging sessions.
+   *
+   * This session is used specifically for /citizen/messages endpoints to allow
+   * users to access messages without re-authenticating for up to 30 days.
+   */
+  CITIZEN_MESSAGING_SESSION_TIMEOUT_DAYS: 30,
+
+  /**
    * Rate limit for citizen weak logins per username (attempts per hour).
    *
    * 0 means no limit
@@ -390,6 +398,7 @@ function createLocalDevelopmentOverrides(): Partial<EnvVariables> {
 
 export interface Config {
   citizen: SessionConfig & { weakLoginRateLimit: number }
+  citizenMessaging: SessionConfig
   employee: SessionConfig
   ad:
     | { type: 'mock' | 'disabled' }
@@ -637,6 +646,17 @@ export function configFromEnv(): Config {
         'CITIZEN_WEAK_LOGIN_RATE_LIMIT',
         parseInteger
       )
+    },
+    citizenMessaging: {
+      useSecureCookies,
+      cookieSecret: nonNullable(
+        optional('CITIZEN_COOKIE_SECRET', unchanged) ?? legacyCookieSecret,
+        'Either COOKIE_SECRET or CITIZEN_COOKIE_SECRET must be set'
+      ),
+      sessionTimeoutMinutes:
+        required('CITIZEN_MESSAGING_SESSION_TIMEOUT_DAYS', parseInteger) *
+        24 *
+        60 // Convert days to minutes
     },
     employee: {
       useSecureCookies,
