@@ -34,7 +34,7 @@
 ;"Tulevat esikoululaiset -raportti";READ_FUTURE_PRESCHOOLERS;x;;;;;;;;;;
 ;"Varda-raportit";READ_VARDA_REPORT;x;;;;;;;;;;
 ;"Varhaiskasvatuksessa lopettavat lapset -raportti";"READ_ENDED_PLACEMENTS_REPORT";x;;x;x;;x;;;;;
-;"Yksiköt-raportti";READ_UNITS_REPORT;x;;;;;;;;;;
+;"Yksiköt-raportti";READ_UNITS_REPORT;x;x;x;;;;;;;;
 ;"Aktiivisten lomakyselyiden luku";"READ_ACTIVE_HOLIDAY_QUESTIONNAIRES";;;;;;;;;;;
 ;"Arvopäätösten haku";"SEARCH_VOUCHER_VALUE_DECISIONS";x;;x;x;;;;;;;
 ;"Asetuksien muokkaus";UPDATE_SETTINGS;"TRE,NOK,YLO,ORI";;;;;"TRE,NOK,YLO,ORI";;;;;
