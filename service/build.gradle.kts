@@ -190,6 +190,14 @@ dependencies {
     testImplementation("org.junit-pioneer:junit-pioneer:2.3.0")
     testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.1")
 
+    // TEST: poi-ooxml 4.1.2 transitively pulls commons-compress 1.19
+    // (CVE-2021-35515/35516/35517/36090, all HIGH). The direct coordinate has
+    // no HIGH GHSA at this version, and commons-compress is not pinned by any
+    // BOM in this project — so the vulnerable transitive resolves naturally
+    // and is only visible to the full graph submission, not the auto-parser.
+    // Revert before merging.
+    testImplementation("org.apache.poi:poi-ooxml:4.1.2")
+
     integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")
