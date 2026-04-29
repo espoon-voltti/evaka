@@ -121,7 +121,8 @@
     }
   },
   "resolutions": {
-    "@react-leaflet/core@npm:^3.0.0": "patch:@react-leaflet/core@npm%3A3.0.0#~/.yarn/patches/@react-leaflet-core-npm-3.0.0-4e3f2d62b5.patch"
+    "@react-leaflet/core@npm:^3.0.0": "patch:@react-leaflet/core@npm%3A3.0.0#~/.yarn/patches/@react-leaflet-core-npm-3.0.0-4e3f2d62b5.patch",
+    "tar": "7.5.13"
   },
   "engines": {
     "node": ">= 22.12.0"

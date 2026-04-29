@@ -24,6 +24,9 @@
     "prettier": "3.8.3",
     "typescript": "6.0.3"
   },
+  "overrides": {
+    "@xmldom/xmldom": "0.8.13"
+  },
   "prettier": {
     "arrowParens": "always",
     "bracketSpacing": true,
