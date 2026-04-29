@@ -35,20 +35,6 @@ public/favicon.ico
 !.yarn/versions
 .pnp.*
 
-src/lib-customizations/**/*
-!src/lib-customizations/defaults
-!src/lib-customizations/defaults/**/*
-!src/lib-customizations/espoo
-!src/lib-customizations/espoo/**/*
-!src/lib-customizations/oulu
-!src/lib-customizations/oulu/**/*
-!src/lib-customizations/turku
-!src/lib-customizations/turku/**/*
-!src/lib-customizations/README.md
-!src/lib-customizations/*.ts
-!src/lib-customizations/*.json
-!src/lib-customizations/*.tsx
-
 playwright-filenames.txt
 
 espoo-customizations/

@@ -4,18 +4,6 @@
 
 *
 !src
-src/lib-customizations/**/*
-!src/lib-customizations/defaults
-!src/lib-customizations/defaults/**/*
-!src/lib-customizations/*.ts
-!src/lib-customizations/*.json
-!src/lib-customizations/*.tsx
-!src/lib-customizations/espoo
-!src/lib-customizations/espoo/**/*
-!src/lib-customizations/oulu
-!src/lib-customizations/oulu/**/*
-!src/lib-customizations/turku
-!src/lib-customizations/turku/**/*
 !packages
 !public
 !vendor
@@ -31,7 +19,7 @@ src/lib-customizations/**/*
 !.yarnrc.yml
 
 !eslint-plugin
-!espoo-customizations
 
 !node_modules/@fortawesome/pro-*
 !proxy/files/
+!bin

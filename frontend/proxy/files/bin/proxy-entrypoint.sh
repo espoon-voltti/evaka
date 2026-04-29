@@ -21,6 +21,15 @@ fi
 
 export HOST_IP="UNAVAILABLE"
 
+if [ -z "${EVAKA_MUNICIPALITY:-}" ]; then
+  echo 'ERROR: EVAKA_MUNICIPALITY must be set'
+  exit 1
+fi
+if [ ! -d "/static/${EVAKA_MUNICIPALITY}" ]; then
+  echo "ERROR: /static/${EVAKA_MUNICIPALITY} does not exist in this image"
+  exit 1
+fi
+
 if [ "${ENDUSER_GW_URL:-X}" = 'X' ]; then
   echo 'ERROR: ENDUSER_GW_URL must be a non-empty string!'
   exit 1
