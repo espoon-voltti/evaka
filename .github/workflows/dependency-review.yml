@@ -24,6 +24,13 @@ jobs:
       - uses: gradle/actions/dependency-submission@v4
         with:
           build-root-directory: service
+        env:
+          # Limit the submitted graph to source-set classpaths. Without this,
+          # the action also reports vulnerabilities in build-time tooling
+          # (Spring Boot Gradle plugin, ktlint, etc. — pulled into the
+          # buildscript / plugin classpath), which never ships to production
+          # and so isn't a real exposure.
+          DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: ".*[Cc]ompileClasspath|.*[Rr]untimeClasspath"
       - if: github.event_name == 'pull_request'
         uses: actions/dependency-review-action@v4
         with:
