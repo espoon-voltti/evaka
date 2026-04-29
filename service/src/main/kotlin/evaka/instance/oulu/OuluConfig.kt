@@ -8,6 +8,10 @@ import com.jcraft.jsch.JSch
 import evaka.core.ScheduledJobsEnv
 import evaka.core.VtjXroadEnv
 import evaka.core.application.ApplicationStatus
+import evaka.core.bi.BiExportClient
+import evaka.core.bi.BiExportConfig
+import evaka.core.bi.BiExportJob
+import evaka.core.bi.BiTable
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.holidayperiod.QuestionnaireType
@@ -32,10 +36,12 @@ import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.shared.message.IMessageProvider
 import evaka.core.shared.security.actionrule.ActionRuleMapping
+import evaka.core.shared.sftp.SftpClient
 import evaka.core.shared.template.ITemplateProvider
 import evaka.core.titania.TitaniaEmployeeIdConverter
 import evaka.core.vtjclient.config.httpsMessageSender
 import evaka.instance.espoo.DefaultPasswordSpecification
+import evaka.instance.oulu.bi.OuluBiSftpExportClient
 import evaka.instance.oulu.database.DevDataInitializer
 import evaka.instance.oulu.dw.DwExportClient
 import evaka.instance.oulu.dw.DwExportJob
@@ -71,6 +77,10 @@ import software.amazon.awssdk.services.s3.S3Client
 @Configuration
 @Import(OuluAsyncJobRegistration::class)
 class OuluConfig {
+    companion object {
+        val excludedBiTables: Set<BiTable> = setOf(BiTable.AttendanceReservation)
+    }
+
     @Bean fun ouluEnv(env: Environment): OuluEnv = OuluEnv.fromEnvironment(env)
 
     @Bean
@@ -232,6 +242,17 @@ class OuluConfig {
     @Bean fun evakaOuluDWJob(dwExportClient: DwExportClient) = DwExportJob(dwExportClient)
 
     @Bean
+    fun ouluBiExportClient(ouluEnv: OuluEnv): BiExportClient =
+        OuluBiSftpExportClient(SftpClient(ouluEnv.fabric.sftp), ouluEnv.fabric.remotePath)
+
+    @Bean
+    fun ouluBiJob(biExportClient: BiExportClient): BiExportJob =
+        BiExportJob(
+            biExportClient,
+            BiExportConfig(includePII = false, includeLegacyColumns = false, deltaWindowDays = 730),
+        )
+
+    @Bean
     fun OuluScheduledJobEnv(env: Environment): ScheduledJobsEnv<OuluScheduledJob> =
         ScheduledJobsEnv.fromEnvironment(
             OuluScheduledJob.entries.associateWith { it.defaultSettings },
@@ -243,7 +264,8 @@ class OuluConfig {
     fun ouluScheduledJobs(
         evakaOuluRunner: AsyncJobRunner<OuluAsyncJob>,
         env: ScheduledJobsEnv<OuluScheduledJob>,
-    ): OuluScheduledJobs = OuluScheduledJobs(evakaOuluRunner, env)
+    ): OuluScheduledJobs =
+        OuluScheduledJobs(evakaOuluRunner, env, biTables = BiTable.entries - excludedBiTables)
 
     @Bean
     fun passwordSpecification(): PasswordSpecification =

@@ -4,6 +4,8 @@
 
 package evaka.instance.oulu
 
+import evaka.core.bi.BiExportJob
+import evaka.core.bi.BiTable
 import evaka.core.shared.async.AsyncJobPayload
 import evaka.core.shared.async.AsyncJobPool
 import evaka.core.shared.async.AsyncJobRunner
@@ -16,18 +18,29 @@ sealed interface OuluAsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendBiTable(val table: BiTable) : OuluAsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     companion object {
         val pool =
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(OuluAsyncJob::class, "oulu"),
                 AsyncJobPool.Config(concurrency = 1),
-                setOf(SendDWQuery::class),
+                setOf(SendDWQuery::class, SendBiTable::class),
             )
     }
 }
 
-class OuluAsyncJobRegistration(runner: AsyncJobRunner<OuluAsyncJob>, dwExportJob: DwExportJob) {
+class OuluAsyncJobRegistration(
+    runner: AsyncJobRunner<OuluAsyncJob>,
+    dwExportJob: DwExportJob,
+    biExportJob: BiExportJob,
+) {
     init {
         runner.registerHandler(dwExportJob::sendDwQuery)
+        runner.registerHandler { db, clock, msg: OuluAsyncJob.SendBiTable ->
+            biExportJob.sendBiTable(db, clock, msg.table)
+        }
     }
 }

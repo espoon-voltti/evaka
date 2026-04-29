@@ -14,7 +14,7 @@ data class OuluEnv(
     val intimePayments: SftpProperties,
     val bucket: BucketProperties,
     val dwExport: DwExportProperties,
-    val bi: BiProperties,
+    val fabric: FabricProperties,
 ) {
     companion object {
         fun fromEnvironment(env: Environment) =
@@ -27,7 +27,7 @@ data class OuluEnv(
                         prefix = env.lookup("evakaoulu.dw_export.prefix"),
                         sftp = SftpProperties.fromEnvironment(env, "evakaoulu.dw_export.sftp"),
                     ),
-                bi = BiProperties.fromEnvironment(env),
+                fabric = FabricProperties.fromEnvironment(env),
             )
     }
 }
@@ -57,36 +57,29 @@ data class BucketProperties(val export: String) {
 
 data class DwExportProperties(val prefix: String, val sftp: SftpProperties)
 
-private fun String.ensureTrailingSlash(): String = if (this.endsWith("/")) this else "$this/"
-
-data class BiProperties(
-    val sftp: SftpEnv,
-    val remotePath: String,
-    val windowMonths: Int = 3,
-    val excludedTables: Set<String> = emptySet(),
-) {
+data class FabricProperties(val sftp: SftpEnv, val remotePath: String) {
     companion object {
         fun fromEnvironment(env: Environment) =
-            BiProperties(
+            FabricProperties(
                 sftp =
                     SftpEnv(
-                        host = env.lookup("evakaoulu.bi.sftp.host"),
-                        port = env.lookup<Int?>("evakaoulu.bi.sftp.port") ?: 22,
-                        hostKeys = env.lookup("evakaoulu.bi.sftp.host_keys"),
-                        username = env.lookup("evakaoulu.bi.sftp.username"),
+                        host = env.lookup("evakaoulu.fabric.sftp.host"),
+                        port = env.lookup<Int?>("evakaoulu.fabric.sftp.port") ?: 22,
+                        hostKeys = env.lookup("evakaoulu.fabric.sftp.host_keys"),
+                        username = env.lookup("evakaoulu.fabric.sftp.username"),
                         password =
-                            env.lookup<String?>("evakaoulu.bi.sftp.password")?.let {
+                            env.lookup<String?>("evakaoulu.fabric.sftp.password")?.let {
                                 Sensitive(it)
                             },
                         privateKey =
-                            env.lookup<String?>("evakaoulu.bi.sftp.private_key")?.let {
+                            env.lookup<String?>("evakaoulu.fabric.sftp.private_key")?.let {
                                 Sensitive(it)
                             },
                     ),
-                remotePath = env.lookup<String>("evakaoulu.bi.remote_path").ensureTrailingSlash(),
-                windowMonths = env.lookup<Int?>("evakaoulu.bi.window_months") ?: 3,
-                excludedTables =
-                    env.lookup<List<String>?>("evakaoulu.bi.excluded_tables")?.toSet() ?: emptySet(),
+                remotePath =
+                    (env.lookup<String?>("evakaoulu.fabric.remote_path") ?: "").let {
+                        if (it.isEmpty() || it.endsWith("/")) it else "$it/"
+                    },
             )
     }
 }

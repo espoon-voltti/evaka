@@ -37,7 +37,7 @@ class BiExportS3ClientTest : AbstractTampereIntegrationTest() {
                 BiExportConfig(includePII = true, includeLegacyColumns = true, deltaWindowDays = 60),
             )
 
-        job.sendBiTable(db, clock, table.fileName, table.query)
+        job.sendBiTable(db, clock, table)
 
         val bucket = properties.bucket.export
         val prefix = properties.biExport.prefix

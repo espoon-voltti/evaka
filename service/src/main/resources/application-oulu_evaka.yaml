@@ -62,8 +62,7 @@ evakaoulu:
       password: pass
       address: address
       path: path
-  bi:
-    window_months: 3
+  fabric:
     remote_path: upload/
     sftp:
       host: localhost
