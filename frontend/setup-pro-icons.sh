@@ -10,7 +10,7 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-VERSION="6.4.0"
+VERSION="7.2.0"
 
 store_npm() {
   name="$1"
