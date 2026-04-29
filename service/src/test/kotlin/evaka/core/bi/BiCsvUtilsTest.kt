@@ -33,28 +33,52 @@ class BiCsvUtilsTest {
 
     @Test
     fun `includes all columns when includePII=true and includeLegacyColumns=true`() {
-        val out = render(BiExportConfig(includePII = true, includeLegacyColumns = true))
+        val out =
+            render(
+                BiExportConfig(includePII = true, includeLegacyColumns = true, deltaWindowDays = 60)
+            )
         assertEquals("id,keep,legacy,name\r\n", out[0])
         assertEquals("1,K,,Alice\r\n", out[1])
     }
 
     @Test
     fun `omits Pii columns when includePII=false`() {
-        val out = render(BiExportConfig(includePII = false, includeLegacyColumns = true))
+        val out =
+            render(
+                BiExportConfig(
+                    includePII = false,
+                    includeLegacyColumns = true,
+                    deltaWindowDays = 60,
+                )
+            )
         assertEquals("id,keep,legacy\r\n", out[0])
         assertEquals("1,K,\r\n", out[1])
     }
 
     @Test
     fun `omits LegacyColumn columns when includeLegacyColumns=false`() {
-        val out = render(BiExportConfig(includePII = true, includeLegacyColumns = false))
+        val out =
+            render(
+                BiExportConfig(
+                    includePII = true,
+                    includeLegacyColumns = false,
+                    deltaWindowDays = 60,
+                )
+            )
         assertEquals("id,keep,name\r\n", out[0])
         assertEquals("1,K,Alice\r\n", out[1])
     }
 
     @Test
     fun `omits both categories when both flags are false`() {
-        val out = render(BiExportConfig(includePII = false, includeLegacyColumns = false))
+        val out =
+            render(
+                BiExportConfig(
+                    includePII = false,
+                    includeLegacyColumns = false,
+                    deltaWindowDays = 60,
+                )
+            )
         assertEquals("id,keep\r\n", out[0])
         assertEquals("1,K\r\n", out[1])
     }
@@ -66,7 +90,11 @@ class BiCsvUtilsTest {
                     ::convertToCsv,
                     SampleBothAnnotations::class,
                     sequenceOf(SampleBothAnnotations(1, "X", "K")),
-                    BiExportConfig(includePII = false, includeLegacyColumns = true),
+                    BiExportConfig(
+                        includePII = false,
+                        includeLegacyColumns = true,
+                        deltaWindowDays = 60,
+                    ),
                 )
                 .toList()
         assertEquals("id,keep\r\n", out[0])
@@ -80,7 +108,11 @@ class BiCsvUtilsTest {
                     ::convertToCsv,
                     SampleBothAnnotations::class,
                     sequenceOf(SampleBothAnnotations(1, "X", "K")),
-                    BiExportConfig(includePII = true, includeLegacyColumns = false),
+                    BiExportConfig(
+                        includePII = true,
+                        includeLegacyColumns = false,
+                        deltaWindowDays = 60,
+                    ),
                 )
                 .toList()
         assertEquals("id,keep\r\n", out[0])
@@ -94,7 +126,11 @@ class BiCsvUtilsTest {
                     ::convertToCsv,
                     SampleNullablePii::class,
                     sequenceOf(SampleNullablePii(1, null, "K")),
-                    BiExportConfig(includePII = false, includeLegacyColumns = true),
+                    BiExportConfig(
+                        includePII = false,
+                        includeLegacyColumns = true,
+                        deltaWindowDays = 60,
+                    ),
                 )
                 .toList()
         assertEquals("id,keep\r\n", out[0])

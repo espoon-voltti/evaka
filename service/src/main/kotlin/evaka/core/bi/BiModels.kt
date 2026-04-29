@@ -183,6 +183,17 @@ data class BiAssistanceNeedVoucherCoefficient(
 
 data class BiAttendanceReservation(val child_id: String, val date: LocalDate)
 
+data class BiAttendanceReservationDelta(
+    val id: UUID,
+    val created_at: String,
+    val updated_at: String,
+    val child_id: UUID,
+    val date: LocalDate,
+    val start_time: LocalTime?,
+    val end_time: LocalTime?,
+    val created_by: UUID,
+)
+
 data class BiBackupCare(
     val id: UUID,
     val created: String,
@@ -652,6 +663,27 @@ data class BiStaffAttendancePlan(
     val start_time: String,
     val end_time: String,
     val description: String?,
+)
+
+data class BiStaffAttendanceRealtime(
+    val id: UUID,
+    val created: String,
+    val updated: String,
+    val employee_id: UUID,
+    val group_id: UUID?,
+    val arrived: String,
+    val departed: String?,
+    val type: StaffAttendanceType,
+    val occupancy_coefficient: BigDecimal,
+    val departed_automatically: Boolean,
+    val arrived_added_at: String?,
+    val arrived_added_by: UUID?,
+    val arrived_modified_at: String?,
+    val arrived_modified_by: UUID?,
+    val departed_added_at: String?,
+    val departed_added_by: UUID?,
+    val departed_modified_at: String?,
+    val departed_modified_by: UUID?,
 )
 
 data class BiStaffOccupancyCoefficient(

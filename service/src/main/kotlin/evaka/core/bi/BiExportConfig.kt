@@ -18,4 +18,8 @@ package evaka.core.bi
 @Retention(AnnotationRetention.RUNTIME)
 annotation class LegacyColumn
 
-data class BiExportConfig(val includePII: Boolean, val includeLegacyColumns: Boolean)
+data class BiExportConfig(
+    val includePII: Boolean,
+    val includeLegacyColumns: Boolean,
+    val deltaWindowDays: Int,
+)

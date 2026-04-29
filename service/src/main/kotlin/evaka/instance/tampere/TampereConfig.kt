@@ -10,6 +10,7 @@ import evaka.core.application.ApplicationStatus
 import evaka.core.bi.BiExportClient
 import evaka.core.bi.BiExportConfig
 import evaka.core.bi.BiExportJob
+import evaka.core.bi.BiTable
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.mealintegration.DefaultMealTypeMapper
@@ -137,7 +138,10 @@ class TampereConfig {
 
     @Bean
     fun tampereBiJob(biExportClient: BiExportClient): BiExportJob =
-        BiExportJob(biExportClient, BiExportConfig(includePII = true, includeLegacyColumns = true))
+        BiExportJob(
+            biExportClient,
+            BiExportConfig(includePII = true, includeLegacyColumns = true, deltaWindowDays = 60),
+        )
 
     @Bean
     fun paymentIntegrationClient(properties: TampereProperties): PaymentIntegrationClient {
@@ -202,6 +206,9 @@ class TampereConfig {
             asyncJobRunner,
             properties,
             env,
+            biTables =
+                BiTable.entries -
+                    setOf(BiTable.StaffAttendanceRealtime, BiTable.AttendanceReservationDelta),
         )
 
     @Bean

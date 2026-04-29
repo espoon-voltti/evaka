@@ -38,7 +38,7 @@ enum class TampereScheduledJob(
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(0, 0))),
     ),
     PlanBiExportJobs(
-        { jobs, db, clock -> jobs.planBiJobs(db, clock, BiTable.entries) },
+        { jobs, db, clock -> jobs.planBiJobs(db, clock) },
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(1, 0))),
     ),
     PlanDocumentArchival(
@@ -54,6 +54,7 @@ class TampereScheduledJobs(
     private val coreAsyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val properties: TampereProperties,
     env: ScheduledJobsEnv<TampereScheduledJob>,
+    private val biTables: List<BiTable>,
 ) : JobSchedule {
     private val logger = KotlinLogging.logger {}
 
@@ -77,14 +78,13 @@ class TampereScheduledJobs(
         }
     }
 
-    fun planBiJobs(db: Database.Connection, clock: EvakaClock, selectedTables: List<BiTable>?) {
-        val tables = selectedTables ?: BiTable.entries
-        logger.info { "Planning BI jobs for ${tables.size} tables" }
+    fun planBiJobs(db: Database.Connection, clock: EvakaClock) {
+        logger.info { "Planning BI jobs for ${biTables.size} tables" }
         db.transaction { tx ->
             tx.removeUnclaimedJobs(setOf(AsyncJobType(TampereAsyncJob.SendBiTable::class)))
             asyncJobRunner.plan(
                 tx,
-                tables.asSequence().map(TampereAsyncJob::SendBiTable),
+                biTables.asSequence().map(TampereAsyncJob::SendBiTable),
                 runAt = clock.now(),
                 retryCount = 1,
             )
