@@ -23,7 +23,7 @@ dependencies {
         api("net.logstash.logback:logstash-logback-encoder:9.0")
         api("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:4.0.1")
         api("org.apache.commons:commons-csv:1.14.1")
-        api("org.apache.commons:commons-text:1.15.0")
+        api("org.apache.commons:commons-text:1.9")
         api("org.apache.commons:commons-imaging:1.0.0-alpha6")
         api("org.apache.httpcomponents:httpclient:4.5.14")
         api("org.apache.tika:tika-core:3.3.0")
