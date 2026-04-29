@@ -80,7 +80,8 @@ export const parentshipsQuery = q.query(getParentships)
 export const updatePersonDetailsMutation = q.mutation(updatePersonDetails, [
   ({ personId }) => personQuery({ personId }),
   ({ personId }) => childQuery({ childId: personId }),
-  ({ personId }) => sensitiveDetailsQuery({ personId })
+  ({ personId }) => sensitiveDetailsQuery({ personId }),
+  ({ personId }) => familyByPersonQuery({ id: personId })
 ])
 
 export const updatePersonAndFamilyFromVtjMutation = q.mutation(
