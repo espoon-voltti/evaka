@@ -9,10 +9,14 @@ import config from '../../config'
 import {
   createDaycarePlacementFixture,
   testDaycare,
+  testDaycare2,
   testChild,
+  testChild2,
   testAdult,
+  testAdult2,
   Fixture,
-  testCareArea
+  testCareArea,
+  testCareArea2
 } from '../../dev-api/fixtures'
 import {
   createDaycarePlacements,
@@ -55,6 +59,61 @@ test.describe('Income statements', () => {
     await nav.openTab('finance')
     await new FinancePage(page).selectIncomeStatementsTab()
     return new IncomeStatementsPage(page)
+  }
+
+  async function setupTwoUnitsWithIncomeStatements() {
+    await testCareArea2.save()
+    await testDaycare2.save()
+    await Fixture.family({
+      guardian: testAdult2,
+      children: [testChild2]
+    }).save()
+
+    await Fixture.fridgeChild({
+      headOfChild: testAdult.id,
+      childId: testChild.id,
+      startDate: today.addYears(-1),
+      endDate: today.addYears(1)
+    }).save()
+    await Fixture.fridgeChild({
+      headOfChild: testAdult2.id,
+      childId: testChild2.id,
+      startDate: today.addYears(-1),
+      endDate: today.addYears(1)
+    }).save()
+
+    const startDate = today.addYears(-1)
+    const endDate = today
+
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(
+          randomId(),
+          testChild.id,
+          testDaycare.id,
+          startDate,
+          endDate
+        ),
+        createDaycarePlacementFixture(
+          randomId(),
+          testChild2.id,
+          testDaycare2.id,
+          startDate,
+          endDate
+        )
+      ]
+    })
+
+    await Fixture.incomeStatement({
+      personId: testAdult.id,
+      data: { type: 'HIGHEST_FEE', startDate, endDate }
+    }).save()
+    await Fixture.incomeStatement({
+      personId: testAdult2.id,
+      data: { type: 'HIGHEST_FEE', startDate, endDate }
+    }).save()
+
+    await page.reload()
   }
 
   test('Income statement can be set handled', async () => {
@@ -175,6 +234,78 @@ test.describe('Income statements', () => {
     await incomeStatementsPage.searchButton.click()
     await incomeStatementsPage.waitUntilLoaded()
     await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(0)
+  })
+
+  test('Income statement can be filtered by child placement unit', async () => {
+    await setupTwoUnitsWithIncomeStatements()
+
+    const incomeStatementsPage = await navigateToIncomeStatements()
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(2)
+
+    await incomeStatementsPage.toggleUnit(testDaycare.name)
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
+    await expect(incomeStatementsPage.incomeStatementRows).toContainText([
+      testAdult.lastName
+    ])
+
+    await incomeStatementsPage.toggleUnit(testDaycare2.name)
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(2)
+
+    await incomeStatementsPage.toggleUnit(testDaycare.name)
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
+    await expect(incomeStatementsPage.incomeStatementRows).toContainText([
+      testAdult2.lastName
+    ])
+
+    await incomeStatementsPage.toggleUnit(testDaycare2.name)
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(2)
+  })
+
+  test('Income statement can be filtered by child placement unit area', async () => {
+    await setupTwoUnitsWithIncomeStatements()
+
+    const incomeStatementsPage = await navigateToIncomeStatements()
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(2)
+
+    await incomeStatementsPage.selectArea(testCareArea.shortName)
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
+    await expect(incomeStatementsPage.incomeStatementRows).toContainText([
+      testAdult.lastName
+    ])
+
+    await incomeStatementsPage.selectArea(testCareArea2.shortName)
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(2)
+
+    await incomeStatementsPage.unSelectArea(testCareArea.shortName)
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
+    await expect(incomeStatementsPage.incomeStatementRows).toContainText([
+      testAdult2.lastName
+    ])
+
+    await incomeStatementsPage.unSelectArea(testCareArea2.shortName)
+    await incomeStatementsPage.searchButton.click()
+    await incomeStatementsPage.waitUntilLoaded()
+    await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(2)
   })
 
   test('Income statement can be filtered by status', async () => {

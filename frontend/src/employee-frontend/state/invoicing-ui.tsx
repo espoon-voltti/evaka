@@ -163,7 +163,7 @@ interface PaymentSearchFilterState {
 
 export interface IncomeStatementSearchFiltersRaw {
   area: string[]
-  unit: DaycareId | undefined
+  unitIds: DaycareId[]
   providerTypes: ProviderType[]
   sentStartDate: string
   sentEndDate: string
@@ -286,7 +286,7 @@ const defaultState: UiState = {
     setPage: () => undefined,
     searchFilters: {
       area: [],
-      unit: undefined,
+      unitIds: [],
       providerTypes: [],
       sentStartDate: '',
       sentEndDate: '',

@@ -642,7 +642,7 @@ data class IncomeStatementAwaitingHandler(
 private fun awaitingHandlerQuery(
     today: LocalDate,
     areas: List<String>,
-    unit: DaycareId?,
+    unitIds: List<DaycareId>,
     providerTypes: List<ProviderType>,
     sentStartDate: LocalDate?,
     sentEndDate: LocalDate?,
@@ -653,7 +653,7 @@ private fun awaitingHandlerQuery(
         PredicateSql.allNotNull(
             PredicateSql { where("ca.short_name = ANY(${bind(areas)})") }
                 .takeIf { areas.isNotEmpty() },
-            PredicateSql { where("d.id = ${bind(unit)}") }.takeIf { unit != null },
+            PredicateSql { where("d.id = ANY(${bind(unitIds)})") }.takeIf { unitIds.isNotEmpty() },
             PredicateSql { where("d.provider_type = ANY(${bind(providerTypes)})") }
                 .takeIf { providerTypes.isNotEmpty() },
             PredicateSql {
@@ -749,7 +749,7 @@ data class PagedIncomeStatementsAwaitingHandler(
 fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     today: LocalDate,
     areas: List<String>,
-    unit: DaycareId?,
+    unitIds: List<DaycareId>,
     providerTypes: List<ProviderType>,
     sentStartDate: LocalDate?,
     sentEndDate: LocalDate?,
@@ -764,7 +764,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
         awaitingHandlerQuery(
             today,
             areas,
-            unit,
+            unitIds,
             providerTypes,
             sentStartDate,
             sentEndDate,
