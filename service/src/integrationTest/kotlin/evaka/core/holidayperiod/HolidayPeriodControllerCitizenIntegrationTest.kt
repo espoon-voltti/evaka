@@ -596,6 +596,47 @@ class HolidayPeriodControllerCitizenIntegrationTest :
     }
 
     @Test
+    fun `open ranges submission ignores ineligible children with empty range list`() {
+        db.transaction { tx ->
+            tx.insertGuardian(parent.id, child2.id)
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    type = PlacementType.CLUB,
+                    startDate = mockToday.minusYears(1),
+                    endDate = mockToday.plusYears(1),
+                )
+            )
+        }
+
+        val id = createOpenRangesQuestionnaire(freeRangesQuestionnaire)
+        val range =
+            FiniteDateRange(
+                freeRangesQuestionnaire.period.start,
+                freeRangesQuestionnaire.period.start.plusDays(40),
+            )
+
+        reportFreeRanges(
+            id,
+            OpenRangesBody(mapOf(child1.id to listOf(range), child2.id to emptyList())),
+        )
+
+        val absences = db.read { it.getAllAbsences() }
+        assertThat(absences.map { it.childId }.toSet()).containsExactly(child1.id)
+    }
+
+    @Test
+    fun `open ranges submission with empty list for eligible child is a no-op`() {
+        val id = createOpenRangesQuestionnaire(freeRangesQuestionnaire)
+
+        reportFreeRanges(id, OpenRangesBody(mapOf(child1.id to emptyList())))
+
+        val absences = db.read { it.getAllAbsences() }
+        assertThat(absences).isEmpty()
+    }
+
+    @Test
     fun `free absences are saved only when length of absence exceeds threshold`() {
         val id = createOpenRangesQuestionnaire(freeRangesQuestionnaire)
         reportFreeRanges(
