@@ -679,8 +679,11 @@ const AttendanceRow = React.memo(function AttendanceRow({
       </NameTd>
       {operationalDays
         .map(({ date }) => {
-          const { matchingAttendances, hasHiddenAttendances } =
-            getAttendancesForGroupAndDate(attendances, groupFilter, date)
+          const matchingAttendances = getAttendancesForGroupAndDate(
+            attendances,
+            groupFilter,
+            date
+          )
           const plannedAttendancesForToday = getPlannedAttendancesForDate(
             plannedAttendances ?? [],
             date
@@ -689,7 +692,6 @@ const AttendanceRow = React.memo(function AttendanceRow({
             date,
             plannedAttendancesForToday,
             attendancesForToday: matchingAttendances,
-            hasHiddenAttendances,
             someAttendanceDepartedAutomatically: matchingAttendances.some(
               (a) => a.departedAutomatically
             ),
@@ -700,7 +702,6 @@ const AttendanceRow = React.memo(function AttendanceRow({
           ({
             date,
             attendancesForToday,
-            hasHiddenAttendances,
             plannedAttendancesForToday,
             someAttendanceDepartedAutomatically,
             allowDetailsModal
@@ -775,7 +776,6 @@ const AttendanceRow = React.memo(function AttendanceRow({
                               onOpen={() => openDetails(date)}
                               hovered={isHovered(date)}
                               allowDetailsModal={allowDetailsModal}
-                              hasHiddenAttendances={hasHiddenAttendances}
                               departedAutomatically={
                                 someAttendanceDepartedAutomatically
                               }
@@ -794,7 +794,6 @@ const AttendanceRow = React.memo(function AttendanceRow({
                         onOpen={() => openDetails(date)}
                         hovered={isHovered(date)}
                         allowDetailsModal={allowDetailsModal}
-                        hasHiddenAttendances={false}
                         departedAutomatically={false}
                       />
                     </AttendanceCell>
@@ -812,7 +811,6 @@ interface DetailsToggleProps {
   onOpen: () => void
   hovered: boolean
   allowDetailsModal: boolean
-  hasHiddenAttendances: boolean
   departedAutomatically: boolean
   className?: string
 }
@@ -865,32 +863,25 @@ function getAttendancesForGroupAndDate(
   attendances: AttendanceRowAttendance[],
   groupFilter: GroupFilter | null,
   date: LocalDate
-): {
-  matchingAttendances: AttendanceRowAttendance[]
-  hasHiddenAttendances: boolean
-} {
-  const attendancesForDate = attendances.filter(
-    (a) =>
-      a.arrived.toLocalDate().isEqual(date) ||
-      (a.departed &&
-        new DateRange(
-          a.arrived.toLocalDate(),
-          a.departed.toLocalDate()
-        ).includes(date))
-  )
-
-  const presentAttendances = attendancesForDate.filter(
-    ({ groupId, type }) =>
-      !groupFilter ||
-      (groupId &&
-        groupFilter([groupId]) &&
-        type !== null &&
-        presentInGroup(type))
-  )
-  return {
-    matchingAttendances: presentAttendances,
-    hasHiddenAttendances: presentAttendances.length < attendancesForDate.length
-  }
+): AttendanceRowAttendance[] {
+  return attendances
+    .filter(
+      (a) =>
+        a.arrived.toLocalDate().isEqual(date) ||
+        (a.departed &&
+          new DateRange(
+            a.arrived.toLocalDate(),
+            a.departed.toLocalDate()
+          ).includes(date))
+    )
+    .filter(
+      ({ groupId, type }) =>
+        !groupFilter ||
+        (groupId &&
+          groupFilter([groupId]) &&
+          type !== null &&
+          presentInGroup(type))
+    )
 }
 
 function getPlannedAttendancesForDate(
