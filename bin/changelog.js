@@ -34,8 +34,8 @@ function main() {
       } catch (error) {
           console.error("An error occurred while parsing JSON:", error.message);
       }
-      const grouped = processPrs(json, startDate, endDate)
-      const markdown = toMarkdown(grouped, startDate, endDate)
+      const prs = processPrs(json, startDate, endDate)
+      const markdown = toMarkdown(prs, startDate, endDate)
       console.log(markdown)
   });
 }
@@ -59,62 +59,78 @@ function parseArgs() {
   return {startDate, endDate}
 }
 
-const ignoreLabels = ['no-changelog']
+const scopeSections = [
+  { label: 'core', title: 'Ytimen muutokset' },
+  { label: 'espoo', title: 'Espoo' },
+  { label: 'oulu', title: 'Oulu' },
+  { label: 'turku', title: 'Turku' },
+  { label: 'seutu', title: 'Seutu' },
+]
 
-const labels = {
+const changelogSections = {
   breaking: 'Toimia vaativat muutokset',
-  enhancement: 'Uudet ominaisuudet ja parannukset',
-  bug: 'Bugikorjaukset',
-  unknown: 'Muut',
+  enhancement:  'Uudet ominaisuudet ja parannukset',
+  bugfix: 'Bugikorjaukset',
   tech: 'Tekniset',
   dependencies: 'Riippuvuuksien päivitykset',
+  unknown: 'Muut',
+}
+
+const visibilityLabels = {
+  citizen: 'kuntalainen',
+  employee: 'henkilökunta',
+  'employee-mobile': 'henkilökunnan mobiili',
 }
 
 function processPrs(prs, startDate, endDate) {
-  const min = startDate
-  const maxExclusive = new Date(endDate + 24 * 60 * 60 * 1000)
+  const min = startDate.getTime()
+  const maxExclusive = endDate.getTime() + 24 * 60 * 60 * 1000
 
-  const prsToInclude = prs
-    .filter((pr) => min <= new Date(pr.closedAt) && new Date(pr.closedAt) < maxExclusive)
-    .filter((pr) => !ignoreLabels.some((ignore) => hasLabel(pr, ignore)))
-
-  // Sort by closedAt descending
-  prsToInclude.sort((a, b) => a.closedAt < b.closedAt ? 1 : -1);
-
-  const grouped = groupBy(prsToInclude, (pr) => {
-    for (const label of Object.keys(labels)) {
-      if (hasLabel(pr, label)) return label
-    }
-    return 'unknown'
-  })
-
-  return grouped
-}
-
-function toMarkdown(groups, startDate, endDate) {
-  let markdown = [`# eVakan muutosloki ${formatDate(startDate)}-${formatDate(endDate)}`]
-  for (const [label, title] of Object.entries(labels)) {
-    const prs = groups[label]
-    if (!prs || !prs.length) continue
-
-    const lines = prs.map((pr) => {
-      return `- ${pr.title} [#${pr.number}](${pr.url})`
+  return prs
+    .filter((pr) => {
+      const t = new Date(pr.closedAt).getTime()
+      return min <= t && t < maxExclusive
     })
-    markdown.push('', `## ${title}`, '', ...lines)
-  }
-  return markdown.join('\n')
+    .filter((pr) => !hasLabel(pr, 'no-changelog'))
+    .sort((a, b) => a.closedAt < b.closedAt ? 1 : -1)
 }
 
-function groupBy(arr, fn) {
-  const result = {}
-  arr.forEach((item) => {
-    const key = fn(item)
-    if (result[key] === undefined) {
-      result[key] = []
+function toMarkdown(prs, startDate, endDate) {
+  const parts = [`# eVakan muutosloki ${formatDate(startDate)}-${formatDate(endDate)}`]
+
+  for (const { label: scopeLabel, title: scopeTitle } of scopeSections) {
+    const hasNoScopeLabel = (pr) => !scopeSections.some(({ label }) => hasLabel(pr, label))
+    const scopePrs = prs.filter((pr) => hasLabel(pr, scopeLabel) || (scopeLabel === 'core' && hasNoScopeLabel(pr)))
+    if (scopePrs.length === 0) continue
+
+    parts.push('', `## ${scopeTitle}`)
+
+    for (const [changelogLabel, changelogTitle] of Object.entries(changelogSections)) {
+      const sectionPrs = scopePrs.filter((pr) => changelogLabel === 'unknown'
+        ? !Object.keys(changelogSections).filter((l) => l !== 'unknown').some((l) => hasLabel(pr, l))
+        : hasLabel(pr, changelogLabel)
+      )
+      if (sectionPrs.length === 0) continue
+
+      const lines = sectionPrs.map(formatPrLine)
+      if (changelogLabel === 'dependencies') {
+        parts.push('', `<details><summary>${changelogTitle}</summary>`, '', ...lines, '', '</details>')
+      } else {
+        parts.push('', `### ${changelogTitle}`, '', ...lines)
+      }
     }
-    result[key].push(item)
-  })
-  return result
+  }
+
+  return parts.join('\n')
+}
+
+function formatPrLine(pr) {
+  const visibility = Object.entries(visibilityLabels)
+    .filter(([label]) => hasLabel(pr, label))
+    .map(([, name]) => name)
+
+  const suffix = visibility.length > 0 ? ` _(${visibility.join(', ')})_` : ''
+  return `- ${pr.title} [#${pr.number}](${pr.url})${suffix}`
 }
 
 function hasLabel(pr, labelName) {
