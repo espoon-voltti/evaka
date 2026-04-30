@@ -39,6 +39,7 @@ export interface Theme {
     status: {
       danger: string
       warning: string
+      warningBackground: string
       success: string
       info: string
     }

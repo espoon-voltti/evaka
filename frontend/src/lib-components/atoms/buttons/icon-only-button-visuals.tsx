@@ -13,7 +13,7 @@ import type { BaseProps } from '../../utils'
 import type { IconSize } from '../icon-size'
 import { diameterByIconSize } from '../icon-size'
 
-type PredefinedColor = 'default' | 'gray' | 'white'
+type PredefinedColor = 'default' | 'gray' | 'white' | 'warning'
 
 /**
  * Visual/semantic props for an icon-only button
@@ -108,6 +108,13 @@ const cssColors = (theme: Theme, color: PredefinedColor): CssColors => {
         hover: theme.colors.grayscale.g0,
         active: theme.colors.main.m2Active,
         focus: theme.colors.main.m2Focus
+      }
+    case 'warning':
+      return {
+        base: theme.colors.status.warning,
+        hover: theme.colors.status.warning,
+        active: theme.colors.status.warning,
+        focus: theme.colors.status.warning
       }
   }
 }

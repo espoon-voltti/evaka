@@ -2609,6 +2609,8 @@ export const fi = {
       addedAt: 'Merkintä luotu',
       modifiedAt: 'Muokattu',
       departedAutomatically: 'Automaattikatkaistu',
+      departedAutomaticallyBanner: (count: number) =>
+        `${count} läsnäolojen automaattikatkaisua tällä viikolla.`,
       hasStaffOccupancyEffect: 'Kasvatusvastuullinen'
     },
     error: {
