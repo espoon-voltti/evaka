@@ -42,7 +42,7 @@ const changelogLabels = [
   'no-changelog',
   'breaking',
   'enhancement',
-  'bug',
+  'bugfix',
   'tech',
   'dependencies'
 ];

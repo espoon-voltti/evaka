@@ -70,7 +70,7 @@ const scopeSections = [
 const changelogSections = {
   breaking: 'Toimia vaativat muutokset',
   enhancement:  'Uudet ominaisuudet ja parannukset',
-  bug: 'Bugikorjaukset',
+  bugfix: 'Bugikorjaukset',
   tech: 'Tekniset',
   dependencies: 'Riippuvuuksien päivitykset',
   unknown: 'Muut',
