@@ -74,7 +74,7 @@ but you can also explicitly set the environment variable `ICONS=free`, e.g.:
 ICONS=free yarn dev
 ```
 
-### Using professional icons
+### Using pro icons
 
 Please refer to [Font Awesome documentation](https://fontawesome.com/plans)
 on how to obtain a commercial license for the professional version of the icon library.
@@ -101,23 +101,20 @@ private registry in your `.npmrc`:
 //npm.fontawesome.com/:_authToken=<your token>
 ```
 
-e.g. Voltti developers can configure it with:
-
-```sh
-cat << EOF > .npmrc
-@fortawesome:registry=https://npm.fontawesome.com/
-//npm.fontawesome.com/:_authToken=$(aws ssm get-parameter --name "/voltti/fontawesome-token" --query 'Parameter.Value' --with-decryption --region eu-west-1 --profile voltti-dev)
-EOF
-```
-
-**IMPORTANT:** Once you have fetched the packages, remove the above configuration
-to avoid accidentally configuring all the public `@fortawesome/` packages to
-target the private registry in `yarn.lock`.
-
 Fetch and place the packages with:
 
 ```sh
-./setup-pro-icons.sh
+./bin/setup-pro-icons.sh
+```
+
+**IMPORTANT:** Remove the above configuration to avoid accidentally configuring
+all the public `@fortawesome/` packages to target the private registry in
+`yarn.lock`.
+
+eVaka core developers can download from S3:
+
+```sh
+./bin/setup-pro-icons-s3.sh
 ```
 
 ## Development

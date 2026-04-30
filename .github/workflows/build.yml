@@ -132,22 +132,22 @@ jobs:
         uses: actions/cache@v5
         with:
           path: frontend/node_modules
-          key: fortawesome-${{ hashFiles('frontend/setup-pro-icons.sh') }}
+          key: fortawesome-${{ hashFiles('frontend/bin/unpack-pro-icons.sh') }}
 
-      - uses: actions/setup-node@v6
+      - name: Configure AWS credentials
         if: ${{ !github.event.pull_request.head.repo.fork && steps.fortawesome.outputs.cache-hit != 'true' }}
+        uses: aws-actions/configure-aws-credentials@v6
         with:
-          node-version: 24.15.0
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE }}
 
       - name: Install fortawesome
         if: ${{ !github.event.pull_request.head.repo.fork && steps.fortawesome.outputs.cache-hit != 'true' }}
         run: |
-          cat << EOF > frontend/.npmrc
-          @fortawesome:registry=https://npm.fontawesome.com/
-          //npm.fontawesome.com/:_authToken="${{ secrets.FONTAWESOME_TOKEN }}"
-          EOF
-          ./frontend/setup-pro-icons.sh
-          rm frontend/.npmrc
+          aws s3 cp s3://evaka-assets/fontawesome-7.2.0/fortawesome-pro-light-svg-icons-7.2.0.tgz frontend/vendor/fortawesome/
+          aws s3 cp s3://evaka-assets/fontawesome-7.2.0/fortawesome-pro-regular-svg-icons-7.2.0.tgz frontend/vendor/fortawesome/
+          aws s3 cp s3://evaka-assets/fontawesome-7.2.0/fortawesome-pro-solid-svg-icons-7.2.0.tgz frontend/vendor/fortawesome/
+          (cd frontend && ./bin/unpack-pro-icons.sh)
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -220,7 +220,7 @@ jobs:
         if: ${{ github.event.pull_request.head.repo.fork }}
         run: |
           cd ./frontend
-          ./build-docker.sh test
+          ./bin/build-docker.sh test
 
       - name: Docker cleanup
         if: always()

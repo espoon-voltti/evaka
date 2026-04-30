@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-VERSION=6.4.0
+VERSION=7.2.0
 
 unpack() {
   NAME=${1}

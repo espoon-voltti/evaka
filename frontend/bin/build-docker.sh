@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-cd "$( dirname "${BASH_SOURCE[0]}")"
+cd "$( dirname "${BASH_SOURCE[0]}")/.."
 
 if [ "${1:-}" = "test" ] || [ "${1:-}" = "builder" ]; then
     docker build -t evaka/frontend-builder \

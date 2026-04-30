@@ -8,16 +8,14 @@
 
 set -euo pipefail
 
-cd "$(dirname "${BASH_SOURCE[0]}")"
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-VERSION="6.4.0"
+VERSION="7.2.0"
 
 store_npm() {
   name="$1"
   npm pack "@fortawesome/${name}@${VERSION}"
-  mkdir -p "node_modules/@fortawesome/${name}"
-  tar xz --strip-components 1 -C "node_modules/@fortawesome/${name}" -f "fortawesome-${name}-${VERSION}.tgz"
-  rm "fortawesome-${name}-${VERSION}.tgz"
+  mv "fortawesome-${name}-${VERSION}.tgz" vendor/fortawesome/
 }
 
 if [ "${FORCE:-false}" = "false" ] && ! test -f .npmrc; then
@@ -28,3 +26,4 @@ fi
 store_npm pro-light-svg-icons
 store_npm pro-regular-svg-icons
 store_npm pro-solid-svg-icons
+./bin/unpack-pro-icons.sh

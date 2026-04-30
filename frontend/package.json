@@ -19,9 +19,9 @@
     "e2e": "LC_ALL=fi_FI.UTF-8 tsx node_modules/.bin/playwright test -c src/e2e-test/playwright.config.ts"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "6.7.2",
-    "@fortawesome/free-regular-svg-icons": "6.7.2",
-    "@fortawesome/free-solid-svg-icons": "6.7.2",
+    "@fortawesome/fontawesome-svg-core": "7.2.0",
+    "@fortawesome/free-regular-svg-icons": "7.2.0",
+    "@fortawesome/free-solid-svg-icons": "7.2.0",
     "@fortawesome/react-fontawesome": "3.3.1",
     "@react-spring/web": "10.0.3",
     "@sentry/browser": "10.49.0",
@@ -105,9 +105,9 @@
     "vitest": "4.1.5"
   },
   "peerDependencies": {
-    "@fortawesome/pro-light-svg-icons": "^6.4.0",
-    "@fortawesome/pro-regular-svg-icons": "^6.4.0",
-    "@fortawesome/pro-solid-svg-icons": "^6.4.0"
+    "@fortawesome/pro-light-svg-icons": "7.2.0",
+    "@fortawesome/pro-regular-svg-icons": "7.2.0",
+    "@fortawesome/pro-solid-svg-icons": "7.2.0"
   },
   "peerDependenciesMeta": {
     "@fortawesome/pro-light-svg-icons": {
