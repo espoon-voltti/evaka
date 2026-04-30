@@ -120,6 +120,7 @@ export type DocumentTemplateId = Id<'DocumentTemplate'>
 * Generated from evaka.core.shared.security.EmployeeFeatures
 */
 export interface EmployeeFeatures {
+  allowEnglishChildDocumentsForAllTypes: boolean
   applications: boolean
   createDraftInvoices: boolean
   createPlacements: boolean

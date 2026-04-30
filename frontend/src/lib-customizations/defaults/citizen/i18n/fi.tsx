@@ -1419,7 +1419,8 @@ export default {
           languageFilter: {
             label: 'Yksikön kieli',
             fi: 'suomi',
-            sv: 'ruotsi'
+            sv: 'ruotsi',
+            en: 'englanti'
           },
           select: {
             label: (maxUnits: number): string =>

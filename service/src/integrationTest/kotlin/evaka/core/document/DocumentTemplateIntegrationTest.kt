@@ -4,6 +4,7 @@
 
 package evaka.core.document
 
+import evaka.core.CitizenCalendarEnv
 import evaka.core.FullApplicationTest
 import evaka.core.caseprocess.DocumentConfidentiality
 import evaka.core.daycare.domain.Language
@@ -11,8 +12,10 @@ import evaka.core.document.childdocument.ChildDocumentController
 import evaka.core.document.childdocument.ChildDocumentCreateRequest
 import evaka.core.placement.PlacementType
 import evaka.core.shared.auth.UserRole
+import evaka.core.shared.config.testFeatureConfig
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
@@ -23,6 +26,7 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.UiLanguage
+import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.PilotFeature
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -36,6 +40,16 @@ import org.springframework.beans.factory.annotation.Autowired
 class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var controller: DocumentTemplateController
     @Autowired lateinit var childDocumentController: ChildDocumentController
+    @Autowired lateinit var accessControl: AccessControl
+    @Autowired lateinit var citizenCalendarEnv: CitizenCalendarEnv
+
+    private fun controllerWithEnglishFlag(enabled: Boolean) =
+        DocumentTemplateController(
+            accessControl,
+            evakaEnv,
+            citizenCalendarEnv,
+            testFeatureConfig.copy(allowEnglishChildDocumentsForAllTypes = enabled),
+        )
 
     private val now = MockEvakaClock(2022, 1, 1, 15, 0)
     private val area = DevCareArea()
@@ -552,6 +566,152 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
+    fun `active templates endpoint returns templates in all languages when placement unit is english`() {
+        val childId = insertChildInUnitWithLanguage(Language.en, name = "English Daycare")
+        listOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN).forEach { lang ->
+            publishPedagogicalAssessmentTemplate(lang)
+        }
+
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, childId)
+        assertEquals(
+            setOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN),
+            active.map { it.language }.toSet(),
+        )
+    }
+
+    @Test
+    fun `active templates endpoint returns finnish and english templates only when placement unit is finnish`() {
+        val childId = insertChildInUnitWithLanguage(Language.fi, name = "Finnish Daycare")
+        listOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN).forEach { lang ->
+            publishPedagogicalAssessmentTemplate(lang)
+        }
+
+        val active = controller.getActiveTemplates(dbInstance(), employee.user, now, childId)
+        assertEquals(setOf(UiLanguage.FI, UiLanguage.EN), active.map { it.language }.toSet())
+    }
+
+    @Test
+    fun `active templates by group id endpoint returns templates in all languages when group unit is english`() {
+        val groupId = insertGroupInUnitWithLanguage(Language.en, name = "English Daycare")
+        listOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN).forEach { lang ->
+            publishCitizenBasicTemplate(lang)
+        }
+
+        val active =
+            controller.getActiveTemplatesByGroupId(
+                dbInstance(),
+                employee.user,
+                now,
+                groupId,
+                emptySet(),
+            )
+        assertEquals(
+            setOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN),
+            active.map { it.language }.toSet(),
+        )
+    }
+
+    @Test
+    fun `active templates by group id endpoint returns only matching language templates when group unit is finnish`() {
+        val groupId = insertGroupInUnitWithLanguage(Language.fi, name = "Finnish Daycare")
+        listOf(UiLanguage.FI, UiLanguage.SV, UiLanguage.EN).forEach { lang ->
+            publishCitizenBasicTemplate(lang)
+        }
+
+        val active =
+            controller.getActiveTemplatesByGroupId(
+                dbInstance(),
+                employee.user,
+                now,
+                groupId,
+                emptySet(),
+            )
+        assertEquals(setOf(UiLanguage.FI), active.map { it.language }.toSet())
+    }
+
+    private fun insertChildInUnitWithLanguage(language: Language, name: String) =
+        db.transaction { tx ->
+            val areaId =
+                tx.insert(DevCareArea(name = "Area for $name", shortName = "area_${language.name}"))
+            val daycareId =
+                tx.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        name = name,
+                        language = language,
+                        enabledPilotFeatures =
+                            setOf(
+                                PilotFeature.VASU_AND_PEDADOC,
+                                PilotFeature.OTHER_DECISION,
+                                PilotFeature.CITIZEN_BASIC_DOCUMENT,
+                            ),
+                    )
+                )
+            val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = now.today(),
+                    endDate = now.today().plusDays(5),
+                )
+            )
+            childId
+        }
+
+    private fun insertGroupInUnitWithLanguage(language: Language, name: String) =
+        db.transaction { tx ->
+            val areaId =
+                tx.insert(
+                    DevCareArea(name = "Area for $name", shortName = "area_group_${language.name}")
+                )
+            val daycareId =
+                tx.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        name = name,
+                        language = language,
+                        enabledPilotFeatures = setOf(PilotFeature.CITIZEN_BASIC_DOCUMENT),
+                    )
+                )
+            tx.insert(DevDaycareGroup(daycareId = daycareId))
+        }
+
+    private fun publishPedagogicalAssessmentTemplate(language: UiLanguage) {
+        val template =
+            controllerWithEnglishFlag(enabled = true)
+                .createTemplate(
+                    dbInstance(),
+                    employee.user,
+                    now,
+                    testCreationRequest.copy(
+                        name = "PA-${language.name}",
+                        type = ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
+                        language = language,
+                        validity = DateRange(now.today(), null),
+                    ),
+                )
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
+    }
+
+    private fun publishCitizenBasicTemplate(language: UiLanguage) {
+        val template =
+            controller.createTemplate(
+                dbInstance(),
+                employee.user,
+                now,
+                testCreationRequest.copy(
+                    name = "CB-${language.name}",
+                    type = ChildDocumentType.CITIZEN_BASIC,
+                    language = language,
+                    confidentiality = null,
+                    validity = DateRange(now.today(), null),
+                ),
+            )
+        controller.publishTemplate(dbInstance(), employee.user, now, template.id)
+    }
+
+    @Test
     fun `active templates endpoint does not return templates where placement type does not match`() {
         val template =
             controller.createTemplate(
@@ -672,6 +832,165 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 ),
             )
         }
+    }
+
+    @Test
+    fun `English is rejected for non-CITIZEN_BASIC types when flag is off - create`() {
+        val request =
+            testCreationRequest.copy(
+                type = ChildDocumentType.PEDAGOGICAL_REPORT,
+                language = UiLanguage.EN,
+            )
+        val ex =
+            assertThrows<BadRequest> {
+                controllerWithEnglishFlag(enabled = false)
+                    .createTemplate(dbInstance(), employee.user, now, request)
+            }
+        assertEquals("English is not supported for this document type", ex.message)
+    }
+
+    @Test
+    fun `English is rejected for non-CITIZEN_BASIC types when flag is off - import`() {
+        val exported =
+            testCreationRequest
+                .copy(type = ChildDocumentType.PEDAGOGICAL_REPORT, language = UiLanguage.EN)
+                .toExported(testContent)
+        val ex =
+            assertThrows<BadRequest> {
+                controllerWithEnglishFlag(enabled = false)
+                    .importTemplate(dbInstance(), employee.user, now, exported)
+            }
+        assertEquals("English is not supported for this document type", ex.message)
+    }
+
+    @Test
+    fun `English is rejected for non-CITIZEN_BASIC types when flag is off - duplicate`() {
+        val disabledController = controllerWithEnglishFlag(enabled = false)
+        val created =
+            disabledController.createTemplate(dbInstance(), employee.user, now, testCreationRequest)
+        val ex =
+            assertThrows<BadRequest> {
+                disabledController.duplicateTemplate(
+                    dbInstance(),
+                    employee.user,
+                    now,
+                    created.id,
+                    testCreationRequest.copy(
+                        name = "dup",
+                        type = ChildDocumentType.PEDAGOGICAL_REPORT,
+                        language = UiLanguage.EN,
+                    ),
+                )
+            }
+        assertEquals("English is not supported for this document type", ex.message)
+    }
+
+    @Test
+    fun `English is rejected for non-CITIZEN_BASIC types when flag is off - update`() {
+        val disabledController = controllerWithEnglishFlag(enabled = false)
+        val created =
+            disabledController.createTemplate(dbInstance(), employee.user, now, testCreationRequest)
+        val ex =
+            assertThrows<BadRequest> {
+                disabledController.updateDraftTemplateBasics(
+                    dbInstance(),
+                    employee.user,
+                    now,
+                    created.id,
+                    testCreationRequest.copy(
+                        type = ChildDocumentType.PEDAGOGICAL_REPORT,
+                        language = UiLanguage.EN,
+                    ),
+                )
+            }
+        assertEquals("English is not supported for this document type", ex.message)
+    }
+
+    @Test
+    fun `English is accepted for non-CITIZEN_BASIC types when flag is on - create`() {
+        val englishController = controllerWithEnglishFlag(enabled = true)
+        val request =
+            testCreationRequest.copy(
+                type = ChildDocumentType.PEDAGOGICAL_REPORT,
+                language = UiLanguage.EN,
+            )
+        val created = englishController.createTemplate(dbInstance(), employee.user, now, request)
+        assertEquals(UiLanguage.EN, created.language)
+        assertEquals(ChildDocumentType.PEDAGOGICAL_REPORT, created.type)
+    }
+
+    @Test
+    fun `English is accepted for non-CITIZEN_BASIC types when flag is on - update`() {
+        val englishController = controllerWithEnglishFlag(enabled = true)
+        val created =
+            englishController.createTemplate(dbInstance(), employee.user, now, testCreationRequest)
+        englishController.updateDraftTemplateBasics(
+            dbInstance(),
+            employee.user,
+            now,
+            created.id,
+            testCreationRequest.copy(
+                type = ChildDocumentType.PEDAGOGICAL_REPORT,
+                language = UiLanguage.EN,
+            ),
+        )
+        val updated = englishController.getTemplate(dbInstance(), employee.user, now, created.id)
+        assertEquals(UiLanguage.EN, updated.language)
+        assertEquals(ChildDocumentType.PEDAGOGICAL_REPORT, updated.type)
+    }
+
+    @Test
+    fun `English is accepted for non-CITIZEN_BASIC types when flag is on - import`() {
+        val englishController = controllerWithEnglishFlag(enabled = true)
+        val exported =
+            testCreationRequest
+                .copy(type = ChildDocumentType.PEDAGOGICAL_REPORT, language = UiLanguage.EN)
+                .toExported(testContent)
+        val imported = englishController.importTemplate(dbInstance(), employee.user, now, exported)
+        assertEquals(UiLanguage.EN, imported.language)
+        assertEquals(ChildDocumentType.PEDAGOGICAL_REPORT, imported.type)
+    }
+
+    @Test
+    fun `English is accepted for non-CITIZEN_BASIC types when flag is on - duplicate`() {
+        val englishController = controllerWithEnglishFlag(enabled = true)
+        val created =
+            englishController.createTemplate(dbInstance(), employee.user, now, testCreationRequest)
+        val duplicated =
+            englishController.duplicateTemplate(
+                dbInstance(),
+                employee.user,
+                now,
+                created.id,
+                testCreationRequest.copy(
+                    name = "dup",
+                    type = ChildDocumentType.PEDAGOGICAL_REPORT,
+                    language = UiLanguage.EN,
+                ),
+            )
+        assertEquals(UiLanguage.EN, duplicated.language)
+        assertEquals(ChildDocumentType.PEDAGOGICAL_REPORT, duplicated.type)
+    }
+
+    @Test
+    fun `English is accepted for CITIZEN_BASIC regardless of flag`() {
+        val request =
+            testCreationRequest.copy(
+                type = ChildDocumentType.CITIZEN_BASIC,
+                language = UiLanguage.EN,
+                confidentiality = null,
+            )
+        val createdFlagOff =
+            controllerWithEnglishFlag(enabled = false)
+                .createTemplate(dbInstance(), employee.user, now, request)
+        assertEquals(UiLanguage.EN, createdFlagOff.language)
+        assertEquals(ChildDocumentType.CITIZEN_BASIC, createdFlagOff.type)
+
+        val createdFlagOn =
+            controllerWithEnglishFlag(enabled = true)
+                .createTemplate(dbInstance(), employee.user, now, request.copy(name = "cb2"))
+        assertEquals(UiLanguage.EN, createdFlagOn.language)
+        assertEquals(ChildDocumentType.CITIZEN_BASIC, createdFlagOn.type)
     }
 }
 

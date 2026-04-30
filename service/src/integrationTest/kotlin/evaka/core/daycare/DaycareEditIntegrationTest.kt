@@ -164,6 +164,27 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
+    fun testCreateEnglish() {
+        val englishFields = fields.copy(language = Language.en)
+        val result =
+            daycareController.createDaycare(dbInstance(), admin, RealEvakaClock(), englishFields)
+        getAndAssertDaycareFields(result.id, englishFields)
+    }
+
+    @Test
+    fun testUpdateEnglish() {
+        val englishFields = fields.copy(language = Language.en)
+        daycareController.updateDaycare(
+            dbInstance(),
+            admin,
+            RealEvakaClock(),
+            daycare.id,
+            englishFields,
+        )
+        getAndAssertDaycareFields(daycare.id, englishFields)
+    }
+
+    @Test
     fun testUpdatePreschool() {
         val preschoolFields =
             fields.copy(

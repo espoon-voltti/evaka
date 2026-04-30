@@ -6,7 +6,7 @@ import type {
   ApplicationType,
   TransferApplicationUnitSummary
 } from 'lib-common/generated/api-types/application'
-import type { CareType } from 'lib-common/generated/api-types/daycare'
+import type { CareType, Language } from 'lib-common/generated/api-types/daycare'
 import type LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
@@ -408,6 +408,10 @@ export class UnitEditor {
 
   async selectProviderType(providerType: UnitProviderType) {
     await this.#providerTypeRadio(providerType).click()
+  }
+
+  async selectLanguage(language: Language) {
+    await this.page.findByDataQa(`language-${language}`).click()
   }
 
   async setUnitHandlerAddress(text: string) {

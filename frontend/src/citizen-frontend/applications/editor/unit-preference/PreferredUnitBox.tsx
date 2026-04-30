@@ -5,7 +5,10 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import type {
+  Language,
+  PublicUnit
+} from 'lib-common/generated/api-types/daycare'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -87,15 +90,13 @@ export default React.memo(function PreferredUnitBox({
             )}
           </FixedSpaceColumn>
           <FixedSpaceFlexWrap $horizontalSpacing="xs" $verticalSpacing="xs">
-            {unit.language === 'sv' ? (
-              <StaticChip $color={colors.accents.a5orangeLight}>
-                {t.applications.editor.unitPreference.units.preferences.sv}
-              </StaticChip>
-            ) : (
-              <StaticChip $color={colors.main.m3}>
-                {t.applications.editor.unitPreference.units.preferences.fi}
-              </StaticChip>
-            )}
+            <StaticChip $color={unitLanguageChipColor[unit.language]}>
+              {
+                t.applications.editor.unitPreference.units.preferences[
+                  unit.language
+                ]
+              }
+            </StaticChip>
             <StaticChip {...getProviderTypeColors()}>
               {providerTypeText.toLowerCase()}
             </StaticChip>
@@ -148,6 +149,12 @@ export default React.memo(function PreferredUnitBox({
     </Wrapper>
   )
 })
+
+const unitLanguageChipColor: Record<Language, string> = {
+  fi: colors.main.m3,
+  sv: colors.accents.a5orangeLight,
+  en: colors.accents.a10powder
+}
 
 const noOp = () => undefined
 

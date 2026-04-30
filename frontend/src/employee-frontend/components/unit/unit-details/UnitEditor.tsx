@@ -1655,12 +1655,13 @@ export default function UnitEditor(props: Props) {
         </div>
         {props.editable ? (
           <FixedSpaceColumn>
-            {(['fi', 'sv'] as const).map((value) => (
+            {(['fi', 'sv', 'en'] as const).map((value) => (
               <Radio
                 key={value}
                 label={i18n.language[value]}
                 checked={form.language === value}
                 onChange={() => updateForm({ language: value })}
+                data-qa={`language-${value}`}
               />
             ))}
           </FixedSpaceColumn>

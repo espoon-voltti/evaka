@@ -474,7 +474,8 @@ const en: DeepPartial<Translations> = {
           languageFilter: {
             label: 'Unit language',
             fi: 'Finnish',
-            sv: 'Swedish'
+            sv: 'Swedish',
+            en: 'English'
           },
           select: {
             label: (maxUnits: number): string =>

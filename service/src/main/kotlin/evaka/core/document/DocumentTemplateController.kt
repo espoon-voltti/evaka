@@ -15,6 +15,7 @@ import evaka.core.daycare.getDaycare
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
 import evaka.core.shared.DocumentTemplateId
+import evaka.core.shared.FeatureConfig
 import evaka.core.shared.GroupId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
@@ -47,6 +48,7 @@ class DocumentTemplateController(
     private val accessControl: AccessControl,
     private val evakaEnv: EvakaEnv,
     private val citizenCalendarEnv: CitizenCalendarEnv,
+    private val featureConfig: FeatureConfig,
 ) {
     @PostMapping
     fun createTemplate(
@@ -151,9 +153,11 @@ class DocumentTemplateController(
                         it.published &&
                             it.validity.includes(clock.today()) &&
                             it.placementTypes.contains(placement.type) &&
+                            // English-language units can issue documents in any language
                             (it.language.name.uppercase() ==
                                 placement.unitLanguage.name.uppercase() ||
-                                it.language == UiLanguage.EN) &&
+                                it.language == UiLanguage.EN ||
+                                placement.unitLanguage == Language.en) &&
                             (placement.enabledPilotFeatures.contains(
                                 PilotFeature.VASU_AND_PEDADOC
                             ) || !isPedagogicalDocument((it.type))) &&
@@ -194,7 +198,9 @@ class DocumentTemplateController(
                         it.published &&
                             it.validity.includes(clock.today()) &&
                             (types.isEmpty() || types.contains(it.type)) &&
-                            (it.language.name.uppercase() == unit.language.name.uppercase())
+                            // English-language units can issue documents in any language
+                            (it.language.name.uppercase() == unit.language.name.uppercase() ||
+                                unit.language == Language.en)
                     }
                 }
             }
@@ -449,11 +455,15 @@ class DocumentTemplateController(
             }
             .also { Audit.DocumentTemplateDelete.log(targetId = AuditId(templateId)) }
     }
-}
 
-private fun validateLanguage(lang: UiLanguage, type: ChildDocumentType) {
-    if (type != ChildDocumentType.CITIZEN_BASIC && lang == UiLanguage.EN) {
-        throw BadRequest("English is not supported for this document type")
+    private fun validateLanguage(lang: UiLanguage, type: ChildDocumentType) {
+        if (
+            lang == UiLanguage.EN &&
+                type != ChildDocumentType.CITIZEN_BASIC &&
+                !featureConfig.allowEnglishChildDocumentsForAllTypes
+        ) {
+            throw BadRequest("English is not supported for this document type")
+        }
     }
 }
 

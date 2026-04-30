@@ -130,6 +130,7 @@ class TurkuConfig {
                 }
             },
             placementToolApplicationStatus = ApplicationStatus.WAITING_DECISION,
+            allowEnglishChildDocumentsForAllTypes = true,
         )
 
     @Bean

@@ -79,6 +79,7 @@ export class TemplateModal extends Element {
   readonly nameInput
   readonly typeSelect
   readonly placementTypesSelect
+  readonly languageSelect
   readonly validityStartInput
   readonly processDefinitionNumberInput
   readonly archiveDurationMonthsInput
@@ -94,6 +95,7 @@ export class TemplateModal extends Element {
     this.placementTypesSelect = new MultiSelect(
       this.findByDataQa('placement-types-select')
     )
+    this.languageSelect = new Select(this.findByDataQa('language-select'))
     this.validityStartInput = new TextInput(this.findByDataQa('start-date'))
     this.processDefinitionNumberInput = new TextInput(
       this.findByDataQa('process-definition-number')

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 
 import DateRange from 'lib-common/date-range'
 import { openEndedLocalDateRange } from 'lib-common/form/fields'
@@ -38,6 +38,7 @@ import {
 } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../../state/i18n'
+import { UserContext } from '../../../state/user'
 import { renderResult } from '../../async-rendering'
 import { documentTemplateForm } from '../forms'
 import {
@@ -93,6 +94,9 @@ const TemplateModalInner = React.memo(function TemplateModalInner({
   mode
 }: InternalProps) {
   const { i18n, lang } = useTranslation()
+  const { user } = useContext(UserContext)
+  const allowEnglishForAllTypes =
+    user?.accessibleFeatures.allowEnglishChildDocumentsForAllTypes
 
   const { mutateAsync: createDocumentTemplate } = useMutationResult(
     createDocumentTemplateMutation
@@ -126,15 +130,17 @@ const TemplateModalInner = React.memo(function TemplateModalInner({
   )
 
   const getLanguageOptions = useCallback(
-    (type: ChildDocumentType) =>
-      uiLanguages
-        .filter((option) => type === 'CITIZEN_BASIC' || option !== 'EN')
+    (type: ChildDocumentType) => {
+      const englishAllowed = type === 'CITIZEN_BASIC' || allowEnglishForAllTypes
+      return uiLanguages
+        .filter((option) => option !== 'EN' || englishAllowed)
         .map((option) => ({
           domValue: option,
           value: option,
           label: i18n.documentTemplates.languages[option]
-        })),
-    [i18n.documentTemplates]
+        }))
+    },
+    [i18n.documentTemplates, allowEnglishForAllTypes]
   )
 
   const form = useForm(
@@ -328,7 +334,7 @@ const TemplateModalInner = React.memo(function TemplateModalInner({
       />
       <Gap />
       <Label>{i18n.documentTemplates.templateModal.language}</Label>
-      <SelectF bind={language} />
+      <SelectF bind={language} data-qa="language-select" />
       <Gap />
       <Label>{i18n.documentTemplates.templateModal.legalBasis}</Label>
       <InputFieldF bind={legalBasis} hideErrorsBeforeTouched />

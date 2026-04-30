@@ -2,20 +2,22 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useMemo, useRef, useCallback } from 'react'
 import styled from 'styled-components'
 
 import type { PreferredUnit } from 'lib-common/generated/api-types/application'
-import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import { SelectionChip } from 'lib-components/atoms/Chip'
+import type {
+  Language,
+  PublicUnit
+} from 'lib-common/generated/api-types/daycare'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import {
   FixedSpaceColumn,
-  FixedSpaceFlexWrap,
-  FixedSpaceRow
+  FixedSpaceFlexWrap
 } from 'lib-components/layout/flex-helpers'
+import LanguageFilterChips from 'lib-components/molecules/LanguageFilterChips'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -43,8 +45,30 @@ export default React.memo(function UnitsSubSection({
 }: Props) {
   const t = useTranslation()
   const emptyPreferredUnitsLabel = useRef<HTMLLabelElement>(null)
-  const [displayFinnish, setDisplayFinnish] = useState(true)
-  const [displaySwedish, setDisplaySwedish] = useState(false)
+  const availableLanguages = useMemo(
+    () => new Set((units ?? []).map((u) => u.language)),
+    [units]
+  )
+  const [displayedLanguages, setDisplayedLanguages] = useState<Language[]>([
+    'fi'
+  ])
+  const effectiveLanguages = useMemo(
+    () => displayedLanguages.filter((l) => availableLanguages.has(l)),
+    [displayedLanguages, availableLanguages]
+  )
+  // Stale selection (e.g. default ['fi'] but no Finnish units exist) shows
+  // all units to avoid locking the user out of the dropdown. Explicitly
+  // empty selection (user deselected every chip) is intentional and still
+  // hides everything.
+  const showAllAsFallback =
+    displayedLanguages.length > 0 && effectiveLanguages.length === 0
+  const visibleUnits = useMemo(
+    () =>
+      (units ?? []).filter(
+        (u) => showAllAsFallback || effectiveLanguages.includes(u.language)
+      ),
+    [units, showAllAsFallback, effectiveLanguages]
+  )
   const [isUnitSelectionInvalid, setIsUnitSelectionInvalid] = useState(false)
   const [screenReaderMessage, showTimedScreenReaderMessage] =
     useScreenReaderMessage()
@@ -133,28 +157,19 @@ export default React.memo(function UnitsSubSection({
         </div>
       ) : (
         <>
-          <div role="group" aria-labelledby="language-selection-label">
-            <Label id="language-selection-label">
-              {t.applications.editor.unitPreference.units.languageFilter.label}
-            </Label>
-            <Gap $size="xs" />
-            <FixedSpaceRow>
-              <SelectionChip
-                text={
-                  t.applications.editor.unitPreference.units.languageFilter.fi
-                }
-                selected={displayFinnish}
-                onChange={setDisplayFinnish}
-              />
-              <SelectionChip
-                text={
-                  t.applications.editor.unitPreference.units.languageFilter.sv
-                }
-                selected={displaySwedish}
-                onChange={setDisplaySwedish}
-              />
-            </FixedSpaceRow>
-          </div>
+          <LanguageFilterChips
+            availableLanguages={availableLanguages}
+            selected={displayedLanguages}
+            onChange={setDisplayedLanguages}
+            getLabel={(lang) =>
+              t.applications.editor.unitPreference.units.languageFilter[lang]
+            }
+            label={
+              t.applications.editor.unitPreference.units.languageFilter.label
+            }
+            labelId="language-selection-label"
+            dataQa="unit-language-filter"
+          />
 
           <Gap $size="m" />
 
@@ -178,15 +193,7 @@ export default React.memo(function UnitsSubSection({
                       )
                     : []
                 }
-                options={
-                  units
-                    ? units.filter(
-                        (u) =>
-                          (displayFinnish && u.language === 'fi') ||
-                          (displaySwedish && u.language === 'sv')
-                      )
-                    : []
-                }
+                options={visibleUnits}
                 getOptionId={(unit) => unit.id}
                 getOptionLabel={(unit) => unit.name}
                 getOptionSecondaryText={(unit) => unit.streetAddress}
