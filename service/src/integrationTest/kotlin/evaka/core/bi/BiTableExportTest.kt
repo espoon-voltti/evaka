@@ -85,7 +85,7 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
         BiTable.entries.map { table ->
             DynamicTest.dynamicTest("${table.name} export") {
                 val client = CapturingBiExportClient()
-                BiExportJob(client, config).sendBiTable(db, clock, table.fileName, table.query)
+                BiExportJob(client, config).sendBiTable(db, clock, table)
                 assertEquals(listOf(table.fileName), client.captured.keys.toList())
                 val csv = client.captured.getValue(table.fileName).toString(CSV_CHARSET)
                 assertTrue(

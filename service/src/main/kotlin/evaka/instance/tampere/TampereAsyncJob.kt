@@ -32,7 +32,7 @@ class TampereAsyncJobRegistration(
 ) {
     init {
         runner.registerHandler { db, clock, msg: TampereAsyncJob.SendBiTable ->
-            biExportJob.sendBiTable(db, clock, msg.table.fileName, msg.table.query)
+            biExportJob.sendBiTable(db, clock, msg.table)
         }
     }
 }

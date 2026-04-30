@@ -25,9 +25,9 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
-import evaka.instance.oulu.BiProperties
 import evaka.instance.oulu.BucketProperties
 import evaka.instance.oulu.DwExportProperties
+import evaka.instance.oulu.FabricProperties
 import evaka.instance.oulu.OuluEnv
 import evaka.instance.oulu.SftpProperties
 import evaka.instance.oulu.invoice.service.SftpConnector
@@ -89,8 +89,8 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 password = Sensitive("pass"),
                             ),
                     ),
-                bi =
-                    BiProperties(
+                fabric =
+                    FabricProperties(
                         sftp =
                             SftpEnv(
                                 host = "localhost",

@@ -65,6 +65,10 @@ internal val PAYMENT_SOAP_PACKAGES =
 @Configuration
 @Import(TampereAsyncJobRegistration::class)
 class TampereConfig {
+    companion object {
+        val excludedBiTables: Set<BiTable> =
+            setOf(BiTable.StaffAttendanceRealtime, BiTable.AttendanceReservationDelta)
+    }
 
     @Bean
     fun featureConfig(): FeatureConfig =
@@ -206,9 +210,7 @@ class TampereConfig {
             asyncJobRunner,
             properties,
             env,
-            biTables =
-                BiTable.entries -
-                    setOf(BiTable.StaffAttendanceRealtime, BiTable.AttendanceReservationDelta),
+            biTables = BiTable.entries - excludedBiTables,
         )
 
     @Bean
