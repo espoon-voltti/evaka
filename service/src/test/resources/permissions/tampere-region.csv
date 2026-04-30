@@ -203,7 +203,7 @@ Lapsi;"Läsnäolovarauksien luku (ei-varattavat)";"READ_NON_RESERVABLE_RESERVATI
 Lapsi;"Läsnäolovarauksien muokkaus (ei-varattavat)";"UPDATE_NON_RESERVABLE_RESERVATIONS";;;;;;;;;;;
 Lapsi;"Läsnäolovarauksien poisto (loma-aika)";"DELETE_HOLIDAY_RESERVATIONS";x;;;;;;;x;x;x;
 Lapsi;"Lisätietojen luku";READ_ADDITIONAL_INFO;x;;x;;;x;;x;x;x;x
-Lapsi;"Lisätietojen muokkaus";UPDATE_ADDITIONAL_INFO;x;;;;;x;;x;x;x;
+Lapsi;"Lisätietojen muokkaus";UPDATE_ADDITIONAL_INFO;x;;;;;x;;x;x;x;x
 Lapsi;"Hakemuksen luku";READ_APPLICATION;x;;x;;;x;;x;;;
 Lapsi;"Tuen luku";READ_ASSISTANCE;x;;x;x;;x;;x;x;x;x
 Lapsi;"Tuen kertoimen luonti";CREATE_ASSISTANCE_FACTOR;x;;;;;x;;x;;x;

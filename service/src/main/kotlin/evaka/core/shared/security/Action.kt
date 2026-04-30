@@ -951,7 +951,13 @@ sealed interface Action {
         ),
         UPDATE_ADDITIONAL_INFO(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    STAFF,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                )
+                .inPlacementUnitOfChild(),
         ),
         READ_APPLICATION(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         READ_ASSISTANCE(
