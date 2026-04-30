@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: 2017-2026 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: Cleanup GHCR
+
+on:
+  schedule:
+    # Mondays 01:17 UTC ~= 03:17 (winter) / 04:17 (summer) Helsinki time.
+    - cron: '17 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - evaka/frontend
+          - evaka/frontend-multi
+          - evaka/frontend-builder
+          - evaka/service
+          - evaka/service-builder
+          - evaka/api-gateway
+    steps:
+      - name: Delete untagged versions of ${{ matrix.package }}
+        uses: actions/delete-package-versions@v5
+        with:
+          owner: espoon-voltti
+          package-name: ${{ matrix.package }}
+          package-type: container
+          delete-only-untagged-versions: 'true'
+
+      - name: Keep newest 100 versions of ${{ matrix.package }}
+        if: matrix.package == 'evaka/frontend' # Extend this in future if needed.
+        uses: actions/delete-package-versions@v5
+        with:
+          owner: espoon-voltti
+          package-name: ${{ matrix.package }}
+          package-type: container
+          min-versions-to-keep: 100

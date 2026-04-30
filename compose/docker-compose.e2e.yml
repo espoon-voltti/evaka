@@ -28,6 +28,7 @@ services:
       INTERNAL_GW_URL: "http://api-gw:3000"
       RATE_LIMIT_CIDR_WHITELIST: "0.0.0.0/0;::/0"
       HTTP_SCHEME: "http"
+      EVAKA_MUNICIPALITY: "espoo"
     # Enable for debug logging
     #command: [nginx-debug, '-g', 'daemon off;']
     # Develop nginx
