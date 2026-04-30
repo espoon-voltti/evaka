@@ -48,14 +48,8 @@ RUN set -e; \
     for muni_dir in src/lib-customizations/*/; do \
       name=$(basename "$muni_dir"); \
       case "$name" in defaults) continue ;; esac; \
-      icons_file="$muni_dir/icons"; \
-      if [ ! -f "$icons_file" ]; then \
-        echo "ERROR: $icons_file is missing" >&2; \
-        exit 1; \
-      fi; \
-      icons=$(cat "$icons_file"); \
-      echo "Building $name (icons=$icons)"; \
-      EVAKA_CUSTOMIZATIONS="$name" ICONS="$icons" yarn build; \
+      echo "Building $name"; \
+      EVAKA_CUSTOMIZATIONS="$name" ICONS=pro yarn build; \
       /project/assemble-static-bundle.sh "$name"; \
       rm -rf dist; \
     done
