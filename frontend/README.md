@@ -104,7 +104,7 @@ private registry in your `.npmrc`:
 Fetch and place the packages with:
 
 ```sh
-./setup-pro-icons.sh
+./bin/setup-pro-icons.sh
 ```
 
 **IMPORTANT:** Remove the above configuration to avoid accidentally configuring
@@ -114,7 +114,7 @@ all the public `@fortawesome/` packages to target the private registry in
 eVaka core developers can download from S3:
 
 ```sh
-./setup-pro-icons-s3.sh
+./bin/setup-pro-icons-s3.sh
 ```
 
 ## Development

@@ -50,7 +50,7 @@ RUN set -e; \
       case "$name" in defaults) continue ;; esac; \
       echo "Building $name"; \
       EVAKA_CUSTOMIZATIONS="$name" ICONS=pro yarn build; \
-      /project/assemble-static-bundle.sh "$name"; \
+      /project/bin/assemble-static-bundle.sh "$name"; \
       rm -rf dist; \
     done
 
@@ -69,7 +69,7 @@ ENV ICONS="$ICONS"
 
 RUN yarn build \
  && mkdir -p /out/static \
- && /project/assemble-static-bundle.sh "${EVAKA_CUSTOMIZATIONS}"
+ && /project/bin/assemble-static-bundle.sh "${EVAKA_CUSTOMIZATIONS}"
 
 # ---------- Shared runtime base ----------
 

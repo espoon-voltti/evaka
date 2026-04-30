@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-cd "$(dirname "${BASH_SOURCE[0]}")"
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 VERSION="7.2.0"
 
@@ -26,4 +26,4 @@ fi
 store_npm pro-light-svg-icons
 store_npm pro-regular-svg-icons
 store_npm pro-solid-svg-icons
-./unpack-pro-icons.sh
+./bin/unpack-pro-icons.sh

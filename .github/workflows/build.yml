@@ -132,7 +132,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: frontend/node_modules
-          key: fortawesome-${{ hashFiles('frontend/unpack-pro-icons.sh') }}
+          key: fortawesome-${{ hashFiles('frontend/bin/unpack-pro-icons.sh') }}
 
       - name: Configure AWS credentials
         if: ${{ !github.event.pull_request.head.repo.fork && steps.fortawesome.outputs.cache-hit != 'true' }}
@@ -147,7 +147,7 @@ jobs:
           aws s3 cp s3://evaka-assets/fontawesome-7.2.0/fortawesome-pro-light-svg-icons-7.2.0.tgz frontend/vendor/fortawesome/
           aws s3 cp s3://evaka-assets/fontawesome-7.2.0/fortawesome-pro-regular-svg-icons-7.2.0.tgz frontend/vendor/fortawesome/
           aws s3 cp s3://evaka-assets/fontawesome-7.2.0/fortawesome-pro-solid-svg-icons-7.2.0.tgz frontend/vendor/fortawesome/
-          (cd frontend && ./unpack-pro-icons.sh)
+          (cd frontend && ./bin/unpack-pro-icons.sh)
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -220,7 +220,7 @@ jobs:
         if: ${{ github.event.pull_request.head.repo.fork }}
         run: |
           cd ./frontend
-          ./build-docker.sh test
+          ./bin/build-docker.sh test
 
       - name: Docker cleanup
         if: always()

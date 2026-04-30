@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-cd "$(dirname "${BASH_SOURCE[0]}")"
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 VERSION="7.2.0"
 
@@ -19,4 +19,4 @@ s3_download() {
 s3_download pro-light-svg-icons
 s3_download pro-regular-svg-icons
 s3_download pro-solid-svg-icons
-./unpack-pro-icons.sh
+./bin/unpack-pro-icons.sh
