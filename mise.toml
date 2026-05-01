@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 [tools]
-devcontainer-cli = "0.83.2"
+devcontainer-cli = "0.86.0"
 java = "zulu-25"
 lefthook = "2.1.6"
 node = "24.15.0"
