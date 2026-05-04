@@ -789,8 +789,166 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 1,
                 1,
             ),
-            getIncomeStatementsAwaitingHandler(SearchIncomeStatementsRequest(unit = daycare2.id)),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(unitIds = listOf(daycare2.id))
+            ),
         )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - multiple units filter`() {
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child1.id,
+                    unitId = daycare1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            tx.insert(
+                DevParentship(
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child2.id,
+                    unitId = daycare2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            tx.insert(
+                DevParentship(
+                    childId = child3.id,
+                    headOfChildId = adult3.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child3.id,
+                    unitId = daycarePurchased.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+        }
+
+        val incomeStatement1 = createTestIncomeStatement(adult1.id)
+        val incomeStatement2 = createTestIncomeStatement(adult2.id)
+        createTestIncomeStatement(adult3.id)
+
+        assertEquals(
+            PagedIncomeStatementsAwaitingHandler(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement2.id,
+                        sentAt = incomeStatement2.sentAt!!,
+                        citizenModifiedAt = incomeStatement2.sentAt!!,
+                        startDate = incomeStatement2.startDate,
+                        incomeEndDate = null,
+                        handlerNote = "",
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = adult2.id,
+                        personLastName = "Doe",
+                        personFirstName = "Joan",
+                        primaryCareArea = area2.name,
+                    ),
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement1.id,
+                        sentAt = incomeStatement1.sentAt!!,
+                        citizenModifiedAt = incomeStatement1.sentAt!!,
+                        startDate = incomeStatement1.startDate,
+                        incomeEndDate = null,
+                        handlerNote = "",
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = adult1.id,
+                        personLastName = "Doe",
+                        personFirstName = "John",
+                        primaryCareArea = area1.name,
+                    ),
+                ),
+                2,
+                1,
+            ),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(unitIds = listOf(daycare1.id, daycare2.id))
+            ),
+        )
+    }
+
+    @Test
+    fun `list income statements awaiting handler - empty units list returns unfiltered`() {
+        val placementStart = today.minusDays(30)
+        val placementEnd = today.plusDays(30)
+        db.transaction { tx ->
+            tx.insert(
+                DevParentship(
+                    childId = child1.id,
+                    headOfChildId = adult1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child1.id,
+                    unitId = daycare1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            tx.insert(
+                DevParentship(
+                    childId = child2.id,
+                    headOfChildId = adult2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = child2.id,
+                    unitId = daycare2.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+        }
+
+        createTestIncomeStatement(adult1.id)
+        createTestIncomeStatement(adult2.id)
+
+        val unfiltered = getIncomeStatementsAwaitingHandler(SearchIncomeStatementsRequest())
+        val emptyUnits =
+            getIncomeStatementsAwaitingHandler(SearchIncomeStatementsRequest(unitIds = emptyList()))
+
+        assertEquals(2, unfiltered.total)
+        assertEquals(unfiltered, emptyUnits)
     }
 
     @Test

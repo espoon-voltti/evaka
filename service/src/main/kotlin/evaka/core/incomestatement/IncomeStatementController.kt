@@ -151,7 +151,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                     it.fetchIncomeStatementsAwaitingHandler(
                         clock.now().toLocalDate(),
                         body.areas ?: emptyList(),
-                        body.unit,
+                        body.unitIds ?: emptyList(),
                         body.providerTypes ?: emptyList(),
                         body.sentStartDate,
                         body.sentEndDate,
@@ -200,7 +200,7 @@ data class SearchIncomeStatementsRequest(
     val sortBy: IncomeStatementSortParam? = null,
     val sortDirection: SortDirection? = null,
     val areas: List<String>? = emptyList(),
-    val unit: DaycareId? = null,
+    val unitIds: List<DaycareId>? = emptyList(),
     val providerTypes: List<ProviderType>? = emptyList(),
     val sentStartDate: LocalDate? = null,
     val sentEndDate: LocalDate? = null,

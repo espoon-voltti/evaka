@@ -20,8 +20,8 @@ import {
   AreaFilter,
   DateFilter,
   Filters,
-  ProviderTypeFilter,
-  UnitFilter
+  MultiSelectUnitFilter,
+  ProviderTypeFilter
 } from '../common/Filters'
 
 export default React.memo(function IncomeStatementsFilters() {
@@ -54,9 +54,8 @@ export default React.memo(function IncomeStatementsFilters() {
     [setSearchFilters]
   )
 
-  const setUnit = useCallback(
-    (unit: DaycareId | undefined) =>
-      setSearchFilters((old) => ({ ...old, unit })),
+  const setUnitIds = useCallback(
+    (unitIds: DaycareId[]) => setSearchFilters((old) => ({ ...old, unitIds })),
     [setSearchFilters]
   )
 
@@ -117,10 +116,11 @@ export default React.memo(function IncomeStatementsFilters() {
           />
           <Gap $size="L" />
           {renderResult(unitsResult, (units) => (
-            <UnitFilter
+            <MultiSelectUnitFilter
               units={units}
-              select={setUnit}
-              selected={units.find(({ id }) => id === searchFilters.unit)}
+              selectedUnits={searchFilters.unitIds}
+              onChange={setUnitIds}
+              data-qa="unit-selector"
             />
           ))}
         </>

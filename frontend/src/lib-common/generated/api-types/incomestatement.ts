@@ -399,7 +399,7 @@ export interface SearchIncomeStatementsRequest {
   sortBy: IncomeStatementSortParam | null
   sortDirection: SortDirection | null
   status: IncomeStatementStatus[] | null
-  unit: DaycareId | null
+  unitIds: DaycareId[] | null
 }
 
 /**

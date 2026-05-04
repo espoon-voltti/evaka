@@ -185,7 +185,8 @@ export default React.memo(function IncomeStatementsPage() {
       ? incomeStatementsAwaitingHandlerQuery({
           body: {
             areas: searchFilters.area.length > 0 ? searchFilters.area : null,
-            unit: searchFilters.unit ?? null,
+            unitIds:
+              searchFilters.unitIds.length > 0 ? searchFilters.unitIds : null,
             providerTypes:
               searchFilters.providerTypes.length > 0
                 ? searchFilters.providerTypes

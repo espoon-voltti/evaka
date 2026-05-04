@@ -19,6 +19,7 @@ import {
   AsyncButton,
   Checkable,
   Checkbox,
+  MultiSelect,
   Radio,
   Select,
   TextInput,
@@ -475,10 +476,12 @@ export class InvoicesPage {
 export class IncomeStatementsPage {
   searchButton: Element
   incomeStatementRows: ElementCollection
+  #unitFilter: MultiSelect
 
   constructor(private readonly page: Page) {
     this.incomeStatementRows = page.findAll(`[data-qa="income-statement-row"]`)
     this.searchButton = page.findByDataQa('search-button')
+    this.#unitFilter = new MultiSelect(page.findByDataQa('unit-selector'))
   }
 
   #providerTypeFilter = (type: ProviderType) =>
@@ -486,6 +489,9 @@ export class IncomeStatementsPage {
 
   #statusFilter = (status: 'SENT' | 'HANDLING') =>
     new Checkable(this.page.findByDataQa(`status-filter-${status}`))
+
+  #areaFilter = (shortName: string) =>
+    new Checkable(this.page.findByDataQa(`area-filter-${shortName}`))
 
   async waitUntilLoaded() {
     await this.page
@@ -507,6 +513,18 @@ export class IncomeStatementsPage {
 
   async unSelectStatus(status: 'SENT' | 'HANDLING') {
     await this.#statusFilter(status).uncheck()
+  }
+
+  async toggleUnit(name: string) {
+    await this.#unitFilter.fillAndSelectFirst(name)
+  }
+
+  async selectArea(shortName: string) {
+    await this.#areaFilter(shortName).check()
+  }
+
+  async unSelectArea(shortName: string) {
+    await this.#areaFilter(shortName).uncheck()
   }
 
   async openNthIncomeStatementForGuardian(nth: number) {
