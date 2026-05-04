@@ -209,6 +209,22 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
+    fun `generic reasonings with removed_at set are excluded from the read`() {
+        val id = createGenericReasoning(genericRequest(LocalDate.of(2026, 8, 1)))
+        db.transaction { tx ->
+            tx.createUpdate {
+                    sql(
+                        "UPDATE decision_reasoning_generic SET removed_at = ${bind(now)} WHERE id = ${bind(id)}"
+                    )
+                }
+                .execute()
+        }
+
+        val result = getGenericReasonings(DecisionReasoningCollectionType.DAYCARE)
+        assertEquals(0, result.size)
+    }
+
+    @Test
     fun `endDate is the day before the next validFrom and null for the latest`() {
         val earlierStart = LocalDate.of(2026, 8, 1)
         val laterStart = LocalDate.of(2027, 1, 1)

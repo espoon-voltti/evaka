@@ -32,7 +32,7 @@ fun Database.Read.getGenericReasonings(
                     """
 SELECT id, collection_type, valid_from, text_fi, text_sv, ready, created_at, modified_at
 FROM decision_reasoning_generic
-WHERE collection_type = ${bind(collectionType)}
+WHERE collection_type = ${bind(collectionType)} AND removed_at IS NULL
 ORDER BY valid_from DESC, created_at DESC
 """
                 )
