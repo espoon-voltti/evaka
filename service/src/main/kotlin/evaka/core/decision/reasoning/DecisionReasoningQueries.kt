@@ -119,6 +119,26 @@ WHERE id = ${bind(id)} AND ready = false
     }
 }
 
+fun Database.Transaction.removeGenericReasoning(
+    id: DecisionGenericReasoningId,
+    now: HelsinkiDateTime,
+) {
+    val updated =
+        createUpdate {
+                sql(
+                    """
+UPDATE decision_reasoning_generic
+SET removed_at = ${bind(now)}, modified_at = ${bind(now)}
+WHERE id = ${bind(id)} AND removed_at IS NULL
+"""
+                )
+            }
+            .execute()
+    if (updated == 0) {
+        throw NotFound("Generic reasoning $id not found")
+    }
+}
+
 fun Database.Read.getIndividualReasonings(
     collectionType: DecisionReasoningCollectionType
 ): List<DecisionIndividualReasoning> =

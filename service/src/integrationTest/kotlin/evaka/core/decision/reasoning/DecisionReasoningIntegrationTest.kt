@@ -225,6 +225,25 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
+    fun `removeGenericReasoning soft-deletes the row so it is excluded from the read`() {
+        val id = createGenericReasoning(genericRequest(LocalDate.of(2026, 8, 1)).copy(ready = true))
+
+        db.transaction { tx -> tx.removeGenericReasoning(id, now) }
+
+        val result = getGenericReasonings(DecisionReasoningCollectionType.DAYCARE)
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `removeGenericReasoning is idempotent — second call throws NotFound`() {
+        val id = createGenericReasoning(genericRequest(LocalDate.of(2026, 8, 1)).copy(ready = true))
+
+        db.transaction { tx -> tx.removeGenericReasoning(id, now) }
+
+        assertThrows<NotFound> { db.transaction { tx -> tx.removeGenericReasoning(id, now) } }
+    }
+
+    @Test
     fun `endDate is the day before the next validFrom and null for the latest`() {
         val earlierStart = LocalDate.of(2026, 8, 1)
         val laterStart = LocalDate.of(2027, 1, 1)
