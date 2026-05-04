@@ -104,6 +104,27 @@ class DecisionReasoningController(private val accessControl: AccessControl) {
         Audit.DecisionReasoningGenericDelete.log(targetId = AuditId(id))
     }
 
+    @PutMapping("/generic/{id}/remove")
+    fun removeGenericReasoning(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: DecisionGenericReasoningId,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Global.WRITE_DECISION_REASONINGS,
+                )
+                tx.removeGenericReasoning(id, clock.now())
+            }
+        }
+        Audit.DecisionReasoningGenericRemove.log(targetId = AuditId(id))
+    }
+
     @GetMapping("/individual")
     fun getIndividualReasonings(
         db: Database,
