@@ -11,6 +11,7 @@ import evaka.core.application.ApplicationControllerV2
 import evaka.core.application.ApplicationDecisions
 import evaka.core.application.ApplicationStateService
 import evaka.core.application.ApplicationStatus
+import evaka.core.application.ApplicationType
 import evaka.core.application.ChildInfo
 import evaka.core.application.DaycarePlacementPlan
 import evaka.core.application.DecisionDraftGroup
@@ -23,6 +24,7 @@ import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.daycare.Daycare
 import evaka.core.daycare.DaycareDecisionCustomization
 import evaka.core.daycare.VisitingAddress
+import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.daycare.getDaycare
 import evaka.core.pis.service.PersonService
@@ -41,11 +43,14 @@ import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
+import evaka.core.shared.dev.TestDecision
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestApplication
+import evaka.core.shared.dev.insertTestDecision
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.security.Action
 import evaka.core.test.DecisionTableRow
 import evaka.core.test.getApplicationStatus
@@ -62,6 +67,8 @@ import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.beans.factory.annotation.Autowired
 
 class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -1114,6 +1121,59 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val plannedByType = drafts.associate { it.type to it.planned }
         assertEquals(true, plannedByType[DecisionType.PRESCHOOL])
         assertEquals(true, plannedByType[DecisionType.PRESCHOOL_DAYCARE])
+    }
+
+    @ParameterizedTest
+    @EnumSource(Language::class)
+    fun `getDecisionLanguage returns SV for Swedish units and FI for Finnish or English units`(
+        unitLanguage: Language
+    ) {
+        val expected =
+            when (unitLanguage) {
+                Language.sv -> OfficialLanguage.SV
+                Language.fi,
+                Language.en -> OfficialLanguage.FI
+            }
+        val area = DevCareArea(name = "Lang test area", shortName = "lang_test_area")
+        val daycare = DevDaycare(areaId = area.id, language = unitLanguage)
+        val guardian = DevPerson(ssn = "010180-1232")
+        val child = DevPerson(ssn = "010617A123U", dateOfBirth = LocalDate.of(2017, 6, 1))
+        val applicationId = ApplicationId(UUID.randomUUID())
+        val period = FiniteDateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 7, 31))
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertTestApplication(
+                id = applicationId,
+                type = ApplicationType.DAYCARE,
+                guardianId = guardian.id,
+                childId = child.id,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.DAYCARE,
+                        child = child.toDaycareFormChild(),
+                        guardian = guardian.toDaycareFormAdult(),
+                        apply = Apply(preferredUnits = listOf(daycare.id)),
+                        preferredStartDate = period.start,
+                    ),
+            )
+            tx.insertTestDecision(
+                TestDecision(
+                    id = decisionId,
+                    createdBy = employee.evakaUserId,
+                    unitId = daycare.id,
+                    applicationId = applicationId,
+                    type = DecisionType.DAYCARE,
+                    startDate = period.start,
+                    endDate = period.end,
+                )
+            )
+        }
+
+        assertEquals(expected, db.read { it.getDecisionLanguage(decisionId) })
     }
 
     private fun getDecisionDrafts(applicationId: ApplicationId): List<DecisionDraft> =
