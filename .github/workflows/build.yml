@@ -54,71 +54,6 @@ jobs:
     - name: Reuse Compliance Check
       uses: fsfe/reuse-action@v6
 
-  frontend-common:
-    runs-on: ubuntu-latest
-    needs:
-      - cache-bust
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Docker building
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        id: setup
-        uses: espoon-voltti/voltti-actions/docker-setup@master
-        with:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS: false
-
-      - name: Build frontend image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
-        id: build
-        with:
-          registry: ghcr.io/espoon-voltti
-          name: evaka/frontend-common
-          path: ./frontend
-          push: ${{ inputs.push || 'true' }}
-          build-args: |
-            CACHE_BUST=${{ needs.cache-bust.outputs.cache-bust }}
-            SENTRY_PUBLISH_ENABLED=false
-            build=${{ github.run_number }}
-            commit=${{ github.event.pull_request.head.sha || github.sha }}
-            ICONS=free
-          build-contexts:
-            customizations=frontend/src/lib-customizations/espoo
-
-      - name: Build frontend image builder
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
-        id: builder
-        with:
-          registry: ghcr.io/espoon-voltti
-          name: evaka/frontend-common-builder
-          cache_from: ${{ steps.build.outputs.image_cache }}
-          path: ./frontend
-          target: builder-single
-          push: ${{ inputs.push || 'true' }}
-          build-args: |
-            CACHE_BUST=${{ needs.cache-bust.outputs.cache-bust }}
-            SENTRY_PUBLISH_ENABLED=false
-            build=${{ github.run_number }}
-            commit=${{ github.event.pull_request.head.sha || github.sha }}
-            ICONS=free
-          build-contexts:
-            customizations=frontend/src/lib-customizations/espoo
-
-      - name: Docker cleanup
-        if: always()
-        uses: espoon-voltti/voltti-actions/docker-cleanup@master
-
-    outputs:
-      image: ${{ steps.build.outputs.image }}
-      image_name: ${{ steps.build.outputs.image_name }}
-      builder_image: ${{ steps.builder.outputs.image }}
-      builder_image_name: ${{ steps.builder.outputs.image_name }}
-
   frontend:
     runs-on: ubuntu-latest
     needs:
@@ -157,17 +92,37 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE: ${{ secrets.AWS_ROLE }}
+          AWS: false
 
-      - name: Build frontend image
+      - name: Build frontend builder image
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
-        id: build
+        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
+        id: builder
         with:
-          registry: ${{ steps.setup.outputs.ecr_registry }}
-          name: evaka/frontend
+          registry: ghcr.io/espoon-voltti
+          name: evaka/frontend-builder
           path: ./frontend
+          target: builder-single
+          push: ${{ inputs.push || 'true' }}
+          build-args: |
+            CACHE_BUST=${{ needs.cache-bust.outputs.cache-bust }}
+            SENTRY_PUBLISH_ENABLED=false
+            build=${{ github.run_number }}
+            commit=${{ github.event.pull_request.head.sha || github.sha }}
+            ICONS=pro
+          build-contexts:
+            customizations=frontend/src/lib-customizations/espoo
+
+      - name: Build frontend single image
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
+        id: build-single
+        with:
+          registry: ghcr.io/espoon-voltti
+          name: evaka/frontend-single
+          cache_from: ${{ steps.builder.outputs.image_cache }}
+          path: ./frontend
+          target: runtime-single
           push: ${{ inputs.push || 'true' }}
           build-args: |
             CACHE_BUST=${{ needs.cache-bust.outputs.cache-bust }}
@@ -179,17 +134,37 @@ jobs:
           build-contexts:
             customizations=frontend/src/lib-customizations/espoo
 
+      - name: Build frontend multi image
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
+        id: build-multi
+        with:
+          registry: ghcr.io/espoon-voltti
+          name: evaka/frontend
+          cache_from: ${{ steps.builder.outputs.image_cache }}
+          path: ./frontend
+          target: runtime-multi
+          push: ${{ inputs.push || 'true' }}
+          build-args: |
+            CACHE_BUST=${{ needs.cache-bust.outputs.cache-bust }}
+            SENTRY_PUBLISH_ENABLED=false
+            build=${{ github.run_number }}
+            commit=${{ github.event.pull_request.head.sha || github.sha }}
+
       - name: Docker cleanup
         if: always()
         uses: espoon-voltti/voltti-actions/docker-cleanup@master
 
     outputs:
-      image: ${{ steps.build.outputs.image }}
-      image_name: ${{ steps.build.outputs.image_name }}
+      image: ${{ steps.build-single.outputs.image }}
+      image_name: ${{ steps.build-single.outputs.image_name }}
+      multi_image: ${{ steps.build-multi.outputs.image }}
+      multi_image_name: ${{ steps.build-multi.outputs.image_name }}
+      builder_image: ${{ steps.builder.outputs.image }}
+      builder_image_name: ${{ steps.builder.outputs.image_name }}
 
   frontend-test:
     needs:
-      - frontend-common
       - frontend
     runs-on: ubuntu-latest
     steps:
@@ -205,15 +180,15 @@ jobs:
 
       - name: Lint
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        run: docker run --rm "${{ needs.frontend-common.outputs.builder_image }}" yarn lint
+        run: docker run --rm "${{ needs.frontend.outputs.builder_image }}" yarn lint
 
       - name: Type check
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        run: docker run --rm "${{ needs.frontend-common.outputs.builder_image }}" yarn type-check
+        run: docker run --rm "${{ needs.frontend.outputs.builder_image }}" yarn type-check
 
       - name: Test
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        run: docker run --rm "${{ needs.frontend-common.outputs.builder_image }}" yarn test --maxWorkers=2
+        run: docker run --rm "${{ needs.frontend.outputs.builder_image }}" yarn test --maxWorkers=2
 
       - name: Build and test fork
         id: fork
@@ -241,15 +216,14 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE: ${{ secrets.AWS_ROLE }}
+          AWS: false
 
       - name: Build and run API-gateway tests
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
         id: test
         with:
-          registry: ${{ steps.setup.outputs.ecr_registry }}
+          registry: ghcr.io/espoon-voltti
           name: evaka/api-gateway-test
           path: ./apigw
           push: false
@@ -262,10 +236,10 @@ jobs:
 
       - name: Build API-gateway image
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
         id: build
         with:
-          registry: ${{ steps.setup.outputs.ecr_registry }}
+          registry: ghcr.io/espoon-voltti
           name: evaka/api-gateway
           path: ./apigw
           push: ${{ inputs.push || 'true' }}
@@ -299,15 +273,14 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE: ${{ secrets.AWS_ROLE }}
+          AWS: false
 
       - name: Build Evaka Service image
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
         id: build
         with:
-          registry: ${{ steps.setup.outputs.ecr_registry }}
+          registry: ghcr.io/espoon-voltti
           name: evaka/service
           path: .
           dockerfile: service/Dockerfile
@@ -319,10 +292,10 @@ jobs:
 
       - name: Build Evaka Service builder image
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
         id: builder
         with:
-          registry: ${{ steps.setup.outputs.ecr_registry }}
+          registry: ghcr.io/espoon-voltti
           name: evaka/service-builder
           target: builder
           cache_from: ${{ steps.build.outputs.image_cache }}
@@ -360,15 +333,14 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE: ${{ secrets.AWS_ROLE }}
+          AWS: false
 
       - name: Build and run Evaka Service tests
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@master
+        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
         id: build
         with:
-          registry: ${{ steps.setup.outputs.ecr_registry }}
+          registry: ghcr.io/espoon-voltti
           name: evaka/service-test
           path: .
           dockerfile: service/test.Dockerfile
@@ -398,20 +370,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Configure AWS credentials
+      - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: docker/login-action@v4
         with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE }}
-          role-duration-seconds: 1200
-
-      - name: Login to Amazon ECR
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        id: ecr
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          mask-password: 'true'
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cache dependency check database
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -628,7 +593,6 @@ jobs:
     needs:
       - service
       - api-gateway
-      - frontend-common
       - frontend
     runs-on: ubuntu-latest
 
@@ -698,6 +662,68 @@ jobs:
             compose/e2e-all.log
           retention-days: 2
 
+  ecr-push:
+    if: ${{ !github.event.pull_request.head.repo.fork && inputs.push != 'false' }}
+    needs:
+      - frontend
+      - service
+      - api-gateway
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - municipality: espoo
+            aws_region: eu-north-1
+            aws_role: AWS_ROLE
+            ecr_prefix: evaka
+          - municipality: oulu
+            aws_region: eu-west-1
+            aws_role: AWS_ROLE_OULU
+            ecr_prefix: evakaoulu
+          - municipality: turku
+            aws_region: eu-west-1
+            aws_role: AWS_ROLE_TURKU
+            ecr_prefix: evakaturku
+    steps:
+      - name: Configure AWS credentials for ${{ matrix.municipality }}
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ matrix.aws_region }}
+          role-to-assume: ${{ secrets[matrix.aws_role] }}
+          role-duration-seconds: 1200
+          mask-aws-account-id: false
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Copy images from GHCR to ${{ matrix.municipality }} ECR
+        env:
+          SHA: "${{ github.event.pull_request.head.sha || github.sha }}"
+          ECR: "${{ steps.ecr.outputs.registry }}"
+          PREFIX: "${{ matrix.ecr_prefix }}"
+        run: |
+          set -euo pipefail
+          for image in frontend service api-gateway; do
+            src="ghcr.io/espoon-voltti/evaka/${image}:${SHA}"
+            dst="${ECR}/${PREFIX}/${image}:${SHA}"
+            echo "Copying ${src} -> ${dst}"
+            docker buildx imagetools create --tag "${dst}" "${src}"
+          done
+
   frontend-s3:
     if: ${{ github.ref == 'refs/heads/master' && !github.event.pull_request.head.repo.fork && inputs.push != 'false' }}
     needs:
@@ -747,6 +773,7 @@ jobs:
     if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     needs:
+      - ecr-push
       - service-test
       - service-integration-test
       - municipality-smoke-test
@@ -755,22 +782,29 @@ jobs:
       - lint-shell
       - check-licenses
       - check-schema
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - municipality: espoo
+            aws_region: eu-north-1
+            aws_role: AWS_ROLE
+            ecr_prefix: evaka
+          - municipality: oulu
+            aws_region: eu-west-1
+            aws_role: AWS_ROLE_OULU
+            ecr_prefix: evakaoulu
+          - municipality: turku
+            aws_region: eu-west-1
+            aws_role: AWS_ROLE_TURKU
+            ecr_prefix: evakaturku
     steps:
-      - name: Configure AWS credentials
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+      - name: Configure AWS credentials for ${{ matrix.municipality }}
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE }}
+          aws-region: ${{ matrix.aws_region }}
+          role-to-assume: ${{ secrets[matrix.aws_role] }}
           role-duration-seconds: 1200
-
-      - name: Login to GitHub Container Registry
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Docker metadata # Used to get the tag from DOCKER_METADATA_OUTPUT_VERSION
         id: metadata
@@ -784,27 +818,28 @@ jobs:
             type=ref,event=pr,prefix=pr-
             type=ref,event=branch,prefix=
 
-      - name: Retag with branch
+      - name: Retag ${{ matrix.municipality }} ECR images with branch
+        env:
+          SHA: "${{ github.event.pull_request.head.sha || github.sha }}"
+          PREFIX: "${{ matrix.ecr_prefix }}"
         run: |
+          set -euo pipefail
           if test -z "$DOCKER_METADATA_OUTPUT_VERSION"; then
             echo "Empty tag"
             exit 1
           fi
 
-          for repository in evaka/frontend evaka/frontend-common evaka/frontend-common-builder evaka/service evaka/service-builder evaka/api-gateway; do
-            ghcr_image_base="ghcr.io/espoon-voltti/${repository}"
-            ghcr_image="${ghcr_image_base}:${{ github.event.pull_request.head.sha || github.sha }}"
-            ghcr_target="${ghcr_image_base}:${DOCKER_METADATA_OUTPUT_VERSION}"
-            echo "Tagging GHCR with '${ghcr_target}'"
-            docker pull "$ghcr_image"
-            docker tag "$ghcr_image" "${ghcr_image_base}:${DOCKER_METADATA_OUTPUT_VERSION}"
-            docker push "${ghcr_image_base}:${DOCKER_METADATA_OUTPUT_VERSION}"
-          done
-
-          for repository in evaka/frontend evaka/service evaka/service-builder evaka/api-gateway; do
-            # ECR retag
-            MANIFEST=$(aws ecr batch-get-image --repository-name "$repository" --image-ids imageTag="${{ github.event.pull_request.head.sha || github.sha }}" --output json | jq --raw-output --join-output '.images[0].imageManifest')
-            aws ecr put-image --repository-name "$repository" --image-tag "${DOCKER_METADATA_OUTPUT_VERSION}" --image-manifest "$MANIFEST"
+          for image in frontend service api-gateway; do
+            repository="${PREFIX}/${image}"
+            echo "Retagging ${repository}:${SHA} -> :${DOCKER_METADATA_OUTPUT_VERSION}"
+            MANIFEST=$(aws ecr batch-get-image \
+              --repository-name "$repository" \
+              --image-ids imageTag="$SHA" \
+              --output json | jq --raw-output --join-output '.images[0].imageManifest')
+            aws ecr put-image \
+              --repository-name "$repository" \
+              --image-tag "${DOCKER_METADATA_OUTPUT_VERSION}" \
+              --image-manifest "$MANIFEST"
           done
 
   notify:
