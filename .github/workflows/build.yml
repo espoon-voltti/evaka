@@ -96,7 +96,7 @@ jobs:
 
       - name: Build frontend builder image
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: builder
         with:
           registry: ghcr.io/espoon-voltti
@@ -115,7 +115,7 @@ jobs:
 
       - name: Build frontend single image
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: build-single
         with:
           registry: ghcr.io/espoon-voltti
@@ -136,7 +136,7 @@ jobs:
 
       - name: Build frontend multi image
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: build-multi
         with:
           registry: ghcr.io/espoon-voltti
@@ -220,7 +220,7 @@ jobs:
 
       - name: Build and run API-gateway tests
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: test
         with:
           registry: ghcr.io/espoon-voltti
@@ -236,7 +236,7 @@ jobs:
 
       - name: Build API-gateway image
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: build
         with:
           registry: ghcr.io/espoon-voltti
@@ -277,7 +277,7 @@ jobs:
 
       - name: Build Evaka Service image
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: build
         with:
           registry: ghcr.io/espoon-voltti
@@ -292,7 +292,7 @@ jobs:
 
       - name: Build Evaka Service builder image
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: builder
         with:
           registry: ghcr.io/espoon-voltti
@@ -337,7 +337,7 @@ jobs:
 
       - name: Build and run Evaka Service tests
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-registry@remove-public-registry
+        uses: espoon-voltti/voltti-actions/docker-build-registry@master
         id: build
         with:
           registry: ghcr.io/espoon-voltti
