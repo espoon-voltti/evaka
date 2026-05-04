@@ -368,13 +368,18 @@ export function createSamlIntegration<T extends SessionType>(
       }
       return res.redirect(url)
     } catch (err) {
-      if (err instanceof Error && err.message === 'InResponseTo is not valid')
+      if (
+        err instanceof Error &&
+        (err.message === 'InResponseTo is not valid' ||
+          err.message.startsWith('Bad status code:'))
+      ) {
         throw new SamlError('Logout failed', {
           redirectUrl: validateRelayStateUrl(req)?.toString() ?? defaultPageUrl,
           cause: err,
           // just ignore without logging to reduce noise in logs
           silent: true
         })
+      }
 
       const samlError = samlErrorSchema.safeParse(err)
       if (samlError.success) {
