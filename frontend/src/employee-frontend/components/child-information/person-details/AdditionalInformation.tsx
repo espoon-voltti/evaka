@@ -217,7 +217,8 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
               'UNIT_SUPERVISOR',
               'ADMIN',
               'STAFF',
-              'SPECIAL_EDUCATION_TEACHER'
+              'SPECIAL_EDUCATION_TEACHER',
+              'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
             ]}
           >
             <Button
