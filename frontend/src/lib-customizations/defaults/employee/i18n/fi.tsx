@@ -5264,7 +5264,11 @@ export const fi = {
       edit: 'Muokkaa',
       delete: 'Poista',
       deleteConfirmTitle: 'Poista perustelu',
-      deleteConfirmText: 'Haluatko poistaa yleisen perustelun?'
+      deleteConfirmText: 'Haluatko poistaa yleisen perustelun?',
+      remove: 'Poista käytöstä',
+      removeConfirmTitle: 'Poista perustelu käytöstä',
+      removeConfirmText:
+        'Aktiivinen perustelu poistettavissa vain testiympäristöissä'
     },
     individual: {
       title: 'Yksilölliset perustelut',

@@ -10,6 +10,7 @@ import {
   deleteGenericReasoning,
   getGenericReasonings,
   getIndividualReasonings,
+  removeGenericReasoning,
   removeIndividualReasoning,
   updateGenericReasoning
 } from '../../generated/api-clients/decision'
@@ -32,6 +33,11 @@ export const updateGenericReasoningMutation = q.mutation(
 
 export const deleteGenericReasoningMutation = q.mutation(
   deleteGenericReasoning,
+  [genericReasoningsQuery.prefix]
+)
+
+export const removeGenericReasoningMutation = q.mutation(
+  removeGenericReasoning,
   [genericReasoningsQuery.prefix]
 )
 

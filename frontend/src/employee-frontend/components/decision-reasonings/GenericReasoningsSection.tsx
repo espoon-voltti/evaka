@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
@@ -40,6 +40,7 @@ import {
 } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 
 import {
   CollapsibleHeader,
@@ -50,6 +51,7 @@ import {
 import {
   createGenericReasoningMutation,
   deleteGenericReasoningMutation,
+  removeGenericReasoningMutation,
   updateGenericReasoningMutation
 } from './queries'
 
@@ -219,6 +221,7 @@ function GenericReasoningCard({
 }: GenericReasoningCardProps) {
   const { i18n } = useTranslation()
   const t = i18n.decisionReasonings.generic
+  const { user } = useContext(UserContext)
 
   const isEditing = editMode.type === 'edit' && editMode.id === reasoning.id
 
@@ -287,6 +290,23 @@ function GenericReasoningCard({
             />
           </FixedSpaceRow>
         )}
+        {reasoning.ready &&
+          !reasoning.outdated &&
+          user?.accessibleFeatures.decisionReasoningGenericRemoval && (
+            <FixedSpaceRow $spacing="s">
+              <ConfirmedMutation
+                buttonStyle="ICON"
+                icon={faTrash}
+                buttonAltText={t.remove}
+                mutation={removeGenericReasoningMutation}
+                onClick={() => ({ id: reasoning.id })}
+                confirmationTitle={t.removeConfirmTitle}
+                confirmationText={t.removeConfirmText}
+                data-qa="remove-generic-reasoning-button"
+                data-qa-modal="remove-generic-reasoning-modal"
+              />
+            </FixedSpaceRow>
+          )}
       </FixedSpaceRow>
       <Gap $size="s" />
       <H3 $noMargin>{dateRangeHeading}</H3>

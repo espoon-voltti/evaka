@@ -5293,7 +5293,11 @@ export const sv: typeof fi = {
       edit: 'Redigera',
       delete: 'Ta bort',
       deleteConfirmTitle: 'Ta bort motivering',
-      deleteConfirmText: 'Vill du ta bort den allmänna motiveringen?'
+      deleteConfirmText: 'Vill du ta bort den allmänna motiveringen?',
+      remove: 'Ta ur bruk',
+      removeConfirmTitle: 'Ta motiveringen ur bruk',
+      removeConfirmText:
+        'En aktiv motivering kan tas ur bruk endast i testmiljöer'
     },
     individual: {
       title: 'Individuella motiveringar',
