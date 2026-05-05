@@ -829,17 +829,24 @@ jobs:
             exit 1
           fi
 
+          tags=("$DOCKER_METADATA_OUTPUT_VERSION")
+          if [ "$DOCKER_METADATA_OUTPUT_VERSION" = "master" ]; then
+            tags+=("latest")
+          fi
+
           for image in frontend service api-gateway; do
             repository="${PREFIX}/${image}"
-            echo "Retagging ${repository}:${SHA} -> :${DOCKER_METADATA_OUTPUT_VERSION}"
             MANIFEST=$(aws ecr batch-get-image \
               --repository-name "$repository" \
               --image-ids imageTag="$SHA" \
               --output json | jq --raw-output --join-output '.images[0].imageManifest')
-            aws ecr put-image \
-              --repository-name "$repository" \
-              --image-tag "${DOCKER_METADATA_OUTPUT_VERSION}" \
-              --image-manifest "$MANIFEST"
+            for tag in "${tags[@]}"; do
+              echo "Retagging ${repository}:${SHA} -> :${tag}"
+              aws ecr put-image \
+                --repository-name "$repository" \
+                --image-tag "$tag" \
+                --image-manifest "$MANIFEST"
+            done
           done
 
   notify:
