@@ -1427,8 +1427,8 @@ fun Database.Transaction.insert(row: DevDocumentTemplate): DocumentTemplateId =
     createUpdate {
             sql(
                 """
-INSERT INTO document_template (id, name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, published, archive_externally, end_decision_when_unit_changes, content) 
-VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.type)}, ${bind(row.placementTypes)}, ${bind(row.language)}, ${bind(row.confidentiality != null)}, ${bind(row.confidentiality?.durationYears)}, ${bind(row.confidentiality?.basis)}, ${bind(row.legalBasis)}, ${bind(row.validity)}, ${bind(row.processDefinitionNumber)}, ${bind(row.archiveDurationMonths)}, ${bind(row.published)}, ${bind(row.archiveExternally)}, ${bind(row.endDecisionWhenUnitChanges)}, ${bind(row.content)})
+INSERT INTO document_template (id, name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, published, archive_externally, end_decision_when_unit_changes, deletion_retention_days, deletion_retention_basis, content)
+VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.type)}, ${bind(row.placementTypes)}, ${bind(row.language)}, ${bind(row.confidentiality != null)}, ${bind(row.confidentiality?.durationYears)}, ${bind(row.confidentiality?.basis)}, ${bind(row.legalBasis)}, ${bind(row.validity)}, ${bind(row.processDefinitionNumber)}, ${bind(row.archiveDurationMonths)}, ${bind(row.published)}, ${bind(row.archiveExternally)}, ${bind(row.endDecisionWhenUnitChanges)}, ${bind(row.deletionRetentionDays)}, ${bind(row.deletionRetentionBasis)}, ${bind(row.content)})
 """
             )
         }
@@ -1446,8 +1446,8 @@ fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId {
         createUpdate {
                 sql(
                     """
-INSERT INTO child_document (id, created_at, created_by, type, status, child_id, template_id, content, modified_at, modified_by, content_locked_at, content_locked_by, answered_at, answered_by, process_id, decision_maker, decision_id)
-VALUES (${bind(row.id)}, ${if (row.createdAt != null) bind(row.createdAt) else insertDefault()}, ${bind(row.createdBy)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.contentLockedAt)}, ${bind(row.contentLockedBy)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)}, ${bind(row.decisionMaker)}, ${bind(decisionId)})
+INSERT INTO child_document (id, created_at, created_by, type, status, child_id, template_id, content, modified_at, modified_by, status_modified_at, content_locked_at, content_locked_by, answered_at, answered_by, process_id, decision_maker, decision_id)
+VALUES (${bind(row.id)}, ${if (row.createdAt != null) bind(row.createdAt) else insertDefault()}, ${bind(row.createdBy)}, ${bind(type)}, ${bind(row.status)}, ${bind(row.childId)}, ${bind(row.templateId)}, ${bind(row.content)}, ${bind(row.modifiedAt)}, ${bind(row.modifiedBy)}, ${bind(row.statusModifiedAt ?: row.modifiedAt)}, ${bind(row.contentLockedAt)}, ${bind(row.contentLockedBy)}, ${bind(row.answeredAt)}, ${bind(row.answeredBy)}, ${bind(row.processId)}, ${bind(row.decisionMaker)}, ${bind(decisionId)})
 """
                 )
             }

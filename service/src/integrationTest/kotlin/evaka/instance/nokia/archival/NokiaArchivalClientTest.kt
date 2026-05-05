@@ -24,6 +24,7 @@ import evaka.core.decision.DecisionStatus
 import evaka.core.decision.DecisionType
 import evaka.core.decision.DecisionUnit
 import evaka.core.document.ChildDocumentType
+import evaka.core.document.DocumentDeletionBasis
 import evaka.core.document.DocumentTemplate
 import evaka.core.document.DocumentTemplateContent
 import evaka.core.document.archival.ArchivalIntegrationClient
@@ -902,6 +903,8 @@ private val testVasuDetails =
                 archiveDurationMonths = 1440,
                 archiveExternally = true,
                 endDecisionWhenUnitChanges = false,
+                deletionRetentionDays = 10 * 365,
+                deletionRetentionBasis = DocumentDeletionBasis.PLACEMENT_END,
                 content = DocumentTemplateContent(sections = emptyList()),
             ),
         decisionMaker = null,
@@ -937,6 +940,8 @@ private val testChildDocumentDecisionDetails =
                 archiveDurationMonths = 1440,
                 archiveExternally = true,
                 endDecisionWhenUnitChanges = false,
+                deletionRetentionDays = 10 * 365,
+                deletionRetentionBasis = DocumentDeletionBasis.PLACEMENT_END,
                 content = DocumentTemplateContent(sections = emptyList()),
             ),
         decisionMaker = null,

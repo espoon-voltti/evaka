@@ -103,6 +103,8 @@ test.describe('Employee - Child documents', () => {
     await modal.confidentialityDurationYearsInput.fill('100')
     await modal.confidentialityBasisInput.fill('Joku laki §300')
     await modal.processDefinitionNumberInput.fill('12.06.01.SL1.RT34')
+    await modal.deletionRetentionDaysInput.fill('1825')
+    await modal.deletionRetentionBasisPlacementEnd.check()
     await modal.confirmCreateButton.click()
     await documentTemplatesPage.openTemplate(documentName)
 
@@ -744,6 +746,8 @@ test.describe('Employee - Child documents', () => {
     await modal.processDefinitionNumberInput.fill('12.06.01.SL1.RT34')
     await modal.archiveDurationMonthsInput.fill('1320')
     await modal.archiveExternallyCheckbox.check()
+    await modal.deletionRetentionDaysInput.fill('1825')
+    await modal.deletionRetentionBasisPlacementEnd.check()
     await modal.confirmCreateButton.click()
     await documentTemplatesPage.openTemplate(documentName)
 
@@ -839,6 +843,8 @@ test.describe('Employee - Child documents', () => {
     await modal.validityStartInput.fill('01.08.2022')
     await modal.confidentialityDurationYearsInput.fill('100')
     await modal.confidentialityBasisInput.fill('Joku laki §300')
+    await modal.deletionRetentionDaysInput.fill('1825')
+    await modal.deletionRetentionBasisPlacementEnd.check()
     await modal.confirmCreateButton.click()
     await documentTemplatesPage.openTemplate(documentName)
 
@@ -982,6 +988,8 @@ test.describe('Employee - Child documents', () => {
     await modal.validityStartInput.fill('01.08.2022')
     await modal.confidentialityDurationYearsInput.fill('100')
     await modal.confidentialityBasisInput.fill('Joku laki §300')
+    await modal.deletionRetentionDaysInput.fill('1825')
+    await modal.deletionRetentionBasisPlacementEnd.check()
     await modal.confirmCreateButton.click()
     await documentTemplatesPage.openTemplate(documentName)
 

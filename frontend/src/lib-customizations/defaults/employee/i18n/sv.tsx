@@ -4989,7 +4989,13 @@ export const sv: typeof fi = {
         'Uppgiftsklassens nummer som definierats i informationsstyrningsplanen. Lämna tomt om dokumentet inte arkiveras.',
       archiveDurationMonths: 'Arkiveringstid (månader)',
       archiveExternally: 'Ska överföras till externt arkiv före radering',
-      endDecisionWhenUnitChanges: 'Beslutet avbryts om barnet byter enhet'
+      endDecisionWhenUnitChanges: 'Beslutet avbryts om barnet byter enhet',
+      deletionRetentionDays: 'Bevarandetid i eVaka (dagar)',
+      deletionRetention: 'Bevarandetid i eVaka',
+      deletionRetentionBasis: {
+        PLACEMENT_END: 'från barnets senaste placerings slutdatum',
+        STATUS_TRANSITION: 'från dokumentets senaste statusbyte'
+      }
     },
     templateEditor: {
       confidential: 'Sekretessbelagt',

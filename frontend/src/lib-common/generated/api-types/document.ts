@@ -306,6 +306,16 @@ export interface DocumentContent {
 }
 
 /**
+* Generated from evaka.core.document.DocumentDeletionBasis
+*/
+export const documentDeletionBases = [
+  'PLACEMENT_END',
+  'STATUS_TRANSITION'
+] as const
+
+export type DocumentDeletionBasis = typeof documentDeletionBases[number]
+
+/**
 * Generated from evaka.core.document.childdocument.ChildDocumentController.DocumentLockResponse
 */
 export interface DocumentLockResponse {
@@ -331,6 +341,8 @@ export interface DocumentTemplate {
   archiveExternally: boolean
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
+  deletionRetentionBasis: DocumentDeletionBasis
+  deletionRetentionDays: number
   endDecisionWhenUnitChanges: boolean | null
   id: DocumentTemplateId
   language: UiLanguage
@@ -353,6 +365,8 @@ export namespace DocumentTemplateBasicsRequest {
     archiveDurationMonths: number
     archiveExternally: boolean
     confidentiality: DocumentConfidentiality | null
+    deletionRetentionBasis: DocumentDeletionBasis
+    deletionRetentionDays: number
     endDecisionWhenUnitChanges: boolean | null
     language: UiLanguage
     legalBasis: string
@@ -371,6 +385,8 @@ export namespace DocumentTemplateBasicsRequest {
     archiveDurationMonths: number | null
     archiveExternally: boolean
     confidentiality: DocumentConfidentiality | null
+    deletionRetentionBasis: DocumentDeletionBasis
+    deletionRetentionDays: number
     endDecisionWhenUnitChanges: boolean | null
     language: UiLanguage
     legalBasis: string
@@ -426,6 +442,8 @@ export interface ExportedDocumentTemplate {
   archiveExternally: boolean
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
+  deletionRetentionBasis: DocumentDeletionBasis
+  deletionRetentionDays: number
   endDecisionWhenUnitChanges: boolean | null
   language: UiLanguage
   legalBasis: string

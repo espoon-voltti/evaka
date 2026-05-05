@@ -1448,6 +1448,8 @@ export class Fixture {
       archiveDurationMonths: null,
       archiveExternally: false,
       endDecisionWhenUnitChanges: null,
+      deletionRetentionDays: 3650,
+      deletionRetentionBasis: 'PLACEMENT_END',
       content: {
         sections: [
           {
@@ -1534,6 +1536,7 @@ export class Fixture {
       status: 'DRAFT',
       modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser.id,
+      statusModifiedAt: HelsinkiDateTime.now(),
       contentLockedAt: HelsinkiDateTime.now(),
       contentLockedBy: null,
       content: {
