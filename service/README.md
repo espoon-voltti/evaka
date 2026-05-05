@@ -210,14 +210,14 @@ EOF
 chmod a+x .git/hooks/pre-commit
 ```
 
-## OWASP dependency check
+## Dependency vulnerability scanning
 
-Service dependencies are checked for security vulnerabilities with
-the [OWASP dependency-check-gradle](https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/index.html)
-plugin. Dependencies are checked on every build with the command `./gradlew dependencyCheckAnalyze`. By default even
-minor vulnerabilities break the build, but they can
-be [suppressed](https://jeremylong.github.io/DependencyCheck/general/suppression.html) when needed. The suppression
-rules are configured [here](./owasp-suppressions.xml).
+Service dependencies are scanned for known vulnerabilities via GitHub's Dependabot
+alerts (using the GitHub Advisory Database) against the Gradle dependency graph.
+Pull requests are additionally gated by
+[actions/dependency-review-action](https://github.com/actions/dependency-review-action),
+which fails the build when a PR introduces a dependency with a `high` or `critical`
+severity advisory.
 
 ### Add metadata to log entries
 

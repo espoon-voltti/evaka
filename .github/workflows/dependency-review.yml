@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2017-2026 City of Espoo
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: Dependency review
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: 25
+      - uses: gradle/actions/dependency-submission@v6
+        with:
+          build-root-directory: service
+        env:
+          # Limit the submitted graph to source-set classpaths. Without this,
+          # the action also reports vulnerabilities in build-time tooling
+          # (Spring Boot Gradle plugin, ktlint, etc. — pulled into the
+          # buildscript / plugin classpath), which never ships to production
+          # and so isn't a real exposure.
+          DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: ".*[Cc]ompileClasspath|.*[Rr]untimeClasspath"
+      - if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: low
+          comment-summary-in-pr: on-failure
