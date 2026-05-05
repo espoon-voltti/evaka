@@ -228,12 +228,19 @@ fun Database.Transaction.forceUnpublishTemplate(id: DocumentTemplateId) {
     }
 }
 
-fun Database.Transaction.deleteDraftTemplate(id: DocumentTemplateId) {
+fun Database.Read.templateHasDocuments(id: DocumentTemplateId): Boolean =
+    createQuery {
+            sql("SELECT EXISTS (SELECT 1 FROM child_document WHERE template_id = ${bind(id)})")
+        }
+        .exactlyOne<Boolean>()
+
+fun Database.Transaction.deleteUnusedTemplate(id: DocumentTemplateId) {
     createUpdate {
             sql(
                 """
-                DELETE FROM document_template 
-                WHERE id = ${bind(id)} AND published = false
+                DELETE FROM document_template
+                WHERE id = ${bind(id)}
+                  AND NOT EXISTS (SELECT 1 FROM child_document WHERE template_id = ${bind(id)})
                 """
             )
         }

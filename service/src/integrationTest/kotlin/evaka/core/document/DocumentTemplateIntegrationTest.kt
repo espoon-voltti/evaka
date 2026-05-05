@@ -199,7 +199,7 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
-    fun `test publishing, after which basics and content cannot be updated or template deleted`() {
+    fun `test publishing, after which basics and content cannot be updated`() {
         val created =
             controller.createTemplate(dbInstance(), employee.user, now, testCreationRequest)
         controller.updateDraftTemplateContent(
@@ -233,10 +233,6 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        assertThrows<BadRequest> {
-            controller.deleteDraftTemplate(dbInstance(), employee.user, now, created.id)
-        }
-
         // validity period can still be updated
         controller.updateTemplateValidity(
             dbInstance(),
@@ -245,6 +241,43 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             created.id,
             DateRange(LocalDate.of(2000, 1, 1), null),
         )
+    }
+
+    @Test
+    fun `published template without documents can be deleted, with documents cannot`() {
+        val otherChild = DevPerson()
+        db.transaction { tx -> tx.insert(otherChild, DevPersonType.CHILD) }
+
+        val withDocs =
+            controller.createTemplate(
+                dbInstance(),
+                employee.user,
+                now,
+                testCreationRequest.copy(validity = DateRange(now.today(), null)),
+            )
+        controller.publishTemplate(dbInstance(), employee.user, now, withDocs.id)
+        childDocumentController.createDocument(
+            dbInstance(),
+            employee.user,
+            now,
+            ChildDocumentCreateRequest(otherChild.id, withDocs.id),
+        )
+        assertThrows<BadRequest> {
+            controller.deleteDraftTemplate(dbInstance(), employee.user, now, withDocs.id)
+        }
+
+        val withoutDocs =
+            controller.createTemplate(
+                dbInstance(),
+                employee.user,
+                now,
+                testCreationRequest.copy(validity = DateRange(now.today(), null)),
+            )
+        controller.publishTemplate(dbInstance(), employee.user, now, withoutDocs.id)
+        controller.deleteDraftTemplate(dbInstance(), employee.user, now, withoutDocs.id)
+        assertThrows<NotFound> {
+            controller.getTemplate(dbInstance(), employee.user, now, withoutDocs.id)
+        }
     }
 
     @Test

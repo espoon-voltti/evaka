@@ -173,7 +173,7 @@ const TemplateRow = React.memo(function TemplateRow({
           <IconOnlyButton
             icon={faTrash}
             aria-label={i18n.common.remove}
-            disabled={template.published}
+            disabled={template.documentCount > 0}
             onClick={() => deleteDocumentTemplate({ templateId: template.id })}
           />
           <a data-qa="export" href={exportUrl} target="_blank" rel="noreferrer">
