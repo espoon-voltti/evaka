@@ -294,7 +294,11 @@ fun Database.Read.getDecisionLanguage(decisionId: DecisionId): OfficialLanguage 
     createQuery {
             sql(
                 """
-            SELECT daycare.language
+            -- Decisions are issued in FI/SV only
+            SELECT CASE
+                WHEN daycare.language = 'en' THEN 'fi'
+                ELSE daycare.language::text
+            END
             FROM decision
                 INNER JOIN daycare ON unit_id = daycare.id
             WHERE decision.id = ${bind(decisionId)}
