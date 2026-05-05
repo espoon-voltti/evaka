@@ -733,18 +733,15 @@ data class ArchiveEnv(
         fun fromEnvironment(env: Environment) =
             ArchiveEnv(
                 url = URI.create(env.lookup("evaka.integration.sarma.url")),
-                useMockClient = env.lookup("evaka.integration.sarma.use_mock_client") ?: false,
+                useMockClient = env.lookup("evaka.integration.sarma.use_mock_client"),
                 userId = env.lookup("evaka.integration.sarma.user_id"),
                 userRole = env.lookup("evaka.integration.sarma.user_role"),
                 metadataMainNamespace =
-                    env.lookup("evaka.integration.sarma.metadata_main_namespace")
-                        ?: "urn:example:record-metadata",
+                    env.lookup("evaka.integration.sarma.metadata_main_namespace"),
                 metadataPolicyNamespace =
-                    env.lookup("evaka.integration.sarma.metadata_policy_namespace")
-                        ?: "urn:example:records-schedule",
-                masterId = env.lookup("evaka.integration.sarma.master_id") ?: "placeholder",
-                virtualArchiveId =
-                    env.lookup("evaka.integration.sarma.virtual_archive_id") ?: "PLACEHOLDER",
+                    env.lookup("evaka.integration.sarma.metadata_policy_namespace"),
+                masterId = env.lookup("evaka.integration.sarma.master_id"),
+                virtualArchiveId = env.lookup("evaka.integration.sarma.virtual_archive_id"),
             )
     }
 }

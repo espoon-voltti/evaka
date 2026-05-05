@@ -70,6 +70,10 @@ evaka:
       url: https://eoy3xw8tftt5shn.m.pipedream.net/archive-core/
       user_id: eVaka
       user_role: xa-api-integration
+      metadata_main_namespace: urn:example:record-metadata
+      metadata_policy_namespace: urn:example:records-schedule
+      master_id: placeholder
+      virtual_archive_id: PLACEHOLDER
   not_for_prod:
     force_unpublish_document_template_enabled: true
   jwt:
