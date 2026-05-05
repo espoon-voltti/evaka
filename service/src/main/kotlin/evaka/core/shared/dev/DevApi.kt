@@ -51,6 +51,7 @@ import evaka.core.decision.DecisionType
 import evaka.core.decision.getDecision
 import evaka.core.decision.getDecisionsByApplication
 import evaka.core.document.ChildDocumentType
+import evaka.core.document.DocumentDeletionBasis
 import evaka.core.document.DocumentTemplate
 import evaka.core.document.DocumentTemplateContent
 import evaka.core.document.childdocument.ChildDocumentDecisionStatus
@@ -2442,6 +2443,8 @@ data class DevDocumentTemplate(
     @Json val content: DocumentTemplateContent,
     val archiveExternally: Boolean = false,
     val endDecisionWhenUnitChanges: Boolean? = null,
+    val deletionRetentionDays: Int = 10 * 365,
+    val deletionRetentionBasis: DocumentDeletionBasis = DocumentDeletionBasis.PLACEMENT_END,
 ) {
     fun toDocumentTemplate() =
         DocumentTemplate(
@@ -2459,6 +2462,8 @@ data class DevDocumentTemplate(
             content = content,
             archiveExternally = archiveExternally,
             endDecisionWhenUnitChanges = endDecisionWhenUnitChanges,
+            deletionRetentionDays = deletionRetentionDays,
+            deletionRetentionBasis = deletionRetentionBasis,
         )
 }
 
@@ -2472,6 +2477,7 @@ data class DevChildDocument(
     @Json val content: DocumentContent,
     val modifiedAt: HelsinkiDateTime,
     val modifiedBy: EvakaUserId,
+    val statusModifiedAt: HelsinkiDateTime? = null,
     val contentLockedAt: HelsinkiDateTime,
     val contentLockedBy: EmployeeId?,
     val answeredAt: HelsinkiDateTime? = null,

@@ -12,8 +12,8 @@ fun Database.Transaction.insertTemplate(template: DocumentTemplateBasicsRequest)
     return createQuery {
             sql(
                 """
-INSERT INTO document_template (name, type, placement_types,  language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, archive_externally, end_decision_when_unit_changes, content) 
-VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.archiveExternally)}, ${bind(template.endDecisionWhenUnitChanges)}, ${bind(DocumentTemplateContent(sections = emptyList()))}::jsonb)
+INSERT INTO document_template (name, type, placement_types,  language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, archive_externally, end_decision_when_unit_changes, deletion_retention_days, deletion_retention_basis, content)
+VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.archiveExternally)}, ${bind(template.endDecisionWhenUnitChanges)}, ${bind(template.deletionRetentionDays)}, ${bind(template.deletionRetentionBasis)}, ${bind(DocumentTemplateContent(sections = emptyList()))}::jsonb)
 RETURNING *
 """
             )
@@ -25,8 +25,8 @@ fun Database.Transaction.importTemplate(template: ExportedDocumentTemplate): Doc
     createQuery {
             sql(
                 """
-INSERT INTO document_template (name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, archive_externally, end_decision_when_unit_changes, content)
-VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.archiveExternally)}, ${bind(template.endDecisionWhenUnitChanges)}, ${bind(template.content)})
+INSERT INTO document_template (name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, archive_externally, end_decision_when_unit_changes, deletion_retention_days, deletion_retention_basis, content)
+VALUES (${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.archiveExternally)}, ${bind(template.endDecisionWhenUnitChanges)}, ${bind(template.deletionRetentionDays)}, ${bind(template.deletionRetentionBasis)}, ${bind(template.content)})
 RETURNING *
 """
             )
@@ -40,8 +40,8 @@ fun Database.Transaction.duplicateTemplate(
     return createQuery {
             sql(
                 """
-INSERT INTO document_template (name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, archive_externally, end_decision_when_unit_changes, content) 
-SELECT ${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.archiveExternally)}, ${bind(template.endDecisionWhenUnitChanges)}, content FROM document_template WHERE id = ${bind(id)}
+INSERT INTO document_template (name, type, placement_types, language, confidential, confidentiality_duration_years, confidentiality_basis, legal_basis, validity, process_definition_number, archive_duration_months, archive_externally, end_decision_when_unit_changes, deletion_retention_days, deletion_retention_basis, content)
+SELECT ${bind(template.name)}, ${bind(template.type)}, ${bind(template.placementTypes)}, ${bind(template.language)}, ${bind(template.confidentiality != null)}, ${bind(template.confidentiality?.durationYears)}, ${bind(template.confidentiality?.basis)}, ${bind(template.legalBasis)}, ${bind(template.validity)}, ${bind(template.processDefinitionNumber)}, ${bind(template.archiveDurationMonths)}, ${bind(template.archiveExternally)}, ${bind(template.endDecisionWhenUnitChanges)}, ${bind(template.deletionRetentionDays)}, ${bind(template.deletionRetentionBasis)}, content FROM document_template WHERE id = ${bind(id)}
 RETURNING *
 """
             )
@@ -70,12 +70,26 @@ fun Database.Read.getTemplateSummaries(): List<DocumentTemplateSummary> {
 }
 
 fun Database.Read.getTemplate(id: DocumentTemplateId): DocumentTemplate? {
-    return createQuery { sql("SELECT * FROM document_template WHERE id = ${bind(id)}") }
+    return createQuery {
+            sql(
+                """
+                SELECT *
+                FROM document_template WHERE id = ${bind(id)}
+                """
+            )
+        }
         .exactlyOneOrNull<DocumentTemplate>()
 }
 
 fun Database.Read.exportTemplate(id: DocumentTemplateId): ExportedDocumentTemplate? {
-    return createQuery { sql("SELECT * FROM document_template WHERE id = ${bind(id)}") }
+    return createQuery {
+            sql(
+                """
+                SELECT *
+                FROM document_template WHERE id = ${bind(id)}
+                """
+            )
+        }
         .exactlyOneOrNull<ExportedDocumentTemplate>()
 }
 
@@ -88,7 +102,7 @@ fun Database.Transaction.updateDraftTemplateBasics(
                 """
                 UPDATE document_template
                 SET
-                    name = ${bind(basics.name)}, 
+                    name = ${bind(basics.name)},
                     type = ${bind(basics.type)},
                     placement_types = ${bind(basics.placementTypes)},
                     language = ${bind(basics.language)},
@@ -100,7 +114,9 @@ fun Database.Transaction.updateDraftTemplateBasics(
                     process_definition_number = ${bind(basics.processDefinitionNumber)},
                     archive_duration_months = ${bind(basics.archiveDurationMonths)},
                     archive_externally = ${bind(basics.archiveExternally)},
-                    end_decision_when_unit_changes = ${bind(basics.endDecisionWhenUnitChanges)}
+                    end_decision_when_unit_changes = ${bind(basics.endDecisionWhenUnitChanges)},
+                    deletion_retention_days = ${bind(basics.deletionRetentionDays)},
+                    deletion_retention_basis = ${bind(basics.deletionRetentionBasis)}
                 WHERE id = ${bind(id)} AND published = false
                 """
             )

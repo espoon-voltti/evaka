@@ -18,6 +18,7 @@ import evaka.core.shared.DocumentTemplateId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.UserRole
+import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevChildDocument
 import evaka.core.shared.dev.DevChildDocumentPublishedVersion
@@ -35,6 +36,7 @@ import evaka.core.shared.domain.MockEvakaClock
 import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -221,6 +223,9 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
         }
 
+        val initialTime = clock.now()
+        clock.tick()
+
         // when
         db.transaction { service.completeAndPublishChildDocumentsAtEndOfTerm(it, clock.now()) }
         asyncJobRunner.runPendingJobsSync(clock)
@@ -231,25 +236,37 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(DocumentStatus.DRAFT, status)
                 assertNull(publishedAt)
             }
+            assertEquals(initialTime, tx.getStatusModifiedAt(activeHojksDocumentId))
 
             with(tx.getChildDocument(expiredHojksDocumentId)!!) {
                 assertEquals(DocumentStatus.COMPLETED, status)
                 assertEquals(clock.now(), publishedAt)
             }
+            assertEquals(clock.now(), tx.getStatusModifiedAt(expiredHojksDocumentId))
+            assertNotEquals(initialTime, tx.getStatusModifiedAt(expiredHojksDocumentId))
 
             with(tx.getChildDocument(alreadyCompletedHojksDocumentId)!!) {
                 assertEquals(DocumentStatus.COMPLETED, status)
-                assertEquals(clock.now().minusMonths(1), publishedAt)
+                assertEquals(initialTime.minusMonths(1), publishedAt)
             }
+            assertEquals(
+                initialTime.minusMonths(1),
+                tx.getStatusModifiedAt(alreadyCompletedHojksDocumentId),
+            )
 
             with(tx.getChildDocument(expiredDecisionDocumentId)!!) {
                 assertEquals(DocumentStatus.DRAFT, status)
                 assertNull(publishedAt)
             }
+            assertEquals(initialTime, tx.getStatusModifiedAt(expiredDecisionDocumentId))
         }
         assertEquals(1, MockEmailClient.emails.size)
         assertEquals(adult.email, MockEmailClient.emails.first().toAddress)
     }
+
+    private fun Database.Read.getStatusModifiedAt(id: ChildDocumentId): HelsinkiDateTime =
+        createQuery { sql("SELECT status_modified_at FROM child_document WHERE id = ${bind(id)}") }
+            .exactlyOne()
 
     @Test
     fun `child document notification email is not sent if placement has ended and document won't be visible anyway`() {

@@ -26,6 +26,7 @@ import evaka.core.decision.DecisionUnit
 import evaka.core.decision.createDecisionPdf
 import evaka.core.document.CheckboxGroupQuestionOption
 import evaka.core.document.ChildDocumentType
+import evaka.core.document.DocumentDeletionBasis
 import evaka.core.document.DocumentTemplate
 import evaka.core.document.DocumentTemplateContent
 import evaka.core.document.Question
@@ -445,6 +446,8 @@ class PdfGeneratorTest {
                         published = true,
                         archiveExternally = false,
                         endDecisionWhenUnitChanges = null,
+                        deletionRetentionDays = 10 * 365,
+                        deletionRetentionBasis = DocumentDeletionBasis.PLACEMENT_END,
                         content =
                             DocumentTemplateContent(
                                 sections =

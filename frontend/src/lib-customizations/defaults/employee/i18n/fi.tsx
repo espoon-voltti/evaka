@@ -4959,7 +4959,13 @@ export const fi = {
         'Tiedonohjaussuunnitelmassa määritelty tehtäväluokan numero. Jätä tyhjäksi jos asiakirjaa ei arkistoida.',
       archiveDurationMonths: 'Arkistointiaika (kuukautta)',
       archiveExternally: 'Siirrettävä ulkoiseen arkistoon ennen poistoa',
-      endDecisionWhenUnitChanges: 'Päätös katkeaa, jos lapsi vaihtaa yksikköä'
+      endDecisionWhenUnitChanges: 'Päätös katkeaa, jos lapsi vaihtaa yksikköä',
+      deletionRetentionDays: 'Säilytysaika eVakassa (päivää)',
+      deletionRetention: 'Säilytysaika eVakassa',
+      deletionRetentionBasis: {
+        PLACEMENT_END: 'lapsen viimeisen sijoituksen päättymisestä',
+        STATUS_TRANSITION: 'asiakirjan viimeisestä tilasiirtymästä'
+      }
     },
     templateEditor: {
       confidential: 'Salassapidettävä',

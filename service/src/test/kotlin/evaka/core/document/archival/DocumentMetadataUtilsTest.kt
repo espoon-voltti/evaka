@@ -6,6 +6,7 @@ package evaka.core.document.archival
 
 import evaka.core.caseprocess.*
 import evaka.core.document.ChildDocumentType
+import evaka.core.document.DocumentDeletionBasis
 import evaka.core.document.DocumentTemplate
 import evaka.core.document.DocumentTemplateContent
 import evaka.core.document.childdocument.ChildBasics
@@ -80,6 +81,8 @@ class DocumentMetadataUtilsTest {
                     content = DocumentTemplateContent(sections = listOf()),
                     archiveExternally = true,
                     endDecisionWhenUnitChanges = if (documentType.decision) true else null,
+                    deletionRetentionDays = 10 * 365,
+                    deletionRetentionBasis = DocumentDeletionBasis.PLACEMENT_END,
                 ),
         )
     }
