@@ -271,7 +271,20 @@ tasks.getByName<Jar>("jar") { archiveClassifier.set("") }
 tasks.getByName<BootJar>("bootJar") { archiveClassifier.set("boot") }
 
 tasks {
-    test { systemProperty("spring.profiles.active", "test") }
+    test {
+        systemProperty("spring.profiles.active", "test")
+        useJUnitPlatform { excludeTags("schemaValidation") }
+    }
+
+    register<Test>("validateArchiveMetadata") {
+        description =
+            "Validates generated archive metadata XML against XSD schemas (requires local schema files)"
+        group = "verification"
+        testClassesDirs = sourceSets["test"].output.classesDirs
+        classpath = sourceSets["test"].runtimeClasspath
+        useJUnitPlatform { includeTags("schemaValidation") }
+        systemProperty("sarma.schema.dir", project.findProperty("sarma.schema.dir") ?: "")
+    }
 
     register("integrationTest", Test::class) {
         useJUnitPlatform()

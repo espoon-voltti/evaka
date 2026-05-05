@@ -4,11 +4,13 @@
 
 package evaka.instance.espoo
 
+import evaka.core.ArchiveEnv
 import evaka.core.ChildDocumentArchivalEnv
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.Sensitive
 import evaka.core.VtjXroadEnv
+import evaka.core.document.archival.ArchivalClient
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.emailclient.EvakaEmailMessageProvider
 import evaka.core.emailclient.IEmailMessageProvider
@@ -47,6 +49,9 @@ import evaka.core.shared.template.EvakaTemplateProvider
 import evaka.core.shared.template.ITemplateProvider
 import evaka.core.titania.TitaniaEmployeeIdConverter
 import evaka.core.vtjclient.config.httpsMessageSender
+import evaka.instance.espoo.archival.SärmäChildDocumentClient
+import evaka.instance.espoo.archival.SärmäHttpClient
+import evaka.instance.espoo.archival.SärmäMockClient
 import evaka.instance.espoo.bi.EspooBiHttpClient
 import evaka.instance.espoo.bi.EspooBiJob
 import evaka.instance.espoo.invoicing.EspooIncomeCoefficientMultiplierProvider
@@ -312,8 +317,24 @@ class EspooConfig {
         )
 
     @Bean
-    fun archivalIntegrationClient(): ArchivalIntegrationClient =
-        ArchivalIntegrationClient.FailingClient()
+    fun särmäClient(evakaEnv: EvakaEnv, archiveEnv: ArchiveEnv?): ArchivalClient {
+        if (!evakaEnv.archivalEnabled || archiveEnv?.useMockClient == true) {
+            return SärmäMockClient()
+        }
+        return SärmäHttpClient(archiveEnv)
+    }
+
+    @Bean
+    fun archivalIntegrationClient(
+        evakaEnv: EvakaEnv,
+        archivalClient: ArchivalClient,
+        archiveEnv: ArchiveEnv?,
+    ): ArchivalIntegrationClient {
+        if (evakaEnv.archivalEnabled && archiveEnv != null) {
+            return SärmäChildDocumentClient(archivalClient, archiveEnv)
+        }
+        return ArchivalIntegrationClient.FailingClient()
+    }
 }
 
 data class EspooEnv(

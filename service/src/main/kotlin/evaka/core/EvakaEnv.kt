@@ -74,7 +74,10 @@ data class EvakaEnv(
                 webPushEnabled = env.lookup("evaka.web_push.enabled") ?: false,
                 jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
                 aromiEnabled = env.lookup("evaka.integration.aromi.enabled") ?: false,
-                archivalEnabled = env.lookup("evaka.integration.archival.enabled") ?: false,
+                archivalEnabled =
+                    env.lookup("evaka.integration.archival.enabled")
+                        ?: env.lookup("evaka.integration.sarma.enabled")
+                        ?: false,
                 nekkuEnabled = env.lookup("evaka.integration.nekku.enabled") ?: false,
                 forceUnpublishDocumentTemplateEnabled =
                     env.lookup("evaka.not_for_prod.force_unpublish_document_template_enabled")
@@ -710,6 +713,35 @@ data class ChildDocumentArchivalEnv(val delayDays: Int, val limit: Int) {
             ChildDocumentArchivalEnv(
                 delayDays = env.lookup("evaka.child_document_archival_delay_days") ?: 30,
                 limit = env.lookup("evaka.child_document_archival_limit") ?: 0,
+            )
+    }
+}
+
+data class ArchiveEnv(
+    /** URL up to the endpoint name e.g. http://10.0.0.10/archive-core/ */
+    val url: URI,
+    val useMockClient: Boolean,
+    val userId: String,
+    val userRole: String,
+    val metadataMainNamespace: String,
+    val metadataPolicyNamespace: String,
+    val masterId: String,
+    val virtualArchiveId: String,
+) {
+
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            ArchiveEnv(
+                url = URI.create(env.lookup("evaka.integration.sarma.url")),
+                useMockClient = env.lookup("evaka.integration.sarma.use_mock_client"),
+                userId = env.lookup("evaka.integration.sarma.user_id"),
+                userRole = env.lookup("evaka.integration.sarma.user_role"),
+                metadataMainNamespace =
+                    env.lookup("evaka.integration.sarma.metadata_main_namespace"),
+                metadataPolicyNamespace =
+                    env.lookup("evaka.integration.sarma.metadata_policy_namespace"),
+                masterId = env.lookup("evaka.integration.sarma.master_id"),
+                virtualArchiveId = env.lookup("evaka.integration.sarma.virtual_archive_id"),
             )
     }
 }
