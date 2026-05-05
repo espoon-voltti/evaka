@@ -114,6 +114,10 @@ class GenericReasoningCard extends Element {
   get deleteButton(): Element {
     return this.findByDataQa('delete-generic-reasoning-button')
   }
+
+  get removeButton(): Element {
+    return this.findByDataQa('remove-generic-reasoning-button')
+  }
 }
 
 class IndividualReasoningCard extends Element {
