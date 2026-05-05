@@ -73,7 +73,7 @@ export default React.memo(function StaffListItem({
   present,
   type,
   occupancyEffect
-}: Staff & { unitOrGroup: UnitOrGroup; occupancyEffect: boolean }) {
+}: Staff & { unitOrGroup: UnitOrGroup }) {
   const theme = useTheme()
 
   const link = (

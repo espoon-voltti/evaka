@@ -222,14 +222,7 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
         <FixedSpaceColumn $spacing="zero">
           {staff.map((staffMember) => {
             const s = toStaff(staffMember)
-            return (
-              <StaffListItem
-                {...s}
-                key={s.id}
-                unitOrGroup={unitOrGroup}
-                occupancyEffect={staffMember.occupancyEffect}
-              />
-            )
+            return <StaffListItem {...s} key={s.id} unitOrGroup={unitOrGroup} />
           })}
         </FixedSpaceColumn>
       ))}
