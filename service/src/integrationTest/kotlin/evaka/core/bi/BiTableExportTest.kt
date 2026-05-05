@@ -277,12 +277,7 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
 private class CapturingBiExportClient : BiExportClient {
     val captured = linkedMapOf<String, ByteArray>()
 
-    override fun sendBiCsvFile(
-        tableName: String,
-        clock: EvakaClock,
-        stream: CsvInputStream,
-    ): Pair<String, String> {
+    override fun sendBiCsvFile(tableName: String, clock: EvakaClock, stream: CsvInputStream) {
         captured[tableName] = stream.readAllBytes()
-        return "fake-bucket" to tableName
     }
 }

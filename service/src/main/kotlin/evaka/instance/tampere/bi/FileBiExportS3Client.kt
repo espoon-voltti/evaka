@@ -23,11 +23,7 @@ class FileBiExportS3Client(
 ) : BiExportClient {
     private val logger = KotlinLogging.logger {}
 
-    override fun sendBiCsvFile(
-        tableName: String,
-        clock: EvakaClock,
-        stream: CsvInputStream,
-    ): Pair<String, String> {
+    override fun sendBiCsvFile(tableName: String, clock: EvakaClock, stream: CsvInputStream) {
         val date = clock.now().toLocalDate()
         val entryName = "$tableName.csv"
         logger.info { "Sending BI content for '$tableName'" }
@@ -71,7 +67,5 @@ class FileBiExportS3Client(
                 }
             }
         }
-
-        return bucket to key
     }
 }

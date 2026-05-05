@@ -7,9 +7,5 @@ package evaka.core.bi
 import evaka.core.shared.domain.EvakaClock
 
 interface BiExportClient {
-    fun sendBiCsvFile(
-        tableName: String,
-        clock: EvakaClock,
-        stream: CsvInputStream,
-    ): Pair<String, String>
+    fun sendBiCsvFile(tableName: String, clock: EvakaClock, stream: CsvInputStream)
 }
