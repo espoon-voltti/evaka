@@ -28,12 +28,6 @@
 !service/service-lib/*.kts
 !service/service-lib/src
 
-!service/sficlient/*.kts
-!service/sficlient/src
-
-!service/sarmamodel/*.kts
-!service/sarmamodel/src
-
 !service/vtjclient/*.kts
 !service/vtjclient/src
 
