@@ -801,11 +801,25 @@ jobs:
 
           for image in frontend service api-gateway; do
             repository="${PREFIX}/${image}"
+            sha_digest=$(aws ecr describe-images \
+              --repository-name "$repository" \
+              --image-ids imageTag="$SHA" \
+              --query 'imageDetails[0].imageDigest' \
+              --output text)
             MANIFEST=$(aws ecr batch-get-image \
               --repository-name "$repository" \
               --image-ids imageTag="$SHA" \
               --output json | jq --raw-output --join-output '.images[0].imageManifest')
             for tag in "${tags[@]}"; do
+              current_digest=$(aws ecr describe-images \
+                --repository-name "$repository" \
+                --image-ids imageTag="$tag" \
+                --query 'imageDetails[0].imageDigest' \
+                --output text 2>/dev/null || echo "")
+              if [ "$current_digest" = "$sha_digest" ]; then
+                echo "${repository}:${tag} already points at ${SHA}, skipping."
+                continue
+              fi
               echo "Retagging ${repository}:${SHA} -> :${tag}"
               aws ecr put-image \
                 --repository-name "$repository" \
