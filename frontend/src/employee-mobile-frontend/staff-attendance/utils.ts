@@ -17,6 +17,7 @@ export interface Staff {
   name: string
   id: string
   present: boolean
+  occupancyEffect: boolean
 }
 
 function isStaffMember(
@@ -31,14 +32,18 @@ export function toStaff(staff: StaffMember | ExternalStaffMember): Staff {
       type: 'employee',
       name: [staff.lastName, staff.firstName].join(' '),
       id: staff.employeeId,
-      present: !!staff.present
+      present: !!staff.present,
+      occupancyEffect: staff.latestCurrentDayAttendance
+        ? staff.latestCurrentDayAttendance.occupancyCoefficient > 0
+        : staff.occupancyEffect
     }
   }
   return {
     type: 'external',
     name: staff.name,
     id: staff.id,
-    present: true
+    present: true,
+    occupancyEffect: staff.occupancyEffect
   }
 }
 
