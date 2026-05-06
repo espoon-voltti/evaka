@@ -733,7 +733,7 @@ data class ArchiveEnv(
         fun fromEnvironment(env: Environment) =
             ArchiveEnv(
                 url = URI.create(env.lookup("evaka.integration.sarma.url")),
-                useMockClient = env.lookup("evaka.integration.sarma.use_mock_client"),
+                useMockClient = env.lookup("evaka.integration.sarma.use_mock_client") ?: false,
                 userId = env.lookup("evaka.integration.sarma.user_id"),
                 userRole = env.lookup("evaka.integration.sarma.user_role"),
                 metadataMainNamespace =
