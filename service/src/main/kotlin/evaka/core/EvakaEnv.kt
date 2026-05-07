@@ -60,6 +60,7 @@ data class EvakaEnv(
     val placementToolServiceNeedOptionId: ServiceNeedOptionId?,
     val newBrowserLoginEmailEnabled: Boolean,
     val staffAttendanceDriftMinutes: Duration,
+    val decisionReasoningGenericRemovalEnabled: Boolean,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -117,6 +118,8 @@ data class EvakaEnv(
                     Duration.ofMinutes(
                         env.lookup("evaka.integration.staff_attendance_drift_minutes") ?: 5
                     ),
+                decisionReasoningGenericRemovalEnabled =
+                    env.lookup("evaka.decision_reasoning.generic_removal_enabled") ?: false,
             )
         }
     }
