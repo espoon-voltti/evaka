@@ -805,3 +805,76 @@ fun Database.Read.getChildDocumentsEligibleForArchival(
             )
         }
         .toList<ChildDocumentId>()
+
+data class DeletedChildDocument(
+    val documentId: ChildDocumentId,
+    val decisionId: ChildDocumentDecisionId?,
+    val processId: CaseProcessId?,
+)
+
+fun Database.Transaction.deleteExpiredChildDocuments(
+    now: HelsinkiDateTime,
+    limit: Int? = null,
+): List<DeletedChildDocument> {
+    val today = now.toLocalDate()
+
+    val deletable =
+        createQuery {
+                sql(
+                    """
+SELECT cd.id AS document_id, cd.decision_id, cd.process_id
+FROM child_document cd
+JOIN document_template dt ON dt.id = cd.template_id
+WHERE (NOT dt.archive_externally OR cd.archived_at IS NOT NULL)
+  AND CASE dt.deletion_retention_basis
+    WHEN 'STATUS_TRANSITION' THEN
+        cd.status_modified_at + make_interval(days => dt.deletion_retention_days) <= ${bind(now)}
+    WHEN 'PLACEMENT_END' THEN
+        (SELECT MAX(p.end_date) FROM placement p WHERE p.child_id = cd.child_id)
+            + make_interval(days => dt.deletion_retention_days) <= ${bind(today)}
+  END
+${if (limit != null) "LIMIT ${bind(limit)}" else ""}
+"""
+                )
+            }
+            .toList<DeletedChildDocument>()
+
+    val deletableIds = deletable.map { it.documentId }
+    val deletableDecisionIds = deletable.mapNotNull { it.decisionId }
+    val deletableProcessIds = deletable.mapNotNull { it.processId }
+
+    if (deletableIds.isNotEmpty()) {
+        execute {
+            sql("DELETE FROM child_document_read WHERE document_id = ANY(${bind(deletableIds)})")
+        }
+        execute {
+            sql(
+                "DELETE FROM child_document_published_version WHERE child_document_id = ANY(${bind(deletableIds)})"
+            )
+        }
+        execute {
+            sql(
+                """
+                DELETE FROM sfi_message_event
+                WHERE message_id IN (
+                    SELECT id FROM sfi_message WHERE document_id = ANY(${bind(deletableIds)})
+                )
+                """
+            )
+        }
+        execute { sql("DELETE FROM sfi_message WHERE document_id = ANY(${bind(deletableIds)})") }
+        execute { sql("DELETE FROM child_document WHERE id = ANY(${bind(deletableIds)})") }
+        if (deletableDecisionIds.isNotEmpty()) {
+            execute {
+                sql(
+                    "DELETE FROM child_document_decision WHERE id = ANY(${bind(deletableDecisionIds)})"
+                )
+            }
+        }
+        if (deletableProcessIds.isNotEmpty()) {
+            execute { sql("DELETE FROM case_process WHERE id = ANY(${bind(deletableProcessIds)})") }
+        }
+    }
+
+    return deletable
+}

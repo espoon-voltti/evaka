@@ -5,6 +5,7 @@
 package evaka.core.shared.job
 
 import evaka.core.ChildDocumentArchivalEnv
+import evaka.core.ChildDocumentDeletionEnv
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
 import evaka.core.application.PendingDecisionEmailService
@@ -20,6 +21,7 @@ import evaka.core.caseprocess.migrateProcessMetadata
 import evaka.core.daycare.controllers.removeDaycareAclForRole
 import evaka.core.document.archival.planChildDocumentArchival
 import evaka.core.document.childdocument.ChildDocumentService
+import evaka.core.document.childdocument.deleteExpiredChildDocuments
 import evaka.core.document.childdocument.endExpiredChildDocumentDecisions
 import evaka.core.dvv.DvvModificationsBatchRefreshService
 import evaka.core.invoicing.service.FinanceDecisionGenerator
@@ -52,6 +54,7 @@ import evaka.core.shared.db.runSanityChecks
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.titania.cleanTitaniaErrors
 import evaka.core.varda.VardaUpdateService
+import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.opentelemetry.api.trace.Tracer
 import java.nio.file.Path
@@ -308,6 +311,10 @@ enum class ScheduledJob(
         ScheduledJobs::archiveEligibleChildDocuments,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
+    DeleteExpiredChildDocuments(
+        ScheduledJobs::deleteExpiredChildDocuments,
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
+    ),
 }
 
 private val logger = KotlinLogging.logger {}
@@ -338,6 +345,7 @@ class ScheduledJobs(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val tracer: Tracer,
     private val childDocumentArchivalEnv: ChildDocumentArchivalEnv,
+    private val childDocumentDeletionEnv: ChildDocumentDeletionEnv,
     env: ScheduledJobsEnv<ScheduledJob>,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -667,5 +675,33 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             childDocumentArchivalEnv.delayDays,
             childDocumentArchivalEnv.limit,
         )
+    }
+
+    fun deleteExpiredChildDocuments(db: Database.Connection, clock: EvakaClock) {
+        val limit = childDocumentDeletionEnv.limit
+        val deleted = db.transaction { tx ->
+            tx.deleteExpiredChildDocuments(clock.now(), limit = limit)
+        }
+        if (deleted.isNotEmpty()) {
+            val deletedDocumentIds = deleted.map { it.documentId }
+            val deletedDecisionIds = deleted.mapNotNull { it.decisionId }
+            val deletedProcessIds = deleted.mapNotNull { it.processId }
+            logger.info(
+                mapOf(
+                    "deletedDocumentIds" to deletedDocumentIds,
+                    "deletedDecisionIds" to deletedDecisionIds,
+                    "deletedProcessIds" to deletedProcessIds,
+                )
+            ) {
+                "Deleted ${deletedDocumentIds.size} expired child document(s)"
+            }
+        } else {
+            logger.info { "Deleted 0 expired child document(s)" }
+        }
+        if (limit != null && deleted.size >= limit) {
+            logger.info {
+                "Child document deletion hit batch limit of $limit; remaining backlog will be processed on the next run"
+            }
+        }
     }
 }
