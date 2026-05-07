@@ -153,11 +153,14 @@ class DocumentTemplateController(
                         it.published &&
                             it.validity.includes(clock.today()) &&
                             it.placementTypes.contains(placement.type) &&
-                            // English-language units can issue documents in any language
+                            // Allowed templates: same-language, EN CITIZEN_BASIC for any unit,
+                            // FI templates for EN units.
                             (it.language.name.uppercase() ==
                                 placement.unitLanguage.name.uppercase() ||
-                                it.language == UiLanguage.EN ||
-                                placement.unitLanguage == Language.en) &&
+                                (it.language == UiLanguage.EN &&
+                                    it.type == ChildDocumentType.CITIZEN_BASIC) ||
+                                (placement.unitLanguage == Language.en &&
+                                    it.language == UiLanguage.FI)) &&
                             isAllowedByPilotFeatures(it.type, placement.enabledPilotFeatures) &&
                             // Allow not-yet-started placements only for CITIZEN_BASIC documents,
                             // require an active placement for others
@@ -191,9 +194,12 @@ class DocumentTemplateController(
                         it.published &&
                             it.validity.includes(clock.today()) &&
                             (types.isEmpty() || types.contains(it.type)) &&
-                            // English-language units can issue documents in any language
+                            // Allowed templates: same-language, EN CITIZEN_BASIC for any unit,
+                            // FI templates for EN units.
                             (it.language.name.uppercase() == unit.language.name.uppercase() ||
-                                unit.language == Language.en) &&
+                                (it.language == UiLanguage.EN &&
+                                    it.type == ChildDocumentType.CITIZEN_BASIC) ||
+                                (unit.language == Language.en && it.language == UiLanguage.FI)) &&
                             isAllowedByPilotFeatures(it.type, unit.enabledPilotFeatures)
                     }
                 }
