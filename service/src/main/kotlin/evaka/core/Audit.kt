@@ -248,6 +248,7 @@ enum class Audit(
     DecisionReasoningGenericCreate,
     DecisionReasoningGenericDelete,
     DecisionReasoningGenericRead,
+    DecisionReasoningGenericRemove,
     DecisionReasoningGenericUpdate,
     DecisionReasoningIndividualCreate,
     DecisionReasoningIndividualRead,

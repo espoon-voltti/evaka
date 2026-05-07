@@ -179,6 +179,22 @@ export async function getIndividualReasonings(
 
 
 /**
+* Generated from evaka.core.decision.reasoning.DecisionReasoningController.removeGenericReasoning
+*/
+export async function removeGenericReasoning(
+  request: {
+    id: DecisionGenericReasoningId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/decision-reasonings/generic/${request.id}/remove`.toString(),
+    method: 'PUT'
+  })
+  return json
+}
+
+
+/**
 * Generated from evaka.core.decision.reasoning.DecisionReasoningController.removeIndividualReasoning
 */
 export async function removeIndividualReasoning(

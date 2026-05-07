@@ -6,18 +6,23 @@ package evaka.core.decision.reasoning
 
 import evaka.core.Audit
 import evaka.core.AuditId
+import evaka.core.EvakaEnv
 import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/employee/decision-reasonings")
-class DecisionReasoningController(private val accessControl: AccessControl) {
+class DecisionReasoningController(
+    private val accessControl: AccessControl,
+    private val evakaEnv: EvakaEnv,
+) {
 
     @GetMapping("/generic")
     fun getGenericReasonings(
@@ -102,6 +107,30 @@ class DecisionReasoningController(private val accessControl: AccessControl) {
             }
         }
         Audit.DecisionReasoningGenericDelete.log(targetId = AuditId(id))
+    }
+
+    @PutMapping("/generic/{id}/remove")
+    fun removeGenericReasoning(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: DecisionGenericReasoningId,
+    ) {
+        if (!evakaEnv.decisionReasoningGenericRemovalEnabled) {
+            throw Forbidden("Feature not enabled")
+        }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Global.WRITE_DECISION_REASONINGS,
+                )
+                tx.removeGenericReasoning(id, clock.now())
+            }
+        }
+        Audit.DecisionReasoningGenericRemove.log(targetId = AuditId(id))
     }
 
     @GetMapping("/individual")

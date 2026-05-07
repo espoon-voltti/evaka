@@ -11,6 +11,8 @@ evaka:
     voucher_value_decisions: evaka-vouchervaluedecisions-it
   clock:
     mock: true
+  decision_reasoning:
+    generic_removal_enabled: true
   email:
     sender_address: no-reply.evaka@espoo.fi
     sender_name:

@@ -70,6 +70,24 @@ test.describe('Employee - Decision reasonings', () => {
     await expect(decisionReasoningsPage.genericCards).toHaveCount(1)
   })
 
+  test('Active generic reasoning can be removed', async () => {
+    await decisionReasoningsPage.addGenericButton.click()
+    await decisionReasoningsPage.genericValidFrom.fill('01.08.2026')
+    await decisionReasoningsPage.genericTextFi.fill('Suomenkielinen perustelu')
+    await decisionReasoningsPage.genericTextSv.fill('Svenskspråkig motivering')
+    await decisionReasoningsPage.genericSaveAndActivateButton.click()
+    await decisionReasoningsPage.confirmModal()
+
+    const card = decisionReasoningsPage.genericCard(0)
+    await expect(card.status).toHaveText('Käytössä')
+
+    await card.removeButton.click()
+    await decisionReasoningsPage.confirmModal()
+
+    await expect(decisionReasoningsPage.genericCards).toHaveCount(0)
+    await expect(decisionReasoningsPage.toggleOutdatedGeneric).toBeHidden()
+  })
+
   test('Individual reasoning can be created and removed', async () => {
     // Create an individual reasoning
     await decisionReasoningsPage.addIndividualButton.click()

@@ -2813,7 +2813,8 @@ CREATE TABLE public.decision_reasoning_generic (
     ready boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone NOT NULL,
     modified_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    removed_at timestamp with time zone
 );
 
 -- Name: decision_reasoning_individual; Type: TABLE; Schema: public

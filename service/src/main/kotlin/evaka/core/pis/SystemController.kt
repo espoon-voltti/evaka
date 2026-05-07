@@ -338,6 +338,8 @@ class SystemController(
                                 permittedGlobalActions.contains(
                                     Action.Global.WRITE_DECISION_REASONINGS
                                 ),
+                            decisionReasoningGenericRemoval =
+                                env.decisionReasoningGenericRemovalEnabled,
                             allowEnglishChildDocumentsForAllTypes =
                                 featureConfig.allowEnglishChildDocumentsForAllTypes,
                         )

@@ -68,6 +68,12 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         user: AuthenticatedUser.Employee = admin.user,
     ) = controller.deleteGenericReasoning(dbInstance(), user, MockEvakaClock(now), id)
 
+    private fun removeGenericReasoning(
+        id: DecisionGenericReasoningId,
+        user: AuthenticatedUser.Employee = admin.user,
+        time: HelsinkiDateTime = now,
+    ) = controller.removeGenericReasoning(dbInstance(), user, MockEvakaClock(time), id)
+
     private fun createIndividualReasoning(
         request: DecisionIndividualReasoningRequest,
         user: AuthenticatedUser.Employee = admin.user,
@@ -206,6 +212,58 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val result = getGenericReasonings(DecisionReasoningCollectionType.DAYCARE)
         assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `generic reasonings with removed_at set are excluded from the read`() {
+        val id = createGenericReasoning(genericRequest(LocalDate.of(2026, 8, 1)))
+        db.transaction { tx ->
+            tx.createUpdate {
+                    sql(
+                        "UPDATE decision_reasoning_generic SET removed_at = ${bind(now)} WHERE id = ${bind(id)}"
+                    )
+                }
+                .execute()
+        }
+
+        val result = getGenericReasonings(DecisionReasoningCollectionType.DAYCARE)
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `removeGenericReasoning soft-deletes the row so it is excluded from the read`() {
+        val id = createGenericReasoning(genericRequest(LocalDate.of(2026, 8, 1)).copy(ready = true))
+
+        db.transaction { tx -> tx.removeGenericReasoning(id, now) }
+
+        val result = getGenericReasonings(DecisionReasoningCollectionType.DAYCARE)
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `removeGenericReasoning is idempotent — second call throws NotFound`() {
+        val id = createGenericReasoning(genericRequest(LocalDate.of(2026, 8, 1)).copy(ready = true))
+
+        db.transaction { tx -> tx.removeGenericReasoning(id, now) }
+
+        assertThrows<NotFound> { db.transaction { tx -> tx.removeGenericReasoning(id, now) } }
+    }
+
+    @Test
+    fun `admin can remove a ready generic reasoning via the controller`() {
+        val id = createGenericReasoning(genericRequest(LocalDate.of(2026, 8, 1)).copy(ready = true))
+
+        removeGenericReasoning(id)
+
+        val result = getGenericReasonings(DecisionReasoningCollectionType.DAYCARE)
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `service worker cannot remove a generic reasoning`() {
+        val id = createGenericReasoning(genericRequest(LocalDate.of(2026, 8, 1)).copy(ready = true))
+
+        assertThrows<Forbidden> { removeGenericReasoning(id, user = serviceWorker.user) }
     }
 
     @Test
