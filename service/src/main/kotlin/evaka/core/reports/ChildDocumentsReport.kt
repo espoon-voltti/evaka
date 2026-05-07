@@ -152,7 +152,12 @@ WITH valid_children AS (
     WHERE dt.id = ANY(${bind(templateIds)})
       AND pl.unit_id = ANY(${bind(unitIds)})
       AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
-      AND lower(dt.language::text) = lower(d.language::text)
+      -- CITIZEN_BASIC templates are filtered out upstream by getChildDocumentsReportTemplateOptions,
+      -- so no EN-CB cross-language clause is needed here.
+      AND (
+          lower(dt.language::text) = lower(d.language::text)
+          OR (lower(d.language::text) = 'en' AND lower(dt.language::text) = 'fi')
+      )
       AND daterange(dg.start_date, dg.end_date, '[]') @> ${bind(today)}
 )
 SELECT
