@@ -65,6 +65,9 @@ import {
   updateDocumentTemplateContentMutation
 } from '../queries'
 
+import DeletionRulesEditor, {
+  useDeletionBasisOptions
+} from './DeletionRulesEditor'
 import TemplateSectionModal from './TemplateSectionModal'
 import TemplateSectionView from './TemplateSectionView'
 
@@ -288,6 +291,14 @@ const BasicsSection = React.memo(function BasicsSection({
               {
                 label: 'Asiakirja arkistoitavissa',
                 value: template.archiveExternally ? 'Kyllä' : 'Ei'
+              },
+              {
+                label: i18n.documentTemplates.templateModal.deletionRetention,
+                value: `${template.deletionRetentionDays} ${i18n.common.days} ${
+                  i18n.documentTemplates.templateModal.deletionRetentionBasis[
+                    template.deletionRetentionBasis
+                  ]
+                }`
               }
             ]}
           />
@@ -338,6 +349,8 @@ const BasicsEditor = React.memo(function BasicsEditor({
     [i18n.documentTemplates]
   )
 
+  const deletionBasisOptions = useDeletionBasisOptions()
+
   const getLanguageOptions = useCallback(
     (type: ChildDocumentType) => {
       const englishAllowed = type === 'CITIZEN_BASIC' || allowEnglishForAllTypes
@@ -374,7 +387,12 @@ const BasicsEditor = React.memo(function BasicsEditor({
       processDefinitionNumber: template.processDefinitionNumber ?? '',
       archiveDurationMonths: template.archiveDurationMonths?.toString() ?? '0',
       archiveExternally: template.archiveExternally ?? false,
-      endDecisionWhenUnitChanges: template.endDecisionWhenUnitChanges ?? true
+      endDecisionWhenUnitChanges: template.endDecisionWhenUnitChanges ?? true,
+      deletionRetentionDays: template.deletionRetentionDays.toString(),
+      deletionRetentionBasis: {
+        domValue: template.deletionRetentionBasis,
+        options: deletionBasisOptions
+      }
     }),
     {
       ...i18n.validationErrors
@@ -416,7 +434,9 @@ const BasicsEditor = React.memo(function BasicsEditor({
     processDefinitionNumber,
     archiveDurationMonths,
     archiveExternally,
-    endDecisionWhenUnitChanges
+    endDecisionWhenUnitChanges,
+    deletionRetentionDays,
+    deletionRetentionBasis
   } = useFormFields(form)
 
   return (
@@ -522,6 +542,11 @@ const BasicsEditor = React.memo(function BasicsEditor({
           bind={archiveExternally}
           label={i18n.documentTemplates.templateModal.archiveExternally}
           data-qa="archive-externally-checkbox"
+        />
+        <Gap />
+        <DeletionRulesEditor
+          retentionDays={deletionRetentionDays}
+          retentionBasis={deletionRetentionBasis}
         />
       </div>
       <FixedSpaceRow $justifyContent="flex-end">

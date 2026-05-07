@@ -43,8 +43,8 @@ fun Database.Transaction.insertChildDocument(
     return createQuery {
             sql(
                 """
-INSERT INTO child_document(child_id, template_id, type, status, content, modified_at, modified_by, content_locked_at, content_locked_by, created_by, process_id, decision_maker)
-VALUES (${bind(childId)}, ${bind(templateId)}, ${bind(type)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(userId)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)}, NULL)
+INSERT INTO child_document(child_id, template_id, type, status, content, modified_at, modified_by, status_modified_at, content_locked_at, content_locked_by, created_by, process_id, decision_maker)
+VALUES (${bind(childId)}, ${bind(templateId)}, ${bind(type)}, 'DRAFT', ${bind(DocumentContent(answers = emptyList()))}, ${bind(now)}, ${bind(userId)}, ${bind(now)}, ${bind(now)}, ${bind(userId)}, ${bind(userId)}, ${bind(processId)}, NULL)
 RETURNING id
 """
             )
@@ -203,6 +203,9 @@ SELECT
     dt.process_definition_number as template_process_definition_number,
     dt.archive_duration_months as template_archive_duration_months,
     dt.archive_externally as template_archive_externally,
+    dt.end_decision_when_unit_changes as template_end_decision_when_unit_changes,
+    dt.deletion_retention_days as template_deletion_retention_days,
+    dt.deletion_retention_basis as template_deletion_retention_basis,
     cd.decision_maker,
     cdd.id AS decision_id,
     cdd.status AS decision_status,
@@ -420,6 +423,7 @@ fun Database.Transaction.updateChildDocument(
                     content = ${bind(content)},
                     modified_at = ${bind(now)},
                     modified_by = ${bind(userId)},
+                    status_modified_at = CASE WHEN status = ${bind(statusTransition.newStatus)} THEN status_modified_at ELSE ${bind(now)} END,
                     content_locked_at = ${bind(now)},
                     content_locked_by = ${bind(userId)},
                     answered_at = ${bind(now)},
@@ -488,7 +492,8 @@ fun Database.Transaction.updateChildDocumentStatus(
                 UPDATE child_document
                 SET status = ${bind(statusTransition.newStatus)},
                     modified_at = ${bind(now)},
-                    modified_by = ${bind(userId)}
+                    modified_by = ${bind(userId)},
+                    status_modified_at = CASE WHEN status = ${bind(statusTransition.newStatus)} THEN status_modified_at ELSE ${bind(now)} END
                     ${if (answeredBy != null) ", answered_at = ${bind(now)}, answered_by = ${bind(answeredBy)}" else ""}
                 WHERE id = ${bind(id)} AND status = ${bind(statusTransition.currentStatus)}
                 """
@@ -510,7 +515,8 @@ fun Database.Transaction.markCompletedAndPublish(
                 UPDATE child_document
                 SET status = 'COMPLETED',
                     modified_at = ${bind(now)},
-                    modified_by = ${bind(userId)}
+                    modified_by = ${bind(userId)},
+                    status_modified_at = CASE WHEN status = 'COMPLETED' THEN status_modified_at ELSE ${bind(now)} END
                 WHERE id = ANY(${bind(ids)})
                 """
             )
@@ -670,10 +676,11 @@ fun Database.Transaction.setChildDocumentDecisionAndComplete(
             sql(
                 """
                 UPDATE child_document
-                SET decision_id = ${bind(decisionId)}, 
-                    status = 'COMPLETED', 
+                SET decision_id = ${bind(decisionId)},
+                    status = 'COMPLETED',
                     modified_at = ${bind(now)},
-                    modified_by = ${bind(userId)}
+                    modified_by = ${bind(userId)},
+                    status_modified_at = ${bind(now)}
                 WHERE id = ${bind(documentId)} AND status = 'DECISION_PROPOSAL'
                 """
             )
@@ -798,3 +805,76 @@ fun Database.Read.getChildDocumentsEligibleForArchival(
             )
         }
         .toList<ChildDocumentId>()
+
+data class DeletedChildDocument(
+    val documentId: ChildDocumentId,
+    val decisionId: ChildDocumentDecisionId?,
+    val processId: CaseProcessId?,
+)
+
+fun Database.Transaction.deleteExpiredChildDocuments(
+    now: HelsinkiDateTime,
+    limit: Int? = null,
+): List<DeletedChildDocument> {
+    val today = now.toLocalDate()
+
+    val deletable =
+        createQuery {
+                sql(
+                    """
+SELECT cd.id AS document_id, cd.decision_id, cd.process_id
+FROM child_document cd
+JOIN document_template dt ON dt.id = cd.template_id
+WHERE (NOT dt.archive_externally OR cd.archived_at IS NOT NULL)
+  AND CASE dt.deletion_retention_basis
+    WHEN 'STATUS_TRANSITION' THEN
+        cd.status_modified_at + make_interval(days => dt.deletion_retention_days) <= ${bind(now)}
+    WHEN 'PLACEMENT_END' THEN
+        (SELECT MAX(p.end_date) FROM placement p WHERE p.child_id = cd.child_id)
+            + make_interval(days => dt.deletion_retention_days) <= ${bind(today)}
+  END
+${if (limit != null) "LIMIT ${bind(limit)}" else ""}
+"""
+                )
+            }
+            .toList<DeletedChildDocument>()
+
+    val deletableIds = deletable.map { it.documentId }
+    val deletableDecisionIds = deletable.mapNotNull { it.decisionId }
+    val deletableProcessIds = deletable.mapNotNull { it.processId }
+
+    if (deletableIds.isNotEmpty()) {
+        execute {
+            sql("DELETE FROM child_document_read WHERE document_id = ANY(${bind(deletableIds)})")
+        }
+        execute {
+            sql(
+                "DELETE FROM child_document_published_version WHERE child_document_id = ANY(${bind(deletableIds)})"
+            )
+        }
+        execute {
+            sql(
+                """
+                DELETE FROM sfi_message_event
+                WHERE message_id IN (
+                    SELECT id FROM sfi_message WHERE document_id = ANY(${bind(deletableIds)})
+                )
+                """
+            )
+        }
+        execute { sql("DELETE FROM sfi_message WHERE document_id = ANY(${bind(deletableIds)})") }
+        execute { sql("DELETE FROM child_document WHERE id = ANY(${bind(deletableIds)})") }
+        if (deletableDecisionIds.isNotEmpty()) {
+            execute {
+                sql(
+                    "DELETE FROM child_document_decision WHERE id = ANY(${bind(deletableDecisionIds)})"
+                )
+            }
+        }
+        if (deletableProcessIds.isNotEmpty()) {
+            execute { sql("DELETE FROM case_process WHERE id = ANY(${bind(deletableProcessIds)})") }
+        }
+    }
+
+    return deletable
+}

@@ -239,6 +239,13 @@ CREATE TYPE public.decision_type AS ENUM (
     'CLUB'
 );
 
+-- Name: document_deletion_basis; Type: TYPE; Schema: public
+
+CREATE TYPE public.document_deletion_basis AS ENUM (
+    'PLACEMENT_END',
+    'STATUS_TRANSITION'
+);
+
 -- Name: document_template_type; Type: TYPE; Schema: public
 
 CREATE TYPE public.document_template_type AS ENUM (
@@ -2484,6 +2491,7 @@ CREATE TABLE public.child_document (
     modified_by uuid DEFAULT '00000000-0000-0000-0000-000000000000'::uuid NOT NULL,
     created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
     updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
+    status_modified_at timestamp with time zone NOT NULL,
     CONSTRAINT answerable_document CHECK (((type = 'CITIZEN_BASIC'::public.document_template_type) OR ((answered_at IS NULL) AND (answered_by IS NULL)))),
     CONSTRAINT answered_consistency CHECK (((answered_at IS NULL) = (answered_by IS NULL))),
     CONSTRAINT archived_documents_must_be_completed CHECK (((archived_at IS NULL) OR (status = 'COMPLETED'::public.child_document_status))),
@@ -2854,9 +2862,12 @@ CREATE TABLE public.document_template (
     end_decision_when_unit_changes boolean,
     created timestamp with time zone GENERATED ALWAYS AS (created_at) STORED,
     updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
+    deletion_retention_days integer NOT NULL,
+    deletion_retention_basis public.document_deletion_basis NOT NULL,
     CONSTRAINT "check$archive_duration_months_positive" CHECK (((archive_duration_months IS NULL) OR (archive_duration_months > 0))),
     CONSTRAINT "check$archive_externally_requires_metadata" CHECK (((NOT archive_externally) OR ((process_definition_number IS NOT NULL) AND (archive_duration_months IS NOT NULL)))),
     CONSTRAINT "check$archive_fields_nullability" CHECK (((process_definition_number IS NOT NULL) = (archive_duration_months IS NOT NULL))),
+    CONSTRAINT "check$deletion_retention_days_positive" CHECK ((deletion_retention_days > 0)),
     CONSTRAINT "check$process_definition_number_not_blank" CHECK ((process_definition_number <> ''::text)),
     CONSTRAINT "check$validity" CHECK ((NOT lower_inf(validity))),
     CONSTRAINT decision_config CHECK (((type = ANY (ARRAY['OTHER_DECISION'::public.document_template_type, 'MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION'::public.document_template_type, 'MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION'::public.document_template_type])) = (end_decision_when_unit_changes IS NOT NULL))),

@@ -11,6 +11,7 @@ import {
   Element,
   FileInput,
   MultiSelect,
+  Radio,
   Select,
   TextInput
 } from '../../../utils/page'
@@ -86,6 +87,9 @@ export class TemplateModal extends Element {
   readonly confidentialityDurationYearsInput
   readonly confidentialityBasisInput
   readonly archiveExternallyCheckbox
+  readonly deletionRetentionDaysInput
+  readonly deletionRetentionBasisPlacementEnd
+  readonly deletionRetentionBasisStatusTransition
   readonly confirmCreateButton
 
   constructor(locator: Locator) {
@@ -111,6 +115,15 @@ export class TemplateModal extends Element {
     )
     this.archiveExternallyCheckbox = new Checkbox(
       this.findByDataQa('archive-externally-checkbox')
+    )
+    this.deletionRetentionDaysInput = new TextInput(
+      this.findByDataQa('deletion-retention-days')
+    )
+    this.deletionRetentionBasisPlacementEnd = new Radio(
+      this.findByDataQa('deletion-retention-basis-PLACEMENT_END')
+    )
+    this.deletionRetentionBasisStatusTransition = new Radio(
+      this.findByDataQa('deletion-retention-basis-STATUS_TRANSITION')
     )
     this.confirmCreateButton = this.findByDataQa('modal-okBtn')
   }

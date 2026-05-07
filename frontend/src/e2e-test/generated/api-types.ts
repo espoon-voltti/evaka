@@ -44,6 +44,7 @@ import type { DecisionStatus } from 'lib-common/generated/api-types/decision'
 import type { DecisionType } from 'lib-common/generated/api-types/decision'
 import type { DocumentConfidentiality } from 'lib-common/generated/api-types/caseprocess'
 import type { DocumentContent } from 'lib-common/generated/api-types/document'
+import type { DocumentDeletionBasis } from 'lib-common/generated/api-types/document'
 import type { DocumentStatus } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
@@ -390,6 +391,7 @@ export interface DevChildDocument {
   processId: CaseProcessId | null
   publishedVersions: DevChildDocumentPublishedVersion[]
   status: DocumentStatus
+  statusModifiedAt: HelsinkiDateTime | null
   templateId: DocumentTemplateId
 }
 
@@ -565,6 +567,8 @@ export interface DevDocumentTemplate {
   archiveExternally: boolean
   confidentiality: DocumentConfidentiality | null
   content: DocumentTemplateContent
+  deletionRetentionBasis: DocumentDeletionBasis
+  deletionRetentionDays: number
   endDecisionWhenUnitChanges: boolean | null
   id: DocumentTemplateId
   language: UiLanguage
@@ -1377,7 +1381,8 @@ export function deserializeJsonDevChildDocument(json: JsonOf<DevChildDocument>):
     createdAt: (json.createdAt != null) ? HelsinkiDateTime.parseIso(json.createdAt) : null,
     decision: (json.decision != null) ? deserializeJsonDevChildDocumentDecision(json.decision) : null,
     modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
-    publishedVersions: json.publishedVersions.map(e => deserializeJsonDevChildDocumentPublishedVersion(e))
+    publishedVersions: json.publishedVersions.map(e => deserializeJsonDevChildDocumentPublishedVersion(e)),
+    statusModifiedAt: (json.statusModifiedAt != null) ? HelsinkiDateTime.parseIso(json.statusModifiedAt) : null
   }
 }
 

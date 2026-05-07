@@ -33,12 +33,14 @@ import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.Forbidden
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.user.EvakaUser
 import evaka.core.user.EvakaUserType
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
@@ -278,6 +280,7 @@ class ChildDocumentControllerCitizenIntegrationTest :
             ),
             getUnansweredChildDocuments(),
         )
+        val statusModifiedBeforeUpdate = getStatusModifiedAt(documentId)
         clock.tick()
 
         val content =
@@ -294,6 +297,8 @@ class ChildDocumentControllerCitizenIntegrationTest :
                 content = content,
             ),
         )
+        assertEquals(clock.now(), getStatusModifiedAt(documentId))
+        assertNotEquals(statusModifiedBeforeUpdate, getStatusModifiedAt(documentId))
 
         val documents = getDocumentsByChild(child.id)
         assertEquals(
@@ -640,4 +645,11 @@ class ChildDocumentControllerCitizenIntegrationTest :
 
     private fun updateDocumentContent(id: ChildDocumentId, content: DocumentContent) =
         employeeController.updateDocumentContent(dbInstance(), employeeUser, clock, id, content)
+
+    private fun getStatusModifiedAt(id: ChildDocumentId): HelsinkiDateTime = db.read { tx ->
+        tx.createQuery {
+                sql("SELECT status_modified_at FROM child_document WHERE id = ${bind(id)}")
+            }
+            .exactlyOne<HelsinkiDateTime>()
+    }
 }

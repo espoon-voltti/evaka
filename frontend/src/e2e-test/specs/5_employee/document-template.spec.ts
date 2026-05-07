@@ -76,6 +76,8 @@ test.describe('Employee - Document templates', () => {
         durationYears: 50,
         basis: 'Test legal basis'
       },
+      deletionRetentionDays: 1825,
+      deletionRetentionBasis: 'STATUS_TRANSITION',
       content: {
         sections: [
           {
@@ -102,5 +104,8 @@ test.describe('Employee - Document templates', () => {
     await expect(modal.confidentialityBasisInput).toHaveValue(
       'Test legal basis'
     )
+    await expect(modal.deletionRetentionDaysInput).toHaveValue('1825')
+    await modal.deletionRetentionBasisStatusTransition.waitUntilChecked(true)
+    await modal.deletionRetentionBasisPlacementEnd.waitUntilChecked(false)
   })
 })

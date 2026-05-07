@@ -717,6 +717,19 @@ data class ChildDocumentArchivalEnv(val delayDays: Int, val limit: Int) {
     }
 }
 
+/**
+ * @property limit Maximum number of expired child documents deleted per scheduled run, or `null`
+ *   for unlimited.
+ */
+data class ChildDocumentDeletionEnv(val limit: Int?) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            ChildDocumentDeletionEnv(
+                limit = env.lookup("evaka.child_document_deletion_limit") ?: 5000
+            )
+    }
+}
+
 data class ArchiveEnv(
     /** URL up to the endpoint name e.g. http://10.0.0.10/archive-core/ */
     val url: URI,

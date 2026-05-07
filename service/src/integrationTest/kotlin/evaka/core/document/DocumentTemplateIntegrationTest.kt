@@ -95,6 +95,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             processDefinitionNumber = "123.456.789",
             archiveDurationMonths = 120,
             endDecisionWhenUnitChanges = null,
+            deletionRetentionDays = 10 * 365,
+            deletionRetentionBasis = DocumentDeletionBasis.PLACEMENT_END,
         )
 
     @BeforeEach
@@ -343,6 +345,8 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     processDefinitionNumber = "123.456.789b",
                     archiveDurationMonths = 1200,
                     endDecisionWhenUnitChanges = null,
+                    deletionRetentionDays = 10 * 365,
+                    deletionRetentionBasis = DocumentDeletionBasis.PLACEMENT_END,
                 ),
             )
 
@@ -1040,5 +1044,7 @@ private fun DocumentTemplateBasicsRequest.Regular.toExported(content: DocumentTe
         archiveDurationMonths,
         archiveExternally,
         endDecisionWhenUnitChanges,
+        deletionRetentionDays,
+        deletionRetentionBasis,
         content,
     )

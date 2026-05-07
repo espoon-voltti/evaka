@@ -25,6 +25,7 @@ import {
 } from 'lib-common/form/types'
 import { nonBlank } from 'lib-common/form/validators'
 import type {
+  DocumentDeletionBasis,
   DocumentTemplateBasicsRequest,
   DocumentTemplateContent,
   ChildDocumentType,
@@ -51,6 +52,10 @@ const caseManagementRequired: ChildDocumentType[] = [
   'MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION'
 ]
 
+export const deletionRetentionDaysField = required(value<string>())
+export const deletionRetentionBasisField =
+  required(oneOf<DocumentDeletionBasis>())
+
 export const documentTemplateForm = transformed(
   object({
     name: validated(string(), nonBlank),
@@ -67,7 +72,9 @@ export const documentTemplateForm = transformed(
     processDefinitionNumber: required(value<string>()),
     archiveDurationMonths: required(value<string>()),
     archiveExternally: boolean(),
-    endDecisionWhenUnitChanges: boolean()
+    endDecisionWhenUnitChanges: boolean(),
+    deletionRetentionDays: deletionRetentionDaysField,
+    deletionRetentionBasis: deletionRetentionBasisField
   }),
   (value) => {
     const caseManaged = value.processDefinitionNumber.trim().length > 0
@@ -95,6 +102,14 @@ export const documentTemplateForm = transformed(
       }
     }
 
+    if (value.deletionRetentionDays.trim().length === 0) {
+      return ValidationError.field('deletionRetentionDays', 'required')
+    }
+    const deletionRetentionDays = parseInt(value.deletionRetentionDays)
+    if (isNaN(deletionRetentionDays) || deletionRetentionDays < 1) {
+      return ValidationError.field('deletionRetentionDays', 'integerFormat')
+    }
+
     const confidential = value.confidential
     if (confidential) {
       const confidentialityDurationYears = parseInt(
@@ -116,7 +131,7 @@ export const documentTemplateForm = transformed(
 
     const output: DocumentTemplateBasicsRequest = {
       ...value,
-
+      deletionRetentionDays,
       confidentiality: confidential
         ? {
             durationYears: parseInt(value.confidentialityDurationYears),
