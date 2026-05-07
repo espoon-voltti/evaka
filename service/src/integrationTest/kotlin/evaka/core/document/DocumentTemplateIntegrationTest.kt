@@ -629,6 +629,27 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(setOf(UiLanguage.FI), active.map { it.language }.toSet())
     }
 
+    @Test
+    fun `active templates by group id endpoint does not show citizen basic templates when pilot feature is disabled`() {
+        val groupId =
+            insertGroupInUnitWithLanguage(
+                Language.fi,
+                name = "Finnish Daycare",
+                enabledPilotFeatures = emptySet(),
+            )
+        publishCitizenBasicTemplate(UiLanguage.FI)
+
+        val active =
+            controller.getActiveTemplatesByGroupId(
+                dbInstance(),
+                employee.user,
+                now,
+                groupId,
+                emptySet(),
+            )
+        assertEquals(emptyList(), active)
+    }
+
     private fun insertChildInUnitWithLanguage(language: Language, name: String) =
         db.transaction { tx ->
             val areaId =
@@ -659,23 +680,26 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             childId
         }
 
-    private fun insertGroupInUnitWithLanguage(language: Language, name: String) =
-        db.transaction { tx ->
-            val areaId =
-                tx.insert(
-                    DevCareArea(name = "Area for $name", shortName = "area_group_${language.name}")
+    private fun insertGroupInUnitWithLanguage(
+        language: Language,
+        name: String,
+        enabledPilotFeatures: Set<PilotFeature> = setOf(PilotFeature.CITIZEN_BASIC_DOCUMENT),
+    ) = db.transaction { tx ->
+        val areaId =
+            tx.insert(
+                DevCareArea(name = "Area for $name", shortName = "area_group_${language.name}")
+            )
+        val daycareId =
+            tx.insert(
+                DevDaycare(
+                    areaId = areaId,
+                    name = name,
+                    language = language,
+                    enabledPilotFeatures = enabledPilotFeatures,
                 )
-            val daycareId =
-                tx.insert(
-                    DevDaycare(
-                        areaId = areaId,
-                        name = name,
-                        language = language,
-                        enabledPilotFeatures = setOf(PilotFeature.CITIZEN_BASIC_DOCUMENT),
-                    )
-                )
-            tx.insert(DevDaycareGroup(daycareId = daycareId))
-        }
+            )
+        tx.insert(DevDaycareGroup(daycareId = daycareId))
+    }
 
     private fun publishPedagogicalAssessmentTemplate(language: UiLanguage) {
         val template =
