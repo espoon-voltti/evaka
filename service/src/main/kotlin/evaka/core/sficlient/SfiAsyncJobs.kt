@@ -51,7 +51,15 @@ class SfiAsyncJobs(
                                 eventType = event.type,
                             )
                         )
-                    logger.info { "SfiAsyncJobs: successfully processed event $event with id $id" }
+                    if (id != null) {
+                        logger.info {
+                            "SfiAsyncJobs: successfully processed event $event with id $id"
+                        }
+                    } else {
+                        logger.info {
+                            "SfiAsyncJobs: skipped event $event (no matching sfi_message)"
+                        }
+                    }
                 } catch (e: Exception) {
                     logger.error(e) { "SfiAsyncJobs: failed to process event $event" }
                 }

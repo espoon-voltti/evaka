@@ -139,7 +139,7 @@ data class SentSfiMessage(
 
 fun Database.Transaction.upsertSfiMessageEventIfSfiMessageExists(
     event: SfiMessageEvent
-): SfiMessageEventId =
+): SfiMessageEventId? =
     createUpdate {
             sql(
                 """
@@ -156,7 +156,7 @@ RETURNING id
             )
         }
         .executeAndReturnGeneratedKeys()
-        .exactlyOne<SfiMessageEventId>()
+        .exactlyOneOrNull<SfiMessageEventId>()
 
 fun Database.Read.getSfiMessageEventsByMessageId(messageId: SfiMessageId): List<SfiMessageEvent> =
     createQuery {
