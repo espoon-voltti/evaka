@@ -19,6 +19,7 @@ import evaka.core.attachment.AttachmentsController
 import evaka.core.attachment.uploadApplicationAttachment
 import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.ProcessMetadataController
+import evaka.core.caseprocess.ProcessType
 import evaka.core.caseprocess.getCaseProcessByApplicationId
 import evaka.core.daycare.getChild
 import evaka.core.decision.Decision
@@ -2605,6 +2606,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         assertEquals(CaseProcessState.COMPLETED, metadata.process.history[3].state)
         assertEquals(guardian.evakaUserId(), metadata.process.history[3].enteredBy.id)
         assertEquals("Varhaiskasvatus- ja palvelusetelihakemus", metadata.primaryDocument.name)
+        assertEquals(ApplicationType.DAYCARE, metadata.primaryDocument.applicationType)
+        assertEquals(ProcessType.APPLICATION_DAYCARE, metadata.processType)
         assertEquals(guardian.evakaUserId(), metadata.primaryDocument.createdBy?.id)
         assertEquals(clock.today(), metadata.primaryDocument.createdAtDate)
         assertEquals(clock.now().toLocalTime(), metadata.primaryDocument.createdAtTime)
@@ -2612,6 +2615,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         assertEquals(1, metadata.secondaryDocuments.size)
         metadata.secondaryDocuments[0].also { doc ->
             assertEquals("Päätös varhaiskasvatuksesta", doc.name)
+            assertEquals(DecisionType.DAYCARE, doc.decisionType)
             assertEquals(serviceWorker.evakaUserId, doc.createdBy?.id)
             assertEquals("/employee/decisions/$decisionId/download", doc.downloadPath)
         }

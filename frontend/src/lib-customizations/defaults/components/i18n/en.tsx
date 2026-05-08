@@ -240,18 +240,41 @@ const components: Translations = {
       hide: 'Hide more information'
     },
     applicationDocumentNames: {
-      DAYCARE: 'Daycare application',
-      PRESCHOOL: 'Preschool application',
-      CLUB: 'Club application'
+      DAYCARE: 'Application for early childhood education and service voucher',
+      PRESCHOOL:
+        'Enrolment to pre-primary education and/or preparatory education',
+      CLUB: 'Application for club'
     },
     decisionDocumentNames: {
-      CLUB: 'Club decision',
-      DAYCARE: 'Daycare decision',
-      DAYCARE_PART_TIME: 'Part-time daycare decision',
-      PRESCHOOL: 'Preschool decision',
-      PRESCHOOL_DAYCARE: 'Connected daycare decision',
-      PRESCHOOL_CLUB: 'Preschool club decision',
-      PREPARATORY_EDUCATION: 'Preparatory education decision'
+      CLUB: 'Decision on club',
+      DAYCARE: 'Decision on early childhood education',
+      DAYCARE_PART_TIME: 'Decision on part-day early childhood education',
+      PRESCHOOL: 'Decision on pre-primary education',
+      PRESCHOOL_DAYCARE:
+        'Decision on early childhood education related to pre-primary education',
+      PRESCHOOL_CLUB: 'Decision on pre-primary education club',
+      PREPARATORY_EDUCATION: 'Decision on preparatory education'
+    },
+    financeDecisionDocumentNames: {
+      FEE_DECISION: 'Fee decision',
+      VOUCHER_VALUE_DECISION: 'Voucher value decision'
+    },
+    processNames: {
+      APPLICATION_DAYCARE:
+        'Application for early childhood education / service voucher application for early childhood education',
+      APPLICATION_PRESCHOOL:
+        'Application for pre-primary education / application for preparatory education for basic education provided in connection with pre-primary education',
+      APPLICATION_CLUB: 'Application for club',
+      FEE_DECISION: 'Early childhood education fee decision',
+      VOUCHER_VALUE_DECISION:
+        'Early childhood education service voucher value decision',
+      CHILD_DOCUMENT_VASU: "Child's early childhood education plan",
+      CHILD_DOCUMENT_LEOPS: "Child's pre-primary education learning plan",
+      CHILD_DOCUMENT_HOJKS: 'Individual education plan',
+      CHILD_DOCUMENT_PEDAGOGICAL_ASSESSMENT:
+        'Pre-primary education pedagogical assessment',
+      CHILD_DOCUMENT_PEDAGOGICAL_REPORT:
+        'Pre-primary education pedagogical report'
     }
   }
 }

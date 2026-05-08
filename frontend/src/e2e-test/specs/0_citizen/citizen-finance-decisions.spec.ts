@@ -30,6 +30,7 @@ import {
 } from '../../generated/api-clients'
 import type { DevPerson, VoucherValueDecision } from '../../generated/api-types'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
+import CitizenHeader from '../../pages/citizen/citizen-header'
 import { test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
@@ -169,11 +170,31 @@ test.describe('Citizen finance decisions', () => {
     citizenDecisionsPage = new CitizenDecisionsPage(page)
     await enduserLogin(page, testAdult, '/decisions')
 
-    await citizenDecisionsPage.assertMetadataForFinanceDecisionShown(
-      feeDecision.id
+    await citizenDecisionsPage.assertFinanceDecisionMetadata(
+      feeDecision.id,
+      'Maksupäätös',
+      'Varhaiskasvatuksen maksupäätös',
+      'Espoon kaupungin esiopetus ja varhaiskasvatus'
     )
-    await citizenDecisionsPage.assertMetadataForFinanceDecisionShown(
-      voucherValueDecision.id
+    await citizenDecisionsPage.assertFinanceDecisionMetadata(
+      voucherValueDecision.id,
+      'Arvopäätös',
+      'Varhaiskasvatuksen palvelusetelin arvopäätös',
+      'Espoon kaupungin esiopetus ja varhaiskasvatus'
+    )
+
+    await new CitizenHeader(page).selectLanguage('sv')
+    await citizenDecisionsPage.assertFinanceDecisionMetadata(
+      feeDecision.id,
+      'Avgiftsbeslut',
+      'Avgiftsbeslut för småbarnspedagogik',
+      'Esbo stads förskoleundervisning och småbarnspedagogik'
+    )
+    await citizenDecisionsPage.assertFinanceDecisionMetadata(
+      voucherValueDecision.id,
+      'Värdebeslut',
+      'Värdebeslut för servicesedel inom småbarnspedagogik',
+      'Esbo stads förskoleundervisning och småbarnspedagogik'
     )
   })
 
@@ -184,8 +205,11 @@ test.describe('Citizen finance decisions', () => {
     citizenDecisionsPage = new CitizenDecisionsPage(page)
     await enduserLogin(page, partner, '/decisions')
 
-    await citizenDecisionsPage.assertMetadataForFinanceDecisionShown(
-      feeDecision.id
+    await citizenDecisionsPage.assertFinanceDecisionMetadata(
+      feeDecision.id,
+      'Maksupäätös',
+      'Varhaiskasvatuksen maksupäätös',
+      'Espoon kaupungin esiopetus ja varhaiskasvatus'
     )
     await citizenDecisionsPage.assertMetadataForFinanceDecisionNotShown(
       voucherValueDecision.id

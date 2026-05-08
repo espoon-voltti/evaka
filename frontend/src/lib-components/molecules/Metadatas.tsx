@@ -27,18 +27,25 @@ const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
   const i18n = useTranslations()
 
   const documentName = useMemo(() => {
-    const { decisionType, applicationType, name } = document
+    const { decisionType, applicationType, financeDecisionType, name } =
+      document
     if (decisionType) {
-      return i18n.metadata.decisionDocumentNames[decisionType]
+      return i18n.metadata.decisionDocumentNames[decisionType] || name
     }
     if (applicationType) {
-      return i18n.metadata.applicationDocumentNames[applicationType]
+      return i18n.metadata.applicationDocumentNames[applicationType] || name
+    }
+    if (financeDecisionType) {
+      return (
+        i18n.metadata.financeDecisionDocumentNames[financeDecisionType] || name
+      )
     }
     return name
   }, [
     document,
     i18n.metadata.decisionDocumentNames,
-    i18n.metadata.applicationDocumentNames
+    i18n.metadata.applicationDocumentNames,
+    i18n.metadata.financeDecisionDocumentNames
   ])
 
   const createdAt = useMemo(() => {
@@ -66,7 +73,7 @@ const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
           }}
         />
       )}
-      <H3>{documentName}</H3>
+      <H3 data-qa="metadata-document-name">{documentName}</H3>
       <LabelValueList
         spacing="small"
         contents={[
@@ -209,11 +216,15 @@ export const Metadatas = React.memo(function Metadatas({
             value: metadata.process.caseIdentifier,
             dataQa: 'process-number-field'
           },
-          ...(metadata.processName
+          ...((metadata.processType ?? metadata.processName)
             ? [
                 {
                   label: i18n.metadata.processName,
-                  value: metadata.processName
+                  value:
+                    (metadata.processType
+                      ? i18n.metadata.processNames[metadata.processType]
+                      : undefined) ?? metadata.processName,
+                  dataQa: 'metadata-process-name'
                 }
               ]
             : []),

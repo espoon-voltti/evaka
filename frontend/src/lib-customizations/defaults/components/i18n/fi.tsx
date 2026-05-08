@@ -236,7 +236,7 @@ const components: Translations = {
       hide: 'Piilota lisätiedot'
     },
     applicationDocumentNames: {
-      DAYCARE: 'Hakemus varhaiskasvatukseen',
+      DAYCARE: 'Varhaiskasvatus- ja palvelusetelihakemus',
       PRESCHOOL:
         'Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen',
       CLUB: 'Kerhohakemus'
@@ -249,6 +249,25 @@ const components: Translations = {
       PRESCHOOL_DAYCARE: 'Päätös liittyvästä varhaiskasvatuksesta',
       PRESCHOOL_CLUB: 'Päätös esiopetuksen kerhosta',
       PREPARATORY_EDUCATION: 'Päätös valmistavasta opetuksesta'
+    },
+    financeDecisionDocumentNames: {
+      FEE_DECISION: 'Maksupäätös',
+      VOUCHER_VALUE_DECISION: 'Arvopäätös'
+    },
+    processNames: {
+      APPLICATION_DAYCARE:
+        'Varhaiskasvatushakemus / palvelusetelihakemus varhaiskasvatukseen',
+      APPLICATION_PRESCHOOL:
+        'Esiopetushakemus / hakemus esiopetuksessa järjestettävään perusopetukseen valmistavaan opetukseen',
+      APPLICATION_CLUB: 'Kerhohakemus',
+      FEE_DECISION: 'Varhaiskasvatuksen maksupäätös',
+      VOUCHER_VALUE_DECISION: 'Varhaiskasvatuksen palvelusetelin arvopäätös',
+      CHILD_DOCUMENT_VASU: 'Lapsen varhaiskasvatussuunnitelma',
+      CHILD_DOCUMENT_LEOPS: 'Lapsen esiopetuksen oppimissuunnitelma',
+      CHILD_DOCUMENT_HOJKS:
+        'Henkilökohtainen opetuksen järjestämistä koskeva suunnitelma',
+      CHILD_DOCUMENT_PEDAGOGICAL_ASSESSMENT: 'Esiopetuksen pedagoginen arvio',
+      CHILD_DOCUMENT_PEDAGOGICAL_REPORT: 'Esiopetuksen pedagoginen selvitys'
     }
   }
 }

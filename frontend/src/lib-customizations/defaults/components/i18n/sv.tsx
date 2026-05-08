@@ -240,9 +240,10 @@ const components: Translations = {
       hide: 'Dölj mer information'
     },
     applicationDocumentNames: {
-      DAYCARE: 'Ansökan om småbarnspedagogik',
-      PRESCHOOL: 'Ansökan om förskoleundervisning',
-      CLUB: 'Ansökan om klubb'
+      DAYCARE: 'Ansökan till småbarnspedagogik och ansökan om servicesedel',
+      PRESCHOOL:
+        'Anmälan till förskoleundervisning och/eller förberedande undervisning',
+      CLUB: 'Ansökan till klubbverksamhet'
     },
     decisionDocumentNames: {
       CLUB: 'Beslut om klubb',
@@ -253,6 +254,28 @@ const components: Translations = {
         'Beslut om småbarnspedagogik ansluten till förskoleundervisning',
       PRESCHOOL_CLUB: 'Beslut om förskoleklubb',
       PREPARATORY_EDUCATION: 'Beslut om förberedande undervisning'
+    },
+    financeDecisionDocumentNames: {
+      FEE_DECISION: 'Avgiftsbeslut',
+      VOUCHER_VALUE_DECISION: 'Värdebeslut'
+    },
+    processNames: {
+      APPLICATION_DAYCARE:
+        'Ansökan till småbarnspedagogik / ansökan om servicesedel för småbarnspedagogik',
+      APPLICATION_PRESCHOOL:
+        'Ansökan om förskoleundervisning / ansökan om förberedande undervisning för den grundläggande utbildningen som ordnas inom förskoleundervisningen',
+      APPLICATION_CLUB: 'Ansökan till klubbverksamhet',
+      FEE_DECISION: 'Avgiftsbeslut för småbarnspedagogik',
+      VOUCHER_VALUE_DECISION:
+        'Värdebeslut för servicesedel inom småbarnspedagogik',
+      CHILD_DOCUMENT_VASU: 'Barnets plan för småbarnspedagogik',
+      CHILD_DOCUMENT_LEOPS: 'Barnets plan för förskoleundervisning',
+      CHILD_DOCUMENT_HOJKS:
+        'Plan för hur undervisningen ska ordnas individuellt',
+      CHILD_DOCUMENT_PEDAGOGICAL_ASSESSMENT:
+        'Förskoleundervisningens pedagogiska bedömning',
+      CHILD_DOCUMENT_PEDAGOGICAL_REPORT:
+        'Förskoleundervisningens pedagogiska utredning'
     }
   }
 }

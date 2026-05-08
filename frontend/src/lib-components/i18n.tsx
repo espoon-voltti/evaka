@@ -226,6 +226,22 @@ export interface Translations {
       CLUB: string
       PRESCHOOL_CLUB: string
     }
+    financeDecisionDocumentNames: {
+      FEE_DECISION: string
+      VOUCHER_VALUE_DECISION: string
+    }
+    processNames: {
+      APPLICATION_DAYCARE: string
+      APPLICATION_PRESCHOOL: string
+      APPLICATION_CLUB: string
+      FEE_DECISION: string
+      VOUCHER_VALUE_DECISION: string
+      CHILD_DOCUMENT_VASU: string
+      CHILD_DOCUMENT_LEOPS: string
+      CHILD_DOCUMENT_HOJKS: string
+      CHILD_DOCUMENT_PEDAGOGICAL_ASSESSMENT: string
+      CHILD_DOCUMENT_PEDAGOGICAL_REPORT: string
+    }
   }
 }
 

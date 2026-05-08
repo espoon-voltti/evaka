@@ -8,6 +8,7 @@ import evaka.core.EmailEnv
 import evaka.core.FullApplicationTest
 import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.ProcessMetadataController
+import evaka.core.caseprocess.ProcessType
 import evaka.core.caseprocess.getCaseProcessByVoucherValueDecisionId
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.emailclient.Email
@@ -279,6 +280,11 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     decision.id,
                 )
             assertEquals(process.caseIdentifier, metadata.data?.process?.caseIdentifier)
+            assertEquals(ProcessType.VOUCHER_VALUE_DECISION, metadata.data?.processType)
+            assertEquals(
+                FinanceDecisionType.VOUCHER_VALUE_DECISION,
+                metadata.data?.primaryDocument?.financeDecisionType,
+            )
         }
     }
 

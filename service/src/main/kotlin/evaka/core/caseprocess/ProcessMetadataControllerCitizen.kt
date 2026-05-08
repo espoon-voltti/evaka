@@ -89,6 +89,7 @@ class ProcessMetadataControllerCitizen(
                         ProcessMetadata(
                                 process = process,
                                 processName = "Varhaiskasvatuksen maksupäätös",
+                                processType = ProcessType.FEE_DECISION,
                                 primaryDocument = decisionDocument,
                                 secondaryDocuments = emptyList(),
                             )
@@ -133,6 +134,7 @@ class ProcessMetadataControllerCitizen(
                         ProcessMetadata(
                                 process = process,
                                 processName = "Varhaiskasvatuksen palvelusetelin arvopäätös",
+                                processType = ProcessType.VOUCHER_VALUE_DECISION,
                                 primaryDocument = decisionDocument,
                                 secondaryDocuments = emptyList(),
                             )

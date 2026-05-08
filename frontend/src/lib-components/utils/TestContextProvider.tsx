@@ -232,6 +232,22 @@ export const testTranslations: Translations = {
       PRESCHOOL_DAYCARE: '',
       PRESCHOOL_CLUB: '',
       PREPARATORY_EDUCATION: ''
+    },
+    financeDecisionDocumentNames: {
+      FEE_DECISION: '',
+      VOUCHER_VALUE_DECISION: ''
+    },
+    processNames: {
+      APPLICATION_DAYCARE: '',
+      APPLICATION_PRESCHOOL: '',
+      APPLICATION_CLUB: '',
+      FEE_DECISION: '',
+      VOUCHER_VALUE_DECISION: '',
+      CHILD_DOCUMENT_VASU: '',
+      CHILD_DOCUMENT_LEOPS: '',
+      CHILD_DOCUMENT_HOJKS: '',
+      CHILD_DOCUMENT_PEDAGOGICAL_ASSESSMENT: '',
+      CHILD_DOCUMENT_PEDAGOGICAL_REPORT: ''
     }
   }
 }
