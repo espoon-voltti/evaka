@@ -153,19 +153,15 @@ class DocumentTemplateController(
                         it.published &&
                             it.validity.includes(clock.today()) &&
                             it.placementTypes.contains(placement.type) &&
-                            // English-language units can issue documents in any language
+                            // Allowed templates: same-language, EN CITIZEN_BASIC for any unit,
+                            // FI templates for EN units.
                             (it.language.name.uppercase() ==
                                 placement.unitLanguage.name.uppercase() ||
-                                it.language == UiLanguage.EN ||
-                                placement.unitLanguage == Language.en) &&
-                            (placement.enabledPilotFeatures.contains(
-                                PilotFeature.VASU_AND_PEDADOC
-                            ) || !isPedagogicalDocument((it.type))) &&
-                            (placement.enabledPilotFeatures.contains(PilotFeature.OTHER_DECISION) ||
-                                it.type != ChildDocumentType.OTHER_DECISION) &&
-                            (placement.enabledPilotFeatures.contains(
-                                PilotFeature.CITIZEN_BASIC_DOCUMENT
-                            ) || it.type != ChildDocumentType.CITIZEN_BASIC) &&
+                                (it.language == UiLanguage.EN &&
+                                    it.type == ChildDocumentType.CITIZEN_BASIC) ||
+                                (placement.unitLanguage == Language.en &&
+                                    it.language == UiLanguage.FI)) &&
+                            isAllowedByPilotFeatures(it.type, placement.enabledPilotFeatures) &&
                             // Allow not-yet-started placements only for CITIZEN_BASIC documents,
                             // require an active placement for others
                             (it.type == ChildDocumentType.CITIZEN_BASIC || activePlacement != null)
@@ -198,9 +194,13 @@ class DocumentTemplateController(
                         it.published &&
                             it.validity.includes(clock.today()) &&
                             (types.isEmpty() || types.contains(it.type)) &&
-                            // English-language units can issue documents in any language
+                            // Allowed templates: same-language, EN CITIZEN_BASIC for any unit,
+                            // FI templates for EN units.
                             (it.language.name.uppercase() == unit.language.name.uppercase() ||
-                                unit.language == Language.en)
+                                (it.language == UiLanguage.EN &&
+                                    it.type == ChildDocumentType.CITIZEN_BASIC) ||
+                                (unit.language == Language.en && it.language == UiLanguage.FI)) &&
+                            isAllowedByPilotFeatures(it.type, unit.enabledPilotFeatures)
                     }
                 }
             }
@@ -526,3 +526,13 @@ private val PEDAGOGICAL_DOCUMENT_TYPES =
     )
 
 private fun isPedagogicalDocument(type: ChildDocumentType) = type in PEDAGOGICAL_DOCUMENT_TYPES
+
+private fun isAllowedByPilotFeatures(
+    type: ChildDocumentType,
+    enabledPilotFeatures: Collection<PilotFeature>,
+): Boolean =
+    (PilotFeature.VASU_AND_PEDADOC in enabledPilotFeatures || !isPedagogicalDocument(type)) &&
+        (PilotFeature.OTHER_DECISION in enabledPilotFeatures ||
+            type != ChildDocumentType.OTHER_DECISION) &&
+        (PilotFeature.CITIZEN_BASIC_DOCUMENT in enabledPilotFeatures ||
+            type != ChildDocumentType.CITIZEN_BASIC)
