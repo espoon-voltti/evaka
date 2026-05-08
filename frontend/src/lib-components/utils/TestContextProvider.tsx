@@ -178,6 +178,7 @@ export const testTranslations: Translations = {
     caseIdentifier: '',
     processName: '',
     organization: '',
+    organizationName: '',
     archiveDurationMonths: '',
     primaryDocument: '',
     secondaryDocuments: '',

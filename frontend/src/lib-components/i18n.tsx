@@ -171,6 +171,7 @@ export interface Translations {
     caseIdentifier: string
     processName: string
     organization: string
+    organizationName: string
     archiveDurationMonths: string
     primaryDocument: string
     secondaryDocuments: string
@@ -218,13 +219,13 @@ export interface Translations {
       CLUB: string
     }
     decisionDocumentNames: {
+      CLUB: string
       DAYCARE: string
       DAYCARE_PART_TIME: string
       PRESCHOOL: string
-      PREPARATORY_EDUCATION: string
       PRESCHOOL_DAYCARE: string
-      CLUB: string
       PRESCHOOL_CLUB: string
+      PREPARATORY_EDUCATION: string
     }
     financeDecisionDocumentNames: {
       FEE_DECISION: string

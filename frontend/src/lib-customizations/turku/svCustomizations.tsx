@@ -1153,6 +1153,11 @@ const sv: DeepPartial<Translations> = {
       </>
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Åbo stads småbarnspedagogik'
+    }
+  },
   accessibilityStatement: (
     <>
       <H1>Tillgänglighetsutlåtande</H1>

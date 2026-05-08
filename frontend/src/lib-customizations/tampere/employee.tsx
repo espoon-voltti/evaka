@@ -305,9 +305,20 @@ const customizations: EmployeeCustomizations = {
         title: 'Esiopetussijoitusten tuonti',
         description:
           'Voit luoda tuotetuista sijoitusehdotuksista hakemukset eVakaan. Hakemukset luodaan suoraan odottamaan päätöstä.'
+      },
+      components: {
+        metadata: {
+          organizationName: 'Tampereen kaupunki, varhaiskasvatus ja esiopetus'
+        }
       }
     },
-    sv: {}
+    sv: {
+      components: {
+        metadata: {
+          organizationName: 'Tampereen kaupunki, varhaiskasvatus ja esiopetus'
+        }
+      }
+    }
   },
   cityLogo: {
     src: TampereLogo,

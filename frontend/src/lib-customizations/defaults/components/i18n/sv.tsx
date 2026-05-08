@@ -198,6 +198,7 @@ const components: Translations = {
     caseIdentifier: 'Ärendekod',
     processName: 'Ärendeprocess',
     organization: 'Organisation',
+    organizationName: 'Esbo stads förskoleundervisning och småbarnspedagogik',
     archiveDurationMonths: 'Arkiveringstid',
     primaryDocument: 'Primärt dokument',
     secondaryDocuments: 'Övriga dokument',

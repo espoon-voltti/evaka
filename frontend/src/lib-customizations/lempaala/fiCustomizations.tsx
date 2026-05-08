@@ -410,6 +410,11 @@ const fi: DeepPartial<Translations> = {
       />
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Lempäälän kunta, varhaiskasvatus'
+    }
+  },
   loginPage: {
     applying: {
       infoBullets: [

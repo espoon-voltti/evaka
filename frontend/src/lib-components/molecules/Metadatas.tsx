@@ -12,12 +12,26 @@ import { faArrowDownToLine } from 'lib-icons'
 import HorizontalLine from '../atoms/HorizontalLine'
 import UnorderedList from '../atoms/UnorderedList'
 import { Button } from '../atoms/buttons/Button'
+import type { Translations } from '../i18n'
 import { useTranslations } from '../i18n'
 import { FixedSpaceColumn, FixedSpaceRow } from '../layout/flex-helpers'
 import { H3 } from '../typography'
 import { Gap } from '../white-space'
 
 import LabelValueList from './LabelValueList'
+
+function getDocumentName(
+  document: DocumentMetadata,
+  i18n: Translations['metadata']
+): string {
+  if (document.decisionType)
+    return i18n.decisionDocumentNames[document.decisionType]
+  if (document.applicationType)
+    return i18n.applicationDocumentNames[document.applicationType]
+  if (document.financeDecisionType)
+    return i18n.financeDecisionDocumentNames[document.financeDecisionType]
+  return document.name
+}
 
 const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
   document
@@ -26,27 +40,7 @@ const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
 }) {
   const i18n = useTranslations()
 
-  const documentName = useMemo(() => {
-    const { decisionType, applicationType, financeDecisionType, name } =
-      document
-    if (decisionType) {
-      return i18n.metadata.decisionDocumentNames[decisionType] || name
-    }
-    if (applicationType) {
-      return i18n.metadata.applicationDocumentNames[applicationType] || name
-    }
-    if (financeDecisionType) {
-      return (
-        i18n.metadata.financeDecisionDocumentNames[financeDecisionType] || name
-      )
-    }
-    return name
-  }, [
-    document,
-    i18n.metadata.decisionDocumentNames,
-    i18n.metadata.applicationDocumentNames,
-    i18n.metadata.financeDecisionDocumentNames
-  ])
+  const documentName = getDocumentName(document, i18n.metadata)
 
   const createdAt = useMemo(() => {
     const values = [
@@ -73,6 +67,7 @@ const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
           }}
         />
       )}
+      <Gap $size="xxs" />
       <H3 data-qa="metadata-document-name">{documentName}</H3>
       <LabelValueList
         spacing="small"
@@ -230,7 +225,8 @@ export const Metadatas = React.memo(function Metadatas({
             : []),
           {
             label: i18n.metadata.organization,
-            value: metadata.process.organization
+            value: i18n.metadata.organizationName,
+            dataQa: 'metadata-organization'
           },
           ...(metadata.process.archiveDurationMonths !== null
             ? [

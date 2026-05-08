@@ -198,6 +198,8 @@ const components: Translations = {
     caseIdentifier: 'Case identifier',
     processName: 'Case process',
     organization: 'Organization',
+    organizationName:
+      'City of Espoo pre-primary education and early childhood education',
     archiveDurationMonths: 'Archiving period',
     primaryDocument: 'Primary document',
     secondaryDocuments: 'Other documents',

@@ -586,6 +586,11 @@ const fi: DeepPartial<Translations> = {
       />
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Oulun kaupungin varhaiskasvatus'
+    }
+  },
   loginPage: {
     title: 'Oulun kaupungin varhaiskasvatus',
     login: {

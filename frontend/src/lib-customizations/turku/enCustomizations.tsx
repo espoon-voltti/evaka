@@ -1164,6 +1164,11 @@ const en: DeepPartial<Translations> = {
       </>
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'City of Turku early childhood education and care'
+    }
+  },
   accessibilityStatement: (
     <>
       <H1>Accessibility statement</H1>

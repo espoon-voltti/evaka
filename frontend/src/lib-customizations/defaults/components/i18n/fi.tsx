@@ -194,6 +194,7 @@ const components: Translations = {
     caseIdentifier: 'Asiatunnus',
     processName: 'Asiaprosessi',
     organization: 'Organisaatio',
+    organizationName: 'Espoon kaupungin esiopetus ja varhaiskasvatus',
     archiveDurationMonths: 'Arkistointiaika',
     primaryDocument: 'Ensisijainen asiakirja',
     secondaryDocuments: 'Muut asiakirjat',

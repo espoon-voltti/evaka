@@ -439,6 +439,11 @@ const fi: DeepPartial<Translations> = {
       />
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Tampereen kaupunki, varhaiskasvatus ja esiopetus'
+    }
+  },
   loginPage: {
     applying: {
       infoBullets: [

@@ -411,6 +411,11 @@ const fi: DeepPartial<Translations> = {
       />
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Nokian kaupunki, varhaiskasvatus ja esiopetus'
+    }
+  },
   loginPage: {
     applying: {
       infoBullets: [

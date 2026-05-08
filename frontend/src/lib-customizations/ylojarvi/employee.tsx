@@ -298,9 +298,20 @@ const customizations: EmployeeCustomizations = {
         title: 'Esiopetussijoitusten tuonti',
         description:
           'Voit luoda tuotetuista sijoitusehdotuksista hakemukset eVakaan. Hakemukset luodaan suoraan odottamaan päätöstä.'
+      },
+      components: {
+        metadata: {
+          organizationName: 'Ylöjärven kaupunki, varhaiskasvatus'
+        }
       }
     },
-    sv: {}
+    sv: {
+      components: {
+        metadata: {
+          organizationName: 'Ylöjärven kaupunki, varhaiskasvatus'
+        }
+      }
+    }
   },
   cityLogo: {
     src: YlojarviLogo,
