@@ -686,71 +686,81 @@ test.describe('Application transitions', () => {
     ])
   })
 
-  test('Decision draft page works with unit selection', async () => {
-    const fixture = {
-      ...applicationFixture(
-        testChild2,
-        familyWithTwoGuardians.guardian,
-        undefined,
-        'PRESCHOOL',
-        null,
-        [testPreschool.id],
-        true,
-        'SENT',
-        mockedDate
-      ),
-      id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
-    }
-    const applicationId = fixture.id
-    await createApplications({ body: [fixture] })
+  test.describe('Decision draft page (legacy)', () => {
+    test.use({
+      evakaOptions: {
+        employeeCustomizations: {
+          featureFlags: { decisionDraftRedesign: false }
+        }
+      }
+    })
 
-    await execSimpleApplicationActions(
-      applicationId,
-      ['MOVE_TO_WAITING_PLACEMENT'],
-      HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(13, 40))
-    )
+    test('Decision draft page works with unit selection', async () => {
+      const fixture = {
+        ...applicationFixture(
+          testChild2,
+          familyWithTwoGuardians.guardian,
+          undefined,
+          'PRESCHOOL',
+          null,
+          [testPreschool.id],
+          true,
+          'SENT',
+          mockedDate
+        ),
+        id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
+      }
+      const applicationId = fixture.id
+      await createApplications({ body: [fixture] })
 
-    await employeeLogin(page, serviceWorker)
-    await page.goto(ApplicationListView.url)
+      await execSimpleApplicationActions(
+        applicationId,
+        ['MOVE_TO_WAITING_PLACEMENT'],
+        HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(13, 40))
+      )
 
-    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
-    await applicationListView.searchButton.click()
+      await employeeLogin(page, serviceWorker)
+      await page.goto(ApplicationListView.url)
 
-    const placementDraftPage = await applicationListView
-      .applicationRow(applicationId)
-      .primaryActionCreatePlacementPlan()
-    await placementDraftPage.waitUntilLoaded()
+      await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
+      await applicationListView.searchButton.click()
 
-    await placementDraftPage.placeToUnit(testPreschool.id)
-    await placementDraftPage.submit()
+      const placementDraftPage = await applicationListView
+        .applicationRow(applicationId)
+        .primaryActionCreatePlacementPlan()
+      await placementDraftPage.waitUntilLoaded()
 
-    await applicationListView.filterByApplicationStatus('WAITING_DECISION')
-    await applicationListView.searchButton.click()
+      await placementDraftPage.placeToUnit(testPreschool.id)
+      await placementDraftPage.submit()
 
-    const decisionEditorPage = await applicationListView
-      .applicationRow(applicationId)
-      .primaryActionEditDecisions()
-    await decisionEditorPage.waitUntilLoaded()
+      await applicationListView.filterByApplicationStatus('WAITING_DECISION')
+      await applicationListView.searchButton.click()
 
-    await decisionEditorPage.selectUnit('PRESCHOOL_DAYCARE', testDaycare.id)
-    await decisionEditorPage.save()
-    await applicationListView.searchButton.click()
+      const decisionEditorPage = await applicationListView
+        .applicationRow(applicationId)
+        .primaryActionEditDecisions()
+      await decisionEditorPage.waitUntilLoaded()
 
-    await execSimpleApplicationActions(
-      applicationId,
-      ['SEND_DECISIONS_WITHOUT_PROPOSAL'],
-      HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(13, 41))
-    )
+      await decisionEditorPage.selectUnit('PRESCHOOL_DAYCARE', testDaycare.id)
+      await decisionEditorPage.save()
+      await applicationListView.searchButton.click()
 
-    const decisions = await getApplicationDecisions({ applicationId })
-    expect(
-      decisions
-        .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))
-        .sort((a, b) => a.type.localeCompare(b.type))
-    ).toStrictEqual([
-      { type: 'PRESCHOOL', unitId: testDaycare.id },
-      { type: 'PRESCHOOL_DAYCARE', unitId: testDaycare.id }
-    ])
+      await execSimpleApplicationActions(
+        applicationId,
+        ['SEND_DECISIONS_WITHOUT_PROPOSAL'],
+        HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(13, 41))
+      )
+
+      const decisions = await getApplicationDecisions({ applicationId })
+      expect(
+        decisions
+          .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))
+          .sort((a, b) => a.type.localeCompare(b.type))
+      ).toStrictEqual([
+        { type: 'PRESCHOOL', unitId: testDaycare.id },
+        { type: 'PRESCHOOL_DAYCARE', unitId: testDaycare.id }
+      ])
+    })
   })
 
   test('Placement proposal flow', async ({ newEvakaPage }) => {

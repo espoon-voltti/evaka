@@ -329,6 +329,13 @@ interface BaseFeatureFlags {
    * EXPERIMENTAL: Enable decision reasoning options management page
    */
   decisionReasoningOptions?: boolean
+
+  /**
+   * EXPERIMENTAL: Render the redesigned decision draft page in place of
+   * the legacy layout. Intended for local development only while the new
+   * layout is being built.
+   */
+  decisionDraftRedesign?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

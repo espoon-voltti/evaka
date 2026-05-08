@@ -76,7 +76,14 @@ const serviceWorker = Fixture.employee().serviceWorker()
 let page: Page
 
 test.describe('Additional daycare application decision drafts', () => {
-  test.use({ evakaOptions: { mockedTime } })
+  test.use({
+    evakaOptions: {
+      mockedTime,
+      employeeCustomizations: {
+        featureFlags: { decisionDraftRedesign: false }
+      }
+    }
+  })
 
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
