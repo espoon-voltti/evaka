@@ -13,6 +13,7 @@ import evaka.core.shared.job.ScheduledJobDefinition
 import evaka.core.shared.job.ScheduledJobSettings
 import evaka.trevaka.export.ChildDocumentTransferType
 import evaka.trevaka.export.exportChildDocumentsViaSftp
+import java.time.DayOfWeek
 
 enum class OrivesiScheduledJob(
     val fn: (OrivesiScheduledJobs, Database.Connection, EvakaClock) -> Unit,
@@ -20,7 +21,10 @@ enum class OrivesiScheduledJob(
 ) {
     ExportDaycareToPreschoolChildDocuments(
         OrivesiScheduledJobs::exportDaycareToPreschoolChildDocuments,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.cron("0 0 0 1 8 ?")),
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.annualOnIsoWeek(isoWeek = 17, dayOfWeek = DayOfWeek.WEDNESDAY),
+        ),
     )
 }
 
