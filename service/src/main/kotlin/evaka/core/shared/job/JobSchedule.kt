@@ -10,6 +10,7 @@ import com.github.kagkarlsson.scheduler.task.schedule.Schedule
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.europeHelsinki
+import java.time.DayOfWeek
 import java.time.LocalTime
 
 interface JobSchedule {
@@ -21,6 +22,9 @@ interface JobSchedule {
         fun nightly(): Schedule = Nightly()
 
         fun cron(expression: String): Schedule = CronSchedule(expression, europeHelsinki)
+
+        fun annualOnIsoWeek(isoWeek: Int, dayOfWeek: DayOfWeek): Schedule =
+            AnnualOnIsoWeek(isoWeek, dayOfWeek, Nightly.runAt)
     }
 }
 

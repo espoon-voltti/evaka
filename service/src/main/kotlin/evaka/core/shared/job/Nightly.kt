@@ -10,7 +10,9 @@ import java.time.LocalTime
 
 class Nightly : Daily(europeHelsinki, runAt) {
     companion object {
-        private var runAt: LocalTime = LocalTime.of(0, 10)
+        // Configuration is expected to happen once at startup before any JobSchedule is built.
+        var runAt: LocalTime = LocalTime.of(0, 10)
+            private set
 
         fun configureNightlyTime(time: LocalTime) {
             runAt = time
