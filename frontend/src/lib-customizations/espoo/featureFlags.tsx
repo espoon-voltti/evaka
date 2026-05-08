@@ -65,7 +65,8 @@ const features: Features = {
     forceUnpublishDocumentTemplate: true,
     serviceApplications: true,
     showCitizenApplicationPreschoolTerms: true,
-    decisionReasoningOptions: true
+    decisionReasoningOptions: true,
+    decisionDraftRedesign: true
   },
   staging: {
     ...prod,
