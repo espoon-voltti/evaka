@@ -92,7 +92,7 @@
     "jsdom": "29.1.1",
     "make-error-cause": "2.3.0",
     "playwright": "1.59.1",
-    "postcss": "8.5.13",
+    "postcss": "8.5.14",
     "postcss-preset-env": "11.2.1",
     "prettier": "3.8.3",
     "rollup": "4.60.3",
