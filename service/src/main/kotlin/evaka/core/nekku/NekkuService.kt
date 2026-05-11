@@ -79,61 +79,45 @@ class NekkuService(
         clock: EvakaClock,
         job: AsyncJob.SyncNekkuCustomers,
     ) {
-        if (client == null) error("Cannot sync Nekku customers: NekkuEnv is not configured")
-        fetchAndUpdateNekkuCustomers(client, db, asyncJobRunner, clock.now())
+        runSync("customers") { fetchAndUpdateNekkuCustomers(it, db, asyncJobRunner, clock.now()) }
     }
 
-    fun planNekkuCustomersSync(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { tx ->
-            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SyncNekkuCustomers::class)))
-            asyncJobRunner.plan(
-                tx,
-                listOf(AsyncJob.SyncNekkuCustomers()),
-                runAt = clock.now(),
-                retryCount = 1,
-            )
-        }
-    }
+    fun planNekkuCustomersSync(db: Database.Connection, clock: EvakaClock) =
+        planSync(db, clock, AsyncJob.SyncNekkuCustomers())
 
     fun syncNekkuSpecialDiets(
         db: Database.Connection,
         clock: EvakaClock,
         job: AsyncJob.SyncNekkuSpecialDiets,
     ) {
-        if (client == null) error("Cannot sync Nekku special diets: NekkuEnv is not configured")
-        fetchAndUpdateNekkuSpecialDiets(client, db, asyncJobRunner, clock.now())
-    }
-
-    fun planNekkuSpecialDietsSync(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { tx ->
-            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SyncNekkuSpecialDiets::class)))
-            asyncJobRunner.plan(
-                tx,
-                listOf(AsyncJob.SyncNekkuSpecialDiets()),
-                runAt = clock.now(),
-                retryCount = 1,
-            )
+        runSync("special diets") {
+            fetchAndUpdateNekkuSpecialDiets(it, db, asyncJobRunner, clock.now())
         }
     }
+
+    fun planNekkuSpecialDietsSync(db: Database.Connection, clock: EvakaClock) =
+        planSync(db, clock, AsyncJob.SyncNekkuSpecialDiets())
 
     fun syncNekkuProducts(
         db: Database.Connection,
         clock: EvakaClock,
         job: AsyncJob.SyncNekkuProducts,
     ) {
-        if (client == null) error("Cannot sync Nekku products: NekkuEnv is not configured")
-        fetchAndUpdateNekkuProducts(client, db)
+        runSync("products") { fetchAndUpdateNekkuProducts(it, db) }
     }
 
-    fun planNekkuProductsSync(db: Database.Connection, clock: EvakaClock) {
+    fun planNekkuProductsSync(db: Database.Connection, clock: EvakaClock) =
+        planSync(db, clock, AsyncJob.SyncNekkuProducts())
+
+    private fun runSync(typeName: String, fetch: (NekkuClient) -> Unit) {
+        if (client == null) error("Cannot sync Nekku $typeName: NekkuEnv is not configured")
+        fetch(client)
+    }
+
+    private fun planSync(db: Database.Connection, clock: EvakaClock, job: AsyncJob) {
         db.transaction { tx ->
-            tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SyncNekkuProducts::class)))
-            asyncJobRunner.plan(
-                tx,
-                listOf(AsyncJob.SyncNekkuProducts()),
-                runAt = clock.now(),
-                retryCount = 1,
-            )
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(job::class)))
+            asyncJobRunner.plan(tx, listOf(job), runAt = clock.now(), retryCount = 1)
         }
     }
 
