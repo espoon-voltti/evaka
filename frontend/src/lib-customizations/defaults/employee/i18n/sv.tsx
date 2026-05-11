@@ -5231,7 +5231,8 @@ export const sv: typeof fi = {
         'Småbarnspedagogikbeslut',
         'Deltid småbarnspedagogik',
         'Ansluten småbarnspedagogik',
-        'Klubb'
+        'Klubb',
+        'Förskoleklubb'
       ],
       PRESCHOOL: ['Förskoleundervisning', 'Förberedande undervisning']
     },
