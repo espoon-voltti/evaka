@@ -2797,6 +2797,24 @@ CREATE TABLE public.daycare_group_acl (
     updated timestamp with time zone DEFAULT now() NOT NULL
 );
 
+-- Name: decision_generic_reasoning; Type: TABLE; Schema: public
+
+CREATE TABLE public.decision_generic_reasoning (
+    decision_id uuid NOT NULL,
+    reasoning_id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    created_by uuid NOT NULL
+);
+
+-- Name: decision_individual_reasoning; Type: TABLE; Schema: public
+
+CREATE TABLE public.decision_individual_reasoning (
+    decision_id uuid NOT NULL,
+    reasoning_id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    created_by uuid NOT NULL
+);
+
 -- Name: decision_number_seq; Type: SEQUENCE; Schema: public
 
 CREATE SEQUENCE public.decision_number_seq
@@ -4503,6 +4521,16 @@ ALTER TABLE ONLY public.daycare_group_placement
 ALTER TABLE ONLY public.daycare
     ADD CONSTRAINT daycare_pkey PRIMARY KEY (id);
 
+-- Name: decision_generic_reasoning decision_generic_reasoning_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.decision_generic_reasoning
+    ADD CONSTRAINT decision_generic_reasoning_pkey PRIMARY KEY (decision_id, reasoning_id);
+
+-- Name: decision_individual_reasoning decision_individual_reasoning_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.decision_individual_reasoning
+    ADD CONSTRAINT decision_individual_reasoning_pkey PRIMARY KEY (decision_id, reasoning_id);
+
 -- Name: decision_reasoning_generic decision_reasoning_generic_pkey; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.decision_reasoning_generic
@@ -5363,6 +5391,22 @@ CREATE INDEX "fk$child_document_published_version_document_id_version_number" ON
 -- Name: fk$created_by; Type: INDEX; Schema: public
 
 CREATE INDEX "fk$created_by" ON public.placement USING btree (created_by);
+
+-- Name: fk$decision_generic_reasoning_created_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$decision_generic_reasoning_created_by" ON public.decision_generic_reasoning USING btree (created_by);
+
+-- Name: fk$decision_generic_reasoning_reasoning_id; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$decision_generic_reasoning_reasoning_id" ON public.decision_generic_reasoning USING btree (reasoning_id);
+
+-- Name: fk$decision_individual_reasoning_created_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$decision_individual_reasoning_created_by" ON public.decision_individual_reasoning USING btree (created_by);
+
+-- Name: fk$decision_individual_reasoning_reasoning_id; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$decision_individual_reasoning_reasoning_id" ON public.decision_individual_reasoning USING btree (reasoning_id);
 
 -- Name: fk$fee_decision_process_id; Type: INDEX; Schema: public
 
@@ -7348,6 +7392,36 @@ ALTER TABLE ONLY public.daycare_group_acl
 
 ALTER TABLE ONLY public.daycare_group
     ADD CONSTRAINT daycare_group_daycare_id_fkey FOREIGN KEY (daycare_id) REFERENCES public.daycare(id) ON DELETE CASCADE;
+
+-- Name: decision_generic_reasoning decision_generic_reasoning_created_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.decision_generic_reasoning
+    ADD CONSTRAINT decision_generic_reasoning_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.evaka_user(id);
+
+-- Name: decision_generic_reasoning decision_generic_reasoning_decision_id_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.decision_generic_reasoning
+    ADD CONSTRAINT decision_generic_reasoning_decision_id_fkey FOREIGN KEY (decision_id) REFERENCES public.decision(id) ON DELETE CASCADE;
+
+-- Name: decision_generic_reasoning decision_generic_reasoning_reasoning_id_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.decision_generic_reasoning
+    ADD CONSTRAINT decision_generic_reasoning_reasoning_id_fkey FOREIGN KEY (reasoning_id) REFERENCES public.decision_reasoning_generic(id);
+
+-- Name: decision_individual_reasoning decision_individual_reasoning_created_by_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.decision_individual_reasoning
+    ADD CONSTRAINT decision_individual_reasoning_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.evaka_user(id);
+
+-- Name: decision_individual_reasoning decision_individual_reasoning_decision_id_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.decision_individual_reasoning
+    ADD CONSTRAINT decision_individual_reasoning_decision_id_fkey FOREIGN KEY (decision_id) REFERENCES public.decision(id) ON DELETE CASCADE;
+
+-- Name: decision_individual_reasoning decision_individual_reasoning_reasoning_id_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.decision_individual_reasoning
+    ADD CONSTRAINT decision_individual_reasoning_reasoning_id_fkey FOREIGN KEY (reasoning_id) REFERENCES public.decision_reasoning_individual(id);
 
 -- Name: employee_pin employee_pin_user_id_fkey; Type: FK CONSTRAINT; Schema: public
 
