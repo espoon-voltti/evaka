@@ -351,6 +351,7 @@ fun planNekkuDailyOrderJobs(
                     else daycareOpenNextTime(today, operationDays) >= it.validFrom
                 }
         val orderedGroupIds = openGroups + openingGroupsToOrder
+        val customerWeekdays = tx.getNekkuCustomerWeekdaysByGroups(orderedGroupIds.map { it.id })
         asyncJobRunner.plan(
             tx,
             orderedGroupIds.mapNotNull { nekkuGroup ->
@@ -368,7 +369,11 @@ fun planNekkuDailyOrderJobs(
                             daycareOpenNextTime,
                         )
 
-                    if (nekkuOrders.isNotEmpty()) {
+                    val nekkuWeekday = getNekkuWeekday(daycareOpenNextTime)
+                    if (
+                        nekkuOrders.isNotEmpty() &&
+                            nekkuWeekday in (customerWeekdays[nekkuGroup.id] ?: emptySet())
+                    ) {
                         AsyncJob.SendNekkuOrder(groupId = nekkuGroup.id, date = daycareOpenNextTime)
                     } else null
                 } else null
@@ -389,6 +394,8 @@ fun planNekkuSpecifyOrderJobs(
 
     dbc.transaction { tx ->
         val openGroups = tx.getNekkuOpenDaycareGroupDates(fourDaysFromNow)
+        val customerWeekdays = tx.getNekkuCustomerWeekdaysByGroups(openGroups.map { it.id })
+        val nekkuWeekday = getNekkuWeekday(fourDaysFromNow)
 
         asyncJobRunner.plan(
             tx,
@@ -404,7 +411,8 @@ fun planNekkuSpecifyOrderJobs(
                 if (
                     nekkuOrders.isNotEmpty() &&
                         groupOperationDays != null &&
-                        isGroupOpenOnDate(fourDaysFromNow, groupOperationDays)
+                        isGroupOpenOnDate(fourDaysFromNow, groupOperationDays) &&
+                        nekkuWeekday in (customerWeekdays[nekkuGroup.id] ?: emptySet())
                 ) {
                     AsyncJob.SendNekkuOrder(groupId = nekkuGroup.id, date = fourDaysFromNow)
                 } else null
