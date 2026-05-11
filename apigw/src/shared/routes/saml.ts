@@ -112,6 +112,13 @@ export function createSamlIntegration<T extends SessionType>(
       : `${defaultPageUrl}?loginError=true`
   }
 
+  // User not found or similar errors return 4xx status code
+  const isExpectedDownstreamError = (err: unknown) =>
+    err instanceof AxiosError &&
+    err.response !== undefined &&
+    err.response.status >= 400 &&
+    err.response.status < 500
+
   const validateSamlLoginResponse = async (
     req: express.Request
   ): Promise<Profile> => {
@@ -263,7 +270,8 @@ export function createSamlIntegration<T extends SessionType>(
       )
       throw new SamlError('Login failed', {
         redirectUrl: errorRedirectUrl(err),
-        cause: err
+        cause: err,
+        silent: isExpectedDownstreamError(err)
       })
     }
   }
