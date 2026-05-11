@@ -5201,7 +5201,8 @@ export const fi = {
         'Varhaiskasvatuspäätökset',
         'Osa-aikainen varhaiskasvatus',
         'Liittyvä varhaiskasvatus',
-        'Kerho'
+        'Kerho',
+        'Esiopetuksen kerho'
       ],
       PRESCHOOL: ['Esiopetus', 'Valmistava opetus']
     },

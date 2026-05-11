@@ -11,7 +11,7 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import java.time.LocalDate
 
-private data class DecisionGenericReasoningRow(
+internal data class DecisionGenericReasoningRow(
     val id: DecisionGenericReasoningId,
     val collectionType: DecisionReasoningCollectionType,
     val validFrom: LocalDate,
