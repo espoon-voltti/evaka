@@ -32,7 +32,7 @@ jobs:
           # and so isn't a real exposure.
           DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: ".*[Cc]ompileClasspath|.*[Rr]untimeClasspath"
       - if: github.event_name == 'pull_request'
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v4.9.0
         with:
           fail-on-severity: low
           comment-summary-in-pr: on-failure
