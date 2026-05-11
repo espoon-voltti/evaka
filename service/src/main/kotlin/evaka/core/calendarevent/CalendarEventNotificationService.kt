@@ -252,11 +252,13 @@ class CalendarEventNotificationService(
             "Processing discussion time reminder email for (recipientId: ${msg.recipientId}, eventTimeId: ${msg.eventTimeId})"
         }
 
-        val messageDetails =
-            db.read { it.getEventTimeReminderInfo(msg.eventTimeId) }
-                ?: throw NotFound(
-                    "Event time to remind of not found (eventTimeId: ${msg.eventTimeId})"
-                )
+        val messageDetails = db.read { it.getEventTimeReminderInfo(msg.eventTimeId) }
+        if (messageDetails == null) {
+            logger.info {
+                "Skipping discussion time reminder, event time no longer exists (eventTimeId: ${msg.eventTimeId})"
+            }
+            return
+        }
         Email.create(
                 db,
                 msg.recipientId,
