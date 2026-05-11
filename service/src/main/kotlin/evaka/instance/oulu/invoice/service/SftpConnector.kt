@@ -18,7 +18,7 @@ class SftpConnector(val jsch: JSch) {
     fun connect(address: String, username: String, password: String) {
         jschSession = jsch.getSession(username, address)
         jschSession?.setConfig("StrictHostKeyChecking", "no")
-        jschSession?.setPassword(password)
+        jschSession?.setPassword(password.toByteArray(Charsets.UTF_8))
         jschSession?.connect()
 
         channelSftp = jschSession?.openChannel("sftp") as ChannelSftp
