@@ -56,7 +56,7 @@ class SftpClient(private val sftpEnv: SftpEnv) {
         }
         val session = jsch.getSession(sftpEnv.username, sftpEnv.host, sftpEnv.port)
         if (sftpEnv.password != null) {
-            session.setPassword(sftpEnv.password.value)
+            session.setPassword(sftpEnv.password.value.toByteArray(Charsets.UTF_8))
         }
         session.hostKeyAlias = hostKeyAlias
         try {
