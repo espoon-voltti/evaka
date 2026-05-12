@@ -307,19 +307,17 @@ function ensurePortForwarding(ports) {
     } catch {}
   }
 
-  const sshArgs = ["-N"];
+  const sshConfig = resolve(homedir(), ".colima", "ssh_config");
+  const sshArgs = ["-F", sshConfig, "-N"];
   for (const port of ports) {
     const [host, container] = port.includes(":")
       ? port.split(":")
       : [port, port];
     sshArgs.push("-L", `${host}:localhost:${container}`);
   }
+  sshArgs.push(`colima-${profile}`);
 
-  const child = spawn(
-    "colima",
-    ["ssh", "--profile", profile, "--", ...sshArgs],
-    { detached: true, stdio: "ignore" }
-  );
+  const child = spawn("ssh", sshArgs, { detached: true, stdio: "ignore" });
   child.unref();
   writeFileSync(portFwdPidFile, String(child.pid));
 }
@@ -375,6 +373,7 @@ function buildStartArgs(config) {
     "--mount-inotify",
     "--vz-rosetta",
     "--ssh-agent",
+    "--port-forwarder", "none",
     ...mountArgs,
   ];
 }
