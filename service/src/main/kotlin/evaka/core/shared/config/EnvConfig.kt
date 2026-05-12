@@ -9,6 +9,7 @@ import evaka.core.AromiEnv
 import evaka.core.BucketEnv
 import evaka.core.ChildDocumentArchivalEnv
 import evaka.core.CitizenCalendarEnv
+import evaka.core.DataRemovalEnv
 import evaka.core.DatabaseEnv
 import evaka.core.DvvModificationsEnv
 import evaka.core.EmailEnv
@@ -121,4 +122,6 @@ class EnvConfig {
     @Bean
     fun childDocumentArchivalEnv(env: Environment): ChildDocumentArchivalEnv =
         ChildDocumentArchivalEnv.fromEnvironment(env)
+
+    @Bean fun dataRemovalEnv(env: Environment): DataRemovalEnv = DataRemovalEnv.fromEnvironment(env)
 }

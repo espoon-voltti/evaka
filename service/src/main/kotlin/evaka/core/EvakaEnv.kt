@@ -720,6 +720,19 @@ data class ChildDocumentArchivalEnv(val delayDays: Int, val limit: Int) {
     }
 }
 
+/**
+ * Per-task batch limits for [evaka.core.dataremoval] scheduled jobs. `null` means unlimited; any
+ * backlog beyond the limit is processed on subsequent runs.
+ */
+data class DataRemovalEnv(val childDocumentLimit: Int?) {
+    companion object {
+        fun fromEnvironment(env: Environment) =
+            DataRemovalEnv(
+                childDocumentLimit = env.lookup("evaka.data_removal.child_document_limit") ?: 5000
+            )
+    }
+}
+
 data class ArchiveEnv(
     /** URL up to the endpoint name e.g. http://10.0.0.10/archive-core/ */
     val url: URI,

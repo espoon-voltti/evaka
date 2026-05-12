@@ -4,6 +4,7 @@
 
 package evaka.core.document.childdocument
 
+import evaka.core.caseprocess.deleteCaseProcesses
 import evaka.core.document.ChildDocumentType
 import evaka.core.pis.Employee
 import evaka.core.shared.CaseProcessId
@@ -16,6 +17,7 @@ import evaka.core.shared.EmployeeId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.GroupId
 import evaka.core.shared.PersonId
+import evaka.core.shared.SfiMessageId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.Database
@@ -805,3 +807,89 @@ fun Database.Read.getChildDocumentsEligibleForArchival(
             )
         }
         .toList<ChildDocumentId>()
+
+data class DeletedChildDocument(
+    val documentId: ChildDocumentId,
+    val decisionId: ChildDocumentDecisionId?,
+    val processId: CaseProcessId?,
+    val documentKeys: List<String>,
+    val sfiMessageIds: List<SfiMessageId>,
+)
+
+fun Database.Transaction.deleteExpiredChildDocuments(
+    now: HelsinkiDateTime,
+    limit: Int? = null,
+): List<DeletedChildDocument> {
+    val today = now.toLocalDate()
+
+    val deletableRows =
+        createQuery {
+                sql(
+                    """
+SELECT
+    cd.id AS document_id,
+    cd.decision_id,
+    cd.process_id,
+    COALESCE(
+        array_agg(DISTINCT v.document_key) FILTER (WHERE v.document_key IS NOT NULL),
+        '{}'
+    ) AS document_keys,
+    COALESCE(
+        array_agg(DISTINCT sm.id) FILTER (WHERE sm.id IS NOT NULL),
+        '{}'
+    ) AS sfi_message_ids
+FROM child_document cd
+JOIN document_template dt ON dt.id = cd.template_id
+LEFT JOIN child_document_published_version v ON v.child_document_id = cd.id
+LEFT JOIN sfi_message sm ON sm.document_id = cd.id
+WHERE (NOT dt.archive_externally OR cd.archived_at IS NOT NULL)
+  AND CASE dt.deletion_retention_basis
+    WHEN 'STATUS_TRANSITION' THEN
+        cd.status_modified_at + make_interval(days => dt.deletion_retention_days) <= ${bind(now)}
+    WHEN 'PLACEMENT_END' THEN
+        (SELECT MAX(p.end_date) FROM placement p WHERE p.child_id = cd.child_id)
+            + make_interval(days => dt.deletion_retention_days) <= ${bind(today)}
+  END
+GROUP BY cd.id
+${if (limit != null) "LIMIT ${bind(limit)}" else ""}
+"""
+                )
+            }
+            .toList<DeletedChildDocument>()
+
+    val deletableIds = deletableRows.map { it.documentId }
+    val deletableDecisionIds = deletableRows.mapNotNull { it.decisionId }
+    val deletableProcessIds = deletableRows.mapNotNull { it.processId }
+    val deletableSfiMessageIds = deletableRows.flatMap { it.sfiMessageIds }
+
+    if (deletableIds.isNotEmpty()) {
+        execute {
+            sql("DELETE FROM child_document_read WHERE document_id = ANY(${bind(deletableIds)})")
+        }
+        execute {
+            sql(
+                "DELETE FROM child_document_published_version WHERE child_document_id = ANY(${bind(deletableIds)})"
+            )
+        }
+        if (deletableSfiMessageIds.isNotEmpty()) {
+            execute {
+                sql(
+                    "DELETE FROM sfi_message_event WHERE message_id = ANY(${bind(deletableSfiMessageIds)})"
+                )
+            }
+            execute {
+                sql("DELETE FROM sfi_message WHERE id = ANY(${bind(deletableSfiMessageIds)})")
+            }
+        }
+        execute { sql("DELETE FROM child_document WHERE id = ANY(${bind(deletableIds)})") }
+        deleteChildDocumentDecisions(deletableDecisionIds)
+        deleteCaseProcesses(deletableProcessIds)
+    }
+
+    return deletableRows
+}
+
+fun Database.Transaction.deleteChildDocumentDecisions(decisionIds: List<ChildDocumentDecisionId>) {
+    if (decisionIds.isEmpty()) return
+    execute { sql("DELETE FROM child_document_decision WHERE id = ANY(${bind(decisionIds)})") }
+}

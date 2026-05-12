@@ -192,6 +192,11 @@ fun Database.Transaction.deleteProcessById(processId: CaseProcessId) {
     execute { sql("DELETE FROM case_process WHERE id = ${bind(processId)}") }
 }
 
+fun Database.Transaction.deleteCaseProcesses(processIds: List<CaseProcessId>) {
+    if (processIds.isEmpty()) return
+    execute { sql("DELETE FROM case_process WHERE id = ANY(${bind(processIds)})") }
+}
+
 fun deleteProcessByDocumentId(tx: Database.Transaction, documentId: ChildDocumentId) {
     tx.createQuery { sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}") }
         .exactlyOneOrNull<CaseProcessId?>()
