@@ -4,20 +4,24 @@
 
 package evaka.instance.oulu.payment.service
 
-import com.jcraft.jsch.SftpException
 import evaka.core.daycare.CareType
 import evaka.core.invoicing.domain.Payment
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.invoicing.domain.PaymentUnit
 import evaka.core.shared.DaycareId
 import evaka.core.shared.db.Database
-import evaka.instance.oulu.invoice.service.SftpSender
+import evaka.core.shared.sftp.SftpClient
+import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.UUID
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -28,10 +32,12 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 @ExtendWith(OutputCaptureExtension::class)
 internal class OuluPaymentIntegrationClientTest {
     val paymentGenerator = mock<ProEPaymentGenerator>()
-    val sftpSender = mock<SftpSender>()
-    val paymentClient = OuluPaymentIntegrationClient(paymentGenerator, sftpSender)
+    val sftpClient = mock<SftpClient>()
+    val sftpPath = "/some/path"
+    val paymentClient = OuluPaymentIntegrationClient(paymentGenerator, sftpClient, sftpPath)
     val tx = mock<Database.Transaction>()
     val fileName: String = SimpleDateFormat("'proe-'yyyyMMdd-hhmmss'.txt'").format(Date())
+    val fullPath = "$sftpPath/$fileName"
 
     @Test
     fun `should pass payments to the payment generator`() {
@@ -61,7 +67,10 @@ internal class OuluPaymentIntegrationClientTest {
 
         paymentClient.send(paymentList, tx)
 
-        verify(sftpSender).send(proEPayment1, fileName)
+        val captor = argumentCaptor<InputStream>()
+        verify(sftpClient).put(captor.capture(), eq(fullPath))
+        Assertions.assertThat(captor.firstValue.readBytes().toString(Charsets.ISO_8859_1))
+            .isEqualTo(proEPayment1)
     }
 
     @Test
@@ -73,7 +82,7 @@ internal class OuluPaymentIntegrationClientTest {
 
         paymentClient.send(paymentList, tx)
 
-        verify(sftpSender, never()).send("", fileName)
+        verify(sftpClient, never()).put(any<InputStream>(), any())
     }
 
     @Test
@@ -119,7 +128,6 @@ internal class OuluPaymentIntegrationClientTest {
                 proEPayment1,
             )
         whenever(paymentGenerator.generatePayments(paymentList)).thenReturn(paymentGeneratorResult)
-        // whenever(sftpSender.send(proEPayment1)).thenThrow(SftpException::class.java)
 
         val sendResult = paymentClient.send(paymentList, tx)
 
@@ -137,7 +145,7 @@ internal class OuluPaymentIntegrationClientTest {
                 proEPayment1,
             )
         whenever(paymentGenerator.generatePayments(paymentList)).thenReturn(paymentGeneratorResult)
-        whenever(sftpSender.send(proEPayment1, fileName)).thenThrow(SftpException::class.java)
+        doThrow(RuntimeException::class).whenever(sftpClient).put(any<InputStream>(), any<String>())
 
         val sendResult = paymentClient.send(paymentList, tx)
 
@@ -159,7 +167,10 @@ internal class OuluPaymentIntegrationClientTest {
         val sendResult = paymentClient.send(paymentList, tx)
 
         Assertions.assertThat(sendResult.succeeded).hasSize(2)
-        verify(sftpSender).send(proEPayment1, fileName)
+        val captor = argumentCaptor<InputStream>()
+        verify(sftpClient).put(captor.capture(), eq(fullPath))
+        Assertions.assertThat(captor.firstValue.readBytes().toString(Charsets.ISO_8859_1))
+            .isEqualTo(proEPayment1)
     }
 
     @Test
@@ -192,7 +203,7 @@ internal class OuluPaymentIntegrationClientTest {
                 )
             )
 
-        whenever(sftpSender.send(proEPayment1, fileName)).thenThrow(SftpException::class.java)
+        doThrow(RuntimeException::class).whenever(sftpClient).put(any<InputStream>(), any<String>())
         paymentClient.send(paymentList, tx)
 
         Assertions.assertThat(output).contains("Failed to send 2 payments")

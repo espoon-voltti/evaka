@@ -39,6 +39,17 @@ data class SftpProperties(
     val username: Sensitive<String>,
     val password: Sensitive<String>,
 ) {
+    fun toSftpEnv(): SftpEnv =
+        SftpEnv(
+            host = address,
+            port = port,
+            hostKeys = emptyList(),
+            username = username.value,
+            password = password,
+            privateKey = null,
+            skipHostKeyVerification = true,
+        )
+
     companion object {
         fun fromEnvironment(env: Environment, prefix: String) =
             SftpProperties(

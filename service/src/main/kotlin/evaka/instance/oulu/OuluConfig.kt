@@ -4,7 +4,6 @@
 
 package evaka.instance.oulu
 
-import com.jcraft.jsch.JSch
 import evaka.core.ScheduledJobsEnv
 import evaka.core.VtjXroadEnv
 import evaka.core.application.ApplicationStatus
@@ -51,8 +50,6 @@ import evaka.instance.oulu.invoice.config.OuluIncomeTypesProvider
 import evaka.instance.oulu.invoice.config.OuluInvoiceProductProvider
 import evaka.instance.oulu.invoice.service.OuluInvoiceClient
 import evaka.instance.oulu.invoice.service.ProEInvoiceGenerator
-import evaka.instance.oulu.invoice.service.SftpConnector
-import evaka.instance.oulu.invoice.service.SftpSender
 import evaka.instance.oulu.payment.service.BicMapper
 import evaka.instance.oulu.payment.service.OuluPaymentIntegrationClient
 import evaka.instance.oulu.payment.service.ProEPaymentGenerator
@@ -170,18 +167,12 @@ class OuluConfig {
     @Bean fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic // TODO: implement
 
     @Bean
-    fun invoiceIntegrationClient(
-        ouluEnv: OuluEnv,
-        sftpConnector: SftpConnector,
-    ): InvoiceIntegrationClient {
-        val sftpSender = SftpSender(ouluEnv.intimeInvoices, sftpConnector)
-        return OuluInvoiceClient(
-            sftpSender,
+    fun invoiceIntegrationClient(ouluEnv: OuluEnv): InvoiceIntegrationClient =
+        OuluInvoiceClient(
+            SftpClient(ouluEnv.intimeInvoices.toSftpEnv()),
+            ouluEnv.intimeInvoices.path,
             ProEInvoiceGenerator(FinanceDateProvider(RealEvakaClock())),
         )
-    }
-
-    @Bean fun sftpConnector(): SftpConnector = SftpConnector(JSch())
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = OuluIncomeTypesProvider()
 
@@ -194,14 +185,14 @@ class OuluConfig {
     @Bean fun invoiceNumberProvider(): InvoiceNumberProvider = DefaultInvoiceNumberProvider(1)
 
     @Bean
-    fun paymentIntegrationClient(
-        ouluEnv: OuluEnv,
-        sftpConnector: SftpConnector,
-    ): PaymentIntegrationClient {
-        val sftpSender = SftpSender(ouluEnv.intimePayments, sftpConnector)
+    fun paymentIntegrationClient(ouluEnv: OuluEnv): PaymentIntegrationClient {
         val paymentGenerator =
             ProEPaymentGenerator(FinanceDateProvider(RealEvakaClock()), BicMapper())
-        return OuluPaymentIntegrationClient(paymentGenerator, sftpSender)
+        return OuluPaymentIntegrationClient(
+            paymentGenerator,
+            SftpClient(ouluEnv.intimePayments.toSftpEnv()),
+            ouluEnv.intimePayments.path,
+        )
     }
 
     @Bean
@@ -224,12 +215,13 @@ class OuluConfig {
     @Bean fun mealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
 
     @Bean
-    fun fileDwExportClient(
-        s3Client: S3Client,
-        sftpConnector: SftpConnector,
-        ouluEnv: OuluEnv,
-    ): DwExportClient =
-        FileDwExportClient(s3Client, SftpSender(ouluEnv.dwExport.sftp, sftpConnector), ouluEnv)
+    fun fileDwExportClient(s3Client: S3Client, ouluEnv: OuluEnv): DwExportClient =
+        FileDwExportClient(
+            s3Client,
+            SftpClient(ouluEnv.dwExport.sftp.toSftpEnv()),
+            ouluEnv.dwExport.sftp.path,
+            ouluEnv,
+        )
 
     @Bean
     fun OuluAsyncJobRunner(

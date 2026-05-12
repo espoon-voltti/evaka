@@ -20,31 +20,30 @@ import java.util.*
 private val logger = KotlinLogging.logger {}
 
 class SftpClient(private val sftpEnv: SftpEnv) {
-    fun put(inputStream: InputStream, filename: String) = execute { channel ->
-        logger.info { "Uploading $filename to ${sftpEnv.host}:${sftpEnv.port}" }
-        channel.put(inputStream, filename)
+    fun put(inputStream: InputStream, filename: String) = session { it.put(inputStream, filename) }
+
+    fun put(filename: String, write: (OutputStream) -> Unit) = session { it.put(filename, write) }
+
+    fun getAsString(filename: String, encoding: Charset): String = session {
+        it.getAsString(filename, encoding)
     }
 
-    fun put(filename: String, write: (OutputStream) -> Unit) = execute { channel ->
-        logger.info { "Uploading $filename to ${sftpEnv.host}:${sftpEnv.port}" }
-        channel.put(filename).use(write)
-    }
-
-    fun getAsString(filename: String, encoding: Charset): String = execute { channel ->
-        logger.info { "Downloading $filename from ${sftpEnv.host}:${sftpEnv.port}" }
-        channel.get(filename).bufferedReader(encoding).use(BufferedReader::readText)
+    fun <T> session(block: (SftpSession) -> T): T = execute { channel ->
+        block(ChannelSftpSession(sftpEnv, channel))
     }
 
     private fun <T> execute(callback: (channel: ChannelSftp) -> T): T {
         val hostKeyAlias = "${sftpEnv.host}:${sftpEnv.port}"
         val jsch =
             JSch().apply {
-                hostKeyRepository =
-                    ReadOnlyHostKeyRepository(
-                        sftpEnv.hostKeys.map {
-                            HostKey(hostKeyAlias, HostKey.GUESS, Base64.getDecoder().decode(it))
-                        }
-                    )
+                if (!sftpEnv.skipHostKeyVerification) {
+                    hostKeyRepository =
+                        ReadOnlyHostKeyRepository(
+                            sftpEnv.hostKeys.map {
+                                HostKey(hostKeyAlias, HostKey.GUESS, Base64.getDecoder().decode(it))
+                            }
+                        )
+                }
             }
         if (sftpEnv.privateKey != null) {
             jsch.addIdentity(
@@ -59,6 +58,12 @@ class SftpClient(private val sftpEnv: SftpEnv) {
             session.setPassword(sftpEnv.password.value.toByteArray(Charsets.UTF_8))
         }
         session.hostKeyAlias = hostKeyAlias
+        if (sftpEnv.skipHostKeyVerification) {
+            session.setConfig("StrictHostKeyChecking", "no")
+            logger.warn {
+                "Connecting to ${sftpEnv.host}:${sftpEnv.port} with host key verification disabled"
+            }
+        }
         try {
             session.connect()
             val channel = session.openChannel("sftp") as ChannelSftp
@@ -71,6 +76,32 @@ class SftpClient(private val sftpEnv: SftpEnv) {
         } finally {
             session.disconnect()
         }
+    }
+}
+
+interface SftpSession {
+    fun put(inputStream: InputStream, filename: String)
+
+    fun put(filename: String, write: (OutputStream) -> Unit)
+
+    fun getAsString(filename: String, encoding: Charset): String
+}
+
+private class ChannelSftpSession(private val sftpEnv: SftpEnv, private val channel: ChannelSftp) :
+    SftpSession {
+    override fun put(inputStream: InputStream, filename: String) {
+        logger.info { "Uploading $filename to ${sftpEnv.host}:${sftpEnv.port}" }
+        channel.put(inputStream, filename)
+    }
+
+    override fun put(filename: String, write: (OutputStream) -> Unit) {
+        logger.info { "Uploading $filename to ${sftpEnv.host}:${sftpEnv.port}" }
+        channel.put(filename).use(write)
+    }
+
+    override fun getAsString(filename: String, encoding: Charset): String {
+        logger.info { "Downloading $filename from ${sftpEnv.host}:${sftpEnv.port}" }
+        return channel.get(filename).bufferedReader(encoding).use(BufferedReader::readText)
     }
 }
 

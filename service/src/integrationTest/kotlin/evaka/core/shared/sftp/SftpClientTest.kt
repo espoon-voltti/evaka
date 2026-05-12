@@ -68,4 +68,30 @@ class SftpClientTest {
             }
         assertContains(exception.message ?: "", "UnknownHostKey")
     }
+
+    @Test
+    fun `skipHostKeyVerification accepts any server key`() {
+        val client =
+            SftpClient(
+                env.copy(
+                    hostKeys = emptyList(),
+                    password = Sensitive(password),
+                    privateKey = null,
+                    skipHostKeyVerification = true,
+                )
+            )
+        "hello world".byteInputStream(Charsets.UTF_8).use { client.put(it, "upload/test.txt") }
+        assertEquals("hello world", client.getAsString("upload/test.txt", Charsets.UTF_8))
+    }
+
+    @Test
+    fun `session block can put multiple files over one connection`() {
+        val client = SftpClient(env.copy(password = Sensitive(password), privateKey = null))
+        client.session { session ->
+            session.put("first".byteInputStream(Charsets.UTF_8), "upload/a.txt")
+            session.put("second".byteInputStream(Charsets.UTF_8), "upload/b.txt")
+        }
+        assertEquals("first", client.getAsString("upload/a.txt", Charsets.UTF_8))
+        assertEquals("second", client.getAsString("upload/b.txt", Charsets.UTF_8))
+    }
 }

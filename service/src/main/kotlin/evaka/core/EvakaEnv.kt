@@ -634,10 +634,14 @@ data class SftpEnv(
     val username: String,
     val password: Sensitive<String>?,
     val privateKey: Sensitive<String>?,
+    val skipHostKeyVerification: Boolean = false,
 ) {
     init {
         check(listOfNotNull(password, privateKey).size == 1) {
             "Either password or private key must be provided"
+        }
+        check(hostKeys.isNotEmpty() || skipHostKeyVerification) {
+            "Either hostKeys must be provided or skipHostKeyVerification must be true"
         }
     }
 }

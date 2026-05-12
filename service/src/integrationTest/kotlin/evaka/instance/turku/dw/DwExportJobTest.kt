@@ -4,7 +4,6 @@
 
 package evaka.instance.turku.dw
 
-import com.jcraft.jsch.JSch
 import evaka.core.BucketEnv
 import evaka.core.FullApplicationTest
 import evaka.core.Sensitive
@@ -27,11 +26,10 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.sftp.SftpClient
 import evaka.instance.turku.DwExportProperties
 import evaka.instance.turku.SftpProperties
 import evaka.instance.turku.TurkuEnv
-import evaka.instance.turku.invoice.service.SftpConnector
-import evaka.instance.turku.invoice.service.SftpSender
 import java.time.LocalDate
 import java.time.LocalTime
 import org.junit.jupiter.api.BeforeAll
@@ -94,8 +92,11 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
             s3Client.createBucket(CreateBucketRequest.builder().bucket(EXPORT_BUCKET).build())
         }
 
-        val sftpSender = SftpSender(turkuEnv.dwExport.sftp, SftpConnector(JSch()))
-        val exportClient = FileDWExportClient(sftpSender)
+        val exportClient =
+            FileDWExportClient(
+                SftpClient(turkuEnv.dwExport.sftp.toSftpEnv()),
+                turkuEnv.dwExport.sftp.path,
+            )
         job = DwExportJob(exportClient)
     }
 

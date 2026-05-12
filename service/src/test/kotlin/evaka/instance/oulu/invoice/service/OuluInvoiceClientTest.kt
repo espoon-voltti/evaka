@@ -3,16 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 package evaka.instance.oulu.invoice.service
 
-import com.jcraft.jsch.SftpException
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.sftp.SftpClient
+import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -23,13 +28,15 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 @ExtendWith(OutputCaptureExtension::class)
 internal class OuluInvoiceClientTest {
     val invoiceGenerator = mock<ProEInvoiceGenerator>()
-    val sftpSender = mock<SftpSender>()
-    val ouluInvoiceClient = OuluInvoiceClient(sftpSender, invoiceGenerator)
+    val sftpClient = mock<SftpClient>()
+    val sftpPath = "/some/path"
+    val ouluInvoiceClient = OuluInvoiceClient(sftpClient, sftpPath, invoiceGenerator)
     val mockNow = HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(13, 34, 56))
     val fileName: String =
         "proe-" +
             mockNow.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) +
             ".txt"
+    val fullPath = "$sftpPath/$fileName"
 
     @Test
     fun `should pass invoices to the invoice generator`() {
@@ -62,7 +69,10 @@ internal class OuluInvoiceClientTest {
 
         ouluInvoiceClient.send(mockNow, invoiceList)
 
-        verify(sftpSender).send(proEInvoice1, fileName)
+        val captor = argumentCaptor<InputStream>()
+        verify(sftpClient).put(captor.capture(), eq(fullPath))
+        assertThat(captor.firstValue.readBytes().toString(Charsets.ISO_8859_1))
+            .isEqualTo(proEInvoice1)
     }
 
     @Test
@@ -74,7 +84,7 @@ internal class OuluInvoiceClientTest {
 
         ouluInvoiceClient.send(mockNow, invoiceList)
 
-        verify(sftpSender, never()).send("", fileName)
+        verify(sftpClient, never()).put(any<InputStream>(), any())
     }
 
     @Test
@@ -106,7 +116,7 @@ internal class OuluInvoiceClientTest {
                 proEInvoice1,
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
-        whenever(sftpSender.send(proEInvoice1, fileName)).thenThrow(SftpException::class.java)
+        doThrow(RuntimeException::class).whenever(sftpClient).put(any<InputStream>(), any<String>())
 
         val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
 
@@ -128,7 +138,10 @@ internal class OuluInvoiceClientTest {
         val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(sendResult.succeeded).hasSize(2)
-        verify(sftpSender).send(proEInvoice1, fileName)
+        val captor = argumentCaptor<InputStream>()
+        verify(sftpClient).put(captor.capture(), eq(fullPath))
+        assertThat(captor.firstValue.readBytes().toString(Charsets.ISO_8859_1))
+            .isEqualTo(proEInvoice1)
     }
 
     @Test
@@ -153,7 +166,10 @@ internal class OuluInvoiceClientTest {
 
         assertThat(sendResult.succeeded).hasSize(1)
         assertThat(sendResult.manuallySent).hasSize(1)
-        verify(sftpSender).send(proEInvoice1, fileName)
+        val captor = argumentCaptor<InputStream>()
+        verify(sftpClient).put(captor.capture(), eq(fullPath))
+        assertThat(captor.firstValue.readBytes().toString(Charsets.ISO_8859_1))
+            .isEqualTo(proEInvoice1)
     }
 
     @Test
@@ -192,7 +208,7 @@ internal class OuluInvoiceClientTest {
                 )
             )
 
-        whenever(sftpSender.send(proEInvoice1, fileName)).thenThrow(SftpException::class.java)
+        doThrow(RuntimeException::class).whenever(sftpClient).put(any<InputStream>(), any<String>())
         ouluInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(output).contains("Failed to send 2 invoices")
@@ -212,6 +228,6 @@ internal class OuluInvoiceClientTest {
             )
         val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
 
-        verify(sftpSender).send(proEInvoice1, "proe-20221012-133456.txt")
+        verify(sftpClient).put(any<InputStream>(), eq("$sftpPath/proe-20221012-133456.txt"))
     }
 }

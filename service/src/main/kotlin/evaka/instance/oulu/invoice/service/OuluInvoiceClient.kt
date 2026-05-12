@@ -4,17 +4,18 @@
 
 package evaka.instance.oulu.invoice.service
 
-import com.jcraft.jsch.SftpException
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.sftp.SftpClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.format.DateTimeFormatter
 
 private val logger = KotlinLogging.logger {}
 
 class OuluInvoiceClient(
-    private val sftpSender: SftpSender,
+    private val sftpClient: SftpClient,
+    private val remotePath: String,
     private val invoiceGenerator: ProEInvoiceGenerator,
 ) : InvoiceIntegrationClient {
     override fun send(
@@ -35,16 +36,19 @@ class OuluInvoiceClient(
                         now.toLocalDateTime()
                             .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) +
                         ".txt"
-                sftpSender.send(proEinvoices, fileName)
+                sftpClient.put(
+                    proEinvoices.byteInputStream(Charsets.ISO_8859_1),
+                    "$remotePath/$fileName",
+                )
                 logger.info {
                     "Successfully sent ${successList.size} invoices and created ${manuallySentList.size} manual invoice"
                 }
-            } catch (e: SftpException) {
+            } catch (e: Exception) {
                 failedList.addAll(successList)
                 failedList.addAll(manuallySentList)
                 successList = listOf()
                 manuallySentList = listOf()
-                logger.error { "Failed to send ${failedList.size} invoices" }
+                logger.error(e) { "Failed to send ${failedList.size} invoices" }
             }
         }
 
