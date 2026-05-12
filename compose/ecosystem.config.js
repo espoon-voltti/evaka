@@ -42,7 +42,8 @@ module.exports = {
     env: {
       ICONS: process.env.ICONS,
       EVAKA_FRONTEND_PORT: ports.frontend,
-      EVAKA_APIGW_PORT: ports.apigw
+      EVAKA_APIGW_PORT: ports.apigw,
+      EVAKA_CUSTOMIZATIONS: process.env.EVAKA_CUSTOMIZATIONS
     },
     ...defaults
   }, {
@@ -53,7 +54,8 @@ module.exports = {
     env: {
       SERVER_PORT: ports.service,
       EVAKA_DATABASE_URL: `jdbc:postgresql://localhost:${ports.db}/evaka_local`,
-      EVAKA_LOCAL_S3_URL: `https://localhost:${ports.s3}`
+      EVAKA_LOCAL_S3_URL: `https://localhost:${ports.s3}`,
+      EVAKA_MUNICIPALITY: process.env.EVAKA_MUNICIPALITY
     },
     ...defaults
   }, /*{

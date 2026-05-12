@@ -47,6 +47,7 @@ trap - INT
 
 echo ""
 echo "Development environment started."
+echo "  Active municipality: ${EVAKA_MUNICIPALITY:-espoo (default)}"
 echo "Open http://localhost:${FRONTEND_PORT}/ in your browser."
 """
 
@@ -59,7 +60,10 @@ arg "[services]" var=#true help="Service(s) to restart" {
 """
 dir = "compose"
 run = """
-pm2 restart {{ usage.services | default(value=["all"]) | join(sep=" ") }}
+#!/usr/bin/env bash
+set -euo pipefail
+SERVICES="${usage_services:-all}"
+pm2 restart $SERVICES --update-env
 """
 
 [tasks.stop]
@@ -132,6 +136,40 @@ fi
 description = "Deactivate eVaka instance (return to default)"
 depends = ["instance"]
 
+[tasks.municipality]
+description = "Set or clear the active municipality for local dev"
+usage = """
+arg "[name]" help="Municipality name (omit to clear)" {
+    choices "espoo" "hameenkyro" "kangasala" "lempaala" "nokia" "orivesi" "oulu" "pirkkala" "tampere" "turku" "vesilahti" "ylojarvi"
+}
+"""
+run = """
+#!/usr/bin/env bash
+# Valid municipality names must match:
+#   - service/src/main/kotlin/evaka/Main.kt (instance switch)
+#   - frontend/src/lib-customizations/ (customization dirs)
+# Keep the `choices` list in `usage` above in sync with both.
+set -euo pipefail
+
+NAME="${usage_name:-}"
+
+if [ -z "$NAME" ]; then
+  mise unset --file mise.local.toml EVAKA_MUNICIPALITY EVAKA_CUSTOMIZATIONS 2>/dev/null || true
+  echo "Cleared active municipality (returning to default: espoo)."
+  exit 0
+fi
+
+mise set --file mise.local.toml \
+  "EVAKA_MUNICIPALITY=$NAME" \
+  "EVAKA_CUSTOMIZATIONS=$NAME"
+
+echo "Active municipality: $NAME"
+echo ""
+echo "If you are switching from another municipality, you may need to:"
+echo "  mise reset-local-db   # per-municipality migrations differ"
+echo "  mise restart          # or: mise stop && mise start"
+"""
+
 [tasks.status]
 description = "Show current eVaka instance configuration"
 run = """
@@ -200,8 +238,11 @@ fi
 BASH_SNIPPET='
 _evaka_prompt_cmd() {
   local clean="${PS1#\\[evaka:*\\] }"
-  if [ -n "$EVAKA_INSTANCE" ]; then
-    PS1="[evaka:$EVAKA_INSTANCE] $clean"
+  local parts=""
+  [ -n "$EVAKA_INSTANCE" ] && parts="$EVAKA_INSTANCE"
+  [ -n "$EVAKA_MUNICIPALITY" ] && parts="${parts:+$parts:}$EVAKA_MUNICIPALITY"
+  if [ -n "$parts" ]; then
+    PS1="[evaka:$parts] $clean"
   else
     PS1="$clean"
   fi
@@ -212,8 +253,11 @@ PROMPT_COMMAND="_evaka_prompt_cmd${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
 ZSH_SNIPPET='
 _evaka_update_prompt() {
   local clean="${PROMPT#\\[evaka:*\\] }"
-  if [[ -n "$EVAKA_INSTANCE" ]]; then
-    PROMPT="[evaka:$EVAKA_INSTANCE] $clean"
+  local parts=""
+  [[ -n "$EVAKA_INSTANCE" ]] && parts="$EVAKA_INSTANCE"
+  [[ -n "$EVAKA_MUNICIPALITY" ]] && parts="${parts:+$parts:}$EVAKA_MUNICIPALITY"
+  if [[ -n "$parts" ]]; then
+    PROMPT="[evaka:$parts] $clean"
   else
     PROMPT="$clean"
   fi
