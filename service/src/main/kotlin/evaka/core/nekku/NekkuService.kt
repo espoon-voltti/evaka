@@ -652,7 +652,7 @@ fun nekkuMealReportData(
                         val sku =
                             getNekkuProductNumber(nekkuProducts, mealTime, childInfo, customerType)
                         if (sku == null) {
-                            logger.error {
+                            logger.warn {
                                 "No Nekku product found for child ${childInfo.childId} with customertype=$customerType optionsId=${childInfo.optionsId} mealtype=${childInfo.mealType} mealtime=${mealTime.name}"
                             }
                             null

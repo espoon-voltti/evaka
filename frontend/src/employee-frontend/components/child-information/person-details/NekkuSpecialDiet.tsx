@@ -24,6 +24,7 @@ interface Props {
   dietChoices: NekkuSpecialDietChoices[]
   formData: AdditionalInformation
   editing: boolean
+  disabled?: boolean
   setField(dietId: string, fieldId: string, value: string): void
   toggleField(dietId: string, fieldId: string, value: string): void
 }
@@ -65,6 +66,7 @@ export default React.memo(function NekkuSpecialDiet(props: Props) {
                           }
                           key={field.id + '-' + option.key}
                           label={option.key}
+                          disabled={props.disabled}
                           checked={
                             props.formData.nekkuSpecialDietChoices.find(
                               (value) =>
@@ -109,6 +111,7 @@ export default React.memo(function NekkuSpecialDiet(props: Props) {
                       {field.name}
                       <TextArea
                         data-qa={field.diet_id + '-' + field.id + '-textarea'}
+                        readonly={props.disabled}
                         value={
                           props.formData.nekkuSpecialDietChoices.find(
                             (value) =>

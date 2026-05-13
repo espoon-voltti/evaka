@@ -468,7 +468,11 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                         <>
                           <Combobox
                             data-qa="nekku-diet-input"
-                            items={nekkuDiets}
+                            items={nekkuDiets.filter(
+                              (diet) =>
+                                diet.type !== 'VEGAN' ||
+                                form.nekkuSpecialDietChoices.length === 0
+                            )}
                             selectedItem={nekkuDiets.find(
                               (value) => value.type === form.nekkuDiet
                             )}
@@ -501,6 +505,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
                           setField={setChoiceField}
                           toggleField={toggleChoiceField}
                           editing={editing}
+                          disabled={form.nekkuDiet === 'VEGAN'}
                         />
                       )
                     }

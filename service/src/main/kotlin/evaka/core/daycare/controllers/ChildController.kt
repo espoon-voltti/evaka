@@ -20,6 +20,7 @@ import evaka.core.shared.ChildId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
@@ -109,6 +110,15 @@ class ChildController(
         @PathVariable childId: ChildId,
         @RequestBody data: AdditionalInformation,
     ) {
+        if (
+            data.nekkuDiet == NekkuProductMealType.VEGAN &&
+                data.nekkuSpecialDietChoices.isNotEmpty()
+        ) {
+            throw BadRequest(
+                "Vegan Nekku diet and special diet choices cannot both be set",
+                errorCode = "NEKKU_VEGAN_AND_SPECIAL_DIET_BOTH_SET",
+            )
+        }
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(

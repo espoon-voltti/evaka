@@ -7,12 +7,20 @@ package evaka.core.daycare.controllers
 import evaka.core.FullApplicationTest
 import evaka.core.daycare.createChild
 import evaka.core.daycare.getChild
+import evaka.core.nekku.NekkuProductMealType
+import evaka.core.nekku.NekkuSpecialDiet
+import evaka.core.nekku.NekkuSpecialDietChoices
+import evaka.core.nekku.NekkuSpecialDietType
+import evaka.core.nekku.NekkuSpecialDietsField
+import evaka.core.nekku.setSpecialDietFields
+import evaka.core.nekku.setSpecialDiets
 import evaka.core.shared.ChildId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.config.testFeatureConfig
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.shared.noopTracer
 import evaka.core.shared.security.AccessControl
@@ -24,6 +32,7 @@ import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -85,6 +94,71 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         Assertions.assertThat(result.permittedActions)
             .doesNotContain(Action.Child.READ_DAILY_SERVICE_TIMES)
+    }
+
+    @Test
+    fun `updateAdditionalInfo rejects VEGAN nekku diet combined with special diet choices`() {
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+        val data =
+            child.additionalInformation.copy(
+                nekkuDiet = NekkuProductMealType.VEGAN,
+                nekkuSpecialDietChoices =
+                    listOf(NekkuSpecialDietChoices(dietId = "2", fieldId = "f1", value = "v1")),
+            )
+        val exception =
+            assertThrows<BadRequest> {
+                childController.updateAdditionalInfo(
+                    dbInstance(),
+                    user,
+                    RealEvakaClock(),
+                    childId,
+                    data,
+                )
+            }
+        assertEquals("NEKKU_VEGAN_AND_SPECIAL_DIET_BOTH_SET", exception.errorCode)
+    }
+
+    @Test
+    fun `updateAdditionalInfo allows VEGETABLE nekku diet combined with special diet choices`() {
+        val diets =
+            listOf(
+                NekkuSpecialDiet(
+                    id = "2",
+                    name = "Test diet",
+                    fields =
+                        listOf(
+                            NekkuSpecialDietsField(
+                                id = "f1",
+                                name = "Field 1",
+                                type = NekkuSpecialDietType.TEXT,
+                            )
+                        ),
+                )
+            )
+        db.transaction { tx ->
+            tx.setSpecialDiets(diets)
+            tx.setSpecialDietFields(diets.map { it.id to it.fields })
+        }
+
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+        val data =
+            child.additionalInformation.copy(
+                nekkuDiet = NekkuProductMealType.VEGETABLE,
+                nekkuSpecialDietChoices =
+                    listOf(NekkuSpecialDietChoices(dietId = "2", fieldId = "f1", value = "v1")),
+            )
+        childController.updateAdditionalInfo(dbInstance(), user, RealEvakaClock(), childId, data)
+    }
+
+    @Test
+    fun `updateAdditionalInfo allows VEGAN nekku diet without special diet choices`() {
+        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+        val data =
+            child.additionalInformation.copy(
+                nekkuDiet = NekkuProductMealType.VEGAN,
+                nekkuSpecialDietChoices = emptyList(),
+            )
+        childController.updateAdditionalInfo(dbInstance(), user, RealEvakaClock(), childId, data)
     }
 
     @Test
