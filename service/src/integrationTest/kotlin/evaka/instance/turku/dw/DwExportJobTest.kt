@@ -94,8 +94,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val exportClient =
             FileDWExportClient(
-                SftpClient(turkuEnv.dwExport.sftp.toSftpEnv()),
-                turkuEnv.dwExport.sftp.path,
+                SftpClient(turkuEnv.dwExport.sftp.toSftpEnv(), turkuEnv.dwExport.sftp.path)
             )
         job = DwExportJob(exportClient)
     }

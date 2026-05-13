@@ -157,8 +157,7 @@ class TurkuConfig {
         invoiceGenerator: SapInvoiceGenerator,
     ): InvoiceIntegrationClient =
         TurkuInvoiceClient(
-            SftpClient(properties.sapInvoicing.toSftpEnv()),
-            properties.sapInvoicing.path,
+            SftpClient(properties.sapInvoicing.toSftpEnv(), properties.sapInvoicing.path),
             invoiceGenerator,
         )
 
@@ -179,8 +178,7 @@ class TurkuConfig {
     ): PaymentIntegrationClient =
         TurkuPaymentIntegrationClient(
             paymentGenerator,
-            SftpClient(evakaProperties.sapPayments.toSftpEnv()),
-            evakaProperties.sapPayments.path,
+            SftpClient(evakaProperties.sapPayments.toSftpEnv(), evakaProperties.sapPayments.path),
         )
 
     @Bean
@@ -205,8 +203,7 @@ class TurkuConfig {
     @Bean
     fun fileDwExportClient(properties: TurkuEnv): DwExportClient =
         FileDWExportClient(
-            SftpClient(properties.dwExport.sftp.toSftpEnv()),
-            properties.dwExport.sftp.path,
+            SftpClient(properties.dwExport.sftp.toSftpEnv(), properties.dwExport.sftp.path)
         )
 
     @Bean

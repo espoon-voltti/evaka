@@ -19,7 +19,9 @@ import java.util.*
 
 private val logger = KotlinLogging.logger {}
 
-class SftpClient(private val sftpEnv: SftpEnv) {
+class SftpClient(private val sftpEnv: SftpEnv, basePath: String = "") {
+    private val basePath = basePath.trim('/')
+
     fun put(inputStream: InputStream, filename: String) = session { it.put(inputStream, filename) }
 
     fun put(filename: String, write: (OutputStream) -> Unit) = session { it.put(filename, write) }
@@ -29,7 +31,7 @@ class SftpClient(private val sftpEnv: SftpEnv) {
     }
 
     fun <T> session(block: (SftpSession) -> T): T = execute { channel ->
-        block(ChannelSftpSession(sftpEnv, channel))
+        block(ChannelSftpSession(sftpEnv, channel, basePath))
     }
 
     private fun <T> execute(callback: (channel: ChannelSftp) -> T): T {
@@ -87,22 +89,31 @@ interface SftpSession {
     fun getAsString(filename: String, encoding: Charset): String
 }
 
-private class ChannelSftpSession(private val sftpEnv: SftpEnv, private val channel: ChannelSftp) :
-    SftpSession {
+private class ChannelSftpSession(
+    private val sftpEnv: SftpEnv,
+    private val channel: ChannelSftp,
+    private val basePath: String,
+) : SftpSession {
     override fun put(inputStream: InputStream, filename: String) {
-        logger.info { "Uploading $filename to ${sftpEnv.host}:${sftpEnv.port}" }
-        channel.put(inputStream, filename)
+        val target = resolve(filename)
+        logger.info { "Uploading $target to ${sftpEnv.host}:${sftpEnv.port}" }
+        channel.put(inputStream, target)
     }
 
     override fun put(filename: String, write: (OutputStream) -> Unit) {
-        logger.info { "Uploading $filename to ${sftpEnv.host}:${sftpEnv.port}" }
-        channel.put(filename).use(write)
+        val target = resolve(filename)
+        logger.info { "Uploading $target to ${sftpEnv.host}:${sftpEnv.port}" }
+        channel.put(target).use(write)
     }
 
     override fun getAsString(filename: String, encoding: Charset): String {
-        logger.info { "Downloading $filename from ${sftpEnv.host}:${sftpEnv.port}" }
-        return channel.get(filename).bufferedReader(encoding).use(BufferedReader::readText)
+        val target = resolve(filename)
+        logger.info { "Downloading $target from ${sftpEnv.host}:${sftpEnv.port}" }
+        return channel.get(target).bufferedReader(encoding).use(BufferedReader::readText)
     }
+
+    private fun resolve(filename: String): String =
+        if (basePath.isEmpty()) filename else "$basePath/${filename.trimStart('/')}"
 }
 
 private class ReadOnlyHostKeyRepository(private val hostKeys: List<HostKey>) : HostKeyRepository {

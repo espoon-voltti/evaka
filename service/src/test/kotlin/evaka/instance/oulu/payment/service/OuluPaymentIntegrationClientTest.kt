@@ -33,11 +33,9 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 internal class OuluPaymentIntegrationClientTest {
     val paymentGenerator = mock<ProEPaymentGenerator>()
     val sftpClient = mock<SftpClient>()
-    val sftpPath = "/some/path"
-    val paymentClient = OuluPaymentIntegrationClient(paymentGenerator, sftpClient, sftpPath)
+    val paymentClient = OuluPaymentIntegrationClient(paymentGenerator, sftpClient)
     val tx = mock<Database.Transaction>()
     val fileName: String = SimpleDateFormat("'proe-'yyyyMMdd-hhmmss'.txt'").format(Date())
-    val fullPath = "$sftpPath/$fileName"
 
     @Test
     fun `should pass payments to the payment generator`() {
@@ -68,7 +66,7 @@ internal class OuluPaymentIntegrationClientTest {
         paymentClient.send(paymentList, tx)
 
         val captor = argumentCaptor<InputStream>()
-        verify(sftpClient).put(captor.capture(), eq(fullPath))
+        verify(sftpClient).put(captor.capture(), eq(fileName))
         Assertions.assertThat(captor.firstValue.readBytes().toString(Charsets.ISO_8859_1))
             .isEqualTo(proEPayment1)
     }
@@ -168,7 +166,7 @@ internal class OuluPaymentIntegrationClientTest {
 
         Assertions.assertThat(sendResult.succeeded).hasSize(2)
         val captor = argumentCaptor<InputStream>()
-        verify(sftpClient).put(captor.capture(), eq(fullPath))
+        verify(sftpClient).put(captor.capture(), eq(fileName))
         Assertions.assertThat(captor.firstValue.readBytes().toString(Charsets.ISO_8859_1))
             .isEqualTo(proEPayment1)
     }

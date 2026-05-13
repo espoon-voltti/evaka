@@ -18,7 +18,6 @@ import software.amazon.awssdk.services.s3.S3Client
 class FileDwExportClient(
     private val s3Client: S3Client,
     private val sftpClient: SftpClient,
-    private val remotePath: String,
     private val ouluEnv: OuluEnv,
 ) : DwExportClient {
     private val logger = KotlinLogging.logger {}
@@ -42,9 +41,7 @@ class FileDwExportClient(
 
             logger.info { "Sending DW content for '$queryName' via SFTP" }
 
-            tempFile.toFile().inputStream().use { input ->
-                sftpClient.put(input, "$remotePath/$fileName")
-            }
+            tempFile.toFile().inputStream().use { input -> sftpClient.put(input, fileName) }
 
             logger.info { "Sending DW content for '$queryName' to S3" }
 

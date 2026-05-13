@@ -29,7 +29,7 @@ class OuluBiSftpExportClientTest {
 
     @Test
     fun `uploads a CSV to the remote path`() {
-        val client = OuluBiSftpExportClient(SftpClient(env), "upload/")
+        val client = OuluBiSftpExportClient(SftpClient(env, "upload"))
         val clock = MockEvakaClock(2026, 4, 24, 12, 0)
         val csv = sequenceOf("col\r\n", "Hämäläinen\r\n")
 

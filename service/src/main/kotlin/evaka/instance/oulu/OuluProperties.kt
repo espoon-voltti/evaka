@@ -87,10 +87,7 @@ data class FabricProperties(val sftp: SftpEnv, val remotePath: String) {
                                 Sensitive(it)
                             },
                     ),
-                remotePath =
-                    (env.lookup<String?>("evakaoulu.fabric.remote_path") ?: "").let {
-                        if (it.isEmpty() || it.endsWith("/")) it else "$it/"
-                    },
+                remotePath = env.lookup<String?>("evakaoulu.fabric.remote_path") ?: "",
             )
     }
 }

@@ -13,8 +13,7 @@ import java.nio.file.Files
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.deleteIfExists
 
-class FileDWExportClient(private val sftpClient: SftpClient, private val remotePath: String) :
-    DwExportClient {
+class FileDWExportClient(private val sftpClient: SftpClient) : DwExportClient {
     private val logger = KotlinLogging.logger {}
 
     override fun sendDwCsvFile(queryName: String, clock: EvakaClock, stream: CsvInputStream) {
@@ -27,9 +26,7 @@ class FileDWExportClient(private val sftpClient: SftpClient, private val remoteP
             Files.newOutputStream(tempFile).use { fos ->
                 BufferedOutputStream(fos).use { bos -> stream.transferTo(bos) }
             }
-            tempFile.toFile().inputStream().use { input ->
-                sftpClient.put(input, "$remotePath/$fileName")
-            }
+            tempFile.toFile().inputStream().use { input -> sftpClient.put(input, fileName) }
         } catch (e: Exception) {
             logger.warn(e) { "Failed to send DW content for '$queryName'" }
         } finally {

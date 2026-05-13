@@ -17,7 +17,6 @@ private val logger = KotlinLogging.logger {}
 class TurkuPaymentIntegrationClient(
     private val paymentGenerator: SapPaymentGenerator,
     private val sftpClient: SftpClient,
-    private val remotePath: String,
 ) : PaymentIntegrationClient {
     override fun send(
         payments: List<Payment>,
@@ -47,7 +46,7 @@ class TurkuPaymentIntegrationClient(
             try {
                 sftpClient.session { session ->
                     contents.forEach { (filename, body) ->
-                        session.put(body.byteInputStream(Charsets.UTF_8), "$remotePath/$filename")
+                        session.put(body.byteInputStream(Charsets.UTF_8), filename)
                     }
                 }
                 logger.info { "Successfully sent ${successList.size} payments" }

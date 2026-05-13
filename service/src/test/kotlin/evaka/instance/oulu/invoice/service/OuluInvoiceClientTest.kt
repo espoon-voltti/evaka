@@ -29,14 +29,12 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 internal class OuluInvoiceClientTest {
     val invoiceGenerator = mock<ProEInvoiceGenerator>()
     val sftpClient = mock<SftpClient>()
-    val sftpPath = "/some/path"
-    val ouluInvoiceClient = OuluInvoiceClient(sftpClient, sftpPath, invoiceGenerator)
+    val ouluInvoiceClient = OuluInvoiceClient(sftpClient, invoiceGenerator)
     val mockNow = HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(13, 34, 56))
     val fileName: String =
         "proe-" +
             mockNow.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) +
             ".txt"
-    val fullPath = "$sftpPath/$fileName"
 
     @Test
     fun `should pass invoices to the invoice generator`() {
@@ -70,7 +68,7 @@ internal class OuluInvoiceClientTest {
         ouluInvoiceClient.send(mockNow, invoiceList)
 
         val captor = argumentCaptor<InputStream>()
-        verify(sftpClient).put(captor.capture(), eq(fullPath))
+        verify(sftpClient).put(captor.capture(), eq(fileName))
         assertThat(captor.firstValue.readBytes().toString(Charsets.ISO_8859_1))
             .isEqualTo(proEInvoice1)
     }
@@ -139,7 +137,7 @@ internal class OuluInvoiceClientTest {
 
         assertThat(sendResult.succeeded).hasSize(2)
         val captor = argumentCaptor<InputStream>()
-        verify(sftpClient).put(captor.capture(), eq(fullPath))
+        verify(sftpClient).put(captor.capture(), eq(fileName))
         assertThat(captor.firstValue.readBytes().toString(Charsets.ISO_8859_1))
             .isEqualTo(proEInvoice1)
     }
@@ -167,7 +165,7 @@ internal class OuluInvoiceClientTest {
         assertThat(sendResult.succeeded).hasSize(1)
         assertThat(sendResult.manuallySent).hasSize(1)
         val captor = argumentCaptor<InputStream>()
-        verify(sftpClient).put(captor.capture(), eq(fullPath))
+        verify(sftpClient).put(captor.capture(), eq(fileName))
         assertThat(captor.firstValue.readBytes().toString(Charsets.ISO_8859_1))
             .isEqualTo(proEInvoice1)
     }
@@ -228,6 +226,6 @@ internal class OuluInvoiceClientTest {
             )
         val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
 
-        verify(sftpClient).put(any<InputStream>(), eq("$sftpPath/proe-20221012-133456.txt"))
+        verify(sftpClient).put(any<InputStream>(), eq("proe-20221012-133456.txt"))
     }
 }

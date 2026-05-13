@@ -17,7 +17,6 @@ private val logger = KotlinLogging.logger {}
 class OuluPaymentIntegrationClient(
     private val paymentGenerator: ProEPaymentGenerator,
     private val sftpClient: SftpClient,
-    private val remotePath: String,
 ) : PaymentIntegrationClient {
     override fun send(
         payments: List<Payment>,
@@ -34,7 +33,7 @@ class OuluPaymentIntegrationClient(
             try {
                 sftpClient.put(
                     generatorResult.paymentString.byteInputStream(Charsets.ISO_8859_1),
-                    "$remotePath/" + SimpleDateFormat("'proe-'yyyyMMdd-hhmmss'.txt'").format(Date()),
+                    SimpleDateFormat("'proe-'yyyyMMdd-hhmmss'.txt'").format(Date()),
                 )
                 logger.info { "Successfully sent ${successList.size} payments" }
             } catch (e: Exception) {

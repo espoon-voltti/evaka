@@ -169,8 +169,7 @@ class OuluConfig {
     @Bean
     fun invoiceIntegrationClient(ouluEnv: OuluEnv): InvoiceIntegrationClient =
         OuluInvoiceClient(
-            SftpClient(ouluEnv.intimeInvoices.toSftpEnv()),
-            ouluEnv.intimeInvoices.path,
+            SftpClient(ouluEnv.intimeInvoices.toSftpEnv(), ouluEnv.intimeInvoices.path),
             ProEInvoiceGenerator(FinanceDateProvider(RealEvakaClock())),
         )
 
@@ -190,8 +189,7 @@ class OuluConfig {
             ProEPaymentGenerator(FinanceDateProvider(RealEvakaClock()), BicMapper())
         return OuluPaymentIntegrationClient(
             paymentGenerator,
-            SftpClient(ouluEnv.intimePayments.toSftpEnv()),
-            ouluEnv.intimePayments.path,
+            SftpClient(ouluEnv.intimePayments.toSftpEnv(), ouluEnv.intimePayments.path),
         )
     }
 
@@ -218,8 +216,7 @@ class OuluConfig {
     fun fileDwExportClient(s3Client: S3Client, ouluEnv: OuluEnv): DwExportClient =
         FileDwExportClient(
             s3Client,
-            SftpClient(ouluEnv.dwExport.sftp.toSftpEnv()),
-            ouluEnv.dwExport.sftp.path,
+            SftpClient(ouluEnv.dwExport.sftp.toSftpEnv(), ouluEnv.dwExport.sftp.path),
             ouluEnv,
         )
 
@@ -235,7 +232,7 @@ class OuluConfig {
 
     @Bean
     fun ouluBiExportClient(ouluEnv: OuluEnv): BiExportClient =
-        OuluBiSftpExportClient(SftpClient(ouluEnv.fabric.sftp), ouluEnv.fabric.remotePath)
+        OuluBiSftpExportClient(SftpClient(ouluEnv.fabric.sftp, ouluEnv.fabric.remotePath))
 
     @Bean
     fun ouluBiJob(biExportClient: BiExportClient): BiExportJob =

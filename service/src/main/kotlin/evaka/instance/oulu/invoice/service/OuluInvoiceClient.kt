@@ -15,7 +15,6 @@ private val logger = KotlinLogging.logger {}
 
 class OuluInvoiceClient(
     private val sftpClient: SftpClient,
-    private val remotePath: String,
     private val invoiceGenerator: ProEInvoiceGenerator,
 ) : InvoiceIntegrationClient {
     override fun send(
@@ -36,10 +35,7 @@ class OuluInvoiceClient(
                         now.toLocalDateTime()
                             .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) +
                         ".txt"
-                sftpClient.put(
-                    proEinvoices.byteInputStream(Charsets.ISO_8859_1),
-                    "$remotePath/$fileName",
-                )
+                sftpClient.put(proEinvoices.byteInputStream(Charsets.ISO_8859_1), fileName)
                 logger.info {
                     "Successfully sent ${successList.size} invoices and created ${manuallySentList.size} manual invoice"
                 }

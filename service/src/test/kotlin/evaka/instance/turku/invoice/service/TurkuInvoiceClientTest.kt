@@ -27,9 +27,8 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 internal class TurkuInvoiceClientTest {
     private val invoiceGenerator = mock<SapInvoiceGenerator>()
     private val sftpClient = mock<SftpClient>()
-    private val sftpPath = "/some/path"
-    private val eVakaTurkuInvoiceClient = TurkuInvoiceClient(sftpClient, sftpPath, invoiceGenerator)
-    private val fileNamePattern = """$sftpPath/LAVAK_1002\d{6}-\d{6}.xml"""
+    private val eVakaTurkuInvoiceClient = TurkuInvoiceClient(sftpClient, invoiceGenerator)
+    private val fileNamePattern = """LAVAK_1002\d{6}-\d{6}.xml"""
 
     private val mockNow = HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(13, 34, 56))
 

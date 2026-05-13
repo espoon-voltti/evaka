@@ -16,7 +16,6 @@ private val logger = KotlinLogging.logger {}
 
 class TurkuInvoiceClient(
     private val sftpClient: SftpClient,
-    private val remotePath: String,
     private val invoiceGenerator: SapInvoiceGenerator,
 ) : InvoiceIntegrationClient {
     override fun send(
@@ -33,10 +32,7 @@ class TurkuInvoiceClient(
         if (successList.isNotEmpty()) {
             try {
                 val filename = SimpleDateFormat("'LAVAK_1002'yyMMdd-hhmmss'.xml'").format(Date())
-                sftpClient.put(
-                    invoiceString.byteInputStream(Charsets.UTF_8),
-                    "$remotePath/$filename",
-                )
+                sftpClient.put(invoiceString.byteInputStream(Charsets.UTF_8), filename)
                 logger.info {
                     "Successfully sent ${successList.size} invoices and created ${manuallySentList.size} manual invoice"
                 }
