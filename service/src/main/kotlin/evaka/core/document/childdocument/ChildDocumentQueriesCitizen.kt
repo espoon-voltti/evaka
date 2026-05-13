@@ -117,6 +117,8 @@ fun Database.Read.getCitizenChildDocument(id: ChildDocumentId): ChildDocumentCit
                     dt.published as template_published,
                     dt.content as template_content,
                     dt.archive_externally as template_archive_externally,
+                    dt.deletion_retention_days as template_deletion_retention_days,
+                    dt.deletion_retention_basis as template_deletion_retention_basis,
                     cdd.id AS decision_id,
                     cdd.status AS decision_status,
                     cdd.created_at AS decision_created_at,

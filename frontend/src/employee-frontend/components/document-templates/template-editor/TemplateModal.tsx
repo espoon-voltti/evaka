@@ -48,6 +48,10 @@ import {
   importDocumentTemplateMutation
 } from '../queries'
 
+import DeletionRulesEditor, {
+  useDeletionBasisOptions
+} from './DeletionRulesEditor'
+
 export type TemplateModalMode =
   | { type: 'new' }
   | { type: 'duplicate'; from: DocumentTemplateId }
@@ -129,6 +133,8 @@ const TemplateModalInner = React.memo(function TemplateModalInner({
     [i18n.documentTemplates, mode.type]
   )
 
+  const deletionBasisOptions = useDeletionBasisOptions()
+
   const getLanguageOptions = useCallback(
     (type: ChildDocumentType) => {
       const englishAllowed = type === 'CITIZEN_BASIC' || allowEnglishForAllTypes
@@ -171,7 +177,12 @@ const TemplateModalInner = React.memo(function TemplateModalInner({
             mode.data.archiveDurationMonths?.toString() ?? '120',
           archiveExternally: mode.data.archiveExternally,
           endDecisionWhenUnitChanges:
-            mode.data.endDecisionWhenUnitChanges ?? true
+            mode.data.endDecisionWhenUnitChanges ?? true,
+          deletionRetentionDays: mode.data.deletionRetentionDays.toString(),
+          deletionRetentionBasis: {
+            domValue: mode.data.deletionRetentionBasis,
+            options: deletionBasisOptions
+          }
         }
       } else if (mode.type === 'duplicate') {
         const template = mode.template
@@ -197,7 +208,12 @@ const TemplateModalInner = React.memo(function TemplateModalInner({
             template.archiveDurationMonths?.toString() ?? '120',
           archiveExternally: template.archiveExternally,
           endDecisionWhenUnitChanges:
-            template.endDecisionWhenUnitChanges ?? true
+            template.endDecisionWhenUnitChanges ?? true,
+          deletionRetentionDays: template.deletionRetentionDays.toString(),
+          deletionRetentionBasis: {
+            domValue: template.deletionRetentionBasis,
+            options: deletionBasisOptions
+          }
         }
       } else {
         return {
@@ -219,7 +235,12 @@ const TemplateModalInner = React.memo(function TemplateModalInner({
           processDefinitionNumber: '',
           archiveDurationMonths: '120',
           archiveExternally: false,
-          endDecisionWhenUnitChanges: true
+          endDecisionWhenUnitChanges: true,
+          deletionRetentionDays: '',
+          deletionRetentionBasis: {
+            domValue: '',
+            options: deletionBasisOptions
+          }
         }
       }
     },
@@ -263,7 +284,9 @@ const TemplateModalInner = React.memo(function TemplateModalInner({
     processDefinitionNumber,
     archiveDurationMonths,
     archiveExternally,
-    endDecisionWhenUnitChanges
+    endDecisionWhenUnitChanges,
+    deletionRetentionDays,
+    deletionRetentionBasis
   } = useFormFields(form)
 
   return (
@@ -400,6 +423,11 @@ const TemplateModalInner = React.memo(function TemplateModalInner({
         bind={archiveExternally}
         label={i18n.documentTemplates.templateModal.archiveExternally}
         data-qa="archive-externally-checkbox"
+      />
+      <Gap />
+      <DeletionRulesEditor
+        retentionDays={deletionRetentionDays}
+        retentionBasis={deletionRetentionBasis}
       />
     </AsyncFormModal>
   )

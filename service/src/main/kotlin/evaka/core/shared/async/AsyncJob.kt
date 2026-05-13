@@ -229,6 +229,8 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class DeleteExpiredChildDocuments(override val user: AuthenticatedUser? = null) : AsyncJob
+
     data class SendCalendarEventDigestEmail(
         val parentId: PersonId,
         val language: Language,
@@ -492,6 +494,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     CreateExpiredIncome::class,
                     DeleteAttachment::class,
                     DeleteChildDocumentPdf::class,
+                    DeleteExpiredChildDocuments::class,
                     DeletePersonalDevicesIfNeeded::class,
                     DvvModificationsRefresh::class,
                     GarbageCollectPairing::class,
