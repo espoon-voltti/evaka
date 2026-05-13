@@ -36,12 +36,11 @@ const components: Translations = {
     selected: 'Vald',
     unselected: 'Ej vald',
     userTypes: {
-      // TODO
-      SYSTEM: 'järjestelmä',
-      CITIZEN: 'kuntalainen',
-      EMPLOYEE: 'työntekijä',
-      MOBILE_DEVICE: 'mobiililaite',
-      UNKNOWN: 'tuntematon'
+      SYSTEM: 'system',
+      CITIZEN: 'kommuninvånare',
+      EMPLOYEE: 'arbetstagare',
+      MOBILE_DEVICE: 'mobilenhet',
+      UNKNOWN: 'okänd'
     }
   },
   datePicker: {

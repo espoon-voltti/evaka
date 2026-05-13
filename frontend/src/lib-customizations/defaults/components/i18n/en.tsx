@@ -36,12 +36,11 @@ const components: Translations = {
     selected: 'Selected',
     unselected: 'Unselected',
     userTypes: {
-      // TODO
-      SYSTEM: 'järjestelmä',
-      CITIZEN: 'kuntalainen',
-      EMPLOYEE: 'työntekijä',
-      MOBILE_DEVICE: 'mobiililaite',
-      UNKNOWN: 'tuntematon'
+      SYSTEM: 'system',
+      CITIZEN: 'citizen',
+      EMPLOYEE: 'employee',
+      MOBILE_DEVICE: 'mobile device',
+      UNKNOWN: 'unknown'
     }
   },
   datePicker: {
