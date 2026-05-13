@@ -83,7 +83,11 @@ class ScheduledJobRunner(
         val logMeta = mapOf("jobName" to job.name)
         logger.info(logMeta) { "Planning scheduled job ${job.name}" }
         val payload =
-            if (definition.settings.schedule is Nightly) AsyncJob.RunNightlyJob(job.name)
+            if (
+                definition.settings.schedule is Nightly ||
+                    definition.settings.schedule is AnnualOnIsoWeek
+            )
+                AsyncJob.RunNightlyJob(job.name)
             else AsyncJob.RunScheduledJob(job.name)
         db.transaction { tx ->
             asyncJobRunner.plan(

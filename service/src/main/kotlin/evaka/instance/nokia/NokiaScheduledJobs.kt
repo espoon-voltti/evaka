@@ -16,6 +16,7 @@ import evaka.core.shared.job.ScheduledJobSettings
 import evaka.trevaka.archival.planDocumentArchival
 import evaka.trevaka.export.ChildDocumentTransferType
 import evaka.trevaka.export.exportChildDocumentsViaSftp
+import java.time.DayOfWeek
 import java.time.LocalTime
 
 enum class NokiaScheduledJob(
@@ -24,7 +25,10 @@ enum class NokiaScheduledJob(
 ) {
     ExportPreschoolToPrimaryChildDocuments(
         NokiaScheduledJobs::exportPreschoolToPrimaryChildDocuments,
-        ScheduledJobSettings(enabled = false, schedule = JobSchedule.cron("0 0 0 1 8 ?")),
+        ScheduledJobSettings(
+            enabled = false,
+            schedule = JobSchedule.annualOnIsoWeek(isoWeek = 16, dayOfWeek = DayOfWeek.WEDNESDAY),
+        ),
     ),
     PlanDocumentArchival(
         NokiaScheduledJobs::archiveEligibleDocuments,
