@@ -2021,6 +2021,69 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `reminder job completes gracefully when calendar event has been deleted`() {
+        db.transaction { tx ->
+            tx.updatePersonalDetails(
+                adult1.id,
+                PersonalDataUpdate(
+                    preferredName = "",
+                    phone = "",
+                    backupPhone = "",
+                    email = "example@example.com",
+                ),
+            )
+        }
+
+        val eventTimeForm =
+            CalendarEventTimeForm(
+                date = today.plusDays(2),
+                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
+            )
+        val form =
+            CalendarEventForm(
+                unitId = daycare.id,
+                tree = mapOf(group1.id to null),
+                title = "Group survey",
+                description = "gsu",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                times = listOf(eventTimeForm),
+            )
+
+        val event = createCalendarEvent(form)
+
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            CalendarEventTimeEmployeeReservationForm(event.times.first().id, child1.id),
+        )
+
+        // flush reservation email
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        MockEmailClient.clear()
+
+        calendarEventNotificationService.scheduleDiscussionTimeReminders(db, now)
+
+        // Calendar event is deleted before the reminder async job runs
+        deleteCalendarEvent(event.id)
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(0, MockEmailClient.emails.size)
+
+        val pendingReminderJobs = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT count(*) FROM async_job WHERE type = 'SendDiscussionReservationReminderEmail' AND completed_at IS NULL"
+                    )
+                }
+                .exactlyOne<Int>()
+        }
+        assertEquals(0, pendingReminderJobs)
+    }
+
+    @Test
     fun `reminders not sent outside notification window for discussion time reservations`() {
         db.transaction { tx ->
             // Email address is needed
