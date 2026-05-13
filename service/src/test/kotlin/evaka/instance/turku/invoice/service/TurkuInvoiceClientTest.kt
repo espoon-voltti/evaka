@@ -3,17 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 package evaka.instance.turku.invoice.service
 
-import com.jcraft.jsch.SftpException
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.sftp.SftpClient
+import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
-import org.mockito.kotlin.eq
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -24,8 +26,8 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 @ExtendWith(OutputCaptureExtension::class)
 internal class TurkuInvoiceClientTest {
     private val invoiceGenerator = mock<SapInvoiceGenerator>()
-    private val sftpSender = mock<SftpSender>()
-    private val eVakaTurkuInvoiceClient = TurkuInvoiceClient(sftpSender, invoiceGenerator)
+    private val sftpClient = mock<SftpClient>()
+    private val eVakaTurkuInvoiceClient = TurkuInvoiceClient(sftpClient, invoiceGenerator)
     private val fileNamePattern = """LAVAK_1002\d{6}-\d{6}.xml"""
 
     private val mockNow = HelsinkiDateTime.of(LocalDate.of(2022, 10, 12), LocalTime.of(13, 34, 56))
@@ -61,8 +63,10 @@ internal class TurkuInvoiceClientTest {
 
         eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
-        verify(sftpSender)
-            .send(eq(sapInvoice1), argThat { filePath -> filePath.matches(Regex(fileNamePattern)) })
+        val captor = argumentCaptor<InputStream>()
+        verify(sftpClient)
+            .put(captor.capture(), argThat { filePath -> filePath.matches(Regex(fileNamePattern)) })
+        assertThat(captor.firstValue.readBytes().toString(Charsets.UTF_8)).isEqualTo(sapInvoice1)
     }
 
     @Test
@@ -74,8 +78,7 @@ internal class TurkuInvoiceClientTest {
 
         eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
-        verify(sftpSender, never())
-            .send(eq(""), argThat { filePath -> filePath.matches(Regex(fileNamePattern)) })
+        verify(sftpClient, never()).put(any<InputStream>(), any())
     }
 
     @Test
@@ -108,12 +111,12 @@ internal class TurkuInvoiceClientTest {
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
         whenever(
-                sftpSender.send(
-                    eq(sapInvoice1),
+                sftpClient.put(
+                    any<InputStream>(),
                     argThat { filePath -> filePath.matches(Regex(fileNamePattern)) },
                 )
             )
-            .thenThrow(SftpException::class.java)
+            .thenThrow(RuntimeException::class.java)
 
         val sendResult = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
@@ -135,8 +138,10 @@ internal class TurkuInvoiceClientTest {
         val sendResult = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(sendResult.succeeded).hasSize(2)
-        verify(sftpSender)
-            .send(eq(sapInvoice1), argThat { filePath -> filePath.matches(Regex(fileNamePattern)) })
+        val captor = argumentCaptor<InputStream>()
+        verify(sftpClient)
+            .put(captor.capture(), argThat { filePath -> filePath.matches(Regex(fileNamePattern)) })
+        assertThat(captor.firstValue.readBytes().toString(Charsets.UTF_8)).isEqualTo(sapInvoice1)
     }
 
     @Test
@@ -161,8 +166,10 @@ internal class TurkuInvoiceClientTest {
 
         assertThat(sendResult.succeeded).hasSize(1)
         assertThat(sendResult.manuallySent).hasSize(1)
-        verify(sftpSender)
-            .send(eq(sapInvoice1), argThat { filePath -> filePath.matches(Regex(fileNamePattern)) })
+        val captor = argumentCaptor<InputStream>()
+        verify(sftpClient)
+            .put(captor.capture(), argThat { filePath -> filePath.matches(Regex(fileNamePattern)) })
+        assertThat(captor.firstValue.readBytes().toString(Charsets.UTF_8)).isEqualTo(sapInvoice1)
     }
 
     @Test
@@ -202,12 +209,12 @@ internal class TurkuInvoiceClientTest {
             )
 
         whenever(
-                sftpSender.send(
-                    eq(sapInvoice1),
+                sftpClient.put(
+                    any<InputStream>(),
                     argThat { filePath -> filePath.matches(Regex(fileNamePattern)) },
                 )
             )
-            .thenThrow(SftpException::class.java)
+            .thenThrow(RuntimeException::class.java)
         eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(output).contains("Failed to send 2 invoices")

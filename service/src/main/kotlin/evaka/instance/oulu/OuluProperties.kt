@@ -39,6 +39,17 @@ data class SftpProperties(
     val username: Sensitive<String>,
     val password: Sensitive<String>,
 ) {
+    fun toSftpEnv(): SftpEnv =
+        SftpEnv(
+            host = address,
+            port = port,
+            hostKeys = emptyList(),
+            username = username.value,
+            password = password,
+            privateKey = null,
+            skipHostKeyVerification = true,
+        )
+
     companion object {
         fun fromEnvironment(env: Environment, prefix: String) =
             SftpProperties(
@@ -76,10 +87,7 @@ data class FabricProperties(val sftp: SftpEnv, val remotePath: String) {
                                 Sensitive(it)
                             },
                     ),
-                remotePath =
-                    (env.lookup<String?>("evakaoulu.fabric.remote_path") ?: "").let {
-                        if (it.isEmpty() || it.endsWith("/")) it else "$it/"
-                    },
+                remotePath = env.lookup<String?>("evakaoulu.fabric.remote_path") ?: "",
             )
     }
 }

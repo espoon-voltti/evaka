@@ -7,6 +7,7 @@ package evaka.instance.turku.invoice.service
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.integration.InvoiceIntegrationClient
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.sftp.SftpClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -14,7 +15,7 @@ import java.util.Date
 private val logger = KotlinLogging.logger {}
 
 class TurkuInvoiceClient(
-    private val sftpSender: SftpSender,
+    private val sftpClient: SftpClient,
     private val invoiceGenerator: SapInvoiceGenerator,
 ) : InvoiceIntegrationClient {
     override fun send(
@@ -31,7 +32,7 @@ class TurkuInvoiceClient(
         if (successList.isNotEmpty()) {
             try {
                 val filename = SimpleDateFormat("'LAVAK_1002'yyMMdd-hhmmss'.xml'").format(Date())
-                sftpSender.send(invoiceString, filename)
+                sftpClient.put(invoiceString.byteInputStream(Charsets.UTF_8), filename)
                 logger.info {
                     "Successfully sent ${successList.size} invoices and created ${manuallySentList.size} manual invoice"
                 }

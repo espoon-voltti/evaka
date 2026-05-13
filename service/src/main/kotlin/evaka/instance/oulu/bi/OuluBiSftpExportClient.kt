@@ -11,19 +11,17 @@ import evaka.core.shared.sftp.SftpClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.format.DateTimeFormatter
 
-class OuluBiSftpExportClient(private val sftpClient: SftpClient, private val remotePath: String) :
-    BiExportClient {
+class OuluBiSftpExportClient(private val sftpClient: SftpClient) : BiExportClient {
     private val logger = KotlinLogging.logger {}
 
     override fun sendBiCsvFile(tableName: String, clock: EvakaClock, stream: CsvInputStream) {
         val date = clock.now().toLocalDate()
         val fileName = "${tableName}_${date.format(DateTimeFormatter.ISO_DATE)}.csv"
-        val target = "$remotePath$fileName"
 
         logger.info { "Sending BI content for '$tableName' via SFTP" }
 
-        sftpClient.put(stream, target)
+        sftpClient.put(stream, fileName)
 
-        logger.info { "BI file '$target' successfully sent via SFTP" }
+        logger.info { "BI file '$fileName' successfully sent via SFTP" }
     }
 }

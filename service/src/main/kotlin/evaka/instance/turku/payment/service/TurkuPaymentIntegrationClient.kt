@@ -7,7 +7,7 @@ package evaka.instance.turku.payment.service
 import evaka.core.invoicing.domain.Payment
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.shared.db.Database
-import evaka.instance.turku.invoice.service.SftpSender
+import evaka.core.shared.sftp.SftpClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -16,7 +16,7 @@ private val logger = KotlinLogging.logger {}
 
 class TurkuPaymentIntegrationClient(
     private val paymentGenerator: SapPaymentGenerator,
-    private val sftpSender: SftpSender,
+    private val sftpClient: SftpClient,
 ) : PaymentIntegrationClient {
     override fun send(
         payments: List<Payment>,
@@ -44,7 +44,11 @@ class TurkuPaymentIntegrationClient(
                     .toMap()
 
             try {
-                sftpSender.sendAll(contents)
+                sftpClient.session { session ->
+                    contents.forEach { (filename, body) ->
+                        session.put(body.byteInputStream(Charsets.UTF_8), filename)
+                    }
+                }
                 logger.info { "Successfully sent ${successList.size} payments" }
             } catch (e: Exception) {
                 logger.error(e) { "Failed to send ${successList.size} payments" }

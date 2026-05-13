@@ -4,7 +4,6 @@
 
 package evaka.instance.oulu.dw
 
-import com.jcraft.jsch.JSch
 import evaka.core.BucketEnv
 import evaka.core.FullApplicationTest
 import evaka.core.Sensitive
@@ -25,13 +24,12 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.sftp.SftpClient
 import evaka.instance.oulu.BucketProperties
 import evaka.instance.oulu.DwExportProperties
 import evaka.instance.oulu.FabricProperties
 import evaka.instance.oulu.OuluEnv
 import evaka.instance.oulu.SftpProperties
-import evaka.instance.oulu.invoice.service.SftpConnector
-import evaka.instance.oulu.invoice.service.SftpSender
 import java.time.LocalDate
 import java.time.LocalTime
 import org.junit.jupiter.api.BeforeAll
@@ -99,6 +97,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                                 username = "foo",
                                 password = Sensitive("pass"),
                                 privateKey = null,
+                                skipHostKeyVerification = true,
                             ),
                         remotePath = "upload/",
                     ),
@@ -109,8 +108,12 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
             s3Client.createBucket(CreateBucketRequest.builder().bucket(EXPORT_BUCKET).build())
         }
 
-        val sftpSender = SftpSender(ouluEnv.dwExport.sftp, SftpConnector(JSch()))
-        val exportClient = FileDwExportClient(s3Client, sftpSender, ouluEnv)
+        val exportClient =
+            FileDwExportClient(
+                s3Client,
+                SftpClient(ouluEnv.dwExport.sftp.toSftpEnv(), ouluEnv.dwExport.sftp.path),
+                ouluEnv,
+            )
         job = DwExportJob(exportClient)
     }
 

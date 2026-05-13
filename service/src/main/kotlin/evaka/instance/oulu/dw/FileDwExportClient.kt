@@ -6,8 +6,8 @@ package evaka.instance.oulu.dw
 
 import evaka.core.bi.CsvInputStream
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.sftp.SftpClient
 import evaka.instance.oulu.OuluEnv
-import evaka.instance.oulu.invoice.service.SftpSender
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedOutputStream
 import java.nio.file.Files
@@ -17,7 +17,7 @@ import software.amazon.awssdk.services.s3.S3Client
 
 class FileDwExportClient(
     private val s3Client: S3Client,
-    private val sftpSender: SftpSender,
+    private val sftpClient: SftpClient,
     private val ouluEnv: OuluEnv,
 ) : DwExportClient {
     private val logger = KotlinLogging.logger {}
@@ -41,7 +41,7 @@ class FileDwExportClient(
 
             logger.info { "Sending DW content for '$queryName' via SFTP" }
 
-            sftpSender.send(tempFile.toFile().readText(Charsets.UTF_8), fileName, Charsets.UTF_8)
+            tempFile.toFile().inputStream().use { input -> sftpClient.put(input, fileName) }
 
             logger.info { "Sending DW content for '$queryName' to S3" }
 

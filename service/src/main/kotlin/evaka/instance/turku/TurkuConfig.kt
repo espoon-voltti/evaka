@@ -4,7 +4,6 @@
 
 package evaka.instance.turku
 
-import com.jcraft.jsch.JSch
 import evaka.core.ScheduledJobsEnv
 import evaka.core.VtjXroadEnv
 import evaka.core.application.ApplicationStatus
@@ -31,6 +30,7 @@ import evaka.core.shared.auth.PasswordSpecification
 import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.message.IMessageProvider
 import evaka.core.shared.security.actionrule.ActionRuleMapping
+import evaka.core.shared.sftp.SftpClient
 import evaka.core.shared.template.ITemplateProvider
 import evaka.core.titania.TitaniaEmployeeIdConverter
 import evaka.core.vtjclient.config.httpsMessageSender
@@ -43,8 +43,6 @@ import evaka.instance.turku.invoice.config.TurkuIncomeCoefficientMultiplierProvi
 import evaka.instance.turku.invoice.config.TurkuIncomeTypesProvider
 import evaka.instance.turku.invoice.config.TurkuInvoiceProductProvider
 import evaka.instance.turku.invoice.service.SapInvoiceGenerator
-import evaka.instance.turku.invoice.service.SftpConnector
-import evaka.instance.turku.invoice.service.SftpSender
 import evaka.instance.turku.invoice.service.TurkuInvoiceClient
 import evaka.instance.turku.payment.service.SapPaymentGenerator
 import evaka.instance.turku.payment.service.TurkuPaymentIntegrationClient
@@ -157,13 +155,11 @@ class TurkuConfig {
     fun invoiceIntegrationClient(
         properties: TurkuEnv,
         invoiceGenerator: SapInvoiceGenerator,
-        sftpConnector: SftpConnector,
-    ): InvoiceIntegrationClient {
-        val sftpSender = SftpSender(properties.sapInvoicing, sftpConnector)
-        return TurkuInvoiceClient(sftpSender, invoiceGenerator)
-    }
-
-    @Bean fun sftpConnector(): SftpConnector = SftpConnector(JSch())
+    ): InvoiceIntegrationClient =
+        TurkuInvoiceClient(
+            SftpClient(properties.sapInvoicing.toSftpEnv(), properties.sapInvoicing.path),
+            invoiceGenerator,
+        )
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = TurkuIncomeTypesProvider()
 
@@ -179,11 +175,11 @@ class TurkuConfig {
     fun paymentIntegrationClient(
         evakaProperties: TurkuEnv,
         paymentGenerator: SapPaymentGenerator,
-        sftpConnector: SftpConnector,
-    ): PaymentIntegrationClient {
-        val sftpSender = SftpSender(evakaProperties.sapPayments, sftpConnector)
-        return TurkuPaymentIntegrationClient(paymentGenerator, sftpSender)
-    }
+    ): PaymentIntegrationClient =
+        TurkuPaymentIntegrationClient(
+            paymentGenerator,
+            SftpClient(evakaProperties.sapPayments.toSftpEnv(), evakaProperties.sapPayments.path),
+        )
 
     @Bean
     @Profile("production")
@@ -205,8 +201,10 @@ class TurkuConfig {
     @Bean fun mealTypeMapper(): MealTypeMapper = DefaultMealTypeMapper
 
     @Bean
-    fun fileDwExportClient(sftpConnector: SftpConnector, properties: TurkuEnv): DwExportClient =
-        FileDWExportClient(SftpSender(properties.dwExport.sftp, sftpConnector))
+    fun fileDwExportClient(properties: TurkuEnv): DwExportClient =
+        FileDWExportClient(
+            SftpClient(properties.dwExport.sftp.toSftpEnv(), properties.dwExport.sftp.path)
+        )
 
     @Bean
     fun evakaTurkuAsyncJobRunner(
