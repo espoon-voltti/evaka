@@ -227,10 +227,12 @@ fun Database.Transaction.addNewChildrenForVardaUpdate(): Int {
         sql(
             """
                     INSERT INTO varda_state (child_id, state)
-                    SELECT child_id, null
+                    SELECT pl.child_id, null
                     FROM placement pl
+                    JOIN person p ON p.id = pl.child_id
                     WHERE
                         pl.type = ANY(${bind(vardaPlacementTypes)}) AND
+                        (p.social_security_number IS NOT NULL OR (p.oph_person_oid IS NOT NULL AND p.oph_person_oid != '')) AND
                         NOT EXISTS (SELECT FROM varda_state vs WHERE vs.child_id = pl.child_id)
                     ON CONFLICT (child_id) DO NOTHING
                     """
