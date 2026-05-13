@@ -72,6 +72,37 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `children without ssn and oph_person_oid are not added to varda_state`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val childWithSsn = DevPerson(ssn = "030320A904N", ophPersonOid = null)
+        val childWithOid = DevPerson(ssn = null, ophPersonOid = "1.2.3.4")
+        val childWithEmptyOid = DevPerson(ssn = null, ophPersonOid = "")
+        val childWithNeither = DevPerson(ssn = null, ophPersonOid = null)
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            listOf(childWithSsn, childWithOid, childWithEmptyOid, childWithNeither).forEach { child
+                ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insert(
+                    DevPlacement(
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2021, 1, 1),
+                        endDate = LocalDate.of(2021, 2, 28),
+                    )
+                )
+            }
+
+            tx.addNewChildrenForVardaUpdate()
+        }
+
+        assertEquals(setOf(childWithSsn.id, childWithOid.id), getVardaStateChildIds())
+    }
+
+    @Test
     fun `update is not planned if state is up-to-date`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id, ophOrganizerOid = ophEnv.organizerOid)
