@@ -102,6 +102,7 @@ class OuluConfig {
             financeMessageAccountName =
                 "Varhaiskasvatuksen asiakasmaksut - Early childhood education fees",
             archiveMetadataOrganization = "Oulun kaupungin varhaiskasvatus",
+            metadataBusinessId = "0187690-1",
             archiveMetadataConfigs = { type: ArchiveProcessType, year: Int ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE -> {

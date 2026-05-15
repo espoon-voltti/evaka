@@ -174,13 +174,13 @@ test.describe('Citizen finance decisions', () => {
       feeDecision.id,
       'Maksupäätös',
       'Varhaiskasvatuksen maksupäätös',
-      'Espoon kaupungin esiopetus ja varhaiskasvatus'
+      'Espoon kaupungin esiopetus ja varhaiskasvatus, 0101263-6'
     )
     await citizenDecisionsPage.assertFinanceDecisionMetadata(
       voucherValueDecision.id,
       'Arvopäätös',
       'Varhaiskasvatuksen palvelusetelin arvopäätös',
-      'Espoon kaupungin esiopetus ja varhaiskasvatus'
+      'Espoon kaupungin esiopetus ja varhaiskasvatus, 0101263-6'
     )
 
     await new CitizenHeader(page).selectLanguage('sv')
@@ -188,13 +188,13 @@ test.describe('Citizen finance decisions', () => {
       feeDecision.id,
       'Avgiftsbeslut',
       'Avgiftsbeslut för småbarnspedagogik',
-      'Esbo stads förskoleundervisning och småbarnspedagogik'
+      'Esbo stads förskoleundervisning och småbarnspedagogik, 0101263-6'
     )
     await citizenDecisionsPage.assertFinanceDecisionMetadata(
       voucherValueDecision.id,
       'Värdebeslut',
       'Värdebeslut för servicesedel inom småbarnspedagogik',
-      'Esbo stads förskoleundervisning och småbarnspedagogik'
+      'Esbo stads förskoleundervisning och småbarnspedagogik, 0101263-6'
     )
   })
 
@@ -209,7 +209,7 @@ test.describe('Citizen finance decisions', () => {
       feeDecision.id,
       'Maksupäätös',
       'Varhaiskasvatuksen maksupäätös',
-      'Espoon kaupungin esiopetus ja varhaiskasvatus'
+      'Espoon kaupungin esiopetus ja varhaiskasvatus, 0101263-6'
     )
     await citizenDecisionsPage.assertMetadataForFinanceDecisionNotShown(
       voucherValueDecision.id

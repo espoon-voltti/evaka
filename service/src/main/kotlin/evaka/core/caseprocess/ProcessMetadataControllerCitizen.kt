@@ -7,6 +7,7 @@ package evaka.core.caseprocess
 import evaka.core.Audit
 import evaka.core.AuditId
 import evaka.core.shared.ApplicationId
+import evaka.core.shared.FeatureConfig
 import evaka.core.shared.FeeDecisionId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.auth.AuthenticatedUser
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 class ProcessMetadataControllerCitizen(
     private val accessControl: AccessControl,
     private val processMetadataService: ProcessMetadataService,
+    private val featureConfig: FeatureConfig,
 ) {
     @GetMapping("/applications/{applicationId}")
     fun getApplicationMetadata(
@@ -92,6 +94,7 @@ class ProcessMetadataControllerCitizen(
                                 processType = ProcessType.FEE_DECISION,
                                 primaryDocument = decisionDocument,
                                 secondaryDocuments = emptyList(),
+                                businessId = featureConfig.metadataBusinessId,
                             )
                             .redactForCitizen()
                     )
@@ -137,6 +140,7 @@ class ProcessMetadataControllerCitizen(
                                 processType = ProcessType.VOUCHER_VALUE_DECISION,
                                 primaryDocument = decisionDocument,
                                 secondaryDocuments = emptyList(),
+                                businessId = featureConfig.metadataBusinessId,
                             )
                             .redactForCitizen()
                     )

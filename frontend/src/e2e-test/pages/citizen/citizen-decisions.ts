@@ -150,7 +150,7 @@ export default class CitizenDecisionsPage {
     )
     await expect(
       decisionSection.findByDataQa('metadata-organization')
-    ).toHaveText('Espoon kaupungin esiopetus ja varhaiskasvatus')
+    ).toHaveText('Espoon kaupungin esiopetus ja varhaiskasvatus, 0101263-6')
     await expect(
       decisionSection.findAllByDataQa('metadata-document-name').last()
     ).toHaveText('Päätös varhaiskasvatuksesta')

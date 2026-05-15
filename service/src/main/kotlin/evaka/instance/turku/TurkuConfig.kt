@@ -89,6 +89,7 @@ class TurkuConfig {
             financeMessageAccountName =
                 "Varhaiskasvatuksen asiakasmaksut - Småbarnspedagogikens avgifter - Early childhood education fees",
             archiveMetadataOrganization = "Turun kaupungin varhaiskasvatus",
+            metadataBusinessId = "0204819-8",
             archiveMetadataConfigs = { type: ArchiveProcessType, year: Int ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE -> {

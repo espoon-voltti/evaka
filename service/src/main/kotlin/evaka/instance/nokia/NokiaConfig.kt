@@ -59,6 +59,7 @@ class NokiaConfig {
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,
             archiveMetadataOrganization = "Nokian kaupunki, varhaiskasvatus ja esiopetus",
+            metadataBusinessId = "0205711-9",
             archiveMetadataConfigs = { type, year ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE ->

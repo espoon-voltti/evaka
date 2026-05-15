@@ -58,6 +58,7 @@ class PirkkalaConfig {
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,
             archiveMetadataOrganization = "Pirkkalan kunta, varhaiskasvatus",
+            metadataBusinessId = "0152084-1",
             archiveMetadataConfigs = { type, year ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE ->

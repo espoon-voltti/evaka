@@ -91,6 +91,7 @@ class TampereConfig {
             fiveYearsOldDaycareEnabled = false,
             temporaryDaycarePartDayAbsenceGivesADailyRefund = false,
             archiveMetadataOrganization = "Tampereen kaupunki, varhaiskasvatus ja esiopetus",
+            metadataBusinessId = "0211675-2",
             archiveMetadataConfigs = { type, year ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE ->

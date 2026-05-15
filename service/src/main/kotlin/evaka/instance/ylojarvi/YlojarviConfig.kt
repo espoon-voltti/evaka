@@ -54,6 +54,7 @@ class YlojarviConfig {
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,
             archiveMetadataOrganization = "Ylöjärven kaupunki, varhaiskasvatus",
+            metadataBusinessId = "0158221-7",
             archiveMetadataConfigs = { type, year ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE ->

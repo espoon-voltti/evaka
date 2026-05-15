@@ -54,6 +54,7 @@ class LempaalaConfig {
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,
             archiveMetadataOrganization = "Lempäälän kunta, varhaiskasvatus",
+            metadataBusinessId = "0150783-1",
             archiveMetadataConfigs = { type, year ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE ->

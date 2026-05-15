@@ -98,6 +98,7 @@ export interface DocumentVersion {
 * Generated from evaka.core.caseprocess.ProcessMetadata
 */
 export interface ProcessMetadata {
+  businessId: string
   primaryDocument: DocumentMetadata
   process: CaseProcess
   processName: string | null

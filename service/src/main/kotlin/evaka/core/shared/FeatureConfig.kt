@@ -100,6 +100,12 @@ data class FeatureConfig(
     /** The name of the organization used in archived metadata */
     val archiveMetadataOrganization: String,
 
+    /**
+     * Municipality business ID (Y-tunnus) displayed in the metadata UI. Not persisted to
+     * case_process or archive metadata.
+     */
+    val metadataBusinessId: String,
+
     /** Configs for enabled archive metadata processes */
     val archiveMetadataConfigs: (type: ArchiveProcessType, year: Int) -> ArchiveProcessConfig?,
 

@@ -13,6 +13,7 @@ import evaka.core.document.childdocument.getChildDocument
 import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.FeatureConfig
 import evaka.core.shared.FeeDecisionId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.auth.AuthenticatedUser
@@ -112,6 +113,7 @@ data class ProcessMetadata(
     val processName: String?,
     val primaryDocument: DocumentMetadata,
     val secondaryDocuments: List<DocumentMetadata>,
+    val businessId: String,
     val processType: ProcessType? = null,
 ) {
     fun redactForCitizen() =
@@ -135,6 +137,7 @@ data class ProcessMetadataResponse(val data: ProcessMetadata?)
 class ProcessMetadataController(
     private val accessControl: AccessControl,
     private val processMetadataService: ProcessMetadataService,
+    private val featureConfig: FeatureConfig,
 ) {
 
     @GetMapping("/child-documents/{childDocumentId}")
@@ -165,6 +168,7 @@ class ProcessMetadataController(
                             process = process,
                             processName = processName,
                             processType = processType,
+                            businessId = featureConfig.metadataBusinessId,
                             primaryDocument =
                                 document.copy(
                                     downloadPath =
@@ -268,6 +272,7 @@ class ProcessMetadataController(
                             processType = ProcessType.FEE_DECISION,
                             primaryDocument = decisionDocument,
                             secondaryDocuments = emptyList(),
+                            businessId = featureConfig.metadataBusinessId,
                         )
                     )
                 }
@@ -312,6 +317,7 @@ class ProcessMetadataController(
                             processType = ProcessType.VOUCHER_VALUE_DECISION,
                             primaryDocument = decisionDocument,
                             secondaryDocuments = emptyList(),
+                            businessId = featureConfig.metadataBusinessId,
                         )
                     )
                 }
