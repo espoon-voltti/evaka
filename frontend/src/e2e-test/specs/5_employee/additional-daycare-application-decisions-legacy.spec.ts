@@ -19,9 +19,9 @@ import {
   resetServiceState
 } from '../../generated/api-clients'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
+import type { DecisionEditorPage } from '../../pages/employee/applications/application-list-view'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
-import type { DecisionDraftPage } from '../../pages/employee/applications/decision-draft-page'
 import { test } from '../../playwright'
 import type { NewEvakaPage } from '../../playwright'
 import type { Page } from '../../utils/page'
@@ -76,7 +76,14 @@ const serviceWorker = Fixture.employee().serviceWorker()
 let page: Page
 
 test.describe('Additional daycare application decision drafts', () => {
-  test.use({ evakaOptions: { mockedTime } })
+  test.use({
+    evakaOptions: {
+      mockedTime,
+      employeeCustomizations: {
+        featureFlags: { decisionDraftRedesign: false }
+      }
+    }
+  })
 
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
@@ -101,10 +108,12 @@ test.describe('Additional daycare application decision drafts', () => {
       daycareA,
       newEvakaPage
     )
-    const decisionDraftPage = await navigateToDecisionDrafts(applicationId)
+    const decisionEditorPage = await navigateToDecisionDrafts(applicationId)
 
-    await decisionDraftPage.plannedCheckbox('PRESCHOOL').waitUntilChecked(false)
-    await decisionDraftPage
+    await decisionEditorPage
+      .plannedCheckbox('PRESCHOOL')
+      .waitUntilChecked(false)
+    await decisionEditorPage
       .plannedCheckbox('PRESCHOOL_DAYCARE')
       .waitUntilChecked(true)
   })
@@ -117,10 +126,10 @@ test.describe('Additional daycare application decision drafts', () => {
       daycareB,
       newEvakaPage
     )
-    const decisionDraftPage = await navigateToDecisionDrafts(applicationId)
+    const decisionEditorPage = await navigateToDecisionDrafts(applicationId)
 
-    await decisionDraftPage.plannedCheckbox('PRESCHOOL').waitUntilChecked(true)
-    await decisionDraftPage
+    await decisionEditorPage.plannedCheckbox('PRESCHOOL').waitUntilChecked(true)
+    await decisionEditorPage
       .plannedCheckbox('PRESCHOOL_DAYCARE')
       .waitUntilChecked(true)
   })
@@ -195,7 +204,7 @@ async function citizenCreatesPreschoolDaycareApplication(
 
 async function navigateToDecisionDrafts(
   applicationId: ApplicationId
-): Promise<DecisionDraftPage> {
+): Promise<DecisionEditorPage> {
   await execSimpleApplicationActions(
     applicationId,
     ['MOVE_TO_WAITING_PLACEMENT', 'CREATE_DEFAULT_PLACEMENT_PLAN'],
@@ -207,9 +216,9 @@ async function navigateToDecisionDrafts(
   await page.goto(ApplicationListView.url)
   await applicationListView.filterByApplicationStatus('WAITING_DECISION')
   await applicationListView.searchButton.click()
-  const decisionDraftPage = await applicationListView
+  const decisionEditorPage = await applicationListView
     .applicationRow(applicationId)
-    .primaryActionEditDecisionsRedesign()
-  await decisionDraftPage.waitUntilLoaded()
-  return decisionDraftPage
+    .primaryActionEditDecisions()
+  await decisionEditorPage.waitUntilLoaded()
+  return decisionEditorPage
 }
