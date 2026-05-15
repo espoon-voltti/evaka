@@ -23,6 +23,7 @@ import {
 import { PlacementDraftPage } from '../placement-draft-page'
 
 import ApplicationReadView from './application-read-view'
+import { DecisionDraftPage } from './decision-draft-page'
 
 export default class ApplicationListView {
   applicationStatus: Element
@@ -168,6 +169,11 @@ export class ApplicationRow extends Element {
   async primaryActionEditDecisions() {
     await this.root.findByDataQa('primary-action-edit-decisions').click()
     return new DecisionEditorPage(this.page)
+  }
+
+  async primaryActionEditDecisionsRedesign() {
+    await this.root.findByDataQa('primary-action-edit-decisions').click()
+    return new DecisionDraftPage(this.page)
   }
 
   async assertStartDate(date: LocalDate) {
