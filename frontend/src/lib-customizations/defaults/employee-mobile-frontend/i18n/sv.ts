@@ -469,7 +469,7 @@ export const sv: typeof fi = {
       type: {
         label: 'Typ av meddelande',
         message: 'Meddelande',
-        bulletin: 'Nyhetsbrev (mottagaren kan inte svara)'
+        bulletin: 'Infobrev (mottagaren kan inte svara)'
       },
       urgent: {
         heading: 'Markera som brådskande',
