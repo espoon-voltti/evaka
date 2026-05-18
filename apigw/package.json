@@ -39,7 +39,7 @@
     "query-string": "9.3.1",
     "redis": "5.12.1",
     "split2": "4.2.0",
-    "through2": "4.0.2",
+    "through2": "5.0.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
