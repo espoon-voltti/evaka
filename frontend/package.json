@@ -48,7 +48,7 @@
     "punycode": "2.3.1",
     "react": "19.2.6",
     "react-chartjs-2": "5.3.1",
-    "react-day-picker": "9.14.0",
+    "react-day-picker": "10.0.0",
     "react-dom": "19.2.6",
     "react-focus-lock": "2.13.7",
     "react-focus-on": "3.10.2",
