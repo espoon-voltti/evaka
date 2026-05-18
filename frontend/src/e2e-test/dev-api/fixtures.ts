@@ -76,6 +76,8 @@ import {
   createDaycareGroups,
   createDaycarePlacements,
   createDaycares,
+  createDecisionReasoningGeneric,
+  createDecisionReasoningIndividual,
   createDecisions,
   createDocumentTemplate,
   createEmployee,
@@ -130,6 +132,8 @@ import type {
   DevDaycare,
   DevDaycareGroup,
   DevDaycareGroupPlacement,
+  DevDecisionReasoningGeneric,
+  DevDecisionReasoningIndividual,
   DevDocumentTemplate,
   DevEmployee,
   DevEmployeePin,
@@ -1720,6 +1724,50 @@ export class Fixture {
       ...value,
       async save() {
         await createNekkuCustomer({ body: value })
+        return value
+      }
+    }
+  }
+
+  static decisionReasoningGeneric(
+    initial: SemiPartial<
+      DevDecisionReasoningGeneric,
+      'collectionType' | 'validFrom' | 'textFi' | 'textSv'
+    >
+  ) {
+    const value: DevDecisionReasoningGeneric = {
+      id: randomId(),
+      ready: true,
+      createdAt: HelsinkiDateTime.now(),
+      modifiedAt: HelsinkiDateTime.now(),
+      ...initial
+    }
+    return {
+      ...value,
+      async save() {
+        await createDecisionReasoningGeneric({ body: [value] })
+        return value
+      }
+    }
+  }
+
+  static decisionReasoningIndividual(
+    initial: SemiPartial<
+      DevDecisionReasoningIndividual,
+      'collectionType' | 'titleFi' | 'titleSv' | 'textFi' | 'textSv'
+    >
+  ) {
+    const value: DevDecisionReasoningIndividual = {
+      id: randomId(),
+      removedAt: null,
+      createdAt: HelsinkiDateTime.now(),
+      modifiedAt: HelsinkiDateTime.now(),
+      ...initial
+    }
+    return {
+      ...value,
+      async save() {
+        await createDecisionReasoningIndividual({ body: [value] })
         return value
       }
     }

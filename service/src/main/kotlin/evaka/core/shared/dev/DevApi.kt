@@ -50,6 +50,7 @@ import evaka.core.decision.DecisionStatus
 import evaka.core.decision.DecisionType
 import evaka.core.decision.getDecision
 import evaka.core.decision.getDecisionsByApplication
+import evaka.core.decision.reasoning.DecisionReasoningCollectionType
 import evaka.core.document.ChildDocumentType
 import evaka.core.document.DocumentDeletionBasis
 import evaka.core.document.DocumentTemplate
@@ -478,6 +479,22 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 )
             }
         }
+    }
+
+    @PostMapping("/decision-reasonings/generic")
+    fun createDecisionReasoningGeneric(
+        db: Database,
+        @RequestBody rows: List<DevDecisionReasoningGeneric>,
+    ) {
+        db.connect { dbc -> dbc.transaction { tx -> rows.forEach { tx.insert(it) } } }
+    }
+
+    @PostMapping("/decision-reasonings/individual")
+    fun createDecisionReasoningIndividual(
+        db: Database,
+        @RequestBody rows: List<DevDecisionReasoningIndividual>,
+    ) {
+        db.connect { dbc -> dbc.transaction { tx -> rows.forEach { tx.insert(it) } } }
     }
 
     @GetMapping("/applications/{applicationId}")
@@ -2756,4 +2773,27 @@ data class DevHolidayQuestionnaireAnswer(
     val childId: ChildId,
     val fixedPeriod: FiniteDateRange?,
     val openRanges: List<FiniteDateRange> = listOf(),
+)
+
+data class DevDecisionReasoningGeneric(
+    val id: DecisionGenericReasoningId = DecisionGenericReasoningId(UUID.randomUUID()),
+    val collectionType: DecisionReasoningCollectionType,
+    val validFrom: LocalDate,
+    val textFi: String,
+    val textSv: String,
+    val ready: Boolean = true,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+)
+
+data class DevDecisionReasoningIndividual(
+    val id: DecisionIndividualReasoningId = DecisionIndividualReasoningId(UUID.randomUUID()),
+    val collectionType: DecisionReasoningCollectionType,
+    val titleFi: String,
+    val titleSv: String,
+    val textFi: String,
+    val textSv: String,
+    val removedAt: HelsinkiDateTime? = null,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 )

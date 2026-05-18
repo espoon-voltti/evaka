@@ -38,8 +38,11 @@ import type { DaycareAssistanceId } from 'lib-common/generated/api-types/shared'
 import type { DaycareAssistanceLevel } from 'lib-common/generated/api-types/assistance'
 import type { DaycareDecisionCustomization } from 'lib-common/generated/api-types/daycare'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import type { DecisionGenericReasoningId } from 'lib-common/generated/api-types/shared'
 import type { DecisionId } from 'lib-common/generated/api-types/shared'
 import type { DecisionIncome } from 'lib-common/generated/api-types/invoicing'
+import type { DecisionIndividualReasoningId } from 'lib-common/generated/api-types/shared'
+import type { DecisionReasoningCollectionType } from 'lib-common/generated/api-types/decision'
 import type { DecisionStatus } from 'lib-common/generated/api-types/decision'
 import type { DecisionType } from 'lib-common/generated/api-types/decision'
 import type { DocumentConfidentiality } from 'lib-common/generated/api-types/caseprocess'
@@ -557,6 +560,35 @@ export interface DevDaycareGroupPlacement {
   endDate: LocalDate
   id: GroupPlacementId
   startDate: LocalDate
+}
+
+/**
+* Generated from evaka.core.shared.dev.DevDecisionReasoningGeneric
+*/
+export interface DevDecisionReasoningGeneric {
+  collectionType: DecisionReasoningCollectionType
+  createdAt: HelsinkiDateTime
+  id: DecisionGenericReasoningId
+  modifiedAt: HelsinkiDateTime
+  ready: boolean
+  textFi: string
+  textSv: string
+  validFrom: LocalDate
+}
+
+/**
+* Generated from evaka.core.shared.dev.DevDecisionReasoningIndividual
+*/
+export interface DevDecisionReasoningIndividual {
+  collectionType: DecisionReasoningCollectionType
+  createdAt: HelsinkiDateTime
+  id: DecisionIndividualReasoningId
+  modifiedAt: HelsinkiDateTime
+  removedAt: HelsinkiDateTime | null
+  textFi: string
+  textSv: string
+  titleFi: string
+  titleSv: string
 }
 
 /**
@@ -1485,6 +1517,26 @@ export function deserializeJsonDevDaycareGroupPlacement(json: JsonOf<DevDaycareG
     ...json,
     endDate: LocalDate.parseIso(json.endDate),
     startDate: LocalDate.parseIso(json.startDate)
+  }
+}
+
+
+export function deserializeJsonDevDecisionReasoningGeneric(json: JsonOf<DevDecisionReasoningGeneric>): DevDecisionReasoningGeneric {
+  return {
+    ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    validFrom: LocalDate.parseIso(json.validFrom)
+  }
+}
+
+
+export function deserializeJsonDevDecisionReasoningIndividual(json: JsonOf<DevDecisionReasoningIndividual>): DevDecisionReasoningIndividual {
+  return {
+    ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
+    removedAt: (json.removedAt != null) ? HelsinkiDateTime.parseIso(json.removedAt) : null
   }
 }
 
