@@ -53,6 +53,7 @@ class HameenkyroConfig {
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,
             archiveMetadataOrganization = "Hämeenkyrön kunta, varhaiskasvatus",
+            metadataBusinessId = "0132947-3",
             archiveMetadataConfigs = { type, year ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE ->

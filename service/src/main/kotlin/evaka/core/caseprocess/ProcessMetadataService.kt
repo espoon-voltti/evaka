@@ -16,7 +16,10 @@ import evaka.core.shared.security.Action
 import org.springframework.stereotype.Service
 
 @Service
-class ProcessMetadataService(private val accessControl: AccessControl) {
+class ProcessMetadataService(
+    private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig,
+) {
     fun getApplicationProcessMetadata(
         tx: Database.Read,
         user: AuthenticatedUser,
@@ -37,6 +40,7 @@ class ProcessMetadataService(private val accessControl: AccessControl) {
             process = process,
             processName = processName,
             processType = processType,
+            businessId = featureConfig.metadataBusinessId,
             primaryDocument = applicationDocument,
             secondaryDocuments =
                 decisionDocuments.map { (decisionId, doc) ->

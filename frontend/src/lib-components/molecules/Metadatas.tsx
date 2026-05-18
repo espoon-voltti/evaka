@@ -225,7 +225,7 @@ export const Metadatas = React.memo(function Metadatas({
             : []),
           {
             label: i18n.metadata.organization,
-            value: i18n.metadata.organizationName,
+            value: `${i18n.metadata.organizationName}, ${metadata.businessId}`,
             dataQa: 'metadata-organization'
           },
           ...(metadata.process.archiveDurationMonths !== null

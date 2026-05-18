@@ -59,6 +59,7 @@ class KangasalaConfig {
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,
             archiveMetadataOrganization = "Kangasalan kaupunki, varhaiskasvatus",
+            metadataBusinessId = "1923299-5",
             archiveMetadataConfigs = { type, year ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE ->

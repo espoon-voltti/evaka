@@ -230,6 +230,7 @@ class EspooConfig {
             fiveYearsOldDaycareEnabled = true,
             freeJulyStartOnSeptember = true,
             archiveMetadataOrganization = "Espoon kaupungin esiopetus ja varhaiskasvatus",
+            metadataBusinessId = "0101263-6",
             archiveMetadataConfigs = { type: ArchiveProcessType, year: Int ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE -> {

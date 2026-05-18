@@ -53,6 +53,7 @@ class OrivesiConfig {
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,
             archiveMetadataOrganization = "Oriveden kaupunki, varhaiskasvatus",
+            metadataBusinessId = "0151789-6",
             archiveMetadataConfigs = { type, year ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE ->
