@@ -49,6 +49,8 @@ import type { DevDaycareAssistance } from './api-types'
 import type { DevDaycareGroup } from './api-types'
 import type { DevDaycareGroupAcl } from './api-types'
 import type { DevDaycareGroupPlacement } from './api-types'
+import type { DevDecisionReasoningGeneric } from './api-types'
+import type { DevDecisionReasoningIndividual } from './api-types'
 import type { DevDocumentTemplate } from './api-types'
 import type { DevEmployee } from './api-types'
 import type { DevEmployeePin } from './api-types'
@@ -779,6 +781,48 @@ export async function createDecisionPdf(
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/decisions/${request.id}/actions/create-pdf`.toString(),
       method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from evaka.core.shared.dev.DevApi.createDecisionReasoningGeneric
+*/
+export async function createDecisionReasoningGeneric(
+  request: {
+    body: DevDecisionReasoningGeneric[]
+  }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/decision-reasonings/generic`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevDecisionReasoningGeneric[]>
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from evaka.core.shared.dev.DevApi.createDecisionReasoningIndividual
+*/
+export async function createDecisionReasoningIndividual(
+  request: {
+    body: DevDecisionReasoningIndividual[]
+  }
+): Promise<void> {
+  try {
+    const { data: json } = await devClient.request<JsonOf<void>>({
+      url: uri`/decision-reasonings/individual`.toString(),
+      method: 'POST',
+      data: request.body satisfies JsonCompatible<DevDecisionReasoningIndividual[]>
     })
     return json
   } catch (e) {
