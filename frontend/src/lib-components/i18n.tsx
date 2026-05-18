@@ -167,14 +167,15 @@ export interface Translations {
   metadata: {
     title: string
     notFound: string
+    case: string
     caseIdentifier: string
     processName: string
     organization: string
+    organizationName: string
     archiveDurationMonths: string
     primaryDocument: string
     secondaryDocuments: string
     documentId: string
-    name: string
     createdAt: string
     createdBy: string
     publishedVersions: string
@@ -211,6 +212,36 @@ export interface Translations {
     section: {
       show: string
       hide: string
+    }
+    applicationDocumentNames: {
+      DAYCARE: string
+      PRESCHOOL: string
+      CLUB: string
+    }
+    decisionDocumentNames: {
+      CLUB: string
+      DAYCARE: string
+      DAYCARE_PART_TIME: string
+      PRESCHOOL: string
+      PRESCHOOL_DAYCARE: string
+      PRESCHOOL_CLUB: string
+      PREPARATORY_EDUCATION: string
+    }
+    financeDecisionDocumentNames: {
+      FEE_DECISION: string
+      VOUCHER_VALUE_DECISION: string
+    }
+    processNames: {
+      APPLICATION_DAYCARE: string
+      APPLICATION_PRESCHOOL: string
+      APPLICATION_CLUB: string
+      FEE_DECISION: string
+      VOUCHER_VALUE_DECISION: string
+      CHILD_DOCUMENT_VASU: string
+      CHILD_DOCUMENT_LEOPS: string
+      CHILD_DOCUMENT_HOJKS: string
+      CHILD_DOCUMENT_PEDAGOGICAL_ASSESSMENT: string
+      CHILD_DOCUMENT_PEDAGOGICAL_REPORT: string
     }
   }
 }

@@ -190,14 +190,15 @@ const components: Translations = {
   metadata: {
     title: 'Arkistoitava metadata',
     notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
+    case: 'Asia',
     caseIdentifier: 'Asiatunnus',
     processName: 'Asiaprosessi',
     organization: 'Organisaatio',
+    organizationName: 'Espoon kaupungin esiopetus ja varhaiskasvatus',
     archiveDurationMonths: 'Arkistointiaika',
     primaryDocument: 'Ensisijainen asiakirja',
     secondaryDocuments: 'Muut asiakirjat',
     documentId: 'Asiakirjan tunniste',
-    name: 'Asiakirjan nimi',
     createdAt: 'Laatimisajankohta',
     createdBy: 'Laatija',
     publishedVersions: 'Julkaistut versiot',
@@ -234,6 +235,40 @@ const components: Translations = {
     section: {
       show: 'Näytä lisätiedot',
       hide: 'Piilota lisätiedot'
+    },
+    applicationDocumentNames: {
+      DAYCARE: 'Varhaiskasvatus- ja palvelusetelihakemus',
+      PRESCHOOL:
+        'Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen',
+      CLUB: 'Kerhohakemus'
+    },
+    decisionDocumentNames: {
+      CLUB: 'Päätös kerhosta',
+      DAYCARE: 'Päätös varhaiskasvatuksesta',
+      DAYCARE_PART_TIME: 'Päätös osa-aikaisesta varhaiskasvatuksesta',
+      PRESCHOOL: 'Päätös esiopetuksesta',
+      PRESCHOOL_DAYCARE: 'Päätös liittyvästä varhaiskasvatuksesta',
+      PRESCHOOL_CLUB: 'Päätös esiopetuksen kerhosta',
+      PREPARATORY_EDUCATION: 'Päätös valmistavasta opetuksesta'
+    },
+    financeDecisionDocumentNames: {
+      FEE_DECISION: 'Maksupäätös',
+      VOUCHER_VALUE_DECISION: 'Arvopäätös'
+    },
+    processNames: {
+      APPLICATION_DAYCARE:
+        'Varhaiskasvatushakemus / palvelusetelihakemus varhaiskasvatukseen',
+      APPLICATION_PRESCHOOL:
+        'Esiopetushakemus / hakemus esiopetuksessa järjestettävään perusopetukseen valmistavaan opetukseen',
+      APPLICATION_CLUB: 'Kerhohakemus',
+      FEE_DECISION: 'Varhaiskasvatuksen maksupäätös',
+      VOUCHER_VALUE_DECISION: 'Varhaiskasvatuksen palvelusetelin arvopäätös',
+      CHILD_DOCUMENT_VASU: 'Lapsen varhaiskasvatussuunnitelma',
+      CHILD_DOCUMENT_LEOPS: 'Lapsen esiopetuksen oppimissuunnitelma',
+      CHILD_DOCUMENT_HOJKS:
+        'Henkilökohtainen opetuksen järjestämistä koskeva suunnitelma',
+      CHILD_DOCUMENT_PEDAGOGICAL_ASSESSMENT: 'Esiopetuksen pedagoginen arvio',
+      CHILD_DOCUMENT_PEDAGOGICAL_REPORT: 'Esiopetuksen pedagoginen selvitys'
     }
   }
 }

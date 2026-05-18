@@ -411,6 +411,11 @@ const fi: DeepPartial<Translations> = {
       />
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Kangasalan kaupunki, varhaiskasvatus'
+    }
+  },
   loginPage: {
     applying: {
       infoBullets: [

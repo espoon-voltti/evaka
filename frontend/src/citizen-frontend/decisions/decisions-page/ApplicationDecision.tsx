@@ -96,17 +96,21 @@ export default React.memo(function ApplicationDecision({
       $paddingVertical="0"
       data-qa={`application-decision-${id}`}
     >
-      {open && <DecisionDetails id={id} applicationId={applicationId} />}
+      {open && (
+        <DecisionDetails id={id} applicationId={applicationId} type={type} />
+      )}
     </CollapsibleContentArea>
   )
 })
 
 const DecisionDetails = React.memo(function DecisionDetails({
   id,
-  applicationId
+  applicationId,
+  type
 }: {
   id: DecisionId
   applicationId: ApplicationId
+  type: DecisionType
 }) {
   const t = useTranslation()
   const detailsResult = useQueryResult(decisionDetailsQuery({ id }))
@@ -116,7 +120,10 @@ const DecisionDetails = React.memo(function DecisionDetails({
   return renderResult(detailsResult, (details) => (
     <FixedSpaceColumn $spacing="s">
       <PaddedRow>
-        <PdfLink decisionId={id} />
+        <PdfLink
+          decisionId={id}
+          text={t.components.metadata.decisionDocumentNames[type]}
+        />
       </PaddedRow>
       <div>
         <Label>{t.decisions.applicationDecisions.unit}</Label>
@@ -140,10 +147,12 @@ const DecisionDetails = React.memo(function DecisionDetails({
         </div>
       </div>
       <div>
-        <Label>{t.decisions.applicationDecisions.resolved}</Label>
+        <Label>{t.decisions.applicationDecisions.confirmation}</Label>
         <Gap $size="xxs" />
         <div data-qa="decision-resolved">
-          {details.resolved?.format() ?? '–'}
+          {details.resolved
+            ? `${t.decisions.applicationDecisions.resolved} ${details.resolved.format()}`
+            : '–'}
         </div>
       </div>
       {featureFlags.showMetadataToCitizen && (

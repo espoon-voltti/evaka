@@ -36,12 +36,11 @@ const components: Translations = {
     selected: 'Selected',
     unselected: 'Unselected',
     userTypes: {
-      // TODO
-      SYSTEM: 'järjestelmä',
-      CITIZEN: 'kuntalainen',
-      EMPLOYEE: 'työntekijä',
-      MOBILE_DEVICE: 'mobiililaite',
-      UNKNOWN: 'tuntematon'
+      SYSTEM: 'system',
+      CITIZEN: 'citizen',
+      EMPLOYEE: 'employee',
+      MOBILE_DEVICE: 'mobile device',
+      UNKNOWN: 'unknown'
     }
   },
   datePicker: {
@@ -194,14 +193,16 @@ const components: Translations = {
   metadata: {
     title: 'Archivable metadata',
     notFound: 'No archivable metadata for the document',
+    case: 'Case',
     caseIdentifier: 'Case identifier',
     processName: 'Case process',
     organization: 'Organization',
+    organizationName:
+      'City of Espoo pre-primary education and early childhood education',
     archiveDurationMonths: 'Archiving period',
     primaryDocument: 'Primary document',
     secondaryDocuments: 'Other documents',
     documentId: 'Document identifier',
-    name: 'Document name',
     createdAt: 'Creation date',
     createdBy: 'Creator',
     publishedVersions: 'Published versions',
@@ -238,6 +239,43 @@ const components: Translations = {
     section: {
       show: 'Show more information',
       hide: 'Hide more information'
+    },
+    applicationDocumentNames: {
+      DAYCARE: 'Application for early childhood education and service voucher',
+      PRESCHOOL:
+        'Enrolment to pre-primary education and/or preparatory education',
+      CLUB: 'Application for club'
+    },
+    decisionDocumentNames: {
+      CLUB: 'Decision on club',
+      DAYCARE: 'Decision on early childhood education',
+      DAYCARE_PART_TIME: 'Decision on part-day early childhood education',
+      PRESCHOOL: 'Decision on pre-primary education',
+      PRESCHOOL_DAYCARE:
+        'Decision on early childhood education related to pre-primary education',
+      PRESCHOOL_CLUB: 'Decision on pre-primary education club',
+      PREPARATORY_EDUCATION: 'Decision on preparatory education'
+    },
+    financeDecisionDocumentNames: {
+      FEE_DECISION: 'Fee decision',
+      VOUCHER_VALUE_DECISION: 'Voucher value decision'
+    },
+    processNames: {
+      APPLICATION_DAYCARE:
+        'Application for early childhood education / service voucher application for early childhood education',
+      APPLICATION_PRESCHOOL:
+        'Application for pre-primary education / application for preparatory education for basic education provided in connection with pre-primary education',
+      APPLICATION_CLUB: 'Application for club',
+      FEE_DECISION: 'Early childhood education fee decision',
+      VOUCHER_VALUE_DECISION:
+        'Early childhood education service voucher value decision',
+      CHILD_DOCUMENT_VASU: "Child's early childhood education plan",
+      CHILD_DOCUMENT_LEOPS: "Child's pre-primary education learning plan",
+      CHILD_DOCUMENT_HOJKS: 'Individual education plan',
+      CHILD_DOCUMENT_PEDAGOGICAL_ASSESSMENT:
+        'Pre-primary education pedagogical assessment',
+      CHILD_DOCUMENT_PEDAGOGICAL_REPORT:
+        'Pre-primary education pedagogical report'
     }
   }
 }

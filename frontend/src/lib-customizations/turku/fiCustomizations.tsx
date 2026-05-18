@@ -622,6 +622,11 @@ const fi: DeepPartial<Translations> = {
       />
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Turun kaupungin varhaiskasvatus'
+    }
+  },
   loginPage: {
     title: 'Turun kaupungin varhaiskasvatus',
     login: {

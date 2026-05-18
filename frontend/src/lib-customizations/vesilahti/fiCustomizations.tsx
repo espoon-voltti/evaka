@@ -431,6 +431,11 @@ const fi: DeepPartial<Translations> = {
       />
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Vesilahden kunta, varhaiskasvatus'
+    }
+  },
   loginPage: {
     applying: {
       infoBullets: [

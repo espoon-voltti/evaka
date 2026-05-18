@@ -410,6 +410,11 @@ const fi: DeepPartial<Translations> = {
       />
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Pirkkalan kunta, varhaiskasvatus'
+    }
+  },
   loginPage: {
     applying: {
       infoBullets: [

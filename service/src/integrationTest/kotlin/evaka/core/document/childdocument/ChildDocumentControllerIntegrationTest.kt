@@ -8,6 +8,7 @@ import evaka.core.FullApplicationTest
 import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.DocumentConfidentiality
 import evaka.core.caseprocess.ProcessMetadataController
+import evaka.core.caseprocess.ProcessType
 import evaka.core.caseprocess.SfiMethod
 import evaka.core.caseprocess.getCaseProcess
 import evaka.core.daycare.domain.Language
@@ -407,6 +408,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", it.process.organization)
             assertEquals(120, it.process.archiveDurationMonths)
             assertEquals("HOJKS", it.primaryDocument.name)
+            assertEquals(ProcessType.CHILD_DOCUMENT_HOJKS, it.processType)
             assertEquals(
                 devTemplateHojks.confidentiality?.durationYears,
                 it.primaryDocument.confidentiality?.durationYears,

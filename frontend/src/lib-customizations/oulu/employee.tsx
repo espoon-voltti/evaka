@@ -249,9 +249,20 @@ const customizations: EmployeeCustomizations = {
           amountWithoutAddress: 'Osoitteettomia',
           amountWithZeroPrice: 'Nollalaskuja'
         }
+      },
+      components: {
+        metadata: {
+          organizationName: 'Oulun kaupungin varhaiskasvatus'
+        }
       }
     },
-    sv: {}
+    sv: {
+      components: {
+        metadata: {
+          organizationName: 'Oulun kaupungin varhaiskasvatus'
+        }
+      }
+    }
   },
   cityLogo: {
     src: OuluLogo,

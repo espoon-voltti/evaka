@@ -411,6 +411,11 @@ const fi: DeepPartial<Translations> = {
       />
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Ylöjärven kaupunki, varhaiskasvatus'
+    }
+  },
   loginPage: {
     applying: {
       infoBullets: [

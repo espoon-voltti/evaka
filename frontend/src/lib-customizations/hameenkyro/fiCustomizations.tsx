@@ -408,6 +408,11 @@ const fi: DeepPartial<Translations> = {
       />
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Hämeenkyrön kunta, varhaiskasvatus'
+    }
+  },
   loginPage: {
     applying: {
       infoBullets: [

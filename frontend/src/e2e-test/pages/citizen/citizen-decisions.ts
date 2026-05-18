@@ -83,17 +83,29 @@ export default class CitizenDecisionsPage {
     ).toBeHidden()
   }
 
-  async assertMetadataForFinanceDecisionShown(financeDecisionId: string) {
+  async assertFinanceDecisionMetadata(
+    financeDecisionId: string,
+    expectedDocumentName: string,
+    expectedProcessName: string,
+    expectedOrganization: string
+  ) {
     const financeDecision = this.page.findByDataQa(
       `finance-decision-${financeDecisionId}`
     )
     if ((await financeDecision.getAttribute('data-status')) === 'closed') {
       await financeDecision.click()
     }
-    await this.#decisionMetadataButton(financeDecisionId).click()
+    const documentName = financeDecision.findByDataQa('metadata-document-name')
+    if (!(await documentName.visible)) {
+      await this.#decisionMetadataButton(financeDecisionId).click()
+    }
+    await expect(documentName).toHaveText(expectedDocumentName)
     await expect(
-      financeDecision.findByDataQa('process-number-field')
-    ).toBeVisible()
+      financeDecision.findByDataQa('metadata-process-name')
+    ).toHaveText(expectedProcessName)
+    await expect(
+      financeDecision.findByDataQa('metadata-organization')
+    ).toHaveText(expectedOrganization)
   }
   async assertMetadataForFinanceDecisionNotShown(financeDecisionId: string) {
     await expect(
@@ -124,10 +136,24 @@ export default class CitizenDecisionsPage {
     )
     await decisionSection.findAll('button').first().click()
     await expect(decisionSection.findByDataQa('decision-unit')).toBeVisible()
+    await expect(decisionSection.findByDataQa('button-open-pdf')).toHaveText(
+      'Päätös varhaiskasvatuksesta'
+    )
     await decisionSection.findByDataQa('metadata-section').click()
     await expect(
       decisionSection.findByDataQa('process-number-field')
     ).toBeVisible()
+    await expect(
+      decisionSection.findByDataQa('metadata-process-name')
+    ).toHaveText(
+      'Varhaiskasvatushakemus / palvelusetelihakemus varhaiskasvatukseen'
+    )
+    await expect(
+      decisionSection.findByDataQa('metadata-organization')
+    ).toHaveText('Espoon kaupungin esiopetus ja varhaiskasvatus')
+    await expect(
+      decisionSection.findAllByDataQa('metadata-document-name').last()
+    ).toHaveText('Päätös varhaiskasvatuksesta')
   }
 
   async viewDecisionWithoutMetadata(decisionId: DecisionId) {

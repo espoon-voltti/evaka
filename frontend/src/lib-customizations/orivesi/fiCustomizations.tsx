@@ -403,6 +403,11 @@ const fi: DeepPartial<Translations> = {
       />
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Oriveden kaupunki, varhaiskasvatus'
+    }
+  },
   loginPage: {
     applying: {
       infoBullets: [

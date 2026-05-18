@@ -8,6 +8,7 @@ import evaka.core.EmailEnv
 import evaka.core.FullApplicationTest
 import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.ProcessMetadataController
+import evaka.core.caseprocess.ProcessType
 import evaka.core.caseprocess.getCaseProcessByFeeDecisionId
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.IEmailMessageProvider
@@ -1461,6 +1462,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 draft.id,
             )
         assertEquals(process.caseIdentifier, metadata.data?.process?.caseIdentifier)
+        assertEquals(ProcessType.FEE_DECISION, metadata.data?.processType)
+        assertEquals(
+            FinanceDecisionType.FEE_DECISION,
+            metadata.data?.primaryDocument?.financeDecisionType,
+        )
     }
 
     @Test

@@ -6,6 +6,7 @@ package evaka.core.caseprocess
 import evaka.core.application.ApplicationOrigin
 import evaka.core.application.ApplicationType
 import evaka.core.decision.DecisionType
+import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.DecisionId
@@ -119,6 +120,14 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
         }
         .exactlyOne()
 
+private fun applicationDocumentName(applicationType: ApplicationType): String =
+    when (applicationType) {
+        ApplicationType.DAYCARE -> "Varhaiskasvatus- ja palvelusetelihakemus"
+        ApplicationType.PRESCHOOL ->
+            "Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen"
+        ApplicationType.CLUB -> "Kerhohakemus"
+    }
+
 fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): DocumentMetadata =
     createQuery {
             sql(
@@ -140,24 +149,11 @@ fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): 
             )
         }
         .map {
+            val applicationType = column<ApplicationType>("type")
             DocumentMetadata(
                 documentId = column("id"),
-                name =
-                    column<ApplicationType>("type").let { type ->
-                        when (type) {
-                            ApplicationType.DAYCARE -> {
-                                "Varhaiskasvatus- ja palvelusetelihakemus"
-                            }
-
-                            ApplicationType.PRESCHOOL -> {
-                                "Ilmoittautuminen esiopetukseen ja / tai valmistavaan opetukseen"
-                            }
-
-                            ApplicationType.CLUB -> {
-                                "Kerhohakemus"
-                            }
-                        }
-                    },
+                name = applicationDocumentName(applicationType),
+                applicationType = applicationType,
                 createdAtDate = column("sentdate"),
                 createdAtTime = column("senttime"),
                 createdBy =
@@ -199,6 +195,17 @@ fun Database.Read.getSentDecisionIdsByApplication(applicationId: ApplicationId):
         }
         .toList()
 
+private fun applicationDecisionDocumentName(decisionType: DecisionType): String =
+    when (decisionType) {
+        DecisionType.DAYCARE -> "Päätös varhaiskasvatuksesta"
+        DecisionType.DAYCARE_PART_TIME -> "Päätös osa-aikaisesta varhaiskasvatuksesta"
+        DecisionType.PRESCHOOL -> "Päätös esiopetuksesta"
+        DecisionType.PREPARATORY_EDUCATION -> "Päätös valmistavasta opetuksesta"
+        DecisionType.PRESCHOOL_DAYCARE -> "Päätös liittyvästä varhaiskasvatuksesta"
+        DecisionType.CLUB -> "Päätös kerhosta"
+        DecisionType.PRESCHOOL_CLUB -> "Päätös esiopetuksen kerhosta"
+    }
+
 fun Database.Read.getApplicationDecisionDocumentMetadata(
     decisionId: DecisionId,
     isCitizen: Boolean,
@@ -226,40 +233,11 @@ fun Database.Read.getApplicationDecisionDocumentMetadata(
             )
         }
         .map {
+            val decisionType = column<DecisionType>("type")
             DocumentMetadata(
                 documentId = column("id"),
-                name =
-                    column<DecisionType>("type").let {
-                        when (it) {
-                            DecisionType.DAYCARE -> {
-                                "Päätös varhaiskasvatuksesta"
-                            }
-
-                            DecisionType.DAYCARE_PART_TIME -> {
-                                "Päätös osa-aikaisesta varhaiskasvatuksesta"
-                            }
-
-                            DecisionType.PRESCHOOL -> {
-                                "Päätös esiopetuksesta"
-                            }
-
-                            DecisionType.PREPARATORY_EDUCATION -> {
-                                "Päätös valmistavasta opetuksesta"
-                            }
-
-                            DecisionType.PRESCHOOL_DAYCARE -> {
-                                "Päätös liittyvästä varhaiskasvatuksesta"
-                            }
-
-                            DecisionType.CLUB -> {
-                                "Päätös kerhosta"
-                            }
-
-                            DecisionType.PRESCHOOL_CLUB -> {
-                                "Päätös esiopetuksen kerhosta"
-                            }
-                        }
-                    },
+                name = applicationDecisionDocumentName(decisionType),
+                decisionType = decisionType,
                 createdAtDate = column("sent_date"),
                 createdAtTime = column("sent_time"),
                 createdBy =
@@ -311,6 +289,7 @@ fun Database.Read.getFeeDecisionDocumentMetadata(
             DocumentMetadata(
                 documentId = column("id"),
                 name = "Maksupäätös",
+                financeDecisionType = FinanceDecisionType.FEE_DECISION,
                 createdAtDate = createdAt.toLocalDate(),
                 createdAtTime = createdAt.toLocalTime(),
                 createdBy =
@@ -362,6 +341,7 @@ fun Database.Read.getVoucherValueDecisionDocumentMetadata(
             DocumentMetadata(
                 documentId = column("id"),
                 name = "Arvopäätös",
+                financeDecisionType = FinanceDecisionType.VOUCHER_VALUE_DECISION,
                 createdAtDate = createdAt?.toLocalDate(),
                 createdAtTime = createdAt?.toLocalTime(),
                 createdBy =

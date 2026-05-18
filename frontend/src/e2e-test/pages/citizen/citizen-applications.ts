@@ -150,6 +150,12 @@ export default class CitizenApplicationsPage {
   async viewApplicationMetadata(id: string) {
     await this.#applicationToggleMetadataButton(id).click()
     await expect(this.page.findByDataQa('process-number-field')).toBeVisible()
+    await expect(
+      this.page.findAllByDataQa('metadata-document-name').first()
+    ).toHaveText('Varhaiskasvatus- ja palvelusetelihakemus')
+    await expect(this.page.findByDataQa('metadata-process-name')).toHaveText(
+      'Varhaiskasvatushakemus / palvelusetelihakemus varhaiskasvatukseen'
+    )
   }
 }
 

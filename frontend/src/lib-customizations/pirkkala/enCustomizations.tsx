@@ -601,6 +601,11 @@ const en: DeepPartial<Translations> = {
     },
     absentPlanned: 'Planned absence'
   },
+  components: {
+    metadata: {
+      organizationName: 'Pirkkalan kunta, varhaiskasvatus'
+    }
+  },
   accessibilityStatement: (
     <>
       <H1>Accessibility statement</H1>

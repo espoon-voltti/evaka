@@ -887,6 +887,11 @@ const fi: DeepPartial<Translations> = {
       </>
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Early childhood education and care in the City of Oulu'
+    }
+  },
   accessibilityStatement: (
     <>
       <H1>Accessibility statement</H1>

@@ -613,6 +613,11 @@ const en: DeepPartial<Translations> = {
       </>
     )
   },
+  components: {
+    metadata: {
+      organizationName: 'Tampereen kaupunki, varhaiskasvatus ja esiopetus'
+    }
+  },
   accessibilityStatement: (
     <>
       <H1>Accessibility statement</H1>

@@ -595,6 +595,11 @@ const en: DeepPartial<Translations> = {
     },
     absentPlanned: 'Planned absence'
   },
+  components: {
+    metadata: {
+      organizationName: 'Oriveden kaupunki, varhaiskasvatus'
+    }
+  },
   accessibilityStatement: (
     <>
       <H1>Accessibility statement</H1>
