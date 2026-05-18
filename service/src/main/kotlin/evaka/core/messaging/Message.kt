@@ -39,6 +39,7 @@ data class Message(
     val readAt: HelsinkiDateTime? = null,
     @Json val attachments: List<Attachment>,
     val recipientNames: Set<String>? = null,
+    val contentDeletedAt: HelsinkiDateTime? = null,
 )
 
 data class MessageThread(
