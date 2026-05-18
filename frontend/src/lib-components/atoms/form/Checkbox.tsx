@@ -133,6 +133,7 @@ export interface CheckboxProps extends CommonProps {
   disabled?: boolean
   translate?: 'yes' | 'no'
   inputRef?: RefObject<HTMLInputElement | null>
+  id?: string
 }
 
 const Checkbox = React.memo(function Checkbox({
@@ -146,9 +147,11 @@ const Checkbox = React.memo(function Checkbox({
   className,
   translate,
   'data-qa': dataQa,
-  inputRef
+  inputRef,
+  id
 }: CheckboxProps) {
-  const ariaId = useUniqueId('checkbox')
+  const generatedId = useUniqueId('checkbox')
+  const ariaId = id ?? generatedId
 
   return (
     <Wrapper className={classNames(className, { disabled })} data-qa={dataQa}>
