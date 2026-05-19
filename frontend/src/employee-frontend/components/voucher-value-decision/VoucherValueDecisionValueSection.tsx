@@ -27,13 +27,18 @@ export default React.memo(function VoucherValueDecisionValueSection({
     voucherValue
   }
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
+
+  const voucherValueDescription =
+    lang === 'sv'
+      ? serviceNeed.voucherValueDescriptionSv
+      : serviceNeed.voucherValueDescriptionFi
 
   const mainDescription = `${
     i18n.valueDecision.summary.age[childAge < 3 ? 'LESS_THAN_3' : 'OVER_3']
   } (${formatCents(baseValue)} €), ${i18n.placement.type[
     placement.type
-  ].toLowerCase()} ${serviceNeed.voucherValueDescriptionFi} (${formatPercentage(
+  ].toLowerCase()} ${voucherValueDescription} (${formatPercentage(
     serviceNeed.voucherValueCoefficient * 100
   )})${
     assistanceNeedCoefficient !== 1

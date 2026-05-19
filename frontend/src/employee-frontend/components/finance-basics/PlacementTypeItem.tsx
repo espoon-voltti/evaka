@@ -30,9 +30,12 @@ export default React.memo(function PlacementTypeItem({
   voucherValuesMap,
   'data-qa': dataQa
 }: PlacementTypeItemProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const [open, useOpen] = useBoolean(false)
+
+  const serviceNeedName = (serviceNeed: ServiceNeedOption) =>
+    lang === 'sv' ? serviceNeed.nameSv : serviceNeed.nameFi
 
   return (
     <CollapsibleContentArea
@@ -52,7 +55,7 @@ export default React.memo(function PlacementTypeItem({
           <ServiceNeedItem
             key={serviceNeed.id}
             serviceNeedId={serviceNeed.id}
-            serviceNeedName={serviceNeed.nameFi + ' (oletus)'}
+            serviceNeedName={`${serviceNeedName(serviceNeed)} ${i18n.placement.defaultOptionText}`}
             serviceNeedValidityStart={serviceNeed.validFrom}
             serviceNeedValidityEnd={serviceNeed.validTo}
             voucherValuesList={voucherValuesMap[serviceNeed.id] ?? []}
@@ -68,7 +71,7 @@ export default React.memo(function PlacementTypeItem({
           <ServiceNeedItem
             key={serviceNeed.id}
             serviceNeedId={serviceNeed.id}
-            serviceNeedName={serviceNeed.nameFi}
+            serviceNeedName={serviceNeedName(serviceNeed)}
             serviceNeedValidityStart={serviceNeed.validFrom}
             serviceNeedValidityEnd={serviceNeed.validTo}
             voucherValuesList={voucherValuesMap[serviceNeed.id] ?? []}

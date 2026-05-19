@@ -169,7 +169,7 @@ const ApplicationsList = React.memo(function Applications({
 }: Props) {
   const { data: applications, pages, total } = applicationsResult
 
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const {
     page,
     setPage,
@@ -286,7 +286,9 @@ const ApplicationsList = React.memo(function Applications({
             }
             label={
               application.serviceNeed !== null
-                ? application.serviceNeed.nameFi
+                ? lang === 'sv'
+                  ? application.serviceNeed.nameSv
+                  : application.serviceNeed.nameFi
                 : i18n.placement.type[application.placementType]
             }
           />

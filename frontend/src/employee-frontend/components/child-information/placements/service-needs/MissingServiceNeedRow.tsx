@@ -31,15 +31,18 @@ function MissingServiceNeedRow({
   disabled,
   defaultOption
 }: MissingServiceNeedRowProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const t = i18n.childInformation.placements.serviceNeeds
+  const defaultOptionName =
+    defaultOption &&
+    (lang === 'sv' ? defaultOption.nameSv : defaultOption.nameFi)
   return (
     <Tr>
       <InfoTd>
         {startDate.format()} - {endDate.format()}
       </InfoTd>
       <InfoTd>
-        <div>{`${defaultOption ? `${defaultOption.nameFi} ${i18n.placement.defaultOptionText}` : i18n.placement.defaultOptionMissingText}`}</div>
+        <div>{`${defaultOption ? `${defaultOptionName} ${i18n.placement.defaultOptionText}` : i18n.placement.defaultOptionMissingText}`}</div>
         {t.missing}{' '}
         <FontAwesomeIcon
           icon={faExclamationTriangle}
