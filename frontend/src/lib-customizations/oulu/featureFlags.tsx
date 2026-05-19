@@ -94,7 +94,8 @@ const features: Features = {
     showCitizenApplicationPreschoolTerms: true,
     showMetadataToCitizen: true,
     placementDesktop: true,
-    decisionReasoningOptions: true
+    decisionReasoningOptions: true,
+    decisionDraftRedesign: true
   },
   prod: {
     environmentLabel: null,

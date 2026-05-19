@@ -92,7 +92,8 @@ const features: Features = {
     showMetadataToCitizen: true,
     placementDesktop: true,
     employeeLanguageSelection: true,
-    decisionReasoningOptions: true
+    decisionReasoningOptions: true,
+    decisionDraftRedesign: true
   },
   prod: {
     environmentLabel: null,
