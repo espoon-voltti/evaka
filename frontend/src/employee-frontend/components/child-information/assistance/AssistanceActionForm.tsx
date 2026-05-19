@@ -156,7 +156,7 @@ function validateOption(
 }
 
 export default React.memo(function AssistanceActionForm(props: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
 
   const initialFormState: FormState = useMemo(
@@ -315,13 +315,13 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                   <DatePicker
                     date={form.startDate}
                     onChange={(startDate) => updateFormState({ startDate })}
-                    locale="fi"
+                    locale={lang}
                   />
                   <DatePickerSpacer />
                   <DatePicker
                     date={form.endDate}
                     onChange={(endDate) => updateFormState({ endDate })}
-                    locale="fi"
+                    locale={lang}
                   />
                 </FixedSpaceRow>
 

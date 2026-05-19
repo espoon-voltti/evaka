@@ -146,7 +146,7 @@ function redirectToMainPage(navigate: (location: string) => void) {
 
 export default React.memo(function Decision() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [, navigate] = useLocation()
   const decisionDraftGroup = useQueryResult(
     decisionDraftsQuery({ applicationId })
@@ -345,7 +345,7 @@ export default React.memo(function Decision() {
                             }
                             minDate={minDate(decision.type)}
                             maxDate={maxDate(decision.type)}
-                            locale="fi"
+                            locale={lang}
                           />
                           <DatePickerSpacer />
                           <DatePicker
@@ -358,7 +358,7 @@ export default React.memo(function Decision() {
                             }
                             minDate={minDate(decision.type)}
                             maxDate={maxDate(decision.type)}
-                            locale="fi"
+                            locale={lang}
                           />
                         </FixedSpaceRow>
                       )

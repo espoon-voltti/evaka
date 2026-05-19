@@ -55,7 +55,7 @@ const initialState = (): StateOf<typeof model> => ({
 })
 
 export default React.memo(function Raw() {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const form = useForm(model, initialState, {
     ...i18n.validationErrors,
     tooLongRange: 'Liian pitkä aikaväli (max 7 päivää)'
@@ -99,7 +99,7 @@ export default React.memo(function Raw() {
         <FilterRow>
           <FilterLabel>{i18n.reports.common.period}</FilterLabel>
           <FlexRow>
-            <DateRangePickerF bind={range} locale="fi" />
+            <DateRangePickerF bind={range} locale={lang} />
           </FlexRow>
         </FilterRow>
         <FilterRow>

@@ -35,7 +35,7 @@ export default React.memo(function IncomeStatementsFilters() {
     shared: { availableAreas, allDaycareUnits: unitsResult }
   } = useContext(InvoicingUiContext)
 
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const toggleArea = useCallback(
     (code: string) => () => {
@@ -147,7 +147,7 @@ export default React.memo(function IncomeStatementsFilters() {
           <DatePickerLowLevel
             value={searchFilters.placementValidDate}
             onChange={setPlacementValidDate}
-            locale="fi"
+            locale={lang}
           />
           <Gap $size="L" />
           <StatusFilter toggled={searchFilters.status} toggle={toggleStatus} />

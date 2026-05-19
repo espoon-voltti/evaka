@@ -33,7 +33,7 @@ export default React.memo(function GroupUpdateModal({
   group,
   nekkuUnits
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
 
   const [data, setData] = useState<{
@@ -105,7 +105,7 @@ export default React.memo(function GroupUpdateModal({
             onChange={(startDate) =>
               setData((state) => ({ ...state, startDate }))
             }
-            locale="fi"
+            locale={lang}
             data-qa="start-date-input"
           />
           <Gap $size="s" />
@@ -113,7 +113,7 @@ export default React.memo(function GroupUpdateModal({
           <DatePicker
             date={data.endDate}
             onChange={(endDate) => setData((state) => ({ ...state, endDate }))}
-            locale="fi"
+            locale={lang}
             data-qa="end-date-input"
           />
           {featureFlags.jamixIntegration && (

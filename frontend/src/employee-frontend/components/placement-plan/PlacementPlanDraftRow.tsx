@@ -75,7 +75,7 @@ export default React.memo(function PlacementDraftSection({
   updatePreschoolStart,
   updatePreschoolEnd
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const today = LocalDate.todayInSystemTz()
 
@@ -128,7 +128,7 @@ export default React.memo(function PlacementDraftSection({
             date={formState.period?.start ?? null}
             onChange={updateStart}
             minDate={today}
-            locale="fi"
+            locale={lang}
             data-qa="start-date"
           />
           <DatePickerSpacer />
@@ -136,7 +136,7 @@ export default React.memo(function PlacementDraftSection({
             date={formState.period?.end ?? null}
             onChange={updateEnd}
             minDate={formState.period?.start ?? today}
-            locale="fi"
+            locale={lang}
             data-qa="end-date"
           />
         </DateRowItem>
@@ -160,7 +160,7 @@ export default React.memo(function PlacementDraftSection({
               date={formState.preschoolDaycarePeriod?.start ?? null}
               onChange={updatePreschoolStart}
               minDate={today}
-              locale="fi"
+              locale={lang}
               data-qa="preschool-daycare-start-date"
             />
             <DatePickerSpacer />
@@ -168,7 +168,7 @@ export default React.memo(function PlacementDraftSection({
               date={formState.preschoolDaycarePeriod?.end ?? null}
               onChange={updatePreschoolEnd}
               minDate={formState.preschoolDaycarePeriod?.start ?? today}
-              locale="fi"
+              locale={lang}
               data-qa="preschool-daycare-end-date"
             />
           </DateRowItem>

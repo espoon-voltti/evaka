@@ -30,7 +30,7 @@ export default React.memo(function CreatePersonInput({
   personType,
   onFocus
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   return (
     <>
@@ -60,7 +60,7 @@ export default React.memo(function CreatePersonInput({
             }}
             onFocus={onFocus}
             maxDate={LocalDate.todayInSystemTz()}
-            locale="fi"
+            locale={lang}
             data-qa="datepicker-dob"
           />
           <Label>{i18n.personSearch.createNewPerson.form.address}*</Label>

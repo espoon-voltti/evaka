@@ -58,7 +58,7 @@ function CreateApplicationModal({
   child,
   guardians
 }: CreateApplicationModalProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const i18nView = i18n.childInformation.application.create
   const { clearUiMode } = useContext(UIContext)
   const { mutateAsync: createPaperApplication } = useMutationResult(
@@ -328,7 +328,7 @@ function CreateApplicationModal({
                 validate(sentDate, required),
                 i18n.validationErrors
               )}
-              locale="fi"
+              locale={lang}
             />
           </div>
         </div>

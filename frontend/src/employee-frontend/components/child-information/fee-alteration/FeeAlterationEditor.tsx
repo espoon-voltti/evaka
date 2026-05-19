@@ -73,7 +73,7 @@ export default React.memo(function FeeAlterationEditor({
   onSuccess,
   onFailure
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [edited, setEdited] = useState(
     baseFeeAlteration || newFeeAlteration(personId)
   )
@@ -146,7 +146,7 @@ export default React.memo(function FeeAlterationEditor({
                     onValidationResult={(isValid) => {
                       setValidationErrors({ dates: !isValid })
                     }}
-                    locale="fi"
+                    locale={lang}
                   />
                 </FixedSpaceRow>
               )

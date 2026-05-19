@@ -22,7 +22,7 @@ export default React.memo(function NekkuOrderModal({
   groupId: GroupId
   groupName: string
 }) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
 
   const [date, setDate] = useState<LocalDate | null>(null)
@@ -57,7 +57,7 @@ export default React.memo(function NekkuOrderModal({
         onChange={(selectedDate) => setDate(selectedDate)}
         minDate={LocalDate.todayInSystemTz().addDays(1)}
         maxDate={lastOrderedDate(LocalDate.todayInSystemTz())}
-        locale="fi"
+        locale={lang}
         data-qa="input-order-date"
       />
     </MutateFormModal>

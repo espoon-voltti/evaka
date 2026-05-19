@@ -51,7 +51,7 @@ function GroupCaretakersModal({
   unitId,
   groupId
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const [form, setForm] = useState<FormState>(
     existing
@@ -153,7 +153,7 @@ function GroupCaretakersModal({
         <DatePicker
           date={form.startDate}
           onChange={(startDate) => assignForm({ startDate })}
-          locale="fi"
+          locale={lang}
         />
       </section>
       <section>
@@ -161,7 +161,7 @@ function GroupCaretakersModal({
         <DatePicker
           date={form.endDate}
           onChange={(endDate) => assignForm({ endDate })}
-          locale="fi"
+          locale={lang}
         />
       </section>
       <section>

@@ -44,7 +44,7 @@ const Wrapper = styled.div`
 `
 
 export default React.memo(function MissingServiceNeed() {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [filters, setFilters] = useState<MissingServiceNeedReportFilters>({
     from: LocalDate.todayInSystemTz().subMonths(1).withDate(1),
     to: LocalDate.todayInSystemTz().addMonths(2).lastDayOfMonth()
@@ -85,7 +85,7 @@ export default React.memo(function MissingServiceNeed() {
           <DatePicker
             date={filters.from}
             onChange={(from) => setFilters({ ...filters, from })}
-            locale="fi"
+            locale={lang}
           />
         </FilterRow>
         <FilterRow>
@@ -93,7 +93,7 @@ export default React.memo(function MissingServiceNeed() {
           <DatePicker
             date={filters.to}
             onChange={(to) => setFilters({ ...filters, to })}
-            locale="fi"
+            locale={lang}
           />
         </FilterRow>
 

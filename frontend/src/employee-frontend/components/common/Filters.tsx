@@ -516,7 +516,7 @@ export function FeeDecisionDateFilter({
   searchByStartDate,
   setSearchByStartDate
 }: FeeDecisionDateFilterProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const showWarning = useMemo(() => {
     const start = LocalDate.parseFiOrNull(startDate)
@@ -531,14 +531,14 @@ export function FeeDecisionDateFilter({
         <DatePickerLowLevel
           value={startDate}
           onChange={setStartDate}
-          locale="fi"
+          locale={lang}
           data-qa="fee-decisions-start-date"
         />
         <Gap $horizontal $size="xs" />
         <DatePickerLowLevel
           value={endDate}
           onChange={setEndDate}
-          locale="fi"
+          locale={lang}
           data-qa="fee-decisions-start-date"
         />
       </FlexRow>
@@ -622,7 +622,7 @@ export function ValueDecisionDateFilter({
   searchByStartDate,
   setSearchByStartDate
 }: ValueDecisionDateFilterProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const showWarning = useMemo(() => {
     const start = LocalDate.parseFiOrNull(startDate)
@@ -637,14 +637,14 @@ export function ValueDecisionDateFilter({
         <DatePickerLowLevel
           value={startDate}
           onChange={setStartDate}
-          locale="fi"
+          locale={lang}
           data-qa="value-decisions-start-date"
         />
         <Gap $horizontal $size="xs" />
         <DatePickerLowLevel
           value={endDate}
           onChange={setEndDate}
-          locale="fi"
+          locale={lang}
           data-qa="value-decisions-end-date"
         />
       </FlexRow>
@@ -774,7 +774,7 @@ export function InvoiceDateFilter({
   searchByStartDate,
   setUseCustomDatesForInvoiceSending
 }: InvoiceDateFilterProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const showWarning = useMemo(() => {
     const start = LocalDate.parseFiOrNull(startDate)
@@ -789,14 +789,14 @@ export function InvoiceDateFilter({
         <DatePickerLowLevel
           value={startDate}
           onChange={setStartDate}
-          locale="fi"
+          locale={lang}
           data-qa="invoices-start-date"
         />
         <Gap $horizontal $size="xs" />
         <DatePickerLowLevel
           value={endDate}
           onChange={setEndDate}
-          locale="fi"
+          locale={lang}
           data-qa="invoices-end-date"
         />
       </FlexRow>
@@ -968,7 +968,7 @@ export function ApplicationDateFilter({
   toggled,
   toggle
 }: ApplicationDateFilterProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const dates: ApplicationDateType[] = ['DUE', 'START', 'ARRIVAL']
 
@@ -998,14 +998,14 @@ export function ApplicationDateFilter({
         <DatePickerLowLevel
           value={startDate}
           onChange={setStartDate}
-          locale="fi"
+          locale={lang}
           data-qa="applications-start-date"
         />
         <span>-</span>
         <DatePickerLowLevel
           value={endDate}
           onChange={setEndDate}
-          locale="fi"
+          locale={lang}
           data-qa="applications-end-date"
         />
       </FlexRow>
@@ -1323,7 +1323,7 @@ export function DateFilter({
   endDate,
   setEndDate
 }: DateFilterProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const showWarning = useMemo(() => {
     const start = LocalDate.parseFiOrNull(startDate)
@@ -1338,14 +1338,14 @@ export function DateFilter({
         <DatePickerLowLevel
           value={startDate}
           onChange={setStartDate}
-          locale="fi"
+          locale={lang}
           data-qa="start-date-filter-input"
         />
         <Gap $horizontal $size="xs" />
         <DatePickerLowLevel
           value={endDate}
           onChange={setEndDate}
-          locale="fi"
+          locale={lang}
           data-qa="end-date-filter-input"
         />
       </FlexRow>

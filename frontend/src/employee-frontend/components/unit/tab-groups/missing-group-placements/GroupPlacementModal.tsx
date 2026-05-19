@@ -56,7 +56,7 @@ export default React.memo(function GroupPlacementModal({
     gap: { start: minDate, end: maxDate }
   } = missingPlacement.data
 
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
 
   // filter out groups which are not active on any day during the maximum placement time range
@@ -205,7 +205,7 @@ export default React.memo(function GroupPlacementModal({
             onChange={(startDate) => assignFormValues({ startDate })}
             minDate={minDate}
             maxDate={maxDate}
-            locale="fi"
+            locale={lang}
           />
         </FieldWrapper>
         <FieldWrapper>
@@ -216,7 +216,7 @@ export default React.memo(function GroupPlacementModal({
             onChange={(endDate) => assignFormValues({ endDate })}
             minDate={minDate}
             maxDate={maxDate}
-            locale="fi"
+            locale={lang}
           />
         </FieldWrapper>
         {form.errors.length > 0 && (

@@ -307,7 +307,7 @@ const resolveGroupingType = (
 }
 
 export default React.memo(function AssistanceNeedsAndActions() {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const permittedReports = useQueryResult(permittedReportsQuery())
   const assistanceActionOptionsResult = useQueryResult(
     getAssistanceActionOptionsQuery()
@@ -501,7 +501,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
               setFilters((prev) => ({ ...prev, date }))
               setRowFilters(emptyRowFilters)
             }}
-            locale="fi"
+            locale={lang}
           />
         </FilterRow>
 
