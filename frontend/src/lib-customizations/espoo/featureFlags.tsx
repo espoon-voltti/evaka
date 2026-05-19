@@ -72,7 +72,8 @@ const features: Features = {
     ...prod,
     environmentLabel: 'Staging',
     forceUnpublishDocumentTemplate: true,
-    decisionReasoningOptions: true
+    decisionReasoningOptions: true,
+    decisionDraftRedesign: true
   },
   prod
 }
