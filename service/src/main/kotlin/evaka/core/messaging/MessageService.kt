@@ -12,6 +12,7 @@ import evaka.core.incomestatement.citizenHasUnhandledIncomeStatements
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.AttachmentId
 import evaka.core.shared.ChildId
+import evaka.core.shared.EmployeeId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.MessageAccountId
 import evaka.core.shared.MessageContentId
@@ -24,6 +25,7 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -366,6 +368,47 @@ class MessageService(
         }
         return ThreadReply(threadId, message)
     }
+
+    fun deleteSentMessageContent(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        deletingEmployeeId: EmployeeId,
+        accountId: MessageAccountId,
+        messageId: MessageId,
+    ) {
+        val target =
+            tx.getMessageDeletionTarget(messageId) ?: throw NotFound("Message $messageId not found")
+        if (target.senderId != accountId) throw Forbidden("Message was not sent from this account")
+        if (target.messageType != MessageType.MESSAGE)
+            throw Forbidden("Only personal and group messages can be deleted")
+        val windowEnd = HelsinkiDateTime.atStartOfDay(target.sentAt.toLocalDate().plusDays(8))
+        if (!clock.now().isBefore(windowEnd)) throw Forbidden("The deletion window has ended")
+
+        val rows =
+            tx.createUpdate {
+                    sql(
+                        """
+                        UPDATE message
+                        SET content_deleted_at = ${bind(clock.now())},
+                            content_deleted_by_employee_id = ${bind(deletingEmployeeId)}
+                        WHERE content_id = ${bind(target.contentId)}
+                          AND sender_id = ${bind(accountId)}
+                          AND content_deleted_at IS NULL
+                    """
+                    )
+                }
+                .execute()
+
+        if (rows == 0) throw Conflict("Message already deleted")
+    }
+
+    fun getDeletedMessageContent(
+        tx: Database.Read,
+        accountId: MessageAccountId,
+        messageId: MessageId,
+    ): DeletedMessageContent =
+        tx.fetchDeletedMessageContent(accountId, messageId)
+            ?: throw Forbidden("Message $messageId is not a deleted message of this account")
 }
 
 fun AsyncJobRunner<AsyncJob>.scheduleMarkMessagesAsSent(

@@ -1193,6 +1193,41 @@ class MessageController(
             }
     }
 
+    @PostMapping("/employee/messages/{accountId}/{messageId}/delete-content")
+    fun deleteMessageContent(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable messageId: MessageId,
+    ) {
+        db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.transaction { tx ->
+                messageService.deleteSentMessageContent(tx, clock, user.id, accountId, messageId)
+            }
+        }
+        Audit.MessagingDeleteContent.log(targetId = AuditId(listOf(accountId, messageId)))
+    }
+
+    @PostMapping("/employee/messages/{accountId}/{messageId}/view-deleted-content")
+    fun getDeletedMessageContent(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable messageId: MessageId,
+    ): DeletedMessageContent =
+        db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.read { tx -> messageService.getDeletedMessageContent(tx, accountId, messageId) }
+            }
+            .also {
+                Audit.MessagingViewDeletedContent.log(
+                    targetId = AuditId(listOf(accountId, messageId))
+                )
+            }
+
     private fun requireMessageAccountAccess(
         db: Database.Connection,
         user: AuthenticatedUser,
