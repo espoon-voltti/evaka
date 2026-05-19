@@ -24,6 +24,7 @@ import { Label } from 'lib-components/typography'
 import { TextAreaF } from '../../atoms/form/TextArea'
 import { useTranslations } from '../../i18n'
 import { DatePickerF } from '../../molecules/date-picker/DatePicker'
+import { useTemplateLanguage } from '../TemplateLanguageContext'
 
 import type {
   DocumentQuestionDescriptor,
@@ -76,6 +77,7 @@ const View = React.memo(function View({
   bind: BoundForm<QuestionForm>
   readOnly: boolean
 }) {
+  const locale = useTemplateLanguage()
   const { template, answer } = useFormFields(bind)
   const { label, infoText } = useFormFields(template)
   return readOnly ? (
@@ -88,7 +90,7 @@ const View = React.memo(function View({
       <ExpandingInfo info={infoText.value()} width="full">
         <Label>{label.state}</Label>
       </ExpandingInfo>
-      <DatePickerF bind={answer} locale="fi" data-qa="answer-input" />
+      <DatePickerF bind={answer} locale={locale} data-qa="answer-input" />
     </FixedSpaceColumn>
   )
 })

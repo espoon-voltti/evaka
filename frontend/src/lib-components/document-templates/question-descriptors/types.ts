@@ -22,7 +22,9 @@ export interface TemplateQuestionDescriptor<
     state: StateOf<TemplateForm>
   }
   Component: ComponentType<{ bind: BoundForm<TemplateForm> }>
-  PreviewComponent: ComponentType<{ bind: BoundForm<TemplateForm> }>
+  PreviewComponent: ComponentType<{
+    bind: BoundForm<TemplateForm>
+  }>
 }
 
 export interface DocumentQuestionDescriptor<

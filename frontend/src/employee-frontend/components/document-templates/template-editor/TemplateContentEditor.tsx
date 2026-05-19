@@ -31,6 +31,10 @@ import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
+import {
+  localeByTemplateLanguage,
+  TemplateLanguageProvider
+} from 'lib-components/document-templates/TemplateLanguageContext'
 import { getDocumentCategory } from 'lib-components/document-templates/documents'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -102,6 +106,7 @@ export default React.memo(function TemplateContentEditor({
   )
   const sections = useFormField(form, 'sections')
   const sectionElems = useFormElems(sections)
+  const locale = localeByTemplateLanguage[template.language]
 
   return (
     <div>
@@ -115,47 +120,49 @@ export default React.memo(function TemplateContentEditor({
           Essi Esimerkkiläinen (
           {LocalDate.todayInHelsinkiTz().subYears(5).format()})
         </H2>
-        <FixedSpaceColumn $spacing="L">
-          {sectionElems.map((section, index) => (
-            <TemplateSectionView
-              key={section.state.id}
-              bind={section}
-              onMoveUp={() =>
-                sections.update((old) => swapElements(old, index, index - 1))
-              }
-              onMoveDown={() =>
-                sections.update((old) => swapElements(old, index, index + 1))
-              }
-              onDelete={() =>
-                sections.update((old) => [
-                  ...old.slice(0, index),
-                  ...old.slice(index + 1)
-                ])
-              }
-              first={index === 0}
-              last={index === sectionElems.length - 1}
-              readOnly={readOnly}
+        <TemplateLanguageProvider value={locale}>
+          <FixedSpaceColumn $spacing="L">
+            {sectionElems.map((section, index) => (
+              <TemplateSectionView
+                key={section.state.id}
+                bind={section}
+                onMoveUp={() =>
+                  sections.update((old) => swapElements(old, index, index - 1))
+                }
+                onMoveDown={() =>
+                  sections.update((old) => swapElements(old, index, index + 1))
+                }
+                onDelete={() =>
+                  sections.update((old) => [
+                    ...old.slice(0, index),
+                    ...old.slice(index + 1)
+                  ])
+                }
+                first={index === 0}
+                last={index === sectionElems.length - 1}
+                readOnly={readOnly}
+              />
+            ))}
+          </FixedSpaceColumn>
+
+          {!readOnly && (
+            <AddButtonRow
+              text={i18n.documentTemplates.templateEditor.addSection}
+              onClick={() => setCreatingSection(true)}
+              data-qa="create-section-button"
             />
-          ))}
-        </FixedSpaceColumn>
+          )}
 
-        {!readOnly && (
-          <AddButtonRow
-            text={i18n.documentTemplates.templateEditor.addSection}
-            onClick={() => setCreatingSection(true)}
-            data-qa="create-section-button"
-          />
-        )}
-
-        {creatingSection && (
-          <TemplateSectionModal
-            onSave={(newSection) => {
-              sections.update((old) => [...old, newSection])
-              setCreatingSection(false)
-            }}
-            onCancel={() => setCreatingSection(false)}
-          />
-        )}
+          {creatingSection && (
+            <TemplateSectionModal
+              onSave={(newSection) => {
+                sections.update((old) => [...old, newSection])
+                setCreatingSection(false)
+              }}
+              onCancel={() => setCreatingSection(false)}
+            />
+          )}
+        </TemplateLanguageProvider>
       </ContentArea>
 
       <Gap />
