@@ -53,7 +53,7 @@ class VesilahtiConfig {
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,
             archiveMetadataOrganization = "Vesilahden kunta, varhaiskasvatus",
-            metadataBusinessId = "0157716-8",
+            metadataBusinessId = "0157711-9",
             archiveMetadataConfigs = { type, year ->
                 when (type) {
                     ArchiveProcessType.APPLICATION_DAYCARE ->
