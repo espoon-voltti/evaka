@@ -55,6 +55,7 @@ JOIN daycare d ON d.id = dg.daycare_id
 JOIN mobile_device_push_group mdpg ON mdpg.daycare_group = dg.id
 JOIN mobile_device md ON mdpg.device = md.id
 WHERE mr.read_at IS NULL
+AND m.content_deleted_at IS NULL
 AND ma.type = 'GROUP'
 AND mt.is_copy IS FALSE
 AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)

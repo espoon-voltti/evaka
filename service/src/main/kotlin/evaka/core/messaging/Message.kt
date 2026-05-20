@@ -42,6 +42,7 @@ const val DELETED_MESSAGE_PLACEHOLDER_TITLE =
 data class Message(
     val id: MessageId,
     val threadId: MessageThreadId,
+    val contentId: MessageContentId,
     @Json val sender: MessageAccount,
     @Json val recipients: Set<MessageAccount>,
     val sentAt: HelsinkiDateTime,
@@ -134,6 +135,7 @@ data class SentMessage(
     val contentId: MessageContentId,
     val content: String,
     val contentDeletedAt: HelsinkiDateTime?,
+    val firstMessageContentDeletedAt: HelsinkiDateTime?,
     val sentAt: HelsinkiDateTime,
     val threadTitle: String,
     val type: MessageType,
@@ -143,7 +145,11 @@ data class SentMessage(
     @Json val attachments: List<Attachment>,
 )
 
-data class DeletedMessageContent(val content: String, @Json val attachments: List<Attachment>)
+data class DeletedMessageContent(
+    val content: String,
+    @Json val attachments: List<Attachment>,
+    val title: String?,
+)
 
 enum class MessageType : DatabaseEnum {
     MESSAGE,

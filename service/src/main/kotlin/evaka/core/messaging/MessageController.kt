@@ -1193,38 +1193,57 @@ class MessageController(
             }
     }
 
-    @PostMapping("/employee/messages/{accountId}/{messageId}/delete-content")
+    @PostMapping("/employee/messages/{accountId}/contents/{contentId}/delete-content")
     fun deleteMessageContent(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @PathVariable messageId: MessageId,
+        @PathVariable contentId: MessageContentId,
     ) {
         db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, clock, accountId)
-            dbc.transaction { tx ->
-                messageService.deleteSentMessageContent(tx, clock, user.id, accountId, messageId)
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.transaction { tx ->
+                    messageService.deleteSentMessageContent(
+                        tx,
+                        clock,
+                        user.id,
+                        accountId,
+                        contentId,
+                    )
+                }
             }
-        }
-        Audit.MessagingDeleteContent.log(targetId = AuditId(listOf(accountId, messageId)))
+            .also {
+                Audit.MessagingDeleteContent.log(
+                    targetId = AuditId(listOf(accountId, contentId)),
+                    meta =
+                        mapOf(
+                            "recipientCount" to it.recipientCount,
+                            "sentAt" to it.sentAt,
+                            "deletedAt" to it.deletedAt,
+                        ),
+                )
+            }
     }
 
-    @PostMapping("/employee/messages/{accountId}/{messageId}/view-deleted-content")
+    @GetMapping("/employee/messages/{accountId}/contents/{contentId}/view-deleted-content")
     fun getDeletedMessageContent(
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @PathVariable messageId: MessageId,
+        @PathVariable contentId: MessageContentId,
     ): DeletedMessageContent =
         db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.read { tx -> messageService.getDeletedMessageContent(tx, accountId, messageId) }
+                dbc.read { tx -> tx.fetchDeletedMessageContent(accountId, contentId) }
+                    ?: throw Forbidden(
+                        "Message $contentId is not a deleted message of this account"
+                    )
             }
             .also {
                 Audit.MessagingViewDeletedContent.log(
-                    targetId = AuditId(listOf(accountId, messageId))
+                    targetId = AuditId(listOf(accountId, contentId))
                 )
             }
 

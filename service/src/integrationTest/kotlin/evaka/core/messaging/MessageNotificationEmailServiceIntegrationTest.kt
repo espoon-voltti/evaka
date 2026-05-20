@@ -229,6 +229,48 @@ class MessageNotificationEmailServiceIntegrationTest :
     }
 
     @Test
+    fun `a notification is not sent when the message content has been deleted`() {
+        val employeeAccount = db.read {
+            it.getEmployeeMessageAccountIds(
+                    accessControl.requireAuthorizationFilter(
+                        it,
+                        employee,
+                        clock,
+                        Action.MessageAccount.ACCESS,
+                    )
+                )
+                .first()
+        }
+
+        val contentId =
+            postNewThread(
+                    sender = employeeAccount,
+                    recipients = listOf(MessageRecipient.Child(child.id)),
+                    user = employee,
+                    clock = clock,
+                )
+                .createdId
+        assertNotNull(contentId)
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    """
+UPDATE message
+SET content_deleted_at = ${bind(clock.now())},
+    content_deleted_by_employee_id = ${bind(staffEmployee.id)}
+WHERE content_id = ${bind(contentId)}
+"""
+                )
+            }
+        }
+
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
+
+        assertTrue(MockEmailClient.emails.isEmpty())
+    }
+
+    @Test
     fun `notifications related to an application are sent to citizens`() {
         val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
         val serviceWorkerAccount = db.transaction { tx ->

@@ -83,7 +83,8 @@ data class FeatureConfig(
      * in the post-deletion banner and emails as the support contact.
      *
      * If null, the municipality has not configured a support address: the support-contact line is
-     * omitted from the banner and emails, and the admin notification email is not sent.
+     * omitted from the banner and emails, and the admin notification email is sent to all active
+     * users with the admin role.
      */
     val messageSupportEmail: String? = null,
 

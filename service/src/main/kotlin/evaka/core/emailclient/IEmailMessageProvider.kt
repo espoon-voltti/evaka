@@ -17,6 +17,7 @@ import evaka.core.shared.ChildId
 import evaka.core.shared.HtmlSafe
 import evaka.core.shared.MessageThreadId
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.LocalTime
 import org.jsoup.Jsoup
@@ -145,7 +146,26 @@ interface IEmailMessageProvider {
     fun emailChanged(newEmail: String): EmailContent
 
     fun newBrowserLoginNotification(): EmailContent
+
+    fun messageDeletionSenderEmail(
+        supportEmail: String?,
+        data: MessageDeletionEmailData,
+    ): EmailContent = MessageDeletionEmailContent.senderEmail(supportEmail, data)
+
+    fun messageDeletionNotificationEmail(
+        supportEmail: String?,
+        data: MessageDeletionEmailData,
+    ): EmailContent = MessageDeletionEmailContent.notificationEmail(supportEmail, data)
 }
+
+data class MessageDeletionEmailData(
+    val deleterName: HtmlSafe<String>,
+    val senderAccountName: HtmlSafe<String>,
+    val senderAccountType: AccountType,
+    val sentAt: HelsinkiDateTime,
+    val deletedAt: HelsinkiDateTime,
+    val recipientCount: Int,
+)
 
 data class MessageThreadData(
     val id: MessageThreadId,
