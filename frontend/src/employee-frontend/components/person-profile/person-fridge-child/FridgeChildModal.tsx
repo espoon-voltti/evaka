@@ -41,7 +41,7 @@ export interface FridgeChildForm {
 }
 
 function FridgeChildModal({ headPersonId, parentship }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
   const { person } = useContext(PersonContext)
   const initialForm = useMemo(
@@ -218,7 +218,7 @@ function FridgeChildModal({ headPersonId, parentship }: Props) {
           onChange={(startDate) => assignFridgeChildForm({ startDate })}
           minDate={form.child?.dateOfBirth}
           maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
-          locale="fi"
+          locale={lang}
           data-qa="fridge-child-start-date"
         />
       </section>
@@ -229,7 +229,7 @@ function FridgeChildModal({ headPersonId, parentship }: Props) {
           onChange={(endDate) => assignFridgeChildForm({ endDate })}
           minDate={form.child?.dateOfBirth}
           maxDate={form.child?.dateOfBirth.addYears(18).subDays(1)}
-          locale="fi"
+          locale={lang}
           data-qa="fridge-child-end-date"
         />
       </section>

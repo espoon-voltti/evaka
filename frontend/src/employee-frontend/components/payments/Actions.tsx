@@ -133,7 +133,7 @@ const SendPaymentsModal = React.memo(function Modal({
   onSuccess: () => void
   onCancel: () => void
 }) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [paymentDate, setPaymentDate] = useState<LocalDate | null>(
     LocalDate.todayInHelsinkiTz()
   )
@@ -170,7 +170,7 @@ const SendPaymentsModal = React.memo(function Modal({
               i18n.validationErrors
             )}
             hideErrorsBeforeTouched
-            locale="fi"
+            locale={lang}
           />
         </div>
         <Gap $size="s" />
@@ -184,7 +184,7 @@ const SendPaymentsModal = React.memo(function Modal({
               i18n.validationErrors
             )}
             hideErrorsBeforeTouched
-            locale="fi"
+            locale={lang}
           />
         </div>
       </ModalContent>

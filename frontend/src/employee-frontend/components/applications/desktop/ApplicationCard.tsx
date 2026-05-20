@@ -77,7 +77,7 @@ export default React.memo(function ApplicationCard({
   onMutateApplicationPlacementFailure: () => void
   onAddOrHighlightDaycare: (unit: PreferredUnit) => void
 }) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { colors } = useTheme()
   const [, navigate] = useLocation()
   const {
@@ -270,7 +270,9 @@ export default React.memo(function ApplicationCard({
                     }
                     label={
                       application.serviceNeed !== null
-                        ? application.serviceNeed.nameFi
+                        ? lang === 'sv'
+                          ? application.serviceNeed.nameSv
+                          : application.serviceNeed.nameFi
                         : i18n.placement.type[application.placementType]
                     }
                     size={24}

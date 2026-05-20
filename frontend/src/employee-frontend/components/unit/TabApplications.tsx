@@ -20,7 +20,7 @@ interface Props {
 }
 
 export default React.memo(function TabApplications({ applications }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [open, setOpen] = useState<boolean>(true)
 
   return (
@@ -81,7 +81,9 @@ export default React.memo(function TabApplications({ applications }: Props) {
                     }
                     label={
                       (row.serviceNeed !== null
-                        ? row.serviceNeed.nameFi
+                        ? lang === 'sv'
+                          ? row.serviceNeed.nameSv
+                          : row.serviceNeed.nameFi
                         : i18n.placement.type[row.requestedPlacementType]) +
                       (row.extendedCare
                         ? ', ' + i18n.unit.applications.extendedCare

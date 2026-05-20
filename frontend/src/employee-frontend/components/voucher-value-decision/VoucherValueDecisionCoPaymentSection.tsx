@@ -26,10 +26,13 @@ export default React.memo(function VoucherValueDecisionCoPaymentSection({
     finalCoPayment
   }
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
+
+  const feeDescription =
+    lang === 'sv' ? serviceNeed.feeDescriptionSv : serviceNeed.feeDescriptionFi
 
   const mainDescription = `${i18n.placement.type[placement.type]}, ${
-    serviceNeed.feeDescriptionFi
+    feeDescription
   } (${serviceNeed.feeCoefficient * 100} %)${
     siblingDiscount
       ? `, ${i18n.valueDecision.summary.siblingDiscount} ${siblingDiscount}%`

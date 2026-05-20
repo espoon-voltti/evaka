@@ -36,7 +36,7 @@ export default React.memo(function DecisionResponse({
   applicationId,
   decision
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [accept, setAccept] = useState(true)
   const [acceptDate, setAcceptDate] = useState<LocalDate | null>(
     decision.startDate
@@ -83,7 +83,7 @@ export default React.memo(function DecisionResponse({
             i18n.validationErrors
           )}
           required
-          locale="fi"
+          locale={lang}
         />
       </FixedSpaceRow>
       <Radio

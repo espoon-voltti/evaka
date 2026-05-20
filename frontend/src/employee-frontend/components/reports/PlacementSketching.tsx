@@ -139,7 +139,7 @@ export default React.memo(function PlacementSketching() {
             onChange={(placementStartDate) =>
               setFilters({ ...filters, placementStartDate })
             }
-            locale="fi"
+            locale={lang}
           />
         </FilterRow>
 
@@ -152,7 +152,7 @@ export default React.memo(function PlacementSketching() {
             onChange={(earliestPreferredStartDate) =>
               setFilters({ ...filters, earliestPreferredStartDate })
             }
-            locale="fi"
+            locale={lang}
           />
         </FilterRow>
 

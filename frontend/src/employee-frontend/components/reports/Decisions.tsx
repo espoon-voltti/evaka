@@ -48,7 +48,7 @@ const Wrapper = styled.div`
 `
 
 export default React.memo(function Decisions() {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [filters, setFilters] = useState<Filters>({
     from: LocalDate.todayInSystemTz(),
     to: LocalDate.todayInSystemTz().addMonths(4),
@@ -100,14 +100,14 @@ export default React.memo(function Decisions() {
             <DatePicker
               date={filters.from}
               onChange={(from) => setFilters({ ...filters, from })}
-              locale="fi"
+              locale={lang}
               data-qa="datepicker-from"
             />
             <DatePickerSpacer />
             <DatePicker
               date={filters.to}
               onChange={(to) => setFilters({ ...filters, to })}
-              locale="fi"
+              locale={lang}
               data-qa="datepicker-to"
             />
           </FlexRow>

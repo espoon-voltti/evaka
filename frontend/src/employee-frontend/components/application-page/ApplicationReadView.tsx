@@ -73,7 +73,7 @@ interface PreschoolApplicationProps {
 export default React.memo(function ApplicationReadView({
   application
 }: PreschoolApplicationProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const {
     application: {
@@ -204,7 +204,11 @@ export default React.memo(function ApplicationReadView({
                     </>
                   )}
                   {serviceNeed.serviceNeedOption !== null && (
-                    <span>{serviceNeed.serviceNeedOption.nameFi}</span>
+                    <span>
+                      {lang === 'sv'
+                        ? serviceNeed.serviceNeedOption.nameSv
+                        : serviceNeed.serviceNeedOption.nameFi}
+                    </span>
                   )}
                 </>
               )}
@@ -239,7 +243,11 @@ export default React.memo(function ApplicationReadView({
                           .connectedDaycareServiceNeedOptionLabel
                       }
                     </Label>
-                    <span>{serviceNeed.serviceNeedOption.nameFi}</span>
+                    <span>
+                      {lang === 'sv'
+                        ? serviceNeed.serviceNeedOption.nameSv
+                        : serviceNeed.serviceNeedOption.nameFi}
+                    </span>
                   </>
                 )}
             </>

@@ -113,7 +113,7 @@ export default React.memo(function PlacementRow({
   otherPlacementRanges,
   serviceNeedOptions
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { setErrorMessage } = useContext<UiState>(UIContext)
   const backupCares = useQueryResult(
     backupCaresQuery({ childId: placement.child.id })
@@ -346,7 +346,7 @@ export default React.memo(function PlacementRow({
                     validate(startDate, placement.endDate)
                   }}
                   data-qa="placement-start-date-input"
-                  locale="fi"
+                  locale={lang}
                 />
                 {startDateWarning ? (
                   <WarningContainer>
@@ -376,7 +376,7 @@ export default React.memo(function PlacementRow({
                         setForm({ ...form, endDate })
                         validate(placement.startDate, endDate)
                       }}
-                      locale="fi"
+                      locale={lang}
                       data-qa="placement-end-date-input"
                       aria-labelledby="placement-details-end-date"
                     />

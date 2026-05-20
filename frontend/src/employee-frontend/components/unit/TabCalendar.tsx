@@ -364,7 +364,7 @@ const ActiveDateRangeSelector = React.memo(function ActiveDateRangeSelector({
   mode,
   weekRange
 }: ActiveDateRangeSelectorProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const startDate =
     mode === 'week' ? weekRange.start : selectedDate.startOfMonth()
@@ -396,7 +396,7 @@ const ActiveDateRangeSelector = React.memo(function ActiveDateRangeSelector({
           onChange={(date) => {
             if (date) setSelectedDate(date)
           }}
-          locale="fi"
+          locale={lang}
         />
         <span>–</span>
         <span>{endDate.format('dd.MM.yyyy')}</span>

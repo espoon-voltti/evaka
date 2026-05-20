@@ -924,7 +924,7 @@ function MealtimeInput({
 }
 
 export default function UnitEditor(props: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const initialData = useMemo<FormData>(
     () => toFormData(props.unit),
     [props.unit]
@@ -1140,7 +1140,7 @@ export default function UnitEditor(props: Props) {
                   date={form.openingDate}
                   onChange={(openingDate) => updateForm({ openingDate })}
                   maxDate={form.closingDate ?? LocalDate.of(2100, 1, 1)}
-                  locale="fi"
+                  locale={lang}
                   data-qa="opening-date-input"
                 />
                 <DatePickerSpacer />
@@ -1148,7 +1148,7 @@ export default function UnitEditor(props: Props) {
                   date={form.closingDate}
                   onChange={(closingDate) => updateForm({ closingDate })}
                   minDate={form.openingDate ?? LocalDate.of(1960, 1, 1)}
-                  locale="fi"
+                  locale={lang}
                   data-qa="closing-date-input"
                 />
               </>
@@ -1352,7 +1352,7 @@ export default function UnitEditor(props: Props) {
                                   }
                                 })
                               }}
-                              locale="fi"
+                              locale={lang}
                             />
                             <DatePickerSpacer />
                             <DatePicker
@@ -1367,7 +1367,7 @@ export default function UnitEditor(props: Props) {
                                   }
                                 })
                               }}
-                              locale="fi"
+                              locale={lang}
                             />
                           </>
                         ) : (

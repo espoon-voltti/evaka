@@ -242,7 +242,7 @@ const SendModal = React.memo(function SendModal({
   fullAreaSelection: boolean
   sendType: SendModalType
 }) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const {
     invoices: { searchFilters }
   } = useContext(InvoicingUiContext)
@@ -322,7 +322,7 @@ const SendModal = React.memo(function SendModal({
               i18n.validationErrors
             )}
             hideErrorsBeforeTouched
-            locale="fi"
+            locale={lang}
             data-qa="invoice-date-input"
           />
         </div>
@@ -337,7 +337,7 @@ const SendModal = React.memo(function SendModal({
               i18n.validationErrors
             )}
             hideErrorsBeforeTouched
-            locale="fi"
+            locale={lang}
             data-qa="invoice-due-date-input"
           />
         </div>

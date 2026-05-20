@@ -45,7 +45,7 @@ export default React.memo(function GroupTransferModal({
     endDate: maxDate
   } = placement
 
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
 
   // filter out groups which are not active on any day during the maximum placement time range
@@ -138,7 +138,7 @@ export default React.memo(function GroupTransferModal({
             onChange={(startDate) => assignFormValues({ startDate })}
             minDate={minDate}
             maxDate={maxDate}
-            locale="fi"
+            locale={lang}
           />
         </section>
         {form.errors.length > 0 && (

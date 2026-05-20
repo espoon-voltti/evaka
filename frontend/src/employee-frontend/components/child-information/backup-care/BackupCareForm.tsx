@@ -100,7 +100,7 @@ export default function BackupCareForm({
   backupCares,
   backupCare
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { uiMode, clearUiMode } = useContext(UIContext)
   const { permittedActions } = useContext(ChildContext)
 
@@ -324,14 +324,14 @@ export default function BackupCareForm({
             <DatePicker
               date={formState.startDate}
               onChange={(startDate) => updateFormState({ startDate })}
-              locale="fi"
+              locale={lang}
               data-qa="backup-care-start-date"
             />
             <DatePickerSpacer />
             <DatePicker
               date={formState.endDate}
               onChange={(endDate) => updateFormState({ endDate })}
-              locale="fi"
+              locale={lang}
               data-qa="backup-care-end-date"
             />
           </FixedSpaceRow>

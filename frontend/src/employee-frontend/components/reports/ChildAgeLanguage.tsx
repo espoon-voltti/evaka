@@ -38,7 +38,7 @@ const Wrapper = styled.div`
 `
 
 export default React.memo(function ChildAgeLanguage() {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [filters, _setFilters] = useState<DateFilters>({
     date: LocalDate.todayInSystemTz()
   })
@@ -78,7 +78,7 @@ export default React.memo(function ChildAgeLanguage() {
           <DatePicker
             date={filters.date}
             onChange={(date) => setFilters({ date })}
-            locale="fi"
+            locale={lang}
           />
         </FilterRow>
 

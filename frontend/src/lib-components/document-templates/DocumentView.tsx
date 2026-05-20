@@ -18,6 +18,10 @@ import type { Translations } from '../i18n'
 import { ComponentLocalizationContextProvider } from '../i18n'
 
 import {
+  localeByTemplateLanguage,
+  TemplateLanguageProvider
+} from './TemplateLanguageContext'
+import {
   type documentForm,
   DocumentQuestionView,
   type documentSectionForm
@@ -41,22 +45,26 @@ export default React.memo(function DocumentView({
   templateLanguage
 }: Props) {
   const sectionElems = useFormElems(bind)
-  const translations = translationsByLang[templateLanguage ?? 'FI']
+  const lang: UiLanguage = templateLanguage ?? 'FI'
+  const translations = translationsByLang[lang]
+  const locale = localeByTemplateLanguage[lang]
 
   return (
     <div>
       <ComponentLocalizationContextProvider
         useTranslations={() => translations}
       >
-        <FixedSpaceColumn $spacing="XL">
-          {sectionElems.map((section) => (
-            <DocumentSectionView
-              key={section.state.id}
-              bind={section}
-              readOnly={readOnly ?? false}
-            />
-          ))}
-        </FixedSpaceColumn>
+        <TemplateLanguageProvider value={locale}>
+          <FixedSpaceColumn $spacing="XL">
+            {sectionElems.map((section) => (
+              <DocumentSectionView
+                key={section.state.id}
+                bind={section}
+                readOnly={readOnly ?? false}
+              />
+            ))}
+          </FixedSpaceColumn>
+        </TemplateLanguageProvider>
       </ComponentLocalizationContextProvider>
     </div>
   )

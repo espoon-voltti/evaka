@@ -104,7 +104,7 @@ export default React.memo(function ApplicationEditView({
   guardians,
   serviceNeedOptions
 }: PreschoolApplicationProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [placementType, setPlacementType] = useState<PlacementType | null>(
     application.form.preferences.serviceNeed?.serviceNeedOption
       ?.validPlacementType ?? null
@@ -267,7 +267,7 @@ export default React.memo(function ApplicationEditView({
                     set('form.preferences.preferredStartDate', value)
                   )
                 }}
-                locale="fi"
+                locale={lang}
                 data-qa="datepicker-start-date"
               />
               {errors['form.preferences.preferredStartDate'] ? (
@@ -327,7 +327,7 @@ export default React.memo(function ApplicationEditView({
                           {partTimeOptions.map((opt) => (
                             <Radio
                               key={opt.id}
-                              label={opt.nameFi}
+                              label={lang === 'sv' ? opt.nameSv : opt.nameFi}
                               checked={
                                 serviceNeed.serviceNeedOption?.id === opt.id
                               }
@@ -365,7 +365,7 @@ export default React.memo(function ApplicationEditView({
                           {fullTimeOptions.map((opt) => (
                             <Radio
                               key={opt.id}
-                              label={opt.nameFi}
+                              label={lang === 'sv' ? opt.nameSv : opt.nameFi}
                               checked={
                                 serviceNeed.serviceNeedOption?.id === opt.id
                               }
@@ -489,7 +489,7 @@ export default React.memo(function ApplicationEditView({
                             )
                           )
                         }}
-                        locale="fi"
+                        locale={lang}
                         data-qa="datepicker-connected-daycare-preferred-start-date"
                       />
                       {errors[
@@ -545,7 +545,11 @@ export default React.memo(function ApplicationEditView({
                                   <Radio
                                     data-qa={`preschool-service-need-option-${option.nameFi}`}
                                     key={option.id}
-                                    label={option.nameFi}
+                                    label={
+                                      lang === 'sv'
+                                        ? option.nameSv
+                                        : option.nameFi
+                                    }
                                     checked={
                                       serviceNeed.serviceNeedOption?.id ===
                                       option.id
@@ -916,7 +920,7 @@ export default React.memo(function ApplicationEditView({
                         set('form.child.futureAddress.movingDate', value)
                       )
                     }}
-                    locale="fi"
+                    locale={lang}
                   />
                 </>
               )}
@@ -1002,7 +1006,7 @@ export default React.memo(function ApplicationEditView({
                             set('form.guardian.futureAddress.movingDate', value)
                           )
                         }}
-                        locale="fi"
+                        locale={lang}
                       />
                     </>
                   )}
@@ -1353,7 +1357,7 @@ export default React.memo(function ApplicationEditView({
           <DatePicker
             date={application.dueDate}
             onChange={(value) => setApplication(set('dueDate', value))}
-            locale="fi"
+            locale={lang}
             data-qa="due-date"
           />
         }

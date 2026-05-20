@@ -211,7 +211,7 @@ export function PaymentDateFilter({
   endDate,
   setEndDate
 }: PaymentDateFilterProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   const showWarning = useMemo(() => {
     const start = LocalDate.parseFiOrNull(startDate)
@@ -226,10 +226,14 @@ export function PaymentDateFilter({
         <DatePickerLowLevel
           value={startDate}
           onChange={setStartDate}
-          locale="fi"
+          locale={lang}
         />
         <Gap $horizontal $size="xs" />
-        <DatePickerLowLevel value={endDate} onChange={setEndDate} locale="fi" />
+        <DatePickerLowLevel
+          value={endDate}
+          onChange={setEndDate}
+          locale={lang}
+        />
       </FlexRow>
       {showWarning ? (
         <>

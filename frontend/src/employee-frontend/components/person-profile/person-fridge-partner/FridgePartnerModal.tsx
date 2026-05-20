@@ -43,7 +43,7 @@ export interface FridgePartnerForm {
 }
 
 function FridgePartnerModal({ partnership, headPersonId }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { clearUiMode, setErrorMessage } = useContext(UIContext)
   const { person } = useContext(PersonContext)
   const initialForm = useMemo(
@@ -227,7 +227,7 @@ function FridgePartnerModal({ partnership, headPersonId }: Props) {
         <DatePicker
           date={form.startDate}
           onChange={(startDate) => assignFridgePartnerForm({ startDate })}
-          locale="fi"
+          locale={lang}
           data-qa="fridge-partner-start-date"
         />
       </section>
@@ -236,7 +236,7 @@ function FridgePartnerModal({ partnership, headPersonId }: Props) {
         <DatePicker
           date={form.endDate}
           onChange={(endDate) => assignFridgePartnerForm({ endDate })}
-          locale="fi"
+          locale={lang}
         />
         {retroactive && (
           <>

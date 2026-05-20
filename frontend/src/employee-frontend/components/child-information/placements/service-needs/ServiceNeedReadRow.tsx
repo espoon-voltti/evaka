@@ -26,13 +26,15 @@ function ServiceNeedReadRow({
   onDelete,
   disabled
 }: ServiceNeedReadRowProps) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   return (
     <Tr data-qa="service-need-row">
       <Td data-qa="service-need-range">
         {serviceNeed.startDate.format()} - {serviceNeed.endDate.format()}
       </Td>
-      <Td data-qa="service-need-name">{serviceNeed.option.nameFi}</Td>
+      <Td data-qa="service-need-name">
+        {lang === 'sv' ? serviceNeed.option.nameSv : serviceNeed.option.nameFi}
+      </Td>
       <Td data-qa={`shift-care-${serviceNeed.shiftCare}`}>
         {featureFlags.intermittentShiftCare
           ? i18n.childInformation.placements.serviceNeeds.shiftCareTypes[

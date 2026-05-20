@@ -48,7 +48,7 @@ interface CreateGroupForm {
 export const AROMI_CUSTOMER_ID_MAX_LENGTH = 100
 
 export default React.memo(function GroupModal({ unitId }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
 
   const initialForm: CreateGroupForm = {
@@ -143,7 +143,7 @@ export default React.memo(function GroupModal({ unitId }: Props) {
                 : undefined
             }
             hideErrorsBeforeTouched
-            locale="fi"
+            locale={lang}
           />
         </div>
         <div>

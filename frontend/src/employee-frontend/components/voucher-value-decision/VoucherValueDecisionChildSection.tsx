@@ -29,7 +29,7 @@ export default React.memo(function ChildSection({
   placement,
   serviceNeed
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   return (
     <CollapsibleSection
@@ -70,7 +70,10 @@ export default React.memo(function ChildSection({
           },
           {
             label: i18n.valueDecision.child.serviceNeed,
-            value: serviceNeed.feeDescriptionFi
+            value:
+              lang === 'sv'
+                ? serviceNeed.feeDescriptionSv
+                : serviceNeed.feeDescriptionFi
           }
         ]}
       />

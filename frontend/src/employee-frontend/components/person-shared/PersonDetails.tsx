@@ -478,7 +478,7 @@ export default React.memo(function PersonDetails({
   sensitiveDetailsOpen,
   onToggleSensitiveDetails
 }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext<UiState>(UIContext)
   const editing = uiMode === 'person-details-editing'
   const [form, setForm] = useState<Form>({
@@ -651,7 +651,7 @@ export default React.memo(function PersonDetails({
                   date={form.dateOfBirth}
                   onChange={(dateOfBirth) => updateForm({ dateOfBirth })}
                   maxDate={LocalDate.todayInSystemTz()}
-                  locale="fi"
+                  locale={lang}
                   data-qa="input-birthday"
                 />
               ) : (

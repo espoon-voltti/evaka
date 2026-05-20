@@ -45,7 +45,7 @@ interface Form {
 }
 
 function CreatePlacementModal({ childId }: Props) {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const { clearUiMode } = useContext(UIContext)
   const units = useQueryResult(daycaresQuery({ includeClosed: true }))
   const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
@@ -278,7 +278,7 @@ function CreatePlacementModal({ childId }: Props) {
             date={form.startDate}
             onChange={(startDate) => setForm({ ...form, startDate })}
             data-qa="create-placement-start-date"
-            locale="fi"
+            locale={lang}
           />
         </section>
 
@@ -289,7 +289,7 @@ function CreatePlacementModal({ childId }: Props) {
             date={form.endDate}
             onChange={(endDate) => setForm({ ...form, endDate })}
             data-qa="create-placement-end-date"
-            locale="fi"
+            locale={lang}
           />
         </section>
 
