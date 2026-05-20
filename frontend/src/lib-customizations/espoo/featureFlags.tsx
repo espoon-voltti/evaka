@@ -70,11 +70,7 @@ const features: Features = {
   staging: {
     ...prod,
     environmentLabel: 'Staging',
-    jamixIntegration: false,
-    nekkuIntegration: false,
     forceUnpublishDocumentTemplate: true,
-    serviceApplications: true,
-    showCitizenApplicationPreschoolTerms: true,
     decisionReasoningOptions: true
   },
   prod
