@@ -11,142 +11,69 @@ type Features = {
   default: FeatureFlags
 } & Record<Env, FeatureFlags>
 
+const prod: FeatureFlags = {
+  environmentLabel: null,
+  citizenShiftCareAbsence: true,
+  assistanceActionOther: true,
+  daycareApplication: {
+    dailyTimes: true,
+    serviceNeedOption: false
+  },
+  preschoolApplication: {
+    connectedDaycarePreferredStartDate: true,
+    serviceNeedOption: false
+  },
+  decisionDraftMultipleUnits: false,
+  preschool: true,
+  preparatory: true,
+  urgencyAttachments: true,
+  financeDecisionHandlerSelect: false,
+  feeDecisionPreschoolClubFilter: false,
+  placementGuarantee: true,
+  extendedPreschoolTerm: true,
+  citizenAttendanceSummary: false,
+  voucherUnitPayments: false,
+  voucherValueSeparation: true,
+  intermittentShiftCare: false,
+  noAbsenceType: false,
+  discussionReservations: true,
+  forceUnpublishDocumentTemplate: false,
+  invoiceDisplayAccountNumber: true,
+  serviceApplications: false,
+  multiSelectDeparture: true,
+  archiveIntegration: {
+    childDocuments: true
+  },
+  aromiIntegration: true,
+  citizenChildDocumentTypes: true,
+  decisionChildDocumentTypes: true,
+  showCitizenApplicationPreschoolTerms: false,
+  missingQuestionnaireAnswerMarkerEnabled: false,
+  absenceApplications: true,
+  showMetadataToCitizen: true,
+  placementDesktop: true,
+  employeeLanguageSelection: true
+}
+
 const features: Features = {
   default: {
+    ...prod,
     environmentLabel: 'Lokaali',
-    citizenShiftCareAbsence: true,
-    assistanceActionOther: true,
-    daycareApplication: {
-      dailyTimes: true,
-      serviceNeedOption: false
-    },
-    preschoolApplication: {
-      connectedDaycarePreferredStartDate: true,
-      serviceNeedOption: false
-    },
-    decisionDraftMultipleUnits: false,
-    preschool: true,
-    preparatory: true,
-    urgencyAttachments: true,
-    financeDecisionHandlerSelect: false,
-    feeDecisionPreschoolClubFilter: false,
-    placementGuarantee: true,
     voucherUnitPayments: true,
-    voucherValueSeparation: true,
-    extendedPreschoolTerm: true,
-    citizenAttendanceSummary: false,
-    intermittentShiftCare: false,
-    noAbsenceType: false,
-    discussionReservations: true,
     jamixIntegration: true,
     nekkuIntegration: false,
     forceUnpublishDocumentTemplate: true,
-    invoiceDisplayAccountNumber: true,
     serviceApplications: true,
-    multiSelectDeparture: true,
-    archiveIntegration: {
-      childDocuments: true
-    },
-    aromiIntegration: true,
-    citizenChildDocumentTypes: true,
-    decisionChildDocumentTypes: true,
     showCitizenApplicationPreschoolTerms: true,
-    missingQuestionnaireAnswerMarkerEnabled: false,
-    absenceApplications: true,
-    showMetadataToCitizen: true,
-    placementDesktop: true,
-    employeeLanguageSelection: true,
     decisionReasoningOptions: true
   },
   staging: {
+    ...prod,
     environmentLabel: 'Staging',
-    citizenShiftCareAbsence: true,
-    assistanceActionOther: true,
-    daycareApplication: {
-      dailyTimes: true,
-      serviceNeedOption: false
-    },
-    preschoolApplication: {
-      connectedDaycarePreferredStartDate: true,
-      serviceNeedOption: false
-    },
-    decisionDraftMultipleUnits: false,
-    preschool: true,
-    preparatory: true,
-    urgencyAttachments: true,
-    financeDecisionHandlerSelect: false,
-    feeDecisionPreschoolClubFilter: false,
-    placementGuarantee: true,
-    extendedPreschoolTerm: true,
-    citizenAttendanceSummary: false,
-    voucherUnitPayments: false,
-    voucherValueSeparation: true,
-    intermittentShiftCare: false,
-    noAbsenceType: false,
-    discussionReservations: true,
-    jamixIntegration: false,
-    nekkuIntegration: false,
     forceUnpublishDocumentTemplate: true,
-    invoiceDisplayAccountNumber: true,
-    serviceApplications: true,
-    multiSelectDeparture: true,
-    archiveIntegration: {
-      childDocuments: true
-    },
-    aromiIntegration: true,
-    citizenChildDocumentTypes: true,
-    decisionChildDocumentTypes: true,
-    showCitizenApplicationPreschoolTerms: true,
-    missingQuestionnaireAnswerMarkerEnabled: false,
-    absenceApplications: true,
-    showMetadataToCitizen: true,
-    placementDesktop: true,
-    employeeLanguageSelection: true,
     decisionReasoningOptions: true
   },
-  prod: {
-    environmentLabel: null,
-    citizenShiftCareAbsence: true,
-    assistanceActionOther: true,
-    daycareApplication: {
-      dailyTimes: true,
-      serviceNeedOption: false
-    },
-    preschoolApplication: {
-      connectedDaycarePreferredStartDate: true,
-      serviceNeedOption: false
-    },
-    decisionDraftMultipleUnits: false,
-    preschool: true,
-    preparatory: true,
-    urgencyAttachments: true,
-    financeDecisionHandlerSelect: false,
-    feeDecisionPreschoolClubFilter: false,
-    placementGuarantee: true,
-    extendedPreschoolTerm: true,
-    citizenAttendanceSummary: false,
-    voucherUnitPayments: false,
-    voucherValueSeparation: true,
-    intermittentShiftCare: false,
-    noAbsenceType: false,
-    discussionReservations: true,
-    forceUnpublishDocumentTemplate: false,
-    invoiceDisplayAccountNumber: true,
-    serviceApplications: false,
-    multiSelectDeparture: true,
-    archiveIntegration: {
-      childDocuments: true
-    },
-    aromiIntegration: true,
-    citizenChildDocumentTypes: true,
-    decisionChildDocumentTypes: true,
-    showCitizenApplicationPreschoolTerms: false,
-    missingQuestionnaireAnswerMarkerEnabled: false,
-    absenceApplications: true,
-    showMetadataToCitizen: true,
-    placementDesktop: true,
-    employeeLanguageSelection: true
-  }
+  prod
 }
 
 const featureFlags = features[env()]
