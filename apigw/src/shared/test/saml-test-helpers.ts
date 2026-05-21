@@ -34,11 +34,13 @@ export const IDP_ISSUER = 'evaka-slo-test'
 export function buildLoginResponse(
   nameId: string,
   sessionIndex: string,
-  inResponseTo: string
+  inResponseTo: string | null
 ) {
   const notBefore = '1980-01-01T01:00:00Z'
   const issueInstant = '1980-01-01T01:01:00Z'
   const notOnOrAfter = '4980-01-01T01:01:00Z'
+  const inResponseToAttribute =
+    inResponseTo !== null ? `InResponseTo="${inResponseTo}"` : ''
 
   const assertion = `<saml:Assertion
       xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -55,7 +57,7 @@ export function buildLoginResponse(
               <saml:SubjectConfirmationData
                   NotOnOrAfter="${notOnOrAfter}"
                   Recipient="${SP_LOGIN_CALLBACK_URL}"
-                  InResponseTo="${inResponseTo}"/>
+                  ${inResponseToAttribute}/>
           </saml:SubjectConfirmation>
       </saml:Subject>
       <saml:Conditions
@@ -93,7 +95,7 @@ export function buildLoginResponse(
   Version="2.0"
   IssueInstant="${issueInstant}"
   Destination="${SP_LOGIN_CALLBACK_URL}"
-  InResponseTo="${inResponseTo}">
+  ${inResponseToAttribute}>
   <saml:Issuer>${IDP_ISSUER}</saml:Issuer>
   <samlp:Status>
       <samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>
