@@ -1,8 +1,10 @@
-// SPDX-FileCopyrightText: 2017-2024 City of Espoo
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { shade } from 'polished'
 import React from 'react'
+import styled from 'styled-components'
 
 import { cancelMutation } from 'lib-common/query'
 
@@ -42,3 +44,24 @@ const MutateButton_ = function MutateButton<Arg, Data>({
  * Loading/success/failure states are indicated with a spinner or a checkmark/cross icon.
  */
 export const MutateButton = React.memo(MutateButton_) as typeof MutateButton_
+
+/**
+ * A MutateButton styled in the danger palette. Use as `primary` to indicate
+ * an irreversible action (e.g. delete confirmation).
+ */
+export const DangerMutateButton = styled(MutateButton)`
+  &.primary {
+    background: ${(p) => p.theme.colors.status.danger};
+    border-color: ${(p) => p.theme.colors.status.danger};
+
+    &:hover {
+      background: ${(p) => shade(0.1, p.theme.colors.status.danger)};
+      border-color: ${(p) => shade(0.1, p.theme.colors.status.danger)};
+    }
+
+    &:active {
+      background: ${(p) => shade(0.2, p.theme.colors.status.danger)};
+      border-color: ${(p) => shade(0.2, p.theme.colors.status.danger)};
+    }
+  }
+` as typeof MutateButton

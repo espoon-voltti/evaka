@@ -10,8 +10,10 @@ import {
   createMessage,
   createMessagePreflightCheck,
   deleteDraftMessage,
+  deleteMessageContent,
   getAccountsByUser,
   getArchivedMessages,
+  getDeletedMessageContent,
   getDraftMessages,
   getFinanceMessagesWithPerson,
   getFolders,
@@ -58,6 +60,12 @@ export const messagesInFolderQuery = q.query(getMessagesInFolder)
 
 export const threadQuery = q.query(getThread)
 
+// staleTime: 0 keeps this query stale so re-enabling it on every reveal always
+// refetches and each view is audit-logged, independent of any global default
+export const deletedMessageContentQuery = q.query(getDeletedMessageContent, {
+  staleTime: 0
+})
+
 export const selectableRecipientsQuery = q.query(getSelectableRecipients)
 
 export const markThreadReadMutation = q.mutation(markThreadRead, [
@@ -85,6 +93,14 @@ export const replyToThreadMutation = q.mutation(replyToThread, [
 export const archiveThreadMutation = q.mutation(archiveThread, [
   receivedMessagesQuery.prefix,
   archivedMessagesQuery.prefix,
+  messagesInFolderQuery.prefix,
+  threadQuery.prefix
+])
+
+export const deleteMessageContentMutation = q.mutation(deleteMessageContent, [
+  receivedMessagesQuery.prefix,
+  sentMessagesQuery.prefix,
+  messageCopiesQuery.prefix,
   messagesInFolderQuery.prefix,
   threadQuery.prefix
 ])

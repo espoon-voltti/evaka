@@ -250,6 +250,26 @@ const customizations: EmployeeCustomizations = {
           amountWithZeroPrice: 'Nollalaskuja'
         }
       },
+      messages: {
+        deletion: {
+          afterDeletion: {
+            banner: () => (
+              <span>
+                Viesti on poistettu. Ota välittömästi yhteyttä eVaka-tukeen
+                osoitteessa{' '}
+                <a
+                  href="https://palvelupyynto.siku.ouka.fi/customerui/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  https://palvelupyynto.siku.ouka.fi/customerui/
+                </a>
+                .
+              </span>
+            )
+          }
+        }
+      },
       components: {
         metadata: {
           organizationName: 'Oulun kaupungin varhaiskasvatus'
@@ -257,6 +277,26 @@ const customizations: EmployeeCustomizations = {
       }
     },
     sv: {
+      messages: {
+        deletion: {
+          afterDeletion: {
+            banner: () => (
+              <span>
+                Meddelandet har raderats. Kontakta omedelbart eVaka-stödet på
+                adressen{' '}
+                <a
+                  href="https://palvelupyynto.siku.ouka.fi/customerui/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  https://palvelupyynto.siku.ouka.fi/customerui/
+                </a>
+                .
+              </span>
+            )
+          }
+        }
+      },
       components: {
         metadata: {
           organizationName: 'Oulun kaupungin varhaiskasvatus'

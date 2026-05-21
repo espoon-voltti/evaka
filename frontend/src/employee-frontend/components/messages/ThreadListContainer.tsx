@@ -129,7 +129,13 @@ export default React.memo(function ThreadListContainer({
       dataQa: string
     ): ThreadListItem => ({
       id: thread.id,
-      title: thread.title,
+      title:
+        view === 'sent'
+          ? thread.title
+          : thread.messages[0].contentDeletedAt !== null &&
+              thread.messages[0].sender.id === account.id
+            ? `${i18n.messages.deletion.afterDeletion.threadTitlePrefix} ${thread.messages[0].contentDeletedAt.toLocalDate().format()}`
+            : thread.title,
       content: thread.messages[thread.messages.length - 1].content,
       urgent: thread.urgent,
       sensitive: thread.sensitive,
@@ -146,7 +152,7 @@ export default React.memo(function ThreadListContainer({
       messageCount: displayMessageCount ? thread.messages.length : undefined,
       dataQa: dataQa
     }),
-    [account.id, selectThread, view]
+    [account.id, selectThread, view, i18n]
   )
 
   const receivedMessageItems: Result<ThreadListItem[]> = useMemo(

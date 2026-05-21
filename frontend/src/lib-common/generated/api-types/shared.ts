@@ -132,6 +132,7 @@ export interface EmployeeFeatures {
   finance: boolean
   financeBasics: boolean
   holidayAndTermPeriods: boolean
+  messageSupportEmail: string | null
   messages: boolean
   openRangesHolidayQuestionnaire: boolean
   outOfOffice: boolean

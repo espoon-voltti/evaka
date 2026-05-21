@@ -4607,6 +4607,44 @@ export const fi = {
     replyToThread: 'Vastaa viestiin',
     archiveThread: 'Arkistoi viestiketju',
     markUnread: 'Merkitse lukemattomaksi',
+    deletion: {
+      deleteButton: 'Viestin poistaminen',
+      alreadyDeleted: 'Viesti oli jo poistettu',
+      modal: {
+        title: 'Viestin poistaminen',
+        intro:
+          'Toiminto on tarkoitettu vain tilanteeseen, jossa viesti on lähetetty vahingossa väärälle vastaanottajalle. Poistetun viestin sisältö korvataan jokaisen vastaanottajan eVakassa seuraavalla tekstillä:',
+        placeholderQuote: [
+          'Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään.',
+          'Avsändaren har tagit bort meddelandet. Du behöver inte göra något.',
+          'The sender has deleted this message. No action is needed on your part.'
+        ],
+        stepsHeader: 'Toimenpiteet välittömästi poiston jälkeen',
+        stepsBody1:
+          'Väärälle vastaanottajalle lähetetystä viestistä tulee aina tehdä tietosuojailmoitus. Ota poiston jälkeen yhteyttä kunnan eVaka-tukeen jatkotoimenpiteitä varten.',
+        stepsBody2:
+          'Tieto poistosta välitetään varhaiskasvatusyksikön johtajille ja eVaka-tukeen.',
+        cancel: 'Peruuta',
+        confirm: 'Poista viesti'
+      },
+      afterDeletion: {
+        banner: (supportEmail: string | null): ReactNode =>
+          supportEmail ? (
+            <span>
+              Viesti on poistettu. Ota välittömästi yhteyttä eVaka-tukeen
+              osoitteessa <a href={`mailto:${supportEmail}`}>{supportEmail}</a>.
+            </span>
+          ) : (
+            'Viesti on poistettu. Ota välittömästi yhteyttä eVaka-tukeen.'
+          ),
+        viewLogWarning:
+          'Poistetun viestin katselusta jää lokitieto järjestelmään.',
+        viewButton: 'Näytä poistettu viesti',
+        hideButton: 'Piilota poistettu viesti',
+        threadTitlePrefix: 'Viesti poistettu',
+        sentThreadTitlePrefix: 'Viestiketjun otsikko poistettu'
+      }
+    },
     changeFolder: {
       button: 'Vaihda kansiota',
       modalTitle: 'Valitse kansio',

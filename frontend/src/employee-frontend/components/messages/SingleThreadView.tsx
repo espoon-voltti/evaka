@@ -15,15 +15,23 @@ import styled from 'styled-components'
 import { Link, useLocation, useSearchParams } from 'wouter'
 
 import type {
+  DeletedMessageContent,
   Message,
   MessageChild,
   MessageThread,
   MessageType,
   ThreadReply
 } from 'lib-common/generated/api-types/messaging'
+import type { MessageContentId } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalTime from 'lib-common/local-time'
 import type { TypedMessageAccount } from 'lib-common/messaging'
 import { formatAccountNames } from 'lib-common/messaging'
-import { useMutationResult } from 'lib-common/query'
+import {
+  constantQuery,
+  useMutationResult,
+  useQueryResult
+} from 'lib-common/query'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
@@ -39,18 +47,23 @@ import {
 import { MessageCharacteristics } from 'lib-components/messages/MessageCharacteristics'
 import MessageReplyEditor from 'lib-components/messages/MessageReplyEditor'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { Bold, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faAngleLeft, faBoxArchive, faEnvelope } from 'lib-icons'
+import { faAngleLeft, faBoxArchive, faEnvelope, faTrash } from 'lib-icons'
 
 import { getAttachmentUrl } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 
+import { ConfirmDeleteMessage } from './ConfirmDeleteMessage'
+import { DeletedMessageView } from './DeletedMessageView'
 import { MessageContext } from './MessageContext'
 import {
   archiveThreadMutation,
+  deletedMessageContentQuery,
   markLastReceivedMessageInThreadUnreadMutation,
   markThreadReadMutation,
   replyToThreadMutation
@@ -93,19 +106,34 @@ const MessageContent = styled.div`
   word-break: break-word;
 `
 
+const deletionWindowDays = 8
+
 function SingleMessage({
+  account,
+  threadType,
   view,
   message,
   messageChildren,
-  index
+  index,
+  isJustDeleted,
+  revealed,
+  onSetRevealed,
+  supportEmail,
+  onDelete
 }: {
+  account: TypedMessageAccount
+  threadType: MessageType
   view: View
   message: Message
   messageChildren: MessageChild[]
-  type?: MessageType
-  title?: string
   index: number
+  isJustDeleted: boolean
+  revealed: boolean
+  onSetRevealed: (revealed: boolean) => void
+  supportEmail: string | null
+  onDelete: (contentId: MessageContentId) => void
 }) {
+  const { i18n } = useTranslation()
   const { senderName, recipientNames } = useMemo(() => {
     if (view === 'sent' || view === 'copies') {
       return {
@@ -127,19 +155,65 @@ function SingleMessage({
     message.recipientNames,
     messageChildren
   ])
+
+  const isOwnMessage = message.sender.id === account.id
+  const isDeleted = message.contentDeletedAt !== null
+  const canDelete =
+    threadType === 'MESSAGE' &&
+    isOwnMessage &&
+    !isDeleted &&
+    HelsinkiDateTime.now().isBefore(
+      message.sentAt
+        .toLocalDate()
+        .addDays(deletionWindowDays)
+        .toHelsinkiDateTime(LocalTime.MIN)
+    )
+
   return (
     <MessageContainer>
+      {isJustDeleted && (
+        <>
+          <AlertBox
+            data-qa="message-deleted-banner"
+            noMargin
+            wide
+            message={i18n.messages.deletion.afterDeletion.banner(supportEmail)}
+          />
+          <Gap $size="m" />
+        </>
+      )}
       <TitleRow>
         <Bold>{senderName}</Bold>
         <InformationText>{message.sentAt.format()}</InformationText>
       </TitleRow>
-      <InformationText data-qa="recipient-names">
-        {recipientNames.join(', ')}
-      </InformationText>
+      <FixedSpaceRow $justifyContent="space-between" $alignItems="center">
+        <InformationText data-qa="recipient-names">
+          {recipientNames.join(', ')}
+        </InformationText>
+        {canDelete && (
+          <Button
+            appearance="inline"
+            icon={faTrash}
+            text={i18n.messages.deletion.deleteButton}
+            onClick={() => onDelete(message.contentId)}
+            data-qa="delete-message-btn"
+          />
+        )}
+      </FixedSpaceRow>
       <MessageContent data-qa="message-content" data-index={index}>
-        <Linkify text={message.content} />
+        {isDeleted && isOwnMessage ? (
+          <DeletedMessageView
+            accountId={account.id}
+            contentId={message.contentId}
+            isJustDeleted={isJustDeleted}
+            revealed={revealed}
+            onSetRevealed={onSetRevealed}
+          />
+        ) : (
+          <Linkify text={message.content} />
+        )}
       </MessageContent>
-      {message.attachments.length > 0 && (
+      {!isDeleted && message.attachments.length > 0 && (
         <>
           <HorizontalLine $slim />
           <FixedSpaceColumn $spacing="xs">
@@ -202,6 +276,28 @@ export function SingleThreadView({
   const [, navigate] = useLocation()
   const { getReplyContent, onReplySent, setReplyContent } =
     useContext(MessageContext)
+  const { user } = useContext(UserContext)
+  const [deleteModalContentId, setDeleteModalContentId] =
+    useState<MessageContentId | null>(null)
+  const [justDeletedContentIds, setJustDeletedContentIds] = useState<
+    Set<MessageContentId>
+  >(() => new Set())
+  const [revealedContentIds, setRevealedContentIds] = useState<
+    Set<MessageContentId>
+  >(() => new Set())
+  const onSetRevealed = useCallback(
+    (contentId: MessageContentId, revealed: boolean) =>
+      setRevealedContentIds((prev) => {
+        const next = new Set(prev)
+        if (revealed) {
+          next.add(contentId)
+        } else {
+          next.delete(contentId)
+        }
+        return next
+      }),
+    []
+  )
   const [searchParams] = useSearchParams()
   const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(
     !!searchParams.get('reply')
@@ -300,6 +396,51 @@ export function SingleThreadView({
     return messages.some((message) => message.sender.type === 'CITIZEN')
   }, [messages])
 
+  const supportEmail = user?.accessibleFeatures.messageSupportEmail ?? null
+
+  const firstMessage = messages.length > 0 ? messages[0] : undefined
+  const ownDeletedFirstMessage = useMemo(
+    () =>
+      firstMessage?.contentDeletedAt != null &&
+      firstMessage.sender.id === account.id
+        ? {
+            contentId: firstMessage.contentId,
+            contentDeletedAt: firstMessage.contentDeletedAt
+          }
+        : undefined,
+    [firstMessage, account.id]
+  )
+
+  const revealedFirstContent = useQueryResult(
+    ownDeletedFirstMessage !== undefined &&
+      revealedContentIds.has(ownDeletedFirstMessage.contentId)
+      ? deletedMessageContentQuery({
+          accountId: account.id,
+          contentId: ownDeletedFirstMessage.contentId
+        })
+      : constantQuery<DeletedMessageContent | null>(null)
+  )
+
+  const isThreadContext = view !== 'sent' && view !== 'copies'
+  const threadTitlePrefix =
+    i18n.messages.deletion.afterDeletion.threadTitlePrefix
+  const headerTitle = useMemo(() => {
+    const revealedTitle = revealedFirstContent.getOrElse(null)?.title ?? null
+    if (revealedTitle !== null) {
+      return `${threadTitlePrefix} [${revealedTitle}]`
+    }
+    if (isThreadContext && ownDeletedFirstMessage !== undefined) {
+      return `${threadTitlePrefix} ${ownDeletedFirstMessage.contentDeletedAt.toLocalDate().format()}`
+    }
+    return title
+  }, [
+    isThreadContext,
+    ownDeletedFirstMessage,
+    revealedFirstContent,
+    threadTitlePrefix,
+    title
+  ])
+
   return (
     <ThreadContainer>
       <ContentArea $opaque $paddingVertical={defaultMargins.xs}>
@@ -316,8 +457,8 @@ export function SingleThreadView({
           <ThreadHeader ref={stickyTitleRowRef}>
             <FixedSpaceColumn>
               <FixedSpaceRow $justifyContent="space-between">
-                <H2 $noMargin>
-                  {title}
+                <H2 $noMargin data-qa="thread-title">
+                  {headerTitle}
                   {sensitive && ` (${i18n.messages.sensitive})`}
                 </H2>
                 <MessageCharacteristics type={type} urgent={urgent} />
@@ -357,10 +498,19 @@ export function SingleThreadView({
               )}
               <SingleMessage
                 key={message.id}
+                account={account}
+                threadType={type}
                 view={view}
                 message={message}
                 messageChildren={children}
                 index={idx}
+                isJustDeleted={justDeletedContentIds.has(message.contentId)}
+                revealed={revealedContentIds.has(message.contentId)}
+                onSetRevealed={(revealed) =>
+                  onSetRevealed(message.contentId, revealed)
+                }
+                supportEmail={supportEmail}
+                onDelete={(contentId) => setDeleteModalContentId(contentId)}
               />
             </React.Fragment>
           ))}
@@ -427,6 +577,20 @@ export function SingleThreadView({
           ))}
         {replyEditorVisible && <span ref={autoScrollRef} />}
       </ScrollContainer>
+      {deleteModalContentId !== null && (
+        <ConfirmDeleteMessage
+          accountId={account.id}
+          contentId={deleteModalContentId}
+          onClose={() => setDeleteModalContentId(null)}
+          onDeleted={() =>
+            setJustDeletedContentIds((prev) => {
+              const next = new Set(prev)
+              next.add(deleteModalContentId)
+              return next
+            })
+          }
+        />
+      )}
     </ThreadContainer>
   )
 }

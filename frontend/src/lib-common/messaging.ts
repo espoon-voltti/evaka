@@ -30,10 +30,20 @@ export const deserializeDraftContent = ({
 
 export const deserializeSentMessage = ({
   sentAt,
+  contentDeletedAt,
+  firstMessageContentDeletedAt,
   ...rest
 }: JsonOf<SentMessage>): SentMessage => ({
   ...rest,
-  sentAt: HelsinkiDateTime.parseIso(sentAt)
+  sentAt: HelsinkiDateTime.parseIso(sentAt),
+  contentDeletedAt:
+    contentDeletedAt != null
+      ? HelsinkiDateTime.parseIso(contentDeletedAt)
+      : null,
+  firstMessageContentDeletedAt:
+    firstMessageContentDeletedAt != null
+      ? HelsinkiDateTime.parseIso(firstMessageContentDeletedAt)
+      : null
 })
 
 export function formatAccountNames(
