@@ -196,8 +196,14 @@ export function createSamlIntegration<T extends SessionType>(
     try {
       profile = await validateSamlLoginResponse(req)
     } catch (err) {
-      if (err instanceof Error && err.message === 'InResponseTo is not valid')
-        // These errors can happen for example when the user browses back to the login callback after login
+      if (
+        err instanceof Error &&
+        (err.message === 'InResponseTo is not valid' ||
+          err.message === 'InResponseTo is missing from response')
+      )
+        // These errors can happen for example when the user browses back to
+        // the login callback after login, or when an unsolicited login
+        // response is received
         throw new SamlError('Login failed', {
           redirectUrl: sessions.isAuthenticated(req)
             ? (validateRelayStateUrl(req)?.toString() ?? defaultPageUrl)
@@ -379,6 +385,7 @@ export function createSamlIntegration<T extends SessionType>(
       if (
         err instanceof Error &&
         (err.message === 'InResponseTo is not valid' ||
+          err.message === 'InResponseTo is missing from response' ||
           err.message.startsWith('Bad status code:'))
       ) {
         throw new SamlError('Logout failed', {
