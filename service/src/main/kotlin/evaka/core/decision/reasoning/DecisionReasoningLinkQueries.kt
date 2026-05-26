@@ -105,6 +105,22 @@ VALUES (${bind(decisionId)}, ${bind { it }}, ${bind(createdAt)}, ${bind(createdB
     }
 }
 
+fun Database.Transaction.freezeGenericReasoningLinks(
+    decisionId: DecisionId,
+    decisionType: DecisionType,
+    startDate: LocalDate,
+    now: HelsinkiDateTime,
+    createdBy: EvakaUserId,
+): List<DecisionGenericReasoningId> {
+    val existing = getDecisionGenericReasoningIds(decisionId)
+    if (existing.isNotEmpty()) return existing
+
+    val reasoningIds =
+        resolveApplicableGenericReasonings(decisionType, startDate).mapNotNull { it.reasoning?.id }
+    insertDecisionGenericReasoningLinks(decisionId, reasoningIds, now, createdBy)
+    return reasoningIds
+}
+
 fun Database.Read.getDecisionGenericReasoningIds(
     decisionId: DecisionId
 ): List<DecisionGenericReasoningId> =
