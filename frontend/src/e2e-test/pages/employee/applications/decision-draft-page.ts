@@ -6,7 +6,7 @@ import type { DecisionType } from 'lib-common/generated/api-types/decision'
 import type { UUID } from 'lib-common/types'
 
 import { expect } from '../../../playwright'
-import type { Page } from '../../../utils/page'
+import type { Element, ElementCollection, Page } from '../../../utils/page'
 import { Checkbox, Combobox } from '../../../utils/page'
 
 export class DecisionDraftPage {
@@ -32,11 +32,62 @@ export class DecisionDraftPage {
     return new Checkbox(this.page.findByDataQa(`planned-${decisionType}`))
   }
 
+  decisionCard(type: DecisionType): DecisionCardSection {
+    return new DecisionCardSection(
+      this.page.findByDataQa(`decision-card-${type}`)
+    )
+  }
+
+  async openPicker(type: DecisionType): Promise<IndividualReasoningPicker> {
+    await this.page.findByDataQa(`open-picker-${type}`).click()
+    return new IndividualReasoningPicker(this.page)
+  }
+
   async save() {
     await this.page.findByDataQa('save-decisions-button').click()
   }
 
   async cancel() {
     await this.page.findByDataQa('cancel-decisions-button').click()
+  }
+}
+
+export class DecisionCardSection {
+  constructor(private root: Element) {}
+
+  genericReasoning(collectionType: 'DAYCARE' | 'PRESCHOOL'): Element {
+    return this.root.findByDataQa(`generic-card-${collectionType}`)
+  }
+
+  individualReasoning(reasoningId: UUID): Element {
+    return this.root.findByDataQa(`individual-card-${reasoningId}`)
+  }
+
+  individualReasonings(): ElementCollection {
+    return this.root.findAll('[data-qa^="individual-card-"]')
+  }
+}
+
+export class IndividualReasoningPicker {
+  constructor(private page: Page) {}
+
+  reasoningRow(reasoningId: UUID): Element {
+    return this.page.findByDataQa(`reasoning-row-${reasoningId}`)
+  }
+
+  reasoningRows(): ElementCollection {
+    return this.page.findAll('[data-qa^="reasoning-row-"]')
+  }
+
+  async selectReasoning(reasoningId: UUID) {
+    await this.reasoningRow(reasoningId).click()
+  }
+
+  async deselectReasoning(reasoningId: UUID) {
+    await this.reasoningRow(reasoningId).click()
+  }
+
+  async close() {
+    await this.page.findByDataQa('picker-close').click()
   }
 }
