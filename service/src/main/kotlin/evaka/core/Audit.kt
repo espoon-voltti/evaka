@@ -241,6 +241,7 @@ enum class Audit(
     DecisionAccept,
     DecisionDownloadPdf,
     DecisionDraftRead,
+    DecisionDraftReasoningPreviewRead,
     DecisionDraftUpdate,
     DecisionRead,
     DecisionReadByApplication,

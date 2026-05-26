@@ -47,6 +47,7 @@ import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -68,23 +69,17 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
-    fun `applicableReasoningCollectionTypes returns the right slots per decision type`() {
-        assertEquals(setOf(DAYCARE_COLLECTION), DAYCARE.applicableReasoningCollectionTypes())
+    fun `applicableReasoningCollectionType returns the right slot per decision type`() {
+        assertEquals(DAYCARE_COLLECTION, DAYCARE.applicableReasoningCollectionType())
+        assertEquals(DAYCARE_COLLECTION, DAYCARE_PART_TIME.applicableReasoningCollectionType())
+        assertEquals(PRESCHOOL_COLLECTION, PRESCHOOL.applicableReasoningCollectionType())
+        assertEquals(DAYCARE_COLLECTION, PRESCHOOL_DAYCARE.applicableReasoningCollectionType())
         assertEquals(
-            setOf(DAYCARE_COLLECTION),
-            DAYCARE_PART_TIME.applicableReasoningCollectionTypes(),
+            PRESCHOOL_COLLECTION,
+            PREPARATORY_EDUCATION.applicableReasoningCollectionType(),
         )
-        assertEquals(setOf(PRESCHOOL_COLLECTION), PRESCHOOL.applicableReasoningCollectionTypes())
-        assertEquals(
-            setOf(DAYCARE_COLLECTION),
-            PRESCHOOL_DAYCARE.applicableReasoningCollectionTypes(),
-        )
-        assertEquals(
-            setOf(PRESCHOOL_COLLECTION),
-            PREPARATORY_EDUCATION.applicableReasoningCollectionTypes(),
-        )
-        assertEquals(setOf(DAYCARE_COLLECTION), CLUB.applicableReasoningCollectionTypes())
-        assertEquals(setOf(DAYCARE_COLLECTION), PRESCHOOL_CLUB.applicableReasoningCollectionTypes())
+        assertEquals(DAYCARE_COLLECTION, CLUB.applicableReasoningCollectionType())
+        assertEquals(DAYCARE_COLLECTION, PRESCHOOL_CLUB.applicableReasoningCollectionType())
     }
 
     private fun insertGenericReasoning(
@@ -107,62 +102,74 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
-    fun `resolver returns the latest ready row whose validFrom is on or before startDate`() {
+    fun `resolver returns the latest applicable row whose validFrom is on or before startDate`() {
         val older =
             insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
         val newer =
             insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 4, 1), ready = true)
 
         val resolved = db.read { tx ->
-            tx.resolveApplicableGenericReasonings(DAYCARE, LocalDate.of(2026, 6, 1))
+            tx.resolveApplicableGenericReasoning(DAYCARE, LocalDate.of(2026, 6, 1))
         }
 
-        assertEquals(1, resolved.size)
-        assertEquals(DAYCARE_COLLECTION, resolved[0].collectionType)
-        assertEquals(newer, resolved[0].reasoning?.id)
-        assertEquals(false, resolved.any { it.reasoning?.id == older })
+        assertEquals(DAYCARE_COLLECTION, resolved.collectionType)
+        assertEquals(newer, resolved.reasoning?.id)
+        assertNotEquals(older, resolved.reasoning?.id)
     }
 
     @Test
-    fun `resolver skips rows with ready = false`() {
-        insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = false)
+    fun `resolver returns rows with ready = false`() {
+        val notReady =
+            insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = false)
 
         val resolved = db.read { tx ->
-            tx.resolveApplicableGenericReasonings(DAYCARE, LocalDate.of(2026, 6, 1))
+            tx.resolveApplicableGenericReasoning(DAYCARE, LocalDate.of(2026, 6, 1))
         }
 
-        assertEquals(1, resolved.size)
-        assertNull(resolved[0].reasoning)
+        assertEquals(notReady, resolved.reasoning?.id)
+        assertEquals(false, resolved.reasoning?.ready)
     }
 
     @Test
-    fun `resolver returns only the DAYCARE entry for PRESCHOOL_DAYCARE`() {
+    fun `resolver picks a not-ready newer version over a ready older one`() {
+        insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
+        val newerNotReady =
+            insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 4, 1), ready = false)
+
+        val resolved = db.read { tx ->
+            tx.resolveApplicableGenericReasoning(DAYCARE, LocalDate.of(2026, 5, 19))
+        }
+
+        assertEquals(newerNotReady, resolved.reasoning?.id)
+        assertEquals(false, resolved.reasoning?.ready)
+    }
+
+    @Test
+    fun `resolver returns the DAYCARE reasoning for PRESCHOOL_DAYCARE`() {
         val daycareId =
             insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
         insertGenericReasoning(PRESCHOOL_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
 
         val resolved = db.read { tx ->
-            tx.resolveApplicableGenericReasonings(PRESCHOOL_DAYCARE, LocalDate.of(2026, 8, 1))
+            tx.resolveApplicableGenericReasoning(PRESCHOOL_DAYCARE, LocalDate.of(2026, 8, 1))
         }
 
-        assertEquals(1, resolved.size)
-        assertEquals(DAYCARE_COLLECTION, resolved[0].collectionType)
-        assertEquals(daycareId, resolved[0].reasoning?.id)
+        assertEquals(DAYCARE_COLLECTION, resolved.collectionType)
+        assertEquals(daycareId, resolved.reasoning?.id)
     }
 
     @Test
-    fun `resolver returns only the DAYCARE entry for PRESCHOOL_CLUB`() {
+    fun `resolver returns the DAYCARE reasoning for PRESCHOOL_CLUB`() {
         val daycareId =
             insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
         insertGenericReasoning(PRESCHOOL_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
 
         val resolved = db.read { tx ->
-            tx.resolveApplicableGenericReasonings(PRESCHOOL_CLUB, LocalDate.of(2026, 8, 1))
+            tx.resolveApplicableGenericReasoning(PRESCHOOL_CLUB, LocalDate.of(2026, 8, 1))
         }
 
-        assertEquals(1, resolved.size)
-        assertEquals(DAYCARE_COLLECTION, resolved[0].collectionType)
-        assertEquals(daycareId, resolved[0].reasoning?.id)
+        assertEquals(DAYCARE_COLLECTION, resolved.collectionType)
+        assertEquals(daycareId, resolved.reasoning?.id)
     }
 
     @Test
@@ -172,11 +179,10 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         db.transaction { tx -> tx.removeGenericReasoning(removedId, now) }
 
         val resolved = db.read { tx ->
-            tx.resolveApplicableGenericReasonings(DAYCARE, LocalDate.of(2026, 6, 1))
+            tx.resolveApplicableGenericReasoning(DAYCARE, LocalDate.of(2026, 6, 1))
         }
 
-        assertEquals(1, resolved.size)
-        assertNull(resolved[0].reasoning)
+        assertNull(resolved.reasoning)
     }
 
     @Test

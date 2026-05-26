@@ -8,6 +8,8 @@ import evaka.core.Audit
 import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.application.fetchApplicationDetails
+import evaka.core.decision.reasoning.DraftReasoningPreview
+import evaka.core.decision.reasoning.getDraftReasoningPreview
 import evaka.core.document.archival.validateArchivability
 import evaka.core.pis.getPersonById
 import evaka.core.shared.DecisionId
@@ -100,6 +102,22 @@ class DecisionController(
                 }
             }
             .also { Audit.UnitRead.log(meta = mapOf("count" to it.size)) }
+    }
+
+    @GetMapping("/{id}/draft-reasoning-preview")
+    fun getDraftReasoningPreview(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: DecisionId,
+    ): DraftReasoningPreview {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(tx, user, clock, Action.Decision.READ, id)
+                    tx.getDraftReasoningPreview(id)
+                }
+            }
+            .also { Audit.DecisionDraftReasoningPreviewRead.log(targetId = AuditId(id)) }
     }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
