@@ -178,6 +178,13 @@ export interface DraftReasoningPreview {
 }
 
 /**
+* Generated from evaka.core.decision.DecisionController.LinkIndividualReasoningBody
+*/
+export interface LinkIndividualReasoningBody {
+  reasoningId: DecisionIndividualReasoningId
+}
+
+/**
 * Generated from evaka.core.decision.reasoning.ResolvedGenericReasoning
 */
 export interface ResolvedGenericReasoning {

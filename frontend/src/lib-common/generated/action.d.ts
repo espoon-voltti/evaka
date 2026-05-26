@@ -260,6 +260,7 @@ export type Decision =
   | 'ARCHIVE'
   | 'DOWNLOAD_PDF'
   | 'READ'
+  | 'UPDATE_REASONING_LINKS'
 
 export type FeeAlteration =
   | 'DELETE'

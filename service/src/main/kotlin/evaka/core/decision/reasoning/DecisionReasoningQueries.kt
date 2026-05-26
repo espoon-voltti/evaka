@@ -150,6 +150,20 @@ ORDER BY created_at DESC
         }
         .toList<DecisionIndividualReasoning>()
 
+fun Database.Read.getIndividualReasoning(
+    id: DecisionIndividualReasoningId
+): DecisionIndividualReasoning? =
+    createQuery {
+            sql(
+                """
+SELECT id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at
+FROM decision_reasoning_individual
+WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .exactlyOneOrNull<DecisionIndividualReasoning>()
+
 fun Database.Transaction.insertIndividualReasoning(
     request: DecisionIndividualReasoningRequest,
     now: HelsinkiDateTime,

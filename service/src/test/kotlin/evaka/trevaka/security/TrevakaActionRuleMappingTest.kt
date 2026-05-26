@@ -718,6 +718,7 @@ private fun translate(entry: Enum<*>) =
             "PROPOSE_DECISION" -> "Päätöksen ehdotus"
             "ANNUL_DECISION" -> "Päätöksen mitätöinti"
             "UPDATE_DECISION_VALIDITY" -> "Päätöksen voimassaoloajan muokkaus"
+            "UPDATE_REASONING_LINKS" -> "Perustelujen muokkaus"
             "ARCHIVE" -> "Arkistointi"
             "UPDATE_PLACEMENT_DRAFT" -> "Sijoitushahmotelman muokkaus"
             "READ_SERVICE_WORKER_ACCOUNT_MESSAGES" -> "Palveluohjauksen viestien luku"

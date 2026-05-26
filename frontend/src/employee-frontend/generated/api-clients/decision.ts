@@ -17,6 +17,7 @@ import type { DecisionWithPermittedActions } from 'lib-common/generated/api-type
 import type { DraftReasoningPreview } from 'lib-common/generated/api-types/decision'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
+import type { LinkIndividualReasoningBody } from 'lib-common/generated/api-types/decision'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
@@ -91,6 +92,24 @@ export async function getDraftReasoningPreview(
 
 
 /**
+* Generated from evaka.core.decision.DecisionController.linkIndividualReasoning
+*/
+export async function linkIndividualReasoning(
+  request: {
+    id: DecisionId,
+    body: LinkIndividualReasoningBody
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/decisions/${request.id}/individual-reasonings`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<LinkIndividualReasoningBody>
+  })
+  return json
+}
+
+
+/**
 * Generated from evaka.core.decision.DecisionController.planArchiveDecision
 */
 export async function planArchiveDecision(
@@ -101,6 +120,23 @@ export async function planArchiveDecision(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/decisions/${request.decisionId}/archive`.toString(),
     method: 'POST'
+  })
+  return json
+}
+
+
+/**
+* Generated from evaka.core.decision.DecisionController.unlinkIndividualReasoning
+*/
+export async function unlinkIndividualReasoning(
+  request: {
+    id: DecisionId,
+    reasoningId: DecisionIndividualReasoningId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/decisions/${request.id}/individual-reasonings/${request.reasoningId}`.toString(),
+    method: 'DELETE'
   })
   return json
 }
