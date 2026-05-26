@@ -3437,6 +3437,16 @@ export const fi = {
   },
   decisionDraft: {
     title: 'Päätöksen teko ja lähetys',
+    titlePlural: 'Päätösten muokkaus',
+    titleSingle: 'Päätöksen muokkaus',
+    decisionsHeading: 'Päätökset',
+    decisionsHeadingSingle: 'Päätös',
+    decisionsSubtitle:
+      'Valitse sijoitukset, joista lähetetään kuntalaiselle päätökset:',
+    unitInlineSummary: (address: string, manager: string) =>
+      `${address} · Johtaja: ${manager}`,
+    unitDataMissing:
+      'Yksikön tiedot puuttuvat — pyydä pääkäyttäjää täydentämään.',
     info1:
       'Lähettämällä päätöksen hyväksyt sijoitussuunnitelman. Kuntalaiselle lähetetään ne päätökset, jotka olet alla valinnut.',
     info2:
@@ -3479,7 +3489,22 @@ export const fi = {
     missingValue: 'Tieto puuttuu.',
     noOtherGuardian: 'Toista huoltajaa ei ole',
     differentUnit:
-      'Päätöksellä näkyvä yksikkö on eri kuin alkuperäisessä sijoituksessa.'
+      'Päätöksellä näkyvä yksikkö on eri kuin alkuperäisessä sijoituksessa.',
+    reasonings: {
+      generic: 'Yleinen perustelu',
+      individual: 'Yksilölliset perustelut',
+      pickerButton: 'Valitse',
+      noGenericForSlot:
+        'Tähän osa-alueeseen ei ole julkaistua valmista perustelua.',
+      noIndividual: 'Päätökseen ei ole liitetty yksilöllisiä perusteluja.',
+      genericRangeOpen: (validFrom: string) =>
+        `${validFrom}– alkavat sijoitukset`,
+      genericRangeClosed: (validFrom: string, validUntil: string) =>
+        `${validFrom}–${validUntil} alkavat sijoitukset`,
+      modalTitle: 'Valitse yksilölliset perustelut',
+      modalCloseButton: 'Sulje',
+      modalEntryTextLabel: 'Päätökselle tuleva teksti'
+    }
   },
   reports: {
     title: 'Raportit',
