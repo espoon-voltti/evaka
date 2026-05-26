@@ -3465,6 +3465,16 @@ export const sv: typeof fi = {
   },
   decisionDraft: {
     title: 'Beslutets utarbetande och skickande',
+    titlePlural: 'Redigering av besluten',
+    titleSingle: 'Redigering av beslutet',
+    decisionsHeading: 'Besluten',
+    decisionsHeadingSingle: 'Beslut',
+    decisionsSubtitle:
+      'Välj de placeringar som beslut ska skickas för till kommunmedlemmen:',
+    unitInlineSummary: (address: string, manager: string) =>
+      `${address} · Ledare: ${manager}`,
+    unitDataMissing:
+      'Enhetens uppgifter saknas — be huvudanvändaren komplettera.',
     info1:
       'Genom att skicka beslutet godkänner du placeringsplanen. Kommunmedlemmen skickas de beslut som du har valt nedan.',
     info2:
@@ -3509,7 +3519,23 @@ export const sv: typeof fi = {
     missingValue: 'Uppgift saknas.',
     noOtherGuardian: 'Det finns ingen andra vårdnadshavare',
     differentUnit:
-      'Enheten som visas på beslutet är en annan än i den ursprungliga placeringen.'
+      'Enheten som visas på beslutet är en annan än i den ursprungliga placeringen.',
+    reasonings: {
+      generic: 'Allmän motivering',
+      individual: 'Individuella motiveringar',
+      pickerButton: 'Välj',
+      noGenericForSlot:
+        'Inget publicerat motiveringsutkast finns för detta delområde.',
+      noIndividual:
+        'Inga individuella motiveringar har kopplats till beslutet.',
+      genericRangeOpen: (validFrom: string) =>
+        `Placeringar som börjar från ${validFrom}`,
+      genericRangeClosed: (validFrom: string, validUntil: string) =>
+        `Placeringar som börjar ${validFrom}–${validUntil}`,
+      modalTitle: 'Välj individuella motiveringar',
+      modalCloseButton: 'Stäng',
+      modalEntryTextLabel: 'Text som visas i beslutet'
+    }
   },
   reports: {
     title: 'Rapporter',
