@@ -169,6 +169,23 @@ export interface DecisionWithPermittedActions {
   permittedActions: Action.Decision[]
 }
 
+/**
+* Generated from evaka.core.decision.reasoning.DraftReasoningPreview
+*/
+export interface DraftReasoningPreview {
+  genericReasoning: ResolvedGenericReasoning
+  individualReasonings: DecisionIndividualReasoning[]
+}
+
+/**
+* Generated from evaka.core.decision.reasoning.ResolvedGenericReasoning
+*/
+export interface ResolvedGenericReasoning {
+  collectionType: DecisionReasoningCollectionType
+  reasoning: DecisionGenericReasoning | null
+  validUntil: LocalDate | null
+}
+
 
 export function deserializeJsonDecision(json: JsonOf<Decision>): Decision {
   return {
@@ -234,5 +251,23 @@ export function deserializeJsonDecisionWithPermittedActions(json: JsonOf<Decisio
   return {
     ...json,
     data: deserializeJsonDecision(json.data)
+  }
+}
+
+
+export function deserializeJsonDraftReasoningPreview(json: JsonOf<DraftReasoningPreview>): DraftReasoningPreview {
+  return {
+    ...json,
+    genericReasoning: deserializeJsonResolvedGenericReasoning(json.genericReasoning),
+    individualReasonings: json.individualReasonings.map(e => deserializeJsonDecisionIndividualReasoning(e))
+  }
+}
+
+
+export function deserializeJsonResolvedGenericReasoning(json: JsonOf<ResolvedGenericReasoning>): ResolvedGenericReasoning {
+  return {
+    ...json,
+    reasoning: (json.reasoning != null) ? deserializeJsonDecisionGenericReasoning(json.reasoning) : null,
+    validUntil: (json.validUntil != null) ? LocalDate.parseIso(json.validUntil) : null
   }
 }

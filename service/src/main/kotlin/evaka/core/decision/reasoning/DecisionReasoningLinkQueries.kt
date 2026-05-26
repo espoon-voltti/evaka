@@ -10,49 +10,59 @@ import evaka.core.shared.DecisionId
 import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
-/**
- * For each decision type, the set of [DecisionReasoningCollectionType] slots that apply.
- *
- * Source: the existing admin UI labels in
- * `frontend/src/lib-customizations/defaults/employee/i18n/fi.tsx`
- * (`decisionReasonings.placementTypes`).
- */
-fun DecisionType.applicableReasoningCollectionTypes(): Set<DecisionReasoningCollectionType> =
+fun DecisionType.applicableReasoningCollectionType(): DecisionReasoningCollectionType =
     when (this) {
         DecisionType.DAYCARE,
-        DecisionType.DAYCARE_PART_TIME -> setOf(DecisionReasoningCollectionType.DAYCARE)
-        DecisionType.PRESCHOOL -> setOf(DecisionReasoningCollectionType.PRESCHOOL)
-        DecisionType.PRESCHOOL_DAYCARE -> setOf(DecisionReasoningCollectionType.DAYCARE)
-        DecisionType.PREPARATORY_EDUCATION -> setOf(DecisionReasoningCollectionType.PRESCHOOL)
+        DecisionType.DAYCARE_PART_TIME -> DecisionReasoningCollectionType.DAYCARE
+        DecisionType.PRESCHOOL -> DecisionReasoningCollectionType.PRESCHOOL
+        DecisionType.PRESCHOOL_DAYCARE -> DecisionReasoningCollectionType.DAYCARE
+        DecisionType.PREPARATORY_EDUCATION -> DecisionReasoningCollectionType.PRESCHOOL
         DecisionType.CLUB,
-        DecisionType.PRESCHOOL_CLUB -> setOf(DecisionReasoningCollectionType.DAYCARE)
+        DecisionType.PRESCHOOL_CLUB -> DecisionReasoningCollectionType.DAYCARE
     }
 
-/**
- * One entry per applicable [DecisionReasoningCollectionType] slot for a given decision type.
- * [reasoning] is null when no ready, non-removed generic exists with `valid_from <= startDate` for
- * that slot.
- */
 data class ResolvedGenericReasoning(
     val collectionType: DecisionReasoningCollectionType,
     val reasoning: DecisionGenericReasoning?,
+    val validUntil: LocalDate?,
 )
 
-fun Database.Read.resolveApplicableGenericReasonings(
+fun Database.Read.resolveApplicableGenericReasoning(
     decisionType: DecisionType,
     startDate: LocalDate,
-): List<ResolvedGenericReasoning> =
-    decisionType.applicableReasoningCollectionTypes().sorted().map { collectionType ->
-        ResolvedGenericReasoning(
-            collectionType = collectionType,
-            reasoning = resolveLatestReadyGenericReasoning(collectionType, startDate),
-        )
-    }
+): ResolvedGenericReasoning {
+    val collectionType = decisionType.applicableReasoningCollectionType()
+    val reasoning = resolveLatestApplicableGenericReasoning(collectionType, startDate)
+    return ResolvedGenericReasoning(
+        collectionType = collectionType,
+        reasoning = reasoning,
+        validUntil = reasoning?.let { findValidUntil(collectionType, it.validFrom) },
+    )
+}
 
-private fun Database.Read.resolveLatestReadyGenericReasoning(
+private fun Database.Read.findValidUntil(
+    collectionType: DecisionReasoningCollectionType,
+    validFrom: LocalDate,
+): LocalDate? =
+    createQuery {
+            sql(
+                """
+SELECT min(valid_from)
+FROM decision_reasoning_generic
+WHERE collection_type = ${bind(collectionType)}
+  AND valid_from > ${bind(validFrom)}
+  AND removed_at IS NULL
+"""
+            )
+        }
+        .exactlyOneOrNull<LocalDate?>()
+        ?.minusDays(1)
+
+private fun Database.Read.resolveLatestApplicableGenericReasoning(
     collectionType: DecisionReasoningCollectionType,
     startDate: LocalDate,
 ): DecisionGenericReasoning? {
@@ -64,7 +74,6 @@ SELECT id, collection_type, valid_from, text_fi, text_sv, ready, created_at, mod
 FROM decision_reasoning_generic
 WHERE collection_type = ${bind(collectionType)}
   AND valid_from <= ${bind(startDate)}
-  AND ready = true
   AND removed_at IS NULL
 ORDER BY valid_from DESC, created_at DESC
 LIMIT 1
@@ -81,8 +90,6 @@ LIMIT 1
         ready = row.ready,
         createdAt = row.createdAt,
         modifiedAt = row.modifiedAt,
-        // The slot resolver does not need endDate / outdated semantics;
-        // those are admin-page concerns. We return safe defaults.
         endDate = null,
         outdated = false,
     )
@@ -116,7 +123,7 @@ fun Database.Transaction.freezeGenericReasoningLinks(
     if (existing.isNotEmpty()) return existing
 
     val reasoningIds =
-        resolveApplicableGenericReasonings(decisionType, startDate).mapNotNull { it.reasoning?.id }
+        listOfNotNull(resolveApplicableGenericReasoning(decisionType, startDate).reasoning?.id)
     insertDecisionGenericReasoningLinks(decisionId, reasoningIds, now, createdBy)
     return reasoningIds
 }
@@ -185,3 +192,54 @@ ORDER BY created_at
             )
         }
         .toList<DecisionIndividualReasoningId>()
+
+fun Database.Read.getDraftReasoningPreview(decisionId: DecisionId): DraftReasoningPreview {
+    val decision =
+        createQuery {
+                sql(
+                    """
+SELECT id, type, start_date, sent_date
+FROM decision
+WHERE id = ${bind(decisionId)}
+"""
+                )
+            }
+            .exactlyOne<DecisionStatusRow>()
+
+    if (decision.sentDate != null) {
+        throw BadRequest(
+            "Decision $decisionId has already been sent; reasoning preview is for drafts only"
+        )
+    }
+
+    val generic = resolveApplicableGenericReasoning(decision.type, decision.startDate)
+
+    val individual =
+        createQuery {
+                sql(
+                    """
+SELECT r.id, r.collection_type, r.title_fi, r.title_sv, r.text_fi, r.text_sv,
+       r.removed_at, r.created_at, r.modified_at
+FROM decision_individual_reasoning link
+JOIN decision_reasoning_individual r ON r.id = link.reasoning_id
+WHERE link.decision_id = ${bind(decisionId)}
+ORDER BY link.created_at
+"""
+                )
+            }
+            .toList<DecisionIndividualReasoning>()
+
+    return DraftReasoningPreview(genericReasoning = generic, individualReasonings = individual)
+}
+
+private data class DecisionStatusRow(
+    val id: DecisionId,
+    val type: DecisionType,
+    val startDate: LocalDate,
+    val sentDate: LocalDate?,
+)
+
+data class DraftReasoningPreview(
+    val genericReasoning: ResolvedGenericReasoning,
+    val individualReasonings: List<DecisionIndividualReasoning>,
+)
