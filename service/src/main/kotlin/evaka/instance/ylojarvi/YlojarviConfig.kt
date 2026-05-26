@@ -50,6 +50,7 @@ class YlojarviConfig {
             municipalMessageAccountName = "Ylöjärven kaupunki",
             serviceWorkerMessageAccountName = "Varhaiskasvatuksen ja esiopetuksen asiakaspalvelu",
             financeMessageAccountName = "Ylöjärven varhaiskasvatuksen asiakasmaksut",
+            messageSupportEmail = "varhaiskasvatus.sovellustuki@tampere.fi",
             applyPlacementUnitFromDecision = true,
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,

@@ -225,6 +225,7 @@ class EspooConfig {
                 "Varhaiskasvatuksen palveluohjaus - Småbarnspedagogikens servicehandledning - Early childhood education service guidance",
             financeMessageAccountName =
                 "Varhaiskasvatuksen asiakasmaksut - Småbarnspedagogikens avgifter - Early childhood education fees",
+            messageSupportEmail = "evaka@espoo.fi",
             applyPlacementUnitFromDecision = false,
             preferredStartRelativeApplicationDueDate = false,
             fiveYearsOldDaycareEnabled = true,

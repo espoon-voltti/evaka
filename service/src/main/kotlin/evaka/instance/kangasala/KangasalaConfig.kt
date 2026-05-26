@@ -55,6 +55,7 @@ class KangasalaConfig {
             municipalMessageAccountName = "Kangasalan kaupunki",
             serviceWorkerMessageAccountName = "Varhaiskasvatuksen ja esiopetuksen asiakaspalvelu",
             financeMessageAccountName = "Kangasalan varhaiskasvatuksen asiakasmaksut",
+            messageSupportEmail = "varhaiskasvatus.sovellustuki@tampere.fi",
             applyPlacementUnitFromDecision = true,
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,

@@ -49,6 +49,7 @@ class OrivesiConfig {
             municipalMessageAccountName = "Oriveden kaupunki",
             serviceWorkerMessageAccountName = "Varhaiskasvatuksen asiakaspalvelu",
             financeMessageAccountName = "Oriveden varhaiskasvatuksen asiakasmaksut",
+            messageSupportEmail = "varhaiskasvatus.sovellustuki@tampere.fi",
             applyPlacementUnitFromDecision = true,
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,

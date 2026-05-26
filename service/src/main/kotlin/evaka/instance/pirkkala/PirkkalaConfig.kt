@@ -54,6 +54,7 @@ class PirkkalaConfig {
             municipalMessageAccountName = "Pirkkalan kunta",
             serviceWorkerMessageAccountName = "Varhaiskasvatuksen asiakaspalvelu",
             financeMessageAccountName = "Pirkkalan varhaiskasvatuksen asiakasmaksut",
+            messageSupportEmail = "varhaiskasvatus.sovellustuki@tampere.fi",
             applyPlacementUnitFromDecision = true,
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,

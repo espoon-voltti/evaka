@@ -49,6 +49,7 @@ class VesilahtiConfig {
             municipalMessageAccountName = "Vesilahden kunta",
             serviceWorkerMessageAccountName = "Varhaiskasvatuksen asiakaspalvelu",
             financeMessageAccountName = "Vesilahden varhaiskasvatuksen asiakasmaksut",
+            messageSupportEmail = "varhaiskasvatus.sovellustuki@tampere.fi",
             applyPlacementUnitFromDecision = true,
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,

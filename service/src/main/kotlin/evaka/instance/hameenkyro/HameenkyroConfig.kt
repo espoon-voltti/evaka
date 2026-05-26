@@ -49,6 +49,7 @@ class HameenkyroConfig {
             municipalMessageAccountName = "Hämeenkyrön kunta",
             serviceWorkerMessageAccountName = "Varhaiskasvatuksen ja esiopetuksen asiakaspalvelu",
             financeMessageAccountName = "Hämeenkyrön varhaiskasvatuksen asiakasmaksut",
+            messageSupportEmail = "varhaiskasvatus.sovellustuki@tampere.fi",
             applyPlacementUnitFromDecision = true,
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,

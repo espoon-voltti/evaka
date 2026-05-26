@@ -88,6 +88,7 @@ class TurkuConfig {
                 env.lookup("evaka.five_years_old_daycare.enabled") ?: false,
             financeMessageAccountName =
                 "Varhaiskasvatuksen asiakasmaksut - Småbarnspedagogikens avgifter - Early childhood education fees",
+            messageSupportEmail = "varkas.tietojarjestelmat@turku.fi",
             archiveMetadataOrganization = "Turun kaupungin varhaiskasvatus",
             metadataBusinessId = "0204819-8",
             archiveMetadataConfigs = { type: ArchiveProcessType, year: Int ->
