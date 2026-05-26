@@ -148,17 +148,19 @@ fun Database.Transaction.insertDecisionIndividualReasoningLink(
     reasoningId: DecisionIndividualReasoningId,
     createdAt: HelsinkiDateTime,
     createdBy: EvakaUserId,
-) {
-    createUpdate {
-            sql(
-                """
+): Boolean {
+    val inserted =
+        createUpdate {
+                sql(
+                    """
 INSERT INTO decision_individual_reasoning (decision_id, reasoning_id, created_at, created_by)
 VALUES (${bind(decisionId)}, ${bind(reasoningId)}, ${bind(createdAt)}, ${bind(createdBy)})
 ON CONFLICT (decision_id, reasoning_id) DO NOTHING
 """
-            )
-        }
-        .execute()
+                )
+            }
+            .execute()
+    return inserted > 0
 }
 
 fun Database.Transaction.deleteDecisionIndividualReasoningLink(

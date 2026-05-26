@@ -21,8 +21,10 @@ import evaka.core.decision.reasoning.insertDecisionIndividualReasoningLink
 import evaka.core.decision.reasoning.insertGenericReasoning
 import evaka.core.decision.reasoning.insertIndividualReasoning
 import evaka.core.decision.reasoning.removeGenericReasoning
+import evaka.core.decision.reasoning.removeIndividualReasoning
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DecisionId
+import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
@@ -38,6 +40,7 @@ import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.time.LocalTime
@@ -144,6 +147,151 @@ class DecisionReasoningPreviewControllerIntegrationTest :
         val ex = kotlin.runCatching { getPreview(decisionId, user = unauthorized.user) }
         assertEquals(true, ex.isFailure)
         assertEquals("Forbidden", ex.exceptionOrNull()?.javaClass?.simpleName)
+    }
+
+    @Test
+    fun `POST individual link succeeds for PENDING decision`() {
+        val (decisionId, _) = createPlannedDecision(DecisionType.DAYCARE)
+        val indId = createIndividual(DAYCARE_COLLECTION)
+
+        decisionController.linkIndividualReasoning(
+            dbInstance(),
+            serviceWorker.user,
+            clock,
+            decisionId,
+            DecisionController.LinkIndividualReasoningBody(reasoningId = indId),
+        )
+
+        val response = getPreview(decisionId)
+        assertEquals(listOf(indId), response.individualReasonings.map { it.id })
+    }
+
+    @Test
+    fun `POST individual link is rejected after send`() {
+        val (decisionId, applicationId) = createPlannedDecision(DecisionType.DAYCARE)
+        sendDecision(applicationId)
+        val indId = createIndividual(DAYCARE_COLLECTION)
+
+        val ex = kotlin.runCatching {
+            decisionController.linkIndividualReasoning(
+                dbInstance(),
+                serviceWorker.user,
+                clock,
+                decisionId,
+                DecisionController.LinkIndividualReasoningBody(reasoningId = indId),
+            )
+        }
+        assertIs<BadRequest>(ex.exceptionOrNull())
+    }
+
+    @Test
+    fun `POST individual link is rejected when collection_type does not apply to decision type`() {
+        val (decisionId, _) = createPlannedDecision(DecisionType.DAYCARE)
+        val indId = createIndividual(DecisionReasoningCollectionType.PRESCHOOL)
+
+        val ex = kotlin.runCatching {
+            decisionController.linkIndividualReasoning(
+                dbInstance(),
+                serviceWorker.user,
+                clock,
+                decisionId,
+                DecisionController.LinkIndividualReasoningBody(reasoningId = indId),
+            )
+        }
+        assertIs<BadRequest>(ex.exceptionOrNull())
+    }
+
+    @Test
+    fun `DELETE individual link succeeds for PENDING decision`() {
+        val (decisionId, _) = createPlannedDecision(DecisionType.DAYCARE)
+        val indId = createIndividual(DAYCARE_COLLECTION)
+        db.transaction { tx ->
+            tx.insertDecisionIndividualReasoningLink(decisionId, indId, now, admin.evakaUserId)
+        }
+
+        decisionController.unlinkIndividualReasoning(
+            dbInstance(),
+            serviceWorker.user,
+            clock,
+            decisionId,
+            indId,
+        )
+
+        val response = getPreview(decisionId)
+        assertEquals(emptyList(), response.individualReasonings)
+    }
+
+    @Test
+    fun `DELETE individual link is rejected after send`() {
+        val (decisionId, applicationId) = createPlannedDecision(DecisionType.DAYCARE)
+        val indId = createIndividual(DAYCARE_COLLECTION)
+        db.transaction { tx ->
+            tx.insertDecisionIndividualReasoningLink(decisionId, indId, now, admin.evakaUserId)
+        }
+        sendDecision(applicationId)
+
+        val ex = kotlin.runCatching {
+            decisionController.unlinkIndividualReasoning(
+                dbInstance(),
+                serviceWorker.user,
+                clock,
+                decisionId,
+                indId,
+            )
+        }
+        assertIs<BadRequest>(ex.exceptionOrNull())
+    }
+
+    @Test
+    fun `POST individual link is rejected when reasoningId does not exist`() {
+        val (decisionId, _) = createPlannedDecision(DecisionType.DAYCARE)
+        val bogusReasoningId = DecisionIndividualReasoningId(java.util.UUID.randomUUID())
+
+        val ex = kotlin.runCatching {
+            decisionController.linkIndividualReasoning(
+                dbInstance(),
+                serviceWorker.user,
+                clock,
+                decisionId,
+                DecisionController.LinkIndividualReasoningBody(reasoningId = bogusReasoningId),
+            )
+        }
+        assertIs<NotFound>(ex.exceptionOrNull())
+    }
+
+    @Test
+    fun `POST individual link is rejected when the reasoning has been removed`() {
+        val (decisionId, _) = createPlannedDecision(DecisionType.DAYCARE)
+        val indId = createIndividual(DAYCARE_COLLECTION)
+        db.transaction { tx -> tx.removeIndividualReasoning(indId, now) }
+
+        val ex = kotlin.runCatching {
+            decisionController.linkIndividualReasoning(
+                dbInstance(),
+                serviceWorker.user,
+                clock,
+                decisionId,
+                DecisionController.LinkIndividualReasoningBody(reasoningId = indId),
+            )
+        }
+        assertIs<BadRequest>(ex.exceptionOrNull())
+    }
+
+    @Test
+    fun `POST individual link is rejected when the decision does not exist`() {
+        val indId = createIndividual(DAYCARE_COLLECTION)
+        val bogusDecisionId = DecisionId(java.util.UUID.randomUUID())
+
+        val ex = kotlin.runCatching {
+            decisionController.linkIndividualReasoning(
+                dbInstance(),
+                serviceWorker.user,
+                clock,
+                bogusDecisionId,
+                DecisionController.LinkIndividualReasoningBody(reasoningId = indId),
+            )
+        }
+        assertEquals(true, ex.isFailure)
     }
 
     private fun createReadyGeneric(
