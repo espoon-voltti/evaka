@@ -143,6 +143,37 @@ ORDER BY created_at
         }
         .toList<DecisionGenericReasoningId>()
 
+fun Database.Read.getDecisionGenericReasonings(
+    decisionId: DecisionId
+): List<DecisionGenericReasoning> =
+    createQuery {
+            sql(
+                """
+SELECT r.id, r.collection_type, r.valid_from, r.text_fi, r.text_sv, r.ready,
+       r.created_at, r.modified_at
+FROM decision_generic_reasoning link
+JOIN decision_reasoning_generic r ON r.id = link.reasoning_id
+WHERE link.decision_id = ${bind(decisionId)}
+ORDER BY link.created_at
+"""
+            )
+        }
+        .toList<DecisionGenericReasoningRow>()
+        .map { row ->
+            DecisionGenericReasoning(
+                id = row.id,
+                collectionType = row.collectionType,
+                validFrom = row.validFrom,
+                textFi = row.textFi,
+                textSv = row.textSv,
+                ready = row.ready,
+                createdAt = row.createdAt,
+                modifiedAt = row.modifiedAt,
+                endDate = null,
+                outdated = false,
+            )
+        }
+
 fun Database.Transaction.insertDecisionIndividualReasoningLink(
     decisionId: DecisionId,
     reasoningId: DecisionIndividualReasoningId,
@@ -195,6 +226,23 @@ ORDER BY created_at
         }
         .toList<DecisionIndividualReasoningId>()
 
+fun Database.Read.getDecisionIndividualReasonings(
+    decisionId: DecisionId
+): List<DecisionIndividualReasoning> =
+    createQuery {
+            sql(
+                """
+SELECT r.id, r.collection_type, r.title_fi, r.title_sv, r.text_fi, r.text_sv,
+       r.removed_at, r.created_at, r.modified_at
+FROM decision_individual_reasoning link
+JOIN decision_reasoning_individual r ON r.id = link.reasoning_id
+WHERE link.decision_id = ${bind(decisionId)}
+ORDER BY link.created_at
+"""
+            )
+        }
+        .toList<DecisionIndividualReasoning>()
+
 fun Database.Read.getDraftReasoningPreview(decisionId: DecisionId): DraftReasoningPreview {
     val decision =
         createQuery {
@@ -215,22 +263,7 @@ WHERE id = ${bind(decisionId)}
     }
 
     val generic = resolveApplicableGenericReasoning(decision.type, decision.startDate)
-
-    val individual =
-        createQuery {
-                sql(
-                    """
-SELECT r.id, r.collection_type, r.title_fi, r.title_sv, r.text_fi, r.text_sv,
-       r.removed_at, r.created_at, r.modified_at
-FROM decision_individual_reasoning link
-JOIN decision_reasoning_individual r ON r.id = link.reasoning_id
-WHERE link.decision_id = ${bind(decisionId)}
-ORDER BY link.created_at
-"""
-                )
-            }
-            .toList<DecisionIndividualReasoning>()
-
+    val individual = getDecisionIndividualReasonings(decisionId)
     return DraftReasoningPreview(genericReasoning = generic, individualReasonings = individual)
 }
 

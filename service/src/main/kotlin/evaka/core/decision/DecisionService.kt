@@ -14,6 +14,8 @@ import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.daycare.getDaycare
 import evaka.core.decision.reasoning.freezeGenericReasoningLinks
+import evaka.core.decision.reasoning.getDecisionGenericReasonings
+import evaka.core.decision.reasoning.getDecisionIndividualReasonings
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
@@ -41,6 +43,7 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
@@ -90,6 +93,19 @@ class DecisionService(
             if (frozen.isEmpty()) {
                 logger.warn {
                     "Decision ${decision.id} (${decision.type}) finalized with no generic reasoning in force for start date ${decision.startDate}"
+                }
+            }
+            if (tx.getDecisionLanguage(decision.id) == OfficialLanguage.SV) {
+                val genericMissing =
+                    tx.getDecisionGenericReasonings(decision.id).any { it.textSv.isNullOrBlank() }
+                val individualMissing =
+                    tx.getDecisionIndividualReasonings(decision.id).any {
+                        it.titleSv.isNullOrBlank() || it.textSv.isNullOrBlank()
+                    }
+                if (genericMissing || individualMissing) {
+                    throw BadRequest(
+                        "Decision ${decision.id} is in Swedish but the associated reasoning has no Swedish content"
+                    )
                 }
             }
         }

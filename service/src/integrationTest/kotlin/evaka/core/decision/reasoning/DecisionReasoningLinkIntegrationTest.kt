@@ -13,6 +13,7 @@ import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.daycare.domain.Language
 import evaka.core.decision.DecisionStatus
 import evaka.core.decision.DecisionType
 import evaka.core.decision.DecisionType.CLUB
@@ -39,6 +40,7 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestApplication
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -51,6 +53,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -423,16 +426,91 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         )
     }
 
+    @Test
+    fun `finalize fails for sv unit when frozen generic reasoning has null swedish text`() {
+        db.transaction { tx ->
+            tx.insertGenericReasoning(
+                DecisionGenericReasoningRequest(
+                    collectionType = DAYCARE_COLLECTION,
+                    validFrom = LocalDate.of(2026, 1, 1),
+                    textFi = "Suomeksi",
+                    textSv = null,
+                    ready = true,
+                ),
+                now,
+            )
+        }
+        val (_, applicationId) =
+            createPlannedDecisionWithApplication(DAYCARE, unitLanguage = Language.sv)
+
+        assertThrows<BadRequest> { sendDecisionViaService(applicationId) }
+    }
+
+    @Test
+    fun `finalize succeeds for sv unit when frozen generic reasoning has swedish text`() {
+        insertGenericReasoning(
+            DAYCARE_COLLECTION,
+            LocalDate.of(2026, 1, 1),
+            ready = true,
+            textSv = "På svenska",
+        )
+        val (decisionId, applicationId) =
+            createPlannedDecisionWithApplication(DAYCARE, unitLanguage = Language.sv)
+
+        sendDecisionViaService(applicationId)
+
+        val linked = db.read { tx -> tx.getDecisionGenericReasoningIds(decisionId) }
+        assertEquals(1, linked.size)
+    }
+
+    @Test
+    fun `finalize fails for sv unit when individual reasoning has null swedish content`() {
+        insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
+        val individualId = db.transaction { tx ->
+            tx.insertIndividualReasoning(
+                DecisionIndividualReasoningRequest(
+                    collectionType = DAYCARE_COLLECTION,
+                    titleFi = "Otsikko",
+                    titleSv = null,
+                    textFi = "Teksti",
+                    textSv = null,
+                ),
+                now,
+            )
+        }
+        val (decisionId, applicationId) =
+            createPlannedDecisionWithApplication(DAYCARE, unitLanguage = Language.sv)
+        db.transaction { tx ->
+            tx.insertDecisionIndividualReasoningLink(
+                decisionId = decisionId,
+                reasoningId = individualId,
+                createdAt = now,
+                createdBy = admin.evakaUserId,
+            )
+        }
+
+        assertThrows<BadRequest> { sendDecisionViaService(applicationId) }
+    }
+
+    @Test
+    fun `finalize for sv unit with no reasoning attached does not fire the guard`() {
+        val (_, applicationId) =
+            createPlannedDecisionWithApplication(DAYCARE, unitLanguage = Language.sv)
+
+        sendDecisionViaService(applicationId)
+    }
+
     private fun createPlannedDecisionWithApplication(
         type: DecisionType,
         startDate: LocalDate = LocalDate.of(2026, 8, 1),
         guardian: DevPerson = DevPerson(),
         child: DevPerson = DevPerson(dateOfBirth = today.minusYears(3)),
+        unitLanguage: Language = Language.fi,
     ): Pair<DecisionId, ApplicationId> = db.transaction { tx ->
         val guardianId = tx.insert(guardian, DevPersonType.ADULT)
         val childId = tx.insert(child, DevPersonType.CHILD)
         val areaId = tx.insert(DevCareArea())
-        val unitId = tx.insert(DevDaycare(areaId = areaId))
+        val unitId = tx.insert(DevDaycare(areaId = areaId, language = unitLanguage))
         val sw = AuthenticatedUser.Employee(admin.id, setOf(UserRole.ADMIN))
 
         val isPreschool =
