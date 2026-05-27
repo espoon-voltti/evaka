@@ -9,8 +9,10 @@ import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionIndividualReasoningId
+import evaka.core.shared.FeatureConfig
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.security.AccessControl
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*
 class DecisionReasoningController(
     private val accessControl: AccessControl,
     private val evakaEnv: EvakaEnv,
+    private val featureConfig: FeatureConfig,
 ) {
 
     @GetMapping("/generic")
@@ -52,6 +55,7 @@ class DecisionReasoningController(
         clock: EvakaClock,
         @RequestBody body: DecisionGenericReasoningRequest,
     ): DecisionGenericReasoningId {
+        requireGenericSwedish(body.textSv)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -74,6 +78,7 @@ class DecisionReasoningController(
         @PathVariable id: DecisionGenericReasoningId,
         @RequestBody body: DecisionGenericReasoningRequest,
     ) {
+        requireGenericSwedish(body.textSv)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -161,6 +166,7 @@ class DecisionReasoningController(
         clock: EvakaClock,
         @RequestBody body: DecisionIndividualReasoningRequest,
     ): DecisionIndividualReasoningId {
+        requireIndividualSwedish(body.titleSv, body.textSv)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -194,5 +200,16 @@ class DecisionReasoningController(
             }
         }
         Audit.DecisionReasoningIndividualRemove.log(targetId = AuditId(id))
+    }
+
+    private fun requireGenericSwedish(textSv: String?) {
+        if (!featureConfig.decisionReasoningSwedishEnabled) return
+        if (textSv.isNullOrBlank()) throw BadRequest("Swedish text is required")
+    }
+
+    private fun requireIndividualSwedish(titleSv: String?, textSv: String?) {
+        if (!featureConfig.decisionReasoningSwedishEnabled) return
+        if (titleSv.isNullOrBlank()) throw BadRequest("Swedish title is required")
+        if (textSv.isNullOrBlank()) throw BadRequest("Swedish text is required")
     }
 }

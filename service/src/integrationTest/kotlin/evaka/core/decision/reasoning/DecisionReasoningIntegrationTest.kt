@@ -11,6 +11,7 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -475,5 +476,91 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             DecisionReasoningCollectionType.PRESCHOOL,
             preschoolResult.first().collectionType,
         )
+    }
+
+    @Test
+    fun `create generic reasoning rejects null swedish text when flag is on`() {
+        assertThrows<BadRequest> {
+            createGenericReasoning(
+                DecisionGenericReasoningRequest(
+                    collectionType = DecisionReasoningCollectionType.DAYCARE,
+                    validFrom = LocalDate.of(2026, 8, 1),
+                    textFi = "Teksti FI",
+                    textSv = null,
+                    ready = false,
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `create generic reasoning rejects blank swedish text when flag is on`() {
+        assertThrows<BadRequest> {
+            createGenericReasoning(
+                DecisionGenericReasoningRequest(
+                    collectionType = DecisionReasoningCollectionType.DAYCARE,
+                    validFrom = LocalDate.of(2026, 8, 1),
+                    textFi = "Teksti FI",
+                    textSv = "   ",
+                    ready = false,
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `update generic reasoning rejects null swedish text when flag is on`() {
+        val id =
+            createGenericReasoning(
+                DecisionGenericReasoningRequest(
+                    collectionType = DecisionReasoningCollectionType.DAYCARE,
+                    validFrom = LocalDate.of(2026, 8, 1),
+                    textFi = "Teksti FI",
+                    textSv = "Text SV",
+                    ready = false,
+                )
+            )
+        assertThrows<BadRequest> {
+            updateGenericReasoning(
+                id,
+                DecisionGenericReasoningRequest(
+                    collectionType = DecisionReasoningCollectionType.DAYCARE,
+                    validFrom = LocalDate.of(2026, 8, 1),
+                    textFi = "Teksti FI",
+                    textSv = null,
+                    ready = false,
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun `create individual reasoning rejects null swedish title when flag is on`() {
+        assertThrows<BadRequest> {
+            createIndividualReasoning(
+                DecisionIndividualReasoningRequest(
+                    collectionType = DecisionReasoningCollectionType.DAYCARE,
+                    titleFi = "Otsikko FI",
+                    titleSv = null,
+                    textFi = "Teksti FI",
+                    textSv = "Text SV",
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `create individual reasoning rejects null swedish text when flag is on`() {
+        assertThrows<BadRequest> {
+            createIndividualReasoning(
+                DecisionIndividualReasoningRequest(
+                    collectionType = DecisionReasoningCollectionType.DAYCARE,
+                    titleFi = "Otsikko FI",
+                    titleSv = "Titel SV",
+                    textFi = "Teksti FI",
+                    textSv = null,
+                )
+            )
+        }
     }
 }
