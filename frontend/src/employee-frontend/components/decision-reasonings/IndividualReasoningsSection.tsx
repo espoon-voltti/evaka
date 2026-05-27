@@ -24,6 +24,7 @@ import {
 import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   faChevronDown,
   faChevronRight,
@@ -51,9 +52,13 @@ const ReasoningTitle = styled.span`
 
 const individualReasoningForm = object({
   titleFi: validated(required(value<string>()), nonBlank),
-  titleSv: validated(required(value<string>()), nonBlank),
+  titleSv: featureFlags.decisionReasoningSwedishEnabled
+    ? validated(required(value<string>()), nonBlank)
+    : value<string>(),
   textFi: validated(required(value<string>()), nonBlank),
-  textSv: validated(required(value<string>()), nonBlank)
+  textSv: featureFlags.decisionReasoningSwedishEnabled
+    ? validated(required(value<string>()), nonBlank)
+    : value<string>()
 })
 
 interface IndividualReasoningCreateFormProps {
@@ -83,9 +88,26 @@ function IndividualReasoningCreateForm({
     onCancel()
   }
 
+  const buildBody = () => {
+    const value = form.value()
+    return {
+      titleFi: value.titleFi,
+      titleSv: featureFlags.decisionReasoningSwedishEnabled
+        ? value.titleSv
+        : null,
+      textFi: value.textFi,
+      textSv: featureFlags.decisionReasoningSwedishEnabled
+        ? value.textSv
+        : null,
+      collectionType
+    }
+  }
+
   return (
     <ReasoningCard>
-      <LanguageGrid>
+      <LanguageGrid
+        $columns={featureFlags.decisionReasoningSwedishEnabled ? 2 : 1}
+      >
         <FixedSpaceColumn>
           <Label>{i18n.decisionReasonings.fi}</Label>
           <Label>{t.titleFi}</Label>
@@ -101,21 +123,23 @@ function IndividualReasoningCreateForm({
             data-qa="individual-reasoning-text-fi"
           />
         </FixedSpaceColumn>
-        <FixedSpaceColumn>
-          <Label>{i18n.decisionReasonings.sv}</Label>
-          <Label>{t.titleSv}</Label>
-          <InputFieldF
-            bind={titleSv}
-            hideErrorsBeforeTouched
-            data-qa="individual-reasoning-title-sv"
-          />
-          <Label>{t.textSv}</Label>
-          <TextAreaF
-            bind={textSv}
-            hideErrorsBeforeTouched
-            data-qa="individual-reasoning-text-sv"
-          />
-        </FixedSpaceColumn>
+        {featureFlags.decisionReasoningSwedishEnabled && (
+          <FixedSpaceColumn>
+            <Label>{i18n.decisionReasonings.sv}</Label>
+            <Label>{t.titleSv}</Label>
+            <InputFieldF
+              bind={titleSv}
+              hideErrorsBeforeTouched
+              data-qa="individual-reasoning-title-sv"
+            />
+            <Label>{t.textSv}</Label>
+            <TextAreaF
+              bind={textSv}
+              hideErrorsBeforeTouched
+              data-qa="individual-reasoning-text-sv"
+            />
+          </FixedSpaceColumn>
+        )}
       </LanguageGrid>
       <Gap $size="m" />
       <FixedSpaceRow $justifyContent="flex-end">
@@ -128,9 +152,7 @@ function IndividualReasoningCreateForm({
           buttonText={t.saveAndActivate}
           primary
           mutation={createIndividualReasoningMutation}
-          onClick={() => ({
-            body: { ...form.value(), collectionType }
-          })}
+          onClick={() => ({ body: buildBody() })}
           disabled={!form.isValid()}
           onSuccess={onSuccess}
           confirmationTitle={t.saveAndActivateConfirmTitle}
@@ -218,17 +240,21 @@ export default React.memo(function IndividualReasoningsSection({
               />
             </FixedSpaceRow>
             <Gap $size="s" />
-            <LanguageGrid>
+            <LanguageGrid
+              $columns={featureFlags.decisionReasoningSwedishEnabled ? 2 : 1}
+            >
               <FixedSpaceColumn>
                 <Label>{i18n.decisionReasonings.fi}</Label>
                 <ReasoningTitle>{reasoning.titleFi}</ReasoningTitle>
                 <span>{reasoning.textFi}</span>
               </FixedSpaceColumn>
-              <FixedSpaceColumn>
-                <Label>{i18n.decisionReasonings.sv}</Label>
-                <ReasoningTitle>{reasoning.titleSv}</ReasoningTitle>
-                <span>{reasoning.textSv}</span>
-              </FixedSpaceColumn>
+              {featureFlags.decisionReasoningSwedishEnabled && (
+                <FixedSpaceColumn>
+                  <Label>{i18n.decisionReasonings.sv}</Label>
+                  <ReasoningTitle>{reasoning.titleSv ?? ''}</ReasoningTitle>
+                  <span>{reasoning.textSv ?? ''}</span>
+                </FixedSpaceColumn>
+              )}
             </LanguageGrid>
           </ReasoningCard>
         ))}
@@ -264,17 +290,25 @@ export default React.memo(function IndividualReasoningsSection({
                       data-qa="individual-reasoning-status"
                     />
                     <Gap $size="s" />
-                    <LanguageGrid>
+                    <LanguageGrid
+                      $columns={
+                        featureFlags.decisionReasoningSwedishEnabled ? 2 : 1
+                      }
+                    >
                       <FixedSpaceColumn>
                         <Label>{i18n.decisionReasonings.fi}</Label>
                         <ReasoningTitle>{reasoning.titleFi}</ReasoningTitle>
                         <span>{reasoning.textFi}</span>
                       </FixedSpaceColumn>
-                      <FixedSpaceColumn>
-                        <Label>{i18n.decisionReasonings.sv}</Label>
-                        <ReasoningTitle>{reasoning.titleSv}</ReasoningTitle>
-                        <span>{reasoning.textSv}</span>
-                      </FixedSpaceColumn>
+                      {featureFlags.decisionReasoningSwedishEnabled && (
+                        <FixedSpaceColumn>
+                          <Label>{i18n.decisionReasonings.sv}</Label>
+                          <ReasoningTitle>
+                            {reasoning.titleSv ?? ''}
+                          </ReasoningTitle>
+                          <span>{reasoning.textSv ?? ''}</span>
+                        </FixedSpaceColumn>
+                      )}
                     </LanguageGrid>
                   </ReasoningCard>
                 ))}

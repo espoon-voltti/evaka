@@ -205,10 +205,10 @@ export default React.memo(function DecisionCard({
         )}
 
         {renderResult(previewResult, (preview) => {
-          const text = (s: { textFi: string; textSv: string }) =>
-            lang === 'sv' ? s.textSv : s.textFi
-          const title = (s: { titleFi: string; titleSv: string }) =>
-            lang === 'sv' ? s.titleSv : s.titleFi
+          const text = (s: { textFi: string; textSv: string | null }) =>
+            lang === 'sv' ? (s.textSv ?? s.textFi) : s.textFi
+          const title = (s: { titleFi: string; titleSv: string | null }) =>
+            lang === 'sv' ? (s.titleSv ?? s.titleFi) : s.titleFi
           const linkedIds = new Set(
             preview.individualReasonings.map((r) => r.id)
           )

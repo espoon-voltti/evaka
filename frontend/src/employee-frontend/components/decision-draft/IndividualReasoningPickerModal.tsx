@@ -133,9 +133,9 @@ export default React.memo(function IndividualReasoningPickerModal({
         </HeadingRow>
         {renderResult(eligibleResult, (rows) => {
           const text = (r: DecisionIndividualReasoning) =>
-            lang === 'sv' ? r.textSv : r.textFi
+            lang === 'sv' ? (r.textSv ?? r.textFi) : r.textFi
           const title = (r: DecisionIndividualReasoning) =>
-            lang === 'sv' ? r.titleSv : r.titleFi
+            lang === 'sv' ? (r.titleSv ?? r.titleFi) : r.titleFi
           const eligible = rows
             .filter((r) => r.removedAt === null)
             .sort((a, b) => title(a).localeCompare(title(b), lang))

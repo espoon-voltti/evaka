@@ -30,6 +30,7 @@ import { ConfirmedMutation } from 'lib-components/molecules/ConfirmedMutation'
 import { DatePickerF } from 'lib-components/molecules/date-picker/DatePicker'
 import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   faChevronDown,
   faChevronRight,
@@ -73,7 +74,9 @@ const WarningText = styled.span`
 const genericReasoningForm = object({
   validFrom: required(localDate()),
   textFi: validated(required(value<string>()), nonBlank),
-  textSv: validated(required(value<string>()), nonBlank)
+  textSv: featureFlags.decisionReasoningSwedishEnabled
+    ? validated(required(value<string>()), nonBlank)
+    : value<string>()
 })
 
 interface GenericReasoningFormProps {
@@ -106,34 +109,29 @@ function GenericReasoningForm({
 
   const { validFrom, textFi, textSv } = useFormFields(form)
 
+  const body = (ready: boolean) => {
+    const value = form.value()
+    return {
+      validFrom: value.validFrom,
+      textFi: value.textFi,
+      textSv: featureFlags.decisionReasoningSwedishEnabled
+        ? value.textSv
+        : null,
+      collectionType,
+      ready
+    }
+  }
+
   const [saveAsNotReadyMutation, saveAsNotReady] = useSelectMutation(
     () => (existing ? first(existing.id) : second()),
-    [
-      updateGenericReasoningMutation,
-      (id) => ({
-        id,
-        body: { ...form.value(), collectionType, ready: false }
-      })
-    ],
-    [
-      createGenericReasoningMutation,
-      () => ({ body: { ...form.value(), collectionType, ready: false } })
-    ]
+    [updateGenericReasoningMutation, (id) => ({ id, body: body(false) })],
+    [createGenericReasoningMutation, () => ({ body: body(false) })]
   )
 
   const [saveAndActivateMutation, saveAndActivate] = useSelectMutation(
     () => (existing ? first(existing.id) : second()),
-    [
-      updateGenericReasoningMutation,
-      (id) => ({
-        id,
-        body: { ...form.value(), collectionType, ready: true }
-      })
-    ],
-    [
-      createGenericReasoningMutation,
-      () => ({ body: { ...form.value(), collectionType, ready: true } })
-    ]
+    [updateGenericReasoningMutation, (id) => ({ id, body: body(true) })],
+    [createGenericReasoningMutation, () => ({ body: body(true) })]
   )
 
   return (
@@ -148,7 +146,9 @@ function GenericReasoningForm({
         />
       </FixedSpaceColumn>
       <Gap $size="m" />
-      <LanguageGrid>
+      <LanguageGrid
+        $columns={featureFlags.decisionReasoningSwedishEnabled ? 2 : 1}
+      >
         <FixedSpaceColumn>
           <Label>{i18n.decisionReasonings.fi}</Label>
           <Label>{t.textFi}</Label>
@@ -158,15 +158,17 @@ function GenericReasoningForm({
             data-qa="generic-reasoning-text-fi"
           />
         </FixedSpaceColumn>
-        <FixedSpaceColumn>
-          <Label>{i18n.decisionReasonings.sv}</Label>
-          <Label>{t.textSv}</Label>
-          <TextAreaF
-            bind={textSv}
-            hideErrorsBeforeTouched
-            data-qa="generic-reasoning-text-sv"
-          />
-        </FixedSpaceColumn>
+        {featureFlags.decisionReasoningSwedishEnabled && (
+          <FixedSpaceColumn>
+            <Label>{i18n.decisionReasonings.sv}</Label>
+            <Label>{t.textSv}</Label>
+            <TextAreaF
+              bind={textSv}
+              hideErrorsBeforeTouched
+              data-qa="generic-reasoning-text-sv"
+            />
+          </FixedSpaceColumn>
+        )}
       </LanguageGrid>
       <Gap $size="m" />
       <FixedSpaceRow $justifyContent="flex-end">
@@ -311,15 +313,19 @@ function GenericReasoningCard({
       <Gap $size="s" />
       <H3 $noMargin>{dateRangeHeading}</H3>
       <Gap $size="s" />
-      <LanguageGrid>
+      <LanguageGrid
+        $columns={featureFlags.decisionReasoningSwedishEnabled ? 2 : 1}
+      >
         <FixedSpaceColumn>
           <Label>{i18n.decisionReasonings.fi}</Label>
           <PreWrap>{reasoning.textFi}</PreWrap>
         </FixedSpaceColumn>
-        <FixedSpaceColumn>
-          <Label>{i18n.decisionReasonings.sv}</Label>
-          <PreWrap>{reasoning.textSv}</PreWrap>
-        </FixedSpaceColumn>
+        {featureFlags.decisionReasoningSwedishEnabled && (
+          <FixedSpaceColumn>
+            <Label>{i18n.decisionReasonings.sv}</Label>
+            <PreWrap>{reasoning.textSv ?? ''}</PreWrap>
+          </FixedSpaceColumn>
+        )}
       </LanguageGrid>
     </ReasoningCard>
   )
