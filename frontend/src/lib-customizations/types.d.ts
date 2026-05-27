@@ -336,6 +336,13 @@ interface BaseFeatureFlags {
    * layout is being built.
    */
   decisionDraftRedesign?: boolean
+
+  /**
+   * Require Swedish content in decision reasonings. When false, the editor
+   * hides the Swedish column and the backend accepts null Swedish fields.
+   * Mirror of FeatureConfig.decisionReasoningSwedishEnabled.
+   */
+  decisionReasoningSwedishEnabled: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

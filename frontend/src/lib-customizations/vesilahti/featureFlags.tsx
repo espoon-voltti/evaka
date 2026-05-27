@@ -45,7 +45,8 @@ const prod: FeatureFlags = {
   requireAttachments: true,
   showCitizenApplicationPreschoolTerms: true,
   decisionChildDocumentTypes: true,
-  placementDesktop: true
+  placementDesktop: true,
+  decisionReasoningSwedishEnabled: false
 }
 
 const features: Features = {

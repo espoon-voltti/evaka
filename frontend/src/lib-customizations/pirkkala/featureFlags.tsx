@@ -51,7 +51,8 @@ const prod: FeatureFlags = {
     feeDecisions: true,
     voucherValueDecisions: true
   },
-  placementDesktop: true
+  placementDesktop: true,
+  decisionReasoningSwedishEnabled: false
 }
 
 const features: Features = {

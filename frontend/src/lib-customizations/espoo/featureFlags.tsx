@@ -52,7 +52,8 @@ const prod: FeatureFlags = {
   absenceApplications: true,
   showMetadataToCitizen: true,
   placementDesktop: true,
-  employeeLanguageSelection: true
+  employeeLanguageSelection: true,
+  decisionReasoningSwedishEnabled: true
 }
 
 const features: Features = {

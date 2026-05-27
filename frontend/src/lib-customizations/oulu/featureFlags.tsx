@@ -54,7 +54,8 @@ const features: Features = {
     showCitizenApplicationPreschoolTerms: true,
     showMetadataToCitizen: true,
     placementDesktop: true,
-    decisionReasoningOptions: true
+    decisionReasoningOptions: true,
+    decisionReasoningSwedishEnabled: false
   },
   staging: {
     environmentLabel: 'Staging',
@@ -95,7 +96,8 @@ const features: Features = {
     showMetadataToCitizen: true,
     placementDesktop: true,
     decisionReasoningOptions: true,
-    decisionDraftRedesign: true
+    decisionDraftRedesign: true,
+    decisionReasoningSwedishEnabled: false
   },
   prod: {
     environmentLabel: null,
@@ -134,7 +136,8 @@ const features: Features = {
     missingQuestionnaireAnswerMarkerEnabled: true,
     showCitizenApplicationPreschoolTerms: true,
     showMetadataToCitizen: true,
-    placementDesktop: true
+    placementDesktop: true,
+    decisionReasoningSwedishEnabled: false
   }
 }
 

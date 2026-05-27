@@ -54,7 +54,8 @@ const prod: FeatureFlags = {
     childDocuments: true
   },
   decisionChildDocumentTypes: true,
-  placementDesktop: true
+  placementDesktop: true,
+  decisionReasoningSwedishEnabled: false
 }
 
 const features: Features = {
