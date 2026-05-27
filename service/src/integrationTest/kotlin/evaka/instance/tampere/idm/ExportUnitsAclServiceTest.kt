@@ -37,6 +37,7 @@ class ExportUnitsAclServiceTest : AbstractTampereIntegrationTest() {
                         id = DaycareId(UUID.fromString("4e042a2e-f2d3-11ec-b2d6-1bf5942d79f4")),
                         name = "Sammon koulun esiopetus",
                         areaId = AreaId(UUID.fromString("6529f5a2-9777-11eb-ba89-cfcda122ed3b")),
+                        ophUnitOid = "5.4.3.2.1",
                     )
                 )
             val employeeId =
@@ -69,6 +70,6 @@ class ExportUnitsAclServiceTest : AbstractTampereIntegrationTest() {
 }
 
 private const val EXPECTED =
-    """unit_id;unit_name;first_name;last_name;email;employee_number
-4e042a2e-f2d3-11ec-b2d6-1bf5942d79f4;Sammon koulun esiopetus;Leena;Testi;leena.testi@tampere.fi;356751
+    """unit_id;unit_name;first_name;last_name;email;employee_number;unit_oid
+4e042a2e-f2d3-11ec-b2d6-1bf5942d79f4;Sammon koulun esiopetus;Leena;Testi;leena.testi@tampere.fi;356751;5.4.3.2.1
 """

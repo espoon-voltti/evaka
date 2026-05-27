@@ -27,6 +27,7 @@ data class UnitAclRow(
     @get:JsonProperty("last_name") val lastName: String,
     @get:JsonProperty("email") val email: String?,
     @get:JsonProperty("employee_number") val employeeNumber: String?,
+    @get:JsonProperty("unit_oid") val unitOid: String?,
 )
 
 private val TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd")
@@ -72,7 +73,8 @@ SELECT
     e.first_name,
     e.last_name,
     e.email,
-    e.employee_number
+    e.employee_number,
+    d.oph_unit_oid AS unit_oid
 FROM daycare_acl
 JOIN daycare d ON daycare_acl.daycare_id = d.id
 JOIN employee e ON daycare_acl.employee_id = e.id
