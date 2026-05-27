@@ -121,7 +121,7 @@ const customizations: EmployeeCustomizations = {
             'Käytetään kuluvan päivän poissaolossa. Edellisenä päivänä tai sitä aiemmin ilmoitetut poissaolot tulee muuttaa sopimuspoissaoloiksi.',
           SICKLEAVE: 'Merkitään kun lapsi on sairaana.',
           UNKNOWN_ABSENCE:
-            'Käytetään silloin, kun huoltaja ei ole ilmoittanut poissaolosta, vaikuttaa heinäkuussa myös laskutukseen. Koodi muutetaan vain, jos kyseessä on sairauspoissaolo, jonka jatkumisesta huoltaja ilmoittaa seuraavana päivänä.',
+            'Käytetään silloin, kun huoltaja ei ole ilmoittanut poissaolosta, vaikuttaa kesä-elokuussa myös laskutukseen. Koodi muutetaan vain, jos kyseessä on sairauspoissaolo, jonka jatkumisesta huoltaja ilmoittaa seuraavana päivänä.',
           PLANNED_ABSENCE:
             'Ennalta ilmoitetut poissaolot. Kaikki edeltävänä päivänä tai sitä aiemmin ilmoitetut poissaolot ovat sopimuspoissaoloja.',
           TEMPORARY_RELOCATION:
