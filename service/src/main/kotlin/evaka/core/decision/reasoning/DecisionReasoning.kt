@@ -21,7 +21,7 @@ data class DecisionGenericReasoningRequest(
     val collectionType: DecisionReasoningCollectionType,
     val validFrom: LocalDate,
     val textFi: String,
-    val textSv: String,
+    val textSv: String?,
     val ready: Boolean,
 )
 
@@ -30,7 +30,7 @@ data class DecisionGenericReasoning(
     val collectionType: DecisionReasoningCollectionType,
     val validFrom: LocalDate,
     val textFi: String,
-    val textSv: String,
+    val textSv: String?,
     val ready: Boolean,
     val createdAt: HelsinkiDateTime,
     val modifiedAt: HelsinkiDateTime,
@@ -41,18 +41,18 @@ data class DecisionGenericReasoning(
 data class DecisionIndividualReasoningRequest(
     val collectionType: DecisionReasoningCollectionType,
     val titleFi: String,
-    val titleSv: String,
+    val titleSv: String?,
     val textFi: String,
-    val textSv: String,
+    val textSv: String?,
 )
 
 data class DecisionIndividualReasoning(
     val id: DecisionIndividualReasoningId,
     val collectionType: DecisionReasoningCollectionType,
     val titleFi: String,
-    val titleSv: String,
+    val titleSv: String?,
     val textFi: String,
-    val textSv: String,
+    val textSv: String?,
     val removedAt: HelsinkiDateTime?,
     val createdAt: HelsinkiDateTime,
     val modifiedAt: HelsinkiDateTime,

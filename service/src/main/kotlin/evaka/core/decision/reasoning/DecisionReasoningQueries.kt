@@ -16,7 +16,7 @@ internal data class DecisionGenericReasoningRow(
     val collectionType: DecisionReasoningCollectionType,
     val validFrom: LocalDate,
     val textFi: String,
-    val textSv: String,
+    val textSv: String?,
     val ready: Boolean,
     val createdAt: HelsinkiDateTime,
     val modifiedAt: HelsinkiDateTime,

@@ -75,7 +75,7 @@ export interface DecisionGenericReasoning {
   outdated: boolean
   ready: boolean
   textFi: string
-  textSv: string
+  textSv: string | null
   validFrom: LocalDate
 }
 
@@ -86,7 +86,7 @@ export interface DecisionGenericReasoningRequest {
   collectionType: DecisionReasoningCollectionType
   ready: boolean
   textFi: string
-  textSv: string
+  textSv: string | null
   validFrom: LocalDate
 }
 
@@ -100,9 +100,9 @@ export interface DecisionIndividualReasoning {
   modifiedAt: HelsinkiDateTime
   removedAt: HelsinkiDateTime | null
   textFi: string
-  textSv: string
+  textSv: string | null
   titleFi: string
-  titleSv: string
+  titleSv: string | null
 }
 
 /**
@@ -111,9 +111,9 @@ export interface DecisionIndividualReasoning {
 export interface DecisionIndividualReasoningRequest {
   collectionType: DecisionReasoningCollectionType
   textFi: string
-  textSv: string
+  textSv: string | null
   titleFi: string
-  titleSv: string
+  titleSv: string | null
 }
 
 /**
