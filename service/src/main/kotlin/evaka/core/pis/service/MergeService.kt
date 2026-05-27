@@ -4,7 +4,7 @@
 
 package evaka.core.pis.service
 
-import evaka.core.childimages.removeImage
+import evaka.core.childimages.deleteImage
 import evaka.core.pis.getTransferablePersonReferences
 import evaka.core.s3.DocumentService
 import evaka.core.shared.ChildId
@@ -160,7 +160,7 @@ SELECT
 
         // Does nothing if there is no image (also if the image was assigned from duplicate to
         // master in merge)
-        removeImage(tx, documentClient, ChildId(id.raw))
+        deleteImage(tx, documentClient, ChildId(id.raw))
 
         tx.createUpdate {
                 sql(

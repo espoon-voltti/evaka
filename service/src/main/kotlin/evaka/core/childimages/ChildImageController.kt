@@ -92,7 +92,7 @@ class ChildImageController(
                     childId,
                 )
             }
-            dbc.transaction { tx -> removeImage(tx, documentClient, childId) }
+            dbc.transaction { tx -> deleteImage(tx, documentClient, childId) }
         }
         Audit.ChildImageDelete.log(
             targetId = AuditId(childId),

@@ -26,7 +26,6 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.MockEvakaClock
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -40,7 +39,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val today = LocalDate.of(2026, 5, 7)
-    private val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(2, 0)))
+    private val now = HelsinkiDateTime.of(today, LocalTime.of(2, 0))
 
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val careArea = DevCareArea()
@@ -65,11 +64,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         // A pending PDF (null key) must not leak as a null payload.
         insertExpiredDocument(template, keys = listOf("s3-key-c-v1", null))
 
-        dataRemovalService.deleteExpiredChildDocuments(
-            db,
-            clock,
-            AsyncJob.DeleteExpiredChildDocuments(),
-        )
+        dataRemovalService.deleteExpiredChildDocuments(db, now, limit = 100)
 
         assertEquals(
             setOf("s3-key-a-v1", "s3-key-a-v2", "s3-key-b-v1", "s3-key-c-v1"),
@@ -81,13 +76,9 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     fun `handler enqueues nothing when no documents are eligible for deletion`() {
         val template = insertTemplate()
         // Recently modified document is not yet expired.
-        insertDocument(template, statusModifiedAt = clock.now(), keys = listOf("fresh-key"))
+        insertDocument(template, statusModifiedAt = now, keys = listOf("fresh-key"))
 
-        dataRemovalService.deleteExpiredChildDocuments(
-            db,
-            clock,
-            AsyncJob.DeleteExpiredChildDocuments(),
-        )
+        dataRemovalService.deleteExpiredChildDocuments(db, now, limit = 1000)
 
         assertTrue(scheduledPdfDeletionKeys().isEmpty())
     }
@@ -97,11 +88,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val template = insertTemplate()
         insertExpiredDocument(template, keys = emptyList())
 
-        dataRemovalService.deleteExpiredChildDocuments(
-            db,
-            clock,
-            AsyncJob.DeleteExpiredChildDocuments(),
-        )
+        dataRemovalService.deleteExpiredChildDocuments(db, now, limit = 1000)
 
         assertTrue(scheduledPdfDeletionKeys().isEmpty())
     }
@@ -134,8 +121,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private fun insertExpiredDocument(
         template: DevDocumentTemplate,
         keys: List<String?>,
-    ): ChildDocumentId =
-        insertDocument(template, statusModifiedAt = clock.now().minusYears(1), keys = keys)
+    ): ChildDocumentId = insertDocument(template, statusModifiedAt = now.minusYears(1), keys = keys)
 
     private fun insertDocument(
         template: DevDocumentTemplate,
