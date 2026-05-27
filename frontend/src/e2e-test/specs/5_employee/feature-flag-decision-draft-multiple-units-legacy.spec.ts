@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2026 City of Espoo
+// SPDX-FileCopyrightText: 2017-2024 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -39,7 +39,10 @@ test.use({
   evakaOptions: {
     mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0)),
     employeeCustomizations: {
-      featureFlags: { decisionDraftMultipleUnits: true }
+      featureFlags: {
+        decisionDraftMultipleUnits: true,
+        decisionDraftRedesign: false
+      }
     }
   }
 })
@@ -108,11 +111,11 @@ test.describe('Application transitions', () => {
 
     await applicationListView.filterByApplicationStatus('WAITING_DECISION')
     await applicationListView.searchButton.click()
-    const decisionDraftPage = await applicationListView
+    const decisionEditorPage = await applicationListView
       .applicationRow(applicationId)
-      .primaryActionEditDecisionsRedesign()
-    await decisionDraftPage.waitUntilLoaded()
-    await decisionDraftPage.save()
+      .primaryActionEditDecisions()
+    await decisionEditorPage.waitUntilLoaded()
+    await decisionEditorPage.save()
 
     await applicationListView.searchButton.click()
 
@@ -171,11 +174,11 @@ test.describe('Application transitions', () => {
 
     await applicationListView.filterByApplicationStatus('WAITING_DECISION')
     await applicationListView.searchButton.click()
-    const decisionDraftPage = await applicationListView
+    const decisionEditorPage = await applicationListView
       .applicationRow(applicationId)
-      .primaryActionEditDecisionsRedesign()
-    await decisionDraftPage.selectUnit('PRESCHOOL_DAYCARE', testDaycare.id)
-    await decisionDraftPage.save()
+      .primaryActionEditDecisions()
+    await decisionEditorPage.selectUnit('PRESCHOOL_DAYCARE', testDaycare.id)
+    await decisionEditorPage.save()
 
     await applicationListView.searchButton.click()
 

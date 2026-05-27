@@ -239,7 +239,7 @@ const StaticallyPositionedModal = styled(ModalWrapper)`
 
 type PlainModalProps = Pick<
   ModalBaseProps,
-  'className' | 'zIndex' | 'data-qa' | 'mobileFullScreen' | 'children'
+  'className' | 'zIndex' | 'data-qa' | 'mobileFullScreen' | 'children' | 'width'
 > & {
   margin: string
   onEscapeKey?: () => void
@@ -259,6 +259,7 @@ export const PlainModal = React.memo(function PlainModal(
           $noPadding
           $mobileFullScreen={props.mobileFullScreen}
           $margin={props.margin}
+          $width={props.width}
           className="modal-container"
           data-qa="modal"
         >

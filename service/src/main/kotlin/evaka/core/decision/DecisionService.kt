@@ -13,6 +13,7 @@ import evaka.core.daycare.UnitManager
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.daycare.getDaycare
+import evaka.core.decision.reasoning.freezeGenericReasoningLinks
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
@@ -75,12 +76,29 @@ class DecisionService(
     ): List<DecisionId> {
         val now = clock.now()
         val decisionIds = tx.finalizeDecisions(applicationId, now)
+        val decisions = decisionIds.map { tx.getDecision(it)!! }
+
+        decisions.forEach { decision ->
+            val frozen =
+                tx.freezeGenericReasoningLinks(
+                    decisionId = decision.id,
+                    decisionType = decision.type,
+                    startDate = decision.startDate,
+                    now = now,
+                    createdBy = user.evakaUserId,
+                )
+            if (frozen.isEmpty()) {
+                logger.warn {
+                    "Decision ${decision.id} (${decision.type}) finalized with no generic reasoning in force for start date ${decision.startDate}"
+                }
+            }
+        }
+
         asyncJobRunner.plan(
             tx,
-            decisionIds.map { decisionId ->
-                val decision = tx.getDecision(decisionId)!!
+            decisions.map { decision ->
                 AsyncJob.NotifyDecisionCreated(
-                    decisionId,
+                    decision.id,
                     user,
                     sendAsMessage,
                     skipGuardianApproval && decision.type == DecisionType.PRESCHOOL,

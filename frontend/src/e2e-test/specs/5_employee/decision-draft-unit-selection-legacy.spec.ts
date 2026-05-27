@@ -16,7 +16,9 @@ import {
   testPreschool,
   familyWithTwoGuardians,
   testAdult,
+  testChild,
   testChild2,
+  testChildRestricted,
   testCareArea,
   preschoolTerm2021
 } from '../../dev-api/fixtures'
@@ -33,18 +35,18 @@ import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
-const mockedTime = LocalDate.of(2021, 8, 16)
+const mockedDate = LocalDate.of(2021, 8, 16)
 
 test.use({
   evakaOptions: {
-    mockedTime: mockedTime.toHelsinkiDateTime(LocalTime.of(12, 0)),
+    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0)),
     employeeCustomizations: {
-      featureFlags: { decisionDraftMultipleUnits: true }
+      featureFlags: { decisionDraftRedesign: false }
     }
   }
 })
 
-test.describe('Application transitions', () => {
+test.describe('Decision draft unit selection', () => {
   let page: Page
   let applicationListView: ApplicationListView
 
@@ -59,7 +61,7 @@ test.describe('Application transitions', () => {
     await testPreschool.save()
     await Fixture.family({
       guardian: testAdult,
-      children: [testChild2]
+      children: [testChild, testChild2, testChildRestricted]
     }).save()
     await familyWithTwoGuardians.save()
     serviceWorker = await Fixture.employee().serviceWorker().save()
@@ -68,69 +70,6 @@ test.describe('Application transitions', () => {
 
     page = evaka
     applicationListView = new ApplicationListView(page)
-  })
-
-  test('Decision draft page works without unit selection', async () => {
-    const fixture = {
-      ...applicationFixture(
-        testChild2,
-        familyWithTwoGuardians.guardian,
-        undefined,
-        'PRESCHOOL',
-        null,
-        [testPreschool.id],
-        true,
-        'SENT',
-        mockedTime
-      ),
-      id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
-    }
-    const applicationId = fixture.id
-    await createApplications({ body: [fixture] })
-
-    await execSimpleApplicationActions(
-      applicationId,
-      ['MOVE_TO_WAITING_PLACEMENT'],
-      HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 40))
-    )
-
-    await employeeLogin(page, serviceWorker)
-    await page.goto(ApplicationListView.url)
-
-    await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
-    await applicationListView.searchButton.click()
-    const placementDraftPage = await applicationListView
-      .applicationRow(applicationId)
-      .primaryActionCreatePlacementPlan()
-    await placementDraftPage.waitUntilLoaded()
-    await placementDraftPage.placeToUnit(testPreschool.id)
-    await placementDraftPage.submit()
-
-    await applicationListView.filterByApplicationStatus('WAITING_DECISION')
-    await applicationListView.searchButton.click()
-    const decisionDraftPage = await applicationListView
-      .applicationRow(applicationId)
-      .primaryActionEditDecisionsRedesign()
-    await decisionDraftPage.waitUntilLoaded()
-    await decisionDraftPage.save()
-
-    await applicationListView.searchButton.click()
-
-    await execSimpleApplicationActions(
-      applicationId,
-      ['SEND_DECISIONS_WITHOUT_PROPOSAL'],
-      HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
-    )
-
-    const decisions = await getApplicationDecisions({ applicationId })
-    expect(
-      decisions
-        .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))
-        .sort((a, b) => a.type.localeCompare(b.type))
-    ).toEqual([
-      { type: 'PRESCHOOL', unitId: testPreschool.id },
-      { type: 'PRESCHOOL_DAYCARE', unitId: testPreschool.id }
-    ])
   })
 
   test('Decision draft page works with unit selection', async () => {
@@ -144,7 +83,7 @@ test.describe('Application transitions', () => {
         [testPreschool.id],
         true,
         'SENT',
-        mockedTime
+        mockedDate
       ),
       id: fromUuid<ApplicationId>('6a9b1b1e-3fdf-11eb-b378-0242ac130002')
     }
@@ -154,7 +93,7 @@ test.describe('Application transitions', () => {
     await execSimpleApplicationActions(
       applicationId,
       ['MOVE_TO_WAITING_PLACEMENT'],
-      HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 40))
+      HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(13, 40))
     )
 
     await employeeLogin(page, serviceWorker)
@@ -162,27 +101,31 @@ test.describe('Application transitions', () => {
 
     await applicationListView.filterByApplicationStatus('WAITING_PLACEMENT')
     await applicationListView.searchButton.click()
+
     const placementDraftPage = await applicationListView
       .applicationRow(applicationId)
       .primaryActionCreatePlacementPlan()
     await placementDraftPage.waitUntilLoaded()
+
     await placementDraftPage.placeToUnit(testPreschool.id)
     await placementDraftPage.submit()
 
     await applicationListView.filterByApplicationStatus('WAITING_DECISION')
     await applicationListView.searchButton.click()
-    const decisionDraftPage = await applicationListView
-      .applicationRow(applicationId)
-      .primaryActionEditDecisionsRedesign()
-    await decisionDraftPage.selectUnit('PRESCHOOL_DAYCARE', testDaycare.id)
-    await decisionDraftPage.save()
 
+    const decisionEditorPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionEditDecisions()
+    await decisionEditorPage.waitUntilLoaded()
+
+    await decisionEditorPage.selectUnit('PRESCHOOL_DAYCARE', testDaycare.id)
+    await decisionEditorPage.save()
     await applicationListView.searchButton.click()
 
     await execSimpleApplicationActions(
       applicationId,
       ['SEND_DECISIONS_WITHOUT_PROPOSAL'],
-      HelsinkiDateTime.fromLocal(mockedTime, LocalTime.of(13, 41))
+      HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(13, 41))
     )
 
     const decisions = await getApplicationDecisions({ applicationId })
@@ -191,7 +134,7 @@ test.describe('Application transitions', () => {
         .map(({ type, unit: { id: unitId } }) => ({ type, unitId }))
         .sort((a, b) => a.type.localeCompare(b.type))
     ).toStrictEqual([
-      { type: 'PRESCHOOL', unitId: testPreschool.id },
+      { type: 'PRESCHOOL', unitId: testDaycare.id },
       { type: 'PRESCHOOL_DAYCARE', unitId: testDaycare.id }
     ])
   })

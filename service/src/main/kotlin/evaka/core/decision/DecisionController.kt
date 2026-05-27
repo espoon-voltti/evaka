@@ -8,9 +8,16 @@ import evaka.core.Audit
 import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.application.fetchApplicationDetails
+import evaka.core.decision.reasoning.DraftReasoningPreview
+import evaka.core.decision.reasoning.applicableReasoningCollectionType
+import evaka.core.decision.reasoning.deleteDecisionIndividualReasoningLink
+import evaka.core.decision.reasoning.getDraftReasoningPreview
+import evaka.core.decision.reasoning.getIndividualReasoning
+import evaka.core.decision.reasoning.insertDecisionIndividualReasoningLink
 import evaka.core.document.archival.validateArchivability
 import evaka.core.pis.getPersonById
 import evaka.core.shared.DecisionId
+import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -24,9 +31,11 @@ import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -100,6 +109,22 @@ class DecisionController(
                 }
             }
             .also { Audit.UnitRead.log(meta = mapOf("count" to it.size)) }
+    }
+
+    @GetMapping("/{id}/draft-reasoning-preview")
+    fun getDraftReasoningPreview(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: DecisionId,
+    ): DraftReasoningPreview {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(tx, user, clock, Action.Decision.READ, id)
+                    tx.getDraftReasoningPreview(id)
+                }
+            }
+            .also { Audit.DecisionDraftReasoningPreviewRead.log(targetId = AuditId(id)) }
     }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
@@ -183,6 +208,107 @@ class DecisionController(
                     retryCount = 1,
                 )
             }
+        }
+    }
+
+    data class LinkIndividualReasoningBody(val reasoningId: DecisionIndividualReasoningId)
+
+    @PostMapping("/{id}/individual-reasonings")
+    fun linkIndividualReasoning(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: DecisionId,
+        @RequestBody body: LinkIndividualReasoningBody,
+    ) {
+        val inserted = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Decision.UPDATE_REASONING_LINKS,
+                    id,
+                )
+                requireDecisionEditableForReasoningLinks(tx, id)
+                requireReasoningEligibleForDecision(tx, id, body.reasoningId)
+                tx.insertDecisionIndividualReasoningLink(
+                    decisionId = id,
+                    reasoningId = body.reasoningId,
+                    createdAt = clock.now(),
+                    createdBy = user.evakaUserId,
+                )
+            }
+        }
+        if (inserted) {
+            Audit.DecisionReasoningIndividualLinkCreate.log(
+                targetId = AuditId(id),
+                objectId = AuditId(body.reasoningId),
+            )
+        }
+    }
+
+    @DeleteMapping("/{id}/individual-reasonings/{reasoningId}")
+    fun unlinkIndividualReasoning(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable id: DecisionId,
+        @PathVariable reasoningId: DecisionIndividualReasoningId,
+    ) {
+        val deleted = db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Decision.UPDATE_REASONING_LINKS,
+                    id,
+                )
+                requireDecisionEditableForReasoningLinks(tx, id)
+                tx.deleteDecisionIndividualReasoningLink(id, reasoningId)
+            }
+        }
+        if (deleted) {
+            Audit.DecisionReasoningIndividualLinkDelete.log(
+                targetId = AuditId(id),
+                objectId = AuditId(reasoningId),
+            )
+        }
+    }
+
+    private fun requireDecisionEditableForReasoningLinks(
+        tx: Database.Read,
+        decisionId: DecisionId,
+    ) {
+        val decision =
+            tx.getDecision(decisionId) ?: throw NotFound("Decision $decisionId not found")
+        if (decision.sentDate != null) {
+            throw BadRequest(
+                "Decision $decisionId has already been sent; " +
+                    "individual reasoning links cannot be changed after send."
+            )
+        }
+    }
+
+    private fun requireReasoningEligibleForDecision(
+        tx: Database.Read,
+        decisionId: DecisionId,
+        reasoningId: DecisionIndividualReasoningId,
+    ) {
+        val decision =
+            tx.getDecision(decisionId) ?: throw NotFound("Decision $decisionId not found")
+        val reasoning =
+            tx.getIndividualReasoning(reasoningId)
+                ?: throw NotFound("Individual reasoning $reasoningId not found")
+        if (reasoning.removedAt != null) {
+            throw BadRequest("Individual reasoning $reasoningId is removed")
+        }
+        if (reasoning.collectionType != decision.type.applicableReasoningCollectionType()) {
+            throw BadRequest(
+                "Individual reasoning $reasoningId has collection_type ${reasoning.collectionType}, " +
+                    "which does not apply to decision $decisionId of type ${decision.type}"
+            )
         }
     }
 }

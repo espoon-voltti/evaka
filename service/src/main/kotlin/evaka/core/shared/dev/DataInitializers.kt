@@ -54,7 +54,9 @@ import evaka.core.shared.DailyServiceTimesId
 import evaka.core.shared.DaycareAssistanceId
 import evaka.core.shared.DaycareCaretakerId
 import evaka.core.shared.DaycareId
+import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionId
+import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.DocumentTemplateId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.EmployeePinId
@@ -1925,3 +1927,31 @@ VALUES (${bind(hqa.id)}, ${bind(hqa.modifiedBy)}, ${bind(hqa.questionnaireId)}, 
         )
     }
 }
+
+fun Database.Transaction.insert(row: DevDecisionReasoningGeneric): DecisionGenericReasoningId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO decision_reasoning_generic (id, collection_type, valid_from, text_fi, text_sv, ready, created_at, modified_at)
+VALUES (${bind(row.id)}, ${bind(row.collectionType)}, ${bind(row.validFrom)}, ${bind(row.textFi)}, ${bind(row.textSv)}, ${bind(row.ready)}, ${bind(row.createdAt)}, ${bind(row.modifiedAt)})
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<DecisionGenericReasoningId>()
+
+fun Database.Transaction.insert(
+    row: DevDecisionReasoningIndividual
+): DecisionIndividualReasoningId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO decision_reasoning_individual (id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at)
+VALUES (${bind(row.id)}, ${bind(row.collectionType)}, ${bind(row.titleFi)}, ${bind(row.titleSv)}, ${bind(row.textFi)}, ${bind(row.textSv)}, ${bind(row.removedAt)}, ${bind(row.createdAt)}, ${bind(row.modifiedAt)})
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne<DecisionIndividualReasoningId>()

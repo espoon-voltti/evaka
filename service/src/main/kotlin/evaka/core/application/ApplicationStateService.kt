@@ -943,6 +943,7 @@ class ApplicationStateService(
         tx.syncApplicationOtherGuardians(application.id, now.toLocalDate())
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION, user.evakaUserId, now)
         tx.markApplicationDecisionsSent(application.id, now)
+
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendNewDecisionEmail(application.id)), runAt = now)
         Audit.ApplicationConfirmDecisionsMailed.log(targetId = AuditId(applicationId))
     }

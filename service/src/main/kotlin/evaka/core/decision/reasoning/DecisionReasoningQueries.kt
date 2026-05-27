@@ -11,7 +11,7 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import java.time.LocalDate
 
-private data class DecisionGenericReasoningRow(
+internal data class DecisionGenericReasoningRow(
     val id: DecisionGenericReasoningId,
     val collectionType: DecisionReasoningCollectionType,
     val validFrom: LocalDate,
@@ -149,6 +149,20 @@ ORDER BY created_at DESC
             )
         }
         .toList<DecisionIndividualReasoning>()
+
+fun Database.Read.getIndividualReasoning(
+    id: DecisionIndividualReasoningId
+): DecisionIndividualReasoning? =
+    createQuery {
+            sql(
+                """
+SELECT id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at
+FROM decision_reasoning_individual
+WHERE id = ${bind(id)}
+"""
+            )
+        }
+        .exactlyOneOrNull<DecisionIndividualReasoning>()
 
 fun Database.Transaction.insertIndividualReasoning(
     request: DecisionIndividualReasoningRequest,
