@@ -145,6 +145,7 @@ class OuluConfig {
             holidayQuestionnaireType = QuestionnaireType.OPEN_RANGES,
             minimumInvoiceAmount = 800,
             daycarePlacementPlanEndMonthDay = MonthDay.of(8, 20),
+            decisionReasoningSwedishEnabled = false,
         )
 
     @Bean fun actionRuleMapping(): ActionRuleMapping = OuluActionRuleMapping()

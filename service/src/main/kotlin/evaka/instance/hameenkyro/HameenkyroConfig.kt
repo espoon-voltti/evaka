@@ -88,6 +88,7 @@ class HameenkyroConfig {
                 }
             },
             daycarePlacementPlanEndMonthDay = MonthDay.of(8, 15),
+            decisionReasoningSwedishEnabled = false,
         )
 
     @Bean

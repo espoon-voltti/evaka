@@ -127,6 +127,7 @@ class TampereConfig {
             },
             daycarePlacementPlanEndMonthDay = MonthDay.of(8, 15),
             placementToolApplicationStatus = ApplicationStatus.WAITING_DECISION,
+            decisionReasoningSwedishEnabled = false,
         )
 
     @Bean

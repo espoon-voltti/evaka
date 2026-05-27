@@ -135,6 +135,13 @@ data class FeatureConfig(
 
     /** Allow English as a language for every child document type, not only `CITIZEN_BASIC` */
     val allowEnglishChildDocumentsForAllTypes: Boolean = false,
+
+    /**
+     * If true, Swedish content (`text_sv`, `title_sv`) is required on decision reasonings. If
+     * false, Swedish fields may be null and the editor hides them. Mirrored to frontend
+     * `featureFlags`.
+     */
+    val decisionReasoningSwedishEnabled: Boolean = true,
 )
 
 enum class ArchiveProcessType {
