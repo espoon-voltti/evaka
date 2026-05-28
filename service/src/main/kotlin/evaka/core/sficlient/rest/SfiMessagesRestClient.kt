@@ -46,7 +46,9 @@ class Config(env: SfiEnv) {
                             "SFI printing billing password must be set"
                         },
                 ),
-            costPool = env.printing.costPool,
+            costPool = requireNotNull(env.printing.costPool) {
+                "SFI printing cost pool must be set"
+            }
         )
 
     private val sender = Sender(serviceId = env.serviceIdentifier)
