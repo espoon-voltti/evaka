@@ -107,12 +107,15 @@ fun insertNekkuSpecialDietChoice(
     db.transaction { tx ->
         tx.createUpdate {
                 sql(
-                    "INSERT INTO nekku_special_diet_choices VALUES (" +
-                        "${bind(childId)}," +
-                        "${bind(dietId)}," +
-                        "${bind(dietField)}," +
-                        "${bind(dietValue)}" +
-                        ")"
+                    """
+                    INSERT INTO nekku_special_diet_choices (child_id, created_at, diet_id, field_id, value) VALUES (
+                        ${bind(childId)},
+                        ${bind(HelsinkiDateTime.now())},
+                        ${bind(dietId)},
+                        ${bind(dietField)},
+                        ${bind(dietValue)}
+                    )
+                    """
                 )
             }
             .execute()

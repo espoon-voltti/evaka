@@ -7,6 +7,7 @@ package evaka.core.daycare
 import evaka.core.daycare.controllers.Child
 import evaka.core.shared.ChildId
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.HelsinkiDateTime
 
 fun Database.Read.getChild(id: ChildId): Child? {
     val child =
@@ -27,7 +28,7 @@ WHERE child.id = ${bind(id)}
     return child
 }
 
-fun Database.Transaction.createChild(child: Child) {
+fun Database.Transaction.createChild(child: Child, now: HelsinkiDateTime) {
     execute {
         sql(
             """
@@ -47,7 +48,7 @@ INSERT INTO child (id, allergies, diet, additionalinfo, medication, language_at_
 """
         )
     }
-    resetNekkuSpecialDietChoices(child)
+    resetNekkuSpecialDietChoices(child, now)
 }
 
 fun Database.Transaction.upsertChild(child: Child) {
@@ -61,7 +62,7 @@ ON CONFLICT (id) DO UPDATE SET allergies = ${bind(child.additionalInformation.al
     }
 }
 
-fun Database.Transaction.updateChild(child: Child) {
+fun Database.Transaction.updateChild(child: Child, now: HelsinkiDateTime) {
     execute {
         sql(
             """
@@ -80,10 +81,10 @@ WHERE id = ${bind(child.id)}
 """
         )
     }
-    resetNekkuSpecialDietChoices(child)
+    resetNekkuSpecialDietChoices(child, now)
 }
 
-fun Database.Transaction.resetNekkuSpecialDietChoices(child: Child) {
+fun Database.Transaction.resetNekkuSpecialDietChoices(child: Child, now: HelsinkiDateTime) {
     execute {
         sql(
             """
@@ -94,12 +95,13 @@ fun Database.Transaction.resetNekkuSpecialDietChoices(child: Child) {
     executeBatch(child.additionalInformation.nekkuSpecialDietChoices) {
         sql(
             """
-                INSERT INTO nekku_special_diet_choices (child_id, diet_id, field_id, value)
+                INSERT INTO nekku_special_diet_choices (child_id, diet_id, field_id, value, created_at)
                 VALUES (
                     ${bind(child.id)},
-                    ${bind{it.dietId}},
-                    ${bind{it.fieldId}},
-                    ${bind{it.value}}
+                    ${bind { it.dietId }},
+                    ${bind { it.fieldId }},
+                    ${bind { it.value }},
+                    ${bind(now)}
                 )
             """
         )

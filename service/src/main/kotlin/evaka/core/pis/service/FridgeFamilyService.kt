@@ -61,7 +61,7 @@ class FridgeFamilyService(
             db.read { tx -> tx.getDependantGuardians(personId) }.map { it.id }.toSet()
         val updatedGuardians =
             db.transaction { tx ->
-                    personService.getGuardians(tx, user, personId, forceRefresh = true)
+                    personService.getGuardians(tx, user, clock.now(), personId, forceRefresh = true)
                 }
                 .map { it.id }
                 .toSet()
@@ -76,9 +76,18 @@ class FridgeFamilyService(
         clock: EvakaClock,
         personId: PersonId,
     ) {
+        val now = clock.now()
+        val today = now.toLocalDate()
+
         logger.info { "Refreshing $personId from VTJ" }
         val targetPerson = db.transaction {
-            personService.getPersonWithChildren(it, user = user, id = personId, forceRefresh = true)
+            personService.getPersonWithChildren(
+                it,
+                user = user,
+                now = now,
+                id = personId,
+                forceRefresh = true,
+            )
         }
         if (targetPerson != null) {
             logger.info { "Person to refresh has ${targetPerson.children.size} children" }
@@ -91,6 +100,7 @@ class FridgeFamilyService(
                             personService.getPersonWithChildren(
                                 it,
                                 user = user,
+                                now = now,
                                 id = partnerId,
                                 forceRefresh = true,
                             )
@@ -104,10 +114,7 @@ class FridgeFamilyService(
                     }
 
             val head =
-                if (
-                    partner != null &&
-                        db.read { it.personIsHeadOfFamily(partner.id, clock.today()) }
-                )
+                if (partner != null && db.read { it.personIsHeadOfFamily(partner.id, today) })
                     partner
                 else targetPerson
 
@@ -130,7 +137,7 @@ class FridgeFamilyService(
                     .asSequence()
                     .distinct()
                     .filter { child -> !child.socialSecurityNumber.isNullOrBlank() }
-                    .filter { child -> child.dateOfBirth.isAfter(clock.today().minusYears(18)) }
+                    .filter { child -> child.dateOfBirth.isAfter(today.minusYears(18)) }
                     .filter {
                         personService.personsLiveInTheSameAddress(
                             it.toPersonDTO(),
@@ -139,9 +146,7 @@ class FridgeFamilyService(
                     }
                     .filter { !currentFridgeChildren.contains(it.id) }
                     .filter { child ->
-                        tx.getFosterParents(child.id).none {
-                            it.validDuring.includes(clock.today())
-                        }
+                        tx.getFosterParents(child.id).none { it.validDuring.includes(today) }
                     }
                     .toList()
             }
@@ -150,14 +155,11 @@ class FridgeFamilyService(
                 try {
                     val startDate =
                         if (
-                            childShouldBeAddedToFamilyStartingFromBirthday(
-                                clock.today(),
-                                child.dateOfBirth,
-                            )
+                            childShouldBeAddedToFamilyStartingFromBirthday(today, child.dateOfBirth)
                         ) {
                             child.dateOfBirth
                         } else {
-                            clock.today()
+                            today
                         }
                     db.transaction { tx ->
                         parentshipService.createParentship(

@@ -305,9 +305,9 @@ class ApplicationControllerV2(
 
                     val decisions = tx.getDecisionsByApplication(applicationId, decisionFilter)
                     val guardians =
-                        personService.getGuardians(tx, user, application.childId).map { personDTO ->
-                            PersonJSON.from(personDTO)
-                        }
+                        personService
+                            .getGuardians(tx, user, clock.now(), application.childId)
+                            .map { personDTO -> PersonJSON.from(personDTO) }
 
                     val attachments =
                         tx.getApplicationAttachments(applicationId).let { allAttachments ->
@@ -513,7 +513,7 @@ class ApplicationControllerV2(
                     val child =
                         tx.getPersonById(application.childId)
                             ?: throw NotFound("Child ${application.childId} not found")
-                    val vtjGuardians = personService.getGuardians(tx, user, child.id)
+                    val vtjGuardians = personService.getGuardians(tx, user, clock.now(), child.id)
 
                     val applicationGuardianIsVtjGuardian: Boolean = vtjGuardians.any {
                         it.id == application.guardianId

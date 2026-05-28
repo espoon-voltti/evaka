@@ -1623,12 +1623,14 @@ export async function deletePlacement(
 export async function forceFullVtjRefresh(
   request: {
     person: PersonId
-  }
+  },
+  options?: { mockedTime?: HelsinkiDateTime }
 ): Promise<void> {
   try {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/persons/${request.person}/force-full-vtj-refresh`.toString(),
-      method: 'POST'
+      method: 'POST',
+      headers: { EvakaMockedTime: options?.mockedTime?.formatIso() }
     })
     return json
   } catch (e) {

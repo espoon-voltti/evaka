@@ -93,7 +93,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
     @Test
     fun `children in same address are added`() {
         val dto = getDto(adult1).copy(children = listOf(getDto(child)))
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult1.id), any()))
+        whenever(personService.getPersonWithChildren(any(), eq(user), any(), eq(adult1.id), any()))
             .thenReturn(dto)
         whenever(personService.personsLiveInTheSameAddress(any(), any())).thenReturn(true)
 
@@ -125,7 +125,7 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
                             residenceCode = "2",
                         ),
                 )
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult1.id), any()))
+        whenever(personService.getPersonWithChildren(any(), eq(user), any(), eq(adult1.id), any()))
             .thenReturn(dto)
         service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(adult1.id))
         verifyNoInteractions(parentshipService)
@@ -161,9 +161,9 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
 
         val dto1 = getDto(adult1)
         val dto2 = getDto(adult2).copy(children = listOf(getDto(child)))
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult1.id), any()))
+        whenever(personService.getPersonWithChildren(any(), eq(user), any(), eq(adult1.id), any()))
             .thenReturn(dto1)
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult2.id), any()))
+        whenever(personService.getPersonWithChildren(any(), eq(user), any(), eq(adult2.id), any()))
             .thenReturn(dto2)
         whenever(personService.personsLiveInTheSameAddress(any(), any())).thenReturn(true)
 
@@ -213,9 +213,9 @@ class DVVBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
 
         val dto1 = getDto(adult1)
         val dto2 = getDto(adult2).copy(children = listOf(getDto(child)))
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult1.id), any()))
+        whenever(personService.getPersonWithChildren(any(), eq(user), any(), eq(adult1.id), any()))
             .thenReturn(dto1)
-        whenever(personService.getPersonWithChildren(any(), eq(user), eq(adult2.id), any()))
+        whenever(personService.getPersonWithChildren(any(), eq(user), any(), eq(adult2.id), any()))
             .thenReturn(dto2)
 
         service.doVTJRefresh(db, RealEvakaClock(), AsyncJob.VTJRefresh(adult1.id))

@@ -11,6 +11,7 @@ import evaka.core.daycare.createChild
 import evaka.core.daycare.getChild
 import evaka.core.daycare.updateChild
 import evaka.core.shared.ChildId
+import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.util.UUID.randomUUID
 import kotlin.test.assertEquals
@@ -38,7 +39,8 @@ class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             diet = "Kasvisruokavalio",
                             additionalInfo = "Ei osaa solmia kengännauhoja",
                         ),
-                )
+                ),
+                HelsinkiDateTime.now(),
             )
             child = tx.getChild(childId)!!
         }
@@ -63,7 +65,7 @@ class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     )
             )
 
-        db.transaction { it.updateChild(updated) }
+        db.transaction { it.updateChild(updated, HelsinkiDateTime.now()) }
 
         val actual = db.transaction { it.getChild(childId) }
         assertEquals(actual, updated)

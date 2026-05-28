@@ -10,6 +10,7 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
 import evaka.core.vtjclient.service.persondetails.VTJPersonDetailsService
 import evaka.core.vtjclient.service.vtjclient.IVtjClientService
@@ -101,7 +102,12 @@ class PersonServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         MockVtjClientService.addPERUSSANOMA3RequestExpectation(testPersonWithVtjChildren)
         MockVtjClientService.addPERUSSANOMA3RequestExpectation(testPersonDependantChild)
         db.transaction {
-            personService.getPersonWithChildren(it, user, testPersonWithVtjChildren.id)
+            personService.getPersonWithChildren(
+                it,
+                user,
+                HelsinkiDateTime.now(),
+                testPersonWithVtjChildren.id,
+            )
         }
         assertEquals(0, MockVtjClientService.getPERUSSANOMA3RequestCount(testPersonWithVtjChildren))
         assertEquals(1, MockVtjClientService.getPERUSSANOMA3RequestCount(testPersonDependantChild))

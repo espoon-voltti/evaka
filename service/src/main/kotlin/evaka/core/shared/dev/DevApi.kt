@@ -846,13 +846,14 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     }
 
     @PostMapping("/persons/{person}/force-full-vtj-refresh")
-    fun forceFullVtjRefresh(db: Database, @PathVariable person: PersonId) {
+    fun forceFullVtjRefresh(db: Database, clock: EvakaClock, @PathVariable person: PersonId) {
+        val now = clock.now()
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val user = AuthenticatedUser.SystemInternalUser
                 personService.getUpToDatePersonFromVtj(tx, user, person)
-                personService.getGuardians(tx, user, person)
-                personService.getPersonWithChildren(tx, user, person)
+                personService.getGuardians(tx, user, now, person)
+                personService.getPersonWithChildren(tx, user, now, person)
             }
         }
     }

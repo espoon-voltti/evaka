@@ -22,6 +22,7 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
@@ -128,7 +129,7 @@ class ChildController(
                     Action.Child.UPDATE_ADDITIONAL_INFO,
                     childId,
                 )
-                it.upsertAdditionalInformation(childId, data)
+                it.upsertAdditionalInformation(childId, data, clock.now())
             }
         }
         Audit.ChildAdditionalInformationUpdate.log(targetId = AuditId(childId))
@@ -151,13 +152,14 @@ fun Database.Read.getAdditionalInformation(childId: ChildId): AdditionalInformat
 fun Database.Transaction.upsertAdditionalInformation(
     childId: ChildId,
     data: AdditionalInformation,
+    now: HelsinkiDateTime,
 ) {
     updatePreferredName(childId, data.preferredName)
     val child = getChild(childId)
     if (child != null) {
-        updateChild(child.copy(additionalInformation = data))
+        updateChild(child.copy(additionalInformation = data), now)
     } else {
-        createChild(Child(id = childId, additionalInformation = data))
+        createChild(Child(id = childId, additionalInformation = data), now)
     }
 }
 

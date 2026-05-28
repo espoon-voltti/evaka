@@ -143,7 +143,8 @@ class PlacementController(
                 )
                 if (tx.getChild(body.childId) == null) {
                     tx.createChild(
-                        Child(id = body.childId, additionalInformation = AdditionalInformation())
+                        Child(id = body.childId, additionalInformation = AdditionalInformation()),
+                        clock.now(),
                     )
                 }
 
