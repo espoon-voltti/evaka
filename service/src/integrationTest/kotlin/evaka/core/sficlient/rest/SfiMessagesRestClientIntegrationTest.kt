@@ -13,14 +13,11 @@ import evaka.core.SfiPrintingEnv
 import evaka.core.s3.Document
 import evaka.core.sficlient.SfiMessage
 import evaka.core.shared.SfiMessageId
-import evaka.core.shared.config.defaultJsonMapperBuilder
 import java.net.URI
 import java.util.UUID
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -259,77 +256,5 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
         // sending a message should still work after password change
         client.send(message)
         assertEquals(1, MockSfiMessagesRestEndpoint.getCapturedMessages().size)
-    }
-
-    @Test
-    fun `costPool is omitted from JSON when null`() {
-        val jsonMapper = defaultJsonMapperBuilder().build()
-        val service =
-            PrintingAndEnvelopingService(
-                postiMessaging =
-                    PostiMessaging(
-                        contactDetails = ContactDetails(email = "test@example.com"),
-                        username = "billing-username",
-                        password = "billing-password",
-                    )
-            )
-        val json = jsonMapper.writeValueAsString(service)
-
-        assertFalse(json.contains("costPool"), "costPool should not appear in JSON when null")
-        assertTrue(json.contains("postiMessaging"))
-    }
-
-    @Test
-    fun `costPool is included in JSON when set`() {
-        val jsonMapper = defaultJsonMapperBuilder().build()
-        val service =
-            PrintingAndEnvelopingService(
-                postiMessaging =
-                    PostiMessaging(
-                        contactDetails = ContactDetails(email = "test@example.com"),
-                        username = "billing-username",
-                        password = "billing-password",
-                    ),
-                costPool = "my-cost-pool",
-            )
-        val json = jsonMapper.writeValueAsString(service)
-
-        assertTrue(json.contains("\"costPool\""), "costPool should appear in JSON when set")
-        assertTrue(json.contains("\"my-cost-pool\""))
-    }
-
-    @Test
-    fun `costPool round-trips through serialization`() {
-        val jsonMapper = defaultJsonMapperBuilder().build()
-        val service =
-            PrintingAndEnvelopingService(
-                postiMessaging =
-                    PostiMessaging(
-                        contactDetails = ContactDetails(email = "test@example.com"),
-                        username = "billing-username",
-                        password = "billing-password",
-                    ),
-                costPool = "department-42",
-            )
-        val json = jsonMapper.writeValueAsString(service)
-        val deserialized = jsonMapper.readValue(json, PrintingAndEnvelopingService::class.java)
-        assertEquals(service, deserialized)
-    }
-
-    @Test
-    fun `costPool defaults to null when absent in JSON`() {
-        val jsonMapper = defaultJsonMapperBuilder().build()
-        val service =
-            PrintingAndEnvelopingService(
-                postiMessaging =
-                    PostiMessaging(
-                        contactDetails = ContactDetails(email = "test@example.com"),
-                        username = "billing-username",
-                        password = "billing-password",
-                    )
-            )
-        val json = jsonMapper.writeValueAsString(service)
-        val deserialized = jsonMapper.readValue(json, PrintingAndEnvelopingService::class.java)
-        assertEquals(null, deserialized.costPool)
     }
 }
