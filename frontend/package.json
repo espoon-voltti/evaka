@@ -26,7 +26,7 @@
     "@react-spring/web": "10.0.3",
     "@sentry/browser": "10.53.1",
     "@sentry/react": "10.53.1",
-    "@tanstack/react-query": "5.100.11",
+    "@tanstack/react-query": "5.100.14",
     "autosize": "6.0.1",
     "axios": "1.16.1",
     "chart.js": "4.5.1",
