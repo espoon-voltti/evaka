@@ -92,9 +92,9 @@ export async function getDraftReasoningPreview(
 
 
 /**
-* Generated from evaka.core.decision.DecisionController.linkIndividualReasoning
+* Generated from evaka.core.decision.DecisionController.linkIndividualReasonings
 */
-export async function linkIndividualReasoning(
+export async function linkIndividualReasonings(
   request: {
     id: DecisionId,
     body: LinkIndividualReasoningBody
@@ -120,23 +120,6 @@ export async function planArchiveDecision(
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/employee/decisions/${request.decisionId}/archive`.toString(),
     method: 'POST'
-  })
-  return json
-}
-
-
-/**
-* Generated from evaka.core.decision.DecisionController.unlinkIndividualReasoning
-*/
-export async function unlinkIndividualReasoning(
-  request: {
-    id: DecisionId,
-    reasoningId: DecisionIndividualReasoningId
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/decisions/${request.id}/individual-reasonings/${request.reasoningId}`.toString(),
-    method: 'DELETE'
   })
   return json
 }

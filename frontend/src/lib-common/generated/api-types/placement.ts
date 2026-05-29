@@ -278,6 +278,14 @@ export type PlacementPlanRejectReason =
   | 'REASON_3'
 
 /**
+* Generated from evaka.core.placement.PlacementPlanUnit
+*/
+export interface PlacementPlanUnit {
+  id: DaycareId
+  name: string
+}
+
+/**
 * Generated from evaka.core.placement.PlacementResponse
 */
 export interface PlacementResponse {

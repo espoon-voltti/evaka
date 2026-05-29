@@ -28,8 +28,9 @@ data class EmployeeFeatures(
     val replacementInvoices: Boolean,
     val openRangesHolidayQuestionnaire: Boolean,
     val outOfOffice: Boolean,
-    val decisionReasonings: Boolean,
+    val decisionReasoningManagement: Boolean,
     val decisionReasoningGenericRemoval: Boolean,
+    val decisionReasoningsUsable: Boolean,
     val allowEnglishChildDocumentsForAllTypes: Boolean,
     val messageSupportEmail: String?,
 )

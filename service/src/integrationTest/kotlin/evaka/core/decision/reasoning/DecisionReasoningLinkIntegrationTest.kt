@@ -28,6 +28,7 @@ import evaka.core.decision.reasoning.DecisionReasoningCollectionType.PRESCHOOL a
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionId
+import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
@@ -109,12 +110,12 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
             insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 4, 1), ready = true)
 
         val resolved = db.read { tx ->
-            tx.resolveApplicableGenericReasoning(DAYCARE, LocalDate.of(2026, 6, 1))
+            resolveApplicableGenericReasoning(tx, DAYCARE, LocalDate.of(2026, 6, 1))
         }
 
-        assertEquals(DAYCARE_COLLECTION, resolved.collectionType)
-        assertEquals(newer, resolved.reasoning?.id)
-        assertNotEquals(older, resolved.reasoning?.id)
+        assertEquals(DAYCARE_COLLECTION, resolved?.collectionType)
+        assertEquals(newer, resolved?.id)
+        assertNotEquals(older, resolved?.id)
     }
 
     @Test
@@ -123,11 +124,11 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
             insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = false)
 
         val resolved = db.read { tx ->
-            tx.resolveApplicableGenericReasoning(DAYCARE, LocalDate.of(2026, 6, 1))
+            resolveApplicableGenericReasoning(tx, DAYCARE, LocalDate.of(2026, 6, 1))
         }
 
-        assertEquals(notReady, resolved.reasoning?.id)
-        assertEquals(false, resolved.reasoning?.ready)
+        assertEquals(notReady, resolved?.id)
+        assertEquals(false, resolved?.ready)
     }
 
     @Test
@@ -137,11 +138,11 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
             insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 4, 1), ready = false)
 
         val resolved = db.read { tx ->
-            tx.resolveApplicableGenericReasoning(DAYCARE, LocalDate.of(2026, 5, 19))
+            resolveApplicableGenericReasoning(tx, DAYCARE, LocalDate.of(2026, 5, 19))
         }
 
-        assertEquals(newerNotReady, resolved.reasoning?.id)
-        assertEquals(false, resolved.reasoning?.ready)
+        assertEquals(newerNotReady, resolved?.id)
+        assertEquals(false, resolved?.ready)
     }
 
     @Test
@@ -151,11 +152,11 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         insertGenericReasoning(PRESCHOOL_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
 
         val resolved = db.read { tx ->
-            tx.resolveApplicableGenericReasoning(PRESCHOOL_DAYCARE, LocalDate.of(2026, 8, 1))
+            resolveApplicableGenericReasoning(tx, PRESCHOOL_DAYCARE, LocalDate.of(2026, 8, 1))
         }
 
-        assertEquals(DAYCARE_COLLECTION, resolved.collectionType)
-        assertEquals(daycareId, resolved.reasoning?.id)
+        assertEquals(DAYCARE_COLLECTION, resolved?.collectionType)
+        assertEquals(daycareId, resolved?.id)
     }
 
     @Test
@@ -165,11 +166,11 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         insertGenericReasoning(PRESCHOOL_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
 
         val resolved = db.read { tx ->
-            tx.resolveApplicableGenericReasoning(PRESCHOOL_CLUB, LocalDate.of(2026, 8, 1))
+            resolveApplicableGenericReasoning(tx, PRESCHOOL_CLUB, LocalDate.of(2026, 8, 1))
         }
 
-        assertEquals(DAYCARE_COLLECTION, resolved.collectionType)
-        assertEquals(daycareId, resolved.reasoning?.id)
+        assertEquals(DAYCARE_COLLECTION, resolved?.collectionType)
+        assertEquals(daycareId, resolved?.id)
     }
 
     @Test
@@ -179,91 +180,71 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         db.transaction { tx -> tx.removeGenericReasoning(removedId, now) }
 
         val resolved = db.read { tx ->
-            tx.resolveApplicableGenericReasoning(DAYCARE, LocalDate.of(2026, 6, 1))
+            resolveApplicableGenericReasoning(tx, DAYCARE, LocalDate.of(2026, 6, 1))
         }
 
-        assertNull(resolved.reasoning)
+        assertNull(resolved)
     }
 
-    @Test
-    fun `insert and read generic reasoning links`() {
-        val (decisionId, _) = insertDraftDecisionDirectly(DAYCARE)
-        val r1 = insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
-        val r2 = insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 3, 1), ready = true)
-
+    private fun insertIndividualReasoning(key: String): DecisionIndividualReasoningId =
         db.transaction { tx ->
-            tx.insertDecisionGenericReasoningLinks(
-                decisionId = decisionId,
-                reasoningIds = listOf(r1, r2),
-                createdAt = now,
-                createdBy = admin.evakaUserId,
-            )
-        }
-
-        val linkedIds = db.read { tx -> tx.getDecisionGenericReasoningIds(decisionId) }
-        assertEquals(setOf(r1, r2), linkedIds.toSet())
-    }
-
-    @Test
-    fun `insert generic reasoning links is a no-op when list is empty`() {
-        val (decisionId, _) = insertDraftDecisionDirectly(DAYCARE)
-
-        db.transaction { tx ->
-            tx.insertDecisionGenericReasoningLinks(
-                decisionId = decisionId,
-                reasoningIds = emptyList(),
-                createdAt = now,
-                createdBy = admin.evakaUserId,
-            )
-        }
-
-        val linkedIds = db.read { tx -> tx.getDecisionGenericReasoningIds(decisionId) }
-        assertEquals(emptyList(), linkedIds)
-    }
-
-    @Test
-    fun `insert and remove individual reasoning link`() {
-        val (decisionId, _) = insertDraftDecisionDirectly(DAYCARE)
-        val individualId = db.transaction { tx ->
             tx.insertIndividualReasoning(
                 DecisionIndividualReasoningRequest(
                     collectionType = DAYCARE_COLLECTION,
-                    titleFi = "title-fi",
-                    titleSv = "title-sv",
-                    textFi = "text-fi",
-                    textSv = "text-sv",
+                    titleFi = "title-fi-$key",
+                    titleSv = "title-sv-$key",
+                    textFi = "text-fi-$key",
+                    textSv = "text-sv-$key",
                 ),
                 now,
             )
         }
 
+    @Test
+    fun `setting individual reasoning selections replaces the previous set`() {
+        val (decisionId, _) = insertDraftDecisionDirectly(DAYCARE)
+        val r1 = insertIndividualReasoning("r1")
+        val r2 = insertIndividualReasoning("r2")
+        val r3 = insertIndividualReasoning("r3")
+
         db.transaction { tx ->
-            tx.insertDecisionIndividualReasoningLink(
+            tx.setDecisionReasoningIndividualSelections(
                 decisionId = decisionId,
-                reasoningId = individualId,
+                reasoningIds = setOf(r1, r2),
                 createdAt = now,
                 createdBy = admin.evakaUserId,
             )
         }
-
         assertEquals(
-            listOf(individualId),
-            db.read { tx -> tx.getDecisionIndividualReasoningIds(decisionId) },
+            setOf(r1, r2),
+            db.read { tx -> tx.getDecisionIndividualReasoningIds(decisionId) }.toSet(),
         )
 
-        val removed = db.transaction { tx ->
-            tx.deleteDecisionIndividualReasoningLink(decisionId, individualId)
+        db.transaction { tx ->
+            tx.setDecisionReasoningIndividualSelections(
+                decisionId = decisionId,
+                reasoningIds = setOf(r2, r3),
+                createdAt = now,
+                createdBy = admin.evakaUserId,
+            )
         }
-        assertEquals(true, removed)
+        assertEquals(
+            setOf(r2, r3),
+            db.read { tx -> tx.getDecisionIndividualReasoningIds(decisionId) }.toSet(),
+        )
+
+        db.transaction { tx ->
+            tx.setDecisionReasoningIndividualSelections(
+                decisionId = decisionId,
+                reasoningIds = emptySet(),
+                createdAt = now,
+                createdBy = admin.evakaUserId,
+            )
+        }
         assertEquals(
             emptyList(),
             db.read { tx -> tx.getDecisionIndividualReasoningIds(decisionId) },
         )
-
-        val removedAgain = db.transaction { tx ->
-            tx.deleteDecisionIndividualReasoningLink(decisionId, individualId)
-        }
-        assertEquals(false, removedAgain)
     }
 
     @Test

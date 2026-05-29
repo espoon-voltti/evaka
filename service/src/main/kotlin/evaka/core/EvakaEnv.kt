@@ -61,6 +61,7 @@ data class EvakaEnv(
     val newBrowserLoginEmailEnabled: Boolean,
     val staffAttendanceDriftMinutes: Duration,
     val decisionReasoningGenericRemovalEnabled: Boolean,
+    val decisionReasoningEnabled: Boolean,
 ) {
     companion object {
         fun fromEnvironment(env: Environment): EvakaEnv {
@@ -120,6 +121,7 @@ data class EvakaEnv(
                     ),
                 decisionReasoningGenericRemovalEnabled =
                     env.lookup("evaka.decision_reasoning.generic_removal_enabled") ?: false,
+                decisionReasoningEnabled = env.lookup("evaka.decision_reasoning.enabled") ?: false,
             )
         }
     }

@@ -5,6 +5,7 @@
 package evaka.core.decision.reasoning
 
 import evaka.core.shared.DecisionGenericReasoningId
+import evaka.core.shared.DecisionId
 import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -144,6 +145,25 @@ fun Database.Read.getIndividualReasonings(
 SELECT id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at
 FROM decision_reasoning_individual
 WHERE collection_type = ${bind(collectionType)}
+ORDER BY created_at DESC
+"""
+            )
+        }
+        .toList<DecisionIndividualReasoning>()
+
+fun Database.Read.getIndividualReasoningSelectionsForDecision(
+    decisionId: DecisionId
+): List<DecisionIndividualReasoning> =
+    createQuery {
+            sql(
+                """
+SELECT id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at
+FROM decision_reasoning_individual
+WHERE EXISTS (
+    SELECT 1
+    FROM decision_reasoning_individual_selection link
+    WHERE link.decision_id = ${bind(decisionId)} AND link.reasoning_id = decision_reasoning_individual.id
+)
 ORDER BY created_at DESC
 """
             )

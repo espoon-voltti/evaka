@@ -126,7 +126,8 @@ export interface EmployeeFeatures {
   createPlacements: boolean
   createUnits: boolean
   decisionReasoningGenericRemoval: boolean
-  decisionReasonings: boolean
+  decisionReasoningManagement: boolean
+  decisionReasoningsUsable: boolean
   documentTemplates: boolean
   employees: boolean
   finance: boolean
