@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <title>6. Ei-funktionaaliset vaatimukset</title>
+  <style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm;
+  }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    color: #1f1f1f;
+    background: #ffffff;
+    font-size: 10pt;
+    margin: 0;
+    padding: 0;
+  }
+  .doc-meta {
+    color: #6e6e6e;
+    font-size: 9.5pt;
+    margin-bottom: 14pt;
+  }
+  h1 {
+    color: #2c5fa1;
+    border-bottom: 2.5pt solid #2c5fa1;
+    padding-bottom: 6pt;
+    font-size: 26pt;
+    margin: 0 0 16pt 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    page-break-after: avoid;
+  }
+  h2 {
+    color: #2c5fa1;
+    font-size: 17pt;
+    margin-top: 20pt;
+    margin-bottom: 8pt;
+    border-bottom: 1pt solid #2c5fa1;
+    padding-bottom: 3pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  h3 {
+    color: #1f1f1f;
+    font-size: 13pt;
+    margin-top: 16pt;
+    margin-bottom: 6pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  h4 {
+    color: #1f1f1f;
+    font-size: 11pt;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  p { margin: 6pt 0; }
+  code {
+    background: #f1ebe3;
+    color: #b8421a;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 8.8pt;
+  }
+  pre {
+    background: #f5f5f5;
+    padding: 9pt 11pt;
+    border-radius: 3pt;
+    overflow-x: auto;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    page-break-inside: avoid;
+    margin: 8pt 0;
+  }
+  pre code {
+    background: transparent;
+    color: #1f1f1f;
+    padding: 0;
+    font-size: inherit;
+  }
+  table {
+    border-collapse: collapse;
+    margin: 10pt 0;
+    width: 100%;
+    page-break-inside: avoid;
+    font-size: 9pt;
+  }
+  th, td {
+    border: 0.5pt solid #b8b8b8;
+    padding: 5pt 7pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #ececec;
+    color: #1f1f1f;
+    font-weight: 700;
+  }
+  blockquote {
+    background: #e8eef5;
+    border-left: 3pt solid #2c5fa1;
+    padding: 8pt 14pt;
+    margin: 10pt 0;
+    color: #2a2a2a;
+    font-style: italic;
+    page-break-inside: avoid;
+  }
+  blockquote p { margin: 4pt 0; }
+  blockquote strong { color: #2c5fa1; font-style: normal; }
+  blockquote em { font-style: italic; }
+  .mermaid {
+    text-align: center;
+    margin: 16pt 0;
+    page-break-inside: avoid;
+  }
+  .mermaid svg { max-width: 100%; height: auto; }
+  ul, ol { margin: 6pt 0; padding-left: 22pt; }
+  li { margin: 3pt 0; }
+  hr.pagebreak { page-break-before: always; visibility: hidden; height: 0; border: none; margin: 0; }
+  hr:not(.pagebreak) {
+    border: none;
+    border-top: 0.5pt solid #b8b8b8;
+    margin: 14pt 0;
+  }
+  a { color: #2c5fa1; text-decoration: none; }
+  strong { color: #1f1f1f; font-weight: 700; }
+  em { font-style: italic; }
+</style>
+</head>
+<body>
+<div class="doc-meta">eNivel-määrittely · Reaktor · 2026-05-28</div>
+<div id="content"></div>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  const md = "# 6. Ei-funktionaaliset vaatimukset\n\nTässä luvussa määritellään ne laatuvaatimukset, joita eNivelen ja siihen liittyvien eVaka-muutosten tulee täyttää: tietoturva, tietosuoja, suorituskyky, saatavuus, ylläpidettävyys ja käytettävyys.\n\n## 6.1 Tietosuoja\n\n### 6.1.1 Lainsäädännöllinen perusta\n\neNivel käsittelee arkaluonteisia henkilötietoja (lapsen tukitiedot, hetu/oppijanumero, asiakirjat). Käsittely perustuu seuraaviin lainsäädännöllisiin perusteisiin:\n\n- **GDPR (EU 2016/679):** käsittelyperusta artikla 6.1.e (yleisen edun mukainen tehtävä) ja erityisten henkilötietojen osalta artikla 9.2.g (tärkeä yleinen etu)\n- **Tietosuojalaki (1050/2018)**\n- **Perusopetuslaki:** lapsen oppimisen tukemisen tiedonsiirtoperusta\n- **Varhaiskasvatuslaki:** esiopetuksen ja perusopetuksen välisen tiedonsiirron perusta\n- **Oppimisen ja koulunkäynnin tuen uudistus (1.8.2025 voimaan):** lakimuutos tukitietojen kirjaamiseen ja siirtoihin\n\nAsiakirjojen siirto perustuu joko **huoltajan suostumukseen** (UC-2) tai **viranomaisen tehtävään** lain perusteella (UC-3).\n\n### 6.1.2 Suostumusmekanismi\n\n- Huoltajan suostumus on **kahdesta erillisestä toimesta** koostuva: sisällön hyväksyntä ja siirron hyväksyntä (UR-1, luku 4)\n- Suostumus on lokitettu eVakassa: kuka huoltaja, milloin, mikä asiakirja, mistä laitteesta (Suomi.fi-tunnistus → kirjaus eVakan audit-lokiin)\n- Suostumusta ei voi perua hyväksynnän jälkeen — tämä kerrotaan huoltajalle ennen hyväksyntää selkeällä UI-tekstillä\n\n### 6.1.3 Henkilötietojen elinkaari\n\n| Vaihe | Sijainti | Säilytysaika |\n|---|---|---|\n| Esiopetuksessa kerätty | eVaka | Lain sallima aika |\n| Siirretty eNiveleen | eNivel-tietokanta | Ympäristöllisesti määritelty (esim. seuraavan oppilaaksioton päättymiseen + 6 kk) |\n| Luettu perusopetukseen | Perusopetuksen järjestelmä (DigiOne / Primus) | Kohdejärjestelmän oma säilytyssääntö |\n| Pysyvä tieto | Koski (vain tukipäätökset ja tietyt rekisterointit) | Pysyvä |\n\n### 6.1.4 Rekisterit ja vastuut\n\neNivelellä on oma henkilörekisteri. **Rekisterinpitäjä** on kunnallinen tilaaja (Turku ja Oulu omillaan; muut kunnat erikseen jos otetaan käyttöön). **Käsittelijä** on eNivelen tekninen ylläpitäjä (todennäköisesti SaaS-toimittaja tai kunnan IT-tuki).\n\neVakan ja eNivelen välinen tiedonsiirto edellyttää **käsittelysopimusta** (DPA) kuntien välillä, jos eNivel toimii useamman kunnan yhteisenä palveluna.\n\n### 6.1.5 Tietosuojaseloste\n\nJokaisesta eNivel-instanssista on oltava julkinen tietosuojaseloste, joka kuvaa rekisterin sisällön, käsittelyperustan ja oikeudet. Tietosuojaseloste linkitetään eNivelen alaviitteeseen (Figma Frame 59: *\"Tietosuojaselosteet\"*).\n\n## 6.2 Tietoturva\n\n### 6.2.1 Liikenteen suojaaminen\n\n| Yhteys | Suojaus |\n|---|---|\n| eVaka → eNivel (Push API) | mTLS tai HTTPS + OAuth2 client credentials, TLS 1.3 |\n| eNivel UI ↔ eNivel-backend | HTTPS, TLS 1.3, HSTS |\n| Käyttäjä → eNivel UI | HTTPS, TLS 1.3, HSTS, secure cookies |\n| eNivel ↔ MPASSid (opettajat) | OIDC, TLS 1.3 |\n| eNivel ↔ kunnan Entra ID (rehtorit, pääkäyttäjät) | OIDC, TLS 1.3 |\n| eNivel ↔ edu-AD (opettajat — ei MVP) | OIDC, TLS 1.3 |\n\n### 6.2.2 Pääsynhallinta\n\n- Sisäänkirjautuminen MPASSidin (opettajat) tai kunnan Entra ID:n (rehtorit, pääkäyttäjät) kautta. edu.turku.fi/edu.ouka.fi AD on opettajien vaihtoehtona, mutta ei MVP:ssä.\n- Roolipohjainen pääsynhallinta (RBAC): pääkäyttäjä (mahdollisesti koulurajauksella), rehtori, opettaja, erityisopettaja (luku 5.4.1). Aluerehtoreille / aluepääkäyttäjille ei ole omaa roolia — pääkäyttäjälle annetaan koulurajaus.\n- Näkyvyys oppilaisiin rajataan koulukohtaisesti / aluekohtaisesti (= rajauksella) / luokkakohtaisesti\n- Pääkäyttäjä luvittaa rehtorit ja muut pääkäyttäjät; rehtori luvittaa opettajat omille luokilleen\n- Sessio aikakatkaistaan automaattisesti, enint. 30 min toimettomuus\n\n### 6.2.3 Varmuuskopiointi ja palautuminen\n\n- Tietokannan varmuuskopiointi vähintään päivittäin\n- Replikointi maantieteellisesti eri sijainnissa (kuntakohtainen pilvi-/datakeskuspolitiikka)\n- RPO (Recovery Point Objective) ≤ 24h, RTO (Recovery Time Objective) ≤ 4h\n- Varmuuskopiotkin tuhotaan säilytysajan päätyttyä\n\n### 6.2.4 Salaus levossa\n\n- Tietokanta: salattu levyllä (Postgres-pohjaisesti tai pilvitarjoajan natiiviosallisuus, esim. AWS RDS/Aurora encryption at rest)\n- PDF-blob: salattu levyllä\n- Salausavainten hallinta KMS-tyyppisellä palvelulla (esim. AWS KMS, HashiCorp Vault)\n\n### 6.2.5 Tietoturvaloki ja monitorointi\n\n- Kaikki autentikointi-/auktorisointitapahtumat lokitetaan\n- Anomalioista (esim. yhden käyttäjän epätavallinen hakumäärä) varoittaa monitorointi\n- Tietoturvaloki säilytetään vähemmän kuin oppilastiedot, mutta yhdenmukaisesti lain vaatimusten kanssa\n\n## 6.3 Audit-lokitus\n\n### 6.3.1 Lokitettavat tapahtumat\n\n| Tapahtuma | Loki sisältää |\n|---|---|\n| Käyttäjän tunnistautuminen | käyttäjä, aikaleima, IP, onnistunut/epäonnistunut |\n| Lapsen tietojen avaaminen | käyttäjä, oppija_oid, aikaleima, toiminta (`READ_DETAILS`, `READ_DOCUMENT`, `READ_PDF`) |\n| Asiakirjan vastaanotto | uuid, eVaka-instanssi, aikaleima, koko, tila |\n| Asiakirjan poisto (UC-7) | uuid, aikaleima, syy (`RETENTION_EXPIRED`) |\n| CSV-tuonti (UC-6) | käyttäjä, tiedostonimi, riveiden lkm, hyväksytyt/hylätyt |\n| Käyttäjähallinnan muutos | hallinnoija, kohdekäyttäjä, muutos, aikaleima |\n\n### 6.3.2 Lokin säilytys ja saatavuus\n\n- Audit-loki säilytetään vähintään **kaksi vuotta** lain vaatimusten mukaisesti\n- Pääkäyttäjä voi tarkastella lokia eNivelen hallintanäkymässä; tarvittaessa CSV-vienti\n- Audit-lokia ei voi muokata (append-only)\n\n## 6.4 Suorituskyky\n\n### 6.4.1 Kapasiteetti\n\nMirosta ja PDF:istä saadut volyymitiedot:\n- **Aloittavia oppilaita / lukuvuosi:** 1500–2000 (yksi kunta, esim. Turku)\n- **Tukea saavia / vuosi:** satoja\n- **Käsittelijöitä per kunta:** 2–3 (Turku); muutamia rehtoreita ja erityisopettajia per koulu\n\n| Kuormitustyyppi | Arvioitu volyymi | Vaatimus |\n|---|---|---|\n| Asiakirjojen siirto eVakasta | ≤ 200 / päivä huippuviikolla | Siirtotehtävä toteuttaa tunnissa |\n| Yhtaikaisia eNivel UI -käyttäjiä | < 50 normaalisti, < 200 piikkihetkellä | UI vasteaika ≤ 2s navigaatiolle, ≤ 5s yhden lapsen tarkalle näkymälle |\n| Lasten tietokantakoko | < 100 000 oppilasta per kunta + 5 vuotta historiaa | Suodatin- ja hakuvasteet ≤ 1s |\n\n### 6.4.2 Skaalautuvuus\n\n- eNivel voi olla joko **kuntakohtainen** instanssi tai **monikuntaratkaisu** (multi-tenant)\n- MVP:ssä yksi instanssi per kunta on yksinkertaisempi; multi-tenant tutkitaan vaiheen 2 jälkeen\n- Tietokanta skaalautuu vertikaalisesti (RDS/Aurora) MVP-volyymeille\n\n## 6.5 Saatavuus\n\n| Ympäristö | Saatavuusvaatimus |\n|---|---|\n| Tuotanto, virka-aika 7–18 ma–pe | 99.5 % |\n| Tuotanto, oppilaaksiottohuiput (helmi–touko) | 99.9 % |\n| Tuotanto, muu aika | 99 % |\n| Staging | \"best effort\" |\n\neNivel ei ole reaaliaikajärjestelmä — eVakan siirtotehtävä retryaa virhetilanteissa, joten eNivelen lyhyet katkokset eivät aiheuta datan menetystä.\n\n## 6.6 Ylläpidettävyys\n\n### 6.6.1 Versionhallinta\n\n- eNivelen lähdekoodi versionhallinnassa (Git, esim. GitHub)\n- API-versiointi polkurakenteessa (`/api/v1/...`); vanhojen versioiden tuki vähintään 12 kk uuden version julkaisun jälkeen\n- Tietokantamigraatiot versionhallinnassa, ajetaan automaattisesti deploy-kutsujen yhteydessä\n\n### 6.6.2 Konfiguroitavuus\n\n| Konfiguraatiopiste | Esimerkki | Tapa |\n|---|---|---|\n| Säilytysaika | \"tiedot poistuvat 31.10.2027\" | Ympäristömuuttuja eNivelessä |\n| MPASSid OIDC -discovery-URL + client-ID | `https://mpass.fi/...` | Ympäristömuuttuja |\n| Kunnan Entra ID tenant + client | tenant-ID, client-ID, secret | Ympäristömuuttuja + salaisuuden hallinta |\n| (Tuleva) edu-AD OIDC -discovery-URL | `https://edu.turku.fi/...` tms. | Ympäristömuuttuja, ei MVP |\n| Logo, värit | Kuntakohtaiset brändäykset | Ympäristömuuttuja tai konfiguraatiotiedosto |\n| eVaka-asiakkaan TLS-sertifikaatti | mTLS:n osa | Salatun salaisuuden hallinnan kautta |\n\n### 6.6.3 Havaittavuus (observability)\n\n- Sovellusloki (rakenteinen JSON, esim. Loki / CloudWatch / vastaava)\n- Mittaristotiedot (latenssit, virheprosentit, tapahtumamäärät)\n- Hälytykset: epäonnistunut autentikointi, kasvavat eVaka-siirron virheet, säilytyspoiston häiriöt\n- Status-sivu pääkäyttäjille\n\n## 6.7 Käytettävyys\n\n### 6.7.1 Saavutettavuus\n\n- WCAG 2.1 AA -tasoinen saavutettavuus\n- Näppäimistökäyttö, ruudunlukijatuki\n- Selvät tekstit, ei kirjainpienennyksiä lukukelvottomuuteen asti\n\n### 6.7.2 Kielet\n\n- Suomi (pakollinen)\n- Ruotsi (pakollinen kuntien lain mukaan)\n- Englanti (suositus, vrt. eVakan `UiLanguage.EN`-tuki)\n\n### 6.7.3 Selaintuki\n\n- Modernit Chromium-pohjaiset selaimet (Chrome, Edge), Firefox, Safari — viimeisten 2 vuoden versiot\n- Mobiililaitteet (responsiivinen) — toissijainen prioriteetti, mutta kohtuullinen kokemus pieniltä näytöiltä\n\n### 6.7.4 Ohjeet ja tuki\n\n- Käyttöohjeet eNivelen pääkäyttäjille (käyttäjähallinta, CSV-tuonti)\n- Käyttöohjeet eVakan pääkäyttäjille (pohjien `transferable_to_basic_education`-flagi)\n- Yhteyspiste IT-tuelle (palautelinkki Figma Frame 59:n alaviitteessä: *\"Lähetä palautetta\"*)\n\n## 6.8 Kestävyys\n\n- Ratkaisun on tuettava kehittyviä lähde- ja kohdejärjestelmiä (Sami Koposen luonnos)\n- API-version vaihdokset taaksepäin yhteensopivasti, kunnes kaikki integraatiot on päivitetty\n- Tietomallin laajennukset eivät rikkoa olemassaolevia integraatioita (lisätään valinnaisia kenttiä, ei muuteta pakollisia)\n\n## 6.9 Yhteenveto: kriittiset ei-funktionaaliset vaatimukset\n\n| Vaatimus | Pakollisuus |\n|---|---|\n| GDPR-lainmukainen henkilötietojen käsittely | Pakollinen |\n| Audit-loki kaikille tietojen avaamisille | Pakollinen |\n| eVakan idempotentti PUT-rajapinta | Pakollinen |\n| Säilytysajan automaattinen pakottaminen | Pakollinen |\n| WCAG 2.1 AA -saavutettavuus | Pakollinen |\n| Suomi + Ruotsi -kielitoiset käyttöliittymät | Pakollinen |\n| 99.5 % saatavuus virka-aikaan | Pakollinen |\n| Multi-tenant kapasiteetti | Toissijainen (vaiheen 2 jälkeen) |\n| Webhookit kohdejärjestelmiin | Toissijainen |\n";
+  const renderer = new marked.Renderer();
+  const origCode = renderer.code.bind(renderer);
+  renderer.code = function(code, lang) {
+    if (lang === 'mermaid') {
+      return '<div class="mermaid">' + code + '</div>';
+    }
+    return origCode(code, lang);
+  };
+  const expanded = md.replace(/<!-- PAGEBREAK -->/g, '\n\n<hr class="pagebreak" />\n\n');
+  marked.setOptions({ gfm: true, breaks: false });
+  document.getElementById('content').innerHTML = marked.parse(expanded, { renderer });
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'default',
+    securityLevel: 'loose',
+  });
+  mermaid.run({ querySelector: '.mermaid' }).then(() => {
+    window.__renderingDone = true;
+  }).catch(e => {
+    console.error('mermaid error:', e);
+    window.__renderingDone = true;
+  });
+</script>
+</body>
+</html>

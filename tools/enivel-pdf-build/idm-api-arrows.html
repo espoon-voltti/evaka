@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<title>Picture 2 annotated</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #f6f4ee;
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    color: #1f1f1f;
+  }
+  .canvas {
+    position: relative;
+    width: 1320px;
+    height: 320px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .img {
+    position: absolute;
+    left: 20px;
+    top: 40px;
+    width: 792px;
+    height: 240px;
+    border: 1px solid #ccc;
+    background: white;
+  }
+  .svg {
+    position: absolute;
+    left: 0; top: 0;
+    width: 1320px;
+    height: 320px;
+    pointer-events: none;
+  }
+  .label {
+    position: absolute;
+    width: 460px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.35;
+    box-shadow: 3px 3px 0 0 rgba(0,0,0,0.15);
+  }
+  .label .num {
+    display: inline-block;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    color: white;
+    font-weight: 700;
+    text-align: center;
+    line-height: 22px;
+    font-size: 13px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .label .title {
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .label .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 4px;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    vertical-align: middle;
+  }
+  .label .sub {
+    font-size: 12.5px;
+    color: #5d5d5d;
+    margin-top: 4px;
+  }
+
+  /* AD-integraatio (kohde 1) */
+  .label-1 {
+    top: 220px;
+    left: 840px;
+    background: #ffe2db;
+    border: 2px solid #e6553f;
+  }
+  .label-1 .num { background: #e6553f; }
+  .label-1 .tag { background: #e6553f; color: white; }
+
+  /* Tietosisällön Excel (kohde 2) */
+  .label-2 {
+    top: 140px;
+    left: 840px;
+    background: #ffe2db;
+    border: 2px solid #e6553f;
+  }
+  .label-2 .num { background: #e6553f; }
+  .label-2 .tag { background: #e6553f; color: white; }
+
+  /* IdM-käyttötapaukset (kohde 3) */
+  .label-3 {
+    top: 60px;
+    left: 840px;
+    background: #fff4d6;
+    border: 2px solid #d97e00;
+  }
+  .label-3 .num { background: #d97e00; }
+  .label-3 .tag { background: #d97e00; color: white; }
+
+  header {
+    position: absolute;
+    top: 8px; left: 20px;
+    font-size: 14px;
+    color: #5d5d5d;
+  }
+  header strong { color: #1f1f1f; font-size: 15px; }
+</style>
+</head>
+<body>
+
+<div class="canvas">
+  <header><strong>IdM-API · Liittyvät dokumentaatiot</strong> — kolme pyydettävää lisätietoa</header>
+
+  <img class="img" src="file:///Volumes/Evaka/enivel/IdM-API/Picture 2.png" />
+
+  <svg class="svg" viewBox="0 0 1320 320">
+    <defs>
+      <marker id="arrRed" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#e6553f"/>
+      </marker>
+      <marker id="arrOrange" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#d97e00"/>
+      </marker>
+    </defs>
+
+    <!-- AD-integraatio (rivi 5 kuvassa, y ≈ 40 + 115 = 155) -->
+    <path d="M 840 240 Q 815 200 795 158"
+          stroke="#e6553f" stroke-width="3.5" fill="none" marker-end="url(#arrRed)"/>
+
+    <!-- Tietosisällön Excel (rivi 4 kuvassa, y ≈ 40 + 95 = 135) -->
+    <path d="M 840 160 Q 800 145 720 138"
+          stroke="#e6553f" stroke-width="3.5" fill="none" marker-end="url(#arrRed)"/>
+
+    <!-- IdM-käyttötapaukset (rivi 1a kuvassa, y ≈ 40 + 48 = 88) -->
+    <path d="M 840 82 Q 600 78 230 90"
+          stroke="#d97e00" stroke-width="3.5" fill="none" marker-end="url(#arrOrange)"/>
+  </svg>
+
+  <div class="label label-3">
+    <div><span class="num">3</span><span class="title">IdM-integraatio — käyttötapaukset</span><span class="tag">nice-to-have</span></div>
+    <div class="sub">Vahvistaa, ettei eNivelin käyttötapaus ole jo katettu DigiOnen omassa mallissa</div>
+  </div>
+
+  <div class="label label-2">
+    <div><span class="num">2</span><span class="title">Tietosisällön Excel</span><span class="tag">must-have</span></div>
+    <div class="sub">eVaka → DigiOne -kenttäluettelo; <code>&lt;employee&gt;</code>-puolen varatut kentät</div>
+  </div>
+
+  <div class="label label-1">
+    <div><span class="num">1</span><span class="title">AD-integraatio</span><span class="tag">must-have</span></div>
+    <div class="sub">Todentaminen, federointi Entra ID:n kanssa, claims:it (vaikutus slidien 6 luvitusmaisemaan)</div>
+  </div>
+
+</div>
+
+</body>
+</html>

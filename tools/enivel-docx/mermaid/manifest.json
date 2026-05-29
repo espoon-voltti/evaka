@@ -1,0 +1,31 @@
+{
+  "02-jarjestelmaarkitehtuuri": [
+    {
+      "index": 0,
+      "path": "/tmp/enivel-docx/mermaid/02-jarjestelmaarkitehtuuri-0-0a279f74e9.png",
+      "hash": "0a279f74e9"
+    },
+    {
+      "index": 1,
+      "path": "/tmp/enivel-docx/mermaid/02-jarjestelmaarkitehtuuri-1-b538ea657d.png",
+      "hash": "b538ea657d"
+    },
+    {
+      "index": 2,
+      "path": "/tmp/enivel-docx/mermaid/02-jarjestelmaarkitehtuuri-2-fc37bd2200.png",
+      "hash": "fc37bd2200"
+    }
+  ],
+  "05-integraatiovaatimukset": [
+    {
+      "index": 0,
+      "path": "/tmp/enivel-docx/mermaid/05-integraatiovaatimukset-0-0008f3a409.png",
+      "hash": "0008f3a409"
+    },
+    {
+      "index": 1,
+      "path": "/tmp/enivel-docx/mermaid/05-integraatiovaatimukset-1-48942fd88b.png",
+      "hash": "48942fd88b"
+    }
+  ]
+}

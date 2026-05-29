@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <title>4. Käyttötapaukset ja vaatimukset</title>
+  <style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm;
+  }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    color: #1f1f1f;
+    background: #ffffff;
+    font-size: 10pt;
+    margin: 0;
+    padding: 0;
+  }
+  .doc-meta {
+    color: #6e6e6e;
+    font-size: 9.5pt;
+    margin-bottom: 14pt;
+  }
+  h1 {
+    color: #2c5fa1;
+    border-bottom: 2.5pt solid #2c5fa1;
+    padding-bottom: 6pt;
+    font-size: 26pt;
+    margin: 0 0 16pt 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    page-break-after: avoid;
+  }
+  h2 {
+    color: #2c5fa1;
+    font-size: 17pt;
+    margin-top: 20pt;
+    margin-bottom: 8pt;
+    border-bottom: 1pt solid #2c5fa1;
+    padding-bottom: 3pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  h3 {
+    color: #1f1f1f;
+    font-size: 13pt;
+    margin-top: 16pt;
+    margin-bottom: 6pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  h4 {
+    color: #1f1f1f;
+    font-size: 11pt;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  p { margin: 6pt 0; }
+  code {
+    background: #f1ebe3;
+    color: #b8421a;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 8.8pt;
+  }
+  pre {
+    background: #f5f5f5;
+    padding: 9pt 11pt;
+    border-radius: 3pt;
+    overflow-x: auto;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    page-break-inside: avoid;
+    margin: 8pt 0;
+  }
+  pre code {
+    background: transparent;
+    color: #1f1f1f;
+    padding: 0;
+    font-size: inherit;
+  }
+  table {
+    border-collapse: collapse;
+    margin: 10pt 0;
+    width: 100%;
+    page-break-inside: avoid;
+    font-size: 9pt;
+  }
+  th, td {
+    border: 0.5pt solid #b8b8b8;
+    padding: 5pt 7pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #ececec;
+    color: #1f1f1f;
+    font-weight: 700;
+  }
+  blockquote {
+    background: #e8eef5;
+    border-left: 3pt solid #2c5fa1;
+    padding: 8pt 14pt;
+    margin: 10pt 0;
+    color: #2a2a2a;
+    font-style: italic;
+    page-break-inside: avoid;
+  }
+  blockquote p { margin: 4pt 0; }
+  blockquote strong { color: #2c5fa1; font-style: normal; }
+  blockquote em { font-style: italic; }
+  .mermaid {
+    text-align: center;
+    margin: 16pt 0;
+    page-break-inside: avoid;
+  }
+  .mermaid svg { max-width: 100%; height: auto; }
+  ul, ol { margin: 6pt 0; padding-left: 22pt; }
+  li { margin: 3pt 0; }
+  hr.pagebreak { page-break-before: always; visibility: hidden; height: 0; border: none; margin: 0; }
+  hr:not(.pagebreak) {
+    border: none;
+    border-top: 0.5pt solid #b8b8b8;
+    margin: 14pt 0;
+  }
+  a { color: #2c5fa1; text-decoration: none; }
+  strong { color: #1f1f1f; font-weight: 700; }
+  em { font-style: italic; }
+</style>
+</head>
+<body>
+<div class="doc-meta">eNivel-määrittely · Reaktor · 2026-05-28</div>
+<div id="content"></div>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  const md = "# 4. Käyttötapaukset ja vaatimukset\n\nTässä luvussa kuvataan eNivel-järjestelmän keskeiset käyttötapaukset osallistujien (eVaka-pääkäyttäjä, esiopetuksen henkilökunta, huoltaja, perusopetuksen henkilökunta, taustaprosessit) näkökulmista. Käyttötapaukset on jäsennelty luokkiin: pohjien ylläpito, asiakirjan elinkaari, tiedon haku eNivelessä ja tausta-automaatio.\n\n## 4.1 Toimijat (käyttäjäroolit)\n\n| Toimija | Lyhyt kuvaus | Järjestelmäpääsy |\n|---|---|---|\n| **eVaka-pääkäyttäjä** | Kunnan tietohallinto / pääkäyttäjä, joka ylläpitää eVakan asiakirjapohjia | eVaka admin-UI |\n| **Esiopetuksen henkilökunta** | Lastentarhanopettaja, varhaiskasvatuksen erityisopettaja, päiväkodinjohtaja, erityispalvelupäällikkö (eVaka-rooleilla `STAFF`, `SPECIAL_EDUCATION_TEACHER`, `UNIT_SUPERVISOR`, `ADMIN`) | eVaka employee-UI |\n| **Huoltaja** | Lapsen huoltaja | eVaka citizen-UI (Suomi.fi-tunnistautuminen) |\n| **Perusopetuksen henkilökunta** | Pääkäyttäjä (mahdollisesti koulurajauksella), rehtori, opettaja / erityisopettaja. *Aluerehtori / aluepääkäyttäjä toimii pääkäyttäjänä koulurajauksella — ei omaa roolia MVP:ssä.* | eNivel-UI — opettajat tunnistautuvat MPASSidillä, rehtorit ja pääkäyttäjät kunnan Entra ID:llä; luvitus eNivelen sisäinen (ks. luku 5) |\n| **eVaka-siirtotehtävä** | Background job eVakassa, joka poimii valmiit asiakirjat ja kutsuu eNivelen API:a | Sisäinen automaatio |\n| **eNivel-siivoustehtävä** | Background job eNivelessä, joka poistaa säilytysajan ylittäneet asiakirjat | Sisäinen automaatio |\n\n## 4.2 Yhteenveto käyttötapauksista\n\n| ID | Käyttötapaus | Pääasiallinen toimija |\n|---|---|---|\n| UC-1 | Asiakirjapohjan luominen ja merkitseminen siirrettäväksi | eVaka-pääkäyttäjä |\n| UC-2 | Asiakirjan siirto huoltajan hyväksynnällä | Esiopetuksen henkilökunta + huoltaja + siirtotehtävä |\n| UC-3 | Asiakirjan siirto henkilökunnan päätöksellä | Esiopetuksen henkilökunta + siirtotehtävä |\n| UC-4 | Tukipäätösten yhteenvedon siirto eNiveleen | Siirtotehtävä |\n| UC-5 | Oppilaan tietojen tarkastelu eNivelessä | Perusopetuksen henkilökunta |\n| UC-6 | Koulusijoituksen tuonti eNiveleen (CSV) | Pääkäyttäjä (perusopetus) |\n| UC-7 | Asiakirjan poisto säilytysajan päätyttyä | Siivoustehtävä |\n| UC-8 | Rehtorin luvitus kouluun (tai kouluihin) | Pääkäyttäjä |\n| UC-9 | Opettajan luvitus luokkaan (tai luokkiin) | Rehtori |\n| UC-10 | Luvittamattomien opettajien listan tarkastelu rehtorin näkymässä | Rehtori |\n\n## 4.3 Käyttötapaukset\n\n### UC-1: Asiakirjapohjan luominen ja merkitseminen siirrettäväksi\n\n**Toimija:** eVaka-pääkäyttäjä\n\n**Esiehdot:**\n- Käyttäjällä on `ADMIN`-rooli eVakassa\n- Pohja luodaan ensin staging-ympäristössä; tuotantoon vienti tapahtuu pohjan import-export-toiminnolla\n\n**Pääpolku:**\n1. Pääkäyttäjä avaa eVakan asiakirjapohjien hallintanäkymän\n2. Luo uuden asiakirjapohjan tai muokkaa olemassaolevaa\n3. Valitsee pohjalle `ChildDocumentType`:n (esim. `CITIZEN_BASIC` huoltajan polulla, `OTHER` henkilökunnan polulla)\n4. Asettaa muut pohjan ominaisuudet: nimi, sijoitustyypit, kysymykset, kelpoisuusaikaväli jne.\n5. **Asettaa uuden `transferable_to_basic_education`-flagin arvoon `true`** jos pohjasta luodut asiakirjat halutaan siirtää eNiveleen\n6. Tallentaa pohjan staging-ympäristössä; suorittaa testit (luonti, hyväksyntä, siirto eNivelen staging-instanssiin)\n7. Kun pohja on validoitu, käyttää eVakan **import-export-toimintoa** viedäkseen pohjan tuotantoon — flagin arvo siirtyy mukana\n\n**Vaihtoehtoiset polut:**\n- *1a* — Pohja on pedagoginen (`PEDAGOGICAL_REPORT`, `VASU`, `LEOPS`, jne.): UI estää `transferable_to_basic_education = true` -valinnan (ks. luku 7 toteutusehdotus)\n\n**Lopputila:**\n- Pohja näkyy eVakan tuotannossa, ja siitä luodut ilmentymät on mahdollista siirtää eNiveleen\n- **Ilman flagia siirtotehtävä ei koskaan poimi pohjan ilmentymiä siirtoon** — tämä on keskeinen turvamekanismi\n\n---\n\n### UC-2: Asiakirjan siirto huoltajan hyväksynnällä\n\n**Toimija:** Esiopetuksen henkilökunta (luonti) + huoltaja (hyväksyntä) + siirtotehtävä (siirto)\n\n**Esiehdot:**\n- Lapsi on aktiivisessa esiopetussijoituksessa\n- Pohja `transferable_to_basic_education = true` ja `ChildDocumentType = CITIZEN_BASIC`\n- Lapsella on rekisteröity huoltaja eVakassa\n\n**Pääpolku:**\n\n1. **Esiopetuksen henkilökunta luo ilmentymän:** valitsee pohjan, kytkee lapseen, täyttää kentät → tila `DRAFT`\n2. **Henkilökunta lähettää huoltajalle:** julkaisee asiakirjan huoltajan tarkasteluun → tila `CITIZEN_DRAFT`\n3. **Huoltaja avaa asiakirjan eVakan citizen-UI:ssa** (Suomi.fi-tunnistus)\n4. **Huoltaja tarkistaa sisällön ja tekee kaksi hyväksyntää:**\n   - ✅ \"Hyväksyn sisällön\"\n   - ✅ \"Hyväksyn tietojen siirron perusopetukseen\"\n5. **Tila siirtyy `COMPLETED`-tilaan** ja sisältö lukittuu — tämän jälkeen sisältöä ei voi muokata; muutostarpeissa luodaan uusi ilmentymä\n6. **eVaka-siirtotehtävä poimii** seuraavalla ajollaan kaikki `COMPLETED`-tilaiset ilmentymät, joiden pohja on `transferable_to_basic_education = true` ja jotka eivät vielä ole tilassa `TRANSFERRED`\n7. **Siirtotehtävä lähettää asiakirjan eNiveleen** REST-rajapinnalla `PUT /asiakirjat/{uuid}` — UUID = ilmentymän eVakan UUID, idempotentti\n8. **eNivel vastaanottaa, tallentaa ja vastaa onnistumisesta**\n9. **eVaka merkitsee siirretyksi** ja päivittää sisäisen tilan `TRANSFERRED`\n\n**Vaihtoehtoiset polut:**\n- *4a — Huoltaja ei hyväksy:* tila pysyy `CITIZEN_DRAFT`-tilassa eikä siirry eteenpäin. Henkilökunta voi ottaa käyttöön henkilökunnan polun (UC-3) jos pitää tietojen siirtoa välttämättömänä.\n- *4b — Useampi huoltaja:* yhden huoltajan hyväksyntä riittää (sama logiikka kuin muilla `CITIZEN_BASIC`-asiakirjoilla)\n- *7a — Siirto epäonnistuu (verkkohäiriö, eNivel pois käytöstä):* siirtotehtävä yrittää uudelleen seuraavalla ajollaan. Idempotentti UUID estää duplikaatit.\n\n**Poikkeustilanteet:**\n- *Sisällön muutostarve hyväksynnän jälkeen:* eVaka ei salli muokkausta. Henkilökunta luo uuden ilmentymän (uusi UUID), joka käy oman hyväksyntäkierroksensa.\n- *Hyväksynnän peruminen:* Ei mahdollinen. Huoltajalle informoidaan ennen hyväksyntää, että hyväksyntä on lopullinen.\n\n**Lopputila:**\n- Asiakirja näkyy perusopetuksen henkilökunnalle eNivelessä luvituksen rajoissa (UC-5)\n- eVakassa asiakirjan siirron tila näkyy henkilökunnalle (esim. tapahtumalogi: *\"08.05.2026 — Tiedot siirretty koululle Topeliuksen koulu\"*); huoltajalle tila ei näy\n- Asiakirjalla on `delete_at`-aikaleima eNivelessä, joka asetetaan eNivelen ympäristöllistä säilytysaikaa noudattaen\n\n---\n\n### UC-3: Asiakirjan siirto henkilökunnan päätöksellä\n\n**Toimija:** Esiopetuksen henkilökunta + siirtotehtävä\n\n**Esiehdot:**\n- Lapsi on aktiivisessa esiopetussijoituksessa\n- Pohja `transferable_to_basic_education = true` ja `ChildDocumentType` on staff-only-tyyppi (esim. `OTHER`, ei `CITIZEN_BASIC`)\n- Käyttäjällä on rooli, joka eVakassa sallii ChildDocumentin luomisen kyseiselle lapselle (`CREATE_CHILD_DOCUMENT`-action: `ADMIN`, `UNIT_SUPERVISOR`, `SPECIAL_EDUCATION_TEACHER`, `STAFF`)\n\n**Pääpolku:**\n\n1. Henkilökunta valitsee henkilökunnan polun pohjan (esim. *\"Tiedonsiirtolomake (henkilökunnan päätöksellä)\"*) ja kytkee sen lapseen → tila `DRAFT`\n2. Henkilökunta täyttää tiedot **alusta** — ei esitäyttöä huoltajan polun mahdollisesta torjutusta versiosta\n3. Henkilökunta merkkaa asiakirjan valmiiksi → tila `COMPLETED`, sisältö lukittuu\n4. eVaka-siirtotehtävä poimii ja siirtää eNiveleen kuten UC-2:n vaiheissa 6–9\n5. Asiakirja näkyy huoltajalle eVaka citizen-UI:ssa **informatiivisesti** (kuten VASU-tyyppiset asiakirjat) — huoltajalla ei ole hyväksyntätoimea\n\n**Vaihtoehtoiset polut:**\n- *1a — Rinnakkainen huoltajan polku olemassa:* henkilökunnan polku voidaan luoda riippumatta huoltajan polun tilasta. Lapsi voi saada eNiveleen molemmat ilmentymät rinnan, kummallakin oma UUID.\n- *1b — Henkilökunnan polku huoltajan torjunnan jälkeen:* tämä on tyypillisin syy ottaa polku käyttöön\n\n**Lopputila:**\n- Asiakirja eNivelessä, tunnistettu henkilökunnan polun ilmentymäksi (`kasittelypolku = HENKILOKUNNAN_PAATOKSELLA`)\n- Huoltajalle näkyvyys citizen-UI:ssa, kuten muillakin staff-only-asiakirjoilla\n\n---\n\n### UC-4: Tukipäätösten yhteenvedon siirto eNiveleen\n\n**Toimija:** eVaka-siirtotehtävä (automaattinen)\n\n**Esiehdot:**\n- Lapsella on yksi tai useampi tukipäätös eVakassa (esim. EO-tuen päätös, pidennetyn oppivelvollisuuden päätös)\n\n**Pääpolku:**\n\n1. Tukipäätöstä tehtäessä eVaka tallentaa päätöksen omaan rekisteriinsä ja lähettää sen Koskeen (nykyinen toiminnallisuus)\n2. eVaka-siirtotehtävä koostaa lapsikohtaisen rakenteellisen yhteenvedon: tukipäätösten lukumäärä, tyypit ja laatimispäivämäärät\n3. Yhteenveto siirretään eNiveleen samalla mekanismilla kuin asiakirjat, mutta erilliseen päätepisteeseen `PUT /tukipaatosten-yhteenveto/{oppija_oid}`\n4. **Itse päätösasiakirjaa ei siirretä** — ainoastaan yhteenvedon rakenteellinen tieto\n\n**Lopputila:**\n- Perusopetuksen henkilökunta näkee eNivelessä että lapsella on tukipäätöksiä, niiden määrä ja päivämäärät — itse päätös on Koskessa, jonne perusopetus ei voi tehdä hakuja (Miron Kysymykset-frame: *\"Koskesta ei saa hakea lasten tietoja\"*)\n\n---\n\n### UC-5: Oppilaan tietojen tarkastelu eNivelessä\n\n**Toimija:** Perusopetuksen henkilökunta\n\n**Esiehdot:**\n- Käyttäjä on tunnistautunut eNiveleen (opettaja MPASSidillä, rehtori/pääkäyttäjä kunnan Entra ID:llä — ks. luku 5)\n- Käyttäjällä on rooli ja näkyvyysoikeus, joka oikeuttaa lapsen tietojen tarkasteluun\n\n**Pääpolku:**\n\n1. Käyttäjä avaa eNivelen lasten listaussivun (Figma Frame 59: *\"Lasten tiedot\"*)\n2. Käyttöliittymä näyttää lapset, joihin käyttäjällä on luvitus\n   - **Pääkäyttäjä:** kaikkien lasten tiedot (myös aluerehtorit toimivat tällä roolilla)\n   - **Rehtori:** oman koulun (tai useamman koulun) oppilaat\n   - **Opettaja / erityisopettaja:** rehtorin antaman luvituksen mukaiset luokat (esim. *1A* ja *1B*) ja niiden oppilaat. Lukuvuosi on implisiittinen — eNivelen säilytysaika hoitaa vanhentuneiden tietojen poiston\n3. Käyttäjä suodattaa listaa esim. *\"Tukea saavat\"*, *\"Koulupaikka puuttuu\"*, *\"Erityiskouluun sijoitettu\"* (Figma Frame 59)\n4. Käyttäjä klikkaa lasta → avautuu yksittäisen lapsen näkymä (Figma Frame 57)\n5. Lapsen näkymässä näkyvät:\n   - Henkilötiedot (nimi, hetu/syntymäaika, oppijanumero)\n   - Esiopetussijoitus (yksikkö, ryhmä, ajanjakso)\n   - Perusopetussijoitus (koulu, luokka, luvitettu opettaja)\n   - Tuen tiedot rakenteisena (tuen tarve, tuen muodot, ajanjakso, vapaa arvio)\n   - Asiakirjat (huoltajan polun ja henkilökunnan polun ilmentymät)\n   - Tukipäätösten yhteenveto\n   - Tapahtumaloki (siirrot, päivitykset)\n6. Tietojen avaaminen tallennetaan auditointia varten\n\n**Vaihtoehtoiset polut:**\n- *2a — Lapsi ei ole eNivelessä:* käyttäjä näkee tyhjän hakutuloksen. Esim. Oulun käytäntö: jos lasta ei löydy, koulu kysyy esiopetuspaikasta erikseen.\n\n**Poikkeustilanteet:**\n- *Tietojen avaamisen lokitus:* jokainen lapsen tiedon avaaminen tallennetaan (paitsi ehkä lasten listaus). Luku 6 määrittelee tarkkuustason.\n\n---\n\n### UC-6: Koulusijoituksen tuonti eNiveleen (CSV)\n\n**Toimija:** Perusopetuksen pääkäyttäjä\n\n**Esiehdot:**\n- Oppilaaksiottoprosessi on tuottanut koulusijoitukset (Karttapalvelu / oppilaaksiottojärjestelmä)\n\n**Pääpolku:**\n\n1. Pääkäyttäjä lataa CSV-tiedoston, joka sisältää oppilaiden oppijanumerot ja koulusijoitukset (koulu, luokka, mahdollisesti luvitettu opettaja)\n2. Pääkäyttäjä avaa eNivelen \"Lisää koulupaikkatietoja\" -toiminnon (Figma Frame 59)\n3. CSV validoidaan: oppijanumeroiden olemassaolo eNivelessä, koulutiedon oikeellisuus\n4. Sijoitukset tallennetaan ja näkyvät lasten näkymissä\n5. Tapahtumalokiin merkitään (Figma Frame 57: *\"31.03.2026 — Koulupaikkapäätös kouluun Topeliuksen koulu (CSV-tuonti)\"*)\n\n**Vaihtoehtoiset polut:**\n- *1a — Suora integraatio Karttapalveluun / oppilaaksiottojärjestelmään (myöhemmin):* CSV korvataan API-kutsulla. MVP-vaiheessa CSV riittää.\n\n---\n\n### UC-7: Asiakirjan poisto säilytysajan päätyttyä\n\n**Toimija:** eNivel-siivoustehtävä (automaattinen)\n\n**Esiehdot:**\n- Asiakirja eNivelessä, jonka `delete_at < now()`\n\n**Pääpolku:**\n\n1. Siivoustehtävä ajetaan päivittäin (tai harvemmin, ympäristömuuttuja)\n2. Tehtävä etsii kaikki asiakirjat joilla `delete_at < now()`\n3. Asiakirjan PDF, sisältö (json) ja metakentät poistetaan kokonaan\n4. Lokitetaan poisto (auditointia varten — kuka asiakirja, milloin poistettu)\n\n**Lopputila:**\n- Asiakirjaa ei voi enää avata eNivelestä\n- eVakassa kopio säilyy lain salliman ajan; lopullinen pysyvä tieto on Koskessa\n\n---\n\n### UC-8: Rehtorin luvitus kouluun (tai kouluihin)\n\n**Toimija:** Pääkäyttäjä (perusopetus)\n\n**Esiehdot:**\n- Pääkäyttäjä on tunnistautunut eNiveleen (kunnan Entra ID — pääkäyttäjät eivät käytä MPASSidiä)\n- Rehtorin sähköpostiosoite tai Entra ID -tunniste tiedossa\n- Koulu on luotu eNivelen tietokantaan (joko CSV-tuonnista UC-6 tai manuaalisesti)\n\n**Pääpolku:**\n\n1. Pääkäyttäjä avaa eNivelen Käyttäjähallinta-välilehden (Figma Frame 57:n yläpalkki)\n2. Valitsee toiminnon *\"Lisää rehtori\"* tai *\"Muokkaa käyttäjää\"*\n3. Hakee rehtorin tunnuksella (AD-haku) tai syöttää sähköpostiosoitteen\n4. Valitsee koulun tai useamman koulun, joihin rehtori luvitetaan\n5. Tallentaa luvituksen\n6. Rehtori voi seuraavalla kirjautumiskerralla nähdä omien koulujensa oppilaat ja luvittaa edelleen opettajia (UC-9)\n\n**Vaihtoehtoiset polut:**\n- *4a — Useampi koulu samalle rehtorille:* tyypillistä esim. aluerehtorin tilanteessa, jossa pääkäyttäjä antaa pääsyn useamman koulun oppilaisiin (aluerehtorit toimivat pääkäyttäjänä → tämä polku korvaa erillisen aluerehtori-roolin)\n- *4b — Luvituksen poisto:* pääkäyttäjä voi poistaa rehtorin luvituksen kouluun. Sen jälkeen rehtori ei näe enää oppilaita ja hänen tekemänsä opettajaluvitukset poistuvat samalla\n\n**Lopputila:**\n- Rehtorin rooli ja koulukohtainen luvitus tallennettu eNivelen `staff_users`-tauluun\n- Audit-lokimerkintä luvituksen lisäyksestä/muutoksesta/poistosta\n\n---\n\n### UC-9: Opettajan luvitus luokkaan (tai luokkiin)\n\n**Toimija:** Rehtori\n\n**Esiehdot:**\n- Rehtori on luvitettu johonkin kouluun (UC-8)\n- Rehtori tietää opettajan oppijanumeron TAI opettaja on vähintään kerran kirjautunut eNiveleen (UC-10 mahdollistaa luvittamattoman opettajan valinnan listasta)\n\n**Pääpolku:**\n\n1. Rehtori avaa eNivelen Käyttäjähallinta-välilehden\n2. Näkee oman koulunsa luvitetut opettajat\n3. Valitsee toiminnon *\"Lisää opettaja\"* tai *\"Muokkaa luvitusta\"*\n4. Valitsee opettajan joko (a) luvittamattomien listasta (UC-10) — **suositeltu polku**, koska MPASSid ei tuota sähköpostia tai käyttäjätunnusta, vain oppijanumeron — tai (b) syöttää opettajan oppijanumeron suoraan, jos se on tiedossa\n5. Valitsee luokan tai useamman luokan, joihin opettaja luvitetaan (esim. *\"1A\"*, *\"1B\"*)\n   - **Huomio:** Lukuvuotta ei merkitä erikseen — luvitus on aina ajantasaisille luokkatiedoille, ja eNivelen säilytysaika hoitaa vanhentuneen tiedon poiston\n6. Tallentaa luvituksen\n7. Opettaja voi seuraavalla kirjautumiskerralla nähdä omiin luokkiinsa kuuluvien oppilaiden tiedot\n\n**Vaihtoehtoiset polut:**\n- *5a — Erityisopettaja:* sama mekanismi, mutta voidaan luvittaa esim. yhden tai useamman erityisopetusryhmän tasolle\n- *6a — Luvituksen poisto / muutos:* rehtori voi poistaa tai muuttaa opettajan luvituksen, esim. lukuvuoden vaihtuessa kun luokat muodostetaan uudelleen\n\n**Vaatimukset:**\n- Opettajan luvitus on aina rehtorin annattava — pääkäyttäjä ei oletuksena tee luokkatason luvituksia. Tämä siirtää operatiivisen vastuun koulun rehtorille\n- Luvitus on rajaava, ei lisäävä: opettaja ei näe muiden koulujen tietoja edes saman kunnan sisällä\n\n**Lopputila:**\n- Opettajan rooli ja luokkatason luvitus tallennettu\n- Audit-lokimerkintä luvituksen lisäyksestä/muutoksesta/poistosta\n\n---\n\n### UC-10: Luvittamattomien opettajien listan tarkastelu rehtorin näkymässä\n\n**Toimija:** Rehtori\n\n**Esiehdot:**\n- Rehtori on luvitettu johonkin kouluun (UC-8)\n- Yksi tai useampi opettaja on kirjautunut eNiveleen MPASSidillä, ja MPASSidin tarjoama oppilaitos-tieto (OPH OID) vastaa rehtorin luvittaman koulun OID:tä\n\n**Tarkoitus:** Helpottaa rehtoria luvittamaan opettajia luokkiin (UC-9) tilanteessa, jossa rehtori ei tunne opettajan oppijanumeroa ulkomuistista. MPASSid ei tuo sähköpostia eikä käyttäjätunnusta, joten haku tunnetulla tavalla ei toimi — sen sijaan eNivel hyödyntää kirjautumistapahtumaa identifioidakseen luvittamattomat opettajat. (AD-tapaaminen 19.5.2026: ehdotus Esko Pykäläaho / Anne Madetoja)\n\n**Pääpolku:**\n\n1. Opettaja kirjautuu eNiveleen MPASSidillä — eNivel tallentaa kirjautumistapahtuman `staff_user`-taulukkoon vaikka käyttäjälle ei vielä ole luokkaluvitusta\n2. Rehtori avaa eNivelen Käyttäjähallinta-välilehden\n3. Käyttöliittymä näyttää *\"Luvittamattomat opettajat (kouluni)\"* -listan: opettajat, jotka ovat kirjautuneet MPASSidillä ja joiden oppilaitos-OID vastaa rehtorin luvittaman koulun OID:tä, mutta joilla ei ole vielä luokkaluvitusta tässä koulussa\n4. Lista näyttää opettajan etunimen, sukunimen ja viimeisen kirjautumisajan — käyttäjätunnusta tai sähköpostia ei näytetä (MPASSid ei niitä tarjoa)\n5. Rehtori klikkaa opettajaa listalta → siirtyy UC-9:n vaiheeseen 5 (luokkavalinta) valittu opettaja kontekstissa\n\n**Vaihtoehtoiset polut:**\n- *3a — Opettaja kuuluu useampaan kuin yhteen rehtorin kouluun:* opettaja näkyy molemmissa konteksteissa, kummassakin omanaan\n- *3b — Opettaja oli kirjautunut, mutta on sittemmin lopettanut tehtävässä:* rehtori voi piilottaa opettajan luvittamattomien listasta (\"Ei luvitustarvetta\") — piilotus on lokittu\n\n**Vaatimukset:**\n- Luvittamattomien lista ei tallenna oppilastietoja — opettaja ei näe lapsia ennen kuin hänet on luvitettu luokkaan\n- Lista on **koulukohtainen** — rehtori näkee vain oman koulunsa luvittamattomat, ei naapurikoulun\n- Pääkäyttäjä näkee saman listan kaikista kunnan kouluista (jos pääkäyttäjä on globaali) tai rajatuilta kouluilta (jos pääkäyttäjälle on koulurajaus)\n\n**Lopputila:**\n- Rehtori on saanut tiedon, kuka koulun opettajista on kirjautunut mutta ei ole vielä luvitettu — voi siirtyä luvittamaan (UC-9)\n- Vaihtoehtoisesti rehtori on piilottanut opettajan luvittamattomien listasta\n\n---\n\n## 4.4 Vaatimukset käyttäjäkokemukseen\n\n| ID | Vaatimus | Sidonnainen käyttötapaus |\n|---|---|---|\n| UR-1 | Huoltajan UI:ssa hyväksyntäpainikkeet ovat erillisiä: sisältö ja siirto tehdään eri klikkauksilla, jotta huoltaja tietoisesti valitsee | UC-2 |\n| UR-2 | Henkilökunnan UI:ssa näkyy asiakirjan siirron tila ja tapahtumaloki | UC-2, UC-3 |\n| UR-3 | Lasten lista näyttää lukumäärät suodatinryhmittäin (kaikki / tukea saavat / ei dokumentteja / koulupaikka päätetty / koulupaikka puuttuu / erityiskouluun sijoitettu) | UC-5 |\n| UR-4 | \"Tiedot poistuvat <pvm>\" -teksti on näkyvällä paikalla eNivelen pääsivulla | UC-7 |\n| UR-5 | Lapsen yksityiskohtanäkymässä näkyy eVakan ulkopuolelta tulevan vapaan tekstin status (esim. \"TÄTÄ EI OLE EVAKASSA RAKENTEELLISENA\" -varauma jos kuntakohtaisesti niin on) | UC-5 |\n\n## 4.5 Käyttäjätarinat (User stories)\n\nKorkean tason käyttäjätarinat (vrt. Miron Käyttäjätarinat-frame), pohjustamaan tarkempaa toiminnallista määrittelyä:\n\n- **Huoltajana** haluan tietää tarkasti, mitä tietoja lapsestani siirretään perusopetukseen, jotta voin tehdä tietoisen päätöksen siirron hyväksymisestä.\n- **Esiopetuksen henkilökuntana** haluan luoda lapsesta tiedonsiirtolomakkeen ja saada huoltajan hyväksynnän ilman paperilomakkeita ja postin lähettämistä.\n- **Esiopetuksen henkilökuntana** haluan poikkeustapauksissa siirtää välttämättömät tukitiedot vaikka huoltaja ei hyväksyisi siirtoa, koska lapsen oppimisen tukeminen perusopetuksessa edellyttää niitä.\n- **Perusopetuksen rehtorina** haluan nähdä tulevien ykkösluokkalaisten tukitiedot helmi-maaliskuussa, jotta voin suunnitella ryhmittelyn ja tukiopettaja-resurssit.\n- **Perusopetuksen opettajana** haluan nähdä oman luokkani oppilaiden tuen tiedot, mutta vain niiden, jotka rehtori on minulle luvittanut.\n- **Perusopetuksen pääkäyttäjänä** haluan tuoda koulusijoitukset eNiveleen CSV-tuonnilla, jotta voin saattaa koulupaikkatiedot näkyville ennen toukokuun loppua.\n\n## 4.6 Avoimet asiat ja kuntakohtaiset variaatiot\n\n| Aihe | Avoin asia / kuntakohtaisuus | Ratkaisuvastuu |\n|---|---|---|\n| Vapaa \"arvio tuen tarpeesta\" -teksti | Kunta päättää, tuleeko vapaa kenttä eVakan dokumentointipohjaan vai sovituksiin per kunta | Kunnan eVaka-pääkäyttäjä |\n| Pohjien sisältö | Kuntakohtainen sisältö pohjissa — sama \"Tiedonsiirtolomake\" voi olla sisällöltään eri kunnissa | Kunnan eVaka-pääkäyttäjä |\n| Oulun erilliset lomakkeet | Oulussa erillinen lomake esiopetukseen vs. perusopetukseen → kaksi eri pohjaa eVakassa | Oulu eVaka-pääkäyttäjä |\n| Aikataulu | Kunta määrittää milloin tukitiedot pitää olla siirretty (Turku helmikuu, Oulu helmi-maalis) | Kunnan tietohallinto |\n| Tukipäätösten yhteenvedon laajuus | Pelkkä lukumäärä + päivämäärä, vai myös päätöstyypit eriteltynä? | Sopimuksessa luvun 5 yhteydessä |\n";
+  const renderer = new marked.Renderer();
+  const origCode = renderer.code.bind(renderer);
+  renderer.code = function(code, lang) {
+    if (lang === 'mermaid') {
+      return '<div class="mermaid">' + code + '</div>';
+    }
+    return origCode(code, lang);
+  };
+  const expanded = md.replace(/<!-- PAGEBREAK -->/g, '\n\n<hr class="pagebreak" />\n\n');
+  marked.setOptions({ gfm: true, breaks: false });
+  document.getElementById('content').innerHTML = marked.parse(expanded, { renderer });
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'default',
+    securityLevel: 'loose',
+  });
+  mermaid.run({ querySelector: '.mermaid' }).then(() => {
+    window.__renderingDone = true;
+  }).catch(e => {
+    console.error('mermaid error:', e);
+    window.__renderingDone = true;
+  });
+</script>
+</body>
+</html>

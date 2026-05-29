@@ -166,3 +166,12 @@ path = "service/src/integrationTest/resources/payment-client/**.xml"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2023-2024 Tampere region"
 SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = [
+    "tools/enivel-docx/**",
+    "tools/enivel-pdf-build/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <title>2. Järjestelmäarkkitehtuuri</title>
+  <style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm;
+  }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    color: #1f1f1f;
+    background: #ffffff;
+    font-size: 10pt;
+    margin: 0;
+    padding: 0;
+  }
+  .doc-meta {
+    color: #6e6e6e;
+    font-size: 9.5pt;
+    margin-bottom: 14pt;
+  }
+  h1 {
+    color: #2c5fa1;
+    border-bottom: 2.5pt solid #2c5fa1;
+    padding-bottom: 6pt;
+    font-size: 26pt;
+    margin: 0 0 16pt 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    page-break-after: avoid;
+  }
+  h2 {
+    color: #2c5fa1;
+    font-size: 17pt;
+    margin-top: 20pt;
+    margin-bottom: 8pt;
+    border-bottom: 1pt solid #2c5fa1;
+    padding-bottom: 3pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  h3 {
+    color: #1f1f1f;
+    font-size: 13pt;
+    margin-top: 16pt;
+    margin-bottom: 6pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  h4 {
+    color: #1f1f1f;
+    font-size: 11pt;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  p { margin: 6pt 0; }
+  code {
+    background: #f1ebe3;
+    color: #b8421a;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 8.8pt;
+  }
+  pre {
+    background: #f5f5f5;
+    padding: 9pt 11pt;
+    border-radius: 3pt;
+    overflow-x: auto;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    page-break-inside: avoid;
+    margin: 8pt 0;
+  }
+  pre code {
+    background: transparent;
+    color: #1f1f1f;
+    padding: 0;
+    font-size: inherit;
+  }
+  table {
+    border-collapse: collapse;
+    margin: 10pt 0;
+    width: 100%;
+    page-break-inside: avoid;
+    font-size: 9pt;
+  }
+  th, td {
+    border: 0.5pt solid #b8b8b8;
+    padding: 5pt 7pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #ececec;
+    color: #1f1f1f;
+    font-weight: 700;
+  }
+  blockquote {
+    background: #e8eef5;
+    border-left: 3pt solid #2c5fa1;
+    padding: 8pt 14pt;
+    margin: 10pt 0;
+    color: #2a2a2a;
+    font-style: italic;
+    page-break-inside: avoid;
+  }
+  blockquote p { margin: 4pt 0; }
+  blockquote strong { color: #2c5fa1; font-style: normal; }
+  blockquote em { font-style: italic; }
+  .mermaid {
+    text-align: center;
+    margin: 16pt 0;
+    page-break-inside: avoid;
+  }
+  .mermaid svg { max-width: 100%; height: auto; }
+  ul, ol { margin: 6pt 0; padding-left: 22pt; }
+  li { margin: 3pt 0; }
+  hr.pagebreak { page-break-before: always; visibility: hidden; height: 0; border: none; margin: 0; }
+  hr:not(.pagebreak) {
+    border: none;
+    border-top: 0.5pt solid #b8b8b8;
+    margin: 14pt 0;
+  }
+  a { color: #2c5fa1; text-decoration: none; }
+  strong { color: #1f1f1f; font-weight: 700; }
+  em { font-style: italic; }
+</style>
+</head>
+<body>
+<div class="doc-meta">eNivel-määrittely · Reaktor · 2026-05-28</div>
+<div id="content"></div>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  const md = "# 2. Järjestelmäarkkitehtuuri\n\nTässä luvussa kuvataan eNivel-järjestelmän kokonaisarkkitehtuuri, sen sijoittuminen muihin järjestelmiin ja arkkitehtuuristen valintojen perustelut. Yksityiskohtaisemmat osa-aluekuvaukset löytyvät myöhemmistä luvuista (3 Tietomalli, 4 Käyttötapaukset, 5 Integraatiot, 7 Toteutus). Esimerkeissä lähdejärjestelmänä käytetään eVakaa, mutta arkkitehtuuri on järjestelmäriippumaton. Vaikka eVakaan kohdistuvat vaatimukset kuvataan, ne suunnitellaan ja toteutetaan erillään eNivel-hankkeen toteutuksesta.\n\n## 2.1 Arkkitehtuurin lähtökohta\n\nArkkitehtuuri pohjautuu **Sami Koposen 27.1.2026 julkaisemaan ratkaisuluonnokseen**, jonka keskeiset periaatteet:\n\n- **Järjestelmäriippumattomuus:** ratkaisun on palveltava paitsi Turun ja Oulun (eVaka + DigiOne) nykyarkkitehtuuria, myös muita kuntia ja niiden eri lähde- ja kohdejärjestelmiä\n- **Välivarasto-pohjainen tiedonsiirto:** suoraa eVaka → DigiOne -rajapintaa vältetään, koska se sitoisi vain kahden kaupungin tarpeisiin\n- **Kaikki data metatiedotetaan ja luvitetaan:** sama tieto voi sijaita joko dokumentissa tai erilliskentässä; metatieto kulkee aina mukana\n- **Lyhyt säilytys eNivelessä:** tiedot eNivelessä lain salliman ajan tai määriteltyyn poistoaikaan asti; pysyvä tieto Koskessa\n- **REST-pohjainen rajapinta:** standardit API-rajapinnat tallennukseen ja lukuun\n\n## 2.2 Korkean tason järjestelmäkuva\n\n```mermaid\nflowchart TB\n    subgraph \"Lähdejärjestelmät (Varhaiskasvatus / Esiopetus)\"\n        eVaka[eVaka<br/>Turku, Oulu, ...]\n        Other[Muut esiopetuksen<br/>järjestelmät tulevaisuudessa]\n    end\n\n    subgraph \"eNivel (välivarasto)\"\n        Push[Push API]\n        DB[(Tietokanta<br/>oppilaat, asiakirjat,<br/>tukitiedot, audit)]\n        UI[Web-UI<br/>perusopetukselle]\n        Pull[Pull API]\n        Jobs[Taustatehtävät:<br/>poisto, audit retention]\n    end\n\n    subgraph \"Kohdejärjestelmät (Perusopetus)\"\n        DigiOne[DigiOne]\n        Primus[Primus]\n        OtherK[Muut katselu-/<br/>lukuohjelmat]\n    end\n\n    Koski[(Koski<br/>kansallinen<br/>tietovaranto)]\n\n    Karttapalvelu[Karttapalvelu /<br/>Oppilaaksiottojärjestelmä]\n\n    eVaka -->|\"push: oppilaat,<br/>asiakirjat,<br/>tukipäätösten yhteenveto\"| Push\n    Other -.->|sama API| Push\n\n    Push --> DB\n    DB <--> Pull\n    DB --> UI\n    DB --> Jobs\n\n    UI --> DigiOne\n    UI --> Primus\n    UI --> OtherK\n\n    eVaka -.->|tukipäätökset| Koski\n    Koski -.->|\"pysyvä tieto<br/>(ei lukua perusopetukseen)\"| eVaka\n\n    Karttapalvelu -.->|\"CSV-tuonti<br/>(MVP)\"| UI\n```\n\n## 2.3 eNivelen sisäinen kerrosrakenne\n\n```mermaid\nflowchart LR\n    subgraph Frontend\n        UI[React-pohjainen<br/>Single Page App]\n    end\n\n    subgraph Backend\n        APIauth[Auth-kerros<br/>OIDC + RBAC]\n        APIPush[Push-rajapinta<br/>mTLS]\n        APIPull[Pull-rajapinta<br/>session-pohjainen]\n        Service[Sovelluslogiikka<br/>oppilas, asiakirja,<br/>tukitiedot, audit]\n        Persist[Tietokerros<br/>JDBC / ORM]\n    end\n\n    subgraph \"Taustatehtävät\"\n        Cleanup[Säilytyspoistaja]\n        AuditClean[Audit-lokin pakkaus]\n    end\n\n    DB[(PostgreSQL)]\n    Blob[(Blob-tallennus<br/>PDF-asiakirjat)]\n    KMS[(Salausavaimet<br/>KMS)]\n\n    UI -->|HTTPS| APIauth\n    APIauth --> APIPull\n    APIauth --> APIPush\n    APIPush --> Service\n    APIPull --> Service\n    Service --> Persist\n    Persist --> DB\n    Service --> Blob\n    Service -.-> KMS\n\n    Cleanup --> Service\n    AuditClean --> Service\n```\n\n## 2.4 Arkkitehtuuriperiaatteet\n\n### 2.4.1 Tiedon liikesuunta: push sisään, pull ulos\n\neNivel ei tee aktiivisia kutsuja muihin järjestelmiin asiakirjojen siirtämiseksi, vaan **eVaka vie** tiedot eNiveleen. Tämä yksinkertaistaa luvitusta (eVaka tietää milloin huoltaja on antanut luvan) ja vähentää eNivelen riippuvuuksia.\n\nPerusopetuksen kohdejärjestelmät **hakevat** tietoja eNivelestä ohjelmallisesti tai tietoja katsellaan suoraan eNivelen käyttöliittymän kautta.\n\n### 2.4.2 Idempotentti PUT-rajapinta\n\nKaikki Push API:n tallennusoperaatiot ovat idempotentteja: sama eVakan ilmentymän UUID lähetettynä uudelleen ei luo duplikaattia. Tämä mahdollistaa eVakan uudelleenyritysmekanismin ilman datan kahdentumista (luvut 5 ja 7).\n\n### 2.4.3 Pohja-pohjainen siirto-ohjaus\n\neNivel ei päätä mitkä asiakirjat siirretään — se on eVakan pohjien (`document_template`) `transferable_to_basic_education`-flagin vastuulla. Tämä antaa **eVaka-pääkäyttäjälle** kontrollin: vain merkityt pohjat tuottavat eNivel-siirtoja, kaikki muut jätetään kokonaan välistä.\n\n### 2.4.4 Henkilökunnan ja huoltajan rinnakkaiset polut\n\neVakan asiakirjailmentymä voi siirtyä eNiveleen joko **huoltajan hyväksynnällä** (CITIZEN_BASIC-tyyppiset pohjat) tai **henkilökunnan päätöksellä** (OTHER-tyyppiset pohjat). Polkujen valinta määräytyy pohjan tyypistä, ei ilmentymä-kohtaisesti — tämä yksinkertaistaa logiikkaa ja antaa selkeän vastuun pohjan luojalle.\n\n### 2.4.5 Säilytys ympäristökohtaisesti\n\neNivelen asiakirjojen säilytysaika määrätään eNivelessä eikä asiakirjakohtaisessa kentässä — tämä mahdollistaa eNivelen kuntakohtaiset poistosäännöt ilman että eVakan pohjien metatieto monimutkaistuu.\n\n### 2.4.6 Tukipäätösten yhteenveto rakenteisena\n\nItse päätösasiakirjoja (esim. EO-tuen päätös) ei siirretä eNiveleen — ne menevät Koskeen. eNiveleen siirretään vain rakenteinen yhteenveto: päätösten lukumäärät ja laatimispäivämäärät. Perusopetus näkee yhteenvedon eNivelessä; itse päätös haetaan tarvittaessa Koskesta.\n\n### 2.4.7 eNivelellä on oma käyttöliittymä — ei pelkkä rajapintakerros\n\nJotta järjestelmä saadaan käyttöön seuraavan kauden koulupaikkojen jakamisen tueksi, MVP-vaiheessa toteutetaan **eNivelen oma web-käyttöliittymä**. Sen kautta perusopetuksen henkilökunta lukee asiakirjoja ja oppilastietoja, jotka aiemmin ovat olleet paperilla tai Dotku-tietovarannossa.\n\nTämä on tietoinen ero hankkeen alkuluonnokseen, jossa eNivel kuvattiin pelkkänä välivarastona ilman omaa UI:tä. Yhteensovitus: eNivelen API rakennetaan **alusta lähtien koneellisesti kutsuttavaksi** siten että ohjelmallinen integraatio kohdejärjestelmiin (DigiOne, Primus, Wilma) on myöhemmin mahdollinen ilman API-suurempia muutoksia.\n\n### 2.4.8 Sisäinen kaksitasoinen luvitus\n\neNivelellä on oma `staff_users`-pohjainen luvitusmalli MPASSid- ja Entra-tunnistautumisen päällä:\n\n- **Pääkäyttäjä** luvittaa rehtorit kouluihin. Pääkäyttäjälle voidaan antaa valinnainen koulurajaus (sama mekanismi kuin rehtorilla) — aluepääkäyttäjä-tilanne hoituu tällä, ilman erillistä roolia.\n- **Rehtori** luvittaa opettajat luokkiin oman koulunsa sisällä.\n- Lukuvuosi on implisiittinen — eNivelen säilytysaika hoitaa sen että vanhentuneiden lukuvuosien tiedot poistuvat.\n\nTämä luvituksen rakenne on välttämätön, koska tunnistautumislähteet eivät tarjoa eNivelen tarvitsemaa luvitustietoa:\n\n- **MPASSid** tuo opettajasta oppijanumeron, nimen, oppilaitoksen (OPH OID) ja henkilökunta/oppilas-tiedon — mutta **ei luokka- tai oppilastason oikeutusta**. (Lähde: [MPASSid-tietomalli 1.4](https://wiki.eduuni.fi/spaces/ophPPK/pages/313150371) ja AD-tapaaminen 19.5.2026)\n- **Kunnan Entra ID** ei tuo edes oppilaitos- tai roolitietoa, joten rehtorien ja pääkäyttäjien luvitus pitää tehdä eNivelessä manuaalisesti.\n- **DigiOnen OneRoster ja IdM-API** eivät tarjoa opettaja↔valvontaryhmä-mappausta — OneRoster kattaa vain opetusryhmät, ja IdM-API:n `<employee>`-elementin laajentaminen ei ole feasible (Tieran linjaus 28.5.2026).\n\nTämän vuoksi eNivelen oma `staff_users`-luvitus on välttämätön ja pysyvä — ei väliaikainen ratkaisu.\n\n## 2.5 Sijoittuminen olemassa oleviin järjestelmiin\n\n### 2.5.1 eVakan kanssa\n\neVaka on **tämän projektin keskeinen lähdejärjestelmä**. eVaka tarjoaa:\n- Asiakirjapohjien hallinnan (`document_template`)\n- Asiakirjailmentymät (`child_document`) huoltajan ja henkilökunnan polulla\n- Citizen-UI:n huoltajan tunnistautumiselle ja hyväksyntätoimille\n- Suoran integraation Koskeen tukipäätöksissä\n- Background-job -infrastruktuurin (jolle eNivel-siirtotehtävä lisätään)\n\nHankkeen vaiheen 2 muutostyöt eVakaan käsitellään luvussa 7.\n\n### 2.5.2 DigiOnen, Primuksen ja Wilman kanssa\n\nDigiOne (Turku, Oulu), Primus ja Wilma (osa kuntia) ovat **kohdejärjestelmiä**, jotka kuluttavat eNivelen tietoja. Ne eivät vie tietoa eNiveleen — tieto tulee eVakasta.\n\n**MVP:ssä** eNiveleä käytetään **käyttöliittymäpohjaisesti**: opettajat ja rehtorit avaavat eNivelen UI:n erillisellä kirjautumisella — **opettajat MPASSidillä**, **rehtorit ja pääkäyttäjät kunnan Entra ID:llä**. Kohdejärjestelmäintegraatiot tehdään myöhemmin erillisissä hankkeissa.\n\n**Tulevaisuudessa** kohdejärjestelmistä voi olla suora ohjelmallinen integraatio eNiveleen. Erityisen kiinnostavia ovat:\n\n- **Rakenteinen tieto sijoittelutyökaluun:** erityiskoulu- ja erityisopetusryhmäsijoittelu hyötyisi siitä että tuen tarpeen rakenteinen tieto siirtyy automaattisesti perusopetuksen sijoittelujärjestelmään\n- **Asiakirjamuotoinen tieto:** voi jäädä jatkossakin eNivelen UI:n kautta haettavaksi (MPASSid/Entra-kirjautuminen + eNivelen sisäinen luvitus)\n\nAPI-rakenne tukee molempia käyttötapoja alusta lähtien — siirtyminen ohjelmalliseen integraatioon ei edellytä API-suurempia muutoksia.\n\n**Tunnistautumiskuvan selvitys (Tiera-tapaaminen 28.5.2026):** DigiOnella ei ole erillistä SSO-mekanismia — kaikki DigiOnen käyttäjät tunnistautuvat MPASSidillä. eNivel käyttää siis samoja identity providereita kuin DigiOne, ei DigiOnea identity providerina. Hankkeen alkuluonnoksissa esiintynyt ajatus *\"DigiOne toimittaa käyttäjätiedon yhteydessä listan oppilaista joiden tietoja saa katsella\"* (Mironen ehdotus 27.1.2026) ei ole feasible: DigiOne tukee OneRoster-rajapintaa, mutta se kattaa vain opetusryhmiä eikä suomalaisia valvontaryhmiä, eikä `<employee>`-elementin laajentaminen valvontaryhmäjäsenyyksillä ole Tieran kannan mukaan mahdollista. Tämän vuoksi eNivelen oma `staff_users`-luvitus on välttämätön — ei väliaikainen ratkaisu.\n\n### 2.5.3 Koski\n\nKoski säilyttää **pysyvän tukitiedon** ja tukipäätökset. eNivel ei lue Koskesta — Koskeen ei myöskään tehdä hakuja perusopetuksen järjestelmistä (Miron huomio: *\"Koskesta ei saa hakea lasten tietoja, sinne ainoastaan viedetään tietoja\"*).\n\neNivelen tukipäätösten yhteenveto on käytännössä lukunäkymä siitä, mitä eVaka on Koskeen vienyt — ja eVaka tuottaa yhteenvedon eNiveleen suoraan, ei Koskesta hakemalla.\n\n### 2.5.4 Karttapalvelu / oppilaaksiottojärjestelmä\n\nOppilaaksiottoprosessi tuottaa lapsen koulusijoituksen — mihin kouluun ja luokalle. MVP-vaiheessa tämä tieto tuodaan eNiveleen **CSV-tuonnilla** (UC-6); myöhemmin voidaan toteuttaa ohjelmallinen rajapinta.\n\n## 2.6 Käyttöönottojärjestys (kuntakohtainen)\n\neNivel voidaan ottaa käyttöön kuntakohtaisesti vaiheittain. Periaatteellinen järjestys:\n\n1. **Tekninen alusta:** eNivel-instanssi pystyssä, tietokanta valmis, mTLS-sertifikaatit eVaka-yhteyteen\n2. **eVaka-muutokset:** pohja-flagi käytössä, siirtotehtävä testattu\n3. **Pohjien konfigurointi:** kunnan eVaka-pääkäyttäjä luo siirrettävät pohjat (UC-1)\n4. **Pilottiryhmä:** valittujen yksiköiden henkilökunta luo asiakirjoja, huoltajat hyväksyvät\n5. **Perusopetuksen UI käyttöön:** rehtorit ja opettajat luvitettu, lasten tiedot näkyvät\n6. **Skaalaus koko kuntaan:** muut yksiköt mukaan vaiheittain\n\n## 2.7 Sallittu skoopin laajeneminen\n\nReaktorin tarjouksen *\"laajempi kokonaisuus\"* (16.2.2026) listaa asioita, jotka eivät kuulu vaiheen 1 määrittelyn ydinjoukkoon, mutta joiden olemassaolo huomioidaan:\n\n- Espoon ja Tampereen seudun erityistarpeiden kartoitus\n- Primus, Effica ja muut katselu-/lukuohjelmat lähde- tai kohdejärjestelminä\n- Muiden kuin Turun ja Oulun arkistoratkaisuiden mukaanotto\n- Erikoisempien tapausten käsittely (esim. luvitustietojen tai hetun muuttuminen)\n\nNäitä tarkennetaan vaiheen 2 toteutusten yhteydessä, eivätkä ne saa estää MVP:n valmistumista hankkeen päättyessä 31.8.2026.\n\n## 2.8 Arkkitehtuuripäätökset koottuna\n\n| Aihe | Päätös | Perustelu |\n|---|---|---|\n| Tiedonkulun suunta | eVaka push, perusopetus pull | Yksinkertaistaa luvitusta ja eNivelen riippuvuuksia |\n| Asiakirjan tunniste | eVakan UUID, idempotentti PUT | Retry-turvallisuus ilman duplikaatteja |\n| Siirron ohjaus | Pohja-tason flagi (`transferable_to_basic_education`) | Selkeä vastuu eVaka-pääkäyttäjällä, kuntakohtainen joustavuus |\n| Polkujen valinta | Pohjan tyyppi määrää (CITIZEN_BASIC = huoltaja, OTHER = henkilökunta) | Hyödyntää eVakan olemassaolevaa rakennetta, ei uutta polkukäsitettä |\n| Säilytysaika | Ympäristömuuttuja eNivelessä | Yksinkertainen, kuntakohtaisesti konfiguroitavissa |\n| Tukipäätösasiakirjat | Ei siirretä — vain rakenteinen yhteenveto | Lain mukainen — itse päätös on Koskessa |\n| API-tyyli | REST + JSON, idempotentti | Laajalti tunnettu, helppo integroida moneen järjestelmään |\n| Backend-stack | Kotlin + Spring Boot (suositus) | Yhdenmukainen eVakan kanssa, helpompi tiimien yhteistyö |\n| Frontend-stack | React + TypeScript | Figma-mockit ovat React-koodina, helpompi siirtää tuotantoon |\n| Auth | OIDC: MPASSid (opettajat), kunnan Entra ID (rehtorit + pääkäyttäjät); edu-AD opettajien vaihtoehtona — ei MVP | Standardit, kuntien IT-ympäristöjen kanssa yhteensopivat; MPASSid on opetushallituksen kansallinen tunnistautuminen |\n| eNivelen oma UI | Pakollinen MVP:hen | Ainoa tapa saada järjestelmä käyttöön seuraavalla kaudella; korvaa paperin ja Dotku-tietovarannon välittömästi |\n| Sisäinen luvitus | `staff_users`-pohjainen, kaksitasoinen (pääkäyttäjä → rehtori → opettaja) | MPASSid tuo vain oppilaitoksen (ei luokka-/oppilastasoa), Entra ei sitäkään; DigiOnen OneRoster ja IdM-API eivät tarjoa opettaja↔valvontaryhmä-mappausta — luvitus on hoidettava eNivelen sisällä |\n| Aluepääkäyttäjät / aluerehtorit | Pääkäyttäjälle valinnainen koulurajaus (sama mekanismi kuin rehtorilla) — ei erillistä roolia | Yksinkertaistaa MVP-roolimallia; kunta päättää oman alueellisen tarpeensa luvitettavasti |\n| Lukuvuositason luvitus | Implisiittinen — säilytysaika hoitaa | Yksinkertaisempi malli, ei vaadi vuosittaisia massapäivityksiä luvituksiin |\n| Ohjelmalliset pull-rajapinnat kohdejärjestelmiin | Ei MVP:ssä — API rakennetaan kuitenkin alusta yhteensopivaksi | Rakenteisen tiedon (sijoittelutyökalut) integraatio kiinnostaa myöhemmin; asiakirjat haetaan jatkossakin UI:n kautta |\n";
+  const renderer = new marked.Renderer();
+  const origCode = renderer.code.bind(renderer);
+  renderer.code = function(code, lang) {
+    if (lang === 'mermaid') {
+      return '<div class="mermaid">' + code + '</div>';
+    }
+    return origCode(code, lang);
+  };
+  const expanded = md.replace(/<!-- PAGEBREAK -->/g, '\n\n<hr class="pagebreak" />\n\n');
+  marked.setOptions({ gfm: true, breaks: false });
+  document.getElementById('content').innerHTML = marked.parse(expanded, { renderer });
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'default',
+    securityLevel: 'loose',
+  });
+  mermaid.run({ querySelector: '.mermaid' }).then(() => {
+    window.__renderingDone = true;
+  }).catch(e => {
+    console.error('mermaid error:', e);
+    window.__renderingDone = true;
+  });
+</script>
+</body>
+</html>

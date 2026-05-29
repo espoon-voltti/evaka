@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <title>7. Toteutuksen näkökulmat</title>
+  <style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm;
+  }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    color: #1f1f1f;
+    background: #ffffff;
+    font-size: 10pt;
+    margin: 0;
+    padding: 0;
+  }
+  .doc-meta {
+    color: #6e6e6e;
+    font-size: 9.5pt;
+    margin-bottom: 14pt;
+  }
+  h1 {
+    color: #2c5fa1;
+    border-bottom: 2.5pt solid #2c5fa1;
+    padding-bottom: 6pt;
+    font-size: 26pt;
+    margin: 0 0 16pt 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    page-break-after: avoid;
+  }
+  h2 {
+    color: #2c5fa1;
+    font-size: 17pt;
+    margin-top: 20pt;
+    margin-bottom: 8pt;
+    border-bottom: 1pt solid #2c5fa1;
+    padding-bottom: 3pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  h3 {
+    color: #1f1f1f;
+    font-size: 13pt;
+    margin-top: 16pt;
+    margin-bottom: 6pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  h4 {
+    color: #1f1f1f;
+    font-size: 11pt;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  p { margin: 6pt 0; }
+  code {
+    background: #f1ebe3;
+    color: #b8421a;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 8.8pt;
+  }
+  pre {
+    background: #f5f5f5;
+    padding: 9pt 11pt;
+    border-radius: 3pt;
+    overflow-x: auto;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    page-break-inside: avoid;
+    margin: 8pt 0;
+  }
+  pre code {
+    background: transparent;
+    color: #1f1f1f;
+    padding: 0;
+    font-size: inherit;
+  }
+  table {
+    border-collapse: collapse;
+    margin: 10pt 0;
+    width: 100%;
+    page-break-inside: avoid;
+    font-size: 9pt;
+  }
+  th, td {
+    border: 0.5pt solid #b8b8b8;
+    padding: 5pt 7pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #ececec;
+    color: #1f1f1f;
+    font-weight: 700;
+  }
+  blockquote {
+    background: #e8eef5;
+    border-left: 3pt solid #2c5fa1;
+    padding: 8pt 14pt;
+    margin: 10pt 0;
+    color: #2a2a2a;
+    font-style: italic;
+    page-break-inside: avoid;
+  }
+  blockquote p { margin: 4pt 0; }
+  blockquote strong { color: #2c5fa1; font-style: normal; }
+  blockquote em { font-style: italic; }
+  .mermaid {
+    text-align: center;
+    margin: 16pt 0;
+    page-break-inside: avoid;
+  }
+  .mermaid svg { max-width: 100%; height: auto; }
+  ul, ol { margin: 6pt 0; padding-left: 22pt; }
+  li { margin: 3pt 0; }
+  hr.pagebreak { page-break-before: always; visibility: hidden; height: 0; border: none; margin: 0; }
+  hr:not(.pagebreak) {
+    border: none;
+    border-top: 0.5pt solid #b8b8b8;
+    margin: 14pt 0;
+  }
+  a { color: #2c5fa1; text-decoration: none; }
+  strong { color: #1f1f1f; font-weight: 700; }
+  em { font-style: italic; }
+</style>
+</head>
+<body>
+<div class="doc-meta">eNivel-määrittely · Reaktor · 2026-05-28</div>
+<div id="content"></div>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  const md = "# 7. Toteutuksen näkökulmat\n\nTässä luvussa kuvataan kahden eri kategorian toteutusehdotukset: **eVakaan tarvittavat muutokset** (tietokantamuutokset, API-laajennukset, UI-muutokset, taustaprosessit) sekä **eNivel-järjestelmän rakentaminen alusta** (tietomalli, REST API, oma käyttöliittymä, luvitusmalli, taustatehtävät). eVaka on tuotantokäytössä oleva järjestelmä, joten siellä tehdään kohdennettuja laajennuksia ja muutoksia. eNivel sen sijaan on tämän hankkeen lopputuotteena toteutettava uusi järjestelmä — siellä ei ole \"muutoksia\" vaan toteutus. Luku palvelee vaiheen 2 tarjouspyyntöjä sekä eVaka-toimittajalle (Reaktor) että eNivel-toteuttajalle.\n\nToteutusehdotus pohjaa eVakan nykyiseen `document_template` / `child_document`-arkkitehtuuriin (`fi.espoo.evaka.document.*`).\n\n## 7.1 eVakan tietokantamuutokset\n\n### 7.1.1 Pohja-taso (`document_template`)\n\n| Sarake | Tyyppi | Selitys | Migraation tyyppi |\n|---|---|---|---|\n| `transferable_to_basic_education` | `boolean NOT NULL DEFAULT false` | **Uusi.** Ohjaa siirtotehtävää: vain `true`-arvoiset pohjat poimitaan eNivel-siirtoon | `ALTER TABLE document_template ADD COLUMN ...` |\n\n**Constraint-ehdotus** (lisäsuoja pedagogisille asiakirjoille):\n```sql\nCHECK (\n    transferable_to_basic_education = false\n    OR type IN ('CITIZEN_BASIC', 'OTHER')\n)\n```\nTämä estää että pedagogiset (`PEDAGOGICAL_REPORT`, `PEDAGOGICAL_ASSESSMENT`, `HOJKS`, `VASU`, `LEOPS`) tai tukipäätökset (`OTHER_DECISION`) merkitään vahingossa siirrettäviksi.\n\n### 7.1.2 Pohja-taso: import-export laajennus\n\neVakan olemassaolevaa `ExportedDocumentTemplate`-rakennetta (Kotlin: `DocumentTemplate.kt:442-455`) laajennetaan uudella kentällä, jotta staging→tuotanto-import säilyttää flagin arvon.\n\n```kotlin\ndata class ExportedDocumentTemplate(\n    val name: String,\n    val type: ChildDocumentType,\n    // ... olemassaolevat kentät ...\n    val archiveExternally: Boolean,\n    val endDecisionWhenUnitChanges: Boolean?,\n    val transferableToBasicEducation: Boolean = false,  // ← uusi\n    @Json val content: DocumentTemplateContent,\n)\n```\n\n### 7.1.3 Ilmentymä-taso (`child_document`)\n\nUusia sarakkeita siirron metatietoa varten:\n\n| Sarake | Tyyppi | Selitys |\n|---|---|---|\n| `transfer_status` | `enum NOT NULL DEFAULT 'NOT_APPLICABLE'` | `NOT_APPLICABLE` \\| `READY` \\| `TRANSFERRING` \\| `TRANSFERRED` \\| `FAILED` |\n| `transferred_at` | `timestamp NULL` | Aikaleima onnistuneelle siirrolle |\n| `transfer_attempts` | `integer NOT NULL DEFAULT 0` | Yritysten lukumäärä retrylogiikkaa varten |\n| `transfer_last_error` | `text NULL` | Viimeisin virheteksti (lokitusta ja vianetsintää varten) |\n\n**Tilan päivityslogiikka:**\n- `NOT_APPLICABLE` — pohjan flagi `transferable_to_basic_education = false` tai pohja on poistettu siirrettävyydestä\n- `READY` — asetetaan kun ilmentymä siirtyy `COMPLETED`-tilaan ja pohja on siirrettävä\n- `TRANSFERRING` — siirtotehtävä on poiminut, pyörii kutsu eNivelen API:in\n- `TRANSFERRED` — eNivel vastasi onnistumisesta\n- `FAILED` — virhe; jää retry-jonoon, ellei ihmistoimijalla ole eskalointia\n\n### 7.1.4 Migraation järjestys\n\n1. `V_XXX__document_template_transferable_to_basic_education.sql` — sarake + constraint + default\n2. `V_XXX__child_document_transfer_status.sql` — sarakkeet ilmentymälle\n3. `V_XXX__document_template_export_transferable_field.sql` — JSON-skeeman laajennus exportissa (jos tarpeen — riippuu nykyisen import-export-formaatin toteutuksesta)\n\n> Tarkista nykyisin käytössä olevat migration-numerot ennen liittämistä — `service/src/main/resources/db/migration/` on jo numerolla > V577.\n\n## 7.2 eVakan API-muutokset\n\n### 7.2.1 DocumentTemplate-controller\n\n| Endpoint | Muutos |\n|---|---|\n| `POST /employee/document-templates` | Pyyntörunkoon `transferableToBasicEducation: Boolean` (default `false`) |\n| `PUT /employee/document-templates/{id}/content` | Mahdollisuus muuttaa flagia kun pohja on `published = false` |\n| `GET /employee/document-templates` (lista) | Vastauksessa `transferableToBasicEducation`-flagi |\n| `GET /employee/document-templates/{id}` (yksityiskohta) | Vastauksessa `transferableToBasicEducation`-flagi |\n| `POST /employee/document-templates/import` | Hyväksyy `transferableToBasicEducation` kentän import-rakenteessa |\n| `GET /employee/document-templates/{id}/export` | Sisällyttää `transferableToBasicEducation` exportiin |\n\n### 7.2.2 ChildDocument-controller\n\n| Endpoint | Muutos |\n|---|---|\n| `GET /employee/child-documents/{id}` | Vastauksessa `transferStatus`, `transferredAt`, `transferAttempts`, `transferLastError` |\n| `GET /employee/children/{childId}/documents` | Listassa `transferStatus`-yhteenveto |\n\nCitizen-puolen rajapintaan (`/citizen/child-documents/...`) ei tarvita laajennusta — siirron tila ei näy huoltajalle.\n\n### 7.2.3 Sisäinen API: ulosvienti eNivel-tehtävälle\n\nSiirtotehtävä on eVaka-prosessin sisäinen, ei ulkoinen rajapinta. Kotlin-puolella:\n\n- Uusi service-luokka `fi.espoo.evaka.document.transfer.ENivelTransferService`\n  - Metodi: `transferReadyDocuments(): List<TransferResult>`\n  - Konfiguraatio: `eNivelApiUrl`, `eNivelApiCredentials` (env-muuttujat)\n- Uusi scheduled job rekisteröitynä eVakan job-järjestelmään (vrt. `service/src/main/kotlin/fi/espoo/evaka/shared/async/...`)\n  - Ajetaan esim. tunnein, ei reaaliaikaisesti\n\n## 7.3 eVakan UI-muutokset\n\n### 7.3.1 Admin-UI: pohjan editori\n\n- Lisätään checkbox **\"Siirretään perusopetukseen (eNivel)\"** pohjan luonti-/muokkaus-formulaariin\n- Checkbox näkyy vain kun `type ∈ {CITIZEN_BASIC, OTHER}` — muuten harmaana ja info-tooltip \"*Tämän tyyppisiä asiakirjoja ei voi siirtää perusopetukseen*\"\n- Pohjan listausnäkymässä uusi sarake \"Siirretään eNiveleen\" (Kyllä/Ei)\n\n### 7.3.2 Citizen-UI: huoltajan hyväksyntä\n\nCITIZEN_DRAFT-tilan hyväksyntänäkymään lisätään **kaksi erillistä checkboxia**:\n- ☐ \"Hyväksyn asiakirjan sisällön\"\n- ☐ \"Hyväksyn tietojen siirron perusopetukseen\"\n\nAsiakirjaa voi hyväksyä vain jos pohjassa on `transferable_to_basic_education = true` JA molemmat ovat checkattu. Jos pohja ei ole siirrettävä, jälkimmäinen checkbox piilotetaan ja vain sisällön hyväksyntä riittää (ei muutosta nykyiseen UX:ään).\n\n> **Huom:** Yhdistetty hyväksyntäpainike ei käy — huoltajan tulee tehdä eksplisiittinen valinta tietojen siirrosta. Tämä on erillinen GDPR-luvituksen kannalta.\n\n### 7.3.3 Employee-UI: ilmentymän näkymä\n\n- Lisätään tapahtumaloki, johon merkitään tila-siirtymät (`DRAFT → CITIZEN_DRAFT → COMPLETED → TRANSFERRING → TRANSFERRED`)\n- Tapahtumalokin esitysmuoto vastaa Figma Frame 57:n *\"Tapahtumaloki\"*-osiota\n- Jos `transfer_status = FAILED`, näytetään huomio + pääsy retry-toimintoon (vain ADMIN-roolille)\n\n### 7.3.4 Employee-UI: pohjien luettelo lapsen kohdalla\n\nLasten dokumenttien luonti-näkymässä (Figma Frame 57: *\"Asiakirjat\"*-lohko) pohjien suodatusmahdollisuus *\"Vain siirrettävät perusopetukseen\"* helpottamaan navigointia.\n\n## 7.4 Background job: siirtotehtävä\n\n### 7.4.1 Logiikka\n\nPseudo-Kotlin:\n\n```kotlin\nclass ENivelTransferJob(\n    private val db: Database,\n    private val eNivelClient: ENivelApiClient,\n) {\n    fun execute() {\n        val candidates = db.read {\n            it.findChildDocumentsReadyForTransfer()\n                // SQL: WHERE cd.status = 'COMPLETED'\n                //   AND dt.transferable_to_basic_education = true\n                //   AND cd.transfer_status IN ('READY', 'FAILED')\n                //   AND cd.transfer_attempts < MAX_ATTEMPTS\n        }\n\n        candidates.forEach { doc ->\n            db.transaction { tx ->\n                tx.markAsTransferring(doc.id)\n            }\n\n            try {\n                eNivelClient.putDocument(doc)  // PUT /asiakirjat/{uuid}\n                db.transaction { tx ->\n                    tx.markAsTransferred(doc.id, Instant.now())\n                }\n            } catch (e: Exception) {\n                db.transaction { tx ->\n                    tx.markAsFailed(doc.id, e.message, attempts = doc.transferAttempts + 1)\n                }\n                logger.error(\"eNivel transfer failed for ${doc.id}\", e)\n            }\n        }\n    }\n}\n```\n\n### 7.4.2 Skeduloinnin asetukset (suositus)\n\n| Asetus | Arvo | Perustelu |\n|---|---|---|\n| Ajotaajuus | Tunnein (esim. 0 * * * *) | Miron huomio \"yöllinen riittää\", mutta tunneittainen mahdollistaa nopeamman päivityksen |\n| Max attempts | 5 | Riittävä vakaaviin verkkohäiriöihin, jättää eskaloinnin ihmistoimijalle |\n| Retry backoff | Eksponentiaalinen (1h, 2h, 4h, 8h, 24h) | Vältetään turhia kutsuja kun eNivel on pitkään pois käytöstä |\n| Yhden suorituksen aikaraja | 10 min | Estää kasautumisen jos eNivel on hidas |\n| Rinnakkaisuus | 1 (sekvenssinen) tai pieni rajattu määrä | Vältetään ylikuormitus |\n\n## 7.5 eNivelen puolen toteutusehdotukset\n\n### 7.5.1 Tietokantarakenne (PostgreSQL)\n\nPäätaulut:\n- `oppilas` — oppijanumero, nimi, hetu, syntymäaika, perustiedot\n- `esiopetussijoitus` — yksikkö, ryhmä, ajanjakso\n- `tuen_tiedot` ja `tuen_ajanjakso`, `tukitoimi`\n- `tukipaatosten_yhteenveto`\n- `asiakirja` — ilmentymät, sisältää `id` (eVakan UUID), `pohja_id`, `pohja_nimi`, `pohja_tyyppi`, `kasittelypolku`, `sisalto JSONB`, `pdf BYTEA`, `created_at`, `transferred_at`, `delete_at`\n- `koulusijoitus` ja `kouluryhma`\n- `audit_log` — kaikki tietojen avaamiset (lapsi, käyttäjä, aikaleima, toiminta)\n- `staff_users` — eNivelen käyttäjät (rooli, AD-tunniste, sähköposti, luvitukset, ks. 7.5.5)\n- `staff_user_school_role` — kytkentätaulu, *(staff_user_id, school_id, role)* — pääkäyttäjälle ei rivejä (näkee kaikki); rehtorille rivi per luvitettu koulu\n- `staff_user_class_authorization` — kytkentätaulu opettajille, *(staff_user_id, school_id, class_name)* — esim. *(opettajaX, Topelius, \"1A\")* ja *(opettajaX, Topelius, \"1B\")*\n\n### 7.5.2 Backend-stack (suositus)\n\n- **Kotlin + Spring Boot** — yhteneväinen eVakan kanssa, helpompi yhdistää tiimien osaamista. Vaihtoehtoisesti Node.js / TypeScript jos tiimi sitä haluaa.\n- **PostgreSQL** — kuten eVaka\n- **REST API** — luvun 5 mukaisesti\n- **OAuth2 / OpenID Connect** — kolme identity provideria: MPASSid (opettajat), kunnan Entra ID (rehtorit + pääkäyttäjät), edu-AD (opettajien vaihtoehto, ei MVP). Luvitus on aina eNivelen sisäinen `staff_user`-mallilla.\n\n### 7.5.3 Frontend-stack\n\n- **React + TypeScript** — sopii Figma-mockupien renderöintiin (Frame 57, Frame 59 jo React-koodina käytettävissä)\n- Komponentit: lasten lista (suodattimet + taulukko), lapsen detail-näkymä, koulupaikkatuonti, hallintanäkymät\n\n### 7.5.4 Background-tehtävät eNivelessä\n\n- **Siivoustehtävä** (UC-7): ajetaan päivittäin, poistaa asiakirjat joilla `delete_at < now()`\n- **Audit-loki retention** — vanhojen audit-merkintöjen pakkaus tai arkistointi (tarkennetaan luvussa 6)\n\n### 7.5.5 Luvitusmalli yksityiskohtaisesti\n\nLuvitus on kaksitasoinen ja perustuu kolmeen tauluun:\n\n```sql\nCREATE TABLE staff_user (\n    id UUID PRIMARY KEY,\n    display_name TEXT,\n    role TEXT NOT NULL CHECK (role IN ('PAAKAYTTAJA', 'REHTORI', 'OPETTAJA')),\n    created_at TIMESTAMP NOT NULL DEFAULT now(),\n    deactivated_at TIMESTAMP NULL\n);\n\n-- Identiteetin ankkurointi: yksi staff_user voi periaatteessa olla yhteydessä\n-- useampaan tunnistautumislähteeseen. MVP:ssä opettajilla on käytössä vain MPASSid\n-- ja rehtoreilla/pääkäyttäjillä vain kunnan Entra ID, joten per käyttäjä on\n-- yleensä yksi rivi. Rakenne kuitenkin sallii tulevan edu-AD-vaihtoehdon ja\n-- mahdollisen identiteetin yhdistämisen vaiheen 2 jälkeen.\nCREATE TABLE staff_user_identity (\n    staff_user_id UUID REFERENCES staff_user(id) ON DELETE CASCADE,\n    provider TEXT NOT NULL CHECK (provider IN ('MPASSID', 'ENTRA_ID', 'EDU_AD')),\n    external_id TEXT NOT NULL,\n        -- MPASSid:llä OPH:n oppijanumero\n        -- Entra ID:llä UPN tai objectId\n        -- edu-AD:llä UPN\n    first_seen_at TIMESTAMP NOT NULL DEFAULT now(),\n    last_seen_at TIMESTAMP NOT NULL DEFAULT now(),\n    PRIMARY KEY (provider, external_id)\n);\n\nCREATE TABLE staff_user_school_role (\n    staff_user_id UUID REFERENCES staff_user(id) ON DELETE CASCADE,\n    school_id UUID REFERENCES koulu(id),\n    PRIMARY KEY (staff_user_id, school_id)\n);\n-- Käytetään REHTORI-roolisille käyttäjille; voi olla useampi rivi\n-- Käytetään myös PAAKAYTTAJA-roolisille kun koulurajaus on käytössä\n-- (alueellinen pääkäyttäjä, ks. luku 5.4.1)\n-- Rajauksetonta pääkäyttäjää (globaali näkyvyys) edustaa rivin puuttuminen\n\nCREATE TABLE staff_user_class_authorization (\n    staff_user_id UUID REFERENCES staff_user(id) ON DELETE CASCADE,\n    school_id UUID REFERENCES koulu(id),\n    class_name TEXT NOT NULL,  -- esim. \"1A\", \"1B\"\n    granted_by UUID REFERENCES staff_user(id),\n    granted_at TIMESTAMP NOT NULL DEFAULT now(),\n    PRIMARY KEY (staff_user_id, school_id, class_name)\n);\n-- Käytetään OPETTAJA-roolisille käyttäjille\n-- granted_by viittaa rehtoriin joka antoi luvituksen (audit)\n```\n\n**Oppilaitos-tunnisteen luonnollinen avain:** `koulu.id`:n natural keynä käytetään **OPH:n oppilaitos-OID:tä** (esim. `1.2.246.562.10.67096058700`), joka on sama tunniste jolla MPASSid raportoi opettajan oppilaitoksen ja jolla DigiOnen IdM-API:n `<school-position>` viittaa kouluun. Tämä mahdollistaa luvittamattomien opettajien listan (UC-10) toiminnan ilman erillistä mappausylläpitoa.\n\n**Lukuvuositason hallinnan periaate:**\n\nLuokkanimi *(\"1A\")* viittaa aina ajantasaiseen kouluvuoden luokkaan. Kun seuraava lukuvuosi alkaa ja edellisten ykkösluokkien tiedot poistuvat eNivelen säilytysajan mukaisesti, jäljellä olevat *(opettaja, \"1A\")*-rivit eivät enää viittaa mihinkään olemassa olevaan oppilaaseen — käytännössä luvitus \"vanhenee\" automaattisesti datan poistuessa.\n\nRehtori voi vaihtaa luvituksia uuden lukuvuoden alussa: poistaa edellisen vuoden tarpeettomia luvituksia ja lisätä uudet (esim. seuraavan vuoden luokkien opettajille).\n\n**Pääsynhallinnan kysely (esimerkki SQL):**\n\n```sql\n-- Onko käyttäjällä pääsy oppilaaseen?\nWITH lapsen_koulu AS (\n    SELECT school_id, class_name FROM koulusijoitus WHERE oppija_oid = :oid\n)\nSELECT 1 FROM staff_user u\nLEFT JOIN staff_user_school_role sr ON sr.staff_user_id = u.id\nLEFT JOIN staff_user_class_authorization ca ON ca.staff_user_id = u.id\nWHERE u.id = :user_id\n  AND (\n    u.role = 'PAAKAYTTAJA'\n    OR (u.role = 'REHTORI' AND sr.school_id = (SELECT school_id FROM lapsen_koulu))\n    OR (u.role = 'OPETTAJA'\n        AND ca.school_id = (SELECT school_id FROM lapsen_koulu)\n        AND ca.class_name = (SELECT class_name FROM lapsen_koulu))\n  );\n```\n\n### 7.5.6 API-yhteensopivuus tulevia integraatioita varten\n\nPäätös: **eNivelen UI on MVP:ssä ainoa kuluttaja Pull API:lle**, mutta API rakennetaan alusta lähtien siten että ohjelmallinen kutsu kohdejärjestelmästä on myöhemmin mahdollinen ilman API-suuria muutoksia.\n\nKäytännön suositukset toteutukseen:\n\n| Periaate | Toteutus |\n|---|---|\n| Auth tukee sekä ihmis- että järjestelmätunnusta alusta | Bearer-token (JWT) jonka voi tuottaa joko OIDC ID-tokenista tai client_credentials-flowsta. API-kerros ei eronna |\n| Tietorakenteet ovat täysin JSON-pohjaisia, eivät HTML/UI-spesifisiä | Vältetään rakenteita joissa on UI-tason muotoiluja — sisältö, ei esitys |\n| Endpointit ovat resurssikeskeisiä, ei näkymäkeskeisiä | Esim. `GET /oppilaat/{oid}/asiakirjat` (lista) eikä `GET /lapsi-detail-page-data/{oid}` |\n| Rakenteinen ja asiakirjamuotoinen tieto erotettavissa | `GET /oppilaat/{oid}/tuen-tiedot` palauttaa rakenteisen tiedon erikseen — sopii sijoittelutyökalulle ilman PDF:ää |\n| Suodattimet kone-ystävällisinä | Listausendpointit hyväksyvät kone-ystävälliset suodattimet (esim. `?tuen_taso=ERITYINEN_TUKI&koulupaikka_status=PUUTTUU`) |\n| Versiointi ja deprekaatio dokumentoituina | OpenAPI-spec, version-mainen polku, deprekaatio-otsakkeet kun rajapintaan tehdään muutoksia |\n\n**Konkreettinen tulevaisuusskenaario:** kun perusopetuksen sijoittelutyökalu (esim. DigiOne-laajennus) haluaa lukea automaattisesti tuen tarpeen tiedot kaikille seuraavan vuoden ykkösluokille, se kutsuu:\n\n```\nGET /api/v1/oppilaat?koulu_id=<X>&tuen_taso[]=TEHOSTETTU_TUKI&tuen_taso[]=ERITYINEN_TUKI\nAuthorization: Bearer <client-credentials-token>\n```\n\nja saa rakenteisen JSON-listan ilman että tarvitsee navigoida HTML-näkymiä. Asiakirjamuotoinen tieto (`GET /asiakirjat/{uuid}/pdf`) jää eNivelen UI:n kautta haettavaksi.\n\n## 7.6 Implementaatiojärjestys (vaiheittainen)\n\nVaiheen 2 toteutuksen suositeltu järjestys:\n\n### Vaihe A — eNivelen alusta ja eVakan rajapinta (rinnan)\n\n| Työ | Tekijä | Riippuvuudet |\n|---|---|---|\n| eNivelen tietokanta + REST API:n perusrakenne | eNivel-toteuttaja | — |\n| eNivelen auth (MPASSid + Entra ID mocked alkuun) | eNivel-toteuttaja | — |\n| eVakan migraatiot: `transferable_to_basic_education` + `child_document` siirtokentät | eVaka-toimittaja | — |\n| eVakan import-export-laajennus | eVaka-toimittaja | migraatiot |\n\n### Vaihe B — Pohjien hallinta ja siirto\n\n| Työ | Tekijä | Riippuvuudet |\n|---|---|---|\n| eVakan admin-UI: pohjan flagi-checkbox | eVaka-toimittaja | API-laajennus |\n| eVakan citizen-UI: kaksi erillistä hyväksyntä-checkboxia | eVaka-toimittaja | flagi UI |\n| eVakan siirtotehtävä + eNivel-asiakas | eVaka-toimittaja | child_document siirtokentät, eNivelen API |\n| eNivelen asiakirjojen vastaanotto + tallennus | eNivel-toteuttaja | API-rajapinta |\n\n### Vaihe C — eNivelen käyttöliittymä\n\n| Työ | Tekijä | Riippuvuudet |\n|---|---|---|\n| MPASSid + Entra ID -tunnistautuminen + sisäänkirjautuminen | eNivel-toteuttaja | OIDC-discovery-URL:t ja asiakaskredentiaalit kunnan Entra ID:hen ja MPASSidiin |\n| Käyttäjähallinta — pääkäyttäjän rehtoriluvitukset (UC-8) | eNivel-toteuttaja | `staff_users` + `staff_user_school_role` -taulut |\n| Käyttäjähallinta — rehtorin opettajaluvitukset (UC-9) | eNivel-toteuttaja | `staff_user_class_authorization` -taulu |\n| Lasten lista (Frame 59) + suodattimet | eNivel-toteuttaja | tietokantatäyttö Vaiheen B kautta + luvituslogiikka |\n| Lapsen detail (Frame 57) — kaikki lohkot | eNivel-toteuttaja | lasten lista |\n| Koulupaikkatietojen CSV-tuonti (UC-6) | eNivel-toteuttaja | lasten lista |\n| Tapahtumalogi & audit | eNivel-toteuttaja | kaikki edelliset |\n\n### Vaihe D — Tukipäätösten yhteenveto + siivous\n\n| Työ | Tekijä | Riippuvuudet |\n|---|---|---|\n| eVakan tukipäätösten yhteenvedon koonti + siirto | eVaka-toimittaja | siirtotehtävä |\n| eNivelen yhteenvedon vastaanotto ja UI | eNivel-toteuttaja | tietokantapohja |\n| eNivelen siivoustehtävä (UC-7) | eNivel-toteuttaja | tietokantapohja |\n\n## 7.7 Testaus ja käyttöönotto\n\n| Testattavuus | Tapa |\n|---|---|\n| **eVakan flagi import-export** | Pohja luodaan stagingissa flagilla `true` → exporttaus → import tuotantoon → varmista että flagi on `true` |\n| **Huoltajan polku end-to-end** | Henkilökunta luo CITIZEN_BASIC-asiakirjan → huoltaja hyväksyy citizen-UI:ssa → siirtotehtävä ajetaan → asiakirja näkyy eNivelessä |\n| **Henkilökunnan polku** | Henkilökunta luo OTHER-asiakirjan → merkkaa COMPLETED → siirtotehtävä → eNivel |\n| **Idempotenssi** | Sama UUID lähetetään 3 kertaa → eNivelessä on yksi asiakirja, viimeisimmällä sisällöllä (tai virhe jos sisältö muuttuu, riippuu PUT-semantiikasta) |\n| **Säilytyspoisto** | Tehdään asiakirja jolla `delete_at = eilen` → siivoustehtävä ajetaan → asiakirjaa ei enää löydy |\n| **Pohjan rajoite** | Yritä luoda VASU-pohjalle `transferable_to_basic_education = true` → API hylkää constraint-violation-virheellä |\n| **Auditointiloki** | Avataan lapsen tiedot → varmistetaan että audit_log-tauluun tulee merkintä |\n\n## 7.8 Riskit ja niiden hallinta\n\n| Riski | Vaikutus | Hallinta |\n|---|---|---|\n| Vahingossa pedagogisten asiakirjojen merkitseminen siirrettäväksi | Lakirikkomus, henkilötietojen luvaton siirto | Constraint-tarkistus (UC-1, 7.1.1) + eVaka-pääkäyttäjän koulutus + audit-loki muutoksista |\n| Hyväksynnän peruminen ei mahdollista — virhetapaus | Huoltaja kokee, että ei saa tietojaan takaisin hallintaan | UI-teksti ennen hyväksyntää: *\"Hyväksyntä on lopullinen. Voit lopettaa siirron vain jos asiakirjan sisältö muuttuu — silloin uusi hyväksyntäkierros.\"* |\n| Siirtotehtävä epäonnistuu pitkän aikaa | Tiedot eivät päivity perusopetukseen | Monitorointi, hälytys IT-tuelle, manuaalinen retry-toiminto admin-UI:ssa |\n| eNivel pois käytöstä siirron hetkellä | eVaka kerää siirtomonitoroinnin vajeet | Idempotentti retry, ei datan menetystä |\n| Pohjan flagi muutetaan `false`:ksi olemassaolevien ilmentymien jälkeen | Jos siirto on kesken, mitä tehdään? | Suositus: jo `READY`-tilassa olevat ilmentymät siirretään loppuun normaalisti; uusia ei poimita |\n| Hetu/oppijanumero ei täsmää eNivelen ja eVakan välillä | Lapsi näkyy duplikaattina tai puuttuu | OPH OID ensisijainen tunniste, hetu varatunniste; validointi siirron yhteydessä |\n";
+  const renderer = new marked.Renderer();
+  const origCode = renderer.code.bind(renderer);
+  renderer.code = function(code, lang) {
+    if (lang === 'mermaid') {
+      return '<div class="mermaid">' + code + '</div>';
+    }
+    return origCode(code, lang);
+  };
+  const expanded = md.replace(/<!-- PAGEBREAK -->/g, '\n\n<hr class="pagebreak" />\n\n');
+  marked.setOptions({ gfm: true, breaks: false });
+  document.getElementById('content').innerHTML = marked.parse(expanded, { renderer });
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'default',
+    securityLevel: 'loose',
+  });
+  mermaid.run({ querySelector: '.mermaid' }).then(() => {
+    window.__renderingDone = true;
+  }).catch(e => {
+    console.error('mermaid error:', e);
+    window.__renderingDone = true;
+  });
+</script>
+</body>
+</html>

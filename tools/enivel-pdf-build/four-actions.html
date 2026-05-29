@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<title>Ehdotus seuraavaksi — neljä kohtaa ja niiden linkit</title>
+<style>
+  :root {
+    --bg: #f6f4ee;
+    --fg: #1f1f1f;
+    --muted: #5d5d5d;
+    --card: #ffffff;
+    --border: #2b2b2b;
+    --accent: #e6553f;
+    --accent-soft: #ffe2db;
+    --highlight: #fff4a3;
+    --highlight-edge: #c9a200;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "ss01", "ss02";
+  }
+  body { padding: 36px 44px 44px; width: 1600px; min-height: 1100px; }
+
+  header {
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--border);
+  }
+  h1 {
+    font-size: 36px;
+    margin: 0 0 6px;
+    letter-spacing: -0.02em;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin: 0;
+  }
+  .subtag {
+    display: inline-block;
+    margin-left: 12px;
+    padding: 2px 10px;
+    background: var(--accent);
+    color: white;
+    font-size: 13px;
+    border-radius: 4px;
+    vertical-align: middle;
+    letter-spacing: 0.02em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 22px 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 4px 0 0 var(--border);
+    position: relative;
+  }
+
+  .num {
+    position: absolute;
+    top: -18px;
+    left: -18px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--border);
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  h2 {
+    font-size: 19px;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  .role {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+  .role.you { color: var(--accent); font-weight: 600; }
+
+  .links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .link-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    position: relative;
+  }
+
+  .arrow {
+    flex: 0 0 28px;
+    height: 22px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    color: var(--accent);
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .link {
+    flex: 1;
+    background: var(--highlight);
+    border: 1.5px solid var(--highlight-edge);
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.35;
+    word-break: break-word;
+    box-shadow: 2px 2px 0 0 rgba(0,0,0,0.08);
+  }
+
+  .link .kind {
+    display: inline-block;
+    font-family: -apple-system, sans-serif;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--highlight-edge);
+    font-weight: 700;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .link .url {
+    color: var(--fg);
+    word-break: break-all;
+  }
+  .link .label {
+    color: var(--fg);
+    font-family: -apple-system, sans-serif;
+    font-size: 13.5px;
+  }
+
+  .deferred {
+    background: #efefef;
+    border-color: #b8b8b8;
+    color: #6a6a6a;
+    box-shadow: none;
+  }
+  .deferred .kind, .deferred .url, .deferred .label { color: #6a6a6a; }
+
+  .strike { text-decoration: line-through; }
+
+  footer {
+    margin-top: 30px;
+    padding-top: 14px;
+    border-top: 1px dashed #999;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .card .note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  .you-pill {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    font-size: 11px;
+    padding: 2px 8px;
+    margin-left: 8px;
+    vertical-align: middle;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Ehdotus seuraavaksi — neljä kohtaa ja niiden linkit
+    <span class="subtag">Tieran tapaaminen 28.5.2026</span>
+  </h1>
+  <p class="sub">Nuolet (➜) osoittavat konkreettiset lähteet/kohteet, joihin kukin kohta nojaa.</p>
+</header>
+
+<section class="grid">
+
+  <!-- 1 -->
+  <article class="card">
+    <div class="num">1</div>
+    <h2>Päivitän muistia uudella tiedolla</h2>
+    <div class="role you">Claude — tehty 28.5.2026</div>
+
+    <div class="links">
+      <div class="link-row">
+        <div class="arrow">➜</div>
+        <div class="link"><span class="kind">memory</span><span class="label">project_digione_authentication.md <em>(uusi)</em></span></div>
+      </div>
+      <div class="link-row">
+        <div class="arrow">➜</div>
+        <div class="link"><span class="kind">memory</span><span class="label">reference_digione_idm_api.md <em>(uusi)</em></span></div>
+      </div>
+      <div class="link-row">
+        <div class="arrow">➜</div>
+        <div class="link"><span class="kind">memory</span><span class="label">project_enivel_architecture.md <em>(päivitys)</em></span></div>
+      </div>
+      <div class="link-row">
+        <div class="arrow">➜</div>
+        <div class="link"><span class="kind">file</span><span class="url">/Volumes/Evaka/enivel/IdM-API/README.md</span></div>
+      </div>
+      <div class="link-row">
+        <div class="arrow">➜</div>
+        <div class="link"><span class="kind">www</span><span class="url">wiki.eduuni.fi/spaces/ophPPK/pages/313150371</span><br><span class="label">MPASSid 1.4 -tietomalli</span></div>
+      </div>
+      <div class="link-row">
+        <div class="arrow">➜</div>
+        <div class="link"><span class="kind">www</span><span class="url">1edtech.org/standards/oneroster</span></div>
+      </div>
+      <div class="link-row">
+        <div class="arrow">➜</div>
+        <div class="link"><span class="kind">www</span><span class="url">digione.fi/tietoa-yrityksille</span></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- 2 -->
+  <article class="card">
+    <div class="num">2</div>
+    <h2>Pyydän Tieralta dokumentit</h2>
+    <div class="role">Jonni <span class="you-pill">sinun työsi</span></div>
+
+    <div class="links">
+      <div class="link-row">
+        <div class="arrow">➜</div>
+        <div class="link">
+          <span class="kind">must-have</span>
+          <span class="label">Oppijan_ja_henkilöstön_<br>IdM_rajapintasisältö.xlsx</span><br>
+          <span class="url" style="font-size:11px;">SharePoint · ks. IdM-API/README.md → "Liittyvät dokumentaatiot" k. 4</span>
+        </div>
+      </div>
+      <div class="link-row">
+        <div class="arrow">➜</div>
+        <div class="link">
+          <span class="kind">nice-to-have</span>
+          <span class="label">IdM-integraatio — käyttötapaukset</span><br>
+          <span class="url" style="font-size:11px;">DigiOne Kehitys -Confluence · Turun/Oulun käyttäjillä jo pääsy</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">Sähköpostiviestillä tapaamisen jälkitoimena — ei vaadi uutta tapaamista.<br>Yhteyshenkilöt: Taina, Ville (Tiera).</div>
+  </article>
+
+  <!-- 3 -->
+  <article class="card">
+    <div class="num">3</div>
+    <h2 class="strike">Päivitän slidet</h2>
+    <div class="role">Claude — <strong>jätetään väliin</strong></div>
+
+    <div class="links">
+      <div class="link-row">
+        <div class="arrow" style="color:#888;">➜</div>
+        <div class="link deferred"><span class="kind">file</span><span class="url">presentations/2026-06-tiera-tapaaminen/index.html</span></div>
+      </div>
+      <div class="link-row">
+        <div class="arrow" style="color:#888;">➜</div>
+        <div class="link deferred"><span class="kind">file</span><span class="url">pdf/tiera-tapaaminen-2026-06.pdf</span></div>
+      </div>
+      <div class="link-row">
+        <div class="arrow" style="color:#888;">➜</div>
+        <div class="link deferred"><span class="kind">script</span><span class="url">/tmp/enivel-pdf-build/build-tiera-slides.js</span></div>
+      </div>
+    </div>
+
+    <div class="note">Slidet on jo esitetty Tieralle 28.5. Päivitys olisi dokumentointityö, ei jatkokäytön valmistelu. Siirretään spec-viimeistelyn jälkeen — tai jätetään kokonaan.</div>
+  </article>
+
+  <!-- 4 -->
+  <article class="card">
+    <div class="num">4</div>
+    <h2>Tarkistan Turku/Oulu-yhteyshenkilöiltä esiopetus → 1. luokka -siirtymän valvontaryhmäosoituksen</h2>
+    <div class="role">Jonni <span class="you-pill">sinun työsi</span></div>
+
+    <div class="links">
+      <div class="link-row">
+        <div class="arrow">➜</div>
+        <div class="link"><span class="kind">memory</span><span class="label">reference_enivel_materials.md</span><br><span class="url" style="font-size:11px;">→ Drive-PDF:t, Miro-board (ydintiimi)</span></div>
+      </div>
+      <div class="link-row">
+        <div class="arrow">➜</div>
+        <div class="link"><span class="kind">memory</span><span class="label">project_enivel_basics.md</span><br><span class="url" style="font-size:11px;">→ Sami Koponen (Turku, tilaajan yhteyshenkilö)</span></div>
+      </div>
+    </div>
+
+    <div class="note">Kysymys: "Tiedetäänkö esiopetuksen päässä jo, mihin valvontaryhmään / kenelle ohjaavalle opettajalle oppija menee syksyllä?"<br><br><strong>Vastauksen vaikutus:</strong> KYLLÄ → "eVaka-puolen luvituspäätös" -malli viable. EI → koulukohtainen näkymä tai vaiheen 2 jatkokeskustelu.</div>
+  </article>
+
+</section>
+
+<footer>
+  Liittyy: spec-viimeistely (<code>/Volumes/Evaka/enivel/specification/</code>) · vaiheen 1 toimitus tilaajalle ensi viikolla · phase 1 päättyy 30.6.2026
+</footer>
+
+</body>
+</html>

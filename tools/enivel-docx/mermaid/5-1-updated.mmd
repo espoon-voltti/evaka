@@ -1,0 +1,43 @@
+flowchart LR
+    subgraph "Lähdejärjestelmät (push)"
+        eVaka[eVaka<br/>Turku, Oulu, ...]
+        Other[Muut esiopetuksen<br/>järjestelmät tulevaisuudessa]
+    end
+
+    subgraph eNivel
+        Push[Push API<br/>asiakirjat & tukitiedot]
+        Pull[Pull API<br/>haku & luku]
+        UI[eNivel UI]
+    end
+
+    subgraph "Kohdejärjestelmät (pull)"
+        DigiOne[DigiOne]
+        Primus[Primus]
+        OtherKohde[Muut katselu-/<br/>lukuohjelmat]
+    end
+
+    subgraph "Identiteetti & luvitus"
+        MPASSid[MPASSid<br/>opettajat]
+        EntraID[Kunnan Entra ID<br/>rehtorit + pääkäyttäjät]
+    end
+
+    subgraph "Oppilaan luokkajäsenyys"
+        Karttapalvelu[Karttapalvelu /<br/>oppilaaksiottojärjestelmä<br/>CSV-tuonti UC-6]
+        DigiOneIdM[DigiOnen IdM-API<br/>valvontaryhmäjäsenyys<br/>vaihe 2, luku 5.7]
+    end
+
+    eVaka -->|"PUT /asiakirjat<br/>PUT /oppilaat<br/>PUT /tukipaatosten-yhteenveto"| Push
+    Other -.->|"sama API<br/>(tulevaisuudessa)"| Push
+
+    DigiOne -->|"GET /oppilaat<br/>GET /asiakirjat"| Pull
+    Primus -.->|"sama API"| Pull
+    OtherKohde -.->|"sama API"| Pull
+
+    UI -->|"sisäinen API"| Pull
+    UI -->|"sisäinen API"| Push
+
+    MPASSid -.->|"OIDC: oppijanumero,<br/>oppilaitos, henkilökunta-tieto"| UI
+    EntraID -.->|"OIDC: UPN"| UI
+
+    Karttapalvelu -.->|"CSV-tuonti (MVP)"| Push
+    DigiOneIdM -.->|"GET /users<br/>mTLS + Login-API"| Push

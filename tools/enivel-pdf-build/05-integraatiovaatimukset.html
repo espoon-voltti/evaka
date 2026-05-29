@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <title>5. Integraatiovaatimukset</title>
+  <style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm;
+  }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    color: #1f1f1f;
+    background: #ffffff;
+    font-size: 10pt;
+    margin: 0;
+    padding: 0;
+  }
+  .doc-meta {
+    color: #6e6e6e;
+    font-size: 9.5pt;
+    margin-bottom: 14pt;
+  }
+  h1 {
+    color: #2c5fa1;
+    border-bottom: 2.5pt solid #2c5fa1;
+    padding-bottom: 6pt;
+    font-size: 26pt;
+    margin: 0 0 16pt 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    page-break-after: avoid;
+  }
+  h2 {
+    color: #2c5fa1;
+    font-size: 17pt;
+    margin-top: 20pt;
+    margin-bottom: 8pt;
+    border-bottom: 1pt solid #2c5fa1;
+    padding-bottom: 3pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  h3 {
+    color: #1f1f1f;
+    font-size: 13pt;
+    margin-top: 16pt;
+    margin-bottom: 6pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  h4 {
+    color: #1f1f1f;
+    font-size: 11pt;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+  p { margin: 6pt 0; }
+  code {
+    background: #f1ebe3;
+    color: #b8421a;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 8.8pt;
+  }
+  pre {
+    background: #f5f5f5;
+    padding: 9pt 11pt;
+    border-radius: 3pt;
+    overflow-x: auto;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    page-break-inside: avoid;
+    margin: 8pt 0;
+  }
+  pre code {
+    background: transparent;
+    color: #1f1f1f;
+    padding: 0;
+    font-size: inherit;
+  }
+  table {
+    border-collapse: collapse;
+    margin: 10pt 0;
+    width: 100%;
+    page-break-inside: avoid;
+    font-size: 9pt;
+  }
+  th, td {
+    border: 0.5pt solid #b8b8b8;
+    padding: 5pt 7pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #ececec;
+    color: #1f1f1f;
+    font-weight: 700;
+  }
+  blockquote {
+    background: #e8eef5;
+    border-left: 3pt solid #2c5fa1;
+    padding: 8pt 14pt;
+    margin: 10pt 0;
+    color: #2a2a2a;
+    font-style: italic;
+    page-break-inside: avoid;
+  }
+  blockquote p { margin: 4pt 0; }
+  blockquote strong { color: #2c5fa1; font-style: normal; }
+  blockquote em { font-style: italic; }
+  .mermaid {
+    text-align: center;
+    margin: 16pt 0;
+    page-break-inside: avoid;
+  }
+  .mermaid svg { max-width: 100%; height: auto; }
+  ul, ol { margin: 6pt 0; padding-left: 22pt; }
+  li { margin: 3pt 0; }
+  hr.pagebreak { page-break-before: always; visibility: hidden; height: 0; border: none; margin: 0; }
+  hr:not(.pagebreak) {
+    border: none;
+    border-top: 0.5pt solid #b8b8b8;
+    margin: 14pt 0;
+  }
+  a { color: #2c5fa1; text-decoration: none; }
+  strong { color: #1f1f1f; font-weight: 700; }
+  em { font-style: italic; }
+</style>
+</head>
+<body>
+<div class="doc-meta">eNivel-määrittely · Reaktor · 2026-05-28</div>
+<div id="content"></div>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  const md = "# 5. Integraatiovaatimukset\n\nTässä luvussa määritellään eNivelen ja sen integraatiokumppanien (eVaka, perusopetuksen järjestelmät, oppilaaksiottojärjestelmä, identiteetinhallinta) väliset rajapinnat. eNivel on **passiivinen vastaanottava palvelu** eVakan suhteen ja **aktiivinen tarjoava palvelu** perusopetuksen järjestelmien suhteen.\n\nSuunnittelun keskeinen periaate on että eNivel toimii järjestelmäriippumattomana välivarastona — eVaka vie tietoja eNiveleen ja perusopetus hakee niitä. Suoraa eVaka → DigiOne -rajapintaa ei kehitetä, koska se sitoisi ratkaisun kahden kaupungin nykyarkkitehtuuriin.\n\n## 5.1 Integraatioarkkitehtuuri korkealla tasolla\n\n```mermaid\nflowchart LR\n    subgraph \"Lähdejärjestelmät (push)\"\n        eVaka[eVaka<br/>Turku, Oulu, ...]\n        Other[Muut esiopetuksen<br/>järjestelmät tulevaisuudessa]\n    end\n\n    subgraph eNivel\n        Push[Push API<br/>asiakirjat & tukitiedot]\n        Pull[Pull API<br/>haku & luku]\n        UI[eNivel UI]\n    end\n\n    subgraph \"Kohdejärjestelmät (pull)\"\n        DigiOne[DigiOne]\n        Primus[Primus]\n        OtherKohde[Muut katselu-/<br/>lukuohjelmat]\n    end\n\n    subgraph \"Identiteetti & luvitus\"\n        SuomiFi[Suomi.fi<br/>huoltajatunnistus]\n        MPASSid[MPASSid<br/>opettajat]\n        EntraID[Kunnan Entra ID<br/>rehtorit + pääkäyttäjät]\n        EduAD[edu.turku.fi / edu.ouka.fi AD<br/>opettajat — ei MVP]\n    end\n\n    subgraph \"Oppilaaksiotto\"\n        Karttapalvelu[Karttapalvelu /<br/>oppilaaksiottojärjestelmä]\n    end\n\n    eVaka -->|\"PUT /asiakirjat<br/>PUT /oppilaat<br/>PUT /tukipaatosten-yhteenveto\"| Push\n    Other -.->|\"sama API<br/>(tulevaisuudessa)\"| Push\n\n    DigiOne -->|\"GET /oppilaat<br/>GET /asiakirjat\"| Pull\n    Primus -.->|\"sama API\"| Pull\n    OtherKohde -.->|\"sama API\"| Pull\n\n    UI -->|\"sisäinen API\"| Pull\n    UI -->|\"sisäinen API\"| Push\n\n    MPASSid -.->|\"OIDC: oppijanumero,<br/>oppilaitos, henkilökunta-tieto\"| UI\n    EntraID -.->|\"OIDC: UPN\"| UI\n    EduAD -.->|\"OIDC: UPN<br/>(ei MVP)\"| UI\n    SuomiFi -.->|\"huoltajatunnistus<br/>(eVakan kautta)\"| eVaka\n\n    Karttapalvelu -.->|\"CSV / API<br/>(myöhemmin)\"| Push\n```\n\n## 5.2 eVaka → eNivel: Push API\n\n### 5.2.1 Yleiset periaatteet\n\n- **Protokolla:** HTTPS, REST, JSON-pohjainen\n- **Autentikointi:** mutual TLS (mTLS) tai OAuth2 client credentials -flow. Suositus mTLS, koska kyseessä on järjestelmien välinen kommunikaatio\n- **Idempotenssi:** kaikki PUT-kutsut ovat idempotentteja, eVakan UUID toimii avaimena\n- **Versiointi:** API-versio polkurakenteessa: `/api/v1/...`\n\n### 5.2.2 Endpointit\n\n#### POST/PUT `/api/v1/oppilaat/{oppija_oid}`\n\nLapsen perustiedot ja sijoitustiedot. eVaka päivittää aina kun perustiedot, esiopetussijoitus tai tuen tiedot muuttuvat.\n\n**Pyyntörunko:**\n```json\n{\n  \"oppija_oid\": \"1.2.246.562.24.XXXXXXXXXXX\",\n  \"hetu\": \"040119A1BÖ\",\n  \"etunimi\": \"Emilia\",\n  \"sukunimi\": \"Nieminen\",\n  \"syntymaaika\": \"2019-01-04\",\n  \"perustiedot\": {\n    \"kotiosoite\": \"Esimerkkikatu 1, 20100 Turku\"\n  },\n  \"esiopetussijoitukset\": [\n    {\n      \"yksikon_id\": \"1c2bdc0a-5e1f-4b8a-9f7e-6a5c8e8a3a4d\",\n      \"yksikon_nimi\": \"Satumetsän päiväkoti\",\n      \"ryhman_id\": \"...\",\n      \"ryhman_nimi\": \"Kimalaiset\",\n      \"alkupvm\": \"2025-08-13\",\n      \"loppupvm\": \"2026-05-31\"\n    }\n  ],\n  \"tuen_tiedot\": {\n    \"tuen_taso\": \"TEHOSTETTU_TUKI\",\n    \"arvio_tuen_tarpeesta\": \"Emilialla on haasteita keskittymisessä...\",\n    \"tuen_ajanjaksot\": [\n      {\n        \"alkupvm\": \"2025-08-13\",\n        \"loppupvm\": \"2026-05-31\",\n        \"tukitoimet\": [\n          {\"nimi\": \"Osa-aikainen erityisopetus\", \"kuvaus\": null},\n          {\"nimi\": \"Pienryhmätoiminta\", \"kuvaus\": null}\n        ]\n      }\n    ]\n  }\n}\n```\n\n**Vastauskoodi:** `200 OK` (päivitys) | `201 Created` (uusi) | `400 Bad Request` (validointi) | `401 Unauthorized` | `409 Conflict` (oppija_oid:n ja hetun ristiriita)\n\n#### PUT `/api/v1/asiakirjat/{uuid}`\n\nYksittäisen asiakirjan vastaanotto. UUID = eVakan `child_document.id`.\n\n**Pyyntörunko:**\n```json\n{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"oppija_oid\": \"1.2.246.562.24.XXXXXXXXXXX\",\n  \"pohja\": {\n    \"id\": \"...\",\n    \"nimi\": \"Tiedonsiirtolomake\",\n    \"tyyppi\": \"CITIZEN_BASIC\"\n  },\n  \"kasittelypolku\": \"HUOLTAJAN_HYVAKSYNNALLA\",\n  \"sisalto\": {\n    \"sections\": [\n      {\n        \"id\": \"...\",\n        \"label\": \"Tuen tiedot\",\n        \"questions\": [...]\n      }\n    ]\n  },\n  \"pdf_base64\": \"JVBERi0xLjQK...\",\n  \"created_at\": \"2025-08-13T10:00:00+03:00\",\n  \"guardian_approved_at\": \"2026-04-15T14:23:00+03:00\",\n  \"staff_finalized_at\": null\n}\n```\n\n**Idempotenssi:** Sama `id` PUT:ttaessa tuottaa joko *204 No Content* (ei muutoksia) tai *200 OK* päivityksellä. Sisältöä ei käytännössä saa muuttaa hyväksynnän jälkeen, mutta jos eVakassa korjataan virhe (harvinaisesti, esim. metadatakentässä), uudelleenlähetys on idempotentti.\n\n**Vastauskoodi:** `200 OK` (päivitys) | `201 Created` (uusi) | `400 Bad Request` | `401 Unauthorized` | `404 Not Found` (oppija_oid puuttuu eNivelestä — eVakan tulee ensin tehdä `PUT /oppilaat/...`)\n\n#### PUT `/api/v1/tukipaatosten-yhteenveto/{oppija_oid}`\n\nTukipäätösten rakenteinen yhteenveto. Päivittyy aina kun lapselle tehdään uusi tukipäätös eVakassa.\n\n**Pyyntörunko:**\n```json\n{\n  \"oppija_oid\": \"1.2.246.562.24.XXXXXXXXXXX\",\n  \"paatokset\": [\n    {\n      \"paatostyyppi\": \"EO_TUEN_PAATOS\",\n      \"laatimispvm\": \"2025-10-15\",\n      \"voimassaoloalku\": \"2025-11-01\",\n      \"voimassaololoppu\": \"2026-05-31\"\n    },\n    {\n      \"paatostyyppi\": \"PIDENNETYN_OPPIVELVOLLISUUDEN_PAATOS\",\n      \"laatimispvm\": \"2026-02-10\",\n      \"voimassaoloalku\": \"2026-08-01\",\n      \"voimassaololoppu\": null\n    }\n  ]\n}\n```\n\nPäätyypit ovat enum-arvoja, jotka sovitaan kuntien kanssa luvun 5.5 mukaisesti.\n\n#### DELETE `/api/v1/oppilaat/{oppija_oid}` *(harvoin)*\n\nKäytetään esim. kun lapsen huoltaja vaatii tietojen poistoa lainmukaisin perustein. Poistaa kaikki oppilaan eNivel-tiedot. Ei normaaliosa siirtorytmiä — käytetään vain manuaalisesti pyydetyn poiston yhteydessä.\n\n### 5.2.3 Virheiden käsittely\n\neNivel palauttaa standardin RFC 7807 ongelmavastauksen (`application/problem+json`):\n\n```json\n{\n  \"type\": \"https://enivel.example/errors/oppilas-not-found\",\n  \"title\": \"Oppilas not found\",\n  \"status\": 404,\n  \"detail\": \"oppija_oid 1.2.246.562.24.XXX ei löydy. Lähetä ensin POST /oppilaat.\",\n  \"instance\": \"/api/v1/asiakirjat/550e8400-e29b-41d4-a716-446655440000\"\n}\n```\n\neVakan siirtotehtävä logittaa virheen ja tallentaa sen `child_document.transfer_last_error`-kenttään. Retryt eksponentiaalisella backoffilla (ks. 7.4.2).\n\n## 5.3 eNivel → Perusopetus: Pull API\n\n### 5.3.1 Käyttäjäpohjainen pääsy\n\nToisin kuin Push-API (järjestelmäidentiteetti), Pull-API käytetään **ihmiskäyttäjien tunnuksilla**. Yleensä ei ole tarpeen, että toinen kohdejärjestelmä (DigiOne, Primus) hakee asiakirjoja ohjelmallisesti — tieto käytetään eNivelen omassa UI:ssa. Tarvittaessa kohdejärjestelmä voi ohjata käyttäjän eNivelen UI:hin SSO:n kautta.\n\n> **Avoin kysymys (kuntakohtainen):** Halutaanko kohdejärjestelmälle (esim. DigiOne) myös ohjelmallinen rajapinta tukitietojen luettelointiin? Päätös tehdään luvun 5.5 mukaisesti.\n\n### 5.3.2 Käyttäjän tunnistautuminen ja luvitus\n\n| Kunta | Opettajat | Rehtorit ja pääkäyttäjät | Luvituksen lähde |\n|---|---|---|---|\n| Turku | MPASSid (OIDC) | Turun Entra ID (`turku.fi`) | eNivelen oma `staff_users`-luvitus |\n| Oulu | MPASSid (OIDC) | Oulun Entra ID (`ouka.fi`) | eNivelen oma `staff_users`-luvitus |\n| Muut | MPASSid (OIDC) | Kunnan Entra ID (tai OIDC-yhteensopiva tarjoaja) | eNivelen oma `staff_users`-luvitus |\n\n**Reunaehdot (AD-tapaaminen 19.5.2026 ja Tiera-tapaaminen 28.5.2026):**\n\n- **MPASSid** tarjoaa kirjautuneesta opettajasta: **oppijanumero, etunimi, sukunimi, oppilaitos (OPH OID), henkilökunta/oppilas-tieto**. Ei tarjoa: sähköpostia, käyttäjätunnusta, luokka- tai oppilastason oikeutusta. Lähde: [MPASSid-tietomalli 1.4](https://wiki.eduuni.fi/spaces/ophPPK/pages/313150371).\n- **Rehtorit ja hallinnon käyttäjät eivät voi käyttää MPASSidiä** — heidät tunnistetaan kunnan Entra ID:n kautta. Entra ID ei tuo eNivelen kannalta oleellista oppilaitos- tai rooli-tietoa, joten heidän luvituksensa on tehtävä eNivelessä manuaalisesti pääkäyttäjän toimesta.\n- **Opettajien edu.turku.fi / edu.ouka.fi AD -tunnistautuminen** on mahdollinen vaihtoehto MPASSidille, mutta **ei kuulu MVP:hen** — opettajat tunnistautuvat MVP:ssä ainoastaan MPASSidillä. Vaiheen 2 jatkokysymyksenä voidaan harkita lisäämistä.\n- **DigiOne ei tarjoa erillistä SSO-mekanismia** — DigiOnen omat käyttäjät tunnistautuvat MPASSidillä tai kunnan Entra ID:llä. eNivel käyttää siis samoja identity providereita kuin DigiOne, ei DigiOnea identity providerina.\n\n> **Miron innovatiivinen ehdotus 27.1.2026:** *\"Voitaisiinko siirtää tieto sallituista oppilaista osana kirjautumista DigiOnen kautta? DigiOne toimittaa käyttäjätiedon yhteydessä listan oppilaista joiden tietoja saa katsella?\"*\n>\n> **Vastaus (Tieran tapaaminen 28.5.2026):** Ei feasible. DigiOne tukee OneRoster-rajapintaa, mutta se kattaa vain opetusryhmät — ei suomalaisen peruskoulun valvontaryhmiä (administrative groups), jotka olisivat eNivelen opettaja↔oppija-luvituksen lähtökohta. DigiOnen IdM-API:n `<employee>`-elementin laajentaminen valvontaryhmäjäsenyyksillä ei ole feasible Tieran kannan mukaan. **eNivelen oma `staff_users`-luvitus on välttämätön — ei väliaikainen ratkaisu.**\n\n### 5.3.3 Endpointit (eNivel-UI:n käyttämä sisäinen API)\n\n| Endpoint | Selitys |\n|---|---|\n| `GET /api/v1/oppilaat?koulu_id=...&suodatin=...` | Listaa oppilaat luvituksen mukaan; suodattimet (tukea saavat, koulupaikka päätetty/puuttuu, erityiskouluun sijoitettu) |\n| `GET /api/v1/oppilaat/{oppija_oid}` | Oppilaan kaikki tiedot (perustiedot, sijoitukset, tuen tiedot, asiakirjat, tukipäätösten yhteenveto) — kirjataan audit-lokiin |\n| `GET /api/v1/oppilaat/{oppija_oid}/asiakirjat/{uuid}` | Yksittäinen asiakirja JSON-muodossa |\n| `GET /api/v1/oppilaat/{oppija_oid}/asiakirjat/{uuid}/pdf` | Asiakirjan PDF |\n| `POST /api/v1/koulusijoitukset/csv` | CSV-tuonti koulusijoituksille (UC-6) |\n| `POST /api/v1/oppilaat/{oppija_oid}/koulusijoitus` | Manuaalinen koulusijoituksen päivitys (Figma Frame 57: \"Muokkaa koulupaikkatietoa\") |\n\n### 5.3.4 Audit-loki\n\nJokainen GET-kutsu, joka lukee yksittäisen oppilaan tietoja, tallentaa lokimerkinnän:\n- Käyttäjän tunniste\n- Oppilas (oppija_oid)\n- Aikaleima\n- Toiminta (`READ_DETAILS`, `READ_DOCUMENT`, `READ_PDF`)\n- Käyttäjän rooli ja koulu/aluevastuu (rikastettuna lokituksen aikaan)\n\nListanäkymän haku (`GET /oppilaat?...`) ei lokita yksittäisiä oppilaita — vain hakuparametrit. Tämä vähentää lokituksen kuormaa.\n\n## 5.4 Tunnistus ja luvitus tarkemmin\n\n### 5.4.1 eNivelen käyttäjäroolit ja näkyvyys\n\neNivelen sisäinen luvitusmalli on **kaksitasoinen**: pääkäyttäjä luvittaa rehtorit kouluihin, rehtori luvittaa opettajat luokkiin oman koulunsa sisällä. Aluerehtoreille annetaan pääkäyttäjä-rooli — erillistä aluerehtori-roolia ei MVP:ssä toteuteta.\n\n| Rooli | Näkyvyys oppilaisiin | Toiminnot | Luvituksen antaja | Sallitut tunnistautumistavat |\n|---|---|---|---|---|\n| **Pääkäyttäjä** (globaali) | Kaikki kunnan oppilaat — myös ne joilla ei ole vielä koulupaikkaa | Hallintanäkymä, käyttäjäluvitukset (rehtoritasolla), CSV-tuonti, koulusijoitusten muokkaus, kaikki tiedot | Itse järjestelmäkäyttö (kunnan IT) | Kunnan Entra ID |\n| **Pääkäyttäjä** (alueellinen / koulurajattu) | Luvitettujen koulujen oppilaat — **ei näe niitä, joilla ei ole koulupaikkaa** | Samat kuin globaalilla pääkäyttäjällä, mutta rajatulla scopella | Globaali pääkäyttäjä | Kunnan Entra ID |\n| **Rehtori** | Luvitettujen koulujen kaikki oppilaat — ei näe niitä, joilla ei ole vielä koulupaikkaa | Luvittaa opettajat omille luokille, lukea oppilaita | Pääkäyttäjä | Kunnan Entra ID |\n| **Opettaja / erityisopettaja** | Luvitettujen luokkien (esim. *1A*, *1B*) oppilaat | Lukea oppilaita, ei muokata | Rehtori | MPASSid (vaiheessa 2 mahdollisesti myös edu-AD) |\n\n**Aluerehtorit ja alueelliset pääkäyttäjät:** eNivel ei toteuta erillistä aluerehtori- tai aluepääkäyttäjäroolia. Sen sijaan kunnan pääkäyttäjä voi luvittaa muita pääkäyttäjiä joko (a) globaaleiksi tai (b) rajatuiksi yhteen tai useampaan kouluun. Käytännössä \"aluepääkäyttäjä\" on siis pääkäyttäjä, jonka kunnan pääkäyttäjä on luvittanut alueen kouluihin. Kunnan vastuulla on päättää, miten oman tilanteensa luvitukset tehdään.\n\n> **Huom. lapset, joilla ei vielä ole koulupaikkaa:** Jos pääkäyttäjälle on annettu koulurajaus, hän ei näe lapsia joilla ei ole vielä `koulusijoitusta` — koska lapsi ei vielä kuulu mihinkään kouluun. Jos halutaan, että alueellinen pääkäyttäjä näkee myös vielä-sijoittamattomia lapsia (esim. päättäen heidän koulusijoituksensa), pitää luvittaa hänet **globaalina pääkäyttäjänä**. Tämä on tietoinen rajaus joka pysyy yksinkertaisena: lapsi → koulupaikka → koulu → rajaus on yksi ja sama tarkistusketju kaikille rooleille.\n\n### 5.4.2 Luvitushierarkia ja sen rakenne\n\n```mermaid\nflowchart LR\n    PK[Pääkäyttäjä<br/>kuntakohtainen]\n    R1[Rehtori<br/>Topeliuksen koulu]\n    R2[Rehtori<br/>Puolalanmäen koulu]\n    O1[Opettaja<br/>1A, Topeliuksen koulu]\n    O2[Erityisopettaja<br/>1A + 1B,<br/>Topeliuksen koulu]\n    O3[Opettaja<br/>1B, Puolalanmäen koulu]\n\n    PK -->|luvittaa| R1\n    PK -->|luvittaa| R2\n    R1 -->|luvittaa| O1\n    R1 -->|luvittaa| O2\n    R2 -->|luvittaa| O3\n```\n\nLuvitukset tallennetaan eNivelen `staff_users`-tauluun. Periaatteet:\n\n- **Yhdellä rehtorilla voi olla useampi koulu** (kun aluerehtori toimii pääkäyttäjänä, hänellä voi olla pääsy useaan kouluun pääkäyttäjäroolissa; mutta myös rehtori voi olla luvitettu useammalle koululle)\n- **Yhdellä opettajalla voi olla useampi luokka** saman koulun sisällä — esim. erityisopettaja, joka kiertää useassa luokassa\n- **Lukuvuosi on implisiittinen** — eNivelen säilytysaika hoitaa sen että vanhat tiedot poistuvat, jolloin uudet luvitukset koskevat aina ajantasaista lasten joukkoa\n- **Luvitukset ovat AINA rajaavia, ei lisääviä** — opettaja ei pääse esim. naapurikoulun tietoihin edes saman kunnan sisällä\n- **Auditointi:** kaikki luvitusmuutokset tallennetaan audit-lokiin (kuka luvitti, kenen, mihin, milloin)\n\nTarkemmat käyttötapaukset: ks. luku 4 UC-8 (rehtorin luvitus) ja UC-9 (opettajan luvitus).\n\n### 5.4.3 Tunnistautuminen ja identiteetin ankkurointi\n\nKun käyttäjä kirjautuu sisään, eNivel tarkistaa onko käyttäjälle annettu luvitus. Tunnistautuvasta lähteestä saadaan **identiteetin ankkuri**, jolla käyttäjä yhdistetään `staff_users`-taulun riviin:\n\n| Tunnistautumislähde | Käyttäjäryhmä | Ankkuri | Lisäclaimsit jotka eNivel käyttää |\n|---|---|---|---|\n| MPASSid (OIDC) | Opettajat | OPH:n oppijanumero (`urn:mpass.id:uid` tms.) | Oppilaitos (OPH OID) — käytetään rehtorin näkymässä (UC-10), `name.given`, `name.family`, henkilökunta/oppilas-erottelu |\n| Kunnan Entra ID (OIDC) | Rehtorit, pääkäyttäjät | UPN tai `objectId` | `displayName`, `mail` (jos käytettävissä) |\n| edu-AD (OIDC) — *ei MVP* | Opettajat (vaihtoehtoinen tulevaisuuden lisäys) | UPN | `displayName`, `mail` |\n\nJos kirjautuvaa käyttäjää ei löydy `staff_users`-taulusta, hänelle näytetään tieto että pääsy ei ole luvitettu. Yhteyspiste on koulun rehtori (opettajan tilanteessa) tai kunnan pääkäyttäjä (rehtorin tilanteessa). MPASSidin osalta sovelletaan lisätoimintoa (UC-10): jos opettaja on kirjautunut mutta hänen luvitustaan ei ole vielä rehtorilla tehty, opettaja näkyy rehtorin \"luvittamattomat opettajat\" -listassa, mikä helpottaa luvituksen tekemistä ilman että rehtorin täytyy etukäteen tietää opettajan oppijanumero.\n\n> **MVP-rajaus:** Opettajat tunnistautuvat MVP:ssä **ainoastaan MPASSidillä**. edu-AD-vaihtoehto on dokumentoitu mahdollisena tulevana lisäyksenä (jos koulu haluaa rajata MPASSidin pois käytöstä), mutta sen toteutusta ei suunnitella tämän hankkeen ensimmäisessä vaiheessa. **Käyttäjäkohtaista identiteetin yhdistämistä** (sama opettaja kahdesta eri tunnistautumislähteestä) ei siten tarvita MVP-vaiheessa.\n\n## 5.5 Avoimet integraatiokysymykset\n\n| Aihe | Avoin kysymys | Vaikutus |\n|---|---|---|\n| Tukipäätöstyyppien enum | Mitkä päätöstyypit eritellään yhteenvedossa? | Tietomalli + UI |\n| DigiOnen / Primuksen ohjelmallinen pull-rajapinta rakenteiselle tiedolle | Toteutetaanko jo MVP:ssä, vai jätetäänkö vaiheeseen 2+ kun tarve on konkreettinen (esim. erityiskoulu/-luokka-sijoittelutyökalun tarpeet)? | Skooppi, autentikointi |\n| Karttapalvelu-integraatio | CSV-tuonti riittää MVP:ssä, mutta milloin korvataan API:lla? | Vaiheen 2 työn jälkeen |\n| eVakan yöllinen vai tunneittainen siirto | Mirossa \"yöllinen riittää\", mutta tunneittainen mahdollistaa nopeamman päivityksen | Operatiivinen tapa |\n| Kuntakohtaiset poikkeukset | Voiko sama eNivel-instanssi palvella useaa kuntaa, vai onko jokaisella oma? | Käyttöönotto, hosting |\n| MPASSid:n oppilaitos-OID ↔ eNivelen koulu-tunniste | Onko 1:1-mappaus suora vai tarvitaanko ylläpitomappausta? Lähtöoletus: suora — OPH:n oppilaitos-OID toimii natural keyna eNivelen `koulu`-taulussa | Tietomalli, käyttöönotto |\n| Tieran SharePoint-Excel | Onko `<employee>`-elementissä varattuja kenttiä valvontaryhmäjäsenyydelle (`Oppijan_ja_henkilöstön_IdM_rajapintasisältö.xlsx`)? Pyydetään Tieralta vaiheen 2 alkuosaan. | Mahdollinen pidemmän tähtäimen yksinkertaistus |\n\n### 5.5.1 Aiemmat avoimet kysymykset, joihin tapaamiset 19.5. ja 28.5.2026 ovat vastanneet\n\n| Aihe | Aiempi avoin kysymys | Vastaus ja päivämäärä |\n|---|---|---|\n| Aluerehtori-rooli | Onko rooli mukana MVP:ssä? | **AD-tapaaminen 19.5.2026:** Ei omaa roolia. Pääkäyttäjälle voidaan antaa kuntakohtainen koulurajaus (sama mekanismi kuin rehtorille). Kunta päättää, miten omat alueelliset luvitukset järjestää. Ks. 5.4.1. |\n| Asiakirjojen ohjelmallinen haku kohdejärjestelmästä | Onko kohdejärjestelmä-puolelle myös ohjelmallinen rajapinta tukitietojen luettelointiin? | **Päätetty:** Ei MVP:ssä — asiakirjat haetaan eNivelen UI:n kautta MPASSid- tai Entra-luvituksella. API rakennetaan alusta lähtien yhteensopivaksi koneelliselle haulle (ks. 7.5.6). |\n| DigiOne-ohjattu oppilasluvitus | Voiko DigiOne toimittaa listan luvitetuista oppilaista kirjautumisen yhteydessä (Miron ehdotus 27.1.2026)? | **Tieran tapaaminen 28.5.2026:** Ei feasible. OneRoster kattaa vain opetusryhmiä, ei suomalaisia valvontaryhmiä. IdM-API:n `<employee>`-elementin laajentaminen administrative-group-membership-tiedoilla ei mahdollinen. eNivelen oma `staff_users`-luvitus on välttämätön. |\n| DigiOne-SSO tunnistautumiskanavana | Onko DigiOne-SSO sopiva tunnistautumiskanava perusopetukseen? | **Tieran tapaaminen 28.5.2026:** Ei ole olemassa erillistä DigiOne-SSO:ta. Kaikki DigiOnen käyttäjät tunnistautuvat MPASSidillä tai kunnan Entra ID:llä. eNivel käyttää siis samoja identity providereita kuin DigiOne. |\n\n## 5.6 Muut kuin REST-rajapinnat\n\n### 5.6.1 OpenAPI-spesifikaatio\n\nTämän luvun rajapintakuvaukset toteutetaan OpenAPI 3.x -spesifikaationa, joka tuotetaan erikseen. Spesifikaatio liitetään vaiheen 2 tarjouspyyntöihin liitteenä. Sijainti repon liitteissä: `liitteet/api-spec.yaml` (tuotetaan myöhemmin).\n\n### 5.6.2 Webhookit (ei MVP:ssä)\n\nTulevaisuudessa eNivel voi tarjota webhook-rajapinnan, joka ilmoittaa kohdejärjestelmälle (esim. DigiOne) kun lapsen tiedot päivittyvät. Ei kuulu tämän hankkeen vaiheen 2 skooppiin.\n";
+  const renderer = new marked.Renderer();
+  const origCode = renderer.code.bind(renderer);
+  renderer.code = function(code, lang) {
+    if (lang === 'mermaid') {
+      return '<div class="mermaid">' + code + '</div>';
+    }
+    return origCode(code, lang);
+  };
+  const expanded = md.replace(/<!-- PAGEBREAK -->/g, '\n\n<hr class="pagebreak" />\n\n');
+  marked.setOptions({ gfm: true, breaks: false });
+  document.getElementById('content').innerHTML = marked.parse(expanded, { renderer });
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'default',
+    securityLevel: 'loose',
+  });
+  mermaid.run({ querySelector: '.mermaid' }).then(() => {
+    window.__renderingDone = true;
+  }).catch(e => {
+    console.error('mermaid error:', e);
+    window.__renderingDone = true;
+  });
+</script>
+</body>
+</html>
