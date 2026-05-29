@@ -394,10 +394,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
               <div th:text="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
             </th:block>
             <th:block th:unless="${decision.type.name() == 'PRESCHOOL' or decision.type.name() == 'PRESCHOOL_DAYCARE'}">
-              <div th:if="${not #strings.isEmpty(decisionMakerName)}" th:text="${decisionMakerName}"></div>
-              <div th:if="${not #strings.isEmpty(decisionMakerTitle)}" th:text="${decisionMakerTitle}">Asiakaspalvelupäällikkö</div>
-              <div th:if="${not #strings.isEmpty(decisionMakerName) or not #strings.isEmpty(decisionMakerTitle)}"
-                   th:text="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
+              <div th:text="${decision.createdBy}"></div>
+              <div th:text="#{decision.approver.decisionMakerTitle}">Koordinaattori</div>
+              <div th:text="#{decision.approver.additionalInfo}">(allekirjoitettu koneellisesti)</div>
             </th:block>
         </th:block>
         <br/>
