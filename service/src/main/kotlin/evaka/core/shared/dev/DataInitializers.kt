@@ -151,7 +151,6 @@ fun Database.Transaction.ensureDevData() {
     if (createQuery { sql("SELECT count(*) FROM care_area") }.exactlyOne<Int>() == 0) {
         listOf(
                 "dev-data/dev-data.sql",
-                "dev-data/service-need-options.sql",
                 "dev-data/employees.sql",
                 "dev-data/preschool-terms.sql",
                 "dev-data/club-terms.sql",
