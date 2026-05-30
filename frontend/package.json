@@ -57,7 +57,7 @@
     "react-select": "5.10.2",
     "seamless-scroll-polyfill": "2.3.4",
     "styled-components": "6.3.12",
-    "wouter": "3.9.0"
+    "wouter": "3.10.0"
   },
   "devDependencies": {
     "@eslint/compat": "2.1.0",
