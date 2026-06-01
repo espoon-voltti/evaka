@@ -4,8 +4,6 @@
 
 package evaka.core.decision
 
-// import evaka.core.decision.reasoning.deleteDecisionIndividualReasoningLink
-// import evaka.core.decision.reasoning.insertDecisionIndividualReasoningLink
 import evaka.core.Audit
 import evaka.core.AuditId
 import evaka.core.EvakaEnv

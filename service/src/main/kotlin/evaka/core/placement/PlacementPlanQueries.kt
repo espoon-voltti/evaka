@@ -106,10 +106,7 @@ WHERE application_id = ${bind(applicationId)} AND deleted = false
         }
 }
 
-data class PlacementPlanUnit(
-    val id: DaycareId,
-    val name: String,
-)
+data class PlacementPlanUnit(val id: DaycareId, val name: String)
 
 fun Database.Read.getPlacementPlanUnit(applicationId: ApplicationId): PlacementPlanUnit {
     return createQuery {

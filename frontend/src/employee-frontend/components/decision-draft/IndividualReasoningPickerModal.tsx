@@ -13,11 +13,12 @@ import type {
   DecisionId,
   DecisionIndividualReasoningId
 } from 'lib-common/generated/api-types/shared'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { useQueryResult } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
@@ -28,25 +29,6 @@ import {
   getIndividualReasoningsQuery,
   linkIndividualReasoningsMutation
 } from './queries'
-import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-
-const ModalShell = styled.div`
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`
-
-const HeadingRow = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`
-
-const HeadingTitle = styled.h2`
-  margin: 0;
-`
 
 const Subtitle = styled.div`
   color: ${colors.grayscale.g70};
@@ -86,11 +68,6 @@ const ItemTitle = styled.div`
 const TextLabel = styled.div`
   font-weight: ${fontWeights.semibold};
   font-size: 0.9em;
-`
-
-const Footer = styled.div`
-  display: flex;
-  justify-content: flex-end;
 `
 
 interface Props {
@@ -144,15 +121,8 @@ export default React.memo(function IndividualReasoningPickerModal({
       rejectLabel={i18n.common.cancel}
       width="wide"
     >
-      {/* <PlainModal margin="auto" width="wide" onEscapeKey={onClose}> */}
-      {/* <ModalShell> */}
-      {/* <HeadingRow>
-        <HeadingTitle>
-          {i18n.decisionDraft.reasonings.modalTitle}
-        </HeadingTitle>
-        <Subtitle>{`${childName} · ${decisionTypeLabel}`}</Subtitle>
-      </HeadingRow> */}
       <Subtitle>{`${childName} · ${decisionTypeLabel}`}</Subtitle>
+      <Gap />
       {renderResult(individualReasonings, (rows) => {
         const text = (r: DecisionIndividualReasoning) =>
           lang === 'sv' ? r.textSv : r.textFi
@@ -203,16 +173,6 @@ export default React.memo(function IndividualReasoningPickerModal({
           </RowList>
         )
       })}
-      {/* <Footer>
-        <Button
-          primary
-          onClick={onClose}
-          text={i18n.decisionDraft.reasonings.modalCloseButton}
-          data-qa="picker-close"
-        />
-      </Footer> */}
-      {/* </ModalShell> */}
-    {/* </PlainModal> */}
     </MutateFormModal>
   )
 })

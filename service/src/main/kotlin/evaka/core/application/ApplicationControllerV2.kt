@@ -12,9 +12,7 @@ import evaka.core.decision.Decision
 import evaka.core.decision.DecisionDraft
 import evaka.core.decision.DecisionDraftUpdate
 import evaka.core.decision.DecisionType
-import evaka.core.decision.DecisionUnit
 import evaka.core.decision.fetchDecisionDrafts
-import evaka.core.decision.getDecisionUnit
 import evaka.core.decision.getDecisionsByApplication
 import evaka.core.decision.updateDecisionDrafts
 import evaka.core.identity.ExternalIdentifier
@@ -478,7 +476,7 @@ class ApplicationControllerV2(
     }
 
     private fun validateDecisionDrafts(
-        decisionDrafts: List<DecisionDraft>,
+        decisionDrafts: List<DecisionDraft>
     ): Pair<DecisionDraft, DecisionDraft?> {
         if (decisionDrafts.isEmpty()) {
             throw IllegalStateException("At least one decision draft must be provided")
@@ -489,21 +487,19 @@ class ApplicationControllerV2(
         if (decisionDrafts.size == 1) {
             return Pair(decisionDrafts[0], null)
         }
-        val primaryDecision = decisionDrafts.firstOrNull {
-            it.type in listOf(
-                DecisionType.PRESCHOOL,
-                DecisionType.PREPARATORY_EDUCATION,
-            )
-        } ?: throw IllegalStateException(
-            "Found two decision drafts but none of them is of type ${DecisionType.PRESCHOOL} or ${DecisionType.PREPARATORY_EDUCATION}"
-        )
+        val primaryDecision =
+            decisionDrafts.firstOrNull {
+                it.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)
+            }
+                ?: throw IllegalStateException(
+                    "Found two decision drafts but none of them is of type ${DecisionType.PRESCHOOL} or ${DecisionType.PREPARATORY_EDUCATION}"
+                )
 
         val connectedDecision = decisionDrafts.firstOrNull { it.id != primaryDecision.id }
         if (connectedDecision != null) {
-            if (connectedDecision.type !in listOf(
-                    DecisionType.PRESCHOOL_DAYCARE,
-                    DecisionType.PRESCHOOL_CLUB,
-                )
+            if (
+                connectedDecision.type !in
+                    listOf(DecisionType.PRESCHOOL_DAYCARE, DecisionType.PRESCHOOL_CLUB)
             ) {
                 throw IllegalStateException(
                     "Found two decision drafts but the connected decision is not of type ${DecisionType.PRESCHOOL_DAYCARE} or ${DecisionType.PRESCHOOL_CLUB}"
@@ -544,7 +540,8 @@ class ApplicationControllerV2(
 
                     val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
 
-                    val (primaryDecision, connectedDecision) = validateDecisionDrafts(decisionDrafts)
+                    val (primaryDecision, connectedDecision) =
+                        validateDecisionDrafts(decisionDrafts)
 
                     val applicationGuardian =
                         tx.getPersonById(application.guardianId)
