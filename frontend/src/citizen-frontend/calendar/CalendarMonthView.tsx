@@ -735,7 +735,10 @@ const MonthTitle = styled(H1).attrs({ $noMargin: true })`
   color: ${(p) => p.theme.colors.main.m1};
   align-items: center;
   display: flex;
-  min-width: 240px;
+  /* Reserve enough width for the longest localized month name plus the
+     inline info button and warning icon, so the navigation buttons that
+     follow don't shift horizontally when the month (or alert state) changes. */
+  min-width: 320px;
 `
 
 const DayCell = styled.button<{
