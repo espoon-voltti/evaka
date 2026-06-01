@@ -258,16 +258,9 @@ private fun childIdsWithPlacementsEndingBefore(date: LocalDate) = QuerySql {
     sql(
         """
 SELECT child_id
-FROM placement p_last
-WHERE
-    p_last.end_date < ${bind(date)} AND
-    NOT EXISTS (
-        SELECT
-        FROM placement p_later
-        WHERE
-            p_later.child_id = p_last.child_id AND
-            p_later.start_date > p_last.start_date
-    )
+FROM placement
+GROUP BY child_id
+HAVING max(end_date) < ${bind(date)}
 """
     )
 }
