@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 
-import { featureFlags } from 'lib-customizations/employee'
+import { UserContext } from '../../state/user'
 
 import DecisionDraftLegacy from './DecisionDraftLegacy'
 import DecisionDraftRedesign from './DecisionDraftRedesign'
 
 export default React.memo(function DecisionDraft() {
-  return featureFlags.decisionDraftRedesign === true ? (
+  const { user } = useContext(UserContext)
+  return user?.accessibleFeatures.decisionReasoningsEnabled === true ? (
     <DecisionDraftRedesign />
   ) : (
     <DecisionDraftLegacy />

@@ -61,9 +61,7 @@ const features: Features = {
   default: {
     ...prod,
     environmentLabel: 'Test',
-    citizenChildDocumentTypes: true,
-    decisionReasoningOptions: true,
-    decisionDraftRedesign: true
+    citizenChildDocumentTypes: true
   },
   staging: {
     ...prod,

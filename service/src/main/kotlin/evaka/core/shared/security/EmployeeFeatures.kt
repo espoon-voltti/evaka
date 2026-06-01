@@ -30,7 +30,7 @@ data class EmployeeFeatures(
     val outOfOffice: Boolean,
     val decisionReasoningManagement: Boolean,
     val decisionReasoningGenericRemoval: Boolean,
-    val decisionReasoningsUsable: Boolean,
+    val decisionReasoningsEnabled: Boolean,
     val allowEnglishChildDocumentsForAllTypes: Boolean,
     val messageSupportEmail: String?,
 )

@@ -340,7 +340,7 @@ class SystemController(
                                 ),
                             decisionReasoningGenericRemoval =
                                 env.decisionReasoningGenericRemovalEnabled,
-                            decisionReasoningsUsable = env.decisionReasoningEnabled,
+                            decisionReasoningsEnabled = env.decisionReasoningEnabled,
                             allowEnglishChildDocumentsForAllTypes =
                                 featureConfig.allowEnglishChildDocumentsForAllTypes,
                             messageSupportEmail = featureConfig.messageSupportEmail,

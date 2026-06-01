@@ -13,6 +13,7 @@ evaka:
     mock: true
   decision_reasoning:
     generic_removal_enabled: true
+    enabled: true
   email:
     sender_address: no-reply.evaka@espoo.fi
     sender_name:
