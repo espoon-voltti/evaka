@@ -189,7 +189,7 @@ class PersonController(
                             Action.Person.READ_DEPENDANTS,
                             personId,
                         )
-                        personService.getPersonWithChildren(it, user, personId)
+                        personService.getPersonWithChildren(it, user, clock.now(), personId)
                     }
                     ?.children ?: throw NotFound()
             }
@@ -227,7 +227,9 @@ class PersonController(
                         )
                     GuardiansResponse(
                         guardians =
-                            personService.getGuardians(tx, user, personId).map(PersonJSON::from),
+                            personService
+                                .getGuardians(tx, user, clock.now(), personId)
+                                .map(PersonJSON::from),
                         blockedGuardians =
                             if (fetchBlockedGuardians)
                                 tx.getBlockedGuardians(personId)
@@ -593,7 +595,7 @@ class PersonController(
                     tx.blockGuardian(childId, body.guardianId)
                 } else {
                     tx.unblockGuardian(childId, body.guardianId)
-                    personService.getGuardians(tx, user, childId, forceRefresh = true)
+                    personService.getGuardians(tx, user, clock.now(), childId, forceRefresh = true)
                 }
             }
         }

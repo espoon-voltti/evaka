@@ -195,7 +195,7 @@ class DecisionService(
             tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
 
         // make sure VTJ guardians are up-to-date
-        personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, decision.childId)
+        personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, now, decision.childId)
 
         val applicationId = decision.applicationId
         val application =
@@ -309,6 +309,9 @@ class DecisionService(
         clock: EvakaClock,
         applicationId: ApplicationId,
     ) {
+        val now = clock.now()
+        val today = now.toLocalDate()
+
         val guardianId = db.transaction { tx ->
             val application =
                 tx.fetchApplicationDetails(applicationId)
@@ -316,9 +319,9 @@ class DecisionService(
             val childId = application.childId
 
             // make sure VTJ guardians are up-to-date
-            personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, childId)
+            personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, now, childId)
 
-            val currentGuardians = tx.getChildGuardiansAndFosterParents(childId, clock.today())
+            val currentGuardians = tx.getChildGuardiansAndFosterParents(childId, today)
 
             application.guardianId.takeIf { currentGuardians.contains(it) }
         }

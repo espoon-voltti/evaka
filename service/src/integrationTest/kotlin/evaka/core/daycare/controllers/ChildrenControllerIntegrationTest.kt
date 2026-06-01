@@ -21,6 +21,7 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.config.testFeatureConfig
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.shared.noopTracer
 import evaka.core.shared.security.AccessControl
@@ -59,7 +60,8 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                             diet = "bcvxnvgmn",
                             additionalInfo = "fjmhj",
                         ),
-                )
+                ),
+                HelsinkiDateTime.now(),
             )
             child = tx.getChild(childId)!!
         }

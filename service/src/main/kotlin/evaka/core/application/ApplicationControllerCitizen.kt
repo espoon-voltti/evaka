@@ -188,6 +188,7 @@ class ApplicationControllerCitizen(
                         personService.getOtherGuardian(
                             tx,
                             user,
+                            clock.now(),
                             application.guardianId,
                             application.childId,
                         )

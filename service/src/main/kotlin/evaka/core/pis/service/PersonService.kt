@@ -115,6 +115,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     fun getPersonWithChildren(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         id: PersonId,
         forceRefresh: Boolean = false,
     ): PersonWithChildrenDTO? {
@@ -128,7 +129,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             is ExternalIdentifier.SSN -> {
                 if (forceRefresh || guardian.vtjDependantsQueried == null) {
                     getPersonWithDependants(user, guardian.identity)
-                        .let { upsertVtjChildren(tx, it) }
+                        .let { upsertVtjChildren(tx, now, it) }
                         .let {
                             toPersonWithChildrenDTO(
                                 it,
@@ -150,6 +151,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     fun getGuardians(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         id: ChildId,
         forceRefresh: Boolean = false,
     ): List<PersonDTO> {
@@ -163,7 +165,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             is ExternalIdentifier.SSN -> {
                 if (forceRefresh || child.vtjGuardiansQueried == null) {
                     getPersonWithGuardians(user, child.identity)
-                        .let { upsertVtjGuardians(tx, it) }
+                        .let { upsertVtjGuardians(tx, now, it) }
                         .guardians
                         .map(::toPersonDTO)
                 } else {
@@ -179,10 +181,13 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
     fun getOtherGuardian(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         otherGuardianId: PersonId,
         childId: ChildId,
     ): PersonDTO? =
-        getGuardians(tx, user, childId).firstOrNull { guardian -> guardian.id != otherGuardianId }
+        getGuardians(tx, user, now, childId).firstOrNull { guardian ->
+            guardian.id != otherGuardianId
+        }
 
     // Does a request to VTJ if person is not found in database or person data has not been
     // initialized from VTJ
@@ -684,9 +689,13 @@ data class PersonAddressDTO(
 
 data class RestrictedDetails(val enabled: Boolean, val endDate: LocalDate? = null)
 
-private fun upsertVtjGuardians(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
+private fun upsertVtjGuardians(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime,
+    vtjPersonDTO: VtjPersonDTO,
+): VtjPersonDTO {
     val child = upsertVtjPerson(tx, vtjPersonDTO)
-    initChildIfNotExists(tx, child.id)
+    initChildIfNotExists(tx, now, child.id)
     val guardians =
         vtjPersonDTO.guardians
             .map { upsertVtjPerson(tx, it) }
@@ -696,11 +705,17 @@ private fun upsertVtjGuardians(tx: Database.Transaction, vtjPersonDTO: VtjPerson
     return child.toVtjPersonDTO().copy(guardians = guardians.map { it.toVtjPersonDTO() })
 }
 
-private fun upsertVtjChildren(tx: Database.Transaction, vtjPersonDTO: VtjPersonDTO): VtjPersonDTO {
+private fun upsertVtjChildren(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime,
+    vtjPersonDTO: VtjPersonDTO,
+): VtjPersonDTO {
     val guardian = upsertVtjPerson(tx, vtjPersonDTO)
     val children =
         vtjPersonDTO.children
-            .map { upsertVtjPerson(tx, it).also { child -> initChildIfNotExists(tx, child.id) } }
+            .map {
+                upsertVtjPerson(tx, it).also { child -> initChildIfNotExists(tx, now, child.id) }
+            }
             .filterNot { tx.isGuardianBlocked(guardian.id, it.id) }
     createOrReplaceGuardianRelationships(
         tx,
@@ -726,9 +741,13 @@ private fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO)
     }
 }
 
-private fun initChildIfNotExists(tx: Database.Transaction, childId: ChildId) {
+private fun initChildIfNotExists(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime,
+    childId: ChildId,
+) {
     if (tx.getChild(childId) == null) {
-        tx.createChild(Child(id = childId, additionalInformation = AdditionalInformation()))
+        tx.createChild(Child(id = childId, additionalInformation = AdditionalInformation()), now)
     }
 }
 

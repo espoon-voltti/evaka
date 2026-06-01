@@ -36,11 +36,13 @@ fun replaceImage(
     return imageId
 }
 
-fun removeImage(
+fun deleteImage(
     tx: Database.Transaction,
     documentClient: DocumentService,
     childId: ChildId,
 ): ChildImageId? =
-    tx.deleteChildImage(childId)?.also { imageId ->
-        documentClient.delete(DocumentKey.ChildImage(imageId))
-    }
+    tx.deleteChildImage(childId)?.also { imageId -> deleteImageFile(documentClient, imageId) }
+
+fun deleteImageFile(documentClient: DocumentService, childImageId: ChildImageId) {
+    documentClient.delete(DocumentKey.ChildImage(childImageId))
+}

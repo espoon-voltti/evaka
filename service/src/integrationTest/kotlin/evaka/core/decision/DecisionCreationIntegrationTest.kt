@@ -1299,7 +1299,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         hideFromGuardian: Boolean = false,
     ): ApplicationId = db.transaction { tx ->
         // make sure guardians are up-to-date
-        personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, child.id)
+        personService.getGuardians(tx, AuthenticatedUser.SystemInternalUser, clock.now(), child.id)
 
         val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
         val applicationId =

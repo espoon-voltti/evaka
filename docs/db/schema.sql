@@ -3647,7 +3647,10 @@ CREATE TABLE public.nekku_special_diet_choices (
     child_id uuid NOT NULL,
     diet_id text NOT NULL,
     field_id text NOT NULL,
-    value text NOT NULL
+    value text NOT NULL,
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 -- Name: nekku_special_diet_field; Type: TABLE; Schema: public
@@ -4805,6 +4808,11 @@ ALTER TABLE ONLY public.nekku_customer
 
 ALTER TABLE ONLY public.nekku_product
     ADD CONSTRAINT nekku_product_pkey PRIMARY KEY (sku);
+
+-- Name: nekku_special_diet_choices nekku_special_diet_choices_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.nekku_special_diet_choices
+    ADD CONSTRAINT nekku_special_diet_choices_pkey PRIMARY KEY (id);
 
 -- Name: nekku_special_diet_field nekku_special_diet_field_pkey; Type: CONSTRAINT; Schema: public
 
@@ -6871,6 +6879,10 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.mobile_device FOR EACH ROW 
 -- Name: mobile_device_push_subscription set_timestamp; Type: TRIGGER; Schema: public
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.mobile_device_push_subscription FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
+
+-- Name: nekku_special_diet_choices set_timestamp; Type: TRIGGER; Schema: public
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.nekku_special_diet_choices FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: other_assistance_measure set_timestamp; Type: TRIGGER; Schema: public
 

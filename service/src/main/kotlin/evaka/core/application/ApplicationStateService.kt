@@ -187,7 +187,7 @@ class ApplicationStateService(
         val form =
             ApplicationForm.initForm(type, guardian, child)
                 .let { form -> withDefaultStartDate(tx, now.toLocalDate(), type, form) }
-                .let { form -> withDefaultOtherChildren(tx, user, guardian, child, form) }
+                .let { form -> withDefaultOtherChildren(tx, user, now, guardian, child, form) }
 
         return tx.insertApplication(
             now = now,
@@ -252,12 +252,13 @@ class ApplicationStateService(
     private fun withDefaultOtherChildren(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         guardian: PersonDTO,
         child: PersonDTO,
         form: ApplicationForm,
     ): ApplicationForm {
         val vtjChildren =
-            personService.getPersonWithChildren(tx, user, guardian.id)?.children ?: listOf()
+            personService.getPersonWithChildren(tx, user, now, guardian.id)?.children ?: listOf()
         // if the applicant is not the child's guardian (ie. they are a foster parent) do not
         // include other children
         val vtjOtherChildren =
@@ -304,7 +305,7 @@ class ApplicationStateService(
             validateApplicationPeriod = true,
         )
 
-        personService.getGuardians(tx, user, application.childId)
+        personService.getGuardians(tx, user, now, application.childId)
 
         val applicationFlags = tx.applicationFlags(application, currentDate)
         tx.updateApplicationFlags(application.id, applicationFlags, now, user.evakaUserId)
@@ -671,6 +672,9 @@ class ApplicationStateService(
         applicationId: ApplicationId,
         placementPlan: DaycarePlacementPlan,
     ): PlacementPlanId {
+        val now = clock.now()
+        val today = now.toLocalDate()
+
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
 
@@ -681,8 +685,8 @@ class ApplicationStateService(
             placementPlanService.createPlacementPlan(tx, application, placementPlan)
         createDecisionDrafts(tx, user, application)
 
-        personService.getGuardians(tx, user, application.childId)
-        tx.syncApplicationOtherGuardians(applicationId, clock.today())
+        personService.getGuardians(tx, user, now, application.childId)
+        tx.syncApplicationOtherGuardians(applicationId, today)
         tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
         tx.deleteApplicationPlacementDraftIfExists(applicationId)
         return placementPlanId
@@ -1621,10 +1625,13 @@ class ApplicationStateService(
         application: ApplicationDetails,
         config: FeatureConfig = featureConfig,
     ): List<DecisionId> {
+        val now = clock.now()
+        val today = now.toLocalDate()
+
         val skipGuardian =
             config.skipGuardianPreschoolDecisionApproval &&
                 application.type == ApplicationType.PRESCHOOL
-        val sendBySfi = canSendDecisionsBySfi(tx, user, application)
+        val sendBySfi = canSendDecisionsBySfi(tx, user, now, application)
         val decisionDrafts = tx.fetchDecisionDrafts(application.id)
         return if (decisionDrafts.any { it.planned }) {
             val decisionIds =
@@ -1636,9 +1643,9 @@ class ApplicationStateService(
                     sendBySfi,
                     skipGuardian,
                 )
-            tx.syncApplicationOtherGuardians(application.id, clock.today())
+            tx.syncApplicationOtherGuardians(application.id, today)
             val newStatus = if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING
-            tx.updateApplicationStatus(application.id, newStatus, user.evakaUserId, clock.now())
+            tx.updateApplicationStatus(application.id, newStatus, user.evakaUserId, now)
 
             if (skipGuardian) {
                 decisionIds.forEach { decisionId ->
@@ -1664,7 +1671,7 @@ class ApplicationStateService(
                 asyncJobRunner.plan(
                     tx,
                     listOf(AsyncJob.SendNewDecisionEmail(application.id)),
-                    runAt = clock.now(),
+                    runAt = now,
                 )
             }
 
@@ -1673,7 +1680,7 @@ class ApplicationStateService(
                     tx.insertCaseProcessHistoryRow(
                         processId = process.id,
                         state = CaseProcessState.DECIDING,
-                        now = clock.now(),
+                        now = now,
                         userId = user.evakaUserId,
                     )
                 }
@@ -1688,6 +1695,7 @@ class ApplicationStateService(
     private fun canSendDecisionsBySfi(
         tx: Database.Transaction,
         user: AuthenticatedUser,
+        now: HelsinkiDateTime,
         application: ApplicationDetails,
     ): Boolean {
         val hasSsn =
@@ -1695,7 +1703,7 @@ class ApplicationStateService(
                 tx.getPersonById(application.childId)!!.identity is ExternalIdentifier.SSN)
         val guardianIsVtjGuardian =
             personService
-                .getGuardians(tx, user, application.childId)
+                .getGuardians(tx, user, now, application.childId)
                 .filter { it.dateOfDeath == null }
                 .any { it.id == application.guardianId }
 
