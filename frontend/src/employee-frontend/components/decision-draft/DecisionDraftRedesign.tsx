@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -10,14 +10,10 @@ import { combine } from 'lib-common/api'
 import type { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
 import type {
   DecisionDraft,
-  DecisionDraftUpdate,
   DecisionType,
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'
-import type {
-  ApplicationId,
-  DaycareId
-} from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -90,6 +86,28 @@ function redirectToMainPage(navigate: (location: string) => void) {
   navigate('/applications')
 }
 
+function isUnitDataComplete(
+  decision: DecisionDraft,
+  units: DecisionUnit[],
+  isClubDecision: boolean
+) {
+  const requiresDaycareDecisionName =
+    decisionTypesRequiringDaycareDecisionName.includes(decision.type)
+  const requiresPreschoolDecisionName =
+    decisionTypesRequiringPreschoolDecisionName.includes(decision.type)
+  const u = units.find((o) => o.id === decision.unitId)
+  return (
+    !!u &&
+    !!(!requiresDaycareDecisionName || u.daycareDecisionName) &&
+    !!(!requiresPreschoolDecisionName || u.preschoolDecisionName) &&
+    !!u.manager &&
+    !!u.streetAddress &&
+    !!u.postalCode &&
+    !!u.postOffice &&
+    (isClubDecision || (!!u.decisionHandler && !!u.decisionHandlerAddress))
+  )
+}
+
 export default React.memo(function DecisionDraftRedesign() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
   const draftGroupResult = useQueryResult(
@@ -154,41 +172,31 @@ const DecisionDraftRedesignInner = React.memo(
     }
 
     const isClubDecision = primaryDecision.type === 'CLUB'
+    const primaryUnitDataIsComplete = useMemo(() => {
+      return isUnitDataComplete(primaryDecision, units, isClubDecision)
+    }, [primaryDecision, units, isClubDecision])
+    const connectedUnitDataIsComplete = useMemo(() => {
+      return connectedDecision
+        ? isUnitDataComplete(connectedDecision, units, isClubDecision)
+        : true
+    }, [connectedDecision, units, isClubDecision])
+    // TODO: Currently if the two decisions have different units, we don't really show which one of them has incomplete data.
+    //  Also in this new design we no longer display all the data that can be missing.
+    //  This should be discussed with the designer.
+    const dataIncomplete =
+      !primaryUnitDataIsComplete || !connectedUnitDataIsComplete
 
-    // TODO remove?
-    const decisions = connectedDecision
-      ? [primaryDecision, connectedDecision]
-      : [primaryDecision]
-
-    const requiresDaycareDecisionName = decisions.some(({ type }) =>
-      decisionTypesRequiringDaycareDecisionName.includes(type)
-    )
-    const requiresPreschoolDecisionName = decisions.some(({ type }) =>
-      decisionTypesRequiringPreschoolDecisionName.includes(type)
-    )
-    const unitDataIsComplete = decisions.map((d) => {
-      const u = units.find((o) => o.id === d.unitId)
-      return (
-        !!u &&
-        !!(!requiresDaycareDecisionName || u.daycareDecisionName) &&
-        !!(!requiresPreschoolDecisionName || u.preschoolDecisionName) &&
-        !!u.manager &&
-        !!u.streetAddress &&
-        !!u.postalCode &&
-        !!u.postOffice &&
-        (isClubDecision || (!!u.decisionHandler && !!u.decisionHandlerAddress))
-      )
-    })
-    const noDecisionsPlanned = decisions.filter((d) => d.planned).length === 0
-    const dataIncomplete = unitDataIsComplete.some((c) => !c)
-    const sharedUnitId: DaycareId | null = decisions[0]?.unitId ?? null
+    const noDecisionsPlanned =
+      connectedDecision !== null &&
+      !primaryDecision.planned &&
+      !connectedDecision.planned
     const childName = formatPersonName(child, 'First Last')
 
     return (
       <Container>
         <ContentArea $opaque>
           <Title size={1}>
-            {decisions.length > 1
+            {connectedDecision !== null
               ? i18n.decisionDraft.titlePlural
               : i18n.decisionDraft.titleSingle}
           </Title>
@@ -199,7 +207,7 @@ const DecisionDraftRedesignInner = React.memo(
             otherGuardian={otherGuardian}
             placementUnitName={placementUnit.name}
             units={units}
-            selectedUnitId={sharedUnitId}
+            selectedUnitId={primaryDecision.unitId}
             onSelectUnit={(unitId) => updateState('both', { unitId })}
             showUnitSelector={!featureFlags.decisionDraftMultipleUnits}
           />
@@ -220,11 +228,11 @@ const DecisionDraftRedesignInner = React.memo(
 
           <SectionHeading>
             <Title size={2}>
-              {decisions.length > 1
+              {connectedDecision !== null
                 ? i18n.decisionDraft.decisionsHeading
                 : i18n.decisionDraft.decisionsHeadingSingle}
             </Title>
-            {decisions.length > 1 && (
+            {connectedDecision !== null && (
               <span>{i18n.decisionDraft.decisionsSubtitle}</span>
             )}
           </SectionHeading>
@@ -236,9 +244,7 @@ const DecisionDraftRedesignInner = React.memo(
               showPlannedCheckbox={connectedDecision !== null}
               childName={childName}
               units={units}
-              perDecisionUnitSelector={
-                featureFlags.decisionDraftMultipleUnits === true
-              }
+              perDecisionUnitSelector={featureFlags.decisionDraftMultipleUnits}
               onPlannedChange={(planned) => updateState('primary', { planned })}
               onUnitChange={(unitId) => updateState('primary', { unitId })}
             />
@@ -250,7 +256,7 @@ const DecisionDraftRedesignInner = React.memo(
                 childName={childName}
                 units={units}
                 perDecisionUnitSelector={
-                  featureFlags.decisionDraftMultipleUnits === true
+                  featureFlags.decisionDraftMultipleUnits
                 }
                 onPlannedChange={(planned) =>
                   updateState('connected', { planned })
@@ -277,19 +283,19 @@ const DecisionDraftRedesignInner = React.memo(
                 data-qa="save-decisions-button"
                 disabled={dataIncomplete || noDecisionsPlanned}
                 mutation={updateDecisionDraftsMutation}
-                onClick={() => {
-                  const updates: DecisionDraftUpdate[] = decisions.map((d) => ({
+                onClick={() => ({
+                  applicationId,
+                  body: [
+                    primaryDecision,
+                    ...(connectedDecision ? [connectedDecision] : [])
+                  ].map((d) => ({
                     id: d.id,
                     unitId: d.unitId,
                     startDate: d.startDate,
                     endDate: d.endDate,
                     planned: d.planned
                   }))
-                  return {
-                    applicationId,
-                    body: updates
-                  }
-                }}
+                })}
                 onSuccess={() => redirectToMainPage(navigate)}
                 text={i18n.common.save}
               />
