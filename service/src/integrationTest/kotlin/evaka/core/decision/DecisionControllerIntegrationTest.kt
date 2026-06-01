@@ -29,6 +29,7 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.Forbidden
@@ -53,8 +54,11 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @BeforeEach
     fun init() {
-        db.transaction { it.insert(admin) }
-        db.transaction { it.insert(serviceWorker) }
+        db.transaction {
+            it.insertDefaultDecisionGenericReasonings()
+            it.insert(admin)
+            it.insert(serviceWorker)
+        }
     }
 
     @Test

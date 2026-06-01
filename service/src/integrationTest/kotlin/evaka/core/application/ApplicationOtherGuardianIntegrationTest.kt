@@ -24,6 +24,7 @@ import evaka.core.shared.dev.DevFosterParent
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
@@ -82,6 +83,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
         MockSfiMessagesClient.reset()
 
         db.transaction { tx ->
+            tx.insertDefaultDecisionGenericReasonings()
             tx.insert(guardian, DevPersonType.ADULT)
             tx.insert(child, DevPersonType.CHILD)
             tx.insert(otherVtjGuardian, DevPersonType.ADULT)

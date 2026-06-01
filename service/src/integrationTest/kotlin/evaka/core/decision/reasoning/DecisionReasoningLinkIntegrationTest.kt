@@ -31,7 +31,6 @@ import evaka.core.shared.DecisionId
 import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
-import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
@@ -43,6 +42,7 @@ import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.actionrule.AccessControlFilter
 import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.LocalDate
@@ -52,12 +52,14 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val now = HelsinkiDateTime.of(LocalDate.of(2026, 5, 11), LocalTime.of(12, 0))
+    private val clock = MockEvakaClock(now)
     private val today: LocalDate = now.toLocalDate()
 
     @Autowired private lateinit var applicationStateService: ApplicationStateService
@@ -248,52 +250,25 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
-    fun `cascade deletes join rows when decision is hard-deleted`() {
-        val (decisionId, _) = insertDraftDecisionDirectly(DAYCARE)
-        val r = insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
-        db.transaction { tx ->
-            tx.insertDecisionGenericReasoningLinks(decisionId, listOf(r), now, admin.evakaUserId)
-        }
-
-        db.transaction { tx ->
-            tx.execute { sql("DELETE FROM decision WHERE id = ${bind(decisionId)}") }
-        }
-
-        val joinRowCount = db.read { tx ->
-            tx.createQuery {
-                    sql(
-                        "SELECT count(*) FROM decision_generic_reasoning WHERE reasoning_id = ${bind(r)}"
-                    )
-                }
-                .exactlyOne<Long>()
-        }
-        assertEquals(0L, joinRowCount)
-    }
-
-    @Test
-    fun `sending a decision writes generic reasoning links inside the same transaction`() {
+    fun `sending a decision sets the generic reasoning link inside the same transaction`() {
         val genericId =
             insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
         val (decisionId, applicationId) = createPlannedDecisionWithApplication(DAYCARE)
 
         sendDecisionViaService(applicationId)
 
-        val linked = db.read { tx -> tx.getDecisionGenericReasoningIds(decisionId) }
-        assertEquals(listOf(genericId), linked)
+        assertEquals(genericId, getDecisionGenericReasoningId(decisionId))
     }
 
     @Test
-    fun `sending a decision with no eligible generic writes zero link rows`() {
-        val (decisionId, applicationId) = createPlannedDecisionWithApplication(DAYCARE)
+    fun `sending a decision with no eligible generic reasoning throws`() {
+        val (_, applicationId) = createPlannedDecisionWithApplication(DAYCARE)
 
-        sendDecisionViaService(applicationId)
-
-        val linked = db.read { tx -> tx.getDecisionGenericReasoningIds(decisionId) }
-        assertEquals(emptyList(), linked)
+        assertThrows<NotFound> { sendDecisionViaService(applicationId) }
     }
 
     @Test
-    fun `sending a PRESCHOOL_DAYCARE decision writes only the DAYCARE link`() {
+    fun `sending a PRESCHOOL_DAYCARE decision sets the DAYCARE link`() {
         val daycareId =
             insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
         insertGenericReasoning(PRESCHOOL_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
@@ -301,12 +276,11 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         sendDecisionViaService(applicationId)
 
-        val linked = db.read { tx -> tx.getDecisionGenericReasoningIds(decisionId) }
-        assertEquals(listOf(daycareId), linked)
+        assertEquals(daycareId, getDecisionGenericReasoningId(decisionId))
     }
 
     @Test
-    fun `sending a decision via the SFI path also writes generic reasoning links`() {
+    fun `sending a decision via the SFI path also sets the generic reasoning link`() {
         val genericId =
             insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
 
@@ -339,19 +313,18 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         db.transaction { tx ->
             applicationStateService.sendDecisionsWithoutProposal(
                 tx = tx,
-                user = AuthenticatedUser.Employee(admin.id, setOf(UserRole.ADMIN)),
-                clock = MockEvakaClock(now),
+                user = admin.user,
+                clock = clock,
                 applicationId = applicationId,
             )
         }
-        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+        asyncJobRunner.runPendingJobsSync(clock)
 
-        val linked = db.read { tx -> tx.getDecisionGenericReasoningIds(decisionId) }
-        assertEquals(listOf(genericId), linked)
+        assertEquals(genericId, getDecisionGenericReasoningId(decisionId))
     }
 
     @Test
-    fun `generic reasoning links are frozen at finalize, before the decision pdf job runs`() {
+    fun `generic reasoning link is set at finalize, before the decision pdf job runs`() {
         val genericId =
             insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
         val (decisionId, applicationId) = createPlannedDecisionWithApplication(DAYCARE)
@@ -359,49 +332,29 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         db.transaction { tx ->
             applicationStateService.sendDecisionsWithoutProposal(
                 tx = tx,
-                user = AuthenticatedUser.Employee(admin.id, setOf(UserRole.ADMIN)),
-                clock = MockEvakaClock(now),
+                user = admin.user,
+                clock = clock,
                 applicationId = applicationId,
             )
         }
 
         // No async jobs run: the decision pdf has not been generated yet.
-        val linked = db.read { tx -> tx.getDecisionGenericReasoningIds(decisionId) }
-        assertEquals(listOf(genericId), linked)
+        assertEquals(genericId, getDecisionGenericReasoningId(decisionId))
     }
 
     @Test
-    fun `freezing generic reasoning links is idempotent across re-runs`() {
-        val startDate = LocalDate.of(2026, 8, 1)
-        val (decisionId, _) = insertDraftDecisionDirectly(DAYCARE, startDate)
-        val reasoning =
-            insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
+    fun `setting the generic reasoning link a second time throws because the column is set-once`() {
+        val (decisionId, _) = insertDraftDecisionDirectly(DAYCARE)
+        val r1 = insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
+        val r2 = insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 2, 1), ready = true)
 
-        val first = db.transaction { tx ->
-            tx.freezeGenericReasoningLinks(
-                decisionId = decisionId,
-                decisionType = DAYCARE,
-                startDate = startDate,
-                now = now,
-                createdBy = admin.evakaUserId,
-            )
-        }
-        val second = db.transaction { tx ->
-            tx.freezeGenericReasoningLinks(
-                decisionId = decisionId,
-                decisionType = DAYCARE,
-                startDate = startDate,
-                now = now,
-                createdBy = admin.evakaUserId,
-            )
-        }
+        db.transaction { tx -> tx.updateGenericReasoningToDecision(decisionId, r1) }
+        assertEquals(r1, getDecisionGenericReasoningId(decisionId))
 
-        assertEquals(listOf(reasoning), first)
-        assertEquals(listOf(reasoning), second)
-        assertEquals(
-            listOf(reasoning),
-            db.read { tx -> tx.getDecisionGenericReasoningIds(decisionId) },
-        )
+        assertThrows<NotFound> {
+            db.transaction { tx -> tx.updateGenericReasoningToDecision(decisionId, r2) }
+        }
+        assertEquals(r1, getDecisionGenericReasoningId(decisionId))
     }
 
     private fun createPlannedDecisionWithApplication(
@@ -414,7 +367,6 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         val childId = tx.insert(child, DevPersonType.CHILD)
         val areaId = tx.insert(DevCareArea())
         val unitId = tx.insert(DevDaycare(areaId = areaId))
-        val sw = AuthenticatedUser.Employee(admin.id, setOf(UserRole.ADMIN))
 
         val isPreschool =
             type in setOf(PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY_EDUCATION, PRESCHOOL_CLUB)
@@ -442,15 +394,15 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
             )
         applicationStateService.setVerified(
             tx = tx,
-            user = sw,
-            clock = MockEvakaClock(now),
+            user = admin.user,
+            clock = clock,
             applicationId = applicationId,
             confidential = false,
         )
         applicationStateService.createPlacementPlan(
             tx = tx,
-            user = sw,
-            clock = MockEvakaClock(now),
+            user = admin.user,
+            clock = clock,
             applicationId = applicationId,
             placementPlan =
                 DaycarePlacementPlan(
@@ -472,21 +424,29 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         db.transaction { tx ->
             applicationStateService.sendDecisionsWithoutProposal(
                 tx = tx,
-                user = AuthenticatedUser.Employee(admin.id, setOf(UserRole.ADMIN)),
-                clock = MockEvakaClock(now),
+                user = admin.user,
+                clock = clock,
                 applicationId = applicationId,
             )
         }
-        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+        asyncJobRunner.runPendingJobsSync(clock)
         db.transaction { tx ->
             applicationStateService.confirmDecisionMailed(
                 tx = tx,
-                user = AuthenticatedUser.Employee(admin.id, setOf(UserRole.ADMIN)),
-                clock = MockEvakaClock(now),
+                user = admin.user,
+                clock = clock,
                 applicationId = applicationId,
             )
         }
     }
+
+    private fun getDecisionGenericReasoningId(decisionId: DecisionId): DecisionGenericReasoningId? =
+        db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT generic_reasoning_id FROM decision WHERE id = ${bind(decisionId)}")
+                }
+                .exactlyOne<DecisionGenericReasoningId?>()
+        }
 
     private fun insertDraftDecisionDirectly(
         type: DecisionType,
