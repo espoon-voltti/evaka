@@ -7,7 +7,7 @@ ARG NGINX_VERSION=1.29.2
 
 # ---------- Base ----------
 
-FROM node:24.15.0-trixie-slim AS base
+FROM node:24.16.0-trixie-slim AS base
 ARG CACHE_BUST
 
 USER root
