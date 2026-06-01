@@ -27,7 +27,7 @@
     "express-http-proxy": "2.1.2",
     "express-session": "1.19.0",
     "fast-xml-parser": "5.8.0",
-    "helmet": "8.1.0",
+    "helmet": "8.2.0",
     "jsonwebtoken": "9.0.3",
     "lodash": "4.18.1",
     "make-error-cause": "2.3.0",
