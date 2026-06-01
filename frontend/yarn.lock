@@ -4704,10 +4704,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:4.2.1, date-fns@npm:^4.1.0":
-  version: 4.2.1
-  resolution: "date-fns@npm:4.2.1"
-  checksum: 10/c2731946a2d022935b3641062cd64bcdd62a65066115fee3490ba360a17fbf42134918493c43acb2c5c995b9ea4a2c7f505f0d9c02e73351cd2899b13e081729
+"date-fns@npm:4.3.0, date-fns@npm:^4.1.0":
+  version: 4.3.0
+  resolution: "date-fns@npm:4.3.0"
+  checksum: 10/be129ab084a43cb06d2f598008fc3816b9c3767f0e9b7f08c19981b99f361cdee623c63d89e8eb305ebb488778027358127284a2f2aca6da258b3cd33d7366fe
   languageName: node
   linkType: hard
 
@@ -5505,7 +5505,7 @@ __metadata:
     classnames: "npm:2.5.1"
     concurrently: "npm:9.2.1"
     csstype: "npm:3.2.3"
-    date-fns: "npm:4.2.1"
+    date-fns: "npm:4.3.0"
     date-fns-tz: "npm:3.2.0"
     eslint: "npm:9.39.4"
     eslint-config-prettier: "npm:10.1.8"
