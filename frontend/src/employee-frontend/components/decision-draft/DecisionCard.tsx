@@ -18,6 +18,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights, Title } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -260,9 +261,9 @@ export default React.memo(function DecisionCard({
                     <span>{text(preview.genericReasoning)}</span>
                   </GenericCard>
                 ) : (
-                  <Muted>
-                    {i18n.decisionDraft.reasonings.noGenericForSlot}
-                  </Muted>
+                  <AlertBox
+                    title={i18n.decisionDraft.reasonings.noGenericForSlot}
+                  />
                 )}
               </div>
 

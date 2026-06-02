@@ -3495,7 +3495,7 @@ export const fi = {
       individual: 'Yksilölliset perustelut',
       pickerButton: 'Valitse',
       noGenericForSlot:
-        'Tähän osa-alueeseen ei ole julkaistua valmista perustelua.',
+        'Pääkäyttäjä ei ole lisännyt yleistä perustelua tälle päätöstyypille.',
       noIndividual: 'Päätökseen ei ole liitetty yksilöllisiä perusteluja.',
       genericRangeOpen: (validFrom: string) =>
         `${validFrom}– alkavat sijoitukset`,
