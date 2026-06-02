@@ -80,6 +80,7 @@ test.describe('Additional daycare application decision drafts', () => {
 
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
+    await Fixture.decisionReasoningGenericDefaults().save()
     await preschoolTerm.save()
     await careArea.save()
     await daycareA.save()

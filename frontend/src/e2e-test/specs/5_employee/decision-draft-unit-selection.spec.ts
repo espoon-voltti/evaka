@@ -52,6 +52,7 @@ test.describe('Decision draft unit selection', () => {
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
     await cleanUpMessages()
+    await Fixture.decisionReasoningGenericDefaults().save()
     await preschoolTerm2021.save()
     await testCareArea.save()
     await testDaycare.save()

@@ -87,7 +87,11 @@ export class IndividualReasoningPicker {
     await this.reasoningRow(reasoningId).click()
   }
 
-  async close() {
-    await this.page.findByDataQa('picker-close').click()
+  async confirm() {
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async cancel() {
+    await this.page.findByDataQa('modal-cancelBtn').click()
   }
 }

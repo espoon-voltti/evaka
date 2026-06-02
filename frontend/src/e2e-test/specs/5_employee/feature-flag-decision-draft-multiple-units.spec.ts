@@ -53,6 +53,7 @@ test.describe('Application transitions', () => {
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
     await cleanUpMessages()
+    await Fixture.decisionReasoningGenericDefaults().save()
     await preschoolTerm2021.save()
     await testCareArea.save()
     await testDaycare.save()

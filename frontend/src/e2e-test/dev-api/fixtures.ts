@@ -1751,6 +1751,39 @@ export class Fixture {
     }
   }
 
+  static decisionReasoningGenericDefaults() {
+    const valueDaycare: DevDecisionReasoningGeneric = {
+      id: randomId(),
+      ready: true,
+      createdAt: HelsinkiDateTime.now(),
+      modifiedAt: HelsinkiDateTime.now(),
+      collectionType: 'DAYCARE',
+      validFrom: LocalDate.of(2000, 1, 1),
+      textFi: 'Varhaiskasvatuksen perustelu',
+      textSv: 'Småbarnspedagogikmotivering'
+    }
+    const valuePreschool: DevDecisionReasoningGeneric = {
+      id: randomId(),
+      ready: true,
+      createdAt: HelsinkiDateTime.now(),
+      modifiedAt: HelsinkiDateTime.now(),
+      collectionType: 'PRESCHOOL',
+      validFrom: LocalDate.of(2000, 1, 1),
+      textFi: 'Esiopetuksen perustelu',
+      textSv: 'Förskolemotivering'
+    }
+    return {
+      daycare: valueDaycare,
+      preschool: valuePreschool,
+      async save() {
+        await createDecisionReasoningGeneric({
+          body: [valueDaycare, valuePreschool]
+        })
+        return [valueDaycare, valuePreschool]
+      }
+    }
+  }
+
   static decisionReasoningIndividual(
     initial: SemiPartial<
       DevDecisionReasoningIndividual,

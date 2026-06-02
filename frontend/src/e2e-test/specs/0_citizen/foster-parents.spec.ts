@@ -59,6 +59,7 @@ test.describe('Foster parents', () => {
     await resetServiceState()
     await testCareArea.save()
     await testDaycare.save()
+    await Fixture.decisionReasoningGenericDefaults().save()
     const employee = await Fixture.employee().save()
 
     fosterParent = await testAdult.saveAdult({
