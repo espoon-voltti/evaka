@@ -12,6 +12,8 @@ import evaka.core.emailclient.DiscussionSurveyReservationNotificationData
 import evaka.core.emailclient.DiscussionTimeReminderData
 import evaka.core.emailclient.EmailContent
 import evaka.core.emailclient.IEmailMessageProvider
+import evaka.core.emailclient.MessageDeletionEmailContent
+import evaka.core.emailclient.MessageDeletionEmailData
 import evaka.core.emailclient.MessageThreadData
 import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.invoicing.service.IncomeNotificationType
@@ -34,6 +36,43 @@ class OuluEmailMessageProvider : IEmailMessageProvider {
         "Hakemus vastaanotettu / Application received"
     val subjectForPreschoolApplicationReceivedEmail: String =
         "Hakemus vastaanotettu / Application received"
+
+    private val servicePortalUrl = "https://palvelupyynto.siku.ouka.fi/customerui/"
+
+    override fun messageDeletionSenderEmail(
+        supportEmail: String?,
+        data: MessageDeletionEmailData,
+    ): EmailContent =
+        EmailContent.fromHtml(
+            subject = "eVaka-viesti poistettu – ota yhteyttä tukeen",
+            html =
+                """
+<p>Olet poistanut viestin eVakasta. Vastaanottajien viestin sisältö on korvattu ilmoituksella poistosta. Voit tarvittaessa avata poistetun viestin katseltavaksi eVakassa.</p>
+<p><strong>Ota yhteyttä tukeen osoitteessa $servicePortalUrl ja esihenkilöösi tietosuojailmoituksen tekemiseksi.</strong></p>
+${MessageDeletionEmailContent.detailsBlock(data)}
+""",
+        )
+
+    override fun messageDeletionNotificationEmail(
+        supportEmail: String?,
+        data: MessageDeletionEmailData,
+    ): EmailContent {
+        val deleter =
+            MessageDeletionEmailContent.deleterIdentification(
+                data.deleterName,
+                data.senderAccountName,
+                data.senderAccountType,
+            )
+        return EmailContent.fromHtml(
+            subject = "eVaka-viesti poistettu – tee tietosuojailmoitus",
+            html =
+                """
+<p>$deleter on poistanut viestin eVakasta. Viesti oli lähetetty väärille vastaanottajille. Vastaanottajien viestin sisältö on korvattu ilmoituksella poistosta. Poistaja voi tarvittaessa avata poistetun viestin katseltavaksi eVakassa.</p>
+<p><strong>Viestin poistajaa on ohjeistettu ottamaan yhteyttä tukeen osoitteessa $servicePortalUrl ja esihenkilöönsä tietosuojailmoituksen tekemiseksi.</strong></p>
+${MessageDeletionEmailContent.detailsBlock(data)}
+""",
+        )
+    }
 
     private val securityFi =
         """

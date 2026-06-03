@@ -1193,6 +1193,60 @@ class MessageController(
             }
     }
 
+    @PostMapping("/employee/messages/{accountId}/contents/{contentId}/delete-content")
+    fun deleteMessageContent(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable contentId: MessageContentId,
+    ) {
+        db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.transaction { tx ->
+                    messageService.deleteSentMessageContent(
+                        tx,
+                        clock,
+                        user.id,
+                        accountId,
+                        contentId,
+                    )
+                }
+            }
+            .also {
+                Audit.MessagingDeleteContent.log(
+                    targetId = AuditId(listOf(accountId, contentId)),
+                    meta =
+                        mapOf(
+                            "recipientCount" to it.recipientCount,
+                            "sentAt" to it.sentAt,
+                            "deletedAt" to it.deletedAt,
+                        ),
+                )
+            }
+    }
+
+    @GetMapping("/employee/messages/{accountId}/contents/{contentId}/view-deleted-content")
+    fun getDeletedMessageContent(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable contentId: MessageContentId,
+    ): DeletedMessageContent =
+        db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.read { tx -> tx.fetchDeletedMessageContent(accountId, contentId) }
+                    ?: throw Forbidden(
+                        "Message $contentId is not a deleted message of this account"
+                    )
+            }
+            .also {
+                Audit.MessagingViewDeletedContent.log(
+                    targetId = AuditId(listOf(accountId, contentId))
+                )
+            }
+
     private fun requireMessageAccountAccess(
         db: Database.Connection,
         user: AuthenticatedUser,

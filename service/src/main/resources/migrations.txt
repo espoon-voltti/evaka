@@ -589,3 +589,4 @@ V590__decision_reasoning_generic_removed_at.sql
 V591__child_document_deletion_rules.sql
 V592__decision_reasoning_links.sql
 V593__nekku_special_diet_choices_pk.sql
+V594__message_content_deletion.sql

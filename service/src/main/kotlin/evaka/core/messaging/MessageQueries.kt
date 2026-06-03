@@ -12,6 +12,7 @@ import evaka.core.invoicing.controller.SortDirection
 import evaka.core.messaging.MessageController.MessageThreadFolder
 import evaka.core.placement.PlacementType
 import evaka.core.shared.*
+import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.Predicate
 import evaka.core.shared.db.PredicateSql
@@ -626,7 +627,11 @@ EXISTS (
 SELECT
     COUNT(*) OVER () AS count,
     t.id,
-    t.title,
+    CASE
+        WHEN first_msg.content_deleted_at IS NOT NULL
+        THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+        ELSE t.title
+    END AS title,
     t.message_type AS type,
     t.urgent,
     t.sensitive,
@@ -646,6 +651,13 @@ SELECT
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 LEFT JOIN application a ON t.application_id = a.id
+LEFT JOIN LATERAL (
+    SELECT m.sender_id, m.content_deleted_at
+    FROM message m
+    WHERE m.thread_id = t.id
+    ORDER BY m.sent_at, m.created
+    LIMIT 1
+) first_msg ON TRUE
 WHERE tp.participant_id = ${bind(accountId)}
 AND ${predicate(personAccountPredicate.forTable("tp"))}
 AND tp.folder_id IS NOT DISTINCT FROM ${bind(folderId)}
@@ -731,7 +743,11 @@ fun Database.Read.getReceivedThreads(
 SELECT
     COUNT(*) OVER () AS count,
     t.id,
-    t.title,
+    CASE
+        WHEN first_msg.content_deleted_at IS NOT NULL
+        THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+        ELSE t.title
+    END AS title,
     t.message_type AS type,
     t.urgent,
     t.sensitive,
@@ -752,6 +768,13 @@ SELECT
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 LEFT JOIN application a on a.id = t.application_id
+LEFT JOIN LATERAL (
+    SELECT m.sender_id, m.content_deleted_at
+    FROM message m
+    WHERE m.thread_id = t.id
+    ORDER BY m.sent_at, m.created
+    LIMIT 1
+) first_msg ON TRUE
 WHERE
     tp.participant_id = ${bind(accountId)} AND
     tp.last_received_timestamp IS NOT NULL AND
@@ -793,8 +816,13 @@ private fun Database.Read.getThreadMessages(
 SELECT
     m.id,
     m.thread_id,
+    m.content_id,
     COALESCE(m.sent_at, m.created) AS sent_at,
-    mc.content,
+    CASE
+        WHEN m.content_deleted_at IS NOT NULL THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_BODY)}
+        ELSE mc.content
+    END AS content,
+    m.content_deleted_at,
     mr_self.read_at,
     jsonb_build_object(
         'id', sender.id,
@@ -828,11 +856,14 @@ SELECT
             WHERE mr.message_id = m.id
         )
     END AS recipients,
-    coalesce((
-        SELECT jsonb_agg(jsonb_build_object('id', a.id, 'name', a.name, 'contentType', a.content_type))
-        FROM attachment a
-        WHERE a.message_content_id = mc.id
-    ), '[]'::jsonb) AS attachments
+    CASE
+        WHEN m.content_deleted_at IS NOT NULL THEN '[]'::jsonb
+        ELSE coalesce((
+            SELECT jsonb_agg(jsonb_build_object('id', a.id, 'name', a.name, 'contentType', a.content_type))
+            FROM attachment a
+            WHERE a.message_content_id = mc.id
+        ), '[]'::jsonb)
+    END AS attachments
 FROM message m
 JOIN message_content mc ON mc.id = m.content_id
 JOIN message_account_view sender ON sender.id = m.sender_id
@@ -888,12 +919,14 @@ private fun combineThreadsAndMessages(
 data class MessageCopy(
     val threadId: MessageThreadId,
     val messageId: MessageId,
+    val contentId: MessageContentId,
     val title: String,
     val type: MessageType,
     val urgent: Boolean,
     val sensitive: Boolean,
     val sentAt: HelsinkiDateTime,
     val content: String,
+    val contentDeletedAt: HelsinkiDateTime? = null,
     val senderId: MessageAccountId,
     val senderName: String,
     val senderAccountType: AccountType,
@@ -927,7 +960,11 @@ fun Database.Read.getMessageCopiesByAccount(
         COUNT(*) OVER () AS count,
         t.id AS thread_id,
         m.id AS message_id,
-        t.title,
+        CASE
+            WHEN m.content_deleted_at IS NOT NULL
+            THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+            ELSE t.title
+        END AS title,
         t.message_type AS type,
         t.urgent,
         t.sensitive,
@@ -936,20 +973,29 @@ fun Database.Read.getMessageCopiesByAccount(
         m.sender_id,
         sender_acc.type AS sender_account_type,
         m.content_id,
-        c.content,
+        CASE
+            WHEN m.content_deleted_at IS NOT NULL
+            THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_BODY)}
+            ELSE c.content
+        END AS content,
+        m.content_deleted_at,
         rec.read_at,
         rec.recipient_id,
         acc.name recipient_name,
         recipient_acc.type AS recipient_account_type,
         m.recipient_names,
-        (
-            SELECT coalesce(jsonb_agg(jsonb_build_object(
-               'id', att.id,
-               'name', att.name,
-               'contentType', att.content_type
-            )), '[]'::jsonb)
-            FROM attachment att WHERE att.message_content_id = m.content_id
-        ) AS attachments
+        CASE
+            WHEN m.content_deleted_at IS NOT NULL
+            THEN '[]'::jsonb
+            ELSE (
+                SELECT coalesce(jsonb_agg(jsonb_build_object(
+                   'id', att.id,
+                   'name', att.name,
+                   'contentType', att.content_type
+                )), '[]'::jsonb)
+                FROM attachment att WHERE att.message_content_id = m.content_id
+            )
+        END AS attachments
     FROM message_recipients rec
     JOIN message m ON rec.message_id = m.id
     JOIN message_content c ON m.content_id = c.id
@@ -1048,8 +1094,13 @@ fun Database.Read.getSentMessage(
 SELECT
     m.id,
     m.thread_id,
+    m.content_id,
     COALESCE(m.sent_at, m.created) AS sent_at,  -- use the created timestamp until the asyncjob marks the message as sent
-    mc.content,
+    CASE
+        WHEN m.content_deleted_at IS NOT NULL THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_BODY)}
+        ELSE mc.content
+    END AS content,
+    m.content_deleted_at,
     (
         SELECT jsonb_build_object('id', mav.id, 'name', CASE mav.type WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} WHEN 'FINANCE' THEN ${bind(financeAccountName)} ELSE mav.name END, 'type', mav.type)
         FROM message_account_view mav
@@ -1061,11 +1112,14 @@ SELECT
         JOIN message_account_view mav ON mav.id = mr.recipient_id
         WHERE mr.message_id = m.id
     ) AS recipients,
-    coalesce((
-        SELECT jsonb_agg(jsonb_build_object('id', a.id, 'name', a.name, 'contentType', a.content_type))
-        FROM attachment a
-        WHERE a.message_content_id = mc.id
-    ), '[]'::jsonb) AS attachments
+    CASE
+        WHEN m.content_deleted_at IS NOT NULL THEN '[]'::jsonb
+        ELSE coalesce((
+            SELECT jsonb_agg(jsonb_build_object('id', a.id, 'name', a.name, 'contentType', a.content_type))
+            FROM attachment a
+            WHERE a.message_content_id = mc.id
+        ), '[]'::jsonb)
+    END AS attachments
 FROM message m
 JOIN message_content mc ON mc.id = m.content_id
 WHERE m.id = ${bind(messageId)} AND m.sender_id = ${bind(senderId)}
@@ -1268,12 +1322,22 @@ WITH pageable_messages AS (
         t.message_type,
         t.urgent,
         t.sensitive,
+        bool_or(m.content_deleted_at IS NOT NULL) AS is_content_deleted,
+        first_msg.content_deleted_at AS first_message_content_deleted_at,
+        max(m.content_deleted_at) AS content_deleted_at,
         COUNT(*) OVER () AS count
     FROM message m
     JOIN message_thread t ON m.thread_id = t.id
+    LEFT JOIN LATERAL (
+        SELECT m2.content_deleted_at
+        FROM message m2
+        WHERE m2.thread_id = t.id
+        ORDER BY m2.sent_at, m2.created
+        LIMIT 1
+    ) first_msg ON TRUE
     WHERE sender_id = ${bind(accountId)} AND
         ${predicate(accountAccessPredicate.forTable("m"))}
-    GROUP BY m.content_id, m.sent_at, m.created, m.recipient_names, t.title, t.message_type, t.urgent, t.sensitive
+    GROUP BY m.content_id, m.sent_at, m.created, m.recipient_names, t.title, t.message_type, t.urgent, t.sensitive, first_msg.content_deleted_at
     ORDER BY sent_at DESC
     LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
 )
@@ -1282,21 +1346,33 @@ SELECT
     msg.content_id,
     msg.sent_at,
     msg.recipient_names,
-    msg.title AS thread_title,
+    CASE
+        WHEN msg.first_message_content_deleted_at IS NOT NULL
+        THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+        ELSE msg.title
+    END AS thread_title,
+    msg.first_message_content_deleted_at,
     msg.message_type AS type,
     msg.urgent,
     msg.sensitive,
-    mc.content,
-    (SELECT coalesce(jsonb_agg(jsonb_build_object(
-           'id', att.id,
-           'name', att.name,
-           'contentType', att.content_type
-        )), '[]'::jsonb)
-        FROM attachment att WHERE att.message_content_id = msg.content_id
-        ) AS attachments
+    msg.content_deleted_at,
+    CASE
+        WHEN msg.is_content_deleted THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_BODY)}
+        ELSE mc.content
+    END AS content,
+    CASE
+        WHEN msg.is_content_deleted THEN '[]'::jsonb
+        ELSE (SELECT coalesce(jsonb_agg(jsonb_build_object(
+               'id', att.id,
+               'name', att.name,
+               'contentType', att.content_type
+            )), '[]'::jsonb)
+            FROM attachment att WHERE att.message_content_id = msg.content_id
+        )
+    END AS attachments
 FROM pageable_messages msg
 JOIN message_content mc ON msg.content_id = mc.id
-GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.urgent, msg.sensitive, msg.title
+GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.urgent, msg.sensitive, msg.title, msg.is_content_deleted, msg.first_message_content_deleted_at, msg.content_deleted_at
 ORDER BY msg.sent_at DESC
 """
             )
@@ -1356,7 +1432,11 @@ fun Database.Read.getMessageThread(
                     """
 SELECT
     t.id,
-    t.title,
+    CASE
+        WHEN first_msg.content_deleted_at IS NOT NULL
+        THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+        ELSE t.title
+    END AS title,
     t.message_type AS type,
     t.urgent,
     t.sensitive,
@@ -1374,6 +1454,13 @@ SELECT
      ), '[]'::jsonb) AS children
 FROM message_thread t
 JOIN message_thread_participant tp on t.id = tp.thread_id
+LEFT JOIN LATERAL (
+    SELECT m.sender_id, m.content_deleted_at
+    FROM message m
+    WHERE m.thread_id = t.id
+    ORDER BY m.sent_at, m.created
+    LIMIT 1
+) first_msg ON TRUE
 WHERE t.id = ${bind(threadId)} AND tp.participant_id = ${bind(accountId)}
   AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL))
 """
@@ -1411,7 +1498,11 @@ fun Database.Read.getMessageThreadByApplicationId(
                     """
 SELECT
     t.id,
-    t.title,
+    CASE
+        WHEN first_msg.content_deleted_at IS NOT NULL
+        THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+        ELSE t.title
+    END AS title,
     t.message_type AS type,
     t.urgent,
     t.sensitive,
@@ -1428,9 +1519,16 @@ SELECT
          WHERE mtc.thread_id = t.id
      ), '[]'::jsonb) AS children
 FROM message_thread t
+LEFT JOIN LATERAL (
+    SELECT m.sender_id, m.content_deleted_at
+    FROM message m
+    WHERE m.thread_id = t.id
+    ORDER BY m.sent_at, m.created
+    LIMIT 1
+) first_msg ON TRUE
 WHERE t.application_id = ${bind(applicationId)}
   AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = ${bind(accountId)} OR m.sent_at IS NOT NULL))
-GROUP BY t.id
+GROUP BY t.id, first_msg.sender_id, first_msg.content_deleted_at
 LIMIT 1
         """
                 )
@@ -2097,7 +2195,13 @@ fun Database.Read.unreadMessageForRecipientExists(
             sql(
                 """
 SELECT EXISTS (
-    SELECT * FROM message_recipients WHERE message_id = ${bind(messageId)} AND recipient_id = ${bind(recipientId)} AND read_at IS NULL
+    SELECT 1
+    FROM message_recipients mr
+    JOIN message m ON m.id = mr.message_id
+    WHERE mr.message_id = ${bind(messageId)}
+      AND mr.recipient_id = ${bind(recipientId)}
+      AND mr.read_at IS NULL
+      AND m.content_deleted_at IS NULL
 )
 """
             )
@@ -2144,3 +2248,209 @@ fun Database.Read.messageAttachmentsAllowedForCitizen(
         }
         .exactlyOne()
 }
+
+data class MessageDeletionTarget(
+    val contentId: MessageContentId,
+    val senderId: MessageAccountId,
+    val sentAt: HelsinkiDateTime,
+    val messageType: MessageType,
+)
+
+fun Database.Read.getMessageDeletionTarget(contentId: MessageContentId): MessageDeletionTarget? =
+    createQuery {
+            sql(
+                """
+                SELECT m.content_id, m.sender_id, coalesce(m.sent_at, m.created) AS sent_at, t.message_type
+                FROM message m
+                JOIN message_thread t ON t.id = m.thread_id
+                WHERE m.content_id = ${bind(contentId)}
+                LIMIT 1
+            """
+            )
+        }
+        .exactlyOneOrNull()
+
+fun Database.Read.fetchDeletedMessageContent(
+    accountId: MessageAccountId,
+    contentId: MessageContentId,
+): DeletedMessageContent? =
+    createQuery {
+            sql(
+                """
+                SELECT
+                    mc.content,
+                    coalesce(
+                        jsonb_agg(
+                            jsonb_build_object('id', att.id, 'name', att.name, 'contentType', att.content_type)
+                            ORDER BY att.id
+                        ) FILTER (WHERE att.id IS NOT NULL),
+                        '[]'::jsonb
+                    ) AS attachments,
+                    (
+                        SELECT t.title
+                        FROM message m
+                        JOIN message_thread t ON t.id = m.thread_id
+                        WHERE m.content_id = mc.id
+                          AND m.sender_id = ${bind(accountId)}
+                          AND m.content_deleted_at IS NOT NULL
+                          AND m.id = (
+                              SELECT m2.id FROM message m2
+                              WHERE m2.thread_id = m.thread_id
+                              ORDER BY m2.sent_at, m2.created
+                              LIMIT 1
+                          )
+                        LIMIT 1
+                    ) AS title
+                FROM message_content mc
+                LEFT JOIN attachment att ON att.message_content_id = mc.id
+                WHERE mc.id = ${bind(contentId)}
+                  AND EXISTS (
+                      SELECT 1 FROM message m
+                      WHERE m.content_id = mc.id
+                        AND m.sender_id = ${bind(accountId)}
+                        AND m.content_deleted_at IS NOT NULL
+                  )
+                GROUP BY mc.id, mc.content
+            """
+            )
+        }
+        .exactlyOneOrNull()
+
+data class MessageContentDeletionInfo(val senderId: MessageAccountId, val isContentDeleted: Boolean)
+
+fun Database.Read.getMessageContentDeletionInfo(
+    messageContentId: MessageContentId
+): MessageContentDeletionInfo? =
+    createQuery {
+            sql(
+                """
+                SELECT m.sender_id, bool_or(m.content_deleted_at IS NOT NULL) AS is_content_deleted
+                FROM message m
+                WHERE m.content_id = ${bind(messageContentId)}
+                GROUP BY m.sender_id
+            """
+            )
+        }
+        .exactlyOneOrNull()
+
+data class MessageDeletionSummary(
+    val sentAt: HelsinkiDateTime,
+    val deletedAt: HelsinkiDateTime,
+    val recipientCount: Int,
+    val deleterName: String,
+    val deleterEmail: String?,
+    val senderAccountName: String,
+    val senderAccountType: AccountType,
+)
+
+fun Database.Read.getMessageDeletionSummary(
+    contentId: MessageContentId,
+    municipalAccountName: String,
+    serviceWorkerAccountName: String,
+    financeAccountName: String,
+): MessageDeletionSummary =
+    createQuery {
+            sql(
+                """
+                SELECT
+                    coalesce(m.sent_at, m.created) AS sent_at,
+                    m.content_deleted_at AS deleted_at,
+                    (
+                        SELECT count(*)
+                        FROM message_recipients mr
+                        JOIN message copy ON copy.id = mr.message_id
+                        WHERE copy.content_id = m.content_id
+                    ) AS recipient_count,
+                    e.first_name || ' ' || e.last_name AS deleter_name,
+                    e.email AS deleter_email,
+                    CASE sender.type
+                        WHEN 'MUNICIPAL' THEN ${bind(municipalAccountName)}
+                        WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)}
+                        WHEN 'FINANCE' THEN ${bind(financeAccountName)}
+                        ELSE sender.name
+                    END AS sender_account_name,
+                    sender.type AS sender_account_type
+                FROM message m
+                JOIN employee e ON e.id = m.content_deleted_by_employee_id
+                JOIN message_account_view sender ON sender.id = m.sender_id
+                WHERE m.content_id = ${bind(contentId)}
+                LIMIT 1
+            """
+            )
+        }
+        .exactlyOne()
+
+fun Database.Read.getContentRecipientCount(contentId: MessageContentId): Int =
+    createQuery {
+            sql(
+                """
+                SELECT count(*)
+                FROM message_recipients mr
+                JOIN message copy ON copy.id = mr.message_id
+                WHERE copy.content_id = ${bind(contentId)}
+            """
+            )
+        }
+        .exactlyOne()
+
+fun Database.Read.getUnitSupervisorEmailsForContent(contentId: MessageContentId): Set<String> =
+    createQuery {
+            sql(
+                """
+                WITH content AS (
+                    SELECT
+                        m.content_id,
+                        m.sender_id,
+                        m.content_deleted_by_employee_id,
+                        coalesce(m.sent_at, m.created) AS sent_at
+                    FROM message m
+                    WHERE m.content_id = ${bind(contentId)}
+                    LIMIT 1
+                ), message_units AS (
+                    SELECT dg.daycare_id AS unit_id
+                    FROM content c
+                    JOIN message_account sender ON sender.id = c.sender_id AND sender.type = 'GROUP'
+                    JOIN daycare_group dg ON dg.id = sender.daycare_group_id
+
+                    UNION
+
+                    SELECT pl.unit_id
+                    FROM content c
+                    JOIN message_account sender ON sender.id = c.sender_id AND sender.type = 'PERSONAL'
+                    JOIN message copy ON copy.content_id = c.content_id
+                    JOIN message_thread_children mtc ON mtc.thread_id = copy.thread_id
+                    JOIN placement pl ON pl.child_id = mtc.child_id
+                        AND daterange(pl.start_date, pl.end_date, '[]') @> c.sent_at::date
+                )
+                SELECT DISTINCT e.email
+                FROM content c
+                JOIN message_units mu ON true
+                JOIN daycare_acl acl ON acl.daycare_id = mu.unit_id AND acl.role = 'UNIT_SUPERVISOR'
+                JOIN employee e ON e.id = acl.employee_id
+                WHERE e.email IS NOT NULL
+                  AND e.active
+                  AND e.id IS DISTINCT FROM c.content_deleted_by_employee_id
+            """
+            )
+        }
+        .toSet()
+
+fun Database.Read.getAdminEmailsForContent(contentId: MessageContentId): Set<String> =
+    createQuery {
+            sql(
+                """
+                SELECT e.email
+                FROM employee e
+                WHERE e.roles && ${bind(setOf(UserRole.ADMIN))}
+                  AND e.active
+                  AND e.email IS NOT NULL
+                  AND e.id IS DISTINCT FROM (
+                      SELECT m.content_deleted_by_employee_id
+                      FROM message m
+                      WHERE m.content_id = ${bind(contentId)}
+                      LIMIT 1
+                  )
+            """
+            )
+        }
+        .toSet()

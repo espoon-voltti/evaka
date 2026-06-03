@@ -15,6 +15,7 @@ import evaka.core.invoicing.data.getInvoice
 import evaka.core.invoicing.domain.InvoiceStatus
 import evaka.core.messaging.findMessageAccountIdByDraftId
 import evaka.core.messaging.getMessageAccountIdsByContentId
+import evaka.core.messaging.getMessageContentDeletionInfo
 import evaka.core.messaging.messageAttachmentsAllowedForCitizen
 import evaka.core.pedagogicaldocument.PedagogicalDocumentNotificationService
 import evaka.core.s3.ContentTypePattern
@@ -637,6 +638,7 @@ class AttachmentsController(
         @PathVariable attachmentId: AttachmentId,
         @PathVariable requestedFilename: String,
     ): ResponseEntity<Any> {
+        var senderViewOfDeletedMessage = false
         val attachment = db.connect { dbc ->
             dbc.read {
                 val (attachment, attachedTo) =
@@ -693,6 +695,25 @@ class AttachmentsController(
                             Action.MessageAccount.ACCESS,
                             accountIds,
                         )
+                        val deletionInfo =
+                            it.getMessageContentDeletionInfo(attachedTo.messageContentId)
+                        if (deletionInfo?.isContentDeleted == true) {
+                            // The message content was deleted: only the sender keeps access to
+                            // its attachments, and every such download is audit-logged below.
+                            if (
+                                !accessControl.hasPermissionFor(
+                                    it,
+                                    user,
+                                    clock,
+                                    Action.MessageAccount.ACCESS,
+                                    deletionInfo.senderId,
+                                )
+                            ) {
+                                throw Forbidden("Attachment belongs to a deleted message")
+                            }
+                            senderViewOfDeletedMessage = true
+                        }
+                        Unit
                     }
 
                     is AttachmentParent.MessageDraft -> {
@@ -746,6 +767,9 @@ class AttachmentsController(
         val documentLocation = documentClient.locate(DocumentKey.Attachment(attachmentId))
         return documentClient.responseInline(documentLocation, attachment.name).also {
             Audit.AttachmentsRead.log(targetId = AuditId(attachmentId))
+            if (senderViewOfDeletedMessage) {
+                Audit.MessagingViewDeletedContent.log(targetId = AuditId(attachmentId))
+            }
         }
     }
 

@@ -12,6 +12,7 @@ import evaka.core.incomestatement.citizenHasUnhandledIncomeStatements
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.AttachmentId
 import evaka.core.shared.ChildId
+import evaka.core.shared.EmployeeId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.MessageAccountId
 import evaka.core.shared.MessageContentId
@@ -24,17 +25,21 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import org.springframework.stereotype.Component
 
+private const val DELETION_WINDOW_DAYS = 8L
+
 @Component
 class MessageService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val notificationEmailService: MessageNotificationEmailService,
     private val messagePushNotifications: MessagePushNotifications,
+    private val messageDeletionEmailService: MessageDeletionEmailService,
     private val featureConfig: FeatureConfig,
     private val citizenCalendarEnv: CitizenCalendarEnv,
 ) {
@@ -366,7 +371,57 @@ class MessageService(
         }
         return ThreadReply(threadId, message)
     }
+
+    fun deleteSentMessageContent(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        deletingEmployeeId: EmployeeId,
+        accountId: MessageAccountId,
+        contentId: MessageContentId,
+    ): MessageContentDeletionResult {
+        val target =
+            tx.getMessageDeletionTarget(contentId) ?: throw NotFound("Message $contentId not found")
+        if (target.senderId != accountId) throw Forbidden("Message was not sent from this account")
+        if (target.messageType != MessageType.MESSAGE)
+            throw Forbidden("Only personal and group messages can be deleted")
+        val now = clock.now()
+        val windowEnd =
+            HelsinkiDateTime.atStartOfDay(
+                target.sentAt.toLocalDate().plusDays(DELETION_WINDOW_DAYS)
+            )
+        if (!now.isBefore(windowEnd)) throw Forbidden("The deletion window has ended")
+
+        val rows =
+            tx.createUpdate {
+                    sql(
+                        """
+                        UPDATE message
+                        SET content_deleted_at = ${bind(now)},
+                            content_deleted_by_employee_id = ${bind(deletingEmployeeId)}
+                        WHERE content_id = ${bind(contentId)}
+                          AND sender_id = ${bind(accountId)}
+                          AND content_deleted_at IS NULL
+                    """
+                    )
+                }
+                .execute()
+
+        if (rows == 0) throw Conflict("Message already deleted")
+
+        messageDeletionEmailService.planDeletionEmails(tx, contentId, now)
+        return MessageContentDeletionResult(
+            recipientCount = tx.getContentRecipientCount(contentId),
+            sentAt = target.sentAt,
+            deletedAt = now,
+        )
+    }
 }
+
+data class MessageContentDeletionResult(
+    val recipientCount: Int,
+    val sentAt: HelsinkiDateTime,
+    val deletedAt: HelsinkiDateTime,
+)
 
 fun AsyncJobRunner<AsyncJob>.scheduleMarkMessagesAsSent(
     tx: Database.Transaction,

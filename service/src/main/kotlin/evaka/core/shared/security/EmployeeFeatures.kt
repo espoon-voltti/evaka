@@ -31,4 +31,5 @@ data class EmployeeFeatures(
     val decisionReasonings: Boolean,
     val decisionReasoningGenericRemoval: Boolean,
     val allowEnglishChildDocumentsForAllTypes: Boolean,
+    val messageSupportEmail: String?,
 )

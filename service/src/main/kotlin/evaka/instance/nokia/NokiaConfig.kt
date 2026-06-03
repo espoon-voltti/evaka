@@ -55,6 +55,7 @@ class NokiaConfig {
             municipalMessageAccountName = "Nokian kaupunki",
             serviceWorkerMessageAccountName = "Varhaiskasvatuksen ja esiopetuksen asiakaspalvelu",
             financeMessageAccountName = "Nokian varhaiskasvatuksen asiakasmaksut",
+            messageSupportEmail = "varhaiskasvatus.sovellustuki@tampere.fi",
             applyPlacementUnitFromDecision = true,
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,

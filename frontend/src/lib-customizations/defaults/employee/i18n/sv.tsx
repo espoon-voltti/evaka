@@ -4642,6 +4642,43 @@ export const sv: typeof fi = {
     replyToThread: 'Svara på meddelande',
     archiveThread: 'Arkivera meddelandetråd',
     markUnread: 'Markera som oläst',
+    deletion: {
+      deleteButton: 'Radera meddelandet',
+      alreadyDeleted: 'Meddelandet hade redan raderats',
+      modal: {
+        title: 'Radera meddelandet',
+        intro:
+          'Funktionen är endast avsedd för situationer där ett meddelande av misstag har skickats till fel mottagare. Det raderade meddelandets innehåll ersätts hos varje mottagare i eVaka med följande text:',
+        placeholderQuote: [
+          'Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään.',
+          'Avsändaren har tagit bort meddelandet. Du behöver inte göra något.',
+          'The sender has deleted this message. No action is needed on your part.'
+        ],
+        stepsHeader: 'Åtgärder omedelbart efter raderingen',
+        stepsBody1:
+          'För ett meddelande som skickats till fel mottagare ska alltid en dataskyddsanmälan göras. Kontakta kommunens eVaka-stöd efter raderingen för fortsatta åtgärder.',
+        stepsBody2:
+          'Information om raderingen förmedlas till enhetsledarna och till eVaka-stödet.',
+        cancel: 'Avbryt',
+        confirm: 'Radera meddelandet'
+      },
+      afterDeletion: {
+        banner: (supportEmail: string | null): ReactNode =>
+          supportEmail ? (
+            <span>
+              Meddelandet har raderats. Kontakta omedelbart eVaka-stödet på
+              adressen <a href={`mailto:${supportEmail}`}>{supportEmail}</a>.
+            </span>
+          ) : (
+            'Meddelandet har raderats. Kontakta omedelbart eVaka-stödet.'
+          ),
+        viewLogWarning: 'Visning av ett raderat meddelande loggas i systemet.',
+        viewButton: 'Visa raderat meddelande',
+        hideButton: 'Dölj raderat meddelande',
+        threadTitlePrefix: 'Meddelandet raderat',
+        sentThreadTitlePrefix: 'Meddelandetrådens rubrik raderad'
+      }
+    },
     changeFolder: {
       button: 'Byt mapp',
       modalTitle: 'Välj mapp',

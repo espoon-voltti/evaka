@@ -50,6 +50,7 @@ class LempaalaConfig {
             municipalMessageAccountName = "Lempäälän kunta",
             serviceWorkerMessageAccountName = "Varhaiskasvatuksen asiakaspalvelu",
             financeMessageAccountName = "Lempäälän varhaiskasvatuksen asiakasmaksut",
+            messageSupportEmail = "varhaiskasvatus.sovellustuki@tampere.fi",
             applyPlacementUnitFromDecision = true,
             preferredStartRelativeApplicationDueDate = true,
             fiveYearsOldDaycareEnabled = false,

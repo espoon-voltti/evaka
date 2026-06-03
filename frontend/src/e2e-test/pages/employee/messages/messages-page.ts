@@ -228,12 +228,55 @@ export class FolderMessagesPage {
 }
 
 export class SentMessagePage {
-  constructor(private readonly page: Page) {}
+  deleteMessageButton: Element
+  messageDeletedBanner: Element
+  deletedMessageAlert: Element
+  viewDeletedMessageButton: Element
+  hideDeletedMessageButton: Element
+  deletedMessageOriginal: Element
+  alreadyDeletedModal: Element
+  threadTitle: Element
+  constructor(private readonly page: Page) {
+    this.deleteMessageButton = page.findByDataQa('delete-message-btn')
+    this.messageDeletedBanner = page.findByDataQa('message-deleted-banner')
+    this.deletedMessageAlert = page.findByDataQa('deleted-message-alert')
+    this.viewDeletedMessageButton = page.findByDataQa(
+      'view-deleted-message-btn'
+    )
+    this.hideDeletedMessageButton = page.findByDataQa(
+      'hide-deleted-message-btn'
+    )
+    this.deletedMessageOriginal = page.findByDataQa('deleted-message-original')
+    this.alreadyDeletedModal = page.findByDataQa(
+      'message-already-deleted-modal'
+    )
+    this.threadTitle = page.findByDataQa('thread-title')
+  }
 
   async assertMessageRecipients(recipients: string) {
     await expect(this.page.findByDataQa('recipient-names')).toHaveText(
       recipients
     )
+  }
+
+  async deleteMessage() {
+    await this.deleteMessageButton.click()
+    const modal = this.page.findByDataQa('delete-message-modal')
+    await modal.findByDataQa('modal-okBtn').click()
+    await expect(modal).toBeHidden()
+  }
+
+  async viewDeletedContent() {
+    await this.viewDeletedMessageButton.click()
+  }
+
+  async hideDeletedContent() {
+    await this.hideDeletedMessageButton.click()
+  }
+
+  async dismissAlreadyDeleted() {
+    await this.alreadyDeletedModal.findByDataQa('modal-okBtn').click()
+    await expect(this.alreadyDeletedModal).toBeHidden()
   }
 }
 

@@ -109,6 +109,15 @@ export interface CreateMessageResponse {
 }
 
 /**
+* Generated from evaka.core.messaging.DeletedMessageContent
+*/
+export interface DeletedMessageContent {
+  attachments: Attachment[]
+  content: string
+  title: string | null
+}
+
+/**
 * Generated from evaka.core.messaging.DraftContent
 */
 export interface DraftContent {
@@ -157,6 +166,8 @@ export interface Group {
 export interface Message {
   attachments: Attachment[]
   content: string
+  contentDeletedAt: HelsinkiDateTime | null
+  contentId: MessageContentId
   id: MessageId
   readAt: HelsinkiDateTime | null
   recipientNames: string[] | null
@@ -200,6 +211,8 @@ export interface MessageChild {
 export interface MessageCopy {
   attachments: Attachment[]
   content: string
+  contentDeletedAt: HelsinkiDateTime | null
+  contentId: MessageContentId
   messageId: MessageId
   readAt: HelsinkiDateTime | null
   recipientAccountType: AccountType
@@ -491,7 +504,9 @@ export interface SelectableRecipientsResponse {
 export interface SentMessage {
   attachments: Attachment[]
   content: string
+  contentDeletedAt: HelsinkiDateTime | null
   contentId: MessageContentId
+  firstMessageContentDeletedAt: HelsinkiDateTime | null
   recipientNames: string[]
   sensitive: boolean
   sentAt: HelsinkiDateTime
@@ -592,6 +607,7 @@ export function deserializeJsonGetRecipientsResponse(json: JsonOf<GetRecipientsR
 export function deserializeJsonMessage(json: JsonOf<Message>): Message {
   return {
     ...json,
+    contentDeletedAt: (json.contentDeletedAt != null) ? HelsinkiDateTime.parseIso(json.contentDeletedAt) : null,
     readAt: (json.readAt != null) ? HelsinkiDateTime.parseIso(json.readAt) : null,
     sentAt: HelsinkiDateTime.parseIso(json.sentAt)
   }
@@ -609,6 +625,7 @@ export function deserializeJsonMessageAccountWithPresence(json: JsonOf<MessageAc
 export function deserializeJsonMessageCopy(json: JsonOf<MessageCopy>): MessageCopy {
   return {
     ...json,
+    contentDeletedAt: (json.contentDeletedAt != null) ? HelsinkiDateTime.parseIso(json.contentDeletedAt) : null,
     readAt: (json.readAt != null) ? HelsinkiDateTime.parseIso(json.readAt) : null,
     sentAt: HelsinkiDateTime.parseIso(json.sentAt)
   }
@@ -697,6 +714,8 @@ export function deserializeJsonSelectableRecipientsResponse(json: JsonOf<Selecta
 export function deserializeJsonSentMessage(json: JsonOf<SentMessage>): SentMessage {
   return {
     ...json,
+    contentDeletedAt: (json.contentDeletedAt != null) ? HelsinkiDateTime.parseIso(json.contentDeletedAt) : null,
+    firstMessageContentDeletedAt: (json.firstMessageContentDeletedAt != null) ? HelsinkiDateTime.parseIso(json.firstMessageContentDeletedAt) : null,
     sentAt: HelsinkiDateTime.parseIso(json.sentAt)
   }
 }

@@ -7,10 +7,12 @@
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import type { AuthorizedMessageAccount } from 'lib-common/generated/api-types/messaging'
 import type { CreateMessageResponse } from 'lib-common/generated/api-types/messaging'
+import type { DeletedMessageContent } from 'lib-common/generated/api-types/messaging'
 import type { DraftContent } from 'lib-common/generated/api-types/messaging'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
+import type { MessageContentId } from 'lib-common/generated/api-types/shared'
 import type { MessageDraftId } from 'lib-common/generated/api-types/shared'
 import type { MessageId } from 'lib-common/generated/api-types/shared'
 import type { MessageThread } from 'lib-common/generated/api-types/messaging'
@@ -119,6 +121,23 @@ export async function deleteDraftMessage(
 
 
 /**
+* Generated from evaka.core.messaging.MessageController.deleteMessageContent
+*/
+export async function deleteMessageContent(
+  request: {
+    accountId: MessageAccountId,
+    contentId: MessageContentId
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/employee/messages/${request.accountId}/contents/${request.contentId}/delete-content`.toString(),
+    method: 'POST'
+  })
+  return json
+}
+
+
+/**
 * Generated from evaka.core.messaging.MessageController.getAccountsByUser
 */
 export async function getAccountsByUser(): Promise<AuthorizedMessageAccount[]> {
@@ -148,6 +167,23 @@ export async function getArchivedMessages(
     params
   })
   return deserializeJsonPagedMessageThreads(json)
+}
+
+
+/**
+* Generated from evaka.core.messaging.MessageController.getDeletedMessageContent
+*/
+export async function getDeletedMessageContent(
+  request: {
+    accountId: MessageAccountId,
+    contentId: MessageContentId
+  }
+): Promise<DeletedMessageContent> {
+  const { data: json } = await client.request<JsonOf<DeletedMessageContent>>({
+    url: uri`/employee/messages/${request.accountId}/contents/${request.contentId}/view-deleted-content`.toString(),
+    method: 'GET'
+  })
+  return json
 }
 
 

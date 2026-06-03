@@ -3442,7 +3442,10 @@ CREATE TABLE public.message (
     thread_id uuid CONSTRAINT message_thread_id_not_null1 NOT NULL,
     sender_id uuid NOT NULL,
     sent_at timestamp with time zone,
-    recipient_names text[] DEFAULT '{}'::text[] NOT NULL
+    recipient_names text[] DEFAULT '{}'::text[] NOT NULL,
+    content_deleted_at timestamp with time zone,
+    content_deleted_by_employee_id uuid,
+    CONSTRAINT message_content_deleted_consistency CHECK (((content_deleted_at IS NULL) = (content_deleted_by_employee_id IS NULL)))
 );
 
 -- Name: message_account; Type: TABLE; Schema: public
@@ -6140,6 +6143,14 @@ CREATE INDEX "idx$koski_study_right_unit" ON public.koski_study_right USING btre
 
 CREATE INDEX "idx$message_content_author" ON public.message_content USING btree (author_id);
 
+-- Name: idx$message_content_deleted_at; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$message_content_deleted_at" ON public.message USING btree (content_deleted_at) WHERE (content_deleted_at IS NOT NULL);
+
+-- Name: idx$message_content_deleted_by_employee_id; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$message_content_deleted_by_employee_id" ON public.message USING btree (content_deleted_by_employee_id) WHERE (content_deleted_by_employee_id IS NOT NULL);
+
 -- Name: idx$message_content_id; Type: INDEX; Schema: public
 
 CREATE INDEX "idx$message_content_id" ON public.message USING btree (content_id);
@@ -8134,6 +8145,11 @@ ALTER TABLE ONLY public.message_account
 
 ALTER TABLE ONLY public.message_content
     ADD CONSTRAINT message_content_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.message_account(id);
+
+-- Name: message message_content_deleted_by_employee_id_fkey; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.message
+    ADD CONSTRAINT message_content_deleted_by_employee_id_fkey FOREIGN KEY (content_deleted_by_employee_id) REFERENCES public.employee(id);
 
 -- Name: message message_content_id_fkey; Type: FK CONSTRAINT; Schema: public
 

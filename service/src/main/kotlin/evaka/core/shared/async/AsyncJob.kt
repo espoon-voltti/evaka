@@ -90,6 +90,18 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendMessageDeletionSenderEmail(val contentId: MessageContentId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendMessageDeletionNotificationEmail(
+        val contentId: MessageContentId,
+        val recipientEmail: String,
+        val recipientLabel: String,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendAbsencePushNotification(val absenceId: AbsenceId, val device: MobileDeviceId) :
         AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -553,6 +565,8 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendDiscussionSurveyReservationCancellationEmail::class,
                     SendDiscussionSurveyReservationEmail::class,
                     SendEmailChangedEmail::class,
+                    SendMessageDeletionNotificationEmail::class,
+                    SendMessageDeletionSenderEmail::class,
                     SendMessageNotificationEmail::class,
                     SendMissingHolidayReservationsReminder::class,
                     SendMissingReservationsReminder::class,

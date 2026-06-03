@@ -29,9 +29,20 @@ import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import tools.jackson.databind.annotation.JsonTypeIdResolver
 
+const val DELETED_MESSAGE_PLACEHOLDER_BODY =
+    """Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään.
+
+Avsändaren har tagit bort meddelandet. Du behöver inte göra något.
+
+The sender has deleted this message. No action is needed on your part."""
+
+const val DELETED_MESSAGE_PLACEHOLDER_TITLE =
+    "Viesti on poistettu / Meddelandet har raderats / Message was deleted"
+
 data class Message(
     val id: MessageId,
     val threadId: MessageThreadId,
+    val contentId: MessageContentId,
     @Json val sender: MessageAccount,
     @Json val recipients: Set<MessageAccount>,
     val sentAt: HelsinkiDateTime,
@@ -39,6 +50,7 @@ data class Message(
     val readAt: HelsinkiDateTime? = null,
     @Json val attachments: List<Attachment>,
     val recipientNames: Set<String>? = null,
+    val contentDeletedAt: HelsinkiDateTime? = null,
 )
 
 data class MessageThread(
@@ -122,6 +134,8 @@ sealed interface CitizenMessageThread {
 data class SentMessage(
     val contentId: MessageContentId,
     val content: String,
+    val contentDeletedAt: HelsinkiDateTime?,
+    val firstMessageContentDeletedAt: HelsinkiDateTime?,
     val sentAt: HelsinkiDateTime,
     val threadTitle: String,
     val type: MessageType,
@@ -129,6 +143,12 @@ data class SentMessage(
     val sensitive: Boolean,
     val recipientNames: List<String>,
     @Json val attachments: List<Attachment>,
+)
+
+data class DeletedMessageContent(
+    val content: String,
+    @Json val attachments: List<Attachment>,
+    val title: String?,
 )
 
 enum class MessageType : DatabaseEnum {

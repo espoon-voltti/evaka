@@ -6,6 +6,7 @@ package evaka.core.messaging
 
 import evaka.core.FullApplicationTest
 import evaka.core.application.ApplicationType
+import evaka.core.application.notes.createApplicationNote
 import evaka.core.application.notes.getApplicationNotes
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
@@ -13,20 +14,24 @@ import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.attachment.AttachmentsController
 import evaka.core.daycare.CareType
+import evaka.core.emailclient.MockEmailClient
 import evaka.core.incomestatement.IncomeStatementBody
 import evaka.core.incomestatement.IncomeStatementStatus
 import evaka.core.insertServiceNeedOptions
 import evaka.core.messaging.MessageController.PostMessagePreflightResponse
 import evaka.core.pis.service.insertGuardian
+import evaka.core.pis.updateEmployeeGlobalRoles
 import evaka.core.serviceneed.ShiftCareType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.AttachmentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
+import evaka.core.shared.EmployeeId
 import evaka.core.shared.GroupId
 import evaka.core.shared.MessageAccountId
 import evaka.core.shared.MessageContentId
 import evaka.core.shared.MessageDraftId
+import evaka.core.shared.MessageId
 import evaka.core.shared.MessageThreadFolderId
 import evaka.core.shared.MessageThreadId
 import evaka.core.shared.ServiceNeedOptionId
@@ -61,8 +66,14 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mock.web.MockMultipartFile
+
+private data class DeletionInfo(
+    val contentDeletedAt: HelsinkiDateTime?,
+    val contentDeletedByEmployeeId: EmployeeId?,
+)
 
 class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var attachmentsController: AttachmentsController
@@ -3534,6 +3545,801 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     "evaka-logo.png",
                 )
             }
+        }
+    }
+
+    @Nested
+    inner class MessageDeletion {
+        private fun sendMessage(sender: MessageAccountId = employee1Account): MessageId {
+            val contentId =
+                postNewThread(
+                    title = "Test message",
+                    message = "Hello!",
+                    messageType = MessageType.MESSAGE,
+                    sender = sender,
+                    recipients = listOf(MessageRecipient.Child(child1.id)),
+                    user = employee1,
+                )!!
+            return messageIdOfContent(contentId)
+        }
+
+        private fun sendMessageWithAttachment(): Pair<MessageId, AttachmentId> {
+            val draftId = db.transaction { it.initDraft(employee1Account) }
+            val attachmentId = uploadMessageAttachment(employee1, draftId)
+            val contentId =
+                postNewThread(
+                    title = "Test message",
+                    message = "Hello!",
+                    messageType = MessageType.MESSAGE,
+                    sender = employee1Account,
+                    recipients = listOf(MessageRecipient.Child(child1.id)),
+                    user = employee1,
+                    attachmentIds = setOf(attachmentId),
+                    draftId = draftId,
+                )!!
+            return messageIdOfContent(contentId) to attachmentId
+        }
+
+        private fun sendBulletin(): MessageId {
+            val contentId =
+                postNewThread(
+                    title = "Bulletin test",
+                    message = "Important announcement",
+                    messageType = MessageType.BULLETIN,
+                    sender = group1Account,
+                    recipients = listOf(MessageRecipient.Group(groupId1)),
+                    user = employee1,
+                )!!
+            return messageIdOfContent(contentId)
+        }
+
+        private fun messageIdOfContent(contentId: MessageContentId): MessageId = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT id FROM message WHERE content_id = ${bind(contentId)} ORDER BY id LIMIT 1"
+                    )
+                }
+                .exactlyOne<MessageId>()
+        }
+
+        private fun contentIdOfMessage(messageId: MessageId): MessageContentId = db.read { tx ->
+            tx.createQuery { sql("SELECT content_id FROM message WHERE id = ${bind(messageId)}") }
+                .exactlyOne<MessageContentId>()
+        }
+
+        private fun deleteContent(
+            user: AuthenticatedUser.Employee,
+            accountId: MessageAccountId,
+            messageId: MessageId,
+            now: HelsinkiDateTime = sendTime.plusHours(1),
+        ) {
+            messageController.deleteMessageContent(
+                dbInstance(),
+                user,
+                MockEvakaClock(now),
+                accountId,
+                contentIdOfMessage(messageId),
+            )
+        }
+
+        private fun viewDeletedContent(
+            user: AuthenticatedUser.Employee,
+            accountId: MessageAccountId,
+            messageId: MessageId,
+        ): DeletedMessageContent =
+            messageController.getDeletedMessageContent(
+                dbInstance(),
+                user,
+                MockEvakaClock(sendTime.plusHours(2)),
+                accountId,
+                contentIdOfMessage(messageId),
+            )
+
+        private fun threadIdOf(messageId: MessageId): MessageThreadId = db.read { tx ->
+            tx.createQuery { sql("SELECT thread_id FROM message WHERE id = ${bind(messageId)}") }
+                .exactlyOne<MessageThreadId>()
+        }
+
+        private fun getThreadAs(
+            accountId: MessageAccountId,
+            threadId: MessageThreadId,
+        ): MessageThread = db.read { tx -> tx.getMessageThread(accountId, threadId, "", "", "") }
+
+        private fun deletionInfoOf(messageId: MessageId): DeletionInfo = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT content_deleted_at, content_deleted_by_employee_id FROM message WHERE id = ${bind(messageId)}"
+                    )
+                }
+                .exactlyOne<DeletionInfo>()
+        }
+
+        private fun latestEmployee1MessageIn(threadId: MessageThreadId): MessageId = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        """
+                            SELECT id FROM message
+                            WHERE thread_id = ${bind(threadId)} AND sender_id = ${bind(employee1Account)}
+                            ORDER BY sent_at DESC LIMIT 1
+                            """
+                    )
+                }
+                .exactlyOne<MessageId>()
+        }
+
+        private fun guardianReply(
+            threadId: MessageThreadId,
+            content: String,
+            now: HelsinkiDateTime,
+        ) = replyToThread(person1, threadId, setOf(employee1Account), content, now)
+
+        private fun employee1Reply(
+            threadId: MessageThreadId,
+            content: String,
+            now: HelsinkiDateTime,
+        ) =
+            replyToThread(
+                employee1,
+                employee1Account,
+                threadId,
+                setOf(person1Account),
+                content,
+                now,
+            )
+
+        @Test
+        fun `sender can delete own message within window`() {
+            val messageId = sendMessage()
+
+            deleteContent(employee1, employee1Account, messageId)
+
+            val info = deletionInfoOf(messageId)
+            assertNotNull(info.contentDeletedAt)
+            assertEquals(employee1.id, info.contentDeletedByEmployeeId)
+        }
+
+        @Test
+        fun `non-sender cannot delete`() {
+            val messageId = sendMessage()
+
+            assertThrows<Forbidden> { deleteContent(employee2, employee1Account, messageId) }
+        }
+
+        @Test
+        fun `bulletin cannot be deleted`() {
+            val messageId = sendBulletin()
+
+            assertThrows<Forbidden> { deleteContent(employee1, group1Account, messageId) }
+        }
+
+        @Test
+        fun `delete after window returns 403`() {
+            val messageId = sendMessage()
+            val afterWindow = HelsinkiDateTime.atStartOfDay(sendTime.toLocalDate().plusDays(8))
+
+            assertThrows<Forbidden> {
+                deleteContent(employee1, employee1Account, messageId, afterWindow)
+            }
+        }
+
+        @Test
+        fun `delete just before end of day 7 succeeds`() {
+            val messageId = sendMessage()
+            val justBefore =
+                HelsinkiDateTime.atStartOfDay(sendTime.toLocalDate().plusDays(8)).minusSeconds(1)
+
+            deleteContent(employee1, employee1Account, messageId, justBefore)
+
+            assertNotNull(deletionInfoOf(messageId).contentDeletedAt)
+        }
+
+        @Test
+        fun `second delete returns 409 conflict`() {
+            val messageId = sendMessage()
+
+            deleteContent(employee1, employee1Account, messageId)
+
+            assertThrows<Conflict> { deleteContent(employee1, employee1Account, messageId) }
+        }
+
+        @Test
+        fun `deleting redacts every copy of a message sent to multiple recipient groups`() {
+            val contentId =
+                postNewThread(
+                    title = "Test message",
+                    message = "Hello!",
+                    messageType = MessageType.MESSAGE,
+                    sender = employee1Account,
+                    recipients =
+                        listOf(
+                            MessageRecipient.Child(child1.id),
+                            MessageRecipient.Child(child3.id),
+                        ),
+                    user = employee1,
+                )!!
+            val copies = db.read { tx ->
+                tx.createQuery {
+                        sql("SELECT id FROM message WHERE content_id = ${bind(contentId)}")
+                    }
+                    .toList<MessageId>()
+            }
+            assertEquals(2, copies.size)
+
+            deleteContent(employee1, employee1Account, copies.first())
+
+            copies.forEach { assertNotNull(deletionInfoOf(it).contentDeletedAt) }
+        }
+
+        @Test
+        fun `cannot delete a message of another account the user also has access to`() {
+            val messageId = sendMessage()
+
+            assertThrows<Forbidden> { deleteContent(employee1, group1Account, messageId) }
+        }
+
+        @Test
+        fun `non-sender sees placeholder body and no attachments for a deleted message`() {
+            val messageId = sendMessage()
+            val threadId = threadIdOf(messageId)
+
+            deleteContent(employee1, employee1Account, messageId)
+
+            val message = getThreadAs(person1Account, threadId).messages.single()
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, message.content)
+            assertEquals(emptyList(), message.attachments)
+            assertNotNull(message.contentDeletedAt)
+        }
+
+        @Test
+        fun `body and attachments of a deleted message are redacted even for the sender`() {
+            val messageId = sendMessage()
+            val threadId = threadIdOf(messageId)
+
+            deleteContent(employee1, employee1Account, messageId)
+
+            val message = getThreadAs(employee1Account, threadId).messages.single()
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, message.content)
+            assertEquals(emptyList(), message.attachments)
+            assertNotNull(message.contentDeletedAt)
+        }
+
+        @Test
+        fun `thread title is redacted for everyone including the sender when the first message is deleted`() {
+            val messageId = sendMessage()
+            val threadId = threadIdOf(messageId)
+
+            deleteContent(employee1, employee1Account, messageId)
+
+            assertEquals(
+                DELETED_MESSAGE_PLACEHOLDER_TITLE,
+                getThreadAs(person1Account, threadId).title,
+            )
+            assertEquals(
+                DELETED_MESSAGE_PLACEHOLDER_TITLE,
+                getThreadAs(employee1Account, threadId).title,
+            )
+        }
+
+        @Test
+        fun `thread title is unchanged when a non-first reply message is deleted`() {
+            val messageId = sendMessage()
+            val threadId = threadIdOf(messageId)
+            guardianReply(threadId, "Guardian reply", sendTime.plusMinutes(10))
+            employee1Reply(threadId, "Employee reply", sendTime.plusMinutes(20))
+
+            val replyMessageId = latestEmployee1MessageIn(threadId)
+            deleteContent(employee1, employee1Account, replyMessageId)
+
+            assertEquals("Test message", getThreadAs(person1Account, threadId).title)
+            assertEquals("Test message", getThreadAs(employee1Account, threadId).title)
+        }
+
+        @Test
+        fun `reply messages render unredacted regardless of viewer when a non-first message is deleted`() {
+            val messageId = sendMessage()
+            val threadId = threadIdOf(messageId)
+            guardianReply(threadId, "Guardian reply", sendTime.plusMinutes(10))
+            employee1Reply(threadId, "Employee reply", sendTime.plusMinutes(20))
+
+            val replyMessageId = latestEmployee1MessageIn(threadId)
+            deleteContent(employee1, employee1Account, replyMessageId)
+
+            val messages = getThreadAs(person1Account, threadId).messages.sortedBy { it.sentAt }
+
+            assertEquals("Hello!", messages[0].content)
+            assertNull(messages[0].contentDeletedAt)
+
+            assertEquals("Guardian reply", messages[1].content)
+
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, messages[2].content)
+            assertNotNull(messages[2].contentDeletedAt)
+
+            val senderReply =
+                getThreadAs(employee1Account, threadId).messages.maxByOrNull { it.sentAt }!!
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, senderReply.content)
+            assertNotNull(senderReply.contentDeletedAt)
+        }
+
+        @Test
+        fun `replies stay visible when the first message of the thread is deleted`() {
+            val messageId = sendMessage()
+            val threadId = threadIdOf(messageId)
+            guardianReply(threadId, "Guardian reply", sendTime.plusMinutes(10))
+            employee1Reply(threadId, "Employee reply", sendTime.plusMinutes(20))
+
+            deleteContent(employee1, employee1Account, messageId)
+
+            val recipientMessages =
+                getThreadAs(person1Account, threadId).messages.sortedBy { it.sentAt }
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, recipientMessages[0].content)
+            assertNotNull(recipientMessages[0].contentDeletedAt)
+            assertEquals("Guardian reply", recipientMessages[1].content)
+            assertNull(recipientMessages[1].contentDeletedAt)
+            assertEquals("Employee reply", recipientMessages[2].content)
+            assertNull(recipientMessages[2].contentDeletedAt)
+
+            val senderMessages =
+                getThreadAs(employee1Account, threadId).messages.sortedBy { it.sentAt }
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, senderMessages[0].content)
+            assertEquals("Guardian reply", senderMessages[1].content)
+            assertEquals("Employee reply", senderMessages[2].content)
+        }
+
+        @Test
+        fun `received threads list redacts deleted first message body and title for non-sender`() {
+            val messageId = sendMessage()
+
+            deleteContent(employee1, employee1Account, messageId)
+
+            val received = db.read { tx ->
+                tx.getReceivedThreads(person1Account, pageSize = 10, page = 1, "", "", "")
+            }
+            val thread = received.data.single()
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_TITLE, thread.title)
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, thread.messages.single().content)
+
+            val sent = db.read { tx ->
+                tx.getThreads(employee1Account, pageSize = 10, page = 1, "", "", "")
+            }
+            val sentThread = sent.data.single()
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_TITLE, sentThread.title)
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, sentThread.messages.single().content)
+        }
+
+        @Test
+        fun `getSentMessage redacts the body but keeps the deletion timestamp for the sender`() {
+            val messageId = sendMessage()
+
+            deleteContent(employee1, employee1Account, messageId)
+
+            val sentMessage = db.read { tx ->
+                tx.getSentMessage(employee1Account, messageId, "", "")
+            }
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, sentMessage.content)
+            assertNotNull(sentMessage.contentDeletedAt)
+            assertTrue(sentMessage.attachments.isEmpty())
+        }
+
+        @Test
+        fun `sent messages list redacts the body of a deleted message for the sender`() {
+            val (messageId, _) = sendMessageWithAttachment()
+
+            deleteContent(employee1, employee1Account, messageId)
+
+            val sent = db.read { tx ->
+                tx.getMessagesSentByAccount(employee1Account, pageSize = 10, page = 1)
+            }
+            val sentMessage = sent.data.single()
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, sentMessage.content)
+            assertTrue(sentMessage.attachments.isEmpty())
+
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_TITLE, sentMessage.threadTitle)
+        }
+
+        @Test
+        fun `sent messages list keeps the real title when a non-first reply is deleted`() {
+            val messageId = sendMessage()
+            val threadId = threadIdOf(messageId)
+            guardianReply(threadId, "Guardian reply", sendTime.plusMinutes(10))
+            employee1Reply(threadId, "Employee reply", sendTime.plusMinutes(20))
+
+            val replyMessageId = latestEmployee1MessageIn(threadId)
+            deleteContent(employee1, employee1Account, replyMessageId)
+
+            val sent = db.read { tx ->
+                tx.getMessagesSentByAccount(employee1Account, pageSize = 10, page = 1)
+            }
+            val deletedReply = sent.data.single { it.contentDeletedAt != null }
+            assertEquals("Test message", deletedReply.threadTitle)
+            assertNull(deletedReply.firstMessageContentDeletedAt)
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, deletedReply.content)
+        }
+
+        @Test
+        fun `sent messages list redacts the title of every row in a thread whose first message is deleted`() {
+            val messageId = sendMessage()
+            val threadId = threadIdOf(messageId)
+            guardianReply(threadId, "Guardian reply", sendTime.plusMinutes(10))
+            employee1Reply(threadId, "Employee reply", sendTime.plusMinutes(20))
+
+            // delete the FIRST message (the reply stays)
+            deleteContent(employee1, employee1Account, messageId)
+
+            val sent = db.read { tx ->
+                tx.getMessagesSentByAccount(employee1Account, pageSize = 10, page = 1)
+            }
+            // employee1 sent two contents in this thread: the first message and the reply
+            assertEquals(2, sent.data.size)
+            sent.data.forEach { row ->
+                assertEquals(DELETED_MESSAGE_PLACEHOLDER_TITLE, row.threadTitle)
+                assertNotNull(row.firstMessageContentDeletedAt)
+            }
+        }
+
+        @Test
+        fun `deleting an application-linked message redacts its body in the thread view and the application note`() {
+            val applicationId = db.transaction { tx ->
+                tx.insertTestApplication(
+                    childId = child1.id,
+                    guardianId = adult1.id,
+                    type = ApplicationType.DAYCARE,
+                    document =
+                        DaycareFormV0(
+                            type = ApplicationType.DAYCARE,
+                            child = Child(dateOfBirth = null),
+                            guardian = Adult(),
+                            apply = Apply(preferredUnits = listOf(daycare.id)),
+                            preferredStartDate = placementStart,
+                        ),
+                )
+            }
+            val contentId =
+                postNewThread(
+                    title = "Hakemuksenne",
+                    message = "Hello!",
+                    messageType = MessageType.MESSAGE,
+                    sender = serviceWorkerAccount,
+                    recipients = listOf(MessageRecipient.Citizen(adult1.id)),
+                    user = serviceWorker.user,
+                    relatedApplicationId = applicationId,
+                )!!
+
+            // the message body is mirrored into an application note on send
+            assertEquals(
+                "Hello!",
+                db.read { it.getApplicationNotes(applicationId) }.single().content,
+            )
+
+            // a plain note unrelated to any message must not be affected by redaction
+            val plainNoteId =
+                db.transaction { tx ->
+                        tx.createApplicationNote(
+                            now = sendTime,
+                            applicationId = applicationId,
+                            content = "Plain note",
+                            createdBy = serviceWorker.evakaUserId,
+                        )
+                    }
+                    .id
+
+            deleteContent(serviceWorker.user, serviceWorkerAccount, messageIdOfContent(contentId))
+
+            val thread =
+                checkNotNull(
+                    db.read { tx ->
+                        tx.getMessageThreadByApplicationId(
+                            serviceWorkerAccount,
+                            applicationId,
+                            "",
+                            "",
+                            "",
+                        )
+                    }
+                )
+            val message = thread.messages.single()
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, message.content)
+            assertTrue(message.attachments.isEmpty())
+
+            val notes = db.read { it.getApplicationNotes(applicationId) }
+            // the application note that mirrored the body is redacted too
+            assertEquals(
+                DELETED_MESSAGE_PLACEHOLDER_BODY,
+                notes.single { it.id != plainNoteId }.content,
+            )
+            // the plain note keeps its real content
+            assertEquals("Plain note", notes.single { it.id == plainNoteId }.content)
+        }
+
+        @Test
+        fun `sender can view the original content of a deleted message`() {
+            val messageId = sendMessage()
+            deleteContent(employee1, employee1Account, messageId)
+
+            val original = viewDeletedContent(employee1, employee1Account, messageId)
+
+            assertEquals("Hello!", original.content)
+            assertEquals(emptyList(), original.attachments)
+            assertEquals("Test message", original.title)
+        }
+
+        @Test
+        fun `viewing a deleted non-first reply returns content but no title`() {
+            val messageId = sendMessage()
+            val threadId = threadIdOf(messageId)
+            guardianReply(threadId, "Guardian reply", sendTime.plusMinutes(10))
+            employee1Reply(threadId, "Employee reply", sendTime.plusMinutes(20))
+
+            val replyMessageId = latestEmployee1MessageIn(threadId)
+            deleteContent(employee1, employee1Account, replyMessageId)
+
+            val original = viewDeletedContent(employee1, employee1Account, replyMessageId)
+
+            assertEquals("Employee reply", original.content)
+            assertNull(original.title)
+        }
+
+        @Test
+        fun `sender can view the original attachments of a deleted message`() {
+            val (messageId, attachmentId) = sendMessageWithAttachment()
+            deleteContent(employee1, employee1Account, messageId)
+
+            val original = viewDeletedContent(employee1, employee1Account, messageId)
+
+            assertEquals("Hello!", original.content)
+            assertEquals(listOf(attachmentId), original.attachments.map { it.id })
+        }
+
+        @Test
+        fun `non-sender cannot view the deleted content`() {
+            val messageId = sendMessage()
+            deleteContent(employee1, employee1Account, messageId)
+
+            assertThrows<Forbidden> { viewDeletedContent(employee2, employee1Account, messageId) }
+        }
+
+        @Test
+        fun `cannot view the deleted content via another account the user also has access to`() {
+            val messageId = sendMessage()
+            deleteContent(employee1, employee1Account, messageId)
+
+            assertThrows<Forbidden> { viewDeletedContent(employee1, group1Account, messageId) }
+        }
+
+        @Test
+        fun `view-deleted-content on a message that is not deleted returns 403`() {
+            val messageId = sendMessage()
+
+            assertThrows<Forbidden> { viewDeletedContent(employee1, employee1Account, messageId) }
+        }
+
+        @Test
+        fun `non-sender cannot download an attachment after the message is deleted`() {
+            val (messageId, attachmentId) = sendMessageWithAttachment()
+
+            attachmentsController.getAttachment(
+                dbInstance(),
+                person1,
+                MockEvakaClock(sendTime.plusHours(1)),
+                attachmentId,
+                "evaka-logo.png",
+            )
+
+            deleteContent(employee1, employee1Account, messageId)
+
+            assertThrows<Forbidden> {
+                attachmentsController.getAttachment(
+                    dbInstance(),
+                    person1,
+                    MockEvakaClock(sendTime.plusHours(2)),
+                    attachmentId,
+                    "evaka-logo.png",
+                )
+            }
+        }
+
+        @Test
+        fun `sender can still download an attachment after the message is deleted`() {
+            val (messageId, attachmentId) = sendMessageWithAttachment()
+
+            deleteContent(employee1, employee1Account, messageId)
+
+            attachmentsController.getAttachment(
+                dbInstance(),
+                employee1,
+                MockEvakaClock(sendTime.plusHours(2)),
+                attachmentId,
+                "evaka-logo.png",
+            )
+        }
+
+        private fun insertExtraDaycareSupervisor(email: String): DevEmployee {
+            val supervisor = DevEmployee(email = email)
+            db.transaction { tx ->
+                tx.insert(supervisor)
+                tx.insertDaycareAclRow(daycare.id, supervisor.id, UserRole.UNIT_SUPERVISOR)
+            }
+            return supervisor
+        }
+
+        private fun runDeletionEmailJobs() =
+            asyncJobRunner.runPendingJobsSync(MockEvakaClock(sendTime.plusHours(2)))
+
+        @Test
+        fun `with no support email configured, the admin notification goes to all admins except the deleter`() {
+            val admin =
+                DevEmployee(
+                    firstName = "Anna",
+                    lastName = "Admin",
+                    email = "admin@example.com",
+                    roles = setOf(UserRole.ADMIN),
+                )
+            db.transaction { tx ->
+                tx.insert(admin)
+                // make the deleter an admin too, to prove they are excluded from the fallback
+                tx.updateEmployeeGlobalRoles(devEmployee1.id, listOf(UserRole.ADMIN))
+            }
+            val messageId = sendMessage()
+            MockEmailClient.clear()
+
+            deleteContent(employee1, employee1Account, messageId)
+            runDeletionEmailJobs()
+
+            val notificationRecipients =
+                MockEmailClient.emails
+                    .filter {
+                        it.content.subject == "eVaka-viesti poistettu – tee tietosuojailmoitus"
+                    }
+                    .map { it.toAddress }
+                    .toSet()
+            assertEquals(setOf("admin@example.com"), notificationRecipients)
+            // the deleter still receives the sender email, not an admin notification
+            assertTrue(
+                MockEmailClient.emails.any {
+                    it.toAddress == "test.person@espoo.fi" &&
+                        it.content.subject == "eVaka-viesti poistettu – ota yhteyttä tukeen"
+                }
+            )
+        }
+
+        @Test
+        fun `deleting a personal-account message emails the deleter, the unit supervisor and the admin`() {
+            whenever(featureConfig.messageSupportEmail).thenReturn("admin@espoo.fi")
+            insertExtraDaycareSupervisor("supervisor@example.com")
+            val messageId = sendMessage()
+            MockEmailClient.clear()
+
+            deleteContent(employee1, employee1Account, messageId)
+            runDeletionEmailJobs()
+
+            val byAddress = MockEmailClient.emails.associateBy { it.toAddress }
+            assertEquals(
+                setOf("test.person@espoo.fi", "supervisor@example.com", "admin@espoo.fi"),
+                byAddress.keys,
+            )
+            assertEquals(
+                "eVaka-viesti poistettu – ota yhteyttä tukeen",
+                byAddress.getValue("test.person@espoo.fi").content.subject,
+            )
+            val supervisorEmail = byAddress.getValue("supervisor@example.com").content
+            assertEquals("eVaka-viesti poistettu – tee tietosuojailmoitus", supervisorEmail.subject)
+            assertTrue(supervisorEmail.html.contains("Test Person on poistanut"))
+            assertTrue(supervisorEmail.html.contains("Vastaanottajien lukumäärä: 2"))
+        }
+
+        @Test
+        fun `deleting a group-account message resolves the supervisor from the group's unit`() {
+            insertExtraDaycareSupervisor("supervisor@example.com")
+            val messageId = sendMessage(sender = group1Account)
+            MockEmailClient.clear()
+
+            deleteContent(employee1, group1Account, messageId)
+            runDeletionEmailJobs()
+
+            assertEquals(
+                setOf("test.person@espoo.fi", "supervisor@example.com"),
+                MockEmailClient.emails.map { it.toAddress }.toSet(),
+            )
+        }
+
+        @Test
+        fun `deleting a finance-account message resolves no supervisors`() {
+            whenever(featureConfig.messageSupportEmail).thenReturn("admin@espoo.fi")
+            val messageId =
+                messageIdOfContent(
+                    postNewThread(
+                        title = "Test message",
+                        message = "Hello!",
+                        messageType = MessageType.MESSAGE,
+                        sender = financeAccount,
+                        recipients = listOf(MessageRecipient.Citizen(adult1.id)),
+                        user = financeAdmin.user,
+                    )!!
+                )
+            MockEmailClient.clear()
+
+            deleteContent(financeAdmin.user, financeAccount, messageId)
+            runDeletionEmailJobs()
+
+            val byAddress = MockEmailClient.emails.associateBy { it.toAddress }
+            assertEquals(setOf("test.person@espoo.fi", "admin@espoo.fi"), byAddress.keys)
+            assertTrue(
+                byAddress
+                    .getValue("admin@espoo.fi")
+                    .content
+                    .html
+                    .contains("Finance Admin (Varhaiskasvatuksen asiakasmaksut")
+            )
+        }
+
+        @Test
+        fun `a unit supervisor deleting their own message falls through to admin-only`() {
+            whenever(featureConfig.messageSupportEmail).thenReturn("admin@espoo.fi")
+            val messageId = sendMessage()
+            MockEmailClient.clear()
+
+            deleteContent(employee1, employee1Account, messageId)
+            runDeletionEmailJobs()
+
+            assertEquals(
+                setOf("test.person@espoo.fi", "admin@espoo.fi"),
+                MockEmailClient.emails.map { it.toAddress }.toSet(),
+            )
+        }
+
+        @Test
+        fun `deleting a personal-account message that reached two units notifies the supervisor of each unit`() {
+            val sender =
+                DevEmployee(firstName = "Area", lastName = "Veo", email = "area.veo@example.com")
+            val supervisorA =
+                DevEmployee(firstName = "Sup", lastName = "A", email = "supervisor.a@example.com")
+            val supervisorB =
+                DevEmployee(firstName = "Sup", lastName = "B", email = "supervisor.b@example.com")
+            val senderAccount = db.transaction { tx ->
+                tx.insert(sender)
+                tx.insertDaycareAclRow(daycare.id, sender.id, UserRole.UNIT_SUPERVISOR)
+                tx.insertDaycareAclRow(daycare2.id, sender.id, UserRole.UNIT_SUPERVISOR)
+                tx.insert(supervisorA)
+                tx.insertDaycareAclRow(daycare.id, supervisorA.id, UserRole.UNIT_SUPERVISOR)
+                tx.insert(supervisorB)
+                tx.insertDaycareAclRow(daycare2.id, supervisorB.id, UserRole.UNIT_SUPERVISOR)
+                tx.upsertEmployeeMessageAccount(sender.id)
+            }
+            val senderUser =
+                AuthenticatedUser.Employee(id = sender.id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+
+            val contentId =
+                postNewThread(
+                    title = "Test message",
+                    message = "Hello!",
+                    messageType = MessageType.MESSAGE,
+                    sender = senderAccount,
+                    recipients =
+                        listOf(
+                            MessageRecipient.Child(child1.id),
+                            MessageRecipient.Child(child8.id),
+                        ),
+                    user = senderUser,
+                    now = sendTime,
+                )!!
+            MockEmailClient.clear()
+
+            deleteContent(senderUser, senderAccount, messageIdOfContent(contentId))
+            runDeletionEmailJobs()
+
+            val byAddress = MockEmailClient.emails.associateBy { it.toAddress }
+
+            assertTrue(byAddress.containsKey("supervisor.a@example.com"))
+            assertTrue(byAddress.containsKey("supervisor.b@example.com"))
+
+            assertTrue(byAddress.containsKey("area.veo@example.com"))
+
+            assertTrue(
+                byAddress
+                    .getValue("supervisor.a@example.com")
+                    .content
+                    .html
+                    .contains("Vastaanottajien lukumäärä: 4")
+            )
         }
     }
 

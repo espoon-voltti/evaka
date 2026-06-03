@@ -83,6 +83,12 @@ const defaultMessage = {
   content: 'Testiviestin sisältö'
 }
 
+const deletedPlaceholderLines = [
+  'Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään.',
+  'Avsändaren har tagit bort meddelandet. Du behöver inte göra något.',
+  'The sender has deleted this message. No action is needed on your part.'
+]
+
 test.describe('Sending and receiving messages', () => {
   let unitSupervisorPage: Page
   let citizenPage: Page
@@ -1181,6 +1187,233 @@ test.describe('Sending and receiving messages', () => {
       citizenMessagesPage = await openCitizenThread(mockedTime.addHours(4))
       await citizenMessagesPage.assertFinanceReplyInfo(true)
       await citizenMessagesPage.assertOpenReplyEditorButtonIsHidden()
+    })
+  })
+
+  test.describe('Message deletion', () => {
+    test('Sender deletes own message, views the original, and sees the alert on later views', async () => {
+      await openSupervisorPage(mockedDateAt10)
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.sendNewMessage(defaultMessage)
+      await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+      let sentMessage = await (
+        await messagesPage.openSentMessages()
+      ).openMessage(0)
+      await sentMessage.deleteMessage()
+
+      await expect(sentMessage.messageDeletedBanner).toBeVisible()
+      await expect(sentMessage.viewDeletedMessageButton).toBeVisible()
+      await expect(sentMessage.deletedMessageAlert).toBeHidden()
+
+      await expect(sentMessage.threadTitle).toContainText(
+        'Viesti poistettu 21.05.2022'
+      )
+      await expect(sentMessage.threadTitle).not.toContainText(
+        defaultMessage.title
+      )
+
+      await expect(sentMessage.deletedMessageOriginal).toBeHidden()
+      await sentMessage.viewDeletedContent()
+      await expect(sentMessage.deletedMessageOriginal).toContainText(
+        defaultMessage.content
+      )
+      await expect(sentMessage.threadTitle).toContainText(
+        `Viesti poistettu [${defaultMessage.title}]`
+      )
+      await sentMessage.hideDeletedContent()
+      await expect(sentMessage.deletedMessageOriginal).toBeHidden()
+      await expect(sentMessage.viewDeletedMessageButton).toBeVisible()
+
+      await expect(sentMessage.threadTitle).toContainText(
+        'Viesti poistettu 21.05.2022'
+      )
+      await expect(sentMessage.threadTitle).not.toContainText(
+        defaultMessage.title
+      )
+
+      // Re-viewing within the same page load must hit the backend again so
+      // every view is audit-logged (there is no remount to trigger a refetch)
+      const [secondViewRequest] = await Promise.all([
+        unitSupervisorPage.page.waitForRequest((req) =>
+          req.url().includes('view-deleted-content')
+        ),
+        sentMessage.viewDeletedContent()
+      ])
+      expect(secondViewRequest.method()).toEqual('GET')
+      await expect(sentMessage.deletedMessageOriginal).toContainText(
+        defaultMessage.content
+      )
+
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const sentList = await messagesPage.openSentMessages()
+      await expect(
+        sentList.sentMessages.nth(0).findByDataQa('thread-list-item-title')
+      ).toContainText('Viesti poistettu 21.05.2022')
+      sentMessage = await sentList.openMessage(0)
+      await expect(sentMessage.messageDeletedBanner).toBeHidden()
+      await expect(sentMessage.deletedMessageAlert).toBeVisible()
+      await sentMessage.viewDeletedContent()
+      await expect(sentMessage.deletedMessageOriginal).toContainText(
+        defaultMessage.content
+      )
+    })
+
+    test('A still-visible reply shows the thread-title-removed wording when the first message is deleted', async () => {
+      await openSupervisorPage(mockedDateAt10)
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      let messagesPage = new MessagesPage(unitSupervisorPage)
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.sendNewMessage(defaultMessage)
+      await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+      await openCitizenPage(mockedDateAt11, '/messages')
+      const citizenMessagesPage = new CitizenMessagesPage(
+        citizenPage,
+        'desktop'
+      )
+      await citizenMessagesPage.replyToFirstThread(defaultReply)
+      await runPendingAsyncJobs(mockedDateAt11.addMinutes(1))
+
+      await openSupervisorPage(mockedDateAt12)
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      messagesPage = new MessagesPage(unitSupervisorPage)
+      await messagesPage.openInbox(0)
+      await messagesPage.openFirstThreadReplyEditor()
+      await messagesPage.fillReplyContent(defaultReply)
+      await messagesPage.sendReplyButton.click()
+      await expect(messagesPage.sendReplyButton).toBeHidden()
+      await runPendingAsyncJobs(mockedDateAt12.addMinutes(1))
+
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const firstSent = await (
+        await messagesPage.openSentMessages()
+      ).openMessage(1)
+      await firstSent.deleteMessage()
+
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const sentList = await messagesPage.openSentMessages()
+      await expect(
+        sentList.sentMessages.nth(0).findByDataQa('thread-list-item-title')
+      ).toContainText('Viestiketjun otsikko poistettu 21.05.2022')
+      await expect(
+        sentList.sentMessages.nth(1).findByDataQa('thread-list-item-title')
+      ).toContainText('Viesti poistettu 21.05.2022')
+
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      await messagesPage.openInbox(0)
+      await expect(
+        messagesPage.receivedMessages
+          .nth(0)
+          .findByDataQa('thread-list-item-title')
+      ).toContainText('Viesti poistettu 21.05.2022')
+      await messagesPage.openFirstThread()
+      await expect(
+        unitSupervisorPage.findByDataQa('thread-title')
+      ).toContainText('Viesti poistettu 21.05.2022')
+    })
+
+    test('Recipient sees the multilingual placeholder for a deleted message', async () => {
+      await openSupervisorPage(mockedDateAt10)
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.sendNewMessage(defaultMessage)
+      await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+      const sentMessage = await (
+        await messagesPage.openSentMessages()
+      ).openMessage(0)
+      await sentMessage.deleteMessage()
+
+      await openCitizenPage(mockedDateAt11, '/messages')
+      const citizenMessagesPage = new CitizenMessagesPage(
+        citizenPage,
+        'desktop'
+      )
+      await citizenMessagesPage.openFirstThread()
+      const deletedMessage = citizenMessagesPage.threadMessages.only()
+
+      for (const line of deletedPlaceholderLines) {
+        await expect(deletedMessage).toContainText(line)
+      }
+
+      await expect(deletedMessage).not.toContainText(defaultMessage.content)
+    })
+
+    test('Delete button is hidden after the deletion window has passed', async () => {
+      await openSupervisorPage(mockedDateAt10)
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      let messagesPage = new MessagesPage(unitSupervisorPage)
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.sendNewMessage(defaultMessage)
+      await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+      await openSupervisorPage(
+        HelsinkiDateTime.fromLocal(mockedDate.addDays(8), LocalTime.of(10, 2))
+      )
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      messagesPage = new MessagesPage(unitSupervisorPage)
+      const sentMessage = await (
+        await messagesPage.openSentMessages()
+      ).openMessage(0)
+      await expect(sentMessage.deleteMessageButton).toBeHidden()
+    })
+
+    test('Bulletins cannot be deleted', async () => {
+      await openSupervisorPage(mockedDateAt10)
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.sendNewMessage({
+        ...defaultMessage,
+        type: 'BULLETIN'
+      })
+      await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+      const sentMessage = await (
+        await messagesPage.openSentMessages()
+      ).openMessage(0)
+      await expect(sentMessage.deleteMessageButton).toBeHidden()
+    })
+
+    test('Deleting an already-deleted message shows an "already deleted" notice, not the deleted-by-you banner', async () => {
+      // two sessions on the same account
+      const firstPage = await newPage({ mockedTime: mockedDateAt10 })
+      await employeeLogin(firstPage, unitSupervisor)
+      await firstPage.goto(`${config.employeeUrl}/messages`)
+      const firstMessages = new MessagesPage(firstPage)
+      const messageEditor = await firstMessages.openMessageEditor()
+      await messageEditor.sendNewMessage(defaultMessage)
+      await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+      const secondPage = await newPage({ mockedTime: mockedDateAt10 })
+      await employeeLogin(secondPage, unitSupervisor)
+      await secondPage.goto(`${config.employeeUrl}/messages`)
+      const secondMessages = new MessagesPage(secondPage)
+
+      // both sessions open the same sent message before either deletes
+      const firstSent = await (
+        await firstMessages.openSentMessages()
+      ).openMessage(0)
+      const secondSent = await (
+        await secondMessages.openSentMessages()
+      ).openMessage(0)
+
+      // the first session deletes it (real deletion → banner)
+      await firstSent.deleteMessage()
+      await expect(firstSent.messageDeletedBanner).toBeVisible()
+
+      // the second (now stale) session tries to delete the same message and is
+      // told it was already deleted — without the "you deleted this" banner
+      await secondSent.deleteMessage()
+      await expect(secondSent.alreadyDeletedModal).toBeVisible()
+      await expect(secondSent.messageDeletedBanner).toBeHidden()
+      await secondSent.dismissAlreadyDeleted()
+      // the view reflects the already-deleted state
+      await expect(secondSent.deleteMessageButton).toBeHidden()
     })
   })
 })

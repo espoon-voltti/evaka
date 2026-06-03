@@ -15,6 +15,7 @@ import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevDaycareGroupPlacement
+import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevMobileDevice
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
@@ -169,6 +170,43 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                 .single()
         assertEquals(municipalAccount, copy.senderId)
         assertEquals(testMessage.title, copy.title)
+        assertEquals(0, mockEndpoint.getCapturedRequests("1234").size)
+    }
+
+    @Test
+    fun `a push notification is not sent when the message content has been deleted`() {
+        val endpoint = URI("http://localhost:$httpPort/public/mock-web-push/subscription/1234")
+        upsertSubscription(device.id, endpoint)
+
+        val employee = DevEmployee()
+        val sent = db.transaction { tx ->
+            tx.insert(employee)
+            messageService.sendMessageAsCitizen(
+                tx,
+                clock.now(),
+                sender = citizenAccount,
+                recipients = setOf(groupAccount),
+                children = emptySet(),
+                msg = testMessage,
+            )
+        }
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    """
+UPDATE message
+SET content_deleted_at = ${bind(clock.now())},
+    content_deleted_by_employee_id = ${bind(employee.id)}
+WHERE id = ${bind(sent.messageId)}
+"""
+                )
+            }
+        }
+
+        clock.tick(Duration.ofMinutes(30))
+        asyncJobRunner.runPendingJobsSync(clock)
+
         assertEquals(0, mockEndpoint.getCapturedRequests("1234").size)
     }
 

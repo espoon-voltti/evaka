@@ -79,6 +79,16 @@ data class FeatureConfig(
     val financeMessageAccountName: String,
 
     /**
+     * Address that receives "message deleted by employee" notifications, and is shown to the sender
+     * in the post-deletion banner and emails as the support contact.
+     *
+     * If null, the municipality has not configured a support address: the support-contact line is
+     * omitted from the banner and emails, and the admin notification email is sent to all active
+     * users with the admin role.
+     */
+    val messageSupportEmail: String? = null,
+
+    /**
      * true = placement unit is resolved from decision when it's accepted, false = placement unit is
      * resolved from placement plan
      */

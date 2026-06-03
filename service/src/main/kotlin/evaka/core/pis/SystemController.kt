@@ -342,6 +342,7 @@ class SystemController(
                                 env.decisionReasoningGenericRemovalEnabled,
                             allowEnglishChildDocumentsForAllTypes =
                                 featureConfig.allowEnglishChildDocumentsForAllTypes,
+                            messageSupportEmail = featureConfig.messageSupportEmail,
                         )
 
                     EmployeeUserResponse(
