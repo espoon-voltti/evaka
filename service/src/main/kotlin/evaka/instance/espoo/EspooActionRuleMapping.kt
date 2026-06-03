@@ -205,6 +205,16 @@ class EspooActionRuleMapping : ActionRuleMapping {
                 )
             }
 
+            Action.AssistanceAction.READ,
+            Action.AssistanceFactor.READ,
+            Action.DaycareAssistance.READ,
+            Action.PreschoolAssistance.READ,
+            Action.OtherAssistanceMeasure.READ -> {
+                @Suppress("UNCHECKED_CAST")
+                action.defaultRules.asSequence() +
+                    sequenceOf(HasGlobalRole(UserRole.SERVICE_WORKER) as ScopedActionRule<in T>)
+            }
+
             else -> {
                 action.defaultRules.asSequence()
             }
