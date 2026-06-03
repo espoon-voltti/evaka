@@ -251,6 +251,7 @@ export const sv: typeof fi = {
       noServiceTodayShort: 'Ingen lämplig tid idag',
       notSet: 'Närvaroanmälan saknas',
       notSetShort: 'Anmälan saknas',
+      reservationNoTimes: 'Närvarande, klockslag ännu inte känd',
       variableTimes: 'Varierande tid i småbarnspedagogik',
       variableTimesShort: 'Lämplig tid varierar',
       present: 'På plats',

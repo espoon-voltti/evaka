@@ -242,6 +242,7 @@ export const fi = {
       noServiceTodayShort: 'Ei sop.aikaa tänään',
       notSet: 'Läsnäoloilmoitus puuttuu',
       notSetShort: 'Ilmoitus puuttuu',
+      reservationNoTimes: 'Läsnä, kellonaika ei vielä tiedossa',
       variableTimes: 'Vaihteleva varhaiskasvatusaika',
       variableTimesShort: 'Sop.aika vaihtelee',
       present: 'Läsnä',
