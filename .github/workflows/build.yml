@@ -686,7 +686,7 @@ jobs:
             src="ghcr.io/espoon-voltti/evaka/${image}:${SHA}"
             dst="${ECR}/${PREFIX}/${image}:${SHA}"
             echo "Copying ${src} -> ${dst}"
-            docker buildx imagetools create --tag "${dst}" "${src}"
+            docker buildx imagetools create --prefer-index=false --tag "${dst}" "${src}"
           done
 
   frontend-s3:
