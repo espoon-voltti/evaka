@@ -20,6 +20,25 @@ const customerContactText = function () {
 }
 
 const fi: DeepPartial<Translations> = {
+  personalDetails: {
+    familySizeSection: {
+      description: (
+        <P>
+          The number of adults and children living in the same household affects
+          the client fees. If your family details have changed, please contact
+          the client fee unit,{' '}
+          <a
+            href="https://www.ouka.fi/oulu/paivahoito-ja-esiopetus/paivahoitomaksut"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            more information about client fees
+          </a>
+          .
+        </P>
+      )
+    }
+  },
   children: {
     serviceApplication: {
       createInfo:

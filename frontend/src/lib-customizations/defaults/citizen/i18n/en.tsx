@@ -1910,6 +1910,19 @@ const en: Translations = {
         Population Data Services Agency (DVV).
       </P>
     ),
+    familySizeSection: {
+      title: 'Family size',
+      description: (
+        <P>
+          The number of adults and children living in the same household affects
+          the client fees. If your family details have changed, please contact
+          the client fee unit, tel. <a href="tel:+358981627400">09 81627400</a>.
+        </P>
+      ),
+      adults: 'Adults',
+      children: 'Children',
+      self: '(you)'
+    },
     detailsSection: {
       noEmailAlert:
         'Your email address is missing. Please fill it down below to receive notifications sent by eVaka.',

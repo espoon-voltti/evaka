@@ -10,6 +10,7 @@ export default class CitizenPersonalDetails {
   personalDetailsSection: CitizenPersonalDetailsSection
   loginDetailsSection: LoginDetailsSection
   notificationSettingsSectiong: CitizenNotificationSettingsSection
+  familySizeSection: FamilySizeSection
   constructor(page: Page) {
     this.personalDetailsSection = new CitizenPersonalDetailsSection(
       page.findByDataQa('personal-details-section')
@@ -19,6 +20,9 @@ export default class CitizenPersonalDetails {
     )
     this.notificationSettingsSectiong = new CitizenNotificationSettingsSection(
       page.findByDataQa('notification-settings-section')
+    )
+    this.familySizeSection = new FamilySizeSection(
+      page.findByDataQa('family-size-section')
     )
   }
 }
@@ -129,6 +133,34 @@ export class CitizenPersonalDetailsSection extends Element {
     await expect(this.#backupPhone).toHaveText(data.backupPhone)
     await expect(this.#email).toHaveText(
       data.email === null ? 'Sähköpostiosoite puuttuu' : data.email
+    )
+  }
+}
+
+export class FamilySizeSection extends Element {
+  #adults: Element
+  #children: Element
+  constructor(element: Element) {
+    super(element)
+    this.#adults = element.findByDataQa('family-adults')
+    this.#children = element.findByDataQa('family-children')
+  }
+
+  #member(personId: string): Element {
+    return this.findByDataQa(`family-member-${personId}`)
+  }
+
+  async assertAdultCount(count: number) {
+    await expect(this.#adults).toContainText(`Aikuiset ${count}`)
+  }
+
+  async assertChildCount(count: number) {
+    await expect(this.#children).toContainText(`Lapset ${count}`)
+  }
+
+  async assertMember(personId: string, name: string, isSelf = false) {
+    await expect(this.#member(personId)).toHaveText(
+      isSelf ? `${name} (sinä)` : name
     )
   }
 }

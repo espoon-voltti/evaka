@@ -325,6 +325,23 @@ export interface FamilyContactUpdate {
 }
 
 /**
+* Generated from evaka.core.pis.service.FamilyMember
+*/
+export interface FamilyMember {
+  firstName: string
+  lastName: string
+  personId: PersonId
+}
+
+/**
+* Generated from evaka.core.pis.service.FamilyMembers
+*/
+export interface FamilyMembers {
+  adults: FamilyMember[]
+  children: FamilyMember[]
+}
+
+/**
 * Generated from evaka.core.pis.service.FamilyOverview
 */
 export interface FamilyOverview {

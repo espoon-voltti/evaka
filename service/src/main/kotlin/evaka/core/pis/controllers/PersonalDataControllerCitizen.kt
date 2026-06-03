@@ -8,6 +8,8 @@ import evaka.core.Audit
 import evaka.core.AuditId
 import evaka.core.Sensitive
 import evaka.core.pis.*
+import evaka.core.pis.service.FamilyMembers
+import evaka.core.pis.service.getFamilyMembersByAdult
 import evaka.core.shared.PersonEmailVerificationId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -232,6 +234,22 @@ class PersonalDataControllerCitizen(
                 }
             }
             .also { Audit.CitizenEmailVerificationStatusRead.log(targetId = AuditId(user.id)) }
+
+    @GetMapping("/family")
+    fun getFamily(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): FamilyMembers =
+        db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_FAMILY,
+                        user.id,
+                    )
+                    tx.getFamilyMembersByAdult(user.id, clock.today())
+                }
+            }
+            .also { Audit.CitizenFamilyRead.log(targetId = AuditId(user.id)) }
 
     @PostMapping("/email-verification-code")
     fun sendEmailVerificationCode(

@@ -50,7 +50,24 @@ const fi: DeepPartial<Translations> = {
         Nimesi ja osoitteesi haetaan väestötietojärjestelmästä. Mikäli tietosi
         muuttuvat, sinun tulee tehdä ilmoitus Digi- ja väestötietovirastoon.
       </P>
-    )
+    ),
+    familySizeSection: {
+      description: (
+        <P>
+          Samassa taloudessa asuvien aikuisten ja lasten määrä vaikuttaa
+          asiakasmaksuihin. Jos perheen tiedoissa on tapahtunut muutos, ole
+          yhteydessä asiakasmaksutiimiin,{' '}
+          <a
+            href="https://www.ouka.fi/oulu/paivahoito-ja-esiopetus/paivahoitomaksut"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            lisätietoja asiakasmaksuista
+          </a>
+          .
+        </P>
+      )
+    }
   },
   applications: {
     creation: {

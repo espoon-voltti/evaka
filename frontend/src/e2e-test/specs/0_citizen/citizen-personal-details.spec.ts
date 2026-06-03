@@ -2,12 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { PartnershipId } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { randomId } from 'lib-common/id-type'
+import LocalDate from 'lib-common/local-date'
+
 import { Fixture } from '../../dev-api/fixtures'
-import { resetServiceState } from '../../generated/api-clients'
+import {
+  createFridgePartner,
+  resetServiceState
+} from '../../generated/api-clients'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import type {
   CitizenNotificationSettingsSection,
-  CitizenPersonalDetailsSection
+  CitizenPersonalDetailsSection,
+  FamilySizeSection
 } from '../../pages/citizen/citizen-personal-details'
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
 import { test } from '../../playwright'
@@ -133,5 +142,90 @@ test.describe('Citizen notification settings', () => {
     await section.checkboxes.informalDocument.waitUntilChecked(false)
     await section.checkboxes.attendanceReservation.waitUntilChecked(true)
     await section.checkboxes.discussionTime.waitUntilChecked(true)
+  })
+})
+
+test.describe('Citizen family size', () => {
+  let familySection: FamilySizeSection
+
+  const head = Fixture.person({
+    firstName: 'Elina Maria Leena',
+    lastName: 'Mäkinen',
+    ssn: '150385-9987'
+  })
+  const partner = Fixture.person({
+    firstName: 'Jukka Tapio',
+    lastName: 'Mäkinen',
+    ssn: '010280-9994'
+  })
+  const child1 = Fixture.person({
+    firstName: 'Linnea Aino Ursula',
+    lastName: 'Mäkinen',
+    ssn: '120618A999E',
+    dateOfBirth: LocalDate.of(2018, 6, 12)
+  })
+  const child2 = Fixture.person({
+    firstName: 'Robin Tenho Kalevi',
+    lastName: 'Mäkinen',
+    ssn: '050721A999H',
+    dateOfBirth: LocalDate.of(2021, 7, 5)
+  })
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    await child1.saveChild({ updateMockVtj: true })
+    await child2.saveChild({ updateMockVtj: true })
+    await head.saveAdult({ updateMockVtjWithDependants: [child1, child2] })
+    await partner.saveAdult({ updateMockVtjWithDependants: [] })
+
+    const partnershipId = randomId<PartnershipId>()
+    const start = LocalDate.of(2020, 1, 1)
+    const end = LocalDate.of(2030, 1, 1)
+    await createFridgePartner({
+      body: [
+        {
+          partnershipId,
+          indx: 1,
+          otherIndx: 2,
+          personId: head.id,
+          startDate: start,
+          endDate: end,
+          conflict: false,
+          createdAt: HelsinkiDateTime.now()
+        },
+        {
+          partnershipId,
+          indx: 2,
+          otherIndx: 1,
+          personId: partner.id,
+          startDate: start,
+          endDate: end,
+          conflict: false,
+          createdAt: HelsinkiDateTime.now()
+        }
+      ]
+    })
+    for (const child of [child1, child2]) {
+      await Fixture.fridgeChild({
+        headOfChild: head.id,
+        childId: child.id,
+        startDate: start,
+        endDate: end
+      }).save()
+    }
+
+    page = evaka
+    await enduserLogin(page, head, '/personal-details')
+    personalDetailsPage = new CitizenPersonalDetailsPage(page)
+    familySection = personalDetailsPage.familySizeSection
+  })
+
+  test('Citizen sees adults and children with the self marker', async () => {
+    await familySection.assertAdultCount(2)
+    await familySection.assertChildCount(2)
+    await familySection.assertMember(head.id, 'Elina Maria Leena Mäkinen', true)
+    await familySection.assertMember(partner.id, 'Jukka Tapio Mäkinen')
+    await familySection.assertMember(child1.id, 'Linnea Aino Ursula Mäkinen')
+    await familySection.assertMember(child2.id, 'Robin Tenho Kalevi Mäkinen')
   })
 })

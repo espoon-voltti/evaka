@@ -24,6 +24,17 @@ const customerContactText = function () {
 }
 
 const fi: DeepPartial<Translations> = {
+  personalDetails: {
+    familySizeSection: {
+      description: (
+        <P>
+          Samassa taloudessa asuvien aikuisten ja lasten määrä vaikuttaa
+          asiakasmaksuihin. Jos perheen tiedoissa on tapahtunut muutos, ole
+          yhteydessä asiakasmaksutiimiin.
+        </P>
+      )
+    }
+  },
   applications: {
     creation: {
       daycareInfo:

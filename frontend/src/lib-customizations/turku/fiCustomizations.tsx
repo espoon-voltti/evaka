@@ -963,7 +963,17 @@ const fi: DeepPartial<Translations> = {
         Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne
         muuttuvat, sinun tulee tehdä ilmoitus väestötietojärjestelmään.
       </P>
-    )
+    ),
+    familySizeSection: {
+      description: (
+        <P>
+          Samassa taloudessa asuvien aikuisten ja lasten määrä vaikuttaa
+          asiakasmaksuihin. Jos perheen tiedoissa on tapahtunut muutos, ole
+          yhteydessä asiakasmaksutiimiin, puh.{' '}
+          <a href="tel:+35822625609">02 2625609</a>.
+        </P>
+      )
+    }
   },
   income: {
     description: (

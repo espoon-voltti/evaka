@@ -156,6 +156,57 @@ data class FamilyOverviewIncome(
     @JsonInclude(JsonInclude.Include.NON_NULL) val total: Int?,
 )
 
+data class FamilyMember(val personId: PersonId, val firstName: String, val lastName: String)
+
+data class FamilyMembers(val adults: List<FamilyMember>, val children: List<FamilyMember>)
+
+fun Database.Read.getFamilyMembersByAdult(adultId: PersonId, today: LocalDate): FamilyMembers {
+    val members =
+        createQuery {
+                sql(
+                    """
+WITH adult_ids AS (
+    SELECT ${bind(adultId)} AS id
+
+    UNION
+
+    SELECT partner_person_id AS id
+    FROM fridge_partner_view
+    WHERE person_id = ${bind(adultId)}
+      AND daterange(start_date, end_date, '[]') @> ${bind(today)}
+      AND conflict IS FALSE
+)
+SELECT p.id, p.first_name, p.last_name, p.date_of_birth, false AS is_child
+FROM person p
+JOIN adult_ids a ON p.id = a.id
+
+UNION
+
+SELECT p.id, p.first_name, p.last_name, p.date_of_birth, true AS is_child
+FROM fridge_child fc
+JOIN adult_ids a ON fc.head_of_child = a.id
+JOIN person p ON fc.child_id = p.id
+WHERE daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)}
+  AND fc.conflict IS FALSE
+
+ORDER BY date_of_birth, last_name, first_name
+"""
+                )
+            }
+            .toList {
+                Pair(
+                    column<Boolean>("is_child"),
+                    FamilyMember(
+                        personId = column("id"),
+                        firstName = column("first_name"),
+                        lastName = column("last_name"),
+                    ),
+                )
+            }
+    val (children, adults) = members.partition { it.first }
+    return FamilyMembers(adults = adults.map { it.second }, children = children.map { it.second })
+}
+
 fun Row.toFamilyOverviewPerson(
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
