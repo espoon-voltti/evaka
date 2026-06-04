@@ -2252,17 +2252,21 @@ fun Database.Read.messageAttachmentsAllowedForCitizen(
 data class MessageDeletionTarget(
     val contentId: MessageContentId,
     val senderId: MessageAccountId,
+    val senderAccountType: AccountType,
     val sentAt: HelsinkiDateTime,
-    val messageType: MessageType,
 )
 
 fun Database.Read.getMessageDeletionTarget(contentId: MessageContentId): MessageDeletionTarget? =
     createQuery {
             sql(
                 """
-                SELECT m.content_id, m.sender_id, coalesce(m.sent_at, m.created) AS sent_at, t.message_type
+                SELECT
+                    m.content_id,
+                    m.sender_id,
+                    sender.type AS sender_account_type,
+                    coalesce(m.sent_at, m.created) AS sent_at
                 FROM message m
-                JOIN message_thread t ON t.id = m.thread_id
+                JOIN message_account sender ON sender.id = m.sender_id
                 WHERE m.content_id = ${bind(contentId)}
                 LIMIT 1
             """

@@ -3580,15 +3580,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             return messageIdOfContent(contentId) to attachmentId
         }
 
-        private fun sendBulletin(): MessageId {
+        private fun sendBulletinFrom(
+            sender: MessageAccountId,
+            recipients: List<MessageRecipient>,
+            user: AuthenticatedUser.Employee = employee1,
+        ): MessageId {
             val contentId =
                 postNewThread(
                     title = "Bulletin test",
                     message = "Important announcement",
                     messageType = MessageType.BULLETIN,
-                    sender = group1Account,
-                    recipients = listOf(MessageRecipient.Group(groupId1)),
-                    user = employee1,
+                    sender = sender,
+                    recipients = recipients,
+                    user = user,
                 )!!
             return messageIdOfContent(contentId)
         }
@@ -3706,10 +3710,81 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         @Test
-        fun `bulletin cannot be deleted`() {
-            val messageId = sendBulletin()
+        fun `sender can delete own bulletin sent from a personal account`() {
+            val messageId =
+                sendBulletinFrom(
+                    sender = employee1Account,
+                    recipients = listOf(MessageRecipient.Child(child1.id)),
+                )
 
-            assertThrows<Forbidden> { deleteContent(employee1, group1Account, messageId) }
+            deleteContent(employee1, employee1Account, messageId)
+
+            val info = deletionInfoOf(messageId)
+            assertNotNull(info.contentDeletedAt)
+            assertEquals(employee1.id, info.contentDeletedByEmployeeId)
+        }
+
+        @Test
+        fun `sender can delete own bulletin sent from a group account`() {
+            val messageId =
+                sendBulletinFrom(
+                    sender = group1Account,
+                    recipients = listOf(MessageRecipient.Group(groupId1)),
+                )
+
+            deleteContent(employee1, group1Account, messageId)
+
+            val info = deletionInfoOf(messageId)
+            assertNotNull(info.contentDeletedAt)
+            assertEquals(employee1.id, info.contentDeletedByEmployeeId)
+        }
+
+        @Test
+        fun `municipal bulletin cannot be deleted`() {
+            val messageId =
+                sendBulletinFrom(
+                    sender = municipalAccount,
+                    recipients = listOf(MessageRecipient.Child(child1.id)),
+                    user = messager.user,
+                )
+
+            val exception =
+                assertThrows<Forbidden> {
+                    deleteContent(messager.user, municipalAccount, messageId)
+                }
+            assertEquals(
+                "Messages sent by the municipal account cannot be deleted",
+                exception.message,
+            )
+            assertNull(deletionInfoOf(messageId).contentDeletedAt)
+        }
+
+        @Test
+        fun `deleting a bulletin redacts every recipient copy`() {
+            val contentId =
+                postNewThread(
+                    title = "Bulletin test",
+                    message = "Important announcement",
+                    messageType = MessageType.BULLETIN,
+                    sender = group1Account,
+                    recipients = listOf(MessageRecipient.Group(groupId1)),
+                    user = employee1,
+                )!!
+            val copies = db.read { tx ->
+                tx.createQuery {
+                        sql("SELECT id FROM message WHERE content_id = ${bind(contentId)}")
+                    }
+                    .toList<MessageId>()
+            }
+            assertTrue(copies.size > 1)
+
+            deleteContent(employee1, group1Account, messageIdOfContent(contentId))
+
+            copies.forEach { assertNotNull(deletionInfoOf(it).contentDeletedAt) }
+
+            val recipientView =
+                getThreadAs(person1Account, threadIdOf(copies.first())).messages.single()
+            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, recipientView.content)
         }
 
         @Test
