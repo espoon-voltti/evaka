@@ -4804,6 +4804,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"real-require@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "real-require@npm:1.0.0"
+  checksum: 10/ac2ae7681e20c92be45a5f49110414af1576c7b4512869c2260076a69fc7c336335ef354f466a3be92e779c55b8df0b0043d191797d82d7f18e6310958e5a890
+  languageName: node
+  linkType: hard
+
 "redis@npm:5.12.1":
   version: 5.12.1
   resolution: "redis@npm:5.12.1"
@@ -5515,11 +5522,11 @@ __metadata:
   linkType: hard
 
 "thread-stream@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "thread-stream@npm:4.0.0"
+  version: 4.2.0
+  resolution: "thread-stream@npm:4.2.0"
   dependencies:
-    real-require: "npm:^0.2.0"
-  checksum: 10/698ac8bd104c6cf91dda8421c30790979b867d7b6c878f914ddef18f1b1bc846f8776976d9f0113ed0ee90043f2e9e6554b96f4c1154ff84cd199da657f214fa
+    real-require: "npm:^1.0.0"
+  checksum: 10/040d1f5284806a28d12ac83fc0a1f0b32547c6773b5fab9494c664798fa7fb14197bede695ec61221c5f93f64a32b0f1850408d0ad5730af03ee1d1efe6c1b05
   languageName: node
   linkType: hard
 
