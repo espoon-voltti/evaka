@@ -171,9 +171,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
     fun `it sends a sfi message with costPool when configured`() {
         val costPoolValue = "test-cost-pool-123"
         val envWithCostPool =
-            createEnv().let {
-                it.copy(printing = it.printing.copy(costPool = costPoolValue))
-            }
+            createEnv().let { it.copy(printing = it.printing.copy(costPool = costPoolValue)) }
         val costPoolClient =
             SfiMessagesRestClient(
                 envWithCostPool,
@@ -193,10 +191,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
         MockSfiMessagesRestEndpoint.getCapturedMessages().entries.let {
             assertEquals(1, it.size)
             val (_, captured) = it.first().value
-            assertEquals(
-                costPoolValue,
-                captured.paperMail.printingAndEnvelopingService.costPool,
-            )
+            assertEquals(costPoolValue, captured.paperMail.printingAndEnvelopingService.costPool)
         }
     }
 
@@ -207,10 +202,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
         MockSfiMessagesRestEndpoint.getCapturedMessages().entries.let {
             assertEquals(1, it.size)
             val (_, captured) = it.first().value
-            assertEquals(
-                null,
-                captured.paperMail.printingAndEnvelopingService.costPool,
-            )
+            assertEquals(null, captured.paperMail.printingAndEnvelopingService.costPool)
         }
     }
 
