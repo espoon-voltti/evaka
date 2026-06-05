@@ -21,6 +21,8 @@ import type { Sessions } from '../../shared/session.ts'
 export interface AuthStatus {
   loggedIn: boolean
   user?: EmployeeUser | MobileUser
+  featureConfig?: object
+  /** @deprecated removed in a follow-up PR; frontend gates on permitted actions / startPage */
   roles?: string[]
   globalRoles?: string[]
   allScopedRoles?: string[]
@@ -33,6 +35,7 @@ interface EmployeeUser {
   name: string
   accessibleFeatures: object
   permittedGlobalActions: string[]
+  startPage: string
 }
 
 interface MobileUser {
@@ -48,6 +51,7 @@ interface MobileUser {
 
 interface ValidatedUser {
   user: EmployeeUser | MobileUser
+  featureConfig?: object
   globalRoles: string[]
   allScopedRoles: string[]
 }
@@ -78,15 +82,17 @@ async function validateUser(
           personalDevice,
           pushApplicationServerKey
         },
+        featureConfig: undefined,
         globalRoles: [],
         allScopedRoles: []
       }
     }
     case 'EMPLOYEE': {
-      const employee = await getEmployeeDetails(req, user.id)
-      if (!employee) {
+      const response = await getEmployeeDetails(req, user.id)
+      if (!response) {
         return undefined
       }
+      const { user: employee, featureConfig } = response
       const {
         id,
         firstName,
@@ -94,7 +100,8 @@ async function validateUser(
         globalRoles,
         allScopedRoles,
         accessibleFeatures,
-        permittedGlobalActions
+        permittedGlobalActions,
+        startPage
       } = employee
       const name = [firstName, lastName].filter((x) => !!x).join(' ')
       return {
@@ -102,9 +109,11 @@ async function validateUser(
           userType: 'EMPLOYEE',
           id,
           name,
-          accessibleFeatures: accessibleFeatures ?? {},
-          permittedGlobalActions: permittedGlobalActions ?? []
+          accessibleFeatures,
+          permittedGlobalActions,
+          startPage
         },
+        featureConfig,
         globalRoles,
         allScopedRoles
       }
@@ -132,7 +141,7 @@ export const internalAuthStatus = (
     const validUser = sessionUser && (await validateUser(req, sessionUser))
     let status: AuthStatus
     if (validUser) {
-      const { user, globalRoles, allScopedRoles } = validUser
+      const { user, featureConfig, globalRoles, allScopedRoles } = validUser
       // Refresh roles if necessary
       if (
         sessionUser?.userType === 'EMPLOYEE' &&
@@ -147,6 +156,7 @@ export const internalAuthStatus = (
       status = {
         loggedIn: true,
         user,
+        featureConfig,
         globalRoles,
         allScopedRoles,
         roles: [...globalRoles, ...allScopedRoles],
