@@ -429,6 +429,24 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
+    fun `notifications are not sent if there is an indefinite income`() {
+        db.transaction {
+            it.insert(
+                DevIncome(
+                    personId = fridgeHeadOfChild.id,
+                    modifiedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    validFrom = clock.today().minusYears(1),
+                    validTo = null,
+                )
+            )
+        }
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
+
+        assertEquals(0, getEmails().size)
+    }
+
+    @Test
     fun `expiring income is not notified if there is a new unhandled income statement`() {
         val incomeExpirationDate = clock.today().plusWeeks(4)
 

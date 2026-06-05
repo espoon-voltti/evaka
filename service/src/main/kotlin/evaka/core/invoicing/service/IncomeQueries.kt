@@ -163,7 +163,7 @@ WITH previously_placed_children AS (
             SELECT 1
             FROM income i
             WHERE (i.person_id = fc_head.head_of_child OR i.person_id = fp_spouse.person_id)
-            AND (i.valid_to >= pl.end_date OR (i.valid_to < pl.end_date AND i.valid_to > (${bind(today)} + INTERVAL '4 weeks')))
+            AND (coalesce(i.valid_to, 'infinity') >= pl.end_date OR (i.valid_to < pl.end_date AND i.valid_to > (${bind(today)} + INTERVAL '4 weeks')))
         ) AND
         ${predicate(guardianPredicate)}
 )
