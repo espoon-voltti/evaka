@@ -18,6 +18,7 @@ import useTitle from '../../useTitle'
 import AdditionalDetailsSection from '../editor/verification/AdditionalDetailsSection'
 import BasicsSection from '../editor/verification/BasicsSection'
 import ContactInfoSection from '../editor/verification/ContactInfoSection'
+import OtherGuardianAgreementSection from '../editor/verification/OtherGuardianAgreementSection'
 import ServiceNeedSection from '../editor/verification/ServiceNeedSection'
 import UnitPreferenceSection from '../editor/verification/UnitPreferenceSection'
 
@@ -39,6 +40,10 @@ export default React.memo(function ApplicationReadViewContents({
     .map((u) => u?.id === application.guardianId)
     .getOrElse(false)
 
+  const showOtherGuardianAgreement =
+    !userIsApplicationGuardian &&
+    application.form.secondGuardian?.agreementStatus === 'AGREED'
+
   return (
     <Container>
       <ReturnButton label={t.common.return} />
@@ -54,9 +59,9 @@ export default React.memo(function ApplicationReadViewContents({
           />
           <HorizontalLine />
           <UnitPreferenceSection formData={formData.unitPreference} />
-          <HorizontalLine />
           {userIsApplicationGuardian && (
             <>
+              <HorizontalLine />
               <ContactInfoSection
                 data-qa="contact-info-section"
                 formData={formData.contactInfo}
@@ -72,6 +77,12 @@ export default React.memo(function ApplicationReadViewContents({
                 formData={formData}
                 showAllergiesAndDiet={type !== 'CLUB'}
               />
+            </>
+          )}
+          {showOtherGuardianAgreement && (
+            <>
+              <HorizontalLine />
+              <OtherGuardianAgreementSection />
             </>
           )}
         </ContentArea>

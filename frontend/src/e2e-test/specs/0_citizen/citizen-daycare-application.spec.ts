@@ -322,10 +322,40 @@ test.describe('Citizen daycare applications', () => {
       await applications.viewApplication(applicationId)
 
     await expect(applicationReadView.unitPreferenceSection).toBeVisible()
+    await expect(
+      applicationReadView.otherGuardianAgreementSection
+    ).toBeVisible()
     await expect(applicationReadView.contactInfoSection).toBeHidden()
     await expect(applicationReadView.urgencyAttachments).toBeHidden()
     await expect(applicationReadView.shiftCareAttachments).toBeHidden()
     await expect(applicationReadView.assistanceNeedDescription).toHaveText('')
+  })
+
+  test('Other guardian does not see the agreement notice when the status is not AGREED', async ({
+    newEvakaPage
+  }) => {
+    const editorPage = await applicationsPage.createApplication(
+      testChild.id,
+      'DAYCARE'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+
+    const applicationForm = minimalDaycareForm({
+      otherGuardianAgreementStatus: 'NOT_AGREED'
+    })
+    await editorPage.fillData(applicationForm.form)
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
+
+    const otherGuardianPage = await newEvakaPage({ mockedTime: mockedNow })
+    await enduserLogin(otherGuardianPage, testAdult2, '/applications')
+
+    const applications = new CitizenApplicationsPage(otherGuardianPage)
+    await applications.assertApplicationExists(applicationId)
+    const applicationReadView =
+      await applications.viewApplication(applicationId)
+
+    await expect(applicationReadView.unitPreferenceSection).toBeVisible()
+    await expect(applicationReadView.otherGuardianAgreementSection).toBeHidden()
   })
 
   test('Application can be saved as draft', async () => {

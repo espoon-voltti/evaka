@@ -164,6 +164,7 @@ class CitizenApplicationReadView {
   urgencyAttachments: Element
   shiftCareAttachments: Element
   unitPreferenceSection: Element
+  otherGuardianAgreementSection: Element
   assistanceNeedDescription: TextInput
 
   constructor(readonly page: Page) {
@@ -175,6 +176,9 @@ class CitizenApplicationReadView {
       'service-need-shift-care-attachments'
     )
     this.unitPreferenceSection = page.findByDataQa('unit-preference-section')
+    this.otherGuardianAgreementSection = page.findByDataQa(
+      'other-guardian-agreement-section'
+    )
     this.assistanceNeedDescription = new TextInput(
       page.findByDataQa('assistance-need-description')
     )
