@@ -128,6 +128,7 @@ WITH previously_placed_children AS (
     JOIN fridge_child fc ON pl.child_id = fc.child_id AND ${bind(today)} BETWEEN fc.start_date AND fc.end_date
     WHERE
         pl.start_date < ${bind(currentMonth.start)} AND
+        pl.created_at < ${bind(today)} - INTERVAL '1 month' AND
         pl.type = ANY(${bind(PlacementType.invoiced)})
 ), fridge_parents AS (
     SELECT fc_head.head_of_child AS parent_id, fp_spouse.person_id AS spouse_id
@@ -151,7 +152,14 @@ WITH previously_placed_children AS (
         daterange(fp_spouse.start_date, fp_spouse.end_date, '[]') @> ${bind(today)} AND fp_spouse.conflict = false
     )
     WHERE
-        pl.start_date BETWEEN ${bind(currentMonth.start)} AND ${bind(currentMonth.end)} AND
+        (
+            (pl.start_date BETWEEN ${bind(currentMonth.start)} AND ${bind(currentMonth.end)}) OR
+            (
+                pl.created_at >= ${bind(today)} - INTERVAL '1 month' AND
+                pl.start_date < ${bind(currentMonth.start)} AND
+                pl.end_date >= ${bind(today)}
+            )
+        ) AND
         pl.type = ANY(${bind(PlacementType.invoiced)}) AND
         NOT EXISTS(
             SELECT 1

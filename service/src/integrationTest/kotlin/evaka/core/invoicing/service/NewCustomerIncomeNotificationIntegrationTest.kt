@@ -111,6 +111,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         start: LocalDate,
         end: LocalDate,
         type: PlacementType = PlacementType.DAYCARE,
+        createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     ): PlacementId {
         return db.transaction { tx ->
             tx.insert(
@@ -120,6 +121,7 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
                     type = type,
                     startDate = start,
                     endDate = end,
+                    createdAt = createdAt,
                 )
             )
         }
@@ -192,6 +194,112 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
+    fun `notification is sent for a retroactive placement that started in the previous month`() {
+        val start = clock.today().minusWeeks(3) // 2024-01-11, previous month
+        val placementId = insertPlacement(child, start, placementEnd)
+        insertServiceNeed(placementId, start, placementEnd)
+
+        assertEquals(1, getEmails().size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
+    }
+
+    @Test
+    fun `notification is sent for a placement created on the last day of the previous month`() {
+        // The daily job runs at 06:45, so a placement created later on the last day of
+        // the month is first evaluated on the first day of the next month. Its created_at
+        // is then "before the current month", and its start is not in the current month
+        // either, so it must still be picked up.
+        val createdAt = HelsinkiDateTime.of(LocalDate.of(2024, 1, 31), LocalTime.of(20, 0))
+        val start = LocalDate.of(2024, 1, 31) // last day of the previous month
+        val placementId = insertPlacement(child, start, placementEnd, createdAt = createdAt)
+        insertServiceNeed(placementId, start, placementEnd)
+
+        assertEquals(1, getEmails().size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
+    }
+
+    @Test
+    fun `notification is not sent for a retroactive placement that already ended`() {
+        val start = clock.today().minusWeeks(3) // 2024-01-11
+        val end = clock.today().minusDays(1) // 2024-01-31, ended before today
+        val placementId = insertPlacement(child, start, end)
+        insertServiceNeed(placementId, start, end)
+
+        assertEquals(0, getEmails().size)
+    }
+
+    @Test
+    fun `notification is not sent for an old placement created before this month`() {
+        val start = clock.today().minusMonths(2) // 2023-12-01
+        val placementId =
+            insertPlacement(
+                child,
+                start,
+                placementEnd,
+                createdAt = HelsinkiDateTime.of(start, LocalTime.of(12, 0)),
+            )
+        insertServiceNeed(placementId, start, placementEnd)
+
+        assertEquals(0, getEmails().size)
+    }
+
+    @Test
+    fun `family with two retroactive siblings entered this month is notified once`() {
+        val otherChild = DevPerson()
+        db.transaction { tx ->
+            tx.insert(otherChild, DevPersonType.CHILD)
+            tx.insert(
+                DevFridgeChild(
+                    childId = otherChild.id,
+                    headOfChild = fridgeHeadOfChild.id,
+                    startDate = clock.today().minusYears(1),
+                    endDate = clock.today().plusYears(1),
+                )
+            )
+        }
+        val start = clock.today().minusWeeks(3) // 2024-01-11, previous month
+        val p1 = insertPlacement(child, start, placementEnd)
+        insertServiceNeed(p1, start, placementEnd)
+        val p2 = insertPlacement(otherChild, start, placementEnd)
+        insertServiceNeed(p2, start, placementEnd)
+
+        assertEquals(1, getEmails().size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
+    }
+
+    @Test
+    fun `sibling placement entered on the last day of the previous month does not suppress the notification`() {
+        // A sibling's placement was entered on the last day of the previous month (and has
+        // already ended). Because it was entered within the last month, it must not count
+        // as a previous placement that marks the family as an existing customer, so the
+        // notification for the child starting this month is still sent.
+        val sibling = DevPerson()
+        db.transaction { tx ->
+            tx.insert(sibling, DevPersonType.CHILD)
+            tx.insert(
+                DevFridgeChild(
+                    childId = sibling.id,
+                    headOfChild = fridgeHeadOfChild.id,
+                    startDate = clock.today().minusYears(1),
+                    endDate = clock.today().plusYears(1),
+                )
+            )
+        }
+        val siblingCreatedAt = HelsinkiDateTime.of(LocalDate.of(2024, 1, 31), LocalTime.of(20, 0))
+        val siblingStart = LocalDate.of(2024, 1, 11)
+        val siblingEnd = LocalDate.of(2024, 1, 20) // already ended
+        val siblingPlacement =
+            insertPlacement(sibling, siblingStart, siblingEnd, createdAt = siblingCreatedAt)
+        insertServiceNeed(siblingPlacement, siblingStart, siblingEnd)
+
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
+
+        assertEquals(1, getEmails().size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
+    }
+
+    @Test
     fun `notifications are not sent when placement does not start in current month`() {
         val placementId = insertPlacement(child, placementStart, placementEnd)
         insertServiceNeed(placementId, placementStart, placementEnd)
@@ -225,7 +333,13 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
 
         val otherPlacementStart = clock.today().minusYears(1)
         val otherPlacementEnd = clock.today().plusYears(1)
-        val otherPlacementId = insertPlacement(otherChild, otherPlacementStart, otherPlacementEnd)
+        val otherPlacementId =
+            insertPlacement(
+                otherChild,
+                otherPlacementStart,
+                otherPlacementEnd,
+                createdAt = HelsinkiDateTime.of(otherPlacementStart, LocalTime.of(12, 0)),
+            )
         insertServiceNeed(otherPlacementId, otherPlacementStart, otherPlacementEnd)
 
         assertEquals(0, getEmails().size)
@@ -374,7 +488,12 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         val otherPlacementStart = clock.today().minusYears(2)
         val otherPlacementEnd = clock.today().plusMonths(6)
         val otherPlacementId =
-            insertPlacement(partnersChild, otherPlacementStart, otherPlacementEnd)
+            insertPlacement(
+                partnersChild,
+                otherPlacementStart,
+                otherPlacementEnd,
+                createdAt = HelsinkiDateTime.of(otherPlacementStart, LocalTime.of(12, 0)),
+            )
         insertServiceNeed(otherPlacementId, otherPlacementStart, otherPlacementEnd)
 
         assertEquals(0, getEmails().size)
