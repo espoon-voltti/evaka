@@ -270,13 +270,14 @@ class SystemController(
         systemUser: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @PathVariable id: EmployeeId,
-    ): EmployeeUserResponse {
+    ): EmployeeAuthResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val employeeUser = tx.getEmployeeUser(id) ?: throw NotFound()
                     val user = AuthenticatedUser.Employee(employeeUser)
                     val permittedGlobalActions =
                         accessControl.getPermittedActions<Action.Global>(tx, user, clock)
+                    @Suppress("DEPRECATION")
                     val accessibleFeatures =
                         EmployeeFeatures(
                             applications =
@@ -345,14 +346,37 @@ class SystemController(
                             messageSupportEmail = featureConfig.messageSupportEmail,
                         )
 
-                    EmployeeUserResponse(
-                        id = employeeUser.id,
-                        firstName = employeeUser.preferredFirstName ?: employeeUser.firstName,
-                        lastName = employeeUser.lastName,
-                        globalRoles = employeeUser.globalRoles,
-                        allScopedRoles = employeeUser.allScopedRoles,
-                        accessibleFeatures = accessibleFeatures,
-                        permittedGlobalActions = permittedGlobalActions,
+                    val employeeFeatureConfig =
+                        EmployeeFeatureConfig(
+                            replacementInvoices = env.replacementInvoicesStart != null,
+                            decisionReasoningGenericRemoval =
+                                env.decisionReasoningGenericRemovalEnabled,
+                            openRangesHolidayQuestionnaire =
+                                featureConfig.holidayQuestionnaireType ==
+                                    QuestionnaireType.OPEN_RANGES,
+                            allowEnglishChildDocumentsForAllTypes =
+                                featureConfig.allowEnglishChildDocumentsForAllTypes,
+                            messageSupportEmail = featureConfig.messageSupportEmail,
+                        )
+
+                    EmployeeAuthResponse(
+                        user =
+                            EmployeeUserResponse(
+                                id = employeeUser.id,
+                                firstName =
+                                    employeeUser.preferredFirstName ?: employeeUser.firstName,
+                                lastName = employeeUser.lastName,
+                                globalRoles = employeeUser.globalRoles,
+                                allScopedRoles = employeeUser.allScopedRoles,
+                                accessibleFeatures = accessibleFeatures,
+                                permittedGlobalActions = permittedGlobalActions,
+                                startPage =
+                                    employeeStartPage(
+                                        employeeUser.globalRoles,
+                                        employeeUser.allScopedRoles,
+                                    ),
+                            ),
+                        featureConfig = employeeFeatureConfig,
                     )
                 }
             }
@@ -495,6 +519,12 @@ class SystemController(
         val allScopedRoles: Set<UserRole> = setOf(),
         val accessibleFeatures: EmployeeFeatures,
         val permittedGlobalActions: Set<Action.Global>,
+        val startPage: EmployeeStartPage,
+    )
+
+    data class EmployeeAuthResponse(
+        val user: EmployeeUserResponse,
+        val featureConfig: EmployeeFeatureConfig,
     )
 
     data class CitizenUserResponse(
