@@ -31,6 +31,7 @@ import { faChevronDown, faChevronUp, faGlobe, faSignOut } from 'lib-icons'
 import { logoutUrl } from '../api/auth'
 import { I18nContext, useTranslation } from '../state/i18n'
 import { UserContext } from '../state/user'
+import { hasGlobalAction } from '../utils/roles'
 
 import { MessageContext } from './messages/MessageContext'
 import { ReportNotificationContext } from './reports/ReportNotificationContext'
@@ -239,7 +240,7 @@ export default React.memo(function Header() {
       <NavBarItems>
         {loggedIn && user && (
           <NavLinks>
-            {user.accessibleFeatures.applications && (
+            {hasGlobalAction(user, 'APPLICATIONS_PAGE') && (
               <NavbarLink
                 onClick={closeUserPopup}
                 className="navbar-item is-tab"
@@ -252,7 +253,7 @@ export default React.memo(function Header() {
               </NavbarLink>
             )}
 
-            {user.accessibleFeatures.units && (
+            {hasGlobalAction(user, 'UNITS_PAGE') && (
               <NavbarLink
                 onClick={closeUserPopup}
                 className="navbar-item is-tab"
@@ -265,7 +266,7 @@ export default React.memo(function Header() {
               </NavbarLink>
             )}
 
-            {user.accessibleFeatures.personSearch && (
+            {hasGlobalAction(user, 'PERSON_SEARCH_PAGE') && (
               <NavbarLink
                 onClick={closeUserPopup}
                 className={classNames('navbar-item is-tab', {
@@ -280,7 +281,7 @@ export default React.memo(function Header() {
               </NavbarLink>
             )}
 
-            {user.accessibleFeatures.finance && (
+            {hasGlobalAction(user, 'FINANCE_PAGE') && (
               <NavbarLink
                 onClick={closeUserPopup}
                 className="navbar-item is-tab"
@@ -293,7 +294,7 @@ export default React.memo(function Header() {
               </NavbarLink>
             )}
 
-            {user.accessibleFeatures.reports && (
+            {hasGlobalAction(user, 'REPORTS_PAGE') && (
               <NavbarLink
                 onClick={closeUserPopup}
                 className="navbar-item is-tab"
@@ -317,7 +318,7 @@ export default React.memo(function Header() {
               </NavbarLink>
             )}
 
-            {user.accessibleFeatures.messages && (
+            {hasGlobalAction(user, 'MESSAGES_PAGE') && (
               <NavbarLink
                 onClick={closeUserPopup}
                 className="navbar-item is-tab"
@@ -387,7 +388,7 @@ export default React.memo(function Header() {
               </>
             )}
             <FixedSpaceColumn $spacing="m">
-              {user?.accessibleFeatures.employees && (
+              {hasGlobalAction(user, 'EMPLOYEES_PAGE') && (
                 <Link
                   to="/employees"
                   onClick={closeUserPopup}
@@ -396,7 +397,7 @@ export default React.memo(function Header() {
                   {i18n.titles.employees}
                 </Link>
               )}
-              {user?.accessibleFeatures.financeBasics && (
+              {hasGlobalAction(user, 'FINANCE_BASICS_PAGE') && (
                 <Link
                   to="/finance/basics"
                   onClick={closeUserPopup}
@@ -405,7 +406,7 @@ export default React.memo(function Header() {
                   {i18n.titles.financeBasics}
                 </Link>
               )}
-              {user?.accessibleFeatures.documentTemplates && (
+              {hasGlobalAction(user, 'DOCUMENT_TEMPLATES_PAGE') && (
                 <Link
                   to="/document-templates"
                   onClick={closeUserPopup}
@@ -414,7 +415,7 @@ export default React.memo(function Header() {
                   {i18n.documentTemplates.title}
                 </Link>
               )}
-              {user?.accessibleFeatures.decisionReasonings && (
+              {hasGlobalAction(user, 'WRITE_DECISION_REASONINGS') && (
                 <Link
                   to="/decision-reasonings"
                   onClick={closeUserPopup}
@@ -423,7 +424,7 @@ export default React.memo(function Header() {
                   {i18n.titles.decisionReasonings}
                 </Link>
               )}
-              {user?.accessibleFeatures.holidayAndTermPeriods && (
+              {hasGlobalAction(user, 'HOLIDAY_AND_TERM_PERIODS_PAGE') && (
                 <Link
                   to="/holiday-periods"
                   onClick={closeUserPopup}
@@ -432,7 +433,7 @@ export default React.memo(function Header() {
                   {i18n.titles.holidayAndTermPeriods}
                 </Link>
               )}
-              {user?.accessibleFeatures.settings && (
+              {hasGlobalAction(user, 'SETTINGS_PAGE') && (
                 <Link
                   to="/settings"
                   onClick={closeUserPopup}
@@ -441,7 +442,7 @@ export default React.memo(function Header() {
                   {i18n.titles.settings}
                 </Link>
               )}
-              {user?.accessibleFeatures.systemNotifications && (
+              {hasGlobalAction(user, 'READ_SYSTEM_NOTIFICATIONS') && (
                 <Link
                   to="/system-notifications"
                   onClick={closeUserPopup}
@@ -450,7 +451,7 @@ export default React.memo(function Header() {
                   {i18n.titles.systemNotifications}
                 </Link>
               )}
-              {user?.accessibleFeatures.unitFeatures && (
+              {hasGlobalAction(user, 'UNIT_FEATURES_PAGE') && (
                 <Link
                   to="/unit-features"
                   onClick={closeUserPopup}
@@ -459,7 +460,7 @@ export default React.memo(function Header() {
                   {i18n.titles.unitFeatures}
                 </Link>
               )}
-              {user?.accessibleFeatures.placementTool && (
+              {hasGlobalAction(user, 'PLACEMENT_TOOL') && (
                 <Link
                   to="/placement-tool"
                   onClick={closeUserPopup}
@@ -468,7 +469,7 @@ export default React.memo(function Header() {
                   {i18n.placementTool.title}
                 </Link>
               )}
-              {user?.accessibleFeatures.personalMobileDevice && (
+              {hasGlobalAction(user, 'PERSONAL_MOBILE_DEVICE_PAGE') && (
                 <Link
                   to="/personal-mobile-devices"
                   onClick={closeUserPopup}
@@ -477,7 +478,7 @@ export default React.memo(function Header() {
                   {i18n.personalMobileDevices.title}
                 </Link>
               )}
-              {user?.accessibleFeatures.pinCode && (
+              {hasGlobalAction(user, 'PIN_CODE_PAGE') && (
                 <Link
                   to="/pin-code"
                   onClick={closeUserPopup}
@@ -486,7 +487,7 @@ export default React.memo(function Header() {
                   {i18n.pinCode.link}
                 </Link>
               )}
-              {user?.accessibleFeatures.outOfOffice && (
+              {hasGlobalAction(user, 'OUT_OF_OFFICE_PAGE') && (
                 <Link
                   to="/out-of-office"
                   onClick={closeUserPopup}
