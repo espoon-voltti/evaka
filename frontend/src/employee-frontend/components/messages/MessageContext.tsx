@@ -54,6 +54,7 @@ import type { SelectOption } from 'lib-components/molecules/Select'
 
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
+import { hasGlobalAction } from '../../utils/roles'
 
 import {
   accountsByUserQuery,
@@ -223,13 +224,15 @@ export const MessageContextProvider = React.memo(
     const [page, setPage] = useState<number>(1)
 
     const accounts = useQueryResult(
-      user?.accessibleFeatures.messages
+      hasGlobalAction(user, 'MESSAGES_PAGE')
         ? accountsByUserQuery()
         : constantQuery<AuthorizedMessageAccount[]>([])
     )
 
     const folders = useQueryResult(
-      user?.accessibleFeatures.messages ? foldersQuery() : constantQuery([])
+      hasGlobalAction(user, 'MESSAGES_PAGE')
+        ? foldersQuery()
+        : constantQuery([])
     )
 
     const municipalAccount = useMemo(
@@ -296,7 +299,7 @@ export const MessageContextProvider = React.memo(
     )
 
     const unreadCountsByAccount = useQueryResult(
-      user?.accessibleFeatures.messages
+      hasGlobalAction(user, 'MESSAGES_PAGE')
         ? unreadMessagesQuery()
         : constantQuery([]),
       {
