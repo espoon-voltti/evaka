@@ -17,7 +17,7 @@ import { faFileAlt } from 'lib-icons'
 import { personIdentityQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { RequireRole } from '../../utils/roles'
+import { RequirePermittedGlobalAction } from '../../utils/roles'
 import { inferApplicationType } from '../application'
 import { renderResult } from '../async-rendering'
 import { DateTd, NameTd, StatusTd } from '../person-profile/common'
@@ -51,13 +51,13 @@ export default React.memo(function ChildApplications({ childId }: Props) {
 
   return (
     <>
-      <RequireRole oneOf={['SERVICE_WORKER', 'ADMIN']}>
+      <RequirePermittedGlobalAction oneOf={['CREATE_PAPER_APPLICATION']}>
         <AddButtonRow
           text={i18n.childInformation.application.create.createButton}
           onClick={() => toggleUiMode('create-new-application')}
           data-qa="button-create-application"
         />
-      </RequireRole>
+      </RequirePermittedGlobalAction>
 
       {renderResult(applications, (applications) => (
         <Table data-qa="table-of-applications">

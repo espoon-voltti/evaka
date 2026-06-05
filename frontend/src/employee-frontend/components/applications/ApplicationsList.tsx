@@ -54,7 +54,7 @@ import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
 import type { SearchOrder } from '../../types'
 import { isPartDayPlacement } from '../../utils/placements'
-import { hasRole, RequireRole } from '../../utils/roles'
+import { hasRole, RequirePermittedGlobalAction } from '../../utils/roles'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 import { CareTypeChip } from '../common/CareTypeLabel'
 
@@ -405,7 +405,9 @@ const ApplicationsList = React.memo(function Applications({
           )}
         </Td>
 
-        <RequireRole oneOf={['SERVICE_WORKER']}>
+        <RequirePermittedGlobalAction
+          oneOf={['READ_SERVICE_WORKER_APPLICATION_NOTES']}
+        >
           <Td>
             <Tooltip
               tooltip={
@@ -435,7 +437,7 @@ const ApplicationsList = React.memo(function Applications({
               />
             </Tooltip>
           </Td>
-        </RequireRole>
+        </RequirePermittedGlobalAction>
         <Td>
           {enableApplicationActions && (
             <ApplicationActions
@@ -517,9 +519,11 @@ const ApplicationsList = React.memo(function Applications({
               >
                 {i18n.applications.list.status}
               </SortableTh>
-              <RequireRole oneOf={['SERVICE_WORKER']}>
+              <RequirePermittedGlobalAction
+                oneOf={['READ_SERVICE_WORKER_APPLICATION_NOTES']}
+              >
                 <Th>{i18n.applications.list.note}</Th>
-              </RequireRole>
+              </RequirePermittedGlobalAction>
               <Th>
                 {showCheckboxes ? (
                   <CheckAllContainer>

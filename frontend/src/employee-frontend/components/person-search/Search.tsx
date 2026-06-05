@@ -27,7 +27,7 @@ import { faSearch } from 'lib-icons'
 import { PROFILE_AGE_THRESHOLD_DEFAULT } from '../../constants'
 import { searchPersonQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
-import { RequireRole } from '../../utils/roles'
+import { RequirePermittedGlobalAction } from '../../utils/roles'
 
 import AddVTJPersonModal from './AddVTJPersonModal'
 import CreatePersonModal from './CreatePersonModal'
@@ -84,21 +84,23 @@ export default React.memo(function Search() {
               icon={faSearch}
             />
           </Wrapper>
-          <RequireRole oneOf={['SERVICE_WORKER', 'FINANCE_ADMIN']}>
-            <ButtonsContainer>
+          <ButtonsContainer>
+            <RequirePermittedGlobalAction oneOf={['CREATE_PERSON_FROM_VTJ']}>
               <AddButton
                 text={i18n.personSearch.addPersonFromVTJ.title}
                 onClick={() => setShowAddPersonFromVTJModal(true)}
                 data-qa="add-vtj-person-button"
               />
-              <Gap $size="s" $horizontal />
+            </RequirePermittedGlobalAction>
+            <Gap $size="s" $horizontal />
+            <RequirePermittedGlobalAction oneOf={['CREATE_PERSON']}>
               <AddButton
                 text={i18n.personSearch.createNewPerson.title}
                 onClick={() => setShowCreatePersonModal(true)}
                 data-qa="create-person-button"
               />
-            </ButtonsContainer>
-          </RequireRole>
+            </RequirePermittedGlobalAction>
+          </ButtonsContainer>
         </TopBar>
         <Gap $size="XL" />
 
