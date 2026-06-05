@@ -117,6 +117,17 @@ export type DecisionIndividualReasoningId = Id<'DecisionIndividualReasoning'>
 export type DocumentTemplateId = Id<'DocumentTemplate'>
 
 /**
+* Generated from evaka.core.shared.security.EmployeeFeatureConfig
+*/
+export interface EmployeeFeatureConfig {
+  allowEnglishChildDocumentsForAllTypes: boolean
+  decisionReasoningGenericRemoval: boolean
+  messageSupportEmail: string | null
+  openRangesHolidayQuestionnaire: boolean
+  replacementInvoices: boolean
+}
+
+/**
 * Generated from evaka.core.shared.security.EmployeeFeatures
 */
 export interface EmployeeFeatures {
@@ -150,6 +161,17 @@ export interface EmployeeFeatures {
 }
 
 export type EmployeeId = Id<'Employee'>
+
+/**
+* Generated from evaka.core.shared.security.EmployeeStartPage
+*/
+export type EmployeeStartPage =
+  | 'APPLICATIONS'
+  | 'UNITS'
+  | 'REPORTS'
+  | 'MESSAGES'
+  | 'WELCOME'
+  | 'SEARCH'
 
 export type EvakaUserId = Id<'EvakaUser'>
 

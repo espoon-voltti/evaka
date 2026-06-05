@@ -34,6 +34,7 @@ const val basePackage = "evaka.core"
 val forceIncludes: Set<KType> =
     setOf(
         typeOf<SystemController.CitizenUserResponse>(),
+        typeOf<SystemController.EmployeeAuthResponse>(),
         typeOf<SystemController.EmployeeUserResponse>(),
         typeOf<SystemController.PinLoginResponse>(),
         typeOf<MobileDeviceDetails>(),

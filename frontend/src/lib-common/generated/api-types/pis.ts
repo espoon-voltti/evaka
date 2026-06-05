@@ -11,8 +11,10 @@ import type { CitizenAuthLevel } from './shared'
 import type { CitizenFeatures } from './shared'
 import DateRange from '../../date-range'
 import type { DaycareId } from './shared'
+import type { EmployeeFeatureConfig } from './shared'
 import type { EmployeeFeatures } from './shared'
 import type { EmployeeId } from './shared'
+import type { EmployeeStartPage } from './shared'
 import type { EvakaUser } from './user'
 import type { EvakaUserId } from './shared'
 import type { FosterParentId } from './shared'
@@ -210,6 +212,14 @@ export interface Employee {
 }
 
 /**
+* Generated from evaka.core.pis.SystemController.EmployeeAuthResponse
+*/
+export interface EmployeeAuthResponse {
+  featureConfig: EmployeeFeatureConfig
+  user: EmployeeUserResponse
+}
+
+/**
 * Generated from evaka.core.pis.controllers.EmployeeController.EmployeeEmailRequest
 */
 export interface EmployeeEmailRequest {
@@ -242,6 +252,7 @@ export interface EmployeeUserResponse {
   id: EmployeeId
   lastName: string
   permittedGlobalActions: Action.Global[]
+  startPage: EmployeeStartPage
 }
 
 /**
