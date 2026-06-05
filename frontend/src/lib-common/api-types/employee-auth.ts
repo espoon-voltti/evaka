@@ -5,7 +5,9 @@
 import type { MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
 
 import type { Action } from '../generated/action'
+import type { EmployeeStartPage } from '../generated/api-types/pis'
 import type {
+  EmployeeFeatureConfig,
   EmployeeFeatures,
   EmployeeId
 } from '../generated/api-types/shared'
@@ -16,6 +18,7 @@ export interface User {
   userType: 'EMPLOYEE'
   accessibleFeatures: EmployeeFeatures
   permittedGlobalActions: Action.Global[]
+  startPage: EmployeeStartPage
 }
 
 export interface MobileUser extends MobileDeviceDetails {
@@ -49,6 +52,8 @@ export type AdRole = GlobalRole | ScopedRole
 export interface AuthStatus<U extends User | MobileUser> {
   loggedIn: boolean
   user?: U
+  featureConfig?: EmployeeFeatureConfig
+  /** @deprecated removed in a follow-up PR; gate on permitted actions / startPage */
   roles?: AdRole[]
   apiVersion: string
 }

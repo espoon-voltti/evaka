@@ -270,13 +270,14 @@ class SystemController(
         systemUser: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @PathVariable id: EmployeeId,
-    ): EmployeeUserResponse {
+    ): EmployeeAuthResponse {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val employeeUser = tx.getEmployeeUser(id) ?: throw NotFound()
                     val user = AuthenticatedUser.Employee(employeeUser)
                     val permittedGlobalActions =
                         accessControl.getPermittedActions<Action.Global>(tx, user, clock)
+                    @Suppress("DEPRECATION")
                     val accessibleFeatures =
                         EmployeeFeatures(
                             applications =
@@ -346,14 +347,38 @@ class SystemController(
                             messageSupportEmail = featureConfig.messageSupportEmail,
                         )
 
-                    EmployeeUserResponse(
-                        id = employeeUser.id,
-                        firstName = employeeUser.preferredFirstName ?: employeeUser.firstName,
-                        lastName = employeeUser.lastName,
-                        globalRoles = employeeUser.globalRoles,
-                        allScopedRoles = employeeUser.allScopedRoles,
-                        accessibleFeatures = accessibleFeatures,
-                        permittedGlobalActions = permittedGlobalActions,
+                    val employeeFeatureConfig =
+                        EmployeeFeatureConfig(
+                            replacementInvoices = env.replacementInvoicesStart != null,
+                            decisionReasoningGenericRemoval =
+                                env.decisionReasoningGenericRemovalEnabled,
+                            decisionReasoningsEnabled = env.decisionReasoningEnabled,
+                            openRangesHolidayQuestionnaire =
+                                featureConfig.holidayQuestionnaireType ==
+                                    QuestionnaireType.OPEN_RANGES,
+                            allowEnglishChildDocumentsForAllTypes =
+                                featureConfig.allowEnglishChildDocumentsForAllTypes,
+                            messageSupportEmail = featureConfig.messageSupportEmail,
+                        )
+
+                    EmployeeAuthResponse(
+                        user =
+                            EmployeeUserResponse(
+                                id = employeeUser.id,
+                                firstName =
+                                    employeeUser.preferredFirstName ?: employeeUser.firstName,
+                                lastName = employeeUser.lastName,
+                                globalRoles = employeeUser.globalRoles,
+                                allScopedRoles = employeeUser.allScopedRoles,
+                                accessibleFeatures = accessibleFeatures,
+                                permittedGlobalActions = permittedGlobalActions,
+                                startPage =
+                                    employeeStartPage(
+                                        employeeUser.globalRoles,
+                                        employeeUser.allScopedRoles,
+                                    ),
+                            ),
+                        featureConfig = employeeFeatureConfig,
                     )
                 }
             }
@@ -496,6 +521,12 @@ class SystemController(
         val allScopedRoles: Set<UserRole> = setOf(),
         val accessibleFeatures: EmployeeFeatures,
         val permittedGlobalActions: Set<Action.Global>,
+        val startPage: EmployeeStartPage,
+    )
+
+    data class EmployeeAuthResponse(
+        val user: EmployeeUserResponse,
+        val featureConfig: EmployeeFeatureConfig,
     )
 
     data class CitizenUserResponse(
@@ -516,4 +547,31 @@ class SystemController(
     data class PinLoginEmployee(val firstName: String, val lastName: String)
 
     data class PinLoginResponse(val status: PinLoginStatus, val employee: PinLoginEmployee? = null)
+}
+
+/** The page an employee is routed to immediately after login. */
+enum class EmployeeStartPage {
+    APPLICATIONS,
+    UNITS,
+    REPORTS,
+    MESSAGES,
+    WELCOME,
+    SEARCH,
+}
+
+/** Computes the post-login landing page from the employee's roles. */
+fun employeeStartPage(
+    globalRoles: Set<UserRole>,
+    allScopedRoles: Set<UserRole>,
+): EmployeeStartPage {
+    val roles = globalRoles + allScopedRoles
+    return when {
+        UserRole.SERVICE_WORKER in roles || UserRole.SPECIAL_EDUCATION_TEACHER in roles ->
+            EmployeeStartPage.APPLICATIONS
+        UserRole.UNIT_SUPERVISOR in roles || UserRole.STAFF in roles -> EmployeeStartPage.UNITS
+        UserRole.DIRECTOR in roles || UserRole.REPORT_VIEWER in roles -> EmployeeStartPage.REPORTS
+        UserRole.MESSAGING in roles -> EmployeeStartPage.MESSAGES
+        roles.isEmpty() -> EmployeeStartPage.WELCOME
+        else -> EmployeeStartPage.SEARCH
+    }
 }

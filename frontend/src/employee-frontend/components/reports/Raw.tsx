@@ -26,6 +26,7 @@ import { featureFlags } from 'lib-customizations/employee'
 import type { getRawReport } from '../../generated/api-clients/reports'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
+import { hasGlobalAction } from '../../utils/roles'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
@@ -248,7 +249,7 @@ export default React.memo(function Raw() {
             disabled={dirty}
           />
         ))}
-        {user?.accessibleFeatures.submitPatuReport && (
+        {hasGlobalAction(user, 'SUBMIT_PATU_REPORT') && (
           <div>
             <MutateButton
               primary

@@ -730,8 +730,7 @@ export function InvoiceStatusFilter({
   const { i18n } = useTranslation()
   const user = useContext(UserContext)
 
-  const statuses: InvoiceStatus[] = user?.user?.accessibleFeatures
-    .replacementInvoices
+  const statuses: InvoiceStatus[] = user?.featureConfig?.replacementInvoices
     ? allStatuses
     : statusesWithoutReplacements
 

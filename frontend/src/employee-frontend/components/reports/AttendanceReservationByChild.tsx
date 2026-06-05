@@ -41,6 +41,7 @@ import { getMealOrders } from '../../generated/api-clients/aromi'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
+import { hasGlobalAction } from '../../utils/roles'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { unitGroupsQuery, daycaresQuery } from '../unit/queries'
@@ -63,7 +64,7 @@ const orderByOptions: OrderBy[] = ['start', 'end']
 
 export default React.memo(function AttendanceReservationByChild() {
   const { lang, i18n } = useTranslation()
-  const { roles } = useContext(UserContext)
+  const { user } = useContext(UserContext)
 
   const [unitId, setUnitId] = useState<DaycareId | null>(null)
   const [range, setRange] = useState(() => {
@@ -276,16 +277,17 @@ export default React.memo(function AttendanceReservationByChild() {
           />
         </FilterRow>
 
-        {featureFlags.aromiIntegration && roles.includes('ADMIN') && (
-          <BackendReportDownload
-            href={getMealOrders({
-              start: range.start,
-              end: range.end
-            }).url.toString()}
-            text="Lataa Aromi-raportti"
-            enabled={range !== null}
-          />
-        )}
+        {featureFlags.aromiIntegration &&
+          hasGlobalAction(user, 'READ_AROMI_ORDERS') && (
+            <BackendReportDownload
+              href={getMealOrders({
+                start: range.start,
+                end: range.end
+              }).url.toString()}
+              text="Lataa Aromi-raportti"
+              enabled={range !== null}
+            />
+          )}
 
         {renderResult(report, (report) => {
           if (activeParams === null || report === null) return null

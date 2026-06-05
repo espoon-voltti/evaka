@@ -27,7 +27,6 @@ import StateProvider from './state/StateProvider'
 import { I18nContextProvider, useTranslation } from './state/i18n'
 import { UIContext } from './state/ui'
 import { UserContext, UserContextProvider } from './state/user'
-import { hasRole } from './utils/roles'
 
 export function Navigate(props: { replace?: boolean; to: string }) {
   return <Redirect to={props.to} replace={props.replace} />
@@ -120,27 +119,25 @@ export function CloseAfterLogin() {
 }
 
 export function RedirectToMainPage() {
-  const { loggedIn, roles } = useContext(UserContext)
+  const { loggedIn, user } = useContext(UserContext)
 
-  if (!loggedIn) {
+  if (!loggedIn || !user) {
     return <Navigate replace to="~/employee/login" />
   }
 
-  if (
-    hasRole(roles, 'SERVICE_WORKER') ||
-    hasRole(roles, 'SPECIAL_EDUCATION_TEACHER')
-  ) {
-    return <Navigate replace to="~/employee/applications" />
-  } else if (hasRole(roles, 'UNIT_SUPERVISOR') || hasRole(roles, 'STAFF')) {
-    return <Navigate replace to="~/employee/units" />
-  } else if (hasRole(roles, 'DIRECTOR') || hasRole(roles, 'REPORT_VIEWER')) {
-    return <Navigate replace to="~/employee/reports" />
-  } else if (hasRole(roles, 'MESSAGING')) {
-    return <Navigate replace to="~/employee/messages" />
-  } else if (roles.length === 0) {
-    return <Navigate replace to="~/employee/welcome" />
-  } else {
-    return <Navigate replace to="~/employee/search" />
+  switch (user.startPage) {
+    case 'APPLICATIONS':
+      return <Navigate replace to="~/employee/applications" />
+    case 'UNITS':
+      return <Navigate replace to="~/employee/units" />
+    case 'REPORTS':
+      return <Navigate replace to="~/employee/reports" />
+    case 'MESSAGES':
+      return <Navigate replace to="~/employee/messages" />
+    case 'WELCOME':
+      return <Navigate replace to="~/employee/welcome" />
+    case 'SEARCH':
+      return <Navigate replace to="~/employee/search" />
   }
 }
 

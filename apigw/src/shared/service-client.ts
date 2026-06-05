@@ -83,7 +83,13 @@ export interface EmployeeUser {
 
 export interface EmployeeUserResponse extends EmployeeUser {
   accessibleFeatures: object
-  permittedGlobalActions?: string[]
+  permittedGlobalActions: string[]
+  startPage: string
+}
+
+export interface EmployeeAuthResponse {
+  user: EmployeeUserResponse
+  featureConfig: object
 }
 
 export interface CitizenLoginRequest {
@@ -128,9 +134,9 @@ export async function employeeSuomiFiLogin(
 export async function getEmployeeDetails(
   req: express.Request,
   employeeId: string
-): Promise<EmployeeUserResponse | undefined> {
+): Promise<EmployeeAuthResponse | undefined> {
   try {
-    const { data } = await client.get<EmployeeUserResponse>(
+    const { data } = await client.get<EmployeeAuthResponse>(
       `/system/employee/${employeeId}`,
       { headers: createServiceRequestHeaders(req, systemUserHeader) }
     )
