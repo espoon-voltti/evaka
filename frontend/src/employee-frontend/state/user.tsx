@@ -11,6 +11,7 @@ import React, {
 } from 'react'
 
 import type { AdRole, User } from 'lib-common/api-types/employee-auth'
+import type { EmployeeFeatureConfig } from 'lib-common/generated/api-types/shared'
 import { Queries, useQuery } from 'lib-common/query'
 import { LoginStatusChangeEvent } from 'lib-common/utils/login-status'
 
@@ -21,6 +22,7 @@ export interface UserState {
   apiVersion: string | undefined
   loggedIn: boolean
   user: User | undefined
+  featureConfig: EmployeeFeatureConfig | undefined
   roles: AdRole[]
   refreshAuthStatus: () => void
   unauthorizedApiCallDetected: boolean
@@ -32,6 +34,7 @@ export const UserContext = createContext<UserState>({
   apiVersion: undefined,
   loggedIn: false,
   user: undefined,
+  featureConfig: undefined,
   roles: [],
   refreshAuthStatus: () => undefined,
   unauthorizedApiCallDetected: false,
@@ -76,6 +79,7 @@ export const UserContextProvider = React.memo(function UserContextProvider({
       apiVersion: authStatus?.apiVersion,
       loggedIn: authStatus?.loggedIn ?? false,
       user: authStatus?.user,
+      featureConfig: authStatus?.featureConfig,
       roles: authStatus?.roles ?? [],
       refreshAuthStatus,
       unauthorizedApiCallDetected,
