@@ -154,6 +154,44 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
     }
 
     @Test
+    fun `does not send a second new customer notification on a later day`() {
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
+
+        assertEquals(1, getEmails().size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
+
+        clock.tick(Duration.ofDays(1))
+
+        assertEquals(1, getEmails().size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
+    }
+
+    @Test
+    fun `notification is sent when the job runs later in the month for a placement starting later this month`() {
+        clock.tick(Duration.ofDays(9)) // 2024-02-10
+        val laterStart = clock.today().plusDays(10) // 2024-02-20, still the current month
+        val placementId = insertPlacement(child, laterStart, placementEnd)
+        insertServiceNeed(placementId, laterStart, placementEnd)
+
+        assertEquals(1, getEmails().size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
+    }
+
+    @Test
+    fun `placement starting this month is not notified again the following month`() {
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
+
+        assertEquals(1, getEmails().size)
+
+        clock.tick(Duration.ofDays(35)) // 2024-03-07, next calendar month
+
+        assertEquals(1, getEmails().size)
+        assertEquals(1, getIncomeNotifications(fridgeHeadOfChild.id).size)
+    }
+
+    @Test
     fun `notifications are not sent when placement does not start in current month`() {
         val placementId = insertPlacement(child, placementStart, placementEnd)
         insertServiceNeed(placementId, placementStart, placementEnd)

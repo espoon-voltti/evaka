@@ -181,6 +181,12 @@ WHERE NOT EXISTS (
       AND (status = 'SENT'::income_statement_status OR status = 'HANDLING'::income_statement_status)
       AND sent_at > ${bind(today)} - INTERVAL '12 months'
 )
+AND NOT EXISTS (
+    SELECT 1 FROM income_notification
+    WHERE receiver_id = parent.person_id
+      AND notification_type = 'NEW_CUSTOMER'::income_notification_type
+      AND created > ${bind(today)} - INTERVAL '1 month'
+)
 """
             )
         }
