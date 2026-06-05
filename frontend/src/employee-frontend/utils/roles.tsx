@@ -5,10 +5,15 @@
 import type { ReactNode } from 'react'
 import React, { useContext, useMemo } from 'react'
 
-import type { AdRole } from 'lib-common/api-types/employee-auth'
+import type { AdRole, User } from 'lib-common/api-types/employee-auth'
 import type { Action } from 'lib-common/generated/action'
 
 import { UserContext } from '../state/user'
+
+export const hasGlobalAction = (
+  user: User | undefined,
+  action: Action.Global
+): boolean => user?.permittedGlobalActions.includes(action) ?? false
 
 export const requireRole = (roles: AdRole[], ...requiresOneOf: AdRole[]) => {
   const requiredRoles: AdRole[] = [...requiresOneOf, 'ADMIN']
