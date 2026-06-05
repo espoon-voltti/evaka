@@ -98,9 +98,9 @@ const TemplateModalInner = React.memo(function TemplateModalInner({
   mode
 }: InternalProps) {
   const { i18n, lang } = useTranslation()
-  const { user } = useContext(UserContext)
+  const { featureConfig } = useContext(UserContext)
   const allowEnglishForAllTypes =
-    user?.accessibleFeatures.allowEnglishChildDocumentsForAllTypes
+    featureConfig?.allowEnglishChildDocumentsForAllTypes
 
   const { mutateAsync: createDocumentTemplate } = useMutationResult(
     createDocumentTemplateMutation

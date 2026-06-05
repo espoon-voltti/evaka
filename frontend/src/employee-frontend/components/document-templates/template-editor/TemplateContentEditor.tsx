@@ -342,9 +342,9 @@ const BasicsEditor = React.memo(function BasicsEditor({
   onClose: () => void
 }) {
   const { i18n, lang } = useTranslation()
-  const { user } = useContext(UserContext)
+  const { featureConfig } = useContext(UserContext)
   const allowEnglishForAllTypes =
-    user?.accessibleFeatures.allowEnglishChildDocumentsForAllTypes
+    featureConfig?.allowEnglishChildDocumentsForAllTypes
 
   const typeOptions = useMemo(
     () =>

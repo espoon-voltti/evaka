@@ -276,7 +276,7 @@ export function SingleThreadView({
   const [, navigate] = useLocation()
   const { getReplyContent, onReplySent, setReplyContent } =
     useContext(MessageContext)
-  const { user } = useContext(UserContext)
+  const { featureConfig } = useContext(UserContext)
   const [deleteModalContentId, setDeleteModalContentId] =
     useState<MessageContentId | null>(null)
   const [justDeletedContentIds, setJustDeletedContentIds] = useState<
@@ -396,7 +396,7 @@ export function SingleThreadView({
     return messages.some((message) => message.sender.type === 'CITIZEN')
   }, [messages])
 
-  const supportEmail = user?.accessibleFeatures.messageSupportEmail ?? null
+  const supportEmail = featureConfig?.messageSupportEmail ?? null
 
   const firstMessage = messages.length > 0 ? messages[0] : undefined
   const ownDeletedFirstMessage = useMemo(

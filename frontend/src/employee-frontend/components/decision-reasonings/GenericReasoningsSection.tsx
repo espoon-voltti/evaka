@@ -221,7 +221,7 @@ function GenericReasoningCard({
 }: GenericReasoningCardProps) {
   const { i18n } = useTranslation()
   const t = i18n.decisionReasonings.generic
-  const { user } = useContext(UserContext)
+  const { featureConfig } = useContext(UserContext)
 
   const isEditing = editMode.type === 'edit' && editMode.id === reasoning.id
 
@@ -292,7 +292,7 @@ function GenericReasoningCard({
         )}
         {reasoning.ready &&
           !reasoning.outdated &&
-          user?.accessibleFeatures.decisionReasoningGenericRemoval && (
+          featureConfig?.decisionReasoningGenericRemoval && (
             <FixedSpaceRow $spacing="s">
               <ConfirmedMutation
                 buttonStyle="ICON"

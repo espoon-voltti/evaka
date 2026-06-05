@@ -38,7 +38,7 @@ export default React.memo(function PersonInvoices({ id }: Props) {
 
   return (
     <div>
-      {user?.user?.accessibleFeatures.replacementInvoices &&
+      {user?.featureConfig?.replacementInvoices &&
       permittedActions.has('CREATE_REPLACEMENT_DRAFT_INVOICES') ? (
         <FixedSpaceColumn $alignItems="flex-end">
           <MutateButton
