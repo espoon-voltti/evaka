@@ -16,11 +16,6 @@ export class DecisionDraftPage {
     await expect(this.page.findByDataQa('save-decisions-button')).toBeVisible()
   }
 
-  async selectUnit(type: DecisionType, unitId: UUID) {
-    const selector = new Combobox(this.page.findByDataQa(`unit-${type}`))
-    await selector.fillAndSelectItem('', unitId)
-  }
-
   async selectSharedUnit(unitId: UUID) {
     const selector = new Combobox(
       this.page.findByDataQa('header-unit-selector')

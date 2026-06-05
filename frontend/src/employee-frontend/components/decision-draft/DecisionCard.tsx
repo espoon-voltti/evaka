@@ -7,15 +7,12 @@ import styled from 'styled-components'
 
 import type {
   DecisionDraft,
-  DecisionType,
-  DecisionUnit
+  DecisionType
 } from 'lib-common/generated/api-types/decision'
-import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { Chip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
@@ -129,12 +126,9 @@ const Muted = styled.div`
 interface Props {
   decision: DecisionDraft
   childName: string
-  units: DecisionUnit[]
-  perDecisionUnitSelector: boolean
   showPlannedCheckbox: boolean
   primaryDecisionType: DecisionType
   onPlannedChange: (planned: boolean) => void
-  onUnitChange: (unitId: DaycareId) => void
 }
 
 /**
@@ -154,12 +148,9 @@ const decisionTypeForLabel = (
 export default React.memo(function DecisionCard({
   decision,
   childName,
-  units,
-  perDecisionUnitSelector,
   showPlannedCheckbox,
   primaryDecisionType,
-  onPlannedChange,
-  onUnitChange
+  onPlannedChange
 }: Props) {
   const { i18n, lang } = useTranslation()
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -172,8 +163,6 @@ export default React.memo(function DecisionCard({
     i18n.decisionDraft.types[
       decisionTypeForLabel(decision.type, primaryDecisionType)
     ]
-
-  const selectedUnit = units.find((u) => u.id === decision.unitId) ?? null
 
   return (
     <Card
@@ -202,17 +191,6 @@ export default React.memo(function DecisionCard({
           {decision.startDate?.format() ?? ''}–
           {decision.endDate?.format() ?? ''}
         </DateRange>
-
-        {perDecisionUnitSelector && (
-          <Combobox
-            items={units}
-            selectedItem={selectedUnit}
-            onChange={(u) => u && onUnitChange(u.id)}
-            getItemLabel={(u) => u?.name ?? ''}
-            getItemDataQa={(u) => u?.id ?? ''}
-            data-qa={`unit-${decision.type}`}
-          />
-        )}
 
         {renderResult(previewResult, (preview) => {
           const text = (s: { textFi: string; textSv: string }) =>

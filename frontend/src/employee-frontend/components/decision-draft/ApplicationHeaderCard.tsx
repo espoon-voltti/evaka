@@ -59,7 +59,6 @@ interface Props {
   units: DecisionUnit[]
   selectedUnitId: DaycareId | null
   onSelectUnit: (unitId: DaycareId) => void
-  showUnitSelector: boolean
 }
 
 export default React.memo(function ApplicationHeaderCard({
@@ -69,8 +68,7 @@ export default React.memo(function ApplicationHeaderCard({
   placementUnitName,
   units,
   selectedUnitId,
-  onSelectUnit,
-  showUnitSelector
+  onSelectUnit
 }: Props) {
   const { i18n } = useTranslation()
   const selectedUnit = units.find((u) => u.id === selectedUnitId) ?? null
@@ -98,33 +96,31 @@ export default React.memo(function ApplicationHeaderCard({
         <Field>
           {selectedUnit && (
             <>
-              <Label>{i18n.decisionDraft.handlerName}</Label>
+              <Label>{i18n.decisionDraft.handler}</Label>
               <span>{selectedUnit.decisionHandler}</span>
               <span>{selectedUnit.decisionHandlerAddress}</span>
             </>
           )}
         </Field>
-        {showUnitSelector && (
-          <Field>
-            <Label>{i18n.decisionDraft.selectedUnit}</Label>
-            <Combobox
-              items={units}
-              selectedItem={selectedUnit}
-              onChange={(u) => u && onSelectUnit(u.id)}
-              getItemLabel={(u) => u?.name ?? ''}
-              getItemDataQa={(u) => u?.id ?? ''}
-              data-qa="header-unit-selector"
-            />
-            {selectedUnit && (
-              <InlineSummary>
-                {i18n.decisionDraft.unitInlineSummary(
-                  `${selectedUnit.streetAddress}, ${selectedUnit.postalCode} ${selectedUnit.postOffice}`,
-                  selectedUnit.manager ?? ''
-                )}
-              </InlineSummary>
-            )}
-          </Field>
-        )}
+        <Field>
+          <Label>{i18n.decisionDraft.selectedUnit}</Label>
+          <Combobox
+            items={units}
+            selectedItem={selectedUnit}
+            onChange={(u) => u && onSelectUnit(u.id)}
+            getItemLabel={(u) => u?.name ?? ''}
+            getItemDataQa={(u) => u?.id ?? ''}
+            data-qa="header-unit-selector"
+          />
+          {selectedUnit && (
+            <InlineSummary>
+              {i18n.decisionDraft.unitInlineSummary(
+                `${selectedUnit.streetAddress}, ${selectedUnit.postalCode} ${selectedUnit.postOffice}`,
+                selectedUnit.manager ?? ''
+              )}
+            </InlineSummary>
+          )}
+        </Field>
       </Grid>
     </Card>
   )

@@ -18,14 +18,16 @@ import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -78,34 +80,48 @@ const FooterRow = styled.div`
   gap: ${defaultMargins.s};
 `
 
-const InlineWarning = styled.div`
-  color: ${colors.status.warning};
-`
-
 function redirectToMainPage(navigate: (location: string) => void) {
   navigate('/applications')
 }
 
-function isUnitDataComplete(
+type DecisionUnitField =
+  | 'unit'
+  | 'daycareDecisionName'
+  | 'preschoolDecisionName'
+  | 'manager'
+  | 'streetAddress'
+  | 'postalCode'
+  | 'postOffice'
+  | 'decisionHandler'
+  | 'decisionHandlerAddress'
+
+function getMissingUnitFields(
   decision: DecisionDraft,
   units: DecisionUnit[],
   isClubDecision: boolean
-) {
+): DecisionUnitField[] {
+  const u = units.find((o) => o.id === decision.unitId)
+  if (!u) return ['unit']
+
   const requiresDaycareDecisionName =
     decisionTypesRequiringDaycareDecisionName.includes(decision.type)
   const requiresPreschoolDecisionName =
     decisionTypesRequiringPreschoolDecisionName.includes(decision.type)
-  const u = units.find((o) => o.id === decision.unitId)
-  return (
-    !!u &&
-    !!(!requiresDaycareDecisionName || u.daycareDecisionName) &&
-    !!(!requiresPreschoolDecisionName || u.preschoolDecisionName) &&
-    !!u.manager &&
-    !!u.streetAddress &&
-    !!u.postalCode &&
-    !!u.postOffice &&
-    (isClubDecision || (!!u.decisionHandler && !!u.decisionHandlerAddress))
-  )
+
+  const missing: DecisionUnitField[] = []
+  if (requiresDaycareDecisionName && !u.daycareDecisionName)
+    missing.push('daycareDecisionName')
+  if (requiresPreschoolDecisionName && !u.preschoolDecisionName)
+    missing.push('preschoolDecisionName')
+  if (!u.manager) missing.push('manager')
+  if (!u.streetAddress) missing.push('streetAddress')
+  if (!u.postalCode) missing.push('postalCode')
+  if (!u.postOffice) missing.push('postOffice')
+  if (!isClubDecision) {
+    if (!u.decisionHandler) missing.push('decisionHandler')
+    if (!u.decisionHandlerAddress) missing.push('decisionHandlerAddress')
+  }
+  return missing
 }
 
 export default React.memo(function DecisionDraftRedesign() {
@@ -172,19 +188,22 @@ const DecisionDraftRedesignInner = React.memo(
     }
 
     const isClubDecision = primaryDecision.type === 'CLUB'
-    const primaryUnitDataIsComplete = useMemo(() => {
-      return isUnitDataComplete(primaryDecision, units, isClubDecision)
-    }, [primaryDecision, units, isClubDecision])
-    const connectedUnitDataIsComplete = useMemo(() => {
-      return connectedDecision
-        ? isUnitDataComplete(connectedDecision, units, isClubDecision)
-        : true
-    }, [connectedDecision, units, isClubDecision])
-    // TODO: Currently if the two decisions have different units, we don't really show which one of them has incomplete data.
-    //  Also in this new design we no longer display all the data that can be missing.
-    //  This should be discussed with the designer.
-    const dataIncomplete =
-      !primaryUnitDataIsComplete || !connectedUnitDataIsComplete
+    const incompleteUnit = useMemo(() => {
+      const decisions = [
+        primaryDecision,
+        ...(connectedDecision ? [connectedDecision] : [])
+      ]
+      const fields = new Set<DecisionUnitField>()
+      for (const decision of decisions) {
+        getMissingUnitFields(decision, units, isClubDecision).forEach((field) =>
+          fields.add(field)
+        )
+      }
+      if (fields.size === 0) return null
+      const unit = units.find((u) => u.id === primaryDecision.unitId)
+      return { unitName: unit?.name ?? null, fields: [...fields] }
+    }, [primaryDecision, connectedDecision, units, isClubDecision])
+    const dataIncomplete = incompleteUnit !== null
 
     const noDecisionsPlanned =
       connectedDecision !== null &&
@@ -209,7 +228,6 @@ const DecisionDraftRedesignInner = React.memo(
             units={units}
             selectedUnitId={primaryDecision.unitId}
             onSelectUnit={(unitId) => updateState('both', { unitId })}
-            showUnitSelector={!featureFlags.decisionDraftMultipleUnits}
           />
 
           {!(guardian.ssn && child.ssn) && (
@@ -243,10 +261,7 @@ const DecisionDraftRedesignInner = React.memo(
               primaryDecisionType={primaryDecision.type}
               showPlannedCheckbox={connectedDecision !== null}
               childName={childName}
-              units={units}
-              perDecisionUnitSelector={featureFlags.decisionDraftMultipleUnits}
               onPlannedChange={(planned) => updateState('primary', { planned })}
-              onUnitChange={(unitId) => updateState('primary', { unitId })}
             />
             {connectedDecision && (
               <DecisionCard
@@ -254,24 +269,40 @@ const DecisionDraftRedesignInner = React.memo(
                 primaryDecisionType={primaryDecision.type}
                 showPlannedCheckbox={true}
                 childName={childName}
-                units={units}
-                perDecisionUnitSelector={
-                  featureFlags.decisionDraftMultipleUnits
-                }
                 onPlannedChange={(planned) =>
                   updateState('connected', { planned })
                 }
-                onUnitChange={(unitId) => updateState('connected', { unitId })}
               />
             )}
           </DecisionCardWrapper>
 
+          {incompleteUnit !== null && (
+            <AlertBox
+              wide
+              title={i18n.decisionDraft.unitInfo1}
+              message={
+                <FixedSpaceColumn $spacing="s">
+                  <div>
+                    <strong>
+                      {incompleteUnit.unitName ??
+                        i18n.decisionDraft.unitFieldsMissingUnitName}
+                    </strong>
+                    <Gap $size="xs" />
+                    <UnorderedList $spacing="xxs">
+                      {incompleteUnit.fields.map((field) => (
+                        <li key={field}>
+                          {i18n.decisionDraft.unitFields[field]}
+                        </li>
+                      ))}
+                    </UnorderedList>
+                  </div>
+                  <div>{i18n.decisionDraft.unitInfo2}</div>
+                </FixedSpaceColumn>
+              }
+            />
+          )}
+
           <FooterRow>
-            {dataIncomplete && (
-              <InlineWarning>
-                {i18n.decisionDraft.unitDataMissing}
-              </InlineWarning>
-            )}
             <FixedSpaceRow>
               <Button
                 onClick={() => redirectToMainPage(navigate)}
