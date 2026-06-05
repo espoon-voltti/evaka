@@ -9,14 +9,21 @@ import evaka.core.emailclient.MockEmailClient
 import evaka.core.pis.EmailMessageType
 import evaka.core.pis.PersonalDataUpdate
 import evaka.core.pis.controllers.PersonalDataControllerCitizen
+import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.CitizenAuthLevel
+import evaka.core.shared.dev.DevFridgeChild
+import evaka.core.shared.dev.DevFridgePartnership
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.RealEvakaClock
+import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
@@ -97,5 +104,118 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                     it.content.text.contains(newEmail)
             }
         assertNotNull(email, "Email should be sent to old address after email update")
+    }
+
+    @Test
+    fun `getFamily returns the citizen, their partner and children`() {
+        val head = DevPerson(dateOfBirth = LocalDate.of(1980, 1, 1))
+        val partner = DevPerson(dateOfBirth = LocalDate.of(1982, 1, 1))
+        val olderChild = DevPerson(dateOfBirth = LocalDate.of(2018, 1, 1))
+        val youngerChild = DevPerson(dateOfBirth = LocalDate.of(2021, 1, 1))
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 1, 1), LocalTime.of(12, 0)))
+
+        db.transaction { tx ->
+            tx.insert(head, DevPersonType.ADULT)
+            tx.insert(partner, DevPersonType.ADULT)
+            tx.insert(olderChild, DevPersonType.CHILD)
+            tx.insert(youngerChild, DevPersonType.CHILD)
+            tx.insert(
+                DevFridgePartnership(
+                    first = head.id,
+                    second = partner.id,
+                    startDate = LocalDate.of(2024, 1, 1),
+                    endDate = LocalDate.of(2024, 1, 1),
+                    createdAt = clock.now(),
+                )
+            )
+            listOf(olderChild, youngerChild).forEach { child ->
+                tx.insert(
+                    DevFridgeChild(
+                        childId = child.id,
+                        headOfChild = head.id,
+                        startDate = LocalDate.of(2024, 1, 1),
+                        endDate = LocalDate.of(2024, 1, 1),
+                    )
+                )
+            }
+        }
+
+        fun getFamilyAs(citizenId: PersonId) =
+            personalDataController.getFamily(
+                dbInstance(),
+                AuthenticatedUser.Citizen(citizenId, CitizenAuthLevel.WEAK),
+                clock,
+            )
+
+        val response = getFamilyAs(head.id)
+        assertEquals(setOf(head.id, partner.id), response.adults.map { it.personId }.toSet())
+        // children are ordered by date of birth ascending (oldest first)
+        assertEquals(listOf(olderChild.id, youngerChild.id), response.children.map { it.personId })
+
+        // the partner is not head-of-child, but still sees the whole household
+        val partnerResponse = getFamilyAs(partner.id)
+        assertEquals(setOf(head.id, partner.id), partnerResponse.adults.map { it.personId }.toSet())
+        assertEquals(
+            listOf(olderChild.id, youngerChild.id),
+            partnerResponse.children.map { it.personId },
+        )
+    }
+
+    @Test
+    fun `getFamily orders same-age children by last name then first name`() {
+        val head = DevPerson(dateOfBirth = LocalDate.of(1980, 1, 1))
+        val dob = LocalDate.of(2018, 1, 1)
+        val korhonenAaron = DevPerson(dateOfBirth = dob, firstName = "Aaron", lastName = "Korhonen")
+        val korhonenBertil =
+            DevPerson(dateOfBirth = dob, firstName = "Bertil", lastName = "Korhonen")
+        val virtanenAaron = DevPerson(dateOfBirth = dob, firstName = "Aaron", lastName = "Virtanen")
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 1, 1), LocalTime.of(12, 0)))
+
+        db.transaction { tx ->
+            tx.insert(head, DevPersonType.ADULT)
+            listOf(virtanenAaron, korhonenBertil, korhonenAaron).forEach { child ->
+                tx.insert(child, DevPersonType.CHILD)
+                tx.insert(
+                    DevFridgeChild(
+                        childId = child.id,
+                        headOfChild = head.id,
+                        startDate = LocalDate.of(2024, 1, 1),
+                        endDate = LocalDate.of(2024, 1, 1),
+                    )
+                )
+            }
+        }
+
+        val response =
+            personalDataController.getFamily(
+                dbInstance(),
+                AuthenticatedUser.Citizen(head.id, CitizenAuthLevel.WEAK),
+                clock,
+            )
+
+        assertEquals(
+            listOf(korhonenAaron.id, korhonenBertil.id, virtanenAaron.id),
+            response.children.map { it.personId },
+        )
+    }
+
+    @Test
+    fun `getFamily returns only the citizen for a solo adult`() {
+        val solo = DevPerson()
+        val clock =
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2024, 1, 1), LocalTime.of(12, 0)))
+        db.transaction { tx -> tx.insert(solo, DevPersonType.ADULT) }
+
+        val response =
+            personalDataController.getFamily(
+                dbInstance(),
+                AuthenticatedUser.Citizen(solo.id, CitizenAuthLevel.WEAK),
+                clock,
+            )
+
+        assertEquals(listOf(solo.id), response.adults.map { it.personId })
+        assertEquals(emptyList(), response.children.map { it.personId })
     }
 }

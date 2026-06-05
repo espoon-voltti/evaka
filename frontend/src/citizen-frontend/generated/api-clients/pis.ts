@@ -7,6 +7,7 @@
 import type { EmailMessageType } from 'lib-common/generated/api-types/pis'
 import type { EmailVerificationRequest } from 'lib-common/generated/api-types/pis'
 import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
+import type { FamilyMembers } from 'lib-common/generated/api-types/pis'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import type { PasswordConstraints } from 'lib-common/generated/api-types/shared'
@@ -26,6 +27,18 @@ export async function getEmailVerificationStatus(): Promise<EmailVerificationSta
     method: 'GET'
   })
   return deserializeJsonEmailVerificationStatusResponse(json)
+}
+
+
+/**
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.getFamily
+*/
+export async function getFamily(): Promise<FamilyMembers> {
+  const { data: json } = await client.request<JsonOf<FamilyMembers>>({
+    url: uri`/citizen/personal-data/family`.toString(),
+    method: 'GET'
+  })
+  return json
 }
 
 

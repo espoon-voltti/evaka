@@ -2175,6 +2175,20 @@ export default {
         muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
       </P>
     ),
+    familySizeSection: {
+      title: 'Perhekoko',
+      description: (
+        <P>
+          Samassa taloudessa asuvien aikuisten ja lasten määrä vaikuttaa
+          asiakasmaksuihin. Jos perheen tiedoissa on tapahtunut muutos, ole
+          yhteydessä asiakasmaksutiimiin, puh.{' '}
+          <a href="tel:+358981627400">09 81627400</a>.
+        </P>
+      ),
+      adults: 'Aikuiset',
+      children: 'Lapset',
+      self: '(sinä)'
+    },
     detailsSection: {
       title: 'Henkilötiedot',
       noEmailAlert:

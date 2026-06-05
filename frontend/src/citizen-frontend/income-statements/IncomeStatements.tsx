@@ -35,6 +35,7 @@ import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
+import FamilySizeSection from '../personal-details/FamilySizeSection'
 import useTitle from '../useTitle'
 
 import ChildrenIncomeStatements from './ChildrenIncomeStatements'
@@ -264,6 +265,7 @@ export default React.memo(function IncomeStatements() {
                   )}
                 />
               )}
+            <FamilySizeSection />
           </ContentArea>
           <Gap $size="s" />
           <ContentArea $opaque $paddingVertical="L">

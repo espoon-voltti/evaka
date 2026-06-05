@@ -20,6 +20,7 @@ import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 
+import FamilySizeSection from './FamilySizeSection'
 import LoginDetailsSection from './LoginDetailsSection'
 import NotificationSettingsSection from './NotificationSettingsSection'
 import PersonalDetailsSection from './PersonalDetailsSection'
@@ -71,6 +72,8 @@ export default React.memo(function PersonalDetails() {
                 <Redirect replace to="/" />
               )
           )}
+          <HorizontalLine />
+          <FamilySizeSection />
           {renderResult(
             combine(user, emailVerificationStatus, passwordConstraints),
             ([user, emailVerificationStatus, passwordConstraints]) =>

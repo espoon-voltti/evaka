@@ -213,6 +213,7 @@ enum class Audit(
     CitizenDocumentResponseReportRead,
     CitizenDocumentResponseReportGroupOptionsRead,
     CitizenEmailVerificationStatusRead,
+    CitizenFamilyRead(securityEvent = true, securityLevel = "high"),
     CitizenFeeDecisionDownloadPdf,
     CitizenNotificationSettingsRead,
     // CitizenNotificationSettingsUpdate,

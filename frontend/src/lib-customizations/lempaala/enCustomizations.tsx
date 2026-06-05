@@ -24,6 +24,17 @@ const customerContactText = function () {
 }
 
 const en: DeepPartial<Translations> = {
+  personalDetails: {
+    familySizeSection: {
+      description: (
+        <P>
+          The number of adults and children living in the same household affects
+          the client fees. If your family details have changed, please contact
+          the client fee unit.
+        </P>
+      )
+    }
+  },
   applications: {
     creation: {
       daycareInfo:

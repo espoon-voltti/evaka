@@ -2160,6 +2160,20 @@ const sv: Translations = {
         myndigheten för digitalisering och befolkningsdata (DVV).
       </P>
     ),
+    familySizeSection: {
+      title: 'Familjestorlek',
+      description: (
+        <P>
+          Antalet vuxna och barn som bor i samma hushåll påverkar
+          klientavgifterna. Om uppgifterna om familjen har ändrats, kontakta
+          enheten för klientavgifter, tfn{' '}
+          <a href="tel:+358981627400">09 81627400</a>.
+        </P>
+      ),
+      adults: 'Vuxna',
+      children: 'Barn',
+      self: '(du)'
+    },
     detailsSection: {
       noEmailAlert:
         'Din epostadress saknas. Var god och fyll i den nedan, så att du kan ta emot notiser från eVaka.',
