@@ -10,7 +10,7 @@ dependencies {
     constraints {
         api("ch.qos.logback.access:logback-access-tomcat:2.0.12")
         api("com.auth0:java-jwt:4.5.2")
-        api("com.github.kagkarlsson:db-scheduler:16.11.0")
+        api("com.github.kagkarlsson:db-scheduler:16.12.0")
         api("com.github.mwiede:jsch:2.28.2")
         api("com.google.guava:guava:33.6.0-jre")
         api("com.networknt:json-schema-validator:3.0.2")
