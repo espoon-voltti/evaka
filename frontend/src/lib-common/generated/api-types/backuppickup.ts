@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { Action } from '../action'
 import type { BackupPickupId } from './shared'
 import type { PersonId } from './shared'
 
@@ -30,4 +31,19 @@ export interface ChildBackupPickupContent {
 */
 export interface ChildBackupPickupCreateResponse {
   id: BackupPickupId
+}
+
+/**
+* Generated from evaka.core.backuppickup.ChildBackupPickupResponse
+*/
+export interface ChildBackupPickupResponse {
+  backupPickup: ChildBackupPickup
+  permittedActions: Action.BackupPickup[]
+}
+
+/**
+* Generated from evaka.core.backuppickup.ChildBackupPickupsResponse
+*/
+export interface ChildBackupPickupsResponse {
+  backupPickups: ChildBackupPickupResponse[]
 }
