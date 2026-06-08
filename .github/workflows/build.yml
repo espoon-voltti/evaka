@@ -44,34 +44,34 @@ jobs:
   lint-shell:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
       - uses: espoon-voltti/voltti-actions/shellcheck@v1
 
   check-licenses:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v6.0.3
     - name: Reuse Compliance Check
-      uses: fsfe/reuse-action@v6
+      uses: fsfe/reuse-action@v6.0.0
 
   frontend:
     runs-on: ubuntu-latest
     needs:
       - cache-bust
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
 
       - name: Cache fortawesome
         if: ${{ !github.event.pull_request.head.repo.fork }}
         id: fortawesome
-        uses: actions/cache@v5
+        uses: actions/cache@v5.0.5
         with:
           path: frontend/node_modules
           key: fortawesome-${{ hashFiles('frontend/bin/unpack-pro-icons.sh') }}
 
       - name: Configure AWS credentials
         if: ${{ !github.event.pull_request.head.repo.fork && steps.fortawesome.outputs.cache-hit != 'true' }}
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@v6.2.0
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE }}
@@ -168,11 +168,11 @@ jobs:
       - frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -206,7 +206,7 @@ jobs:
     needs:
       - cache-bust
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -263,7 +263,7 @@ jobs:
     needs:
       - cache-bust
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -323,7 +323,7 @@ jobs:
       - service
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -368,11 +368,11 @@ jobs:
       - service
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -418,11 +418,11 @@ jobs:
         test_chunk_count: [6] # must max value of above list
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -453,7 +453,7 @@ jobs:
           ./compose-integration run integration-test $args
 
       - name: Store test results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: integration-test-results-${{ matrix.test_chunk_number }}
@@ -497,10 +497,10 @@ jobs:
     if: ${{ !github.event.pull_request.head.repo.fork }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -568,18 +568,18 @@ jobs:
     env:
       PLAYWRIGHT_TAG: "${{ inputs.playwright_tag || 'master' }}"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
 
       - name: Login to Docker Hub
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.2.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -617,7 +617,7 @@ jobs:
 
       - name: Store test results and logs
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: e2e-test-results-${{ matrix.shard }}
           path: |
@@ -652,7 +652,7 @@ jobs:
             ecr_prefix: evakaturku
     steps:
       - name: Configure AWS credentials for ${{ matrix.municipality }}
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@v6.2.0
         with:
           aws-region: ${{ matrix.aws_region }}
           role-to-assume: ${{ secrets[matrix.aws_role] }}
@@ -661,19 +661,19 @@ jobs:
 
       - name: Login to Amazon ECR
         id: ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@v2.1.5
         with:
           mask-password: 'true'
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v4.1.0
 
       - name: Copy images from GHCR to ${{ matrix.municipality }} ECR
         env:
@@ -698,7 +698,7 @@ jobs:
     steps:
       - name: Configure AWS credentials
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@v6.2.0
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE }}
@@ -706,7 +706,7 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@v2.1.5
         with:
           mask-password: 'true'
 
@@ -719,7 +719,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@v6.2.0
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE }}
@@ -765,7 +765,7 @@ jobs:
             ecr_prefix: evakaturku
     steps:
       - name: Configure AWS credentials for ${{ matrix.municipality }}
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@v6.2.0
         with:
           aws-region: ${{ matrix.aws_region }}
           role-to-assume: ${{ secrets[matrix.aws_role] }}
@@ -775,7 +775,7 @@ jobs:
         id: metadata
         env:
           DOCKER_METADATA_PR_HEAD_SHA: "true"
-        uses: docker/metadata-action@v6
+        uses: docker/metadata-action@v6.1.0
         with:
           images: |
             evaka/dummy

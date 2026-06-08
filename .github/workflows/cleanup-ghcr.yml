@@ -33,7 +33,7 @@ jobs:
           - evaka/api-gateway
     steps:
       - name: Delete untagged versions of ${{ matrix.package }}
-        uses: actions/delete-package-versions@v5
+        uses: actions/delete-package-versions@v5.0.0
         with:
           owner: espoon-voltti
           package-name: ${{ matrix.package }}
@@ -42,7 +42,7 @@ jobs:
 
       - name: Keep newest 100 versions of ${{ matrix.package }}
         if: matrix.package == 'evaka/frontend' # Extend this in future if needed.
-        uses: actions/delete-package-versions@v5
+        uses: actions/delete-package-versions@v5.0.0
         with:
           owner: espoon-voltti
           package-name: ${{ matrix.package }}
