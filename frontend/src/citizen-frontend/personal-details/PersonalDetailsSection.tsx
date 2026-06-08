@@ -17,7 +17,7 @@ import {
 } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormField } from 'lib-common/form/hooks'
 import type { StateOf } from 'lib-common/form/types'
-import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
+import { ValidationSuccess } from 'lib-common/form/types'
 import {
   optionalPhoneNumber,
   regexp,
