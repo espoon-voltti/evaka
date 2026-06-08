@@ -16,7 +16,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "dev-maintenance-page": "cd src/maintenance-page-frontend && npx http-server",
-    "e2e": "LC_ALL=fi_FI.UTF-8 tsx node_modules/.bin/playwright test -c src/e2e-test/playwright.config.ts"
+    "e2e": "LC_ALL=fi_FI.UTF-8 tsx node_modules/.bin/playwright test -c src/e2e-test/playwright.config.ts",
+    "seed-applications": "tsx --tsconfig src/e2e-test/tsconfig.json src/e2e-test/seed-applications/index.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "7.2.0",

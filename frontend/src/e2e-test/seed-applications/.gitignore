@@ -1,0 +1,7 @@
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+# Machine-local VTJ mock snapshot, written at seed time. Pairs with the local
+# database state, so it must not be shared.
+.vtj-snapshot.json
