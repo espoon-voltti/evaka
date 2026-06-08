@@ -88,7 +88,7 @@ class Config(env: SfiEnv) {
                     ),
                 replyAllowedBy = ReplyAllowedBy.NO_ONE,
                 title = msg.messageHeader,
-                visibility = Visibility.RECIPIENT_ONLY,
+                visibility = Visibility.NORMAL,
             ),
             PaperMailPart(
                 attachments = listOf(attachment),

@@ -121,7 +121,7 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
                                         ),
                                 ),
                             replyAllowedBy = ReplyAllowedBy.NO_ONE,
-                            visibility = Visibility.RECIPIENT_ONLY,
+                            visibility = Visibility.NORMAL,
                         ),
                     paperMail =
                         PaperMailPart(
