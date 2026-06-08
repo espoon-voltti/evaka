@@ -1036,6 +1036,10 @@ export default {
           otherInfoLabel: 'Hakuun liittyvät lisätiedot',
           dietLabel: 'Erityisruokavalio',
           allergiesLabel: 'Allergiat'
+        },
+        otherGuardianAgreement: {
+          title: 'Hakemuksen lisätiedot',
+          text: 'Toinen huoltaja on ilmoittanut, että olette sopineet yhdessä hakemuksen lähettämisestä.'
         }
       },
       serviceNeed: {

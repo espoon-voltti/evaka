@@ -1040,6 +1040,10 @@ const sv: Translations = {
           otherInfoLabel: 'Tilläggsuppgifter till ansökan',
           dietLabel: 'Specialdiet',
           allergiesLabel: 'Allergier'
+        },
+        otherGuardianAgreement: {
+          title: 'Tilläggsuppgifter om ansökan',
+          text: 'Den andra vårdnadshavaren har meddelat att ni tillsammans har kommit överens om att skicka in ansökan.'
         }
       },
       serviceNeed: {

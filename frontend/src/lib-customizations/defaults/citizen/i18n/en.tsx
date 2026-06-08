@@ -1056,6 +1056,10 @@ const en: Translations = {
           otherInfoLabel: 'Additional information',
           dietLabel: 'Special diet',
           allergiesLabel: 'Allergies'
+        },
+        otherGuardianAgreement: {
+          title: 'Additional details of the application',
+          text: 'The other guardian has reported that you have agreed together to send this application.'
         }
       },
       serviceNeed: {
