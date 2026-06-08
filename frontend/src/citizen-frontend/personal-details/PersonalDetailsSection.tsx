@@ -17,7 +17,7 @@ import {
 } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormField } from 'lib-common/form/hooks'
 import type { StateOf } from 'lib-common/form/types'
-import { ValidationSuccess } from 'lib-common/form/types'
+import { ValidationError, ValidationSuccess } from 'lib-common/form/types'
 import {
   optionalPhoneNumber,
   regexp,
@@ -243,7 +243,7 @@ export default React.memo(function PersonalDetailsSection({
                 <InputFieldF
                   required
                   id="phone-input"
-                  type="text"
+                  type="tel"
                   width="m"
                   bind={phoneState}
                   hideErrorsBeforeTouched
@@ -268,7 +268,7 @@ export default React.memo(function PersonalDetailsSection({
               {editing ? (
                 <InputFieldF
                   id="backup-phone-input"
-                  type="text"
+                  type="tel"
                   width="m"
                   bind={backupPhoneState}
                   hideErrorsBeforeTouched
@@ -288,7 +288,7 @@ export default React.memo(function PersonalDetailsSection({
                 <div data-qa="email">
                   <InputFieldF
                     id="email-input"
-                    type="text"
+                    type="email"
                     width="m"
                     bind={emailState}
                     required={!noEmailState.state}

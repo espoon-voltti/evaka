@@ -115,6 +115,7 @@ export default React.memo(function SecondGuardianSubSection({
                       </Label>
                       <InputField
                         id="other-guardian-phone"
+                        type="tel"
                         value={formData.otherGuardianPhone}
                         data-qa="otherGuardianPhone-input"
                         onChange={(value) =>
@@ -139,6 +140,7 @@ export default React.memo(function SecondGuardianSubSection({
                       </Label>
                       <InputField
                         id="other-guardian-email"
+                        type="email"
                         value={formData.otherGuardianEmail}
                         data-qa="otherGuardianEmail-input"
                         onChange={(value) =>

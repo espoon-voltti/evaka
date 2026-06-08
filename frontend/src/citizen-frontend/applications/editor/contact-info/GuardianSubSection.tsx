@@ -93,6 +93,7 @@ export default React.memo(function GuardianSubSection({
             </Label>
             <InputField
               id="guardian-phone"
+              type="tel"
               value={formData.guardianPhone}
               data-qa="guardianPhone-input"
               onChange={(value) => updateFormData({ guardianPhone: value })}
@@ -133,6 +134,7 @@ export default React.memo(function GuardianSubSection({
                 </Label>
                 <InputField
                   id="guardian-email"
+                  type="email"
                   value={formData.guardianEmail}
                   data-qa="guardianEmail-input"
                   onChange={(value) =>
@@ -158,6 +160,7 @@ export default React.memo(function GuardianSubSection({
                 </Label>
                 <InputField
                   id="verify-guardian-email"
+                  type="email"
                   value={formData.guardianEmailVerification}
                   data-qa="guardianEmailVerification-input"
                   onChange={(value) =>

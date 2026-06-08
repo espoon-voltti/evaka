@@ -1286,6 +1286,7 @@ const Accounting = React.memo(function Accounting({
         <Label htmlFor="accountant-phone">{t.phone} *</Label>
         <InputField
           id="accountant-phone"
+          type="tel"
           placeholder={t.phonePlaceholder}
           data-qa="accountant-phone"
           required
@@ -1302,6 +1303,7 @@ const Accounting = React.memo(function Accounting({
         <Label htmlFor="accountant-email">{t.email} *</Label>
         <InputField
           id="accountant-email"
+          type="email"
           placeholder={t.emailPlaceholder}
           data-qa="accountant-email"
           required
