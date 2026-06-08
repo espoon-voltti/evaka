@@ -1117,7 +1117,7 @@ sealed interface Action {
                 .inPlacementUnitOfChild(),
         ),
         READ_SERVICE_NEEDS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
