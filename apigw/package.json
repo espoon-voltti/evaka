@@ -20,7 +20,7 @@
     "connect-redis": "9.0.0",
     "cookie-parser": "1.4.7",
     "cookie-signature": "1.2.2",
-    "date-fns": "4.3.0",
+    "date-fns": "4.4.0",
     "dd-trace": "5.104.0",
     "express": "5.2.1",
     "express-basic-auth": "1.2.1",
