@@ -1362,7 +1362,7 @@ test.describe('Sending and receiving messages', () => {
       await expect(sentMessage.deleteMessageButton).toBeHidden()
     })
 
-    test('Bulletins cannot be deleted', async () => {
+    test('Own bulletins can be deleted', async () => {
       await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
@@ -1370,6 +1370,28 @@ test.describe('Sending and receiving messages', () => {
       await messageEditor.sendNewMessage({
         ...defaultMessage,
         type: 'BULLETIN'
+      })
+      await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+      const sentMessage = await (
+        await messagesPage.openSentMessages()
+      ).openMessage(0)
+      await sentMessage.deleteMessage()
+
+      await expect(sentMessage.messageDeletedBanner).toBeVisible()
+      await expect(sentMessage.viewDeletedMessageButton).toBeVisible()
+    })
+
+    test('Municipal bulletins cannot be deleted', async () => {
+      const messenger = await Fixture.employee().messenger().save()
+      const messengerPage = await newPage({ mockedTime: mockedDateAt10 })
+      await employeeLogin(messengerPage, messenger)
+      await messengerPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(messengerPage)
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.sendNewMessage({
+        ...defaultMessage,
+        recipientKeys: [`${careArea.id}+false`]
       })
       await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
 

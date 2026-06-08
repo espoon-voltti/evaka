@@ -382,8 +382,8 @@ class MessageService(
         val target =
             tx.getMessageDeletionTarget(contentId) ?: throw NotFound("Message $contentId not found")
         if (target.senderId != accountId) throw Forbidden("Message was not sent from this account")
-        if (target.messageType != MessageType.MESSAGE)
-            throw Forbidden("Only personal and group messages can be deleted")
+        if (target.senderAccountType == AccountType.MUNICIPAL)
+            throw Forbidden("Messages sent by the municipal account cannot be deleted")
         val now = clock.now()
         val windowEnd =
             HelsinkiDateTime.atStartOfDay(
