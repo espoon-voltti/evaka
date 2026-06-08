@@ -243,7 +243,7 @@ export default React.memo(function PersonalDetailsSection({
                 <InputFieldF
                   required
                   id="phone-input"
-                  type="text"
+                  type="tel"
                   width="m"
                   bind={phoneState}
                   hideErrorsBeforeTouched
@@ -268,7 +268,7 @@ export default React.memo(function PersonalDetailsSection({
               {editing ? (
                 <InputFieldF
                   id="backup-phone-input"
-                  type="text"
+                  type="tel"
                   width="m"
                   bind={backupPhoneState}
                   hideErrorsBeforeTouched
@@ -288,7 +288,7 @@ export default React.memo(function PersonalDetailsSection({
                 <div data-qa="email">
                   <InputFieldF
                     id="email-input"
-                    type="text"
+                    type="email"
                     width="m"
                     bind={emailState}
                     required={!noEmailState.state}
