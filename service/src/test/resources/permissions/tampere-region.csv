@@ -207,15 +207,15 @@ Lapsi;"Lisätietojen luku";READ_ADDITIONAL_INFO;x;;x;;;x;;x;x;x;x
 Lapsi;"Lisätietojen muokkaus";UPDATE_ADDITIONAL_INFO;x;;;;;x;;x;x;x;x
 Lapsi;"Hakemuksen luku";READ_APPLICATION;x;;x;;;x;;x;;;
 Lapsi;"Tuen luku";READ_ASSISTANCE;x;;x;x;;x;;x;x;x;x
-Lapsi;"Tuen kertoimen luonti";CREATE_ASSISTANCE_FACTOR;x;;;;;x;;x;;x;
+Lapsi;"Tuen kertoimen luonti";CREATE_ASSISTANCE_FACTOR;x;;;;;;;x;;x;
 Lapsi;"Tuen kertoimien luku";READ_ASSISTANCE_FACTORS;x;;x;x;;x;;x;;x;x
-Lapsi;"Tuen taso varhaiskastuksessa luonti";"CREATE_DAYCARE_ASSISTANCE";x;;;;;x;;x;;x;
+Lapsi;"Tuen taso varhaiskastuksessa luonti";"CREATE_DAYCARE_ASSISTANCE";x;;;;;;;x;;x;
 Lapsi;"Tuen tasojen varhaiskasvatuksessa luku";READ_DAYCARE_ASSISTANCES;x;;x;;;x;;x;;x;x
-Lapsi;"Tuen taso esiopetuksessa luonti";"CREATE_PRESCHOOL_ASSISTANCE";x;;;;;x;;x;;x;
+Lapsi;"Tuen taso esiopetuksessa luonti";"CREATE_PRESCHOOL_ASSISTANCE";x;;;;;;;x;;x;
 Lapsi;"Tuen tasojen esiopetuksessa luku";"READ_PRESCHOOL_ASSISTANCES";x;;x;;;x;;x;;x;x
-Lapsi;"Tukitoimen luonti";CREATE_ASSISTANCE_ACTION;x;;;;;x;;x;;x;
+Lapsi;"Tukitoimen luonti";CREATE_ASSISTANCE_ACTION;x;;;;;;;x;;x;
 Lapsi;"Tukitoimien luku";READ_ASSISTANCE_ACTION;x;;x;;;x;;x;;x;x
-Lapsi;"Muut toimet luonti";"CREATE_OTHER_ASSISTANCE_MEASURE";x;;;;;x;;x;;x;
+Lapsi;"Muut toimet luonti";"CREATE_OTHER_ASSISTANCE_MEASURE";x;;;;;;;x;;x;
 Lapsi;"Muut toimet luku";"READ_OTHER_ASSISTANCE_MEASURES";x;;x;;;x;;x;;x;x
 Lapsi;"Palvelusetelikertoimien luku";"READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS";x;;;;;x;;x;;x;
 Lapsi;"Palvelusetelikertoimen luonti";"CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT";x;;;;;;;;;x;
@@ -268,23 +268,23 @@ Varasijoitus;Muokkaus;UPDATE;x;;;;;x;;x;x;;x
 Varasijoitus;Poisto;DELETE;x;;;;;x;;x;x;;x
 "Päivittäinen varhaiskasvatusaika";Muokkaus;UPDATE;x;;;;;;;x;x;x;
 "Päivittäinen varhaiskasvatusaika";Poisto;DELETE;x;;;;;;;x;x;x;
-"Tuen kerroin";Muokkaus;UPDATE;x;;;;;x;;x;;x;
-"Tuen kerroin";Poisto;DELETE;x;;;;;x;;x;;x;
+"Tuen kerroin";Muokkaus;UPDATE;x;;;;;;;x;;x;
+"Tuen kerroin";Poisto;DELETE;x;;;;;;;x;;x;
 "Tuen kerroin";Luku;READ;x;;x;x;;x;;x;x;x;x
 Palvelusetelikerroin;Muokkaus;UPDATE;x;;;;;;;;;x;
 Palvelusetelikerroin;Poisto;DELETE;x;;;;;;;;;x;
-"Tuen taso varhaiskasvatuksessa";Muokkaus;UPDATE;x;;;;;x;;x;;x;
-"Tuen taso varhaiskasvatuksessa";Poisto;DELETE;x;;;;;x;;x;;x;
-"Tuen taso varhaiskasvatuksessa";Luku;READ;x;;x;;;;;x;x;x;x
-"Tuki esiopetuksessa";Muokkaus;UPDATE;x;;;;;x;;x;;x;
-"Tuki esiopetuksessa";Poisto;DELETE;x;;;;;x;;x;;x;
+"Tuen taso varhaiskasvatuksessa";Muokkaus;UPDATE;x;;;;;;;x;;x;
+"Tuen taso varhaiskasvatuksessa";Poisto;DELETE;x;;;;;;;x;;x;
+"Tuen taso varhaiskasvatuksessa";Luku;READ;x;;x;;;x;;x;x;x;x
+"Tuki esiopetuksessa";Muokkaus;UPDATE;x;;;;;;;x;;x;
+"Tuki esiopetuksessa";Poisto;DELETE;x;;;;;;;x;;x;
 "Tuki esiopetuksessa";Luku;READ;x;;x;;;x;;x;x;x;x
-"Tukitoimet ja tukipalvelut";Muokkaus;UPDATE;x;;;;;x;;x;;x;
-"Tukitoimet ja tukipalvelut";Poisto;DELETE;x;;;;;x;;x;;x;
-"Tukitoimet ja tukipalvelut";Luku;READ;x;;x;;;;;x;x;x;x
-"Muut toimet";Muokkaus;UPDATE;x;;;;;x;;x;;x;
-"Muut toimet";Poisto;DELETE;x;;;;;x;;x;;x;
-"Muut toimet";Luku;READ;x;;x;;;;;x;x;x;x
+"Tukitoimet ja tukipalvelut";Muokkaus;UPDATE;x;;;;;;;x;;x;
+"Tukitoimet ja tukipalvelut";Poisto;DELETE;x;;;;;;;x;;x;
+"Tukitoimet ja tukipalvelut";Luku;READ;x;;x;;;x;;x;x;x;x
+"Muut toimet";Muokkaus;UPDATE;x;;;;;;;x;;x;
+"Muut toimet";Poisto;DELETE;x;;;;;;;x;;x;
+"Muut toimet";Luku;READ;x;;x;;;x;;x;x;x;x
 "Pegagoginen dokumentointi";"Liitteen luonti";CREATE_ATTACHMENT;x;;;;;;;x;x;x;x
 "Pegagoginen dokumentointi";Poisto;DELETE;x;;;;;;;x;x;x;x
 "Pegagoginen dokumentointi";Muokkaus;UPDATE;x;;;;;;;x;x;x;x

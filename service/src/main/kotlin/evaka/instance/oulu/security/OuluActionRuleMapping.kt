@@ -55,16 +55,6 @@ class OuluActionRuleMapping : ActionRuleMapping {
                     sequenceOf(HasGlobalRole(UserRole.DIRECTOR) as ScopedActionRule<in T>)
             }
 
-            Action.AssistanceAction.READ,
-            Action.AssistanceFactor.READ,
-            Action.DaycareAssistance.READ,
-            Action.PreschoolAssistance.READ,
-            Action.OtherAssistanceMeasure.READ -> {
-                @Suppress("UNCHECKED_CAST")
-                action.defaultRules.asSequence() +
-                    sequenceOf(HasGlobalRole(UserRole.SERVICE_WORKER) as ScopedActionRule<in T>)
-            }
-
             Action.Person.ADD_SSN,
             Action.Person.UPDATE_FROM_VTJ -> {
                 @Suppress("UNCHECKED_CAST")
@@ -83,22 +73,6 @@ class OuluActionRuleMapping : ActionRuleMapping {
                 @Suppress("UNCHECKED_CAST")
                 action.defaultRules.asSequence() +
                     sequenceOf(HasGlobalRole(UserRole.FINANCE_ADMIN) as ScopedActionRule<in T>)
-            }
-
-            Action.OtherAssistanceMeasure.READ -> {
-                @Suppress("UNCHECKED_CAST")
-                // Enable UNIT_SUPERVISORS to see past other assistance measures
-                sequenceOf(HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>) +
-                    sequenceOf(
-                        HasUnitRole(UserRole.SPECIAL_EDUCATION_TEACHER, UserRole.UNIT_SUPERVISOR)
-                            .inPlacementUnitOfChildOfOtherAssistanceMeasure(false)
-                            as ScopedActionRule<in T>
-                    ) +
-                    sequenceOf(
-                        HasUnitRole(UserRole.STAFF)
-                            .inPlacementUnitOfChildOfOtherAssistanceMeasure(true)
-                            as ScopedActionRule<in T>
-                    )
             }
 
             Action.Unit.READ_TRANSFER_APPLICATIONS -> {
