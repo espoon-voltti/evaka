@@ -5516,7 +5516,7 @@ __metadata:
     eslint-plugin-react: "npm:7.37.5"
     eslint-plugin-react-hooks: "npm:7.1.1"
     globals: "npm:17.6.0"
-    ical-generator: "npm:10.2.0"
+    ical-generator: "npm:11.0.0"
     jsdom: "npm:29.1.1"
     leaflet: "npm:1.9.4"
     lib-common: "link:src/lib-common"
@@ -6123,9 +6123,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ical-generator@npm:10.2.0":
-  version: 10.2.0
-  resolution: "ical-generator@npm:10.2.0"
+"ical-generator@npm:11.0.0":
+  version: 11.0.0
+  resolution: "ical-generator@npm:11.0.0"
   peerDependencies:
     "@touch4it/ical-timezones": ">=1.6.0"
     "@types/luxon": ">= 1.26.0"
@@ -6154,7 +6154,7 @@ __metadata:
       optional: true
     rrule:
       optional: true
-  checksum: 10/1378d76543591d241e063cf0215ecbcd318daf730ff214dc6360619fc4223804d91f0fdd669cdf2b4a287f1f9cad9dcd58adeb0f61563f1d4b86ce23ac82fbdd
+  checksum: 10/ad1f918ce0fa29cbc7b0d4e906229455d3c4b9b30480dd967d56f0afd4fd2cf24c78193342672fee3cdb05499ab022390590291cf4a05ebc4866a9e7dd9d6352
   languageName: node
   linkType: hard
 
