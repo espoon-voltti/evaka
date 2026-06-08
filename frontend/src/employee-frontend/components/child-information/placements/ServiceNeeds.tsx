@@ -50,17 +50,20 @@ export default React.memo(function ServiceNeeds({
   const [editingId, setEditingId] = useState<ServiceNeedId | null>(null)
   const [deletingId, setDeletingId] = useState<ServiceNeedId | null>(null)
 
+  const serviceNeeds = useMemo(
+    () => placement.serviceNeedDetail?.serviceNeeds ?? [],
+    [placement.serviceNeedDetail]
+  )
+
   const gaps = useMemo(
     () =>
       new FiniteDateRange(placement.startDate, placement.endDate).getGaps(
-        placement.serviceNeeds.map(
-          (sn) => new FiniteDateRange(sn.startDate, sn.endDate)
-        )
+        serviceNeeds.map((sn) => new FiniteDateRange(sn.startDate, sn.endDate))
       ),
-    [placement]
+    [placement.startDate, placement.endDate, serviceNeeds]
   )
 
-  const rows: ServiceNeedOrGap[] = [...placement.serviceNeeds, ...gaps]
+  const rows: ServiceNeedOrGap[] = [...serviceNeeds, ...gaps]
 
   const options = serviceNeedOptions.filter(
     (option) =>
@@ -80,7 +83,9 @@ export default React.memo(function ServiceNeeds({
   )
 
   // if only default option exists service needs are not relevant and do not need to be rendered
-  return placementHasNonDefaultServiceNeedOptions ? (
+  // service needs are also hidden when the user lacks READ_SERVICE_NEEDS for the child
+  return placement.serviceNeedDetail != null &&
+    placementHasNonDefaultServiceNeedOptions ? (
     <div>
       <HeaderRow>
         <H4 $noMargin>{t.title}</H4>
@@ -166,7 +171,9 @@ export default React.memo(function ServiceNeeds({
                 endDate={sn.end}
                 onEdit={() => setCreatingNew(sn.start)}
                 disabled={creatingNew !== false || editingId !== null}
-                defaultOption={placement.defaultServiceNeedOption}
+                defaultOption={
+                  placement.serviceNeedDetail?.defaultServiceNeedOption ?? null
+                }
               />
             )
           )}

@@ -64,6 +64,15 @@ class PlacementController(
                         childId,
                     )
 
+                    val canReadServiceNeeds =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Child.READ_SERVICE_NEEDS,
+                            childId,
+                        )
+
                     val authorizedDaycares =
                         tx.getDaycares(
                                 clock,
@@ -91,10 +100,16 @@ class PlacementController(
                         .let { placements ->
                             val placementIds = placements.map { placement -> placement.id }
                             val serviceNeedIds = placements.flatMap { placement ->
-                                placement.serviceNeeds.map { serviceNeed -> serviceNeed.id }
+                                placement.serviceNeedDetail?.serviceNeeds.orEmpty().map {
+                                    serviceNeed ->
+                                    serviceNeed.id
+                                }
                             }
+                            val responsePlacements =
+                                if (canReadServiceNeeds) placements
+                                else placements.map { it.copy(serviceNeedDetail = null) }.toSet()
                             PlacementResponse(
-                                placements = placements,
+                                placements = responsePlacements,
                                 permittedPlacementActions =
                                     accessControl.getPermittedActions(
                                         tx,

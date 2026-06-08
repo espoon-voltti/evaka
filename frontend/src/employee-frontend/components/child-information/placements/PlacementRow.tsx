@@ -325,8 +325,9 @@ export default React.memo(function PlacementRow({
             deletable={permittedActions.includes('DELETE')}
             dataQaDelete="btn-remove-placement"
             warning={
-              placement.missingServiceNeedDays > 0
-                ? `${i18n.childInformation.placements.serviceNeedMissingTooltip1} ${placement.missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissingTooltip2}`
+              placement.serviceNeedDetail &&
+              placement.serviceNeedDetail.missingServiceNeedDays > 0
+                ? `${i18n.childInformation.placements.serviceNeedMissingTooltip1} ${placement.serviceNeedDetail.missingServiceNeedDays} ${i18n.childInformation.placements.serviceNeedMissingTooltip2}`
                 : undefined
             }
           />

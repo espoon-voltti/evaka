@@ -93,16 +93,14 @@ export interface DaycarePlacementWithDetails {
   child: ChildBasics
   createdBy: EvakaUser | null
   daycare: DaycareBasics
-  defaultServiceNeedOption: ServiceNeedOption | null
   endDate: LocalDate
   groupPlacements: DaycareGroupPlacement[]
   id: PlacementId
   isRestrictedFromUser: boolean
-  missingServiceNeedDays: number
   modifiedAt: HelsinkiDateTime | null
   modifiedBy: EvakaUser | null
   placeGuarantee: boolean
-  serviceNeeds: ServiceNeed[]
+  serviceNeedDetail: PlacementServiceNeedDetail | null
   source: PlacementSourceCreatedBy
   startDate: LocalDate
   terminatedBy: EvakaUser | null
@@ -295,6 +293,15 @@ export interface PlacementResponse {
 }
 
 /**
+* Generated from evaka.core.placement.PlacementServiceNeedDetail
+*/
+export interface PlacementServiceNeedDetail {
+  defaultServiceNeedOption: ServiceNeedOption | null
+  missingServiceNeedDays: number
+  serviceNeeds: ServiceNeed[]
+}
+
+/**
 * Generated from evaka.core.placement.PlacementSourceCreatedBy
 */
 export type PlacementSourceCreatedBy =
@@ -449,11 +456,10 @@ export function deserializeJsonDaycarePlacementWithDetails(json: JsonOf<DaycareP
   return {
     ...json,
     child: deserializeJsonChildBasics(json.child),
-    defaultServiceNeedOption: (json.defaultServiceNeedOption != null) ? deserializeJsonServiceNeedOption(json.defaultServiceNeedOption) : null,
     endDate: LocalDate.parseIso(json.endDate),
     groupPlacements: json.groupPlacements.map(e => deserializeJsonDaycareGroupPlacement(e)),
     modifiedAt: (json.modifiedAt != null) ? HelsinkiDateTime.parseIso(json.modifiedAt) : null,
-    serviceNeeds: json.serviceNeeds.map(e => deserializeJsonServiceNeed(e)),
+    serviceNeedDetail: (json.serviceNeedDetail != null) ? deserializeJsonPlacementServiceNeedDetail(json.serviceNeedDetail) : null,
     startDate: LocalDate.parseIso(json.startDate),
     terminationRequestedDate: (json.terminationRequestedDate != null) ? LocalDate.parseIso(json.terminationRequestedDate) : null
   }
@@ -568,6 +574,15 @@ export function deserializeJsonPlacementResponse(json: JsonOf<PlacementResponse>
   return {
     ...json,
     placements: json.placements.map(e => deserializeJsonDaycarePlacementWithDetails(e))
+  }
+}
+
+
+export function deserializeJsonPlacementServiceNeedDetail(json: JsonOf<PlacementServiceNeedDetail>): PlacementServiceNeedDetail {
+  return {
+    ...json,
+    defaultServiceNeedOption: (json.defaultServiceNeedOption != null) ? deserializeJsonServiceNeedOption(json.defaultServiceNeedOption) : null,
+    serviceNeeds: json.serviceNeeds.map(e => deserializeJsonServiceNeed(e))
   }
 }
 

@@ -58,6 +58,7 @@ import evaka.core.placement.getUnitChildrenCapacities
 import evaka.core.placement.getWaitingUnitConfirmationApplicationsCount
 import evaka.core.serviceneed.application.getUndecidedServiceApplicationsByUnit
 import evaka.core.shared.BackupCareId
+import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareCaretakerId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.GroupId
@@ -646,6 +647,25 @@ class DaycareController(
                         placements.map { it.child.id }.toSet() +
                             backupCares.map { it.child.id }.toSet()
 
+                    val serviceNeedPermissionByChild =
+                        accessControl.getPermittedActions<ChildId, Action.Child>(
+                            tx,
+                            user,
+                            clock,
+                            placements.map { it.child.id }.toSet(),
+                        )
+                    val responsePlacements = placements.map { placement ->
+                        if (
+                            serviceNeedPermissionByChild[placement.child.id]?.contains(
+                                Action.Child.READ_SERVICE_NEEDS
+                            ) == true
+                        ) {
+                            placement
+                        } else {
+                            placement.copy(serviceNeedDetail = null)
+                        }
+                    }
+
                     val capacities =
                         if (
                             accessControl.hasPermissionFor(
@@ -682,7 +702,7 @@ class DaycareController(
 
                     UnitGroupDetails(
                         groups = groups,
-                        placements = placements,
+                        placements = responsePlacements,
                         backupCares = backupCares,
                         missingGroupPlacements = missingGroupPlacements,
                         missingBackupGroupPlacements = missingBackupPlacements,
