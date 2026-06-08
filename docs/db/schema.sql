@@ -7756,6 +7756,11 @@ ALTER TABLE ONLY public.absence
 ALTER TABLE ONLY public.attachment
     ADD CONSTRAINT "fk$income" FOREIGN KEY (income_id) REFERENCES public.income(id) ON DELETE SET NULL;
 
+-- Name: income_notification fk$income_notification_receiver; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.income_notification
+    ADD CONSTRAINT "fk$income_notification_receiver" FOREIGN KEY (receiver_id) REFERENCES public.person(id) ON DELETE CASCADE;
+
 -- Name: attachment fk$income_statement; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.attachment
