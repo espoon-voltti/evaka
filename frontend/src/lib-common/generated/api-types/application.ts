@@ -320,6 +320,7 @@ export interface ApplicationSummary {
   id: ApplicationId
   lastName: string
   origin: ApplicationOrigin
+  permittedActions: Action.Application[]
   placementDraft: ApplicationSummaryPlacementDraft | null
   placementPlanStartDate: LocalDate | null
   placementPlanUnitName: string | null

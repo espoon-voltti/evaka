@@ -31,6 +31,7 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.security.Action
 import evaka.core.snPreschoolClub45
 import evaka.core.snPreschoolDaycare45
 import java.time.LocalDate
@@ -324,6 +325,37 @@ class ApplicationSearchIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
         assertEquals(1, summary.total)
         assertEquals(applicationId_1, summary.data[0].id)
+    }
+
+    @Test
+    fun `service worker search rows include MOVE_TO_WAITING_PLACEMENT in permittedActions`() {
+        val summary =
+            getApplicationSummaries(
+                type = ApplicationTypeToggle.ALL,
+                status = setOf(ApplicationStatusOption.SENT),
+            )
+        assertEquals(3, summary.total)
+        summary.data.forEach { row ->
+            assert(Action.Application.MOVE_TO_WAITING_PLACEMENT in row.permittedActions) {
+                "Expected MOVE_TO_WAITING_PLACEMENT in permittedActions for application ${row.id}"
+            }
+        }
+    }
+
+    @Test
+    fun `service worker search rows do not include ADMIN-only READ_METADATA in permittedActions`() {
+        // READ_METADATA is restricted to ADMIN only; SERVICE_WORKER must not get it
+        val summary =
+            getApplicationSummaries(
+                type = ApplicationTypeToggle.ALL,
+                status = setOf(ApplicationStatusOption.SENT),
+            )
+        assertEquals(3, summary.total)
+        summary.data.forEach { row ->
+            assert(Action.Application.READ_METADATA !in row.permittedActions) {
+                "Expected READ_METADATA to be absent from permittedActions for SERVICE_WORKER on application ${row.id}"
+            }
+        }
     }
 
     @Test
