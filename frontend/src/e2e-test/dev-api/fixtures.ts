@@ -19,7 +19,7 @@ import type {
 } from 'lib-common/generated/api-types/assistance'
 import type { AssistanceNeedVoucherCoefficient } from 'lib-common/generated/api-types/assistanceneed'
 import type { HolidayPeriod } from 'lib-common/generated/api-types/holidayperiod'
-import { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
+import type { HolidayQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import type {
   DecisionIncome,
   FeeDecision,
@@ -160,7 +160,7 @@ import type {
 } from '../generated/api-types'
 import { upsertDummyIdpVtjDataset } from '../utils/dummy-idp'
 
-import FixedPeriodQuestionnaire = HolidayQuestionnaire.FixedPeriodQuestionnaire
+type FixedPeriodQuestionnaire = HolidayQuestionnaire.FixedPeriodQuestionnaire
 
 const uniqueLabel = (l = 7): string =>
   Math.random().toString(36).substring(0, l)
