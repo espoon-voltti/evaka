@@ -59,6 +59,11 @@
       rangeStrategy: 'auto'
     },
     {
+      // Don't pin GitHub Actions, keep tags like v1
+      matchManagers: ['github-actions'],
+      rangeStrategy: 'replace',
+    },
+    {
       // Don't update Font Awesome icons past 7.x
       matchPackageNames: [
         '@fortawesome/fontawesome-svg-core',
