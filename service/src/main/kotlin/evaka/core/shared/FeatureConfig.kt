@@ -145,6 +145,12 @@ data class FeatureConfig(
 
     /** Allow English as a language for every child document type, not only `CITIZEN_BASIC` */
     val allowEnglishChildDocumentsForAllTypes: Boolean = false,
+
+    /**
+     * How many days before a placement starts a guardian-fillable (`CITIZEN_BASIC`) child document
+     * can be created for the child.
+     */
+    val citizenDocumentCreationDaysBeforePlacement: Int = 60,
 )
 
 enum class ArchiveProcessType {

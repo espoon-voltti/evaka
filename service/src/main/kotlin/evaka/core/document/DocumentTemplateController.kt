@@ -6,7 +6,6 @@ package evaka.core.document
 
 import evaka.core.Audit
 import evaka.core.AuditId
-import evaka.core.CitizenCalendarEnv
 import evaka.core.EvakaEnv
 import evaka.core.ForcePlainGet
 import evaka.core.absence.getDaycareIdByGroup
@@ -47,7 +46,6 @@ import org.springframework.web.bind.annotation.RestController
 class DocumentTemplateController(
     private val accessControl: AccessControl,
     private val evakaEnv: EvakaEnv,
-    private val citizenCalendarEnv: CitizenCalendarEnv,
     private val featureConfig: FeatureConfig,
 ) {
     @PostMapping
@@ -136,7 +134,7 @@ class DocumentTemplateController(
                         tx.getCurrentOrNextPlacement(
                             childId,
                             clock.today(),
-                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                            featureConfig.citizenDocumentCreationDaysBeforePlacement,
                         ) ?: return@read emptyList()
                     val placementHasStarted = !placement.startDate.isAfter(clock.today())
 
