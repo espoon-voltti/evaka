@@ -841,11 +841,13 @@ sealed interface Action {
         ScopedAction<BackupPickupId> {
         UPDATE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup(),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfBackupPickup(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup(),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfBackupPickup(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
