@@ -3644,6 +3644,23 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 .exactlyOne<MessageThreadId>()
         }
 
+        private fun threadIdOfContentFor(
+            contentId: MessageContentId,
+            participant: MessageAccountId,
+        ): MessageThreadId = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        """
+                        SELECT m.thread_id
+                        FROM message m
+                        JOIN message_thread_participant tp ON tp.thread_id = m.thread_id
+                        WHERE m.content_id = ${bind(contentId)} AND tp.participant_id = ${bind(participant)}
+                        """
+                    )
+                }
+                .exactlyOne<MessageThreadId>()
+        }
+
         private fun getThreadAs(
             accountId: MessageAccountId,
             threadId: MessageThreadId,
@@ -3782,8 +3799,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             copies.forEach { assertNotNull(deletionInfoOf(it).contentDeletedAt) }
 
-            val recipientView =
-                getThreadAs(person1Account, threadIdOf(copies.first())).messages.single()
+            val person1ThreadId = threadIdOfContentFor(contentId, person1Account)
+
+            val recipientView = getThreadAs(person1Account, person1ThreadId).messages.single()
             assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, recipientView.content)
         }
 
