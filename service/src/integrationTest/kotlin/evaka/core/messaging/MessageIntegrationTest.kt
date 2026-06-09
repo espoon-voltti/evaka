@@ -1871,7 +1871,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val employeeThreads = getEmployeeMessageThreads(employee1Account, employee1)
             assertEquals(
                 listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
-                employeeThreads.map { it.toSenderContentPairs() }.flatten(),
+                employeeThreads.flatMap { it.toSenderContentPairs() },
             )
             val person1ThreadsAfterReply = getRegularMessageThreads(person1)
             assertEquals(
@@ -1905,7 +1905,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
             assertEquals(
                 listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
-                getRegularMessageThreads(person2).map { it.toSenderContentPairs() }.flatten(),
+                getRegularMessageThreads(person2).flatMap { it.toSenderContentPairs() },
             )
 
             assertEquals(person3Threads, getRegularMessageThreads(person3))
