@@ -128,6 +128,7 @@ WITH previously_placed_children AS (
     JOIN fridge_child fc ON pl.child_id = fc.child_id AND ${bind(today)} BETWEEN fc.start_date AND fc.end_date
     WHERE
         pl.start_date < ${bind(currentMonth.start)} AND
+        pl.created_at < ${bind(today)} - INTERVAL '1 month' AND
         pl.type = ANY(${bind(PlacementType.invoiced)})
 ), fridge_parents AS (
     SELECT fc_head.head_of_child AS parent_id, fp_spouse.person_id AS spouse_id
@@ -151,7 +152,14 @@ WITH previously_placed_children AS (
         daterange(fp_spouse.start_date, fp_spouse.end_date, '[]') @> ${bind(today)} AND fp_spouse.conflict = false
     )
     WHERE
-        pl.start_date BETWEEN ${bind(currentMonth.start)} AND ${bind(currentMonth.end)} AND
+        (
+            (pl.start_date BETWEEN ${bind(currentMonth.start)} AND ${bind(currentMonth.end)}) OR
+            (
+                pl.created_at >= ${bind(today)} - INTERVAL '1 month' AND
+                pl.start_date < ${bind(currentMonth.start)} AND
+                pl.end_date >= ${bind(today)}
+            )
+        ) AND
         pl.type = ANY(${bind(PlacementType.invoiced)}) AND
         NOT EXISTS(
             SELECT 1
@@ -163,7 +171,7 @@ WITH previously_placed_children AS (
             SELECT 1
             FROM income i
             WHERE (i.person_id = fc_head.head_of_child OR i.person_id = fp_spouse.person_id)
-            AND (i.valid_to >= pl.end_date OR (i.valid_to < pl.end_date AND i.valid_to > (${bind(today)} + INTERVAL '4 weeks')))
+            AND (coalesce(i.valid_to, 'infinity') >= pl.end_date OR (i.valid_to < pl.end_date AND i.valid_to > (${bind(today)} + INTERVAL '4 weeks')))
         ) AND
         ${predicate(guardianPredicate)}
 )
@@ -180,6 +188,12 @@ WHERE NOT EXISTS (
     WHERE person_id = parent.person_id
       AND (status = 'SENT'::income_statement_status OR status = 'HANDLING'::income_statement_status)
       AND sent_at > ${bind(today)} - INTERVAL '12 months'
+)
+AND NOT EXISTS (
+    SELECT 1 FROM income_notification
+    WHERE receiver_id = parent.person_id
+      AND notification_type = 'NEW_CUSTOMER'::income_notification_type
+      AND created > ${bind(today)} - INTERVAL '1 month'
 )
 """
             )

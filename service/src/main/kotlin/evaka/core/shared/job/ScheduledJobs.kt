@@ -231,10 +231,7 @@ enum class ScheduledJob(
     ),
     SendNewCustomerIncomeNotification(
         ScheduledJobs::sendNewCustomerIncomeNotifications,
-        ScheduledJobSettings(
-            enabled = false,
-            schedule = JobSchedule.cron("0 45 6 1 * *"), // first day of month, 6:45
-        ),
+        ScheduledJobSettings(enabled = false, schedule = JobSchedule.daily(LocalTime.of(6, 45))),
     ),
     SendCalendarEventDigests(
         ScheduledJobs::sendCalendarEventDigests,
