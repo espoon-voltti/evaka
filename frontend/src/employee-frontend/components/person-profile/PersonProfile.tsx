@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useLocation } from 'wouter'
 
 import type { Action } from 'lib-common/generated/action'
@@ -26,11 +26,8 @@ import { faListTimeline } from 'lib-icons'
 
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
-import { UserContext } from '../../state/user'
 import CircularLabel from '../common/CircularLabel'
 import WarningLabel from '../common/WarningLabel'
-import type { Layouts } from '../layouts'
-import { getLayout } from '../layouts'
 
 import FosterChildren from './FosterChildren'
 import PersonApplications from './PersonApplications'
@@ -176,83 +173,21 @@ const components = {
   })
 }
 
-const layouts: Layouts<typeof components> = {
-  ['ADMIN']: [
-    { component: 'notes-and-messages', open: true },
-    { component: 'family-overview', open: true },
-    { component: 'partners', open: false },
-    { component: 'fridge-children', open: false },
-    { component: 'dependants', open: false },
-    { component: 'fosterChildren', open: false },
-    { component: 'applications', open: false },
-    { component: 'decisions', open: false },
-    { component: 'income', open: false },
-    { component: 'fee-decisions', open: false },
-    { component: 'invoices', open: false },
-    { component: 'invoiceCorrections', open: false },
-    { component: 'voucherValueDecisions', open: false }
-  ],
-  ['DIRECTOR']: [
-    { component: 'family-overview', open: true },
-    { component: 'partners', open: false },
-    { component: 'fridge-children', open: false },
-    { component: 'dependants', open: false },
-    { component: 'fosterChildren', open: false },
-    { component: 'applications', open: false },
-    { component: 'decisions', open: false },
-    { component: 'income', open: false },
-    { component: 'fee-decisions', open: false },
-    { component: 'invoices', open: false },
-    { component: 'invoiceCorrections', open: false },
-    { component: 'voucherValueDecisions', open: false }
-  ],
-  ['FINANCE_ADMIN']: [
-    { component: 'notes-and-messages', open: true },
-    { component: 'family-overview', open: true },
-    { component: 'income', open: true },
-    { component: 'fee-decisions', open: false },
-    { component: 'invoices', open: false },
-    { component: 'invoiceCorrections', open: false },
-    { component: 'voucherValueDecisions', open: false },
-    { component: 'partners', open: false },
-    { component: 'fridge-children', open: false },
-    { component: 'dependants', open: false },
-    { component: 'fosterChildren', open: false }
-  ],
-  ['FINANCE_STAFF']: [
-    { component: 'notes-and-messages', open: true },
-    { component: 'family-overview', open: true },
-    { component: 'fee-decisions', open: false },
-    { component: 'invoices', open: false },
-    { component: 'invoiceCorrections', open: false },
-    { component: 'partners', open: false }
-  ],
-  ['SERVICE_WORKER']: [
-    { component: 'family-overview', open: true },
-    { component: 'partners', open: false },
-    { component: 'fridge-children', open: false },
-    { component: 'dependants', open: false },
-    { component: 'fosterChildren', open: false },
-    { component: 'applications', open: false },
-    { component: 'decisions', open: false }
-  ],
-  ['UNIT_SUPERVISOR']: [
-    { component: 'family-overview', open: true },
-    { component: 'partners', open: false },
-    { component: 'fridge-children', open: false },
-    { component: 'dependants', open: false },
-    { component: 'fosterChildren', open: false },
-    { component: 'decisions', open: false }
-  ],
-  ['EARLY_CHILDHOOD_EDUCATION_SECRETARY']: [
-    { component: 'family-overview', open: true },
-    { component: 'partners', open: false },
-    { component: 'fridge-children', open: false },
-    { component: 'dependants', open: false },
-    { component: 'fosterChildren', open: false },
-    { component: 'decisions', open: false }
-  ]
-}
+const sectionOrder: (keyof typeof components)[] = [
+  'notes-and-messages',
+  'family-overview',
+  'partners',
+  'fridge-children',
+  'dependants',
+  'fosterChildren',
+  'applications',
+  'decisions',
+  'income',
+  'fee-decisions',
+  'invoices',
+  'invoiceCorrections',
+  'voucherValueDecisions'
+]
 
 const PersonProfile = React.memo(function PersonProfile({
   id
@@ -262,10 +197,7 @@ const PersonProfile = React.memo(function PersonProfile({
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
 
-  const { roles } = useContext(UserContext)
   const { person, permittedActions } = useContext(PersonContext)
-
-  const layout = useMemo(() => getLayout(layouts, roles), [roles])
 
   return (
     <Container>
@@ -327,9 +259,9 @@ const PersonProfile = React.memo(function PersonProfile({
         <PersonFridgeHead />
         <Gap $size="s" />
         <FixedSpaceColumn $spacing="s">
-          {layout.map(({ component, open }) => {
+          {sectionOrder.map((component) => {
             const Component = components[component]
-            return <Component key={component} id={id} open={open} />
+            return <Component key={component} id={id} open={false} />
           })}
         </FixedSpaceColumn>
       </div>

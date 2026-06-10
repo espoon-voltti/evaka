@@ -35,12 +35,9 @@ import { faUsers } from 'lib-icons'
 
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
-import { UserContext } from '../../state/user'
 import { useTitle } from '../../utils/useTitle'
 import CircularLabel from '../common/CircularLabel'
 import WarningLabel from '../common/WarningLabel'
-import type { Layouts } from '../layouts'
-import { getLayout } from '../layouts'
 import { parentshipsQuery } from '../person-profile/queries'
 
 import { AbsenceApplicationsSection } from './AbsenceApplicationsSection'
@@ -220,142 +217,21 @@ const components = {
   })
 }
 
-const layouts: Layouts<typeof components> = {
-  ['ADMIN']: [
-    { component: 'family-contacts', open: false },
-    { component: 'guardiansAndParents', open: false },
-    { component: 'placements', open: false },
-    { component: 'absenceApplications', open: false },
-    { component: 'serviceApplications', open: false },
-    { component: 'backup-care', open: false },
-    { component: 'daily-service-times', open: false },
-    { component: 'childDocuments', open: false },
-    {
-      component: 'pedagogicalDocuments',
-      open: false
-    },
-    { component: 'assistance', open: false },
-    { component: 'applications', open: false },
-    { component: 'fee-alterations', open: false },
-    { component: 'income', open: false }
-  ],
-  ['DIRECTOR']: [
-    { component: 'family-contacts', open: false },
-    { component: 'guardiansAndParents', open: false },
-    { component: 'placements', open: false },
-    { component: 'backup-care', open: false },
-    { component: 'daily-service-times', open: false },
-    { component: 'childDocuments', open: false },
-    {
-      component: 'pedagogicalDocuments',
-      open: false
-    },
-    { component: 'assistance', open: false },
-    { component: 'applications', open: false },
-    { component: 'fee-alterations', open: false },
-    { component: 'income', open: false }
-  ],
-  ['SERVICE_WORKER']: [
-    { component: 'guardiansAndParents', open: false },
-    { component: 'placements', open: false },
-    { component: 'backup-care', open: false },
-    { component: 'daily-service-times', open: false },
-    { component: 'assistance', open: false },
-    { component: 'applications', open: false },
-    { component: 'family-contacts', open: false },
-    { component: 'childDocuments', open: false },
-    {
-      component: 'pedagogicalDocuments',
-      open: false
-    },
-    { component: 'fee-alterations', open: false }
-  ],
-  ['FINANCE_ADMIN']: [
-    { component: 'income', open: true },
-    { component: 'fee-alterations', open: true },
-    { component: 'guardiansAndParents', open: false },
-    { component: 'placements', open: false },
-    { component: 'backup-care', open: false },
-    { component: 'daily-service-times', open: false },
-    { component: 'family-contacts', open: false },
-    { component: 'childDocuments', open: false },
-    {
-      component: 'pedagogicalDocuments',
-      open: false
-    },
-    { component: 'assistance', open: false },
-    { component: 'applications', open: false }
-  ],
-  ['FINANCE_STAFF']: [
-    { component: 'guardiansAndParents', open: false },
-    { component: 'placements', open: false },
-    { component: 'backup-care', open: false },
-    { component: 'daily-service-times', open: false }
-  ],
-  ['UNIT_SUPERVISOR']: [
-    { component: 'guardiansAndParents', open: false },
-    { component: 'placements', open: false },
-    { component: 'absenceApplications', open: false },
-    { component: 'serviceApplications', open: false },
-    { component: 'backup-care', open: false },
-    { component: 'daily-service-times', open: false },
-    { component: 'assistance', open: false },
-    { component: 'family-contacts', open: false },
-    { component: 'childDocuments', open: false },
-    {
-      component: 'pedagogicalDocuments',
-      open: false
-    },
-    { component: 'applications', open: false },
-    { component: 'fee-alterations', open: false }
-  ],
-  ['STAFF']: [
-    { component: 'family-contacts', open: true },
-    { component: 'placements', open: false },
-    { component: 'absenceApplications', open: false },
-    { component: 'backup-care', open: false },
-    { component: 'daily-service-times', open: false },
-    { component: 'childDocuments', open: false },
-    {
-      component: 'pedagogicalDocuments',
-      open: false
-    },
-    { component: 'guardiansAndParents', open: false },
-    { component: 'assistance', open: false },
-    { component: 'applications', open: false },
-    { component: 'fee-alterations', open: false }
-  ],
-  ['SPECIAL_EDUCATION_TEACHER']: [
-    { component: 'family-contacts', open: true },
-    { component: 'placements', open: false },
-    { component: 'childDocuments', open: false },
-    {
-      component: 'pedagogicalDocuments',
-      open: false
-    },
-    { component: 'backup-care', open: false },
-    { component: 'daily-service-times', open: false },
-    { component: 'assistance', open: false },
-    { component: 'guardiansAndParents', open: false },
-    { component: 'applications', open: false },
-    { component: 'fee-alterations', open: false }
-  ],
-  ['EARLY_CHILDHOOD_EDUCATION_SECRETARY']: [
-    { component: 'guardiansAndParents', open: false },
-    { component: 'placements', open: false },
-    { component: 'backup-care', open: false },
-    { component: 'daily-service-times', open: false },
-    { component: 'assistance', open: false },
-    { component: 'family-contacts', open: false },
-    { component: 'childDocuments', open: false },
-    {
-      component: 'pedagogicalDocuments',
-      open: false
-    },
-    { component: 'applications', open: false },
-    { component: 'fee-alterations', open: false }
-  ]
-}
+const sectionOrder: (keyof typeof components)[] = [
+  'family-contacts',
+  'guardiansAndParents',
+  'placements',
+  'absenceApplications',
+  'serviceApplications',
+  'backup-care',
+  'daily-service-times',
+  'childDocuments',
+  'pedagogicalDocuments',
+  'assistance',
+  'applications',
+  'fee-alterations',
+  'income'
+]
 
 function getCurrentHeadOfChildId(
   fridgeRelations: ParentshipWithPermittedActions[]
@@ -376,7 +252,6 @@ const ChildInformation = React.memo(function ChildInformation({
 }) {
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
-  const { roles } = useContext(UserContext)
   const { person, hasGuardian, permittedActions } =
     useContext<ChildState>(ChildContext)
 
@@ -386,8 +261,6 @@ const ChildInformation = React.memo(function ChildInformation({
         `${formatPersonName(value, 'Last First')}  | ${i18n.titles.customers}`
     )
   )
-
-  const layout = useMemo(() => getLayout(layouts, roles), [roles])
 
   const parentships = useQueryResult(
     permittedActions.has('READ_PARENTSHIPS')
@@ -475,9 +348,9 @@ const ChildInformation = React.memo(function ChildInformation({
         <Gap $size="m" />
 
         <FixedSpaceColumn $spacing="m">
-          {layout.map(({ component, open }) => {
+          {sectionOrder.map((component) => {
             const Component = components[component]
-            return <Component childId={id} key={component} startOpen={open} />
+            return <Component childId={id} key={component} startOpen={false} />
           })}
         </FixedSpaceColumn>
       </div>
