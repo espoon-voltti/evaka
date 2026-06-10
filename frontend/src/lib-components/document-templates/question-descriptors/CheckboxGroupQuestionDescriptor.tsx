@@ -139,33 +139,31 @@ const View = React.memo(function View({
             return (
               <FixedSpaceRow key={option.state.id} $spacing="xxs">
                 <Checkbox
-                  label={<>
-                    <CheckboxLabelGap>
-                      {option.state.label}
-                    </CheckboxLabelGap>
+                  label={
+                    <>
+                      <CheckboxLabelGap>{option.state.label}</CheckboxLabelGap>
 
-                    {option.state.withText && (
-                      <InputField
-                        value={answerOption?.extra ?? ''}
-                        readonly={!answerOption}
-                        onChange={(value) =>
-                          answer.update((old) => [
-                            ...old.filter(
-                              (opt) => opt.optionId !== option.state.id
-                            ),
-                            { optionId: option.state.id, extra: value }
-                          ])
-                        }
-                        width="L"
-                      />
-                    )}
-                  </>}
+                      {option.state.withText && (
+                        <InputField
+                          value={answerOption?.extra ?? ''}
+                          readonly={!answerOption}
+                          onChange={(value) =>
+                            answer.update((old) => [
+                              ...old.filter(
+                                (opt) => opt.optionId !== option.state.id
+                              ),
+                              { optionId: option.state.id, extra: value }
+                            ])
+                          }
+                          width="L"
+                        />
+                      )}
+                    </>
+                  }
                   checked={answerOption !== undefined}
                   onChange={(checked) =>
                     answer.update((old) => [
-                      ...old.filter(
-                        (opt) => opt.optionId !== option.state.id
-                      ),
+                      ...old.filter((opt) => opt.optionId !== option.state.id),
                       ...(checked
                         ? [{ optionId: option.state.id, extra: '' }]
                         : [])
