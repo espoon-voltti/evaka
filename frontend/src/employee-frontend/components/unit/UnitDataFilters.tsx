@@ -24,13 +24,11 @@ const DatePickersContainer = styled.div`
 `
 
 type Props = {
-  canEdit: boolean
   filters: UnitFilters
   setFilters: (filters: UnitFilters) => void
 }
 
 export default React.memo(function UnitDataFilters({
-  canEdit,
   filters,
   setFilters
 }: Props) {
@@ -40,20 +38,16 @@ export default React.memo(function UnitDataFilters({
   return (
     <FixedSpaceRow>
       <DatePickersContainer>
-        {canEdit ? (
-          <DatePicker
-            data-qa="unit-filter-start-date"
-            date={startDate}
-            onChange={(date) => {
-              if (date) setFilters(filters.withStartDate(date))
-            }}
-            locale={lang}
-            minDate={LocalDate.of(2000, 1, 1)}
-            required
-          />
-        ) : (
-          <div>{startDate.format()}</div>
-        )}
+        <DatePicker
+          data-qa="unit-filter-start-date"
+          date={startDate}
+          onChange={(date) => {
+            if (date) setFilters(filters.withStartDate(date))
+          }}
+          locale={lang}
+          minDate={LocalDate.of(2000, 1, 1)}
+          required
+        />
         <div>-</div>
         <div>{endDate.format()}</div>
       </DatePickersContainer>

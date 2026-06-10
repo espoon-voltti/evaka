@@ -29,14 +29,12 @@ import { faAngleDown, faAngleUp } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { UIContext } from '../../../state/ui'
-import { UserContext } from '../../../state/user'
 import type {
   DaycareGroupPlacementDetailed,
   UnitChildrenCapacityFactors
 } from '../../../types/unit'
 import { flatMapGroupPlacements } from '../../../types/unit'
 import type { UnitFilters } from '../../../utils/UnitFilters'
-import { requireRole } from '../../../utils/roles'
 import { permittedReportsQuery } from '../../reports/queries'
 import UnitDataFilters from '../UnitDataFilters'
 
@@ -149,7 +147,6 @@ export default React.memo(function Groups({
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode } = useContext(UIContext)
-  const { roles } = useContext(UserContext)
   const [transferredPlacement, setTransferredPlacement] = useState<
     DaycareGroupPlacementDetailed | UnitBackupCare | null
   >(null)
@@ -209,18 +206,7 @@ export default React.memo(function Groups({
       <Gap $size="s" />
       <FixedSpaceRow $alignItems="center">
         <Label>{i18n.unit.filters.title}</Label>
-        <UnitDataFilters
-          canEdit={requireRole(
-            roles,
-            'ADMIN',
-            'SERVICE_WORKER',
-            'UNIT_SUPERVISOR',
-            'FINANCE_ADMIN',
-            'EARLY_CHILDHOOD_EDUCATION_SECRETARY'
-          )}
-          filters={filters}
-          setFilters={setFilters}
-        />
+        <UnitDataFilters filters={filters} setFilters={setFilters} />
       </FixedSpaceRow>
       <Gap $size="s" />
       {uiMode === 'create-new-daycare-group' && <GroupModal unitId={unit.id} />}

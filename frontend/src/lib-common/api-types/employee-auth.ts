@@ -36,8 +36,6 @@ export const globalRoles = [
   'MESSAGING'
 ] as const
 
-export type GlobalRole = (typeof globalRoles)[number]
-
 export const scopedRoles = [
   'UNIT_SUPERVISOR',
   'SPECIAL_EDUCATION_TEACHER',
@@ -47,13 +45,9 @@ export const scopedRoles = [
 
 export type ScopedRole = (typeof scopedRoles)[number]
 
-export type AdRole = GlobalRole | ScopedRole
-
 export interface AuthStatus<U extends User | MobileUser> {
   loggedIn: boolean
   user?: U
   featureConfig?: EmployeeFeatureConfig
-  /** @deprecated removed in a follow-up PR; gate on permitted actions / startPage */
-  roles?: AdRole[]
   apiVersion: string
 }
