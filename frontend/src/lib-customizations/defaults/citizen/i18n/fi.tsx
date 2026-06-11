@@ -2185,8 +2185,8 @@ export default {
         <P>
           Samassa taloudessa asuvien aikuisten ja lasten määrä vaikuttaa
           asiakasmaksuihin. Jos perheen tiedoissa on tapahtunut muutos, ole
-          yhteydessä asiakasmaksutiimiin, puh.{' '}
-          <a href="tel:+358981627400">09 81627400</a>.
+          yhteydessä asiakasmaksutiimiin, sähköposti{' '}
+          <a href="mailto:vaka.maksut@espoo.fi">vaka.maksut@espoo.fi</a>.
         </P>
       ),
       adults: 'Aikuiset',
