@@ -240,7 +240,7 @@ test.describe('Service time usage', () => {
       '08:00–15:30 (7 h 30 min)'
     )
     await expect(dayView.getServiceUsageWarning(testChild2.id)).toHaveText(
-      'Toteunut läsnäoloaika ylittää ilmoitetun ajan.'
+      'Toteutunut läsnäoloaika ylittää ilmoitetun ajan.'
     )
   })
 
