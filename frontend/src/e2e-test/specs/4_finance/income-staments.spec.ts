@@ -165,16 +165,19 @@ test.describe('Income statements', () => {
     await navigateToIncomeStatements()
     await incomeStatementsPage.searchButton.click()
     await expect(incomeStatementsPage.incomeStatementRows).toHaveCount(1)
-    await incomeStatementsPage.openNthIncomeStatementForGuardian(0)
+    const reopenedProfilePage =
+      await incomeStatementsPage.openNthIncomeStatementForGuardian(0)
+    const reopenedIncomesSection =
+      await reopenedProfilePage.openCollapsible('incomes')
 
-    await incomesSection
+    await reopenedIncomesSection
       .incomeStatementHandledCheckbox(0)
       .waitUntilChecked(true)
-    await incomesSection
+    await reopenedIncomesSection
       .incomeStatementHandledCheckbox(1)
       .waitUntilChecked(false)
 
-    await incomesSection
+    await reopenedIncomesSection
       .incomeStatementRow(0)
       .assertText((t) => t.includes('this is a note'))
 

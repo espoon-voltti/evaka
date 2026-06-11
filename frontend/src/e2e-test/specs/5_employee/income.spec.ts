@@ -319,6 +319,9 @@ test.describe('Income', () => {
     }).save()
 
     await page.reload()
+    incomesSection = await new GuardianInformationPage(page).openCollapsible(
+      'incomes'
+    )
     await incomesSection.toggleNotificationsCollapsible()
     await expect(incomesSection.incomeNotificationRows).toHaveCount(3)
     await expect(incomesSection.incomeNotificationRows.nth(0)).toHaveText(

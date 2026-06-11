@@ -48,11 +48,6 @@ export default class GuardianInformationPage {
     await expect(
       this.page.find('[data-qa="person-info-section"][data-isloading="false"]')
     ).toBeVisible()
-    await expect(
-      this.page.find(
-        '[data-qa="family-overview-section"][data-isloading="false"]'
-      )
-    ).toBeVisible()
   }
 
   async assertRestrictedDetails(enabled: boolean) {
