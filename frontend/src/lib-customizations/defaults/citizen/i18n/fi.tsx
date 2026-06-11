@@ -461,7 +461,7 @@ export default {
     attendance: 'Toteutunut läsnäolo',
     exceedStart: 'Saapunut ilmoitettua aikaisemmin.',
     exceedEnd: 'Lähtenyt ilmoitettua myöhemmin.',
-    exceedGeneric: 'Toteunut läsnäoloaika ylittää ilmoitetun ajan.',
+    exceedGeneric: 'Toteutunut läsnäoloaika ylittää ilmoitetun ajan.',
     calculatedUsedServiceTime:
       'Käytetty palveluntarve määräytyy kuukauden palveluntarpeen mukaan.',
     usedService: 'Käytetty palveluntarve',
