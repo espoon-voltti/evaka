@@ -2150,8 +2150,8 @@ WITH groups AS (
         SELECT FROM daycare_acl acl
         WHERE acl.daycare_id = u.id AND sender.employee_id = acl.employee_id
       ))
-      AND (u.closing_date IS NULL OR u.closing_date >= ${bind(date)})
-      AND (g.end_date IS NULL OR g.end_date >= ${bind(date)})
+      AND daterange(u.opening_date, u.closing_date, '[]') @> ${bind(date)}
+      AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
 ), units AS (
     SELECT DISTINCT unit_id
     FROM groups
