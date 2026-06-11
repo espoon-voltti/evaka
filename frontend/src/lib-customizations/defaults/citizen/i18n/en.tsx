@@ -1920,7 +1920,8 @@ const en: Translations = {
         <P>
           The number of adults and children living in the same household affects
           the client fees. If your family details have changed, please contact
-          the client fee unit, tel. <a href="tel:+358981627400">09 81627400</a>.
+          the client fee unit, email{' '}
+          <a href="mailto:vaka.maksut@espoo.fi">vaka.maksut@espoo.fi</a>.
         </P>
       ),
       adults: 'Adults',
