@@ -53,22 +53,20 @@ fun Database.Read.getChildAttendanceId(
     unitId: DaycareId,
     now: HelsinkiDateTime,
 ): ChildAttendanceId? {
+    val today = now.toLocalDate()
+    val departedThreshold = now.toLocalTime().minusMinutes(30)
     return createQuery {
             sql(
                 """
-        SELECT id
-        FROM child_attendance
-        WHERE child_id = :childId AND unit_id = :unitId
-        AND (end_time IS NULL OR (date = :date AND (start_time != '00:00'::time OR (start_time = '00:00'::time AND :departedThreshold < end_time))))
-        ORDER BY date, start_time DESC
-        LIMIT 1
+SELECT id
+FROM child_attendance
+WHERE child_id = ${bind(childId)} AND unit_id = ${bind(unitId)}
+AND (end_time IS NULL OR (date = ${bind(today)} AND (start_time != '00:00'::time OR (start_time = '00:00'::time AND ${bind(departedThreshold)} < end_time))))
+ORDER BY date, start_time DESC
+LIMIT 1
 """
             )
         }
-        .bind("childId", childId)
-        .bind("unitId", unitId)
-        .bind("date", now.toLocalDate())
-        .bind("departedThreshold", now.toLocalTime().minusMinutes(30))
         .exactlyOneOrNull()
 }
 
