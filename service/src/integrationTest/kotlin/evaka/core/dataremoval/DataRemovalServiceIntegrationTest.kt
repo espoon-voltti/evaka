@@ -20,6 +20,7 @@ import evaka.core.placement.PlacementType
 import evaka.core.s3.DocumentService
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
+import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.UserRole
@@ -35,6 +36,8 @@ import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevDocumentTemplate
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevFamilyContact
+import evaka.core.shared.dev.DevFosterParent
+import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
@@ -47,10 +50,12 @@ import evaka.core.specialdiet.MealTexture
 import evaka.core.specialdiet.SpecialDiet
 import evaka.core.specialdiet.setMealTextures
 import evaka.core.specialdiet.setSpecialDiets
+import evaka.core.user.updateLastStrongLogin
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -482,6 +487,113 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         )
 
         assertEquals(0, countChildrenWithNull("diet_id"))
+    }
+
+    @Test
+    fun `deleteExpiredCitizenUsers deletes citizen user whose child's last placement ended before expireDate`() {
+        val guardian = insertAdultWithCitizenUser()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, leafExpireDate.minusDays(1))
+
+        deleteExpiredCitizenUsers(db, expireDate = leafExpireDate, limit = 100)
+
+        assertFalse(citizenUserExists(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredCitizenUsers keeps citizen user whose child has a recent placement`() {
+        val guardian = insertAdultWithCitizenUser()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, leafExpireDate.plusDays(1))
+
+        deleteExpiredCitizenUsers(db, expireDate = leafExpireDate, limit = 100)
+
+        assertTrue(citizenUserExists(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredCitizenUsers keeps citizen user whose child placement ends exactly on expireDate`() {
+        val guardian = insertAdultWithCitizenUser()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, leafExpireDate)
+
+        deleteExpiredCitizenUsers(db, expireDate = leafExpireDate, limit = 100)
+
+        assertTrue(citizenUserExists(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredCitizenUsers keeps citizen user with one expired and one recent child placement`() {
+        val guardian = insertAdultWithCitizenUser()
+        val recentChild = DevPerson()
+        db.transaction { it.insert(recentChild, DevPersonType.CHILD) }
+        insertGuardianship(guardian, child.id)
+        insertGuardianship(guardian, recentChild.id)
+        insertPlacementEnding(child.id, leafExpireDate.minusDays(1))
+        insertPlacementEnding(recentChild.id, leafExpireDate.plusDays(1))
+
+        deleteExpiredCitizenUsers(db, expireDate = leafExpireDate, limit = 100)
+
+        assertTrue(citizenUserExists(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredCitizenUsers keeps citizen user whose child has no placements`() {
+        val guardian = insertAdultWithCitizenUser()
+        insertGuardianship(guardian, child.id)
+
+        deleteExpiredCitizenUsers(db, expireDate = leafExpireDate, limit = 100)
+
+        assertTrue(citizenUserExists(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredCitizenUsers keeps citizen user with no guardian or foster relationship`() {
+        val person = insertAdultWithCitizenUser()
+
+        deleteExpiredCitizenUsers(db, expireDate = leafExpireDate, limit = 100)
+
+        assertTrue(citizenUserExists(person))
+    }
+
+    @Test
+    fun `deleteExpiredCitizenUsers deletes citizen user linked to an expired child via foster parent`() {
+        val fosterParent = insertAdultWithCitizenUser()
+        insertFosterParenthood(fosterParent, child.id)
+        insertPlacementEnding(child.id, leafExpireDate.minusDays(1))
+
+        deleteExpiredCitizenUsers(db, expireDate = leafExpireDate, limit = 100)
+
+        assertFalse(citizenUserExists(fosterParent))
+    }
+
+    private fun insertAdultWithCitizenUser(): PersonId = db.transaction { tx ->
+        val id = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
+        tx.updateLastStrongLogin(now, id)
+        id
+    }
+
+    private fun insertGuardianship(guardian: PersonId, childId: ChildId) {
+        db.transaction { it.insert(DevGuardian(guardianId = guardian, childId = childId)) }
+    }
+
+    private fun insertFosterParenthood(parent: PersonId, childId: ChildId) {
+        db.transaction {
+            it.insert(
+                DevFosterParent(
+                    childId = childId,
+                    parentId = parent,
+                    validDuring = DateRange(today.minusYears(2), today.minusYears(1)),
+                    modifiedAt = now,
+                    modifiedBy = admin.evakaUserId,
+                )
+            )
+        }
+    }
+
+    private fun citizenUserExists(id: PersonId): Boolean = db.read { tx ->
+        tx.createQuery { sql("SELECT EXISTS(SELECT FROM citizen_user WHERE id = ${bind(id)})") }
+            .exactlyOne<Boolean>()
     }
 
     private val allLeafTables =

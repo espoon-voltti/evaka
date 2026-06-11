@@ -11,6 +11,7 @@ import evaka.core.s3.DocumentService
 import evaka.core.shared.ChildId
 import evaka.core.shared.ChildImageId
 import evaka.core.shared.Id
+import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.async.AsyncJobType
@@ -87,6 +88,8 @@ class DataRemovalService(
         )
 
         deleteExpiredChildImages(dbc, now, expireDate = today.minusMonths(1), limit)
+
+        deleteExpiredCitizenUsers(dbc, expireDate = today.minusYears(1), limit)
     }
 
     fun deleteExpiredChildDocuments(db: Database.Connection, now: HelsinkiDateTime, limit: Int) {
@@ -261,6 +264,58 @@ SELECT child_id
 FROM placement
 GROUP BY child_id
 HAVING max(end_date) < ${bind(date)}
+"""
+    )
+}
+
+fun deleteExpiredCitizenUsers(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
+    logger.info { "Deleting at most $limit expired citizen users" }
+    val deleted = dbc.transaction { tx -> tx.deleteExpiredCitizenUsersBatch(expireDate, limit) }
+    logger.infoChunked(
+        items = deleted,
+        meta = { chunk -> mapOf("deletedIds" to chunk) },
+        message = { index, total -> "Deleted expired citizen users (chunk $index/$total)" },
+    )
+}
+
+private fun Database.Transaction.deleteExpiredCitizenUsersBatch(
+    expireDate: LocalDate,
+    limit: Int,
+): List<PersonId> =
+    createUpdate {
+            sql(
+                """
+WITH del_batch AS (
+    SELECT id
+    FROM citizen_user
+    WHERE id = ANY(${subquery(citizenUserIdsWithPlacementsEndingBefore(expireDate))})
+    FOR UPDATE
+    LIMIT ${bind(limit)}
+)
+DELETE FROM citizen_user
+USING del_batch
+WHERE citizen_user.id = del_batch.id
+RETURNING citizen_user.id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .toList()
+
+private fun citizenUserIdsWithPlacementsEndingBefore(date: LocalDate) = QuerySql {
+    sql(
+        """
+WITH guardian_child AS (
+    SELECT guardian_id AS person_id, child_id FROM guardian
+    UNION ALL
+    SELECT parent_id AS person_id, child_id FROM foster_parent
+)
+SELECT gc.person_id
+FROM guardian_child gc
+JOIN citizen_user cu ON cu.id = gc.person_id
+JOIN placement p ON p.child_id = gc.child_id
+GROUP BY gc.person_id
+HAVING max(p.end_date) < ${bind(date)}
 """
     )
 }
