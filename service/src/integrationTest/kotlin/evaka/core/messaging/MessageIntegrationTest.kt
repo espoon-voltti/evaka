@@ -3194,6 +3194,68 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         @Test
+        fun `bulletin copy is not created for groups that have not opened yet, are closed, or are in a unit that has not opened yet`() {
+            val notOpenedGroup =
+                DevDaycareGroup(
+                    daycareId = daycare.id,
+                    startDate = sendTime.toLocalDate().plusDays(1),
+                    name = "Not opened yet",
+                )
+            val closedGroup =
+                DevDaycareGroup(
+                    daycareId = daycare.id,
+                    endDate = sendTime.toLocalDate().minusDays(1),
+                    name = "Closed",
+                )
+            val notOpenedUnit =
+                DevDaycare(
+                    areaId = area.id,
+                    name = "Unit not opened yet",
+                    openingDate = sendTime.toLocalDate().plusDays(1),
+                    enabledPilotFeatures = setOf(PilotFeature.MESSAGING),
+                )
+            // an open group, but in a unit that has not opened yet
+            val notOpenedUnitGroup =
+                DevDaycareGroup(
+                    daycareId = notOpenedUnit.id,
+                    startDate = sendTime.toLocalDate().minusYears(1),
+                    name = "Open group in unopened unit",
+                )
+            val (notOpenedGroupAccount, closedGroupAccount, notOpenedUnitGroupAccount) =
+                db.transaction { tx ->
+                    tx.insert(notOpenedGroup)
+                    tx.insert(closedGroup)
+                    tx.insert(notOpenedUnit)
+                    tx.insert(notOpenedUnitGroup)
+                    tx.insertDaycareAclRow(notOpenedUnit.id, employee1.id, UserRole.UNIT_SUPERVISOR)
+                    Triple(
+                        tx.createDaycareGroupMessageAccount(notOpenedGroup.id),
+                        tx.createDaycareGroupMessageAccount(closedGroup.id),
+                        tx.createDaycareGroupMessageAccount(notOpenedUnitGroup.id),
+                    )
+                }
+
+            postNewThread(
+                "title",
+                "content",
+                MessageType.BULLETIN,
+                employee1Account,
+                listOf(MessageRecipient.Unit(daycare.id), MessageRecipient.Unit(notOpenedUnit.id)),
+                user = employee1,
+                now = sendTime,
+            )
+
+            // then an open group in an opened unit gets a copy
+            assertEquals(1, getMessageCopies(employee1, group1Account, readTime).size)
+
+            // but the not-yet-opened group, the closed group, and the open group in a
+            // not-yet-opened unit do not
+            assertEquals(0, getMessageCopies(employee1, notOpenedGroupAccount, readTime).size)
+            assertEquals(0, getMessageCopies(employee1, closedGroupAccount, readTime).size)
+            assertEquals(0, getMessageCopies(employee1, notOpenedUnitGroupAccount, readTime).size)
+        }
+
+        @Test
         fun `message copy is not created for non-bulletins`() {
             // given
             db.transaction { tx -> insertChild(tx, DevPerson(), groupId1) }
