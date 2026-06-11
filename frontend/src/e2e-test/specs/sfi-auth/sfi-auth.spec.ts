@@ -93,6 +93,9 @@ test.describe('SFI authentication', () => {
     await expect(employeeTab.findByDataQa('username')).toBeVisible()
     const header = new CitizenHeader(citizenTab)
     await header.logout()
+    // Wait for the single logout to complete before checking its effects on
+    // the employee session
+    await expect(citizenTab.findByDataQa('strong-login')).toBeVisible()
 
     // Verify that the employee SFI session has been logged out
     await employeeTab.findByDataQa('header').click()
@@ -107,8 +110,20 @@ test.describe('SFI authentication', () => {
     )
     await citizenTab.find('[type=submit]').findText('Jatka').click()
     await expect(citizenTab.findByDataQa('header-city-logo')).toBeVisible()
+    // Wait until the citizen page's startup requests have finished, so that
+    // none of them are in flight when the session is invalidated below. A 401
+    // response to any request would cause a reload to the login page instead
+    // of showing the session expired modal. Some of the requests (e.g.
+    // received messages, fetched globally by MessageContextProvider) have no
+    // visible effect on this page, so there's no element whose state could be
+    // waited on instead of network idleness.
+    await citizenTab.page.waitForLoadState('networkidle')
+
     await employeeTab.findByDataQa('username').click()
     await employeeTab.findByDataQa('logout-btn').click()
+    // Wait for the single logout to complete before checking its effects on
+    // the citizen session
+    await employeeTab.waitForUrl(/\/employee\/login$/)
 
     // Verify that the citizen SFI session has been logged out
     await citizenTab.findByDataQa('desktop-nav').click()
