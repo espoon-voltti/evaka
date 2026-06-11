@@ -5,13 +5,17 @@
 package evaka.core.shared.security
 
 import evaka.core.CitizenCalendarEnv
+import evaka.core.shared.FeatureConfig
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import org.springframework.stereotype.Service
 
 @Service
-class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
+class AccessControlCitizen(
+    val citizenCalendarEnv: CitizenCalendarEnv,
+    val featureConfig: FeatureConfig,
+) {
     fun getPermittedFeatures(
         tx: Database.Read,
         clock: EvakaClock,
@@ -28,7 +32,12 @@ class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
                     citizen,
                     citizenCalendarEnv.calendarOpenBeforePlacementDays,
                 ),
-            childDocumentation = tx.citizenHasAccessToChildDocumentation(clock, citizen),
+            childDocumentation =
+                tx.citizenHasAccessToChildDocumentation(
+                    clock,
+                    citizen,
+                    featureConfig.citizenDocumentCreationDaysBeforePlacement,
+                ),
         )
     }
 
@@ -122,6 +131,7 @@ SELECT EXISTS (
     private fun Database.Read.citizenHasAccessToChildDocumentation(
         clock: EvakaClock,
         userId: PersonId,
+        citizenDocumentCreationDaysBeforePlacement: Int,
     ): Boolean {
         val today = clock.today()
         return createQuery {
@@ -135,9 +145,18 @@ WITH children AS (
 SELECT EXISTS (
     SELECT 1
     FROM children c
-    JOIN placement pl ON c.child_id = pl.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
+    JOIN placement pl ON c.child_id = pl.child_id
     JOIN daycare ON pl.unit_id = daycare.id
-    WHERE 'VASU_AND_PEDADOC' = ANY(enabled_pilot_features)
+    WHERE (
+        daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
+        AND (
+            'VASU_AND_PEDADOC' = ANY(enabled_pilot_features)
+            OR 'OTHER_DECISION' = ANY(enabled_pilot_features)
+        )
+    ) OR (
+        'CITIZEN_BASIC_DOCUMENT' = ANY(enabled_pilot_features)
+        AND daterange((pl.start_date - ${bind(citizenDocumentCreationDaysBeforePlacement)}), pl.end_date, '[]') @> ${bind(today)}
+    )
 )
 """
                 )
