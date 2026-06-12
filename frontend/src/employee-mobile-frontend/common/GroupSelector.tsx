@@ -61,7 +61,7 @@ export default function GroupSelector({
             selected={!selectedGroup && !shiftCareSelected}
             onClick={() => onChangeGroup(undefined)}
             data-qa="group--all"
-            name={i18n.common.all}
+            name={i18n.common.allGroups}
             utilization={
               realtimeStaffAttendanceEnabled
                 ? {

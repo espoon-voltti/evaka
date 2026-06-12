@@ -103,7 +103,7 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
                   ? i18n.common.shiftCare
                   : selectedGroup
                     ? selectedGroup.name
-                    : i18n.common.all
+                    : i18n.common.allGroups
               }
               onClick={() => setShowGroupSelector(true)}
               icon={

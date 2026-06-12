@@ -17,6 +17,7 @@ export const fi = {
     confirm: 'Vahvista',
     sort: 'Järjestä',
     all: 'Kaikki',
+    allGroups: 'Kaikki ryhmät',
     shiftCare: 'Vuorohoito',
     statuses: {
       active: 'Aktiivinen',

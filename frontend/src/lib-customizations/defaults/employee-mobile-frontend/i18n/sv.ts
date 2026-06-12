@@ -19,6 +19,7 @@ export const sv: typeof fi = {
     confirm: 'Bekräfta',
     sort: 'Ordna',
     all: 'Alla',
+    allGroups: 'Alla grupper',
     shiftCare: 'Skiftvård',
     statuses: {
       active: 'Aktiv',
