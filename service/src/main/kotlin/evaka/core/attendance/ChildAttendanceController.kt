@@ -225,7 +225,11 @@ class ChildAttendanceController(
                         Action.Unit.UPDATE_CHILD_ATTENDANCES,
                         unitId,
                     )
-                    body.children.map { childId ->
+                    // Insert in a deterministic order so that two concurrent requests can't
+                    // cause a Postgres deadlock while checking the no-overlap exclusion
+                    // constraint
+                    body.children.sorted().map { childId ->
+                        // Validate that the child is placed in the unit
                         tx.fetchChildPlacementBasics(childId, unitId, today)
                         try {
                             tx.insertAttendance(
