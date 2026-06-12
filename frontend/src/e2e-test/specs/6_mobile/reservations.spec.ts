@@ -135,13 +135,32 @@ test.describe('when placement is ending tomorrow', () => {
 
     const reservationsPage = await navigateToReservations(evaka, child.id)
     await reservationsPage.assertReservations([
-      { date: mockedTomorrow, text: 'Läsnäoloilmoitus puuttuu' }
+      { date: mockedTomorrow, text: 'Läsnä, kellonaika ei vielä tiedossa' }
     ])
     const editPage = await reservationsPage.edit()
+    await editPage.addAttendanceTimes(mockedTomorrow)
     await editPage.fillTime(mockedTomorrow, 0, '07:45', '15:45')
     await editPage.confirmButton.click()
     await reservationsPage.assertReservations([
       { date: mockedTomorrow, text: '07:45–15:45' }
+    ])
+  })
+
+  test('reservation without time can be kept as is', async ({ evaka }) => {
+    await Fixture.holidayPeriod({
+      period: new FiniteDateRange(mockedTomorrow, mockedTomorrow)
+    }).save()
+    await Fixture.attendanceReservationRaw({
+      childId: child.id,
+      date: mockedTomorrow,
+      range: null
+    }).save()
+
+    const reservationsPage = await navigateToReservations(evaka, child.id)
+    const editPage = await reservationsPage.edit()
+    await editPage.confirmButton.click()
+    await reservationsPage.assertReservations([
+      { date: mockedTomorrow, text: 'Läsnä, kellonaika ei vielä tiedossa' }
     ])
   })
 

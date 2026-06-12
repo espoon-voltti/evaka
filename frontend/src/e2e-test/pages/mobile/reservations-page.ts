@@ -70,6 +70,11 @@ export class MobileReservationsEditPage {
     await reservationDate.findByDataQa('reservation-time-add').click()
   }
 
+  async addAttendanceTimes(date: LocalDate) {
+    const reservationDate = this.#findReservationDate(date)
+    await reservationDate.findByDataQa('add-attendance-times').click()
+  }
+
   async removeTime(date: LocalDate, index: number) {
     const reservationDate = this.#findReservationDate(date)
     const reservationTime = reservationDate
