@@ -227,6 +227,7 @@ export const fi = {
     searchPlaceholder: 'Etsi lapsen nimellä',
     noAbsences: 'Ei poissaoloja',
     removeAbsence: 'Peru poissaolo',
+    addAttendanceTimes: 'Lisää läsnäoloajat',
     timeError: 'Virheellinen aika',
     arrived: 'Saapui',
     departed: 'Lähti',

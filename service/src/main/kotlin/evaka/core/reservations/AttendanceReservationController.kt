@@ -480,6 +480,22 @@ class AttendanceReservationController(
                         throw BadRequest("Request contains reservable day")
                     }
 
+                    val holidayPeriods = tx.getHolidayPeriodsInRange(range)
+                    body
+                        .filter { it.reservations.any { res -> res is Reservation.NoTimes } }
+                        .forEach { update ->
+                            if (update.reservations.size > 1) {
+                                throw BadRequest(
+                                    "NO_TIMES reservation must be the only reservation of the day"
+                                )
+                            }
+                            if (holidayPeriods.none { it.period.includes(update.date) }) {
+                                throw BadRequest(
+                                    "NO_TIMES reservation is only allowed on holiday period days"
+                                )
+                            }
+                        }
+
                     // Remove rows from absence on dates that will have a reservation
                     body
                         .filter { it.absenceType == null }

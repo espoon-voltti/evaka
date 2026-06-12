@@ -236,6 +236,7 @@ export const sv: typeof fi = {
     searchPlaceholder: 'Sök på barnets namn',
     noAbsences: 'Ingen frånvaro',
     removeAbsence: 'Ångra frånvaro',
+    addAttendanceTimes: 'Lägg till närvarotider',
     timeError: 'Felaktig tid',
     arrived: 'Ankomsttid',
     departed: 'Avgångstid',

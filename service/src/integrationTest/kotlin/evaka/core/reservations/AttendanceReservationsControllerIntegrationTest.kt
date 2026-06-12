@@ -41,6 +41,7 @@ import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevDaycareGroupPlacement
 import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevHolidayPeriod
 import evaka.core.shared.dev.DevMobileDevice
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
@@ -50,6 +51,7 @@ import evaka.core.shared.dev.DevReservation
 import evaka.core.shared.dev.DevServiceNeed
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestChildAttendance
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
@@ -1407,6 +1409,126 @@ class AttendanceReservationsControllerIntegrationTest :
             ),
             reservations,
         )
+    }
+
+    @Test
+    fun `set confirmed range reservation accepts NO_TIMES reservation on a holiday period day`() {
+        val mobileDevice = DevMobileDevice(unitId = daycare.id)
+        val mobileDeviceId = db.transaction { tx ->
+            tx.insert(
+                DevHolidayPeriod(
+                    period = FiniteDateRange(wed, thu),
+                    reservationsOpenOn = mon,
+                    reservationDeadline = mon,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = mon,
+                    endDate = fri,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                )
+            )
+            tx.insert(mobileDevice)
+        }
+
+        attendanceReservationController.setConfirmedRangeReservations(
+            dbInstance(),
+            AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+            clock,
+            child1.id,
+            listOf(
+                ConfirmedRangeDateUpdate(
+                    date = wed,
+                    reservations = listOf(Reservation.NoTimes),
+                    absenceType = null,
+                )
+            ),
+        )
+
+        val reservations =
+            attendanceReservationController.getConfirmedRangeData(
+                dbInstance(),
+                AuthenticatedUser.MobileDevice(id = mobileDeviceId),
+                clock,
+                child1.id,
+            )
+        assertEquals(
+            listOf(
+                ReservationResponse.NoTimes(
+                    staffCreated = true,
+                    modifiedBy = mobileDevice.evakaUser,
+                    modifiedAt = clock.now(),
+                )
+            ),
+            reservations.single { it.date == wed }.reservations,
+        )
+    }
+
+    @Test
+    fun `set confirmed range reservation rejects invalid NO_TIMES reservations`() {
+        val mobileDeviceId = db.transaction { tx ->
+            tx.insert(
+                DevHolidayPeriod(
+                    period = FiniteDateRange(wed, thu),
+                    reservationsOpenOn = mon,
+                    reservationDeadline = mon,
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = mon,
+                    endDate = fri,
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                )
+            )
+            tx.insert(DevMobileDevice(unitId = daycare.id))
+        }
+        val user = AuthenticatedUser.MobileDevice(id = mobileDeviceId)
+
+        // NO_TIMES mixed with a timed reservation on a holiday period day
+        assertThrows<BadRequest> {
+            attendanceReservationController.setConfirmedRangeReservations(
+                dbInstance(),
+                user,
+                clock,
+                child1.id,
+                listOf(
+                    ConfirmedRangeDateUpdate(
+                        date = wed,
+                        reservations =
+                            listOf(
+                                Reservation.NoTimes,
+                                Reservation.Times(
+                                    TimeRange(LocalTime.of(9, 0), LocalTime.of(11, 0))
+                                ),
+                            ),
+                        absenceType = null,
+                    )
+                ),
+            )
+        }
+
+        // NO_TIMES outside holiday periods
+        assertThrows<BadRequest> {
+            attendanceReservationController.setConfirmedRangeReservations(
+                dbInstance(),
+                user,
+                clock,
+                child1.id,
+                listOf(
+                    ConfirmedRangeDateUpdate(
+                        date = fri,
+                        reservations = listOf(Reservation.NoTimes),
+                        absenceType = null,
+                    )
+                ),
+            )
+        }
     }
 
     @Test
