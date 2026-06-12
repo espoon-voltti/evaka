@@ -15,6 +15,7 @@ import evaka.core.attendance.StaffAttendanceType
 import evaka.core.daycare.ClubTerm
 import evaka.core.decision.DecisionStatus
 import evaka.core.decision.DecisionType
+import evaka.core.decision.reasoning.DecisionReasoningCollectionType
 import evaka.core.document.ChildDocumentType
 import evaka.core.identity.ExternalId
 import evaka.core.incomestatement.IncomeStatementBody
@@ -1939,6 +1940,28 @@ RETURNING id
         }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<DecisionGenericReasoningId>()
+
+fun Database.Transaction.insertDefaultDecisionGenericReasonings():
+    Map<DecisionReasoningCollectionType, DecisionGenericReasoningId> {
+    val daycare =
+        DevDecisionReasoningGeneric(
+            collectionType = DecisionReasoningCollectionType.DAYCARE,
+            textFi = "Generic daycare reasoning",
+            textSv = "Generic daycare reasoning sv",
+            validFrom = LocalDate.of(2000, 1, 1),
+        )
+    val preschool =
+        DevDecisionReasoningGeneric(
+            collectionType = DecisionReasoningCollectionType.PRESCHOOL,
+            textFi = "Generic preschool reasoning",
+            textSv = "Generic preschool reasoning sv",
+            validFrom = LocalDate.of(2000, 1, 1),
+        )
+    return mapOf(
+        DecisionReasoningCollectionType.DAYCARE to insert(daycare),
+        DecisionReasoningCollectionType.PRESCHOOL to insert(preschool),
+    )
+}
 
 fun Database.Transaction.insert(
     row: DevDecisionReasoningIndividual

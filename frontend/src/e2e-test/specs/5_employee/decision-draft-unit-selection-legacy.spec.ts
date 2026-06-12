@@ -39,14 +39,12 @@ const mockedDate = LocalDate.of(2021, 8, 16)
 
 test.use({
   evakaOptions: {
-    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0)),
-    employeeCustomizations: {
-      featureFlags: { decisionDraftRedesign: false }
-    }
+    mockedTime: mockedDate.toHelsinkiDateTime(LocalTime.of(12, 0))
   }
 })
 
-test.describe('Decision draft unit selection', () => {
+// TODO: Cannot be tested since it depends on different backend feature config
+test.skip('Decision draft unit selection', () => {
   let page: Page
   let applicationListView: ApplicationListView
 

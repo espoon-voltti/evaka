@@ -2,32 +2,32 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
+import { combine } from 'lib-common/api'
+import type { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
 import type {
   DecisionDraft,
-  DecisionDraftUpdate,
   DecisionType,
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'
-import type {
-  ApplicationId,
-  DaycareId
-} from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
+import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
@@ -80,198 +80,260 @@ const FooterRow = styled.div`
   gap: ${defaultMargins.s};
 `
 
-const InlineWarning = styled.div`
-  color: ${colors.status.warning};
-`
-
 function redirectToMainPage(navigate: (location: string) => void) {
   navigate('/applications')
 }
 
+type DecisionUnitField =
+  | 'unit'
+  | 'daycareDecisionName'
+  | 'preschoolDecisionName'
+  | 'manager'
+  | 'streetAddress'
+  | 'postalCode'
+  | 'postOffice'
+  | 'decisionHandler'
+  | 'decisionHandlerAddress'
+
+function getMissingUnitFields(
+  decision: DecisionDraft,
+  units: DecisionUnit[],
+  isClubDecision: boolean
+): DecisionUnitField[] {
+  const u = units.find((o) => o.id === decision.unitId)
+  if (!u) return ['unit']
+
+  const requiresDaycareDecisionName =
+    decisionTypesRequiringDaycareDecisionName.includes(decision.type)
+  const requiresPreschoolDecisionName =
+    decisionTypesRequiringPreschoolDecisionName.includes(decision.type)
+
+  const missing: DecisionUnitField[] = []
+  if (requiresDaycareDecisionName && !u.daycareDecisionName)
+    missing.push('daycareDecisionName')
+  if (requiresPreschoolDecisionName && !u.preschoolDecisionName)
+    missing.push('preschoolDecisionName')
+  if (!u.manager) missing.push('manager')
+  if (!u.streetAddress) missing.push('streetAddress')
+  if (!u.postalCode) missing.push('postalCode')
+  if (!u.postOffice) missing.push('postOffice')
+  if (!isClubDecision) {
+    if (!u.decisionHandler) missing.push('decisionHandler')
+    if (!u.decisionHandlerAddress) missing.push('decisionHandlerAddress')
+  }
+  return missing
+}
+
 export default React.memo(function DecisionDraftRedesign() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
-  const { i18n } = useTranslation()
-  const [, navigate] = useLocation()
   const draftGroupResult = useQueryResult(
     decisionDraftsQuery({ applicationId })
   )
   const unitsResult = useQueryResult(decisionUnitsQuery())
-  const { mutateAsync: updateDecisionDrafts } = useMutationResult(
-    updateDecisionDraftsMutation
-  )
-  const [decisions, setDecisions] = useState<DecisionDraft[]>([])
-  const initialized = useRef(false)
 
-  useEffect(() => {
-    initialized.current = false
-  }, [applicationId])
-
-  useEffect(() => {
-    if (draftGroupResult.isSuccess && !initialized.current) {
-      initialized.current = true
-      setDecisions(draftGroupResult.value.decisions)
-    }
-    if (draftGroupResult.isFailure && draftGroupResult.statusCode === 409) {
-      redirectToMainPage(navigate)
-    }
-  }, [draftGroupResult, navigate])
-
-  useTitle(
-    draftGroupResult.map(
-      (g) =>
-        `${formatPersonName(g.child, 'Last First')} | ${i18n.titles.decision}`
+  return renderResult(
+    combine(draftGroupResult, unitsResult),
+    ([draftGroup, units]) => (
+      <DecisionDraftRedesignInner
+        applicationId={applicationId}
+        decisionDraftGroup={draftGroup}
+        units={units}
+      />
     )
-  )
-
-  const updateState = (
-    type: DecisionType | null,
-    values: Partial<DecisionDraft>
-  ) =>
-    setDecisions((prev) =>
-      prev.map((d) =>
-        type === null || d.type === type ? { ...d, ...values } : d
-      )
-    )
-
-  const unitOptions = useMemo(
-    (): DecisionUnit[] => unitsResult.getOrElse([]),
-    [unitsResult]
-  )
-
-  return (
-    <Container>
-      <ContentArea $opaque>
-        {renderResult(draftGroupResult, (group) => {
-          const isClubDecision = decisions.some(({ type }) => type === 'CLUB')
-          const requiresDaycareDecisionName = decisions.some(({ type }) =>
-            decisionTypesRequiringDaycareDecisionName.includes(type)
-          )
-          const requiresPreschoolDecisionName = decisions.some(({ type }) =>
-            decisionTypesRequiringPreschoolDecisionName.includes(type)
-          )
-          const unitDataIsComplete = decisions.map((d) => {
-            const u = unitOptions.find((o) => o.id === d.unitId)
-            return (
-              !!u &&
-              !!(!requiresDaycareDecisionName || u.daycareDecisionName) &&
-              !!(!requiresPreschoolDecisionName || u.preschoolDecisionName) &&
-              !!u.manager &&
-              !!u.streetAddress &&
-              !!u.postalCode &&
-              !!u.postOffice &&
-              (isClubDecision ||
-                (!!u.decisionHandler && !!u.decisionHandlerAddress))
-            )
-          })
-          const noDecisionsPlanned =
-            decisions.filter((d) => d.planned).length === 0
-          const dataIncomplete = unitDataIsComplete.some((c) => !c)
-          const sharedUnitId: DaycareId | null = decisions[0]?.unitId ?? null
-          const childName = formatPersonName(group.child, 'First Last')
-
-          return (
-            <>
-              <Title size={1}>
-                {decisions.length > 1
-                  ? i18n.decisionDraft.titlePlural
-                  : i18n.decisionDraft.titleSingle}
-              </Title>
-              <Gap $size="xs" />
-              <ApplicationHeaderCard
-                child={group.child}
-                guardian={group.guardian}
-                otherGuardian={group.otherGuardian}
-                placementUnitName={group.placementUnitName}
-                units={unitOptions}
-                selectedUnitId={sharedUnitId}
-                onSelectUnit={(unitId) => updateState(null, { unitId })}
-                showUnitSelector={!featureFlags.decisionDraftMultipleUnits}
-              />
-
-              {!(group.guardian.ssn && group.child.ssn) && (
-                <InfoBox
-                  title={i18n.decisionDraft.ssnInfo1}
-                  message={i18n.decisionDraft.ssnInfo2}
-                  icon={faEnvelope}
-                />
-              )}
-              {!group.guardian.isVtjGuardian && (
-                <AlertBox
-                  title={i18n.decisionDraft.notGuardianInfo1}
-                  message={i18n.decisionDraft.notGuardianInfo2}
-                />
-              )}
-
-              <SectionHeading>
-                <Title size={2}>
-                  {decisions.length > 1
-                    ? i18n.decisionDraft.decisionsHeading
-                    : i18n.decisionDraft.decisionsHeadingSingle}
-                </Title>
-                {decisions.length > 1 && (
-                  <span>{i18n.decisionDraft.decisionsSubtitle}</span>
-                )}
-              </SectionHeading>
-
-              <DecisionCardWrapper>
-                {decisions.map((d) => (
-                  <DecisionCard
-                    key={d.id}
-                    decision={d}
-                    decisions={decisions}
-                    childName={childName}
-                    units={unitOptions}
-                    perDecisionUnitSelector={
-                      featureFlags.decisionDraftMultipleUnits === true
-                    }
-                    onPlannedChange={(planned) =>
-                      updateState(d.type, { planned })
-                    }
-                    onUnitChange={(unitId) => updateState(d.type, { unitId })}
-                  />
-                ))}
-              </DecisionCardWrapper>
-
-              <FooterRow>
-                {dataIncomplete && (
-                  <InlineWarning>
-                    {i18n.decisionDraft.unitDataMissing}
-                  </InlineWarning>
-                )}
-                <FixedSpaceRow>
-                  <Button
-                    onClick={() => redirectToMainPage(navigate)}
-                    text={i18n.common.cancel}
-                    data-qa="cancel-decisions-button"
-                  />
-                  <AsyncButton
-                    primary
-                    data-qa="save-decisions-button"
-                    disabled={dataIncomplete || noDecisionsPlanned}
-                    onClick={() => {
-                      const updates: DecisionDraftUpdate[] = decisions.map(
-                        (d) => ({
-                          id: d.id,
-                          unitId: d.unitId,
-                          startDate: d.startDate,
-                          endDate: d.endDate,
-                          planned: d.planned
-                        })
-                      )
-                      return updateDecisionDrafts({
-                        applicationId,
-                        body: updates
-                      })
-                    }}
-                    onSuccess={() => redirectToMainPage(navigate)}
-                    text={i18n.common.save}
-                  />
-                </FixedSpaceRow>
-              </FooterRow>
-            </>
-          )
-        })}
-      </ContentArea>
-    </Container>
   )
 })
+
+const DecisionDraftRedesignInner = React.memo(
+  function DecisionDraftRedesignInner({
+    applicationId,
+    decisionDraftGroup,
+    units
+  }: {
+    applicationId: ApplicationId
+    decisionDraftGroup: DecisionDraftGroup
+    units: DecisionUnit[]
+  }) {
+    const { i18n } = useTranslation()
+    const [, navigate] = useLocation()
+
+    const {
+      child,
+      primaryDecision: initialPrimaryDecision,
+      connectedDecision: initialConnectedDecision,
+      guardian,
+      otherGuardian,
+      placementUnit
+    } = decisionDraftGroup
+
+    const [primaryDecision, setPrimaryDecision] = useState<DecisionDraft>(
+      initialPrimaryDecision
+    )
+    const [connectedDecision, setConnectedDecision] =
+      useState<DecisionDraft | null>(initialConnectedDecision)
+
+    useTitle(
+      `${formatPersonName(child, 'Last First')} | ${i18n.titles.decision}`
+    )
+
+    const updateState = (
+      type: 'primary' | 'connected' | 'both',
+      values: Partial<DecisionDraft>
+    ) => {
+      if (type === 'primary' || type === 'both') {
+        setPrimaryDecision((prev) => ({ ...prev, ...values }))
+      }
+      if (type === 'connected' || type === 'both') {
+        setConnectedDecision((prev) => (prev ? { ...prev, ...values } : null))
+      }
+    }
+
+    const isClubDecision = primaryDecision.type === 'CLUB'
+    const incompleteUnit = useMemo(() => {
+      const decisions = [
+        primaryDecision,
+        ...(connectedDecision ? [connectedDecision] : [])
+      ]
+      const fields = new Set<DecisionUnitField>()
+      for (const decision of decisions) {
+        getMissingUnitFields(decision, units, isClubDecision).forEach((field) =>
+          fields.add(field)
+        )
+      }
+      if (fields.size === 0) return null
+      const unit = units.find((u) => u.id === primaryDecision.unitId)
+      return { unitName: unit?.name ?? null, fields: [...fields] }
+    }, [primaryDecision, connectedDecision, units, isClubDecision])
+    const dataIncomplete = incompleteUnit !== null
+
+    const noDecisionsPlanned =
+      connectedDecision !== null &&
+      !primaryDecision.planned &&
+      !connectedDecision.planned
+    const childName = formatPersonName(child, 'First Last')
+
+    return (
+      <Container>
+        <ContentArea $opaque>
+          <Title size={1}>
+            {connectedDecision !== null
+              ? i18n.decisionDraft.titlePlural
+              : i18n.decisionDraft.titleSingle}
+          </Title>
+          <Gap $size="xs" />
+          <ApplicationHeaderCard
+            child={child}
+            guardian={guardian}
+            otherGuardian={otherGuardian}
+            placementUnitName={placementUnit.name}
+            units={units}
+            selectedUnitId={primaryDecision.unitId}
+            onSelectUnit={(unitId) => updateState('both', { unitId })}
+          />
+
+          {!(guardian.ssn && child.ssn) && (
+            <InfoBox
+              title={i18n.decisionDraft.ssnInfo1}
+              message={i18n.decisionDraft.ssnInfo2}
+              icon={faEnvelope}
+            />
+          )}
+          {!guardian.isVtjGuardian && (
+            <AlertBox
+              title={i18n.decisionDraft.notGuardianInfo1}
+              message={i18n.decisionDraft.notGuardianInfo2}
+            />
+          )}
+
+          <SectionHeading>
+            <Title size={2}>
+              {connectedDecision !== null
+                ? i18n.decisionDraft.decisionsHeading
+                : i18n.decisionDraft.decisionsHeadingSingle}
+            </Title>
+            {connectedDecision !== null && (
+              <span>{i18n.decisionDraft.decisionsSubtitle}</span>
+            )}
+          </SectionHeading>
+
+          <DecisionCardWrapper>
+            <DecisionCard
+              decision={primaryDecision}
+              primaryDecisionType={primaryDecision.type}
+              showPlannedCheckbox={connectedDecision !== null}
+              childName={childName}
+              onPlannedChange={(planned) => updateState('primary', { planned })}
+            />
+            {connectedDecision && (
+              <DecisionCard
+                decision={connectedDecision}
+                primaryDecisionType={primaryDecision.type}
+                showPlannedCheckbox={true}
+                childName={childName}
+                onPlannedChange={(planned) =>
+                  updateState('connected', { planned })
+                }
+              />
+            )}
+          </DecisionCardWrapper>
+
+          {incompleteUnit !== null && (
+            <AlertBox
+              wide
+              title={i18n.decisionDraft.unitInfo1}
+              message={
+                <FixedSpaceColumn $spacing="s">
+                  <div>
+                    <strong>
+                      {incompleteUnit.unitName ??
+                        i18n.decisionDraft.unitFieldsMissingUnitName}
+                    </strong>
+                    <Gap $size="xs" />
+                    <UnorderedList $spacing="xxs">
+                      {incompleteUnit.fields.map((field) => (
+                        <li key={field}>
+                          {i18n.decisionDraft.unitFields[field]}
+                        </li>
+                      ))}
+                    </UnorderedList>
+                  </div>
+                  <div>{i18n.decisionDraft.unitInfo2}</div>
+                </FixedSpaceColumn>
+              }
+            />
+          )}
+
+          <FooterRow>
+            <FixedSpaceRow>
+              <Button
+                onClick={() => redirectToMainPage(navigate)}
+                text={i18n.common.cancel}
+                data-qa="cancel-decisions-button"
+              />
+              <MutateButton
+                primary
+                data-qa="save-decisions-button"
+                disabled={dataIncomplete || noDecisionsPlanned}
+                mutation={updateDecisionDraftsMutation}
+                onClick={() => ({
+                  applicationId,
+                  body: [
+                    primaryDecision,
+                    ...(connectedDecision ? [connectedDecision] : [])
+                  ].map((d) => ({
+                    id: d.id,
+                    unitId: d.unitId,
+                    startDate: d.startDate,
+                    endDate: d.endDate,
+                    planned: d.planned
+                  }))
+                })}
+                onSuccess={() => redirectToMainPage(navigate)}
+                text={i18n.common.save}
+              />
+            </FixedSpaceRow>
+          </FooterRow>
+        </ContentArea>
+      </Container>
+    )
+  }
+)

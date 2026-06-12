@@ -55,6 +55,7 @@ test.describe('Service Worker Messaging', () => {
 
   test.beforeEach(async ({ newEvakaPage }) => {
     await resetServiceState()
+    await Fixture.decisionReasoningGenericDefaults().save()
     await testCareArea.save()
     await testDaycare.save()
     await Fixture.family({

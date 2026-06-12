@@ -64,16 +64,12 @@ const features: Features = {
     nekkuIntegration: false,
     forceUnpublishDocumentTemplate: true,
     serviceApplications: true,
-    showCitizenApplicationPreschoolTerms: true,
-    decisionReasoningOptions: true,
-    decisionDraftRedesign: true
+    showCitizenApplicationPreschoolTerms: true
   },
   staging: {
     ...prod,
     environmentLabel: 'Staging',
-    forceUnpublishDocumentTemplate: true,
-    decisionReasoningOptions: true,
-    decisionDraftRedesign: true
+    forceUnpublishDocumentTemplate: true
   },
   prod
 }

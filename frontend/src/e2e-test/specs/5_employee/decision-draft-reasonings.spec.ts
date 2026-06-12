@@ -47,6 +47,7 @@ test.describe('Decision draft reasonings', () => {
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
     await cleanUpMessages()
+    await Fixture.decisionReasoningGenericDefaults().save()
     await preschoolTerm2021.save()
     await testCareArea.save()
     await testDaycare.save()
@@ -163,13 +164,13 @@ test.describe('Decision draft reasonings', () => {
     ).toBeVisible()
     await expect(preschoolPicker.reasoningRow(daycareReasoningId)).toBeHidden()
     await expect(preschoolPicker.reasoningRows()).toHaveCount(1)
-    await preschoolPicker.close()
+    await preschoolPicker.cancel()
 
     const daycarePicker = await draftPage.openPicker('PRESCHOOL_DAYCARE')
     await expect(daycarePicker.reasoningRow(daycareReasoningId)).toBeVisible()
     await expect(daycarePicker.reasoningRow(preschoolReasoningId)).toBeHidden()
     await expect(daycarePicker.reasoningRows()).toHaveCount(1)
-    await daycarePicker.close()
+    await daycarePicker.cancel()
   })
 
   test('Linking and unlinking an individual reasoning updates the decision card', async () => {
@@ -187,7 +188,7 @@ test.describe('Decision draft reasonings', () => {
 
     const picker = await draftPage.openPicker('PRESCHOOL')
     await picker.selectReasoning(reasoning.id)
-    await picker.close()
+    await picker.confirm()
     await expect(preschoolCard.individualReasoning(reasoning.id)).toBeVisible()
 
     await page.reload()
@@ -196,7 +197,7 @@ test.describe('Decision draft reasonings', () => {
 
     const reopenedPicker = await draftPage.openPicker('PRESCHOOL')
     await reopenedPicker.deselectReasoning(reasoning.id)
-    await reopenedPicker.close()
+    await reopenedPicker.confirm()
     await expect(preschoolCard.individualReasoning(reasoning.id)).toBeHidden()
   })
 

@@ -121,6 +121,7 @@ test.describe('Citizen applications list', () => {
   test('Citizen sees application that is waiting for decision acceptance', async ({
     evaka
   }) => {
+    await Fixture.decisionReasoningGenericDefaults().save()
     const application = applicationFixture(
       testChild,
       testAdult,

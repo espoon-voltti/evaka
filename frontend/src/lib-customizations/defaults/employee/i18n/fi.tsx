@@ -3445,8 +3445,6 @@ export const fi = {
       'Valitse sijoitukset, joista lähetetään kuntalaiselle päätökset:',
     unitInlineSummary: (address: string, manager: string) =>
       `${address} · Johtaja: ${manager}`,
-    unitDataMissing:
-      'Yksikön tiedot puuttuvat — pyydä pääkäyttäjää täydentämään.',
     info1:
       'Lähettämällä päätöksen hyväksyt sijoitussuunnitelman. Kuntalaiselle lähetetään ne päätökset, jotka olet alla valinnut.',
     info2:
@@ -3456,7 +3454,19 @@ export const fi = {
     ssnInfo2: 'Lähetä tulostettu päätös postitse ja merkitse se postitetuksi.',
     unitInfo1: 'Yksikön tiedot ovat puutteelliset.',
     unitInfo2:
-      'Puutteelliset tiedot on päivitettävä ennen päätösten luontia. Ota yhteyttä kehittäjiin.',
+      'Puutteelliset tiedot on päivitettävä ennen päätösten lähettämistä. Ota yhteys pääkäyttäjään.',
+    unitFieldsMissingUnitName: 'Valittu yksikkö',
+    unitFields: {
+      unit: 'Yksikön tietoja ei löytynyt',
+      daycareDecisionName: 'Varhaiskasvatuspäätöksellä näkyvä yksikön nimi',
+      preschoolDecisionName: 'Esiopetuspäätöksellä näkyvä yksikön nimi',
+      manager: 'Yksikön johtaja',
+      streetAddress: 'Käyntiosoite',
+      postalCode: 'Postinumero',
+      postOffice: 'Postitoimipaikka',
+      decisionHandler: 'Päätöksen käsittelijä',
+      decisionHandlerAddress: 'Päätöksen käsittelijän osoite'
+    },
     notGuardianInfo1: 'Hakemuksen huoltaja ei ole lapsen huoltaja.',
     notGuardianInfo2:
       'Henkilö joka on merkitty hakemuksella huoltajaksi ei ole VTJn mukaan lapsen huoltaja. Päätös pitää lähettää paperisena.',
@@ -3482,6 +3492,7 @@ export const fi = {
     daycareDecisionName: 'Yksikön nimi varhaiskasvatuspäätöksellä',
     unitManager: 'Yksikön johtaja',
     unitAddress: 'Yksikön osoite',
+    handler: 'Asian käsittelijä',
     handlerName: 'Käsittelijän nimi',
     handlerAddress: 'Käsittelijän osoite',
     receiver: 'Vastaanottaja',
@@ -3495,7 +3506,7 @@ export const fi = {
       individual: 'Yksilölliset perustelut',
       pickerButton: 'Valitse',
       noGenericForSlot:
-        'Tähän osa-alueeseen ei ole julkaistua valmista perustelua.',
+        'Pääkäyttäjä ei ole lisännyt yleistä perustelua tälle päätöstyypille.',
       noIndividual: 'Päätökseen ei ole liitetty yksilöllisiä perusteluja.',
       genericRangeOpen: (validFrom: string) =>
         `${validFrom}– alkavat sijoitukset`,

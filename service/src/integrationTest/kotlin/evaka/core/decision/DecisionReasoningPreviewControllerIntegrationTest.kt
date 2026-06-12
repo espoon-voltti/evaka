@@ -17,11 +17,11 @@ import evaka.core.decision.reasoning.DecisionGenericReasoningRequest
 import evaka.core.decision.reasoning.DecisionIndividualReasoningRequest
 import evaka.core.decision.reasoning.DecisionReasoningCollectionType
 import evaka.core.decision.reasoning.DecisionReasoningCollectionType.DAYCARE as DAYCARE_COLLECTION
-import evaka.core.decision.reasoning.insertDecisionIndividualReasoningLink
 import evaka.core.decision.reasoning.insertGenericReasoning
 import evaka.core.decision.reasoning.insertIndividualReasoning
 import evaka.core.decision.reasoning.removeGenericReasoning
 import evaka.core.decision.reasoning.removeIndividualReasoning
+import evaka.core.decision.reasoning.setDecisionReasoningIndividualSelections
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.DecisionIndividualReasoningId
@@ -35,9 +35,11 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
@@ -45,9 +47,9 @@ import evaka.core.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class DecisionReasoningPreviewControllerIntegrationTest :
@@ -65,6 +67,7 @@ class DecisionReasoningPreviewControllerIntegrationTest :
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
+            tx.insertDefaultDecisionGenericReasonings()
             tx.insert(admin)
             tx.insert(serviceWorker)
         }
@@ -77,8 +80,8 @@ class DecisionReasoningPreviewControllerIntegrationTest :
 
         val response = getPreview(decisionId)
 
-        assertEquals(readyId, response.genericReasoning.reasoning?.id)
-        assertEquals(DAYCARE_COLLECTION, response.genericReasoning.collectionType)
+        assertEquals(readyId, response.genericReasoning?.id)
+        assertEquals(DAYCARE_COLLECTION, response.genericReasoning?.collectionType)
     }
 
     @Test
@@ -87,8 +90,7 @@ class DecisionReasoningPreviewControllerIntegrationTest :
         val (decisionId, applicationId) = createPlannedDecision(DecisionType.DAYCARE)
         sendDecision(applicationId)
 
-        val ex = kotlin.runCatching { getPreview(decisionId) }
-        assertIs<BadRequest>(ex.exceptionOrNull())
+        assertThrows<BadRequest> { getPreview(decisionId) }
     }
 
     @Test
@@ -98,7 +100,7 @@ class DecisionReasoningPreviewControllerIntegrationTest :
 
         val response = getPreview(decisionId)
 
-        assertEquals(null, response.genericReasoning.validUntil)
+        assertEquals(null, response.genericReasoning?.endDate)
     }
 
     @Test
@@ -109,7 +111,7 @@ class DecisionReasoningPreviewControllerIntegrationTest :
 
         val response = getPreview(decisionId)
 
-        assertEquals(LocalDate.of(2026, 9, 8), response.genericReasoning.validUntil)
+        assertEquals(LocalDate.of(2026, 9, 8), response.genericReasoning?.endDate)
     }
 
     @Test
@@ -121,7 +123,7 @@ class DecisionReasoningPreviewControllerIntegrationTest :
 
         val response = getPreview(decisionId)
 
-        assertEquals(null, response.genericReasoning.validUntil)
+        assertEquals(null, response.genericReasoning?.endDate)
     }
 
     @Test
@@ -129,11 +131,16 @@ class DecisionReasoningPreviewControllerIntegrationTest :
         val (decisionId, _) = createPlannedDecision(DecisionType.DAYCARE)
         val indId = createIndividual(DAYCARE_COLLECTION)
         db.transaction { tx ->
-            tx.insertDecisionIndividualReasoningLink(decisionId, indId, now, admin.evakaUserId)
+            tx.setDecisionReasoningIndividualSelections(
+                decisionId,
+                setOf(indId),
+                now,
+                admin.evakaUserId,
+            )
         }
 
         val response = getPreview(decisionId)
-        assertEquals(listOf(indId), response.individualReasonings.map { it.id })
+        assertEquals(listOf(indId), response.individualReasoningSelections.map { it.id })
     }
 
     @Test
@@ -144,9 +151,7 @@ class DecisionReasoningPreviewControllerIntegrationTest :
                 db.transaction { tx -> tx.insert(it) }
             }
 
-        val ex = kotlin.runCatching { getPreview(decisionId, user = unauthorized.user) }
-        assertEquals(true, ex.isFailure)
-        assertEquals("Forbidden", ex.exceptionOrNull()?.javaClass?.simpleName)
+        assertThrows<Forbidden> { getPreview(decisionId, user = unauthorized.user) }
     }
 
     @Test
@@ -154,16 +159,10 @@ class DecisionReasoningPreviewControllerIntegrationTest :
         val (decisionId, _) = createPlannedDecision(DecisionType.DAYCARE)
         val indId = createIndividual(DAYCARE_COLLECTION)
 
-        decisionController.linkIndividualReasoning(
-            dbInstance(),
-            serviceWorker.user,
-            clock,
-            decisionId,
-            DecisionController.LinkIndividualReasoningBody(reasoningId = indId),
-        )
+        linkReasonings(decisionId, setOf(indId))
 
         val response = getPreview(decisionId)
-        assertEquals(listOf(indId), response.individualReasonings.map { it.id })
+        assertEquals(listOf(indId), response.individualReasoningSelections.map { it.id })
     }
 
     @Test
@@ -172,16 +171,7 @@ class DecisionReasoningPreviewControllerIntegrationTest :
         sendDecision(applicationId)
         val indId = createIndividual(DAYCARE_COLLECTION)
 
-        val ex = kotlin.runCatching {
-            decisionController.linkIndividualReasoning(
-                dbInstance(),
-                serviceWorker.user,
-                clock,
-                decisionId,
-                DecisionController.LinkIndividualReasoningBody(reasoningId = indId),
-            )
-        }
-        assertIs<BadRequest>(ex.exceptionOrNull())
+        assertThrows<BadRequest> { linkReasonings(decisionId, setOf(indId)) }
     }
 
     @Test
@@ -189,57 +179,46 @@ class DecisionReasoningPreviewControllerIntegrationTest :
         val (decisionId, _) = createPlannedDecision(DecisionType.DAYCARE)
         val indId = createIndividual(DecisionReasoningCollectionType.PRESCHOOL)
 
-        val ex = kotlin.runCatching {
-            decisionController.linkIndividualReasoning(
-                dbInstance(),
-                serviceWorker.user,
-                clock,
-                decisionId,
-                DecisionController.LinkIndividualReasoningBody(reasoningId = indId),
-            )
-        }
-        assertIs<BadRequest>(ex.exceptionOrNull())
+        assertThrows<BadRequest> { linkReasonings(decisionId, setOf(indId)) }
     }
 
     @Test
-    fun `DELETE individual link succeeds for PENDING decision`() {
+    fun `POST individual link replaces previous selections for PENDING decision`() {
+        val (decisionId, _) = createPlannedDecision(DecisionType.DAYCARE)
+        val indId1 = createIndividual(DAYCARE_COLLECTION)
+        val indId2 = createIndividual(DAYCARE_COLLECTION)
+        db.transaction { tx ->
+            tx.setDecisionReasoningIndividualSelections(
+                decisionId,
+                setOf(indId1, indId2),
+                now,
+                admin.evakaUserId,
+            )
+        }
+
+        linkReasonings(decisionId, setOf(indId2))
+
+        val response = getPreview(decisionId)
+        assertEquals(listOf(indId2), response.individualReasoningSelections.map { it.id })
+    }
+
+    @Test
+    fun `POST individual link with empty set clears previous selections for PENDING decision`() {
         val (decisionId, _) = createPlannedDecision(DecisionType.DAYCARE)
         val indId = createIndividual(DAYCARE_COLLECTION)
         db.transaction { tx ->
-            tx.insertDecisionIndividualReasoningLink(decisionId, indId, now, admin.evakaUserId)
-        }
-
-        decisionController.unlinkIndividualReasoning(
-            dbInstance(),
-            serviceWorker.user,
-            clock,
-            decisionId,
-            indId,
-        )
-
-        val response = getPreview(decisionId)
-        assertEquals(emptyList(), response.individualReasonings)
-    }
-
-    @Test
-    fun `DELETE individual link is rejected after send`() {
-        val (decisionId, applicationId) = createPlannedDecision(DecisionType.DAYCARE)
-        val indId = createIndividual(DAYCARE_COLLECTION)
-        db.transaction { tx ->
-            tx.insertDecisionIndividualReasoningLink(decisionId, indId, now, admin.evakaUserId)
-        }
-        sendDecision(applicationId)
-
-        val ex = kotlin.runCatching {
-            decisionController.unlinkIndividualReasoning(
-                dbInstance(),
-                serviceWorker.user,
-                clock,
+            tx.setDecisionReasoningIndividualSelections(
                 decisionId,
-                indId,
+                setOf(indId),
+                now,
+                admin.evakaUserId,
             )
         }
-        assertIs<BadRequest>(ex.exceptionOrNull())
+
+        linkReasonings(decisionId, emptySet())
+
+        val response = getPreview(decisionId)
+        assertEquals(emptyList(), response.individualReasoningSelections.map { it.id })
     }
 
     @Test
@@ -247,16 +226,7 @@ class DecisionReasoningPreviewControllerIntegrationTest :
         val (decisionId, _) = createPlannedDecision(DecisionType.DAYCARE)
         val bogusReasoningId = DecisionIndividualReasoningId(java.util.UUID.randomUUID())
 
-        val ex = kotlin.runCatching {
-            decisionController.linkIndividualReasoning(
-                dbInstance(),
-                serviceWorker.user,
-                clock,
-                decisionId,
-                DecisionController.LinkIndividualReasoningBody(reasoningId = bogusReasoningId),
-            )
-        }
-        assertIs<NotFound>(ex.exceptionOrNull())
+        assertThrows<NotFound> { linkReasonings(decisionId, setOf(bogusReasoningId)) }
     }
 
     @Test
@@ -265,16 +235,7 @@ class DecisionReasoningPreviewControllerIntegrationTest :
         val indId = createIndividual(DAYCARE_COLLECTION)
         db.transaction { tx -> tx.removeIndividualReasoning(indId, now) }
 
-        val ex = kotlin.runCatching {
-            decisionController.linkIndividualReasoning(
-                dbInstance(),
-                serviceWorker.user,
-                clock,
-                decisionId,
-                DecisionController.LinkIndividualReasoningBody(reasoningId = indId),
-            )
-        }
-        assertIs<BadRequest>(ex.exceptionOrNull())
+        assertThrows<BadRequest> { linkReasonings(decisionId, setOf(indId)) }
     }
 
     @Test
@@ -282,16 +243,7 @@ class DecisionReasoningPreviewControllerIntegrationTest :
         val indId = createIndividual(DAYCARE_COLLECTION)
         val bogusDecisionId = DecisionId(java.util.UUID.randomUUID())
 
-        val ex = kotlin.runCatching {
-            decisionController.linkIndividualReasoning(
-                dbInstance(),
-                serviceWorker.user,
-                clock,
-                bogusDecisionId,
-                DecisionController.LinkIndividualReasoningBody(reasoningId = indId),
-            )
-        }
-        assertEquals(true, ex.isFailure)
+        assertThrows<NotFound> { linkReasonings(bogusDecisionId, setOf(indId)) }
     }
 
     private fun createReadyGeneric(
@@ -393,4 +345,17 @@ class DecisionReasoningPreviewControllerIntegrationTest :
         decisionId: DecisionId,
         user: AuthenticatedUser.Employee = serviceWorker.user,
     ) = decisionController.getDraftReasoningPreview(dbInstance(), user, clock, decisionId)
+
+    private fun linkReasonings(
+        decisionId: DecisionId,
+        reasoningIds: Set<DecisionIndividualReasoningId>,
+        user: AuthenticatedUser.Employee = serviceWorker.user,
+    ) =
+        decisionController.linkIndividualReasonings(
+            dbInstance(),
+            user,
+            clock,
+            decisionId,
+            DecisionController.LinkIndividualReasoningBody(reasoningIds = reasoningIds),
+        )
 }

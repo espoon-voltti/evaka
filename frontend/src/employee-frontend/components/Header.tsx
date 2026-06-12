@@ -414,7 +414,7 @@ export default React.memo(function Header() {
                   {i18n.documentTemplates.title}
                 </Link>
               )}
-              {user?.accessibleFeatures.decisionReasonings && (
+              {user?.accessibleFeatures.decisionReasoningManagement && (
                 <Link
                   to="/decision-reasonings"
                   onClick={closeUserPopup}

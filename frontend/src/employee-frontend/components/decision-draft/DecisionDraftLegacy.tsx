@@ -264,7 +264,7 @@ export default React.memo(function DecisionDraftLegacy() {
               contents={[
                 {
                   label: i18n.decisionDraft.placementUnit,
-                  value: decisionDraftGroup.placementUnitName
+                  value: decisionDraftGroup.placementUnit.name
                 },
                 {
                   label: i18n.decisionDraft.receiver,
@@ -393,7 +393,7 @@ export default React.memo(function DecisionDraftLegacy() {
                                 )}
                                 <WarningContainer
                                   $visible={
-                                    decisionDraftGroup.unit.id !==
+                                    decisionDraftGroup.placementUnit.id !==
                                     decision.unitId
                                   }
                                 >

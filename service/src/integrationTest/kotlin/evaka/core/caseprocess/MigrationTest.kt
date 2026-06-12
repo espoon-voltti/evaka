@@ -36,6 +36,7 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevVoucherValueDecision
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
@@ -176,6 +177,7 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val child = DevPerson()
 
         val applicationId = db.transaction { tx ->
+            tx.insertDefaultDecisionGenericReasonings()
             tx.insert(employee)
             tx.insert(area)
             tx.insert(unit)

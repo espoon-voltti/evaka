@@ -420,8 +420,7 @@ const routes: EmployeeRoute[] = [
   {
     path: '/decision-reasonings',
     component: DecisionReasoningsPage,
-    title: 'decisionReasonings',
-    disabled: !featureFlags.decisionReasoningOptions
+    title: 'decisionReasonings'
   },
   {
     path: '/document-templates',

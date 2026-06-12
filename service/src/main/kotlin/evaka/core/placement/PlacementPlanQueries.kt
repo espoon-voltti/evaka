@@ -106,18 +106,20 @@ WHERE application_id = ${bind(applicationId)} AND deleted = false
         }
 }
 
-fun Database.Read.getPlacementPlanUnitName(applicationId: ApplicationId): String {
+data class PlacementPlanUnit(val id: DaycareId, val name: String)
+
+fun Database.Read.getPlacementPlanUnit(applicationId: ApplicationId): PlacementPlanUnit {
     return createQuery {
             sql(
                 """
-SELECT d.name
+SELECT d.id,d.name
 FROM placement_plan
 JOIN daycare d ON d.id = placement_plan.unit_id
 WHERE application_id = ${bind(applicationId)} AND deleted = false
 """
             )
         }
-        .exactlyOneOrNull<String>()
+        .exactlyOneOrNull<PlacementPlanUnit>()
         ?: throw NotFound("Placement plan for application $applicationId not found")
 }
 

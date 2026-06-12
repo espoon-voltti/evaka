@@ -40,6 +40,7 @@ test.describe('Citizen application decisions', () => {
     await preschoolTerm2022.save()
     await testCareArea.save()
     await testDaycare.save()
+    await Fixture.decisionReasoningGenericDefaults().save()
     await Fixture.family({
       guardian: testAdult,
       children: [testChild, testChild2, testChildRestricted]

@@ -11,9 +11,8 @@ import evaka.core.ConstList
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionDraft
 import evaka.core.decision.DecisionDraftUpdate
-import evaka.core.decision.DecisionUnit
+import evaka.core.decision.DecisionType
 import evaka.core.decision.fetchDecisionDrafts
-import evaka.core.decision.getDecisionUnit
 import evaka.core.decision.getDecisionsByApplication
 import evaka.core.decision.updateDecisionDrafts
 import evaka.core.identity.ExternalIdentifier
@@ -26,7 +25,8 @@ import evaka.core.placement.PlacementPlanDetails
 import evaka.core.placement.PlacementPlanDraft
 import evaka.core.placement.PlacementPlanRejectReason
 import evaka.core.placement.PlacementPlanService
-import evaka.core.placement.getPlacementPlanUnitName
+import evaka.core.placement.PlacementPlanUnit
+import evaka.core.placement.getPlacementPlanUnit
 import evaka.core.placement.getPlacementPlans
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.AreaId
@@ -475,6 +475,40 @@ class ApplicationControllerV2(
             }
     }
 
+    private fun validateDecisionDrafts(
+        decisionDrafts: List<DecisionDraft>
+    ): Pair<DecisionDraft, DecisionDraft?> {
+        if (decisionDrafts.isEmpty()) {
+            throw IllegalStateException("At least one decision draft must be provided")
+        }
+        if (decisionDrafts.size > 2) {
+            throw IllegalStateException("At most two decision drafts can be provided")
+        }
+        if (decisionDrafts.size == 1) {
+            return Pair(decisionDrafts[0], null)
+        }
+        val primaryDecision =
+            decisionDrafts.firstOrNull {
+                it.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)
+            }
+                ?: throw IllegalStateException(
+                    "Found two decision drafts but none of them is of type ${DecisionType.PRESCHOOL} or ${DecisionType.PREPARATORY_EDUCATION}"
+                )
+
+        val connectedDecision = decisionDrafts.firstOrNull { it.id != primaryDecision.id }
+        if (connectedDecision != null) {
+            if (
+                connectedDecision.type !in
+                    listOf(DecisionType.PRESCHOOL_DAYCARE, DecisionType.PRESCHOOL_CLUB)
+            ) {
+                throw IllegalStateException(
+                    "Found two decision drafts but the connected decision is not of type ${DecisionType.PRESCHOOL_DAYCARE} or ${DecisionType.PRESCHOOL_CLUB}"
+                )
+            }
+        }
+        return Pair(primaryDecision, connectedDecision)
+    }
+
     @GetMapping("/{applicationId}/decision-drafts")
     fun getDecisionDrafts(
         db: Database,
@@ -502,10 +536,12 @@ class ApplicationControllerV2(
                         )
                     }
 
-                    val placementUnitName = tx.getPlacementPlanUnitName(applicationId)
+                    val placementUnit = tx.getPlacementPlanUnit(applicationId)
 
                     val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
-                    val unit = getDecisionUnit(tx, decisionDrafts[0].unitId)
+
+                    val (primaryDecision, connectedDecision) =
+                        validateDecisionDrafts(decisionDrafts)
 
                     val applicationGuardian =
                         tx.getPersonById(application.guardianId)
@@ -525,8 +561,9 @@ class ApplicationControllerV2(
 
                     DecisionDraftGroup(
                         decisions = decisionDrafts,
-                        placementUnitName = placementUnitName,
-                        unit = unit,
+                        primaryDecision = primaryDecision,
+                        connectedDecision = connectedDecision,
+                        placementUnit = placementUnit,
                         guardian =
                             GuardianInfo(
                                 firstName = applicationGuardian.firstName,
@@ -875,9 +912,10 @@ data class AcceptDecisionRequest(val decisionId: DecisionId, val requestedStartD
 data class RejectDecisionRequest(val decisionId: DecisionId)
 
 data class DecisionDraftGroup(
-    val decisions: List<DecisionDraft>,
-    val placementUnitName: String,
-    val unit: DecisionUnit,
+    val decisions: List<DecisionDraft>, // deprecated
+    val primaryDecision: DecisionDraft,
+    val connectedDecision: DecisionDraft?,
+    val placementUnit: PlacementPlanUnit,
     val guardian: GuardianInfo,
     val otherGuardian: GuardianInfo?,
     val child: ChildInfo,

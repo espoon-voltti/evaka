@@ -22,6 +22,7 @@ evaka:
       username: evaka_migration_local
   decision_reasoning:
     generic_removal_enabled: true
+    enabled: true
   email:
     enabled: false
   frontend:

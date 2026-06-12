@@ -68,6 +68,7 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateRange
@@ -220,6 +221,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun beforeEach() {
         MockSfiMessagesClient.reset()
         db.transaction { tx ->
+            tx.insertDefaultDecisionGenericReasonings()
             tx.insert(employee)
             tx.insert(area)
             tx.insert(daycare)

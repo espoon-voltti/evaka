@@ -5,6 +5,7 @@
 package evaka.core.decision
 
 import evaka.core.EmailEnv
+import evaka.core.EvakaEnv
 import evaka.core.application.ApplicationDetails
 import evaka.core.application.ServiceNeed
 import evaka.core.application.fetchApplicationDetails
@@ -13,7 +14,8 @@ import evaka.core.daycare.UnitManager
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.daycare.getDaycare
-import evaka.core.decision.reasoning.freezeGenericReasoningLinks
+import evaka.core.decision.reasoning.resolveApplicableGenericReasoning
+import evaka.core.decision.reasoning.updateGenericReasoningToDecision
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
@@ -65,6 +67,7 @@ class DecisionService(
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val evakaEnv: EvakaEnv,
 ) {
     fun finalizeDecisions(
         tx: Database.Transaction,
@@ -78,19 +81,16 @@ class DecisionService(
         val decisionIds = tx.finalizeDecisions(applicationId, now)
         val decisions = decisionIds.map { tx.getDecision(it)!! }
 
-        decisions.forEach { decision ->
-            val frozen =
-                tx.freezeGenericReasoningLinks(
-                    decisionId = decision.id,
-                    decisionType = decision.type,
-                    startDate = decision.startDate,
-                    now = now,
-                    createdBy = user.evakaUserId,
-                )
-            if (frozen.isEmpty()) {
-                logger.warn {
-                    "Decision ${decision.id} (${decision.type}) finalized with no generic reasoning in force for start date ${decision.startDate}"
-                }
+        if (evakaEnv.decisionReasoningEnabled) {
+            decisions.forEach { decision ->
+                val genericReasoning =
+                    resolveApplicableGenericReasoning(tx, decision.type, decision.startDate)
+                        ?.takeIf { it.ready }
+                        ?: throw NotFound(
+                            "No applicable generic reasoning found for decision ${decision.id} (type: ${decision.type}, start date: ${decision.startDate})"
+                        )
+
+                tx.updateGenericReasoningToDecision(decision.id, genericReasoning.id)
             }
         }
 

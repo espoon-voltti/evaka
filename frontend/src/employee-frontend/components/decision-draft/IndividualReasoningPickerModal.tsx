@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
 import type {
@@ -13,11 +13,12 @@ import type {
   DecisionId,
   DecisionIndividualReasoningId
 } from 'lib-common/generated/api-types/shared'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { useQueryResult } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
@@ -25,27 +26,9 @@ import { renderResult } from '../async-rendering'
 
 import { decisionTypeToCollectionType } from './decisionTypeToCollectionType'
 import {
-  eligibleIndividualReasoningsQuery,
-  linkIndividualReasoningMutation,
-  unlinkIndividualReasoningMutation
+  getIndividualReasoningsQuery,
+  linkIndividualReasoningsMutation
 } from './queries'
-
-const ModalShell = styled.div`
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`
-
-const HeadingRow = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`
-
-const HeadingTitle = styled.h2`
-  margin: 0;
-`
 
 const Subtitle = styled.div`
   color: ${colors.grayscale.g70};
@@ -87,11 +70,6 @@ const TextLabel = styled.div`
   font-size: 0.9em;
 `
 
-const Footer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-`
-
 interface Props {
   decisionId: DecisionId
   decisionType: DecisionType
@@ -106,84 +84,95 @@ export default React.memo(function IndividualReasoningPickerModal({
   decisionType,
   childName,
   decisionTypeLabel,
-  linkedIds,
+  linkedIds: initialLinkedIds,
   onClose
 }: Props) {
   const { i18n, lang } = useTranslation()
   const collectionType = decisionTypeToCollectionType(decisionType)
-  const eligibleResult = useQueryResult(
-    eligibleIndividualReasoningsQuery({ collectionType })
+  const individualReasonings = useQueryResult(
+    getIndividualReasoningsQuery({ collectionType })
   )
+  const [linkedReasoningIds, setLinkedReasoningIds] =
+    React.useState(initialLinkedIds)
 
-  const { mutateAsync: link } = useMutationResult(
-    linkIndividualReasoningMutation
-  )
-  const { mutateAsync: unlink } = useMutationResult(
-    unlinkIndividualReasoningMutation
-  )
+  const isValid = useMemo(() => {
+    if (!individualReasonings.isSuccess) return false
+    return Array.from(linkedReasoningIds).every((id) =>
+      individualReasonings.value.some(
+        (r) => r.id === id && r.removedAt === null
+      )
+    )
+  }, [individualReasonings, linkedReasoningIds])
 
   return (
-    <PlainModal margin="auto" width="wide" onEscapeKey={onClose}>
-      <ModalShell>
-        <HeadingRow>
-          <HeadingTitle>
-            {i18n.decisionDraft.reasonings.modalTitle}
-          </HeadingTitle>
-          <Subtitle>{`${childName} · ${decisionTypeLabel}`}</Subtitle>
-        </HeadingRow>
-        {renderResult(eligibleResult, (rows) => {
-          const text = (r: DecisionIndividualReasoning) =>
-            lang === 'sv' ? r.textSv : r.textFi
-          const title = (r: DecisionIndividualReasoning) =>
-            lang === 'sv' ? r.titleSv : r.titleFi
-          const eligible = rows
-            .filter((r) => r.removedAt === null)
-            .sort((a, b) => title(a).localeCompare(title(b), lang))
-          return (
-            <RowList>
-              {eligible.map((r) => {
-                const selected = linkedIds.has(r.id)
-                return (
-                  <Row
-                    key={r.id}
-                    $selected={selected}
-                    data-qa={`reasoning-row-${r.id}`}
-                  >
-                    <Checkbox
-                      checked={selected}
-                      label={title(r)}
-                      hiddenLabel
-                      onChange={(checked: boolean) => {
-                        void (checked
-                          ? link({
-                              id: decisionId,
-                              body: { reasoningId: r.id }
-                            })
-                          : unlink({ id: decisionId, reasoningId: r.id }))
-                      }}
-                    />
-                    <RowBody>
-                      <ItemTitle>{title(r)}</ItemTitle>
-                      <TextLabel>
-                        {i18n.decisionDraft.reasonings.modalEntryTextLabel}
-                      </TextLabel>
-                      <span>{text(r)}</span>
-                    </RowBody>
-                  </Row>
-                )
-              })}
-            </RowList>
-          )
-        })}
-        <Footer>
-          <Button
-            primary
-            onClick={onClose}
-            text={i18n.decisionDraft.reasonings.modalCloseButton}
-            data-qa="picker-close"
-          />
-        </Footer>
-      </ModalShell>
-    </PlainModal>
+    <MutateFormModal
+      title={i18n.decisionDraft.reasonings.modalTitle}
+      resolveMutation={linkIndividualReasoningsMutation}
+      resolveAction={() => ({
+        id: decisionId,
+        body: {
+          reasoningIds: Array.from(linkedReasoningIds)
+        }
+      })}
+      resolveLabel={i18n.common.confirm}
+      resolveDisabled={!isValid}
+      onSuccess={onClose}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
+      width="wide"
+    >
+      <Subtitle>{`${childName} · ${decisionTypeLabel}`}</Subtitle>
+      <Gap />
+      {renderResult(individualReasonings, (rows) => {
+        const text = (r: DecisionIndividualReasoning) =>
+          lang === 'sv' ? r.textSv : r.textFi
+        const title = (r: DecisionIndividualReasoning) =>
+          lang === 'sv' ? r.titleSv : r.titleFi
+        const eligible = rows
+          .filter((r) => r.removedAt === null || linkedReasoningIds.has(r.id))
+          .sort((a, b) => title(a).localeCompare(title(b), lang))
+        return (
+          <RowList>
+            {eligible.map((r) => {
+              const selected = linkedReasoningIds.has(r.id)
+              return (
+                <Row
+                  key={r.id}
+                  $selected={selected}
+                  data-qa={`reasoning-row-${r.id}`}
+                >
+                  <Checkbox
+                    checked={selected}
+                    label={title(r)}
+                    hiddenLabel
+                    onChange={(checked: boolean) =>
+                      checked
+                        ? setLinkedReasoningIds((prev) =>
+                            new Set(prev).add(r.id)
+                          )
+                        : setLinkedReasoningIds((prev) => {
+                            const newSet = new Set(prev)
+                            newSet.delete(r.id)
+                            return newSet
+                          })
+                    }
+                  />
+                  <RowBody>
+                    <ItemTitle>{title(r)}</ItemTitle>
+                    <TextLabel>
+                      {i18n.decisionDraft.reasonings.modalEntryTextLabel}
+                    </TextLabel>
+                    <span>{text(r)}</span>
+                    {r.removedAt && (
+                      <AlertBox title="Poistettu käytöstä" thin noMargin />
+                    )}
+                  </RowBody>
+                </Row>
+              )
+            })}
+          </RowList>
+        )
+      })}
+    </MutateFormModal>
   )
 })

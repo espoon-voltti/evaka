@@ -12,8 +12,7 @@ import {
   getDecisionUnits,
   getDraftReasoningPreview,
   getIndividualReasonings,
-  linkIndividualReasoning,
-  unlinkIndividualReasoning
+  linkIndividualReasonings
 } from '../../generated/api-clients/decision'
 
 const q = new Queries()
@@ -24,18 +23,11 @@ export const updateDecisionDraftsMutation = q.mutation(updateDecisionDrafts, [
   decisionDraftsQuery.prefix
 ])
 
-export const draftReasoningPreviewQuery = q.query(getDraftReasoningPreview)
+export const getDraftReasoningPreviewQuery = q.query(getDraftReasoningPreview)
 
-export const eligibleIndividualReasoningsQuery = q.query(
-  getIndividualReasonings
-)
+export const getIndividualReasoningsQuery = q.query(getIndividualReasonings)
 
-export const linkIndividualReasoningMutation = q.mutation(
-  linkIndividualReasoning,
-  [({ id }) => draftReasoningPreviewQuery({ id })]
-)
-
-export const unlinkIndividualReasoningMutation = q.mutation(
-  unlinkIndividualReasoning,
-  [({ id }) => draftReasoningPreviewQuery({ id })]
+export const linkIndividualReasoningsMutation = q.mutation(
+  linkIndividualReasonings,
+  [({ id }) => getDraftReasoningPreviewQuery({ id })]
 )

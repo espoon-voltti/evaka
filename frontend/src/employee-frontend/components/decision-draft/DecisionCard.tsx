@@ -7,17 +7,15 @@ import styled from 'styled-components'
 
 import type {
   DecisionDraft,
-  DecisionType,
-  DecisionUnit
+  DecisionType
 } from 'lib-common/generated/api-types/decision'
-import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { Chip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights, Title } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -27,7 +25,7 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import IndividualReasoningPickerModal from './IndividualReasoningPickerModal'
-import { draftReasoningPreviewQuery } from './queries'
+import { getDraftReasoningPreviewQuery } from './queries'
 
 const Card = styled.div<{ $twoColumn: boolean }>`
   border: 1px solid ${colors.grayscale.g15};
@@ -127,43 +125,44 @@ const Muted = styled.div`
 
 interface Props {
   decision: DecisionDraft
-  decisions: DecisionDraft[]
   childName: string
-  units: DecisionUnit[]
-  perDecisionUnitSelector: boolean
+  showPlannedCheckbox: boolean
+  primaryDecisionType: DecisionType
   onPlannedChange: (planned: boolean) => void
-  onUnitChange: (unitId: DaycareId) => void
 }
 
+/**
+ * When the primary decision is PREPARATORY_EDUCATION, connected care decisions
+ * (PRESCHOOL_DAYCARE or PRESCHOOL_CLUB) should be labeled as PREPARATORY_DAYCARE
+ * to match the educational context, even though they share the same underlying type.
+ */
 const decisionTypeForLabel = (
   type: DecisionType,
-  decisions: DecisionDraft[]
+  primaryDecisionType: DecisionType
 ) =>
   (type === 'PRESCHOOL_DAYCARE' || type === 'PRESCHOOL_CLUB') &&
-  decisions.some((d) => d.type === 'PREPARATORY_EDUCATION')
+  primaryDecisionType === 'PREPARATORY_EDUCATION'
     ? 'PREPARATORY_DAYCARE'
     : type
 
 export default React.memo(function DecisionCard({
   decision,
-  decisions,
   childName,
-  units,
-  perDecisionUnitSelector,
-  onPlannedChange,
-  onUnitChange
+  showPlannedCheckbox,
+  primaryDecisionType,
+  onPlannedChange
 }: Props) {
   const { i18n, lang } = useTranslation()
   const [pickerOpen, setPickerOpen] = useState(false)
   const checkboxId = useUniqueId('planned')
   const previewResult = useQueryResult(
-    draftReasoningPreviewQuery({ id: decision.id })
+    getDraftReasoningPreviewQuery({ id: decision.id })
   )
 
   const typeLabel =
-    i18n.decisionDraft.types[decisionTypeForLabel(decision.type, decisions)]
-  const showPlannedCheckbox = decisions.length > 1
-  const selectedUnit = units.find((u) => u.id === decision.unitId) ?? null
+    i18n.decisionDraft.types[
+      decisionTypeForLabel(decision.type, primaryDecisionType)
+    ]
 
   return (
     <Card
@@ -193,26 +192,14 @@ export default React.memo(function DecisionCard({
           {decision.endDate?.format() ?? ''}
         </DateRange>
 
-        {perDecisionUnitSelector && (
-          <Combobox
-            items={units}
-            selectedItem={selectedUnit}
-            onChange={(u) => u && onUnitChange(u.id)}
-            getItemLabel={(u) => u?.name ?? ''}
-            getItemDataQa={(u) => u?.id ?? ''}
-            data-qa={`unit-${decision.type}`}
-          />
-        )}
-
         {renderResult(previewResult, (preview) => {
           const text = (s: { textFi: string; textSv: string }) =>
             lang === 'sv' ? s.textSv : s.textFi
           const title = (s: { titleFi: string; titleSv: string }) =>
             lang === 'sv' ? s.titleSv : s.titleFi
           const linkedIds = new Set(
-            preview.individualReasonings.map((r) => r.id)
+            preview.individualReasoningSelections.map((r) => r.id)
           )
-          const generic = preview.genericReasoning
           return (
             <DecisionWrapper>
               <div>
@@ -221,12 +208,12 @@ export default React.memo(function DecisionCard({
                     {i18n.decisionDraft.reasonings.generic}
                   </SectionLabel>
                 </GenericHeader>
-                {generic.reasoning ? (
+                {preview.genericReasoning ? (
                   <GenericCard
-                    $notReady={!generic.reasoning.ready}
-                    data-qa={`generic-card-${generic.collectionType}`}
+                    $notReady={!preview.genericReasoning.ready}
+                    data-qa={`generic-card-${preview.genericReasoning.collectionType}`}
                   >
-                    {!generic.reasoning.ready && (
+                    {!preview.genericReasoning.ready && (
                       <>
                         <Chip
                           label={i18n.decisionReasonings.generic.statusNotReady}
@@ -240,21 +227,21 @@ export default React.memo(function DecisionCard({
                       </>
                     )}
                     <GenericTitle>
-                      {generic.validUntil
+                      {preview.genericReasoning.endDate
                         ? i18n.decisionDraft.reasonings.genericRangeClosed(
-                            generic.reasoning.validFrom.format(),
-                            generic.validUntil.format()
+                            preview.genericReasoning.validFrom.format(),
+                            preview.genericReasoning.endDate.format()
                           )
                         : i18n.decisionDraft.reasonings.genericRangeOpen(
-                            generic.reasoning.validFrom.format()
+                            preview.genericReasoning.validFrom.format()
                           )}
                     </GenericTitle>
-                    <span>{text(generic.reasoning)}</span>
+                    <span>{text(preview.genericReasoning)}</span>
                   </GenericCard>
                 ) : (
-                  <Muted>
-                    {i18n.decisionDraft.reasonings.noGenericForSlot}
-                  </Muted>
+                  <AlertBox
+                    title={i18n.decisionDraft.reasonings.noGenericForSlot}
+                  />
                 )}
               </div>
 
@@ -271,11 +258,11 @@ export default React.memo(function DecisionCard({
                     data-qa={`open-picker-${decision.type}`}
                   />
                 </IndividualHeader>
-                {preview.individualReasonings.length === 0 ? (
+                {preview.individualReasoningSelections.length === 0 ? (
                   <Muted>{i18n.decisionDraft.reasonings.noIndividual}</Muted>
                 ) : (
                   <FixedSpaceColumn $spacing="s">
-                    {preview.individualReasonings.map((ind) => (
+                    {preview.individualReasoningSelections.map((ind) => (
                       <IndividualCard
                         key={ind.id}
                         data-qa={`individual-card-${ind.id}`}

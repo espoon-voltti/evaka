@@ -3473,8 +3473,6 @@ export const sv: typeof fi = {
       'Välj de placeringar som beslut ska skickas för till kommunmedlemmen:',
     unitInlineSummary: (address: string, manager: string) =>
       `${address} · Ledare: ${manager}`,
-    unitDataMissing:
-      'Enhetens uppgifter saknas — be huvudanvändaren komplettera.',
     info1:
       'Genom att skicka beslutet godkänner du placeringsplanen. Kommunmedlemmen skickas de beslut som du har valt nedan.',
     info2:
@@ -3485,7 +3483,19 @@ export const sv: typeof fi = {
       'Skicka det utskrivna beslutet per post och markera det som postlagt.',
     unitInfo1: 'Enhetens uppgifter är bristfälliga.',
     unitInfo2:
-      'Bristfälliga uppgifter måste uppdateras innan besluten skapas. Kontakta huvudanvändaren',
+      'Bristfälliga uppgifter måste uppdateras innan besluten skickas. Kontakta huvudanvändaren',
+    unitFieldsMissingUnitName: 'Vald enhet',
+    unitFields: {
+      unit: 'Enhetens uppgifter hittades inte',
+      daycareDecisionName: 'Enhetens namn på beslut om småbarnspedagogik',
+      preschoolDecisionName: 'Enhetens namn på beslut om förskoleundervisning',
+      manager: 'Enhetens chef',
+      streetAddress: 'Besöksadress',
+      postalCode: 'Postnummer',
+      postOffice: 'Postanstalt',
+      decisionHandler: 'Beslutets handläggare',
+      decisionHandlerAddress: 'Beslutshandläggarens adress'
+    },
     notGuardianInfo1: 'Ansökans vårdnadshavare är inte barnets vårdnadshavare.',
     notGuardianInfo2:
       'Personen som är antecknad som vårdnadshavare i ansökan är inte barnets vårdnadshavare enligt befolkningsregistret. Beslutet måste skickas i pappersform.',
@@ -3512,6 +3522,7 @@ export const sv: typeof fi = {
     daycareDecisionName: 'Enhetens namn på beslut om småbarnspedagogik',
     unitManager: 'Enhetens ledare',
     unitAddress: 'Enhetens adress',
+    handler: 'Ärendets handläggare',
     handlerName: 'Handläggarens namn',
     handlerAddress: 'Handläggarens adress',
     receiver: 'Mottagare',

@@ -49,6 +49,7 @@ import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevReservation
 import evaka.core.shared.dev.DevServiceNeed
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -91,6 +92,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
+            tx.insertDefaultDecisionGenericReasonings()
             tx.insert(snDefaultDaycare)
             tx.insert(employee)
             tx.insert(area)

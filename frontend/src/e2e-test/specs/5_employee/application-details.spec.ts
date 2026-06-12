@@ -47,6 +47,7 @@ test.describe('Application details', () => {
 
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
+    await Fixture.decisionReasoningGenericDefaults().save()
     await testCareArea.save()
     await testDaycare.save()
     await testPreschool.save()

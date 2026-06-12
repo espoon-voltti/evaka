@@ -334,12 +334,13 @@ class SystemController(
                                     QuestionnaireType.OPEN_RANGES,
                             outOfOffice =
                                 permittedGlobalActions.contains(Action.Global.OUT_OF_OFFICE_PAGE),
-                            decisionReasonings =
+                            decisionReasoningManagement =
                                 permittedGlobalActions.contains(
                                     Action.Global.WRITE_DECISION_REASONINGS
                                 ),
                             decisionReasoningGenericRemoval =
                                 env.decisionReasoningGenericRemovalEnabled,
+                            decisionReasoningsEnabled = env.decisionReasoningEnabled,
                             allowEnglishChildDocumentsForAllTypes =
                                 featureConfig.allowEnglishChildDocumentsForAllTypes,
                             messageSupportEmail = featureConfig.messageSupportEmail,

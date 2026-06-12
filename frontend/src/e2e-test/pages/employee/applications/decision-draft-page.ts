@@ -16,11 +16,6 @@ export class DecisionDraftPage {
     await expect(this.page.findByDataQa('save-decisions-button')).toBeVisible()
   }
 
-  async selectUnit(type: DecisionType, unitId: UUID) {
-    const selector = new Combobox(this.page.findByDataQa(`unit-${type}`))
-    await selector.fillAndSelectItem('', unitId)
-  }
-
   async selectSharedUnit(unitId: UUID) {
     const selector = new Combobox(
       this.page.findByDataQa('header-unit-selector')
@@ -87,7 +82,11 @@ export class IndividualReasoningPicker {
     await this.reasoningRow(reasoningId).click()
   }
 
-  async close() {
-    await this.page.findByDataQa('picker-close').click()
+  async confirm() {
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async cancel() {
+    await this.page.findByDataQa('modal-cancelBtn').click()
   }
 }

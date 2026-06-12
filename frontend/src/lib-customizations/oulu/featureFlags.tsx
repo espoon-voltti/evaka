@@ -53,8 +53,7 @@ const features: Features = {
     missingQuestionnaireAnswerMarkerEnabled: true,
     showCitizenApplicationPreschoolTerms: true,
     showMetadataToCitizen: true,
-    placementDesktop: true,
-    decisionReasoningOptions: true
+    placementDesktop: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -93,9 +92,7 @@ const features: Features = {
     missingQuestionnaireAnswerMarkerEnabled: true,
     showCitizenApplicationPreschoolTerms: true,
     showMetadataToCitizen: true,
-    placementDesktop: true,
-    decisionReasoningOptions: true,
-    decisionDraftRedesign: true
+    placementDesktop: true
   },
   prod: {
     environmentLabel: null,
