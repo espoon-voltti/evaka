@@ -27,7 +27,8 @@ import { faSearch } from 'lib-icons'
 import { PROFILE_AGE_THRESHOLD_DEFAULT } from '../../constants'
 import { searchPersonQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
-import { RequireRole } from '../../utils/roles'
+import { UserContext } from '../../state/user'
+import { hasGlobalAction } from '../../utils/roles'
 
 import AddVTJPersonModal from './AddVTJPersonModal'
 import CreatePersonModal from './CreatePersonModal'
@@ -61,7 +62,11 @@ export default React.memo(function Search() {
     sortToggle,
     personSearchParams
   } = useContext(CustomersContext)
+  const { user } = useContext(UserContext)
   const customers = useQueryResult(searchPersonQuery(personSearchParams))
+
+  const canCreatePersonFromVtj = hasGlobalAction(user, 'CREATE_PERSON_FROM_VTJ')
+  const canCreatePerson = hasGlobalAction(user, 'CREATE_PERSON')
 
   const [showAddPersonFromVTJModal, setShowAddPersonFromVTJModal] =
     useState(false)
@@ -84,21 +89,27 @@ export default React.memo(function Search() {
               icon={faSearch}
             />
           </Wrapper>
-          <RequireRole oneOf={['SERVICE_WORKER', 'FINANCE_ADMIN']}>
+          {(canCreatePersonFromVtj || canCreatePerson) && (
             <ButtonsContainer>
-              <AddButton
-                text={i18n.personSearch.addPersonFromVTJ.title}
-                onClick={() => setShowAddPersonFromVTJModal(true)}
-                data-qa="add-vtj-person-button"
-              />
-              <Gap $size="s" $horizontal />
-              <AddButton
-                text={i18n.personSearch.createNewPerson.title}
-                onClick={() => setShowCreatePersonModal(true)}
-                data-qa="create-person-button"
-              />
+              {canCreatePersonFromVtj && (
+                <AddButton
+                  text={i18n.personSearch.addPersonFromVTJ.title}
+                  onClick={() => setShowAddPersonFromVTJModal(true)}
+                  data-qa="add-vtj-person-button"
+                />
+              )}
+              {canCreatePersonFromVtj && canCreatePerson && (
+                <Gap $size="s" $horizontal />
+              )}
+              {canCreatePerson && (
+                <AddButton
+                  text={i18n.personSearch.createNewPerson.title}
+                  onClick={() => setShowCreatePersonModal(true)}
+                  data-qa="create-person-button"
+                />
+              )}
             </ButtonsContainer>
-          </RequireRole>
+          )}
         </TopBar>
         <Gap $size="XL" />
 

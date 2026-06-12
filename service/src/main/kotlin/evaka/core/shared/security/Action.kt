@@ -841,11 +841,13 @@ sealed interface Action {
         ScopedAction<BackupPickupId> {
         UPDATE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup(),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfBackupPickup(),
         ),
         DELETE(
             HasGlobalRole(ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfBackupPickup(),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
+                .inPlacementUnitOfChildOfBackupPickup(),
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -1117,7 +1119,7 @@ sealed interface Action {
                 .inPlacementUnitOfChild(),
         ),
         READ_SERVICE_NEEDS(
-            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, FINANCE_STAFF),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,

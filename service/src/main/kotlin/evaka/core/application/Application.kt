@@ -28,6 +28,7 @@ import evaka.core.shared.db.DatabaseEnum
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.security.Action
 import evaka.core.shared.security.upsertCitizenUser
 import evaka.core.user.EvakaUser
 import java.time.LocalDate
@@ -78,6 +79,7 @@ data class ApplicationSummary(
     val postalCode: String?,
     val postOffice: String?,
     val placementDraft: ApplicationSummaryPlacementDraft? = null,
+    val permittedActions: Set<Action.Application> = emptySet(),
 )
 
 data class ApplicationSummaryPlacementDraft(val unit: PreferredUnit, val startDate: LocalDate)

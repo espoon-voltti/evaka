@@ -232,7 +232,7 @@ Lapsi;"Päivittäisten varhaiskasvatusaikojen luku";READ_DAILY_SERVICE_TIMES;;;;
 Lapsi;"Päivittäisen varhaiskasvatusajan luonti";"CREATE_DAILY_SERVICE_TIME";;;;;;;;;;;
 Lapsi;"Sijoituksen luku";READ_PLACEMENT;x;;x;x;x;x;;x;x;x;x
 Lapsi;"Palvelutarpeen muutoshakemuksien luku";"READ_SERVICE_APPLICATIONS";x;;;;;;;x;;;
-Lapsi;"Palvelutarpeiden luku";READ_SERVICE_NEEDS;x;;;;;x;;x;x;x;x
+Lapsi;"Palvelutarpeiden luku";READ_SERVICE_NEEDS;x;;x;x;x;x;;x;x;x;x
 Lapsi;"Perheen yhteystietojen luku";READ_FAMILY_CONTACTS;x;;;;;;;x;x;x;x
 Lapsi;"Perheen yhteystietojen muokkaus";"UPDATE_FAMILY_CONTACT_DETAILS";x;;;;;;;x;x;x;
 Lapsi;"Perheen yhteystietojen järjestyksen muokkaus";"UPDATE_FAMILY_CONTACT_PRIORITY";x;;;;;;;x;x;x;
@@ -254,8 +254,8 @@ Lapsi;"Kuvan poisto";DELETE_IMAGE;x;;;;;;;x;x;x;
 "Lapsen huomiot lähipäivinä";Muokkaus;UPDATE;x;;;;;;;x;x;x;
 "Lapsen huomiot lähipäivinä";Poisto;DELETE;x;;;;;;;x;x;x;
 "Lapsen kuva";Lataus;DOWNLOAD;x;;;;;;;x;x;x;x
-Varahakija;Muokkaus;UPDATE;x;;;;;;;x;x;;
-Varahakija;Poisto;DELETE;x;;;;;;;x;x;;
+Varahakija;Muokkaus;UPDATE;x;;;;;;;x;x;x;
+Varahakija;Poisto;DELETE;x;;;;;;;x;x;x;
 Sijaisvanhempi;Poisto;DELETE;x;;;;;x;;;;;
 Sijaisvanhempi;Muokkaus;UPDATE;x;;;;;x;;;;;
 Sijoitus;Muokkaus;UPDATE;x;;;;;x;;x;;;x

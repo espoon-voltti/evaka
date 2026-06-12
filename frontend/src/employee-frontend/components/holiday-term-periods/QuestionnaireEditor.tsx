@@ -22,7 +22,7 @@ export default React.memo(function QuestionnaireEditor() {
   const { id } = useRouteParams(['id'])
   const questionnaireId =
     id === 'new' ? undefined : fromUuid<HolidayQuestionnaireId>(id)
-  const { user } = useContext(UserContext)
+  const { featureConfig } = useContext(UserContext)
 
   const questionnaire = useQueryResult(
     questionnaireId
@@ -42,7 +42,7 @@ export default React.memo(function QuestionnaireEditor() {
       <ContentArea $opaque>
         {renderResult(questionnaire, (questionnaire) =>
           questionnaire === null ? (
-            user?.accessibleFeatures.openRangesHolidayQuestionnaire ? (
+            featureConfig?.openRangesHolidayQuestionnaire ? (
               <OpenRangesQuestionnaireForm
                 onSuccess={navigateToList}
                 onCancel={navigateToList}

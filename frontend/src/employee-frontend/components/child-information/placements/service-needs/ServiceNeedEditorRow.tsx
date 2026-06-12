@@ -231,7 +231,7 @@ function ServiceNeedEditorRow({
     if (!formIsValid) return
 
     if (
-      placement.serviceNeeds.some(
+      (placement.serviceNeedDetail?.serviceNeeds ?? []).some(
         (sn) =>
           sn.id !== editingId &&
           new FiniteDateRange(sn.startDate, sn.endDate).overlaps(range.value())

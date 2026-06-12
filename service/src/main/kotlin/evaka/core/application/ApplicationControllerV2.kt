@@ -195,12 +195,26 @@ class ApplicationControllerV2(
                         throw Forbidden()
                     }
 
-                    tx.fetchApplicationSummaries(
-                        today = clock.today(),
-                        params = body,
-                        readWithoutAssistanceNeed = readWithoutAssistanceNeed,
-                        readWithAssistanceNeed = readWithAssistanceNeed,
-                        canReadServiceWorkerNotes = canReadServiceWorkerNotes,
+                    val summaries =
+                        tx.fetchApplicationSummaries(
+                            today = clock.today(),
+                            params = body,
+                            readWithoutAssistanceNeed = readWithoutAssistanceNeed,
+                            readWithAssistanceNeed = readWithAssistanceNeed,
+                            canReadServiceWorkerNotes = canReadServiceWorkerNotes,
+                        )
+                    val permittedActions =
+                        accessControl.getPermittedActions<ApplicationId, Action.Application>(
+                            tx,
+                            user,
+                            clock,
+                            summaries.data.map { it.id },
+                        )
+                    summaries.copy(
+                        data =
+                            summaries.data.map {
+                                it.copy(permittedActions = permittedActions[it.id] ?: emptySet())
+                            }
                     )
                 }
             }

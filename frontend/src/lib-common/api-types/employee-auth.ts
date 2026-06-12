@@ -5,7 +5,9 @@
 import type { MobileDeviceDetails } from 'lib-common/generated/api-types/pairing'
 
 import type { Action } from '../generated/action'
+import type { EmployeeStartPage } from '../generated/api-types/pis'
 import type {
+  EmployeeFeatureConfig,
   EmployeeFeatures,
   EmployeeId
 } from '../generated/api-types/shared'
@@ -16,6 +18,7 @@ export interface User {
   userType: 'EMPLOYEE'
   accessibleFeatures: EmployeeFeatures
   permittedGlobalActions: Action.Global[]
+  startPage: EmployeeStartPage
 }
 
 export interface MobileUser extends MobileDeviceDetails {
@@ -33,8 +36,6 @@ export const globalRoles = [
   'MESSAGING'
 ] as const
 
-export type GlobalRole = (typeof globalRoles)[number]
-
 export const scopedRoles = [
   'UNIT_SUPERVISOR',
   'SPECIAL_EDUCATION_TEACHER',
@@ -44,11 +45,9 @@ export const scopedRoles = [
 
 export type ScopedRole = (typeof scopedRoles)[number]
 
-export type AdRole = GlobalRole | ScopedRole
-
 export interface AuthStatus<U extends User | MobileUser> {
   loggedIn: boolean
   user?: U
-  roles?: AdRole[]
+  featureConfig?: EmployeeFeatureConfig
   apiVersion: string
 }

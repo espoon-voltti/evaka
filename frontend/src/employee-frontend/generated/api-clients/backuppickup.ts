@@ -5,9 +5,9 @@
 // GENERATED FILE: no manual modifications
 
 import type { BackupPickupId } from 'lib-common/generated/api-types/shared'
-import type { ChildBackupPickup } from 'lib-common/generated/api-types/backuppickup'
 import type { ChildBackupPickupContent } from 'lib-common/generated/api-types/backuppickup'
 import type { ChildBackupPickupCreateResponse } from 'lib-common/generated/api-types/backuppickup'
+import type { ChildBackupPickupsResponse } from 'lib-common/generated/api-types/backuppickup'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
@@ -56,8 +56,8 @@ export async function getBackupPickups(
   request: {
     childId: PersonId
   }
-): Promise<ChildBackupPickup[]> {
-  const { data: json } = await client.request<JsonOf<ChildBackupPickup[]>>({
+): Promise<ChildBackupPickupsResponse> {
+  const { data: json } = await client.request<JsonOf<ChildBackupPickupsResponse>>({
     url: uri`/employee/children/${request.childId}/backup-pickups`.toString(),
     method: 'GET'
   })

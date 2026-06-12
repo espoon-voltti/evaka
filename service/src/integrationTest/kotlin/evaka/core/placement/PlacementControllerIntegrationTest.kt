@@ -16,6 +16,8 @@ import evaka.core.shared.EmployeeId
 import evaka.core.shared.GroupId
 import evaka.core.shared.GroupPlacementId
 import evaka.core.shared.PlacementId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevBackupCare
@@ -37,7 +39,14 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.TimeRange
+import evaka.core.shared.noopTracer
+import evaka.core.shared.security.AccessControl
+import evaka.core.shared.security.Action
 import evaka.core.shared.security.PilotFeature
+import evaka.core.shared.security.actionrule.ActionRuleMapping
+import evaka.core.shared.security.actionrule.DefaultActionRuleMapping
+import evaka.core.shared.security.actionrule.ScopedActionRule
+import evaka.core.shared.security.actionrule.UnscopedActionRule
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -56,6 +65,26 @@ import org.springframework.beans.factory.annotation.Autowired
 class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired lateinit var placementController: PlacementController
+
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
+    // AccessControl that denies Action.Child.READ_SERVICE_NEEDS but otherwise behaves normally
+    private val denyServiceNeedsAccessControl =
+        AccessControl(
+            object : ActionRuleMapping {
+                private val default = DefaultActionRuleMapping()
+
+                override fun rulesOf(action: Action.UnscopedAction): Sequence<UnscopedActionRule> =
+                    default.rulesOf(action)
+
+                override fun <T> rulesOf(
+                    action: Action.ScopedAction<in T>
+                ): Sequence<ScopedActionRule<in T>> =
+                    if (action == Action.Child.READ_SERVICE_NEEDS) emptySequence()
+                    else default.rulesOf(action)
+            },
+            noopTracer(),
+        )
 
     private val mockClock =
         MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2023, 1, 1), LocalTime.of(12, 0)))
@@ -122,6 +151,31 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         Assertions.assertThat(placement.child.id).isEqualTo(childId)
         Assertions.assertThat(placement.startDate).isEqualTo(placementStart)
         Assertions.assertThat(placement.endDate).isEqualTo(placementEnd)
+    }
+
+    @Test
+    fun `serviceNeedDetail is populated for a user with READ_SERVICE_NEEDS`() {
+        val response = getChildPlacements(user = serviceWorker)
+
+        val placement = response.placements.single()
+        Assertions.assertThat(placement.serviceNeedDetail).isNotNull
+    }
+
+    @Test
+    fun `serviceNeedDetail is nulled for a user without READ_SERVICE_NEEDS`() {
+        // No real role can read placements without also being able to read service needs, so
+        // deny READ_SERVICE_NEEDS via a custom AccessControl to exercise the nulling.
+        val controller =
+            PlacementController(
+                accessControl = denyServiceNeedsAccessControl,
+                asyncJobRunner = asyncJobRunner,
+                featureConfig = featureConfig,
+            )
+        val response =
+            controller.getChildPlacements(dbInstance(), serviceWorker, mockClock, childId)
+
+        val placement = response.placements.single()
+        Assertions.assertThat(placement.serviceNeedDetail).isNull()
     }
 
     @Test

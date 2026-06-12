@@ -27,6 +27,7 @@ export interface DaycareGroupPlacementDetailed {
   child: ChildBasics
   serviceNeeds: ServiceNeed[]
   defaultServiceNeedOptionNameFi: string | null
+  serviceNeedDetailVisible: boolean
 }
 
 export const flatMapGroupPlacements = (
@@ -38,14 +39,16 @@ export const flatMapGroupPlacements = (
         ...groupPlacement,
         type: daycarePlacement.type,
         child: daycarePlacement.child,
-        serviceNeeds: daycarePlacement.serviceNeeds,
+        serviceNeeds: daycarePlacement.serviceNeedDetail?.serviceNeeds ?? [],
         defaultServiceNeedOptionNameFi:
-          daycarePlacement.defaultServiceNeedOption?.nameFi ?? null,
+          daycarePlacement.serviceNeedDetail?.defaultServiceNeedOption
+            ?.nameFi ?? null,
         daycarePlacementStartDate: daycarePlacement.startDate,
         daycarePlacementEndDate: daycarePlacement.endDate,
         daycarePlacementId: daycarePlacement.id,
         daycarePlacementMissingServiceNeedDays:
-          daycarePlacement.missingServiceNeedDays
+          daycarePlacement.serviceNeedDetail?.missingServiceNeedDays ?? 0,
+        serviceNeedDetailVisible: daycarePlacement.serviceNeedDetail !== null
       }))
       .forEach((groupPlacement) => groupPlacements.push(groupPlacement))
 

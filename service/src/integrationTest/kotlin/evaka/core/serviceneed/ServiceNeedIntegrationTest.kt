@@ -619,5 +619,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             .getChildPlacements(dbInstance(), unitSupervisor, clock, childId = childId)
             .placements
             .first { it.id == placementId }
-            .serviceNeeds
+            .serviceNeedDetail
+            ?.serviceNeeds
+            .orEmpty()
 }

@@ -24,7 +24,6 @@ import { faPen, faQuestion, faTrash } from 'lib-icons'
 import { ChildContext } from '../../state'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
-import { RequireRole } from '../../utils/roles'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
@@ -188,7 +187,7 @@ function BackupPickup({ childId }: BackupPickupProps) {
 
   return (
     <>
-      {renderResult(backupPickups, (backupPickups) => (
+      {renderResult(backupPickups, ({ backupPickups }) => (
         <>
           <FlexRow $justifyContent="space-between">
             <H3 $noMargin>{i18n.childInformation.backupPickups.title}</H3>
@@ -206,37 +205,48 @@ function BackupPickup({ childId }: BackupPickupProps) {
                 <Tr>
                   <Th>{i18n.childInformation.backupPickups.name}</Th>
                   <Th>{i18n.childInformation.backupPickups.phone}</Th>
-                  <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR', 'STAFF']}>
+                  {backupPickups.some((r) => r.permittedActions.length > 0) && (
                     <Th />
-                  </RequireRole>
+                  )}
                 </Tr>
               </Thead>
               <Tbody>
                 {backupPickups.map((row) => (
                   <Tr
-                    key={row.id}
-                    data-qa={`table-backup-pickup-row-${row.name}`}
+                    key={row.backupPickup.id}
+                    data-qa={`table-backup-pickup-row-${row.backupPickup.name}`}
                   >
-                    <Td data-qa="backup-pickup-name">{row.name}</Td>
-                    <Td>{row.phone}</Td>
-                    <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR', 'STAFF']}>
+                    <Td data-qa="backup-pickup-name">
+                      {row.backupPickup.name}
+                    </Td>
+                    <Td>{row.backupPickup.phone}</Td>
+                    {(row.permittedActions.includes('UPDATE') ||
+                      row.permittedActions.includes('DELETE')) && (
                       <Td>
                         <FixedSpaceRowAlignRight>
-                          <IconOnlyButton
-                            icon={faPen}
-                            onClick={() => openEditBackupPickupModal(row)}
-                            data-qa="edit-backup-pickup"
-                            aria-label={i18n.common.edit}
-                          />
-                          <IconOnlyButton
-                            icon={faTrash}
-                            onClick={() => openRemoveBackupPickupModal(row)}
-                            data-qa="delete-backup-pickup"
-                            aria-label={i18n.common.remove}
-                          />
+                          {row.permittedActions.includes('UPDATE') && (
+                            <IconOnlyButton
+                              icon={faPen}
+                              onClick={() =>
+                                openEditBackupPickupModal(row.backupPickup)
+                              }
+                              data-qa="edit-backup-pickup"
+                              aria-label={i18n.common.edit}
+                            />
+                          )}
+                          {row.permittedActions.includes('DELETE') && (
+                            <IconOnlyButton
+                              icon={faTrash}
+                              onClick={() =>
+                                openRemoveBackupPickupModal(row.backupPickup)
+                              }
+                              data-qa="delete-backup-pickup"
+                              aria-label={i18n.common.remove}
+                            />
+                          )}
                         </FixedSpaceRowAlignRight>
                       </Td>
-                    </RequireRole>
+                    )}
                   </Tr>
                 ))}
               </Tbody>

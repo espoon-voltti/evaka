@@ -10,8 +10,8 @@ import DecisionDraftLegacy from './DecisionDraftLegacy'
 import DecisionDraftRedesign from './DecisionDraftRedesign'
 
 export default React.memo(function DecisionDraft() {
-  const { user } = useContext(UserContext)
-  return user?.accessibleFeatures.decisionReasoningsEnabled === true ? (
+  const { featureConfig } = useContext(UserContext)
+  return featureConfig?.decisionReasoningsEnabled === true ? (
     <DecisionDraftRedesign />
   ) : (
     <DecisionDraftLegacy />

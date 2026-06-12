@@ -22,7 +22,7 @@ import { defaultMargins } from 'lib-components/white-space'
 
 import { getAttachmentUrl } from '../../../api/attachments'
 import { useTranslation } from '../../../state/i18n'
-import { UserContext } from '../../../state/user'
+import { PersonContext } from '../state'
 
 import IncomeTable from './IncomeTable'
 import { tableDataFromIncomeFields } from './utils'
@@ -37,9 +37,9 @@ const IncomeItemBody = React.memo(function IncomeItemBody({
   income
 }: Props) {
   const { i18n } = useTranslation()
-  const { roles } = useContext(UserContext)
+  const { permittedActions } = useContext(PersonContext)
 
-  const applicationLinkVisible = roles.find((r) => ['ADMIN'].includes(r))
+  const applicationLinkVisible = permittedActions.has('READ_APPLICATIONS')
 
   const tableData = useMemo(
     () => tableDataFromIncomeFields(income.data),

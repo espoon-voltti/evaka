@@ -85,7 +85,7 @@ test.describe('Guardian income statements', () => {
     const guardianPage = new GuardianInformationPage(page)
     await guardianPage.navigateToGuardian(testAdult.id)
 
-    const incomesSection = guardianPage.getCollapsible('incomes')
+    const incomesSection = await guardianPage.openCollapsible('incomes')
     await incomesSection.assertIncomeStatementChildName(
       0,
       `${child.lastName} ${child.firstName}`

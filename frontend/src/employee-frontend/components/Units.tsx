@@ -32,7 +32,7 @@ import { useTranslation } from '../state/i18n'
 import type { SearchColumn, UnitsState } from '../state/units'
 import { UnitsContext } from '../state/units'
 import { UserContext } from '../state/user'
-import { RequireRole } from '../utils/roles'
+import { hasGlobalAction, RequirePermittedGlobalAction } from '../utils/roles'
 
 import { renderResult } from './async-rendering'
 import { daycaresQuery } from './unit/queries'
@@ -89,7 +89,7 @@ export default React.memo(function Units() {
   if (
     units.isSuccess &&
     units.value.length === 1 &&
-    !user?.accessibleFeatures.createUnits
+    !hasGlobalAction(user, 'CREATE_UNIT')
   ) {
     return <Redirect to={`/units/${units.value[0].id}`} replace={true} />
   }
@@ -142,7 +142,7 @@ export default React.memo(function Units() {
               data-qa="include-closed"
             />
           </div>
-          <RequireRole oneOf={['ADMIN']}>
+          <RequirePermittedGlobalAction oneOf={['CREATE_UNIT']}>
             <div>
               <LegacyButton
                 data-qa="create-new-unit"
@@ -151,7 +151,7 @@ export default React.memo(function Units() {
                 text={i18n.unit.create}
               />
             </div>
-          </RequireRole>
+          </RequirePermittedGlobalAction>
         </TopBar>
         <Gap $size="L" />
         <div className="table-of-units">

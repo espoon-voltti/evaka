@@ -36,7 +36,7 @@ import {
 import { areasQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
-import { hasRole } from '../../utils/roles'
+import { hasGlobalAction } from '../../utils/roles'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 import { preschoolTermsQuery } from '../holiday-term-periods/queries'
@@ -49,7 +49,7 @@ import { preschoolAbsenceReportQuery } from './queries'
 export default React.memo(function PreschoolAbsenceReport() {
   const { i18n } = useTranslation()
 
-  const { roles } = useContext(UserContext)
+  const { user } = useContext(UserContext)
   const allOption = useMemo(
     () => ({ name: i18n.common.all, id: null }),
     [i18n.common.all]
@@ -89,7 +89,8 @@ export default React.memo(function PreschoolAbsenceReport() {
       terms.map((t) => {
         const today = LocalDate.todayInHelsinkiTz()
         const visibleTerms = t.filter((pt) => {
-          if (roles.includes('ADMIN')) return true
+          if (hasGlobalAction(user, 'READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA'))
+            return true
           return (
             pt.finnishPreschool.start.isEqualOrBefore(today) &&
             pt.finnishPreschool.start.isAfter(today.subYears(2))
@@ -97,7 +98,7 @@ export default React.memo(function PreschoolAbsenceReport() {
         })
         return orderBy(visibleTerms, (term) => term.finnishPreschool.start)
       }),
-    [terms, roles]
+    [terms, user]
   )
 
   const groupOptions = useMemo(
@@ -123,7 +124,10 @@ export default React.memo(function PreschoolAbsenceReport() {
           combine(areas, daycareOptions, termOptions, groupOptions),
           ([areaResult, unitResult, termResult, groupResult]) => (
             <>
-              {hasRole(roles, 'ADMIN') && (
+              {hasGlobalAction(
+                user,
+                'READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA'
+              ) && (
                 <FilterRow>
                   <FilterLabel>
                     {i18n.reports.preschoolAbsences.filters.areaSelection.label}

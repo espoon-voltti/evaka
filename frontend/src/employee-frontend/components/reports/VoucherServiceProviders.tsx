@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import range from 'lodash/range'
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link, useSearchParams } from 'wouter'
 
@@ -30,7 +30,6 @@ import { faLockAlt, faSearch } from 'lib-icons'
 
 import { areasQuery } from '../../queries'
 import { useTranslation } from '../../state/i18n'
-import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 import { FlexRow } from '../common/styled/containers'
 
@@ -74,7 +73,6 @@ function getFilename(year: number, month: number, areaName: string) {
 export default React.memo(function VoucherServiceProviders() {
   const [queryParams] = useSearchParams()
   const { i18n } = useTranslation()
-  const { roles } = useContext(UserContext)
   const areas = useQueryResult(areasQuery())
   const allAreasOption = useMemo(
     () => ({
@@ -118,14 +116,10 @@ export default React.memo(function VoucherServiceProviders() {
   useSyncQueryParams(params)
   const query = new URLSearchParams(params).toString()
 
-  const allAreas = !roles.find((r) =>
-    ['ADMIN', 'FINANCE_ADMIN', 'DIRECTOR'].includes(r)
-  )
-
   const { areaId, ...otherFilters } = filters
   const report = useQueryResult(
     voucherServiceProvidersReportQuery(
-      allAreas || areaId === 'all' ? otherFilters : filters
+      areaId === 'all' ? otherFilters : filters
     )
   )
 
@@ -197,39 +191,33 @@ export default React.memo(function VoucherServiceProviders() {
             </FilterWrapper>
           </FlexRow>
         </FilterRow>
-        {!allAreas ? (
-          <>
-            <FilterRow>
-              <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
-              <FilterWrapper data-qa="select-area">
-                <Select
-                  items={areaOptions}
-                  selectedItem={
-                    areaOptions.find(({ id }) => id === filters.areaId) ?? null
-                  }
-                  onChange={(area) =>
-                    setFilters({ ...filters, areaId: area?.id })
-                  }
-                  getItemValue={({ id }) => id}
-                  getItemLabel={({ name }) => name}
-                />
-              </FilterWrapper>
-            </FilterRow>
-            <FilterRow>
-              <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
-              <FilterWrapper data-qa="unit-name-input">
-                <InputField
-                  value={unitFilter}
-                  onChange={(value) => setUnitFilter(value)}
-                  placeholder={
-                    i18n.reports.voucherServiceProviders.filters.unitPlaceholder
-                  }
-                  icon={faSearch}
-                />
-              </FilterWrapper>
-            </FilterRow>
-          </>
-        ) : null}
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.careAreaName}</FilterLabel>
+          <FilterWrapper data-qa="select-area">
+            <Select
+              items={areaOptions}
+              selectedItem={
+                areaOptions.find(({ id }) => id === filters.areaId) ?? null
+              }
+              onChange={(area) => setFilters({ ...filters, areaId: area?.id })}
+              getItemValue={({ id }) => id}
+              getItemLabel={({ name }) => name}
+            />
+          </FilterWrapper>
+        </FilterRow>
+        <FilterRow>
+          <FilterLabel>{i18n.reports.common.unitName}</FilterLabel>
+          <FilterWrapper data-qa="unit-name-input">
+            <InputField
+              value={unitFilter}
+              onChange={(value) => setUnitFilter(value)}
+              placeholder={
+                i18n.reports.voucherServiceProviders.filters.unitPlaceholder
+              }
+              icon={faSearch}
+            />
+          </FilterWrapper>
+        </FilterRow>
 
         {renderResult(combine(report, mappedData), ([report, mappedData]) => (
           <>

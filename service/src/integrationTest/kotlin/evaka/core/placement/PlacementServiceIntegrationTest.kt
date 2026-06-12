@@ -1042,7 +1042,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         assertThat(placements)
             .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
-                "defaultServiceNeedOption.updated"
+                "serviceNeedDetail.defaultServiceNeedOption.updated"
             )
             .isEqualTo(
                 setOf(
@@ -1068,7 +1068,12 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         startDate = daycarePlacementStartDate,
                         endDate = daycarePlacementEndDate,
                         type = daycarePlacementType,
-                        missingServiceNeedDays = 6,
+                        serviceNeedDetail =
+                            PlacementServiceNeedDetail(
+                                serviceNeeds = emptyList(),
+                                defaultServiceNeedOption = snDefaultDaycare,
+                                missingServiceNeedDays = 6,
+                            ),
                         groupPlacements =
                             listOf(
                                 DaycareGroupPlacement(
@@ -1080,8 +1085,6 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     endDate = daycarePlacementEndDate,
                                 )
                             ),
-                        serviceNeeds = emptyList(),
-                        defaultServiceNeedOption = snDefaultDaycare,
                         terminatedBy = null,
                         terminationRequestedDate = null,
                         placeGuarantee = false,
@@ -1156,7 +1159,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         assertThat(placements)
             .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
-                "defaultServiceNeedOption.updated"
+                "serviceNeedDetail.defaultServiceNeedOption.updated"
             )
             .isEqualTo(
                 setOf(
@@ -1182,7 +1185,12 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         startDate = daycarePlacementStartDate,
                         endDate = daycarePlacementEndDate,
                         type = daycarePlacementType,
-                        missingServiceNeedDays = 20,
+                        serviceNeedDetail =
+                            PlacementServiceNeedDetail(
+                                serviceNeeds = emptyList(),
+                                defaultServiceNeedOption = snDefaultDaycare,
+                                missingServiceNeedDays = 20,
+                            ),
                         groupPlacements =
                             listOf(
                                 DaycareGroupPlacement(
@@ -1258,8 +1266,6 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     endDate = date(20),
                                 ),
                             ),
-                        serviceNeeds = emptyList(),
-                        defaultServiceNeedOption = snDefaultDaycare,
                         terminatedBy = null,
                         terminationRequestedDate = null,
                         placeGuarantee = false,

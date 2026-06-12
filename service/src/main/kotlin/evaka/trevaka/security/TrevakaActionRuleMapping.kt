@@ -164,6 +164,7 @@ class TrevakaActionRuleMapping : ActionRuleMapping {
             Action.Child.READ_ADDITIONAL_INFO,
             Action.Child.READ_BACKUP_CARE,
             Action.Child.READ_PLACEMENT,
+            Action.Child.READ_SERVICE_NEEDS,
             Action.Child.READ_GUARDIANS,
             Action.Child.READ_FEE_ALTERATIONS,
             Action.Child.READ_CHILD_DOCUMENT -> {

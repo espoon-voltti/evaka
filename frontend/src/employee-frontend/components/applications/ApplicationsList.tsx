@@ -51,10 +51,9 @@ import {
 import { getEmployeeUrlPrefix } from '../../constants'
 import { ApplicationUIContext } from '../../state/application-ui'
 import { useTranslation } from '../../state/i18n'
-import { UserContext } from '../../state/user'
 import type { SearchOrder } from '../../types'
 import { isPartDayPlacement } from '../../utils/placements'
-import { hasRole, RequireRole } from '../../utils/roles'
+import { RequirePermittedGlobalAction } from '../../utils/roles'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
 import { CareTypeChip } from '../common/CareTypeLabel'
 
@@ -179,11 +178,13 @@ const ApplicationsList = React.memo(function Applications({
     confirmedSearchFilters: searchFilters
   } = useContext(ApplicationUIContext)
 
-  const { roles } = useContext(UserContext)
-  const enableApplicationActions =
-    hasRole(roles, 'SERVICE_WORKER') ||
-    hasRole(roles, 'FINANCE_ADMIN') ||
-    hasRole(roles, 'ADMIN')
+  const enableApplicationActions = applications.some(
+    (application) => application.permittedActions.length > 0
+  )
+
+  const checkedApplications = applications.filter((application) =>
+    checkedIds.includes(application.id)
+  )
 
   // used to disable all actions when one is in progress
   const [actionInProgress, { on: actionStarted, off: actionEnded }] =
@@ -405,7 +406,9 @@ const ApplicationsList = React.memo(function Applications({
           )}
         </Td>
 
-        <RequireRole oneOf={['SERVICE_WORKER']}>
+        <RequirePermittedGlobalAction
+          oneOf={['READ_SERVICE_WORKER_APPLICATION_NOTES']}
+        >
           <Td>
             <Tooltip
               tooltip={
@@ -435,11 +438,12 @@ const ApplicationsList = React.memo(function Applications({
               />
             </Tooltip>
           </Td>
-        </RequireRole>
+        </RequirePermittedGlobalAction>
         <Td>
           {enableApplicationActions && (
             <ApplicationActions
               application={application}
+              permittedActions={application.permittedActions}
               actionInProgress={actionInProgress}
               onActionStarted={actionStarted}
               onActionEnded={actionEnded}
@@ -517,9 +521,11 @@ const ApplicationsList = React.memo(function Applications({
               >
                 {i18n.applications.list.status}
               </SortableTh>
-              <RequireRole oneOf={['SERVICE_WORKER']}>
+              <RequirePermittedGlobalAction
+                oneOf={['READ_SERVICE_WORKER_APPLICATION_NOTES']}
+              >
                 <Th>{i18n.applications.list.note}</Th>
-              </RequireRole>
+              </RequirePermittedGlobalAction>
               <Th>
                 {showCheckboxes ? (
                   <CheckAllContainer>
@@ -538,6 +544,7 @@ const ApplicationsList = React.memo(function Applications({
           <Tbody>{rows}</Tbody>
         </Table>
         <ActionBar
+          checkedApplications={checkedApplications}
           actionInProgress={actionInProgress}
           onActionStarted={actionStarted}
           onActionEnded={actionEnded}

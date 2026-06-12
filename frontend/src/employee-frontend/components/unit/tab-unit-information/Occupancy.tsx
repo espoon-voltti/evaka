@@ -84,7 +84,7 @@ export default React.memo(function OccupancyContainer({
     >
       <FixedSpaceRow $alignItems="center">
         <Label>{i18n.unit.filters.title}</Label>
-        <UnitDataFilters canEdit filters={filters} setFilters={setFilters} />
+        <UnitDataFilters filters={filters} setFilters={setFilters} />
       </FixedSpaceRow>
       <Gap $size="s" />
       <FixedSpaceRow $alignItems="center">

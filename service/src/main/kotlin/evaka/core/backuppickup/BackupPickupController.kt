@@ -59,25 +59,37 @@ class BackupPickupController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-    ): List<ChildBackupPickup> {
-        return db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Child.READ_BACKUP_PICKUP,
-                        childId,
-                    )
-                    tx.getBackupPickupsForChild(childId)
+    ): ChildBackupPickupsResponse {
+        return ChildBackupPickupsResponse(
+            db.connect { dbc ->
+                    dbc.read { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Child.READ_BACKUP_PICKUP,
+                            childId,
+                        )
+                        val backupPickups = tx.getBackupPickupsForChild(childId)
+                        val permittedActions =
+                            accessControl.getPermittedActions<BackupPickupId, Action.BackupPickup>(
+                                tx,
+                                user,
+                                clock,
+                                backupPickups.map { it.id },
+                            )
+                        backupPickups.map { bp ->
+                            ChildBackupPickupResponse(bp, permittedActions[bp.id] ?: emptySet())
+                        }
+                    }
                 }
-            }
-            .also {
-                Audit.ChildBackupPickupRead.log(
-                    targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+                .also {
+                    Audit.ChildBackupPickupRead.log(
+                        targetId = AuditId(childId),
+                        meta = mapOf("count" to it.size),
+                    )
+                }
+        )
     }
 
     @PutMapping("/employee/backup-pickups/{id}")
@@ -162,3 +174,10 @@ data class ChildBackupPickup(
 )
 
 data class ChildBackupPickupCreateResponse(val id: BackupPickupId)
+
+data class ChildBackupPickupResponse(
+    val backupPickup: ChildBackupPickup,
+    val permittedActions: Set<Action.BackupPickup>,
+)
+
+data class ChildBackupPickupsResponse(val backupPickups: List<ChildBackupPickupResponse>)

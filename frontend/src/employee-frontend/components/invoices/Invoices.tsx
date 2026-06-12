@@ -39,6 +39,7 @@ import { faExclamation, faSync } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
+import { hasGlobalAction } from '../../utils/roles'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 import { StatusIconContainer } from '../common/StatusIconContainer'
@@ -98,7 +99,7 @@ export default React.memo(function Invoices({
 
   return (
     <div className="invoices" data-isloading={isLoading}>
-      {user?.accessibleFeatures.createDraftInvoices && (
+      {hasGlobalAction(user, 'CREATE_DRAFT_INVOICES') && (
         <RefreshInvoices>
           {draftCreationError && (
             <RefreshError>{i18n.common.error.unknown}</RefreshError>

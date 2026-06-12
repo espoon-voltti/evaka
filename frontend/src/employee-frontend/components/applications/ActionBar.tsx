@@ -4,6 +4,7 @@
 
 import React, { useContext, useMemo } from 'react'
 
+import type { ApplicationSummary } from 'lib-common/generated/api-types/application'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
@@ -13,13 +14,16 @@ import { CheckedRowsInfo } from '../common/CheckedRowsInfo'
 import StickyActionBar from '../common/StickyActionBar'
 
 import type { SimpleApplicationMutationAction } from './ApplicationActions'
+import { ACTION_TYPE_TO_PERMISSION } from './ApplicationActions'
 import { simpleBatchActionMutation } from './queries'
 
 export default React.memo(function ActionBar({
+  checkedApplications,
   actionInProgress,
   onActionStarted,
   onActionEnded
 }: {
+  checkedApplications: ApplicationSummary[]
   actionInProgress: boolean
   onActionStarted: () => void
   onActionEnded: () => void
@@ -85,7 +89,21 @@ export default React.memo(function ActionBar({
     }
   }, [searchFilters, i18n.applications.actions])
 
-  return actions.length > 0 ? (
+  const visibleActions = useMemo(
+    () =>
+      actions.filter((action) => {
+        const permission = ACTION_TYPE_TO_PERMISSION[action.actionType]
+        return (
+          permission !== undefined &&
+          checkedApplications.every((a) =>
+            a.permittedActions.includes(permission)
+          )
+        )
+      }),
+    [actions, checkedApplications]
+  )
+
+  return visibleActions.length > 0 ? (
     <StickyActionBar align="right" data-qa="action-bar">
       {checkedIds.length > 0 ? (
         <CheckedRowsInfo>
@@ -93,7 +111,7 @@ export default React.memo(function ActionBar({
         </CheckedRowsInfo>
       ) : null}
       <FixedSpaceRow>
-        {actions.map(({ id, label, actionType, primary }) => (
+        {visibleActions.map(({ id, label, actionType, primary }) => (
           <MutateButton
             key={id}
             mutation={simpleBatchActionMutation}

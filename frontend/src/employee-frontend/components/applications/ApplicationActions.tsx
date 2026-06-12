@@ -6,6 +6,7 @@ import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
+import type { Action } from 'lib-common/generated/action'
 import type {
   ApplicationSummary,
   SimpleApplicationAction as SimpleApplicationActionType
@@ -48,8 +49,39 @@ export type OnClickAction = BaseAction & {
 
 export type ApplicationAction = SimpleApplicationMutationAction | OnClickAction
 
+export const ACTION_TYPE_TO_PERMISSION: Partial<
+  Record<SimpleApplicationActionType, Action.Application>
+> = {
+  MOVE_TO_WAITING_PLACEMENT: 'MOVE_TO_WAITING_PLACEMENT',
+  RETURN_TO_SENT: 'RETURN_TO_SENT',
+  CANCEL_PLACEMENT_PLAN: 'CANCEL_PLACEMENT_PLAN',
+  SEND_DECISIONS_WITHOUT_PROPOSAL: 'SEND_DECISIONS_WITHOUT_PROPOSAL',
+  SEND_PLACEMENT_PROPOSAL: 'SEND_PLACEMENT_PROPOSAL',
+  WITHDRAW_PLACEMENT_PROPOSAL: 'WITHDRAW_PLACEMENT_PROPOSAL',
+  CONFIRM_DECISION_MAILED: 'CONFIRM_DECISIONS_MAILED'
+}
+
+// Every menu item is gated on the action it ultimately performs or navigates to, so items
+// whose underlying action is not permitted — including ones that open a confirmation modal
+// (cancel) or navigate to a permission-gated page (verify / placement / decisions) — are
+// hidden rather than leading the user to something they cannot do or reach.
+const ACTION_ID_TO_PERMISSION: Record<string, Action.Application> = {
+  'move-to-waiting-placement': 'MOVE_TO_WAITING_PLACEMENT',
+  'return-to-sent': 'RETURN_TO_SENT',
+  'cancel-application': 'CANCEL',
+  'create-placement-plan': 'READ_PLACEMENT_PLAN_DRAFT',
+  check: 'VERIFY',
+  'cancel-placement-plan': 'CANCEL_PLACEMENT_PLAN',
+  'edit-decisions': 'READ_DECISION_DRAFT',
+  'send-decisions-without-proposal': 'SEND_DECISIONS_WITHOUT_PROPOSAL',
+  'send-placement-proposal': 'SEND_PLACEMENT_PROPOSAL',
+  'withdraw-placement-proposal': 'WITHDRAW_PLACEMENT_PROPOSAL',
+  'confirm-decision-mailed': 'CONFIRM_DECISIONS_MAILED'
+}
+
 type Props = {
   application: ApplicationSummary
+  permittedActions: Action.Application[]
   actionInProgress: boolean
   onActionStarted: () => void
   onActionEnded: () => void
@@ -57,6 +89,7 @@ type Props = {
 
 export default React.memo(function ApplicationActions({
   application,
+  permittedActions,
   actionInProgress,
   onActionStarted,
   onActionEnded
@@ -173,9 +206,18 @@ export default React.memo(function ApplicationActions({
     }
   }, [application, navigate, i18n.applications.actions])
 
+  const permittedActionsList = useMemo(
+    () =>
+      actions.filter((action) => {
+        const permission = ACTION_ID_TO_PERMISSION[action.id]
+        return permission !== undefined && permittedActions.includes(permission)
+      }),
+    [actions, permittedActions]
+  )
+
   const primaryAction = useMemo(
-    () => actions.find((action) => action.primary),
-    [actions]
+    () => permittedActionsList.find((action) => action.primary),
+    [permittedActionsList]
   )
 
   return (
@@ -190,7 +232,7 @@ export default React.memo(function ApplicationActions({
         />
         <ActionMenu
           applicationId={application.id}
-          actions={actions}
+          actions={permittedActionsList}
           actionInProgress={actionInProgress}
         />
         <ActionCheckbox applicationId={application.id} />
