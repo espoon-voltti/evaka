@@ -94,7 +94,7 @@
     "playwright": "1.60.0",
     "postcss": "8.5.15",
     "postcss-preset-env": "11.3.0",
-    "prettier": "3.8.3",
+    "prettier": "3.8.4",
     "rollup": "4.61.1",
     "terser": "5.48.0",
     "ts-node": "10.9.2",
