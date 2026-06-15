@@ -24,7 +24,11 @@ enum class QuestionnaireType : DatabaseEnum {
 
 data class QuestionnaireConditions(val continuousPlacement: FiniteDateRange? = null)
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type",
+)
 sealed class HolidayQuestionnaire(val type: QuestionnaireType) {
     abstract val id: HolidayQuestionnaireId
     abstract val absenceType: AbsenceType

@@ -262,7 +262,11 @@ data class IncomeStatementAttachment(
     val uploadedByEmployee: Boolean,
 )
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type",
+)
 sealed class IncomeStatement(val type: IncomeStatementType) {
     abstract val id: IncomeStatementId
     abstract val personId: PersonId

@@ -47,7 +47,11 @@ enum class QuestionType {
     GROUPED_TEXT_FIELDS,
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type",
+)
 sealed class Question(val type: QuestionType) {
     abstract val id: String
 

@@ -40,7 +40,11 @@ sealed class ServiceTimesPresenceStatus {
     @JsonTypeName("UNKNOWN") data object Unknown : ServiceTimesPresenceStatus()
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type",
+)
 sealed class DailyServiceTimesValue(
     open val validityPeriod: DateRange,
     val type: DailyServiceTimesType,
