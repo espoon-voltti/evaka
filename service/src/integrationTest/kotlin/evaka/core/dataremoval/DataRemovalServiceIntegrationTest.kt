@@ -13,6 +13,7 @@ import evaka.core.document.DocumentDeletionBasis
 import evaka.core.document.DocumentTemplateContent
 import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
+import evaka.core.finance.notes.createFinanceNote
 import evaka.core.nekku.NekkuProductMealType
 import evaka.core.note.child.sticky.ChildStickyNoteBody
 import evaka.core.note.child.sticky.createChildStickyNote
@@ -37,6 +38,8 @@ import evaka.core.shared.dev.DevDocumentTemplate
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevFamilyContact
 import evaka.core.shared.dev.DevFosterParent
+import evaka.core.shared.dev.DevFridgeChild
+import evaka.core.shared.dev.DevFridgePartnership
 import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
@@ -73,6 +76,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     private val leafExpireDate = today.minusYears(1)
     private val imageExpireDate = today.minusMonths(1)
+    private val financeExpireDate = today.minusYears(5)
 
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val careArea = DevCareArea()
@@ -567,6 +571,307 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertFalse(citizenUserExists(fosterParent))
     }
 
+    @Test
+    fun `deleteExpiredCitizenUsers keeps foster parent whose foster parenthood ended long ago while the child still has a recent placement`() {
+        val fosterParent = insertAdultWithCitizenUser()
+        insertFosterParenthood(
+            fosterParent,
+            child.id,
+            validDuring = DateRange(today.minusYears(3), today.minusYears(2)),
+        )
+        insertPlacementEnding(child.id, today.plusYears(1))
+
+        deleteExpiredCitizenUsers(db, expireDate = leafExpireDate, limit = 100)
+
+        assertTrue(citizenUserExists(fosterParent))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes deletes note of adult whose child's last placement ended before expireDate`() {
+        val guardian = insertAdult()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
+        insertFinanceNote(guardian)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(0, financeNoteCount(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes keeps note of adult whose child has a recent placement`() {
+        val guardian = insertAdult()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, financeExpireDate.plusDays(1))
+        insertFinanceNote(guardian)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(1, financeNoteCount(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes keeps note of adult whose child placement ends exactly on expireDate`() {
+        val guardian = insertAdult()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, financeExpireDate)
+        insertFinanceNote(guardian)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(1, financeNoteCount(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes keeps note of adult with one expired and one recent child placement`() {
+        val guardian = insertAdult()
+        val recentChild = DevPerson()
+        db.transaction { it.insert(recentChild, DevPersonType.CHILD) }
+        insertGuardianship(guardian, child.id)
+        insertGuardianship(guardian, recentChild.id)
+        insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
+        insertPlacementEnding(recentChild.id, financeExpireDate.plusDays(1))
+        insertFinanceNote(guardian)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(1, financeNoteCount(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes keeps note of adult whose child has no placements`() {
+        val guardian = insertAdult()
+        insertGuardianship(guardian, child.id)
+        insertFinanceNote(guardian)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(1, financeNoteCount(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes keeps note of adult with no family or finance connection to any placed child`() {
+        val person = insertAdult()
+        insertFinanceNote(person)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(1, financeNoteCount(person))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes deletes note of head of family who is not a guardian when the child's last placement ended before expireDate`() {
+        val head = insertAdult()
+        insertHeadOfChild(head, child.id)
+        insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
+        insertFinanceNote(head)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(0, financeNoteCount(head))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes keeps note of head of family whose head-of-child relationship ended long ago while the child still has a recent placement`() {
+        val head = insertAdult()
+        insertHeadOfChild(head, child.id, endDate = financeExpireDate.minusDays(1))
+        insertPlacementEnding(child.id, today.plusYears(1))
+        insertFinanceNote(head)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(1, financeNoteCount(head))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes deletes note of fee-paying partner who is not guardian or head once the household child's placement ended before expireDate`() {
+        val head = insertAdult()
+        val partner = insertAdult()
+        insertHeadOfChild(head, child.id)
+        insertPartnership(head, partner)
+        insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
+        insertFinanceNote(partner)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(0, financeNoteCount(partner))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes keeps note of fee-paying partner whose partnership ended long ago while the household child has a recent placement`() {
+        val head = insertAdult()
+        val partner = insertAdult()
+        insertHeadOfChild(head, child.id)
+        insertPartnership(head, partner, endDate = financeExpireDate.minusDays(1))
+        insertPlacementEnding(child.id, today.plusYears(1))
+        insertFinanceNote(partner)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(1, financeNoteCount(partner))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes keeps head note when the only head-of-child link is a conflict row even though the child placement expired`() {
+        val head = insertAdult()
+        insertHeadOfChild(head, child.id, conflict = true)
+        insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
+        insertFinanceNote(head)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(1, financeNoteCount(head))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes keeps partner note when the only partnership link is a conflict row even though the child placement expired`() {
+        val head = insertAdult()
+        val partner = insertAdult()
+        insertHeadOfChild(head, child.id)
+        insertPartnership(head, partner, conflict = true)
+        insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
+        insertFinanceNote(partner)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(1, financeNoteCount(partner))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes deletes note of adult linked to an expired child via foster parent`() {
+        val fosterParent = insertAdult()
+        insertFosterParenthood(fosterParent, child.id)
+        insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
+        insertFinanceNote(fosterParent)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(0, financeNoteCount(fosterParent))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes keeps foster parent note when foster parenthood ended long ago while the child still has a recent placement`() {
+        val fosterParent = insertAdult()
+        insertFosterParenthood(
+            fosterParent,
+            child.id,
+            validDuring = DateRange(today.minusYears(8), financeExpireDate.minusDays(1)),
+        )
+        insertPlacementEnding(child.id, today.plusYears(1))
+        insertFinanceNote(fosterParent)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(1, financeNoteCount(fosterParent))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes keeps foster parent note when the foster child has no placements`() {
+        val fosterParent = insertAdult()
+        insertFosterParenthood(
+            fosterParent,
+            child.id,
+            validDuring = DateRange(today.minusYears(8), today.minusYears(7)),
+        )
+        insertFinanceNote(fosterParent)
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+
+        assertEquals(1, financeNoteCount(fosterParent))
+    }
+
+    @Test
+    fun `deleteExpiredFinanceNotes respects limit`() {
+        val guardian = insertAdult()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, financeExpireDate.minusDays(1))
+        repeat(5) { insertFinanceNote(guardian) }
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 2)
+
+        assertEquals(3, financeNoteCount(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredData deletes finance notes only for adults whose family placements ended over five years ago`() {
+        val expiredGuardian = insertAdult()
+        insertGuardianship(expiredGuardian, child.id)
+        insertPlacementEnding(child.id, today.minusYears(5).minusDays(1))
+        insertFinanceNote(expiredGuardian)
+
+        val activeGuardian = insertAdult()
+        val activeChild = DevPerson()
+        db.transaction { it.insert(activeChild, DevPersonType.CHILD) }
+        insertGuardianship(activeGuardian, activeChild.id)
+        insertPlacementEnding(activeChild.id, today.minusYears(5).plusDays(1))
+        insertFinanceNote(activeGuardian)
+
+        withLimit(100) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(0, financeNoteCount(expiredGuardian))
+        assertEquals(1, financeNoteCount(activeGuardian))
+    }
+
+    private fun insertAdult(): PersonId {
+        val adult = DevPerson()
+        db.transaction { it.insert(adult, DevPersonType.ADULT) }
+        return adult.id
+    }
+
+    private fun insertFinanceNote(personId: PersonId) {
+        db.transaction { it.createFinanceNote(personId, "note", admin.user, now) }
+    }
+
+    private fun insertHeadOfChild(
+        head: PersonId,
+        childId: ChildId,
+        startDate: LocalDate = today.minusYears(10),
+        endDate: LocalDate = today.plusYears(10),
+        conflict: Boolean = false,
+    ) {
+        db.transaction {
+            it.insert(
+                DevFridgeChild(
+                    childId = childId,
+                    headOfChild = head,
+                    startDate = startDate,
+                    endDate = endDate,
+                    conflict = conflict,
+                )
+            )
+        }
+    }
+
+    private fun insertPartnership(
+        first: PersonId,
+        second: PersonId,
+        startDate: LocalDate = today.minusYears(10),
+        endDate: LocalDate = today.plusYears(10),
+        conflict: Boolean = false,
+    ) {
+        db.transaction {
+            it.insert(
+                DevFridgePartnership(
+                    first = first,
+                    second = second,
+                    startDate = startDate,
+                    endDate = endDate,
+                    createdAt = now,
+                    conflict = conflict,
+                )
+            )
+        }
+    }
+
+    private fun financeNoteCount(personId: PersonId): Int = db.read { tx ->
+        tx.createQuery {
+                sql("SELECT count(*) FROM finance_note WHERE person_id = ${bind(personId)}")
+            }
+            .exactlyOne<Int>()
+    }
+
     private fun insertAdultWithCitizenUser(): PersonId = db.transaction { tx ->
         val id = tx.insert(DevPerson(), DevPersonType.RAW_ROW)
         tx.updateLastStrongLogin(now, id)
@@ -577,13 +882,17 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction { it.insert(DevGuardian(guardianId = guardian, childId = childId)) }
     }
 
-    private fun insertFosterParenthood(parent: PersonId, childId: ChildId) {
+    private fun insertFosterParenthood(
+        parent: PersonId,
+        childId: ChildId,
+        validDuring: DateRange = DateRange(today.minusYears(2), today.minusYears(1)),
+    ) {
         db.transaction {
             it.insert(
                 DevFosterParent(
                     childId = childId,
                     parentId = parent,
-                    validDuring = DateRange(today.minusYears(2), today.minusYears(1)),
+                    validDuring = validDuring,
                     modifiedAt = now,
                     modifiedBy = admin.evakaUserId,
                 )
