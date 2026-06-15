@@ -6,7 +6,7 @@
 bouncycastle = "1.84"
 dd-java-agent = "1.63.0"
 flyingsaucer = "10.2.2"
-flyway = "12.7.0"
+flyway = "12.8.1"
 java = "25"
 kotlin = "2.3.21"
 ktfmt = "0.26.0"
