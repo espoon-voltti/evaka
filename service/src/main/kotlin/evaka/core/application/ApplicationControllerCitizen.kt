@@ -6,7 +6,6 @@ package evaka.core.application
 
 import evaka.core.Audit
 import evaka.core.AuditId
-import evaka.core.ChildAudit
 import evaka.core.children.getCitizenChildIds
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionService
@@ -123,13 +122,7 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also { childApplicationList ->
-                val childIds = childApplicationList.map { it.childId }
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(user.id),
-                    childId = AuditId(childIds),
-                )
-            }
+            .also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
     }
 
     @GetMapping("/applications/children")
@@ -150,13 +143,7 @@ class ApplicationControllerCitizen(
                     tx.getCitizenChildren(clock.today(), user.id)
                 }
             }
-            .also { childList ->
-                val childIds = childList.map { it.id }
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(user.id),
-                    childId = AuditId(childIds),
-                )
-            }
+            .also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
     }
 
     @GetMapping("/applications/{applicationId}")
@@ -219,12 +206,7 @@ class ApplicationControllerCitizen(
             } else {
                 throw NotFound("Application not found")
             }
-            .also {
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(applicationId),
-                    childId = AuditId(application.childId),
-                )
-            }
+            .also { Audit.ApplicationRead.log(targetId = AuditId(applicationId)) }
     }
 
     @PostMapping("/applications")

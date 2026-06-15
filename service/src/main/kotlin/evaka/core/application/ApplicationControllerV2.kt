@@ -6,7 +6,6 @@ package evaka.core.application
 
 import evaka.core.Audit
 import evaka.core.AuditId
-import evaka.core.ChildAudit
 import evaka.core.ConstList
 import evaka.core.EvakaEnv
 import evaka.core.decision.Decision
@@ -244,13 +243,7 @@ class ApplicationControllerV2(
                     it.fetchApplicationSummariesForGuardian(guardianId)
                 }
             }
-            .also {
-                val childIds = it.map { application -> application.childId }.toSet()
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(guardianId),
-                    childId = AuditId(childIds),
-                )
-            }
+            .also { Audit.ApplicationRead.log(targetId = AuditId(guardianId)) }
     }
 
     @GetMapping("/by-child/{childId}")
@@ -281,10 +274,7 @@ class ApplicationControllerV2(
             }
             .also {
                 val applicationIds = it.map { application -> application.applicationId }.toSet()
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(applicationIds),
-                    childId = AuditId(childId),
-                )
+                Audit.ApplicationRead.log(targetId = AuditId(applicationIds))
             }
     }
 
@@ -360,10 +350,7 @@ class ApplicationControllerV2(
                 }
             }
             .also {
-                ChildAudit.ApplicationRead.log(
-                    targetId = AuditId(applicationId),
-                    childId = AuditId(it.application.childId),
-                )
+                Audit.ApplicationRead.log(targetId = AuditId(applicationId))
                 Audit.DecisionReadByApplication.log(
                     targetId = AuditId(applicationId),
                     objectId = AuditId(it.application.childId),
