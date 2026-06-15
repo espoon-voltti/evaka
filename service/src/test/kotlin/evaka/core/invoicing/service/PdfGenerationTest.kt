@@ -349,6 +349,28 @@ class PdfGenerationTest {
         assertNotNull(pdfBytes)
     }
 
+    @Test
+    fun `generateFeeDecisionPdf SV smoke test`() {
+        val data =
+            FeeDecisionPdfData(
+                decision = normalDecision,
+                settings = mapOf(),
+                lang = OfficialLanguage.SV,
+            )
+        assertNotNull(service.generateFeeDecisionPdf(data))
+    }
+
+    @Test
+    fun `generateVoucherValueDecisionPdf SV smoke test`() {
+        val data =
+            VoucherValueDecisionPdfData(
+                decision = normalVoucherValueDecision,
+                settings = mapOf(),
+                lang = OfficialLanguage.SV,
+            )
+        assertNotNull(service.generateVoucherValueDecisionPdf(data))
+    }
+
     private val reliefVoucherValueDecision =
         normalVoucherValueDecision.copy(decisionType = VoucherValueDecisionType.RELIEF_ACCEPTED)
 
