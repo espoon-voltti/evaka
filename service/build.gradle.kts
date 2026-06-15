@@ -223,9 +223,6 @@ allprojects {
                     // This will become the default in the future
                     // https://kotlinlang.org/docs/whatsnew2020.html#data-class-copy-function-to-have-the-same-visibility-as-constructor
                     "-Xconsistent-data-class-copy-visibility",
-
-                    // https://kotlinlang.org/docs/whatsnew22.html#new-defaulting-rules-for-use-site-annotation-targets
-                    "-Xannotation-default-target=param-property",
                 )
         }
     }

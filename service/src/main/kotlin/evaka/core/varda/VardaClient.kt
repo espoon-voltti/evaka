@@ -360,7 +360,7 @@ class VardaClient(
             if (Unit is R) {
                 Unit
             } else {
-                jsonMapper.readValue(response.body.string())
+                jsonMapper.readValue<R>(response.body.string())
             }
         }
     }

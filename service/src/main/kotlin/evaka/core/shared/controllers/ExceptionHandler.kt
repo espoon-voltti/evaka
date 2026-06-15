@@ -81,7 +81,7 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
         request: WebRequest,
     ): ResponseEntity<Any>? {
         logger.warn("Max upload size exceeded (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(ErrorResponse())
+        return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE).body(ErrorResponse())
     }
 
     // We don't want alerts from ClientAbortExceptions or return any http responses to them
