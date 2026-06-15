@@ -5,6 +5,7 @@
 package evaka.codegen.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
 import evaka.core.ConstList
 import evaka.core.ForceCodeGenType
@@ -157,6 +158,16 @@ data class TsSealedClass(
     val jacksonSerializer: TypeSerializer,
 ) : TsNamedType<Nothing> {
     override val clazz: KClass<*> = obj.clazz
+
+    /**
+     * Name of the JSON property that holds the type discriminant.
+     *
+     * [TypeSerializer.getPropertyName] returns null when the discriminant is an existing property
+     * (`JsonTypeInfo.As.EXISTING_PROPERTY`), so we fall back to the annotation in that case.
+     */
+    val discriminantProperty: String? =
+        jacksonSerializer.propertyName
+            ?: clazz.findAnnotation<JsonTypeInfo>()?.property?.takeIf { it.isNotEmpty() }
 }
 
 /** One variant of a sealed class, represented as a TS plain object */
