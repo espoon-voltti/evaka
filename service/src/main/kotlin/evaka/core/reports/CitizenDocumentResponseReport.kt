@@ -6,9 +6,10 @@ package evaka.core.reports
 
 import evaka.core.Audit
 import evaka.core.AuditId
+import evaka.core.daycare.DaycareGroup
 import evaka.core.daycare.getDaycare
-import evaka.core.daycare.service.DaycareGroup
-import evaka.core.daycare.service.DaycareService
+import evaka.core.daycare.getDaycareGroups
+import evaka.core.daycare.isValidDaycareId
 import evaka.core.document.DocumentTemplateContent
 import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
@@ -22,6 +23,7 @@ import evaka.core.shared.db.Predicate
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.shared.security.actionrule.toPredicate
@@ -33,10 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class CitizenDocumentResponseReport(
-    private val accessControl: AccessControl,
-    private val daycareService: DaycareService,
-) {
+class CitizenDocumentResponseReport(private val accessControl: AccessControl) {
 
     @GetMapping("/employee/reports/citizen-document-response-report")
     fun getCitizenDocumentResponseReport(
@@ -144,8 +143,9 @@ class CitizenDocumentResponseReport(
                             clock,
                             Action.Group.READ_CITIZEN_DOCUMENT_RESPONSE_REPORT,
                         )
-                    daycareService.getDaycareGroups(
-                        tx,
+                    if (!tx.isValidDaycareId(unitId))
+                        throw NotFound("No daycare found with id $unitId")
+                    tx.getDaycareGroups(
                         unitId,
                         from,
                         to,

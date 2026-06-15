@@ -11,13 +11,12 @@ import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.daycare.Caretakers
 import evaka.core.daycare.Daycare
 import evaka.core.daycare.DaycareFields
+import evaka.core.daycare.DaycareGroup
 import evaka.core.daycare.getDaycare
 import evaka.core.daycare.getDaycareGroup
-import evaka.core.daycare.service.Caretakers
-import evaka.core.daycare.service.DaycareGroup
-import evaka.core.daycare.service.DaycareService
 import evaka.core.decision.DecisionType
 import evaka.core.insertServiceNeedOptions
 import evaka.core.messaging.createDaycareGroupMessageAccount
@@ -72,8 +71,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var daycareController: DaycareController
-
-    @Autowired private lateinit var daycareService: DaycareService
 
     // AccessControl that denies Action.Child.READ_SERVICE_NEEDS but otherwise behaves normally
     private val denyServiceNeedsAccessControl =
@@ -330,11 +327,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
         db.transaction { it.insert(placement) }
 
-        val controller =
-            DaycareController(
-                daycareService = daycareService,
-                accessControl = denyServiceNeedsAccessControl,
-            )
+        val controller = DaycareController(accessControl = denyServiceNeedsAccessControl)
         val details =
             controller.getUnitGroupDetails(
                 dbInstance(),

@@ -7,9 +7,9 @@ package evaka.core.occupancy
 import evaka.core.Audit
 import evaka.core.AuditId
 import evaka.core.application.fetchApplicationDetails
+import evaka.core.daycare.Caretakers
 import evaka.core.daycare.getDaycare
 import evaka.core.daycare.getUnitStats
-import evaka.core.daycare.service.Caretakers
 import evaka.core.placement.PlacementPlanService
 import evaka.core.placement.SpeculatedPlacement
 import evaka.core.reports.AttendanceReservationReportRow
