@@ -26,7 +26,7 @@ import type {
 } from '../../generated/api-types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import UnitsPage from '../../pages/employee/units/units'
-import { test } from '../../playwright'
+import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -144,6 +144,28 @@ test.describe('Employee - Units', () => {
     await group.assertGroupName('Uusi nimi')
     await group.assertGroupStartDate('01.01.2020')
     await group.assertGroupEndDate('31.12.2022')
+  })
+
+  test('Group end date cannot be set before its last group placement', async () => {
+    await Fixture.groupPlacement({
+      daycareGroupId: groupFixture.id,
+      daycarePlacementId: placementFixture.id,
+      startDate: placementFixture.startDate,
+      endDate: placementFixture.endDate
+    }).save()
+
+    const unitPage = await UnitPage.openUnit(page, unitFixture.id)
+    const groupsPage = await unitPage.openGroupsPage()
+    const group = await groupsPage.openGroupCollapsible(groupFixture.id)
+
+    const modal = await group.openUpdateModal()
+    await modal.endDate.fill(placementFixture.endDate.subDays(1).format())
+    await modal.submitButton.assertDisabled(true)
+    await expect(modal.endDateInfo).toHaveText('Valitse myöhäisempi päivä')
+
+    await modal.endDate.fill(placementFixture.endDate.format())
+    await modal.submitButton.assertDisabled(false)
+    await expect(modal.endDateInfo).toBeHidden()
   })
 
   test('daycare has one child missing group', async () => {

@@ -27,6 +27,8 @@ import evaka.core.daycare.getDaycareGroups
 import evaka.core.daycare.getDaycareStub
 import evaka.core.daycare.getDaycares
 import evaka.core.daycare.getGroupStats
+import evaka.core.daycare.getLastGroupPlacementEndDate
+import evaka.core.daycare.getLastGroupPlacementEndDates
 import evaka.core.daycare.getLastPlacementDate
 import evaka.core.daycare.getOphUnitOIDs
 import evaka.core.daycare.getUnitFeatures
@@ -66,6 +68,7 @@ import evaka.core.shared.GroupPlacementId
 import evaka.core.shared.PlacementId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.NotFound
@@ -351,9 +354,25 @@ class DaycareController(
         @RequestBody body: GroupUpdateRequest,
     ) {
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(it, user, clock, Action.Group.UPDATE, groupId)
-                it.updateGroup(
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.Group.UPDATE, groupId)
+
+                if (body.endDate != null) {
+                    if (body.endDate.isBefore(body.startDate)) {
+                        throw BadRequest("Group end date cannot be before start date")
+                    }
+                    val lastGroupPlacementEndDate = tx.getLastGroupPlacementEndDate(groupId)
+                    if (
+                        lastGroupPlacementEndDate != null &&
+                            lastGroupPlacementEndDate > body.endDate
+                    ) {
+                        throw BadRequest(
+                            "Group end date cannot be before the last group placement date"
+                        )
+                    }
+                }
+
+                tx.updateGroup(
                     groupId,
                     body.name,
                     body.startDate,
@@ -595,6 +614,7 @@ class DaycareController(
                         unitId,
                     )
                     val groups = tx.getDaycareGroups(unitId, from, to)
+                    val groupLastPlacementDates = tx.getLastGroupPlacementEndDates(unitId)
                     val placements = tx.getDetailedDaycarePlacements(unitId, null, period).toList()
                     val backupCares = tx.getBackupCaresForDaycare(unitId, period)
                     val (missingGroupPlacements, missingBackupPlacements) =
@@ -702,6 +722,7 @@ class DaycareController(
 
                     UnitGroupDetails(
                         groups = groups,
+                        groupLastPlacementDates = groupLastPlacementDates,
                         placements = responsePlacements,
                         backupCares = backupCares,
                         missingGroupPlacements = missingGroupPlacements,
@@ -877,6 +898,7 @@ class DaycareController(
 
 data class UnitGroupDetails(
     val groups: List<DaycareGroup>,
+    val groupLastPlacementDates: Map<GroupId, LocalDate>,
     val placements: List<DaycarePlacementWithDetails>,
     val backupCares: List<UnitBackupCare>,
     val missingGroupPlacements: List<MissingGroupPlacement>,

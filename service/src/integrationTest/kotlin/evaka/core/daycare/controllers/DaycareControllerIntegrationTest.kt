@@ -816,6 +816,70 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(aromiPreschoolCustomerId, editedGroup2.aromiCustomerId)
     }
 
+    @Test
+    fun `cannot set group end date to earlier than the end of last group placement`() {
+        val groupPlacementEnd = today.plusYears(1)
+        val group = DevDaycareGroup(daycareId = daycare.id, startDate = today, endDate = null)
+        val placement =
+            DevPlacement(
+                childId = child1.id,
+                unitId = daycare.id,
+                startDate = today,
+                endDate = groupPlacementEnd,
+            )
+        db.transaction { tx ->
+            tx.insert(group)
+            tx.insert(placement)
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placement.id,
+                    daycareGroupId = group.id,
+                    startDate = today,
+                    endDate = groupPlacementEnd,
+                )
+            )
+        }
+
+        assertThrows<BadRequest> {
+            updateAndGetDaycareGroup(
+                groupId = group.id,
+                daycareId = daycare.id,
+                name = group.name,
+                startDate = group.startDate,
+                endDate = groupPlacementEnd.minusDays(1),
+                user = supervisor.user,
+            )
+        }
+
+        val endedGroup =
+            updateAndGetDaycareGroup(
+                groupId = group.id,
+                daycareId = daycare.id,
+                name = group.name,
+                startDate = group.startDate,
+                endDate = groupPlacementEnd,
+                user = supervisor.user,
+            )
+        assertEquals(groupPlacementEnd, endedGroup.endDate)
+    }
+
+    @Test
+    fun `group with no group placements can be ended on any date`() {
+        val group = DevDaycareGroup(daycareId = daycare.id, startDate = today, endDate = null)
+        db.transaction { tx -> tx.insert(group) }
+
+        val endedGroup =
+            updateAndGetDaycareGroup(
+                groupId = group.id,
+                daycareId = daycare.id,
+                name = group.name,
+                startDate = group.startDate,
+                endDate = today,
+                user = supervisor.user,
+            )
+        assertEquals(today, endedGroup.endDate)
+    }
+
     private fun getDaycare(daycareId: DaycareId): DaycareController.DaycareResponse {
         return daycareController.getDaycare(
             dbInstance(),

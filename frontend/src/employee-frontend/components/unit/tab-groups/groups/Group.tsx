@@ -266,7 +266,11 @@ export default React.memo(function Group({
       data-status={open ? 'open' : 'closed'}
     >
       {uiMode === `update-group-${group.id}` && (
-        <GroupUpdateModal group={group} nekkuUnits={nekkuUnits} />
+        <GroupUpdateModal
+          group={group}
+          lastPlacementDate={group.lastPlacementDate}
+          nekkuUnits={nekkuUnits}
+        />
       )}
       {uiMode === `nekku-order-${group.id}` && (
         <NekkuOrderModal groupId={group.id} groupName={group.name} />
