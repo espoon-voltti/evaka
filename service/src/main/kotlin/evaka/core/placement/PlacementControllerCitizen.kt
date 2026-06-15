@@ -91,7 +91,7 @@ class PlacementControllerCitizen(
             }
 
         db.connect { dbc ->
-                val terminatablePlacementGroup = dbc.read { tx ->
+                dbc.transaction { tx ->
                     if (
                         tx.getUnitFeatures(body.unitId)
                             ?.features
@@ -102,22 +102,21 @@ class PlacementControllerCitizen(
                             "PLACEMENT_TERMINATION_DISABLED",
                         )
                     }
-                    tx.getCitizenChildPlacements(clock.today(), childId)
-                        .also { placements ->
-                            accessControl.requirePermissionFor(
-                                tx,
-                                user,
-                                clock,
-                                Action.Citizen.Placement.TERMINATE,
-                                placements.map { it.id },
-                            )
-                        }
-                        .let { mapToTerminatablePlacements(it, clock.today()) }
-                        .find { it.unitId == body.unitId && it.type == body.type }
-                        ?: throw NotFound("Matching placement type not found")
-                }
+                    val terminatablePlacementGroup =
+                        tx.getCitizenChildPlacements(clock.today(), childId)
+                            .also { placements ->
+                                accessControl.requirePermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Citizen.Placement.TERMINATE,
+                                    placements.map { it.id },
+                                )
+                            }
+                            .let { mapToTerminatablePlacements(it, clock.today()) }
+                            .find { it.unitId == body.unitId && it.type == body.type }
+                            ?: throw NotFound("Matching placement type not found")
 
-                val cancelableTransferApplicationIds = dbc.transaction { tx ->
                     if (body.terminateDaycareOnly == true) {
                         terminateBilledDaycare(
                             tx,
@@ -186,21 +185,20 @@ class PlacementControllerCitizen(
                         runAt = clock.now(),
                     )
 
-                    cancelableTransferApplicationIds
+                    val placements =
+                        terminatablePlacementGroup.placements +
+                            terminatablePlacementGroup.additionalPlacements
+                    Pair(placements.map { it.id }, cancelableTransferApplicationIds)
                 }
-                Pair(terminatablePlacementGroup, cancelableTransferApplicationIds)
             }
-            .also { (terminatablePlacementGroup, cancelableTransferApplicationIds) ->
-                val placements =
-                    terminatablePlacementGroup.placements +
-                        terminatablePlacementGroup.additionalPlacements
+            .also { (placementIds, cancelableTransferApplicationIds) ->
                 Audit.PlacementTerminate.log(
                     targetId = AuditId(listOf(body.unitId, childId)),
-                    objectId = AuditId(placements.map { it.id } + cancelableTransferApplicationIds),
+                    objectId = AuditId(placementIds + cancelableTransferApplicationIds),
                     meta =
                         mapOf(
                             "type" to body.type,
-                            "placementIds" to placements.map { it.id },
+                            "placementIds" to placementIds,
                             "transferApplicationIds" to cancelableTransferApplicationIds,
                         ),
                 )
