@@ -172,7 +172,11 @@ data class SelectableRecipientsResponse(
     val receivers: List<SelectableRecipient>,
 )
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type",
+)
 sealed class SelectableRecipient(val type: MessageRecipientType) {
     abstract val name: String
 
@@ -255,7 +259,11 @@ data class AuthorizedMessageAccount(
     @Nested("group_") val daycareGroup: Group?,
 )
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type",
+)
 sealed class MessageRecipient(val type: MessageRecipientType) {
     abstract fun isStarter(): Boolean
 

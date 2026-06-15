@@ -213,7 +213,7 @@ ${join(props, "\n").prependIndent("  ")}
         val variants = sealed.variants.map { metadata[it] as TsSealedVariant }
         val tsVariants = variants.map { variant ->
             val discriminantProp =
-                serializer.propertyName?.let {
+                sealed.discriminantProperty?.let {
                     TsCode("$it: '${serializer.discriminantValue(variant.obj.clazz)}'")
                 }
             val props =
@@ -343,7 +343,7 @@ export type ${sealed.name} = ${variants.joinToString(separator = " | ") { "${sea
                             if (deserializer != null) variant to deserializer else null
                         }
                         .toMap()
-                val discriminantProp = namedType.jacksonSerializer.propertyName
+                val discriminantProp = namedType.discriminantProperty
                 if (discriminantProp == null || variants.isEmpty())
                     null // TODO: how can we deserialize without a discriminant?
                 else {
