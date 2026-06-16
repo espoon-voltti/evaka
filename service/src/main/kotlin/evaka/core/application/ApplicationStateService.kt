@@ -1220,6 +1220,9 @@ class ApplicationStateService(
             if (original.status != CREATED)
                 throw BadRequest("Cannot save as draft, application already sent")
         } else {
+            if (original.status != CREATED && original.status != SENT)
+                throw BadRequest("Cannot update application in status ${original.status}")
+
             validateApplication(
                 tx,
                 original.type,

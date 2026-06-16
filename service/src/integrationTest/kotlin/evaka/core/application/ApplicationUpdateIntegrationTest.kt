@@ -7,6 +7,7 @@ package evaka.core.application
 import evaka.core.FullApplicationTest
 import evaka.core.application.ApplicationStatus.CREATED
 import evaka.core.application.ApplicationStatus.SENT
+import evaka.core.application.ApplicationStatus.WAITING_PLACEMENT
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child
@@ -23,6 +24,7 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestApplication
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import java.time.LocalDate
@@ -31,6 +33,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -471,6 +474,36 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             afterClearingShiftCare.attachments
                 .filter { it.type == ApplicationAttachmentType.EXTENDED_CARE }
                 .size,
+        )
+    }
+
+    @Test
+    fun `citizen cannot update an application that is no longer editable in the frontend`() {
+        val sentDate = LocalDate.of(2021, 1, 1)
+        val application = insertApplication(WAITING_PLACEMENT, sentDate, null, false)
+
+        assertThrows<BadRequest> {
+            applicationControllerCitizen.updateApplication(
+                dbInstance(),
+                citizen,
+                clock,
+                application.id,
+                CitizenApplicationUpdate(ApplicationFormUpdate.from(application.form), false),
+            )
+        }
+    }
+
+    @Test
+    fun `citizen can update a SENT application`() {
+        val sentDate = LocalDate.of(2021, 1, 1)
+        val application = insertApplication(SENT, sentDate, null, false)
+
+        applicationControllerCitizen.updateApplication(
+            dbInstance(),
+            citizen,
+            clock,
+            application.id,
+            CitizenApplicationUpdate(ApplicationFormUpdate.from(application.form), false),
         )
     }
 
