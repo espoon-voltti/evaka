@@ -21,9 +21,9 @@ export const ReasoningCard = styled.div<{
   padding: ${defaultMargins.m};
 `
 
-export const LanguageGrid = styled.div`
+export const LanguageGrid = styled.div<{ $singleColumn?: boolean }>`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: ${(p) => (p.$singleColumn ? '1fr' : '1fr 1fr')};
   gap: ${defaultMargins.L};
 `
 

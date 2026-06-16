@@ -10,9 +10,7 @@ import {
 } from '../../generated/api-clients/application'
 import {
   getDecisionUnits,
-  getDraftReasoningPreview,
-  getIndividualReasonings,
-  linkIndividualReasonings
+  getIndividualReasonings
 } from '../../generated/api-clients/decision'
 
 const q = new Queries()
@@ -23,11 +21,4 @@ export const updateDecisionDraftsMutation = q.mutation(updateDecisionDrafts, [
   decisionDraftsQuery.prefix
 ])
 
-export const getDraftReasoningPreviewQuery = q.query(getDraftReasoningPreview)
-
 export const getIndividualReasoningsQuery = q.query(getIndividualReasonings)
-
-export const linkIndividualReasoningsMutation = q.mutation(
-  linkIndividualReasonings,
-  [({ id }) => getDraftReasoningPreviewQuery({ id })]
-)

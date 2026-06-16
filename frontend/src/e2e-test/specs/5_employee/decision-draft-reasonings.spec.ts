@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type {
+  ApplicationId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -164,17 +167,75 @@ test.describe('Decision draft reasonings', () => {
     ).toBeVisible()
     await expect(preschoolPicker.reasoningRow(daycareReasoningId)).toBeHidden()
     await expect(preschoolPicker.reasoningRows()).toHaveCount(1)
-    await preschoolPicker.cancel()
+    await preschoolPicker.close()
 
     const daycarePicker = await draftPage.openPicker('PRESCHOOL_DAYCARE')
     await expect(daycarePicker.reasoningRow(daycareReasoningId)).toBeVisible()
     await expect(daycarePicker.reasoningRow(preschoolReasoningId)).toBeHidden()
     await expect(daycarePicker.reasoningRows()).toHaveCount(1)
-    await daycarePicker.cancel()
+    await daycarePicker.close()
   })
 
-  test('Linking and unlinking an individual reasoning updates the decision card', async () => {
-    const reasoning = await Fixture.decisionReasoningIndividual({
+  test('Individual reasonings persist on save and the selection can be changed', async () => {
+    const reasoningA = await Fixture.decisionReasoningIndividual({
+      collectionType: 'PRESCHOOL',
+      titleFi: 'Esiopetus yksilö A',
+      titleSv: 'Förskola individuell A',
+      textFi: 'Esiopetuksen yksilöperustelu A',
+      textSv: 'Förskolans individuella motivering A'
+    }).save()
+    const reasoningB = await Fixture.decisionReasoningIndividual({
+      collectionType: 'PRESCHOOL',
+      titleFi: 'Esiopetus yksilö B',
+      titleSv: 'Förskola individuell B',
+      textFi: 'Esiopetuksen yksilöperustelu B',
+      textSv: 'Förskolans individuella motivering B'
+    }).save()
+
+    let draftPage = await openDecisionDraft()
+    let preschoolCard = draftPage.decisionCard('PRESCHOOL')
+    // Wait for the reasoning section to load, then assert nothing is selected yet
+    await expect(preschoolCard.pickerButton('PRESCHOOL')).toBeVisible()
+    await expect(preschoolCard.individualReasoning(reasoningA.id)).toBeHidden()
+
+    // Choose reasoning A and close the modal — visible in page state, not yet saved
+    let picker = await draftPage.openPicker('PRESCHOOL')
+    await picker.selectReasoning(reasoningA.id)
+    await picker.close()
+    await expect(preschoolCard.individualReasoning(reasoningA.id)).toBeVisible()
+
+    // Save and reopen — A is persisted
+    await draftPage.save()
+    await expect(page.findByDataQa('save-decisions-button')).toBeHidden()
+    draftPage = await openDecisionDraft()
+    preschoolCard = draftPage.decisionCard('PRESCHOOL')
+    await expect(preschoolCard.individualReasoning(reasoningA.id)).toBeVisible()
+
+    // Switch the selection to B and unselect A, close the modal
+    picker = await draftPage.openPicker('PRESCHOOL')
+    await picker.selectReasoning(reasoningB.id)
+    await picker.deselectReasoning(reasoningA.id)
+    await picker.close()
+    await expect(preschoolCard.individualReasoning(reasoningB.id)).toBeVisible()
+    await expect(preschoolCard.individualReasoning(reasoningA.id)).toBeHidden()
+
+    // Save and reopen — B is persisted and A is gone
+    await draftPage.save()
+    await expect(page.findByDataQa('save-decisions-button')).toBeHidden()
+    draftPage = await openDecisionDraft()
+    preschoolCard = draftPage.decisionCard('PRESCHOOL')
+    await expect(preschoolCard.individualReasoning(reasoningB.id)).toBeVisible()
+    await expect(preschoolCard.individualReasoning(reasoningA.id)).toBeHidden()
+  })
+
+  test('Swedish unit renders reasonings in Swedish', async () => {
+    await Fixture.decisionReasoningGeneric({
+      collectionType: 'PRESCHOOL',
+      validFrom: LocalDate.of(2021, 1, 1),
+      textFi: 'Esiopetuksen perustelu',
+      textSv: 'Förskolemotivering'
+    }).save()
+    const individual = await Fixture.decisionReasoningIndividual({
       collectionType: 'PRESCHOOL',
       titleFi: 'Esiopetus yksilö',
       titleSv: 'Förskola individuell',
@@ -182,23 +243,63 @@ test.describe('Decision draft reasonings', () => {
       textSv: 'Förskolans individuella motivering'
     }).save()
 
-    const draftPage = await openDecisionDraft()
+    const svPreschool = await Fixture.daycare({
+      ...testPreschool,
+      id: fromUuid<DaycareId>('b53d80e0-319b-4d2b-950c-f5c3c9f834bd'),
+      name: 'Alkuräjähdyksen eskari (SV)',
+      language: 'sv'
+    }).save()
+
+    const svApplicationId = fromUuid<ApplicationId>(
+      '6a9b1b1e-3fdf-11eb-b378-0242ac130003'
+    )
+    await createApplications({
+      body: [
+        {
+          ...applicationFixture(
+            testChild2,
+            testAdult,
+            undefined,
+            'PRESCHOOL',
+            null,
+            [svPreschool.id],
+            true,
+            'SENT',
+            mockedDate
+          ),
+          id: svApplicationId
+        }
+      ]
+    })
+    await execSimpleApplicationActions(
+      svApplicationId,
+      ['MOVE_TO_WAITING_PLACEMENT', 'CREATE_DEFAULT_PLACEMENT_PLAN'],
+      HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(13, 0))
+    )
+
+    await employeeLogin(page, serviceWorker)
+    await page.goto(ApplicationListView.url)
+    const applicationListView = new ApplicationListView(page)
+    await applicationListView.filterByApplicationStatus('WAITING_DECISION')
+    await applicationListView.searchButton.click()
+    const draftPage = await applicationListView
+      .applicationRow(svApplicationId)
+      .primaryActionEditDecisionsRedesign()
+    await draftPage.waitUntilLoaded()
+
     const preschoolCard = draftPage.decisionCard('PRESCHOOL')
-    await expect(preschoolCard.individualReasoning(reasoning.id)).toBeHidden()
+    await expect(preschoolCard.unitLanguageUnsupportedWarning).toBeHidden()
+
+    await expect(preschoolCard.genericReasoning('PRESCHOOL')).toContainText(
+      'Förskolemotivering'
+    )
 
     const picker = await draftPage.openPicker('PRESCHOOL')
-    await picker.selectReasoning(reasoning.id)
-    await picker.confirm()
-    await expect(preschoolCard.individualReasoning(reasoning.id)).toBeVisible()
-
-    await page.reload()
-    await draftPage.waitUntilLoaded()
-    await expect(preschoolCard.individualReasoning(reasoning.id)).toBeVisible()
-
-    const reopenedPicker = await draftPage.openPicker('PRESCHOOL')
-    await reopenedPicker.deselectReasoning(reasoning.id)
-    await reopenedPicker.confirm()
-    await expect(preschoolCard.individualReasoning(reasoning.id)).toBeHidden()
+    await picker.selectReasoning(individual.id)
+    await picker.close()
+    await expect(
+      preschoolCard.individualReasoning(individual.id)
+    ).toContainText('Förskola individuell')
   })
 
   async function openDecisionDraft() {

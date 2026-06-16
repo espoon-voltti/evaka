@@ -9,8 +9,10 @@ import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionIndividualReasoningId
+import evaka.core.shared.FeatureConfig
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.security.AccessControl
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*
 class DecisionReasoningController(
     private val accessControl: AccessControl,
     private val evakaEnv: EvakaEnv,
+    private val featureConfig: FeatureConfig,
 ) {
 
     @GetMapping("/generic")
@@ -52,6 +55,9 @@ class DecisionReasoningController(
         clock: EvakaClock,
         @RequestBody body: DecisionGenericReasoningRequest,
     ): DecisionGenericReasoningId {
+        if (featureConfig.placementDecisionSwedishLanguageEnabled && body.textSv.isBlank()) {
+            throw BadRequest("Swedish reasoning text is required")
+        }
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -74,6 +80,9 @@ class DecisionReasoningController(
         @PathVariable id: DecisionGenericReasoningId,
         @RequestBody body: DecisionGenericReasoningRequest,
     ) {
+        if (featureConfig.placementDecisionSwedishLanguageEnabled && body.textSv.isBlank()) {
+            throw BadRequest("Swedish reasoning text is required")
+        }
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -161,6 +170,12 @@ class DecisionReasoningController(
         clock: EvakaClock,
         @RequestBody body: DecisionIndividualReasoningRequest,
     ): DecisionIndividualReasoningId {
+        if (
+            featureConfig.placementDecisionSwedishLanguageEnabled &&
+                (body.titleSv.isBlank() || body.textSv.isBlank())
+        ) {
+            throw BadRequest("Swedish reasoning title and text are required")
+        }
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(

@@ -11,6 +11,7 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -25,6 +26,7 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -40,6 +42,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insert(admin)
             tx.insert(serviceWorker)
         }
+        whenever(featureConfig.placementDecisionSwedishLanguageEnabled).thenReturn(false)
     }
 
     private fun createGenericReasoning(
@@ -332,6 +335,91 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             assertNull(endDate)
             assertFalse(outdated)
         }
+    }
+
+    @Test
+    fun `generic reasoning rejects blank Swedish text when Swedish is required`() {
+        val request =
+            DecisionGenericReasoningRequest(
+                collectionType = DecisionReasoningCollectionType.DAYCARE,
+                validFrom = LocalDate.of(2026, 8, 1),
+                textFi = "Teksti FI",
+                textSv = "",
+                ready = false,
+            )
+        whenever(featureConfig.placementDecisionSwedishLanguageEnabled).thenReturn(true)
+        assertThrows<BadRequest> { createGenericReasoning(request) }
+    }
+
+    @Test
+    fun `generic reasoning allows blank Swedish text when Swedish is not required`() {
+        val request =
+            DecisionGenericReasoningRequest(
+                collectionType = DecisionReasoningCollectionType.DAYCARE,
+                validFrom = LocalDate.of(2026, 8, 1),
+                textFi = "Teksti FI",
+                textSv = "",
+                ready = false,
+            )
+        val id = createGenericReasoning(request)
+        assertNotNull(id)
+    }
+
+    @Test
+    fun `updateGenericReasoning rejects blank Swedish text when Swedish is required`() {
+        val request =
+            DecisionGenericReasoningRequest(
+                collectionType = DecisionReasoningCollectionType.DAYCARE,
+                validFrom = LocalDate.of(2026, 8, 1),
+                textFi = "Teksti FI",
+                textSv = "Text SV",
+                ready = false,
+            )
+        whenever(featureConfig.placementDecisionSwedishLanguageEnabled).thenReturn(true)
+        val id = createGenericReasoning(request)
+        assertThrows<BadRequest> { updateGenericReasoning(id, request.copy(textSv = "")) }
+    }
+
+    @Test
+    fun `individual reasoning rejects blank Swedish title when Swedish is required`() {
+        val request =
+            DecisionIndividualReasoningRequest(
+                collectionType = DecisionReasoningCollectionType.DAYCARE,
+                titleFi = "Otsikko FI",
+                titleSv = "",
+                textFi = "Teksti FI",
+                textSv = "Text SV",
+            )
+        whenever(featureConfig.placementDecisionSwedishLanguageEnabled).thenReturn(true)
+        assertThrows<BadRequest> { createIndividualReasoning(request) }
+    }
+
+    @Test
+    fun `individual reasoning rejects blank Swedish text when Swedish is required`() {
+        val request =
+            DecisionIndividualReasoningRequest(
+                collectionType = DecisionReasoningCollectionType.DAYCARE,
+                titleFi = "Otsikko FI",
+                titleSv = "Titel SV",
+                textFi = "Teksti FI",
+                textSv = "",
+            )
+        whenever(featureConfig.placementDecisionSwedishLanguageEnabled).thenReturn(true)
+        assertThrows<BadRequest> { createIndividualReasoning(request) }
+    }
+
+    @Test
+    fun `individual reasoning allows blank Swedish when not required`() {
+        val request =
+            DecisionIndividualReasoningRequest(
+                collectionType = DecisionReasoningCollectionType.DAYCARE,
+                titleFi = "Otsikko FI",
+                titleSv = "",
+                textFi = "Teksti FI",
+                textSv = "",
+            )
+        val id = createIndividualReasoning(request)
+        assertNotNull(id)
     }
 
     private fun genericRequest(

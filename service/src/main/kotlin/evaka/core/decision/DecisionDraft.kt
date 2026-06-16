@@ -4,8 +4,10 @@
 
 package evaka.core.decision
 
+import evaka.core.decision.reasoning.DecisionGenericReasoning
 import evaka.core.shared.DaycareId
 import evaka.core.shared.DecisionId
+import evaka.core.shared.DecisionIndividualReasoningId
 import java.time.LocalDate
 
 data class DecisionDraft(
@@ -15,4 +17,6 @@ data class DecisionDraft(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val planned: Boolean,
+    val individualReasoningIds: List<DecisionIndividualReasoningId> = emptyList(),
+    val genericReasoning: DecisionGenericReasoning? = null,
 )

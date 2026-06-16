@@ -1331,8 +1331,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .inPlacementUnitOfChildOfDecision(),
         ),
-        ARCHIVE(HasGlobalRole(ADMIN)),
-        UPDATE_REASONING_LINKS(HasGlobalRole(ADMIN, SERVICE_WORKER));
+        ARCHIVE(HasGlobalRole(ADMIN));
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

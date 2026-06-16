@@ -9,6 +9,7 @@ import type {
   DecisionDraft,
   DecisionType
 } from 'lib-common/generated/api-types/decision'
+import type { DecisionIndividualReasoningId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { Chip } from 'lib-components/atoms/Chip'
@@ -25,7 +26,8 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import IndividualReasoningPickerModal from './IndividualReasoningPickerModal'
-import { getDraftReasoningPreviewQuery } from './queries'
+import { decisionTypeToCollectionType } from './decisionTypeToCollectionType'
+import { getIndividualReasoningsQuery } from './queries'
 
 const Card = styled.div<{ $twoColumn: boolean }>`
   border: 1px solid ${colors.grayscale.g15};
@@ -128,7 +130,12 @@ interface Props {
   childName: string
   showPlannedCheckbox: boolean
   primaryDecisionType: DecisionType
+  language: 'fi' | 'sv'
+  unitLanguageUnsupported: boolean
   onPlannedChange: (planned: boolean) => void
+  onReasoningIdsChange: (
+    ids: ReadonlySet<DecisionIndividualReasoningId>
+  ) => void
 }
 
 /**
@@ -150,19 +157,30 @@ export default React.memo(function DecisionCard({
   childName,
   showPlannedCheckbox,
   primaryDecisionType,
-  onPlannedChange
+  language,
+  unitLanguageUnsupported,
+  onPlannedChange,
+  onReasoningIdsChange
 }: Props) {
-  const { i18n, lang } = useTranslation()
+  const { i18n } = useTranslation()
   const [pickerOpen, setPickerOpen] = useState(false)
   const checkboxId = useUniqueId('planned')
-  const previewResult = useQueryResult(
-    getDraftReasoningPreviewQuery({ id: decision.id })
+  const individualReasoningsResult = useQueryResult(
+    getIndividualReasoningsQuery({
+      collectionType: decisionTypeToCollectionType(decision.type)
+    })
   )
 
   const typeLabel =
     i18n.decisionDraft.types[
       decisionTypeForLabel(decision.type, primaryDecisionType)
     ]
+
+  const selectedIds = new Set(decision.individualReasoningIds)
+  const text = (s: { textFi: string; textSv: string }) =>
+    language === 'sv' ? s.textSv : s.textFi
+  const title = (s: { titleFi: string; titleSv: string }) =>
+    language === 'sv' ? s.titleSv : s.titleFi
 
   return (
     <Card
@@ -192,77 +210,78 @@ export default React.memo(function DecisionCard({
           {decision.endDate?.format() ?? ''}
         </DateRange>
 
-        {renderResult(previewResult, (preview) => {
-          const text = (s: { textFi: string; textSv: string }) =>
-            lang === 'sv' ? s.textSv : s.textFi
-          const title = (s: { titleFi: string; titleSv: string }) =>
-            lang === 'sv' ? s.titleSv : s.titleFi
-          const linkedIds = new Set(
-            preview.individualReasoningSelections.map((r) => r.id)
-          )
-          return (
-            <DecisionWrapper>
-              <div>
-                <GenericHeader>
-                  <SectionLabel>
-                    {i18n.decisionDraft.reasonings.generic}
-                  </SectionLabel>
-                </GenericHeader>
-                {preview.genericReasoning ? (
-                  <GenericCard
-                    $notReady={!preview.genericReasoning.ready}
-                    data-qa={`generic-card-${preview.genericReasoning.collectionType}`}
-                  >
-                    {!preview.genericReasoning.ready && (
-                      <>
-                        <Chip
-                          label={i18n.decisionReasonings.generic.statusNotReady}
-                          size="small"
-                          colorPalette="orange"
-                          data-qa="not-ready-pill"
-                        />
-                        <NotReadyDescription>
-                          {i18n.decisionReasonings.generic.notReadyWarning}
-                        </NotReadyDescription>
-                      </>
-                    )}
-                    <GenericTitle>
-                      {preview.genericReasoning.endDate
-                        ? i18n.decisionDraft.reasonings.genericRangeClosed(
-                            preview.genericReasoning.validFrom.format(),
-                            preview.genericReasoning.endDate.format()
-                          )
-                        : i18n.decisionDraft.reasonings.genericRangeOpen(
-                            preview.genericReasoning.validFrom.format()
-                          )}
-                    </GenericTitle>
-                    <span>{text(preview.genericReasoning)}</span>
-                  </GenericCard>
-                ) : (
-                  <AlertBox
-                    title={i18n.decisionDraft.reasonings.noGenericForSlot}
-                  />
-                )}
-              </div>
+        {unitLanguageUnsupported ? (
+          <AlertBox
+            data-qa="unit-language-unsupported-warning"
+            title={i18n.decisionDraft.reasonings.unitLanguageUnsupported}
+          />
+        ) : (
+          <DecisionWrapper>
+            <div>
+              <GenericHeader>
+                <SectionLabel>
+                  {i18n.decisionDraft.reasonings.generic}
+                </SectionLabel>
+              </GenericHeader>
+              {decision.genericReasoning ? (
+                <GenericCard
+                  $notReady={!decision.genericReasoning.ready}
+                  data-qa={`generic-card-${decision.genericReasoning.collectionType}`}
+                >
+                  {!decision.genericReasoning.ready && (
+                    <>
+                      <Chip
+                        label={i18n.decisionReasonings.generic.statusNotReady}
+                        size="small"
+                        colorPalette="orange"
+                        data-qa="not-ready-pill"
+                      />
+                      <NotReadyDescription>
+                        {i18n.decisionReasonings.generic.notReadyWarning}
+                      </NotReadyDescription>
+                    </>
+                  )}
+                  <GenericTitle>
+                    {decision.genericReasoning.endDate
+                      ? i18n.decisionDraft.reasonings.genericRangeClosed(
+                          decision.genericReasoning.validFrom.format(),
+                          decision.genericReasoning.endDate.format()
+                        )
+                      : i18n.decisionDraft.reasonings.genericRangeOpen(
+                          decision.genericReasoning.validFrom.format()
+                        )}
+                  </GenericTitle>
+                  <span>{text(decision.genericReasoning)}</span>
+                </GenericCard>
+              ) : (
+                <AlertBox
+                  title={i18n.decisionDraft.reasonings.noGenericForSlot}
+                />
+              )}
+            </div>
 
-              <div>
-                <IndividualHeader>
-                  <SectionLabel>
-                    {i18n.decisionDraft.reasonings.individual}
-                  </SectionLabel>
-                  <Button
-                    appearance="button"
-                    icon={faFile}
-                    onClick={() => setPickerOpen(true)}
-                    text={i18n.decisionDraft.reasonings.pickerButton}
-                    data-qa={`open-picker-${decision.type}`}
-                  />
-                </IndividualHeader>
-                {preview.individualReasoningSelections.length === 0 ? (
+            <div>
+              <IndividualHeader>
+                <SectionLabel>
+                  {i18n.decisionDraft.reasonings.individual}
+                </SectionLabel>
+                <Button
+                  appearance="button"
+                  icon={faFile}
+                  onClick={() => setPickerOpen(true)}
+                  text={i18n.decisionDraft.reasonings.pickerButton}
+                  data-qa={`open-picker-${decision.type}`}
+                />
+              </IndividualHeader>
+              {renderResult(individualReasoningsResult, (allReasonings) => {
+                const selected = allReasonings.filter((r) =>
+                  selectedIds.has(r.id)
+                )
+                return selected.length === 0 ? (
                   <Muted>{i18n.decisionDraft.reasonings.noIndividual}</Muted>
                 ) : (
                   <FixedSpaceColumn $spacing="s">
-                    {preview.individualReasoningSelections.map((ind) => (
+                    {selected.map((ind) => (
                       <IndividualCard
                         key={ind.id}
                         data-qa={`individual-card-${ind.id}`}
@@ -272,23 +291,24 @@ export default React.memo(function DecisionCard({
                       </IndividualCard>
                     ))}
                   </FixedSpaceColumn>
-                )}
-              </div>
-
-              {pickerOpen && (
-                <IndividualReasoningPickerModal
-                  decisionId={decision.id}
-                  decisionType={decision.type}
-                  childName={childName}
-                  decisionTypeLabel={typeLabel}
-                  linkedIds={linkedIds}
-                  onClose={() => setPickerOpen(false)}
-                />
-              )}
-            </DecisionWrapper>
-          )
-        })}
+                )
+              })}
+            </div>
+          </DecisionWrapper>
+        )}
       </Body>
+
+      {pickerOpen && !unitLanguageUnsupported && (
+        <IndividualReasoningPickerModal
+          decisionType={decision.type}
+          childName={childName}
+          decisionTypeLabel={typeLabel}
+          selectedIds={selectedIds}
+          language={language}
+          onChange={onReasoningIdsChange}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
     </Card>
   )
 })

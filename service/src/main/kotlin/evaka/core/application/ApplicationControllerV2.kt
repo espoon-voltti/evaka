@@ -8,12 +8,14 @@ import evaka.core.Audit
 import evaka.core.AuditId
 import evaka.core.ChildAudit
 import evaka.core.ConstList
+import evaka.core.EvakaEnv
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionDraft
 import evaka.core.decision.DecisionDraftUpdate
 import evaka.core.decision.DecisionType
 import evaka.core.decision.fetchDecisionDrafts
 import evaka.core.decision.getDecisionsByApplication
+import evaka.core.decision.reasoning.resolveApplicableGenericReasoning
 import evaka.core.decision.updateDecisionDrafts
 import evaka.core.identity.ExternalIdentifier
 import evaka.core.pis.controllers.CreatePersonBody
@@ -45,6 +47,7 @@ import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
+import evaka.core.shared.utils.letIf
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -116,6 +119,7 @@ class ApplicationControllerV2(
     private val personService: PersonService,
     private val applicationStateService: ApplicationStateService,
     private val placementPlanService: PlacementPlanService,
+    private val evakaEnv: EvakaEnv,
 ) {
     @PostMapping
     fun createPaperApplication(
@@ -552,7 +556,17 @@ class ApplicationControllerV2(
 
                     val placementUnit = tx.getPlacementPlanUnit(applicationId)
 
-                    val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
+                    val decisionDrafts =
+                        tx.fetchDecisionDrafts(applicationId).letIf(
+                            evakaEnv.decisionReasoningEnabled
+                        ) { drafts ->
+                            drafts.map {
+                                it.copy(
+                                    genericReasoning =
+                                        resolveApplicableGenericReasoning(tx, it.type, it.startDate)
+                                )
+                            }
+                        }
 
                     val (primaryDecision, connectedDecision) =
                         validateDecisionDrafts(decisionDrafts)
@@ -631,7 +645,14 @@ class ApplicationControllerV2(
                     Action.Application.UPDATE_DECISION_DRAFT,
                     applicationId,
                 )
-                updateDecisionDrafts(it, applicationId, body)
+                updateDecisionDrafts(
+                    it,
+                    applicationId,
+                    body,
+                    clock.now(),
+                    user.evakaUserId,
+                    evakaEnv.decisionReasoningEnabled,
+                )
             }
         }
         Audit.DecisionDraftUpdate.log(

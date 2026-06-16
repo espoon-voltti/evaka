@@ -5,15 +5,12 @@
 package evaka.core.decision.reasoning
 
 import evaka.core.decision.DecisionType
-import evaka.core.decision.getDecision
 import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.db.Database
-import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.NotFound
 import java.time.LocalDate
 
 fun DecisionType.applicableReasoningCollectionType(): DecisionReasoningCollectionType =
@@ -95,33 +92,3 @@ ORDER BY created_at
             )
         }
         .toList<DecisionIndividualReasoningId>()
-
-fun getDraftReasoningPreview(tx: Database.Read, decisionId: DecisionId): DraftReasoningPreview {
-    val decision = tx.getDecision(decisionId) ?: throw NotFound("Decision $decisionId not found")
-
-    if (decision.sentDate != null) {
-        throw BadRequest(
-            "Decision $decisionId has already been sent; reasoning preview is for drafts only"
-        )
-    }
-
-    val generic = resolveApplicableGenericReasoning(tx, decision.type, decision.startDate)
-    val individual = tx.getIndividualReasoningSelectionsForDecision(decisionId)
-
-    return DraftReasoningPreview(
-        genericReasoning = generic,
-        individualReasoningSelections = individual,
-    )
-}
-
-private data class DecisionStatusRow(
-    val id: DecisionId,
-    val type: DecisionType,
-    val startDate: LocalDate,
-    val sentDate: LocalDate?,
-)
-
-data class DraftReasoningPreview(
-    val genericReasoning: DecisionGenericReasoning?,
-    val individualReasoningSelections: List<DecisionIndividualReasoning>,
-)

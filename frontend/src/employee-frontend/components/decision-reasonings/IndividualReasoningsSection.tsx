@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { object, required, validated, value } from 'lib-common/form/form'
@@ -33,6 +33,7 @@ import {
 } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 
 import { CollapsibleHeader, LanguageGrid, ReasoningCard } from './common'
 import {
@@ -49,12 +50,17 @@ const ReasoningTitle = styled.span`
   font-weight: 600;
 `
 
-const individualReasoningForm = object({
-  titleFi: validated(required(value<string>()), nonBlank),
-  titleSv: validated(required(value<string>()), nonBlank),
-  textFi: validated(required(value<string>()), nonBlank),
-  textSv: validated(required(value<string>()), nonBlank)
-})
+const individualReasoningForm = (svEnabled: boolean) =>
+  object({
+    titleFi: validated(required(value<string>()), nonBlank),
+    titleSv: svEnabled
+      ? validated(required(value<string>()), nonBlank)
+      : value<string>(),
+    textFi: validated(required(value<string>()), nonBlank),
+    textSv: svEnabled
+      ? validated(required(value<string>()), nonBlank)
+      : value<string>()
+  })
 
 interface IndividualReasoningCreateFormProps {
   collectionType: DecisionReasoningCollectionType
@@ -69,9 +75,12 @@ function IndividualReasoningCreateForm({
 }: IndividualReasoningCreateFormProps) {
   const { i18n } = useTranslation()
   const t = i18n.decisionReasonings.individual
+  const { featureConfig } = useContext(UserContext)
+  const svEnabled =
+    featureConfig?.placementDecisionSwedishLanguageEnabled ?? false
 
   const form = useForm(
-    individualReasoningForm,
+    useMemo(() => individualReasoningForm(svEnabled), [svEnabled]),
     () => ({ titleFi: '', titleSv: '', textFi: '', textSv: '' }),
     i18n.validationErrors
   )
@@ -85,7 +94,7 @@ function IndividualReasoningCreateForm({
 
   return (
     <ReasoningCard>
-      <LanguageGrid>
+      <LanguageGrid $singleColumn={!svEnabled}>
         <FixedSpaceColumn>
           <Label>{i18n.decisionReasonings.fi}</Label>
           <Label>{t.titleFi}</Label>
@@ -101,21 +110,23 @@ function IndividualReasoningCreateForm({
             data-qa="individual-reasoning-text-fi"
           />
         </FixedSpaceColumn>
-        <FixedSpaceColumn>
-          <Label>{i18n.decisionReasonings.sv}</Label>
-          <Label>{t.titleSv}</Label>
-          <InputFieldF
-            bind={titleSv}
-            hideErrorsBeforeTouched
-            data-qa="individual-reasoning-title-sv"
-          />
-          <Label>{t.textSv}</Label>
-          <TextAreaF
-            bind={textSv}
-            hideErrorsBeforeTouched
-            data-qa="individual-reasoning-text-sv"
-          />
-        </FixedSpaceColumn>
+        {svEnabled && (
+          <FixedSpaceColumn>
+            <Label>{i18n.decisionReasonings.sv}</Label>
+            <Label>{t.titleSv}</Label>
+            <InputFieldF
+              bind={titleSv}
+              hideErrorsBeforeTouched
+              data-qa="individual-reasoning-title-sv"
+            />
+            <Label>{t.textSv}</Label>
+            <TextAreaF
+              bind={textSv}
+              hideErrorsBeforeTouched
+              data-qa="individual-reasoning-text-sv"
+            />
+          </FixedSpaceColumn>
+        )}
       </LanguageGrid>
       <Gap $size="m" />
       <FixedSpaceRow $justifyContent="flex-end">
@@ -151,6 +162,9 @@ export default React.memo(function IndividualReasoningsSection({
 }: Props) {
   const { i18n } = useTranslation()
   const t = i18n.decisionReasonings.individual
+  const { featureConfig } = useContext(UserContext)
+  const svEnabled =
+    featureConfig?.placementDecisionSwedishLanguageEnabled ?? false
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showRemoved, setShowRemoved] = useState(false)
 
@@ -218,17 +232,19 @@ export default React.memo(function IndividualReasoningsSection({
               />
             </FixedSpaceRow>
             <Gap $size="s" />
-            <LanguageGrid>
+            <LanguageGrid $singleColumn={!svEnabled}>
               <FixedSpaceColumn>
                 <Label>{i18n.decisionReasonings.fi}</Label>
                 <ReasoningTitle>{reasoning.titleFi}</ReasoningTitle>
                 <span>{reasoning.textFi}</span>
               </FixedSpaceColumn>
-              <FixedSpaceColumn>
-                <Label>{i18n.decisionReasonings.sv}</Label>
-                <ReasoningTitle>{reasoning.titleSv}</ReasoningTitle>
-                <span>{reasoning.textSv}</span>
-              </FixedSpaceColumn>
+              {svEnabled && (
+                <FixedSpaceColumn>
+                  <Label>{i18n.decisionReasonings.sv}</Label>
+                  <ReasoningTitle>{reasoning.titleSv}</ReasoningTitle>
+                  <span>{reasoning.textSv}</span>
+                </FixedSpaceColumn>
+              )}
             </LanguageGrid>
           </ReasoningCard>
         ))}
@@ -264,17 +280,19 @@ export default React.memo(function IndividualReasoningsSection({
                       data-qa="individual-reasoning-status"
                     />
                     <Gap $size="s" />
-                    <LanguageGrid>
+                    <LanguageGrid $singleColumn={!svEnabled}>
                       <FixedSpaceColumn>
                         <Label>{i18n.decisionReasonings.fi}</Label>
                         <ReasoningTitle>{reasoning.titleFi}</ReasoningTitle>
                         <span>{reasoning.textFi}</span>
                       </FixedSpaceColumn>
-                      <FixedSpaceColumn>
-                        <Label>{i18n.decisionReasonings.sv}</Label>
-                        <ReasoningTitle>{reasoning.titleSv}</ReasoningTitle>
-                        <span>{reasoning.textSv}</span>
-                      </FixedSpaceColumn>
+                      {svEnabled && (
+                        <FixedSpaceColumn>
+                          <Label>{i18n.decisionReasonings.sv}</Label>
+                          <ReasoningTitle>{reasoning.titleSv}</ReasoningTitle>
+                          <span>{reasoning.textSv}</span>
+                        </FixedSpaceColumn>
+                      )}
                     </LanguageGrid>
                   </ReasoningCard>
                 ))}

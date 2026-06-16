@@ -570,7 +570,9 @@ export default React.memo(function DecisionDraftLegacy() {
                         unitId: decisionDraft.unitId,
                         startDate: decisionDraft.startDate,
                         endDate: decisionDraft.endDate,
-                        planned: decisionDraft.planned
+                        planned: decisionDraft.planned,
+                        individualReasoningIds:
+                          decisionDraft.individualReasoningIds
                       })
                     )
                     return updateDecisionDrafts({

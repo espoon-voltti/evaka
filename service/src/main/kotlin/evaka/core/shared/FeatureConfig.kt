@@ -154,6 +154,9 @@ data class FeatureConfig(
     /** Allow English as a language for every child document type, not only `CITIZEN_BASIC` */
     val allowEnglishChildDocumentsForAllTypes: Boolean = false,
 
+    /** Whether placement decisions can be made in Swedish. */
+    val placementDecisionSwedishLanguageEnabled: Boolean = false,
+
     /**
      * How many days before a placement starts a guardian-fillable (`CITIZEN_BASIC`) child document
      * can be created for the child.

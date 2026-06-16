@@ -4,6 +4,7 @@
 
 package evaka.core.decision
 
+import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
@@ -73,4 +74,5 @@ data class DecisionUnit(
     val decisionHandler: String,
     val decisionHandlerAddress: String,
     val providerType: ProviderType,
+    val language: Language,
 )

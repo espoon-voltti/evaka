@@ -2,21 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import type {
   DecisionIndividualReasoning,
   DecisionType
 } from 'lib-common/generated/api-types/decision'
-import type {
-  DecisionId,
-  DecisionIndividualReasoningId
-} from 'lib-common/generated/api-types/shared'
+import type { DecisionIndividualReasoningId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
+import BaseModal, {
+  ModalButtons
+} from 'lib-components/molecules/modals/BaseModal'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -25,10 +25,7 @@ import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { decisionTypeToCollectionType } from './decisionTypeToCollectionType'
-import {
-  getIndividualReasoningsQuery,
-  linkIndividualReasoningsMutation
-} from './queries'
+import { getIndividualReasoningsQuery } from './queries'
 
 const Subtitle = styled.div`
   color: ${colors.grayscale.g70};
@@ -71,70 +68,51 @@ const TextLabel = styled.div`
 `
 
 interface Props {
-  decisionId: DecisionId
   decisionType: DecisionType
   childName: string
   decisionTypeLabel: string
-  linkedIds: ReadonlySet<DecisionIndividualReasoningId>
+  selectedIds: ReadonlySet<DecisionIndividualReasoningId>
+  language: 'fi' | 'sv'
+  onChange: (ids: ReadonlySet<DecisionIndividualReasoningId>) => void
   onClose: () => void
 }
 
 export default React.memo(function IndividualReasoningPickerModal({
-  decisionId,
   decisionType,
   childName,
   decisionTypeLabel,
-  linkedIds: initialLinkedIds,
+  selectedIds,
+  language,
+  onChange,
   onClose
 }: Props) {
-  const { i18n, lang } = useTranslation()
+  const { i18n } = useTranslation()
   const collectionType = decisionTypeToCollectionType(decisionType)
   const individualReasonings = useQueryResult(
     getIndividualReasoningsQuery({ collectionType })
   )
-  const [linkedReasoningIds, setLinkedReasoningIds] =
-    React.useState(initialLinkedIds)
-
-  const isValid = useMemo(() => {
-    if (!individualReasonings.isSuccess) return false
-    return Array.from(linkedReasoningIds).every((id) =>
-      individualReasonings.value.some(
-        (r) => r.id === id && r.removedAt === null
-      )
-    )
-  }, [individualReasonings, linkedReasoningIds])
 
   return (
-    <MutateFormModal
+    <BaseModal
       title={i18n.decisionDraft.reasonings.modalTitle}
-      resolveMutation={linkIndividualReasoningsMutation}
-      resolveAction={() => ({
-        id: decisionId,
-        body: {
-          reasoningIds: Array.from(linkedReasoningIds)
-        }
-      })}
-      resolveLabel={i18n.common.confirm}
-      resolveDisabled={!isValid}
-      onSuccess={onClose}
-      rejectAction={onClose}
-      rejectLabel={i18n.common.cancel}
+      close={onClose}
+      closeLabel={i18n.common.close}
       width="wide"
     >
       <Subtitle>{`${childName} · ${decisionTypeLabel}`}</Subtitle>
       <Gap />
       {renderResult(individualReasonings, (rows) => {
         const text = (r: DecisionIndividualReasoning) =>
-          lang === 'sv' ? r.textSv : r.textFi
+          language === 'sv' ? r.textSv : r.textFi
         const title = (r: DecisionIndividualReasoning) =>
-          lang === 'sv' ? r.titleSv : r.titleFi
+          language === 'sv' ? r.titleSv : r.titleFi
         const eligible = rows
-          .filter((r) => r.removedAt === null || linkedReasoningIds.has(r.id))
-          .sort((a, b) => title(a).localeCompare(title(b), lang))
+          .filter((r) => r.removedAt === null || selectedIds.has(r.id))
+          .sort((a, b) => title(a).localeCompare(title(b), language))
         return (
           <RowList>
             {eligible.map((r) => {
-              const selected = linkedReasoningIds.has(r.id)
+              const selected = selectedIds.has(r.id)
               return (
                 <Row
                   key={r.id}
@@ -145,17 +123,15 @@ export default React.memo(function IndividualReasoningPickerModal({
                     checked={selected}
                     label={title(r)}
                     hiddenLabel
-                    onChange={(checked: boolean) =>
-                      checked
-                        ? setLinkedReasoningIds((prev) =>
-                            new Set(prev).add(r.id)
-                          )
-                        : setLinkedReasoningIds((prev) => {
-                            const newSet = new Set(prev)
-                            newSet.delete(r.id)
-                            return newSet
-                          })
-                    }
+                    onChange={(checked: boolean) => {
+                      const next = new Set(selectedIds)
+                      if (checked) {
+                        next.add(r.id)
+                      } else {
+                        next.delete(r.id)
+                      }
+                      onChange(next)
+                    }}
                   />
                   <RowBody>
                     <ItemTitle>{title(r)}</ItemTitle>
@@ -164,7 +140,11 @@ export default React.memo(function IndividualReasoningPickerModal({
                     </TextLabel>
                     <span>{text(r)}</span>
                     {r.removedAt && (
-                      <AlertBox title="Poistettu käytöstä" thin noMargin />
+                      <AlertBox
+                        title={i18n.decisionDraft.reasonings.removedFromUse}
+                        thin
+                        noMargin
+                      />
                     )}
                   </RowBody>
                 </Row>
@@ -173,6 +153,14 @@ export default React.memo(function IndividualReasoningPickerModal({
           </RowList>
         )
       })}
-    </MutateFormModal>
+      <ModalButtons $justifyContent="center">
+        <Button
+          primary
+          data-qa="modal-closeBtn"
+          onClick={onClose}
+          text={i18n.common.close}
+        />
+      </ModalButtons>
+    </BaseModal>
   )
 })

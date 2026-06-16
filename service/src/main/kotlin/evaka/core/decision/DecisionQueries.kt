@@ -29,7 +29,7 @@ private fun Database.Read.createDecisionQuery(
         """
         SELECT
             d.id, d.type, d.start_date, d.end_date, d.document_key, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved, d.document_contains_contact_info, d.archived_at,
-            u.name, u.decision_daycare_name, u.decision_preschool_name, u.decision_handler, u.decision_handler_address, u.provider_type,
+            u.name, u.decision_daycare_name, u.decision_preschool_name, u.decision_handler, u.decision_handler_address, u.provider_type, u.language,
             u.street_address, u.postal_code, u.post_office,
             u.phone,
             unit_manager_name AS manager,
@@ -76,6 +76,7 @@ private fun Row.decisionFromResultSet(): Decision =
                 decisionHandler = column("decision_handler"),
                 decisionHandlerAddress = column("decision_handler_address"),
                 providerType = column("provider_type"),
+                language = column("language"),
             ),
         applicationId = column("application_id"),
         childId = column("child_id"),
@@ -214,9 +215,18 @@ fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<Decisi
     createQuery {
             sql(
                 """
-SELECT id, unit_id, type, start_date, end_date, planned
-FROM decision
-WHERE application_id = ${bind(applicationId)} AND sent_date IS NULL
+SELECT
+    d.id,
+    d.unit_id,
+    d.type,
+    d.start_date,
+    d.end_date,
+    d.planned,
+    (SELECT coalesce(array_agg(s.reasoning_id ORDER BY s.created_at), '{}')
+     FROM decision_reasoning_individual_selection s
+     WHERE s.decision_id = d.id) AS individual_reasoning_ids
+FROM decision d
+WHERE d.application_id = ${bind(applicationId)} AND d.sent_date IS NULL
 """
             )
         }

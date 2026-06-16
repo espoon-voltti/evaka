@@ -3545,7 +3545,10 @@ export const sv: typeof fi = {
         `Placeringar som börjar ${validFrom}–${validUntil}`,
       modalTitle: 'Välj individuella motiveringar',
       modalCloseButton: 'Stäng',
-      modalEntryTextLabel: 'Text som visas i beslutet'
+      modalEntryTextLabel: 'Text som visas i beslutet',
+      removedFromUse: 'Tagen ur bruk',
+      unitLanguageUnsupported:
+        'Den valda enheten är svenskspråkig, men svenskspråkiga beslut är inte i bruk. Byt enhet eller kontakta administratören.'
     }
   },
   reports: {

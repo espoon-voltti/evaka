@@ -8,15 +8,9 @@ import evaka.core.Audit
 import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.application.fetchApplicationDetails
-import evaka.core.decision.reasoning.DraftReasoningPreview
-import evaka.core.decision.reasoning.applicableReasoningCollectionType
-import evaka.core.decision.reasoning.getDraftReasoningPreview
-import evaka.core.decision.reasoning.getIndividualReasoning
-import evaka.core.decision.reasoning.setDecisionReasoningIndividualSelections
 import evaka.core.document.archival.validateArchivability
 import evaka.core.pis.getPersonById
 import evaka.core.shared.DecisionId
-import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -33,7 +27,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -107,22 +100,6 @@ class DecisionController(
                 }
             }
             .also { Audit.UnitRead.log(meta = mapOf("count" to it.size)) }
-    }
-
-    @GetMapping("/{id}/draft-reasoning-preview")
-    fun getDraftReasoningPreview(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable id: DecisionId,
-    ): DraftReasoningPreview {
-        return db.connect { dbc ->
-                dbc.read { tx ->
-                    accessControl.requirePermissionFor(tx, user, clock, Action.Decision.READ, id)
-                    getDraftReasoningPreview(tx, id)
-                }
-            }
-            .also { Audit.DecisionDraftReasoningPreviewRead.log(targetId = AuditId(id)) }
     }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
@@ -207,63 +184,5 @@ class DecisionController(
                 )
             }
         }
-    }
-
-    data class LinkIndividualReasoningBody(val reasoningIds: Set<DecisionIndividualReasoningId>)
-
-    @PostMapping("/{id}/individual-reasonings")
-    fun linkIndividualReasonings(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable id: DecisionId,
-        @RequestBody body: LinkIndividualReasoningBody,
-    ) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Decision.UPDATE_REASONING_LINKS,
-                    id,
-                )
-
-                val decision = tx.getDecision(id) ?: throw NotFound("Decision $id not found")
-                if (decision.sentDate != null) {
-                    throw BadRequest(
-                        "Decision $id has already been sent; " +
-                            "individual reasoning links cannot be changed after send."
-                    )
-                }
-                val applicableCollectionType = decision.type.applicableReasoningCollectionType()
-                body.reasoningIds.forEach { reasoningId ->
-                    val reasoning =
-                        tx.getIndividualReasoning(reasoningId)
-                            ?: throw NotFound("Individual reasoning $reasoningId not found")
-                    if (reasoning.removedAt != null) {
-                        throw BadRequest("Individual reasoning $reasoningId is removed")
-                    }
-                    if (reasoning.collectionType != applicableCollectionType) {
-                        throw BadRequest(
-                            "Individual reasoning $reasoningId has collection_type ${reasoning.collectionType}, " +
-                                "which does not apply to decision $id of type ${decision.type}"
-                        )
-                    }
-                }
-
-                tx.setDecisionReasoningIndividualSelections(
-                    decisionId = id,
-                    reasoningIds = body.reasoningIds,
-                    createdAt = clock.now(),
-                    createdBy = user.evakaUserId,
-                )
-            }
-        }
-
-        Audit.DecisionReasoningIndividualSelectionsUpdate.log(
-            targetId = AuditId(id),
-            objectId = AuditId(body.reasoningIds),
-        )
     }
 }
