@@ -17,6 +17,8 @@ import type {
 import type { NekkuUnitNumber } from 'lib-common/generated/api-types/nekku'
 import type { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import type { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import type { GroupId } from 'lib-common/generated/api-types/shared'
+import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -47,6 +49,7 @@ function renderGroups(
   unit: Daycare,
   filters: UnitFilters,
   groups: DaycareGroup[],
+  groupLastPlacementDates: Partial<Record<GroupId, LocalDate>>,
   groupPermittedActions: Record<UUID, Action.Group[] | undefined>,
   placements: DaycarePlacementWithDetails[],
   permittedBackupCareActions: Partial<Record<UUID, Action.BackupCare[]>>,
@@ -70,6 +73,7 @@ function renderGroups(
     placements: flatMapGroupPlacements(placements).filter(
       (it) => it.groupId === group.id
     ),
+    lastPlacementDate: groupLastPlacementDates[group.id] ?? null,
     backupCares: backupCares.filter((it) => it.group?.id === group.id)
   }))
   const sortedGroups = sortBy(groupsWithPlacements, [
@@ -112,6 +116,7 @@ type Props = {
   filters: UnitFilters
   setFilters: (filters: UnitFilters) => void
   groups: DaycareGroup[]
+  groupLastPlacementDates: Partial<Record<GroupId, LocalDate>>
   placements: DaycarePlacementWithDetails[]
   backupCares: UnitBackupCare[]
   groupPermittedActions: Record<UUID, Action.Group[] | undefined>
@@ -132,6 +137,7 @@ export default React.memo(function Groups({
   filters,
   setFilters,
   groups,
+  groupLastPlacementDates,
   placements,
   backupCares,
   groupPermittedActions,
@@ -231,6 +237,7 @@ export default React.memo(function Groups({
         unit,
         filters,
         groups,
+        groupLastPlacementDates,
         groupPermittedActions,
         placements,
         permittedBackupCareActions,

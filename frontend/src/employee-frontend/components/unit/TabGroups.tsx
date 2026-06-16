@@ -98,6 +98,7 @@ export default React.memo(function TabGroups({
             filters={filters}
             setFilters={setFilters}
             groups={groupData.groups}
+            groupLastPlacementDates={groupData.groupLastPlacementDates}
             placements={groupData.placements}
             backupCares={groupData.backupCares}
             groupPermittedActions={groupPermittedActions}

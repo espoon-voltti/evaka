@@ -516,6 +516,7 @@ export interface UnitFeatures {
 export interface UnitGroupDetails {
   backupCares: UnitBackupCare[]
   caretakers: Partial<Record<GroupId, Caretakers>>
+  groupLastPlacementDates: Partial<Record<GroupId, LocalDate>>
   groupOccupancies: GroupOccupancies | null
   groups: DaycareGroup[]
   missingBackupGroupPlacements: MissingBackupGroupPlacement[]
@@ -822,6 +823,9 @@ export function deserializeJsonUnitGroupDetails(json: JsonOf<UnitGroupDetails>):
   return {
     ...json,
     backupCares: json.backupCares.map(e => deserializeJsonUnitBackupCare(e)),
+    groupLastPlacementDates: Object.fromEntries(Object.entries(json.groupLastPlacementDates).map(
+      ([k, v]) => [k, v !== undefined ? LocalDate.parseIso(v) : v]
+    )),
     groupOccupancies: (json.groupOccupancies != null) ? deserializeJsonGroupOccupancies(json.groupOccupancies) : null,
     groups: json.groups.map(e => deserializeJsonDaycareGroup(e)),
     missingBackupGroupPlacements: json.missingBackupGroupPlacements.map(e => deserializeJsonMissingBackupGroupPlacement(e)),

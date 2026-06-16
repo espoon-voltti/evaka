@@ -57,6 +57,7 @@ export const flatMapGroupPlacements = (
 
 export interface DaycareGroupWithPlacements extends DaycareGroup {
   placements: DaycareGroupPlacementDetailed[]
+  lastPlacementDate: LocalDate | null
 }
 
 export interface UnitChildrenCapacityFactors {

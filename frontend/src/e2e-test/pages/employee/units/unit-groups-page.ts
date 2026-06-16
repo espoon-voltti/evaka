@@ -285,19 +285,25 @@ export class GroupCollapsible extends Element {
 
   #updateButton = this.findByDataQa('btn-update-group')
 
-  async edit(fields: { name: string; startDate: string; endDate: string }) {
+  async openUpdateModal() {
     await this.#updateButton.click()
+    return new GroupUpdateModal(this.findByDataQa('group-update-modal'))
+  }
 
-    const modal = new Modal(this.findByDataQa('group-update-modal'))
-    await new TextInput(modal.findByDataQa('name-input')).fill(fields.name)
-    await new DatePicker(modal.findByDataQa('start-date-input')).fill(
-      fields.startDate
-    )
-    await new DatePicker(modal.findByDataQa('end-date-input')).fill(
-      fields.endDate
-    )
+  async edit(fields: { name: string; startDate: string; endDate: string }) {
+    const modal = await this.openUpdateModal()
+    await modal.name.fill(fields.name)
+    await modal.startDate.fill(fields.startDate)
+    await modal.endDate.fill(fields.endDate)
     await modal.submit()
   }
+}
+
+export class GroupUpdateModal extends Modal {
+  name = new TextInput(this.findByDataQa('name-input'))
+  startDate = new DatePicker(this.findByDataQa('start-date-input'))
+  endDate = new DatePicker(this.findByDataQa('end-date-input'))
+  endDateInfo = this.findByDataQa('end-date-input-info')
 }
 
 export class GroupDailyNoteModal extends Modal {

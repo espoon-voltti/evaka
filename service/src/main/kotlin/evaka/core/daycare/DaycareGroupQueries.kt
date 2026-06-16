@@ -93,6 +93,28 @@ WHERE id = ${bind(groupId)}
         .updateExactlyOne(notFoundMsg = "Group $groupId not found")
 }
 
+fun Database.Read.getLastGroupPlacementEndDate(groupId: GroupId): LocalDate? =
+    createQuery {
+            sql(
+                "SELECT max(end_date) FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)}"
+            )
+        }
+        .exactlyOneOrNull<LocalDate>()
+
+fun Database.Read.getLastGroupPlacementEndDates(daycareId: DaycareId): Map<GroupId, LocalDate> =
+    createQuery {
+            sql(
+                """
+SELECT gp.daycare_group_id, max(gp.end_date) AS last_placement_end_date
+FROM daycare_group_placement gp
+JOIN daycare_group dg ON dg.id = gp.daycare_group_id
+WHERE dg.daycare_id = ${bind(daycareId)}
+GROUP BY gp.daycare_group_id
+"""
+            )
+        }
+        .toMap { columnPair<GroupId, LocalDate>("daycare_group_id", "last_placement_end_date") }
+
 fun Database.Read.getDaycareGroup(groupId: GroupId): DaycareGroup? =
     createDaycareGroupQuery(
             groupId = groupId,
