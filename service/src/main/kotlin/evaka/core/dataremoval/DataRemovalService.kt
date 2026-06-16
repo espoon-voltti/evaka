@@ -10,6 +10,7 @@ import evaka.core.document.childdocument.deleteExpiredChildDocuments
 import evaka.core.s3.DocumentService
 import evaka.core.shared.ChildId
 import evaka.core.shared.ChildImageId
+import evaka.core.shared.FinanceNoteId
 import evaka.core.shared.Id
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
@@ -88,6 +89,8 @@ class DataRemovalService(
         )
 
         deleteExpiredChildImages(dbc, now, expireDate = today.minusMonths(1), limit)
+
+        deleteExpiredFinanceNotes(dbc, expireDate = today.minusYears(5), limit)
 
         deleteExpiredCitizenUsers(dbc, expireDate = today.minusYears(1), limit)
     }
@@ -268,6 +271,40 @@ HAVING max(end_date) < ${bind(date)}
     )
 }
 
+fun deleteExpiredFinanceNotes(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
+    logger.info { "Deleting at most $limit expired finance notes" }
+    val deleted = dbc.transaction { tx -> tx.deleteExpiredFinanceNotesBatch(expireDate, limit) }
+    logger.infoChunked(
+        items = deleted,
+        meta = { chunk -> mapOf("deletedIds" to chunk) },
+        message = { index, total -> "Deleted expired finance notes (chunk $index/$total)" },
+    )
+}
+
+private fun Database.Transaction.deleteExpiredFinanceNotesBatch(
+    expireDate: LocalDate,
+    limit: Int,
+): List<FinanceNoteId> =
+    createUpdate {
+            sql(
+                """
+WITH del_batch AS (
+    SELECT id
+    FROM finance_note
+    WHERE person_id = ANY(${subquery(personIdsWithExpiredFinanceConnections(expireDate))})
+    FOR UPDATE
+    LIMIT ${bind(limit)}
+)
+DELETE FROM finance_note
+USING del_batch
+WHERE finance_note.id = del_batch.id
+RETURNING finance_note.id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .toList()
+
 fun deleteExpiredCitizenUsers(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
     logger.info { "Deleting at most $limit expired citizen users" }
     val deleted = dbc.transaction { tx -> tx.deleteExpiredCitizenUsersBatch(expireDate, limit) }
@@ -315,6 +352,37 @@ FROM guardian_child gc
 JOIN citizen_user cu ON cu.id = gc.person_id
 JOIN placement p ON p.child_id = gc.child_id
 GROUP BY gc.person_id
+HAVING max(p.end_date) < ${bind(date)}
+"""
+    )
+}
+
+private fun personIdsWithExpiredFinanceConnections(date: LocalDate) = QuerySql {
+    sql(
+        """
+WITH finance_connection AS (
+    SELECT g.guardian_id AS person_id, g.child_id
+    FROM guardian g
+    UNION ALL
+    SELECT fp.parent_id AS person_id, fp.child_id
+    FROM foster_parent fp
+    UNION ALL
+    SELECT fc.head_of_child AS person_id, fc.child_id
+    FROM fridge_child fc
+    WHERE fc.conflict = false
+    UNION ALL
+    SELECT partner.person_id AS person_id, fc.child_id
+    FROM fridge_child fc
+    JOIN fridge_partner partner_head ON partner_head.person_id = fc.head_of_child
+    JOIN fridge_partner partner
+        ON partner.partnership_id = partner_head.partnership_id
+        AND partner.person_id <> partner_head.person_id
+    WHERE fc.conflict = false AND partner_head.conflict = false AND partner.conflict = false
+)
+SELECT fconn.person_id
+FROM finance_connection fconn
+JOIN placement p ON p.child_id = fconn.child_id
+GROUP BY fconn.person_id
 HAVING max(p.end_date) < ${bind(date)}
 """
     )
