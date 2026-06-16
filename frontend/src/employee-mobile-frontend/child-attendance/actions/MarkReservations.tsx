@@ -104,6 +104,7 @@ const reservationTimesForm = () => array(reservationTimeForm())
 const reservation = () =>
   union({
     times: reservationTimesForm(),
+    noTimes: value<true>(),
     absence: object({
       absenceType: value<AbsenceType>(),
       scheduleType: value<ScheduleType>()
@@ -157,19 +158,25 @@ const reservationForm = mapped(
             })),
           absenceType: null
         }
-      : output.reservation.branch === 'absence'
+      : output.reservation.branch === 'noTimes'
         ? {
             date: output.date,
-            reservations: [],
-            absenceType: output.reservation.value.absenceType
+            reservations: [{ type: 'NO_TIMES' }],
+            absenceType: null
           }
-        : output.reservation.branch === 'fixedSchedule'
+        : output.reservation.branch === 'absence'
           ? {
               date: output.date,
               reservations: [],
-              absenceType: null
+              absenceType: output.reservation.value.absenceType
             }
-          : undefined
+          : output.reservation.branch === 'fixedSchedule'
+            ? {
+                date: output.date,
+                reservations: [],
+                absenceType: null
+              }
+            : undefined
 )
 
 const reservationsForm = object({
@@ -195,23 +202,26 @@ const initialFormState = (
             ? { branch: 'fixedSchedule' as const, state: true }
             : reservation.scheduleType === 'TERM_BREAK'
               ? { branch: 'termBreak' as const, state: true }
-              : {
-                  branch: 'times' as const,
-                  state:
-                    reservation.reservations.length > 0
-                      ? sortBy(
-                          reservation.reservations,
-                          reservationStartTime
-                        ).map((res) =>
-                          res.type === 'TIMES'
-                            ? {
-                                startTime: res.range.formatStart(),
-                                endTime: res.range.formatEnd()
-                              }
-                            : { startTime: '', endTime: '' }
-                        )
-                      : [{ startTime: '', endTime: '' }]
-                }
+              : reservation.reservations.length === 1 &&
+                  reservation.reservations[0].type === 'NO_TIMES'
+                ? { branch: 'noTimes' as const, state: true }
+                : {
+                    branch: 'times' as const,
+                    state:
+                      reservation.reservations.length > 0
+                        ? sortBy(
+                            reservation.reservations,
+                            reservationStartTime
+                          ).map((res) =>
+                            res.type === 'TIMES'
+                              ? {
+                                  startTime: res.range.formatStart(),
+                                  endTime: res.range.formatEnd()
+                                }
+                              : { startTime: '', endTime: '' }
+                          )
+                        : [{ startTime: '', endTime: '' }]
+                  }
     })
   )
 })
@@ -533,6 +543,20 @@ const ReservationEdit = ({
   switch (branch) {
     case 'times':
       return <TimesEdit bind={form} />
+    case 'noTimes':
+      return (
+        <Button
+          appearance="link"
+          onClick={() => {
+            reservation.set({
+              branch: 'times',
+              state: [{ startTime: '', endTime: '' }]
+            })
+          }}
+          data-qa="add-attendance-times"
+          text={i18n.attendances.addAttendanceTimes}
+        />
+      )
     case 'absence':
       return (
         <Button

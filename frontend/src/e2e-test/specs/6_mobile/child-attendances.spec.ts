@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -1066,6 +1067,33 @@ test.describe('Child attendances', () => {
       await assertAttendanceCounts(1, 0, 0, 0, 1)
       await listPage.selectChild(child)
       await expect(childPage.reservation).toHaveText('Läsnä')
+    })
+
+    test('NO_TIMES reservation child\'s "reservation" is correct', async ({
+      newEvakaPage
+    }) => {
+      await openPage(newEvakaPage)
+      const child = testChild2.id
+      await createPlacements(child)
+
+      const today = now.toLocalDate()
+      await Fixture.holidayPeriod({
+        period: new FiniteDateRange(today, today)
+      }).save()
+      await Fixture.attendanceReservationRaw({
+        childId: child,
+        date: today,
+        range: null
+      }).save()
+
+      const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+      await page.goto(mobileSignupUrl)
+
+      await assertAttendanceCounts(1, 0, 0, 0, 1)
+      await listPage.selectChild(child)
+      await expect(childPage.reservation).toHaveText(
+        'Varaus: Läsnä, kellonaika ei vielä tiedossa'
+      )
     })
 
     test('Term break child is shown in absent list', async ({

@@ -45,6 +45,25 @@ export const Reservations = React.memo(function Reservations({
   )
 })
 
+export const ReservationNoTimes = React.memo(function ReservationNoTimes({
+  hideLabel
+}: {
+  hideLabel?: boolean
+}) {
+  const { i18n } = useTranslation()
+  return (
+    <>
+      {!hideLabel && (
+        <span>
+          {i18n.attendances.serviceTime.reservation}
+          {': '}
+        </span>
+      )}
+      <span>{i18n.attendances.serviceTime.reservationNoTimes}</span>
+    </>
+  )
+})
+
 const Dash = React.memo(function Dash() {
   return (
     <>
