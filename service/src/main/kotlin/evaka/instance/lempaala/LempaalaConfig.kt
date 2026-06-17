@@ -82,6 +82,7 @@ class LempaalaConfig {
                 }
             },
             daycarePlacementPlanEndMonthDay = MonthDay.of(8, 15),
+            messageDeletedSwedishLanguageEnabled = false,
         )
 
     @Bean
