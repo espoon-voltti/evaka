@@ -245,14 +245,27 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `published template without documents can be deleted, with documents cannot`() {
         val otherChild = DevPerson()
-        db.transaction { tx -> tx.insert(otherChild, DevPersonType.CHILD) }
+        db.transaction { tx ->
+            tx.insert(otherChild, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = otherChild.id,
+                    unitId = daycare.id,
+                    startDate = now.today(),
+                    endDate = now.today().plusDays(5),
+                )
+            )
+        }
 
         val withDocs =
             controller.createTemplate(
                 dbInstance(),
                 employee.user,
                 now,
-                testCreationRequest.copy(validity = DateRange(now.today(), null)),
+                testCreationRequest.copy(
+                    language = UiLanguage.SV,
+                    validity = DateRange(now.today(), null),
+                ),
             )
         controller.publishTemplate(dbInstance(), employee.user, now, withDocs.id)
         childDocumentController.createDocument(
@@ -282,14 +295,27 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `document count`() {
         val otherChild = DevPerson()
-        db.transaction { tx -> tx.insert(otherChild, DevPersonType.CHILD) }
+        db.transaction { tx ->
+            tx.insert(otherChild, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = otherChild.id,
+                    unitId = daycare.id,
+                    startDate = now.today(),
+                    endDate = now.today().plusDays(5),
+                )
+            )
+        }
 
         val created =
             controller.createTemplate(
                 dbInstance(),
                 employee.user,
                 now,
-                testCreationRequest.copy(validity = DateRange(now.today(), null)),
+                testCreationRequest.copy(
+                    language = UiLanguage.SV,
+                    validity = DateRange(now.today(), null),
+                ),
             )
         controller.publishTemplate(dbInstance(), employee.user, now, created.id)
 

@@ -21,6 +21,7 @@ import evaka.core.document.Question
 import evaka.core.document.RadioButtonGroupQuestionOption
 import evaka.core.document.Section
 import evaka.core.pis.service.insertGuardian
+import evaka.core.placement.PlacementType
 import evaka.core.sficlient.MockSfiMessagesClient
 import evaka.core.sficlient.rest.EventType
 import evaka.core.shared.ChildDocumentDecisionId
@@ -37,6 +38,7 @@ import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
 import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevChildDocument
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevDaycareGroupPlacement
@@ -55,6 +57,7 @@ import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
+import evaka.core.shared.domain.UiLanguage
 import evaka.core.shared.security.Action
 import evaka.core.shared.security.PilotFeature
 import java.time.LocalDate
@@ -83,8 +86,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     private val daycare =
         DevDaycare(
             areaId = area.id,
-            language = Language.sv,
-            enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
+            language = Language.fi,
+            enabledPilotFeatures =
+                setOf(
+                    PilotFeature.VASU_AND_PEDADOC,
+                    PilotFeature.OTHER_DECISION,
+                    PilotFeature.CITIZEN_BASIC_DOCUMENT,
+                ),
         )
     private val child = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1), ssn = "010617A123U")
     private val adult = DevPerson(ssn = "010180-1232")
@@ -1281,7 +1289,13 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     @Test
     fun `unit supervisor doesn't see pedagogical assessment document from duplicate`() {
         val duplicateId = db.transaction { tx ->
-            val unitId = tx.insert(DevDaycare(areaId = area.id))
+            val unitId =
+                tx.insert(
+                    DevDaycare(
+                        areaId = area.id,
+                        enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
+                    )
+                )
             val childId = tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(
@@ -1578,14 +1592,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
         }
 
-        // Create a document as admin
-        val documentId =
-            controller.createDocument(
-                dbInstance(),
-                employeeUser.user,
-                clock,
-                ChildDocumentCreateRequest(child.id, templateIdCitizenBasic),
-            )
+        // placement is beyond the creation window, so the document cannot be created via the
+        // controller
+        val documentId = insertDocument(child.id, templateIdCitizenBasic)
 
         // STAFF should NOT be able to read the document (too far in future)
         assertThrows<Forbidden> {
@@ -1613,13 +1622,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
         }
 
-        val documentId =
-            controller.createDocument(
-                dbInstance(),
-                employeeUser.user,
-                clock,
-                ChildDocumentCreateRequest(child.id, templateIdCitizenBasic),
-            )
+        // placement has ended, so the document cannot be created via the controller
+        val documentId = insertDocument(child.id, templateIdCitizenBasic)
 
         // STAFF should NOT be able to access expired placement documents
         assertThrows<Forbidden> {
@@ -1677,14 +1681,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
         }
 
-        // Create a decision document as admin
-        val decisionDocumentId =
-            controller.createDecisionDocument(
-                dbInstance(),
-                employeeUser.user,
-                clock,
-                ChildDocumentCreateRequest(child.id, templateIdAssistanceDecision),
-            )
+        // a decision document cannot be created via the controller before the placement starts
+        val decisionDocumentId = insertDocument(child.id, templateIdAssistanceDecision)
 
         // STAFF should be able to READ the decision document
         val document = controller.getDocument(dbInstance(), staffUser, clock, decisionDocumentId)
@@ -1822,18 +1820,106 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         }
     }
 
+    @Test
+    fun `creating a document fails when the child has no current or upcoming placement`() {
+        val childWithoutPlacement = db.transaction { tx ->
+            tx.insert(DevPerson(), DevPersonType.CHILD)
+        }
+        assertThrows<BadRequest> {
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(childWithoutPlacement, templateIdPed),
+            )
+        }
+    }
+
+    @Test
+    fun `creating a document fails when the placement type is not in the template`() {
+        val templateId = DocumentTemplateId(UUID.randomUUID())
+        db.transaction { tx ->
+            tx.insert(
+                devTemplatePed.copy(id = templateId, placementTypes = setOf(PlacementType.CLUB))
+            )
+        }
+        // the helper creates a DAYCARE placement, which the template does not allow
+        assertThrows<BadRequest> { createDocument(templateId = templateId) }
+    }
+
+    @Test
+    fun `creating a document fails when the template language does not match the unit language`() {
+        val templateId = DocumentTemplateId(UUID.randomUUID())
+        db.transaction { tx ->
+            // unit is Finnish but the template is Swedish
+            tx.insert(devTemplatePed.copy(id = templateId, language = UiLanguage.SV))
+        }
+        assertThrows<BadRequest> { createDocument(templateId = templateId) }
+    }
+
+    @Test
+    fun `creating a document fails when the unit lacks the required pilot feature`() {
+        val childInUnitWithoutPilot = db.transaction { tx ->
+            val unitId = tx.insert(DevDaycare(areaId = area.id, language = Language.fi))
+            val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = unitId,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5),
+                )
+            )
+            childId
+        }
+        // PEDAGOGICAL_ASSESSMENT requires the VASU_AND_PEDADOC pilot feature
+        assertThrows<BadRequest> {
+            createDocument(childId = childInUnitWithoutPilot, templateId = templateIdPed)
+        }
+    }
+
+    @Test
+    fun `creating a non-citizen document fails before the placement has started`() {
+        val futureChild = createChildWithUpcomingPlacement()
+        assertThrows<BadRequest> {
+            createDocument(childId = futureChild, templateId = templateIdPed)
+        }
+    }
+
+    @Test
+    fun `creating a citizen document is allowed before the placement has started`() {
+        val futureChild = createChildWithUpcomingPlacement()
+        val documentId = createDocument(childId = futureChild, templateId = templateIdCitizenBasic)
+        assertNotNull(documentId)
+    }
+
+    private fun createChildWithUpcomingPlacement(): PersonId = db.transaction { tx ->
+        val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+        tx.insert(
+            DevPlacement(
+                childId = childId,
+                unitId = daycare.id,
+                startDate = clock.today().plusDays(30),
+                endDate = clock.today().plusDays(90),
+            )
+        )
+        childId
+    }
+
     private fun createDocument(
         childId: PersonId = child.id,
         templateId: DocumentTemplateId = templateIdPed,
         user: AuthenticatedUser.Employee = employeeUser.user,
         clockOverride: MockEvakaClock = clock,
-    ) =
-        controller.createDocument(
+    ): ChildDocumentId {
+        ensurePlacement(childId, clockOverride)
+        return controller.createDocument(
             dbInstance(),
             user,
             clockOverride,
             ChildDocumentCreateRequest(childId, templateId),
         )
+    }
 
     private fun publishDocument(
         id: ChildDocumentId,
@@ -1858,13 +1944,50 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         templateId: DocumentTemplateId = templateIdAssistanceDecision,
         user: AuthenticatedUser.Employee = employeeUser.user,
         clockOverride: MockEvakaClock = clock,
-    ) =
-        controller.createDecisionDocument(
+    ): ChildDocumentId {
+        ensurePlacement(childId, clockOverride)
+        return controller.createDecisionDocument(
             dbInstance(),
             user,
             clockOverride,
             ChildDocumentCreateRequest(childId, templateId),
         )
+    }
+
+    private fun ensurePlacement(childId: PersonId, clockOverride: MockEvakaClock) {
+        val hasPlacement = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT EXISTS(SELECT 1 FROM placement WHERE child_id = ${bind(childId)})")
+                }
+                .exactlyOne<Boolean>()
+        }
+        if (!hasPlacement) {
+            createPlacement(
+                childId = childId,
+                startDate = clockOverride.today(),
+                endDate = clockOverride.today().plusYears(1),
+            )
+        }
+    }
+
+    private fun insertDocument(
+        childId: PersonId,
+        templateId: DocumentTemplateId,
+        status: DocumentStatus = DocumentStatus.DRAFT,
+    ): ChildDocumentId = db.transaction { tx ->
+        tx.insert(
+            DevChildDocument(
+                childId = childId,
+                templateId = templateId,
+                status = status,
+                content = DocumentContent(answers = emptyList()),
+                modifiedAt = clock.now(),
+                modifiedBy = employeeUser.evakaUserId,
+                contentLockedAt = clock.now(),
+                contentLockedBy = null,
+            )
+        )
+    }
 
     private fun takeDocumentWriteLock(
         id: ChildDocumentId,
