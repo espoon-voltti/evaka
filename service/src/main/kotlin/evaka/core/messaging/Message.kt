@@ -29,15 +29,35 @@ import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import tools.jackson.databind.annotation.JsonTypeIdResolver
 
-const val DELETED_MESSAGE_PLACEHOLDER_BODY =
-    """Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään.
+private const val DELETED_MESSAGE_PLACEHOLDER_BODY_FI =
+    "Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään."
+private const val DELETED_MESSAGE_PLACEHOLDER_BODY_SV =
+    "Avsändaren har tagit bort meddelandet. Du behöver inte göra något."
+private const val DELETED_MESSAGE_PLACEHOLDER_BODY_EN =
+    "The sender has deleted this message. No action is needed on your part."
 
-Avsändaren har tagit bort meddelandet. Du behöver inte göra något.
+private const val DELETED_MESSAGE_PLACEHOLDER_TITLE_FI = "Viesti on poistettu"
+private const val DELETED_MESSAGE_PLACEHOLDER_TITLE_SV = "Meddelandet har raderats"
+private const val DELETED_MESSAGE_PLACEHOLDER_TITLE_EN = "Message was deleted"
 
-The sender has deleted this message. No action is needed on your part."""
+fun deletedMessagePlaceholderBody(swedishEnabled: Boolean): String =
+    listOfNotNull(
+            DELETED_MESSAGE_PLACEHOLDER_BODY_FI,
+            DELETED_MESSAGE_PLACEHOLDER_BODY_SV.takeIf { swedishEnabled },
+            DELETED_MESSAGE_PLACEHOLDER_BODY_EN,
+        )
+        .joinToString("\n\n")
 
-const val DELETED_MESSAGE_PLACEHOLDER_TITLE =
-    "Viesti on poistettu / Meddelandet har raderats / Message was deleted"
+fun deletedMessagePlaceholderTitle(swedishEnabled: Boolean): String =
+    listOfNotNull(
+            DELETED_MESSAGE_PLACEHOLDER_TITLE_FI,
+            DELETED_MESSAGE_PLACEHOLDER_TITLE_SV.takeIf { swedishEnabled },
+            DELETED_MESSAGE_PLACEHOLDER_TITLE_EN,
+        )
+        .joinToString(" / ")
+
+val DELETED_MESSAGE_PLACEHOLDER_BODY = deletedMessagePlaceholderBody(swedishEnabled = true)
+val DELETED_MESSAGE_PLACEHOLDER_TITLE = deletedMessagePlaceholderTitle(swedishEnabled = true)
 
 data class Message(
     val id: MessageId,

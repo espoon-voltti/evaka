@@ -172,6 +172,7 @@ class MessageControllerCitizen(
                                 featureConfig.municipalMessageAccountName,
                                 featureConfig.serviceWorkerMessageAccountName,
                                 featureConfig.financeMessageAccountName,
+                                swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
                             )
                         }
                         .mapTo(::PagedCitizenMessageThreads) {
@@ -293,6 +294,7 @@ class MessageControllerCitizen(
                         municipalAccountName = featureConfig.municipalMessageAccountName,
                         serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
                         financeAccountName = featureConfig.financeMessageAccountName,
+                        swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
                     )
                 accountId to response
             }

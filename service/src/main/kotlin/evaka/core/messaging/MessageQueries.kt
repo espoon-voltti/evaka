@@ -601,6 +601,7 @@ fun Database.Read.getThreads(
     folderId: MessageThreadFolderId? = null,
     personAccountId: MessageAccountId? = null,
     messagesSortDirection: SortDirection = SortDirection.ASC,
+    swedishEnabled: Boolean = true,
 ): PagedMessageThreads {
     val personAccountPredicate =
         if (personAccountId != null) {
@@ -629,7 +630,7 @@ SELECT
     t.id,
     CASE
         WHEN first_msg.content_deleted_at IS NOT NULL
-        THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+        THEN ${bind(deletedMessagePlaceholderTitle(swedishEnabled))}
         ELSE t.title
     END AS title,
     t.message_type AS type,
@@ -677,6 +678,7 @@ LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
             serviceWorkerAccountName,
             financeAccountName,
             messagesSortDirection,
+            swedishEnabled,
         )
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
@@ -716,6 +718,7 @@ fun Database.Read.getReceivedThreads(
     folderId: MessageThreadFolderId? = null,
     accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
     childId: ChildId? = null,
+    swedishEnabled: Boolean = true,
 ): PagedMessageThreads {
     val accountAccessPredicate =
         if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
@@ -745,7 +748,7 @@ SELECT
     t.id,
     CASE
         WHEN first_msg.content_deleted_at IS NOT NULL
-        THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+        THEN ${bind(deletedMessagePlaceholderTitle(swedishEnabled))}
         ELSE t.title
     END AS title,
     t.message_type AS type,
@@ -796,6 +799,7 @@ LIMIT ${bind(pageSize)} OFFSET ${bind((page - 1) * pageSize)}
             municipalAccountName,
             serviceWorkerAccountName,
             financeAccountName,
+            swedishEnabled = swedishEnabled,
         )
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
@@ -807,6 +811,7 @@ private fun Database.Read.getThreadMessages(
     serviceWorkerAccountName: String,
     financeAccountName: String,
     sortDirection: SortDirection = SortDirection.ASC,
+    swedishEnabled: Boolean = true,
 ): Map<MessageThreadId, List<Message>> {
     if (threadIds.isEmpty()) return mapOf()
     val sortDir = sortDirection.name
@@ -819,7 +824,7 @@ SELECT
     m.content_id,
     COALESCE(m.sent_at, m.created) AS sent_at,
     CASE
-        WHEN m.content_deleted_at IS NOT NULL THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_BODY)}
+        WHEN m.content_deleted_at IS NOT NULL THEN ${bind(deletedMessagePlaceholderBody(swedishEnabled))}
         ELSE mc.content
     END AS content,
     m.content_deleted_at,
@@ -945,6 +950,7 @@ fun Database.Read.getMessageCopiesByAccount(
     pageSize: Int,
     page: Int,
     accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
+    swedishEnabled: Boolean = true,
 ): PagedMessageCopies {
     val accountAccessPredicate =
         if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
@@ -962,7 +968,7 @@ fun Database.Read.getMessageCopiesByAccount(
         m.id AS message_id,
         CASE
             WHEN m.content_deleted_at IS NOT NULL
-            THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+            THEN ${bind(deletedMessagePlaceholderTitle(swedishEnabled))}
             ELSE t.title
         END AS title,
         t.message_type AS type,
@@ -975,7 +981,7 @@ fun Database.Read.getMessageCopiesByAccount(
         m.content_id,
         CASE
             WHEN m.content_deleted_at IS NOT NULL
-            THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_BODY)}
+            THEN ${bind(deletedMessagePlaceholderBody(swedishEnabled))}
             ELSE c.content
         END AS content,
         m.content_deleted_at,
@@ -1087,6 +1093,7 @@ fun Database.Read.getSentMessage(
     messageId: MessageId,
     serviceWorkerAccountName: String,
     financeAccountName: String,
+    swedishEnabled: Boolean = true,
 ): Message {
     return createQuery {
             sql(
@@ -1097,7 +1104,7 @@ SELECT
     m.content_id,
     COALESCE(m.sent_at, m.created) AS sent_at,  -- use the created timestamp until the asyncjob marks the message as sent
     CASE
-        WHEN m.content_deleted_at IS NOT NULL THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_BODY)}
+        WHEN m.content_deleted_at IS NOT NULL THEN ${bind(deletedMessagePlaceholderBody(swedishEnabled))}
         ELSE mc.content
     END AS content,
     m.content_deleted_at,
@@ -1304,6 +1311,7 @@ fun Database.Read.getMessagesSentByAccount(
     pageSize: Int,
     page: Int,
     accountAccessLimit: AccountAccessLimit = AccountAccessLimit.NoFurtherLimit,
+    swedishEnabled: Boolean = true,
 ): PagedSentMessages {
     val accountAccessPredicate =
         if (accountAccessLimit is AccountAccessLimit.AvailableFrom)
@@ -1348,7 +1356,7 @@ SELECT
     msg.recipient_names,
     CASE
         WHEN msg.first_message_content_deleted_at IS NOT NULL
-        THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+        THEN ${bind(deletedMessagePlaceholderTitle(swedishEnabled))}
         ELSE msg.title
     END AS thread_title,
     msg.first_message_content_deleted_at,
@@ -1357,7 +1365,7 @@ SELECT
     msg.sensitive,
     msg.content_deleted_at,
     CASE
-        WHEN msg.is_content_deleted THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_BODY)}
+        WHEN msg.is_content_deleted THEN ${bind(deletedMessagePlaceholderBody(swedishEnabled))}
         ELSE mc.content
     END AS content,
     CASE
@@ -1425,6 +1433,7 @@ fun Database.Read.getMessageThread(
     municipalAccountName: String,
     serviceWorkerAccountName: String,
     financeAccountName: String,
+    swedishEnabled: Boolean = true,
 ): MessageThread {
     val thread =
         createQuery {
@@ -1434,7 +1443,7 @@ SELECT
     t.id,
     CASE
         WHEN first_msg.content_deleted_at IS NOT NULL
-        THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+        THEN ${bind(deletedMessagePlaceholderTitle(swedishEnabled))}
         ELSE t.title
     END AS title,
     t.message_type AS type,
@@ -1475,6 +1484,7 @@ WHERE t.id = ${bind(threadId)} AND tp.participant_id = ${bind(accountId)}
             municipalAccountName,
             serviceWorkerAccountName,
             financeAccountName,
+            swedishEnabled = swedishEnabled,
         )
     return combineThreadsAndMessages(
             accountId,
@@ -1491,6 +1501,7 @@ fun Database.Read.getMessageThreadByApplicationId(
     municipalAccountName: String,
     serviceWorkerAccountName: String,
     financeAccountName: String,
+    swedishEnabled: Boolean = true,
 ): MessageThread? {
     val thread =
         createQuery {
@@ -1500,7 +1511,7 @@ SELECT
     t.id,
     CASE
         WHEN first_msg.content_deleted_at IS NOT NULL
-        THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_TITLE)}
+        THEN ${bind(deletedMessagePlaceholderTitle(swedishEnabled))}
         ELSE t.title
     END AS title,
     t.message_type AS type,
@@ -1543,6 +1554,7 @@ LIMIT 1
                 municipalAccountName,
                 serviceWorkerAccountName,
                 financeAccountName,
+                swedishEnabled = swedishEnabled,
             )
         return combineThreadsAndMessages(
                 accountId,

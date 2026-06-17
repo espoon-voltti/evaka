@@ -88,6 +88,9 @@ data class FeatureConfig(
      */
     val messageSupportEmail: String? = null,
 
+    /** Whether the Swedish text is included in the deleted message note. */
+    val messageDeletedSwedishLanguageEnabled: Boolean = true,
+
     /**
      * true = placement unit is resolved from decision when it's accepted, false = placement unit is
      * resolved from placement plan

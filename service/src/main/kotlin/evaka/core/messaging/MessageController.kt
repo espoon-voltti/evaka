@@ -184,6 +184,7 @@ class MessageController(
                     featureConfig.financeMessageAccountName,
                     accountAccessLimit = accountAccessLimit,
                     childId = childId,
+                    swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
                 )
             }
             .also {
@@ -220,6 +221,7 @@ class MessageController(
                             featureConfig.financeMessageAccountName,
                             archiveFolderId,
                             accountAccessLimit,
+                            swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
                         )
                     }
                 }
@@ -279,6 +281,7 @@ class MessageController(
                         featureConfig.serviceWorkerMessageAccountName,
                         featureConfig.financeMessageAccountName,
                         folderId,
+                        swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
                     )
                 }
             }
@@ -302,7 +305,13 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read {
                     val accountAccessLimit = it.getAccountAccessLimit(accountId, user.id)
-                    it.getMessageCopiesByAccount(accountId, pageSize = 20, page, accountAccessLimit)
+                    it.getMessageCopiesByAccount(
+                        accountId,
+                        pageSize = 20,
+                        page,
+                        accountAccessLimit,
+                        swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                    )
                 }
             }
             .also {
@@ -349,7 +358,13 @@ class MessageController(
     ): PagedSentMessages {
         return dbc.read {
                 val accountAccessLimit = it.getAccountAccessLimit(accountId, employeeId)
-                it.getMessagesSentByAccount(accountId, pageSize = 20, page, accountAccessLimit)
+                it.getMessagesSentByAccount(
+                    accountId,
+                    pageSize = 20,
+                    page,
+                    accountAccessLimit,
+                    swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                )
             }
             .also {
                 Audit.MessagingSentMessagesRead.log(
@@ -393,6 +408,7 @@ class MessageController(
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
                         featureConfig.financeMessageAccountName,
+                        swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
                     )
                 }
             }
@@ -424,6 +440,7 @@ class MessageController(
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
                         featureConfig.financeMessageAccountName,
+                        swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
                     )
                 }
                 accountId to thread
@@ -468,6 +485,7 @@ class MessageController(
                                 personAccountId = personAccountId,
                                 messagesSortDirection = SortDirection.DESC,
                                 folderId = folderId,
+                                swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
                             )
                             .data
                     }
@@ -1056,6 +1074,7 @@ class MessageController(
                     municipalAccountName = featureConfig.municipalMessageAccountName,
                     serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
                     financeAccountName = featureConfig.financeMessageAccountName,
+                    swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
                 )
             }
             .also {
