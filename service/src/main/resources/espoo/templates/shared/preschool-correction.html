@@ -1,0 +1,59 @@
+<!--
+SPDX-FileCopyrightText: 2017-2026 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="correction">
+    <h1 th:text="#{title}"></h1>
+    <div class="correction-content">
+        <p th:text="#{intro}"></p>
+
+        <h2 th:text="#{right.title}"></h2>
+        <p th:text="#{right.body}"></p>
+
+        <h2 th:text="#{time.title}"></h2>
+        <p th:text="#{time.body.1}"></p>
+        <p th:text="#{time.body.2}"></p>
+        <p th:text="#{time.body.3}"></p>
+        <p th:text="#{time.body.4}"></p>
+        <p th:text="#{time.body.5}"></p>
+
+        <h2 th:text="#{authority.title}"></h2>
+        <p th:text="#{authority.body}"></p>
+        <p th:text="#{authority.online}"></p>
+        <table class="contact-info">
+            <tr><td th:text="#{address.postal.caption}"></td><td th:text="#{address.postal.value}"></td></tr>
+            <tr><td th:text="#{address.street.caption}"></td><td th:text="#{address.street.value}"></td></tr>
+            <tr><td th:text="#{address.email.caption}"></td><td th:text="#{address.email.value}"></td></tr>
+            <tr><td th:text="#{address.phone.caption}"></td><td th:text="#{address.phone.value}"></td></tr>
+            <tr><td th:text="#{address.opening.caption}"></td><td th:text="#{address.opening.value}"></td></tr>
+        </table>
+
+        <div class="keep-together">
+            <h2 th:text="#{form.title}"></h2>
+            <p th:text="#{form.intro}"></p>
+            <p th:text="#{form.required.lead}"></p>
+            <ul>
+                <li th:text="#{form.required.1}"></li>
+                <li th:text="#{form.required.2}"></li>
+                <li th:text="#{form.required.3}"></li>
+            </ul>
+            <p th:text="#{form.contact}"></p>
+            <p th:text="#{form.email}"></p>
+            <p th:text="#{form.representative}"></p>
+            <p th:text="#{form.attachments.lead}"></p>
+            <ul>
+                <li th:text="#{form.attachments.1}"></li>
+                <li th:text="#{form.attachments.2}"></li>
+                <li th:text="#{form.attachments.3}"></li>
+            </ul>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

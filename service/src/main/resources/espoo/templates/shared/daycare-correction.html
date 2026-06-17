@@ -10,66 +10,51 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <body>
 <th:block th:fragment="correction">
     <h1 th:text="#{title}"></h1>
-    <div th:if="${#locale.toString()} == 'fi'" class="correction-content">
-        <p th:text="#{section.main.1}"></p>
-        <p th:text="#{section.main.2}"></p>
-        <p th:text="#{section.main.3}"></p>
-        <p th:text="#{section.main.4}"></p>
-        <ul>
-            <li th:text="#{section.main.4.list.1}"></li>
-            <li th:text="#{section.main.4.list.2}"></li>
-            <li th:text="#{section.main.4.list.3}"></li>
-            <li th:text="#{section.main.4.list.4}"></li>
-        </ul>
-        <p th:text="#{section.main.5}"></p>
-        <p th:utext="#{section.main.6}"></p>
-    </div>
+    <div class="correction-content">
+        <p th:text="#{intro}"></p>
 
-    <div th:if="${#locale.toString()} == 'sv'" class="correction-content">
-        <p th:text="#{section.main.1}"></p>
-        <p th:text="#{section.main.2}"></p>
-        <ul>
-            <li th:text="#{section.main.2.list.1}"></li>
-            <li th:text="#{section.main.2.list.2}"></li>
-        </ul>
-        <p th:text="#{section.main.3}"></p>
-        <p th:text="#{section.main.4}"></p>
-        <ul>
-            <li th:text="#{section.main.4.list.1}"></li>
-            <li th:text="#{section.main.4.list.2}"></li>
-            <li th:text="#{section.main.4.list.3}"></li>
-            <li th:text="#{section.main.4.list.4}"></li>
-        </ul>
-        <p th:text="#{section.main.5}"></p>
-        <p th:if="#{section.main.6} != ''" th:utext="#{section.main.6}"></p>
-    </div>
+        <h2 th:text="#{right.title}"></h2>
+        <p th:text="#{right.body}"></p>
 
-    <div class="col-row" th:text="#{address.title}"></div>
-    <br/>
-    <div class="col-row" th:if="#{address.title.2} != ''" th:text="#{address.title.2}"></div>
-    <div class="row">
-        <div class="col-row" th:if="#{address.street.value} != ''">
-            <div class="left" th:text="#{address.street.caption}"></div>
-            <div class="right" th:text="#{address.street.value}"></div>
+        <h2 th:text="#{time.title}"></h2>
+        <p th:text="#{time.body.1}"></p>
+        <p th:text="#{time.body.2}"></p>
+        <p th:text="#{time.body.3}"></p>
+        <p th:text="#{time.body.4}"></p>
+
+        <h2 th:text="#{authority.title}"></h2>
+        <p th:text="#{authority.body}"></p>
+
+        <h2 th:text="#{delivery.title}"></h2>
+        <div th:if="${#locale.toString()} == 'fi'">
+            <div class="col-row"><span th:text="#{delivery.visit.caption}"></span> <span th:text="#{delivery.visit.value}"></span></div>
+            <div class="col-row"><span th:text="#{delivery.opening.caption}"></span> <span th:text="#{delivery.opening.value}"></span></div>
+            <div class="col-row"><span th:text="#{delivery.postal.caption}"></span> <span th:text="#{delivery.postal.value}"></span></div>
+            <div class="col-row"><span th:text="#{delivery.email.caption}"></span> <span th:text="#{delivery.email.value}"></span></div>
+            <div class="col-row"><span th:text="#{delivery.phone.caption}"></span> <span th:text="#{delivery.phone.value}"></span></div>
         </div>
-        <div class="col-row" th:if="#{address.opening.value} != ''">
-            <div class="left" th:text="#{address.opening.caption}"></div>
-            <div class="right" th:text="#{address.opening.value}"></div>
+        <div th:if="${#locale.toString()} == 'sv'">
+            <p th:text="#{delivery.lead}"></p>
+            <div class="col-row" th:text="#{delivery.line.1}"></div>
+            <div class="col-row" th:text="#{delivery.line.2}"></div>
+            <div class="col-row" th:text="#{delivery.line.3}"></div>
+            <div class="col-row" th:text="#{delivery.line.4}"></div>
+            <div class="col-row" th:text="#{delivery.line.5}"></div>
+            <div class="col-row" th:text="#{delivery.line.6}"></div>
         </div>
-        <div class="col-row">
-            <div class="left" th:text="#{address.postal.caption}"></div>
-            <div class="right" th:text="#{address.postal.value}"></div>
-        </div>
-        <div class="col-row" th:if="#{address.postal.note} != ''" th:text="#{address.postal.note}"></div>
-        <div class="col-row">
-            <div class="left" th:text="#{address.email.caption}"></div>
-            <div class="right">
-                <a th:href="#{address.email.value}" th:text="#{address.email.value}"></a>
-            </div>
-        </div>
-        <div class="col-row">
-            <div class="left" th:text="#{address.phone.caption}"></div>
-            <div class="right" th:text="#{address.phone.value}"></div>
+        <p class="strong" th:text="#{delivery.securemail}"></p>
+
+        <div class="keep-together">
+            <h2 th:text="#{form.title}"></h2>
+            <p th:text="#{form.intro}"></p>
+            <p th:text="#{form.required.lead}"></p>
+            <ul>
+                <li th:text="#{form.required.1}"></li>
+                <li th:text="#{form.required.2}"></li>
+                <li th:text="#{form.required.3}"></li>
+            </ul>
+            <p th:text="#{form.contact}"></p>
+            <p th:text="#{form.email}"></p>
         </div>
     </div>
 </th:block>
