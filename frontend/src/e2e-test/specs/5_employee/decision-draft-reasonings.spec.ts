@@ -207,7 +207,7 @@ test.describe('Decision draft reasonings', () => {
     // Save and reopen — A is persisted
     await draftPage.save()
     await expect(page.findByDataQa('save-decisions-button')).toBeHidden()
-    draftPage = await openDecisionDraft()
+    draftPage = await reopenDecisionDraft()
     preschoolCard = draftPage.decisionCard('PRESCHOOL')
     await expect(preschoolCard.individualReasoning(reasoningA.id)).toBeVisible()
 
@@ -222,7 +222,7 @@ test.describe('Decision draft reasonings', () => {
     // Save and reopen — B is persisted and A is gone
     await draftPage.save()
     await expect(page.findByDataQa('save-decisions-button')).toBeHidden()
-    draftPage = await openDecisionDraft()
+    draftPage = await reopenDecisionDraft()
     preschoolCard = draftPage.decisionCard('PRESCHOOL')
     await expect(preschoolCard.individualReasoning(reasoningB.id)).toBeVisible()
     await expect(preschoolCard.individualReasoning(reasoningA.id)).toBeHidden()
@@ -307,6 +307,16 @@ test.describe('Decision draft reasonings', () => {
     await page.goto(ApplicationListView.url)
     const applicationListView = new ApplicationListView(page)
     await applicationListView.filterByApplicationStatus('WAITING_DECISION')
+    await applicationListView.searchButton.click()
+    const draftPage = await applicationListView
+      .applicationRow(applicationId)
+      .primaryActionEditDecisionsRedesign()
+    await draftPage.waitUntilLoaded()
+    return draftPage
+  }
+
+  async function reopenDecisionDraft() {
+    const applicationListView = new ApplicationListView(page)
     await applicationListView.searchButton.click()
     const draftPage = await applicationListView
       .applicationRow(applicationId)
