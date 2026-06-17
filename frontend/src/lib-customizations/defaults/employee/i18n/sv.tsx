@@ -4660,11 +4660,11 @@ export const sv: typeof fi = {
         title: 'Radera meddelandet',
         intro:
           'Funktionen är endast avsedd för situationer där ett meddelande av misstag har skickats till fel mottagare. Det raderade meddelandets innehåll ersätts hos varje mottagare i eVaka med följande text:',
-        placeholderQuote: [
-          'Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään.',
-          'Avsändaren har tagit bort meddelandet. Du behöver inte göra något.',
-          'The sender has deleted this message. No action is needed on your part.'
-        ],
+        placeholderQuote: {
+          fi: 'Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään.',
+          sv: 'Avsändaren har tagit bort meddelandet. Du behöver inte göra något.',
+          en: 'The sender has deleted this message. No action is needed on your part.'
+        },
         stepsHeader: 'Åtgärder omedelbart efter raderingen',
         stepsBody1:
           'För ett meddelande som skickats till fel mottagare ska alltid en dataskyddsanmälan göras. Kontakta kommunens eVaka-stöd efter raderingen för fortsatta åtgärder.',

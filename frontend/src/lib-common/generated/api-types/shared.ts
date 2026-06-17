@@ -123,6 +123,7 @@ export interface EmployeeFeatureConfig {
   allowEnglishChildDocumentsForAllTypes: boolean
   decisionReasoningGenericRemoval: boolean
   decisionReasoningsEnabled: boolean
+  messageDeletedSwedishLanguageEnabled: boolean
   messageSupportEmail: string | null
   openRangesHolidayQuestionnaire: boolean
   replacementInvoices: boolean

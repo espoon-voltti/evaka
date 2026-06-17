@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useQueryClient } from '@tanstack/react-query'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import type {
@@ -22,6 +22,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 
 import { deleteMessageContentMutation } from './queries'
 
@@ -48,8 +49,17 @@ export const ConfirmDeleteMessage = React.memo(function ConfirmDeleteMessage({
 }: Props) {
   const { i18n } = useTranslation()
   const t = i18n.messages.deletion.modal
+  const { featureConfig } = useContext(UserContext)
   const queryClient = useQueryClient()
   const [alreadyDeleted, setAlreadyDeleted] = useState(false)
+
+  // Deleted message placeholder text in multiple languages.
+  // Swedish is excluded if the feature flag is set to false.
+  const svEnabled =
+    featureConfig?.messageDeletedSwedishLanguageEnabled !== false
+  const deletedMessagePlaceholderLines = Object.entries(t.placeholderQuote)
+    .filter(([language]) => svEnabled || language !== 'sv')
+    .map(([, line]) => line)
 
   if (alreadyDeleted) {
     // Shown when a concurrent delete was detected on confirm (see onFailure below).
@@ -76,7 +86,7 @@ export const ConfirmDeleteMessage = React.memo(function ConfirmDeleteMessage({
     >
       <P>{t.intro}</P>
       <Blockquote data-qa="placeholder-quote">
-        {t.placeholderQuote.join('\n\n')}
+        {deletedMessagePlaceholderLines.join('\n\n')}
       </Blockquote>
       <H3>{t.stepsHeader}</H3>
       <P>{t.stepsBody1}</P>
