@@ -48,13 +48,6 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             testFeatureConfig.copy(allowEnglishChildDocumentsForAllTypes = enabled),
         )
 
-    private fun controllerWithCitizenDocumentDays(days: Int) =
-        DocumentTemplateController(
-            accessControl,
-            evakaEnv,
-            testFeatureConfig.copy(citizenDocumentCreationDaysBeforePlacement = days),
-        )
-
     private val now = MockEvakaClock(2022, 1, 1, 15, 0)
     private val area = DevCareArea()
     private val daycare =
@@ -405,37 +398,52 @@ class DocumentTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
-    fun `citizen basic templates become creatable the configured number of days before placement start`() {
-        val futureChild = DevPerson()
-        val placementStart = now.today().plusDays(40)
+    fun `citizen basic templates become creatable a fixed number of days before placement start`() {
+        val childWithinWindow = DevPerson()
+        val childBeyondWindow = DevPerson()
+        val withinWindowStart =
+            now.today().plusDays((CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT - 5).toLong())
+        val beyondWindowStart =
+            now.today().plusDays((CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT + 5).toLong())
         db.transaction { tx ->
-            tx.insert(futureChild, DevPersonType.CHILD)
+            tx.insert(childWithinWindow, DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(
-                    childId = futureChild.id,
+                    childId = childWithinWindow.id,
                     unitId = daycare.id,
-                    startDate = placementStart,
-                    endDate = placementStart.plusDays(5),
+                    startDate = withinWindowStart,
+                    endDate = withinWindowStart.plusDays(5),
+                )
+            )
+            tx.insert(childBeyondWindow, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = childBeyondWindow.id,
+                    unitId = daycare.id,
+                    startDate = beyondWindowStart,
+                    endDate = beyondWindowStart.plusDays(5),
                 )
             )
         }
         publishCitizenBasicTemplate(UiLanguage.SV)
         publishPedagogicalAssessmentTemplate(UiLanguage.SV)
 
-        // placement starts 40 days out, beyond a 30-day window
+        // within the window only the citizen basic template is creatable; other types still require
+        // an active placement
         assertEquals(
-            0,
-            controllerWithCitizenDocumentDays(30)
-                .getActiveTemplates(dbInstance(), employee.user, now, futureChild.id)
-                .size,
+            listOf(ChildDocumentType.CITIZEN_BASIC),
+            controller
+                .getActiveTemplates(dbInstance(), employee.user, now, childWithinWindow.id)
+                .map { it.type },
         )
 
-        // a wider window exposes only the citizen basic template; other types still require an
-        // active placement
-        val active =
-            controllerWithCitizenDocumentDays(60)
-                .getActiveTemplates(dbInstance(), employee.user, now, futureChild.id)
-        assertEquals(listOf(ChildDocumentType.CITIZEN_BASIC), active.map { it.type })
+        // beyond the window no templates are creatable yet
+        assertEquals(
+            0,
+            controller
+                .getActiveTemplates(dbInstance(), employee.user, now, childBeyondWindow.id)
+                .size,
+        )
     }
 
     @Test

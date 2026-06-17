@@ -1528,10 +1528,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         metadataController.getChildDocumentMetadata(dbInstance(), employeeUser.user, clock, id)
 
     @Test
-    fun `STAFF can access child documents when placement starts within 30 days`() {
-        // Create a placement starting 15 days from now
-        val futureStartDate = clock.today().plusDays(15)
-        val futureEndDate = clock.today().plusDays(90)
+    fun `STAFF can access child documents when placement starts within 60 days`() {
+        // placement starts inside the citizen-document creation window
+        val futureStartDate = clock.today().plusDays(45)
+        val futureEndDate = clock.today().plusDays(120)
 
         val groupId = createPlacementWithGroup(startDate = futureStartDate, endDate = futureEndDate)
 
@@ -1564,10 +1564,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
-    fun `STAFF cannot access child documents when placement starts beyond 30 days`() {
-        // Create a placement starting 35 days from now (beyond 30-day window)
-        val futureStartDate = clock.today().plusDays(35)
-        val futureEndDate = clock.today().plusDays(120)
+    fun `STAFF cannot access child documents when placement starts beyond 60 days`() {
+        // placement starts beyond the citizen-document creation window
+        val futureStartDate = clock.today().plusDays(65)
+        val futureEndDate = clock.today().plusDays(150)
 
         val groupId = createPlacementWithGroup(startDate = futureStartDate, endDate = futureEndDate)
 
@@ -1633,9 +1633,9 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
-    fun `STAFF can create documents for placement starting within 30 days`() {
-        val futureStartDate = clock.today().plusDays(20)
-        val futureEndDate = clock.today().plusDays(100)
+    fun `STAFF can create documents for placement starting within 60 days`() {
+        val futureStartDate = clock.today().plusDays(45)
+        val futureEndDate = clock.today().plusDays(120)
 
         val groupId = createPlacementWithGroup(startDate = futureStartDate, endDate = futureEndDate)
 

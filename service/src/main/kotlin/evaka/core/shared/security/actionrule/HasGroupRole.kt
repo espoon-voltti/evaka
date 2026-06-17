@@ -5,6 +5,7 @@
 package evaka.core.shared.security.actionrule
 
 import evaka.core.daycare.domain.ProviderType
+import evaka.core.document.CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
 import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ChildDocumentId
@@ -24,10 +25,6 @@ import java.util.EnumSet
 
 private typealias GetGroupRoles =
     QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
-
-// Default number of days before a placement starts that staff can access CITIZEN_BASIC
-// type of child documents.
-private const val DEFAULT_FUTURE_ACCESS_DAYS = 30
 
 data class HasGroupRole(
     val oneOf: EnumSet<UserRole>,
@@ -165,9 +162,7 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
-    fun inPlacementGroupOfChildWithFutureAccess(
-        daysBeforePlacement: Int = DEFAULT_FUTURE_ACCESS_DAYS
-    ) =
+    fun inPlacementGroupOfChildWithFutureAccess(daysBeforePlacement: Int) =
         rule<ChildId> { user, now ->
             val futureAccessDate = now.toLocalDate().plusDays(daysBeforePlacement.toLong())
             val pastAccessDate = now.toLocalDate().minusDays(daysBeforePlacement.toLong())
@@ -216,7 +211,7 @@ WHERE employee_id = ${bind(user.id)}
         }
 
     fun inPlacementGroupOfChildOfChildDocumentWithFutureAccess(
-        daysBeforePlacement: Int = DEFAULT_FUTURE_ACCESS_DAYS,
+        daysBeforePlacement: Int = CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT,
         editable: Boolean = false,
         deletable: Boolean = false,
         publishable: Boolean = false,

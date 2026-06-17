@@ -5,17 +5,14 @@
 package evaka.core.shared.security
 
 import evaka.core.CitizenCalendarEnv
-import evaka.core.shared.FeatureConfig
+import evaka.core.document.CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import org.springframework.stereotype.Service
 
 @Service
-class AccessControlCitizen(
-    val citizenCalendarEnv: CitizenCalendarEnv,
-    val featureConfig: FeatureConfig,
-) {
+class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
     fun getPermittedFeatures(
         tx: Database.Read,
         clock: EvakaClock,
@@ -36,7 +33,7 @@ class AccessControlCitizen(
                 tx.citizenHasAccessToChildDocumentation(
                     clock,
                     citizen,
-                    featureConfig.citizenDocumentCreationDaysBeforePlacement,
+                    CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT,
                 ),
         )
     }

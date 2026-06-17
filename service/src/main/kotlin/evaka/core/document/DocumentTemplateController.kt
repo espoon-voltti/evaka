@@ -134,7 +134,7 @@ class DocumentTemplateController(
                         tx.getCurrentOrNextPlacement(
                             childId,
                             clock.today(),
-                            featureConfig.citizenDocumentCreationDaysBeforePlacement,
+                            CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT,
                         ) ?: return@read emptyList()
                     val placementHasStarted = !placement.startDate.isAfter(clock.today())
 

@@ -375,7 +375,7 @@ test.describe('Employee - Child documents', () => {
     ).toBeHidden()
   })
 
-  test('Staff can create CITIZEN_BASIC document for child with placement starting in less than 30 days', async ({
+  test('Staff can create CITIZEN_BASIC document for child with placement starting in less than 60 days', async ({
     newEvakaPage
   }) => {
     const group1: DevDaycareGroup = await Fixture.daycareGroup({
@@ -397,11 +397,11 @@ test.describe('Employee - Child documents', () => {
 
     await Fixture.guardian(childFuture, testAdult).save()
 
-    // Create a placement that starts in 20 days (within the 30-day window)
+    // placement starts inside the citizen-document creation window
     const futurePlacement = await Fixture.placement({
       childId: childFuture.id,
       unitId: testDaycare.id,
-      startDate: now.toLocalDate().addDays(20),
+      startDate: now.toLocalDate().addDays(45),
       endDate: now.toLocalDate().addYears(1),
       type: 'DAYCARE'
     }).save()

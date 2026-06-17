@@ -6,6 +6,7 @@ package evaka.core.shared.security
 
 import evaka.core.daycare.CareType
 import evaka.core.daycare.domain.ProviderType
+import evaka.core.document.CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
 import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ApplicationNoteId
@@ -1157,7 +1158,10 @@ sealed interface Action {
         CREATE_CHILD_DOCUMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-            HasGroupRole(STAFF).inPlacementGroupOfChildWithFutureAccess(),
+            HasGroupRole(STAFF)
+                .inPlacementGroupOfChildWithFutureAccess(
+                    CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
+                ),
         ),
         CREATE_CHILD_DECISION_DOCUMENT(
             HasGlobalRole(ADMIN),
@@ -1166,7 +1170,10 @@ sealed interface Action {
         READ_CHILD_DOCUMENT(
             HasGlobalRole(ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChild(),
-            HasGroupRole(STAFF).inPlacementGroupOfChildWithFutureAccess(),
+            HasGroupRole(STAFF)
+                .inPlacementGroupOfChildWithFutureAccess(
+                    CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
+                ),
         ),
         CREATE_PEDAGOGICAL_DOCUMENT(
             HasGlobalRole(ADMIN),

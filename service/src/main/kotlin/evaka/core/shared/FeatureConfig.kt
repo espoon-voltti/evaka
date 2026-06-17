@@ -156,12 +156,6 @@ data class FeatureConfig(
 
     /** Whether placement decisions can be made in Swedish. */
     val placementDecisionSwedishLanguageEnabled: Boolean,
-
-    /**
-     * How many days before a placement starts a guardian-fillable (`CITIZEN_BASIC`) child document
-     * can be created for the child.
-     */
-    val citizenDocumentCreationDaysBeforePlacement: Int = 60,
 )
 
 enum class ArchiveProcessType {
