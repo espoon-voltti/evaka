@@ -122,3 +122,7 @@ fun Database.Transaction.markEmailVerificationSent(
         sql("UPDATE person_email_verification SET sent_at = ${bind(now)} WHERE id = ${bind(id)}")
     }
 }
+
+fun Database.Transaction.deleteExpiredEmailVerifications(now: HelsinkiDateTime): Int =
+    createUpdate { sql("DELETE FROM person_email_verification WHERE expires_at <= ${bind(now)}") }
+        .execute()
