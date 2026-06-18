@@ -45,14 +45,14 @@ const prod: FeatureFlags = {
   requireAttachments: true,
   showCitizenApplicationPreschoolTerms: true,
   decisionChildDocumentTypes: true,
-  placementDesktop: true
+  placementDesktop: true,
+  citizenChildDocumentTypes: true
 }
 
 const features: Features = {
   default: {
     ...prod,
-    environmentLabel: 'Test',
-    citizenChildDocumentTypes: true
+    environmentLabel: 'Test'
   },
   prod
 }

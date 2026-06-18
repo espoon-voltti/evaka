@@ -54,14 +54,14 @@ const prod: FeatureFlags = {
     childDocuments: true
   },
   decisionChildDocumentTypes: true,
-  placementDesktop: true
+  placementDesktop: true,
+  citizenChildDocumentTypes: true
 }
 
 const features: Features = {
   default: {
     ...prod,
-    environmentLabel: 'Test',
-    citizenChildDocumentTypes: true
+    environmentLabel: 'Test'
   },
   staging: {
     ...prod,
