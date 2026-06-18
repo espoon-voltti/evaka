@@ -4,6 +4,7 @@
 
 package evaka.core.placement
 
+import evaka.core.application.ApplicationType
 import evaka.core.placement.PlacementType.PREPARATORY
 import evaka.core.placement.PlacementType.PREPARATORY_DAYCARE
 import evaka.core.placement.PlacementType.PRESCHOOL
@@ -22,6 +23,18 @@ enum class TerminatablePlacementType {
     DAYCARE,
     PRESCHOOL,
 }
+
+/**
+ * The application type whose transfer applications become moot when a placement of this type is
+ * terminated. Preparatory and preschool share [ApplicationType.PRESCHOOL].
+ */
+fun TerminatablePlacementType.cancelableTransferApplicationType(): ApplicationType =
+    when (this) {
+        TerminatablePlacementType.CLUB -> ApplicationType.CLUB
+        TerminatablePlacementType.DAYCARE -> ApplicationType.DAYCARE
+        TerminatablePlacementType.PRESCHOOL,
+        TerminatablePlacementType.PREPARATORY -> ApplicationType.PRESCHOOL
+    }
 
 data class TerminatablePlacementGroup(
     val type: TerminatablePlacementType,

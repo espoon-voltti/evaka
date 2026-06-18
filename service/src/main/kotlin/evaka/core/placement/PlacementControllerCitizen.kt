@@ -6,7 +6,7 @@ package evaka.core.placement
 
 import evaka.core.Audit
 import evaka.core.AuditId
-import evaka.core.application.cancelAllActiveTransferApplications
+import evaka.core.application.cancelActiveTransferApplications
 import evaka.core.daycare.getUnitFeatures
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
@@ -160,8 +160,16 @@ class PlacementControllerCitizen(
                         }
                     }
 
+                    val dismissedType =
+                        if (body.terminateDaycareOnly == true) TerminatablePlacementType.DAYCARE
+                        else body.type
                     val cancelableTransferApplicationIds =
-                        tx.cancelAllActiveTransferApplications(childId, clock, user.evakaUserId)
+                        tx.cancelActiveTransferApplications(
+                            childId,
+                            dismissedType.cancelableTransferApplicationType(),
+                            clock,
+                            user.evakaUserId,
+                        )
 
                     tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                         childId,
