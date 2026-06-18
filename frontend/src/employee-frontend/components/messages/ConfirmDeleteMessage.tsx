@@ -53,14 +53,6 @@ export const ConfirmDeleteMessage = React.memo(function ConfirmDeleteMessage({
   const queryClient = useQueryClient()
   const [alreadyDeleted, setAlreadyDeleted] = useState(false)
 
-  // Deleted message placeholder text in multiple languages.
-  // Swedish is excluded if the feature flag is set to false.
-  const svEnabled =
-    featureConfig?.messageDeletedSwedishLanguageEnabled !== false
-  const deletedMessagePlaceholderLines = Object.entries(t.placeholderQuote)
-    .filter(([language]) => svEnabled || language !== 'sv')
-    .map(([, line]) => line)
-
   if (alreadyDeleted) {
     // Shown when a concurrent delete was detected on confirm (see onFailure below).
     return (
@@ -86,7 +78,7 @@ export const ConfirmDeleteMessage = React.memo(function ConfirmDeleteMessage({
     >
       <P>{t.intro}</P>
       <Blockquote data-qa="placeholder-quote">
-        {deletedMessagePlaceholderLines.join('\n\n')}
+        {featureConfig?.deletedMessagePlaceholderBody}
       </Blockquote>
       <H3>{t.stepsHeader}</H3>
       <P>{t.stepsBody1}</P>

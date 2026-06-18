@@ -49,7 +49,7 @@ class NoteController(
             ) {
                 tx.getApplicationNotes(
                     applicationId,
-                    swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                    deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
                 )
             } else {
                 accessControl.requirePermissionFor(
@@ -61,7 +61,7 @@ class NoteController(
                 )
                 tx.getApplicationSpecialEducationTeacherNotes(
                     applicationId,
-                    swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                    deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
                 )
             }
         }

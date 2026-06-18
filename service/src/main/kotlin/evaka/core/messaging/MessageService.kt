@@ -273,7 +273,7 @@ class MessageService(
         serviceWorkerAccountName: String,
         financeAccountName: String,
         user: AuthenticatedUser,
-        swedishEnabled: Boolean = true,
+        deletedMessageBody: String,
     ): ThreadReply {
         val today = now.toLocalDate()
         val thread =
@@ -368,7 +368,7 @@ class MessageService(
                 messageId,
                 serviceWorkerAccountName,
                 financeAccountName,
-                swedishEnabled = swedishEnabled,
+                deletedMessageBody = deletedMessageBody,
             )
         }
         return ThreadReply(threadId, message)

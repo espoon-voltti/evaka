@@ -11,6 +11,7 @@ import evaka.core.shared.MobileDeviceId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.config.testFeatureConfig
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDaycareGroup
@@ -165,7 +166,14 @@ class MessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
 
         val copy =
             db.read { tx ->
-                    tx.getMessageCopiesByAccount(groupAccount, pageSize = 20, page = 1).data
+                    tx.getMessageCopiesByAccount(
+                            groupAccount,
+                            pageSize = 20,
+                            page = 1,
+                            deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                            deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+                        )
+                        .data
                 }
                 .single()
         assertEquals(municipalAccount, copy.senderId)

@@ -184,7 +184,8 @@ class MessageController(
                     featureConfig.financeMessageAccountName,
                     accountAccessLimit = accountAccessLimit,
                     childId = childId,
-                    swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                    deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                 )
             }
             .also {
@@ -221,7 +222,8 @@ class MessageController(
                             featureConfig.financeMessageAccountName,
                             archiveFolderId,
                             accountAccessLimit,
-                            swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                            deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                            deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                         )
                     }
                 }
@@ -281,7 +283,8 @@ class MessageController(
                         featureConfig.serviceWorkerMessageAccountName,
                         featureConfig.financeMessageAccountName,
                         folderId,
-                        swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                        deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                     )
                 }
             }
@@ -310,7 +313,8 @@ class MessageController(
                         pageSize = 20,
                         page,
                         accountAccessLimit,
-                        swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                        deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                     )
                 }
             }
@@ -363,7 +367,8 @@ class MessageController(
                     pageSize = 20,
                     page,
                     accountAccessLimit,
-                    swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                    deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                 )
             }
             .also {
@@ -408,7 +413,8 @@ class MessageController(
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
                         featureConfig.financeMessageAccountName,
-                        swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                        deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                     )
                 }
             }
@@ -440,7 +446,8 @@ class MessageController(
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
                         featureConfig.financeMessageAccountName,
-                        swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                        deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                     )
                 }
                 accountId to thread
@@ -485,7 +492,8 @@ class MessageController(
                                 personAccountId = personAccountId,
                                 messagesSortDirection = SortDirection.DESC,
                                 folderId = folderId,
-                                swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                                deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                                deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                             )
                             .data
                     }
@@ -1074,7 +1082,7 @@ class MessageController(
                     municipalAccountName = featureConfig.municipalMessageAccountName,
                     serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
                     financeAccountName = featureConfig.financeMessageAccountName,
-                    swedishEnabled = featureConfig.messageDeletedSwedishLanguageEnabled,
+                    deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
                 )
             }
             .also {

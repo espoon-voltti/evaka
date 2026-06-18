@@ -15,5 +15,5 @@ data class EmployeeFeatureConfig(
     val openRangesHolidayQuestionnaire: Boolean,
     val allowEnglishChildDocumentsForAllTypes: Boolean,
     val messageSupportEmail: String?,
-    val messageDeletedSwedishLanguageEnabled: Boolean,
+    val deletedMessagePlaceholderBody: String,
 )

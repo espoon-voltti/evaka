@@ -23,6 +23,7 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
+import evaka.core.shared.config.testFeatureConfig
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
@@ -250,7 +251,16 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     private fun sentMessageCounts(vararg accountIds: MessageAccountId): List<Int> = db.read { tx ->
-        accountIds.map { tx.getMessagesSentByAccount(it, 10, 1).total }
+        accountIds.map {
+            tx.getMessagesSentByAccount(
+                    it,
+                    10,
+                    1,
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+                )
+                .total
+        }
     }
 
     @Test
@@ -312,6 +322,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                         "Espoo",
                         "Espoon palveluohjaus",
                         "Espoon asiakasmaksut",
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     )
                     .total
             }
@@ -329,6 +341,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                         "Espoon palveluohjaus",
                         "Espoon asiakasmaksut",
                         archiveFolderId,
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     )
                     .total
             }
@@ -372,6 +386,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                         "Espoo",
                         "Espoon palveluohjaus",
                         "Espoon asiakasmaksut",
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     )
                     .data
                     .first()

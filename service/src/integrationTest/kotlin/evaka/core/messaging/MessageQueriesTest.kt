@@ -154,6 +154,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         "Espoo",
                         "Espoon palveluohjaus",
                         "Espoon asiakasmaksut",
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     )
                 }
                 .data
@@ -167,6 +169,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 "Espoo",
                 "Espoon palveluohjaus",
                 "Espoon asiakasmaksut",
+                deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
             )
         }
         assertEquals(2, personResult.data.size)
@@ -187,6 +191,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 "Espoo",
                 "Espoon palveluohjaus",
                 "Espoon asiakasmaksut",
+                deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
             )
         }
         assertEquals(2, person1Threads.data.size)
@@ -205,6 +211,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         "Espoo",
                         "Espoon palveluohjaus",
                         "Espoon asiakasmaksut",
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     )
                 }
                 .data
@@ -230,6 +238,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 "Espoo",
                 "Espoon palveluohjaus",
                 "Espoon asiakasmaksut",
+                deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
             )
         }
         assertEquals(1, employeeResult.data.size)
@@ -245,6 +255,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 "Espoo",
                 "Espoon palveluohjaus",
                 "Espoon asiakasmaksut",
+                deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
             )
         }
         assertEquals(2, person1Result.data.size)
@@ -275,6 +287,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 "Espoo",
                 "Espoon palveluohjaus",
                 "Espoon asiakasmaksut",
+                deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
             )
         }
         assertEquals(1, person2Result.data.size)
@@ -290,6 +304,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 "Espoo",
                 "Espoon palveluohjaus",
                 "Espoon asiakasmaksut",
+                deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
             )
         }
         assertEquals(1, employee2Result.data.size)
@@ -311,6 +327,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 "Espoo",
                 "Espoon palveluohjaus",
                 "Espoon asiakasmaksut",
+                deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
             )
         }
         assertEquals(2, messages.total)
@@ -327,6 +345,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         "Espoo",
                         "Espoon palveluohjaus",
                         "Espoon asiakasmaksut",
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     ),
                     it.getThreads(
                         accounts.person1.id,
@@ -335,6 +355,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         "Espoo",
                         "Espoon palveluohjaus",
                         "Espoon asiakasmaksut",
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     ),
                 )
             }
@@ -368,7 +390,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         // then sent messages are returned for sender id
-        val firstPage = db.read { it.getMessagesSentByAccount(accounts.employee1.id, 1, 1) }
+        val firstPage = db.read {
+            it.getMessagesSentByAccount(
+                accounts.employee1.id,
+                1,
+                1,
+                deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+            )
+        }
         assertEquals(2, firstPage.total)
         assertEquals(2, firstPage.pages)
         assertEquals(1, firstPage.data.size)
@@ -378,7 +408,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals("thread 2", newestMessage.threadTitle)
         assertEquals(listOf(accounts.person1.name), newestMessage.recipientNames)
 
-        val secondPage = db.read { it.getMessagesSentByAccount(accounts.employee1.id, 1, 2) }
+        val secondPage = db.read {
+            it.getMessagesSentByAccount(
+                accounts.employee1.id,
+                1,
+                2,
+                deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+            )
+        }
         assertEquals(2, secondPage.total)
         assertEquals(2, secondPage.pages)
         assertEquals(1, secondPage.data.size)
@@ -392,7 +430,19 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         // then fetching sent messages by recipient ids does not return the messages
-        assertEquals(0, db.read { it.getMessagesSentByAccount(accounts.person1.id, 1, 1) }.total)
+        assertEquals(
+            0,
+            db.read {
+                    it.getMessagesSentByAccount(
+                        accounts.person1.id,
+                        1,
+                        1,
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+                    )
+                }
+                .total,
+        )
     }
 
     @Test
@@ -932,6 +982,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         "Espoon palveluohjaus",
                         "Espoon asiakasmaksut",
                         archiveFolderId,
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     )
                     .total
             },
@@ -956,6 +1008,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         "Espoon palveluohjaus",
                         "Espoon asiakasmaksut",
                         archiveFolderId,
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     )
                     .total
             },
@@ -974,6 +1028,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         "Espoon palveluohjaus",
                         "Espoon asiakasmaksut",
                         null,
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     )
                     .total
             },
@@ -990,6 +1046,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         "Espoon palveluohjaus",
                         "Espoon asiakasmaksut",
                         archiveFolderId,
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     )
                     .total
             },
