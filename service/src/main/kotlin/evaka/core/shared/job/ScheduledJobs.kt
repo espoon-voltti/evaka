@@ -34,6 +34,7 @@ import evaka.core.nekku.NekkuService
 import evaka.core.note.child.daily.deleteExpiredNotes
 import evaka.core.pis.cleanUpInactivePeople
 import evaka.core.pis.deactivateInactiveEmployees
+import evaka.core.pis.deleteExpiredEmailVerifications
 import evaka.core.reports.freezeVoucherValueReportRows
 import evaka.core.reservations.MissingHolidayReservationsReminders
 import evaka.core.reservations.MissingReservationsReminders
@@ -310,6 +311,10 @@ enum class ScheduledJob(
         ScheduledJobs::planDataRemoval,
         ScheduledJobSettings(enabled = false, schedule = JobSchedule.nightly()),
     ),
+    DeleteExpiredEmailVerifications(
+        ScheduledJobs::deleteExpiredEmailVerifications,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
+    ),
 }
 
 private val logger = KotlinLogging.logger {}
@@ -522,6 +527,13 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun removeExpiredNotes(db: Database.Connection, clock: EvakaClock) {
         db.transaction { it.deleteExpiredNotes(clock.now()) }
+    }
+
+    fun deleteExpiredEmailVerifications(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            val count = tx.deleteExpiredEmailVerifications(clock.now())
+            logger.info { "Deleted $count expired email verifications" }
+        }
     }
 
     fun removeOldAsyncJobs(db: Database.Connection, clock: EvakaClock) {

@@ -6,9 +6,13 @@ package evaka.core.pis.controller
 
 import evaka.core.FullApplicationTest
 import evaka.core.emailclient.MockEmailClient
+import evaka.core.pis.NewEmailVerification
 import evaka.core.pis.controllers.CONFIRMATION_CODE_DURATION
 import evaka.core.pis.controllers.CONFIRMATION_CODE_LENGTH
 import evaka.core.pis.controllers.PersonalDataControllerCitizen
+import evaka.core.pis.deleteExpiredEmailVerifications
+import evaka.core.pis.upsertEmailVerification
+import evaka.core.shared.PersonEmailVerificationId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.CitizenAuthLevel
@@ -16,6 +20,7 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import kotlin.test.*
 import org.junit.jupiter.api.assertThrows
@@ -127,4 +132,34 @@ class EmailVerificationIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun verifyEmail(request: PersonalDataControllerCitizen.EmailVerificationRequest) =
         controller.verifyEmail(dbInstance(), user, clock, request)
+
+    @Test
+    fun `deleteExpiredEmailVerifications deletes expired rows, including ones expiring exactly at now, and keeps valid ones`() {
+        insertExpiringVerification(expiresAt = clock.now().minusHours(1))
+        insertExpiringVerification(expiresAt = clock.now())
+        val valid = insertExpiringVerification(expiresAt = clock.now().plusHours(1))
+
+        val deleted = db.transaction { it.deleteExpiredEmailVerifications(clock.now()) }
+
+        assertEquals(2, deleted)
+        assertEquals(listOf(valid), remainingVerificationIds())
+    }
+
+    private fun insertExpiringVerification(expiresAt: HelsinkiDateTime): PersonEmailVerificationId =
+        db.transaction { tx ->
+            val person = DevPerson()
+            tx.insert(person, DevPersonType.ADULT)
+            tx.upsertEmailVerification(
+                    clock.now(),
+                    person.id,
+                    "pending@example.com",
+                    NewEmailVerification(verificationCode = "1234", expiresAt = expiresAt),
+                )
+                .id
+        }
+
+    private fun remainingVerificationIds(): List<PersonEmailVerificationId> = db.read {
+        it.createQuery { sql("SELECT id FROM person_email_verification") }
+            .toList<PersonEmailVerificationId>()
+    }
 }
