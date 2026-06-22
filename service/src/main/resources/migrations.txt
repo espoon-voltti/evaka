@@ -592,3 +592,4 @@ V593__nekku_special_diet_choices_pk.sql
 V594__message_content_deletion.sql
 V595__income_notification_receiver_fk.sql
 V596__decision_reasoning_links_v2.sql
+V597__daily_service_time_notification_created_at.sql

@@ -17,6 +17,7 @@ import evaka.core.attachment.AttachmentService
 import evaka.core.attendance.addMissingStaffAttendanceDepartures
 import evaka.core.calendarevent.CalendarEventNotificationService
 import evaka.core.caseprocess.migrateProcessMetadata
+import evaka.core.dailyservicetimes.deleteOldDailyServiceTimeNotifications
 import evaka.core.dataremoval.DataRemovalService
 import evaka.core.daycare.controllers.removeDaycareAclForRole
 import evaka.core.document.archival.planChildDocumentArchival
@@ -315,6 +316,10 @@ enum class ScheduledJob(
         ScheduledJobs::deleteExpiredEmailVerifications,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
+    DeleteOldDailyServiceTimeNotifications(
+        ScheduledJobs::deleteOldDailyServiceTimeNotifications,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
+    ),
 }
 
 private val logger = KotlinLogging.logger {}
@@ -533,6 +538,13 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         db.transaction { tx ->
             val count = tx.deleteExpiredEmailVerifications(clock.now())
             logger.info { "Deleted $count expired email verifications" }
+        }
+    }
+
+    fun deleteOldDailyServiceTimeNotifications(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            val count = tx.deleteOldDailyServiceTimeNotifications(clock.now())
+            logger.info { "Deleted $count old daily service time notifications" }
         }
     }
 

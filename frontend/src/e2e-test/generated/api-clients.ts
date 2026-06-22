@@ -20,6 +20,7 @@ import type { ChildStickyNoteBody } from 'lib-common/generated/api-types/note'
 import type { ChildStickyNoteId } from 'lib-common/generated/api-types/shared'
 import type { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import type { DailyServiceTimeId } from 'lib-common/generated/api-types/shared'
+import type { DailyServiceTimeNotificationId } from 'lib-common/generated/api-types/shared'
 import type { DaycareAclInsert } from './api-types'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import type { DaycarePlacementPlan } from 'lib-common/generated/api-types/application'
@@ -270,9 +271,9 @@ export async function addDailyServiceTimeNotification(
   request: {
     body: DevDailyServiceTimeNotification
   }
-): Promise<number> {
+): Promise<DailyServiceTimeNotificationId> {
   try {
-    const { data: json } = await devClient.request<JsonOf<number>>({
+    const { data: json } = await devClient.request<JsonOf<DailyServiceTimeNotificationId>>({
       url: uri`/daily-service-time-notification`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DevDailyServiceTimeNotification>

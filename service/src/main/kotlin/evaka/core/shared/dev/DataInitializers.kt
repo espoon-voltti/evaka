@@ -51,6 +51,7 @@ import evaka.core.shared.ChildDocumentDecisionId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.ClubTermId
+import evaka.core.shared.DailyServiceTimeNotificationId
 import evaka.core.shared.DailyServiceTimesId
 import evaka.core.shared.DaycareAssistanceId
 import evaka.core.shared.DaycareCaretakerId
@@ -209,6 +210,21 @@ fun Database.Transaction.insert(row: DevCareArea): AreaId =
                 """
 INSERT INTO care_area (id, name, short_name, area_code, sub_cost_center)
 VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.shortName)}, ${bind(row.areaCode)}, ${bind(row.subCostCenter)})
+RETURNING id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
+
+fun Database.Transaction.insert(
+    row: DevDailyServiceTimeNotification
+): DailyServiceTimeNotificationId =
+    createUpdate {
+            sql(
+                """
+INSERT INTO daily_service_time_notification (id, guardian_id, created_at)
+VALUES (${bind(row.id)}, ${bind(row.guardianId)}, ${bind(row.createdAt)})
 RETURNING id
 """
             )
