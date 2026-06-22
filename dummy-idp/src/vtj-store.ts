@@ -42,6 +42,14 @@ export class VtjStore {
     return [...this.persons.values()]
   }
 
+  snapshot(): MockVtjDataset {
+    const guardianDependants: Record<string, string[]> = {}
+    for (const [guardian, dependants] of this.dependantsOfGuardian) {
+      guardianDependants[guardian] = [...dependants]
+    }
+    return { persons: this.list(), guardianDependants }
+  }
+
   get(ssn: string): VtjPersonWithRelations | undefined {
     const person = this.persons.get(ssn)
     if (!person) return undefined

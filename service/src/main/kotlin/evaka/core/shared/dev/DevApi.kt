@@ -243,8 +243,11 @@ class DevApi(
 
     @PostMapping("/test-mode")
     fun setTestMode(db: Database, @RequestParam enabled: Boolean) {
-        if (!enabled) {
+        if (enabled) {
+            personDetailsService.enterTestMode()
+        } else {
             templateDbManager.resetToOriginal()
+            personDetailsService.exitTestMode()
         }
         asyncJobRunners.forEach {
             if (enabled) {

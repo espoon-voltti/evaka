@@ -6,6 +6,8 @@ import express from 'express'
 import session from 'express-session'
 import {
   clearUsers,
+  enterTestMode,
+  exitTestMode,
   getVtjPerson,
   samlSingleLogoutRoute,
   samlSingleSignOnConfirmRoute,
@@ -35,6 +37,8 @@ app.get('/health', (_, res) => {
 app.post('/idp/users/clear', clearUsers)
 app.post('/idp/users', express.json(), upsertUser)
 app.get('/idp/users/:ssn', getVtjPerson)
+app.post('/idp/test-mode/enter', enterTestMode)
+app.post('/idp/test-mode/exit', exitTestMode)
 
 app.get(
   '/idp/sso',

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
+  MockVtjDataset,
   mockVtjDatasetSchema,
   sfiSamlAttrs,
   sfiSamlAttrUrns,
@@ -20,8 +21,24 @@ import { html, Html } from './html'
 
 const store = new VtjStore(mockVtjDatasetSchema.parse(defaultDataset))
 
+let preTestModeSnapshot: MockVtjDataset | null = null
+
 export const clearUsers: express.RequestHandler = (_, res) => {
   store.clear()
+  res.sendStatus(200)
+}
+
+export const enterTestMode: express.RequestHandler = (_, res) => {
+  preTestModeSnapshot = store.snapshot()
+  res.sendStatus(200)
+}
+
+export const exitTestMode: express.RequestHandler = (_, res) => {
+  if (preTestModeSnapshot) {
+    store.clear()
+    store.upsert(preTestModeSnapshot)
+    preTestModeSnapshot = null
+  }
   res.sendStatus(200)
 }
 

@@ -74,6 +74,14 @@ class DummyIdpPersonDetailsService(baseUrl: String, jsonMapper: JsonMapper) :
         httpClient.post<Unit>("idp/users/clear", jsonBody = emptyMap<String, String>())
     }
 
+    fun enterTestMode() {
+        httpClient.post<Unit>("idp/test-mode/enter", jsonBody = emptyMap<String, String>())
+    }
+
+    fun exitTestMode() {
+        httpClient.post<Unit>("idp/test-mode/exit", jsonBody = emptyMap<String, String>())
+    }
+
     private fun fetch(query: IPersonDetailsService.DetailsQuery): DummyIdpVtjPerson =
         httpClient.get<DummyIdpVtjPerson>("idp/users/${query.targetIdentifier.ssn}")
 }
