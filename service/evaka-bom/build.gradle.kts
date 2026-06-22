@@ -55,6 +55,8 @@ dependencies {
         api("org.apache.groovy:groovy") { version { strictly("5.0.3") } }
 
         // These constraints are needed for CVE fixes
+        api("com.github.jknack:handlebars:4.5.2")
+        api("com.github.jknack:handlebars-helpers:4.5.2")
         api("org.apache.tomcat.embed:tomcat-embed-core:11.0.22")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.22")
         api("org.postgresql:postgresql:42.7.11")
