@@ -5,18 +5,6 @@
 import type { UUID } from './service-client.ts'
 import { client } from './service-client.ts'
 
-export async function getCitizens(): Promise<DevCitizen[]> {
-  const { data } = await client.get<DevCitizen[]>(`/dev-api/citizen`)
-  return data
-}
-
-export interface DevCitizen {
-  ssn: string
-  firstName: string
-  lastName: string
-  dependantCount: number
-}
-
 interface Employee {
   id: UUID
   firstName: string
@@ -28,15 +16,4 @@ interface Employee {
 export async function getEmployees(): Promise<Employee[]> {
   const { data } = await client.get<Employee[]>(`/dev-api/employee`)
   return data
-}
-
-export async function getVtjPersons(): Promise<VtjPersonSummary[]> {
-  const { data } = await client.get<VtjPersonSummary[]>(`/dev-api/vtj-person`)
-  return data
-}
-
-export interface VtjPersonSummary {
-  ssn: string
-  firstName: string
-  lastName: string
 }

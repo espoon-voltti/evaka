@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ValidateInResponseTo } from '@node-saml/node-saml'
 import {
   afterAll,
   afterEach,
@@ -12,20 +13,53 @@ import {
   it
 } from 'vitest'
 
+import type { Config } from '../../shared/config.ts'
 import { configFromEnv } from '../../shared/config.ts'
 import type { CitizenUser } from '../../shared/service-client.ts'
 import { GatewayTester } from '../../shared/test/gateway-tester.ts'
+import {
+  buildLoginResponse,
+  IDP_ENTRY_POINT_URL,
+  SP_CALLBACK_URL,
+  SP_ISSUER
+} from '../../shared/test/saml-test-helpers.ts'
 
 const mockUser: CitizenUser = {
   id: '4f73e4f8-8759-46c6-9b9d-4da860138ce2'
 }
 
+const samlConfig: Config = {
+  ...configFromEnv(),
+  sfi: {
+    type: 'saml',
+    saml: {
+      callbackUrl: SP_CALLBACK_URL,
+      entryPoint: IDP_ENTRY_POINT_URL,
+      logoutUrl: IDP_ENTRY_POINT_URL,
+      issuer: SP_ISSUER,
+      publicCert: 'config/test-cert/slo-test-idp-cert.pem',
+      privateCert: 'config/test-cert/saml-private.pem',
+      validateInResponseTo: ValidateInResponseTo.never,
+      decryptAssertions: false,
+      acceptedClockSkewMs: 0
+    }
+  }
+}
+
 describe('CSRF middleware and cookie handling in enduser-gw', () => {
   let tester: GatewayTester
   beforeAll(async () => {
-    tester = await GatewayTester.start(configFromEnv(), 'citizen')
+    tester = await GatewayTester.start(samlConfig, 'citizen')
   })
-  beforeEach(async () => tester.login(mockUser))
+  beforeEach(async () =>
+    tester.login(mockUser, {
+      SAMLResponse: buildLoginResponse(
+        'test@test.local',
+        '_test_session',
+        'testAuthnRequest'
+      )
+    })
+  )
   afterEach(async () => tester.afterEach())
   afterAll(async () => tester?.stop())
 
