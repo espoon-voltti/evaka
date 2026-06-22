@@ -9,6 +9,7 @@ import evaka.core.AuditId
 import evaka.core.application.ApplicationNote
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ApplicationNoteId
+import evaka.core.shared.FeatureConfig
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
@@ -25,7 +26,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/employee/note")
-class NoteController(private val accessControl: AccessControl) {
+class NoteController(
+    private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig,
+) {
     @GetMapping("/application/{applicationId}")
     fun getNotes(
         db: Database,
@@ -43,7 +47,10 @@ class NoteController(private val accessControl: AccessControl) {
                     applicationId,
                 )
             ) {
-                tx.getApplicationNotes(applicationId)
+                tx.getApplicationNotes(
+                    applicationId,
+                    deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                )
             } else {
                 accessControl.requirePermissionFor(
                     tx,
@@ -52,7 +59,10 @@ class NoteController(private val accessControl: AccessControl) {
                     Action.Application.READ_SPECIAL_EDUCATION_TEACHER_NOTES,
                     applicationId,
                 )
-                tx.getApplicationSpecialEducationTeacherNotes(applicationId)
+                tx.getApplicationSpecialEducationTeacherNotes(
+                    applicationId,
+                    deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                )
             }
         }
 

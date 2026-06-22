@@ -1579,7 +1579,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
 
-            val notes = tx.getApplicationNotes(applicationId)
+            val notes =
+                tx.getApplicationNotes(
+                    applicationId,
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                )
             assertEquals(emptyList(), notes)
 
             val decisionsByApplication =
@@ -1668,7 +1672,11 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
-            val notes = tx.getApplicationNotes(applicationId)
+            val notes =
+                tx.getApplicationNotes(
+                    applicationId,
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                )
             assertEquals(emptyList(), notes)
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)

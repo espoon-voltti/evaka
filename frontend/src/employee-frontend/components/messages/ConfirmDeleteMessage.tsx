@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useQueryClient } from '@tanstack/react-query'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import type {
@@ -22,6 +22,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 
 import { deleteMessageContentMutation } from './queries'
 
@@ -48,6 +49,7 @@ export const ConfirmDeleteMessage = React.memo(function ConfirmDeleteMessage({
 }: Props) {
   const { i18n } = useTranslation()
   const t = i18n.messages.deletion.modal
+  const { featureConfig } = useContext(UserContext)
   const queryClient = useQueryClient()
   const [alreadyDeleted, setAlreadyDeleted] = useState(false)
 
@@ -76,7 +78,7 @@ export const ConfirmDeleteMessage = React.memo(function ConfirmDeleteMessage({
     >
       <P>{t.intro}</P>
       <Blockquote data-qa="placeholder-quote">
-        {t.placeholderQuote.join('\n\n')}
+        {featureConfig?.deletedMessagePlaceholderBody}
       </Blockquote>
       <H3>{t.stepsHeader}</H3>
       <P>{t.stepsBody1}</P>

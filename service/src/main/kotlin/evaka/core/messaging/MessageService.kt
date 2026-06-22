@@ -273,6 +273,7 @@ class MessageService(
         serviceWorkerAccountName: String,
         financeAccountName: String,
         user: AuthenticatedUser,
+        deletedMessageBody: String,
     ): ThreadReply {
         val today = now.toLocalDate()
         val thread =
@@ -367,6 +368,7 @@ class MessageService(
                 messageId,
                 serviceWorkerAccountName,
                 financeAccountName,
+                deletedMessageBody = deletedMessageBody,
             )
         }
         return ThreadReply(threadId, message)

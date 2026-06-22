@@ -359,6 +359,8 @@ class SystemController(
                             allowEnglishChildDocumentsForAllTypes =
                                 featureConfig.allowEnglishChildDocumentsForAllTypes,
                             messageSupportEmail = featureConfig.messageSupportEmail,
+                            deletedMessagePlaceholderBody =
+                                featureConfig.deletedMessagePlaceholderBody,
                         )
 
                     EmployeeAuthResponse(

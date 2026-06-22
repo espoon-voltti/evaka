@@ -172,6 +172,8 @@ class MessageControllerCitizen(
                                 featureConfig.municipalMessageAccountName,
                                 featureConfig.serviceWorkerMessageAccountName,
                                 featureConfig.financeMessageAccountName,
+                                deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                                deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                             )
                         }
                         .mapTo(::PagedCitizenMessageThreads) {
@@ -293,6 +295,7 @@ class MessageControllerCitizen(
                         municipalAccountName = featureConfig.municipalMessageAccountName,
                         serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
                         financeAccountName = featureConfig.financeMessageAccountName,
+                        deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
                     )
                 accountId to response
             }

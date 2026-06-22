@@ -29,16 +29,6 @@ import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
 import tools.jackson.databind.annotation.JsonTypeIdResolver
 
-const val DELETED_MESSAGE_PLACEHOLDER_BODY =
-    """Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään.
-
-Avsändaren har tagit bort meddelandet. Du behöver inte göra något.
-
-The sender has deleted this message. No action is needed on your part."""
-
-const val DELETED_MESSAGE_PLACEHOLDER_TITLE =
-    "Viesti on poistettu / Meddelandet har raderats / Message was deleted"
-
 data class Message(
     val id: MessageId,
     val threadId: MessageThreadId,

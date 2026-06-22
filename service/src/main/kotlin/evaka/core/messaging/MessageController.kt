@@ -184,6 +184,8 @@ class MessageController(
                     featureConfig.financeMessageAccountName,
                     accountAccessLimit = accountAccessLimit,
                     childId = childId,
+                    deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                 )
             }
             .also {
@@ -220,6 +222,8 @@ class MessageController(
                             featureConfig.financeMessageAccountName,
                             archiveFolderId,
                             accountAccessLimit,
+                            deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                            deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                         )
                     }
                 }
@@ -279,6 +283,8 @@ class MessageController(
                         featureConfig.serviceWorkerMessageAccountName,
                         featureConfig.financeMessageAccountName,
                         folderId,
+                        deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                     )
                 }
             }
@@ -302,7 +308,14 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read {
                     val accountAccessLimit = it.getAccountAccessLimit(accountId, user.id)
-                    it.getMessageCopiesByAccount(accountId, pageSize = 20, page, accountAccessLimit)
+                    it.getMessageCopiesByAccount(
+                        accountId,
+                        pageSize = 20,
+                        page,
+                        accountAccessLimit,
+                        deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
+                    )
                 }
             }
             .also {
@@ -349,7 +362,14 @@ class MessageController(
     ): PagedSentMessages {
         return dbc.read {
                 val accountAccessLimit = it.getAccountAccessLimit(accountId, employeeId)
-                it.getMessagesSentByAccount(accountId, pageSize = 20, page, accountAccessLimit)
+                it.getMessagesSentByAccount(
+                    accountId,
+                    pageSize = 20,
+                    page,
+                    accountAccessLimit,
+                    deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
+                )
             }
             .also {
                 Audit.MessagingSentMessagesRead.log(
@@ -393,6 +413,8 @@ class MessageController(
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
                         featureConfig.financeMessageAccountName,
+                        deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                     )
                 }
             }
@@ -424,6 +446,8 @@ class MessageController(
                         featureConfig.municipalMessageAccountName,
                         featureConfig.serviceWorkerMessageAccountName,
                         featureConfig.financeMessageAccountName,
+                        deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                     )
                 }
                 accountId to thread
@@ -468,6 +492,8 @@ class MessageController(
                                 personAccountId = personAccountId,
                                 messagesSortDirection = SortDirection.DESC,
                                 folderId = folderId,
+                                deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
+                                deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                             )
                             .data
                     }
@@ -1056,6 +1082,7 @@ class MessageController(
                     municipalAccountName = featureConfig.municipalMessageAccountName,
                     serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName,
                     financeAccountName = featureConfig.financeMessageAccountName,
+                    deletedMessageBody = featureConfig.deletedMessagePlaceholderBody,
                 )
             }
             .also {

@@ -4625,11 +4625,6 @@ export const fi = {
         title: 'Viestin poistaminen',
         intro:
           'Toiminto on tarkoitettu vain tilanteeseen, jossa viesti on lähetetty vahingossa väärälle vastaanottajalle. Poistetun viestin sisältö korvataan jokaisen vastaanottajan eVakassa seuraavalla tekstillä:',
-        placeholderQuote: [
-          'Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään.',
-          'Avsändaren har tagit bort meddelandet. Du behöver inte göra något.',
-          'The sender has deleted this message. No action is needed on your part.'
-        ],
         stepsHeader: 'Toimenpiteet välittömästi poiston jälkeen',
         stepsBody1:
           'Väärälle vastaanottajalle lähetetystä viestistä tulee aina tehdä tietosuojailmoitus. Ota poiston jälkeen yhteyttä kunnan eVaka-tukeen jatkotoimenpiteitä varten.',

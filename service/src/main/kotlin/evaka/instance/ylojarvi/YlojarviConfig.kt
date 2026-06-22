@@ -91,6 +91,10 @@ class YlojarviConfig {
             },
             daycarePlacementPlanEndMonthDay = MonthDay.of(8, 15),
             placementToolApplicationStatus = ApplicationStatus.WAITING_DECISION,
+            deletedMessagePlaceholderBody =
+                "Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään.\n\n" +
+                    "The sender has deleted this message. No action is needed on your part.",
+            deletedMessagePlaceholderTitle = "Viesti on poistettu / Message was deleted",
         )
 
     @Bean

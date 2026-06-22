@@ -42,6 +42,7 @@ import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
 import evaka.core.shared.auth.syncDaycareGroupAcl
+import evaka.core.shared.config.testFeatureConfig
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.*
 import evaka.core.shared.domain.*
@@ -1278,7 +1279,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             db.transaction { tx ->
                 // then a note is created on the application
-                val applicationNotes = tx.getApplicationNotes(applicationId)
+                val applicationNotes =
+                    tx.getApplicationNotes(
+                        applicationId,
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                    )
                 assertEquals(1, applicationNotes.size)
                 val note = applicationNotes.first()
                 assertEquals(messageContent, note.content)
@@ -1813,7 +1818,15 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
 
             // then sent message is shown as one
-            val sentMessages = db.read { it.getMessagesSentByAccount(employee1Account, 10, 1) }
+            val sentMessages = db.read {
+                it.getMessagesSentByAccount(
+                    employee1Account,
+                    10,
+                    1,
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+                )
+            }
             assertEquals(1, sentMessages.total)
             assertEquals(1, sentMessages.data.size)
             assertEquals(recipientNames, sentMessages.data.flatMap { it.recipientNames })
@@ -3312,6 +3325,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         municipalAccountName = "Municipal Account",
                         serviceWorkerAccountName = "Service Worker",
                         financeAccountName = "Finance",
+                        deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                     )
                 }
                 assertEquals(1, threads.data.size)
@@ -3326,7 +3341,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             }
 
             val sentMessages = db.read {
-                it.getMessagesSentByAccount(accountId = municipalAccount, pageSize = 20, page = 1)
+                it.getMessagesSentByAccount(
+                    accountId = municipalAccount,
+                    pageSize = 20,
+                    page = 1,
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+                )
             }
             assertEquals(1, sentMessages.data.size)
             assertEquals("Municipal Bulletin", sentMessages.data.first().threadTitle)
@@ -3726,7 +3747,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         private fun getThreadAs(
             accountId: MessageAccountId,
             threadId: MessageThreadId,
-        ): MessageThread = db.read { tx -> tx.getMessageThread(accountId, threadId, "", "", "") }
+        ): MessageThread = db.read { tx ->
+            tx.getMessageThread(
+                accountId,
+                threadId,
+                "",
+                "",
+                "",
+                deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+            )
+        }
 
         private fun deletionInfoOf(messageId: MessageId): DeletionInfo = db.read { tx ->
             tx.createQuery {
@@ -3864,7 +3895,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             val person1ThreadId = threadIdOfContentFor(contentId, person1Account)
 
             val recipientView = getThreadAs(person1Account, person1ThreadId).messages.single()
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, recipientView.content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderBody, recipientView.content)
         }
 
         @Test
@@ -3940,7 +3971,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             deleteContent(employee1, employee1Account, messageId)
 
             val message = getThreadAs(person1Account, threadId).messages.single()
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, message.content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderBody, message.content)
             assertEquals(emptyList(), message.attachments)
             assertNotNull(message.contentDeletedAt)
         }
@@ -3953,7 +3984,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             deleteContent(employee1, employee1Account, messageId)
 
             val message = getThreadAs(employee1Account, threadId).messages.single()
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, message.content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderBody, message.content)
             assertEquals(emptyList(), message.attachments)
             assertNotNull(message.contentDeletedAt)
         }
@@ -3966,11 +3997,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             deleteContent(employee1, employee1Account, messageId)
 
             assertEquals(
-                DELETED_MESSAGE_PLACEHOLDER_TITLE,
+                testFeatureConfig.deletedMessagePlaceholderTitle,
                 getThreadAs(person1Account, threadId).title,
             )
             assertEquals(
-                DELETED_MESSAGE_PLACEHOLDER_TITLE,
+                testFeatureConfig.deletedMessagePlaceholderTitle,
                 getThreadAs(employee1Account, threadId).title,
             )
         }
@@ -4006,12 +4037,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             assertEquals("Guardian reply", messages[1].content)
 
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, messages[2].content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderBody, messages[2].content)
             assertNotNull(messages[2].contentDeletedAt)
 
             val senderReply =
                 getThreadAs(employee1Account, threadId).messages.maxByOrNull { it.sentAt }!!
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, senderReply.content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderBody, senderReply.content)
             assertNotNull(senderReply.contentDeletedAt)
         }
 
@@ -4026,7 +4057,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             val recipientMessages =
                 getThreadAs(person1Account, threadId).messages.sortedBy { it.sentAt }
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, recipientMessages[0].content)
+            assertEquals(
+                testFeatureConfig.deletedMessagePlaceholderBody,
+                recipientMessages[0].content,
+            )
             assertNotNull(recipientMessages[0].contentDeletedAt)
             assertEquals("Guardian reply", recipientMessages[1].content)
             assertNull(recipientMessages[1].contentDeletedAt)
@@ -4035,7 +4069,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
             val senderMessages =
                 getThreadAs(employee1Account, threadId).messages.sortedBy { it.sentAt }
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, senderMessages[0].content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderBody, senderMessages[0].content)
             assertEquals("Guardian reply", senderMessages[1].content)
             assertEquals("Employee reply", senderMessages[2].content)
         }
@@ -4047,18 +4081,42 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             deleteContent(employee1, employee1Account, messageId)
 
             val received = db.read { tx ->
-                tx.getReceivedThreads(person1Account, pageSize = 10, page = 1, "", "", "")
+                tx.getReceivedThreads(
+                    person1Account,
+                    pageSize = 10,
+                    page = 1,
+                    "",
+                    "",
+                    "",
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+                )
             }
             val thread = received.data.single()
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_TITLE, thread.title)
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, thread.messages.single().content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderTitle, thread.title)
+            assertEquals(
+                testFeatureConfig.deletedMessagePlaceholderBody,
+                thread.messages.single().content,
+            )
 
             val sent = db.read { tx ->
-                tx.getThreads(employee1Account, pageSize = 10, page = 1, "", "", "")
+                tx.getThreads(
+                    employee1Account,
+                    pageSize = 10,
+                    page = 1,
+                    "",
+                    "",
+                    "",
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+                )
             }
             val sentThread = sent.data.single()
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_TITLE, sentThread.title)
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, sentThread.messages.single().content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderTitle, sentThread.title)
+            assertEquals(
+                testFeatureConfig.deletedMessagePlaceholderBody,
+                sentThread.messages.single().content,
+            )
         }
 
         @Test
@@ -4068,9 +4126,15 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             deleteContent(employee1, employee1Account, messageId)
 
             val sentMessage = db.read { tx ->
-                tx.getSentMessage(employee1Account, messageId, "", "")
+                tx.getSentMessage(
+                    employee1Account,
+                    messageId,
+                    "",
+                    "",
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                )
             }
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, sentMessage.content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderBody, sentMessage.content)
             assertNotNull(sentMessage.contentDeletedAt)
             assertTrue(sentMessage.attachments.isEmpty())
         }
@@ -4082,13 +4146,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             deleteContent(employee1, employee1Account, messageId)
 
             val sent = db.read { tx ->
-                tx.getMessagesSentByAccount(employee1Account, pageSize = 10, page = 1)
+                tx.getMessagesSentByAccount(
+                    employee1Account,
+                    pageSize = 10,
+                    page = 1,
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+                )
             }
             val sentMessage = sent.data.single()
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, sentMessage.content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderBody, sentMessage.content)
             assertTrue(sentMessage.attachments.isEmpty())
 
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_TITLE, sentMessage.threadTitle)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderTitle, sentMessage.threadTitle)
         }
 
         @Test
@@ -4102,12 +4172,18 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             deleteContent(employee1, employee1Account, replyMessageId)
 
             val sent = db.read { tx ->
-                tx.getMessagesSentByAccount(employee1Account, pageSize = 10, page = 1)
+                tx.getMessagesSentByAccount(
+                    employee1Account,
+                    pageSize = 10,
+                    page = 1,
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+                )
             }
             val deletedReply = sent.data.single { it.contentDeletedAt != null }
             assertEquals("Test message", deletedReply.threadTitle)
             assertNull(deletedReply.firstMessageContentDeletedAt)
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, deletedReply.content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderBody, deletedReply.content)
         }
 
         @Test
@@ -4121,12 +4197,18 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             deleteContent(employee1, employee1Account, messageId)
 
             val sent = db.read { tx ->
-                tx.getMessagesSentByAccount(employee1Account, pageSize = 10, page = 1)
+                tx.getMessagesSentByAccount(
+                    employee1Account,
+                    pageSize = 10,
+                    page = 1,
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                    deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
+                )
             }
             // employee1 sent two contents in this thread: the first message and the reply
             assertEquals(2, sent.data.size)
             sent.data.forEach { row ->
-                assertEquals(DELETED_MESSAGE_PLACEHOLDER_TITLE, row.threadTitle)
+                assertEquals(testFeatureConfig.deletedMessagePlaceholderTitle, row.threadTitle)
                 assertNotNull(row.firstMessageContentDeletedAt)
             }
         }
@@ -4162,7 +4244,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             // the message body is mirrored into an application note on send
             assertEquals(
                 "Hello!",
-                db.read { it.getApplicationNotes(applicationId) }.single().content,
+                db.read {
+                        it.getApplicationNotes(
+                            applicationId,
+                            deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                        )
+                    }
+                    .single()
+                    .content,
             )
 
             // a plain note unrelated to any message must not be affected by redaction
@@ -4188,17 +4277,24 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             "",
                             "",
                             "",
+                            deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                            deletedMessageTitle = testFeatureConfig.deletedMessagePlaceholderTitle,
                         )
                     }
                 )
             val message = thread.messages.single()
-            assertEquals(DELETED_MESSAGE_PLACEHOLDER_BODY, message.content)
+            assertEquals(testFeatureConfig.deletedMessagePlaceholderBody, message.content)
             assertTrue(message.attachments.isEmpty())
 
-            val notes = db.read { it.getApplicationNotes(applicationId) }
+            val notes = db.read {
+                it.getApplicationNotes(
+                    applicationId,
+                    deletedMessageBody = testFeatureConfig.deletedMessagePlaceholderBody,
+                )
+            }
             // the application note that mirrored the body is redacted too
             assertEquals(
-                DELETED_MESSAGE_PLACEHOLDER_BODY,
+                testFeatureConfig.deletedMessagePlaceholderBody,
                 notes.single { it.id != plainNoteId }.content,
             )
             // the plain note keeps its real content

@@ -5,7 +5,6 @@
 package evaka.core.application.notes
 
 import evaka.core.application.ApplicationNote
-import evaka.core.messaging.DELETED_MESSAGE_PLACEHOLDER_BODY
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ApplicationNoteId
 import evaka.core.shared.EvakaUserId
@@ -17,27 +16,30 @@ import evaka.core.shared.domain.HelsinkiDateTime
 // Read-time redaction: the body of a message-linked note is replaced with the
 // placeholder once the linked message's content has been deleted. The original
 // is retained in application_note (soft delete).
-private val redactedNoteContent = QuerySql {
+private fun redactedNoteContent(deletedMessageBody: String) = QuerySql {
     sql(
         """
 CASE
     WHEN EXISTS (
         SELECT 1 FROM message msg
         WHERE msg.content_id = n.message_content_id AND msg.content_deleted_at IS NOT NULL
-    ) THEN ${bind(DELETED_MESSAGE_PLACEHOLDER_BODY)}
+    ) THEN ${bind(deletedMessageBody)}
     ELSE n.content
 END AS content
 """
     )
 }
 
-fun Database.Read.getApplicationNotes(applicationId: ApplicationId): List<ApplicationNote> =
+fun Database.Read.getApplicationNotes(
+    applicationId: ApplicationId,
+    deletedMessageBody: String,
+): List<ApplicationNote> =
     createQuery {
             sql(
                 """
 SELECT
     n.id, n.application_id,
-    ${subquery(redactedNoteContent)},
+    ${subquery(redactedNoteContent(deletedMessageBody))},
     n.created_at, n.created_by, (SELECT name FROM evaka_user WHERE id = n.created_by) AS created_by_name,
     n.modified_at, n.modified_by, (SELECT name FROM evaka_user WHERE id = n.modified_by) AS modified_by_name,
     n.message_content_id, m.thread_id as message_thread_id
@@ -51,14 +53,15 @@ ORDER BY n.created_at
         .toList()
 
 fun Database.Read.getApplicationSpecialEducationTeacherNotes(
-    applicationId: ApplicationId
+    applicationId: ApplicationId,
+    deletedMessageBody: String,
 ): List<ApplicationNote> =
     createQuery {
             sql(
                 """
 SELECT
     n.id, n.application_id,
-    ${subquery(redactedNoteContent)},
+    ${subquery(redactedNoteContent(deletedMessageBody))},
     n.created_at, n.created_by, (SELECT name FROM evaka_user WHERE id = n.created_by) AS created_by_name,
     n.modified_at, n.modified_by, (SELECT name FROM evaka_user WHERE id = n.modified_by) AS modified_by_name
 FROM application_note n
