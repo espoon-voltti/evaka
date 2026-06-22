@@ -62,7 +62,7 @@ class TurkuIncomeCoefficientMultiplierProvider : IncomeCoefficientMultiplierProv
 }
 
 class TurkuInvoiceProductProvider : InvoiceProductProvider {
-    override val products = Product.values().map { ProductWithName(it.key, it.nameFi) }
+    override val products = Product.entries.map { ProductWithName(it.key, it.nameFi) }
     override val dailyRefund = Product.FREE_OF_CHARGE.key
     override val partMonthSickLeave = Product.SICK_LEAVE_50.key
     override val fullMonthSickLeave = Product.SICK_LEAVE_100.key
@@ -132,7 +132,7 @@ class TurkuInvoiceProductProvider : InvoiceProductProvider {
 }
 
 fun findProduct(key: ProductKey) =
-    Product.values().find { it.key == key } ?: error("Product with key $key not found")
+    Product.entries.find { it.key == key } ?: error("Product with key $key not found")
 
 enum class Product(val nameFi: String, val code: String) {
     DAYCARE("Varhaiskasvatus", "000000000000007246"),
@@ -146,6 +146,7 @@ enum class Product(val nameFi: String, val code: String) {
     CORRECTION("Oikaisu", "000000000000007246"),
     FREE_MONTH("Poissaolovähennys 100 %", "000000000000007243"),
     OVER_CONTRACT("Sovittujen tuntien ylitys", "000000000000009955"),
+    ADDITIONAL_CHARGE("Lisämaksu", "000000000000009955"),
     PRESCHOOL_DAYCARE_CORRECTION("Kokoaikainen varhaiskasvatus", "000000000000007246");
 
     val key = ProductKey(this.name)
