@@ -632,7 +632,7 @@ WHERE employee_id = ${bind(user.id)}
         deletable: Boolean = false,
         publishable: Boolean = false,
         canGoToPrevStatus: Boolean = false,
-        cfg: ChildAclConfig = ChildAclConfig(),
+        cfg: ChildAclConfig = ChildAclConfig(backupCare = false),
     ) =
         ruleViaChildAcl<ChildDocumentId>(cfg) { _, _ ->
             sql(
@@ -648,8 +648,23 @@ ${if (canGoToPrevStatus) "AND ((type = 'OTHER_DECISION') OR (type = 'CITIZEN_BAS
             )
         }
 
+    fun inActiveBackupCareUnitOfChildOfChildDocument() =
+        rule<ChildDocumentId> { user, now ->
+            sql(
+                """
+SELECT child_document.id AS id, daycare_acl.role, daycare_acl.daycare_id AS unit_id
+FROM child_document
+JOIN backup_care bc ON child_document.child_id = bc.child_id
+JOIN daycare_acl ON bc.unit_id = daycare_acl.daycare_id
+WHERE daycare_acl.employee_id = ${bind(user.id)}
+  AND bc.start_date <= ${bind(now.toLocalDate())}
+  AND bc.end_date >= ${bind(now.toLocalDate())}
+            """
+            )
+        }
+
     fun inPlacementUnitOfDuplicateChildOfHojksChildDocument(
-        cfg: ChildAclConfig = ChildAclConfig()
+        cfg: ChildAclConfig = ChildAclConfig(backupCare = false)
     ) =
         ruleViaChildAcl<ChildDocumentId>(cfg) { _, _ ->
             sql(
@@ -659,6 +674,24 @@ FROM child_document
 JOIN document_template ON document_template.id = child_document.template_id
 JOIN person ON person.id = child_document.child_id
 WHERE document_template.type = 'HOJKS'
+            """
+            )
+        }
+
+    fun inActiveBackupCareUnitOfDuplicateChildOfHojksChildDocument() =
+        rule<ChildDocumentId> { user, now ->
+            sql(
+                """
+SELECT child_document.id AS id, daycare_acl.role, daycare_acl.daycare_id AS unit_id
+FROM child_document
+JOIN document_template ON document_template.id = child_document.template_id
+JOIN person ON person.id = child_document.child_id
+JOIN backup_care bc ON bc.child_id = person.duplicate_of
+JOIN daycare_acl ON bc.unit_id = daycare_acl.daycare_id
+WHERE daycare_acl.employee_id = ${bind(user.id)}
+  AND document_template.type = 'HOJKS'
+  AND bc.start_date <= ${bind(now.toLocalDate())}
+  AND bc.end_date >= ${bind(now.toLocalDate())}
             """
             )
         }

@@ -37,6 +37,7 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
+import evaka.core.shared.dev.DevBackupCare
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevChildDocument
 import evaka.core.shared.dev.DevDaycare
@@ -53,6 +54,7 @@ import evaka.core.shared.dev.insertEmployeeToDaycareGroupAcl
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -1542,7 +1544,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         metadataController.getChildDocumentMetadata(dbInstance(), employeeUser.user, clock, id)
 
     @Test
-    fun `STAFF can access child documents when placement starts within 60 days`() {
+    fun `STAFF can access citizen documents when placement starts within 60 days`() {
         // placement starts inside the citizen-document creation window
         val futureStartDate = clock.today().plusDays(45)
         val futureEndDate = clock.today().plusDays(120)
@@ -1578,7 +1580,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
-    fun `STAFF cannot access child documents when placement starts beyond 60 days`() {
+    fun `STAFF cannot access citizen documents when placement starts beyond 60 days`() {
         // placement starts beyond the citizen-document creation window
         val futureStartDate = clock.today().plusDays(65)
         val futureEndDate = clock.today().plusDays(150)
@@ -1667,8 +1669,8 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
-    fun `STAFF with future access still cannot manage decision documents`() {
-        // Create a placement starting 15 days from now
+    fun `STAFF cannot access non-citizen documents before the placement starts`() {
+        // placement starts in the future, within the citizen-document creation window
         val futureStartDate = clock.today().plusDays(15)
         val futureEndDate = clock.today().plusDays(90)
 
@@ -1681,24 +1683,23 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
         }
 
-        // a decision document cannot be created via the controller before the placement starts
+        // non-citizen documents are not accessible before the placement starts, so they cannot be
+        // created via the controller
+        val pedagogicalDocumentId = insertDocument(child.id, templateIdPed)
         val decisionDocumentId = insertDocument(child.id, templateIdAssistanceDecision)
 
-        // STAFF should be able to READ the decision document
-        val document = controller.getDocument(dbInstance(), staffUser, clock, decisionDocumentId)
-        assertTrue(document.permittedActions.contains(Action.ChildDocument.READ))
-
-        // But STAFF should NOT be able to UPDATE the decision document
-        assertFalse(document.permittedActions.contains(Action.ChildDocument.UPDATE))
-
-        // Verify by attempting to update - should throw Forbidden
-        val decisionContent =
-            DocumentContent(
-                answers = listOf(AnsweredQuestion.TextAnswer("q1", "staff edit decision"))
-            )
         assertThrows<Forbidden> {
-            updateDocumentContent(decisionDocumentId, decisionContent, user = staffUser)
+            controller.getDocument(dbInstance(), staffUser, clock, pedagogicalDocumentId)
         }
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), staffUser, clock, decisionDocumentId)
+        }
+
+        // citizen documents remain accessible within the creation window
+        val citizenDocumentId = insertDocument(child.id, templateIdCitizenBasic)
+        val citizenDocument =
+            controller.getDocument(dbInstance(), staffUser, clock, citizenDocumentId)
+        assertTrue(citizenDocument.permittedActions.contains(Action.ChildDocument.READ))
     }
 
     @Test
@@ -1818,6 +1819,130 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertThrows<Forbidden> {
             updateDocumentContent(decisionDocumentId, content, user = staffUser)
         }
+    }
+
+    @Test
+    fun `staff and unit supervisor can read documents during an active backup care, but only read`() {
+        val backupGroupId =
+            insertBackupCare(
+                period = FiniteDateRange(clock.today().minusDays(2), clock.today().plusDays(2))
+            )
+
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(backupGroupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
+
+        val documentId = insertDocument(child.id, templateIdPed)
+
+        listOf(staffUser, unitSupervisorUser).forEach { user ->
+            val document = controller.getDocument(dbInstance(), user, clock, documentId)
+            assertTrue(document.permittedActions.contains(Action.ChildDocument.READ))
+            assertFalse(document.permittedActions.contains(Action.ChildDocument.UPDATE))
+            assertFalse(document.permittedActions.contains(Action.ChildDocument.DELETE))
+        }
+    }
+
+    @Test
+    fun `backup care access does not allow updating or publishing documents`() {
+        val backupGroupId =
+            insertBackupCare(
+                period = FiniteDateRange(clock.today().minusDays(2), clock.today().plusDays(2))
+            )
+
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(backupGroupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
+
+        val documentId = insertDocument(child.id, templateIdPed)
+        val content =
+            DocumentContent(answers = listOf(AnsweredQuestion.TextAnswer("q1", "attempt to edit")))
+
+        listOf(staffUser, unitSupervisorUser).forEach { user ->
+            controller.getDocument(dbInstance(), user, clock, documentId)
+            assertThrows<Forbidden> { updateDocumentContent(documentId, content, user = user) }
+            assertThrows<Forbidden> { publishDocument(documentId, user = user) }
+        }
+    }
+
+    @Test
+    fun `staff and unit supervisor cannot access documents outside the backup care period`() {
+        val backupGroupId =
+            insertBackupCare(
+                period = FiniteDateRange(clock.today().plusDays(5), clock.today().plusDays(10))
+            )
+
+        val staffUser = db.transaction { tx ->
+            val staffId = tx.insert(DevEmployee())
+            tx.insertDaycareAclRow(daycare.id, staffId, UserRole.STAFF)
+            tx.insertEmployeeToDaycareGroupAcl(backupGroupId, staffId)
+            AuthenticatedUser.Employee(staffId, setOf(UserRole.STAFF))
+        }
+
+        val documentId = insertDocument(child.id, templateIdPed)
+
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), staffUser, clock, documentId)
+        }
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId)
+        }
+    }
+
+    @Test
+    fun `unit supervisor sees hojks from duplicate during the primary's backup care, but not after`() {
+        // the HOJKS belongs to the duplicate; access comes via the primary child's backup care
+        val duplicateId = db.transaction { tx ->
+            tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
+        }
+        val documentId = insertDocument(duplicateId, templateIdHojks)
+
+        val activeBackupCareId = db.transaction { tx ->
+            tx.insert(
+                DevBackupCare(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    period = FiniteDateRange(clock.today().minusDays(1), clock.today().plusDays(1)),
+                )
+            )
+        }
+
+        assertTrue(
+            controller
+                .getDocument(dbInstance(), unitSupervisorUser, clock, documentId)
+                .permittedActions
+                .contains(Action.ChildDocument.READ)
+        )
+
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE backup_care SET end_date = ${bind(clock.today().minusDays(1))} WHERE id = ${bind(activeBackupCareId)}"
+                )
+            }
+        }
+
+        assertThrows<Forbidden> {
+            controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId)
+        }
+    }
+
+    private fun insertBackupCare(period: FiniteDateRange): GroupId = db.transaction { tx ->
+        val groupId = tx.insert(DevDaycareGroup(daycareId = daycare.id))
+        tx.insert(
+            DevBackupCare(
+                childId = child.id,
+                unitId = daycare.id,
+                groupId = groupId,
+                period = period,
+            )
+        )
+        groupId
     }
 
     @Test

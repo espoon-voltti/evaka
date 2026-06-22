@@ -2235,9 +2235,14 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inActiveBackupCareUnitOfChildOfChildDocument(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfDuplicateChildOfHojksChildDocument(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inActiveBackupCareUnitOfDuplicateChildOfHojksChildDocument(),
             HasGroupRole(STAFF).inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
             HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocumentWithFutureAccess(),
+            HasGroupRole(STAFF).inActiveBackupCareGroupOfChildOfChildDocument(),
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
         READ_METADATA(HasGlobalRole(ADMIN)),
@@ -2247,9 +2252,14 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfChildDocument(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inActiveBackupCareUnitOfChildOfChildDocument(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfDuplicateChildOfHojksChildDocument(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .inActiveBackupCareUnitOfDuplicateChildOfHojksChildDocument(),
             HasGroupRole(STAFF).inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
             HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocumentWithFutureAccess(),
+            HasGroupRole(STAFF).inActiveBackupCareGroupOfChildOfChildDocument(),
             IsEmployee.andIsDecisionMakerForChildDocumentDecision(),
         ),
         DOWNLOAD_VERSION(HasGlobalRole(ADMIN)),
