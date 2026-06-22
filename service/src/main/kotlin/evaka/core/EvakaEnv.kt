@@ -38,6 +38,7 @@ data class EvakaEnv(
     val koskiEnabled: Boolean,
     val sfiEnabled: Boolean,
     val vtjEnabled: Boolean,
+    val vtjMockUrl: String,
     val webPushEnabled: Boolean,
     val jamixEnabled: Boolean,
     val aromiEnabled: Boolean,
@@ -73,6 +74,8 @@ data class EvakaEnv(
                 koskiEnabled = env.lookup("evaka.integration.koski.enabled") ?: false,
                 sfiEnabled = env.lookup("evaka.integration.sfi.enabled") ?: false,
                 vtjEnabled = env.lookup("evaka.integration.vtj.enabled") ?: false,
+                vtjMockUrl =
+                    env.lookup("evaka.integration.vtj.mock_url") ?: "http://localhost:9090",
                 webPushEnabled = env.lookup("evaka.web_push.enabled") ?: false,
                 jamixEnabled = env.lookup("evaka.integration.jamix.enabled") ?: false,
                 aromiEnabled = env.lookup("evaka.integration.aromi.enabled") ?: false,

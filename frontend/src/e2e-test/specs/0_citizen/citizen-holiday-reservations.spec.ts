@@ -10,7 +10,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import type { UUID } from 'lib-common/types'
 
-import { vtjDependants } from '../../dev-api'
 import {
   testCareArea,
   testDaycare,
@@ -21,10 +20,7 @@ import {
   testDaycarePrivateVoucher,
   Fixture
 } from '../../dev-api/fixtures'
-import {
-  resetServiceState,
-  upsertVtjDataset
-} from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import type {
   DevDaycare,
   DevEmployee,
@@ -33,6 +29,7 @@ import type {
 } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { test, expect } from '../../playwright'
+import { upsertDummyIdpVtjDataset } from '../../utils/dummy-idp'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -163,7 +160,12 @@ test.describe('Holiday periods and questionnaires', () => {
     const child2 = await testChild2.saveChild({
       updateMockVtj: true
     })
-    await upsertVtjDataset({ body: vtjDependants(guardian, child2) })
+    if (!guardian.ssn) throw new Error('Guardian must have SSN')
+    if (!child2.ssn) throw new Error('Child must have SSN')
+    await upsertDummyIdpVtjDataset({
+      persons: [],
+      guardianDependants: { [guardian.ssn]: [child2.ssn] }
+    })
     await Fixture.guardian(child2, guardian).save()
     const placement = await Fixture.placement({
       childId: child2.id,

@@ -6,8 +6,6 @@ package evaka.core.shared.db
 
 import evaka.core.shared.dev.ensureDevData
 import evaka.core.shared.dev.runSqlScript
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
-import evaka.core.vtjclient.service.persondetails.legacyMockVtjDataset
 import io.opentelemetry.api.trace.Tracer
 import org.jdbi.v3.core.Jdbi
 
@@ -20,6 +18,5 @@ class DevDataInitializer(jdbi: Jdbi, tracer: Tracer) {
                 tx.ensureDevData()
             }
         }
-        MockPersonDetailsService.add(legacyMockVtjDataset())
     }
 }

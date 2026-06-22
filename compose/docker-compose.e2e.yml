@@ -88,6 +88,7 @@ services:
     depends_on:
       - db
       - s3-mock
+      - dummy-idp
     environment:
       VOLTTI_ENV: local
       SPRING_PROFILES_ACTIVE: local
@@ -112,6 +113,7 @@ services:
       EVAKA_INTEGRATION_SFI_ENABLED: "false"
       EVAKA_INTEGRATION_VARDA_URL: "http://localhost:8888/mock-integration/varda/api"
       EVAKA_INTEGRATION_BASIC_AUTH: ""
+      EVAKA_INTEGRATION_VTJ_MOCK_URL: http://dummy-idp:9090
     restart: unless-stopped
 
 volumes:

@@ -10,7 +10,6 @@ import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.RealEvakaClock
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import evaka.instance.tampere.database.resetTampereDatabaseForE2ETests
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
@@ -43,7 +42,6 @@ class TampereDevApi(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         asyncJobRunner.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
 
         db.connect { c -> c.transaction { tx -> tx.resetTampereDatabaseForE2ETests() } }
-        MockPersonDetailsService.reset()
         return ResponseEntity.noContent().build()
     }
 

@@ -515,13 +515,11 @@ const required = <K extends keyof EnvVariables>(
 
 export type SfiMode = NonNullable<EnvVariables['SFI_MODE']>
 
-function sfiDefaultsForMode(mode: SfiMode):
-  | {
-      entryPoint: string
-      logoutUrl: string
-      publicCert: TrustedCertificates[]
-    }
-  | undefined {
+function sfiDefaultsForMode(mode: SfiMode): {
+  entryPoint: string
+  logoutUrl: string
+  publicCert: TrustedCertificates[]
+} {
   switch (mode) {
     case 'prod':
       return {

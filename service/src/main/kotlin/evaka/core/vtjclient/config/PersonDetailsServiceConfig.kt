@@ -6,8 +6,8 @@ package evaka.core.vtjclient.config
 
 import evaka.core.EvakaEnv
 import evaka.core.vtjclient.mapper.VtjHenkiloMapper
+import evaka.core.vtjclient.service.persondetails.DummyIdpPersonDetailsService
 import evaka.core.vtjclient.service.persondetails.IPersonDetailsService
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import evaka.core.vtjclient.service.persondetails.VTJPersonDetailsService
 import evaka.core.vtjclient.service.vtjclient.VtjClientService
 import org.springframework.context.ApplicationContext
@@ -19,18 +19,15 @@ class PersonDetailsServiceConfig {
     @Bean
     fun pisPersonDetailsService(
         evakaEnv: EvakaEnv,
+        jsonMapper: tools.jackson.databind.json.JsonMapper,
         ctx: ApplicationContext,
     ): IPersonDetailsService =
         when (evakaEnv.vtjEnabled) {
-            true -> {
+            true ->
                 VTJPersonDetailsService(
                     vtjClientService = ctx.getBean(VtjClientService::class.java),
                     henkiloMapper = ctx.getBean(VtjHenkiloMapper::class.java),
                 )
-            }
-
-            false -> {
-                MockPersonDetailsService()
-            }
+            false -> DummyIdpPersonDetailsService(evakaEnv.vtjMockUrl, jsonMapper)
         }
 }

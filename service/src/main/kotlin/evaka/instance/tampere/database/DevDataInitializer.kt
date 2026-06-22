@@ -7,8 +7,6 @@ package evaka.instance.tampere.database
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.runSqlScript
 import evaka.core.shared.noopTracer
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
-import evaka.core.vtjclient.service.persondetails.legacyMockVtjDataset
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
@@ -23,6 +21,5 @@ class DevDataInitializer(jdbi: Jdbi) {
                 tx.ensureTampereDevData()
             }
         }
-        MockPersonDetailsService.add(legacyMockVtjDataset())
     }
 }
