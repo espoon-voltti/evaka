@@ -7,8 +7,11 @@ package evaka.core.placement
 import evaka.core.FullApplicationTest
 import evaka.core.absence.AbsenceCategory
 import evaka.core.absence.AbsenceType
+import evaka.core.application.ApplicationStateService
 import evaka.core.application.ApplicationStatus
 import evaka.core.application.ApplicationType
+import evaka.core.application.fetchApplicationDetails
+import evaka.core.application.persistence.club.ClubFormV0
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child
@@ -19,11 +22,13 @@ import evaka.core.pis.service.insertGuardian
 import evaka.core.serviceneed.ShiftCareType
 import evaka.core.serviceneed.insertServiceNeed
 import evaka.core.shared.AbsenceId
+import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
 import evaka.core.shared.PlacementId
 import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.auth.UserRole
+import evaka.core.shared.data.DateSet
 import evaka.core.shared.dev.DevAbsence
 import evaka.core.shared.dev.DevBackupCare
 import evaka.core.shared.dev.DevCareArea
@@ -34,6 +39,7 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
+import evaka.core.shared.dev.DevPreschoolTerm
 import evaka.core.shared.dev.DevReservation
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestApplication
@@ -66,6 +72,7 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var placementControllerCitizen: PlacementControllerCitizen
     @Autowired private lateinit var placementController: PlacementController
+    @Autowired private lateinit var applicationStateService: ApplicationStateService
 
     private val area = DevCareArea()
     private val daycare =
@@ -930,7 +937,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     }
 
     @Test
-    fun `All active transfer applications are cancelled`() {
+    fun `Active transfer applications of the dismissed placement type are cancelled`() {
         db.transaction { tx ->
             tx.insert(
                 DevPlacement(
@@ -952,41 +959,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
         val placementTerminationDate = today.plusDays(1)
 
-        val applicationBeforeTermination = db.transaction { tx ->
-            tx.insertTestApplication(
-                type = ApplicationType.DAYCARE,
-                guardianId = parent.id,
-                childId = child.id,
-                transferApplication = true,
-                status = ApplicationStatus.SENT,
-                document =
-                    DaycareFormV0(
-                        type = ApplicationType.DAYCARE,
-                        child = Child(dateOfBirth = null),
-                        guardian = Adult(),
-                        apply = Apply(preferredUnits = listOf(daycare.id)),
-                        preferredStartDate = placementTerminationDate.plusDays(-1),
-                    ),
-            )
-        }
-
-        val applicationAfterTermination = db.transaction { tx ->
-            tx.insertTestApplication(
-                type = ApplicationType.DAYCARE,
-                guardianId = parent.id,
-                childId = child.id,
-                transferApplication = true,
-                status = ApplicationStatus.SENT,
-                document =
-                    DaycareFormV0(
-                        type = ApplicationType.DAYCARE,
-                        child = Child(dateOfBirth = null),
-                        guardian = Adult(),
-                        apply = Apply(preferredUnits = listOf(daycare.id)),
-                        preferredStartDate = placementTerminationDate.plusDays(1),
-                    ),
-            )
-        }
+        val daycareApplication = insertSentTransferApplication(ApplicationType.DAYCARE)
+        val preschoolApplication = insertSentTransferApplication(ApplicationType.PRESCHOOL)
 
         terminatePlacements(
             child.id,
@@ -1000,11 +974,11 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
         assertEquals(
             ApplicationStatus.CANCELLED,
-            db.read { it.getApplicationStatus(applicationBeforeTermination) },
+            db.read { it.getApplicationStatus(daycareApplication) },
         )
         assertEquals(
-            ApplicationStatus.CANCELLED,
-            db.read { it.getApplicationStatus(applicationAfterTermination) },
+            ApplicationStatus.SENT,
+            db.read { it.getApplicationStatus(preschoolApplication) },
         )
 
         val childPlacements = getChildPlacements(child.id)
@@ -1024,6 +998,187 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             (childPlacements[1].placements + childPlacements[1].additionalPlacements).map {
                 it.terminationRequestedDate
             },
+        )
+    }
+
+    @Test
+    fun `terminating connected daycare only does not cancel the preschool transfer application`() {
+        val placementTerminationDate = today.plusWeeks(1)
+        val startPreschool = today.minusWeeks(2)
+        val endPreschool = startPreschool.plusMonths(1)
+        db.transaction { tx ->
+            val placementId =
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL_DAYCARE,
+                        childId = child.id,
+                        unitId = daycare.id,
+                        startDate = startPreschool,
+                        endDate = endPreschool,
+                    )
+                )
+            tx.insertServiceNeed(
+                placementId,
+                startPreschool,
+                endPreschool,
+                snPreschoolDaycare45.id,
+                ShiftCareType.NONE,
+                false,
+                null,
+                null,
+            )
+        }
+        val transferApplicationId =
+            createSentPreschoolTransferApplication(
+                preferredUnit = daycare2,
+                preferredStartDate = today,
+            )
+        assertEquals(
+            true,
+            db.read { it.fetchApplicationDetails(transferApplicationId) }?.transferApplication,
+        )
+
+        terminatePlacements(
+            child.id,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = TerminatablePlacementType.PRESCHOOL,
+                terminationDate = placementTerminationDate,
+                unitId = daycare.id,
+                terminateDaycareOnly = true,
+            ),
+        )
+
+        assertEquals(
+            ApplicationStatus.SENT,
+            db.read { it.getApplicationStatus(transferApplicationId) },
+        )
+    }
+
+    @Test
+    fun `terminating a preschool placement cancels the preschool transfer application but keeps the daycare one`() {
+        val futureDaycareStart = today.plusMonths(1).plusDays(1)
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = today.minusWeeks(2),
+                    endDate = today.plusMonths(1),
+                )
+            )
+            // separate unit and a non-overlapping later period (placements cannot overlap), so it
+            // is
+            // its own terminatable group, untouched by terminating the preschool
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child.id,
+                    unitId = daycare2.id,
+                    startDate = futureDaycareStart,
+                    endDate = futureDaycareStart.plusMonths(3),
+                )
+            )
+        }
+        val preschoolApplication =
+            createSentPreschoolTransferApplication(
+                preferredUnit = daycare2,
+                preferredStartDate = today,
+            )
+        val daycareApplication =
+            insertSentTransferApplication(
+                ApplicationType.DAYCARE,
+                preferredStartDate = futureDaycareStart,
+            )
+        assertEquals(
+            true,
+            db.read { it.fetchApplicationDetails(preschoolApplication) }?.transferApplication,
+        )
+
+        terminatePlacements(
+            child.id,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = TerminatablePlacementType.PRESCHOOL,
+                terminationDate = today.plusWeeks(1),
+                unitId = daycare.id,
+                terminateDaycareOnly = false,
+            ),
+        )
+
+        assertEquals(
+            ApplicationStatus.CANCELLED,
+            db.read { it.getApplicationStatus(preschoolApplication) },
+        )
+        assertEquals(
+            ApplicationStatus.SENT,
+            db.read { it.getApplicationStatus(daycareApplication) },
+        )
+    }
+
+    @Test
+    fun `terminating a preparatory placement cancels the preschool transfer application`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PREPARATORY,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = today.minusWeeks(2),
+                    endDate = today.plusMonths(2),
+                )
+            )
+        }
+        val preschoolApplication = insertSentTransferApplication(ApplicationType.PRESCHOOL)
+
+        terminatePlacements(
+            child.id,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = TerminatablePlacementType.PREPARATORY,
+                terminationDate = today.plusWeeks(1),
+                unitId = daycare.id,
+                terminateDaycareOnly = false,
+            ),
+        )
+
+        assertEquals(
+            ApplicationStatus.CANCELLED,
+            db.read { it.getApplicationStatus(preschoolApplication) },
+        )
+    }
+
+    @Test
+    fun `terminating a club placement cancels the club transfer application but keeps the daycare one`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.CLUB,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = today.minusWeeks(2),
+                    endDate = today.plusMonths(2),
+                )
+            )
+        }
+        val clubApplication = insertSentTransferApplication(ApplicationType.CLUB)
+        val daycareApplication = insertSentTransferApplication(ApplicationType.DAYCARE)
+
+        terminatePlacements(
+            child.id,
+            PlacementControllerCitizen.PlacementTerminationRequestBody(
+                type = TerminatablePlacementType.CLUB,
+                terminationDate = today.plusWeeks(1),
+                unitId = daycare.id,
+                terminateDaycareOnly = false,
+            ),
+        )
+
+        assertEquals(
+            ApplicationStatus.CANCELLED,
+            db.read { it.getApplicationStatus(clubApplication) },
+        )
+        assertEquals(
+            ApplicationStatus.SENT,
+            db.read { it.getApplicationStatus(daycareApplication) },
         )
     }
 
@@ -1178,6 +1333,84 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         return placementControllerCitizen
             .getPlacements(dbInstance(), authenticatedParent, clock, childId)
             .placements
+    }
+
+    // Sent through ApplicationStateService so the transfer flag is derived from the child's
+    // existing
+    // preschool-family placement, which the caller must insert first.
+    private fun createSentPreschoolTransferApplication(
+        preferredUnit: DevDaycare,
+        preferredStartDate: LocalDate,
+    ): ApplicationId {
+        val term = FiniteDateRange(today.minusYears(1), today.plusYears(1))
+        db.transaction { tx ->
+            tx.insert(
+                DevPreschoolTerm(
+                    finnishPreschool = term,
+                    swedishPreschool = term,
+                    extendedTerm = term,
+                    applicationPeriod = term,
+                    termBreaks = DateSet.empty(),
+                )
+            )
+        }
+        val applicationId = db.transaction { tx ->
+            tx.insertTestApplication(
+                type = ApplicationType.PRESCHOOL,
+                status = ApplicationStatus.CREATED,
+                sentDate = null,
+                dueDate = null,
+                guardianId = parent.id,
+                childId = child.id,
+                document =
+                    DaycareFormV0(
+                        type = ApplicationType.PRESCHOOL,
+                        child = Child(dateOfBirth = null),
+                        guardian = Adult(),
+                        apply = Apply(preferredUnits = listOf(preferredUnit.id)),
+                        preferredStartDate = preferredStartDate,
+                    ),
+            )
+        }
+        db.transaction { tx ->
+            applicationStateService.sendApplication(tx, admin.user, clock, applicationId)
+        }
+        return applicationId
+    }
+
+    private fun insertSentTransferApplication(
+        type: ApplicationType,
+        preferredStartDate: LocalDate = today,
+    ): ApplicationId {
+        val document =
+            if (type == ApplicationType.CLUB)
+                ClubFormV0(
+                    child = evaka.core.application.persistence.club.Child(dateOfBirth = null),
+                    guardian = evaka.core.application.persistence.club.Adult(),
+                    apply =
+                        evaka.core.application.persistence.club.Apply(
+                            preferredUnits = listOf(daycare2.id)
+                        ),
+                    preferredStartDate = preferredStartDate,
+                )
+            else
+                DaycareFormV0(
+                    type = type,
+                    child = Child(dateOfBirth = null),
+                    guardian = Adult(),
+                    apply = Apply(preferredUnits = listOf(daycare2.id)),
+                    preferredStartDate = preferredStartDate,
+                )
+        return db.transaction { tx ->
+            tx.insertTestApplication(
+                type = type,
+                status = ApplicationStatus.SENT,
+                transferApplication = true,
+                guardianId = parent.id,
+                childId = child.id,
+                document = document,
+            )
+        }
     }
 
     private fun getChildGroupPlacements(childId: ChildId): List<DaycareGroupPlacement> {

@@ -1508,8 +1508,9 @@ WHERE application_id = ${bind(applicationId)}
         }
         .toList<ApplicationAttachment>()
 
-fun Database.Transaction.cancelAllActiveTransferApplications(
+fun Database.Transaction.cancelActiveTransferApplications(
     childId: ChildId,
+    applicationType: ApplicationType,
     clock: EvakaClock,
     evakaUserId: EvakaUserId,
 ): List<ApplicationId> =
@@ -1525,6 +1526,7 @@ UPDATE application SET
     confidential = coalesce(confidential, true)
 WHERE transferapplication
 AND child_id = ${bind(childId)}
+AND type = ${bind(applicationType)}
 AND status = ANY(${bind(arrayOf(ApplicationStatus.SENT))}::application_status_type[])
 RETURNING id
 """
