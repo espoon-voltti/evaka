@@ -83,6 +83,7 @@ class OuluConfig {
     @Bean
     fun featureConfig(): FeatureConfig =
         FeatureConfig(
+            placementDecisionSwedishLanguageEnabled = false,
             valueDecisionCapacityFactorEnabled = false,
             // (7*24) - 3 = 165
             citizenReservationThresholdHours = 165,

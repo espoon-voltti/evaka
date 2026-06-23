@@ -73,6 +73,7 @@ class TampereConfig {
     @Bean
     fun featureConfig(): FeatureConfig =
         FeatureConfig(
+            placementDecisionSwedishLanguageEnabled = false,
             valueDecisionCapacityFactorEnabled = true,
             citizenReservationThresholdHours = 6 * 24, // Tue 00:00
             freeAbsenceGivesADailyRefund = false,

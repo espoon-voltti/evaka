@@ -41,6 +41,7 @@ class PirkkalaConfig {
     @Bean
     fun featureConfig() =
         FeatureConfig(
+            placementDecisionSwedishLanguageEnabled = false,
             valueDecisionCapacityFactorEnabled = true,
             citizenReservationThresholdHours = 7 * 24 - 9, // Mon 09:00
             freeAbsenceGivesADailyRefund = true,

@@ -264,6 +264,7 @@ val testArchiveEnv =
 
 val testFeatureConfig =
     FeatureConfig(
+        placementDecisionSwedishLanguageEnabled = true,
         valueDecisionCapacityFactorEnabled = false,
         citizenReservationThresholdHours = 150,
         freeAbsenceGivesADailyRefund = true,
