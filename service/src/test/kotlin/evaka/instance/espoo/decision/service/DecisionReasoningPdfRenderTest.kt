@@ -1,0 +1,145 @@
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.instance.espoo.decision.service
+
+import evaka.core.daycare.UnitManager
+import evaka.core.daycare.domain.Language
+import evaka.core.daycare.domain.ProviderType
+import evaka.core.decision.Decision
+import evaka.core.decision.DecisionStatus
+import evaka.core.decision.DecisionType
+import evaka.core.decision.DecisionUnit
+import evaka.core.decision.PdfReasoning
+import evaka.core.decision.generateDecisionPages
+import evaka.core.identity.ExternalIdentifier
+import evaka.core.pis.service.PersonDTO
+import evaka.core.setting.SettingType
+import evaka.core.shared.ApplicationId
+import evaka.core.shared.ChildId
+import evaka.core.shared.DaycareId
+import evaka.core.shared.DecisionId
+import evaka.core.shared.PersonId
+import evaka.core.shared.config.pdfTemplateEngine
+import evaka.core.shared.domain.OfficialLanguage
+import evaka.core.shared.template.EvakaTemplateProvider
+import java.time.LocalDate
+import java.util.UUID
+import kotlin.test.assertContains
+import kotlin.test.assertFalse
+import org.junit.jupiter.api.Test
+
+class DecisionReasoningPdfRenderTest {
+    private val settings =
+        mapOf(
+            SettingType.DECISION_MAKER_NAME to "Paula Päättäjä",
+            SettingType.DECISION_MAKER_TITLE to "Asiakaspalvelupäällikkö",
+        )
+    private val templateEngine = pdfTemplateEngine("espoo")
+    private val templatePath = EvakaTemplateProvider().getPreschoolDecisionPath()
+    private val manager = UnitManager("Päivi Johtaja", "paivi.johtaja@example.com", "0451231234")
+
+    private fun renderPreschool(reasoning: PdfReasoning?): String {
+        val page =
+            generateDecisionPages(
+                template = templatePath,
+                lang = OfficialLanguage.FI,
+                settings = settings,
+                decision = validDecision(),
+                child = validChild(),
+                unitManager = manager,
+                preschoolManager = manager,
+                isPartTimeDecision = false,
+                serviceNeed = null,
+                reasoning = reasoning,
+            )
+        return templateEngine.process(page.template.name, page.context)
+    }
+
+    @Test
+    fun `renders generic and individual reasoning when present`() {
+        val html =
+            renderPreschool(
+                PdfReasoning(
+                    generic = "Yleinen perustelu lapselle",
+                    individual = listOf("Erityinen perustelu"),
+                )
+            )
+
+        assertContains(html, "Yleinen perustelu lapselle")
+        assertContains(html, "Erityinen perustelu")
+        assertContains(html, "Toimivalta")
+    }
+
+    @Test
+    fun `omits the reasoning section and shows the hard-coded instructions when reasoning is null`() {
+        val html = renderPreschool(null)
+
+        assertFalse(html.contains("Päätöksen perustelut"))
+        assertContains(html, "Sovelletut oikeusohjeet")
+        assertContains(html, "Perusopetuslaki")
+        assertContains(html, "Toimivalta")
+    }
+}
+
+private fun validDecision(type: DecisionType = DecisionType.PRESCHOOL) =
+    Decision(
+        DecisionId(UUID.randomUUID()),
+        createdBy = "Matti Käsittelijä",
+        type,
+        startDate = LocalDate.now(),
+        endDate = LocalDate.now().plusMonths(3),
+        validDecisionUnit(),
+        applicationId = ApplicationId(UUID.randomUUID()),
+        childId = ChildId(UUID.randomUUID()),
+        childName = "Matti",
+        documentKey = null,
+        decisionNumber = 12345,
+        sentDate = LocalDate.now(),
+        DecisionStatus.ACCEPTED,
+        requestedStartDate = null,
+        resolved = null,
+        resolvedByName = null,
+        documentContainsContactInfo = false,
+        archivedAt = null,
+    )
+
+private fun validDecisionUnit() =
+    DecisionUnit(
+        DaycareId(UUID.randomUUID()),
+        name = "Esiopetusyksikkö",
+        daycareDecisionName = "Esiopetusyksikkö",
+        preschoolDecisionName = "Esiopetusyksikkö",
+        manager = null,
+        streetAddress = "Esikatu 1",
+        postalCode = "02100",
+        postOffice = "Espoo",
+        phone = "+35850 1234564",
+        decisionHandler = "Käsittelijä",
+        decisionHandlerAddress = "Toritie 2, 02100 Espoo",
+        ProviderType.MUNICIPAL,
+        language = Language.fi,
+    )
+
+private fun validChild() =
+    PersonDTO(
+        PersonId(UUID.randomUUID()),
+        duplicateOf = null,
+        ExternalIdentifier.SSN.getInstance("010115A9532"),
+        ssnAddingDisabled = false,
+        firstName = "Matti",
+        lastName = "Meikäläinen",
+        preferredName = "Matti",
+        email = null,
+        phone = "",
+        backupPhone = "",
+        language = null,
+        dateOfBirth = LocalDate.of(2015, 1, 1),
+        streetAddress = "Kokinpellonraitti 3",
+        postalCode = "02100",
+        postOffice = "Espoo",
+        residenceCode = "",
+        restrictedDetailsEnabled = false,
+        municipalityOfResidence = "Espoo",
+    )

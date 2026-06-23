@@ -1,0 +1,15 @@
+<!--
+SPDX-FileCopyrightText: 2017-2026 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+<th:block
+  xmlns:th="http://www.thymeleaf.org"
+  th:fragment="section(reasoning)"
+>
+  <h2 th:text="#{title}"></h2>
+  <div class="reasoning-text" th:text="${reasoning.generic}"></div>
+  <th:block th:if="${not #lists.isEmpty(reasoning.individual)}">
+    <div th:each="ind : ${reasoning.individual}" class="reasoning-text" th:text="${ind}"></div>
+  </th:block>
+</th:block>
