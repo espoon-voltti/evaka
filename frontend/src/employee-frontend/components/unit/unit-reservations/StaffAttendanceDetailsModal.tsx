@@ -71,6 +71,7 @@ export interface ModalAttendance {
 export interface ModalPlannedAttendance {
   start: HelsinkiDateTime
   end: HelsinkiDateTime
+  description: string | null
 }
 
 interface Props<
@@ -396,10 +397,11 @@ function StaffAttendanceDetailsModal<
               <LabelLike>{i18n.unit.staffAttendance.plan}</LabelLike>
               <FixedSpaceColumn data-qa="staff-attendance-summary-plan">
                 {plannedAttendances.length > 0
-                  ? plannedAttendances.map(({ end, start }, i) => (
+                  ? plannedAttendances.map(({ end, start, description }, i) => (
                       <div key={i}>
                         {formatDate(start, date)} –{' '}
                         {end ? formatDate(end, date) : ''}
+                        {description ? <i> ({description})</i> : null}
                       </div>
                     ))
                   : '–'}
