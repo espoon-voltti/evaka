@@ -1233,6 +1233,7 @@ export class Fixture {
   ) {
     const value: DevDailyServiceTimeNotification = {
       id: randomId(),
+      createdAt: HelsinkiDateTime.now(),
       ...initial
     }
     return {

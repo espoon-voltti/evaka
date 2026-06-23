@@ -2670,7 +2670,8 @@ CREATE TABLE public.club_term (
 
 CREATE TABLE public.daily_service_time_notification (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
-    guardian_id uuid NOT NULL
+    guardian_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 -- Name: daycare_acl; Type: TABLE; Schema: public

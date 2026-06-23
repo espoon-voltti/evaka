@@ -18,6 +18,7 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevCareArea
+import evaka.core.shared.dev.DevDailyServiceTimeNotification
 import evaka.core.shared.dev.DevDailyServiceTimes
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
@@ -457,6 +458,55 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             absenceDates,
         )
         assertEquals(listOf(tuesdayBefore, wednesdayBefore, tuesday), getReservationDates())
+    }
+
+    @Test
+    fun `deleteOldDailyServiceTimeNotifications deletes old notifications and keeps recent ones across guardians`() {
+        val recentId = DailyServiceTimeNotificationId(UUID.randomUUID())
+        db.transaction { tx ->
+            tx.insert(
+                DevDailyServiceTimeNotification(
+                    guardianId = guardian1.id,
+                    createdAt = now.minusMonths(3),
+                )
+            )
+            tx.insert(
+                DevDailyServiceTimeNotification(
+                    guardianId = guardian2.id,
+                    createdAt = now.minusMonths(4),
+                )
+            )
+            tx.insert(
+                DevDailyServiceTimeNotification(
+                    id = recentId,
+                    guardianId = guardian1.id,
+                    createdAt = now.minusDays(2),
+                )
+            )
+        }
+
+        val deletedCount = db.transaction { it.deleteOldDailyServiceTimeNotifications(now) }
+
+        assertEquals(2, deletedCount)
+        assertEquals(setOf(recentId), getDailyServiceTimeNotifications(guardian1).toSet())
+        assertEquals(0, getDailyServiceTimeNotifications(guardian2).size)
+    }
+
+    @Test
+    fun `deleteOldDailyServiceTimeNotifications preserves a notification exactly at the two month boundary`() {
+        db.transaction { tx ->
+            tx.insert(
+                DevDailyServiceTimeNotification(
+                    guardianId = guardian1.id,
+                    createdAt = now.minusMonths(2),
+                )
+            )
+        }
+
+        val deletedCount = db.transaction { it.deleteOldDailyServiceTimeNotifications(now) }
+
+        assertEquals(0, deletedCount)
+        assertEquals(1, getDailyServiceTimeNotifications(guardian1).size)
     }
 
     private fun createDailyServiceTimes(

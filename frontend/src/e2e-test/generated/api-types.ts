@@ -437,6 +437,7 @@ export interface DevClubTerm {
 * Generated from evaka.core.shared.dev.DevDailyServiceTimeNotification
 */
 export interface DevDailyServiceTimeNotification {
+  createdAt: HelsinkiDateTime
   guardianId: PersonId
   id: DailyServiceTimeNotificationId
 }
@@ -1444,6 +1445,14 @@ export function deserializeJsonDevClubTerm(json: JsonOf<DevClubTerm>): DevClubTe
     applicationPeriod: FiniteDateRange.parseJson(json.applicationPeriod),
     term: FiniteDateRange.parseJson(json.term),
     termBreaks: json.termBreaks.map((x) => FiniteDateRange.parseJson(x))
+  }
+}
+
+
+export function deserializeJsonDevDailyServiceTimeNotification(json: JsonOf<DevDailyServiceTimeNotification>): DevDailyServiceTimeNotification {
+  return {
+    ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt)
   }
 }
 

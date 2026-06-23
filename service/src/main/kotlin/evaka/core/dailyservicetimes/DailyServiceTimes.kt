@@ -12,6 +12,7 @@ import evaka.core.shared.DailyServiceTimesId
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.DatabaseEnum
 import evaka.core.shared.domain.DateRange
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.TimeRange
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -349,6 +350,14 @@ SELECT recipient.id FROM recipient
         )
     }
 }
+
+fun Database.Transaction.deleteOldDailyServiceTimeNotifications(now: HelsinkiDateTime): Int =
+    createUpdate {
+            sql(
+                "DELETE FROM daily_service_time_notification WHERE created_at < ${bind(now.minusMonths(2))}"
+            )
+        }
+        .execute()
 
 fun Database.Transaction.deleteChildDailyServiceTimes(id: DailyServiceTimesId) {
     execute { sql("DELETE FROM daily_service_time WHERE id = ${bind(id)}") }

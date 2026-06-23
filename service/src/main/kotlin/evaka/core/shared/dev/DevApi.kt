@@ -1384,19 +1384,7 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coeff
     fun addDailyServiceTimeNotification(
         db: Database,
         @RequestBody body: DevDailyServiceTimeNotification,
-    ) = db.connect { dbc ->
-        dbc.transaction {
-            it.createUpdate {
-                    sql(
-                        """
-INSERT INTO daily_service_time_notification (id, guardian_id)
-VALUES (${bind(body.id)}, ${bind(body.guardianId)})
-"""
-                    )
-                }
-                .execute()
-        }
-    }
+    ) = db.connect { dbc -> dbc.transaction { it.insert(body) } }
 
     @PostMapping("/payments")
     fun addPayment(db: Database, @RequestBody body: DevPayment) = db.connect { dbc ->
@@ -2373,8 +2361,9 @@ data class DevDailyServiceTimes(
 )
 
 data class DevDailyServiceTimeNotification(
-    val id: DailyServiceTimeNotificationId,
+    val id: DailyServiceTimeNotificationId = DailyServiceTimeNotificationId(UUID.randomUUID()),
     val guardianId: PersonId,
+    val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 )
 
 data class DevPayment(
