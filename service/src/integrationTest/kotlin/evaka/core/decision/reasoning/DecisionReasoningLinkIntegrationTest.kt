@@ -13,6 +13,7 @@ import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.decision.DecisionDraftUpdate
 import evaka.core.decision.DecisionStatus
 import evaka.core.decision.DecisionType
 import evaka.core.decision.DecisionType.CLUB
@@ -25,7 +26,9 @@ import evaka.core.decision.DecisionType.PRESCHOOL_DAYCARE
 import evaka.core.decision.getDecisionsByApplication
 import evaka.core.decision.reasoning.DecisionReasoningCollectionType.DAYCARE as DAYCARE_COLLECTION
 import evaka.core.decision.reasoning.DecisionReasoningCollectionType.PRESCHOOL as PRESCHOOL_COLLECTION
+import evaka.core.decision.updateDecisionDrafts
 import evaka.core.shared.ApplicationId
+import evaka.core.shared.DaycareId
 import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.DecisionIndividualReasoningId
@@ -39,6 +42,7 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestApplication
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -186,6 +190,32 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         }
 
         assertNull(resolved)
+    }
+
+    @Test
+    fun `resolver sets validUntil to the day before the next applicable validFrom`() {
+        insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
+        insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 9, 1), ready = true)
+
+        val resolved = db.read { tx ->
+            resolveApplicableGenericReasoning(tx, DAYCARE, LocalDate.of(2026, 6, 1))
+        }
+
+        assertEquals(LocalDate.of(2026, 8, 31), resolved?.endDate)
+    }
+
+    @Test
+    fun `resolver ignores removed successors when computing validUntil`() {
+        insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
+        val successor =
+            insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 9, 1), ready = true)
+        db.transaction { tx -> tx.removeGenericReasoning(successor, now) }
+
+        val resolved = db.read { tx ->
+            resolveApplicableGenericReasoning(tx, DAYCARE, LocalDate.of(2026, 6, 1))
+        }
+
+        assertEquals(null, resolved?.endDate)
     }
 
     private fun insertIndividualReasoning(key: String): DecisionIndividualReasoningId =
@@ -447,6 +477,224 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 }
                 .exactlyOne<DecisionGenericReasoningId?>()
         }
+
+    /** Builds a minimal DecisionDraftUpdate for an existing decision row. */
+    private fun draftUpdate(
+        decisionId: DecisionId,
+        unitId: DaycareId,
+        startDate: LocalDate = LocalDate.of(2026, 8, 1),
+        individualReasoningIds: Set<DecisionIndividualReasoningId> = emptySet(),
+    ) =
+        DecisionDraftUpdate(
+            id = decisionId,
+            unitId = unitId,
+            startDate = startDate,
+            endDate = startDate.plusYears(1),
+            planned = true,
+            individualReasoningIds = individualReasoningIds,
+        )
+
+    @Test
+    fun `updateDecisionDrafts persists individual reasoning ids`() {
+        val (decisionId, applicationId) = insertDraftDecisionDirectly(DAYCARE)
+        val r1 = insertIndividualReasoning("r1")
+        val r2 = insertIndividualReasoning("r2")
+        val unitId = db.read { tx ->
+            tx.createQuery { sql("SELECT unit_id FROM decision WHERE id = ${bind(decisionId)}") }
+                .exactlyOne<DaycareId>()
+        }
+
+        db.transaction { tx ->
+            updateDecisionDrafts(
+                tx,
+                applicationId,
+                listOf(draftUpdate(decisionId, unitId, individualReasoningIds = setOf(r1, r2))),
+                now,
+                admin.evakaUserId,
+                decisionReasoningEnabled = true,
+            )
+        }
+
+        assertEquals(
+            setOf(r1, r2),
+            db.read { tx -> tx.getDecisionIndividualReasoningIds(decisionId) }.toSet(),
+        )
+    }
+
+    @Test
+    fun `updateDecisionDrafts with empty set clears selections`() {
+        val (decisionId, applicationId) = insertDraftDecisionDirectly(DAYCARE)
+        val r1 = insertIndividualReasoning("r1")
+        val unitId = db.read { tx ->
+            tx.createQuery { sql("SELECT unit_id FROM decision WHERE id = ${bind(decisionId)}") }
+                .exactlyOne<DaycareId>()
+        }
+
+        db.transaction { tx ->
+            updateDecisionDrafts(
+                tx,
+                applicationId,
+                listOf(draftUpdate(decisionId, unitId, individualReasoningIds = setOf(r1))),
+                now,
+                admin.evakaUserId,
+                decisionReasoningEnabled = true,
+            )
+        }
+        assertEquals(listOf(r1), db.read { tx -> tx.getDecisionIndividualReasoningIds(decisionId) })
+
+        db.transaction { tx ->
+            updateDecisionDrafts(
+                tx,
+                applicationId,
+                listOf(draftUpdate(decisionId, unitId, individualReasoningIds = emptySet())),
+                now,
+                admin.evakaUserId,
+                decisionReasoningEnabled = true,
+            )
+        }
+        assertEquals(
+            emptyList(),
+            db.read { tx -> tx.getDecisionIndividualReasoningIds(decisionId) },
+        )
+    }
+
+    @Test
+    fun `updateDecisionDrafts rejects a removed reasoning`() {
+        val (decisionId, applicationId) = insertDraftDecisionDirectly(DAYCARE)
+        val r1 = insertIndividualReasoning("removed")
+        db.transaction { tx -> tx.removeIndividualReasoning(r1, now) }
+        val unitId = db.read { tx ->
+            tx.createQuery { sql("SELECT unit_id FROM decision WHERE id = ${bind(decisionId)}") }
+                .exactlyOne<DaycareId>()
+        }
+
+        assertThrows<BadRequest> {
+            db.transaction { tx ->
+                updateDecisionDrafts(
+                    tx,
+                    applicationId,
+                    listOf(draftUpdate(decisionId, unitId, individualReasoningIds = setOf(r1))),
+                    now,
+                    admin.evakaUserId,
+                    decisionReasoningEnabled = true,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `updateDecisionDrafts rejects a reasoning whose collectionType does not match the decision type`() {
+        val (decisionId, applicationId) = insertDraftDecisionDirectly(DAYCARE)
+        // PRESCHOOL_COLLECTION reasoning cannot be used on a DAYCARE decision
+        val preschoolReasoning = db.transaction { tx ->
+            tx.insertIndividualReasoning(
+                DecisionIndividualReasoningRequest(
+                    collectionType = PRESCHOOL_COLLECTION,
+                    titleFi = "wrong-type-fi",
+                    titleSv = "wrong-type-sv",
+                    textFi = "wrong-fi",
+                    textSv = "wrong-sv",
+                ),
+                now,
+            )
+        }
+        val unitId = db.read { tx ->
+            tx.createQuery { sql("SELECT unit_id FROM decision WHERE id = ${bind(decisionId)}") }
+                .exactlyOne<DaycareId>()
+        }
+
+        assertThrows<BadRequest> {
+            db.transaction { tx ->
+                updateDecisionDrafts(
+                    tx,
+                    applicationId,
+                    listOf(
+                        draftUpdate(
+                            decisionId,
+                            unitId,
+                            individualReasoningIds = setOf(preschoolReasoning),
+                        )
+                    ),
+                    now,
+                    admin.evakaUserId,
+                    decisionReasoningEnabled = true,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `updateDecisionDrafts is rejected after the decision is sent`() {
+        insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
+        val (decisionId, applicationId) = createPlannedDecisionWithApplication(DAYCARE)
+        sendDecisionViaService(applicationId)
+        val r1 = insertIndividualReasoning("r1")
+        val unitId = unitIdOf(decisionId)
+
+        assertThrows<NotFound> {
+            db.transaction { tx ->
+                updateDecisionDrafts(
+                    tx,
+                    applicationId,
+                    listOf(draftUpdate(decisionId, unitId, individualReasoningIds = setOf(r1))),
+                    now,
+                    admin.evakaUserId,
+                    decisionReasoningEnabled = true,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `updateDecisionDrafts is rejected when the reasoning id does not exist`() {
+        val (decisionId, applicationId) = insertDraftDecisionDirectly(DAYCARE)
+        val unitId = unitIdOf(decisionId)
+        val bogusReasoningId = DecisionIndividualReasoningId(java.util.UUID.randomUUID())
+
+        assertThrows<NotFound> {
+            db.transaction { tx ->
+                updateDecisionDrafts(
+                    tx,
+                    applicationId,
+                    listOf(
+                        draftUpdate(
+                            decisionId,
+                            unitId,
+                            individualReasoningIds = setOf(bogusReasoningId),
+                        )
+                    ),
+                    now,
+                    admin.evakaUserId,
+                    decisionReasoningEnabled = true,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `updateDecisionDrafts is rejected when the decision does not exist`() {
+        val (decisionId, applicationId) = insertDraftDecisionDirectly(DAYCARE)
+        val unitId = unitIdOf(decisionId)
+        val bogusDecisionId = DecisionId(java.util.UUID.randomUUID())
+
+        assertThrows<NotFound> {
+            db.transaction { tx ->
+                updateDecisionDrafts(
+                    tx,
+                    applicationId,
+                    listOf(draftUpdate(bogusDecisionId, unitId)),
+                    now,
+                    admin.evakaUserId,
+                    decisionReasoningEnabled = true,
+                )
+            }
+        }
+    }
+
+    private fun unitIdOf(decisionId: DecisionId): DaycareId = db.read { tx ->
+        tx.createQuery { sql("SELECT unit_id FROM decision WHERE id = ${bind(decisionId)}") }
+            .exactlyOne<DaycareId>()
+    }
 
     private fun insertDraftDecisionDirectly(
         type: DecisionType,

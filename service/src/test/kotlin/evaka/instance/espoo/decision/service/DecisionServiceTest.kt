@@ -7,6 +7,7 @@ package evaka.instance.espoo.decision.service
 import evaka.core.application.ServiceNeed
 import evaka.core.application.ServiceNeedOption
 import evaka.core.daycare.UnitManager
+import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionStatus
@@ -104,7 +105,7 @@ class DecisionServiceTest {
                 templateProvider,
                 pdfService,
                 settings,
-                validDecision(decisionType, validDecisionUnit(providerType)),
+                validDecision(decisionType, validDecisionUnit(providerType, lang)),
                 child = validChild(),
                 isTransferApplication = isTransferApplication,
                 serviceNeed =
@@ -165,7 +166,7 @@ private fun validDecision(type: DecisionType, decisionUnit: DecisionUnit) =
         archivedAt = null,
     )
 
-private fun validDecisionUnit(providerType: ProviderType) =
+private fun validDecisionUnit(providerType: ProviderType, lang: OfficialLanguage) =
     DecisionUnit(
         DaycareId(UUID.randomUUID()),
         name = "Tapiolan päiväkoti",
@@ -179,6 +180,11 @@ private fun validDecisionUnit(providerType: ProviderType) =
         decisionHandler = "Tapiolan päiväkoti",
         decisionHandlerAddress = "Itätuulenkuja 5, 02100 Espoo",
         providerType,
+        language =
+            when (lang) {
+                OfficialLanguage.FI -> Language.fi
+                OfficialLanguage.SV -> Language.sv
+            },
     )
 
 private fun validChild() =

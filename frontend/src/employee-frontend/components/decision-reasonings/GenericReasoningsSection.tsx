@@ -70,11 +70,14 @@ const WarningText = styled.span`
   font-size: 0.9em;
 `
 
-const genericReasoningForm = object({
-  validFrom: required(localDate()),
-  textFi: validated(required(value<string>()), nonBlank),
-  textSv: validated(required(value<string>()), nonBlank)
-})
+const genericReasoningForm = (svEnabled: boolean) =>
+  object({
+    validFrom: required(localDate()),
+    textFi: validated(required(value<string>()), nonBlank),
+    textSv: svEnabled
+      ? validated(required(value<string>()), nonBlank)
+      : value<string>()
+  })
 
 interface GenericReasoningFormProps {
   collectionType: DecisionReasoningCollectionType
@@ -91,9 +94,12 @@ function GenericReasoningForm({
 }: GenericReasoningFormProps) {
   const { i18n, lang } = useTranslation()
   const t = i18n.decisionReasonings.generic
+  const { featureConfig } = useContext(UserContext)
+  const svEnabled =
+    featureConfig?.placementDecisionSwedishLanguageEnabled ?? false
 
   const form = useForm(
-    genericReasoningForm,
+    useMemo(() => genericReasoningForm(svEnabled), [svEnabled]),
     () => ({
       validFrom: existing
         ? localDate.fromDate(existing.validFrom)
@@ -148,7 +154,7 @@ function GenericReasoningForm({
         />
       </FixedSpaceColumn>
       <Gap $size="m" />
-      <LanguageGrid>
+      <LanguageGrid $singleColumn={!svEnabled}>
         <FixedSpaceColumn>
           <Label>{i18n.decisionReasonings.fi}</Label>
           <Label>{t.textFi}</Label>
@@ -158,15 +164,17 @@ function GenericReasoningForm({
             data-qa="generic-reasoning-text-fi"
           />
         </FixedSpaceColumn>
-        <FixedSpaceColumn>
-          <Label>{i18n.decisionReasonings.sv}</Label>
-          <Label>{t.textSv}</Label>
-          <TextAreaF
-            bind={textSv}
-            hideErrorsBeforeTouched
-            data-qa="generic-reasoning-text-sv"
-          />
-        </FixedSpaceColumn>
+        {svEnabled && (
+          <FixedSpaceColumn>
+            <Label>{i18n.decisionReasonings.sv}</Label>
+            <Label>{t.textSv}</Label>
+            <TextAreaF
+              bind={textSv}
+              hideErrorsBeforeTouched
+              data-qa="generic-reasoning-text-sv"
+            />
+          </FixedSpaceColumn>
+        )}
       </LanguageGrid>
       <Gap $size="m" />
       <FixedSpaceRow $justifyContent="flex-end">
@@ -222,6 +230,8 @@ function GenericReasoningCard({
   const { i18n } = useTranslation()
   const t = i18n.decisionReasonings.generic
   const { featureConfig } = useContext(UserContext)
+  const svEnabled =
+    featureConfig?.placementDecisionSwedishLanguageEnabled ?? false
 
   const isEditing = editMode.type === 'edit' && editMode.id === reasoning.id
 
@@ -311,15 +321,17 @@ function GenericReasoningCard({
       <Gap $size="s" />
       <H3 $noMargin>{dateRangeHeading}</H3>
       <Gap $size="s" />
-      <LanguageGrid>
+      <LanguageGrid $singleColumn={!svEnabled}>
         <FixedSpaceColumn>
           <Label>{i18n.decisionReasonings.fi}</Label>
           <PreWrap>{reasoning.textFi}</PreWrap>
         </FixedSpaceColumn>
-        <FixedSpaceColumn>
-          <Label>{i18n.decisionReasonings.sv}</Label>
-          <PreWrap>{reasoning.textSv}</PreWrap>
-        </FixedSpaceColumn>
+        {svEnabled && (
+          <FixedSpaceColumn>
+            <Label>{i18n.decisionReasonings.sv}</Label>
+            <PreWrap>{reasoning.textSv}</PreWrap>
+          </FixedSpaceColumn>
+        )}
       </LanguageGrid>
     </ReasoningCard>
   )

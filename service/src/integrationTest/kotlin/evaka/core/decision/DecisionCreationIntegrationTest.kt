@@ -26,12 +26,20 @@ import evaka.core.daycare.DaycareDecisionCustomization
 import evaka.core.daycare.VisitingAddress
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.getDaycare
+import evaka.core.decision.reasoning.DecisionGenericReasoning
+import evaka.core.decision.reasoning.DecisionGenericReasoningRequest
+import evaka.core.decision.reasoning.DecisionIndividualReasoningRequest
+import evaka.core.decision.reasoning.DecisionReasoningCollectionType
+import evaka.core.decision.reasoning.insertGenericReasoning
+import evaka.core.decision.reasoning.insertIndividualReasoning
+import evaka.core.decision.reasoning.setDecisionReasoningIndividualSelections
 import evaka.core.pis.service.PersonService
 import evaka.core.pis.service.blockGuardian
 import evaka.core.placement.PlacementPlanUnit
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DaycareId
+import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -40,10 +48,13 @@ import evaka.core.shared.auth.CitizenAuthLevel
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevDecisionReasoningGeneric
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.TestDecision
+import evaka.core.shared.dev.defaultDaycareDecisionReasoningGeneric
+import evaka.core.shared.dev.defaultPreschoolDecisionReasoningGeneric
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.dev.insertTestApplication
@@ -162,6 +173,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = otherGuardian,
         )
@@ -208,6 +220,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = otherGuardian,
         )
@@ -254,6 +267,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultPreschoolDecisionReasoningGeneric.asResolved(),
                 ),
             connectedDecision =
                 DecisionDraft(
@@ -263,6 +277,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = false,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = otherGuardian,
         )
@@ -313,6 +328,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultPreschoolDecisionReasoningGeneric.asResolved(),
                 ),
             connectedDecision =
                 DecisionDraft(
@@ -322,6 +338,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = preschoolDaycarePeriod.start,
                     endDate = preschoolDaycarePeriod.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = otherGuardian,
         )
@@ -376,6 +393,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultPreschoolDecisionReasoningGeneric.asResolved(),
                 ),
             connectedDecision =
                 DecisionDraft(
@@ -385,6 +403,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = preschoolDaycarePeriod.start,
                     endDate = preschoolDaycarePeriod.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = otherGuardian,
         )
@@ -472,6 +491,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = otherGuardian,
         )
@@ -544,6 +564,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = null,
         )
@@ -591,6 +612,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = null,
         )
@@ -632,6 +654,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = guardian,
         )
@@ -708,6 +731,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = otherGuardian,
         )
@@ -786,6 +810,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = otherGuardian,
         )
@@ -864,6 +889,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = otherGuardian,
         )
@@ -935,6 +961,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     startDate = period.start,
                     endDate = period.end,
                     planned = true,
+                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
                 ),
             otherGuardian = otherGuardian,
         )
@@ -1089,6 +1116,137 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(expected, db.read { it.getDecisionLanguage(primaryDecisionId) })
     }
 
+    @Test
+    fun `updateDecisionDrafts persists the unit change and individual reasoning selections`() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val child = DevPerson(ssn = "070714A9126")
+        db.transaction { tx ->
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+        }
+        MockPersonDetailsService.addPersons(guardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+
+        val period = FiniteDateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 7, 31))
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.DAYCARE,
+                adult = guardian,
+                child = child,
+                period = period,
+            )
+
+        val draft = getDecisionDrafts(applicationId).first { it.type == DecisionType.DAYCARE }
+        val reasoningId = db.transaction { tx ->
+            tx.insertIndividualReasoning(
+                DecisionIndividualReasoningRequest(
+                    collectionType = DecisionReasoningCollectionType.DAYCARE,
+                    titleFi = "title-fi",
+                    titleSv = "title-sv",
+                    textFi = "text-fi",
+                    textSv = "text-sv",
+                ),
+                clock.now(),
+            )
+        }
+
+        applicationController.updateDecisionDrafts(
+            dbInstance(),
+            employee.user,
+            clock,
+            applicationId,
+            listOf(
+                DecisionDraftUpdate(
+                    id = draft.id,
+                    unitId = testDaycare2.id,
+                    startDate = draft.startDate,
+                    endDate = draft.endDate,
+                    planned = draft.planned,
+                    individualReasoningIds = setOf(reasoningId),
+                )
+            ),
+        )
+
+        val updated = getDecisionDrafts(applicationId).first { it.id == draft.id }
+        assertEquals(testDaycare2.id, updated.unitId)
+        assertEquals(listOf(reasoningId), updated.individualReasoningIds)
+    }
+
+    @Test
+    fun `getDecisionDrafts includes the resolved generic reasoning and linked individual reasonings`() {
+        val genericId = insertDaycareGeneric(LocalDate.of(2024, 1, 1))
+        val applicationId = daycareDraftApplication("070644-937X", "070714A9126")
+        val draft = getDecisionDrafts(applicationId).first { it.type == DecisionType.DAYCARE }
+
+        assertEquals(genericId, draft.genericReasoning?.id)
+        assertEquals(
+            DecisionReasoningCollectionType.DAYCARE,
+            draft.genericReasoning?.collectionType,
+        )
+
+        val individualId = db.transaction { tx ->
+            tx.insertIndividualReasoning(
+                DecisionIndividualReasoningRequest(
+                    collectionType = DecisionReasoningCollectionType.DAYCARE,
+                    titleFi = "title-fi",
+                    titleSv = "title-sv",
+                    textFi = "text-fi",
+                    textSv = "text-sv",
+                ),
+                clock.now(),
+            )
+        }
+        db.transaction { tx ->
+            tx.setDecisionReasoningIndividualSelections(
+                decisionId = draft.id,
+                reasoningIds = setOf(individualId),
+                createdAt = clock.now(),
+                createdBy = employee.evakaUserId,
+            )
+        }
+
+        val withIndividual = getDecisionDrafts(applicationId).first { it.id == draft.id }
+        assertEquals(listOf(individualId), withIndividual.individualReasoningIds)
+    }
+
+    private fun insertDaycareGeneric(
+        validFrom: LocalDate,
+        ready: Boolean = true,
+    ): DecisionGenericReasoningId = db.transaction { tx ->
+        tx.insertGenericReasoning(
+            DecisionGenericReasoningRequest(
+                collectionType = DecisionReasoningCollectionType.DAYCARE,
+                validFrom = validFrom,
+                textFi = "fi-$validFrom",
+                textSv = "sv-$validFrom",
+                ready = ready,
+            ),
+            clock.now(),
+        )
+    }
+
+    private fun daycareDraftApplication(
+        guardianSsn: String,
+        childSsn: String,
+        period: FiniteDateRange =
+            FiniteDateRange(LocalDate.of(2024, 8, 1), LocalDate.of(2025, 7, 31)),
+    ): ApplicationId {
+        val guardian = DevPerson(ssn = guardianSsn)
+        val child = DevPerson(ssn = childSsn)
+        db.transaction { tx ->
+            tx.insert(guardian, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+        }
+        MockPersonDetailsService.addPersons(guardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        return insertInitialData(
+            type = PlacementType.DAYCARE,
+            adult = guardian,
+            child = child,
+            period = period,
+        )
+    }
+
     private fun getDecisionDrafts(applicationId: ApplicationId): List<DecisionDraft> =
         applicationController
             .getDecisionDrafts(dbInstance(), employee.user, clock, applicationId)
@@ -1122,6 +1280,23 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
     }
+
+    private fun DevDecisionReasoningGeneric.asResolved(
+        endDate: LocalDate? = null,
+        outdated: Boolean = false,
+    ) =
+        DecisionGenericReasoning(
+            id = id,
+            collectionType = collectionType,
+            validFrom = validFrom,
+            textFi = textFi,
+            textSv = textSv,
+            ready = ready,
+            createdAt = createdAt,
+            modifiedAt = modifiedAt,
+            endDate = endDate,
+            outdated = outdated,
+        )
 
     private fun checkDecisionDrafts(
         applicationId: ApplicationId,

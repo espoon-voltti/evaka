@@ -7,6 +7,7 @@ package evaka.instance.oulu.decision.service
 import evaka.core.application.ServiceNeed
 import evaka.core.application.ServiceNeedOption
 import evaka.core.daycare.UnitManager
+import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionSendAddress
@@ -422,7 +423,8 @@ private fun validDecisionUnit(providerType: ProviderType) =
         phone = "+35850 1234564",
         decisionHandler = "Ainolan kerho",
         decisionHandlerAddress = "Toritie 2, 90100 Oulu",
-        providerType,
+        providerType = providerType,
+        language = Language.fi,
     )
 
 private fun validGuardian(restrictedDetailsEnabled: Boolean = false) =

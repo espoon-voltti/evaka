@@ -50,6 +50,14 @@ export class DecisionDraftPage {
 export class DecisionCardSection {
   constructor(private root: Element) {}
 
+  get unitLanguageUnsupportedWarning(): Element {
+    return this.root.findByDataQa('unit-language-unsupported-warning')
+  }
+
+  pickerButton(decisionType: DecisionType): Element {
+    return this.root.findByDataQa(`open-picker-${decisionType}`)
+  }
+
   genericReasoning(collectionType: 'DAYCARE' | 'PRESCHOOL'): Element {
     return this.root.findByDataQa(`generic-card-${collectionType}`)
   }
@@ -82,11 +90,7 @@ export class IndividualReasoningPicker {
     await this.reasoningRow(reasoningId).click()
   }
 
-  async confirm() {
-    await this.page.findByDataQa('modal-okBtn').click()
-  }
-
-  async cancel() {
-    await this.page.findByDataQa('modal-cancelBtn').click()
+  async close() {
+    await this.page.findByDataQa('modal-closeBtn').click()
   }
 }

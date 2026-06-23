@@ -12,6 +12,7 @@ import type { DecisionId } from './shared'
 import type { DecisionIndividualReasoningId } from './shared'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
+import type { Language } from './daycare'
 import LocalDate from '../../local-date'
 import type { PersonId } from './shared'
 import type { ProviderType } from './daycare'
@@ -45,7 +46,9 @@ export interface Decision {
 */
 export interface DecisionDraft {
   endDate: LocalDate
+  genericReasoning: DecisionGenericReasoning | null
   id: DecisionId
+  individualReasoningIds: DecisionIndividualReasoningId[]
   planned: boolean
   startDate: LocalDate
   type: DecisionType
@@ -58,6 +61,7 @@ export interface DecisionDraft {
 export interface DecisionDraftUpdate {
   endDate: LocalDate
   id: DecisionId
+  individualReasoningIds: DecisionIndividualReasoningId[]
   planned: boolean
   startDate: LocalDate
   unitId: DaycareId
@@ -151,6 +155,7 @@ export interface DecisionUnit {
   decisionHandler: string
   decisionHandlerAddress: string
   id: DaycareId
+  language: Language
   manager: string | null
   name: string
   phone: string | null
@@ -167,21 +172,6 @@ export interface DecisionUnit {
 export interface DecisionWithPermittedActions {
   data: Decision
   permittedActions: Action.Decision[]
-}
-
-/**
-* Generated from evaka.core.decision.reasoning.DraftReasoningPreview
-*/
-export interface DraftReasoningPreview {
-  genericReasoning: DecisionGenericReasoning | null
-  individualReasoningSelections: DecisionIndividualReasoning[]
-}
-
-/**
-* Generated from evaka.core.decision.DecisionController.LinkIndividualReasoningBody
-*/
-export interface LinkIndividualReasoningBody {
-  reasoningIds: DecisionIndividualReasoningId[]
 }
 
 
@@ -202,6 +192,7 @@ export function deserializeJsonDecisionDraft(json: JsonOf<DecisionDraft>): Decis
   return {
     ...json,
     endDate: LocalDate.parseIso(json.endDate),
+    genericReasoning: (json.genericReasoning != null) ? deserializeJsonDecisionGenericReasoning(json.genericReasoning) : null,
     startDate: LocalDate.parseIso(json.startDate)
   }
 }
@@ -249,14 +240,5 @@ export function deserializeJsonDecisionWithPermittedActions(json: JsonOf<Decisio
   return {
     ...json,
     data: deserializeJsonDecision(json.data)
-  }
-}
-
-
-export function deserializeJsonDraftReasoningPreview(json: JsonOf<DraftReasoningPreview>): DraftReasoningPreview {
-  return {
-    ...json,
-    genericReasoning: (json.genericReasoning != null) ? deserializeJsonDecisionGenericReasoning(json.genericReasoning) : null,
-    individualReasoningSelections: json.individualReasoningSelections.map(e => deserializeJsonDecisionIndividualReasoning(e))
   }
 }

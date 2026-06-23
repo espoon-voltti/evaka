@@ -5,6 +5,9 @@
 package evaka.core.decision
 
 import evaka.core.application.ApplicationDetails
+import evaka.core.decision.reasoning.applicableReasoningCollectionType
+import evaka.core.decision.reasoning.getIndividualReasoning
+import evaka.core.decision.reasoning.setDecisionReasoningIndividualSelections
 import evaka.core.placement.PlacementPlan
 import evaka.core.placement.PlacementType
 import evaka.core.placement.getPlacementPlan
@@ -12,8 +15,12 @@ import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.DecisionId
+import evaka.core.shared.DecisionIndividualReasoningId
+import evaka.core.shared.EvakaUserId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import java.time.LocalDate
 import java.util.UUID
@@ -102,23 +109,58 @@ fun updateDecisionDrafts(
     tx: Database.Transaction,
     applicationId: ApplicationId,
     updates: List<DecisionDraftUpdate>,
+    now: HelsinkiDateTime,
+    userId: EvakaUserId,
+    decisionReasoningEnabled: Boolean,
 ) {
-    val successfulUpdates =
-        tx.executeBatch(updates) {
+    val updated =
+        tx.prepareBatch(updates) {
                 sql(
                     """
             UPDATE decision
             SET unit_id = ${bind { it.unitId }}, start_date = ${bind { it.startDate }}, end_date = ${bind { it.endDate }}, planned = ${bind { it.planned }}
-            WHERE id = ${bind { it.id }} AND application_id = ${bind(applicationId)}
+            WHERE id = ${bind { it.id }} AND application_id = ${bind(applicationId)} AND sent_date IS NULL
+            RETURNING id, type
 """
                 )
             }
-            .sum()
+            .executeAndReturn()
+            .toList<UpdatedDecisionDraft>()
 
-    if (successfulUpdates < updates.size) {
-        throw NotFound("Some decision draft was not found")
+    if (updated.size < updates.size) {
+        throw NotFound("Some decision draft was not found or already sent")
+    }
+
+    if (!decisionReasoningEnabled) return
+
+    val typeById = updated.associate { it.id to it.type }
+    updates.forEach { update ->
+        val applicableCollectionType =
+            typeById.getValue(update.id).applicableReasoningCollectionType()
+        update.individualReasoningIds.forEach { reasoningId ->
+            val reasoning =
+                tx.getIndividualReasoning(reasoningId)
+                    ?: throw NotFound("Individual reasoning $reasoningId not found")
+            if (reasoning.removedAt != null) {
+                throw BadRequest("Individual reasoning $reasoningId is removed")
+            }
+            if (reasoning.collectionType != applicableCollectionType) {
+                throw BadRequest(
+                    "Individual reasoning $reasoningId has collection_type ${reasoning.collectionType}, " +
+                        "which does not apply to decision ${update.id} of type ${typeById.getValue(update.id)}"
+                )
+            }
+        }
+        tx.setDecisionReasoningIndividualSelections(
+            decisionId = update.id,
+            reasoningIds = update.individualReasoningIds,
+            createdAt = now,
+            createdBy = userId,
+        )
     }
 }
+
+private data class UpdatedDecisionDraft(val id: DecisionId, val type: DecisionType)
 
 data class DecisionDraftUpdate(
     val id: DecisionId,
@@ -126,6 +168,7 @@ data class DecisionDraftUpdate(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val planned: Boolean,
+    val individualReasoningIds: Set<DecisionIndividualReasoningId> = emptySet(),
 )
 
 fun getDecisionUnits(tx: Database.Read): List<DecisionUnit> =
@@ -144,7 +187,8 @@ SELECT
     postal_code, 
     post_office,
     phone,
-    provider_type
+    provider_type,
+    language
 FROM daycare u
 ORDER BY name
 """
@@ -168,7 +212,8 @@ SELECT
     postal_code, 
     post_office,
     phone,
-    provider_type
+    provider_type,
+    language
 FROM daycare u
 WHERE u.id = ${bind(unitId)}
 """

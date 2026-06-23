@@ -3514,7 +3514,10 @@ export const fi = {
         `${validFrom}–${validUntil} alkavat sijoitukset`,
       modalTitle: 'Valitse yksilölliset perustelut',
       modalCloseButton: 'Sulje',
-      modalEntryTextLabel: 'Päätökselle tuleva teksti'
+      modalEntryTextLabel: 'Päätökselle tuleva teksti',
+      removedFromUse: 'Poistettu käytöstä',
+      unitLanguageUnsupported:
+        'Valittu yksikkö on ruotsinkielinen, mutta ruotsinkieliset päätökset eivät ole käytössä. Vaihda yksikkö tai ota yhteyttä pääkäyttäjään.'
     }
   },
   reports: {

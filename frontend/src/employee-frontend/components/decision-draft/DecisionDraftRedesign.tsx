@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -13,7 +13,10 @@ import type {
   DecisionType,
   DecisionUnit
 } from 'lib-common/generated/api-types/decision'
-import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type {
+  ApplicationId,
+  DaycareId
+} from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
@@ -22,17 +25,16 @@ import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faEnvelope } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { useTitle } from '../../utils/useTitle'
 import { renderResult } from '../async-rendering'
+import StickyActionBar from '../common/StickyActionBar'
 
 import ApplicationHeaderCard from './ApplicationHeaderCard'
 import DecisionCard from './DecisionCard'
@@ -70,14 +72,6 @@ const DecisionCardWrapper = styled.div`
   & > * {
     flex: 1;
   }
-`
-
-const FooterRow = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-top: ${defaultMargins.XL};
-  gap: ${defaultMargins.s};
 `
 
 function redirectToMainPage(navigate: (location: string) => void) {
@@ -127,19 +121,27 @@ function getMissingUnitFields(
 export default React.memo(function DecisionDraftRedesign() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
   const draftGroupResult = useQueryResult(
-    decisionDraftsQuery({ applicationId })
+    decisionDraftsQuery({ applicationId }),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false
+    }
   )
-  const unitsResult = useQueryResult(decisionUnitsQuery())
+  const unitsResult = useQueryResult(decisionUnitsQuery(), {
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false
+  })
 
   return renderResult(
     combine(draftGroupResult, unitsResult),
-    ([draftGroup, units]) => (
-      <DecisionDraftRedesignInner
-        applicationId={applicationId}
-        decisionDraftGroup={draftGroup}
-        units={units}
-      />
-    )
+    ([draftGroup, units], isReloading) =>
+      isReloading ? null : (
+        <DecisionDraftRedesignInner
+          applicationId={applicationId}
+          decisionDraftGroup={draftGroup}
+          units={units}
+        />
+      )
   )
 })
 
@@ -154,6 +156,9 @@ const DecisionDraftRedesignInner = React.memo(
     units: DecisionUnit[]
   }) {
     const { i18n } = useTranslation()
+    const { featureConfig } = useContext(UserContext)
+    const svEnabled =
+      featureConfig?.placementDecisionSwedishLanguageEnabled ?? false
     const [, navigate] = useLocation()
 
     const {
@@ -187,6 +192,11 @@ const DecisionDraftRedesignInner = React.memo(
       }
     }
 
+    const decisionLanguage = (unitId: DaycareId): 'fi' | 'sv' =>
+      units.find((u) => u.id === unitId)?.language === 'sv' ? 'sv' : 'fi'
+    const misconfigured = (unitId: DaycareId) =>
+      decisionLanguage(unitId) === 'sv' && !svEnabled
+
     const isClubDecision = primaryDecision.type === 'CLUB'
     const incompleteUnit = useMemo(() => {
       const decisions = [
@@ -212,128 +222,149 @@ const DecisionDraftRedesignInner = React.memo(
     const childName = formatPersonName(child, 'First Last')
 
     return (
-      <Container>
-        <ContentArea $opaque>
-          <Title size={1}>
-            {connectedDecision !== null
-              ? i18n.decisionDraft.titlePlural
-              : i18n.decisionDraft.titleSingle}
-          </Title>
-          <Gap $size="xs" />
-          <ApplicationHeaderCard
-            child={child}
-            guardian={guardian}
-            otherGuardian={otherGuardian}
-            placementUnitName={placementUnit.name}
-            units={units}
-            selectedUnitId={primaryDecision.unitId}
-            onSelectUnit={(unitId) => updateState('both', { unitId })}
-          />
-
-          {!(guardian.ssn && child.ssn) && (
-            <InfoBox
-              title={i18n.decisionDraft.ssnInfo1}
-              message={i18n.decisionDraft.ssnInfo2}
-              icon={faEnvelope}
-            />
-          )}
-          {!guardian.isVtjGuardian && (
-            <AlertBox
-              title={i18n.decisionDraft.notGuardianInfo1}
-              message={i18n.decisionDraft.notGuardianInfo2}
-            />
-          )}
-
-          <SectionHeading>
-            <Title size={2}>
+      <>
+        <Container>
+          <ContentArea $opaque>
+            <Title size={1}>
               {connectedDecision !== null
-                ? i18n.decisionDraft.decisionsHeading
-                : i18n.decisionDraft.decisionsHeadingSingle}
+                ? i18n.decisionDraft.titlePlural
+                : i18n.decisionDraft.titleSingle}
             </Title>
-            {connectedDecision !== null && (
-              <span>{i18n.decisionDraft.decisionsSubtitle}</span>
-            )}
-          </SectionHeading>
-
-          <DecisionCardWrapper>
-            <DecisionCard
-              decision={primaryDecision}
-              primaryDecisionType={primaryDecision.type}
-              showPlannedCheckbox={connectedDecision !== null}
-              childName={childName}
-              onPlannedChange={(planned) => updateState('primary', { planned })}
+            <Gap $size="xs" />
+            <ApplicationHeaderCard
+              child={child}
+              guardian={guardian}
+              otherGuardian={otherGuardian}
+              placementUnitName={placementUnit.name}
+              units={units}
+              selectedUnitId={primaryDecision.unitId}
+              onSelectUnit={(unitId) => updateState('both', { unitId })}
             />
-            {connectedDecision && (
+
+            {!(guardian.ssn && child.ssn) && (
+              <InfoBox
+                title={i18n.decisionDraft.ssnInfo1}
+                message={i18n.decisionDraft.ssnInfo2}
+                icon={faEnvelope}
+              />
+            )}
+            {!guardian.isVtjGuardian && (
+              <AlertBox
+                title={i18n.decisionDraft.notGuardianInfo1}
+                message={i18n.decisionDraft.notGuardianInfo2}
+              />
+            )}
+
+            <SectionHeading>
+              <Title size={2}>
+                {connectedDecision !== null
+                  ? i18n.decisionDraft.decisionsHeading
+                  : i18n.decisionDraft.decisionsHeadingSingle}
+              </Title>
+              {connectedDecision !== null && (
+                <span>{i18n.decisionDraft.decisionsSubtitle}</span>
+              )}
+            </SectionHeading>
+
+            <DecisionCardWrapper>
               <DecisionCard
-                decision={connectedDecision}
+                decision={primaryDecision}
                 primaryDecisionType={primaryDecision.type}
-                showPlannedCheckbox={true}
+                showPlannedCheckbox={connectedDecision !== null}
                 childName={childName}
+                language={decisionLanguage(primaryDecision.unitId)}
+                unitLanguageUnsupported={misconfigured(primaryDecision.unitId)}
                 onPlannedChange={(planned) =>
-                  updateState('connected', { planned })
+                  updateState('primary', { planned })
+                }
+                onReasoningIdsChange={(ids) =>
+                  updateState('primary', {
+                    individualReasoningIds: Array.from(ids)
+                  })
+                }
+              />
+              {connectedDecision && (
+                <DecisionCard
+                  decision={connectedDecision}
+                  primaryDecisionType={primaryDecision.type}
+                  showPlannedCheckbox={true}
+                  childName={childName}
+                  language={decisionLanguage(connectedDecision.unitId)}
+                  unitLanguageUnsupported={misconfigured(
+                    connectedDecision.unitId
+                  )}
+                  onPlannedChange={(planned) =>
+                    updateState('connected', { planned })
+                  }
+                  onReasoningIdsChange={(ids) =>
+                    updateState('connected', {
+                      individualReasoningIds: Array.from(ids)
+                    })
+                  }
+                />
+              )}
+            </DecisionCardWrapper>
+
+            {incompleteUnit !== null && (
+              <AlertBox
+                wide
+                title={i18n.decisionDraft.unitInfo1}
+                message={
+                  <FixedSpaceColumn $spacing="s">
+                    <div>
+                      <strong>
+                        {incompleteUnit.unitName ??
+                          i18n.decisionDraft.unitFieldsMissingUnitName}
+                      </strong>
+                      <Gap $size="xs" />
+                      <UnorderedList $spacing="xxs">
+                        {incompleteUnit.fields.map((field) => (
+                          <li key={field}>
+                            {i18n.decisionDraft.unitFields[field]}
+                          </li>
+                        ))}
+                      </UnorderedList>
+                    </div>
+                    <div>{i18n.decisionDraft.unitInfo2}</div>
+                  </FixedSpaceColumn>
                 }
               />
             )}
-          </DecisionCardWrapper>
-
-          {incompleteUnit !== null && (
-            <AlertBox
-              wide
-              title={i18n.decisionDraft.unitInfo1}
-              message={
-                <FixedSpaceColumn $spacing="s">
-                  <div>
-                    <strong>
-                      {incompleteUnit.unitName ??
-                        i18n.decisionDraft.unitFieldsMissingUnitName}
-                    </strong>
-                    <Gap $size="xs" />
-                    <UnorderedList $spacing="xxs">
-                      {incompleteUnit.fields.map((field) => (
-                        <li key={field}>
-                          {i18n.decisionDraft.unitFields[field]}
-                        </li>
-                      ))}
-                    </UnorderedList>
-                  </div>
-                  <div>{i18n.decisionDraft.unitInfo2}</div>
-                </FixedSpaceColumn>
-              }
-            />
-          )}
-
-          <FooterRow>
-            <FixedSpaceRow>
-              <Button
-                onClick={() => redirectToMainPage(navigate)}
-                text={i18n.common.cancel}
-                data-qa="cancel-decisions-button"
-              />
-              <MutateButton
-                primary
-                data-qa="save-decisions-button"
-                disabled={dataIncomplete || noDecisionsPlanned}
-                mutation={updateDecisionDraftsMutation}
-                onClick={() => ({
-                  applicationId,
-                  body: [
-                    primaryDecision,
-                    ...(connectedDecision ? [connectedDecision] : [])
-                  ].map((d) => ({
-                    id: d.id,
-                    unitId: d.unitId,
-                    startDate: d.startDate,
-                    endDate: d.endDate,
-                    planned: d.planned
-                  }))
-                })}
-                onSuccess={() => redirectToMainPage(navigate)}
-                text={i18n.common.save}
-              />
-            </FixedSpaceRow>
-          </FooterRow>
-        </ContentArea>
-      </Container>
+          </ContentArea>
+        </Container>
+        <StickyActionBar align="right">
+          <Button
+            onClick={() => redirectToMainPage(navigate)}
+            text={i18n.common.cancel}
+            data-qa="cancel-decisions-button"
+          />
+          <Gap $size="s" $horizontal />
+          <MutateButton
+            primary
+            data-qa="save-decisions-button"
+            disabled={dataIncomplete || noDecisionsPlanned}
+            mutation={updateDecisionDraftsMutation}
+            onClick={() => ({
+              applicationId,
+              body: [
+                primaryDecision,
+                ...(connectedDecision ? [connectedDecision] : [])
+              ].map((d) => ({
+                id: d.id,
+                unitId: d.unitId,
+                startDate: d.startDate,
+                endDate: d.endDate,
+                planned: d.planned,
+                individualReasoningIds: misconfigured(d.unitId)
+                  ? []
+                  : d.individualReasoningIds
+              }))
+            })}
+            onSuccess={() => redirectToMainPage(navigate)}
+            text={i18n.common.save}
+          />
+        </StickyActionBar>
+      </>
     )
   }
 )

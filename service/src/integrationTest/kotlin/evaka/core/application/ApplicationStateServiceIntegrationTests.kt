@@ -1645,7 +1645,16 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                         planned = false,
                     )
                 }
-                .let { updates -> updateDecisionDrafts(tx, applicationId, updates) }
+                .let { updates ->
+                    updateDecisionDrafts(
+                        tx,
+                        applicationId,
+                        updates,
+                        now,
+                        employee.evakaUserId,
+                        decisionReasoningEnabled = true,
+                    )
+                }
             service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->

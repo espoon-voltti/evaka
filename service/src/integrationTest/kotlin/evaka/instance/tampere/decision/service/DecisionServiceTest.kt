@@ -7,6 +7,7 @@ package evaka.instance.tampere.decision.service
 import evaka.core.application.ServiceNeed
 import evaka.core.application.ServiceNeedOption
 import evaka.core.daycare.UnitManager
+import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionStatus
@@ -265,7 +266,8 @@ fun validDecisionUnit(providerType: ProviderType) =
         phone = "+35850 1234564",
         decisionHandler = "Vuoreksen kerho",
         decisionHandlerAddress = "Rautiolanrinne 2, 33870 Tampere",
-        providerType,
+        providerType = providerType,
+        language = Language.fi,
     )
 
 fun validChild(restrictedDetailsEnabled: Boolean = false) =

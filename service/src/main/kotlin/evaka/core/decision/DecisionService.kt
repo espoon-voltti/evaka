@@ -14,6 +14,7 @@ import evaka.core.daycare.UnitManager
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.daycare.getDaycare
+import evaka.core.decision.reasoning.getIndividualReasoningSelectionsForDecision
 import evaka.core.decision.reasoning.resolveApplicableGenericReasoning
 import evaka.core.decision.reasoning.updateGenericReasoningToDecision
 import evaka.core.emailclient.Email
@@ -43,6 +44,7 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
@@ -89,6 +91,24 @@ class DecisionService(
                         ?: throw NotFound(
                             "No applicable generic reasoning found for decision ${decision.id} (type: ${decision.type}, start date: ${decision.startDate})"
                         )
+
+                if (tx.getDecisionLanguage(decision.id) == OfficialLanguage.SV) {
+                    if (genericReasoning.textSv.isBlank()) {
+                        throw BadRequest(
+                            "Cannot finalize Swedish decision ${decision.id}: generic reasoning " +
+                                "${genericReasoning.id} has empty Swedish text"
+                        )
+                    }
+                    tx.getIndividualReasoningSelectionsForDecision(decision.id).forEach { individual
+                        ->
+                        if (individual.titleSv.isBlank() || individual.textSv.isBlank()) {
+                            throw BadRequest(
+                                "Cannot finalize Swedish decision ${decision.id}: individual reasoning " +
+                                    "${individual.id} has empty Swedish title or text"
+                            )
+                        }
+                    }
+                }
 
                 tx.updateGenericReasoningToDecision(decision.id, genericReasoning.id)
             }

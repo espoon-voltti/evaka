@@ -36,6 +36,7 @@ class LempaalaConfig {
     @Bean
     fun featureConfig() =
         FeatureConfig(
+            placementDecisionSwedishLanguageEnabled = false,
             valueDecisionCapacityFactorEnabled = true,
             citizenReservationThresholdHours =
                 (7 + 3) * 24 - 9, // Fri 09:00 (1 week + 3 days before)

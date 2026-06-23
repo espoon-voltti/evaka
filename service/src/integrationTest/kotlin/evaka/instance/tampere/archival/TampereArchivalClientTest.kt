@@ -29,6 +29,7 @@ import evaka.core.caseprocess.CaseProcessHistoryRow
 import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.DocumentConfidentiality
 import evaka.core.caseprocess.DocumentMetadata
+import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionStatus
@@ -731,6 +732,7 @@ private val testDecisionDaycare =
                 decisionHandler = "",
                 decisionHandlerAddress = "",
                 providerType = ProviderType.MUNICIPAL,
+                language = Language.fi,
             ),
         applicationId = testApplicationDaycare.id,
         childId = testChildInfo.id,

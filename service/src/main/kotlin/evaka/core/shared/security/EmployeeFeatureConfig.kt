@@ -12,6 +12,7 @@ data class EmployeeFeatureConfig(
     val replacementInvoices: Boolean,
     val decisionReasoningGenericRemoval: Boolean,
     val decisionReasoningsEnabled: Boolean,
+    val placementDecisionSwedishLanguageEnabled: Boolean,
     val openRangesHolidayQuestionnaire: Boolean,
     val allowEnglishChildDocumentsForAllTypes: Boolean,
     val messageSupportEmail: String?,

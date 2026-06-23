@@ -18,6 +18,7 @@ import evaka.core.application.PreferredUnit
 import evaka.core.application.ServiceNeed
 import evaka.core.caseprocess.DocumentConfidentiality
 import evaka.core.daycare.UnitManager
+import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionStatus
@@ -210,6 +211,7 @@ private val voucherDecisionUnit =
         "Varhaiskasvatuksen palveluohjaus",
         "Kamreerintie 2, 02200 Espoo",
         providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+        language = Language.fi,
     )
 
 private val daycareTransferDecision =
@@ -250,6 +252,7 @@ private val voucherDecision =
                 "Suomenniemen palvelusetelipäiväkodin asiakaspalvelu",
                 "Kartanonkujanpää 565, 02210 Espoo",
                 providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+                language = Language.fi,
             ),
     )
 
@@ -635,6 +638,7 @@ fun createValidDecision(
             "Varhaiskasvatuksen palveluohjaus",
             "Kamreerintie 2, 02200 Espoo",
             providerType = ProviderType.MUNICIPAL,
+            language = Language.fi,
         ),
     applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     childId: ChildId = ChildId(UUID.randomUUID()),

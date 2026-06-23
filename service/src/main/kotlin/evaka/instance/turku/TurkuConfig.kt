@@ -131,6 +131,7 @@ class TurkuConfig {
             },
             placementToolApplicationStatus = ApplicationStatus.WAITING_DECISION,
             allowEnglishChildDocumentsForAllTypes = true,
+            placementDecisionSwedishLanguageEnabled = true,
         )
 
     @Bean

@@ -239,6 +239,7 @@ export interface QueryOptions {
   enabled?: boolean
   refetchOnMount?: boolean | 'always'
   refetchOnWindowFocus?: boolean | 'always'
+  refetchOnReconnect?: boolean | 'always'
   staleTime?: number
   refetchInterval?: number
 }

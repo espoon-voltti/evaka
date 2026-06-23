@@ -126,6 +126,7 @@ export interface EmployeeFeatureConfig {
   deletedMessagePlaceholderBody: string
   messageSupportEmail: string | null
   openRangesHolidayQuestionnaire: boolean
+  placementDecisionSwedishLanguageEnabled: boolean
   replacementInvoices: boolean
 }
 

@@ -14,10 +14,8 @@ import type { DecisionIndividualReasoningRequest } from 'lib-common/generated/ap
 import type { DecisionReasoningCollectionType } from 'lib-common/generated/api-types/decision'
 import type { DecisionUnit } from 'lib-common/generated/api-types/decision'
 import type { DecisionWithPermittedActions } from 'lib-common/generated/api-types/decision'
-import type { DraftReasoningPreview } from 'lib-common/generated/api-types/decision'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
-import type { LinkIndividualReasoningBody } from 'lib-common/generated/api-types/decision'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
@@ -25,7 +23,6 @@ import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonDecisionGenericReasoning } from 'lib-common/generated/api-types/decision'
 import { deserializeJsonDecisionIndividualReasoning } from 'lib-common/generated/api-types/decision'
 import { deserializeJsonDecisionWithPermittedActions } from 'lib-common/generated/api-types/decision'
-import { deserializeJsonDraftReasoningPreview } from 'lib-common/generated/api-types/decision'
 import { uri } from 'lib-common/uri'
 
 
@@ -72,40 +69,6 @@ export async function getDecisionsByGuardian(
     params
   })
   return json.map(e => deserializeJsonDecisionWithPermittedActions(e))
-}
-
-
-/**
-* Generated from evaka.core.decision.DecisionController.getDraftReasoningPreview
-*/
-export async function getDraftReasoningPreview(
-  request: {
-    id: DecisionId
-  }
-): Promise<DraftReasoningPreview> {
-  const { data: json } = await client.request<JsonOf<DraftReasoningPreview>>({
-    url: uri`/employee/decisions/${request.id}/draft-reasoning-preview`.toString(),
-    method: 'GET'
-  })
-  return deserializeJsonDraftReasoningPreview(json)
-}
-
-
-/**
-* Generated from evaka.core.decision.DecisionController.linkIndividualReasonings
-*/
-export async function linkIndividualReasonings(
-  request: {
-    id: DecisionId,
-    body: LinkIndividualReasoningBody
-  }
-): Promise<void> {
-  const { data: json } = await client.request<JsonOf<void>>({
-    url: uri`/employee/decisions/${request.id}/individual-reasonings`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<LinkIndividualReasoningBody>
-  })
-  return json
 }
 
 
