@@ -73,6 +73,9 @@ class DecisionReasoningPdfRenderTest {
     private fun renderVoucher(reasoning: PdfReasoning?): String =
         render(templateProvider.getDaycareVoucherDecisionPath(), DecisionType.DAYCARE, reasoning)
 
+    private fun renderTransfer(reasoning: PdfReasoning?): String =
+        render(templateProvider.getDaycareTransferDecisionPath(), DecisionType.DAYCARE, reasoning)
+
     @Test
     fun `renders generic and individual reasoning when present`() {
         val html =
@@ -173,6 +176,37 @@ class DecisionReasoningPdfRenderTest {
     @Test
     fun `omits the reasoning section in the voucher decision when reasoning is null`() {
         val html = renderVoucher(null)
+
+        assertFalse(html.contains("Päätöksen perustelut"))
+        assertContains(html, "Sovelletut oikeusohjeet")
+        assertContains(html, "Toimivalta")
+        assertContains(html, "tulee hyväksyä/hylätä viimeistään kahden viikon")
+    }
+
+    @Test
+    fun `renders reasoning above the first paragraphs in the transfer decision`() {
+        val html =
+            renderTransfer(
+                PdfReasoning(
+                    generic = "Yleinen perustelu lapselle",
+                    individual = listOf("Erityinen perustelu"),
+                )
+            )
+
+        assertContains(html, "Yleinen perustelu lapselle")
+        assertContains(html, "Erityinen perustelu")
+        // the leading instruction paragraphs are preserved in the acceptance section
+        assertContains(html, "tulee hyväksyä/hylätä viimeistään kahden viikon")
+        assertContains(html, "Tämä päätös poistaa lapsen siirtohakemuksen")
+        // the static legal-references paragraph is replaced by the reasoning fragment
+        assertFalse(html.contains("Sovelletut oikeusohjeet"))
+        // the authority paragraph is kept on page 2
+        assertContains(html, "Toimivalta")
+    }
+
+    @Test
+    fun `omits the reasoning section in the transfer decision when reasoning is null`() {
+        val html = renderTransfer(null)
 
         assertFalse(html.contains("Päätöksen perustelut"))
         assertContains(html, "Sovelletut oikeusohjeet")

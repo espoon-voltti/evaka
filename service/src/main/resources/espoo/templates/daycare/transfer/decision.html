@@ -16,7 +16,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <h1 th:text="#{decision.title}"></h1>
         <div th:replace="~{ shared/common :: child-and-unit-details}"></div>
 
-        <div th:utext="#{decision.instructions}"></div>
+        <div th:if="${reasoning == null}" th:utext="#{decision.instructions.old}"></div>
+        <th:block th:if="${reasoning != null}">
+          <div th:replace="~{shared/decision-reasoning :: section(${reasoning})}"></div>
+          <div>
+            <h2 th:text="#{decision.accepting.title}"></h2>
+            <div th:utext="#{decision.accepting}"></div>
+          </div>
+        </th:block>
       </div>
 
       <div class="page">
