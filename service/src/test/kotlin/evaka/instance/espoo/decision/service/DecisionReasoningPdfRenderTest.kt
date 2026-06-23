@@ -76,6 +76,9 @@ class DecisionReasoningPdfRenderTest {
     private fun renderTransfer(reasoning: PdfReasoning?): String =
         render(templateProvider.getDaycareTransferDecisionPath(), DecisionType.DAYCARE, reasoning)
 
+    private fun renderClub(reasoning: PdfReasoning?): String =
+        render(templateProvider.getClubDecisionPath(), DecisionType.CLUB, reasoning)
+
     @Test
     fun `renders generic and individual reasoning when present`() {
         val html =
@@ -212,6 +215,35 @@ class DecisionReasoningPdfRenderTest {
         assertContains(html, "Sovelletut oikeusohjeet")
         assertContains(html, "Toimivalta")
         assertContains(html, "tulee hyväksyä/hylätä viimeistään kahden viikon")
+    }
+
+    @Test
+    fun `replaces the first instruction paragraph with the reasoning in the club decision`() {
+        val html =
+            renderClub(
+                PdfReasoning(
+                    generic = "Yleinen perustelu lapselle",
+                    individual = listOf("Erityinen perustelu"),
+                )
+            )
+
+        assertContains(html, "Yleinen perustelu lapselle")
+        assertContains(html, "Erityinen perustelu")
+        // the remaining instruction paragraphs are kept in the acceptance section
+        assertContains(html, "Kerhopaikan vastaanottamisesta tai kieltäytymisestä on ilmoitettava")
+        assertContains(html, "Toimivalta")
+        // the first paragraph (the legal basis) is replaced by the reasoning fragment
+        assertFalse(html.contains("Päätös perustuu"))
+    }
+
+    @Test
+    fun `omits the reasoning section in the club decision when reasoning is null`() {
+        val html = renderClub(null)
+
+        assertFalse(html.contains("Päätöksen perustelut"))
+        assertContains(html, "Päätös perustuu")
+        assertContains(html, "Kerhopaikan vastaanottamisesta tai kieltäytymisestä on ilmoitettava")
+        assertContains(html, "Toimivalta")
     }
 }
 
