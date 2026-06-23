@@ -67,6 +67,9 @@ class DecisionReasoningPdfRenderTest {
             reasoning,
         )
 
+    private fun renderDaycare(reasoning: PdfReasoning?): String =
+        render(templateProvider.getDaycareDecisionPath(), DecisionType.DAYCARE, reasoning)
+
     @Test
     fun `renders generic and individual reasoning when present`() {
         val html =
@@ -115,6 +118,33 @@ class DecisionReasoningPdfRenderTest {
         assertContains(html, "Sovelletut oikeusohjeet")
         assertContains(html, "Perusopetuslaki")
         assertContains(html, "Toimivalta")
+    }
+
+    @Test
+    fun `renders reasoning and moves the first instruction paragraph into the daycare acceptance section`() {
+        val html =
+            renderDaycare(
+                PdfReasoning(
+                    generic = "Yleinen perustelu lapselle",
+                    individual = listOf("Erityinen perustelu"),
+                )
+            )
+
+        assertContains(html, "Yleinen perustelu lapselle")
+        assertContains(html, "Erityinen perustelu")
+        // first instruction paragraph is preserved as part of the acceptance section
+        assertContains(html, "tulee hyväksyä/hylätä viimeistään kahden viikon")
+        // the static legal-references paragraph is replaced by the reasoning fragment
+        assertFalse(html.contains("Sovelletut oikeusohjeet"))
+    }
+
+    @Test
+    fun `omits the reasoning section in the daycare decision when reasoning is null`() {
+        val html = renderDaycare(null)
+
+        assertFalse(html.contains("Päätöksen perustelut"))
+        assertContains(html, "Sovelletut oikeusohjeet")
+        assertContains(html, "tulee hyväksyä/hylätä viimeistään kahden viikon")
     }
 }
 
