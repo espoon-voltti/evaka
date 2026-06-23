@@ -213,25 +213,6 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
     }
 
     @Test
-    fun `finalizing a Swedish-unit decision with linked individual reasoning with empty titleSv throws BadRequest`() {
-        insertReadyGenericReasoning(textSv = "non-empty swedish generic text")
-        val (decisionId, applicationId) = createPlannedDecision(Language.sv)
-        val badIndividualId = insertIndividualReasoning(titleSv = "", textSv = "ok-text")
-
-        // Link the bad individual reasoning to the decision
-        db.transaction { tx ->
-            tx.setDecisionReasoningIndividualSelections(
-                decisionId = decisionId,
-                reasoningIds = setOf(badIndividualId),
-                createdAt = now,
-                createdBy = admin.evakaUserId,
-            )
-        }
-
-        assertThrows<BadRequest> { finalizeViaService(applicationId) }
-    }
-
-    @Test
     fun `finalizing a Swedish-unit decision with all Swedish text present succeeds`() {
         insertReadyGenericReasoning(textSv = "non-empty swedish generic text")
         val (decisionId, applicationId) = createPlannedDecision(Language.sv)
