@@ -37,16 +37,16 @@ class DecisionReasoningPdfRenderTest {
             SettingType.DECISION_MAKER_TITLE to "Asiakaspalvelupäällikkö",
         )
     private val templateEngine = pdfTemplateEngine("espoo")
-    private val templatePath = EvakaTemplateProvider().getPreschoolDecisionPath()
+    private val templateProvider = EvakaTemplateProvider()
     private val manager = UnitManager("Päivi Johtaja", "paivi.johtaja@example.com", "0451231234")
 
-    private fun renderPreschool(reasoning: PdfReasoning?): String {
+    private fun render(template: String, type: DecisionType, reasoning: PdfReasoning?): String {
         val page =
             generateDecisionPages(
-                template = templatePath,
+                template = template,
                 lang = OfficialLanguage.FI,
                 settings = settings,
-                decision = validDecision(),
+                decision = validDecision(type),
                 child = validChild(),
                 unitManager = manager,
                 preschoolManager = manager,
@@ -56,6 +56,16 @@ class DecisionReasoningPdfRenderTest {
             )
         return templateEngine.process(page.template.name, page.context)
     }
+
+    private fun renderPreschool(reasoning: PdfReasoning?): String =
+        render(templateProvider.getPreschoolDecisionPath(), DecisionType.PRESCHOOL, reasoning)
+
+    private fun renderPreparatory(reasoning: PdfReasoning?): String =
+        render(
+            templateProvider.getPreparatoryDecisionPath(),
+            DecisionType.PREPARATORY_EDUCATION,
+            reasoning,
+        )
 
     @Test
     fun `renders generic and individual reasoning when present`() {
@@ -75,6 +85,31 @@ class DecisionReasoningPdfRenderTest {
     @Test
     fun `omits the reasoning section and shows the hard-coded instructions when reasoning is null`() {
         val html = renderPreschool(null)
+
+        assertFalse(html.contains("Päätöksen perustelut"))
+        assertContains(html, "Sovelletut oikeusohjeet")
+        assertContains(html, "Perusopetuslaki")
+        assertContains(html, "Toimivalta")
+    }
+
+    @Test
+    fun `renders generic and individual reasoning in the preparatory decision when present`() {
+        val html =
+            renderPreparatory(
+                PdfReasoning(
+                    generic = "Yleinen perustelu lapselle",
+                    individual = listOf("Erityinen perustelu"),
+                )
+            )
+
+        assertContains(html, "Yleinen perustelu lapselle")
+        assertContains(html, "Erityinen perustelu")
+        assertContains(html, "Toimivalta")
+    }
+
+    @Test
+    fun `omits the reasoning section in the preparatory decision when reasoning is null`() {
+        val html = renderPreparatory(null)
 
         assertFalse(html.contains("Päätöksen perustelut"))
         assertContains(html, "Sovelletut oikeusohjeet")
