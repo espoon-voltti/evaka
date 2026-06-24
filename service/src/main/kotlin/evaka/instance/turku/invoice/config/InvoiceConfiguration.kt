@@ -146,7 +146,7 @@ enum class Product(val nameFi: String, val code: String) {
     CORRECTION("Oikaisu", "000000000000007246"),
     FREE_MONTH("Poissaolovähennys 100 %", "000000000000007243"),
     OVER_CONTRACT("Sovittujen tuntien ylitys", "000000000000009955"),
-    ADDITIONAL_CHARGE("Lisämaksu", "000000000000009955"),
+    ADDITIONAL_CHARGE("Lisämaksu", "000000000000007246"),
     PRESCHOOL_DAYCARE_CORRECTION("Kokoaikainen varhaiskasvatus", "000000000000007246");
 
     val key = ProductKey(this.name)
