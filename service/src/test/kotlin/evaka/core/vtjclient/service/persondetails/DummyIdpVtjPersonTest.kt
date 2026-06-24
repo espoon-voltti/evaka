@@ -8,13 +8,27 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
 class DummyIdpVtjPersonTest {
+    private val grandchild =
+        DummyIdpVtjPerson(firstNames = "Grandchild", lastName = "A", socialSecurityNumber = "GC1")
+    private val grandparent =
+        DummyIdpVtjPerson(
+            firstNames = "Grandparent",
+            lastName = "One",
+            socialSecurityNumber = "GP1",
+        )
     private val child =
-        DummyIdpVtjPerson(firstNames = "Child", lastName = "A", socialSecurityNumber = "C1")
+        DummyIdpVtjPerson(
+            firstNames = "Child",
+            lastName = "A",
+            socialSecurityNumber = "C1",
+            dependants = listOf(grandchild),
+        )
     private val guardian =
         DummyIdpVtjPerson(
             firstNames = "Guardian",
             lastName = "One",
             socialSecurityNumber = "G1",
+            guardians = listOf(grandparent),
             dependants = listOf(child),
         )
 
@@ -28,6 +42,7 @@ class DummyIdpVtjPersonTest {
 
     @Test
     fun `dependants are included one level only`() {
+        // child C1 has its own dependant GC1, which must not appear under the guardian
         val result = guardian.toVtjPerson(includeGuardians = false, includeDependants = true)
         assertEquals(listOf("C1"), result.dependants.map { it.socialSecurityNumber })
         assertEquals(emptyList(), result.dependants.single().dependants)
@@ -35,8 +50,8 @@ class DummyIdpVtjPersonTest {
 
     @Test
     fun `guardians are included one level only`() {
-        // childWithGuardian has guardian G1; verify guardians list and that nested guardian carries
-        // no further relations
+        // childWithGuardian has guardian G1, who in turn has guardian GP1 and dependant C1; only G1
+        // is returned, and the nested G1 carries no further relations
         val childWithGuardian =
             DummyIdpVtjPerson(
                 firstNames = "Child",
