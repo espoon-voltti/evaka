@@ -78,6 +78,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
             areaId = careArea1.id,
             providerType = ProviderType.MUNICIPAL,
             type = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION),
+            dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+            dailyPreparatoryTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0)),
         )
     private val daycareGroup1: GroupId = GroupId(UUID.randomUUID())
     private val daycareGroup2: GroupId = GroupId(UUID.randomUUID())

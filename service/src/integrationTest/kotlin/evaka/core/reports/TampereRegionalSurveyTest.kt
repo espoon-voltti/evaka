@@ -429,6 +429,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
             DevDaycare(
                 name = "Palsekoulu",
                 type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
+                dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
                 providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
                 openingDate = startDate.minusYears(3),
                 areaId = newArea.id,
@@ -546,6 +547,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
             DevDaycare(
                 name = "Ostokoulu",
                 type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
+                dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
                 providerType = ProviderType.PURCHASED,
                 openingDate = startDate.minusYears(3),
                 areaId = newArea.id,
@@ -1036,6 +1038,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                 areaId = testArea.id,
                 openingDate = octFirst.minusDays(7),
                 type = setOf(CareType.CENTRE, CareType.PRESCHOOL),
+                dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
                 operationTimes =
                     List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                         List(2) { null },
@@ -2270,6 +2273,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                         areaId = areaAId,
                         openingDate = monday.minusDays(7),
                         type = setOf(CareType.CENTRE, CareType.PRESCHOOL),
+                        dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
                         operationTimes =
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },
@@ -2351,6 +2355,7 @@ class TampereRegionalSurveyTest : FullApplicationTest(resetDbBeforeEach = true) 
                         openingDate = monday.minusMonths(1),
                         type = setOf(CareType.PRESCHOOL, CareType.CENTRE),
                         providerType = ProviderType.MUNICIPAL,
+                        dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
                         operationTimes =
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },

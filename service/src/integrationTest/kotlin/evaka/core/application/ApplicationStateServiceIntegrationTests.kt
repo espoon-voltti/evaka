@@ -71,6 +71,7 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -107,7 +108,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val area = DevCareArea()
-    private val daycare = DevDaycare(areaId = area.id)
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            daycareApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
+            preschoolApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
+        )
     private val daycare2 = DevDaycare(areaId = area.id, name = "Test Daycare 2")
     private val employee = DevEmployee()
     private val serviceWorker =

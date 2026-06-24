@@ -1032,6 +1032,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare2.id,
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
+                    source = PlacementSource.MANUAL,
                     modifiedAt = null,
                     modifiedBy = null,
                 )
@@ -1120,6 +1121,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     unitId = daycare2.id,
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
+                    source = PlacementSource.MANUAL,
                     modifiedAt = null,
                     modifiedBy = null,
                 )

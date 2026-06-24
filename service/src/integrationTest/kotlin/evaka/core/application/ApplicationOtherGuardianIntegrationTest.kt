@@ -73,7 +73,12 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             postOffice = "Espoo",
         )
     private val area = DevCareArea()
-    private val daycare = DevDaycare(areaId = area.id)
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            daycareApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
+            preschoolApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
+        )
     private val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
 
     private val application: ApplicationId = ApplicationId(UUID.randomUUID())

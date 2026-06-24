@@ -4,6 +4,8 @@
 
 import DateRange from 'lib-common/date-range'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
@@ -40,6 +42,10 @@ test.describe('child document with person duplicate', () => {
     const preschool = await Fixture.daycare({
       areaId: area.id,
       type: ['PRESCHOOL'],
+      dailyPreschoolTime: new TimeRange(
+        LocalTime.of(9, 0),
+        LocalTime.of(13, 0)
+      ),
       enabledPilotFeatures: ['VASU_AND_PEDADOC', 'OTHER_DECISION']
     }).save()
 

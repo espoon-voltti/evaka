@@ -941,7 +941,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             periodEnd = invoice.periodEnd,
             dueDate = invoice.dueDate,
             invoiceDate = invoice.invoiceDate,
-            agreementType = allAreas.find { it.id == invoice.areaId }?.areaCode!!,
+            agreementType = allAreas.find { it.id == invoice.areaId }?.areaCode,
             areaId = invoice.areaId,
             headOfFamily = allAdults.find { it.id == invoice.headOfFamilyId }!!.toPersonDetailed(),
             codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),

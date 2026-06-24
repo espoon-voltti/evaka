@@ -51,7 +51,12 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
     private val clock = MockEvakaClock(2020, 1, 1, 12, 0)
 
     private val area = DevCareArea()
-    private val daycare = DevDaycare(areaId = area.id)
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            daycareApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
+            preschoolApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
+        )
     private val adult = DevPerson(ssn = "010180-1232")
     private val child = DevPerson(ssn = "010617A123U")
     private val decisionMaker = DevEmployee()

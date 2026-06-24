@@ -12,6 +12,7 @@ import evaka.core.absence.AbsenceType
 import evaka.core.assistance.OtherAssistanceMeasureType
 import evaka.core.assistance.PreschoolAssistanceLevel
 import evaka.core.daycare.domain.ProviderType
+import evaka.core.defaultMunicipalOrganizerOid
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
@@ -50,8 +51,14 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var koskiEnv: KoskiEnv
 
     private val area = DevCareArea()
-    private val daycare = DevDaycare(areaId = area.id)
-    private val daycare2 = DevDaycare(areaId = area.id, name = "Test Daycare 2")
+    private val daycare =
+        DevDaycare(areaId = area.id, ophOrganizerOid = defaultMunicipalOrganizerOid)
+    private val daycare2 =
+        DevDaycare(
+            areaId = area.id,
+            name = "Test Daycare 2",
+            ophOrganizerOid = defaultMunicipalOrganizerOid,
+        )
     private val employee = DevEmployee()
     private val child1 = DevPerson(ssn = "010617A123U", dateOfBirth = LocalDate.of(2017, 6, 1))
     private val childWithoutSsn = DevPerson(dateOfBirth = LocalDate.of(2018, 7, 28))
@@ -759,7 +766,14 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `a daycare with purchased provider type is marked as such in study rights`() {
         val daycareId = db.transaction {
-            it.insert(DevDaycare(areaId = area.id, providerType = ProviderType.PURCHASED))
+            it.insert(
+                DevDaycare(
+                    areaId = area.id,
+                    providerType = ProviderType.PURCHASED,
+                    ophUnitOid = "1.2.246.562.10.5555555555",
+                    ophOrganizerOid = defaultMunicipalOrganizerOid,
+                )
+            )
         }
         insertPlacement(daycareId = daycareId)
 
@@ -776,7 +790,14 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `a daycare with private provider type is marked as purchased in study rights`() {
         val daycareId = db.transaction {
-            it.insert(DevDaycare(areaId = area.id, providerType = ProviderType.PRIVATE))
+            it.insert(
+                DevDaycare(
+                    areaId = area.id,
+                    providerType = ProviderType.PRIVATE,
+                    ophUnitOid = "1.2.246.562.10.6666666666",
+                    ophOrganizerOid = defaultMunicipalOrganizerOid,
+                )
+            )
         }
         insertPlacement(daycareId = daycareId)
 
@@ -1115,6 +1136,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     areaId = area.id,
                     uploadToKoski = true,
                     ophUnitOid = "1.2.246.562.10.3333333333",
+                    ophOrganizerOid = defaultMunicipalOrganizerOid,
                 )
             )
         }
@@ -1124,6 +1146,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     areaId = area.id,
                     uploadToKoski = true,
                     ophUnitOid = "1.2.246.562.10.4444444444",
+                    ophOrganizerOid = defaultMunicipalOrganizerOid,
                 )
             )
         }
