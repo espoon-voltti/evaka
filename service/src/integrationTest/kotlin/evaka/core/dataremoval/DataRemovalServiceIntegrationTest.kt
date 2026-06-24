@@ -6,6 +6,7 @@ package evaka.core.dataremoval
 
 import evaka.core.DataRemovalEnv
 import evaka.core.FullApplicationTest
+import evaka.core.assistance.OtherAssistanceMeasureType
 import evaka.core.calendarevent.CalendarEventType
 import evaka.core.childimages.insertChildImage
 import evaka.core.document.ChildDocumentType
@@ -19,12 +20,16 @@ import evaka.core.note.child.sticky.ChildStickyNoteBody
 import evaka.core.note.child.sticky.createChildStickyNote
 import evaka.core.placement.PlacementType
 import evaka.core.s3.DocumentService
+import evaka.core.shared.AssistanceActionOptionId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.UserRole
+import evaka.core.shared.dev.DevAssistanceAction
+import evaka.core.shared.dev.DevAssistanceActionOption
+import evaka.core.shared.dev.DevAssistanceFactor
 import evaka.core.shared.dev.DevCalendarEvent
 import evaka.core.shared.dev.DevCalendarEventAttendee
 import evaka.core.shared.dev.DevCalendarEventTime
@@ -33,6 +38,7 @@ import evaka.core.shared.dev.DevChild
 import evaka.core.shared.dev.DevChildDocument
 import evaka.core.shared.dev.DevChildDocumentPublishedVersion
 import evaka.core.shared.dev.DevDaycare
+import evaka.core.shared.dev.DevDaycareAssistance
 import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevDocumentTemplate
 import evaka.core.shared.dev.DevEmployee
@@ -41,9 +47,11 @@ import evaka.core.shared.dev.DevFosterParent
 import evaka.core.shared.dev.DevFridgeChild
 import evaka.core.shared.dev.DevFridgePartnership
 import evaka.core.shared.dev.DevGuardian
+import evaka.core.shared.dev.DevOtherAssistanceMeasure
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
+import evaka.core.shared.dev.DevPreschoolAssistance
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
@@ -77,6 +85,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val leafExpireDate = today.minusYears(1)
     private val imageExpireDate = today.minusMonths(1)
     private val financeExpireDate = today.minusYears(5)
+    private val assistanceExpireDate = today.minusYears(10)
 
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val careArea = DevCareArea()
@@ -428,6 +437,50 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             readChildDietColumns(child.id),
         )
         assertEquals(setOf(imageId.toString()), scheduledChildImageDeletionIds())
+    }
+
+    @Test
+    fun `deleteExpiredData removes assistance rows for a child whose last placement ended over ten years ago`() {
+        insertPlacementEnding(child.id, assistanceExpireDate.minusDays(1))
+        insertAssistanceData(child.id)
+
+        withLimit(100) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        allAssistanceTables.forEach { assertEquals(0, rowCount(it), "table $it should be empty") }
+        assertEquals(
+            0,
+            rowCount("assistance_action_option_ref"),
+            "assistance_action_option_ref should be emptied via cascade",
+        )
+    }
+
+    @Test
+    fun `deleteExpiredData keeps assistance rows for a child whose last placement ended within ten years`() {
+        // Expired by the 1-year leaf window but not by the 10-year assistance window
+        insertExpiredPlacement(child.id)
+        insertAssistanceData(child.id)
+
+        withLimit(100) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        allAssistanceTables.forEach { assertEquals(1, rowCount(it), "table $it should be kept") }
+        assertEquals(1, rowCount("assistance_action_option_ref"))
+    }
+
+    @Test
+    fun `deleteExpiredData keeps assistance rows for a child whose last placement ends exactly on the ten-year boundary`() {
+        insertPlacementEnding(child.id, assistanceExpireDate)
+        insertAssistanceData(child.id)
+
+        withLimit(100) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        allAssistanceTables.forEach { assertEquals(1, rowCount(it), "table $it should be kept") }
+        assertEquals(1, rowCount("assistance_action_option_ref"))
     }
 
     @Test
@@ -913,6 +966,33 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             "family_contact",
             "nekku_special_diet_choices",
         )
+
+    private val allAssistanceTables =
+        listOf(
+            "assistance_factor",
+            "assistance_action",
+            "daycare_assistance",
+            "preschool_assistance",
+            "other_assistance_measure",
+        )
+
+    private fun insertAssistanceData(childId: ChildId) {
+        val actionOption =
+            DevAssistanceActionOption(id = AssistanceActionOptionId(UUID.randomUUID()))
+        db.transaction { tx ->
+            tx.insert(DevAssistanceFactor(childId = childId))
+            tx.insert(actionOption)
+            tx.insert(DevAssistanceAction(childId = childId, actions = setOf(actionOption.value)))
+            tx.insert(DevDaycareAssistance(childId = childId))
+            tx.insert(DevPreschoolAssistance(childId = childId))
+            tx.insert(
+                DevOtherAssistanceMeasure(
+                    childId = childId,
+                    type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT,
+                )
+            )
+        }
+    }
 
     private fun withLimit(limit: Int, block: () -> Unit) {
         ReflectionTestUtils.setField(

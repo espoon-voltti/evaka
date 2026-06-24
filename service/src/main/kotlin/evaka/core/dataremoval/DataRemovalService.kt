@@ -95,6 +95,20 @@ class DataRemovalService(
                 ),
         )
 
+        deleteExpiredChildLeafRows(
+            dbc,
+            expireDate = today.minusYears(10),
+            limit,
+            leafTables =
+                listOf(
+                    "assistance_factor",
+                    "assistance_action",
+                    "daycare_assistance",
+                    "preschool_assistance",
+                    "other_assistance_measure",
+                ),
+        )
+
         unsetExpiredChildReferences(
             dbc,
             expireDate = today.minusYears(1),
