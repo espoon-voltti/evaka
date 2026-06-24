@@ -4,6 +4,8 @@
 
 package evaka.core.dataremoval
 
+import evaka.core.Audit
+import evaka.core.AuditId
 import evaka.core.DataRemovalEnv
 import evaka.core.childimages.deleteImageFile
 import evaka.core.document.childdocument.deleteExpiredChildDocuments
@@ -26,6 +28,18 @@ import java.time.LocalDate
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
+
+private fun auditExpiredDelete(
+    entity: String,
+    targetId: AuditId,
+    meta: Map<String, Any?> = emptyMap(),
+) = Audit.DataRemovalExpiredDelete.log(targetId = targetId, meta = meta + ("entity" to entity))
+
+private fun auditExpiredUnset(
+    entity: String,
+    targetId: AuditId,
+    meta: Map<String, Any?> = emptyMap(),
+) = Audit.DataRemovalExpiredUnset.log(targetId = targetId, meta = meta + ("entity" to entity))
 
 @Service
 class DataRemovalService(
@@ -110,19 +124,19 @@ class DataRemovalService(
             results
         }
         logger.info { "Deleted ${deleted.size} expired child document(s)" }
-        logger.infoChunked(
-            items = deleted,
-            meta = { chunk ->
-                mapOf(
-                    "deletedDocumentIds" to chunk.map { it.documentId },
-                    "deletedDecisionIds" to chunk.mapNotNull { it.decisionId },
-                    "deletedProcessIds" to chunk.mapNotNull { it.processId },
-                    "deletedDocumentKeys" to chunk.flatMap { it.documentKeys },
-                    "deletedSfiMessageIds" to chunk.flatMap { it.sfiMessageIds },
-                )
-            },
-            message = { index, total -> "Deleted expired child documents (chunk $index/$total)" },
-        )
+        deleted.forEach { doc ->
+            auditExpiredDelete(
+                entity = "child_document",
+                targetId = AuditId(doc.documentId),
+                meta =
+                    mapOf(
+                        "decisionId" to doc.decisionId,
+                        "processId" to doc.processId,
+                        "documentKeys" to doc.documentKeys,
+                        "sfiMessageIds" to doc.sfiMessageIds,
+                    ),
+            )
+        }
         if (deleted.size >= limit) {
             logger.info {
                 "Child document deletion hit batch limit of $limit; remaining backlog will be processed on the next run"
@@ -147,11 +161,13 @@ class DataRemovalService(
             childImageIds
         }
 
-        logger.infoChunked(
-            items = ids,
-            meta = { chunk -> mapOf("deletedIds" to chunk) },
-            message = { index, total -> "Deleted expired child images (chunk $index/$total)" },
-        )
+        ids.forEach { imageId ->
+            auditExpiredDelete(
+                entity = "child_images",
+                targetId = AuditId(imageId),
+                meta = mapOf("expireDate" to expireDate),
+            )
+        }
     }
 
     fun deleteChildImage(
@@ -174,13 +190,13 @@ fun deleteExpiredChildLeafRows(
         val deleted = dbc.transaction { tx ->
             tx.deleteExpiredChildLeafRowsFromTable<Id<*>>(expireDate, limit, table)
         }
-        logger.infoChunked(
-            items = deleted,
-            meta = { chunk -> mapOf("table" to table, "deletedIds" to chunk) },
-            message = { index, total ->
-                "Deleted expired rows from table $table (chunk $index/$total)"
-            },
-        )
+        deleted.forEach { id ->
+            auditExpiredDelete(
+                entity = table,
+                targetId = AuditId(id),
+                meta = mapOf("expireDate" to expireDate),
+            )
+        }
     }
 }
 
@@ -221,13 +237,13 @@ fun unsetExpiredChildReferences(
             val childIds = dbc.transaction { tx ->
                 tx.unsetExpiredChildReference(expireDate, limit, column)
             }
-            logger.infoChunked(
-                items = childIds,
-                meta = { chunk -> mapOf("column" to column, "childIds" to chunk) },
-                message = { index, total ->
-                    "Unset expired child.$column values (chunk $index/$total)"
-                },
-            )
+            childIds.forEach { childId ->
+                auditExpiredUnset(
+                    entity = "child",
+                    targetId = AuditId(childId),
+                    meta = mapOf("column" to column, "expireDate" to expireDate),
+                )
+            }
         }
     }
 }
@@ -274,11 +290,13 @@ HAVING max(end_date) < ${bind(date)}
 fun deleteExpiredFinanceNotes(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
     logger.info { "Deleting at most $limit expired finance notes" }
     val deleted = dbc.transaction { tx -> tx.deleteExpiredFinanceNotesBatch(expireDate, limit) }
-    logger.infoChunked(
-        items = deleted,
-        meta = { chunk -> mapOf("deletedIds" to chunk) },
-        message = { index, total -> "Deleted expired finance notes (chunk $index/$total)" },
-    )
+    deleted.forEach { id ->
+        auditExpiredDelete(
+            entity = "finance_note",
+            targetId = AuditId(id),
+            meta = mapOf("expireDate" to expireDate),
+        )
+    }
 }
 
 private fun Database.Transaction.deleteExpiredFinanceNotesBatch(
@@ -308,11 +326,13 @@ RETURNING finance_note.id
 fun deleteExpiredCitizenUsers(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
     logger.info { "Deleting at most $limit expired citizen users" }
     val deleted = dbc.transaction { tx -> tx.deleteExpiredCitizenUsersBatch(expireDate, limit) }
-    logger.infoChunked(
-        items = deleted,
-        meta = { chunk -> mapOf("deletedIds" to chunk) },
-        message = { index, total -> "Deleted expired citizen users (chunk $index/$total)" },
-    )
+    deleted.forEach { id ->
+        auditExpiredDelete(
+            entity = "citizen_user",
+            targetId = AuditId(id),
+            meta = mapOf("expireDate" to expireDate),
+        )
+    }
 }
 
 private fun Database.Transaction.deleteExpiredCitizenUsersBatch(
