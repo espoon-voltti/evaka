@@ -7,8 +7,8 @@ import isEqual from 'lodash/isEqual'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { useBoolean } from 'lib-common/form/hooks'
 import type { UpdateStateFn } from 'lib-common/form-state'
+import { useBoolean } from 'lib-common/form/hooks'
 import type { Attachment } from 'lib-common/generated/api-types/attachment'
 import type {
   AuthorizedMessageAccount,

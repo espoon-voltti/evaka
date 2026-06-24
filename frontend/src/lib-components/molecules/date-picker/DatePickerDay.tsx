@@ -7,9 +7,9 @@ import { fi, sv, enGB } from 'date-fns/locale'
 import React, { useCallback, useMemo, useState } from 'react'
 import type { OnSelectHandler } from 'react-day-picker'
 import { DayPicker } from 'react-day-picker'
+import 'react-day-picker/style.css'
 
 import LocalDate from 'lib-common/local-date'
-import 'react-day-picker/style.css'
 import { capitalizeFirstLetter } from 'lib-common/string'
 
 interface Props {

@@ -118,11 +118,7 @@ export function apiDataToFormData(
 ): ApplicationFormData {
   const vtjSiblings: VtjSibling[] = children
     .map(
-      ({
-        firstName,
-        lastName,
-        socialSecurityNumber
-      }): VtjSibling | undefined =>
+      ({ firstName, lastName, socialSecurityNumber }): VtjSibling | undefined =>
         socialSecurityNumber
           ? {
               firstName,
