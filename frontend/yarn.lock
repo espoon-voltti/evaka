@@ -4738,7 +4738,6 @@ __metadata:
     date-fns: "npm:4.4.0"
     date-fns-tz: "npm:3.2.0"
     eslint-plugin-lodash: "npm:8.0.0"
-    globals: "npm:17.6.0"
     ical-generator: "npm:11.0.0"
     jsdom: "npm:29.1.1"
     leaflet: "npm:1.9.4"
@@ -4756,7 +4755,6 @@ __metadata:
     polished: "npm:4.3.1"
     postcss: "npm:8.5.15"
     postcss-preset-env: "npm:11.3.1"
-    prettier: "npm:3.8.4"
     punycode: "npm:2.3.1"
     react: "npm:19.2.7"
     react-chartjs-2: "npm:5.3.1"
@@ -5021,13 +5019,6 @@ __metadata:
     once: "npm:^1.3.0"
     path-is-absolute: "npm:^1.0.0"
   checksum: 10/bc78b6ea0735b6e23d20678aba4ae6a4760e8c9527e3c4683ac25b14e70f55f9531245dcf25959b70cbc4aa3dcce1fc37ab65fd026a4cbd70aa3a44880bd396b
-  languageName: node
-  linkType: hard
-
-"globals@npm:17.6.0":
-  version: 17.6.0
-  resolution: "globals@npm:17.6.0"
-  checksum: 10/2bf0febf31c942edee6f4eca7e939a9c885f8ecfb767048b1c4dd2a32008d0ab136e6076665d76b44b29c2571bbbc1681371caab05fd8ee0067c7618e841b89d
   languageName: node
   linkType: hard
 
@@ -6635,15 +6626,6 @@ __metadata:
     picocolors: "npm:^1.1.1"
     source-map-js: "npm:^1.2.1"
   checksum: 10/d02ad19eb1e0fa53a1229ee6d53807eb88f903f2b9a8cac66993367f3ac7dd3b97238c783a54ccbf4145f82f6ca9a5cbd58f089846285d759c8a3259fbea8318
-  languageName: node
-  linkType: hard
-
-"prettier@npm:3.8.4":
-  version: 3.8.4
-  resolution: "prettier@npm:3.8.4"
-  bin:
-    prettier: bin/prettier.cjs
-  checksum: 10/54684a3cc6689238692b29fab541c01934af7677be94c02293ba49981a1ac121c8bebe2a865f0c3b963e99d208f847c53aed354cc0ce8750e2d45791d64506c5
   languageName: node
   linkType: hard
 

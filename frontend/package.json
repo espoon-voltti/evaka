@@ -78,7 +78,6 @@
     "@vitejs/plugin-react": "6.0.2",
     "concurrently": "10.0.3",
     "eslint-plugin-lodash": "8.0.0",
-    "globals": "17.6.0",
     "jsdom": "29.1.1",
     "make-error-cause": "2.3.0",
     "oxfmt": "0.56.0",
@@ -87,7 +86,6 @@
     "playwright": "1.61.0",
     "postcss": "8.5.15",
     "postcss-preset-env": "11.3.1",
-    "prettier": "3.8.4",
     "rollup": "4.62.0",
     "terser": "5.48.0",
     "ts-node": "10.9.2",
@@ -130,12 +128,6 @@
     "> 5% in FI",
     "last 3 years"
   ],
-  "prettier": {
-    "bracketSpacing": true,
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "none"
-  },
   "engines": {
     "node": ">= 22.12.0"
   },
