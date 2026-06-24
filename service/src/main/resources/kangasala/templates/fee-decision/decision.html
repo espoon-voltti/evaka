@@ -41,7 +41,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <tbody>
         <tr th:if="${hasChildIncome}">
             <td colspan="2">
-                <strong class="semi" th:text="#{decision.income.title}">Vanhempien tulot</strong>
+                <strong class="semi" th:text="#{decision.income.title}">Aikuisten tulot</strong>
             </td>
         </tr>
         <tr>
@@ -84,7 +84,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
                 <td class="text-right" th:text="${part.childIncomeTotal}"></td>
             </tr>
             <tr>
-                <td th:text="#{decision.childIncome.total}">Vanhempien ja lapsen tulot yhteensä</td>
+                <td th:text="#{decision.childIncome.total}">Aikuisten ja lapsen tulot yhteensä</td>
                 <td class="text-right" th:text="${part.incomeTotal}">2345.67</td>
             </tr>
         </th:block>
