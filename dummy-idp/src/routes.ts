@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import {
-  defaultPersons,
+  MockVtjDataset,
+  mockVtjDatasetSchema,
   sfiSamlAttrs,
   sfiSamlAttrUrns,
-  toSfiSamlAttrs,
-  vtjPersonSchema
+  toSfiSamlAttrs
 } from './model'
+import { defaultDataset } from './default-dataset'
+import { VtjStore } from './vtj-store'
 import express from 'express'
-import { z } from 'zod'
 import samlp, { IdPOptions } from 'samlp'
 import * as crypto from 'node:crypto'
 import * as fs from 'node:fs'
@@ -18,20 +19,41 @@ import { config } from './config'
 import { SessionParticipants, SimpleProfileMapper } from './saml'
 import { html, Html } from './html'
 
-let vtjPersons = defaultPersons
+const store = new VtjStore(mockVtjDatasetSchema.parse(defaultDataset))
+
+let preTestModeSnapshot: MockVtjDataset | null = null
 
 export const clearUsers: express.RequestHandler = (_, res) => {
-  vtjPersons = []
+  store.clear()
+  res.sendStatus(200)
+}
+
+export const enterTestMode: express.RequestHandler = (_, res) => {
+  preTestModeSnapshot = store.snapshot()
+  res.sendStatus(200)
+}
+
+export const exitTestMode: express.RequestHandler = (_, res) => {
+  if (preTestModeSnapshot) {
+    store.clear()
+    store.upsert(preTestModeSnapshot)
+    preTestModeSnapshot = null
+  }
   res.sendStatus(200)
 }
 
 export const upsertUser: express.RequestHandler = (req, res) => {
-  const persons = z.array(vtjPersonSchema).parse(req.body)
-  vtjPersons = [
-    ...vtjPersons.filter((p) => persons.every(({ ssn }) => p.ssn !== ssn)),
-    ...persons
-  ]
+  store.upsert(mockVtjDatasetSchema.parse(req.body))
   res.sendStatus(200)
+}
+
+export const getVtjPerson: express.RequestHandler = (req, res) => {
+  const person = store.get(req.params.ssn)
+  if (!person) {
+    res.sendStatus(404)
+    return
+  }
+  res.json(person)
 }
 
 const idpPublicCert = fs.readFileSync(config.IDP_PUBLIC_CERT_PATH)
@@ -149,13 +171,23 @@ export const samlSingleSignOnRoute: express.RequestHandler = (
     confirmHandler(req, res, next)
   } else {
     const defaultSsn = '070644-937X'
-    const persons = [...vtjPersons] // copy data, because we're doing a mutable sort
-    persons.sort((a, b) => a.ssn.localeCompare(b.ssn))
+    const persons = store
+      .list()
+      .slice()
+      .sort((a, b) =>
+        a.socialSecurityNumber.localeCompare(b.socialSecurityNumber)
+      )
     const inputs = persons
-      .map(({ ssn, givenName, surname, comment }) => {
+      .map((person) => {
+        const ssn = person.socialSecurityNumber
         if (!ssn) return ''
         const checked = ssn === defaultSsn ? 'checked' : ''
-        const commentHtml = comment ? html`<small>(${comment})</small>` : ''
+        const count = store.dependantCount(ssn)
+        const commentText =
+          person.comment ?? (count > 0 ? `${count} huollettavaa` : '')
+        const commentHtml = commentText
+          ? html`<small>(${commentText})</small>`
+          : ''
         return html`<div>
           <input
             type="radio"
@@ -167,7 +199,7 @@ export const samlSingleSignOnRoute: express.RequestHandler = (
           />
           <label for="${ssn}">
             <span style="font-family: monospace; user-select: all">${ssn}</span
-            >: ${givenName} ${surname} ${commentHtml}
+            >: ${person.firstNames} ${person.lastName} ${commentHtml}
           </label>
         </div>`
       })
@@ -190,8 +222,8 @@ export const samlSingleSignOnConfirmRoute: express.RequestHandler = (
   res,
   next
 ) => {
-  const ssn = req.query.ssn
-  const person = vtjPersons.find((p) => p.ssn === ssn)
+  const ssn = typeof req.query.ssn === 'string' ? req.query.ssn : ''
+  const person = store.get(ssn)
   if (!person) throw new Error(`No person with ssn ${ssn}`)
   req.session.user = {
     nameId: crypto.randomUUID(),

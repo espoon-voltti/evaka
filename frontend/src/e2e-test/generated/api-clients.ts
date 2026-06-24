@@ -98,7 +98,6 @@ import type { IncomeNotification } from 'lib-common/generated/api-types/invoicin
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
-import type { MockVtjDataset } from './api-types'
 import type { NekkuCustomer } from './api-types'
 import type { NekkuSpecialDiet } from './api-types'
 import type { NekkuSpecialDietChoices } from 'lib-common/generated/api-types/nekku'
@@ -2329,27 +2328,6 @@ export async function upsertStaffOccupancyCoefficient(
       url: uri`/occupancy-coefficient`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DevUpsertStaffOccupancyCoefficient>
-    })
-    return json
-  } catch (e) {
-    throw new DevApiError(e)
-  }
-}
-
-
-/**
-* Generated from evaka.core.shared.dev.DevApi.upsertVtjDataset
-*/
-export async function upsertVtjDataset(
-  request: {
-    body: MockVtjDataset
-  }
-): Promise<void> {
-  try {
-    const { data: json } = await devClient.request<JsonOf<void>>({
-      url: uri`/vtj-persons`.toString(),
-      method: 'POST',
-      data: request.body satisfies JsonCompatible<MockVtjDataset>
     })
     return json
   } catch (e) {

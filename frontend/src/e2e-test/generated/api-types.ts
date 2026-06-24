@@ -80,8 +80,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import type { MailingAddress } from 'lib-common/generated/api-types/daycare'
 import type { MobileDeviceId } from 'lib-common/generated/api-types/shared'
-import type { Nationality } from 'lib-common/generated/api-types/vtjclient'
-import type { NativeLanguage } from 'lib-common/generated/api-types/vtjclient'
 import type { NekkuProductMealTime } from 'lib-common/generated/api-types/nekku'
 import type { NekkuProductMealType } from 'lib-common/generated/api-types/nekku'
 import type { NekkuSpecialDietType } from 'lib-common/generated/api-types/nekku'
@@ -1071,30 +1069,6 @@ export interface Geometry {
 }
 
 /**
-* Generated from evaka.core.vtjclient.service.persondetails.MockVtjDataset
-*/
-export interface MockVtjDataset {
-  guardianDependants: Partial<Record<string, string[]>>
-  persons: MockVtjPerson[]
-}
-
-/**
-* Generated from evaka.core.vtjclient.service.persondetails.MockVtjPerson
-*/
-export interface MockVtjPerson {
-  address: PersonAddress | null
-  dateOfDeath: LocalDate | null
-  firstNames: string
-  lastName: string
-  municipalityOfResidence: string | null
-  nationalities: Nationality[]
-  nativeLanguage: NativeLanguage | null
-  residenceCode: string | null
-  restrictedDetails: RestrictedDetails | null
-  socialSecurityNumber: string
-}
-
-/**
 * Generated from evaka.core.nekku.NekkuCustomer
 */
 export interface NekkuCustomer {
@@ -1149,17 +1123,6 @@ export interface NekkuSpecialDietsField {
 }
 
 /**
-* Generated from evaka.core.vtjclient.dto.PersonAddress
-*/
-export interface PersonAddress {
-  postOffice: string | null
-  postOfficeSe: string | null
-  postalCode: string | null
-  streetAddress: string | null
-  streetAddressSe: string | null
-}
-
-/**
 * Generated from evaka.core.shared.dev.PlacementPlan
 */
 export interface PlacementPlan {
@@ -1186,14 +1149,6 @@ export interface ReservationInsert {
   childId: PersonId
   date: LocalDate
   range: TimeRange | null
-}
-
-/**
-* Generated from evaka.core.vtjclient.dto.RestrictedDetails
-*/
-export interface RestrictedDetails {
-  enabled: boolean
-  endDate: LocalDate | null
 }
 
 /**
@@ -1761,23 +1716,6 @@ export function deserializeJsonDevTerminatePlacementRequest(json: JsonOf<DevTerm
 }
 
 
-export function deserializeJsonMockVtjDataset(json: JsonOf<MockVtjDataset>): MockVtjDataset {
-  return {
-    ...json,
-    persons: json.persons.map(e => deserializeJsonMockVtjPerson(e))
-  }
-}
-
-
-export function deserializeJsonMockVtjPerson(json: JsonOf<MockVtjPerson>): MockVtjPerson {
-  return {
-    ...json,
-    dateOfDeath: (json.dateOfDeath != null) ? LocalDate.parseIso(json.dateOfDeath) : null,
-    restrictedDetails: (json.restrictedDetails != null) ? deserializeJsonRestrictedDetails(json.restrictedDetails) : null
-  }
-}
-
-
 export function deserializeJsonPlacementPlan(json: JsonOf<PlacementPlan>): PlacementPlan {
   return {
     ...json,
@@ -1794,14 +1732,6 @@ export function deserializeJsonReservationInsert(json: JsonOf<ReservationInsert>
     ...json,
     date: LocalDate.parseIso(json.date),
     range: (json.range != null) ? TimeRange.parseJson(json.range) : null
-  }
-}
-
-
-export function deserializeJsonRestrictedDetails(json: JsonOf<RestrictedDetails>): RestrictedDetails {
-  return {
-    ...json,
-    endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null
   }
 }
 

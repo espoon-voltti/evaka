@@ -171,9 +171,7 @@ import evaka.core.user.EvakaUser
 import evaka.core.user.EvakaUserType
 import evaka.core.user.updateLastStrongLogin
 import evaka.core.user.updateWeakLoginCredentials
-import evaka.core.vtjclient.dto.VtjPerson
-import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
-import evaka.core.vtjclient.service.persondetails.MockVtjDataset
+import evaka.core.vtjclient.service.persondetails.DummyIdpPersonDetailsService
 import evaka.core.webpush.PushNotificationCategory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
@@ -198,6 +196,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import tools.jackson.databind.json.JsonMapper
 
 private val fakeAdmin =
     AuthenticatedUser.Employee(
@@ -223,7 +222,10 @@ class DevApi(
     private val featureConfig: FeatureConfig,
     private val passwordService: PasswordService,
     private val templateDbManager: TemplateDbManager,
+    private val jsonMapper: JsonMapper,
 ) {
+    private val personDetailsService: DummyIdpPersonDetailsService =
+        DummyIdpPersonDetailsService(env.vtjMockUrl, jsonMapper)
     private val digitransit = MockDigitransit()
 
     private fun runAllAsyncJobs(clock: EvakaClock) {
@@ -241,8 +243,11 @@ class DevApi(
 
     @PostMapping("/test-mode")
     fun setTestMode(db: Database, @RequestParam enabled: Boolean) {
-        if (!enabled) {
+        if (enabled) {
+            personDetailsService.enterTestMode()
+        } else {
             templateDbManager.resetToOriginal()
+            personDetailsService.exitTestMode()
         }
         asyncJobRunners.forEach {
             if (enabled) {
@@ -259,7 +264,7 @@ class DevApi(
     fun resetServiceState() {
         templateDbManager.resetToTemplate()
         MockEmailClient.clear()
-        MockPersonDetailsService.reset()
+        personDetailsService.clearAll()
     }
 
     @PostMapping("/run-jobs")
@@ -664,20 +669,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         return db.connect { dbc -> dbc.transaction { it.insert(body) } }
     }
 
-    @ExcludeCodeGen // used from api-gw
-    @GetMapping("/citizen")
-    fun getCitizens(): List<Citizen> =
-        MockPersonDetailsService.getAllPersons()
-            .filter { it.guardians.isEmpty() }
-            .map(Citizen::from)
-
-    @ExcludeCodeGen // used from api-gw
-    @GetMapping("/vtj-person")
-    fun getVtjPersons(): List<VtjPersonSummary> =
-        MockPersonDetailsService.getAllPersons()
-            .filter { it.guardians.isEmpty() }
-            .map(VtjPersonSummary::from)
-
     @PostMapping("/guardian")
     fun insertGuardians(db: Database, @RequestBody guardians: List<DevGuardian>) {
         db.connect { dbc -> dbc.transaction { tx -> guardians.forEach { tx.insert(it) } } }
@@ -838,11 +829,6 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
     @PostMapping("/messages/clean-up")
     fun cleanUpMessages(db: Database) {
         MockSfiMessagesClient.reset()
-    }
-
-    @PostMapping("/vtj-persons")
-    fun upsertVtjDataset(db: Database, @RequestBody dataset: MockVtjDataset) {
-        MockPersonDetailsService.add(dataset)
     }
 
     @PostMapping("/persons/{person}/force-full-vtj-refresh")
@@ -2513,34 +2499,6 @@ data class DevChildDocumentDecision(
     val validity: DateRange?,
     val daycareId: DaycareId?,
 )
-
-data class Citizen(
-    val ssn: String,
-    val firstName: String,
-    val lastName: String,
-    val dependantCount: Int,
-) {
-    companion object {
-        fun from(vtjPerson: VtjPerson) =
-            Citizen(
-                ssn = vtjPerson.socialSecurityNumber,
-                firstName = vtjPerson.firstNames,
-                lastName = vtjPerson.lastName,
-                dependantCount = vtjPerson.dependants.size,
-            )
-    }
-}
-
-data class VtjPersonSummary(val ssn: String, val firstName: String, val lastName: String) {
-    companion object {
-        fun from(vtjPerson: VtjPerson) =
-            VtjPersonSummary(
-                ssn = vtjPerson.socialSecurityNumber,
-                firstName = vtjPerson.firstNames,
-                lastName = vtjPerson.lastName,
-            )
-    }
-}
 
 data class DevAssistanceFactor(
     val id: AssistanceFactorId = AssistanceFactorId(UUID.randomUUID()),

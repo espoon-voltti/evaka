@@ -6,7 +6,6 @@ import cookieParser from 'cookie-parser'
 import express from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
-import { createDevSfiRouter } from './enduser/dev-sfi-auth.ts'
 import mapRoutes from './enduser/mapRoutes.ts'
 import { citizenAuthStatus } from './enduser/routes/auth-status.ts'
 import { authWeakLogin } from './enduser/routes/auth-weak-login.ts'
@@ -17,7 +16,6 @@ import {
 } from './enduser/suomi-fi-saml.ts'
 import { createSamlAdIntegration } from './internal/ad-saml.ts'
 import { createDevAdRouter } from './internal/dev-ad-auth.ts'
-import { createDevEmployeeSfiRouter } from './internal/dev-sfi-auth.ts'
 import {
   checkMobileEmployeeIdToken,
   devApiE2ESignup,
@@ -122,14 +120,8 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     getUserHeader: (req) => employeeMobileSessions.getUserHeader(req)
   })
 
-  let citizenSfiIntegration: SamlIntegration | undefined
-  if (config.sfi.type === 'mock') {
-    router.use(
-      '/citizen/auth/sfi',
-      createDevSfiRouter(citizenSessions, config.citizen.cookieSecret)
-    )
-  } else if (config.sfi.type === 'saml') {
-    citizenSfiIntegration = createCitizenSuomiFiIntegration(
+  const citizenSfiIntegration: SamlIntegration =
+    createCitizenSuomiFiIntegration(
       citizenSessions,
       config.sfi.saml,
       redisClient,
@@ -139,8 +131,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
         cookieSecret: config.employee.cookieSecret
       }
     )
-    router.use('/citizen/auth/sfi', citizenSfiIntegration.router)
-  }
+  router.use('/citizen/auth/sfi', citizenSfiIntegration.router)
 
   let adIntegration: SamlIntegration | undefined
   if (config.ad.type === 'mock') {
@@ -154,14 +145,8 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     router.use('/employee/auth/ad', adIntegration.router)
   }
 
-  let employeeSfiIntegration: SamlIntegration | undefined
-  if (config.sfi.type === 'mock') {
-    router.use(
-      '/employee/auth/sfi',
-      createDevEmployeeSfiRouter(employeeSessions)
-    )
-  } else if (config.sfi.type === 'saml') {
-    employeeSfiIntegration = createEmployeeSuomiFiIntegration(
+  const employeeSfiIntegration: SamlIntegration =
+    createEmployeeSuomiFiIntegration(
       employeeSessions,
       config.sfi.saml,
       redisClient,
@@ -170,8 +155,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
         cookieSecret: config.citizen.cookieSecret
       }
     )
-    router.use('/employee/auth/sfi', employeeSfiIntegration.router)
-  }
+  router.use('/employee/auth/sfi', employeeSfiIntegration.router)
 
   router.use(
     '/application/auth/saml',

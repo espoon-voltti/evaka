@@ -6,12 +6,10 @@ import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import { Fixture } from '../../dev-api/fixtures'
-import {
-  resetServiceState,
-  upsertVtjDataset
-} from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import PersonSearchPage from '../../pages/employee/person-search'
 import { test } from '../../playwright'
+import { upsertDummyIdpVtjDataset } from '../../utils/dummy-idp'
 import type { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -68,30 +66,28 @@ test.describe('Create person', () => {
       postOffice: 'Espoo',
       ssn: '311299-999E'
     }
-    await upsertVtjDataset({
-      body: {
-        persons: [
-          {
-            socialSecurityNumber: personWithSsn.ssn,
-            lastName: personWithSsn.lastName,
-            firstNames: personWithSsn.firstName,
-            address: {
-              streetAddress: personWithSsn.streetAddress,
-              postalCode: personWithSsn.postalCode,
-              postOffice: personWithSsn.postOffice,
-              streetAddressSe: null,
-              postOfficeSe: null
-            },
-            dateOfDeath: null,
-            nationalities: [],
-            nativeLanguage: null,
-            residenceCode: null,
-            municipalityOfResidence: null,
-            restrictedDetails: null
-          }
-        ],
-        guardianDependants: {}
-      }
+    await upsertDummyIdpVtjDataset({
+      persons: [
+        {
+          socialSecurityNumber: personWithSsn.ssn,
+          lastName: personWithSsn.lastName,
+          firstNames: personWithSsn.firstName,
+          address: {
+            streetAddress: personWithSsn.streetAddress,
+            postalCode: personWithSsn.postalCode,
+            postOffice: personWithSsn.postOffice,
+            streetAddressSe: null,
+            postOfficeSe: null
+          },
+          dateOfDeath: null,
+          nationalities: [],
+          nativeLanguage: null,
+          residenceCode: null,
+          municipalityOfResidence: null,
+          restrictedDetails: null
+        }
+      ],
+      guardianDependants: {}
     })
     await personSearchPage.addSsn(personWithSsn.ssn)
     await personSearchPage.assertPersonData(personWithSsn)

@@ -55,7 +55,8 @@ module.exports = {
       SERVER_PORT: ports.service,
       EVAKA_DATABASE_URL: `jdbc:postgresql://localhost:${ports.db}/evaka_local`,
       EVAKA_LOCAL_S3_URL: `https://localhost:${ports.s3}`,
-      EVAKA_MUNICIPALITY: process.env.EVAKA_MUNICIPALITY
+      EVAKA_MUNICIPALITY: process.env.EVAKA_MUNICIPALITY,
+      EVAKA_INTEGRATION_VTJ_MOCK_URL: `http://localhost:${ports.idp}`
     },
     ...defaults
   }, /*{

@@ -13,7 +13,6 @@ import xml2js from 'xml2js'
 
 import type { Config } from '../config.ts'
 import { configFromEnv } from '../config.ts'
-import type { DevCitizen } from '../dev-api.ts'
 import type { CitizenUser } from '../service-client.ts'
 import { sessionCookie } from '../session.ts'
 import { GatewayTester } from '../test/gateway-tester.ts'
@@ -26,7 +25,12 @@ import {
   SP_LOGOUT_CALLBACK_ENDPOINT
 } from '../test/saml-test-helpers.ts'
 
-const mockUser: DevCitizen & CitizenUser = {
+const mockUser: CitizenUser & {
+  firstName: string
+  lastName: string
+  ssn: string
+  dependantCount: number
+} = {
   id: '942b9cab-210d-4d49-b4c9-65f26390eed3',
   firstName: 'dummy',
   lastName: 'dummy',

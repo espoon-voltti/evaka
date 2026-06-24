@@ -106,7 +106,6 @@ import {
   postReservations,
   postReservationsRaw,
   upsertStaffOccupancyCoefficient,
-  upsertVtjDataset,
   upsertWeakCredentials
 } from '../generated/api-clients'
 import type {
@@ -159,7 +158,7 @@ import type {
   ReservationInsert,
   VoucherValueDecision
 } from '../generated/api-types'
-import { upsertDummyIdpUser } from '../utils/dummy-idp'
+import { upsertDummyIdpVtjDataset } from '../utils/dummy-idp'
 
 import FixedPeriodQuestionnaire = HolidayQuestionnaire.FixedPeriodQuestionnaire
 
@@ -395,42 +394,36 @@ export class Fixture {
       if (dependantSsns.length !== dependants.length) {
         throw new Error('All dependants must have SSNs')
       }
-      await upsertVtjDataset({
-        body: {
-          persons: [
-            {
-              firstNames: person.firstName,
-              lastName: person.lastName,
-              socialSecurityNumber: person.ssn || '',
-              address: {
-                streetAddress: person.streetAddress || '',
-                postalCode: person.postalCode || '',
-                postOffice: person.postOffice || '',
-                streetAddressSe: person.streetAddress || '',
-                postOfficeSe: person.postalCode || ''
-              },
-              dateOfDeath: person.dateOfDeath ?? null,
-              nationalities: [],
-              nativeLanguage: null,
-              residenceCode:
-                person.residenceCode ??
-                `${person.streetAddress ?? ''}${person.postalCode ?? ''}${
-                  person.postOffice ?? ''
-                }`.replace(' ', ''),
-              municipalityOfResidence: person.municipalityOfResidence,
-              restrictedDetails: {
-                enabled: person.restrictedDetailsEnabled || false,
-                endDate: person.restrictedDetailsEndDate || null
-              }
+      await upsertDummyIdpVtjDataset({
+        persons: [
+          {
+            firstNames: person.firstName,
+            lastName: person.lastName,
+            socialSecurityNumber: person.ssn || '',
+            address: {
+              streetAddress: person.streetAddress || '',
+              postalCode: person.postalCode || '',
+              postOffice: person.postOffice || '',
+              streetAddressSe: person.streetAddress || '',
+              postOfficeSe: person.postalCode || ''
+            },
+            dateOfDeath: person.dateOfDeath?.formatIso() ?? null,
+            nationalities: [],
+            nativeLanguage: null,
+            residenceCode:
+              person.residenceCode ??
+              `${person.streetAddress ?? ''}${person.postalCode ?? ''}${
+                person.postOffice ?? ''
+              }`.replace(' ', ''),
+            municipalityOfResidence: person.municipalityOfResidence ?? null,
+            restrictedDetails: {
+              enabled: person.restrictedDetailsEnabled || false,
+              endDate: person.restrictedDetailsEndDate?.formatIso() ?? null
             }
-          ],
-          guardianDependants:
-            dependantSsns.length > 0
-              ? {
-                  [person.ssn || '']: dependantSsns
-                }
-              : {}
-        }
+          }
+        ],
+        guardianDependants:
+          dependantSsns.length > 0 ? { [person.ssn || '']: dependantSsns } : {}
       })
       return value
     }
@@ -446,15 +439,6 @@ export class Fixture {
         await createPerson({ body: value, type: 'ADULT' })
         if (opts.updateMockVtjWithDependants !== undefined) {
           await updateMockVtj(opts.updateMockVtjWithDependants)
-          if (value.ssn) {
-            await upsertDummyIdpUser({
-              ssn: value.ssn,
-              commonName: `${value.firstName} ${value.lastName}`,
-              givenName: value.firstName,
-              surname: value.lastName,
-              comment: `${opts.updateMockVtjWithDependants.length} huollettavaa`
-            })
-          }
         }
         if (opts.updateWeakCredentials) {
           await upsertWeakCredentials({

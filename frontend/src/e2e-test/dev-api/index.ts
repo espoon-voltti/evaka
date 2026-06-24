@@ -23,7 +23,6 @@ import {
   runJobs,
   simpleAction
 } from '../generated/api-clients'
-import type { DevPerson, MockVtjDataset } from '../generated/api-types'
 
 export class DevApiError extends BaseError {
   constructor(cause: unknown) {
@@ -94,24 +93,6 @@ export async function runPendingAsyncJobs(
     await runJobs({ mockedTime })
   } catch (e) {
     throw new DevApiError(e)
-  }
-}
-
-export const vtjDependants = (
-  guardian: DevPerson,
-  ...dependants: DevPerson[]
-): MockVtjDataset => {
-  const guardianSsn = guardian.ssn
-  if (!guardianSsn) throw new Error('Guardian must have SSN')
-  return {
-    persons: [],
-    guardianDependants: {
-      [guardianSsn]: dependants.map((d) => {
-        const ssn = d.ssn
-        if (!ssn) throw new Error('Dependant must have SSN')
-        return ssn
-      })
-    }
   }
 }
 
