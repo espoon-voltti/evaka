@@ -22,20 +22,4 @@ const plugin = {
   configs: {}
 }
 
-Object.assign(plugin.configs, {
-  recommended: {
-    plugins: {
-      '@evaka': plugin
-    },
-    rules: {
-      '@evaka/no-page-pause': 'error',
-      '@evaka/no-testonly': 'error',
-      '@evaka/no-relative-lib-imports': 'error',
-      '@evaka/no-icons-imports': 'error',
-      '@evaka/no-localdate-triple-equals': 'error',
-      '@evaka/shortest-relative-imports': 'error'
-    }
-  }
-})
-
 export default plugin
