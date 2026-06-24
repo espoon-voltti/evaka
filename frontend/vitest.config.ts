@@ -52,7 +52,8 @@ export default defineConfig({
         test: {
           name: 'eslint-plugin',
           environment: 'node',
-          include: ['eslint-plugin/**/*.spec.{ts,tsx}']
+          globals: true,
+          include: ['eslint-plugin/**/*.spec.{js,ts,tsx}']
         }
       }
     ]

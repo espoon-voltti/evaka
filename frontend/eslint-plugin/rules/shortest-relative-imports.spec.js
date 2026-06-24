@@ -5,7 +5,7 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { RuleTester } from 'eslint'
+import { RuleTester } from 'oxlint/plugins-dev'
 
 import shortestRelativeImports from './shortest-relative-imports.js'
 
