@@ -42,7 +42,6 @@ import type {
   CalendarEventTimeId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { reservationHasTimes } from 'lib-common/reservations'
 import type TimeInterval from 'lib-common/time-interval'
@@ -94,6 +93,10 @@ import { faQuestion, faTimes } from 'lib-icons'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
+import {
+  exportCitizenCalendarEventIcs,
+  exportCitizenDiscussionReservationIcs
+} from '../generated/api-clients/calendarevent'
 import type { Translations } from '../localization'
 import { useLang, useTranslation } from '../localization'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
@@ -602,19 +605,11 @@ const DayModal = React.memo(function DayModal({
                                       </div>
                                       {date.isEqualOrAfter(today) && (
                                         <CalendarEventExportButton
-                                          eventDetails={{
-                                            title: event.title,
-                                            helsinkiStartTime:
-                                              event.period.start.formatIso(),
-                                            //non-inclusive end date
-                                            helsinkiEndTime: event.period.end
-                                              .addDays(1)
-                                              .formatIso(),
-                                            fileName: `${i18n.calendar.calendarEventFilename}_${event.period.start.formatIso()}-${event.period.end.formatIso()}.ics`,
-                                            locationInfo:
-                                              event.currentAttending,
-                                            allDay: true
-                                          }}
+                                          href={exportCitizenCalendarEventIcs({
+                                            eventId: event.id,
+                                            childId: row.childId,
+                                            date
+                                          }).url.toString()}
                                           data-qa={`event-export-button-${event.id}`}
                                         />
                                       )}
@@ -658,22 +653,9 @@ const DayModal = React.memo(function DayModal({
                                             </div>
                                             {rt.date.isEqualOrAfter(today) && (
                                               <CalendarEventExportButton
-                                                eventDetails={{
-                                                  title: event.title,
-                                                  helsinkiStartTime:
-                                                    HelsinkiDateTime.fromLocal(
-                                                      rt.date,
-                                                      rt.startTime
-                                                    ).formatIso(),
-                                                  helsinkiEndTime:
-                                                    HelsinkiDateTime.fromLocal(
-                                                      rt.date,
-                                                      rt.endTime
-                                                    ).formatIso(),
-                                                  fileName: `${i18n.calendar.discussionTimeReservation.discussionTimeFileName}_${rt.date.formatIso()}.ics`,
-                                                  locationInfo:
-                                                    event.currentAttending
-                                                }}
+                                                href={exportCitizenDiscussionReservationIcs(
+                                                  { eventTimeId: rt.id }
+                                                ).url.toString()}
                                                 data-qa={`event-export-button-${rt.id}`}
                                               />
                                             )}
@@ -758,7 +740,7 @@ interface ModalData {
 }
 
 interface ModalRow {
-  childId: string
+  childId: ChildId
   firstName: string
   lastName: string
   image: ChildImageData

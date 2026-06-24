@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import type { CalendarEventTimeCitizenReservationForm } from 'lib-common/generated/api-types/calendarevent'
 import type { CalendarEventTimeId } from 'lib-common/generated/api-types/shared'
 import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -11,6 +12,7 @@ import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
+import type { Uri } from 'lib-common/uri'
 import { client } from '../../api-client'
 import { createUrlSearchParams } from 'lib-common/api'
 import { deserializeJsonCitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -53,6 +55,40 @@ export async function deleteCalendarEventTimeReservation(
     params
   })
   return json
+}
+
+
+/**
+* Generated from evaka.core.calendarevent.CalendarEventController.exportCitizenCalendarEventIcs
+*/
+export function exportCitizenCalendarEventIcs(
+  request: {
+    eventId: CalendarEventId,
+    childId: PersonId,
+    date: LocalDate
+  }
+): { url: Uri } {
+  const params = createUrlSearchParams(
+    ['childId', request.childId],
+    ['date', request.date.formatIso()]
+  )
+  return {
+    url: uri`/citizen/calendar-events/${request.eventId}/ics`.withBaseUrl(client.defaults.baseURL ?? '').appendQuery(params)
+  }
+}
+
+
+/**
+* Generated from evaka.core.calendarevent.CalendarEventController.exportCitizenDiscussionReservationIcs
+*/
+export function exportCitizenDiscussionReservationIcs(
+  request: {
+    eventTimeId: CalendarEventTimeId
+  }
+): { url: Uri } {
+  return {
+    url: uri`/citizen/calendar-event-times/${request.eventTimeId}/ics`.withBaseUrl(client.defaults.baseURL ?? '')
+  }
 }
 
 
