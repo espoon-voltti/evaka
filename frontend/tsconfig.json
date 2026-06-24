@@ -3,7 +3,13 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "files": ["oxlint.config.ts", "vite.config.ts", "vitest.config.ts", "vitest.setup.ts"],
+  "files": [
+    "oxfmt.config.ts",
+    "oxlint.config.ts",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts"
+  ],
   "references": [
     { "path": "./src/citizen-frontend" },
     { "path": "./src/lib-common" },
