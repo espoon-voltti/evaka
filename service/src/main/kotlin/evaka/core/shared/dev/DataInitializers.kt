@@ -793,14 +793,15 @@ data class TestDecision(
     val pendingDecisionEmailsSentCount: Int? = 0,
     val pendingDecisionEmailSent: HelsinkiDateTime? = null,
     val documentKey: String? = null,
+    val genericReasoningId: DecisionGenericReasoningId? = null,
 )
 
 fun Database.Transaction.insertTestDecision(decision: TestDecision): DecisionId =
     createUpdate {
             sql(
                 """
-INSERT INTO decision (id, created_by, sent_date, unit_id, application_id, type, start_date, end_date, status, requested_start_date, resolved, resolved_by, pending_decision_emails_sent_count, pending_decision_email_sent, document_key)
-VALUES (${bind(decision.id)}, ${bind(decision.createdBy)}, ${bind(decision.sentDate)}, ${bind(decision.unitId)}, ${bind(decision.applicationId)}, ${bind(decision.type)}, ${bind(decision.startDate)}, ${bind(decision.endDate)}, ${bind(decision.status)}, ${bind(decision.requestedStartDate)}, ${bind(decision.resolved)}, ${bind(decision.resolvedBy)}, ${bind(decision.pendingDecisionEmailsSentCount)}, ${bind(decision.pendingDecisionEmailSent)}, ${bind(decision.documentKey)})
+INSERT INTO decision (id, created_by, sent_date, unit_id, application_id, type, start_date, end_date, status, requested_start_date, resolved, resolved_by, pending_decision_emails_sent_count, pending_decision_email_sent, document_key, generic_reasoning_id)
+VALUES (${bind(decision.id)}, ${bind(decision.createdBy)}, ${bind(decision.sentDate)}, ${bind(decision.unitId)}, ${bind(decision.applicationId)}, ${bind(decision.type)}, ${bind(decision.startDate)}, ${bind(decision.endDate)}, ${bind(decision.status)}, ${bind(decision.requestedStartDate)}, ${bind(decision.resolved)}, ${bind(decision.resolvedBy)}, ${bind(decision.pendingDecisionEmailsSentCount)}, ${bind(decision.pendingDecisionEmailSent)}, ${bind(decision.documentKey)}, ${bind(decision.genericReasoningId)})
 RETURNING id
 """
             )

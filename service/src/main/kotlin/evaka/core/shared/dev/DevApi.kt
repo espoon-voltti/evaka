@@ -51,6 +51,7 @@ import evaka.core.decision.DecisionType
 import evaka.core.decision.getDecision
 import evaka.core.decision.getDecisionsByApplication
 import evaka.core.decision.reasoning.DecisionReasoningCollectionType
+import evaka.core.decision.reasoning.setDecisionReasoningIndividualSelections
 import evaka.core.document.ChildDocumentType
 import evaka.core.document.DocumentDeletionBasis
 import evaka.core.document.DocumentTemplate
@@ -423,6 +424,8 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         val startDate: LocalDate,
         val endDate: LocalDate,
         val status: DecisionStatus,
+        val genericReasoningId: DecisionGenericReasoningId? = null,
+        val individualReasoningIds: List<DecisionIndividualReasoningId> = emptyList(),
     )
 
     @PostMapping("/decisions")
@@ -450,8 +453,17 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             resolved = null,
                             pendingDecisionEmailsSentCount = null,
                             pendingDecisionEmailSent = null,
+                            genericReasoningId = decision.genericReasoningId,
                         )
                     )
+                    if (decision.individualReasoningIds.isNotEmpty()) {
+                        tx.setDecisionReasoningIndividualSelections(
+                            decision.id,
+                            decision.individualReasoningIds.toSet(),
+                            evakaClock.now(),
+                            EvakaUserId(decision.employeeId.raw),
+                        )
+                    }
                 }
             }
         }

@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type {
+  ApplicationId,
+  DecisionGenericReasoningId
+} from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -61,11 +64,14 @@ test.describe('Application transitions', () => {
 
   let serviceWorker: DevEmployee
   let applicationId: ApplicationId
+  let daycareGenericReasoningId: DecisionGenericReasoningId
 
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
     await cleanUpMessages()
-    await Fixture.decisionReasoningGenericDefaults().save()
+    const [daycareGeneric] =
+      await Fixture.decisionReasoningGenericDefaults().save()
+    daycareGenericReasoningId = daycareGeneric.id
     await preschoolTerm2021.save()
     await testCareArea.save()
     await testDaycare.save()
@@ -853,7 +859,8 @@ test.describe('Application transitions', () => {
       serviceWorker.id,
       applicationId,
       application.form.preferences.preferredStartDate ?? mockedDate,
-      application.form.preferences.preferredStartDate ?? mockedDate
+      application.form.preferences.preferredStartDate ?? mockedDate,
+      { genericReasoningId: daycareGenericReasoningId }
     )
     const decisionId = decision.id
 
