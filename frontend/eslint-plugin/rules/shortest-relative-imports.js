@@ -18,7 +18,7 @@ const defaultSuffixes = ['', '.ts', '.tsx', '.js', '.jsx']
 function toShortestRelativeImport(importPath, sourceFile) {
   const sourceDir = path.dirname(sourceFile)
   const absoluteTarget = path.resolve(sourceDir, importPath)
-  let shortestRelative = path.relative(sourceDir, absoluteTarget)
+  const shortestRelative = path.relative(sourceDir, absoluteTarget)
 
   if (
     defaultSuffixes.some((suffix) =>

@@ -2,17 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { RuleTester } from 'eslint'
-import typescriptEslint from 'typescript-eslint'
+import { RuleTester } from 'oxlint/plugins-dev'
 
 import rule from './no-localdate-triple-equals'
 
 const ruleTester = new RuleTester({
   languageOptions: {
-    parser: typescriptEslint.parser,
     parserOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module'
+      lang: 'ts'
     }
   }
 })

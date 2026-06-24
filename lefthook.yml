@@ -7,8 +7,12 @@ pre-commit:
     - group:
         parallel: true
         jobs:
-          - run: yarn exec eslint --fix --no-warn-ignored --max-warnings 0 {staged_files}
+          - run: yarn exec oxlint --fix {staged_files}
             glob: frontend/*.{ts,tsx,js,mjs}
+            root: frontend
+            stage_fixed: true
+          - run: yarn exec oxfmt {staged_files}
+            glob: frontend/*
             root: frontend
             stage_fixed: true
           - run: ./gradlew ktfmtPrecommit --include-only=$(echo {staged_files} | tr ' ' ',')

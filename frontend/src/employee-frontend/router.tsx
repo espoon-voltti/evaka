@@ -98,12 +98,12 @@ import VoucherServiceProviders from './components/reports/VoucherServiceProvider
 import SettingsPage from './components/settings/SettingsPage'
 import SystemNotificationsPage from './components/system-notifications/SystemNotificationsPage'
 import TimelinePage from './components/timeline/TimelinePage'
+import UnitFeaturesPage from './components/unit-features/UnitFeaturesPage'
 import GroupCaretakers from './components/unit/group-caretakers/GroupCaretakers'
 import DiscussionReservationSurveyWrapper from './components/unit/tab-calendar/discussion-surveys/DiscussionSurveyWrapper'
 import DiscussionReservationSurveysPage from './components/unit/tab-calendar/discussion-surveys/DiscussionSurveysPage'
 import CreateUnitPage from './components/unit/unit-details/CreateUnitPage'
 import UnitDetailsPage from './components/unit/unit-details/UnitDetailsPage'
-import UnitFeaturesPage from './components/unit-features/UnitFeaturesPage'
 import VoucherValueDecisionPage from './components/voucher-value-decision/VoucherValueDecisionPage'
 import VoucherValueDecisionsPage from './components/voucher-value-decisions/VoucherValueDecisionsPage'
 

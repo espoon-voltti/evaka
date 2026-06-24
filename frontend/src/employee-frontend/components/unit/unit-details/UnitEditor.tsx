@@ -6,9 +6,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type DateRange from 'lib-common/date-range'
-import { useBoolean } from 'lib-common/form/hooks'
 import type { UpdateStateFn } from 'lib-common/form-state'
 import { time } from 'lib-common/form-validation'
+import { useBoolean } from 'lib-common/form/hooks'
 import type {
   CareType,
   Daycare,

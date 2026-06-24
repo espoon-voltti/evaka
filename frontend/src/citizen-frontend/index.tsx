@@ -4,14 +4,15 @@
 
 import * as Sentry from '@sentry/browser'
 import { createRoot } from 'react-dom/client'
-import 'lib-common/assets/fonts/fonts.css'
 import { polyfill as smoothScrollPolyfill } from 'seamless-scroll-polyfill'
 
+import 'lib-common/assets/fonts/fonts.css'
 import { appVersion } from 'lib-common/globals'
 import { sentryEventFilter } from 'lib-common/sentry'
 import { getEnvironment } from 'lib-common/utils/helpers'
-import 'leaflet/dist/leaflet.css'
 import { appConfig } from 'lib-customizations/citizen'
+
+import 'leaflet/dist/leaflet.css'
 
 import Root from './router'
 import './index.css'

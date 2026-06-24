@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { RuleTester } from 'eslint'
+import { RuleTester } from 'oxlint/plugins-dev'
 
 import noTestOnly from './no-testonly.js'
 

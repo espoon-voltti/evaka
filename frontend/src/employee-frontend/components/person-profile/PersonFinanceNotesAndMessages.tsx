@@ -115,9 +115,10 @@ export default React.memo(function PersonFinanceNotesAndMessages({
   const [personName, hasSsn] = useMemo(
     () =>
       person
-        .map<
-          [string | undefined, boolean]
-        >((p) => [formatPersonName(p, 'Last First'), p.hasSsn])
+        .map<[string | undefined, boolean]>((p) => [
+          formatPersonName(p, 'Last First'),
+          p.hasSsn
+        ])
         .getOrElse([undefined, false]),
     [person]
   )
