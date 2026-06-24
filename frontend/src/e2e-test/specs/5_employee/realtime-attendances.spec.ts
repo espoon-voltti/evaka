@@ -218,7 +218,15 @@ test.describe('Realtime staff attendances', () => {
         id: randomId<StaffAttendancePlanId>(),
         employeeId: groupStaff.id,
         startTime: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-        endTime: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 0))
+        endTime: mockedToday.toHelsinkiDateTime(LocalTime.of(12, 0))
+      }).save()
+
+      await Fixture.staffAttendancePlan({
+        id: randomId<StaffAttendancePlanId>(),
+        employeeId: groupStaff.id,
+        startTime: mockedToday.toHelsinkiDateTime(LocalTime.of(14, 0)),
+        endTime: mockedToday.toHelsinkiDateTime(LocalTime.of(15, 0)),
+        description: 'Iltavuoro'
       }).save()
 
       await Fixture.realtimeStaffAttendance({
@@ -237,17 +245,21 @@ test.describe('Realtime staff attendances', () => {
         rowIx: 0,
         nth: 2,
         name: staffName(groupStaff),
-        plannedAttendances: [['07:00', '15:00']],
+        plannedAttendances: [
+          ['07:00', '12:00'],
+          ['14:00', '15:00']
+        ],
         attendances: [['07:03', '–']]
       })
 
       const modal = await staffAttendances.openDetails(0, mockedToday)
+
       await expect
         .poll(() => modal.summary())
         .toEqual({
-          plan: '07:00 – 15:00',
+          plan: '07:00 – 12:00\n14:00 – 15:00 (Iltavuoro)',
           realized: '07:03 –',
-          hours: '10:57 (+2:57)'
+          hours: '10:57 (+4:57)'
         })
     })
 

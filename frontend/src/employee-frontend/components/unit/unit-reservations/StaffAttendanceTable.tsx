@@ -954,7 +954,7 @@ function computeModalAttendances(
       combined.flatMap((employee) => employee.plannedAttendances)
     )
       .filter(({ start, end }) => start <= endOfDay && startOfDay <= end)
-      .map(({ start, end }) => ({ start, end }))
+      .map(({ start, end, description }) => ({ start, end, description }))
     return { attendances, plannedAttendances }
   } else {
     const name = detailsModalConfig.target.name
