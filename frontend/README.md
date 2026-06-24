@@ -124,14 +124,12 @@ using `yarn install`.
 
 ### Linting
 
-All frontends are currently in the process of being migrated to ESLint from TSLint. Please refer to each package's own
-configuration (in `package.json` files) for more details about the linting rules. We also have some
-[custom ESLint rules](#custom-eslint-rules)
-
 ```bash
-# Lint all files
-# Add --fix to fix lint errors automatically
+# lint only
 yarn lint
+
+# fix lint errors where possible
+yarn lint:fix
 ```
 
 #### Custom ESLint rules
