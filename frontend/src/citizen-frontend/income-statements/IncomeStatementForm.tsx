@@ -429,62 +429,60 @@ const IncomeTypeSelection = React.memo(
     )
 
     const dateRange = useCallback(
-      (isHighestFee: boolean) => {
-        return (
-          <Indent>
-            <FixedSpaceRow $spacing="XL">
-              <div>
-                <Label htmlFor="start-date">
-                  {isHighestFee
-                    ? t.income.incomeType.startDate
-                    : t.income.incomeType.starts}{' '}
-                  *
-                </Label>
-                <Gap $size="xs" />
-                <DatePicker
-                  id="start-date"
-                  data-qa="income-start-date"
-                  date={formData.startDate}
-                  onChange={onStartDateChange}
-                  info={startDateInputInfo}
-                  hideErrorsBeforeTouched={!showFormErrors}
-                  locale={lang}
-                  required={true}
-                  isInvalidDate={(d) =>
-                    isValidStartDate(d)
-                      ? null
-                      : t.validationErrors.unselectableDate
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="end-date">{`${isHighestFee ? t.income.incomeType.endDate : t.income.incomeType.ends}${isEndDateRequired ? ' *' : ''}`}</Label>
-                <Gap $size="xs" />
-                <DatePicker
-                  id="end-date"
-                  data-qa="income-end-date"
-                  date={formData.endDate}
-                  onChange={onEndDateChange}
-                  minDate={formData.startDate ?? undefined}
-                  maxDate={
-                    isEndDateRequired
-                      ? formData.startDate?.addYears(1)
-                      : undefined
-                  }
-                  hideErrorsBeforeTouched={false}
-                  locale={lang}
-                  info={endDateInputInfo}
-                  isInvalidDate={(d) =>
-                    errorToInputInfo(validateEndDate(d), t.validationErrors)
-                      ?.text || null
-                  }
-                  required={isEndDateRequired}
-                />
-              </div>
-            </FixedSpaceRow>
-          </Indent>
-        )
-      },
+      (isHighestFee: boolean) => (
+        <Indent>
+          <FixedSpaceRow $spacing="XL">
+            <div>
+              <Label htmlFor="start-date">
+                {isHighestFee
+                  ? t.income.incomeType.startDate
+                  : t.income.incomeType.starts}{' '}
+                *
+              </Label>
+              <Gap $size="xs" />
+              <DatePicker
+                id="start-date"
+                data-qa="income-start-date"
+                date={formData.startDate}
+                onChange={onStartDateChange}
+                info={startDateInputInfo}
+                hideErrorsBeforeTouched={!showFormErrors}
+                locale={lang}
+                required={true}
+                isInvalidDate={(d) =>
+                  isValidStartDate(d)
+                    ? null
+                    : t.validationErrors.unselectableDate
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="end-date">{`${isHighestFee ? t.income.incomeType.endDate : t.income.incomeType.ends}${isEndDateRequired ? ' *' : ''}`}</Label>
+              <Gap $size="xs" />
+              <DatePicker
+                id="end-date"
+                data-qa="income-end-date"
+                date={formData.endDate}
+                onChange={onEndDateChange}
+                minDate={formData.startDate ?? undefined}
+                maxDate={
+                  isEndDateRequired
+                    ? formData.startDate?.addYears(1)
+                    : undefined
+                }
+                hideErrorsBeforeTouched={false}
+                locale={lang}
+                info={endDateInputInfo}
+                isInvalidDate={(d) =>
+                  errorToInputInfo(validateEndDate(d), t.validationErrors)
+                    ?.text || null
+                }
+                required={isEndDateRequired}
+              />
+            </div>
+          </FixedSpaceRow>
+        </Indent>
+      ),
       [
         endDateInputInfo,
         formData.endDate,

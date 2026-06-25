@@ -132,22 +132,20 @@ export function useFormFields<F extends AnyForm>({
   return useMemo(
     () =>
       Object.fromEntries(
-        fieldNames.map((key) => {
-          return [
-            key,
-            {
-              form: shape[key],
-              state: state[key],
-              update: fieldCallbacks[key].fieldUpdate,
-              set: fieldCallbacks[key].fieldSet,
-              ...validationHelpers(
-                () => shape[key].validate(state[key]),
-                translateError,
-                { get: validationError, map: (error) => error[key] }
-              )
-            }
-          ]
-        })
+        fieldNames.map((key) => [
+          key,
+          {
+            form: shape[key],
+            state: state[key],
+            update: fieldCallbacks[key].fieldUpdate,
+            set: fieldCallbacks[key].fieldSet,
+            ...validationHelpers(
+              () => shape[key].validate(state[key]),
+              translateError,
+              { get: validationError, map: (error) => error[key] }
+            )
+          }
+        ])
       ) as any,
     [fieldCallbacks, fieldNames, shape, state, translateError, validationError]
   )

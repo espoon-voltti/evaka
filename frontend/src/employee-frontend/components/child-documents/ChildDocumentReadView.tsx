@@ -1033,12 +1033,12 @@ export default React.memo(function ChildDocumentReadView() {
   )
 
   const acceptedDecisionsResult = useChainedQuery(
-    documentResult.map((document) => {
-      return getDocumentCategory(document.data.template.type) === 'decision' &&
-        document.permittedActions.includes('READ_ACCEPTED_DECISIONS')
+    documentResult.map((document) =>
+      getDocumentCategory(document.data.template.type) === 'decision' &&
+      document.permittedActions.includes('READ_ACCEPTED_DECISIONS')
         ? acceptedChildDocumentDecisionsQuery({ documentId })
         : constantQuery([])
-    })
+    )
   )
 
   return renderResult(

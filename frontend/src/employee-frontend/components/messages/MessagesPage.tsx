@@ -179,13 +179,11 @@ export default React.memo(function MessagesPage({
       return [
         {
           accountId: selectedAccount.account.id,
-          receivers: selectedDraft.recipients.map((recipient, i) => {
-            return {
-              id: fromUuid(recipient.accountId),
-              name: selectedDraft.recipientNames[i],
-              type: 'CITIZEN'
-            }
-          })
+          receivers: selectedDraft.recipients.map((recipient, i) => ({
+            id: fromUuid(recipient.accountId),
+            name: selectedDraft.recipientNames[i],
+            type: 'CITIZEN'
+          }))
         }
       ]
     }

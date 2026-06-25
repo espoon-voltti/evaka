@@ -123,15 +123,13 @@ export default React.memo(function ChildMessagesPageWrapper({
 
   return renderResult(
     combine(child, groupAccounts),
-    ([child, groupAccounts]) => {
-      return (
-        <ChildMessagesPage
-          unitId={unitId}
-          groupAccounts={groupAccounts}
-          child={child}
-        />
-      )
-    }
+    ([child, groupAccounts]) => (
+      <ChildMessagesPage
+        unitId={unitId}
+        groupAccounts={groupAccounts}
+        child={child}
+      />
+    )
   )
 })
 

@@ -293,9 +293,8 @@ export const ApplicationUIContextProvider = React.memo(
     )
 
     const isApplicationExpanded = useCallback(
-      (applicationId: ApplicationId) => {
-        return !collapsedApplications.has(applicationId)
-      },
+      (applicationId: ApplicationId) =>
+        !collapsedApplications.has(applicationId),
       [collapsedApplications]
     )
 

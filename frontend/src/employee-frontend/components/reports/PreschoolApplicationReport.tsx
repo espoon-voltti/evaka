@@ -192,39 +192,37 @@ const PreschoolApplicationReportTable = ({
               </Td>
             </Tr>
           ) : (
-            sortedRows.map((row) => {
-              return (
-                <Tr key={row.applicationId} data-qa="row">
-                  <Td>
-                    <Link to={`/units/${row.applicationUnitId}`}>
-                      {row.applicationUnitName}
-                    </Link>
-                  </Td>
-                  <Td>{row.childLastName}</Td>
-                  <Td>
-                    <Link to={`/child-information/${row.childId}`}>
-                      {row.childFirstName}
-                    </Link>
-                  </Td>
-                  <Td>{row.childDateOfBirth.format()}</Td>
-                  <Td>{row.childStreetAddress}</Td>
-                  <ShortTd>{row.childPostalCode}</ShortTd>
-                  <Td>
-                    {row.currentUnitId !== null &&
-                      row.currentUnitName !== null && (
-                        <Link to={`/units/${row.currentUnitId}`}>
-                          {row.currentUnitName}
-                        </Link>
-                      )}
-                  </Td>
-                  <ShortTd>
-                    {row.isDaycareAssistanceNeed
-                      ? i18n.common.yes
-                      : i18n.common.no}
-                  </ShortTd>
-                </Tr>
-              )
-            })
+            sortedRows.map((row) => (
+              <Tr key={row.applicationId} data-qa="row">
+                <Td>
+                  <Link to={`/units/${row.applicationUnitId}`}>
+                    {row.applicationUnitName}
+                  </Link>
+                </Td>
+                <Td>{row.childLastName}</Td>
+                <Td>
+                  <Link to={`/child-information/${row.childId}`}>
+                    {row.childFirstName}
+                  </Link>
+                </Td>
+                <Td>{row.childDateOfBirth.format()}</Td>
+                <Td>{row.childStreetAddress}</Td>
+                <ShortTd>{row.childPostalCode}</ShortTd>
+                <Td>
+                  {row.currentUnitId !== null &&
+                    row.currentUnitName !== null && (
+                      <Link to={`/units/${row.currentUnitId}`}>
+                        {row.currentUnitName}
+                      </Link>
+                    )}
+                </Td>
+                <ShortTd>
+                  {row.isDaycareAssistanceNeed
+                    ? i18n.common.yes
+                    : i18n.common.no}
+                </ShortTd>
+              </Tr>
+            ))
           )}
         </Tbody>
       </TableScrollable>

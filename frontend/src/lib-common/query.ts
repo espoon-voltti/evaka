@@ -180,12 +180,10 @@ export class Queries {
     return <Arg, Data>(
       api: (arg: Arg) => Promise<Data>,
       invalidations?: Invalidations<Arg & MutationArg>
-    ): MutationDescription<Arg & MutationArg, Data> => {
-      return {
-        api,
-        invalidateQueryKeys: invalidateQueryKeysFn(invalidations)
-      }
-    }
+    ): MutationDescription<Arg & MutationArg, Data> => ({
+      api,
+      invalidateQueryKeys: invalidateQueryKeysFn(invalidations)
+    })
   }
 
   private getQueryName(name: string): string {

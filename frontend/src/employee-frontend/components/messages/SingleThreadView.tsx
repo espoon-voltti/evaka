@@ -389,9 +389,10 @@ export function SingleThreadView({
     return firstMessage.sender.type === 'SERVICE_WORKER'
   }, [applicationId, messages])
 
-  const hasCitizenMessages = useMemo(() => {
-    return messages.some((message) => message.sender.type === 'CITIZEN')
-  }, [messages])
+  const hasCitizenMessages = useMemo(
+    () => messages.some((message) => message.sender.type === 'CITIZEN'),
+    [messages]
+  )
 
   const supportEmail = featureConfig?.messageSupportEmail ?? null
 

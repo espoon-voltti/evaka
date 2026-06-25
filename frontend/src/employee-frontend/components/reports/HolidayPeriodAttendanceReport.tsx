@@ -78,12 +78,12 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
 
   const daycareOptions = useMemo(
     () =>
-      units.map((d) => {
-        return orderBy(
+      units.map((d) =>
+        orderBy(
           d.filter((u) => u.enabledPilotFeatures.includes('RESERVATIONS')),
           (item) => item.name
         )
-      }),
+      ),
     [units]
   )
 
@@ -98,10 +98,7 @@ export default React.memo(function HolidayPeriodAttendanceReport() {
   )
 
   const groupOptions = useMemo(
-    () =>
-      groupsResult.map((g) => {
-        return orderBy(g, (item) => item.name)
-      }),
+    () => groupsResult.map((g) => orderBy(g, (item) => item.name)),
     [groupsResult]
   )
 

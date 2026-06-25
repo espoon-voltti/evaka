@@ -63,17 +63,15 @@ export default React.memo(function HolidayQuestionnaireReport() {
   const units = useQueryResult(daycaresQuery({ includeClosed: false }))
   const questionnaires = useQueryResult(questionnairesQuery())
 
-  const firstPeriod = (questionnaire: HolidayQuestionnaire) => {
-    return questionnaire.type === 'FIXED_PERIOD'
+  const firstPeriod = (questionnaire: HolidayQuestionnaire) =>
+    questionnaire.type === 'FIXED_PERIOD'
       ? questionnaire.periodOptions.at(0)!
       : questionnaire.period
-  }
 
-  const lastPeriod = (questionnaire: HolidayQuestionnaire) => {
-    return questionnaire.type === 'FIXED_PERIOD'
+  const lastPeriod = (questionnaire: HolidayQuestionnaire) =>
+    questionnaire.type === 'FIXED_PERIOD'
       ? questionnaire.periodOptions.at(-1)!
       : questionnaire.period
-  }
 
   const questionnaireOptions = useMemo(
     () =>
@@ -88,12 +86,12 @@ export default React.memo(function HolidayQuestionnaireReport() {
 
   const daycareOptions = useMemo(
     () =>
-      units.map((d) => {
-        return orderBy(
+      units.map((d) =>
+        orderBy(
           d.filter((u) => u.enabledPilotFeatures.includes('RESERVATIONS')),
           (item) => item.name
         )
-      }),
+      ),
     [units]
   )
 
@@ -108,10 +106,7 @@ export default React.memo(function HolidayQuestionnaireReport() {
   )
 
   const groupOptions = useMemo(
-    () =>
-      groupsResult.map((g) => {
-        return orderBy(g, (item) => item.name)
-      }),
+    () => groupsResult.map((g) => orderBy(g, (item) => item.name)),
     [groupsResult]
   )
 

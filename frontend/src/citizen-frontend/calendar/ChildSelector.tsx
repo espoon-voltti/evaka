@@ -29,19 +29,15 @@ interface ChildSelectorProps {
   rangeEnd?: LocalDate
 }
 
-const useChildPlacementValidation = (rangeEnd?: LocalDate) => {
-  return useCallback(
-    (child: ReservationChild) => {
-      return (
-        (rangeEnd &&
-          child.upcomingPlacementStartDate !== null &&
-          child.upcomingPlacementStartDate.isAfter(rangeEnd)) ??
-        false
-      )
-    },
+const useChildPlacementValidation = (rangeEnd?: LocalDate) =>
+  useCallback(
+    (child: ReservationChild) =>
+      (rangeEnd &&
+        child.upcomingPlacementStartDate !== null &&
+        child.upcomingPlacementStartDate.isAfter(rangeEnd)) ??
+      false,
     [rangeEnd]
   )
-}
 
 export default React.memo(function ChildSelector({
   childItems,

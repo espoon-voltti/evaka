@@ -70,8 +70,8 @@ export function useUnreadDecisions() {
 
 export const isPersonalDetailsIncomplete = (user: User) => !user.email
 
-export const useOnEscape = (action: () => void) => {
-  return useCallback(
+export const useOnEscape = (action: () => void) =>
+  useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
       if (event.key === 'Escape') {
         action()
@@ -79,12 +79,11 @@ export const useOnEscape = (action: () => void) => {
     },
     [action]
   )
-}
 
 export const useMenubarKeyboardNavigation = (
   menubarRef: React.RefObject<HTMLElement | null>
-) => {
-  return useCallback(
+) =>
+  useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
       if (!menubarRef.current) return
 
@@ -153,14 +152,13 @@ export const useMenubarKeyboardNavigation = (
     },
     [menubarRef]
   )
-}
 
 export const useDropdownMenuKeyboardNavigation = (
   containerRef: React.RefObject<HTMLElement | null>,
   isOpen: boolean,
   onClose: () => void
-) => {
-  return useCallback(
+) =>
+  useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
       if (!containerRef.current || !isOpen) return
 
@@ -264,4 +262,3 @@ export const useDropdownMenuKeyboardNavigation = (
     },
     [containerRef, isOpen, onClose]
   )
-}

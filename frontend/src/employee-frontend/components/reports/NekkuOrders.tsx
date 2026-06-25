@@ -210,11 +210,12 @@ export default React.memo(function NekkuOrders() {
                   label: i18n.reports.nekkuOrders.mealTime,
                   value: (row) =>
                     row.mealTime
-                      .map((mealTimeValue) => {
-                        return i18n.reports.nekkuOrders.mealTimeValues[
-                          mealTimeValue as mealTimeOptions
-                        ]
-                      })
+                      .map(
+                        (mealTimeValue) =>
+                          i18n.reports.nekkuOrders.mealTimeValues[
+                            mealTimeValue as mealTimeOptions
+                          ]
+                      )
                       .join(', ')
                 },
                 {
@@ -262,11 +263,12 @@ export default React.memo(function NekkuOrders() {
                     <Td>{row.quantity}</Td>
                     <Td>
                       {row.mealTime
-                        .map((mealTimeValue) => {
-                          return i18n.reports.nekkuOrders.mealTimeValues[
-                            mealTimeValue as mealTimeOptions
-                          ]
-                        })
+                        .map(
+                          (mealTimeValue) =>
+                            i18n.reports.nekkuOrders.mealTimeValues[
+                              mealTimeValue as mealTimeOptions
+                            ]
+                        )
                         .join(', ')}
                     </Td>
                     <Td>

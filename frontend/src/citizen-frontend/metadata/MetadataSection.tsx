@@ -54,9 +54,9 @@ export const MetadataResultSection = React.memo(function MetadataResultSection<
   const metadataResult = useQueryResult(query)
   return (
     <>
-      {renderResult(metadataResult, ({ data }) => {
-        return <Metadatas metadata={data} />
-      })}
+      {renderResult(metadataResult, ({ data }) => (
+        <Metadatas metadata={data} />
+      ))}
     </>
   )
 })

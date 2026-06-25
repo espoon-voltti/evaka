@@ -113,22 +113,17 @@ export const IncomeStatementMissingAttachments = React.memo(
         <H3>{t.income.attachments.missingAttachments}</H3>
         {missingAttachments.length > 0 ? (
           <UnorderedList data-qa="missing-attachments">
-            {missingAttachments.map((attachmentType) => {
-              return (
-                <li
-                  key={attachmentType}
-                  data-qa={`attachment-${attachmentType}`}
-                >
-                  <Button
-                    appearance="link"
-                    onClick={() => {
-                      attachmentHandler.focus(attachmentType)
-                    }}
-                    text={t.income.attachments.attachmentNames[attachmentType]}
-                  />
-                </li>
-              )
-            })}
+            {missingAttachments.map((attachmentType) => (
+              <li key={attachmentType} data-qa={`attachment-${attachmentType}`}>
+                <Button
+                  appearance="link"
+                  onClick={() => {
+                    attachmentHandler.focus(attachmentType)
+                  }}
+                  text={t.income.attachments.attachmentNames[attachmentType]}
+                />
+              </li>
+            ))}
           </UnorderedList>
         ) : (
           <P>

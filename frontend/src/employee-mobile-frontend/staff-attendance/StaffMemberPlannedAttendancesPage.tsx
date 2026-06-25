@@ -47,77 +47,75 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
     })
   )
 
-  return renderResult(attendanceResponse, (staffMemberWithOperationalDays) => {
-    return (
-      <StaffMemberPageContainer
-        back={routes.staffAttendancesToday(unitOrGroup, 'present').value}
-      >
-        <EmployeeCardBackground
-          staff={toStaff(staffMemberWithOperationalDays.staffMember)}
-        />
-        <Gap />
-        <DayPlansContainer>
-          <ExpandingInfo info={i18n.attendances.staff.staffMemberPlanInfo}>
-            <H3 $noMargin>{i18n.attendances.staff.nextDays}</H3>
-          </ExpandingInfo>
-          {staffMemberWithOperationalDays.staffMember.unitIds.length > 1 && (
-            <div>
-              <AlertBox
-                message={i18n.attendances.staff.staffMemberMultipleUnits}
-                thin
-              />
-            </div>
-          )}
-          <FixedSpaceColumn $spacing="s">
-            {staffMemberWithOperationalDays.operationalDays.map((date) => {
-              const attendances =
-                staffMemberWithOperationalDays.staffMember.plannedAttendances
-                  .filter(
-                    (a) =>
-                      a.start.toLocalDate().isEqual(date) ||
-                      a.end.toLocalDate().isEqual(date)
-                  )
-                  .map((a) => ({
-                    start: a.start.toLocalDate().isEqual(date)
-                      ? a.start.toLocalTime().format()
-                      : '→',
-                    end: a.end.toLocalDate().isEqual(date)
-                      ? a.end.toLocalTime().format()
-                      : '→',
-                    type: i18n.attendances.staffTypes[a.type],
-                    description: a.description
-                  }))
-              return (
-                <DayPlan
-                  key={date.formatIso()}
-                  data-qa={`day-plan-${date.formatIso()}`}
-                >
-                  <LabelLike>{date.formatExotic('EEEEEE d.M.')}</LabelLike>
-                  {attendances.length > 0 ? (
-                    <FixedSpaceColumn $spacing="xs">
-                      {attendances.map((a, i) => (
-                        <FixedSpaceRow key={i}>
-                          <DayPlanTypeCol>{a.type}</DayPlanTypeCol>
+  return renderResult(attendanceResponse, (staffMemberWithOperationalDays) => (
+    <StaffMemberPageContainer
+      back={routes.staffAttendancesToday(unitOrGroup, 'present').value}
+    >
+      <EmployeeCardBackground
+        staff={toStaff(staffMemberWithOperationalDays.staffMember)}
+      />
+      <Gap />
+      <DayPlansContainer>
+        <ExpandingInfo info={i18n.attendances.staff.staffMemberPlanInfo}>
+          <H3 $noMargin>{i18n.attendances.staff.nextDays}</H3>
+        </ExpandingInfo>
+        {staffMemberWithOperationalDays.staffMember.unitIds.length > 1 && (
+          <div>
+            <AlertBox
+              message={i18n.attendances.staff.staffMemberMultipleUnits}
+              thin
+            />
+          </div>
+        )}
+        <FixedSpaceColumn $spacing="s">
+          {staffMemberWithOperationalDays.operationalDays.map((date) => {
+            const attendances =
+              staffMemberWithOperationalDays.staffMember.plannedAttendances
+                .filter(
+                  (a) =>
+                    a.start.toLocalDate().isEqual(date) ||
+                    a.end.toLocalDate().isEqual(date)
+                )
+                .map((a) => ({
+                  start: a.start.toLocalDate().isEqual(date)
+                    ? a.start.toLocalTime().format()
+                    : '→',
+                  end: a.end.toLocalDate().isEqual(date)
+                    ? a.end.toLocalTime().format()
+                    : '→',
+                  type: i18n.attendances.staffTypes[a.type],
+                  description: a.description
+                }))
+            return (
+              <DayPlan
+                key={date.formatIso()}
+                data-qa={`day-plan-${date.formatIso()}`}
+              >
+                <LabelLike>{date.formatExotic('EEEEEE d.M.')}</LabelLike>
+                {attendances.length > 0 ? (
+                  <FixedSpaceColumn $spacing="xs">
+                    {attendances.map((a, i) => (
+                      <FixedSpaceRow key={i}>
+                        <DayPlanTypeCol>{a.type}</DayPlanTypeCol>
+                        <div>
                           <div>
-                            <div>
-                              {a.start} - {a.end}
-                            </div>
-                            {a.description ? <i>({a.description})</i> : null}
+                            {a.start} - {a.end}
                           </div>
-                        </FixedSpaceRow>
-                      ))}
-                    </FixedSpaceColumn>
-                  ) : (
-                    <div>{i18n.attendances.staff.noPlan}</div>
-                  )}
-                </DayPlan>
-              )
-            })}
-          </FixedSpaceColumn>
-        </DayPlansContainer>
-      </StaffMemberPageContainer>
-    )
-  })
+                          {a.description ? <i>({a.description})</i> : null}
+                        </div>
+                      </FixedSpaceRow>
+                    ))}
+                  </FixedSpaceColumn>
+                ) : (
+                  <div>{i18n.attendances.staff.noPlan}</div>
+                )}
+              </DayPlan>
+            )
+          })}
+        </FixedSpaceColumn>
+      </DayPlansContainer>
+    </StaffMemberPageContainer>
+  ))
 })
 
 const DayPlansContainer = styled(FixedSpaceColumn).attrs({

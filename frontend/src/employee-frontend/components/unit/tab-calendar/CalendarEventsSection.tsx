@@ -292,10 +292,10 @@ export default React.memo(function CalendarEventsSection({
         />
       )}
 
-      {renderResult(groupData, (groups) => {
-        return editingEvent &&
-          !!groupId &&
-          editingEvent.eventType === 'DISCUSSION_SURVEY' ? (
+      {renderResult(groupData, (groups) =>
+        editingEvent &&
+        !!groupId &&
+        editingEvent.eventType === 'DISCUSSION_SURVEY' ? (
           <SurveySummaryModal
             event={editingEvent}
             unitId={unitId}
@@ -306,7 +306,7 @@ export default React.memo(function CalendarEventsSection({
             }}
           />
         ) : null
-      })}
+      )}
       <EventButtonRow>
         <EventButtonColumn>
           {featureFlags.discussionReservations && !!groupId && (
@@ -1074,12 +1074,14 @@ const SurveySummaryModal = React.memo(function SurveySummaryModal({
 
   const eventDay = searchParams.get('eventDay')
   const date = eventDay ? LocalDate.parseIso(eventDay) : null
-  const times = useMemo(() => {
-    return sortBy(
-      event.times.filter((t) => date && t.date.isEqual(date)),
-      ['startTime', 'endTime', 'id']
-    )
-  }, [event.times, date])
+  const times = useMemo(
+    () =>
+      sortBy(
+        event.times.filter((t) => date && t.date.isEqual(date)),
+        ['startTime', 'endTime', 'id']
+      ),
+    [event.times, date]
+  )
 
   const placedChildrenToday = date
     ? placements

@@ -521,12 +521,11 @@ test.describe('Assistance need and actions report', () => {
     const report = new AssistanceNeedsAndActionsReport(page)
     await report.includeDecisionsCheckbox.check()
 
-    await report.needsAndActionsHeader.assertText((text) => {
-      return (
+    await report.needsAndActionsHeader.assertText(
+      (text) =>
         text.includes('SPECIAL SUPPORT DECISION') &&
         text.includes('PEDAGOGICAL ASSESSMENT')
-      )
-    })
+    )
     await expect(report.needsAndActionsHeader).toHaveText(
       'TOIMINTAYKSIKÖT ALUEITTAIN\tRYHMÄ\tYLEINEN TUKI, EI PÄÄTÖSTÄ\tYLEINEN TUKI, PÄÄTÖS TUKIPALVELUISTA\tTEHOSTETTU TUKI\tERITYINEN TUKI\tKULJETUSETU (ESIOPPILAILLA KOSKI-TIETO)\tLAPSEN KOTOUTUMISEN TUKI (ELY)\tOPETUKSEN POIKKEAVA ALOITTAMISAJANKOHTA\tMUU TUKITOIMI\tTUKITOIMI PUUTTUU\tPEDAGOGICAL ASSESSMENT\tSPECIAL SUPPORT DECISION\tKOROTETTU PS-KERROIN',
       { useInnerText: true }

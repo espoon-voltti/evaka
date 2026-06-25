@@ -331,9 +331,10 @@ export default React.memo(
       [messages]
     )
 
-    const hasReceivedMessages = useMemo(() => {
-      return messages.some((m) => m.sender.type !== 'CITIZEN')
-    }, [messages])
+    const hasReceivedMessages = useMemo(
+      () => messages.some((m) => m.sender.type !== 'CITIZEN'),
+      [messages]
+    )
 
     return (
       <ThreadContainer data-qa="thread-reader">

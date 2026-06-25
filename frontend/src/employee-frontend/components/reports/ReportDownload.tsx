@@ -80,20 +80,18 @@ export const BackendReportDownload = ({
   href: string
   text: string
   enabled: boolean
-}) => {
-  return (
-    <RowRightAligned>
-      {enabled ? (
-        <a href={href}>
-          <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
-          <LinkText>{text}</LinkText>
-        </a>
-      ) : (
-        <DisabledLink>
-          <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
-          <LinkText>{text}</LinkText>
-        </DisabledLink>
-      )}
-    </RowRightAligned>
-  )
-}
+}) => (
+  <RowRightAligned>
+    {enabled ? (
+      <a href={href}>
+        <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
+        <LinkText>{text}</LinkText>
+      </a>
+    ) : (
+      <DisabledLink>
+        <FontAwesomeIcon icon={faFileSpreadsheet} size="lg" />
+        <LinkText>{text}</LinkText>
+      </DisabledLink>
+    )}
+  </RowRightAligned>
+)

@@ -174,12 +174,10 @@ export default React.memo(function TampereRegionalSurveyReport() {
 
   const sortedMonthlyReportResult = useMemo(
     () =>
-      monthlyStatisticsResult.map((result) => {
-        return {
-          year: result.year,
-          monthlyCounts: orderBy(result.monthlyCounts, [(r) => r.month])
-        }
-      }),
+      monthlyStatisticsResult.map((result) => ({
+        year: result.year,
+        monthlyCounts: orderBy(result.monthlyCounts, [(r) => r.month])
+      })),
     [monthlyStatisticsResult]
   )
 
@@ -212,9 +210,9 @@ export default React.memo(function TampereRegionalSurveyReport() {
               onClick={fetchMonthlyResults}
               data-qa="fetch-monthly-button"
             />
-            {renderResult(sortedMonthlyReportResult, (result) => {
-              return result.monthlyCounts.length > 0 &&
-                result.year === selectedYear ? (
+            {renderResult(sortedMonthlyReportResult, (result) =>
+              result.monthlyCounts.length > 0 &&
+              result.year === selectedYear ? (
                 <ReportDownload
                   data={result.monthlyCounts.map((row) => ({
                     ...row,
@@ -277,7 +275,7 @@ export default React.memo(function TampereRegionalSurveyReport() {
                   filename={`${t.reportLabel} ${selectedYear} - ${t.monthlyReport}.csv`}
                 />
               ) : null
-            })}
+            )}
           </ReportRow>
           <ReportRow $spacing="L" $alignItems="center" $fullWidth>
             <ReportLabel>{t.ageStatisticsReport}</ReportLabel>
@@ -288,9 +286,9 @@ export default React.memo(function TampereRegionalSurveyReport() {
               onClick={fetchAgeResults}
               data-qa="fetch-age-button"
             />
-            {renderResult(ageStatisticsResult, (result) => {
-              return result.ageStatistics.length > 0 &&
-                result.year === selectedYear ? (
+            {renderResult(ageStatisticsResult, (result) =>
+              result.ageStatistics.length > 0 &&
+              result.year === selectedYear ? (
                 <ReportDownload
                   data={result.ageStatistics}
                   columns={[
@@ -372,7 +370,7 @@ export default React.memo(function TampereRegionalSurveyReport() {
                   filename={`${t.reportLabel} ${selectedYear} - ${t.ageStatisticsReport}.csv`}
                 />
               ) : null
-            })}
+            )}
           </ReportRow>
           <ReportRow $spacing="L" $alignItems="center" $fullWidth>
             <ReportLabel>{t.yearlyStatisticsReport}</ReportLabel>
@@ -383,9 +381,9 @@ export default React.memo(function TampereRegionalSurveyReport() {
               onClick={fetchYearlyResults}
               data-qa="fetch-yearly-button"
             />
-            {renderResult(yearlyStatisticsResult, (result) => {
-              return result.yearlyStatistics.length > 0 &&
-                result.year === selectedYear ? (
+            {renderResult(yearlyStatisticsResult, (result) =>
+              result.yearlyStatistics.length > 0 &&
+              result.year === selectedYear ? (
                 <ReportDownload
                   data={result.yearlyStatistics}
                   columns={[
@@ -508,7 +506,7 @@ export default React.memo(function TampereRegionalSurveyReport() {
                   filename={`${t.reportLabel} ${selectedYear} - ${t.yearlyStatisticsReport}.csv`}
                 />
               ) : null
-            })}
+            )}
           </ReportRow>
           <ReportRow $spacing="L" $alignItems="center" $fullWidth>
             <ReportLabel>{t.municipalVoucherReport}</ReportLabel>
@@ -519,9 +517,9 @@ export default React.memo(function TampereRegionalSurveyReport() {
               onClick={fetchMunicipalVoucherResults}
               data-qa="fetch-municipal-vouchers-button"
             />
-            {renderResult(municipalVoucherResult, (result) => {
-              return result.voucherCounts.length > 0 &&
-                result.year === selectedYear ? (
+            {renderResult(municipalVoucherResult, (result) =>
+              result.voucherCounts.length > 0 &&
+              result.year === selectedYear ? (
                 <ReportDownload
                   data={result.voucherCounts}
                   columns={[
@@ -547,7 +545,7 @@ export default React.memo(function TampereRegionalSurveyReport() {
                   filename={`${t.reportLabel} ${selectedYear} - ${t.municipalVoucherReport}.csv`}
                 />
               ) : null
-            })}
+            )}
           </ReportRow>
         </FixedSpaceColumn>
       </ContentArea>

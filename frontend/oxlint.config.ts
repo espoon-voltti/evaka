@@ -40,6 +40,7 @@ export default defineConfig({
     '@evaka/no-localdate-triple-equals': 'error',
     '@evaka/shortest-relative-imports': 'error',
 
+    'eslint/arrow-body-style': 'error',
     'eslint/eqeqeq': ['error', 'smart'],
     'eslint/no-array-constructor': 'error',
     'eslint/no-console': ['error', { allow: ['warn', 'error'] }],
@@ -77,7 +78,6 @@ export default defineConfig({
     'react/self-closing-comp': ['error', { component: true, html: true }],
 
     // TODO: Enable later
-    'eslint/arrow-body-style': 'off',
     'unicorn/no-useless-spread': 'off'
   },
   overrides: [

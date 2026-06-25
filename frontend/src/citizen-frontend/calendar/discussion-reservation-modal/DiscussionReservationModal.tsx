@@ -137,9 +137,10 @@ export default React.memo(function DiscussionReservationModal({
 
   const [timeAlreadyReserved, setTimeAlreadyReserved] = useState(false)
 
-  const hasReservations = useMemo(() => {
-    return eventTimeDays.some((d) => d.times.some((t) => t.childId !== null))
-  }, [eventTimeDays])
+  const hasReservations = useMemo(
+    () => eventTimeDays.some((d) => d.times.some((t) => t.childId !== null)),
+    [eventTimeDays]
+  )
 
   const queryClient = useQueryClient()
   const invalidateEvents = useCallback(() => {
