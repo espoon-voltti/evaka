@@ -10,11 +10,10 @@ import { isProduction, getEnvironment } from './helpers'
 function withHost(host: string, fn: () => void) {
   const locationSpy = vi.spyOn(window, 'location', 'get')
   locationSpy.mockReturnValue({
-    ...window.location,
     hostname: host.split(':')[0],
     host,
     href: `http://${host}`
-  })
+  } as Location)
   try {
     fn()
   } finally {

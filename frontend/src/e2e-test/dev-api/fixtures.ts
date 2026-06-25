@@ -1694,7 +1694,7 @@ export class Fixture {
     const value: NekkuSpecialDiet[] = initial
 
     return {
-      ...value,
+      diets: value,
       async save() {
         await createNekkuSpecialDiets({ body: value })
         return value

@@ -108,6 +108,7 @@ export default defineConfig({
           'error',
           { checksVoidReturn: false }
         ],
+        'typescript/no-misused-spread': 'error',
         'typescript/no-namespace': 'error',
         'typescript/no-redundant-type-constituents': 'error',
         'typescript/no-require-imports': 'error',
@@ -137,7 +138,6 @@ export default defineConfig({
         'react/require-render-return': 'error',
 
         // TODO: Enable later
-        'typescript/no-misused-spread': 'off',
         'typescript/no-unnecessary-parameter-property-assignment': 'off',
         'typescript/no-useless-default-assignment': 'off',
         'typescript/prefer-regexp-exec': 'off',
