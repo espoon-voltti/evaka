@@ -103,6 +103,7 @@ export default defineConfig({
         ],
         'typescript/no-explicit-any': 'error',
         'typescript/no-inferrable-types': 'error',
+        'typescript/no-meaningless-void-operator': 'error',
         'typescript/no-misused-promises': [
           'error',
           { checksVoidReturn: false }
@@ -136,7 +137,6 @@ export default defineConfig({
         'react/require-render-return': 'error',
 
         // TODO: Enable later
-        'typescript/no-meaningless-void-operator': 'off',
         'typescript/no-misused-spread': 'off',
         'typescript/no-unnecessary-parameter-property-assignment': 'off',
         'typescript/no-useless-default-assignment': 'off',

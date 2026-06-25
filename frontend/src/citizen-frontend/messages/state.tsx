@@ -144,7 +144,7 @@ export const MessageContextProvider = React.memo(
         setReplyContent,
         loadMoreThreads: () => {
           if (hasNextPage) {
-            void fetchNextPage()
+            fetchNextPage()
           }
         },
         hasMoreThreads: hasNextPage !== undefined && hasNextPage,
