@@ -17,9 +17,7 @@ export default defineConfig({
     typeAware: true,
     typeCheck: true,
     maxWarnings: 0,
-
-    // TODO: Enable later
-    reportUnusedDisableDirectives: 'off'
+    reportUnusedDisableDirectives: 'error'
   },
   categories: {
     correctness: 'error'
@@ -113,6 +111,7 @@ export default defineConfig({
           { checksVoidReturn: false }
         ],
         'typescript/no-namespace': 'error',
+        'typescript/no-redundant-type-constituents': 'error',
         'typescript/no-require-imports': 'error',
         'typescript/no-unnecessary-type-assertion': 'error',
         'typescript/no-unnecessary-type-constraint': 'error',
@@ -142,7 +141,6 @@ export default defineConfig({
         // TODO: Enable later
         'typescript/no-meaningless-void-operator': 'off',
         'typescript/no-misused-spread': 'off',
-        'typescript/no-redundant-type-constituents': 'off',
         'typescript/no-unnecessary-parameter-property-assignment': 'off',
         'typescript/no-useless-default-assignment': 'off',
         'typescript/prefer-regexp-exec': 'off',

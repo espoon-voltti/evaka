@@ -2,15 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-/* eslint-disable  */
-/* eslint-enable react-hooks/exhaustive-deps, prettier/prettier, import/order */
+// eslint-disable typescript/no-explicit-any typescript/no-unsafe-return typescript/no-unsafe-assignment typescript/no-unsafe-argument typescript/no-unsafe-member-access typescript/no-unsafe-call
 
 import range from 'lodash/range'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { boolean } from './fields'
 import { memoizeLast } from './memoize'
-import {
+import type {
   AnyForm,
   ErrorOf,
   FieldErrors,
@@ -310,7 +309,8 @@ export function useFormUnion<F extends AnyForm>({
 }
   ? StateOf<F>['branch'] extends infer K
     ? K extends string // trigger distributive conditional type
-      ? ShapeOf<F> extends { [KK in K]: AnyForm }
+      ? // eslint-disable-next-line typescript/consistent-indexed-object-style
+        ShapeOf<F> extends { [KK in K]: AnyForm }
         ? {
             branch: K
             form: BoundForm<ShapeOf<F>[K]>
