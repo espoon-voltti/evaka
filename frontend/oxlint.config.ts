@@ -122,6 +122,7 @@ export default defineConfig({
         'typescript/no-unsafe-return': 'error',
         'typescript/no-unsafe-argument': 'error',
         'typescript/no-unsafe-member-access': 'error',
+        'typescript/no-useless-default-assignment': 'error',
         'typescript/non-nullable-type-assertion-style': 'error',
         'typescript/prefer-find': 'error',
         'typescript/prefer-for-of': 'error',
@@ -139,7 +140,6 @@ export default defineConfig({
         'react/require-render-return': 'error',
 
         // TODO: Enable later
-        'typescript/no-useless-default-assignment': 'off',
         'typescript/prefer-regexp-exec': 'off',
         'typescript/require-array-sort-compare': 'off',
         'typescript/strict-boolean-expressions': 'off' // replaces jsx-expressions/strict-logical-expressions

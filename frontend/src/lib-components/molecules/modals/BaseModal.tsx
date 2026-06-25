@@ -272,7 +272,7 @@ export const PlainModal = React.memo(function PlainModal(
 
 export const ModalHeader = React.memo(function ModalHeader({
   children,
-  headingComponent: HeadingComponent = H1,
+  headingComponent: HeadingComponent,
   ...props
 }: {
   children: React.ReactNode

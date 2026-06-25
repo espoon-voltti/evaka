@@ -2834,7 +2834,7 @@ export const applicationFixtureId = fromUuid<ApplicationId>(
 export const applicationFixture = (
   child: DevPerson,
   guardian: DevPerson,
-  otherGuardian: DevPerson | undefined = undefined,
+  otherGuardian?: DevPerson,
   type: 'DAYCARE' | 'PRESCHOOL' | 'CLUB' = 'DAYCARE',
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null = null,
   preferredUnits: DaycareId[] = [testDaycare.id],

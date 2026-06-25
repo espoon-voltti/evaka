@@ -30,7 +30,7 @@ export const PageWithNavigation: React.FC<PageWithNavigation> = ({
   selectedGroup,
   countInfo,
   includeSelectAll = true,
-  allowedGroupIds = undefined,
+  allowedGroupIds,
   shiftCareSelected,
   onSelectShiftCare,
   children

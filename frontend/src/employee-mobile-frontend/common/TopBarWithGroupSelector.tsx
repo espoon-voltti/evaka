@@ -39,7 +39,7 @@ export default React.memo(function TopBarWithGroupSelector({
   selectedGroup,
   countInfo,
   includeSelectAll = true,
-  allowedGroupIds = undefined,
+  allowedGroupIds,
   shiftCareSelected,
   onSelectShiftCare
 }: TopBarWithGroupSelectorProps) {

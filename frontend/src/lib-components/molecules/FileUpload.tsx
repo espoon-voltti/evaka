@@ -473,10 +473,7 @@ function FileUpload<T>(
     updateUploadedFile({ ...fileObject, progress: percentage })
   }
 
-  const updateUploadedFile = (
-    file: FileObject,
-    id: UUID | undefined = undefined
-  ) => {
+  const updateUploadedFile = (file: FileObject, id?: UUID) => {
     const others = uploadedFiles.filter((item) => item.id !== (id ?? file.id))
     setUploadedFilesAndNotify([...others, file])
   }
