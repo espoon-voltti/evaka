@@ -75,10 +75,7 @@ export default defineConfig({
       { props: 'never', children: 'never', propElementValues: 'always' }
     ],
     'react/rules-of-hooks': 'error',
-    'react/self-closing-comp': ['error', { component: true, html: true }],
-
-    // TODO: Enable later
-    'unicorn/no-useless-spread': 'off'
+    'react/self-closing-comp': ['error', { component: true, html: true }]
   },
   overrides: [
     {

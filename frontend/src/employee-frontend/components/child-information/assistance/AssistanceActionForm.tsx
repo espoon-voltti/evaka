@@ -363,7 +363,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                       label={option.nameFi}
                       checked={form.actions.includes(option.value)}
                       onChange={(value) => {
-                        const actions = new Set([...form.actions])
+                        const actions = new Set(form.actions)
                         if (value) actions.add(option.value)
                         else actions.delete(option.value)
                         updateFormState({ actions: Array.from(actions) })

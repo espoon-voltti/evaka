@@ -110,7 +110,7 @@ export default React.memo(function InvoicesPage() {
   )
   const toggleChecked = (invoiceId: InvoiceId) =>
     setCheckedInvoices((prev) => {
-      const next = new Set([...prev])
+      const next = new Set(prev)
       if (next.has(invoiceId)) {
         next.delete(invoiceId)
       } else {
@@ -121,7 +121,7 @@ export default React.memo(function InvoicesPage() {
   const clearChecked = () => setCheckedInvoices(new Set())
   const checkAllOnPage = () =>
     setCheckedInvoices((prev) => {
-      const next = new Set([...prev])
+      const next = new Set(prev)
       invoices
         .map((res) => res.data.map((invoice) => invoice.data.id))
         .getOrElse([])
