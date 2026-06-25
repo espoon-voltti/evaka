@@ -5,7 +5,7 @@
 import LocalTime from './local-time'
 import type { Ordered } from './ordered'
 
-// oxlint-disable-next-line @typescript-eslint/no-namespace
+// oxlint-disable-next-line typescript/no-namespace
 namespace TimeRangeEndpoint {
   export class Start implements Ordered<Start> {
     isStart = true

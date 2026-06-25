@@ -34,10 +34,10 @@ function getGraphOptions(startDate: Date, endDate: Date): ChartOptions<'line'> {
       x: {
         type: 'time',
         // chart.js typings say number, but 'time' scale wants Date
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line typescript/no-unsafe-assignment,typescript/no-explicit-any
         min: startDate as any,
         // chart.js typings say number, but 'time' scale wants Date
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line typescript/no-unsafe-assignment,typescript/no-explicit-any
         max: endDate as any,
         time: {
           displayFormats: {

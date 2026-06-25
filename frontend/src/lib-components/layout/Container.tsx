@@ -65,7 +65,7 @@ export const Container = styled.div<{
 `
 
 const spacing = (
-  // oxlint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  // oxlint-disable-next-line typescript/no-redundant-type-constituents
   spacing?: SpacingSize | string,
   defaultValue = defaultMargins.s
 ) =>
@@ -80,9 +80,9 @@ type ContentAreaProps = {
   'data-qa'?: string
   $opaque: boolean
   $fullHeight?: boolean
-  // oxlint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  // oxlint-disable-next-line typescript/no-redundant-type-constituents
   $paddingVertical?: SpacingSize | string
-  // oxlint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  // oxlint-disable-next-line typescript/no-redundant-type-constituents
   $paddingHorizontal?: SpacingSize | string
   $blue?: boolean
   $shadow?: boolean

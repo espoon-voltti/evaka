@@ -10,7 +10,7 @@ import type { SpacingSize } from '../white-space'
 import { defaultMargins, isSpacingSize } from '../white-space'
 
 interface FixedSpaceRowProps {
-  // oxlint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  // oxlint-disable-next-line typescript/no-redundant-type-constituents
   $spacing?: SpacingSize | string
   $justifyContent?: Property.JustifyContent
   $alignItems?: Property.AlignItems
@@ -63,11 +63,11 @@ export const MobileFixedSpaceRow = styled(FixedSpaceRow)`
 `
 
 interface FixedSpaceColumnProps {
-  // oxlint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  // oxlint-disable-next-line typescript/no-redundant-type-constituents
   $spacing?: SpacingSize | string
   $justifyContent?: Property.JustifyContent
   $alignItems?: Property.AlignItems
-  // oxlint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  // oxlint-disable-next-line typescript/no-redundant-type-constituents
   $marginRight?: SpacingSize | string
   $fullWidth?: boolean
 }

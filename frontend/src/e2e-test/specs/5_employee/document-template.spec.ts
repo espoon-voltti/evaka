@@ -46,13 +46,13 @@ test.describe('Employee - Document templates', () => {
     const templates = new DocumentTemplatesListPage(page)
 
     const jsonPath = await templates.templateRow(template.name).exportToPath()
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    // oxlint-disable-next-line typescript/no-unsafe-assignment
     const data = JSON.parse(
       await promisify(fs.readFile)(jsonPath, {
         encoding: 'utf-8'
       })
     )
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(data.name).toEqual(template.name)
 
     const name = 'Tuodun uusi nimi'

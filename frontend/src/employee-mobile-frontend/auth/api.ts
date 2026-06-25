@@ -60,7 +60,7 @@ export type PinLoginRequired = typeof PinLoginRequired
 
 export const mapPinLoginRequiredError = (
   e: unknown
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
 ): Failure<any> | Success<PinLoginRequired> => {
   const failure = Failure.fromError(e)
   return failure.errorCode === 'PIN_LOGIN_REQUIRED'

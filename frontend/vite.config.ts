@@ -42,14 +42,14 @@ async function resolveIcons() {
       throw new Error(`Invalid environment variable ICONS=${process.env.ICONS}`)
   }
   try {
-    // oxlint-disable @typescript-eslint/ban-ts-comment
+    // oxlint-disable typescript/ban-ts-comment
     // @ts-ignore
     await import('@fortawesome/pro-light-svg-icons')
     // @ts-ignore
     await import('@fortawesome/pro-regular-svg-icons')
     // @ts-ignore
     await import('@fortawesome/pro-solid-svg-icons')
-    // oxlint-enable @typescript-eslint/ban-ts-comment
+    // oxlint-enable typescript/ban-ts-comment
     console.info('Using pro icons (auto-detected)')
     return 'pro'
   } catch (e) {

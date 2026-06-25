@@ -208,7 +208,7 @@ function getArrayErrorCount<T extends unknown[]>(
   return arrayErrors + itemErrors
 }
 
-// oxlint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export function getErrorCount<E extends ErrorsOf<any>>(errors: E): number {
   if (typeof errors !== 'object') {
     return 0

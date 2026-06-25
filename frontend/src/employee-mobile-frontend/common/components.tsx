@@ -35,7 +35,7 @@ export const InlineWideAsyncButton = styled(WideAsyncButton)`
 `
 
 export const FlexColumn = styled.div<{
-  // oxlint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  // oxlint-disable-next-line typescript/no-redundant-type-constituents
   $paddingHorizontal?: SpacingSize | string
 }>`
   @media screen and (max-width: 1023px) {

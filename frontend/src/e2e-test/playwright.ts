@@ -102,7 +102,7 @@ function unwrapElement(value: unknown): unknown {
 
 export const expect = new Proxy(baseExpect, {
   apply(target, thisArg, args: [unknown, ...unknown[]]) {
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
+    // oxlint-disable-next-line typescript/no-unsafe-return
     return Reflect.apply(target, thisArg, [
       unwrapElement(args[0]),
       ...args.slice(1)

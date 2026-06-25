@@ -53,11 +53,11 @@ export default React.memo(function TemplateImportModal({
           const file = e.target.files?.item(0)
           if (file) {
             void file.text().then((text) => {
-              // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              // oxlint-disable-next-line typescript/no-unsafe-assignment
               const json = JSON.parse(text)
-              // oxlint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              // oxlint-disable-next-line typescript/no-unsafe-member-access
               if ('name' in json && typeof json.name === 'string') {
-                // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
+                // oxlint-disable-next-line typescript/no-unsafe-argument
                 setData(json)
               }
             })

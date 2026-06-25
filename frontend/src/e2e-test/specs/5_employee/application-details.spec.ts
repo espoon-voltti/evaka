@@ -162,7 +162,7 @@ test.describe('Application details', () => {
       HelsinkiDateTime.now() // TODO: use mock clock
     )
     const preferredStartDate =
-      // oxlint-disable-next-line @typescript-eslint/no-extra-non-null-assertion,@typescript-eslint/no-unnecessary-type-assertion
+      // oxlint-disable-next-line typescript/no-extra-non-null-assertion,typescript/no-unnecessary-type-assertion
       restrictedDetailsGuardianApplication.form.preferences.preferredStartDate!!
     await createApplicationPlacementPlan({
       applicationId: restrictedDetailsGuardianApplication.id,
@@ -207,7 +207,7 @@ test.describe('Application details', () => {
       HelsinkiDateTime.now() // TODO: use mock clock
     )
     const preferredStartDate =
-      // oxlint-disable-next-line @typescript-eslint/no-extra-non-null-assertion,@typescript-eslint/no-unnecessary-type-assertion
+      // oxlint-disable-next-line typescript/no-extra-non-null-assertion,typescript/no-unnecessary-type-assertion
       singleParentApplication.form.preferences.preferredStartDate!!
     await createApplicationPlacementPlan({
       applicationId: singleParentApplication.id,

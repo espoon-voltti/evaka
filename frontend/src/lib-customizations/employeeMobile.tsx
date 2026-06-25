@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-// oxlint-disable-next-line @typescript-eslint/ban-ts-comment
+// oxlint-disable-next-line typescript/ban-ts-comment
 // @ts-ignore
 import defaultsUntyped from '@evaka/customizations/employeeMobile'
 import mergeWith from 'lodash/mergeWith'
@@ -15,7 +15,7 @@ import { fi } from './defaults/employee-mobile-frontend/i18n/fi'
 import { sv } from './defaults/employee-mobile-frontend/i18n/sv'
 import type { EmployeeMobileCustomizations } from './types'
 
-// oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
+// oxlint-disable-next-line typescript/no-unsafe-assignment
 const defaults: EmployeeMobileCustomizations = defaultsUntyped
 
 declare global {

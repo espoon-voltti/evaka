@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-// oxlint-disable-next-line @typescript-eslint/ban-ts-comment
+// oxlint-disable-next-line typescript/ban-ts-comment
 // @ts-ignore
 import defaultsUntyped from '@evaka/customizations/common'
 import isArray from 'lodash/isArray'
@@ -27,7 +27,7 @@ export const mergeCustomizer = (
     ? customized
     : undefined // fall back to default merge logic
 
-// oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
+// oxlint-disable-next-line typescript/no-unsafe-assignment
 const defaults: CommonCustomizations = defaultsUntyped
 
 declare global {
