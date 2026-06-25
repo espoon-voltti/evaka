@@ -31,7 +31,17 @@ export default defineConfig({
       specifier: './eslint-plugin'
     }
   ],
+  env: {
+    builtin: true
+  },
   rules: {
+    '@evaka/no-page-pause': 'error',
+    '@evaka/no-testonly': 'error',
+    '@evaka/no-relative-lib-imports': 'error',
+    '@evaka/no-icons-imports': 'error',
+    '@evaka/no-localdate-triple-equals': 'error',
+    '@evaka/shortest-relative-imports': 'error',
+
     'eslint/eqeqeq': ['error', 'smart'],
     'eslint/no-array-constructor': 'error',
     'eslint/no-console': ['error', { allow: ['warn', 'error'] }],
@@ -60,30 +70,22 @@ export default defineConfig({
 
     'lodash/import-scope': ['error', 'method'],
 
-    '@evaka/no-page-pause': 'error',
-    '@evaka/no-testonly': 'error',
-    '@evaka/no-relative-lib-imports': 'error',
-    '@evaka/no-icons-imports': 'error',
-    '@evaka/no-localdate-triple-equals': 'error',
-    '@evaka/shortest-relative-imports': 'error'
-  },
+    'react/exhaustive-deps': ['error', { additionalHooks: '(useApiState)' }],
+    'react/jsx-curly-brace-presence': [
+      'error',
+      { props: 'never', children: 'never', propElementValues: 'always' }
+    ],
+    'react/rules-of-hooks': 'error',
+    'react/self-closing-comp': ['error', { component: true, html: true }],
 
-  // TODO: Move to main rules section
+    // TODO: Enable later
+    'eslint/arrow-body-style': 'off',
+    'unicorn/no-useless-spread': 'off'
+  },
   overrides: [
     {
-      files: ['**/*.ts', '**/*.tsx'],
+      files: ['*.ts', '*.tsx'],
       rules: {
-        'react/exhaustive-deps': [
-          'error',
-          { additionalHooks: '(useApiState)' }
-        ],
-        'react/jsx-curly-brace-presence': [
-          'error',
-          { props: 'never', children: 'never', propElementValues: 'always' }
-        ],
-        'react/rules-of-hooks': 'error',
-        'react/self-closing-comp': ['error', { component: true, html: true }],
-
         'typescript/adjacent-overload-signatures': 'error',
         'typescript/array-type': 'error',
         'typescript/ban-ts-comment': 'error',
@@ -138,7 +140,6 @@ export default defineConfig({
         'react/require-render-return': 'error',
 
         // TODO: Enable later
-        'eslint/arrow-body-style': 'off',
         'typescript/no-meaningless-void-operator': 'off',
         'typescript/no-misused-spread': 'off',
         'typescript/no-redundant-type-constituents': 'off',
@@ -146,12 +147,8 @@ export default defineConfig({
         'typescript/no-useless-default-assignment': 'off',
         'typescript/prefer-regexp-exec': 'off',
         'typescript/require-array-sort-compare': 'off',
-        'typescript/strict-boolean-expressions': 'off', // replaces jsx-expressions/strict-logical-expressions
-        'unicorn/no-useless-spread': 'off'
+        'typescript/strict-boolean-expressions': 'off' // replaces jsx-expressions/strict-logical-expressions
       }
     }
-  ],
-  env: {
-    builtin: true
-  }
+  ]
 })
