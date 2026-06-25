@@ -219,18 +219,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `'created_by' column should be 'uuid' and NOT NULL`() {
         val permittedViolations =
             setOf(
-                // deprecated table, to be dropped
-                Column(
-                    ColumnRef("assistance_need_decision", "created_by"),
-                    "uuid",
-                    nullable = true,
-                ),
-                // deprecated table, to be dropped
-                Column(
-                    ColumnRef("assistance_need_preschool_decision", "created_by"),
-                    "uuid",
-                    nullable = true,
-                ),
                 Column(
                     ColumnRef("child_document", "created_by"),
                     "uuid",
@@ -281,14 +269,7 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @Test
     fun `'created_by' column should have a foreign key to evaka_user`() {
-        // both tables deprecated and waiting to be dropped
-        val permittedViolations =
-            setOf(
-                ColumnsRef("assistance_need_decision", "created_by") to
-                    ColumnsRef("employee", "id"),
-                ColumnsRef("assistance_need_preschool_decision", "created_by") to
-                    ColumnsRef("employee", "id"),
-            )
+        val permittedViolations = setOf<Pair<ColumnsRef, ColumnsRef?>>()
         val violations =
             columns
                 .filter { it.ref.columnName == "created_by" }
@@ -362,8 +343,6 @@ class SchemaConventionsTest : PureJdbiTest(resetDbBeforeEach = false) {
     fun `every daterange and datemultirange column should have a constraint that limits its bound(s)`() {
         val permittedViolations =
             setOf(
-                // deprecated table, to be dropped
-                ColumnRef("assistance_need_decision", "validity_period"),
                 ColumnRef("calendar_event", "period"),
                 ColumnRef("daily_service_time", "validity_period"),
                 ColumnRef("daycare", "club_apply_period"),

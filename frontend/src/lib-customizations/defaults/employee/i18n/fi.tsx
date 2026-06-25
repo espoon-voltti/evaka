@@ -3688,9 +3688,6 @@ export const fi = {
         'application.other_guardian_id': 'Hakemuksia (toisena huoltajana)',
         'assistance_action.child_id': 'Tuki- toimia',
         'assistance_need.child_id': 'Tuen tarpeita',
-        'assistance_need_decision.child_id': 'Tuen tarpeen päätöksiä',
-        'assistance_need_decision_guardian.person_id':
-          'Tuen päätöksen huoltajana',
         'assistance_need_voucher_coefficient.child_id':
           'Tuen palvelusetelikertoimia',
         'attachment.uploaded_by_person': 'Liitteitä',
