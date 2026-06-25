@@ -34,11 +34,11 @@ WHERE pl.child_id = ${bind(childId)}
     AND pl.start_date <= ${bind(date.plusDays(daysAllowedBeforePlacementStart.toLong()))}
     AND pl.end_date >= ${bind(date)}
 ORDER BY pl.start_date
+LIMIT 1
 """
             )
         }
-        .toList<DocumentPlacementInfo>()
-        .firstOrNull()
+        .exactlyOneOrNull<DocumentPlacementInfo>()
 
 private val PEDAGOGICAL_DOCUMENT_TYPES =
     setOf(
