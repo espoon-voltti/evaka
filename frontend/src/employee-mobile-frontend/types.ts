@@ -65,7 +65,7 @@ export function formatCategory(
         case 'NONBILLABLE':
           return i18n.absences.careTypes.DAYCARE_5YO_FREE
       }
-    // eslint-disable-next-line no-fallthrough
+    // oxlint-disable-next-line no-fallthrough
     case 'PREPARATORY':
     case 'PREPARATORY_DAYCARE':
       switch (category) {
@@ -74,7 +74,7 @@ export function formatCategory(
         case 'NONBILLABLE':
           return i18n.common.types.PREPARATORY_EDUCATION
       }
-    // eslint-disable-next-line no-fallthrough
+    // oxlint-disable-next-line no-fallthrough
     case 'PRESCHOOL':
     case 'PRESCHOOL_DAYCARE':
     case 'PRESCHOOL_CLUB':
@@ -86,7 +86,7 @@ export function formatCategory(
         case 'NONBILLABLE':
           return i18n.absences.careTypes.PRESCHOOL
       }
-    // eslint-disable-next-line no-fallthrough
+    // oxlint-disable-next-line no-fallthrough
     case 'SCHOOL_SHIFT_CARE':
       return i18n.absences.careTypes.SCHOOL_SHIFT_CARE
   }

@@ -58,7 +58,7 @@ export default React.memo(function UnitPage() {
       const queryStart = LocalDate.parseIso(searchParams.get('start') ?? '')
       setFilters(filters.withStartDate(queryStart))
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // oxlint-disable-line react-hooks/exhaustive-deps
 
   useTitle(unitInformation.map((value) => value.daycare.name))
 

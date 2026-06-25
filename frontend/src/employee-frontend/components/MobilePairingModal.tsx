@@ -91,7 +91,7 @@ export default React.memo(function MobilePairingModal({
     if (phase === 1) {
       void postPairingResult({ body: idProps })
     }
-  }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phase]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (responseKey.length === 6) {
@@ -105,7 +105,7 @@ export default React.memo(function MobilePairingModal({
         })
       }
     }
-  }, [responseKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [responseKey]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const polling = setInterval(() => {

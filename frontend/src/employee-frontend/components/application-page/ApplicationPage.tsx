@@ -189,7 +189,7 @@ export default React.memo(function ApplicationPage() {
         )
       )
     }
-  }, [debouncedEditedApplication]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedEditedApplication]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   const shouldLoadServiceNeedOptions =
     editedApplication !== undefined &&

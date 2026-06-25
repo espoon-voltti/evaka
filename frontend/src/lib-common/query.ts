@@ -244,7 +244,7 @@ export interface QueryOptions {
   refetchInterval?: number
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyUseQueryOptions = UseQueryOptions<any, unknown>
 
 type DataOf<T extends AnyUseQueryOptions> =

@@ -136,7 +136,7 @@ export const InfoBox = React.memo(function InfoBox({
 }: InfoBoxProps) {
   const theme = useTheme()
   // without this hacking compiler gives an error because IconProp type is already super complex
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-explicit-any
   const notNullIcon: IconProp = (icon as any) ?? faInfo
   return (
     <MessageBox

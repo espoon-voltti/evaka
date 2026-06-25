@@ -997,7 +997,7 @@ export default function UnitEditor(props: Props) {
       props.financeDecisionHandlerOptions.find(
         (e) => e.value === form.financeDecisionHandlerId
       ),
-    [form.financeDecisionHandlerId] // eslint-disable-line react-hooks/exhaustive-deps
+    [form.financeDecisionHandlerId] // oxlint-disable-line react-hooks/exhaustive-deps
   )
 
   const [

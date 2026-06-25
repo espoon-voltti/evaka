@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// oxlint-disable @typescript-eslint/no-explicit-any
 
 export type Form<Output, Error extends string, State, Shape> = {
   validate: (state: State) => ValidationResult<Output, Error>

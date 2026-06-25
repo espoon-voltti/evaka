@@ -43,7 +43,7 @@ export const buttonBorderRadius = '4px'
  * before the previous event. This throttling is lossy because it will simply drop events.
  */
 export function useThrottledEventHandler<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   E extends React.SyntheticEvent<any>
 >(
   onEvent: React.EventHandler<E> | undefined,

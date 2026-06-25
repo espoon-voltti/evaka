@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-// eslint-disable typescript/no-explicit-any typescript/no-unsafe-return typescript/no-unsafe-assignment typescript/no-unsafe-argument typescript/no-unsafe-member-access typescript/no-unsafe-call
+// oxlint-disable typescript/no-explicit-any typescript/no-unsafe-return typescript/no-unsafe-assignment typescript/no-unsafe-argument typescript/no-unsafe-member-access typescript/no-unsafe-call
 
 import range from 'lodash/range'
 import { useCallback, useMemo, useRef, useState } from 'react'
@@ -309,7 +309,7 @@ export function useFormUnion<F extends AnyForm>({
 }
   ? StateOf<F>['branch'] extends infer K
     ? K extends string // trigger distributive conditional type
-      ? // eslint-disable-next-line typescript/consistent-indexed-object-style
+      ? // oxlint-disable-next-line typescript/consistent-indexed-object-style
         ShapeOf<F> extends { [KK in K]: AnyForm }
         ? {
             branch: K

@@ -357,10 +357,10 @@ class CitizenApplicationEditor {
               await this.selectUnit(unit.name)
             }
           } else if (field === 'partTime') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
             await this.selectBooleanRadio(field, value)
           } else if (field === 'siblingBasis') {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument
             await this.setCheckbox(field, value)
             await new Checkbox(this.page.findByDataQa('other-sibling')).click()
           } else if (field === 'otherGuardianAgreementStatus' && value) {

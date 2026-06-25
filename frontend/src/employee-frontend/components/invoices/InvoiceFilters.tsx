@@ -50,7 +50,7 @@ export default React.memo(function InvoiceFilters({
     ) {
       setSearchFilters({ ...searchFilters, unit: undefined })
     }
-  }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [units]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   const toggleArea = useCallback(
     (code: string) => () => {

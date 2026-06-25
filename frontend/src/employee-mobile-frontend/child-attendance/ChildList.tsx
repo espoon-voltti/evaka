@@ -229,7 +229,7 @@ export default React.memo(function ChildList({
   )
 })
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+// oxlint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 const OrderedList = styled.ol<{ $spacing?: SpacingSize | string }>`
   list-style: none;
   padding: 0;

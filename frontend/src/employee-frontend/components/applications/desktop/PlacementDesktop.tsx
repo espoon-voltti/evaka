@@ -390,7 +390,7 @@ const PrefetchedDaycares = React.memo(function PrefetchedDaycares({
       unitIds: shownDaycares.map((d) => d.id),
       occupancyStart: occupancyPeriodStart
     }),
-    [occupancyPeriodStart, applications] // eslint-disable-line react-hooks/exhaustive-deps
+    [occupancyPeriodStart, applications] // oxlint-disable-line react-hooks/exhaustive-deps
   )
 
   const initialData = useQueryResult(getPlacementDesktopDaycaresQuery(queryArg))

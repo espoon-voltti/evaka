@@ -106,7 +106,7 @@ export default React.memo(function ParingWizard() {
       }
     }, 1000)
     return () => clearInterval(polling)
-  }, [pairingResponse]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pairingResponse]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   async function sendRequest() {
     await postChallenge({ body: { challengeKey } }).then(setPairingResponse)
