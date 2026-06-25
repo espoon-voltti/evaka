@@ -128,6 +128,7 @@ export default defineConfig({
         'typescript/prefer-for-of': 'error',
         'typescript/prefer-function-type': 'error',
         'typescript/prefer-includes': 'error',
+        'typescript/prefer-regexp-exec': 'error',
         'typescript/prefer-string-starts-ends-with': 'error',
         'typescript/require-await': 'error',
         'typescript/restrict-plus-operands': 'error',
@@ -140,7 +141,6 @@ export default defineConfig({
         'react/require-render-return': 'error',
 
         // TODO: Enable later
-        'typescript/prefer-regexp-exec': 'off',
         'typescript/require-array-sort-compare': 'off',
         'typescript/strict-boolean-expressions': 'off' // replaces jsx-expressions/strict-logical-expressions
       }
