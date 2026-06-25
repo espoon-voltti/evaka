@@ -157,7 +157,6 @@ for (const env of ['desktop', 'mobile'] as const) {
     test('Citizen cannot delete child income statement while employee is handling it', async ({
       evaka
     }) => {
-      const { listPage } = await setupPageObjects(evaka, env)
       const employee = await Fixture.employee().save()
       const incomeStatement = await Fixture.incomeStatement({
         personId: testChild.id,
@@ -170,6 +169,8 @@ for (const env of ['desktop', 'mobile'] as const) {
         },
         status: 'SENT'
       }).save()
+
+      const { listPage } = await setupPageObjects(evaka, env)
 
       await listPage.assertNthIncomeStatementDeleteButtonDisabled(0, false)
 
