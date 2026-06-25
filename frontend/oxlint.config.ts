@@ -112,6 +112,7 @@ export default defineConfig({
         'typescript/no-namespace': 'error',
         'typescript/no-redundant-type-constituents': 'error',
         'typescript/no-require-imports': 'error',
+        'typescript/no-unnecessary-parameter-property-assignment': 'error',
         'typescript/no-unnecessary-type-assertion': 'error',
         'typescript/no-unnecessary-type-constraint': 'error',
         'typescript/no-unsafe-assignment': 'error',
@@ -138,7 +139,6 @@ export default defineConfig({
         'react/require-render-return': 'error',
 
         // TODO: Enable later
-        'typescript/no-unnecessary-parameter-property-assignment': 'off',
         'typescript/no-useless-default-assignment': 'off',
         'typescript/prefer-regexp-exec': 'off',
         'typescript/require-array-sort-compare': 'off',

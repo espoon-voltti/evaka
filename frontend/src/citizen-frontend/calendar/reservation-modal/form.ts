@@ -665,7 +665,6 @@ export class DayProperties {
 
     this.minDate = minDate
     this.maxDate = maxDate
-    this.calendarDays = calendarDays
     this.reservableDaysByChild = reservableDaysByChild
     this.operationDaysByChild = operationDaysByChild
   }
