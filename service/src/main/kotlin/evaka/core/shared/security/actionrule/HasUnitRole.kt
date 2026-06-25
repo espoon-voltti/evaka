@@ -663,39 +663,6 @@ WHERE daycare_acl.employee_id = ${bind(user.id)}
             )
         }
 
-    fun inPlacementUnitOfDuplicateChildOfHojksChildDocument(
-        cfg: ChildAclConfig = ChildAclConfig(backupCare = false)
-    ) =
-        ruleViaChildAcl<ChildDocumentId>(cfg) { _, _ ->
-            sql(
-                """
-SELECT child_document.id AS id, person.duplicate_of AS child_id
-FROM child_document
-JOIN document_template ON document_template.id = child_document.template_id
-JOIN person ON person.id = child_document.child_id
-WHERE document_template.type = 'HOJKS'
-            """
-            )
-        }
-
-    fun inActiveBackupCareUnitOfDuplicateChildOfHojksChildDocument() =
-        rule<ChildDocumentId> { user, now ->
-            sql(
-                """
-SELECT child_document.id AS id, daycare_acl.role, daycare_acl.daycare_id AS unit_id
-FROM child_document
-JOIN document_template ON document_template.id = child_document.template_id
-JOIN person ON person.id = child_document.child_id
-JOIN backup_care bc ON bc.child_id = person.duplicate_of
-JOIN daycare_acl ON bc.unit_id = daycare_acl.daycare_id
-WHERE daycare_acl.employee_id = ${bind(user.id)}
-  AND document_template.type = 'HOJKS'
-  AND bc.start_date <= ${bind(now.toLocalDate())}
-  AND bc.end_date >= ${bind(now.toLocalDate())}
-            """
-            )
-        }
-
     fun inPlacementUnitOfChildOfDailyServiceTime(cfg: ChildAclConfig = ChildAclConfig()) =
         ruleViaChildAcl<DailyServiceTimesId>(cfg) { _, _ ->
             sql(

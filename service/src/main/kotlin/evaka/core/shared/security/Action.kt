@@ -2236,10 +2236,6 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfChildDocument(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inActiveBackupCareUnitOfChildOfChildDocument(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfDuplicateChildOfHojksChildDocument(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inActiveBackupCareUnitOfDuplicateChildOfHojksChildDocument(),
             HasGroupRole(STAFF).inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
             HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocumentWithFutureAccess(),
             HasGroupRole(STAFF).inActiveBackupCareGroupOfChildOfChildDocument(),
@@ -2253,10 +2249,6 @@ sealed interface Action {
                 .inPlacementUnitOfChildOfChildDocument(),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inActiveBackupCareUnitOfChildOfChildDocument(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inPlacementUnitOfDuplicateChildOfHojksChildDocument(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
-                .inActiveBackupCareUnitOfDuplicateChildOfHojksChildDocument(),
             HasGroupRole(STAFF).inPlacementGroupOfDuplicateChildOfHojksChildDocument(),
             HasGroupRole(STAFF).inPlacementGroupOfChildOfChildDocumentWithFutureAccess(),
             HasGroupRole(STAFF).inActiveBackupCareGroupOfChildOfChildDocument(),

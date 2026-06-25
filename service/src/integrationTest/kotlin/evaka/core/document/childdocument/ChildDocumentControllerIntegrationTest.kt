@@ -1338,32 +1338,6 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
     }
 
     @Test
-    fun `unit supervisor sees hojks document from duplicate`() {
-        createPlacement()
-        val duplicateId = db.transaction { tx ->
-            val unitId =
-                tx.insert(
-                    DevDaycare(
-                        areaId = area.id,
-                        enabledPilotFeatures = setOf(PilotFeature.VASU_AND_PEDADOC),
-                    )
-                )
-            val childId = tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
-            tx.insert(
-                DevPlacement(
-                    childId = childId,
-                    unitId = unitId,
-                    startDate = clock.today(),
-                    endDate = clock.today().plusDays(5),
-                )
-            )
-            childId
-        }
-        val documentId = createDocument(childId = duplicateId, templateId = templateIdHojks)
-        assertNotNull(controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId))
-    }
-
-    @Test
     fun `archiving document with template not marked for external archiving fails`() {
         // Create document with a template not marked for external archiving (Ped template)
         val documentId = createDocument()
@@ -1889,44 +1863,6 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertThrows<Forbidden> {
             controller.getDocument(dbInstance(), staffUser, clock, documentId)
         }
-        assertThrows<Forbidden> {
-            controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId)
-        }
-    }
-
-    @Test
-    fun `unit supervisor sees hojks from duplicate during the primary's backup care, but not after`() {
-        // the HOJKS belongs to the duplicate; access comes via the primary child's backup care
-        val duplicateId = db.transaction { tx ->
-            tx.insert(DevPerson().copy(duplicateOf = child.id), DevPersonType.CHILD)
-        }
-        val documentId = insertDocument(duplicateId, templateIdHojks)
-
-        val activeBackupCareId = db.transaction { tx ->
-            tx.insert(
-                DevBackupCare(
-                    childId = child.id,
-                    unitId = daycare.id,
-                    period = FiniteDateRange(clock.today().minusDays(1), clock.today().plusDays(1)),
-                )
-            )
-        }
-
-        assertTrue(
-            controller
-                .getDocument(dbInstance(), unitSupervisorUser, clock, documentId)
-                .permittedActions
-                .contains(Action.ChildDocument.READ)
-        )
-
-        db.transaction { tx ->
-            tx.execute {
-                sql(
-                    "UPDATE backup_care SET end_date = ${bind(clock.today().minusDays(1))} WHERE id = ${bind(activeBackupCareId)}"
-                )
-            }
-        }
-
         assertThrows<Forbidden> {
             controller.getDocument(dbInstance(), unitSupervisorUser, clock, documentId)
         }
