@@ -27,6 +27,16 @@ pre-commit:
             root: frontend
             stage_fixed: true
 
+          - run: npx oxlint --fix {staged_files}
+            glob: dummy-idp/*.{ts,js}
+            root: dummy-idp
+            stage_fixed: true
+          - run: npx oxfmt -c ../.oxfmtrc.json {staged_files}
+            glob: dummy-idp/*
+            exclude: "*.license"
+            root: dummy-idp
+            stage_fixed: true
+
           - run: ./gradlew ktfmtPrecommit --include-only=$(echo {staged_files} | tr ' ' ',')
             glob: service/*.kt
             root: service
