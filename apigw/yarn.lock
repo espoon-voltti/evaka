@@ -2009,9 +2009,9 @@ __metadata:
     nocache: "npm:4.0.0"
     nock: "npm:14.0.15"
     node-forge: "npm:1.4.0"
-    oxfmt: "npm:^0.56.0"
-    oxlint: "npm:^1.71.0"
-    oxlint-tsgolint: "npm:^0.23.0"
+    oxfmt: "npm:0.56.0"
+    oxlint: "npm:1.71.0"
+    oxlint-tsgolint: "npm:0.23.0"
     pino: "npm:10.3.1"
     pino-http: "npm:11.0.0"
     pino-pretty: "npm:13.1.3"
@@ -3330,7 +3330,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oxfmt@npm:^0.56.0":
+"oxfmt@npm:0.56.0":
   version: 0.56.0
   resolution: "oxfmt@npm:0.56.0"
   dependencies:
@@ -3407,7 +3407,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oxlint-tsgolint@npm:^0.23.0":
+"oxlint-tsgolint@npm:0.23.0":
   version: 0.23.0
   resolution: "oxlint-tsgolint@npm:0.23.0"
   dependencies:
@@ -3436,7 +3436,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oxlint@npm:^1.71.0":
+"oxlint@npm:1.71.0":
   version: 1.71.0
   resolution: "oxlint@npm:1.71.0"
   dependencies:
