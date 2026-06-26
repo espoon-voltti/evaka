@@ -6,21 +6,27 @@ package evaka.core.dataremoval
 
 import evaka.core.DataRemovalEnv
 import evaka.core.FullApplicationTest
+import evaka.core.absence.application.AbsenceApplication
+import evaka.core.absence.application.AbsenceApplicationStatus
 import evaka.core.assistance.OtherAssistanceMeasureType
 import evaka.core.calendarevent.CalendarEventType
 import evaka.core.childimages.insertChildImage
+import evaka.core.dailyservicetimes.DailyServiceTimesType
 import evaka.core.document.ChildDocumentType
 import evaka.core.document.DocumentDeletionBasis
 import evaka.core.document.DocumentTemplateContent
 import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.finance.notes.createFinanceNote
+import evaka.core.holidayperiod.QuestionnaireType
 import evaka.core.nekku.NekkuProductMealType
 import evaka.core.note.child.sticky.ChildStickyNoteBody
 import evaka.core.note.child.sticky.createChildStickyNote
 import evaka.core.placement.PlacementType
 import evaka.core.s3.DocumentService
+import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.AssistanceActionOptionId
+import evaka.core.shared.BackupPickupId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
@@ -30,13 +36,17 @@ import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevAssistanceAction
 import evaka.core.shared.dev.DevAssistanceActionOption
 import evaka.core.shared.dev.DevAssistanceFactor
+import evaka.core.shared.dev.DevBackupCare
+import evaka.core.shared.dev.DevBackupPickup
 import evaka.core.shared.dev.DevCalendarEvent
 import evaka.core.shared.dev.DevCalendarEventAttendee
 import evaka.core.shared.dev.DevCalendarEventTime
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevChild
+import evaka.core.shared.dev.DevChildAttendance
 import evaka.core.shared.dev.DevChildDocument
 import evaka.core.shared.dev.DevChildDocumentPublishedVersion
+import evaka.core.shared.dev.DevDailyServiceTimes
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDaycareAssistance
 import evaka.core.shared.dev.DevDaycareGroup
@@ -47,11 +57,14 @@ import evaka.core.shared.dev.DevFosterParent
 import evaka.core.shared.dev.DevFridgeChild
 import evaka.core.shared.dev.DevFridgePartnership
 import evaka.core.shared.dev.DevGuardian
+import evaka.core.shared.dev.DevHolidayQuestionnaire
+import evaka.core.shared.dev.DevHolidayQuestionnaireAnswer
 import evaka.core.shared.dev.DevOtherAssistanceMeasure
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevPreschoolAssistance
+import evaka.core.shared.dev.DevReservation
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
@@ -85,7 +98,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val leafExpireDate = today.minusYears(1)
     private val imageExpireDate = today.minusMonths(1)
     private val financeExpireDate = today.minusYears(5)
-    private val assistanceExpireDate = today.minusYears(10)
+    private val tenYearExpireDate = today.minusYears(10)
 
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val careArea = DevCareArea()
@@ -440,15 +453,15 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `deleteExpiredData removes assistance rows for a child whose last placement ended over ten years ago`() {
-        insertPlacementEnding(child.id, assistanceExpireDate.minusDays(1))
-        insertAssistanceData(child.id)
+    fun `deleteExpiredData removes ten-year leaf rows for a child whose last placement ended over ten years ago`() {
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        insertTenYearLeafData(child.id)
 
         withLimit(100) {
             dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
         }
 
-        allAssistanceTables.forEach { assertEquals(0, rowCount(it), "table $it should be empty") }
+        allTenYearLeafTables.forEach { assertEquals(0, rowCount(it), "table $it should be empty") }
         assertEquals(
             0,
             rowCount("assistance_action_option_ref"),
@@ -457,29 +470,29 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `deleteExpiredData keeps assistance rows for a child whose last placement ended within ten years`() {
-        // Expired by the 1-year leaf window but not by the 10-year assistance window
+    fun `deleteExpiredData keeps ten-year leaf rows for a child whose last placement ended within ten years`() {
+        // Expired by the 1-year leaf window but not by the 10-year window
         insertExpiredPlacement(child.id)
-        insertAssistanceData(child.id)
+        insertTenYearLeafData(child.id)
 
         withLimit(100) {
             dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
         }
 
-        allAssistanceTables.forEach { assertEquals(1, rowCount(it), "table $it should be kept") }
+        allTenYearLeafTables.forEach { assertEquals(1, rowCount(it), "table $it should be kept") }
         assertEquals(1, rowCount("assistance_action_option_ref"))
     }
 
     @Test
-    fun `deleteExpiredData keeps assistance rows for a child whose last placement ends exactly on the ten-year boundary`() {
-        insertPlacementEnding(child.id, assistanceExpireDate)
-        insertAssistanceData(child.id)
+    fun `deleteExpiredData keeps ten-year leaf rows for a child whose last placement ends exactly on the ten-year boundary`() {
+        insertPlacementEnding(child.id, tenYearExpireDate)
+        insertTenYearLeafData(child.id)
 
         withLimit(100) {
             dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
         }
 
-        allAssistanceTables.forEach { assertEquals(1, rowCount(it), "table $it should be kept") }
+        allTenYearLeafTables.forEach { assertEquals(1, rowCount(it), "table $it should be kept") }
         assertEquals(1, rowCount("assistance_action_option_ref"))
     }
 
@@ -992,6 +1005,104 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 )
             )
         }
+    }
+
+    private val placementLeafTables =
+        listOf(
+            "daily_service_time",
+            "attendance_reservation",
+            "backup_care",
+            "child_attendance",
+            "absence_application",
+            "backup_pickup",
+            "holiday_questionnaire_answer",
+        )
+
+    private fun insertPlacementLeafData(childId: ChildId) {
+        val date = today.minusYears(12)
+        db.transaction { tx ->
+            tx.insert(
+                DevDailyServiceTimes(
+                    childId = childId,
+                    type = DailyServiceTimesType.REGULAR,
+                    validityPeriod = DateRange(date, null),
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = childId,
+                    date = date,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdBy = admin.evakaUserId,
+                )
+            )
+            tx.insert(
+                DevBackupCare(
+                    childId = childId,
+                    unitId = daycare.id,
+                    period = FiniteDateRange(date, date),
+                )
+            )
+            tx.insert(
+                DevChildAttendance(
+                    childId = childId,
+                    unitId = daycare.id,
+                    date = date,
+                    arrived = LocalTime.of(8, 0),
+                    departed = LocalTime.of(16, 0),
+                )
+            )
+            tx.insert(
+                AbsenceApplication(
+                    id = AbsenceApplicationId(UUID.randomUUID()),
+                    createdAt = now,
+                    createdBy = admin.evakaUserId,
+                    modifiedAt = now,
+                    modifiedBy = admin.evakaUserId,
+                    childId = childId,
+                    startDate = date,
+                    endDate = date,
+                    description = "test",
+                    status = AbsenceApplicationStatus.WAITING_DECISION,
+                    decidedAt = null,
+                    decidedBy = null,
+                    rejectedReason = null,
+                )
+            )
+            tx.insert(
+                DevBackupPickup(
+                    id = BackupPickupId(UUID.randomUUID()),
+                    childId = childId,
+                    name = "Pickup Person",
+                    phone = "0401234567",
+                )
+            )
+            val questionnaire =
+                DevHolidayQuestionnaire(
+                    type = QuestionnaireType.FIXED_PERIOD,
+                    periodOptions = null,
+                    periodOptionLabel = null,
+                    period = null,
+                    absenceTypeThreshold = null,
+                )
+            tx.insert(questionnaire)
+            tx.insert(
+                DevHolidayQuestionnaireAnswer(
+                    modifiedBy = admin.evakaUserId,
+                    questionnaireId = questionnaire.id,
+                    childId = childId,
+                    fixedPeriod = FiniteDateRange(date, date),
+                )
+            )
+        }
+    }
+
+    private val allTenYearLeafTables = allAssistanceTables + placementLeafTables
+
+    private fun insertTenYearLeafData(childId: ChildId) {
+        insertAssistanceData(childId)
+        insertPlacementLeafData(childId)
     }
 
     private fun withLimit(limit: Int, block: () -> Unit) {

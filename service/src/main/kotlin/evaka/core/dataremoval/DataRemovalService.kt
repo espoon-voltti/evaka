@@ -106,6 +106,13 @@ class DataRemovalService(
                     "daycare_assistance",
                     "preschool_assistance",
                     "other_assistance_measure",
+                    "daily_service_time",
+                    "attendance_reservation",
+                    "backup_care",
+                    "child_attendance",
+                    "absence_application",
+                    "backup_pickup",
+                    "holiday_questionnaire_answer",
                 ),
         )
 
