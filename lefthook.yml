@@ -8,11 +8,12 @@ pre-commit:
         parallel: true
         jobs:
           - run: yarn exec oxlint --fix {staged_files}
-            glob: frontend/*.{ts,tsx,js,mjs}
+            glob: frontend/*.{ts,tsx,js,jsx,cjs,mjs}
             root: frontend
             stage_fixed: true
           - run: yarn exec oxfmt {staged_files}
             glob: frontend/*
+            exclude: "*.license"
             root: frontend
             stage_fixed: true
           - run: ./gradlew ktfmtPrecommit --include-only=$(echo {staged_files} | tr ' ' ',')
