@@ -9,9 +9,7 @@ import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.ForcePlainGet
 import evaka.core.absence.getDaycareIdByGroup
-import evaka.core.daycare.domain.Language
 import evaka.core.daycare.getDaycare
-import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
 import evaka.core.shared.DocumentTemplateId
 import evaka.core.shared.FeatureConfig
@@ -26,8 +24,6 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.UiLanguage
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
-import evaka.core.shared.security.PilotFeature
-import java.time.LocalDate
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
@@ -134,27 +130,19 @@ class DocumentTemplateController(
                         tx.getCurrentOrNextPlacement(
                             childId,
                             clock.today(),
-                            featureConfig.citizenDocumentCreationDaysBeforePlacement,
+                            CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT,
                         ) ?: return@read emptyList()
-                    val placementHasStarted = !placement.startDate.isAfter(clock.today())
 
                     tx.getTemplateSummaries().filter {
                         it.published &&
                             it.validity.includes(clock.today()) &&
-                            it.placementTypes.contains(placement.type) &&
-                            // Allowed templates: same-language, EN CITIZEN_BASIC for any unit,
-                            // FI templates for EN units.
-                            (it.language.name.equals(
-                                placement.unitLanguage.name,
-                                ignoreCase = true,
-                            ) ||
-                                (it.language == UiLanguage.EN &&
-                                    it.type == ChildDocumentType.CITIZEN_BASIC) ||
-                                (placement.unitLanguage == Language.en &&
-                                    it.language == UiLanguage.FI)) &&
-                            isAllowedByPilotFeatures(it.type, placement.enabledPilotFeatures) &&
-                            // Not-yet-started placements qualify only for CITIZEN_BASIC documents
-                            (it.type == ChildDocumentType.CITIZEN_BASIC || placementHasStarted)
+                            isTemplateApplicableToPlacement(
+                                it.type,
+                                it.language,
+                                it.placementTypes,
+                                placement,
+                                clock.today(),
+                            )
                     }
                 }
             }
@@ -184,12 +172,7 @@ class DocumentTemplateController(
                         it.published &&
                             it.validity.includes(clock.today()) &&
                             (types.isEmpty() || types.contains(it.type)) &&
-                            // Allowed templates: same-language, EN CITIZEN_BASIC for any unit,
-                            // FI templates for EN units.
-                            (it.language.name.equals(unit.language.name, ignoreCase = true) ||
-                                (it.language == UiLanguage.EN &&
-                                    it.type == ChildDocumentType.CITIZEN_BASIC) ||
-                                (unit.language == Language.en && it.language == UiLanguage.FI)) &&
+                            languageMatches(it.language, it.type, unit.language) &&
                             isAllowedByPilotFeatures(it.type, unit.enabledPilotFeatures)
                     }
                 }
@@ -476,54 +459,3 @@ private fun assertUniqueIds(content: DocumentTemplateContent) {
     if (questionIds.size > questionIds.distinct().size)
         throw BadRequest("Found non unique question ids")
 }
-
-private data class PlacementInfo(
-    val startDate: LocalDate,
-    val type: PlacementType,
-    val unitLanguage: Language,
-    val enabledPilotFeatures: Set<PilotFeature>,
-)
-
-private fun Database.Read.getCurrentOrNextPlacement(
-    childId: ChildId,
-    date: LocalDate,
-    daysAllowedBeforePlacementStart: Int,
-): PlacementInfo? =
-    createQuery {
-            sql(
-                """
-SELECT pl.start_date, pl.type, d.language AS unit_language, d.enabled_pilot_features AS enabled_pilot_features
-FROM placement pl
-JOIN daycare d on d.id = pl.unit_id
-WHERE pl.child_id = ${bind(childId)}
-    AND pl.start_date <= ${bind(date.plusDays(daysAllowedBeforePlacementStart.toLong()))}
-    AND pl.end_date >= ${bind(date)}
-ORDER BY pl.start_date
-"""
-            )
-        }
-        .toList<PlacementInfo>()
-        .firstOrNull()
-
-private val PEDAGOGICAL_DOCUMENT_TYPES =
-    setOf(
-        ChildDocumentType.HOJKS,
-        ChildDocumentType.LEOPS,
-        ChildDocumentType.MIGRATED_LEOPS,
-        ChildDocumentType.MIGRATED_VASU,
-        ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
-        ChildDocumentType.VASU,
-        ChildDocumentType.OTHER,
-    )
-
-private fun isPedagogicalDocument(type: ChildDocumentType) = type in PEDAGOGICAL_DOCUMENT_TYPES
-
-private fun isAllowedByPilotFeatures(
-    type: ChildDocumentType,
-    enabledPilotFeatures: Collection<PilotFeature>,
-): Boolean =
-    (PilotFeature.VASU_AND_PEDADOC in enabledPilotFeatures || !isPedagogicalDocument(type)) &&
-        (PilotFeature.OTHER_DECISION in enabledPilotFeatures ||
-            type != ChildDocumentType.OTHER_DECISION) &&
-        (PilotFeature.CITIZEN_BASIC_DOCUMENT in enabledPilotFeatures ||
-            type != ChildDocumentType.CITIZEN_BASIC)

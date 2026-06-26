@@ -12,10 +12,13 @@ import evaka.core.caseprocess.deleteProcessByDocumentId
 import evaka.core.caseprocess.insertCaseProcess
 import evaka.core.caseprocess.insertCaseProcessHistoryRow
 import evaka.core.caseprocess.updateDocumentCaseProcessHistory
+import evaka.core.document.CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
 import evaka.core.document.ChildDocumentType
 import evaka.core.document.DocumentTemplate
 import evaka.core.document.DocumentTemplateContent
+import evaka.core.document.getCurrentOrNextPlacement
 import evaka.core.document.getTemplate
+import evaka.core.document.isTemplateApplicableToPlacement
 import evaka.core.pis.Employee
 import evaka.core.pis.listPersonByDuplicateOf
 import evaka.core.placement.getPlacementsForChildDuring
@@ -1030,6 +1033,24 @@ private fun getTemplate(
                 throw BadRequest("Invalid template")
             }
         } ?: throw NotFound()
+
+    val placement =
+        tx.getCurrentOrNextPlacement(
+            body.childId,
+            clock.today(),
+            CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT,
+        ) ?: throw BadRequest("Child has no current or upcoming placement for the template")
+    if (
+        !isTemplateApplicableToPlacement(
+            template.type,
+            template.language,
+            template.placementTypes,
+            placement,
+            clock.today(),
+        )
+    ) {
+        throw BadRequest("Template ${body.templateId} is not applicable to the child's placement")
+    }
 
     val sameTemplateAlreadyStarted =
         tx.getNonCompletedChildDocumentChildIds(template.id, setOf(body.childId))

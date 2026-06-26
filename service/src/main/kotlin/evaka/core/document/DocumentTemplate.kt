@@ -21,6 +21,8 @@ import java.time.format.DateTimeFormatter
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
+const val CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT = 60
+
 private data class Translations(val yes: String, val no: String)
 
 private val translationsFi = Translations(yes = "Kyllä", no = "Ei")

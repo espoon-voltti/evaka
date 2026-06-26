@@ -632,7 +632,7 @@ WHERE employee_id = ${bind(user.id)}
         deletable: Boolean = false,
         publishable: Boolean = false,
         canGoToPrevStatus: Boolean = false,
-        cfg: ChildAclConfig = ChildAclConfig(),
+        cfg: ChildAclConfig = ChildAclConfig(backupCare = false),
     ) =
         ruleViaChildAcl<ChildDocumentId>(cfg) { _, _ ->
             sql(
@@ -648,17 +648,17 @@ ${if (canGoToPrevStatus) "AND ((type = 'OTHER_DECISION') OR (type = 'CITIZEN_BAS
             )
         }
 
-    fun inPlacementUnitOfDuplicateChildOfHojksChildDocument(
-        cfg: ChildAclConfig = ChildAclConfig()
-    ) =
-        ruleViaChildAcl<ChildDocumentId>(cfg) { _, _ ->
+    fun inActiveBackupCareUnitOfChildOfChildDocument() =
+        rule<ChildDocumentId> { user, now ->
             sql(
                 """
-SELECT child_document.id AS id, person.duplicate_of AS child_id
+SELECT child_document.id AS id, daycare_acl.role, daycare_acl.daycare_id AS unit_id
 FROM child_document
-JOIN document_template ON document_template.id = child_document.template_id
-JOIN person ON person.id = child_document.child_id
-WHERE document_template.type = 'HOJKS'
+JOIN backup_care bc ON child_document.child_id = bc.child_id
+JOIN daycare_acl ON bc.unit_id = daycare_acl.daycare_id
+WHERE daycare_acl.employee_id = ${bind(user.id)}
+  AND bc.start_date <= ${bind(now.toLocalDate())}
+  AND bc.end_date >= ${bind(now.toLocalDate())}
             """
             )
         }

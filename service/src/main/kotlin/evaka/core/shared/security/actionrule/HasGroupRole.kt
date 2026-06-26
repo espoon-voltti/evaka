@@ -5,6 +5,7 @@
 package evaka.core.shared.security.actionrule
 
 import evaka.core.daycare.domain.ProviderType
+import evaka.core.document.CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
 import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.shared.AbsenceApplicationId
 import evaka.core.shared.ChildDocumentId
@@ -24,10 +25,6 @@ import java.util.EnumSet
 
 private typealias GetGroupRoles =
     QuerySql.Builder.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql
-
-// Default number of days before a placement starts that staff can access CITIZEN_BASIC
-// type of child documents.
-private const val DEFAULT_FUTURE_ACCESS_DAYS = 30
 
 data class HasGroupRole(
     val oneOf: EnumSet<UserRole>,
@@ -165,9 +162,7 @@ WHERE employee_id = ${bind(user.id)}
             )
         }
 
-    fun inPlacementGroupOfChildWithFutureAccess(
-        daysBeforePlacement: Int = DEFAULT_FUTURE_ACCESS_DAYS
-    ) =
+    fun inPlacementGroupOfChildWithFutureAccess(daysBeforePlacement: Int) =
         rule<ChildId> { user, now ->
             val futureAccessDate = now.toLocalDate().plusDays(daysBeforePlacement.toLong())
             val pastAccessDate = now.toLocalDate().minusDays(daysBeforePlacement.toLong())
@@ -216,7 +211,7 @@ WHERE employee_id = ${bind(user.id)}
         }
 
     fun inPlacementGroupOfChildOfChildDocumentWithFutureAccess(
-        daysBeforePlacement: Int = DEFAULT_FUTURE_ACCESS_DAYS,
+        daysBeforePlacement: Int = CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT,
         editable: Boolean = false,
         deletable: Boolean = false,
         publishable: Boolean = false,
@@ -249,8 +244,8 @@ WHERE employee_id = ${bind(user.id)}
             )
 
         return rule { user, now ->
-            val futureAccessDate = now.toLocalDate().plusDays(daysBeforePlacement.toLong())
-            val pastAccessDate = now.toLocalDate().minusDays(daysBeforePlacement.toLong())
+            val today = now.toLocalDate()
+            val futureAccessDate = today.plusDays(daysBeforePlacement.toLong())
             sql(
                 """
 SELECT child_document.id AS id, daycare_acl.role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
@@ -262,12 +257,19 @@ JOIN daycare_group ON dgp.daycare_group_id = daycare_group.id
 JOIN daycare_acl ON group_acl.employee_id = daycare_acl.employee_id AND daycare_group.daycare_id = daycare_acl.daycare_id
 JOIN daycare ON daycare_acl.daycare_id = daycare.id
 WHERE daycare_acl.employee_id = ${bind(user.id)}
-  AND dgp.start_date <= ${bind(futureAccessDate)}
-  AND dgp.end_date >= ${bind(now.toLocalDate())}
+  AND dgp.start_date <= CASE WHEN child_document.type = 'CITIZEN_BASIC' THEN ${bind(futureAccessDate)} ELSE ${bind(today)} END
+  AND dgp.end_date >= ${bind(today)}
   AND ${predicate(childDocumentFilters)}
+            """
+                    .trimIndent()
+            )
+        }
+    }
 
-UNION ALL
-
+    fun inActiveBackupCareGroupOfChildOfChildDocument() =
+        rule<ChildDocumentId> { user, now ->
+            sql(
+                """
 SELECT child_document.id AS id, daycare_acl.role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM child_document
 JOIN backup_care bc ON child_document.child_id = bc.child_id
@@ -276,25 +278,48 @@ JOIN daycare_group ON bc.group_id = daycare_group.id
 JOIN daycare_acl ON group_acl.employee_id = daycare_acl.employee_id AND daycare_group.daycare_id = daycare_acl.daycare_id
 JOIN daycare ON daycare_acl.daycare_id = daycare.id
 WHERE daycare_acl.employee_id = ${bind(user.id)}
-  AND bc.end_date > ${bind(pastAccessDate)}
-  AND ${predicate(childDocumentFilters)}
+  AND bc.start_date <= ${bind(now.toLocalDate())}
+  AND bc.end_date >= ${bind(now.toLocalDate())}
             """
                     .trimIndent()
             )
         }
-    }
 
     fun inPlacementGroupOfDuplicateChildOfHojksChildDocument() =
         rule<ChildDocumentId> { user, now ->
+            val today = now.toLocalDate()
             sql(
                 """
-SELECT child_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+SELECT child_document.id AS id, daycare_acl.role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM child_document
 JOIN document_template ON document_template.id = child_document.template_id
 JOIN person ON person.id = child_document.child_id
-JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl ON acl.child_id = person.duplicate_of
-JOIN daycare ON acl.daycare_id = daycare.id
-WHERE employee_id = ${bind(user.id)} AND document_template.type = 'HOJKS'
+JOIN placement dp ON dp.child_id = person.duplicate_of
+JOIN daycare_group_placement dgp ON dp.id = dgp.daycare_placement_id
+JOIN daycare_group_acl AS group_acl USING (daycare_group_id)
+JOIN daycare_group ON dgp.daycare_group_id = daycare_group.id
+JOIN daycare_acl ON group_acl.employee_id = daycare_acl.employee_id AND daycare_group.daycare_id = daycare_acl.daycare_id
+JOIN daycare ON daycare_acl.daycare_id = daycare.id
+WHERE daycare_acl.employee_id = ${bind(user.id)}
+  AND document_template.type = 'HOJKS'
+  AND dgp.start_date <= ${bind(today)}
+  AND dgp.end_date >= ${bind(today)}
+
+UNION ALL
+
+SELECT child_document.id AS id, daycare_acl.role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
+FROM child_document
+JOIN document_template ON document_template.id = child_document.template_id
+JOIN person ON person.id = child_document.child_id
+JOIN backup_care bc ON bc.child_id = person.duplicate_of
+JOIN daycare_group_acl AS group_acl ON bc.group_id = group_acl.daycare_group_id
+JOIN daycare_group ON bc.group_id = daycare_group.id
+JOIN daycare_acl ON group_acl.employee_id = daycare_acl.employee_id AND daycare_group.daycare_id = daycare_acl.daycare_id
+JOIN daycare ON daycare_acl.daycare_id = daycare.id
+WHERE daycare_acl.employee_id = ${bind(user.id)}
+  AND document_template.type = 'HOJKS'
+  AND bc.start_date <= ${bind(today)}
+  AND bc.end_date >= ${bind(today)}
             """
                     .trimIndent()
             )

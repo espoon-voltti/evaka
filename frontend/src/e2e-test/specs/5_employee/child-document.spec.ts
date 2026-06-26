@@ -10,7 +10,6 @@ import { Fixture } from '../../dev-api/fixtures'
 import { resetServiceState } from '../../generated/api-clients'
 import type { DevEmployee, DevPerson } from '../../generated/api-types'
 import ChildInformationPage from '../../pages/employee/child-information'
-import { ChildDocumentPage } from '../../pages/employee/documents/child-document'
 import { test, expect } from '../../playwright'
 import { employeeLogin } from '../../utils/user'
 
@@ -21,7 +20,6 @@ test.describe('child document with person duplicate', () => {
   test.use({ evakaOptions: { mockedTime } })
 
   let admin: DevEmployee
-  let daycareSupervisor: DevEmployee
   let child: DevPerson
   let duplicate: DevPerson
 
@@ -34,9 +32,6 @@ test.describe('child document with person duplicate', () => {
       type: ['CENTRE'],
       enabledPilotFeatures: ['VASU_AND_PEDADOC', 'OTHER_DECISION']
     }).save()
-    daycareSupervisor = await Fixture.employee()
-      .unitSupervisor(daycare.id)
-      .save()
     const preschool = await Fixture.daycare({
       areaId: area.id,
       type: ['PRESCHOOL'],
@@ -63,62 +58,6 @@ test.describe('child document with person duplicate', () => {
       startDate: mockedDate,
       endDate: mockedDate
     }).save()
-  })
-
-  test('unit supervisor sees hojks document from duplicate', async ({
-    evaka
-  }) => {
-    const template = await Fixture.documentTemplate({
-      type: 'HOJKS',
-      validity: new DateRange(mockedDate, mockedDate)
-    }).save()
-    const document = await Fixture.childDocument({
-      childId: duplicate.id,
-      templateId: template.id
-    }).save()
-
-    await employeeLogin(evaka, daycareSupervisor)
-    await evaka.goto(`${config.employeeUrl}/child-documents/${document.id}`)
-    const childDocumentPage = new ChildDocumentPage(evaka)
-    await expect(childDocumentPage.status).toBeVisible()
-  })
-
-  test('unit supervisor sees hojks documents from duplicate', async ({
-    evaka
-  }) => {
-    const pedagogicalAssessmentTemplate = await Fixture.documentTemplate({
-      type: 'PEDAGOGICAL_ASSESSMENT',
-      validity: new DateRange(mockedDate, mockedDate)
-    }).save()
-    await Fixture.childDocument({
-      childId: duplicate.id,
-      templateId: pedagogicalAssessmentTemplate.id
-    }).save()
-    const pedagogicalReportTemplate = await Fixture.documentTemplate({
-      type: 'PEDAGOGICAL_REPORT',
-      validity: new DateRange(mockedDate, mockedDate)
-    }).save()
-    await Fixture.childDocument({
-      childId: duplicate.id,
-      templateId: pedagogicalReportTemplate.id
-    }).save()
-    const hojksTemplate = await Fixture.documentTemplate({
-      type: 'HOJKS',
-      validity: new DateRange(mockedDate, mockedDate)
-    }).save()
-    const hojksDocument = await Fixture.childDocument({
-      childId: duplicate.id,
-      templateId: hojksTemplate.id
-    }).save()
-
-    await employeeLogin(evaka, daycareSupervisor)
-    await evaka.goto(`${config.employeeUrl}/child-information/${child.id}`)
-    const childInformationPage = new ChildInformationPage(evaka)
-    const childDocumentsSection =
-      await childInformationPage.openCollapsible('childDocuments')
-    await childDocumentsSection.assertInternalChildDocuments([
-      { id: hojksDocument.id }
-    ])
   })
 
   test('admin can see all documents from duplicate and edit', async ({

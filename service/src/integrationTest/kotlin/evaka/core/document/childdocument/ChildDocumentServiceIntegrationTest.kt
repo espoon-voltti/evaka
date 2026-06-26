@@ -33,6 +33,7 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.security.PilotFeature
 import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
@@ -50,7 +51,13 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     final val clock = MockEvakaClock(2022, 1, 1, 15, 0)
 
     private val area = DevCareArea()
-    private val daycare = DevDaycare(areaId = area.id, language = Language.sv)
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            language = Language.fi,
+            enabledPilotFeatures =
+                setOf(PilotFeature.VASU_AND_PEDADOC, PilotFeature.CITIZEN_BASIC_DOCUMENT),
+        )
     private val adult = DevPerson(email = "joan.doe@example.com")
     private val child = DevPerson()
 
