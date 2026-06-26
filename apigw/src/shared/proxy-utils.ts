@@ -33,7 +33,7 @@ export function createProxy({
         : {}
 
       // Remove sensitive headers
-      delete originalHeaders['authorization']
+      delete originalHeaders.authorization
       delete originalHeaders['x-user']
 
       const serviceHeaders = lowercaseHeaderNames(

@@ -21,14 +21,14 @@ export class MockRedisClient implements RedisClient {
   advanceTime(amount: number) {
     this.time += amount
     this.db = Object.fromEntries(
-      Object.entries(this.db).filter(([, record]) => {
-        return record.expires === null || record.expires >= this.time
-      })
+      Object.entries(this.db).filter(
+        ([, record]) => record.expires === null || record.expires >= this.time
+      )
     )
     this.sets = Object.fromEntries(
-      Object.entries(this.sets).filter(([, record]) => {
-        return record.expires === null || record.expires >= this.time
-      })
+      Object.entries(this.sets).filter(
+        ([, record]) => record.expires === null || record.expires >= this.time
+      )
     )
   }
 

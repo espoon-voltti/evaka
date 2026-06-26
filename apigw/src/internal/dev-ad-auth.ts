@@ -37,7 +37,7 @@ export function createDevAdRouter(sessions: Sessions<'employee'>): Router {
               type="radio"
               id="${externalId}"
               name="preset"
-              ${idx == 0 ? 'checked' : ''}
+              ${idx === 0 ? 'checked' : ''}
               value="${_.escape(json)}" />
             <label for="${externalId}">${firstName} ${lastName}</label>
           </div>`

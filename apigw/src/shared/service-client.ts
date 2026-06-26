@@ -54,7 +54,7 @@ export function createServiceRequestHeaders(
   }
   const mockedTime = req.get('EvakaMockedTime')
   if (mockedTime) {
-    headers['EvakaMockedTime'] = mockedTime
+    headers.EvakaMockedTime = mockedTime
   }
   return headers
 }

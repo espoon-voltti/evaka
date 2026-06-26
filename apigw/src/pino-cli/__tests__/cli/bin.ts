@@ -27,13 +27,9 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const objToLogMessage = (obj: unknown): string => {
-  return JSON.stringify(obj) + '\n'
-}
+const objToLogMessage = (obj: unknown): string => JSON.stringify(obj) + '\n'
 
-const logMessageToObj = (data: Buffer): unknown => {
-  return JSON.parse(data.toString())
-}
+const logMessageToObj = (data: Buffer): unknown => JSON.parse(data.toString())
 
 const runCli = (input: string) =>
   spawnSync(

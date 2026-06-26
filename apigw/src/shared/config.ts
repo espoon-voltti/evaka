@@ -544,8 +544,8 @@ export function configFromEnv(): Config {
   const adMock =
     optional('DEV_LOGIN', parseBoolean) ?? required('AD_MOCK', parseBoolean)
   const adType = adMock ? 'mock' : 'saml'
-  const ad: Config['ad'] = {
-    ...(adType !== 'saml'
+  const ad: Config['ad'] =
+    adType !== 'saml'
       ? { type: adType }
       : {
           type: adType,
@@ -563,8 +563,7 @@ export function configFromEnv(): Config {
             acceptedClockSkewMs: 0,
             nameIdFormat: required('AD_NAME_ID_FORMAT', unchanged)
           }
-        })
-  }
+        }
 
   const sfiMode = optional('SFI_MODE', parseEnum(['test', 'prod'] as const))
   const sfiDefaults = sfiMode ? sfiDefaultsForMode(sfiMode) : undefined

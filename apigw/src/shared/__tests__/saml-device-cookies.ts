@@ -138,7 +138,7 @@ describe('SAML device cookies', () => {
     expect(header).toMatch(/;\s*HttpOnly/i)
     expect(header).toMatch(/;\s*SameSite=Strict/i)
 
-    const expiresMatch = header.match(/Expires=([^;]+)/)
+    const expiresMatch = /Expires=([^;]+)/.exec(header)
     expect(expiresMatch).not.toBeNull()
     const expiresDate = new Date(expiresMatch![1])
     const ninetyDaysMs = 90 * 24 * 60 * 60 * 1000
