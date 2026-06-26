@@ -5,5 +5,5 @@
 /**
  * Produces a mutable deep copy of the original object
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export const deepCopyObj = (obj: any): any => JSON.parse(JSON.stringify(obj))

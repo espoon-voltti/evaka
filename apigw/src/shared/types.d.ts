@@ -14,7 +14,7 @@ export interface PinoRequest extends Omit<
   SerializedRequest,
   'id' | 'headers' | 'method' | 'raw' | 'remoteAddress' | 'remotePort'
 > {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   raw?: any
   // Custom enriched properties
   path?: string
@@ -41,7 +41,7 @@ export interface UserPinoRequest extends PinoRequest {
 
 export type LogLevel = 'error' | 'warn' | 'info' | 'debug'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export type LogMeta = Record<string, any>
 
 export type LogFn = (

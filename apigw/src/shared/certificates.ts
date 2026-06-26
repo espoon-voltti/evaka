@@ -15,7 +15,7 @@ const names = [
 
 export type TrustedCertificates = (typeof names)[number]
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
+// oxlint-disable-next-line typescript/no-explicit-any,typescript/no-unsafe-assignment
 const certificates: Record<TrustedCertificates, string> = {} as any
 for (const name of names) {
   certificates[name] = fs.readFileSync(

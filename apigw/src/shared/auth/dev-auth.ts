@@ -57,10 +57,10 @@ export function createDevAuthRouter<T extends SessionType>({
         }
       } catch (err) {
         if (!res.headersSent) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          // oxlint-disable-next-line typescript/no-unsafe-member-access
           if (err instanceof AxiosError && err.response?.data?.errorCode) {
             res.redirect(
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              // oxlint-disable-next-line typescript/no-unsafe-member-access
               `${root}?loginError=true&errorCode=${err.response.data.errorCode}`
             )
           } else {

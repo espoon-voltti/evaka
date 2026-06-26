@@ -80,7 +80,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(resPreAuth.status).toBe(200)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(resPreAuth.data?.loggedIn).toBeFalsy()
 
     // Do an IdP-initiated login (skips calling the SP /login endpoint and jumps
@@ -99,7 +99,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(res.status).toBe(200)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(res.data?.loggedIn).toBe(true)
     tester.nockScope.done()
 
@@ -117,7 +117,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(resPostLogout.status).toBe(200)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(resPostLogout.data?.loggedIn).toBeFalsy()
   })
 
@@ -136,7 +136,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(resPreAuth.status).toBe(200)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(resPreAuth.data?.loggedIn).toBeFalsy()
 
     // Do an IdP-initiated login (skips calling the SP /login endpoint and jumps
@@ -154,7 +154,7 @@ describe('SAML Single Logout', () => {
     const res = await tester.client.get(SECURED_ENDPOINT, {
       validateStatus: () => true
     })
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(res.data?.loggedIn).toBe(true)
     tester.nockScope.done()
 
@@ -187,7 +187,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(resPostLogout.status).toBe(200)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(resPostLogout.data?.loggedIn).toBeFalsy()
   })
 })
@@ -214,10 +214,10 @@ async function callSLOEndpointAndAssertResult(
     new RegExp(`^${IDP_ENTRY_POINT_URL}\\?SAMLResponse=?`)
   )
   const logoutResponse = getSamlMessageFromRedirectResponse(res)
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // oxlint-disable-next-line typescript/no-unsafe-assignment
   const logoutResponseJson = await xml2js.parseStringPromise(logoutResponse)
   expect(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     logoutResponseJson['samlp:LogoutResponse']['samlp:Status'][0][
       'samlp:StatusCode'
     ][0].$.Value
@@ -225,7 +225,7 @@ async function callSLOEndpointAndAssertResult(
 }
 
 function getSamlMessageFromRedirectResponse(res: AxiosResponse) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  // oxlint-disable-next-line typescript/no-unsafe-argument
   const location = new URL(res.headers.location)
   const msg =
     location.searchParams.get('SAMLRequest') ??

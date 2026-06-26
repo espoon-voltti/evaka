@@ -69,7 +69,7 @@ function createDigitransitProxy(path: string) {
           })}`
         )
       }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      // oxlint-disable-next-line typescript/no-unsafe-return
       return proxyResData
     }
   })

@@ -102,11 +102,11 @@ export class GatewayTester {
 
   public async login(
     user: CitizenUser | EmployeeUser,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     postData?: any
   ): Promise<void> {
     if (this.sessionType === 'employee') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      // oxlint-disable-next-line typescript/no-unsafe-assignment
       postData =
         postData !== undefined
           ? postData
@@ -121,7 +121,7 @@ export class GatewayTester {
       this.nockScope.post('/system/employee-login').reply(200, user)
       await this.client.post(
         '/api/employee/auth/ad/login/callback',
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        // oxlint-disable-next-line typescript/no-unsafe-argument
         new URLSearchParams(postData),
         {
           maxRedirects: 0,
@@ -130,12 +130,12 @@ export class GatewayTester {
       )
       this.nockScope.done()
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      // oxlint-disable-next-line typescript/no-unsafe-assignment
       postData = postData !== undefined ? postData : { preset: 'dummy' }
       this.nockScope.post('/system/citizen-login').reply(200, user)
       await this.client.post(
         '/api/citizen/auth/sfi/login/callback',
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        // oxlint-disable-next-line typescript/no-unsafe-argument
         new URLSearchParams(postData),
         {
           maxRedirects: 0,

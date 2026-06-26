@@ -74,7 +74,7 @@ export function parseDescriptionFromSamlError(
     ignoreAttributes: false,
     parseAttributeValue: true
   })
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // oxlint-disable-next-line typescript/no-unsafe-assignment
   const statusObject: StatusObject = parser.parse(error.xmlStatus)
 
   if (!statusObject) {

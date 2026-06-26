@@ -8,7 +8,7 @@ import { logWarn } from '../logging.ts'
 
 export const handleCspReport: express.RequestHandler = (req, res) => {
   logWarn('CSP report received', req, {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    // oxlint-disable-next-line typescript/no-unsafe-assignment
     report: req.body
   })
   res.sendStatus(200)

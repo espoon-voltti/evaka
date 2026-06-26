@@ -176,11 +176,11 @@ describe('transport', () => {
 
     describe('given a log message with a missing remoteAddress field', () => {
       test('returns a valid log message in proper format with the clientIp field set to an empty string', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line typescript/no-explicit-any
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // oxlint-disable-next-line typescript/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.req.remoteAddress
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.clientIp = ''
@@ -194,11 +194,11 @@ describe('transport', () => {
 
     describe('given a log message with a missing contentLength field', () => {
       test('returns a valid log message in proper format with the contentLength field set to -1', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line typescript/no-explicit-any
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // oxlint-disable-next-line typescript/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.res.contentLength
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.contentLength = -1
@@ -244,11 +244,11 @@ describe('transport', () => {
 
     describe('given a log message with a missing httpMethod field', () => {
       test('returns a valid log message in proper format with the httpMethod field set to an empty string', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line typescript/no-explicit-any
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // oxlint-disable-next-line typescript/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.req.method
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.httpMethod = ''
@@ -262,11 +262,11 @@ describe('transport', () => {
 
     describe('given a log message with a missing path field', () => {
       test('returns a valid log message in proper format with the path field set to an empty string', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line typescript/no-explicit-any
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // oxlint-disable-next-line typescript/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.req.path
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.path = ''
@@ -280,11 +280,11 @@ describe('transport', () => {
 
     describe('given a log message with a missing queryString field', () => {
       test('returns a valid log message in proper format with the queryString field set to an empty string', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line typescript/no-explicit-any
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // oxlint-disable-next-line typescript/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.req.queryString
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.queryString = ''
@@ -313,11 +313,11 @@ describe('transport', () => {
 
     describe('given a log message with a missing statusCode field', () => {
       test('returns a valid log message in proper format with the statusCode field set to an empty string', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line typescript/no-explicit-any
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // oxlint-disable-next-line typescript/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.res.statusCode
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.statusCode = ''
@@ -331,11 +331,11 @@ describe('transport', () => {
 
     describe('given a log message with a missing userIdHash field', () => {
       test('returns a valid log message in proper format with the userIdHash field set to an empty string', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line typescript/no-explicit-any
         const invalidPinoAccessLogMessage: any = lodash.cloneDeep(
           validPinoAccessLogMessage
         )
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        // oxlint-disable-next-line typescript/no-unsafe-member-access
         delete invalidPinoAccessLogMessage.req.userIdHash
         const logMessage = lodash.cloneDeep(expected.validAccessLogMessage)
         logMessage.userIdHash = ''
