@@ -179,6 +179,22 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         assertEmailSent(doc.id, true)
     }
 
+    @Test
+    fun `no notification is sent and no error occurs if the document is deleted before the job runs`() {
+        val doc = postNewDocument(user = staffUser, PedagogicalDocumentPostBody(child.id, "foobar"))
+
+        pedagogicalDocumentController.deletePedagogicalDocument(
+            dbInstance(),
+            staffUser,
+            RealEvakaClock(),
+            doc.id,
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(emptyList(), MockEmailClient.emails)
+    }
+
     private fun assertEmailSent(id: PedagogicalDocumentId, sent: Boolean? = true) {
         assertEquals(
             sent,

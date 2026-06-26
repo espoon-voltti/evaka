@@ -124,6 +124,12 @@ SELECT EXISTS(
         msg: AsyncJob.SendPedagogicalDocumentNotificationEmail,
     ) {
         val childId = db.read { tx -> tx.getPedagogicalDocumentChild(msg.pedagogicalDocumentId) }
+        if (childId == null) {
+            logger.info {
+                "Pedagogical document ${msg.pedagogicalDocumentId} no longer exists, skipping notification email"
+            }
+            return
+        }
         Email.create(
                 dbc = db,
                 personId = msg.recipientId,
