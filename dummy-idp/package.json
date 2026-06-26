@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "clean": "rm -rf ./dist",
+    "lint": "oxfmt -c ../.oxfmtrc.json --check && oxlint",
+    "lint:fix": "oxfmt -c ../.oxfmtrc.json && oxlint --fix",
     "type-check": "tsc --noEmit",
     "build": "npm run clean && npm install && tsc --build src",
     "dev": "tsc --build src && concurrently --prefix '[{name}]' --names 'tsc,nodemon' 'tsc --build --preserveWatchOutput -w src' 'NODE_ENV=local nodemon --enable-source-maps dist/index.js'",
@@ -22,6 +24,9 @@
     "@types/samlp": "1.0.11",
     "concurrently": "10.0.3",
     "nodemon": "3.1.14",
+    "oxfmt": "0.56.0",
+    "oxlint": "1.71.0",
+    "oxlint-tsgolint": "0.23.0",
     "prettier": "3.8.4",
     "tsx": "4.20.6",
     "typescript": "6.0.3"

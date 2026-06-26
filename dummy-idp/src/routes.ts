@@ -2,22 +2,28 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+// oxlint-disable no-console
+
+import * as crypto from 'node:crypto'
+import * as fs from 'node:fs'
+
+import type express from 'express'
+import type { IdPOptions } from 'samlp'
+import samlp from 'samlp'
+
+import { config } from './config'
+import { defaultDataset } from './default-dataset'
+import type { Html } from './html'
+import { html } from './html'
+import type { MockVtjDataset } from './model'
 import {
-  MockVtjDataset,
   mockVtjDatasetSchema,
   sfiSamlAttrs,
   sfiSamlAttrUrns,
   toSfiSamlAttrs
 } from './model'
-import { defaultDataset } from './default-dataset'
-import { VtjStore } from './vtj-store'
-import express from 'express'
-import samlp, { IdPOptions } from 'samlp'
-import * as crypto from 'node:crypto'
-import * as fs from 'node:fs'
-import { config } from './config'
 import { SessionParticipants, SimpleProfileMapper } from './saml'
-import { html, Html } from './html'
+import { VtjStore } from './vtj-store'
 
 const store = new VtjStore(mockVtjDatasetSchema.parse(defaultDataset))
 
@@ -73,7 +79,7 @@ const renderSamlFormPage = (
 ) => {
   // Preserve SAML state in hidden input fields
   const samlStateInputs = ['SAMLRequest', 'RelayState', 'SigAlg']
-    .map((key) => [key, req.query[key] ?? ''] as const)
+    .map((key) => [key, req.query[key] ?? ''] as [string, string])
     .map(
       ([key, value]) =>
         html`<input type="hidden" name="${key}" value="${value.toString()}" />`
@@ -115,7 +121,7 @@ const renderSamlFormPage = (
   <h1>Devausympäristön Suomi.fi-kirjautuminen</h1>
   <form action="${encodeURI(params.uri)}" method="get">
 ${samlStateInputs.join('\n')}
-${params.bodyHtml}
+${params.bodyHtml.toString()}
   </form>
 </body>
 </html>
@@ -168,7 +174,7 @@ export const samlSingleSignOnRoute: express.RequestHandler = (
 ) => {
   console.log('SSO endpoint called')
   if (req.session.user) {
-    confirmHandler(req, res, next)
+    void confirmHandler(req, res, next)
   } else {
     const defaultSsn = '070644-937X'
     const persons = store
@@ -229,7 +235,7 @@ export const samlSingleSignOnConfirmRoute: express.RequestHandler = (
     nameId: crypto.randomUUID(),
     person
   }
-  confirmHandler(req, res, next)
+  void confirmHandler(req, res, next)
 }
 
 // @types/samlp is not fully correct, so fix things here
@@ -242,7 +248,8 @@ export const samlSingleSignOnFinishRoute: express.RequestHandler = (
   next
 ) => {
   console.log('SSO finish endpoint called')
-  samlp.auth({
+  // oxlint-disable-next-line typescript/no-unsafe-argument
+  void samlp.auth({
     cert: idpPublicCert,
     key: idpPrivateKey,
     signatureAlgorithm: 'rsa-sha256',
@@ -255,6 +262,7 @@ export const samlSingleSignOnFinishRoute: express.RequestHandler = (
     keyEncryptionAlgorighm: 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p',
     sessionIndex: '1',
     getUserFromRequest: (req) => req.session.user,
+    // oxlint-disable-next-line typescript/no-explicit-any typescript/no-unsafe-argument
     profileMapper: (pu: any) => new SimpleProfileMapper(pu),
     getPostURL: (audience, authnRequestDom, req, callback) => {
       if (audience === config.SP_ENTITY_ID) {
@@ -263,6 +271,7 @@ export const samlSingleSignOnFinishRoute: express.RequestHandler = (
         return callback(new Error(`Unexpected SAML audience ${audience}`), '')
       }
     }
+    // oxlint-disable-next-line typescript/no-explicit-any
   } satisfies LoginIdpOptions as any)(req, res, next)
 }
 
@@ -270,6 +279,7 @@ export const samlSingleSignOnFinishRoute: express.RequestHandler = (
 type LogoutIdpOptions = Pick<IdPOptions, 'cert' | 'key' | 'issuer'> & {
   deflate?: boolean
   sessionParticipants: SessionParticipants
+  // oxlint-disable-next-line typescript/no-explicit-any
   clearIdPSession: (cb: (err: any) => void) => void
 }
 export const samlSingleLogoutRoute: express.RequestHandler = (
@@ -278,7 +288,8 @@ export const samlSingleLogoutRoute: express.RequestHandler = (
   next
 ) => {
   console.log('SLO endpoint called')
-  samlp.logout({
+  // oxlint-disable-next-line typescript/no-unsafe-argument
+  void samlp.logout({
     cert: idpPublicCert,
     key: idpPrivateKey,
     issuer: 'dummy-idp',
@@ -300,5 +311,6 @@ export const samlSingleLogoutRoute: express.RequestHandler = (
         : []
     ),
     clearIdPSession: (cb) => req.session.destroy(cb)
+    // oxlint-disable-next-line typescript/no-explicit-any
   } satisfies LogoutIdpOptions as any)(req, res, next)
 }
