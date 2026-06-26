@@ -7,35 +7,30 @@ pre-commit:
     - group:
         parallel: true
         jobs:
-          - run: yarn exec oxlint --fix {staged_files}
-            glob: apigw/*.{ts,js}
+          - &oxlint
+            run: npx oxlint --fix {staged_files}
+            glob: apigw/*.{ts,tsx,js,jsx,cjs,mjs}
             root: apigw
             stage_fixed: true
-          - run: yarn exec oxfmt -c ../.oxfmtrc.json {staged_files}
+          - &oxfmt
+            run: npx oxfmt -c ../.oxfmtrc.json --no-error-on-unmatched-pattern {staged_files}
             glob: apigw/*
-            exclude: "*.license"
             root: apigw
             stage_fixed: true
 
-          - run: yarn exec oxlint --fix {staged_files}
+          - <<: *oxlint
             glob: frontend/*.{ts,tsx,js,jsx,cjs,mjs}
             root: frontend
-            stage_fixed: true
-          - run: yarn exec oxfmt -c ../.oxfmtrc.json {staged_files}
+          - <<: *oxfmt
             glob: frontend/*
-            exclude: "*.license"
             root: frontend
-            stage_fixed: true
 
-          - run: npx oxlint --fix {staged_files}
-            glob: dummy-idp/*.{ts,js}
+          - <<: *oxlint
+            glob: dummy-idp/*.{ts,tsx,js,jsx,cjs,mjs}
             root: dummy-idp
-            stage_fixed: true
-          - run: npx oxfmt -c ../.oxfmtrc.json {staged_files}
+          - <<: *oxfmt
             glob: dummy-idp/*
-            exclude: "*.license"
             root: dummy-idp
-            stage_fixed: true
 
           - run: ./gradlew ktfmtPrecommit --include-only=$(echo {staged_files} | tr ' ' ',')
             glob: service/*.kt
