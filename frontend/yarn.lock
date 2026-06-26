@@ -4761,7 +4761,7 @@ __metadata:
     react-dom: "npm:19.2.7"
     react-focus-lock: "npm:2.13.7"
     react-focus-on: "npm:3.10.2"
-    react-image-crop: "npm:11.0.10"
+    react-image-crop: "npm:11.1.2"
     react-leaflet: "npm:5.0.0"
     react-select: "npm:5.10.2"
     rollup: "npm:4.62.0"
@@ -6748,12 +6748,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-image-crop@npm:11.0.10":
-  version: 11.0.10
-  resolution: "react-image-crop@npm:11.0.10"
+"react-image-crop@npm:11.1.2":
+  version: 11.1.2
+  resolution: "react-image-crop@npm:11.1.2"
   peerDependencies:
     react: ">=16.13.1"
-  checksum: 10/5f38841ec89ac346a69e9bc3460eec71ccb8e154ef7364e7d8f87f902f6ecde2746dfd887230826d3d4fbe23314aa20cd19f80061bd9d3772d4464ba020987b8
+  checksum: 10/a132d49413ba1c73c4146028e3a9a3bf02e20be31284f12dedbcc472ea9cf33408fa71b709213257c8a0924ebe9ad16c1899b3220adf2d37fc7162bcd54f03ec
   languageName: node
   linkType: hard
 

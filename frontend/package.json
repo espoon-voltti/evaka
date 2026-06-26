@@ -51,7 +51,7 @@
     "react-dom": "19.2.7",
     "react-focus-lock": "2.13.7",
     "react-focus-on": "3.10.2",
-    "react-image-crop": "11.0.10",
+    "react-image-crop": "11.1.2",
     "react-leaflet": "5.0.0",
     "react-select": "5.10.2",
     "seamless-scroll-polyfill": "2.3.4",
