@@ -3720,9 +3720,6 @@ export const sv: typeof fi = {
           'Ansökningar (som andra vårdnads- havare)',
         'assistance_action.child_id': 'Stöd- åtgärder',
         'assistance_need.child_id': 'Stödbehov',
-        'assistance_need_decision.child_id': 'Stödbehov- beslut',
-        'assistance_need_decision_guardian.person_id':
-          'Vårdnads- havare i stödbeslut',
         'assistance_need_voucher_coefficient.child_id':
           'Stödets servicesedel- koefficienter',
         'attachment.uploaded_by_person': 'Bilagor',

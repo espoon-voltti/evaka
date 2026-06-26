@@ -148,19 +148,6 @@ object DwQueries {
                         p.postal_code,
                         p.post_office,
                         p.nationalities
-                    FROM assistance_need_decision aneed
-                        JOIN person p ON aneed.child_id = p.id
-                    WHERE current_date::DATE - INTERVAL '3 years' <= upper(validity_period)
-                    UNION
-                    SELECT
-                        p.id,
-                        p.social_security_number,
-                        p.date_of_birth,
-                        p.language,
-                        p.street_address,
-                        p.postal_code,
-                        p.post_office,
-                        p.nationalities
                     FROM fee_decision fd
                         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
                         JOIN person p on fdc.child_id = p.id

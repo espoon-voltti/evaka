@@ -56,26 +56,6 @@ data class DwAssistanceAction(
     val tuenTyyppi: AssistanceActionOptionCategory?,
 )
 
-data class DwAssistanceNeedDecision(
-    val aikaleima: String,
-    val päätosTuesta: Int,
-    val lapsenId: UUID,
-    val tuenAlkupvm: LocalDate,
-    val tuenLoppupvm: LocalDate,
-    val pienennettyRyhmä: Boolean,
-    val erityisryhmä: Boolean,
-    val pienryhmä: Boolean,
-    val ryhmäkohtainenAvustaja: Boolean,
-    val lapsikohtainenAvustaja: Boolean,
-    val henkilöresurssienLisäys: Boolean,
-    val veonAntamaKonsultaatio: Boolean,
-    val veonOsaAikainenOpetus: Boolean,
-    val veonKokoaikainenOpetus: Boolean,
-    val tulkitsemisJaAvustamispalvelut: Boolean,
-    val apuvälineet: Boolean,
-    val tuenTaso: List<String>,
-)
-
 data class DwChildAggregate(
     val pvm: String,
     val lapsenId: UUID,
