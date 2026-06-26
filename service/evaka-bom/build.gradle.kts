@@ -55,7 +55,7 @@ dependencies {
         api("org.apache.groovy:groovy") { version { strictly("5.0.3") } }
 
         // These constraints are needed for CVE fixes
-        api("org.apache.tomcat.embed:tomcat-embed-core:11.0.22")
+        api("org.apache.tomcat.embed:tomcat-embed-core:11.0.23")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.22")
         api("org.postgresql:postgresql:42.7.11")
         api("org.apache.neethi:neethi:3.2.2")
