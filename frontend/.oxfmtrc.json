@@ -1,0 +1,40 @@
+{
+  "ignorePatterns": [
+    "node_modules",
+    ".yarn",
+    "dist",
+    "src/*/generated",
+    "test-results"
+  ],
+
+  "printWidth": 80,
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "arrowParens": "always",
+  "sortImports": {
+    "groups": [
+      "builtin",
+      "external",
+      "internal",
+      "parent",
+      "sibling",
+      "index",
+      "unknown"
+    ],
+    "order": "asc",
+    "ignoreCase": false,
+    "newlinesBetween": true,
+    "internalPattern": [
+      "citizen-frontend",
+      "e2e-test",
+      "employee-frontend",
+      "employee-mobile-frontend",
+      "lib-common",
+      "lib-components",
+      "lib-customizations",
+      "lib-icons",
+      "maintenance-page-frontend"
+    ]
+  }
+}
