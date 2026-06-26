@@ -3,16 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
+import styled from 'styled-components'
 
 import type { Action } from 'lib-common/generated/action'
 import type { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../../state/i18n'
 import { isValidPinCode } from '../../../employee-pin-code/utils'
@@ -109,6 +112,23 @@ export default React.memo(function AddTemporaryEmployeeModal({
           />
         </FixedSpaceColumn>
 
+        {permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') && (
+          <Checkbox
+            data-qa="coefficient-checkbox"
+            checked={formData.hasStaffOccupancyEffect === true}
+            disabled={false}
+            label={i18n.unit.accessControl.hasOccupancyCoefficient}
+            onChange={(checked) => {
+              setFormData({
+                ...formData,
+                hasStaffOccupancyEffect: checked
+              })
+            }}
+          />
+        )}
+
+        <SectionRuler />
+
         {permittedActions.includes('UPDATE_STAFF_GROUP_ACL') && (
           <FixedSpaceColumn $spacing="xs">
             <Label>{i18n.unit.accessControl.chooseGroup}</Label>
@@ -126,20 +146,7 @@ export default React.memo(function AddTemporaryEmployeeModal({
           </FixedSpaceColumn>
         )}
 
-        {permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') && (
-          <Checkbox
-            data-qa="coefficient-checkbox"
-            checked={formData.hasStaffOccupancyEffect === true}
-            disabled={false}
-            label={i18n.unit.accessControl.hasOccupancyCoefficient}
-            onChange={(checked) => {
-              setFormData({
-                ...formData,
-                hasStaffOccupancyEffect: checked
-              })
-            }}
-          />
-        )}
+        <SectionRuler />
 
         <FixedSpaceColumn $spacing="xs">
           <Label>
@@ -163,3 +170,8 @@ export default React.memo(function AddTemporaryEmployeeModal({
     </MutateFormModal>
   )
 })
+
+const SectionRuler = styled(HorizontalLine)`
+  margin-block-start: ${defaultMargins.xs};
+  margin-block-end: ${defaultMargins.s};
+`

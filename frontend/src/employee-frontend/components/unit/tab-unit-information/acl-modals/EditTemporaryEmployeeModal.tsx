@@ -3,18 +3,21 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
+import styled from 'styled-components'
 
 import type { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
 import type {
   DaycareAclRow,
   DaycareId
 } from 'lib-common/generated/api-types/shared'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H1, Label } from 'lib-components/typography'
+import { Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../../state/i18n'
 import { isValidPinCode } from '../../../employee-pin-code/utils'
@@ -64,7 +67,7 @@ export default React.memo(function EditTemporaryEmployeeModal({
 
   return (
     <MutateFormModal
-      title={i18n.unit.accessControl.editDaycareAclModal.title}
+      title={i18n.unit.accessControl.editTemporaryEmployeeModal.title}
       resolveMutation={updateTemporaryEmployeeMutation}
       resolveAction={() => ({
         unitId,
@@ -86,10 +89,6 @@ export default React.memo(function EditTemporaryEmployeeModal({
       data-qa="edit-temporary-employee-modal"
     >
       <FixedSpaceColumn>
-        <H1 $noMargin>
-          {i18n.unit.accessControl.editTemporaryEmployeeModal.title}
-        </H1>
-
         <FixedSpaceColumn $spacing="xs">
           <Label>
             {`${i18n.unit.accessControl.temporaryEmployees.firstName} *`}
@@ -116,6 +115,21 @@ export default React.memo(function EditTemporaryEmployeeModal({
             data-qa="last-name"
           />
         </FixedSpaceColumn>
+
+        <Checkbox
+          data-qa="coefficient-checkbox"
+          checked={formData.hasStaffOccupancyEffect}
+          label={i18n.unit.accessControl.hasOccupancyCoefficient}
+          onChange={(checked) => {
+            setFormData({
+              ...formData,
+              hasStaffOccupancyEffect: checked
+            })
+          }}
+        />
+
+        <SectionRuler />
+
         <FixedSpaceColumn $spacing="xs">
           <Label>{i18n.unit.accessControl.chooseGroup}</Label>
           <MultiSelect
@@ -130,17 +144,9 @@ export default React.memo(function EditTemporaryEmployeeModal({
             placeholder={`${i18n.common.select}...`}
           />
         </FixedSpaceColumn>
-        <Checkbox
-          data-qa="coefficient-checkbox"
-          checked={formData.hasStaffOccupancyEffect}
-          label={i18n.unit.accessControl.hasOccupancyCoefficient}
-          onChange={(checked) => {
-            setFormData({
-              ...formData,
-              hasStaffOccupancyEffect: checked
-            })
-          }}
-        />
+
+        <SectionRuler />
+
         <FixedSpaceColumn $spacing="xs">
           <Label>
             {`${i18n.unit.accessControl.temporaryEmployees.pinCode}`}
@@ -161,3 +167,8 @@ export default React.memo(function EditTemporaryEmployeeModal({
     </MutateFormModal>
   )
 })
+
+const SectionRuler = styled(HorizontalLine)`
+  margin-block-start: ${defaultMargins.xs};
+  margin-block-end: ${defaultMargins.s};
+`

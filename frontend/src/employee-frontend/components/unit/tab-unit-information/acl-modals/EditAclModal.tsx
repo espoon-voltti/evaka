@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useState } from 'react'
+import styled from 'styled-components'
 
 import type { Action } from 'lib-common/generated/action'
 import type { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
@@ -11,6 +12,7 @@ import type {
   DaycareId
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -18,6 +20,7 @@ import { PersonName } from 'lib-components/molecules/PersonNames'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../../state/i18n'
 import { updateGroupAclMutation } from '../../queries'
@@ -94,22 +97,6 @@ export default React.memo(function EditAclModal({
           <Label>{i18n.unit.accessControl.role}</Label>
           <div>{i18n.roles.adRoles[role]}</div>
         </FixedSpaceColumn>
-        {permittedActions.includes('UPDATE_STAFF_GROUP_ACL') && (
-          <FixedSpaceColumn $spacing="xs">
-            <Label>{i18n.unit.accessControl.chooseGroup}</Label>
-            <MultiSelect
-              data-qa="group-select"
-              value={formData.selectedGroups ?? []}
-              options={groupOptions}
-              getOptionId={(item) => item.id}
-              getOptionLabel={(item) => item.name}
-              onChange={(values) =>
-                setFormData({ ...formData, selectedGroups: values })
-              }
-              placeholder={`${i18n.common.select}...`}
-            />
-          </FixedSpaceColumn>
-        )}
 
         {permittedActions.includes('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <Checkbox
@@ -128,6 +115,8 @@ export default React.memo(function EditAclModal({
           />
         )}
 
+        <SectionRuler />
+
         {endDateEditable && (
           <FixedSpaceColumn $spacing="xs">
             <Label>{`${i18n.unit.accessControl.aclEndDate}`}</Label>
@@ -140,9 +129,41 @@ export default React.memo(function EditAclModal({
               locale={lang}
               minDate={LocalDate.todayInHelsinkiTz()}
             />
+            <ExtraSpan>{i18n.unit.accessControl.aclEndDateHelp}</ExtraSpan>
+          </FixedSpaceColumn>
+        )}
+
+        <SectionRuler />
+
+        {permittedActions.includes('UPDATE_STAFF_GROUP_ACL') && (
+          <FixedSpaceColumn $spacing="xs">
+            <Label>{i18n.unit.accessControl.chooseGroup}</Label>
+            <MultiSelect
+              data-qa="group-select"
+              value={formData.selectedGroups ?? []}
+              options={groupOptions}
+              getOptionId={(item) => item.id}
+              getOptionLabel={(item) => item.name}
+              onChange={(values) =>
+                setFormData({ ...formData, selectedGroups: values })
+              }
+              placeholder={`${i18n.common.select}...`}
+            />
+            <ExtraSpan>{i18n.unit.accessControl.chooseGroupHelp}</ExtraSpan>
           </FixedSpaceColumn>
         )}
       </FixedSpaceColumn>
     </MutateFormModal>
   )
 })
+
+const ExtraSpan = styled.span`
+  font-size: 14px;
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-weight: 600;
+`
+
+const SectionRuler = styled(HorizontalLine)`
+  margin-block-start: ${defaultMargins.xs};
+  margin-block-end: ${defaultMargins.s};
+`

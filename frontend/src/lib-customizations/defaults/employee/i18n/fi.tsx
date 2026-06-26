@@ -2021,8 +2021,10 @@ export const fi = {
       role: 'Rooli',
       name: 'Nimi',
       email: 'Sähköpostiosoite',
-      aclStartDate: 'Luvitus alkaa',
-      aclEndDate: 'Luvitus päättyy',
+      aclStartDate: 'Luvitus yksikköön alkaa',
+      aclEndDate: 'Luvitus yksikköön päättyy',
+      aclEndDateHelp:
+        'Päättymispäivän jälkeen henkilön pääsy yksikköön ja kaikkiin ryhmiin poistuu.',
       removeConfirmation:
         'Haluatko poistaa pääsyoikeuden valitulta henkilöltä?',
       removeScheduledConfirmation: 'Haluatko poistaa tulevan luvituksen?',
@@ -2039,6 +2041,8 @@ export const fi = {
       chooseRole: 'Valitse rooli',
       choosePerson: 'Valitse henkilö',
       chooseGroup: 'Valitse ryhmä',
+      chooseGroupHelp:
+        'Luvitus ryhmään noudattaa yksikön luvituksen voimassaoloa.',
       temporaryEmployees: {
         title: 'Tilapäiset sijaiset',
         previousEmployeesTitle: 'Aiemmat tilapäiset sijaiset',

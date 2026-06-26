@@ -218,14 +218,14 @@ function AclRow({
           )}
         </FixedSpaceColumn>
       </Td>
+      <Td>
+        {roleChangeDate ? `${roleChangeDate.format()}*` : row.endDate?.format()}
+      </Td>
       {unitGroups && (
         <Td data-qa="groups">
           <GroupListing unitGroups={unitGroups} groupIds={row.groupIds} />
         </Td>
       )}
-      <Td>
-        {roleChangeDate ? `${roleChangeDate.format()}*` : row.endDate?.format()}
-      </Td>
       <Td>
         <FixedSpaceRow $justifyContent="flex-end">
           {isEditable && (
@@ -255,7 +255,7 @@ function AclRow({
 }
 
 const GroupsTh = styled(Th)`
-  width: 40%;
+  width: 25%;
 `
 
 const ActionsTh = styled(Th)`
@@ -310,8 +310,8 @@ function AclTable({
         <Tr>
           <Th>{i18n.unit.accessControl.role}</Th>
           <Th>{i18n.common.form.name}</Th>
-          {unitGroups && <GroupsTh>{i18n.unit.accessControl.groups}</GroupsTh>}
           <Th>{i18n.unit.accessControl.aclEndDate}</Th>
+          {unitGroups && <GroupsTh>{i18n.unit.accessControl.groups}</GroupsTh>}
           <ActionsTh />
         </Tr>
       </Thead>
