@@ -16,7 +16,6 @@ import type {
   CalendarEventTimeId,
   ChildId
 } from 'lib-common/generated/api-types/shared'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -40,6 +39,7 @@ import { faQuestion } from 'lib-icons'
 import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
+import { exportCitizenDiscussionReservationIcs } from '../../generated/api-clients/calendarevent'
 import { useLang, useTranslation } from '../../localization'
 import { CalendarEventExportButton } from '../CalendarEventExportButton'
 import {
@@ -341,23 +341,9 @@ const ChildSurveyElement = React.memo(function ChildSurveyElement({
                         </Bold>
                       </div>
                       <CalendarEventExportButton
-                        eventDetails={{
-                          title: survey.title,
-                          helsinkiStartTime: HelsinkiDateTime.fromLocal(
-                            r.date,
-                            r.startTime
-                          ).formatIso(),
-                          helsinkiEndTime: HelsinkiDateTime.fromLocal(
-                            r.date,
-                            r.endTime
-                          ).formatIso(),
-                          fileName: `${i18n.calendar.discussionTimeReservation.discussionTimeFileName}_${r.date.formatIso()}.ics`,
-                          locationInfo: survey.attendingChildren?.[
-                            childId
-                          ]?.find(({ periods }) =>
-                            periods.some((period) => period.includes(r.date))
-                          )
-                        }}
+                        href={exportCitizenDiscussionReservationIcs({
+                          eventTimeId: r.id
+                        }).url.toString()}
                         data-qa={`event-export-button-${r.id}`}
                       />
                     </FixedSpaceRow>
