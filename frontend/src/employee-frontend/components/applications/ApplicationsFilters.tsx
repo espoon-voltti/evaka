@@ -131,7 +131,7 @@ export default React.memo(function ApplicationFilters() {
         )
       })
     }
-  }, [searchFilters.units]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchFilters.units]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   const toggleBasis = (toggledBasis: ApplicationBasis) => () => {
     setSearchFilters({

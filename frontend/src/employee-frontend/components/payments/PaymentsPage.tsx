@@ -61,7 +61,7 @@ export default React.memo(function PaymentsPage() {
     if (payments && payments.isSuccess) {
       checkedState.checkIds(payments.value.data.map((payment) => payment.id))
     }
-  }, [payments, checkedState.checkIds]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [payments, checkedState.checkIds]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   const checkedIds = checkedState.getCheckedIds()
 

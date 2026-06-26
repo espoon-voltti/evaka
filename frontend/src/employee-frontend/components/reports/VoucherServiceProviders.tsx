@@ -103,9 +103,9 @@ export default React.memo(function VoucherServiceProviders() {
       areaId
     }
   })
-  const [unitFilter, setUnitFilter] = useState<string>(() => {
-    return queryParams.get('unit') ?? ''
-  })
+  const [unitFilter, setUnitFilter] = useState<string>(
+    () => queryParams.get('unit') ?? ''
+  )
 
   const params = {
     year: filters.year.toString(),

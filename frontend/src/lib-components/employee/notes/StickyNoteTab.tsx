@@ -49,7 +49,7 @@ export function StickyNoteTab<IdType extends Id<string>>({
   smallerHeading = false,
   subHeading
 }: StickyNoteTabProps<IdType>) {
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  // oxlint-disable-next-line typescript/no-redundant-type-constituents
   const [editing, setEditing] = useState<UUID | 'new' | null>(
     notes.length === 0 ? 'new' : null
   )

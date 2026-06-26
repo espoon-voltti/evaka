@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// oxlint-disable-next-line typescript/ban-ts-comment
 // @ts-ignore
 import defaultsUntyped from '@evaka/customizations/citizen'
 import mergeWith from 'lodash/mergeWith'
@@ -15,7 +15,7 @@ import fi from './defaults/citizen/i18n/fi'
 import sv from './defaults/citizen/i18n/sv'
 import type { CitizenCustomizations } from './types'
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+// oxlint-disable-next-line typescript/no-unsafe-assignment
 const defaults: CitizenCustomizations = defaultsUntyped
 
 declare global {

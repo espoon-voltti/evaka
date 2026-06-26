@@ -62,7 +62,7 @@ function FeeDecisionFilters() {
         .find(
           (handler) => handler.value === searchFilters.financeDecisionHandlerId
         ),
-    [searchFilters.financeDecisionHandlerId] // eslint-disable-line react-hooks/exhaustive-deps
+    [searchFilters.financeDecisionHandlerId] // oxlint-disable-line react-hooks/exhaustive-deps
   )
 
   // remove selected unit filter if the unit is not included in the selected areas
@@ -74,7 +74,7 @@ function FeeDecisionFilters() {
     ) {
       setSearchFilters({ ...searchFilters, unit: undefined })
     }
-  }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [units]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   const toggleArea = (code: string) => () => {
     if (searchFilters.area.includes(code)) {

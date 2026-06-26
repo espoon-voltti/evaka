@@ -153,7 +153,7 @@ export default React.memo(function DecisionResponse({
     } else {
       setDateErrorMessage('')
     }
-  }, [startDate, decisionType]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [startDate, decisionType]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div data-qa={`decision-${decision.id}`}>

@@ -533,7 +533,7 @@ export default React.memo(function PersonDetails({
     }
   }, [person, sensitiveDetails, editing])
 
-  useEffect(() => clearUiMode, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => clearUiMode, []) // oxlint-disable-line react-hooks/exhaustive-deps
 
   const powerEditing =
     editing && sensitiveDetails?.socialSecurityNumber === null

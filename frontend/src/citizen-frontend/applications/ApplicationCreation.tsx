@@ -48,10 +48,7 @@ export default React.memo(function ApplicationCreation() {
   useTitle(t, t.applications.creation.title)
   const children = useQueryResult(applicationChildrenQuery())
   const childResult = useMemo(
-    () =>
-      children.map((children) => {
-        return children.find(({ id }) => id === childId)
-      }),
+    () => children.map((children) => children.find(({ id }) => id === childId)),
     [childId, children]
   )
   const [selectedType, setSelectedType] = useState<ApplicationType>()
@@ -75,8 +72,8 @@ export default React.memo(function ApplicationCreation() {
       <Container>
         <ReturnButton label={t.common.return} />
         <Main>
-          {renderResult(childResult, (child) => {
-            return child === undefined ? (
+          {renderResult(childResult, (child) =>
+            child === undefined ? (
               <Redirect replace to="/applications" />
             ) : (
               <Fragment>
@@ -195,7 +192,7 @@ export default React.memo(function ApplicationCreation() {
                 </ContentArea>
               </Fragment>
             )
-          })}
+          )}
         </Main>
       </Container>
       <Footer />

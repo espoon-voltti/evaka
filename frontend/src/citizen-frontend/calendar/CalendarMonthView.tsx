@@ -128,14 +128,15 @@ export default React.memo(function CalendarMonthView({
 
   const isDateInCurrentMonth = useCallback(() => {
     if (!selectedDate) return false
-    return selectedMonthData.weeks.some((w) => {
-      return w.calendarDays.some((d) => d.date.isEqual(selectedDate))
-    })
+    return selectedMonthData.weeks.some((w) =>
+      w.calendarDays.some((d) => d.date.isEqual(selectedDate))
+    )
   }, [selectedDate, selectedMonthData.weeks])
 
-  const firstDayOfMonth = useMemo(() => {
-    return selectedMonthData.weeks[0].calendarDays[0].date
-  }, [selectedMonthData.weeks])
+  const firstDayOfMonth = useMemo(
+    () => selectedMonthData.weeks[0].calendarDays[0].date,
+    [selectedMonthData.weeks]
+  )
 
   useEffect(() => {
     if (selectedDate && !isDateInCurrentMonth()) {

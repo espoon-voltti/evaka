@@ -65,8 +65,8 @@ export const AuthContextProvider = React.memo(function AuthContextProvider({
               authLevel: a.authLevel ?? a.user.authLevel,
               accessibleFeatures:
                 // TODO: remove this extra backwards compatibility code and fetch from one property only
-                ((a.user.details as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-                  .accessibleFeatures as CitizenFeatures) ?? // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+                ((a.user.details as any) // oxlint-disable-line typescript/no-explicit-any
+                  .accessibleFeatures as CitizenFeatures) ?? // oxlint-disable-line typescript/no-unsafe-member-access
                 a.user.accessibleFeatures
             }
           : undefined

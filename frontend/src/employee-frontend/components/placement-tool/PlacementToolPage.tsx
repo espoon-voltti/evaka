@@ -21,10 +21,7 @@ export default React.memo(function PlacementToolPage() {
   const preschoolTermResult = useQueryResult(nextPreschoolTermQuery())
 
   const nextPreschoolTerm = useMemo(
-    () =>
-      preschoolTermResult.map((r) => {
-        return r.length > 0 ? r[0] : null
-      }),
+    () => preschoolTermResult.map((r) => (r.length > 0 ? r[0] : null)),
     [preschoolTermResult]
   )
 

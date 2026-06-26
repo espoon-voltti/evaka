@@ -88,20 +88,13 @@ export const isChildDocumentPublishable = (
 export const isChildDocumentDecidable = (
   type: ChildDocumentType,
   status: DocumentStatus
-) => {
-  return (
-    getDocumentCategory(type) === 'decision' && status === 'DECISION_PROPOSAL'
-  )
-}
+) => getDocumentCategory(type) === 'decision' && status === 'DECISION_PROPOSAL'
 
 export const isChildDocumentAnnullable = (
   type: ChildDocumentType,
   status: DocumentStatus,
   decisionStatus: ChildDocumentDecisionStatus | null
-) => {
-  return (
-    getDocumentCategory(type) === 'decision' &&
-    status === 'COMPLETED' &&
-    decisionStatus === 'ACCEPTED'
-  )
-}
+) =>
+  getDocumentCategory(type) === 'decision' &&
+  status === 'COMPLETED' &&
+  decisionStatus === 'ACCEPTED'

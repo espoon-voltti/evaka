@@ -184,7 +184,7 @@ export class ApplicationRow extends Element {
     const note = this.root.findByDataQa('service-worker-note')
     await note.hover()
     const tooltip = await note.text
-    const match = tooltip.match(matchingText)
+    const match = RegExp(matchingText).exec(tooltip)
     return match ? match.length > 0 : false
   }
 }

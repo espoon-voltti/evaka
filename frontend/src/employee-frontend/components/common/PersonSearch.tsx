@@ -107,7 +107,7 @@ function PersonSearch({
 
   useEffect(() => {
     onResult(selectedPerson)
-  }, [selectedPerson]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedPerson]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   const filterPeople = (people: PersonSummary[]) =>
     people.filter((person) => {
@@ -121,7 +121,7 @@ function PersonSearch({
 
   const options = useMemo(
     () => persons.map((ps) => filterPeople(ps)).getOrElse([]),
-    [persons] // eslint-disable-line react-hooks/exhaustive-deps
+    [persons] // oxlint-disable-line react-hooks/exhaustive-deps
   )
 
   const formatItemLabel = useCallback(

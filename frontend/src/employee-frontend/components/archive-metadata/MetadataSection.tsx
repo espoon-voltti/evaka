@@ -30,9 +30,9 @@ export default React.memo(function MetadataSection({
       toggleOpen={toggleOpen}
       $opaque
     >
-      {renderResult(metadataResult, ({ data: metadata }) => {
-        return <Metadatas metadata={metadata} />
-      })}
+      {renderResult(metadataResult, ({ data: metadata }) => (
+        <Metadatas metadata={metadata} />
+      ))}
     </CollapsibleContentArea>
   )
 })

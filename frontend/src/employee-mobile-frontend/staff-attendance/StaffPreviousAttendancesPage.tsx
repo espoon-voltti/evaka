@@ -57,47 +57,40 @@ export default React.memo(function StaffPreviousAttendancesPage({
 
   return renderResult(
     combine(unitResponse, attendanceResponse),
-    ([unitInfo, staffMemberWithOperationalDays]) => {
-      return (
-        <StaffMemberPageContainer
-          back={routes.staffAttendancesToday(unitOrGroup, 'present').value}
-        >
-          <EmployeeCardBackground
-            staff={toStaff(staffMemberWithOperationalDays.staffMember)}
-          />
-          <Gap />
-          <FixedSpaceColumn $alignItems="center">
-            <H3>{i18n.attendances.staff.previousDays}</H3>
-            <FixedSpaceColumn $spacing="m">
-              {staffMemberWithOperationalDays.operationalDays
-                .reverse()
-                .map((date) => {
-                  return (
-                    <DateAttendances
-                      key={`attendances-${date.formatIso()}`}
-                      date={date}
-                      attendances={staffMemberWithOperationalDays.staffMember.attendances.filter(
-                        (a) => a.arrived.toLocalDate().isEqual(date)
-                      )}
-                      groups={unitInfo.groups}
-                      onEdit={() =>
-                        navigate(
-                          routes.staffAttendanceEdit(
-                            unitOrGroup,
-                            employeeId,
-                            date
-                          ).value
-                        )
-                      }
-                    />
-                  )
-                })}
-            </FixedSpaceColumn>
-            <Gap $size="s" />
+    ([unitInfo, staffMemberWithOperationalDays]) => (
+      <StaffMemberPageContainer
+        back={routes.staffAttendancesToday(unitOrGroup, 'present').value}
+      >
+        <EmployeeCardBackground
+          staff={toStaff(staffMemberWithOperationalDays.staffMember)}
+        />
+        <Gap />
+        <FixedSpaceColumn $alignItems="center">
+          <H3>{i18n.attendances.staff.previousDays}</H3>
+          <FixedSpaceColumn $spacing="m">
+            {staffMemberWithOperationalDays.operationalDays
+              .reverse()
+              .map((date) => (
+                <DateAttendances
+                  key={`attendances-${date.formatIso()}`}
+                  date={date}
+                  attendances={staffMemberWithOperationalDays.staffMember.attendances.filter(
+                    (a) => a.arrived.toLocalDate().isEqual(date)
+                  )}
+                  groups={unitInfo.groups}
+                  onEdit={() =>
+                    navigate(
+                      routes.staffAttendanceEdit(unitOrGroup, employeeId, date)
+                        .value
+                    )
+                  }
+                />
+              ))}
           </FixedSpaceColumn>
-        </StaffMemberPageContainer>
-      )
-    }
+          <Gap $size="s" />
+        </FixedSpaceColumn>
+      </StaffMemberPageContainer>
+    )
   )
 })
 

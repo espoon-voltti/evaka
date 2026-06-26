@@ -628,212 +628,200 @@ export default React.memo(function Occupancies() {
           </>
         ))}
 
-        {renderResult(combine(rows, areas), ([rows, areas]) => {
-          return (
-            <>
-              {showReport && (
-                <>
-                  <ReportDownload
-                    data={reportRows}
-                    columns={[
-                      {
-                        value: (row) => row.areaName,
-                        label: i18n.reports.common.careAreaName
-                      },
-                      {
-                        value: (row) => row.unitName,
-                        label: i18n.reports.common.unitName
-                      },
-                      {
-                        value: (row) => row.groupName,
-                        label: i18n.reports.common.groupName,
-                        exclude: filters.display !== 'GROUPS'
-                      },
-                      {
-                        value: (row) => row.cells[0].value,
-                        label: i18n.reports.occupancies.average,
-                        exclude: usedValues === 'raw'
-                      },
-                      ...dateCols.map((date, i) => {
-                        // if usedValues != 'raw', the first column contains the average and we have to skip it here
-                        const index = i + (usedValues !== 'raw' ? 1 : 0)
-                        return {
-                          value: (row: ReportRow) => row.cells[index].value,
-                          label: date.format('dd.MM.')
-                        }
-                      })
-                    ]}
-                    filename={getFilename(
-                      i18n,
-                      filters.year,
-                      filters.month,
-                      filters.display,
-                      filters.type,
-                      filters.careAreaId === undefined
-                        ? i18n.common.all
-                        : (areas.find((area) => area.id === filters.careAreaId)
-                            ?.name ?? '')
-                    )}
-                  />
-                  <TableScrollable>
-                    <Thead>
-                      <Tr>
-                        <Th>
-                          {filters.careAreaId === undefined
-                            ? i18n.reports.occupancies.unitsGroupedByArea
-                            : i18n.reports.common.unitName}
+        {renderResult(combine(rows, areas), ([rows, areas]) => (
+          <>
+            {showReport && (
+              <>
+                <ReportDownload
+                  data={reportRows}
+                  columns={[
+                    {
+                      value: (row) => row.areaName,
+                      label: i18n.reports.common.careAreaName
+                    },
+                    {
+                      value: (row) => row.unitName,
+                      label: i18n.reports.common.unitName
+                    },
+                    {
+                      value: (row) => row.groupName,
+                      label: i18n.reports.common.groupName,
+                      exclude: filters.display !== 'GROUPS'
+                    },
+                    {
+                      value: (row) => row.cells[0].value,
+                      label: i18n.reports.occupancies.average,
+                      exclude: usedValues === 'raw'
+                    },
+                    ...dateCols.map((date, i) => {
+                      // if usedValues != 'raw', the first column contains the average and we have to skip it here
+                      const index = i + (usedValues !== 'raw' ? 1 : 0)
+                      return {
+                        value: (row: ReportRow) => row.cells[index].value,
+                        label: date.format('dd.MM.')
+                      }
+                    })
+                  ]}
+                  filename={getFilename(
+                    i18n,
+                    filters.year,
+                    filters.month,
+                    filters.display,
+                    filters.type,
+                    filters.careAreaId === undefined
+                      ? i18n.common.all
+                      : (areas.find((area) => area.id === filters.careAreaId)
+                          ?.name ?? '')
+                  )}
+                />
+                <TableScrollable>
+                  <Thead>
+                    <Tr>
+                      <Th>
+                        {filters.careAreaId === undefined
+                          ? i18n.reports.occupancies.unitsGroupedByArea
+                          : i18n.reports.common.unitName}
+                      </Th>
+                      {filters.display === 'GROUPS' && (
+                        <Th>{i18n.reports.common.groupName}</Th>
+                      )}
+                      {usedValues !== 'raw' && (
+                        <Th>{i18n.reports.occupancies.average}</Th>
+                      )}
+                      {dates.map((date) => (
+                        <Th
+                          align="center"
+                          key={date.formatIso()}
+                          colSpan={usedValues === 'raw' ? 4 : undefined}
+                          data-qa="table-header-date"
+                        >
+                          {date.format('dd.MM.')}
                         </Th>
-                        {filters.display === 'GROUPS' && (
-                          <Th>{i18n.reports.common.groupName}</Th>
-                        )}
-                        {usedValues !== 'raw' && (
-                          <Th>{i18n.reports.occupancies.average}</Th>
-                        )}
-                        {dates.map((date) => (
-                          <Th
-                            align="center"
-                            key={date.formatIso()}
-                            colSpan={usedValues === 'raw' ? 4 : undefined}
-                            data-qa="table-header-date"
-                          >
-                            {date.format('dd.MM.')}
-                          </Th>
-                        ))}
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {displayAreas.map((areaName) => (
-                        <React.Fragment key={areaName}>
-                          {filters.careAreaId === undefined && (
-                            <Tr>
-                              <StyledTd
-                                colSpan={
-                                  usedValues === 'raw'
-                                    ? 4 + dateCols.length
-                                    : filters.display === 'GROUPS'
-                                      ? 2
-                                      : undefined
+                      ))}
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {displayAreas.map((areaName) => (
+                      <React.Fragment key={areaName}>
+                        {filters.careAreaId === undefined && (
+                          <Tr>
+                            <StyledTd
+                              colSpan={
+                                usedValues === 'raw'
+                                  ? 4 + dateCols.length
+                                  : filters.display === 'GROUPS'
+                                    ? 2
+                                    : undefined
+                              }
+                            >
+                              <div
+                                onClick={() =>
+                                  setAreasOpen({
+                                    ...areasOpen,
+                                    [areaName]: !(areasOpen[areaName] ?? false)
+                                  })
                                 }
                               >
-                                <div
-                                  onClick={() =>
-                                    setAreasOpen({
-                                      ...areasOpen,
-                                      [areaName]: !(
-                                        areasOpen[areaName] ?? false
-                                      )
-                                    })
-                                  }
-                                >
-                                  <span>
-                                    <AccordionIcon
-                                      icon={
-                                        areasOpen[areaName]
-                                          ? faChevronUp
-                                          : faChevronDown
-                                      }
-                                    />
-                                  </span>
-                                  <span>{areaName}</span>
-                                </div>
-                              </StyledTd>
-                              {usedValues !== 'raw' && (
-                                <>
-                                  <StyledTd>
+                                <span>
+                                  <AccordionIcon
+                                    icon={
+                                      areasOpen[areaName]
+                                        ? faChevronUp
+                                        : faChevronDown
+                                    }
+                                  />
+                                </span>
+                                <span>{areaName}</span>
+                              </div>
+                            </StyledTd>
+                            {usedValues !== 'raw' && (
+                              <>
+                                <StyledTd>
+                                  {formatAverage(
+                                    averages?.byArea[areaName]?.average ?? null,
+                                    usedValues
+                                  )}
+                                </StyledTd>
+                                {dateCols.map((dateCol) => (
+                                  <StyledTd key={dateCol.formatIso()}>
                                     {formatAverage(
-                                      averages?.byArea[areaName]?.average ??
-                                        null,
+                                      averages?.byArea[areaName]?.byDate[
+                                        toOccupancyKey(dateCol)
+                                      ] ?? null,
                                       usedValues
                                     )}
                                   </StyledTd>
-                                  {dateCols.map((dateCol) => (
-                                    <StyledTd key={dateCol.formatIso()}>
-                                      {formatAverage(
-                                        averages?.byArea[areaName]?.byDate[
-                                          toOccupancyKey(dateCol)
-                                        ] ?? null,
-                                        usedValues
+                                ))}
+                              </>
+                            )}
+                          </Tr>
+                        )}
+                        {rows.map(
+                          (row, rowNum) =>
+                            row.areaName === areaName &&
+                            (filters.careAreaId !== undefined ||
+                              areasOpen[areaName]) && (
+                              <Tr
+                                key={isGroupRow(row) ? row.groupId : row.unitId}
+                                data-qa="table-body-row-unit"
+                              >
+                                <StyledTd data-qa="table-body-row-unit-name">
+                                  <Link to={`/units/${row.unitId}`}>
+                                    {row.unitName}
+                                  </Link>
+                                </StyledTd>
+                                {filters.display === 'GROUPS' && (
+                                  <StyledTd>
+                                    {reportRows[rowNum].groupName}
+                                  </StyledTd>
+                                )}
+                                {reportRows[rowNum].cells.map(
+                                  (cell, colNum) => (
+                                    <StyledTd
+                                      key={colNum}
+                                      $borderEdge={cell.borderEdge}
+                                    >
+                                      {cell.tooltip ? (
+                                        <Tooltip tooltip={cell.tooltip}>
+                                          {cell.value}
+                                        </Tooltip>
+                                      ) : (
+                                        <>{cell.value}</>
                                       )}
                                     </StyledTd>
-                                  ))}
-                                </>
-                              )}
-                            </Tr>
-                          )}
-                          {rows.map(
-                            (row, rowNum) =>
-                              row.areaName === areaName &&
-                              (filters.careAreaId !== undefined ||
-                                areasOpen[areaName]) && (
-                                <Tr
-                                  key={
-                                    isGroupRow(row) ? row.groupId : row.unitId
-                                  }
-                                  data-qa="table-body-row-unit"
-                                >
-                                  <StyledTd data-qa="table-body-row-unit-name">
-                                    <Link to={`/units/${row.unitId}`}>
-                                      {row.unitName}
-                                    </Link>
-                                  </StyledTd>
-                                  {filters.display === 'GROUPS' && (
-                                    <StyledTd>
-                                      {reportRows[rowNum].groupName}
-                                    </StyledTd>
-                                  )}
-                                  {reportRows[rowNum].cells.map(
-                                    (cell, colNum) => (
-                                      <StyledTd
-                                        key={colNum}
-                                        $borderEdge={cell.borderEdge}
-                                      >
-                                        {cell.tooltip ? (
-                                          <Tooltip tooltip={cell.tooltip}>
-                                            {cell.value}
-                                          </Tooltip>
-                                        ) : (
-                                          <>{cell.value}</>
-                                        )}
-                                      </StyledTd>
-                                    )
-                                  )}
-                                </Tr>
-                              )
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </Tbody>
-                    {usedValues !== 'raw' && (
-                      <StyledTfoot>
-                        <Tr>
-                          <Td
-                            colSpan={
-                              filters.display === 'GROUPS' ? 2 : undefined
-                            }
-                          >
-                            {i18n.reports.common.total}
-                          </Td>
-                          <Td colSpan={1 + dateCols.length}>
-                            {formatAverage(
-                              averages?.average ?? null,
-                              usedValues
-                            )}
-                          </Td>
-                        </Tr>
-                      </StyledTfoot>
-                    )}
-                  </TableScrollable>
-                  <Gap $size="s" />
-                  <Legend>
-                    <i>
-                      {`${caretakersMissingSymbol} = ${i18n.reports.occupancies.missingCaretakersLegend}`}
-                    </i>
-                  </Legend>
-                </>
-              )}
-            </>
-          )
-        })}
+                                  )
+                                )}
+                              </Tr>
+                            )
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </Tbody>
+                  {usedValues !== 'raw' && (
+                    <StyledTfoot>
+                      <Tr>
+                        <Td
+                          colSpan={filters.display === 'GROUPS' ? 2 : undefined}
+                        >
+                          {i18n.reports.common.total}
+                        </Td>
+                        <Td colSpan={1 + dateCols.length}>
+                          {formatAverage(averages?.average ?? null, usedValues)}
+                        </Td>
+                      </Tr>
+                    </StyledTfoot>
+                  )}
+                </TableScrollable>
+                <Gap $size="s" />
+                <Legend>
+                  <i>
+                    {`${caretakersMissingSymbol} = ${i18n.reports.occupancies.missingCaretakersLegend}`}
+                  </i>
+                </Legend>
+              </>
+            )}
+          </>
+        ))}
       </ContentArea>
     </Container>
   )

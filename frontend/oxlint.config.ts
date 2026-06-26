@@ -17,9 +17,7 @@ export default defineConfig({
     typeAware: true,
     typeCheck: true,
     maxWarnings: 0,
-
-    // TODO: Enable later
-    reportUnusedDisableDirectives: 'off'
+    reportUnusedDisableDirectives: 'error'
   },
   categories: {
     correctness: 'error'
@@ -31,12 +29,22 @@ export default defineConfig({
       specifier: './eslint-plugin'
     }
   ],
+  env: {
+    builtin: true
+  },
   rules: {
+    '@evaka/no-page-pause': 'error',
+    '@evaka/no-testonly': 'error',
+    '@evaka/no-relative-lib-imports': 'error',
+    '@evaka/no-icons-imports': 'error',
+    '@evaka/no-localdate-triple-equals': 'error',
+    '@evaka/shortest-relative-imports': 'error',
+
+    'eslint/arrow-body-style': 'error',
     'eslint/eqeqeq': ['error', 'smart'],
     'eslint/no-array-constructor': 'error',
     'eslint/no-console': ['error', { allow: ['warn', 'error'] }],
     'eslint/no-case-declarations': 'error',
-    'eslint/no-constant-binary-expression': 'error',
     'eslint/no-empty': 'error',
     'eslint/no-empty-function': 'error',
     'eslint/no-fallthrough': 'error',
@@ -60,30 +68,18 @@ export default defineConfig({
 
     'lodash/import-scope': ['error', 'method'],
 
-    '@evaka/no-page-pause': 'error',
-    '@evaka/no-testonly': 'error',
-    '@evaka/no-relative-lib-imports': 'error',
-    '@evaka/no-icons-imports': 'error',
-    '@evaka/no-localdate-triple-equals': 'error',
-    '@evaka/shortest-relative-imports': 'error'
+    'react/exhaustive-deps': ['error', { additionalHooks: '(useApiState)' }],
+    'react/jsx-curly-brace-presence': [
+      'error',
+      { props: 'never', children: 'never', propElementValues: 'always' }
+    ],
+    'react/rules-of-hooks': 'error',
+    'react/self-closing-comp': ['error', { component: true, html: true }]
   },
-
-  // TODO: Move to main rules section
   overrides: [
     {
-      files: ['**/*.ts', '**/*.tsx'],
+      files: ['*.ts', '*.tsx'],
       rules: {
-        'react/exhaustive-deps': [
-          'error',
-          { additionalHooks: '(useApiState)' }
-        ],
-        'react/jsx-curly-brace-presence': [
-          'error',
-          { props: 'never', children: 'never', propElementValues: 'always' }
-        ],
-        'react/rules-of-hooks': 'error',
-        'react/self-closing-comp': ['error', { component: true, html: true }],
-
         'typescript/adjacent-overload-signatures': 'error',
         'typescript/array-type': 'error',
         'typescript/ban-ts-comment': 'error',
@@ -126,7 +122,7 @@ export default defineConfig({
         'typescript/prefer-for-of': 'error',
         'typescript/prefer-function-type': 'error',
         'typescript/prefer-includes': 'error',
-        'typescript/prefer-string-starts-ends-with': 'error',
+        'typescript/prefer-regexp-exec': 'error',
         'typescript/require-await': 'error',
         'typescript/restrict-plus-operands': 'error',
 
@@ -138,20 +134,8 @@ export default defineConfig({
         'react/require-render-return': 'error',
 
         // TODO: Enable later
-        'eslint/arrow-body-style': 'off',
-        'typescript/no-meaningless-void-operator': 'off',
-        'typescript/no-misused-spread': 'off',
-        'typescript/no-redundant-type-constituents': 'off',
-        'typescript/no-unnecessary-parameter-property-assignment': 'off',
-        'typescript/no-useless-default-assignment': 'off',
-        'typescript/prefer-regexp-exec': 'off',
-        'typescript/require-array-sort-compare': 'off',
-        'typescript/strict-boolean-expressions': 'off', // replaces jsx-expressions/strict-logical-expressions
-        'unicorn/no-useless-spread': 'off'
+        'typescript/strict-boolean-expressions': 'off' // replaces jsx-expressions/strict-logical-expressions
       }
     }
-  ],
-  env: {
-    builtin: true
-  }
+  ]
 })

@@ -157,13 +157,13 @@ export default React.memo(function ExpandingInfo({
       group.onOpen()
     }
     setExpanded(!expanded)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [expanded, group.onOpen])
   const close = useCallback(() => setExpanded(false), [])
 
   useEffect(
     () => group.addExpandingInfo(close),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     [group.addExpandingInfo, close]
   )
 

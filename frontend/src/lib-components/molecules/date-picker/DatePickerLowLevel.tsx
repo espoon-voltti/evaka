@@ -203,14 +203,11 @@ export default React.memo(function DatePickerLowLevel({
   )
 
   const isDateDisabled = useCallback(
-    (localDate: LocalDate) => {
-      return (
-        (isInvalidDate && isInvalidDate(localDate) !== null) ||
-        (minDate && minDate.isAfter(localDate)) ||
-        (maxDate && maxDate.isBefore(localDate)) ||
-        false
-      )
-    },
+    (localDate: LocalDate) =>
+      (isInvalidDate && isInvalidDate(localDate) !== null) ||
+      (minDate && minDate.isAfter(localDate)) ||
+      (maxDate && maxDate.isBefore(localDate)) ||
+      false,
     [isInvalidDate, maxDate, minDate]
   )
 

@@ -33,10 +33,10 @@ function ToolbarAccordion({
   subtitle,
   children,
   onToggle,
-  toolbar = undefined,
+  toolbar,
   showBorder = false,
   'data-qa': dataQa,
-  open = false
+  open
 }: Props) {
   const { i18n } = useTranslation()
 

@@ -6,7 +6,7 @@
 
 // Helper for Readonly types with depth until Typescript natively supports them
 // See: https://github.com/microsoft/TypeScript/issues/13923
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+// oxlint-disable-next-line typescript/no-unsafe-function-type
 export type primitive = string | number | boolean | undefined | null | Function
 export type DeepReadonly<T> = T extends primitive ? T : DeepReadonlyObject<T>
 export type DeepReadonlyObject<T> = {
@@ -14,7 +14,7 @@ export type DeepReadonlyObject<T> = {
 }
 export type OmitInUnion<T, K extends keyof T> = T extends T ? Omit<T, K> : never
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export type Arg0<T extends (...args: any) => any> = Parameters<T>[0]
 
 // CONCRETE TYPES

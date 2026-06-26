@@ -283,45 +283,43 @@ const StaffAttendancesPlanned = React.memo(function StaffAttendancesPlanned({
       staffAttendanceResponse.map((res) =>
         res.operationalDays
           .filter((_, index) => index < 5)
-          .map((date) => {
-            return {
-              date,
-              staff: res.staff
-                .filter(
-                  (s) =>
-                    unitOrGroup.type !== 'group' ||
-                    s.groupIds.includes(unitOrGroup.id)
-                )
-                .map((s) => ({
-                  employeeId: s.employeeId,
-                  firstName: s.firstName,
-                  lastName: s.lastName,
-                  occupancyEffect: s.occupancyEffect,
-                  plans: s.plannedAttendances
-                    .filter(
-                      (p) =>
-                        p.start.toLocalDate().isEqual(date) ||
-                        p.end.toLocalDate().isEqual(date)
-                    )
-                    .map((p) => ({
-                      start: p.start.toLocalDate().isEqual(date)
-                        ? p.start.toLocalTime()
-                        : null,
-                      end: p.end.toLocalDate().isEqual(date)
-                        ? p.end.toLocalTime()
-                        : null,
-                      type: p.type,
-                      description: p.description
-                    })),
-                  confidence:
-                    s.unitIds.length > 1
-                      ? 'maybeInOtherUnit'
-                      : s.groupIds.length > 1
-                        ? 'maybeInOtherGroup'
-                        : 'full'
-                }))
-            }
-          })
+          .map((date) => ({
+            date,
+            staff: res.staff
+              .filter(
+                (s) =>
+                  unitOrGroup.type !== 'group' ||
+                  s.groupIds.includes(unitOrGroup.id)
+              )
+              .map((s) => ({
+                employeeId: s.employeeId,
+                firstName: s.firstName,
+                lastName: s.lastName,
+                occupancyEffect: s.occupancyEffect,
+                plans: s.plannedAttendances
+                  .filter(
+                    (p) =>
+                      p.start.toLocalDate().isEqual(date) ||
+                      p.end.toLocalDate().isEqual(date)
+                  )
+                  .map((p) => ({
+                    start: p.start.toLocalDate().isEqual(date)
+                      ? p.start.toLocalTime()
+                      : null,
+                    end: p.end.toLocalDate().isEqual(date)
+                      ? p.end.toLocalTime()
+                      : null,
+                    type: p.type,
+                    description: p.description
+                  })),
+                confidence:
+                  s.unitIds.length > 1
+                    ? 'maybeInOtherUnit'
+                    : s.groupIds.length > 1
+                      ? 'maybeInOtherGroup'
+                      : 'full'
+              }))
+          }))
       ),
     [unitOrGroup, staffAttendanceResponse]
   )

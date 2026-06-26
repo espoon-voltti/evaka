@@ -358,14 +358,11 @@ const CitizenDocumentResponseReportTable = React.memo(
                   i18n.reports.citizenDocumentResponseReport.headers.answeredAt,
                 value: (row) => getAnsweredAtString(row)
               },
-              ...questions.map((q) => {
-                return {
-                  label: q.label,
-                  value: (row: CitizenDocumentResponseReportRowWithAnswers) => {
-                    return getAnswerString(row, q)
-                  }
-                }
-              })
+              ...questions.map((q) => ({
+                label: q.label,
+                value: (row: CitizenDocumentResponseReportRowWithAnswers) =>
+                  getAnswerString(row, q)
+              }))
             ]}
             filename={fileName}
           />
@@ -383,30 +380,26 @@ const CitizenDocumentResponseReportTable = React.memo(
             </Tr>
           </Thead>
           <Tbody>
-            {reportQnARows.map((row) => {
-              return (
-                <React.Fragment key={row.childId}>
-                  <Tr data-qa={`child-row-${row.childId}`}>
-                    <Td data-qa="name">
-                      <Strong>
-                        <PersonName person={row} format="Last First" />
-                      </Strong>
+            {reportQnARows.map((row) => (
+              <React.Fragment key={row.childId}>
+                <Tr data-qa={`child-row-${row.childId}`}>
+                  <Td data-qa="name">
+                    <Strong>
+                      <PersonName person={row} format="Last First" />
+                    </Strong>
+                  </Td>
+                  <Td data-qa="answered-at">{getAnsweredAtString(row)}</Td>
+                  {questions.map((qc) => (
+                    <Td
+                      key={`${row.childId}-${qc.id}`}
+                      data-qa={`question-${qc.id}`}
+                    >
+                      {getAnswerString(row, qc)}
                     </Td>
-                    <Td data-qa="answered-at">{getAnsweredAtString(row)}</Td>
-                    {questions.map((qc) => {
-                      return (
-                        <Td
-                          key={`${row.childId}-${qc.id}`}
-                          data-qa={`question-${qc.id}`}
-                        >
-                          {getAnswerString(row, qc)}
-                        </Td>
-                      )
-                    })}
-                  </Tr>
-                </React.Fragment>
-              )
-            })}
+                  ))}
+                </Tr>
+              </React.Fragment>
+            ))}
           </Tbody>
         </TableScrollable>
       </>

@@ -39,9 +39,7 @@ export function useIsRouteActive(to: string | string[]): boolean {
     if (typeof to === 'string') {
       return matchRoute(parser, `${to}/*?`, path)[0]
     } else {
-      return to.some((route) => {
-        return matchRoute(parser, `${route}/*?`, path)[0]
-      })
+      return to.some((route) => matchRoute(parser, `${route}/*?`, path)[0])
     }
   }, [parser, path, to])
 }

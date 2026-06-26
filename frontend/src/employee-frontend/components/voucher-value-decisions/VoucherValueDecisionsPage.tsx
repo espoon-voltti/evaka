@@ -85,7 +85,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
         searchResult.value.data.map((decision) => decision.id)
       )
     }
-  }, [searchResult, checkedState.checkIds]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchResult, checkedState.checkIds]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   const checkedIds = checkedState.getCheckedIds()
 

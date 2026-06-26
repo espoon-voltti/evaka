@@ -41,14 +41,16 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   children: React.ReactNode
 }) {
   const childResponse = useQueryResult(childQuery({ childId: id }))
-  const permittedActions = useMemo(() => {
-    return childResponse
-      .map(
-        ({ permittedActions, permittedPersonActions }) =>
-          new Set([...permittedActions, ...permittedPersonActions])
-      )
-      .getOrElse(emptyPermittedActions)
-  }, [childResponse])
+  const permittedActions = useMemo(
+    () =>
+      childResponse
+        .map(
+          ({ permittedActions, permittedPersonActions }) =>
+            new Set([...permittedActions, ...permittedPersonActions])
+        )
+        .getOrElse(emptyPermittedActions),
+    [childResponse]
+  )
   const assistanceNeedVoucherCoefficientsEnabled = useMemo(
     () =>
       childResponse.map((res) => res.assistanceNeedVoucherCoefficientsEnabled),

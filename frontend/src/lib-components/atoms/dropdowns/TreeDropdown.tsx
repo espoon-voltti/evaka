@@ -333,7 +333,7 @@ function TreeDropdown<N extends TreeNode>({
           hasUncheckedChildren(node)
             ? formEntries(node.children).map(({ child, key }) => ({
                 child: (
-                  <React.Fragment key={JSON.stringify([...node.key, key])}>
+                  <React.Fragment key={JSON.stringify([node.key, key])}>
                     {node.text}/{child}
                   </React.Fragment>
                 ),
@@ -347,7 +347,7 @@ function TreeDropdown<N extends TreeNode>({
       .map((node) =>
         hasUncheckedChildren(node) ? (
           formEntries(node.children).map(({ child, key }) => (
-            <ValueChip key={JSON.stringify([...node.key, key])} data-qa="value">
+            <ValueChip key={JSON.stringify([node.key, key])} data-qa="value">
               {tree.length !== 1 ? (
                 // do not show unnecessary top-level node text if it's the only top-level node
                 <>{node.text}/</>

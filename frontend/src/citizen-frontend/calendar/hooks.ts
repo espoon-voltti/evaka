@@ -199,12 +199,11 @@ export const useRemovePlacementPendingChildSelections = (
 
     const currentSelectedChildren = selectedChildren.value()
 
-    const placementStartedChildren = currentSelectedChildren.filter((child) => {
-      return (
+    const placementStartedChildren = currentSelectedChildren.filter(
+      (child) =>
         child.upcomingPlacementStartDate === null ||
         !child.upcomingPlacementStartDate.isAfter(rangeEnd)
-      )
-    })
+    )
 
     if (placementStartedChildren.length !== currentSelectedChildren.length) {
       selectedChildren.set(placementStartedChildren)
