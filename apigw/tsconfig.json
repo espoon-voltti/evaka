@@ -2,12 +2,9 @@
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,
-    "esModuleInterop": true,
-    "module": "node16",
-    "moduleResolution": "node16",
-    "noEmit": true,
-    "strict": true,
-    "target": "es2023"
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmit": true
   },
   "include": ["**/*.ts"]
 }

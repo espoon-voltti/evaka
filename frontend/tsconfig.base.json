@@ -1,11 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "module": "esnext",
     "lib": ["dom", "es2022"],
     "types": ["node"],
     "declaration": true,
-    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
     "isolatedModules": true,
@@ -14,7 +11,6 @@
     "noUnusedLocals": true,
     "resolveJsonModule": true,
     "sourceMap": true,
-    "strict": true,
     "paths": {
       "lib-common": ["./src/lib-common"],
       "lib-components": ["./src/lib-components"],
