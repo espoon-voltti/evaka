@@ -8,8 +8,8 @@
   "scripts": {
     "clean": "rm -rf ./build ./dist",
     "type-check": "tsc",
-    "lint": "oxfmt -c ../.oxfmtrc.json --check && eslint --max-warnings 0 .",
-    "lint:fix": "oxfmt -c ../.oxfmtrc.json && eslint --max-warnings 0 --fix .",
+    "lint": "oxfmt -c ../.oxfmtrc.json --check && oxlint",
+    "lint:fix": "oxfmt -c ../.oxfmtrc.json && oxlint --fix",
     "test": "NODE_ENV=test vitest run",
     "dev": "concurrently --prefix '[{name}]' --names 'tsc,node' 'tsc --preserveWatchOutput --watch' 'NODE_ENV=local node --watch-preserve-output --watch src/index.ts'",
     "prepack": "exit 1"
@@ -42,7 +42,6 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
     "@types/cookie-parser": "1.4.10",
     "@types/cookie-signature": "1.1.2",
     "@types/express-http-proxy": "1.6.7",
@@ -56,30 +55,19 @@
     "@types/tough-cookie": "4.0.5",
     "@types/xml2js": "0.4.14",
     "concurrently": "10.0.3",
-    "eslint": "9.39.4",
-    "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-import": "2.32.0",
-    "eslint-plugin-prettier": "5.5.6",
     "nock": "14.0.15",
     "node-forge": "1.4.0",
     "oxfmt": "^0.56.0",
-    "prettier": "3.8.4",
+    "oxlint": "^1.71.0",
+    "oxlint-tsgolint": "^0.23.0",
     "tough-cookie": "6.0.1",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.62.0",
     "vitest": "4.1.9",
     "xml-crypto": "6.1.2",
     "xml2js": "0.6.2"
   },
   "resolutions": {
     "tar": "7.5.16"
-  },
-  "prettier": {
-    "arrowParens": "always",
-    "bracketSpacing": true,
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "none"
   },
   "engines": {
     "node": ">= 22.18.0"
