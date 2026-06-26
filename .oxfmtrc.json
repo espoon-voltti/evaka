@@ -3,7 +3,7 @@
     "node_modules",
     ".yarn",
     "dist",
-    "src/*/generated",
+    "frontend/src/*/generated",
     "test-results"
   ],
 

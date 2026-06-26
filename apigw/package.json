@@ -1,15 +1,15 @@
 {
   "name": "evaka-api-gateways",
   "version": "1.0.0",
-  "description": "API gateways for eVaka",
-  "type": "module",
   "private": true,
+  "description": "API gateways for eVaka",
   "license": "LGPL-2.1-or-later",
+  "type": "module",
   "scripts": {
     "clean": "rm -rf ./build ./dist",
     "type-check": "tsc",
-    "lint": "eslint --max-warnings 0 .",
-    "lint:fix": "yarn lint --fix",
+    "lint": "oxfmt -c ../.oxfmtrc.json --check && eslint --max-warnings 0 .",
+    "lint:fix": "oxfmt -c ../.oxfmtrc.json && eslint --max-warnings 0 --fix .",
     "test": "NODE_ENV=test vitest run",
     "dev": "concurrently --prefix '[{name}]' --names 'tsc,node' 'tsc --preserveWatchOutput --watch' 'NODE_ENV=local node --watch-preserve-output --watch src/index.ts'",
     "prepack": "exit 1"
@@ -62,6 +62,7 @@
     "eslint-plugin-prettier": "5.5.6",
     "nock": "14.0.15",
     "node-forge": "1.4.0",
+    "oxfmt": "^0.56.0",
     "prettier": "3.8.4",
     "tough-cookie": "6.0.1",
     "typescript": "6.0.3",

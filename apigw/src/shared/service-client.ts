@@ -114,7 +114,9 @@ export async function employeeLogin(
   const { data } = await client.post<EmployeeUser>(
     `/system/employee-login`,
     employee,
-    { headers: createServiceRequestHeaders(req, systemUserHeader) }
+    {
+      headers: createServiceRequestHeaders(req, systemUserHeader)
+    }
   )
   return data
 }
@@ -126,7 +128,9 @@ export async function employeeSuomiFiLogin(
   const { data } = await client.post<EmployeeUser>(
     `/system/employee-sfi-login`,
     employee,
-    { headers: createServiceRequestHeaders(req, systemUserHeader) }
+    {
+      headers: createServiceRequestHeaders(req, systemUserHeader)
+    }
   )
   return data
 }
@@ -138,7 +142,9 @@ export async function getEmployeeDetails(
   try {
     const { data } = await client.get<EmployeeAuthResponse>(
       `/system/employee/${employeeId}`,
-      { headers: createServiceRequestHeaders(req, systemUserHeader) }
+      {
+        headers: createServiceRequestHeaders(req, systemUserHeader)
+      }
     )
     return data
   } catch (e: unknown) {
@@ -157,7 +163,9 @@ export async function citizenLogin(
   const { data } = await client.post<CitizenUser>(
     `/system/citizen-login`,
     person,
-    { headers: createServiceRequestHeaders(req, systemUserHeader) }
+    {
+      headers: createServiceRequestHeaders(req, systemUserHeader)
+    }
   )
   return data
 }
@@ -175,7 +183,9 @@ export async function citizenWeakLogin(
   const { data } = await client.post<CitizenUser>(
     `/system/citizen-weak-login`,
     request,
-    { headers: createServiceRequestHeaders(req, systemUserHeader) }
+    {
+      headers: createServiceRequestHeaders(req, systemUserHeader)
+    }
   )
   return data
 }
@@ -192,7 +202,9 @@ export async function citizenWeakLoginCredentialsUpdate(
   await client.put<CitizenUser>(
     `/citizen/personal-data/weak-login-credentials`,
     request,
-    { headers: createServiceRequestHeaders(req, createUserHeader(user)) }
+    {
+      headers: createServiceRequestHeaders(req, createUserHeader(user))
+    }
   )
 }
 

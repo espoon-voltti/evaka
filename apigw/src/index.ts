@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import './tracer.ts'
-
 import * as redis from '@redis/client'
 import express from 'express'
 import helmet from 'helmet'

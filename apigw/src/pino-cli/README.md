@@ -16,9 +16,9 @@ Check the [test fixtures](test-utils/fixtures/log-messages.ts) and [tests](__tes
 1. Build `apigw`
 1. Run `apigw` and pass its output through `pino-cli`:
 
-    ```sh
-    node dist/index.js | node dist/pino-cli/cli/bin.js
-    ```
+   ```sh
+   node dist/index.js | node dist/pino-cli/cli/bin.js
+   ```
 
 ## Development
 
