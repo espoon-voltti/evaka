@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useCallback } from 'react'
 import styled from 'styled-components'
 
-import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -74,7 +73,7 @@ type FreeTextSearchProps = {
   placeholder: string
   background?: string
   setShowSearch: (show: boolean) => void
-  searchResults: AttendanceChild[]
+  resultCount: number
 }
 
 export default function FreeTextSearch({
@@ -83,7 +82,7 @@ export default function FreeTextSearch({
   placeholder,
   background,
   setShowSearch,
-  searchResults
+  resultCount
 }: FreeTextSearchProps) {
   const clear = useCallback(() => setValue(''), [setValue])
   const { i18n } = useTranslation()
@@ -97,9 +96,9 @@ export default function FreeTextSearch({
         onChange={(e) => setValue(e.target.value)}
         data-qa="free-text-search-input"
         $background={background}
-        $showClose={searchResults.length > 1}
+        $showClose={resultCount > 1}
       />
-      {searchResults.length > 1 && (
+      {resultCount > 1 && (
         <CustomIconButton
           icon={faTimes}
           onClick={clear}

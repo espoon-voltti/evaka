@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { animated, useSpring } from '@react-spring/web'
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
@@ -20,6 +21,7 @@ import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { Button } from 'lib-components/atoms/buttons/Button'
+import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -30,15 +32,18 @@ import type { TabLink } from 'lib-components/molecules/Tabs'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { fasExclamationTriangle } from 'lib-icons'
 import { faChevronDown, faChevronRight, faChevronUp } from 'lib-icons'
 
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
+import FreeTextSearch from '../common/FreeTextSearch'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
 import type { UnitOrGroup } from '../common/unit-or-group'
 import { isUnitView, toUnitOrGroup } from '../common/unit-or-group'
+import { zIndex } from '../constants'
 import { unitInfoQuery } from '../units/queries'
 
 import StaffListItem from './StaffListItem'
@@ -58,6 +63,9 @@ export default React.memo(function StaffAttendancesPage(props: Props) {
   const unitOrGroup = props.unitOrGroup
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
+
+  const [showSearch, setShowSearch] = useState(false)
+  const toggleSearch = useCallback(() => setShowSearch((show) => !show), [])
 
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
@@ -100,19 +108,29 @@ export default React.memo(function StaffAttendancesPage(props: Props) {
   )
 
   return (
-    <PageWithNavigation
-      unitOrGroup={unitOrGroup}
-      selected="staff"
-      selectedGroup={selectedGroup}
-      onChangeGroup={changeGroup}
-    >
-      <TabLinks tabs={tabs} mobile />
-      {props.primaryTab === 'today' ? (
-        <StaffAttendancesToday unitOrGroup={unitOrGroup} />
-      ) : (
-        <StaffAttendancesPlanned unitOrGroup={unitOrGroup} />
+    <>
+      {props.primaryTab === 'today' && (
+        <StaffSearch
+          unitOrGroup={unitOrGroup}
+          show={showSearch}
+          toggleShow={toggleSearch}
+        />
       )}
-    </PageWithNavigation>
+      <PageWithNavigation
+        unitOrGroup={unitOrGroup}
+        selected="staff"
+        selectedGroup={selectedGroup}
+        onChangeGroup={changeGroup}
+        toggleSearch={props.primaryTab === 'today' ? toggleSearch : undefined}
+      >
+        <TabLinks tabs={tabs} mobile />
+        {props.primaryTab === 'today' ? (
+          <StaffAttendancesToday unitOrGroup={unitOrGroup} />
+        ) : (
+          <StaffAttendancesPlanned unitOrGroup={unitOrGroup} />
+        )}
+      </PageWithNavigation>
+    </>
   )
 })
 
@@ -206,6 +224,94 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
     </>
   )
 })
+
+const StaffSearch = React.memo(function StaffSearch({
+  unitOrGroup,
+  show,
+  toggleShow
+}: {
+  unitOrGroup: UnitOrGroup
+  show: boolean
+  toggleShow: () => void
+}) {
+  const { i18n } = useTranslation()
+  const containerSpring = useSpring<{ x: number }>({ x: show ? 1 : 0 })
+  const [freeText, setFreeText] = useState('')
+
+  const staffAttendanceResponse = useQueryResult(
+    staffAttendanceQuery({ unitId: unitOrGroup.unitId })
+  )
+
+  const staff = useMemo(
+    () =>
+      staffAttendanceResponse
+        .map((res) =>
+          isUnitView(unitOrGroup)
+            ? [...res.staff, ...res.extraAttendances]
+            : [
+                ...res.staff.filter(
+                  (s) =>
+                    s.groupIds.includes(unitOrGroup.id) ||
+                    s.present === unitOrGroup.id
+                ),
+                ...res.extraAttendances.filter(
+                  (s) => s.groupId === unitOrGroup.id
+                )
+              ]
+        )
+        .getOrElse([]),
+    [unitOrGroup, staffAttendanceResponse]
+  )
+
+  const searchResults = useMemo(
+    () =>
+      freeText === ''
+        ? []
+        : staff.filter((s) => {
+            const text = freeText.toLowerCase()
+            return 'employeeId' in s
+              ? s.firstName.toLowerCase().includes(text) ||
+                  s.lastName.toLowerCase().includes(text)
+              : s.name.toLowerCase().includes(text)
+          }),
+    [freeText, staff]
+  )
+
+  return (
+    <SearchContainer
+      style={{ height: containerSpring.x.to((x) => `${100 * x}%`) }}
+    >
+      <ContentArea
+        $opaque={false}
+        $paddingVertical="zero"
+        $paddingHorizontal="zero"
+      >
+        <FreeTextSearch
+          value={freeText}
+          setValue={setFreeText}
+          placeholder={i18n.attendances.staff.searchPlaceholder}
+          background={colors.grayscale.g0}
+          setShowSearch={toggleShow}
+          resultCount={searchResults.length}
+        />
+        <FixedSpaceColumn $spacing="zero">
+          {searchResults.map((staffMember) => {
+            const s = toStaff(staffMember)
+            return <StaffListItem {...s} key={s.id} unitOrGroup={unitOrGroup} />
+          })}
+        </FixedSpaceColumn>
+      </ContentArea>
+    </SearchContainer>
+  )
+})
+
+const SearchContainer = animated(styled.div`
+  position: absolute;
+  background: ${colors.grayscale.g4};
+  width: 100vw;
+  overflow: hidden;
+  z-index: ${zIndex.searchBar};
+`)
 
 interface StaffMemberDay {
   employeeId: EmployeeId

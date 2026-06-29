@@ -321,6 +321,7 @@ export const sv: typeof fi = {
         employeeNotFound: 'Arbetstagaren hittades inte',
         wrongPin: 'Felaktig PIN-kod'
       },
+      searchPlaceholder: 'Sök på namn',
       previousDays: 'Tidigare anteckningar',
       nextDays: 'Kommande arbetsskift och frånvaro',
       continuationAttendance: '*registrering som började föregående dag',

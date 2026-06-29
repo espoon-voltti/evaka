@@ -311,6 +311,7 @@ export const fi = {
         employeeNotFound: 'Työntekijää ei löytynyt',
         wrongPin: 'Väärä PIN-koodi'
       },
+      searchPlaceholder: 'Etsi nimellä',
       previousDays: 'Aiemmat kirjaukset',
       nextDays: 'Tulevat työvuorot ja poissaolot',
       continuationAttendance: '* edellisenä päivänä alkanut kirjaus',

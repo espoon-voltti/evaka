@@ -235,7 +235,7 @@ const ChildSearch = React.memo(function Search({
           placeholder={i18n.attendances.searchPlaceholder}
           background={colors.grayscale.g0}
           setShowSearch={toggleShow}
-          searchResults={searchResults}
+          resultCount={searchResults.length}
         />
         <ChildList
           unitOrGroup={unitOrGroup}
