@@ -4749,7 +4749,7 @@ __metadata:
     make-error-cause: "npm:2.3.0"
     oxfmt: "npm:0.56.0"
     oxlint: "npm:1.71.0"
-    oxlint-tsgolint: "npm:^0.23.0"
+    oxlint-tsgolint: "npm:0.23.0"
     playwright: "npm:1.61.0"
     polished: "npm:4.3.1"
     postcss: "npm:8.5.15"
@@ -5936,7 +5936,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oxlint-tsgolint@npm:^0.23.0":
+"oxlint-tsgolint@npm:0.23.0":
   version: 0.23.0
   resolution: "oxlint-tsgolint@npm:0.23.0"
   dependencies:
