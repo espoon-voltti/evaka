@@ -682,7 +682,11 @@ jobs:
           PREFIX: "${{ matrix.ecr_prefix }}"
         run: |
           set -euo pipefail
-          for image in frontend service api-gateway; do
+          images=(frontend service api-gateway)
+          if [ "$PREFIX" = "evaka" ]; then
+            images+=(service-builder)
+          fi
+          for image in "${images[@]}"; do
             src="ghcr.io/espoon-voltti/evaka/${image}:${SHA}"
             dst="${ECR}/${PREFIX}/${image}:${SHA}"
             echo "Copying ${src} -> ${dst}"
@@ -799,7 +803,11 @@ jobs:
             tags+=("latest")
           fi
 
-          for image in frontend service api-gateway; do
+          images=(frontend service api-gateway)
+          if [ "$PREFIX" = "evaka" ]; then
+            images+=(service-builder)
+          fi
+          for image in "${images[@]}"; do
             repository="${PREFIX}/${image}"
             sha_digest=$(aws ecr describe-images \
               --repository-name "$repository" \
