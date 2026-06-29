@@ -44,13 +44,13 @@ jobs:
   lint-shell:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: espoon-voltti/voltti-actions/shellcheck@v1
 
   check-licenses:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Reuse Compliance Check
       uses: fsfe/reuse-action@v6
 
@@ -59,7 +59,7 @@ jobs:
     needs:
       - cache-bust
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Cache fortawesome
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -168,7 +168,7 @@ jobs:
       - frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -206,7 +206,7 @@ jobs:
     needs:
       - cache-bust
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -263,7 +263,7 @@ jobs:
     needs:
       - cache-bust
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -323,7 +323,7 @@ jobs:
       - service
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Docker building
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -368,7 +368,7 @@ jobs:
       - service
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -418,7 +418,7 @@ jobs:
         test_chunk_count: [6] # must max value of above list
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Login to GitHub Container Registry
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -497,7 +497,7 @@ jobs:
     if: ${{ !github.event.pull_request.head.repo.fork }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4
@@ -568,7 +568,7 @@ jobs:
     env:
       PLAYWRIGHT_TAG: "${{ inputs.playwright_tag || 'master' }}"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Login to Docker Hub
         if: ${{ !github.event.pull_request.head.repo.fork }}
