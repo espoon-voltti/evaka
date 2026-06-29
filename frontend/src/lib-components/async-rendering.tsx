@@ -85,10 +85,12 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
     position: relative;
   `
 
+  const empty: SpinnerOptions = {}
+
   function RenderResult<T>({
     result,
     renderer,
-    spinnerOptions = {}
+    spinnerOptions = empty
   }: RenderResultProps<T>) {
     const failureMessages = useFailureMessage()
     return useMemo(

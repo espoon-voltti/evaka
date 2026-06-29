@@ -1,5 +1,5 @@
 {
-  "plugins": ["typescript", "unicorn", "oxc", "react"],
+  "plugins": ["eslint", "oxc", "react", "typescript", "unicorn"],
   "options": {
     "typeAware": true,
     "typeCheck": true,
@@ -40,12 +40,24 @@
     "eslint/prefer-spread": "error",
 
     "react/exhaustive-deps": ["error", { "additionalHooks": "(useApiState)" }],
+    "react/forward-ref-uses-ref": "error",
+    "react/display-name": "error",
+    "react/iframe-missing-sandbox": "error",
     "react/jsx-curly-brace-presence": [
       "error",
       { "props": "never", "children": "never", "propElementValues": "always" }
     ],
+    "react/jsx-no-comment-textnodes": "error",
+    "react/jsx-no-target-blank": "error",
+    "react/no-object-type-as-default-prop": "error",
+    "react/no-react-children": "error",
+    "react/no-unescaped-entities": "error",
+    "react/no-unknown-property": "error",
+    "react/no-unknown-property": "error",
+    "react/prefer-function-component": "error",
+    "react/require-render-return": "error",
     "react/rules-of-hooks": "error",
-    "react/self-closing-comp": ["error", { "component": true, "html": true }]
+    "react/self-closing-comp": ["error", { "component": true, "html": true }],
   },
   "overrides": [
     {
@@ -96,13 +108,6 @@
         "typescript/prefer-regexp-exec": "error",
         "typescript/require-await": "error",
         "typescript/restrict-plus-operands": "error",
-
-        "react/display-name": "error",
-        "react/jsx-no-comment-textnodes": "error",
-        "react/jsx-no-target-blank": "error",
-        "react/no-unescaped-entities": "error",
-        "react/no-unknown-property": "error",
-        "react/require-render-return": "error"
       }
     }
   ]
