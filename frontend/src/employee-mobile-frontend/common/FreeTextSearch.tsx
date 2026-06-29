@@ -19,6 +19,7 @@ const SearchInputContainer = styled.div`
   justify-content: center;
   align-items: center;
   margin-bottom: ${defaultMargins.xs};
+  position: relative;
 `
 
 const SearchInput = styled.input<{ $background?: string; $showClose: boolean }>`
@@ -33,8 +34,7 @@ const SearchInput = styled.input<{ $background?: string; $showClose: boolean }>`
   padding-left: 55px;
   font-size: 17px;
   outline: none;
-  margin-left: -38px;
-  margin-right: ${(p) => (p.$showClose ? '-25px' : '0')};
+  padding-right: ${(p) => (p.$showClose ? '50px' : '0')};
   color: ${colors.grayscale.g100};
   height: 100%;
 
@@ -54,7 +54,7 @@ const SearchInput = styled.input<{ $background?: string; $showClose: boolean }>`
 const CustomIcon = styled(FontAwesomeIcon)`
   color: ${colors.grayscale.g70};
   margin: 0 0.5rem;
-  position: relative;
+  position: absolute;
   left: 10px;
   font-size: 22px;
   cursor: pointer;
@@ -62,7 +62,7 @@ const CustomIcon = styled(FontAwesomeIcon)`
 
 const CustomIconButton = styled(IconOnlyButton)`
   float: right;
-  position: relative;
+  position: absolute;
   color: ${colors.grayscale.g35};
   right: 20px;
 `
