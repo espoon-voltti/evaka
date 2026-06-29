@@ -218,13 +218,13 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
 
   const documentsResult = useQueryResult(
     childDocumentSummariesQuery({ childId })
-  )
-    .map((docs) => docs.filter((doc) => types.includes(doc.type)))
-    .map((docs) =>
-      sortBy(docs, (doc) =>
+  ).map((docs) =>
+    sortBy(
+      docs.filter((doc) => types.includes(doc.type)),
+      (doc) =>
         doc.publishedAt !== null ? -doc.publishedAt.timestamp : Infinity
-      )
     )
+  )
 
   return (
     <>
