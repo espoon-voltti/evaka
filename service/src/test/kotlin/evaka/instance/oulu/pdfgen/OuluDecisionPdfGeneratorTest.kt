@@ -96,24 +96,6 @@ class OuluDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
         listOf(
             FeeDecisionScenario("fee_normal"),
             FeeDecisionScenario(
-                "fee_no_income",
-                customize = {
-                    it.copy(
-                        headOfFamilyIncome = null,
-                        partnerIncome = null,
-                        children = it.children.map { c -> c.copy(childIncome = null) },
-                    )
-                },
-            ),
-            FeeDecisionScenario(
-                "fee_no_partner",
-                customize = { it.copy(partner = null, partnerIncome = null) },
-            ),
-            FeeDecisionScenario(
-                "fee_empty_address",
-                customize = { it.copy(headOfFamily = emptyAddressHead) },
-            ),
-            FeeDecisionScenario(
                 "fee_valid_to",
                 customize = {
                     it.copy(
@@ -124,15 +106,11 @@ class OuluDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
             FeeDecisionScenario("fee_relief_rejected", FeeDecisionType.RELIEF_REJECTED),
             FeeDecisionScenario("fee_relief_partly", FeeDecisionType.RELIEF_PARTLY_ACCEPTED),
             FeeDecisionScenario("fee_relief_accepted", FeeDecisionType.RELIEF_ACCEPTED),
-        )
+        ) + feeEdgeScenarios()
 
     override fun voucherValueDecisionScenarios() =
         listOf(
             VoucherValueDecisionScenario("voucher_value_normal"),
-            VoucherValueDecisionScenario(
-                "voucher_value_empty_address",
-                customize = { it.copy(headOfFamily = emptyAddressHead) },
-            ),
             VoucherValueDecisionScenario(
                 "voucher_value_valid_to",
                 customize = { it.copy(validTo = LocalDate.now().plusYears(1)) },
@@ -165,5 +143,5 @@ class OuluDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 "voucher_value_relief_rejected",
                 VoucherValueDecisionType.RELIEF_REJECTED,
             ),
-        )
+        ) + voucherEdgeScenarios()
 }

@@ -279,6 +279,46 @@ abstract class AbstractDecisionPdfGeneratorTest {
     private fun unitLanguage(lang: OfficialLanguage): Language =
         if (lang == OfficialLanguage.SV) Language.sv else Language.fi
 
+    protected fun feeEdgeScenarios(): List<FeeDecisionScenario> =
+        listOf(
+            FeeDecisionScenario(
+                "fee_no_income",
+                customize = {
+                    it.copy(
+                        headOfFamilyIncome = null,
+                        partnerIncome = null,
+                        children = it.children.map { c -> c.copy(childIncome = null) },
+                    )
+                },
+            ),
+            FeeDecisionScenario(
+                "fee_no_partner",
+                customize = { it.copy(partner = null, partnerIncome = null) },
+            ),
+            FeeDecisionScenario(
+                "fee_empty_address",
+                customize = { it.copy(headOfFamily = emptyAddressHead) },
+            ),
+        )
+
+    protected fun voucherEdgeScenarios(): List<VoucherValueDecisionScenario> =
+        listOf(
+            VoucherValueDecisionScenario(
+                "voucher_value_no_income",
+                customize = {
+                    it.copy(headOfFamilyIncome = null, partnerIncome = null, childIncome = null)
+                },
+            ),
+            VoucherValueDecisionScenario(
+                "voucher_value_no_partner",
+                customize = { it.copy(partner = null, partnerIncome = null) },
+            ),
+            VoucherValueDecisionScenario(
+                "voucher_value_empty_address",
+                customize = { it.copy(headOfFamily = emptyAddressHead) },
+            ),
+        )
+
     protected fun writeTempFile(prefix: String, bytes: ByteArray) {
         val file = File.createTempFile("${prefix}_", ".pdf")
         FileOutputStream(file).use { it.write(bytes) }

@@ -21,23 +21,8 @@ class EspooDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
     override fun reasoningVariants() = listOf(null, reasoning)
 
     override fun feeDecisionScenarios() =
-        listOf(
-            FeeDecisionScenario("fee_normal", languages = finnishAndSwedish),
-            FeeDecisionScenario(
-                "fee_no_income",
-                customize = {
-                    it.copy(
-                        headOfFamilyIncome = null,
-                        partnerIncome = null,
-                        children = it.children.map { c -> c.copy(childIncome = null) },
-                    )
-                },
-            ),
-            FeeDecisionScenario(
-                "fee_no_partner",
-                customize = { it.copy(partner = null, partnerIncome = null) },
-            ),
-        )
+        listOf(FeeDecisionScenario("fee_normal", languages = finnishAndSwedish)) +
+            feeEdgeScenarios()
 
     override fun voucherValueDecisionScenarios() =
         listOf(
@@ -46,7 +31,7 @@ class EspooDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 "voucher_value_relief",
                 VoucherValueDecisionType.RELIEF_ACCEPTED,
             ),
-        )
+        ) + voucherEdgeScenarios()
 
     override fun decisionScenarios() =
         listOf(
