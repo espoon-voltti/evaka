@@ -167,7 +167,9 @@ export interface DecisionRequest {
   applicationId: ApplicationId
   employeeId: EmployeeId
   endDate: LocalDate
+  genericReasoningId: DecisionGenericReasoningId | null
   id: DecisionId
+  individualReasoningIds: DecisionIndividualReasoningId[]
   startDate: LocalDate
   status: DecisionStatus
   type: DecisionType

@@ -14,6 +14,8 @@ import evaka.core.daycare.UnitManager
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.daycare.getDaycare
+import evaka.core.decision.reasoning.DecisionPdfReasoningSource
+import evaka.core.decision.reasoning.getDecisionPdfReasoningSource
 import evaka.core.decision.reasoning.getIndividualReasoningSelectionsForDecision
 import evaka.core.decision.reasoning.resolveApplicableGenericReasoning
 import evaka.core.decision.reasoning.updateGenericReasoningToDecision
@@ -101,10 +103,10 @@ class DecisionService(
                     }
                     tx.getIndividualReasoningSelectionsForDecision(decision.id).forEach { individual
                         ->
-                        if (individual.titleSv.isBlank() || individual.textSv.isBlank()) {
+                        if (individual.textSv.isBlank()) {
                             throw BadRequest(
                                 "Cannot finalize Swedish decision ${decision.id}: individual reasoning " +
-                                    "${individual.id} has empty Swedish title or text"
+                                    "${individual.id} has empty Swedish text"
                             )
                         }
                     }
@@ -133,7 +135,7 @@ class DecisionService(
         val settings = tx.getSettings()
         val decision =
             tx.getDecision(decisionId) ?: throw NotFound("No decision with id: $decisionId")
-        val decisionLanguage = determineDecisionLanguage(decision, tx)
+        val decisionLanguage = tx.getDecisionLanguage(decision.id)
         val application =
             tx.fetchApplicationDetails(decision.applicationId)
                 ?: throw NotFound("Application ${decision.applicationId} was not found")
@@ -141,6 +143,12 @@ class DecisionService(
             tx.getPersonById(application.childId)
                 ?: error("Child not found with id: ${application.childId}")
         val unit = tx.getDaycare(decision.unit.id) ?: error("No unit with id: ${decision.unit.id}")
+        val reasoning =
+            if (evakaEnv.decisionReasoningEnabled) {
+                buildPdfReasoning(decisionLanguage, tx.getDecisionPdfReasoningSource(decisionId))
+            } else {
+                null
+            }
         val guardianDecisionLocation =
             createAndUploadDecision(
                 settings,
@@ -150,6 +158,7 @@ class DecisionService(
                 decisionLanguage,
                 unit.unitManager,
                 unit.preschoolManager,
+                reasoning,
             )
 
         tx.updateDecisionGuardianDocumentKey(decisionId, guardianDecisionLocation.key)
@@ -163,6 +172,7 @@ class DecisionService(
         decisionLanguage: OfficialLanguage,
         unitManager: UnitManager,
         preschoolManager: UnitManager,
+        reasoning: PdfReasoning?,
     ): DocumentLocation {
         val decisionBytes =
             createDecisionPdf(
@@ -176,6 +186,7 @@ class DecisionService(
                 decisionLanguage,
                 unitManager,
                 preschoolManager,
+                reasoning,
             )
 
         return uploadPdfToS3(
@@ -191,13 +202,6 @@ class DecisionService(
     ) =
         decision.type != DecisionType.CLUB &&
             !personService.personsLiveInTheSameAddress(this, application.guardianId, otherGuardian)
-
-    private fun determineDecisionLanguage(
-        decision: Decision,
-        tx: Database.Transaction,
-    ): OfficialLanguage {
-        return tx.getDecisionLanguage(decision.id)
-    }
 
     private fun uploadPdfToS3(document: DocumentKey, bytes: ByteArray): DocumentLocation =
         documentClient.upload(document, bytes, "application/pdf").also {
@@ -391,6 +395,26 @@ class DecisionService(
     }
 }
 
+data class PdfReasoning(val generic: String, val individual: List<String>)
+
+internal fun buildPdfReasoning(
+    lang: OfficialLanguage,
+    source: DecisionPdfReasoningSource,
+): PdfReasoning {
+    val swedish = lang == OfficialLanguage.SV
+    val generic =
+        source.generic?.let { if (swedish) it.textSv else it.textFi }?.takeIf { it.isNotBlank() }
+            ?: error("Cannot render decision reasoning: generic reasoning text is missing or blank")
+    val individual =
+        source.individual.map { reasoning ->
+            (if (swedish) reasoning.textSv else reasoning.textFi).takeIf { it.isNotBlank() }
+                ?: error(
+                    "Cannot render decision reasoning: individual reasoning ${reasoning.id} has blank text"
+                )
+        }
+    return PdfReasoning(generic, individual)
+}
+
 fun createDecisionPdf(
     templateProvider: ITemplateProvider,
     pdfService: PdfGenerator,
@@ -402,6 +426,7 @@ fun createDecisionPdf(
     lang: OfficialLanguage,
     unitManager: UnitManager,
     preschoolManager: UnitManager,
+    reasoning: PdfReasoning? = null,
 ): ByteArray {
     val template = createTemplate(templateProvider, decision, isTransferApplication)
     val isPartTimeDecision: Boolean = decision.type == DecisionType.DAYCARE_PART_TIME
@@ -417,12 +442,13 @@ fun createDecisionPdf(
             preschoolManager,
             isPartTimeDecision,
             serviceNeed,
+            reasoning,
         )
 
     return pdfService.render(pages)
 }
 
-private fun generateDecisionPages(
+internal fun generateDecisionPages(
     template: String,
     lang: OfficialLanguage,
     settings: Map<SettingType, String>,
@@ -432,6 +458,7 @@ private fun generateDecisionPages(
     preschoolManager: UnitManager,
     isPartTimeDecision: Boolean,
     serviceNeed: ServiceNeed?,
+    reasoning: PdfReasoning? = null,
 ): Page {
     return Page(
         Template(template),
@@ -484,6 +511,7 @@ private fun generateDecisionPages(
             setVariable("decisionMakerName", settings[SettingType.DECISION_MAKER_NAME])
             setVariable("decisionMakerTitle", settings[SettingType.DECISION_MAKER_TITLE])
             setVariable("sentDate", decision.sentDate)
+            setVariable("reasoning", reasoning)
         },
     )
 }

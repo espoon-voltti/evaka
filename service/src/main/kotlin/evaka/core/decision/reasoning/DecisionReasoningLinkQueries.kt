@@ -92,3 +92,33 @@ ORDER BY created_at
             )
         }
         .toList<DecisionIndividualReasoningId>()
+
+data class GenericReasoningText(val textFi: String, val textSv: String)
+
+fun Database.Read.getDecisionLinkedGenericReasoningText(
+    decisionId: DecisionId
+): GenericReasoningText? =
+    createQuery {
+            sql(
+                """
+SELECT g.text_fi, g.text_sv
+FROM decision d
+JOIN decision_reasoning_generic g ON g.id = d.generic_reasoning_id
+WHERE d.id = ${bind(decisionId)}
+"""
+            )
+        }
+        .exactlyOneOrNull<GenericReasoningText>()
+
+data class DecisionPdfReasoningSource(
+    val generic: GenericReasoningText?,
+    val individual: List<DecisionIndividualReasoning>,
+)
+
+fun Database.Read.getDecisionPdfReasoningSource(
+    decisionId: DecisionId
+): DecisionPdfReasoningSource =
+    DecisionPdfReasoningSource(
+        generic = getDecisionLinkedGenericReasoningText(decisionId),
+        individual = getIndividualReasoningSelectionsForDecision(decisionId),
+    )

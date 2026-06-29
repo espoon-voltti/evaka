@@ -387,6 +387,46 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertEquals(r1, getDecisionGenericReasoningId(decisionId))
     }
 
+    @Test
+    fun `getDecisionPdfReasoningSource returns the linked generic text and individual selections`() {
+        val (decisionId, _) = insertDraftDecisionDirectly(DAYCARE)
+        val genericId =
+            insertGenericReasoning(
+                DAYCARE_COLLECTION,
+                LocalDate.of(2026, 1, 1),
+                ready = true,
+                textFi = "Yleinen perustelu",
+                textSv = "Generisk motivering",
+            )
+        val individualId = insertIndividualReasoning("r1")
+        db.transaction { tx ->
+            tx.updateGenericReasoningToDecision(decisionId, genericId)
+            tx.setDecisionReasoningIndividualSelections(
+                decisionId = decisionId,
+                reasoningIds = setOf(individualId),
+                createdAt = now,
+                createdBy = admin.evakaUserId,
+            )
+        }
+
+        val source = db.read { tx -> tx.getDecisionPdfReasoningSource(decisionId) }
+
+        assertEquals("Yleinen perustelu", source.generic?.textFi)
+        assertEquals("Generisk motivering", source.generic?.textSv)
+        assertEquals(listOf("title-fi-r1"), source.individual.map { it.titleFi })
+        assertEquals(listOf("text-fi-r1"), source.individual.map { it.textFi })
+    }
+
+    @Test
+    fun `getDecisionPdfReasoningSource returns null generic and empty individual when nothing is linked`() {
+        val (decisionId, _) = insertDraftDecisionDirectly(DAYCARE)
+
+        val source = db.read { tx -> tx.getDecisionPdfReasoningSource(decisionId) }
+
+        assertNull(source.generic)
+        assertEquals(emptyList(), source.individual)
+    }
+
     private fun createPlannedDecisionWithApplication(
         type: DecisionType,
         startDate: LocalDate = LocalDate.of(2026, 8, 1),

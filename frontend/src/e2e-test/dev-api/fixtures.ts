@@ -34,6 +34,8 @@ import type {
   ApplicationId,
   AreaId,
   DaycareId,
+  DecisionGenericReasoningId,
+  DecisionIndividualReasoningId,
   EmployeeId,
   EvakaUserId,
   FeeDecisionId,
@@ -641,6 +643,8 @@ export class Fixture {
       startDate: LocalDate.of(2020, 1, 1),
       endDate: LocalDate.of(2021, 1, 1),
       status: 'PENDING',
+      genericReasoningId: null,
+      individualReasoningIds: [],
       ...initial
     }
     return {
@@ -2893,7 +2897,11 @@ export const decisionFixture = (
   employeeId: EmployeeId,
   applicationId: ApplicationId,
   startDate: LocalDate,
-  endDate: LocalDate
+  endDate: LocalDate,
+  reasoning?: {
+    genericReasoningId?: DecisionGenericReasoningId
+    individualReasoningIds?: DecisionIndividualReasoningId[]
+  }
 ): DecisionRequest => ({
   id: fromUuid('9dd0e1ba-9b3b-11ea-bb37-0242ac130987'),
   employeeId,
@@ -2902,7 +2910,9 @@ export const decisionFixture = (
   type: 'DAYCARE',
   startDate: startDate,
   endDate: endDate,
-  status: 'PENDING'
+  status: 'PENDING',
+  genericReasoningId: reasoning?.genericReasoningId ?? null,
+  individualReasoningIds: reasoning?.individualReasoningIds ?? []
 })
 
 export const feeDecisionsFixture = (
