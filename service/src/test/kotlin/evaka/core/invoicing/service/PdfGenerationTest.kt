@@ -9,14 +9,8 @@ import evaka.core.invoicing.domain.EmployeeWithName
 import evaka.core.invoicing.domain.FeeDecisionChildDetailed
 import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.FeeDecisionType
-import evaka.core.invoicing.domain.IncomeEffect
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.domain.UnitData
-import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
-import evaka.core.invoicing.domain.VoucherValueDecisionPlacementDetailed
-import evaka.core.invoicing.domain.VoucherValueDecisionServiceNeed
-import evaka.core.invoicing.domain.VoucherValueDecisionStatus
-import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.invoicing.testDecision1
 import evaka.core.invoicing.testDecisionIncome
 import evaka.core.invoicing.testFeeThresholds
@@ -26,17 +20,14 @@ import evaka.core.shared.AreaId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.PersonId
-import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.template.EvakaTemplateProvider
-import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
 
 class PdfGenerationTest {
@@ -119,89 +110,6 @@ class PdfGenerationTest {
         )
 
     private val reliefDecision = normalDecision.copy(decisionType = FeeDecisionType.RELIEF_ACCEPTED)
-
-    private val normalVoucherValueDecision =
-        VoucherValueDecisionDetailed(
-            id = VoucherValueDecisionId(testDecision1.id.raw),
-            approvedAt = HelsinkiDateTime.of(LocalDate.of(2019, 4, 15), LocalTime.of(10, 15, 30)),
-            approvedBy = EmployeeWithName(EmployeeId(UUID.randomUUID()), "Erkki", "Pelimerkki"),
-            decisionNumber = testDecision1.decisionNumber,
-            decisionType = VoucherValueDecisionType.NORMAL,
-            status = VoucherValueDecisionStatus.WAITING_FOR_SENDING,
-            headOfFamily =
-                PersonDetailed(
-                    id = PersonId(UUID.randomUUID()),
-                    dateOfBirth = LocalDate.of(1980, 1, 1),
-                    firstName = "Anselmi Aataminpoika",
-                    lastName = "Guggenheim",
-                    streetAddress = "Huhdannevanpolku 24 A 3",
-                    postalCode = "02770",
-                    postOffice = "Espoo",
-                    restrictedDetailsEnabled = false,
-                ),
-            partner =
-                PersonDetailed(
-                    id = PersonId(UUID.randomUUID()),
-                    dateOfBirth = LocalDate.of(1980, 1, 1),
-                    firstName = "Cynthia Elisabeth",
-                    lastName = "Maalahti-Guggenheim",
-                    streetAddress = "Huhdannevanpolku 24 A 3",
-                    postalCode = "02770",
-                    postOffice = "Espoo",
-                    restrictedDetailsEnabled = false,
-                ),
-            validFrom = LocalDate.of(2020, 1, 1),
-            validTo = LocalDate.of(2020, 12, 31),
-            financeDecisionHandlerFirstName = null,
-            financeDecisionHandlerLastName = null,
-            familySize = 3,
-            feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
-            headOfFamilyIncome =
-                testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
-            partnerIncome =
-                testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
-            childIncome = testDecisionIncome.copy(effect = IncomeEffect.INCOME, total = 123456),
-            child =
-                PersonDetailed(
-                    id = PersonId(UUID.randomUUID()),
-                    dateOfBirth = LocalDate.of(2017, 1, 1),
-                    firstName = "Iisakki Anselminpoika",
-                    lastName = "Guggenheim",
-                    restrictedDetailsEnabled = false,
-                ),
-            childAge = 3,
-            placement =
-                VoucherValueDecisionPlacementDetailed(
-                    UnitData(
-                        id = DaycareId(UUID.randomUUID()),
-                        name = "Test Daycare",
-                        language = "fi",
-                        areaId = AreaId(UUID.randomUUID()),
-                        areaName = "Test Area",
-                    ),
-                    PlacementType.DAYCARE,
-                ),
-            serviceNeed =
-                VoucherValueDecisionServiceNeed(
-                    feeCoefficient = BigDecimal("1.00"),
-                    voucherValueCoefficient = BigDecimal("1.00"),
-                    feeDescriptionFi = "palveluntarve puuttuu, korkein maksu",
-                    feeDescriptionSv = "vårdbehovet saknas, högsta avgift",
-                    voucherValueDescriptionFi = "yli 25h/viikko",
-                    voucherValueDescriptionSv = "mer än 25 h/vecka",
-                    missing = false,
-                ),
-            voucherValue = 120000,
-            assistanceNeedCoefficient = BigDecimal("1"),
-            baseCoPayment = 900,
-            baseValue = 90000,
-            coPayment = 12000,
-            feeAlterations = emptyList(),
-            finalCoPayment = 12000,
-            siblingDiscount = 0,
-            documentContainsContactInfo = false,
-            archivedAt = null,
-        )
 
     @Test
     fun `variables are ok with normal decision`() {
@@ -315,78 +223,5 @@ class PdfGenerationTest {
                 "hasChildIncome" to true,
             )
         simpleVariables.forEach { (key, item) -> assertEquals(expected.getValue(key), item) }
-    }
-
-    @Test
-    fun `generateFeeDecisionPdf smoke test`() {
-        val feeDecisionPdfData =
-            FeeDecisionPdfData(
-                decision = normalDecision,
-                settings = mapOf(),
-                lang = OfficialLanguage.FI,
-            )
-        val pdfBytes = service.generateFeeDecisionPdf(feeDecisionPdfData)
-
-        // TODO next line should be always commented out in master
-        // java.io.File("/tmp/fee_decision_test.pdf").writeBytes(pdfBytes)
-
-        assertNotNull(pdfBytes)
-    }
-
-    @Test
-    fun `generateVoucherValueDecisionPdf smoke test`() {
-        val voucherValueDecisionPdfData =
-            VoucherValueDecisionPdfData(
-                decision = normalVoucherValueDecision,
-                settings = mapOf(),
-                lang = OfficialLanguage.FI,
-            )
-        val pdfBytes = service.generateVoucherValueDecisionPdf(voucherValueDecisionPdfData)
-
-        // TODO next line should be always commented out in master
-        // java.io.File("/tmp/voucher_value_decision_test.pdf").writeBytes(pdfBytes)
-
-        assertNotNull(pdfBytes)
-    }
-
-    @Test
-    fun `generateFeeDecisionPdf SV smoke test`() {
-        val data =
-            FeeDecisionPdfData(
-                decision = normalDecision,
-                settings = mapOf(),
-                lang = OfficialLanguage.SV,
-            )
-        assertNotNull(service.generateFeeDecisionPdf(data))
-    }
-
-    @Test
-    fun `generateVoucherValueDecisionPdf SV smoke test`() {
-        val data =
-            VoucherValueDecisionPdfData(
-                decision = normalVoucherValueDecision,
-                settings = mapOf(),
-                lang = OfficialLanguage.SV,
-            )
-        assertNotNull(service.generateVoucherValueDecisionPdf(data))
-    }
-
-    private val reliefVoucherValueDecision =
-        normalVoucherValueDecision.copy(decisionType = VoucherValueDecisionType.RELIEF_ACCEPTED)
-
-    @Test
-    fun `generate relief VoucherValueDecisionPdf smoke test`() {
-        val reliefVoucherValueDecisionPdfData =
-            VoucherValueDecisionPdfData(
-                decision = reliefVoucherValueDecision,
-                settings = mapOf(),
-                lang = OfficialLanguage.FI,
-            )
-        val pdfBytes = service.generateVoucherValueDecisionPdf(reliefVoucherValueDecisionPdfData)
-
-        // TODO next line should be always commented out in master
-        // java.io.File("/tmp/voucher_value_relief_decision_test.pdf").writeBytes(pdfBytes)
-
-        assertNotNull(pdfBytes)
     }
 }

@@ -1,0 +1,449 @@
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package evaka.core.pdfgen
+
+import evaka.core.application.ServiceNeed
+import evaka.core.daycare.UnitManager
+import evaka.core.daycare.domain.Language
+import evaka.core.daycare.domain.ProviderType
+import evaka.core.decision.Decision
+import evaka.core.decision.DecisionStatus
+import evaka.core.decision.DecisionType
+import evaka.core.decision.DecisionUnit
+import evaka.core.decision.PdfReasoning
+import evaka.core.decision.createDecisionPdf
+import evaka.core.identity.ExternalIdentifier
+import evaka.core.invoicing.domain.EmployeeWithName
+import evaka.core.invoicing.domain.FeeDecisionChildDetailed
+import evaka.core.invoicing.domain.FeeDecisionDetailed
+import evaka.core.invoicing.domain.FeeDecisionType
+import evaka.core.invoicing.domain.IncomeEffect
+import evaka.core.invoicing.domain.PersonDetailed
+import evaka.core.invoicing.domain.UnitData
+import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
+import evaka.core.invoicing.domain.VoucherValueDecisionPlacementDetailed
+import evaka.core.invoicing.domain.VoucherValueDecisionServiceNeed
+import evaka.core.invoicing.domain.VoucherValueDecisionStatus
+import evaka.core.invoicing.domain.VoucherValueDecisionType
+import evaka.core.invoicing.service.FeeDecisionPdfData
+import evaka.core.invoicing.service.VoucherValueDecisionPdfData
+import evaka.core.invoicing.testDecision1
+import evaka.core.invoicing.testDecisionIncome
+import evaka.core.invoicing.testFeeThresholds
+import evaka.core.pis.service.PersonDTO
+import evaka.core.placement.PlacementType
+import evaka.core.setting.SettingType
+import evaka.core.shared.ApplicationId
+import evaka.core.shared.AreaId
+import evaka.core.shared.ChildId
+import evaka.core.shared.DaycareId
+import evaka.core.shared.DecisionId
+import evaka.core.shared.EmployeeId
+import evaka.core.shared.PersonId
+import evaka.core.shared.VoucherValueDecisionId
+import evaka.core.shared.config.pdfTemplateEngine
+import evaka.core.shared.dev.DevPerson
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.OfficialLanguage
+import evaka.core.shared.template.EvakaTemplateProvider
+import evaka.core.shared.template.ITemplateProvider
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
+import java.io.FileOutputStream
+import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.UUID
+import kotlin.test.assertNotNull
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.TestFactory
+
+private val logger = KotlinLogging.logger {}
+
+private val testChild = DevPerson(ssn = "010617A123U", dateOfBirth = LocalDate.of(2017, 6, 1))
+
+abstract class AbstractDecisionPdfGeneratorTest {
+    protected open val templateProvider: ITemplateProvider = EvakaTemplateProvider()
+
+    protected abstract val municipality: String
+
+    protected abstract fun decisionScenarios(): List<DecisionScenario>
+
+    protected open fun feeDecisionScenarios(): List<FeeDecisionScenario> = emptyList()
+
+    protected open fun voucherValueDecisionScenarios(): List<VoucherValueDecisionScenario> =
+        emptyList()
+
+    private val pdfGenerator by lazy {
+        PdfGenerator(templateProvider, pdfTemplateEngine(municipality))
+    }
+
+    private val settings = emptyMap<SettingType, String>()
+
+    private val reasoning =
+        PdfReasoning(
+            "Tässä yleisen perustelun teksti",
+            listOf("Eka yksilöllinen perustelu", "Toka yksilöllinen perustelu"),
+        )
+
+    private val child =
+        PersonDTO(
+            testChild.id,
+            null,
+            ExternalIdentifier.SSN.getInstance(testChild.ssn!!),
+            false,
+            "Kullervo Kyöstinpoika",
+            "Pöysti",
+            "",
+            null,
+            "",
+            "",
+            null,
+            testChild.dateOfBirth,
+            null,
+            "Kuusikallionrinne 26 A 4",
+            "02270",
+            "Espoo",
+            "",
+            "",
+        )
+
+    private val manager =
+        UnitManager(
+            "Pirkko Päiväkodinjohtaja",
+            "pirkko.paivakodinjohtaja@example.com",
+            "0401231234",
+        )
+
+    @TestFactory
+    fun applicationDecisionPdfs(): List<DynamicTest> =
+        decisionScenarios().flatMap { scenario ->
+            scenario.languages.flatMap { lang ->
+                val decision =
+                    createValidDecision(
+                        type = scenario.decisionType,
+                        unit =
+                            createValidDecisionUnit(
+                                providerType =
+                                    if (scenario.isVoucher) ProviderType.PRIVATE_SERVICE_VOUCHER
+                                    else ProviderType.MUNICIPAL,
+                                language = unitLanguage(lang),
+                            ),
+                    )
+                listOf(null, reasoning).map { reasoningOrNull ->
+                    val variant = if (reasoningOrNull == null) "vanha" else "uusi"
+                    val label = "${scenario.name}_${lang.name}_$variant"
+                    DynamicTest.dynamicTest(label) {
+                        val bytes =
+                            createDecisionPdf(
+                                templateProvider,
+                                pdfGenerator,
+                                settings,
+                                decision,
+                                child,
+                                scenario.isTransferApplication,
+                                scenario.serviceNeed,
+                                lang,
+                                manager,
+                                manager,
+                                reasoningOrNull,
+                            )
+                        assertNotNull(bytes)
+                        writeTempFile("decision_${municipality}_$label", bytes)
+                    }
+                }
+            }
+        }
+
+    @TestFactory
+    fun feeDecisionPdfs(): List<DynamicTest> =
+        feeDecisionScenarios().flatMap { scenario ->
+            scenario.languages.map { lang ->
+                val label = "${scenario.name}_${lang.name}"
+                DynamicTest.dynamicTest(label) {
+                    val bytes =
+                        pdfGenerator.generateFeeDecisionPdf(
+                            FeeDecisionPdfData(
+                                createValidFeeDecision(scenario.decisionType),
+                                settings,
+                                lang,
+                            )
+                        )
+                    assertNotNull(bytes)
+                    writeTempFile("fee_decision_${municipality}_$label", bytes)
+                }
+            }
+        }
+
+    @TestFactory
+    fun voucherValueDecisionPdfs(): List<DynamicTest> =
+        voucherValueDecisionScenarios().flatMap { scenario ->
+            scenario.languages.map { lang ->
+                val label = "${scenario.name}_${lang.name}"
+                DynamicTest.dynamicTest(label) {
+                    val bytes =
+                        pdfGenerator.generateVoucherValueDecisionPdf(
+                            VoucherValueDecisionPdfData(
+                                createValidVoucherValueDecision(scenario.decisionType),
+                                settings,
+                                lang,
+                            )
+                        )
+                    assertNotNull(bytes)
+                    writeTempFile("voucher_value_decision_${municipality}_$label", bytes)
+                }
+            }
+        }
+
+    private fun unitLanguage(lang: OfficialLanguage): Language =
+        if (lang == OfficialLanguage.SV) Language.sv else Language.fi
+
+    protected fun writeTempFile(prefix: String, bytes: ByteArray) {
+        val file = File.createTempFile("${prefix}_", ".pdf")
+        FileOutputStream(file).use { it.write(bytes) }
+        logger.debug { "Generated PDF to ${file.absolutePath}" }
+    }
+}
+
+data class DecisionScenario(
+    val name: String,
+    val decisionType: DecisionType,
+    val languages: Set<OfficialLanguage> = setOf(OfficialLanguage.FI),
+    val isVoucher: Boolean = false,
+    val isTransferApplication: Boolean = false,
+    val serviceNeed: ServiceNeed? = null,
+)
+
+data class FeeDecisionScenario(
+    val name: String,
+    val decisionType: FeeDecisionType = FeeDecisionType.NORMAL,
+    val languages: Set<OfficialLanguage> = setOf(OfficialLanguage.FI),
+)
+
+data class VoucherValueDecisionScenario(
+    val name: String,
+    val decisionType: VoucherValueDecisionType = VoucherValueDecisionType.NORMAL,
+    val languages: Set<OfficialLanguage> = setOf(OfficialLanguage.FI),
+)
+
+private fun createValidDecisionUnit(
+    providerType: ProviderType = ProviderType.MUNICIPAL,
+    language: Language = Language.fi,
+): DecisionUnit =
+    DecisionUnit(
+        DaycareId(UUID.randomUUID()),
+        "Test Daycare",
+        "Test Daycare",
+        "Test Daycare Preschool",
+        "Test Manager",
+        "Test Street 1",
+        "00000",
+        "Test City",
+        "+358 0000000",
+        "Test Decision Handler",
+        "Test Street 1, 00000 Test City",
+        providerType = providerType,
+        language = language,
+    )
+
+private fun createValidDecision(
+    id: DecisionId = DecisionId(UUID.randomUUID()),
+    createdBy: String = "John Doe",
+    type: DecisionType = DecisionType.DAYCARE,
+    startDate: LocalDate = LocalDate.of(2019, 1, 1),
+    endDate: LocalDate = LocalDate.of(2019, 12, 31),
+    unit: DecisionUnit = createValidDecisionUnit(),
+    applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
+    childId: ChildId = ChildId(UUID.randomUUID()),
+    documentKey: String? = null,
+    decisionNumber: Long = 123,
+    sentDate: LocalDate = LocalDate.now(),
+    status: DecisionStatus = DecisionStatus.ACCEPTED,
+    resolved: LocalDate? = null,
+): Decision {
+    return Decision(
+        id = id,
+        createdBy = createdBy,
+        type = type,
+        startDate = startDate,
+        endDate = endDate,
+        unit = unit,
+        applicationId = applicationId,
+        childId = childId,
+        documentKey = documentKey,
+        decisionNumber = decisionNumber,
+        sentDate = sentDate,
+        status = status,
+        childName = "Test Child",
+        requestedStartDate = startDate,
+        resolved = resolved,
+        resolvedByName = null,
+        documentContainsContactInfo = false,
+        archivedAt = null,
+    )
+}
+
+private fun createValidFeeDecision(
+    decisionType: FeeDecisionType = FeeDecisionType.NORMAL
+): FeeDecisionDetailed {
+    return FeeDecisionDetailed(
+        id = testDecision1.id,
+        status = testDecision1.status,
+        decisionNumber = testDecision1.decisionNumber,
+        decisionType = decisionType,
+        validDuring = testDecision1.validDuring,
+        headOfFamily =
+            PersonDetailed(
+                id = PersonId(UUID.randomUUID()),
+                dateOfBirth = LocalDate.of(1980, 1, 1),
+                firstName = "John",
+                lastName = "Doe",
+                streetAddress = "Kamreerintie 2",
+                postalCode = "02770",
+                postOffice = "Espoo",
+                restrictedDetailsEnabled = false,
+            ),
+        partner =
+            PersonDetailed(
+                id = PersonId(UUID.randomUUID()),
+                dateOfBirth = LocalDate.of(1980, 1, 1),
+                firstName = "Joan",
+                lastName = "Doe",
+                streetAddress = "Kamreerintie 2",
+                postalCode = "02770",
+                postOffice = "Espoo",
+                restrictedDetailsEnabled = false,
+            ),
+        headOfFamilyIncome = testDecisionIncome.copy(total = 214159),
+        partnerIncome = testDecisionIncome.copy(total = 413195),
+        familySize = 3,
+        feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
+        approvedAt = HelsinkiDateTime.of(LocalDate.of(2019, 4, 15), LocalTime.of(10, 15, 30)),
+        approvedBy = EmployeeWithName(EmployeeId(UUID.randomUUID()), "Pirkko", "Päättäjä"),
+        children =
+            testDecision1.children.mapIndexed { index, it ->
+                FeeDecisionChildDetailed(
+                    child =
+                        PersonDetailed(
+                            id = PersonId(UUID.randomUUID()),
+                            dateOfBirth = LocalDate.of(2017, 1, 1),
+                            firstName = "Johnny_$index",
+                            lastName = "Doe",
+                            restrictedDetailsEnabled = false,
+                        ),
+                    placementType = it.placement.type,
+                    placementUnit =
+                        UnitData(
+                            id = DaycareId(UUID.randomUUID()),
+                            name = "Leppäkerttu-konserni, päiväkoti Pupu Tupuna",
+                            language = "fi",
+                            areaId = AreaId(UUID.randomUUID()),
+                            areaName = "Test Area",
+                        ),
+                    serviceNeedOptionId = it.serviceNeed.optionId,
+                    serviceNeedFeeCoefficient = it.serviceNeed.feeCoefficient,
+                    serviceNeedDescriptionFi = it.serviceNeed.descriptionFi,
+                    serviceNeedDescriptionSv = it.serviceNeed.descriptionSv,
+                    serviceNeedMissing = it.serviceNeed.missing,
+                    baseFee = it.baseFee,
+                    siblingDiscount = it.siblingDiscount,
+                    fee = it.fee,
+                    feeAlterations = it.feeAlterations,
+                    finalFee = it.finalFee,
+                    childIncome = if (index == 0) testDecisionIncome.copy(total = 123456) else null,
+                )
+            },
+        financeDecisionHandlerFirstName = null,
+        financeDecisionHandlerLastName = null,
+        documentContainsContactInfo = false,
+        archivedAt = null,
+    )
+}
+
+private fun createValidVoucherValueDecision(
+    decisionType: VoucherValueDecisionType = VoucherValueDecisionType.NORMAL
+): VoucherValueDecisionDetailed {
+    return VoucherValueDecisionDetailed(
+        id = VoucherValueDecisionId(testDecision1.id.raw),
+        approvedAt = HelsinkiDateTime.of(LocalDate.of(2019, 4, 15), LocalTime.of(10, 15, 30)),
+        approvedBy = EmployeeWithName(EmployeeId(UUID.randomUUID()), "Erkki", "Pelimerkki"),
+        decisionNumber = testDecision1.decisionNumber,
+        decisionType = decisionType,
+        status = VoucherValueDecisionStatus.WAITING_FOR_SENDING,
+        headOfFamily =
+            PersonDetailed(
+                id = PersonId(UUID.randomUUID()),
+                dateOfBirth = LocalDate.of(1980, 1, 1),
+                firstName = "Anselmi Aataminpoika",
+                lastName = "Guggenheim",
+                streetAddress = "Huhdannevanpolku 24 A 3",
+                postalCode = "02770",
+                postOffice = "Espoo",
+                restrictedDetailsEnabled = false,
+            ),
+        partner =
+            PersonDetailed(
+                id = PersonId(UUID.randomUUID()),
+                dateOfBirth = LocalDate.of(1980, 1, 1),
+                firstName = "Cynthia Elisabeth",
+                lastName = "Maalahti-Guggenheim",
+                streetAddress = "Huhdannevanpolku 24 A 3",
+                postalCode = "02770",
+                postOffice = "Espoo",
+                restrictedDetailsEnabled = false,
+            ),
+        validFrom = LocalDate.of(2020, 1, 1),
+        validTo = LocalDate.of(2020, 12, 31),
+        financeDecisionHandlerFirstName = null,
+        financeDecisionHandlerLastName = null,
+        familySize = 3,
+        feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
+        headOfFamilyIncome =
+            testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
+        partnerIncome =
+            testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
+        childIncome = testDecisionIncome.copy(effect = IncomeEffect.INCOME, total = 123456),
+        child =
+            PersonDetailed(
+                id = PersonId(UUID.randomUUID()),
+                dateOfBirth = LocalDate.of(2017, 1, 1),
+                firstName = "Iisakki Anselminpoika",
+                lastName = "Guggenheim",
+                restrictedDetailsEnabled = false,
+            ),
+        childAge = 3,
+        placement =
+            VoucherValueDecisionPlacementDetailed(
+                UnitData(
+                    id = DaycareId(UUID.randomUUID()),
+                    name = "Test Daycare",
+                    language = "fi",
+                    areaId = AreaId(UUID.randomUUID()),
+                    areaName = "Test Area",
+                ),
+                PlacementType.DAYCARE,
+            ),
+        serviceNeed =
+            VoucherValueDecisionServiceNeed(
+                feeCoefficient = BigDecimal("1.00"),
+                voucherValueCoefficient = BigDecimal("1.00"),
+                feeDescriptionFi = "palveluntarve puuttuu, korkein maksu",
+                feeDescriptionSv = "vårdbehovet saknas, högsta avgift",
+                voucherValueDescriptionFi = "yli 25h/viikko",
+                voucherValueDescriptionSv = "mer än 25 h/vecka",
+                missing = false,
+            ),
+        voucherValue = 120000,
+        assistanceNeedCoefficient = BigDecimal("1"),
+        baseCoPayment = 900,
+        baseValue = 90000,
+        coPayment = 12000,
+        feeAlterations = emptyList(),
+        finalCoPayment = 12000,
+        siblingDiscount = 0,
+        documentContainsContactInfo = false,
+        archivedAt = null,
+    )
+}

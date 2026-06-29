@@ -4,27 +4,7 @@
 
 package evaka.core.pdfgen
 
-import evaka.core.application.Address
-import evaka.core.application.ApplicationDetails
-import evaka.core.application.ApplicationForm
-import evaka.core.application.ApplicationOrigin
-import evaka.core.application.ApplicationStatus
-import evaka.core.application.ApplicationType
-import evaka.core.application.ChildDetails
-import evaka.core.application.Guardian
-import evaka.core.application.PersonBasics
-import evaka.core.application.Preferences
-import evaka.core.application.PreferredUnit
-import evaka.core.application.ServiceNeed
 import evaka.core.caseprocess.DocumentConfidentiality
-import evaka.core.daycare.UnitManager
-import evaka.core.daycare.domain.Language
-import evaka.core.daycare.domain.ProviderType
-import evaka.core.decision.Decision
-import evaka.core.decision.DecisionStatus
-import evaka.core.decision.DecisionType
-import evaka.core.decision.DecisionUnit
-import evaka.core.decision.createDecisionPdf
 import evaka.core.document.CheckboxGroupQuestionOption
 import evaka.core.document.ChildDocumentType
 import evaka.core.document.DocumentDeletionBasis
@@ -44,240 +24,27 @@ import evaka.core.identity.ExternalIdentifier
 import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.service.createAddressPagePdf
 import evaka.core.placement.PlacementType
-import evaka.core.setting.SettingType
-import evaka.core.shared.ApplicationId
 import evaka.core.shared.ChildDocumentId
-import evaka.core.shared.ChildId
-import evaka.core.shared.DaycareId
-import evaka.core.shared.DecisionId
 import evaka.core.shared.DocumentTemplateId
 import evaka.core.shared.PersonId
 import evaka.core.shared.config.pdfTemplateEngine
-import evaka.core.shared.dev.DevCareArea
-import evaka.core.shared.dev.DevDaycare
-import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
-import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.domain.Rectangle
 import evaka.core.shared.domain.UiLanguage
-import evaka.core.shared.message.EvakaMessageProvider
-import evaka.core.shared.message.IMessageProvider
 import evaka.core.shared.template.EvakaTemplateProvider
-import evaka.core.shared.template.ITemplateProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
-import java.time.LocalTime
 import java.util.UUID
-import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
-import org.thymeleaf.ITemplateEngine
 
-val logger = KotlinLogging.logger {}
-
-private val testArea = DevCareArea()
-private val testDaycare = DevDaycare(areaId = testArea.id)
-private val voucherDaycare =
-    DevDaycare(
-        areaId = testArea.id,
-        name = "Test Voucher Daycare",
-        providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
-    )
+private val logger = KotlinLogging.logger {}
 
 private val testAdult = DevPerson(ssn = "010180-1232", dateOfBirth = LocalDate.of(1980, 1, 1))
-private val testChild = DevPerson(ssn = "010617A123U", dateOfBirth = LocalDate.of(2017, 6, 1))
-private val decisionMaker = DevEmployee()
 
-private fun preschoolApplication(preferredUnit: DevDaycare) =
-    ApplicationDetails(
-        id = ApplicationId(UUID.randomUUID()),
-        type = ApplicationType.PRESCHOOL,
-        status = ApplicationStatus.WAITING_DECISION,
-        origin = ApplicationOrigin.ELECTRONIC,
-        childId = testChild.id,
-        guardianId = testAdult.id,
-        otherGuardianLivesInSameAddress = null,
-        childRestricted = false,
-        guardianRestricted = false,
-        guardianDateOfDeath = null,
-        checkedByAdmin = true,
-        confidential = false,
-        createdAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
-        createdBy = decisionMaker.evakaUser,
-        modifiedAt = HelsinkiDateTime.of(LocalDate.of(2021, 8, 15), LocalTime.of(12, 0)),
-        modifiedBy = decisionMaker.evakaUser,
-        sentDate = LocalDate.of(2021, 1, 15),
-        sentTime = null,
-        dueDate = null,
-        dueDateSetManuallyAt = null,
-        transferApplication = false,
-        additionalDaycareApplication = false,
-        hideFromGuardian = false,
-        allowOtherGuardianAccess = true,
-        attachments = listOf(),
-        hasOtherGuardian = false,
-        form =
-            ApplicationForm(
-                child =
-                    ChildDetails(
-                        person =
-                            PersonBasics(
-                                firstName = testChild.firstName,
-                                lastName = testChild.lastName,
-                                socialSecurityNumber = testChild.ssn,
-                            ),
-                        dateOfBirth = testChild.dateOfBirth,
-                        address =
-                            Address(
-                                street = testChild.streetAddress,
-                                postalCode = testChild.postalCode,
-                                postOffice = testChild.postOffice,
-                            ),
-                        futureAddress = null,
-                        nationality = "fi",
-                        language = "fi",
-                        allergies = "allergies",
-                        diet = "diet",
-                        assistanceNeeded = true,
-                        assistanceDescription = "This is a description for assistance.",
-                    ),
-                guardian =
-                    Guardian(
-                        person =
-                            PersonBasics(
-                                firstName = testAdult.firstName,
-                                lastName = testAdult.lastName,
-                                socialSecurityNumber = testAdult.ssn,
-                            ),
-                        address =
-                            Address(
-                                street = testAdult.streetAddress,
-                                postalCode = testAdult.postalCode,
-                                postOffice = testAdult.postOffice,
-                            ),
-                        futureAddress = null,
-                        phoneNumber = "0504139432",
-                        email = "joku@maili.fi",
-                    ),
-                secondGuardian = null,
-                otherPartner = null,
-                otherChildren = emptyList(),
-                preferences =
-                    Preferences(
-                        preferredUnits =
-                            listOf(PreferredUnit(preferredUnit.id, preferredUnit.name)),
-                        preferredStartDate = LocalDate.of(2021, 8, 15),
-                        connectedDaycarePreferredStartDate = null,
-                        serviceNeed =
-                            ServiceNeed(
-                                startTime = "08:00",
-                                endTime = "17:00",
-                                shiftCare = false,
-                                partTime = false,
-                                serviceNeedOption = null,
-                            ),
-                        siblingBasis = null,
-                        preparatory = false,
-                        urgent = false,
-                    ),
-                maxFeeAccepted = false,
-                otherInfo = "other info",
-                clubDetails = null,
-            ),
-    )
-
-private val application = preschoolApplication(testDaycare)
-private val transferApplication = application.copy(transferApplication = true)
-private val voucherApplication = preschoolApplication(voucherDaycare)
-
-private val voucherDecisionUnit =
-    DecisionUnit(
-        DaycareId(UUID.randomUUID()),
-        "PS päiväkoti",
-        "PS päiväkoti",
-        "PS päiväkodin esiopetus",
-        "Pirkko Päiväkodinjohtaja",
-        "PSpolku 123",
-        "02200",
-        "ESPOO",
-        "+35850 1234564",
-        "Varhaiskasvatuksen palveluohjaus",
-        "Kamreerintie 2, 02200 Espoo",
-        providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
-        language = Language.fi,
-    )
-
-private val daycareTransferDecision =
-    createValidDecision(applicationId = transferApplication.id, type = DecisionType.DAYCARE)
-private val daycareDecision =
-    createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE)
-private val preschoolDaycareDecision =
-    createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL_DAYCARE)
-private val daycareDecisionPartTime =
-    createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE_PART_TIME)
-private val daycareDecisionPartTimeVoucher =
-    createValidDecision(
-        applicationId = voucherApplication.id,
-        type = DecisionType.DAYCARE_PART_TIME,
-        unit = voucherDecisionUnit,
-    )
-private val preschoolDecision =
-    createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL)
-private val preparatoryDecision =
-    createValidDecision(applicationId = application.id, type = DecisionType.PREPARATORY_EDUCATION)
-private val clubDecision =
-    createValidDecision(applicationId = application.id, type = DecisionType.CLUB)
-
-private val voucherDecision =
-    daycareDecision.copy(
-        endDate = LocalDate.of(2019, 7, 31),
-        unit =
-            DecisionUnit(
-                DaycareId(UUID.randomUUID()),
-                "Suomenniemen palvelusetelipäiväkoti",
-                "Suomenniemen palvelusetelipäiväkoti",
-                "Suomenniemen palvelusetelipäiväkodin esiopetus",
-                "Pirkko Sanelma Ullanlinna",
-                "Hyväntoivonniementie 13 B",
-                "02200",
-                "ESPOO",
-                "+35850 1234564",
-                "Suomenniemen palvelusetelipäiväkodin asiakaspalvelu",
-                "Kartanonkujanpää 565, 02210 Espoo",
-                providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
-                language = Language.fi,
-            ),
-    )
-
-private val settings = mapOf<SettingType, String>()
-private val child =
-    PersonDTO(
-        testChild.id,
-        null,
-        ExternalIdentifier.SSN.getInstance(testChild.ssn!!),
-        false,
-        "Kullervo Kyöstinpoika",
-        "Pöysti",
-        "",
-        null,
-        "",
-        "",
-        null,
-        testChild.dateOfBirth,
-        null,
-        "Kuusikallionrinne 26 A 4",
-        "02270",
-        "Espoo",
-        "",
-        "",
-    )
 private val guardian =
     PersonDTO(
         testAdult.id,
@@ -299,50 +66,9 @@ private val guardian =
         "",
         "",
     )
-private val manager =
-    UnitManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
 
-@TestConfiguration
-class PdfGeneratorTestConfiguration {
-    @Bean fun messageProvider(): IMessageProvider = EvakaMessageProvider()
-
-    @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
-
-    @Bean fun templateEngine(): ITemplateEngine = pdfTemplateEngine("espoo")
-}
-
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.NONE,
-    classes = [PdfGeneratorTestConfiguration::class, PdfGenerator::class],
-)
 class PdfGeneratorTest {
-    @Autowired lateinit var pdfGenerator: PdfGenerator
-
-    @Test
-    fun createFinnishPDFs() {
-        createPDF(daycareTransferDecision, true, OfficialLanguage.FI)
-        createPDF(daycareDecision, false, OfficialLanguage.FI)
-        createPDF(daycareDecisionPartTime, false, OfficialLanguage.FI)
-        createPDF(daycareDecisionPartTimeVoucher, false, OfficialLanguage.FI)
-        createPDF(preschoolDaycareDecision, false, OfficialLanguage.FI)
-        createPDF(preschoolDecision, false, OfficialLanguage.FI)
-        createPDF(preparatoryDecision, false, OfficialLanguage.FI)
-        createPDF(voucherDecision, false, OfficialLanguage.FI)
-        createPDF(clubDecision, false, OfficialLanguage.FI)
-    }
-
-    @Test
-    fun createSwedishPDFs() {
-        createPDF(daycareTransferDecision, true, OfficialLanguage.SV)
-        createPDF(daycareDecision, false, OfficialLanguage.SV)
-        createPDF(daycareDecisionPartTime, false, OfficialLanguage.SV)
-        createPDF(daycareDecisionPartTimeVoucher, false, OfficialLanguage.SV)
-        createPDF(preschoolDaycareDecision, false, OfficialLanguage.SV)
-        createPDF(preschoolDecision, false, OfficialLanguage.SV)
-        createPDF(preparatoryDecision, false, OfficialLanguage.SV)
-        createPDF(voucherDecision, false, OfficialLanguage.SV)
-        createPDF(clubDecision, false, OfficialLanguage.SV)
-    }
+    private val pdfGenerator = PdfGenerator(EvakaTemplateProvider(), pdfTemplateEngine("espoo"))
 
     @Test
     fun createAddressPagePdfTest() {
@@ -586,86 +312,4 @@ class PdfGeneratorTest {
 
         logger.debug { "Generated child document PDF to ${file.absolutePath}" }
     }
-
-    private fun createPDF(
-        decision: Decision,
-        isTransferApplication: Boolean,
-        lang: OfficialLanguage,
-        serviceNeed: ServiceNeed? = null,
-    ) {
-        val decisionPdfByteArray =
-            createDecisionPdf(
-                EvakaTemplateProvider(),
-                pdfGenerator,
-                settings,
-                decision,
-                child,
-                isTransferApplication,
-                serviceNeed,
-                lang,
-                manager,
-                manager,
-            )
-
-        val file = File.createTempFile("decision_", ".pdf")
-        assertNotNull(decisionPdfByteArray)
-
-        FileOutputStream(file).use { it.write(decisionPdfByteArray) }
-
-        logger.debug {
-            "Generated $lang ${decision.type} (${decision.unit.providerType}${if (isTransferApplication) ", transfer application" else ""}) decision PDF to ${file.absolutePath}"
-        }
-    }
-}
-
-fun createValidDecision(
-    id: DecisionId = DecisionId(UUID.randomUUID()),
-    createdBy: String = "John Doe",
-    type: DecisionType = DecisionType.DAYCARE,
-    startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31),
-    unit: DecisionUnit =
-        DecisionUnit(
-            DaycareId(UUID.randomUUID()),
-            "Kuusenkerkän päiväkoti",
-            "Kuusenkerkän päiväkoti",
-            "Kuusenkerkän päiväkodin esiopetus",
-            "Pirkko Päiväkodinjohtaja",
-            "Kuusernkerkänpolku 123",
-            "02200",
-            "ESPOO",
-            "+35850 1234564",
-            "Varhaiskasvatuksen palveluohjaus",
-            "Kamreerintie 2, 02200 Espoo",
-            providerType = ProviderType.MUNICIPAL,
-            language = Language.fi,
-        ),
-    applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
-    childId: ChildId = ChildId(UUID.randomUUID()),
-    documentKey: String? = null,
-    decisionNumber: Long = 123,
-    sentDate: LocalDate = LocalDate.now(),
-    status: DecisionStatus = DecisionStatus.ACCEPTED,
-    resolved: LocalDate? = null,
-): Decision {
-    return Decision(
-        id = id,
-        createdBy = createdBy,
-        type = type,
-        startDate = startDate,
-        endDate = endDate,
-        unit = unit,
-        applicationId = applicationId,
-        childId = childId,
-        documentKey = documentKey,
-        decisionNumber = decisionNumber,
-        sentDate = sentDate,
-        status = status,
-        childName = "Test Child",
-        requestedStartDate = startDate,
-        resolved = resolved,
-        resolvedByName = null,
-        documentContainsContactInfo = false,
-        archivedAt = null,
-    )
 }
