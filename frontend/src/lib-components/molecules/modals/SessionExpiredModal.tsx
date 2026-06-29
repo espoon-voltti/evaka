@@ -18,8 +18,10 @@ interface Props {
   onLoginClick?: () => void
 }
 
+const reload = () => window.location.reload()
+
 const SessionExpiredModal: React.FC<Props> = ({
-  onLoginClick = () => window.location.reload(),
+  onLoginClick = reload,
   onClose
 }) => {
   const i18n = useTranslations()

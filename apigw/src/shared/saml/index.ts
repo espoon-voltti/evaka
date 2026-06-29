@@ -104,7 +104,7 @@ const SECONDARY_COOKIE_PARAM = '&secondarySessionCookie='
 export function getRawUnvalidatedRelayState(
   req: express.Request
 ): string | undefined {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+  // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
   const relayState = req.body?.RelayState || req.query.RelayState
   if (typeof relayState !== 'string') return undefined
   return relayState

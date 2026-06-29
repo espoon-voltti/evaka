@@ -7,14 +7,31 @@ pre-commit:
     - group:
         parallel: true
         jobs:
-          - run: yarn exec oxlint --fix {staged_files}
-            glob: frontend/*.{ts,tsx,js,mjs}
-            root: frontend
+          - &oxlint
+            run: npx oxlint --fix {staged_files}
+            glob: apigw/*.{ts,tsx,js,jsx,cjs,mjs}
+            root: apigw
             stage_fixed: true
-          - run: yarn exec oxfmt {staged_files}
+          - &oxfmt
+            run: npx oxfmt -c ../.oxfmtrc.json --no-error-on-unmatched-pattern {staged_files}
+            glob: apigw/*
+            root: apigw
+            stage_fixed: true
+
+          - <<: *oxlint
+            glob: frontend/*.{ts,tsx,js,jsx,cjs,mjs}
+            root: frontend
+          - <<: *oxfmt
             glob: frontend/*
             root: frontend
-            stage_fixed: true
+
+          - <<: *oxlint
+            glob: dummy-idp/*.{ts,tsx,js,jsx,cjs,mjs}
+            root: dummy-idp
+          - <<: *oxfmt
+            glob: dummy-idp/*
+            root: dummy-idp
+
           - run: ./gradlew ktfmtPrecommit --include-only=$(echo {staged_files} | tr ' ' ',')
             glob: service/*.kt
             root: service

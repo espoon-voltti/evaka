@@ -14,7 +14,6 @@ export function parseUrlWithOrigin(
   try {
     const url = new URL(value, base.origin)
     return url.origin === base.origin ? url : undefined
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     return undefined
   }

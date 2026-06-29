@@ -33,11 +33,11 @@ const initializeForm = (
   previousAnswers: HolidayQuestionnaireAnswer[]
 ): FormState =>
   eligibleChildIds.reduce(
-    (acc, childId) => ({
-      ...acc,
-      [childId]:
-        previousAnswers.find((a) => a.childId === childId)?.openRanges ?? []
-    }),
+    (acc, childId) =>
+      Object.assign(acc, {
+        [childId]:
+          previousAnswers.find((a) => a.childId === childId)?.openRanges ?? []
+      }),
     {}
   )
 

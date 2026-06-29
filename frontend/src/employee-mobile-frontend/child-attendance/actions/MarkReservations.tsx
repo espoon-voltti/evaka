@@ -695,10 +695,9 @@ const getMinDatesByWeek = (items: { date: LocalDate }[]) =>
   items.reduce<Record<number, LocalDate | undefined>>((weeks, { date }) => {
     const week = date.getIsoWeek()
     const minDate = weeks[week]
-    return {
-      ...weeks,
+    return Object.assign(weeks, {
       [week]: minDate === undefined || date.isBefore(minDate) ? date : minDate
-    }
+    })
   }, {})
 
 const reservationStartTime = (reservation: Reservation): LocalTime =>

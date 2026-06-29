@@ -64,12 +64,14 @@ interface Props {
   onFailure?: () => void
 }
 
+const noop = () => Promise.resolve(Success.of())
+
 export default React.memo(function FeeAlterationEditor({
   personId,
   baseFeeAlteration,
   cancel,
-  create = () => Promise.resolve(Success.of()),
-  update = () => Promise.resolve(Success.of()),
+  create = noop,
+  update = noop,
   onSuccess,
   onFailure
 }: Props) {

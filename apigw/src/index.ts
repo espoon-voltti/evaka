@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import './tracer.ts'
-
 import * as redis from '@redis/client'
 import express from 'express'
 import helmet from 'helmet'
@@ -32,11 +31,11 @@ deprecatedEnvVariables.forEach((name) => {
 })
 const redisClient = redis.createClient(toRedisClientOpts(config))
 redisClient.on('error', (err) =>
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  // oxlint-disable-next-line typescript/no-unsafe-argument
   logError('Redis error', undefined, undefined, err)
 )
 redisClient.connect().catch((err) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  // oxlint-disable-next-line typescript/no-unsafe-argument
   logError('Unable to connect to redis', undefined, undefined, err)
 })
 // Don't prevent the app from exiting if a redis connection is alive.

@@ -229,28 +229,28 @@ function StaffAttendanceDetailsModal<
             departed: HelsinkiDateTime | null
             departedAutomatically: boolean
           }[][]
-        >(
-          (prev, { arrived, departed, departedAutomatically }) =>
-            prev.length === 0 || !last(last(prev))?.departed?.isEqual(arrived)
-              ? [
-                  ...prev,
-                  [
-                    {
-                      arrived,
-                      departed,
-                      departedAutomatically
-                    }
-                  ]
-                ]
-              : [
-                  ...initial(prev),
-                  [
-                    ...(last(prev) ?? []),
-                    { arrived, departed, departedAutomatically }
-                  ]
-                ],
-          []
-        )
+        >((prev, { arrived, departed, departedAutomatically }) => {
+          if (
+            prev.length === 0 ||
+            !last(last(prev))?.departed?.isEqual(arrived)
+          ) {
+            prev.push([
+              {
+                arrived,
+                departed,
+                departedAutomatically
+              }
+            ])
+            return prev
+          }
+          return [
+            ...initial(prev),
+            [
+              ...(last(prev) ?? []),
+              { arrived, departed, departedAutomatically }
+            ]
+          ]
+        }, [])
         .map((gaplessPeriod) => {
           const lastEntry = last(gaplessPeriod)
           return {

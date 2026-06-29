@@ -24,7 +24,6 @@ else
 fi
 
 if [ "${1:-}" = "test" ]; then
-    docker run --rm evaka/frontend-builder:latest yarn lint
     docker run --rm evaka/frontend-builder:latest yarn type-check
     docker run --rm evaka/frontend-builder:latest yarn test --maxWorkers=2
 fi

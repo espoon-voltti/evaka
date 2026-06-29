@@ -78,7 +78,10 @@ export const ServiceWorkerContextProvider = React.memo(
       }
     }, [pushNotifications, pushManager])
 
-    const value = { registration, pushNotifications }
+    const value = useMemo(
+      () => ({ registration, pushNotifications }),
+      [registration, pushNotifications]
+    )
 
     return (
       <ServiceWorkerContext.Provider value={value}>

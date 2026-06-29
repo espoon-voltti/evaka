@@ -376,6 +376,9 @@ interface DayModalProps {
   children?: ((childIndex: number) => React.ReactNode) | undefined
 }
 
+const emptyArray: number[] = []
+const emptyFunction = () => undefined
+
 const DayModal = React.memo(function DayModal({
   date,
   dateActions,
@@ -383,8 +386,8 @@ const DayModal = React.memo(function DayModal({
   onClose,
   leftButton,
   rightButton,
-  editableChildren = [],
-  children: renderReservation = () => undefined
+  editableChildren = emptyArray,
+  children: renderReservation = emptyFunction
 }: DayModalProps) {
   const i18n = useTranslation()
   const [lang] = useLang()

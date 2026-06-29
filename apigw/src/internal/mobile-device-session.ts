@@ -58,10 +58,10 @@ export const refreshMobileSession = (sessions: Sessions<'employee-mobile'>) =>
   toMiddleware(async (req, res) => {
     const user = sessions.getUser(req)
     if (!user) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      // oxlint-disable-next-line typescript/no-unsafe-assignment
       const token = req.signedCookies[mobileLongTermCookieName]
       if (token) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        // oxlint-disable-next-line typescript/no-unsafe-argument
         const deviceIdentity = await identifyMobileDevice(req, token)
         if (deviceIdentity) {
           await mobileLogin(sessions, req, res, deviceIdentity)

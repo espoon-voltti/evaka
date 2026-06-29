@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import samlp, { ProfileMapper } from 'samlp'
-import { SessionData } from 'express-session'
+import type { SessionData } from 'express-session'
+import type { ProfileMapper } from 'samlp'
+import type samlp from 'samlp'
+
 import { toSfiSamlAttrs } from './model'
 
 // This is 100% samlp internal stuff but @types/samlp doesn't export this type
@@ -24,6 +26,7 @@ export class SessionParticipants {
     issuer: string,
     sessionIndices: string[],
     nameId: string,
+    // oxlint-disable-next-line typescript/no-explicit-any
     cb: (err: any, sp: SessionParticipant | undefined) => void
   ) {
     cb(
@@ -39,6 +42,7 @@ export class SessionParticipants {
   hasElements(): boolean {
     return !!this.sessions.length
   }
+  // oxlint-disable-next-line typescript/no-explicit-any
   getFirst(cb: (err: any, sp: SessionParticipant | undefined) => void) {
     cb(null, this.sessions[0])
   }
@@ -46,6 +50,7 @@ export class SessionParticipants {
     serviceProviderId: string,
     sessionIndex: string,
     nameId: string,
+    // oxlint-disable-next-line typescript/no-explicit-any
     cb: (err: any, removed: SessionParticipant | undefined) => void
   ) {
     const index = this.sessions.findIndex(

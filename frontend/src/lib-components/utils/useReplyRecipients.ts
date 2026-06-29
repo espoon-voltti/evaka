@@ -29,7 +29,7 @@ function getInitialRecipients(
 ): SelectableAccount[] {
   const firstMessage = threadMessages[0]
   const lastMessage = threadMessages.slice(-1)[0]
-  const lastRecipients = lastMessage.recipients.map(({ id }) => id)
+  const lastRecipients = new Set(lastMessage.recipients.map(({ id }) => id))
   return [
     ...(firstMessage.sender.id !== replierAccount.id
       ? [
@@ -52,7 +52,7 @@ function getInitialRecipients(
         selected:
           lastMessage.sender.id === acc.id ||
           ((replierAccount.type !== 'CITIZEN' || acc.type !== 'CITIZEN') &&
-            lastRecipients.includes(acc.id)),
+            lastRecipients.has(acc.id)),
         outOfOffice: getOutOfOfficeForAccount(acc.id, accountDetails)
       }))
   ]

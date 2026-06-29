@@ -314,30 +314,27 @@ export default React.memo(function AttendanceReservationByChild() {
                           !showOnlyShiftCare ||
                           (childRow && childRow.hasShiftCare)
                       )
-                      .flatMap((item) =>
-                        item
-                          ? {
-                              ...(groupName !== null ? { groupName } : {}),
-                              childName: formatPersonName(
-                                {
-                                  lastName: item.childLastName,
-                                  firstName: item.childFirstName
-                                },
-                                'Last First'
-                              ),
-                              date: item.date.format(),
-                              fullDayAbsence: item.fullDayAbsence
-                                ? 'Poissa'
-                                : '',
-                              reservationStartTime: item.fullDayAbsence
-                                ? ''
-                                : (item.reservation?.start.format() ?? '-'),
-                              reservationEndTime: item.fullDayAbsence
-                                ? ''
-                                : (item.reservation?.end.format() ?? '-')
-                            }
-                          : []
-                      )
+                      .flatMap((item) => {
+                        if (!item) return []
+                        return {
+                          groupName: groupName !== null ? groupName : undefined,
+                          childName: formatPersonName(
+                            {
+                              lastName: item.childLastName,
+                              firstName: item.childFirstName
+                            },
+                            'Last First'
+                          ),
+                          date: item.date.format(),
+                          fullDayAbsence: item.fullDayAbsence ? 'Poissa' : '',
+                          reservationStartTime: item.fullDayAbsence
+                            ? ''
+                            : (item.reservation?.start.format() ?? '-'),
+                          reservationEndTime: item.fullDayAbsence
+                            ? ''
+                            : (item.reservation?.end.format() ?? '-')
+                        }
+                      })
                   )
                 )}
                 columns={[

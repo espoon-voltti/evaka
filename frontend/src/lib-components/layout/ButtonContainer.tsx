@@ -58,6 +58,7 @@ export default function ButtonContainer({ justify, children }: Props) {
 
   const orderedChildren = useMemo(
     () =>
+      // oxlint-disable-next-line react/no-react-children
       isWideScreen ? React.Children.toArray(children).reverse() : children,
     [isWideScreen, children]
   )

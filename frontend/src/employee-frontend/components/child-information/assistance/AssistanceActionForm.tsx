@@ -212,15 +212,15 @@ export default React.memo(function AssistanceActionForm(props: Props) {
   const sortedOptions = useMemo(
     () =>
       assistanceActionOptionCategories.reduce(
-        (acc, category) => ({
-          ...acc,
-          [category]: sortBy(
-            optionsWithValidation.filter(
-              (o) => o.category === category && o.validation !== false
-            ),
-            [(o) => o.displayOrder, (o) => o.nameFi]
-          )
-        }),
+        (acc, category) =>
+          Object.assign(acc, {
+            [category]: sortBy(
+              optionsWithValidation.filter(
+                (o) => o.category === category && o.validation !== false
+              ),
+              [(o) => o.displayOrder, (o) => o.nameFi]
+            )
+          }),
         {} as Record<
           AssistanceActionOptionCategory,
           typeof optionsWithValidation

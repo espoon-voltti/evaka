@@ -162,11 +162,11 @@ const PlacementDesktopValidated = React.memo(
 
         setDaycareRefs((prev) =>
           units.reduce(
-            (acc, daycare) => ({
-              ...acc,
-              [daycare.id]:
-                prev[daycare.id] ?? React.createRef<HTMLDivElement>()
-            }),
+            (acc, daycare) =>
+              Object.assign(acc, {
+                [daycare.id]:
+                  prev[daycare.id] ?? React.createRef<HTMLDivElement>()
+              }),
             {}
           )
         )
@@ -185,10 +185,10 @@ const PlacementDesktopValidated = React.memo(
     useEffect(() => {
       setPlacementDraftCache(
         applications.reduce(
-          (acc, application) => ({
-            ...acc,
-            [application.id]: application.placementDraft
-          }),
+          (acc, application) =>
+            Object.assign(acc, {
+              [application.id]: application.placementDraft
+            }),
           {}
         )
       )

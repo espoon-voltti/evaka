@@ -664,7 +664,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
       .map(({ placements, backupCares }) =>
         Object.entries(specificChildSelections)
           .map(([childId, groups]) => {
-            const groupIds: string[] = groups.map((g) => g.groupId)
+            const groupIds = new Set(groups.map((g) => g.groupId))
             const childsGroupPlacements = placements
               .filter((placement) => placement.child.id === childId)
               .flatMap((placement) => placement.groupPlacements)
@@ -685,7 +685,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
                   !childsGroupPlacements.some(
                     (gp) =>
                       gp.groupId &&
-                      groupIds.includes(gp.groupId) &&
+                      groupIds.has(gp.groupId) &&
                       new FiniteDateRange(gp.startDate, gp.endDate).includes(
                         date
                       )
@@ -693,7 +693,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
                   !childsBackupCares.some(
                     (bc) =>
                       bc.group &&
-                      groupIds.includes(bc.group.id) &&
+                      groupIds.has(bc.group.id) &&
                       bc.period.includes(date)
                   )
               )

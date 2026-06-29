@@ -21,7 +21,7 @@ import { renderResult } from '../async-rendering'
 import { putSettingsMutation, settingsQuery } from './queries'
 
 const defaultValues = options.reduce(
-  (prev, curr) => ({ ...prev, [curr]: '' }),
+  (prev, curr) => Object.assign(prev, { [curr]: '' }),
   {}
 )
 

@@ -44,7 +44,7 @@ const dataset: MockVtjDataset = {
   guardianDependants: { GP1: ['G1'], G1: ['C1', 'C2'], C1: ['GC1'] }
 }
 
-test('get resolves relations one level deep only', () => {
+void test('get resolves relations one level deep only', () => {
   const store = new VtjStore(dataset)
   const guardian = store.get('G1')
   assert.ok(guardian)
@@ -71,18 +71,18 @@ test('get resolves relations one level deep only', () => {
   )
 })
 
-test('get returns undefined for missing ssn', () => {
+void test('get returns undefined for missing ssn', () => {
   const store = new VtjStore(dataset)
   assert.equal(store.get('NOPE'), undefined)
 })
 
-test('dependantCount reflects the graph', () => {
+void test('dependantCount reflects the graph', () => {
   const store = new VtjStore(dataset)
   assert.equal(store.dependantCount('G1'), 2)
   assert.equal(store.dependantCount('C1'), 1)
 })
 
-test('upsert overwrites a person and merges links without duplicates', () => {
+void test('upsert overwrites a person and merges links without duplicates', () => {
   const store = new VtjStore(dataset)
   store.upsert({
     persons: [
@@ -102,14 +102,14 @@ test('upsert overwrites a person and merges links without duplicates', () => {
   )
 })
 
-test('clear empties the store', () => {
+void test('clear empties the store', () => {
   const store = new VtjStore(dataset)
   store.clear()
   assert.equal(store.list().length, 0)
   assert.equal(store.get('G1'), undefined)
 })
 
-test('snapshot can be restored after clearing and mutating', () => {
+void test('snapshot can be restored after clearing and mutating', () => {
   const store = new VtjStore(dataset)
   const snapshot = store.snapshot()
 

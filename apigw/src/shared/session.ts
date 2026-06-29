@@ -201,11 +201,11 @@ export function sessionSupport<T extends SessionType>(
     const session = await redisClient.get(sessionKey(sid))
     await redisClient.del([sessionKey(sid), logoutKey(logoutToken)])
     if (!session) return
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+    // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
     const user = JSON.parse(session)?.passport?.user
     if (!user) return
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     if (user?.authType === 'sfi') {
       const secondarySession = await redisClient.get(
         secondarySfiSessionsKey(sid)
@@ -355,9 +355,9 @@ export function sessionSupport<T extends SessionType>(
     )
     if (!secondarySession) return undefined
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+    // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
     const user = JSON.parse(secondarySession)?.evaka?.user
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-assignment,typescript/no-unsafe-member-access
     const secondaryUserCreatedAt = user?.createdAt
     if (!secondaryUserCreatedAt) return undefined
 

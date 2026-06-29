@@ -68,17 +68,17 @@ export default React.memo(function AssistanceActionRow({
   const optionsByCategory = useMemo(
     () =>
       assistanceActionOptionCategories.reduce(
-        (acc, category) => ({
-          ...acc,
-          [category]: sortBy(
-            assistanceActionOptions.filter(
-              (o) =>
-                o.category === category &&
-                assistanceAction.actions.includes(o.value)
-            ),
-            [(o) => o.displayOrder, (o) => o.nameFi]
-          )
-        }),
+        (acc, category) =>
+          Object.assign(acc, {
+            [category]: sortBy(
+              assistanceActionOptions.filter(
+                (o) =>
+                  o.category === category &&
+                  assistanceAction.actions.includes(o.value)
+              ),
+              [(o) => o.displayOrder, (o) => o.nameFi]
+            )
+          }),
         {} as Record<AssistanceActionOptionCategory, AssistanceActionOption[]>
       ),
     [assistanceActionOptions, assistanceAction.actions]

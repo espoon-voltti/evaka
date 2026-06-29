@@ -7,7 +7,6 @@ import zlib from 'node:zlib'
 import { ValidateInResponseTo } from '@node-saml/node-saml'
 import xmldom from '@xmldom/xmldom'
 import type { AxiosResponse } from 'axios'
-import type { Cookie } from 'tough-cookie'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import xml2js from 'xml2js'
 
@@ -81,7 +80,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(resPreAuth.status).toBe(200)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(resPreAuth.data?.loggedIn).toBeFalsy()
 
     // Do an IdP-initiated login (skips calling the SP /login endpoint and jumps
@@ -100,7 +99,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(res.status).toBe(200)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(res.data?.loggedIn).toBe(true)
     tester.nockScope.done()
 
@@ -118,7 +117,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(resPostLogout.status).toBe(200)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(resPostLogout.data?.loggedIn).toBeFalsy()
   })
 
@@ -137,7 +136,7 @@ describe('SAML Single Logout', () => {
       validateStatus: () => true
     })
     expect(resPreAuth.status).toBe(200)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(resPreAuth.data?.loggedIn).toBeFalsy()
 
     // Do an IdP-initiated login (skips calling the SP /login endpoint and jumps
@@ -155,7 +154,7 @@ describe('SAML Single Logout', () => {
     const res = await tester.client.get(SECURED_ENDPOINT, {
       validateStatus: () => true
     })
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(res.data?.loggedIn).toBe(true)
     tester.nockScope.done()
 
@@ -183,12 +182,12 @@ describe('SAML Single Logout', () => {
     // our service which must not be available without authentication.
     //
     // Restore cookies to simulate returning our service
-    await tester.setCookie(cookie as Cookie)
+    await tester.setCookie(cookie!)
     const resPostLogout = await tester.client.get(SECURED_ENDPOINT, {
       validateStatus: () => true
     })
     expect(resPostLogout.status).toBe(200)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     expect(resPostLogout.data?.loggedIn).toBeFalsy()
   })
 })
@@ -211,23 +210,23 @@ async function callSLOEndpointAndAssertResult(
     }
   )
   expect(res.status).toBe(302)
-  expect(res.headers['location']).toMatch(
+  expect(res.headers.location).toMatch(
     new RegExp(`^${IDP_ENTRY_POINT_URL}\\?SAMLResponse=?`)
   )
   const logoutResponse = getSamlMessageFromRedirectResponse(res)
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // oxlint-disable-next-line typescript/no-unsafe-assignment
   const logoutResponseJson = await xml2js.parseStringPromise(logoutResponse)
   expect(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     logoutResponseJson['samlp:LogoutResponse']['samlp:Status'][0][
       'samlp:StatusCode'
-    ][0]['$'].Value
+    ][0].$.Value
   ).toEqual('urn:oasis:names:tc:SAML:2.0:status:Success')
 }
 
 function getSamlMessageFromRedirectResponse(res: AxiosResponse) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  const location = new URL(res.headers['location'])
+  // oxlint-disable-next-line typescript/no-unsafe-argument
+  const location = new URL(res.headers.location)
   const msg =
     location.searchParams.get('SAMLRequest') ??
     location.searchParams.get('SAMLResponse')

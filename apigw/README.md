@@ -100,7 +100,7 @@ for VER in public private; do
 done
 ```
 
-Same goes for `test`, `staging` and `prod` but *be sure to use different keys* in all environments.
+Same goes for `test`, `staging` and `prod` but _be sure to use different keys_ in all environments.
 
 ## Authentication and session
 

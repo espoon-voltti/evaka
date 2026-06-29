@@ -8,8 +8,8 @@
   "scripts": {
     "clean": "rm -rf dist screenshots videos node_modules/.cache",
     "dev": "concurrently -n tsc,vite -c blue,green 'yarn type-check:watch' 'vite --host'",
-    "lint": "oxfmt --check && oxlint",
-    "lint:fix": "oxfmt && oxlint --fix",
+    "lint": "oxfmt -c ../.oxfmtrc.json --check && oxlint",
+    "lint:fix": "oxfmt -c ../.oxfmtrc.json && oxlint --fix",
     "type-check": "tsc --build --force .",
     "type-check:watch": "yarn type-check --watch --preserveWatchOutput",
     "build": "vite build",

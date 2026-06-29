@@ -12,18 +12,14 @@ export const AUTH_HISTORY_COOKIE_PREFIX = '__Host-evaka-device-user-'
 export const filterValidDeviceAuthHistory = (
   signedCookies: Record<string, unknown>,
   invalidSignatureCallback?: (cookieName: string, hash: string) => void
-): string[] => {
-  return Object.entries(signedCookies).reduce<string[]>(
-    (acc, [name, value]) => {
-      if (!name.startsWith(AUTH_HISTORY_COOKIE_PREFIX)) return acc
-      const hash = name.substring(AUTH_HISTORY_COOKIE_PREFIX.length)
-      if (value === false) invalidSignatureCallback?.(name, hash)
-      else acc.push(hash)
-      return acc
-    },
-    []
-  )
-}
+): string[] =>
+  Object.entries(signedCookies).reduce<string[]>((acc, [name, value]) => {
+    if (!name.startsWith(AUTH_HISTORY_COOKIE_PREFIX)) return acc
+    const hash = name.substring(AUTH_HISTORY_COOKIE_PREFIX.length)
+    if (value === false) invalidSignatureCallback?.(name, hash)
+    else acc.push(hash)
+    return acc
+  }, [])
 
 export const setDeviceAuthHistoryCookie = (
   res: express.Response,

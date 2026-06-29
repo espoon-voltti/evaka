@@ -104,7 +104,7 @@ export function createSamlIntegration<T extends SessionType>(
   const errorRedirectUrl = (err: unknown) => {
     let errorCode: string | undefined = undefined
     if (err instanceof AxiosError) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
+      // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-call,typescript/no-unsafe-assignment
       errorCode = err.response?.data?.errorCode?.toString() ?? undefined
     }
     return errorCode
@@ -122,7 +122,7 @@ export function createSamlIntegration<T extends SessionType>(
   const validateSamlLoginResponse = async (
     req: express.Request
   ): Promise<Profile> => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    // oxlint-disable-next-line typescript/no-unsafe-argument
     const samlMessage = await saml.validatePostResponseAsync(req.body)
     if (samlMessage.loggedOut || !samlMessage.profile) {
       throw new Error('Invalid SAML message type: expected login response')
@@ -139,9 +139,9 @@ export function createSamlIntegration<T extends SessionType>(
       samlMessage = await saml.validateRedirectAsync(req.query, originalQuery)
     } else if (req.method === 'POST') {
       samlMessage = isSamlPostRequest(req)
-        ? // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        ? // oxlint-disable-next-line typescript/no-unsafe-argument
           await saml.validatePostRequestAsync(req.body)
-        : // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        : // oxlint-disable-next-line typescript/no-unsafe-argument
           await saml.validatePostResponseAsync(req.body)
     } else {
       throw new SamlError(`Unsupported HTTP method ${req.method}`)

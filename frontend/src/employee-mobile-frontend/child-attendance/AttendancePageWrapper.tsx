@@ -139,11 +139,12 @@ export default React.memo(function AttendancePageWrapper({
         {renderResult(
           combine(unitChildren, attendanceStatuses),
           ([unitChildren, attendanceStatuses]) => (
-            <AttendanceContext.Provider
-              value={{ unitChildren, attendanceStatuses }}
+            <AttendanceContextProvider
+              unitChildren={unitChildren}
+              attendanceStatuses={attendanceStatuses}
             >
               {children}
-            </AttendanceContext.Provider>
+            </AttendanceContextProvider>
           )
         )}
       </PageWithNavigation>
@@ -162,6 +163,26 @@ const defaultState: AttendanceState = {
 }
 
 const AttendanceContext = React.createContext<AttendanceState>(defaultState)
+
+function AttendanceContextProvider({
+  unitChildren,
+  attendanceStatuses,
+  children
+}: {
+  unitChildren: AttendanceChild[]
+  attendanceStatuses: AttendanceStatuses
+  children: React.ReactNode
+}) {
+  const value = useMemo(
+    () => ({ unitChildren, attendanceStatuses }),
+    [unitChildren, attendanceStatuses]
+  )
+  return (
+    <AttendanceContext.Provider value={value}>
+      {children}
+    </AttendanceContext.Provider>
+  )
+}
 
 export const useAttendanceContext = () => useContext(AttendanceContext)
 

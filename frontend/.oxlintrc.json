@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["../.oxlintrc.json"],
+
+  "ignorePatterns": [
+    "node_modules",
+    ".yarn",
+    "dist",
+    "src/*/generated",
+    "test-results"
+  ],
+
+  "jsPlugins": [
+    "eslint-plugin-lodash",
+    {
+      "name": "@evaka",
+      "specifier": "./eslint-plugin"
+    }
+  ],
+  "rules": {
+    "lodash/import-scope": ["error", "method"],
+
+    "@evaka/no-page-pause": "error",
+    "@evaka/no-testonly": "error",
+    "@evaka/no-relative-lib-imports": "error",
+    "@evaka/no-icons-imports": "error",
+    "@evaka/no-localdate-triple-equals": "error",
+    "@evaka/shortest-relative-imports": "error"
+  }
+}

@@ -44,17 +44,17 @@ import {
   updateDecisionDraftsMutation
 } from './queries'
 
-const decisionTypesRequiringDaycareDecisionName: DecisionType[] = [
+const decisionTypesRequiringDaycareDecisionName = new Set<DecisionType>([
   'DAYCARE',
   'DAYCARE_PART_TIME'
-]
+])
 
-const decisionTypesRequiringPreschoolDecisionName: DecisionType[] = [
+const decisionTypesRequiringPreschoolDecisionName = new Set<DecisionType>([
   'PRESCHOOL',
   'PREPARATORY_EDUCATION',
   'PRESCHOOL_DAYCARE',
   'PRESCHOOL_CLUB'
-]
+])
 
 const SectionHeading = styled.div`
   margin-bottom: ${defaultMargins.xs};
@@ -98,9 +98,9 @@ function getMissingUnitFields(
   if (!u) return ['unit']
 
   const requiresDaycareDecisionName =
-    decisionTypesRequiringDaycareDecisionName.includes(decision.type)
+    decisionTypesRequiringDaycareDecisionName.has(decision.type)
   const requiresPreschoolDecisionName =
-    decisionTypesRequiringPreschoolDecisionName.includes(decision.type)
+    decisionTypesRequiringPreschoolDecisionName.has(decision.type)
 
   const missing: DecisionUnitField[] = []
   if (requiresDaycareDecisionName && !u.daycareDecisionName)

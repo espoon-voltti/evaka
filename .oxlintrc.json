@@ -1,0 +1,124 @@
+{
+  "plugins": ["eslint", "oxc", "react", "react-perf", "typescript", "unicorn"],
+  "options": {
+    "typeAware": true,
+    "typeCheck": true,
+    "maxWarnings": 0,
+    "reportUnusedDisableDirectives": "error"
+  },
+  "categories": {
+    "correctness": "error",
+    "perf": "error"
+  },
+  "env": {
+    "builtin": true
+  },
+  "rules": {
+    "eslint/arrow-body-style": "error",
+    "eslint/eqeqeq": ["error", "smart"],
+    "eslint/no-array-constructor": "error",
+    "eslint/no-await-in-loop": "off",
+    "eslint/no-console": ["error", { "allow": ["warn", "error"] }],
+    "eslint/no-case-declarations": "error",
+    "eslint/no-empty": "error",
+    "eslint/no-empty-function": "error",
+    "eslint/no-fallthrough": "error",
+    "eslint/no-prototype-builtins": "error",
+    "eslint/no-redeclare": "error",
+    "eslint/no-regex-spaces": "error",
+    "eslint/no-unexpected-multiline": "error",
+    "eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrors": "none"
+      }
+    ],
+    "eslint/no-var": "error",
+    "eslint/prefer-arrow-callback": ["error", { "allowNamedFunctions": true }],
+    "eslint/prefer-const": "error",
+    "eslint/prefer-rest-params": "error",
+    "eslint/prefer-spread": "error",
+
+    "oxc/no-map-spread": "off",
+
+    "react/exhaustive-deps": ["error", { "additionalHooks": "(useApiState)" }],
+    "react/forward-ref-uses-ref": "error",
+    "react/display-name": "error",
+    "react/iframe-missing-sandbox": "error",
+    "react/jsx-curly-brace-presence": [
+      "error",
+      { "props": "never", "children": "never", "propElementValues": "always" }
+    ],
+    "react/jsx-no-comment-textnodes": "error",
+    "react/jsx-no-target-blank": "error",
+    "react/no-array-index-key": "off",
+    "react/no-object-type-as-default-prop": "error",
+    "react/no-react-children": "error",
+    "react/no-unescaped-entities": "error",
+    "react/no-unknown-property": "error",
+    "react/no-unknown-property": "error",
+    "react/prefer-function-component": "error",
+    "react/require-render-return": "error",
+    "react/rules-of-hooks": "error",
+    "react/self-closing-comp": ["error", { "component": true, "html": true }],
+
+    "react-perf/jsx-no-jsx-as-prop": "off",
+    "react-perf/jsx-no-new-array-as-prop": "off",
+    "react-perf/jsx-no-new-function-as-prop": "off",
+    "react-perf/jsx-no-new-object-as-prop": "off",
+  },
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {
+        "typescript/adjacent-overload-signatures": "error",
+        "typescript/array-type": "error",
+        "typescript/ban-ts-comment": "error",
+        "typescript/ban-tslint-comment": "error",
+        "typescript/class-literal-property-style": "error",
+        "typescript/consistent-generic-constructors": "error",
+        "typescript/consistent-indexed-object-style": "error",
+        "typescript/consistent-type-assertions": "error",
+        "typescript/consistent-type-exports": ["error"],
+        "typescript/consistent-type-imports": [
+          "error",
+          { "disallowTypeAnnotations": false }
+        ],
+        "typescript/dot-notation": "error",
+        "typescript/only-throw-error": "error",
+        "typescript/no-confusing-non-null-assertion": "error",
+        "typescript/no-empty-object-type": [
+          "error",
+          { "allowInterfaces": "always" }
+        ],
+        "typescript/no-explicit-any": "error",
+        "typescript/no-inferrable-types": "error",
+        "typescript/no-misused-promises": [
+          "error",
+          { "checksVoidReturn": false }
+        ],
+        "typescript/no-namespace": "error",
+        "typescript/no-require-imports": "error",
+        "typescript/no-unnecessary-type-assertion": "error",
+        "typescript/no-unnecessary-type-constraint": "error",
+        "typescript/no-unsafe-assignment": "error",
+        "typescript/no-unsafe-call": "error",
+        "typescript/no-unsafe-enum-comparison": "error",
+        "typescript/no-unsafe-function-type": "error",
+        "typescript/no-unsafe-return": "error",
+        "typescript/no-unsafe-argument": "error",
+        "typescript/no-unsafe-member-access": "error",
+        "typescript/non-nullable-type-assertion-style": "error",
+        "typescript/prefer-find": "error",
+        "typescript/prefer-for-of": "error",
+        "typescript/prefer-function-type": "error",
+        "typescript/prefer-includes": "error",
+        "typescript/prefer-regexp-exec": "error",
+        "typescript/require-await": "error",
+        "typescript/restrict-plus-operands": "error",
+      }
+    }
+  ]
+}

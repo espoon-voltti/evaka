@@ -75,7 +75,7 @@ declare module 'express-session' {
 
 // Use TS interface merging to add fields to express req and req.user.
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+  // oxlint-disable-next-line typescript/no-namespace
   namespace Express {
     interface Request {
       traceId?: string

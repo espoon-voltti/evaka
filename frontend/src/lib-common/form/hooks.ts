@@ -281,17 +281,20 @@ export function useFormElems<F extends AnyForm>({
 
   return useMemo(
     () =>
-      range(len).map((index) => ({
-        form: elem,
-        state: state[index],
-        update: callbacks[index].elemUpdate,
-        set: callbacks[index].elemSet,
-        ...validationHelpers(
-          () => elem.validate(state[index]),
-          translateError,
-          { get: validationError, map: (error) => error[index.toString()] }
+      range(len).map((index) =>
+        Object.assign(
+          {
+            form: elem,
+            state: state[index],
+            update: callbacks[index].elemUpdate,
+            set: callbacks[index].elemSet
+          },
+          validationHelpers(() => elem.validate(state[index]), translateError, {
+            get: validationError,
+            map: (error) => error[index.toString()]
+          })
         )
-      })) as any,
+      ) as any,
     [callbacks, elem, len, state, translateError, validationError]
   )
 }

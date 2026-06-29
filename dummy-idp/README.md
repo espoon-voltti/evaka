@@ -20,7 +20,7 @@ It uses a library called samlp for low-level SAML protocol functionality.
 ## SAML login flow
 
 1. Service provider (= eVaka apigw) redirects the user's browser to `/idp/sso`.
-2. If there's already an IDP session, goto step 4. If there's no IDP session, a user selection HTML form is rendered. 
+2. If there's already an IDP session, goto step 4. If there's no IDP session, a user selection HTML form is rendered.
 3. The user selection form is submitted with a button press to `/idp/sso-login-confirm`
 4. A confirmation page is rendered that lists the raw SAML attributes that will be sent in the SAML response to the service provider in the next step
 5. The confirmation page form is submitted with a button press to `/idp/sso-login-finish`

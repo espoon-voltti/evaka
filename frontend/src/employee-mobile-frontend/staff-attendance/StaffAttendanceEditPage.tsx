@@ -76,8 +76,8 @@ import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
 import { staffAttendanceMutation, staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
-const typesWithoutGroup: StaffAttendanceType[] = staffAttendanceTypes.filter(
-  (type) => !presentInGroup(type)
+const typesWithoutGroup = new Set(
+  staffAttendanceTypes.filter((type) => !presentInGroup(type))
 )
 const emptyGroupIdDomValue = ''
 
@@ -107,7 +107,7 @@ const staffAttendanceForm = mapped(
       occupancyEffect: required(boolean())
     }),
     (output) => {
-      if (!typesWithoutGroup.includes(output.type) && output.groupId === null) {
+      if (!typesWithoutGroup.has(output.type) && output.groupId === null) {
         return { groupId: 'required' }
       }
       const departed = getDeparted(
@@ -131,7 +131,7 @@ const staffAttendanceForm = mapped(
       output.arrivedTime,
       output.departedTime
     ),
-    hasStaffOccupancyEffect: typesWithoutGroup.includes(output.type)
+    hasStaffOccupancyEffect: typesWithoutGroup.has(output.type)
       ? false
       : output.occupancyEffect
   })
@@ -673,7 +673,7 @@ const StaffAttendanceEditor = ({
       </FixedSpaceRow>
       <Gap $size="s" />
       {isStaffAttendanceTypesEnabled &&
-      typesWithoutGroup.includes(type.value()) ? null : (
+      typesWithoutGroup.has(type.value()) ? null : (
         <CheckboxF
           bind={occupancyEffect}
           label={i18n.staff.staffOccupancyEffect}

@@ -13,6 +13,11 @@ SPDX-FileCopyrightText = "2017-2020 City of Espoo"
 SPDX-License-Identifier = "LGPL-2.1-or-later"
 
 [[annotations]]
+path = ["**/.oxfmtrc.json", "**/.oxlintrc.json"]
+SPDX-FileCopyrightText = "2017-2026 City of Espoo"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
 path = "apigw/.yarn/**"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2016-present Yarn Contributors"

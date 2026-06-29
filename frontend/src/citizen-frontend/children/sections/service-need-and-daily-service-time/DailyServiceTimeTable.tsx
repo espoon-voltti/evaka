@@ -155,15 +155,12 @@ const DailyServiceTimeValue = React.memo(function DailyServiceTimeValue({
           {weekDays
             .reduce<string[]>((data, weekDay) => {
               const range = getTimesOnWeekday(value, weekDay)
-              if (range === null) {
-                return data
-              }
-              return [
-                ...data,
-                `${
-                  t.common.datetime.weekdaysShort[weekDay - 1]
-                } ${range.format()}`
-              ]
+              if (range === null) return data
+
+              data.push(
+                `${t.common.datetime.weekdaysShort[weekDay - 1]} ${range.format()}`
+              )
+              return data
             }, [])
             .join(', ')}
         </>

@@ -46,19 +46,19 @@ export const errorHandler: (v: boolean) => ErrorRequestHandler =
       }
       return
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     if (error.response) {
       const response: LogResponse = {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        // oxlint-disable-next-line typescript/no-unsafe-assignment
         message: includeErrorMessage
-          ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          ? // oxlint-disable-next-line typescript/no-unsafe-member-access
             error.response.data?.message || 'Invalid downstream error response'
           : null,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+        // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
         errorCode: error.response.data?.errorCode
       }
       if (!res.headersSent) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-argument
+        // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-argument
         res.status(error.response.status).json(response)
       }
       return
@@ -73,11 +73,11 @@ export const fallbackErrorHandler: ErrorRequestHandler = (
   _next
 ) => {
   logError(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
     `Internal server error: ${error.message || error || 'No error object'}`,
     req,
     undefined,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    // oxlint-disable-next-line typescript/no-unsafe-argument
     error
   )
   if (!res.headersSent) {
