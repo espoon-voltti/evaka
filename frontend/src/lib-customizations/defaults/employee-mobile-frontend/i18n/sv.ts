@@ -326,7 +326,7 @@ export const sv: typeof fi = {
       continuationAttendance: '*registrering som började föregående dag',
       editContinuationAttendance: 'Gå till redigering',
       absent: 'Frånvaro',
-      externalPerson: 'Annan person',
+      externalPersonCantFindYourName: 'Hittar du inte ditt namn?',
       markExternalPerson: 'Registrera annan person',
       markExternalPersonTitle: 'Registrera annan arbetstagare in',
       markArrived: 'Anteckna dig som närvarande',

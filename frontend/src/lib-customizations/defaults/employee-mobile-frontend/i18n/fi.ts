@@ -316,7 +316,7 @@ export const fi = {
       continuationAttendance: '* edellisenä päivänä alkanut kirjaus',
       editContinuationAttendance: 'Siirry muokkaamaan',
       absent: 'Poissa',
-      externalPerson: 'Muu henkilö',
+      externalPersonCantFindYourName: 'Etkö löydä nimeäsi?',
       markExternalPerson: 'Kirjaa muu henkilö',
       markExternalPersonTitle: 'Kirjaa muu työntekijä sisään',
       markArrived: 'Kirjaudu läsnäolevaksi',

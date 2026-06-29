@@ -19,22 +19,10 @@ import type { Staff } from './utils'
 
 const StaffBox = styled.div`
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  color: ${colors.grayscale.g100};
+  flex-direction: row;
+  background-color: white;
   padding: ${defaultMargins.xs} ${defaultMargins.s};
-  border-radius: 2px;
-  background-color: ${colors.grayscale.g0};
-
-  &:after {
-    content: '';
-    width: calc(100% - ${defaultMargins.s});
-    background: ${colors.grayscale.g15};
-    height: 1px;
-    display: block;
-    margin: 8px 0 -8px;
-  }
+  border-bottom: 1px solid ${colors.grayscale.g15};
 `
 
 const AttendanceLinkBox = styled(Link)`
@@ -49,21 +37,30 @@ const StaffBoxInfo = styled.div`
   margin-left: 24px;
   flex-grow: 1;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-direction: row;
+  align-items: center;
+  gap: ${defaultMargins.xs};
   min-height: ${imageHeight};
+  color: ${colors.grayscale.g100};
 `
 
 export const IconBox = styled.div<{ $present: boolean }>`
   background-color: ${(p) =>
-    p.$present ? colors.status.success : colors.accents.a6turquoise};
+    p.$present ? colors.status.success : colors.main.m3};
   border-radius: 50%;
   box-shadow: ${(p) =>
     p.$present
       ? `0 0 0 2px ${colors.status.success}`
-      : `0 0 0 2px ${colors.accents.a6turquoise}`};
+      : `0 0 0 2px ${colors.main.m3}`};
   border: 2px solid ${colors.grayscale.g0};
+`
+
+const StatusDot = styled.div<{ present: boolean }>`
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: ${(p) =>
+    p.present ? colors.status.success : colors.accents.a8lightBlue};
 `
 
 export default React.memo(function StaffListItem({
@@ -88,21 +85,23 @@ export default React.memo(function StaffListItem({
         <IconBox $present={present}>
           <RoundIcon
             content={farUser}
-            color={present ? colors.status.success : colors.accents.a6turquoise}
+            textColor="white"
+            color={present ? colors.status.success : colors.main.m3}
             size="XL"
           />
         </IconBox>
         <StaffBoxInfo>
           <Bold data-qa="employee-name">{name}</Bold>
+          {present && occupancyEffect && (
+            <RoundIcon
+              content="K"
+              active={true}
+              color={theme.colors.accents.a3emerald}
+              size="s"
+            />
+          )}
         </StaffBoxInfo>
-        {present && occupancyEffect && (
-          <RoundIcon
-            content="K"
-            active={true}
-            color={theme.colors.accents.a3emerald}
-            size="s"
-          />
-        )}
+        <StatusDot present={present} />
       </AttendanceLinkBox>
     </StaffBox>
   )
