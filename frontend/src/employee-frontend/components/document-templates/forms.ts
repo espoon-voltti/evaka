@@ -43,14 +43,14 @@ import RadioButtonGroupQuestionDescriptor from 'lib-components/document-template
 import StaticTextDisplayQuestionDescriptor from 'lib-components/document-templates/question-descriptors/StaticTextDisplayQuestionDescriptor'
 import TextQuestionDescriptor from 'lib-components/document-templates/question-descriptors/TextQuestionDescriptor'
 
-const caseManagementRequired: ChildDocumentType[] = [
+const caseManagementRequired = new Set<ChildDocumentType>([
   'VASU',
   'HOJKS',
   'LEOPS',
   'OTHER_DECISION',
   'MIGRATED_DAYCARE_ASSISTANCE_NEED_DECISION',
   'MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION'
-]
+])
 
 export const deletionRetentionDaysField = required(value<string>())
 export const deletionRetentionBasisField =
@@ -83,7 +83,7 @@ export const documentTemplateForm = transformed(
       if (isNaN(archiveDurationMonths) || archiveDurationMonths < 1) {
         return ValidationError.field('archiveDurationMonths', 'integerFormat')
       }
-    } else if (caseManagementRequired.includes(value.type)) {
+    } else if (caseManagementRequired.has(value.type)) {
       return ValidationError.field('processDefinitionNumber', 'required')
     }
 

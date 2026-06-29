@@ -135,28 +135,29 @@ export default function BackupCareForm({
           p !== null
             ? sortBy(p.placements, (placement) =>
                 placement.startDate.toSystemTzDate().getTime()
-              ).reduce((prev, curr) => {
+              ).reduce((arr, curr) => {
                 const currentRange = new FiniteDateRange(
                   curr.startDate,
                   curr.endDate
                 )
-                const fittingExistingIndex = prev.findIndex((range) =>
+                const fittingExistingIndex = arr.findIndex((range) =>
                   range.adjacentTo(currentRange)
                 )
 
                 if (fittingExistingIndex > -1) {
-                  const fittingExisting = prev[fittingExistingIndex]
+                  const fittingExisting = arr[fittingExistingIndex]
 
                   const newRange = fittingExisting.leftAdjacentTo(currentRange)
                     ? fittingExisting.withEnd(curr.endDate)
                     : fittingExisting.withStart(curr.startDate)
 
-                  const copy = Array.from(prev)
+                  const copy = Array.from(arr)
                   copy[fittingExistingIndex] = newRange
                   return copy
                 }
 
-                return [...prev, currentRange]
+                arr.push(currentRange)
+                return arr
               }, [] as FiniteDateRange[])
             : []
         )

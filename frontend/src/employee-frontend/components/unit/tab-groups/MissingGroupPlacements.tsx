@@ -126,11 +126,12 @@ const ServiceNeedTooltipLabel = ({
 }) => {
   const serviceNeeds = placement.serviceNeeds.reduce<
     { range: FiniteDateRange; nameFi: string }[]
-  >((prev, sn) => {
+  >((arr, sn) => {
     const snRange = new FiniteDateRange(sn.startDate, sn.endDate)
-    return placement.gap.overlaps(snRange)
-      ? [...prev, { range: snRange, nameFi: sn.nameFi }]
-      : prev
+    if (placement.gap.overlaps(snRange)) {
+      arr.push({ range: snRange, nameFi: sn.nameFi })
+    }
+    return arr
   }, [])
   const serviceNeedGaps = placement.gap
     .getGaps(serviceNeeds.map((sn) => sn.range))

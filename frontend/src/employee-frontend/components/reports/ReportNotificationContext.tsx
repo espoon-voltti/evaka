@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, useMemo } from 'react'
 
 import type { Result } from 'lib-common/api'
 import { Loading } from 'lib-common/api'
@@ -43,12 +43,15 @@ export const ReportNotificationContextProvider = React.memo(
       }
     )
 
+    const value = useMemo(
+      () => ({
+        childDocumentDecisionNotificationCount
+      }),
+      [childDocumentDecisionNotificationCount]
+    )
+
     return (
-      <ReportNotificationContext.Provider
-        value={{
-          childDocumentDecisionNotificationCount
-        }}
-      >
+      <ReportNotificationContext.Provider value={value}>
         {children}
       </ReportNotificationContext.Provider>
     )

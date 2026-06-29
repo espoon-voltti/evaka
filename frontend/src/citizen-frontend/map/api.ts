@@ -170,24 +170,17 @@ export async function fetchUnitsWithDistances(
     .then((res) =>
       unitsWithStraightDistance.map((unit) => {
         const plan = res.data.data[uuidToKey(unit.id)]
-        if (!plan)
-          return {
-            ...unit,
-            drivingDistance: null
-          }
+        if (!plan) {
+          return Object.assign(unit, { drivingDistance: null })
+        }
 
         const edges = plan.edges
-        if (edges.length === 0)
-          return {
-            ...unit,
-            drivingDistance: null
-          }
+        if (edges.length === 0) {
+          return Object.assign(unit, { drivingDistance: null })
+        }
 
         const drivingDistance = edges[0].node.walkDistance
-        return {
-          ...unit,
-          drivingDistance
-        }
+        return Object.assign(unit, { drivingDistance })
       })
     )
 }

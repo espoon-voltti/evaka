@@ -176,11 +176,11 @@ export type SelectedNode = {
 export const getSelected = (selectors: SelectorNode[]): SelectedNode[] =>
   selectors.flatMap((selector) => {
     const selectedChildren = getSelected(selector.children)
-    const selectedKeys = selectedChildren.map(({ key }) => key)
+    const selectedKeys = new Set(selectedChildren.map(({ key }) => key))
     if (
       selector.checked &&
       selector.children.length === selectedChildren.length &&
-      selector.children.every(({ key }) => selectedKeys.includes(key))
+      selector.children.every(({ key }) => selectedKeys.has(key))
     ) {
       const { key, text, messageRecipient } = selector
       return [{ key, text, messageRecipient }]

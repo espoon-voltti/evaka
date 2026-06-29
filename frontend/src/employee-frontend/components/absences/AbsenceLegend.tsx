@@ -41,11 +41,11 @@ const allLegendItems: LegendItemType[] = [
   'CONTRACT_DAYS'
 ]
 
-const allAbsenceTypes: LegendItemType[] = [
+const allAbsenceTypes = new Set<LegendItemType>([
   ...absenceTypes,
   'TEMPORARY_RELOCATION'
-]
-const allAdditionalItems: LegendItemType[] = ['CONTRACT_DAYS']
+])
+const allAdditionalItems = new Set<LegendItemType>(['CONTRACT_DAYS'])
 
 const AbsenceLegendRow = styled.div`
   display: flex;
@@ -77,8 +77,8 @@ export const AbsenceLegend = React.memo(function AbsenceLegend({
     () =>
       allLegendItems.filter((a) => {
         if (a === 'NO_ABSENCE') return showNoAbsence
-        if (allAdditionalItems.includes(a)) return showAdditionalLegendItems
-        else return allAbsenceTypes.includes(a)
+        if (allAdditionalItems.has(a)) return showAdditionalLegendItems
+        else return allAbsenceTypes.has(a)
       }),
     [showNoAbsence, showAdditionalLegendItems]
   )

@@ -218,10 +218,10 @@ const emptyGroupingDataByGroup = (
     CHILD_DISCUSSION_COUNSELING: 0
   },
   actionCounts: actions.reduce(
-    (data, action) => ({
-      ...data,
-      [action.value]: 0
-    }),
+    (data, action) =>
+      Object.assign(data, {
+        [action.value]: 0
+      }),
     {}
   ),
   otherActionCount: 0,

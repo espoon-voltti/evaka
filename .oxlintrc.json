@@ -1,5 +1,5 @@
 {
-  "plugins": ["eslint", "oxc", "react", "typescript", "unicorn"],
+  "plugins": ["eslint", "oxc", "react", "react-perf", "typescript", "unicorn"],
   "options": {
     "typeAware": true,
     "typeCheck": true,
@@ -7,7 +7,8 @@
     "reportUnusedDisableDirectives": "error"
   },
   "categories": {
-    "correctness": "error"
+    "correctness": "error",
+    "perf": "error"
   },
   "env": {
     "builtin": true
@@ -16,6 +17,7 @@
     "eslint/arrow-body-style": "error",
     "eslint/eqeqeq": ["error", "smart"],
     "eslint/no-array-constructor": "error",
+    "eslint/no-await-in-loop": "off",
     "eslint/no-console": ["error", { "allow": ["warn", "error"] }],
     "eslint/no-case-declarations": "error",
     "eslint/no-empty": "error",
@@ -39,6 +41,8 @@
     "eslint/prefer-rest-params": "error",
     "eslint/prefer-spread": "error",
 
+    "oxc/no-map-spread": "off",
+
     "react/exhaustive-deps": ["error", { "additionalHooks": "(useApiState)" }],
     "react/forward-ref-uses-ref": "error",
     "react/display-name": "error",
@@ -49,6 +53,7 @@
     ],
     "react/jsx-no-comment-textnodes": "error",
     "react/jsx-no-target-blank": "error",
+    "react/no-array-index-key": "off",
     "react/no-object-type-as-default-prop": "error",
     "react/no-react-children": "error",
     "react/no-unescaped-entities": "error",
@@ -58,6 +63,11 @@
     "react/require-render-return": "error",
     "react/rules-of-hooks": "error",
     "react/self-closing-comp": ["error", { "component": true, "html": true }],
+
+    "react-perf/jsx-no-jsx-as-prop": "off",
+    "react-perf/jsx-no-new-array-as-prop": "off",
+    "react-perf/jsx-no-new-function-as-prop": "off",
+    "react-perf/jsx-no-new-object-as-prop": "off",
   },
   "overrides": [
     {

@@ -81,7 +81,7 @@ const getInvitedChildInfo = (
       eventData.individualChildren.some((c) => c.groupId === g.id)
     return !anyIndividuals
   })
-  const childSelections = eventData.individualChildren.map((c) => c.id)
+  const childSelections = new Set(eventData.individualChildren.map((c) => c.id))
   const invitedChildPlacements = unitDetails.placements.filter((p) => {
     const isPartOfFullGroupSelection = p.groupPlacements.some((gp) => {
       const placedGroupIsInFullGroups = fullGroupSelections.some(
@@ -92,7 +92,7 @@ const getInvitedChildInfo = (
       )
       return placedGroupIsInFullGroups && durationsOverlap
     })
-    const isPartOfIndividualSelections = childSelections.includes(p.child.id)
+    const isPartOfIndividualSelections = childSelections.has(p.child.id)
     return isPartOfFullGroupSelection || isPartOfIndividualSelections
   })
 

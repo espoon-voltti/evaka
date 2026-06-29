@@ -128,17 +128,17 @@ const InfoParagraph = styled.p`
   margin-bottom: 24px;
 `
 
-const decisionTypesRequiringDaycareDecisionName: DecisionType[] = [
+const decisionTypesRequiringDaycareDecisionName = new Set<DecisionType>([
   'DAYCARE',
   'DAYCARE_PART_TIME'
-]
+])
 
-const decisionTypesRequiringPreschoolDecisionName: DecisionType[] = [
+const decisionTypesRequiringPreschoolDecisionName = new Set<DecisionType>([
   'PRESCHOOL',
   'PREPARATORY_EDUCATION',
   'PRESCHOOL_DAYCARE',
   'PRESCHOOL_CLUB'
-]
+])
 
 function redirectToMainPage(navigate: (location: string) => void) {
   navigate('/applications')
@@ -211,11 +211,11 @@ export default React.memo(function DecisionDraftLegacy() {
       : undefined
 
   const requiresDaycareDecisionName = decisions.some(({ type }) =>
-    decisionTypesRequiringDaycareDecisionName.includes(type)
+    decisionTypesRequiringDaycareDecisionName.has(type)
   )
 
   const requiresPreschoolDecisionName = decisions.some(({ type }) =>
-    decisionTypesRequiringPreschoolDecisionName.includes(type)
+    decisionTypesRequiringPreschoolDecisionName.has(type)
   )
 
   const isClubDecision = decisions.some(({ type }) => type === 'CLUB')

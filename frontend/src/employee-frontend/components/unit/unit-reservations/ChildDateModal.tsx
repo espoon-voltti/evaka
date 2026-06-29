@@ -129,14 +129,14 @@ const form = transformed(
   }
 )
 
-const excludedAbsenceTypes: AbsenceType[] = [
+const excludedAbsenceTypes = new Set<AbsenceType>([
   'FREE_ABSENCE',
   'PARENTLEAVE',
   'PLANNED_ABSENCE',
   'FORCE_MAJEURE'
-]
+])
 const basicAbsenceTypes = absenceTypes.filter(
-  (t) => !excludedAbsenceTypes.includes(t)
+  (t) => !excludedAbsenceTypes.has(t)
 )
 const getAbsenceTypeOptions = (
   currentSelection: AbsenceType | null,

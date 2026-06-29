@@ -197,12 +197,19 @@ export default React.memo(function StaffAttendanceTable({
                 setDetailsModalConfig({
                   date,
                   name: row.name,
-                  attendances: row.attendances
-                    .filter((a) => a.type !== null)
-                    .map((a) => ({
-                      ...a,
-                      type: a.type!
-                    })),
+                  attendances: row.attendances.flatMap((a) =>
+                    a.type !== null
+                      ? ({
+                          id: a.id,
+                          groupId: a.groupId,
+                          type: a.type,
+                          arrived: a.arrived,
+                          departed: a.departed,
+                          departedAutomatically: a.departedAutomatically,
+                          occupancyCoefficient: a.occupancyCoefficient
+                        } satisfies ModalAttendance)
+                      : []
+                  ),
                   plannedAttendances: row.plannedAttendances,
                   target: {
                     type: 'employee',
@@ -938,16 +945,21 @@ function computeModalAttendances(
     const attendances: ModalAttendance[] = uniqBy(
       combined
         .flatMap((employee) => employee.attendances)
-        .filter(
-          (attendance) =>
-            attendance.type !== null &&
-            attendance.arrived <= endOfDay &&
-            (attendance.departed === null || startOfDay <= attendance.departed)
-        )
-        .map((a) => ({
-          ...a,
-          type: a.type!
-        })),
+        .flatMap((attendance) =>
+          attendance.type !== null &&
+          attendance.arrived <= endOfDay &&
+          (attendance.departed === null || startOfDay <= attendance.departed)
+            ? ({
+                id: attendance.id,
+                groupId: attendance.groupId,
+                type: attendance.type,
+                arrived: attendance.arrived,
+                departed: attendance.departed,
+                departedAutomatically: attendance.departedAutomatically,
+                occupancyCoefficient: attendance.occupancyCoefficient
+              } satisfies ModalAttendance)
+            : []
+        ),
       (attendance) => attendance.id
     )
     const plannedAttendances: ModalPlannedAttendance[] = uniq(

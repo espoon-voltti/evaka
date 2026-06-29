@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const badPins = [
+const badPins = new Set([
   '1234',
   '0000',
   '1111',
@@ -14,8 +14,8 @@ const badPins = [
   '7777',
   '8888',
   '9999'
-]
+])
 
 export function isValidPinCode(pin: string) {
-  return !badPins.includes(pin) && /^\d{4}$/.test(pin)
+  return !badPins.has(pin) && /^\d{4}$/.test(pin)
 }
