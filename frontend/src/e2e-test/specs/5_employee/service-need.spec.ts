@@ -54,7 +54,8 @@ test.describe('Service need', () => {
       endDate: mockToday.addDays(10)
     }).save()
     activeServiceNeedOption = await Fixture.serviceNeedOption({
-      validPlacementType: placement.type
+      validPlacementType: placement.type,
+      partWeek: false
     }).save()
     inactiveServiceNeedOption = await Fixture.serviceNeedOption({
       validPlacementType: placement.type,

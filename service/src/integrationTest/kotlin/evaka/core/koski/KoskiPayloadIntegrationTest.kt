@@ -34,7 +34,12 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     private val area = DevCareArea()
     private val daycare =
         DevDaycare(areaId = area.id, ophOrganizerOid = defaultMunicipalOrganizerOid)
-    private val daycare2 = DevDaycare(areaId = area.id, name = "Test Daycare 2")
+    private val daycare2 =
+        DevDaycare(
+            areaId = area.id,
+            name = "Test Daycare 2",
+            ophOrganizerOid = defaultMunicipalOrganizerOid,
+        )
     private val child1 =
         DevPerson(
             ssn = "010617A123U",
@@ -335,7 +340,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                                         "myöntäjäHenkilöt":[{
                                             "nimi":"Unit Manager",
                                             "titteli":{"fi":"Esiopetusyksikön johtaja"},
-                                            "organisaatio":{"oid":"1.2.3.4.5"}
+                                            "organisaatio":{"oid":"$defaultMunicipalOrganizerOid"}
                                         }]
                                     },
                                     "osasuoritukset": null
@@ -605,7 +610,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                                         "myöntäjäHenkilöt":[{
                                             "nimi":"Unit Manager",
                                             "titteli":{"fi":"Esiopetusyksikön johtaja"},
-                                            "organisaatio":{"oid":"1.2.3.4.5"}
+                                            "organisaatio":{"oid":"$defaultMunicipalOrganizerOid"}
                                         }]
                                     },
                                     "osasuoritukset": null

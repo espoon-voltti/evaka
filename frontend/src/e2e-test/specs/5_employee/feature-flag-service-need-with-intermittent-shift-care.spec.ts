@@ -55,7 +55,8 @@ test.describe('Intermittent shiftcare', () => {
       endDate: mockedDate.addYears(1)
     }).save()
     activeServiceNeedOption = await Fixture.serviceNeedOption({
-      validPlacementType: placement.type
+      validPlacementType: placement.type,
+      partWeek: false
     }).save()
 
     admin = await Fixture.employee().admin().save()

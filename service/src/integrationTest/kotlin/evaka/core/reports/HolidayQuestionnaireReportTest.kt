@@ -256,6 +256,7 @@ class HolidayQuestionnaireReportTest : FullApplicationTest(resetDbBeforeEach = t
                         areaId = areaAId,
                         openingDate = monday.minusDays(7),
                         type = setOf(CareType.CENTRE, CareType.PRESCHOOL),
+                        dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
                         operationTimes =
                             List(5) { TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)) } +
                                 List(2) { null },

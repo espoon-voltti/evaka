@@ -14,8 +14,10 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.TimeRange
 import evaka.instance.tampere.AbstractTampereIntegrationTest
 import java.time.LocalDate
+import java.time.LocalTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -35,6 +37,7 @@ class PalvelukykykyselyReportTest : AbstractTampereIntegrationTest() {
                 name = "Yksikkö",
                 areaId = areaId,
                 type = setOf(CareType.CENTRE, CareType.PRESCHOOL),
+                dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
             )
         val child1 = DevPerson(firstName = "Pauliina", lastName = "Päiväkotilainen")
         val child2 = DevPerson(firstName = "Taneli", lastName = "Täydentävä")

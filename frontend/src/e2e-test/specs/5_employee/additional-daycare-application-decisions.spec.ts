@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type {
   ApplicationId,
@@ -11,6 +12,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { fromUuid } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 
 import { execSimpleApplicationActions } from '../../dev-api'
 import { applicationFixture, Fixture } from '../../dev-api/fixtures'
@@ -53,12 +55,18 @@ const careArea = Fixture.careArea()
 
 const daycareA = Fixture.daycare({
   areaId: careArea.id,
-  type: ['CENTRE', 'PRESCHOOL']
+  type: ['CENTRE', 'PRESCHOOL'],
+  dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null)
 })
 
 const daycareB = Fixture.daycare({
   areaId: careArea.id,
-  type: ['CENTRE', 'PRESCHOOL']
+  type: ['CENTRE', 'PRESCHOOL'],
+  dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+  daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+  preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null)
 })
 
 const child = Fixture.person({

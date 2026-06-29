@@ -8,6 +8,8 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import { fromUuid, randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
+import TimeRange from 'lib-common/time-range'
 
 import config from '../../config'
 import {
@@ -279,7 +281,8 @@ test.describe('Employee searches applications', () => {
     }).save()
     const preschool = await Fixture.daycare({
       areaId: careArea.id,
-      type: ['PRESCHOOL']
+      type: ['PRESCHOOL'],
+      dailyPreschoolTime: new TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
     }).save()
     const clubApplication = {
       ...applicationFixture(testChild, testAdult, undefined, 'CLUB', null, [

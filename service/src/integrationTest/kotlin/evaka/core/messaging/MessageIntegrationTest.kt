@@ -97,7 +97,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     private val groupId1 = GroupId(UUID.randomUUID())
     private val groupId2 = GroupId(UUID.randomUUID())
-    private val devEmployee1 = DevEmployee()
+    private val devEmployee1 = DevEmployee(email = "test.person@espoo.fi")
     private val employee1 =
         AuthenticatedUser.Employee(id = devEmployee1.id, roles = setOf(UserRole.UNIT_SUPERVISOR))
     private val devEmployee2 = DevEmployee(firstName = "Foo", lastName = "Supervisor")
@@ -119,6 +119,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         DevEmployee(
             firstName = "Finance",
             lastName = "Admin",
+            email = "test.person@espoo.fi",
             roles = setOf(UserRole.FINANCE_ADMIN),
         )
     private val adult1 = DevPerson(firstName = "John", lastName = "Doe", ssn = "010180-1232")

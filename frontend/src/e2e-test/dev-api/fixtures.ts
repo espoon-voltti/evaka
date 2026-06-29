@@ -172,6 +172,28 @@ export const uuidv4 = (): string =>
     return v.toString(16)
   })
 
+const ssnChecksumChars = '0123456789ABCDEFHJKLMNPRSTUVWXY'
+let ssnIndividualCounter = 0
+
+// Valid Finnish SSN for the given date of birth with a unique individual
+// number from the 900-999 range reserved for artificial/test identities, so
+// fixture persons don't collide on the unique ssn index.
+export const uniqueSsn = (dateOfBirth: LocalDate): string => {
+  const dd = String(dateOfBirth.date).padStart(2, '0')
+  const mm = String(dateOfBirth.month).padStart(2, '0')
+  const yy = String(dateOfBirth.year % 100).padStart(2, '0')
+  // century marker: + for 1800s, - for 1900s, A for 2000s
+  const century =
+    dateOfBirth.year >= 2000 ? 'A' : dateOfBirth.year >= 1900 ? '-' : '+'
+  const individual = String(900 + (ssnIndividualCounter++ % 100)).padStart(
+    3,
+    '0'
+  )
+  const checksum =
+    ssnChecksumChars[parseInt(`${dd}${mm}${yy}${individual}`, 10) % 31]
+  return `${dd}${mm}${yy}${century}${individual}${checksum}`
+}
+
 type SemiPartial<T, K extends keyof T> = Partial<T> & Pick<T, K>
 
 export class Fixture {
@@ -181,15 +203,9 @@ export class Fixture {
       id: randomId(),
       name: `daycare_${id}`,
       type: ['CENTRE'],
-      dailyPreschoolTime: new TimeRange(
-        LocalTime.of(9, 0),
-        LocalTime.of(13, 0)
-      ),
-      dailyPreparatoryTime: new TimeRange(
-        LocalTime.of(9, 0),
-        LocalTime.of(14, 0)
-      ),
-      costCenter: `costCenter_${id}`,
+      dailyPreschoolTime: null,
+      dailyPreparatoryTime: null,
+      costCenter: null,
       visitingAddress: {
         streetAddress: `streetAddress_${id}`,
         postalCode: '02230',
@@ -241,15 +257,15 @@ export class Fixture {
       },
       financeDecisionHandler: null,
       clubApplyPeriod: null,
-      daycareApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
-      preschoolApplyPeriod: new DateRange(LocalDate.of(2020, 3, 1), null),
+      daycareApplyPeriod: null,
+      preschoolApplyPeriod: null,
       email: null,
       phone: null,
       url: null,
-      ophUnitOid: '1.2.3.4.5',
-      ophOrganizerOid: '1.2.3.4.5',
+      ophUnitOid: null,
+      ophOrganizerOid: null,
       additionalInfo: null,
-      dwCostCenter: 'dw-test',
+      dwCostCenter: null,
       mealtimeBreakfast: null,
       mealtimeLunch: null,
       mealtimeSnack: null,
@@ -297,8 +313,8 @@ export class Fixture {
       id: randomId(),
       name: `Care Area ${id}`,
       shortName: `careArea_${id}`,
-      areaCode: 2230,
-      subCostCenter: `subCostCenter_${id}`,
+      areaCode: null,
+      subCostCenter: null,
       ...initial
     }
     return {
@@ -352,17 +368,18 @@ export class Fixture {
 
   static person(initial?: Partial<DevPerson>) {
     const id = uniqueLabel()
+    const dateOfBirth = initial?.dateOfBirth ?? LocalDate.of(2020, 5, 5)
     const value: DevPerson = {
       id: randomId(),
-      dateOfBirth: LocalDate.of(2020, 5, 5),
+      dateOfBirth,
       dateOfDeath: null,
-      ssn: '050520A999M',
-      email: `email_${id}@evaka.test`,
+      ssn: uniqueSsn(dateOfBirth),
+      email: null,
       verifiedEmail: null,
       firstName: `firstName_${id}`,
       preferredName: '',
       lastName: `lastName_${id}`,
-      language: `fi`,
+      language: null,
       nationalities: [],
       phone: '123456789',
       backupPhone: '',
@@ -493,7 +510,7 @@ export class Fixture {
     const id = uniqueLabel()
     const value: DevEmployee = {
       id: randomId(),
-      email: `email_${id}@evaka.test`,
+      email: null,
       externalId: `espoo-ad:${randomId()}`,
       firstName: `first_name_${id}`,
       lastName: `last_name_${id}`,
@@ -501,7 +518,7 @@ export class Fixture {
       active: true,
       employeeNumber: null,
       created: HelsinkiDateTime.now(),
-      lastLogin: HelsinkiDateTime.now(),
+      lastLogin: null,
       preferredFirstName: null,
       ssn: null,
       ...initial
@@ -685,7 +702,7 @@ export class Fixture {
       terminationRequestedDate: null,
       createdAt: HelsinkiDateTime.now(),
       createdBy: systemInternalUser.id,
-      source: 'MANUAL',
+      source: null,
       sourceApplicationId: null,
       sourceServiceApplicationId: null,
       modifiedAt: HelsinkiDateTime.now(),
@@ -789,7 +806,7 @@ export class Fixture {
       realizedOccupancyCoefficient: 0,
       realizedOccupancyCoefficientUnder3y: 0,
       partDay: false,
-      partWeek: false,
+      partWeek: null,
       updated: HelsinkiDateTime.now(),
       validPlacementType: 'DAYCARE',
       voucherValueDescriptionFi: `Test service need option ${id}`,
@@ -941,7 +958,7 @@ export class Fixture {
     const value: DevChildAttendance = {
       date: LocalDate.todayInHelsinkiTz(),
       arrived: LocalTime.nowInHelsinkiTz(),
-      departed: LocalTime.nowInHelsinkiTz(),
+      departed: null,
       modifiedAt: HelsinkiDateTime.now(),
       modifiedBy: systemInternalUser.id,
       ...initial
@@ -997,7 +1014,7 @@ export class Fixture {
     const value: DevIncome = {
       id: randomId(),
       validFrom: LocalDate.todayInSystemTz(),
-      validTo: LocalDate.todayInSystemTz().addYears(1),
+      validTo: null,
       data: {
         MAIN_INCOME: {
           multiplier: 1,
@@ -1497,7 +1514,7 @@ export class Fixture {
   static assistanceActionOption(initial?: Partial<DevAssistanceActionOption>) {
     const value: DevAssistanceActionOption = {
       id: randomId(),
-      descriptionFi: 'a description',
+      descriptionFi: null,
       nameFi: 'a test assistance action option',
       value: 'TEST_ASSISTANCE_ACTION_OPTION',
       category: 'DAYCARE',
@@ -2035,10 +2052,7 @@ export const testClub = Fixture.daycare({
   email: null,
   phone: null,
   url: null,
-  ophUnitOid: '1.2.3.4.5',
-  ophOrganizerOid: '1.2.3.4.5',
   additionalInfo: null,
-  dwCostCenter: 'dw-test',
   mealtimeBreakfast: null,
   mealtimeLunch: null,
   mealtimeSnack: null,
@@ -2132,10 +2146,7 @@ export const testDaycare = Fixture.daycare({
   email: null,
   phone: null,
   url: null,
-  ophUnitOid: '1.2.3.4.5',
-  ophOrganizerOid: '1.2.3.4.5',
   additionalInfo: null,
-  dwCostCenter: 'dw-test',
   mealtimeBreakfast: null,
   mealtimeLunch: null,
   mealtimeSnack: null,
@@ -2219,10 +2230,7 @@ export const testDaycare2 = Fixture.daycare({
   email: null,
   phone: null,
   url: null,
-  ophUnitOid: '1.2.3.4.5',
-  ophOrganizerOid: '1.2.3.4.5',
   additionalInfo: null,
-  dwCostCenter: 'dw-test',
   mealtimeBreakfast: null,
   mealtimeLunch: null,
   mealtimeSnack: null,
@@ -2306,10 +2314,7 @@ export const testDaycarePrivateVoucher = Fixture.daycare({
   email: null,
   phone: null,
   url: null,
-  ophUnitOid: '1.2.3.4.5',
-  ophOrganizerOid: '1.2.3.4.5',
   additionalInfo: null,
-  dwCostCenter: 'dw-test',
   mealtimeBreakfast: null,
   mealtimeLunch: null,
   mealtimeSnack: null,
@@ -2391,10 +2396,7 @@ export const testPreschool = Fixture.daycare({
   email: null,
   phone: null,
   url: null,
-  ophUnitOid: '1.2.3.4.5',
-  ophOrganizerOid: '1.2.3.4.5',
   additionalInfo: null,
-  dwCostCenter: 'dw-test',
   mealtimeBreakfast: null,
   mealtimeLunch: null,
   mealtimeSnack: null,

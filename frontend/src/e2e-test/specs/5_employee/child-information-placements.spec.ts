@@ -105,7 +105,8 @@ test.describe('Child Information placement info', () => {
       unitId,
       startDate: mockToday,
       endDate: mockToday,
-      type: 'DAYCARE'
+      type: 'DAYCARE',
+      source: 'MANUAL'
     }).save()
 
     const childPlacements = await openChildPlacements(page, childId)

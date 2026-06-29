@@ -15,20 +15,30 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.TimeRange
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class FuturePreschoolersReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val area = DevCareArea()
-    private val daycare = DevDaycare(areaId = area.id, openingDate = LocalDate.of(2000, 1, 1))
+    private val daycare =
+        DevDaycare(
+            areaId = area.id,
+            openingDate = LocalDate.of(2000, 1, 1),
+            type = setOf(CareType.CENTRE, CareType.PRESCHOOL),
+            dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
+        )
     private val voucherDaycare =
         DevDaycare(
             areaId = area.id,
             name = "Voucher Daycare",
             openingDate = LocalDate.of(2000, 1, 1),
             providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+            type = setOf(CareType.CENTRE, CareType.PRESCHOOL),
+            dailyPreschoolTime = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0)),
         )
     private val roundTheClockDaycare =
         DevDaycare(

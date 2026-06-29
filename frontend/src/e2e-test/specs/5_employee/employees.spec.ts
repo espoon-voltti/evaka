@@ -29,7 +29,8 @@ test.describe('Employees page', () => {
       .save()
     employee = await Fixture.employee({
       firstName: 'Teppo',
-      lastName: 'Testaaja'
+      lastName: 'Testaaja',
+      email: 'teppo.testaaja@evaka.test'
     })
       .serviceWorker()
       .save()
