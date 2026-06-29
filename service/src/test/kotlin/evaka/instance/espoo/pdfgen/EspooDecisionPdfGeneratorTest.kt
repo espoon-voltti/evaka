@@ -4,6 +4,7 @@
 
 package evaka.instance.espoo.pdfgen
 
+import evaka.core.daycare.domain.ProviderType
 import evaka.core.decision.DecisionType
 import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.pdfgen.AbstractDecisionPdfGeneratorTest
@@ -17,8 +18,26 @@ private val finnishAndSwedish = setOf(OfficialLanguage.FI, OfficialLanguage.SV)
 class EspooDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
     override val municipality = "espoo"
 
+    override fun reasoningVariants() = listOf(null, reasoning)
+
     override fun feeDecisionScenarios() =
-        listOf(FeeDecisionScenario("fee_normal", languages = finnishAndSwedish))
+        listOf(
+            FeeDecisionScenario("fee_normal", languages = finnishAndSwedish),
+            FeeDecisionScenario(
+                "fee_no_income",
+                customize = {
+                    it.copy(
+                        headOfFamilyIncome = null,
+                        partnerIncome = null,
+                        children = it.children.map { c -> c.copy(childIncome = null) },
+                    )
+                },
+            ),
+            FeeDecisionScenario(
+                "fee_no_partner",
+                customize = { it.copy(partner = null, partnerIncome = null) },
+            ),
+        )
 
     override fun voucherValueDecisionScenarios() =
         listOf(
@@ -47,7 +66,7 @@ class EspooDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 "vaka_palse_osa-aika",
                 DecisionType.DAYCARE_PART_TIME,
                 languages = finnishAndSwedish,
-                isVoucher = true,
+                providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
             ),
             DecisionScenario(
                 "vaka_liittyvä",
@@ -60,7 +79,7 @@ class EspooDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 "vaka_palse",
                 DecisionType.DAYCARE,
                 languages = finnishAndSwedish,
-                isVoucher = true,
+                providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
             ),
             DecisionScenario("kerho", DecisionType.CLUB),
         )

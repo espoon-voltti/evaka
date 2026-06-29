@@ -5,6 +5,7 @@
 package evaka.core.pdfgen
 
 import evaka.core.application.ServiceNeed
+import evaka.core.application.ServiceNeedOption
 import evaka.core.daycare.UnitManager
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
@@ -15,6 +16,7 @@ import evaka.core.decision.DecisionUnit
 import evaka.core.decision.PdfReasoning
 import evaka.core.decision.createDecisionPdf
 import evaka.core.identity.ExternalIdentifier
+import evaka.core.invoicing.domain.DecisionIncome
 import evaka.core.invoicing.domain.EmployeeWithName
 import evaka.core.invoicing.domain.FeeDecisionChildDetailed
 import evaka.core.invoicing.domain.FeeDecisionDetailed
@@ -30,7 +32,6 @@ import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.invoicing.service.FeeDecisionPdfData
 import evaka.core.invoicing.service.VoucherValueDecisionPdfData
 import evaka.core.invoicing.testDecision1
-import evaka.core.invoicing.testDecisionIncome
 import evaka.core.invoicing.testFeeThresholds
 import evaka.core.pis.service.PersonDTO
 import evaka.core.placement.PlacementType
@@ -42,6 +43,7 @@ import evaka.core.shared.DaycareId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.PersonId
+import evaka.core.shared.ServiceNeedOptionId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.dev.DevPerson
@@ -64,6 +66,34 @@ private val logger = KotlinLogging.logger {}
 
 private val testChild = DevPerson(ssn = "010617A123U", dateOfBirth = LocalDate.of(2017, 6, 1))
 
+private val sampleIncome =
+    DecisionIncome(
+        effect = IncomeEffect.INCOME,
+        data = mapOf("MAIN_INCOME" to 314100),
+        totalIncome = 314100,
+        totalExpenses = 0,
+        total = 314100,
+        worksAtECHA = false,
+    )
+
+private val samplePartner =
+    PersonDetailed(
+        PersonId(UUID.randomUUID()),
+        LocalDate.of(1980, 6, 14),
+        null,
+        "Mikko",
+        "Meikäläinen",
+        "140680-9239",
+        "",
+        "",
+        "",
+        "",
+        null,
+        "",
+        null,
+        restrictedDetailsEnabled = false,
+    )
+
 abstract class AbstractDecisionPdfGeneratorTest {
     protected open val templateProvider: ITemplateProvider = EvakaTemplateProvider()
 
@@ -80,15 +110,24 @@ abstract class AbstractDecisionPdfGeneratorTest {
         PdfGenerator(templateProvider, pdfTemplateEngine(municipality))
     }
 
-    private val settings = emptyMap<SettingType, String>()
+    protected open val settings: Map<SettingType, String> = emptyMap()
 
-    private val reasoning =
+    protected val reasoning =
         PdfReasoning(
             "Tässä yleisen perustelun teksti",
             listOf("Eka yksilöllinen perustelu", "Toka yksilöllinen perustelu"),
         )
 
-    private val child =
+    protected open fun reasoningVariants(): List<PdfReasoning?> = listOf(null)
+
+    protected open fun baseFeeDecision(decisionType: FeeDecisionType): FeeDecisionDetailed =
+        createValidFeeDecision(municipality, decisionType)
+
+    protected open fun baseVoucherValueDecision(
+        decisionType: VoucherValueDecisionType
+    ): VoucherValueDecisionDetailed = createValidVoucherValueDecision(municipality, decisionType)
+
+    protected open val child: PersonDTO =
         PersonDTO(
             testChild.id,
             null,
@@ -110,29 +149,73 @@ abstract class AbstractDecisionPdfGeneratorTest {
             "",
         )
 
-    private val manager =
+    protected open val restrictedChild: PersonDTO
+        get() = child.copy(restrictedDetailsEnabled = true)
+
+    protected open val manager: UnitManager =
         UnitManager(
             "Pirkko Päiväkodinjohtaja",
             "pirkko.paivakodinjohtaja@example.com",
             "0401231234",
         )
 
+    protected val populatedSettings: Map<SettingType, String> =
+        mapOf(
+            SettingType.DECISION_MAKER_NAME to "Paula Palvelupäällikkö",
+            SettingType.DECISION_MAKER_TITLE to "Asiakaspalvelupäällikkö",
+        )
+
+    protected val standardServiceNeed: ServiceNeed =
+        ServiceNeed(
+            startTime = "08:00",
+            endTime = "16:00",
+            shiftCare = false,
+            partTime = false,
+            ServiceNeedOption(
+                ServiceNeedOptionId(UUID.randomUUID()),
+                "Palveluntarve 1 pitkänimi Palveluntarve 1 pitkänimi Palveluntarve",
+                "Palveluntarve 1",
+                "Palveluntarve 1",
+                null,
+            ),
+        )
+
+    protected val emptyAddressHead: PersonDetailed =
+        PersonDetailed(
+            PersonId(UUID.randomUUID()),
+            LocalDate.of(1982, 3, 31),
+            null,
+            "Maija",
+            "Meikäläinen",
+            "310382-956D",
+            "",
+            "",
+            "",
+            "",
+            null,
+            "",
+            null,
+            restrictedDetailsEnabled = false,
+        )
+
     @TestFactory
     fun applicationDecisionPdfs(): List<DynamicTest> =
         decisionScenarios().flatMap { scenario ->
+            val effectiveSettings = scenario.settings ?: settings
+            val scenarioChild = if (scenario.restrictedDetails) restrictedChild else child
             scenario.languages.flatMap { lang ->
                 val decision =
-                    createValidDecision(
-                        type = scenario.decisionType,
-                        unit =
-                            createValidDecisionUnit(
-                                providerType =
-                                    if (scenario.isVoucher) ProviderType.PRIVATE_SERVICE_VOUCHER
-                                    else ProviderType.MUNICIPAL,
-                                language = unitLanguage(lang),
-                            ),
+                    scenario.customize(
+                        createValidDecision(
+                            type = scenario.decisionType,
+                            unit =
+                                createValidDecisionUnit(
+                                    providerType = scenario.providerType,
+                                    language = unitLanguage(lang),
+                                ),
+                        )
                     )
-                listOf(null, reasoning).map { reasoningOrNull ->
+                reasoningVariants().map { reasoningOrNull ->
                     val variant = if (reasoningOrNull == null) "vanha" else "uusi"
                     val label = "${scenario.name}_${lang.name}_$variant"
                     DynamicTest.dynamicTest(label) {
@@ -140,9 +223,9 @@ abstract class AbstractDecisionPdfGeneratorTest {
                             createDecisionPdf(
                                 templateProvider,
                                 pdfGenerator,
-                                settings,
+                                effectiveSettings,
                                 decision,
-                                child,
+                                scenarioChild,
                                 scenario.isTransferApplication,
                                 scenario.serviceNeed,
                                 lang,
@@ -160,16 +243,14 @@ abstract class AbstractDecisionPdfGeneratorTest {
     @TestFactory
     fun feeDecisionPdfs(): List<DynamicTest> =
         feeDecisionScenarios().flatMap { scenario ->
+            val effectiveSettings = scenario.settings ?: settings
+            val decision = scenario.customize(baseFeeDecision(scenario.decisionType))
             scenario.languages.map { lang ->
                 val label = "${scenario.name}_${lang.name}"
                 DynamicTest.dynamicTest(label) {
                     val bytes =
                         pdfGenerator.generateFeeDecisionPdf(
-                            FeeDecisionPdfData(
-                                createValidFeeDecision(scenario.decisionType),
-                                settings,
-                                lang,
-                            )
+                            FeeDecisionPdfData(decision, effectiveSettings, lang)
                         )
                     assertNotNull(bytes)
                     writeTempFile("fee_decision_${municipality}_$label", bytes)
@@ -180,16 +261,14 @@ abstract class AbstractDecisionPdfGeneratorTest {
     @TestFactory
     fun voucherValueDecisionPdfs(): List<DynamicTest> =
         voucherValueDecisionScenarios().flatMap { scenario ->
+            val effectiveSettings = scenario.settings ?: settings
+            val decision = scenario.customize(baseVoucherValueDecision(scenario.decisionType))
             scenario.languages.map { lang ->
                 val label = "${scenario.name}_${lang.name}"
                 DynamicTest.dynamicTest(label) {
                     val bytes =
                         pdfGenerator.generateVoucherValueDecisionPdf(
-                            VoucherValueDecisionPdfData(
-                                createValidVoucherValueDecision(scenario.decisionType),
-                                settings,
-                                lang,
-                            )
+                            VoucherValueDecisionPdfData(decision, effectiveSettings, lang)
                         )
                     assertNotNull(bytes)
                     writeTempFile("voucher_value_decision_${municipality}_$label", bytes)
@@ -211,21 +290,28 @@ data class DecisionScenario(
     val name: String,
     val decisionType: DecisionType,
     val languages: Set<OfficialLanguage> = setOf(OfficialLanguage.FI),
-    val isVoucher: Boolean = false,
+    val providerType: ProviderType = ProviderType.MUNICIPAL,
     val isTransferApplication: Boolean = false,
+    val restrictedDetails: Boolean = false,
+    val settings: Map<SettingType, String>? = null,
     val serviceNeed: ServiceNeed? = null,
+    val customize: (Decision) -> Decision = { it },
 )
 
 data class FeeDecisionScenario(
     val name: String,
     val decisionType: FeeDecisionType = FeeDecisionType.NORMAL,
     val languages: Set<OfficialLanguage> = setOf(OfficialLanguage.FI),
+    val settings: Map<SettingType, String>? = null,
+    val customize: (FeeDecisionDetailed) -> FeeDecisionDetailed = { it },
 )
 
 data class VoucherValueDecisionScenario(
     val name: String,
     val decisionType: VoucherValueDecisionType = VoucherValueDecisionType.NORMAL,
     val languages: Set<OfficialLanguage> = setOf(OfficialLanguage.FI),
+    val settings: Map<SettingType, String>? = null,
+    val customize: (VoucherValueDecisionDetailed) -> VoucherValueDecisionDetailed = { it },
 )
 
 private fun createValidDecisionUnit(
@@ -286,7 +372,8 @@ private fun createValidDecision(
 }
 
 private fun createValidFeeDecision(
-    decisionType: FeeDecisionType = FeeDecisionType.NORMAL
+    municipality: String,
+    decisionType: FeeDecisionType = FeeDecisionType.NORMAL,
 ): FeeDecisionDetailed {
     return FeeDecisionDetailed(
         id = testDecision1.id,
@@ -300,24 +387,14 @@ private fun createValidFeeDecision(
                 dateOfBirth = LocalDate.of(1980, 1, 1),
                 firstName = "John",
                 lastName = "Doe",
-                streetAddress = "Kamreerintie 2",
-                postalCode = "02770",
-                postOffice = "Espoo",
+                streetAddress = "Testikatu 1",
+                postalCode = "00000",
+                postOffice = municipality.replaceFirstChar { it.uppercase() },
                 restrictedDetailsEnabled = false,
             ),
-        partner =
-            PersonDetailed(
-                id = PersonId(UUID.randomUUID()),
-                dateOfBirth = LocalDate.of(1980, 1, 1),
-                firstName = "Joan",
-                lastName = "Doe",
-                streetAddress = "Kamreerintie 2",
-                postalCode = "02770",
-                postOffice = "Espoo",
-                restrictedDetailsEnabled = false,
-            ),
-        headOfFamilyIncome = testDecisionIncome.copy(total = 214159),
-        partnerIncome = testDecisionIncome.copy(total = 413195),
+        partner = samplePartner,
+        headOfFamilyIncome = sampleIncome,
+        partnerIncome = sampleIncome,
         familySize = 3,
         feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
         approvedAt = HelsinkiDateTime.of(LocalDate.of(2019, 4, 15), LocalTime.of(10, 15, 30)),
@@ -352,7 +429,7 @@ private fun createValidFeeDecision(
                     fee = it.fee,
                     feeAlterations = it.feeAlterations,
                     finalFee = it.finalFee,
-                    childIncome = if (index == 0) testDecisionIncome.copy(total = 123456) else null,
+                    childIncome = sampleIncome,
                 )
             },
         financeDecisionHandlerFirstName = null,
@@ -363,7 +440,8 @@ private fun createValidFeeDecision(
 }
 
 private fun createValidVoucherValueDecision(
-    decisionType: VoucherValueDecisionType = VoucherValueDecisionType.NORMAL
+    municipality: String,
+    decisionType: VoucherValueDecisionType = VoucherValueDecisionType.NORMAL,
 ): VoucherValueDecisionDetailed {
     return VoucherValueDecisionDetailed(
         id = VoucherValueDecisionId(testDecision1.id.raw),
@@ -378,33 +456,21 @@ private fun createValidVoucherValueDecision(
                 dateOfBirth = LocalDate.of(1980, 1, 1),
                 firstName = "Anselmi Aataminpoika",
                 lastName = "Guggenheim",
-                streetAddress = "Huhdannevanpolku 24 A 3",
-                postalCode = "02770",
-                postOffice = "Espoo",
+                streetAddress = "Testikatu 1",
+                postalCode = "00000",
+                postOffice = municipality.replaceFirstChar { it.uppercase() },
                 restrictedDetailsEnabled = false,
             ),
-        partner =
-            PersonDetailed(
-                id = PersonId(UUID.randomUUID()),
-                dateOfBirth = LocalDate.of(1980, 1, 1),
-                firstName = "Cynthia Elisabeth",
-                lastName = "Maalahti-Guggenheim",
-                streetAddress = "Huhdannevanpolku 24 A 3",
-                postalCode = "02770",
-                postOffice = "Espoo",
-                restrictedDetailsEnabled = false,
-            ),
+        partner = samplePartner,
         validFrom = LocalDate.of(2020, 1, 1),
         validTo = LocalDate.of(2020, 12, 31),
         financeDecisionHandlerFirstName = null,
         financeDecisionHandlerLastName = null,
         familySize = 3,
         feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
-        headOfFamilyIncome =
-            testDecisionIncome.copy(effect = IncomeEffect.MAX_FEE_ACCEPTED, total = 214159),
-        partnerIncome =
-            testDecisionIncome.copy(effect = IncomeEffect.NOT_AVAILABLE, total = 413195),
-        childIncome = testDecisionIncome.copy(effect = IncomeEffect.INCOME, total = 123456),
+        headOfFamilyIncome = sampleIncome,
+        partnerIncome = sampleIncome,
+        childIncome = sampleIncome,
         child =
             PersonDetailed(
                 id = PersonId(UUID.randomUUID()),
