@@ -321,6 +321,25 @@ tasks {
         classpath = sourceSets["test"].runtimeClasspath
     }
 
+    register("seedApplications", JavaExec::class) {
+        description = "Seed the local dev database with a season of applications"
+        mainClass.set("evaka.core.shared.dev.seed.SeedApplicationsCliKt")
+        classpath = sourceSets["main"].runtimeClasspath
+        systemProperties(
+            mapOf(
+                "evaka.database.url" to
+                    (project.findProperty("seed.database.url")
+                        ?: "jdbc:postgresql://localhost:5432/evaka_local"),
+                "evaka.database.username" to
+                    (project.findProperty("seed.database.username") ?: "postgres"),
+                "evaka.database.password" to
+                    (project.findProperty("seed.database.password") ?: "postgres"),
+                "evaka.integration.vtj.mock_url" to
+                    (project.findProperty("seed.idp.url") ?: "http://localhost:9090"),
+            )
+        )
+    }
+
     register("copyDownloadOnlyDeps", Copy::class) {
         from(downloadOnly)
         into(layout.buildDirectory.dir("download-only"))
