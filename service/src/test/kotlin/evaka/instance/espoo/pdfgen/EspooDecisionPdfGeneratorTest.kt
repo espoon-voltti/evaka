@@ -11,9 +11,6 @@ import evaka.core.pdfgen.AbstractDecisionPdfGeneratorTest
 import evaka.core.pdfgen.DecisionScenario
 import evaka.core.pdfgen.FeeDecisionScenario
 import evaka.core.pdfgen.VoucherValueDecisionScenario
-import evaka.core.shared.domain.OfficialLanguage
-
-private val finnishAndSwedish = setOf(OfficialLanguage.FI, OfficialLanguage.SV)
 
 class EspooDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
     override val municipality = "espoo"

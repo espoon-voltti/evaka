@@ -4,7 +4,6 @@
 
 package evaka.instance.tampere.pdfgen
 
-import evaka.core.application.ServiceNeed
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.decision.DecisionType
 import evaka.core.invoicing.domain.FeeDecisionType
@@ -16,15 +15,6 @@ import evaka.core.pdfgen.VoucherValueDecisionScenario
 import evaka.core.placement.PlacementType
 import evaka.core.shared.template.ITemplateProvider
 import evaka.instance.tampere.template.config.TampereTemplateProvider
-
-private val serviceNeedWithoutOption =
-    ServiceNeed(
-        startTime = "08:00",
-        endTime = "16:00",
-        shiftCare = false,
-        partTime = false,
-        serviceNeedOption = null,
-    )
 
 class TampereDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
     override val municipality = "tampere"

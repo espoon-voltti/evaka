@@ -4,7 +4,6 @@
 
 package evaka.instance.oulu.pdfgen
 
-import evaka.core.application.ServiceNeed
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.decision.DecisionType
 import evaka.core.invoicing.domain.FeeAlterationType
@@ -19,15 +18,6 @@ import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.template.ITemplateProvider
 import evaka.instance.oulu.template.config.OuluTemplateProvider
 import java.time.LocalDate
-
-private val serviceNeedWithoutOption =
-    ServiceNeed(
-        startTime = "08:00",
-        endTime = "16:00",
-        shiftCare = false,
-        partTime = false,
-        serviceNeedOption = null,
-    )
 
 class OuluDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
     override val municipality = "oulu"

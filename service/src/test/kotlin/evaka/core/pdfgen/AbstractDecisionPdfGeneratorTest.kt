@@ -16,12 +16,10 @@ import evaka.core.decision.DecisionUnit
 import evaka.core.decision.PdfReasoning
 import evaka.core.decision.createDecisionPdf
 import evaka.core.identity.ExternalIdentifier
-import evaka.core.invoicing.domain.DecisionIncome
 import evaka.core.invoicing.domain.EmployeeWithName
 import evaka.core.invoicing.domain.FeeDecisionChildDetailed
 import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.FeeDecisionType
-import evaka.core.invoicing.domain.IncomeEffect
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.domain.UnitData
 import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
@@ -32,6 +30,7 @@ import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.invoicing.service.FeeDecisionPdfData
 import evaka.core.invoicing.service.VoucherValueDecisionPdfData
 import evaka.core.invoicing.testDecision1
+import evaka.core.invoicing.testDecisionIncome
 import evaka.core.invoicing.testFeeThresholds
 import evaka.core.pis.service.PersonDTO
 import evaka.core.placement.PlacementType
@@ -65,16 +64,6 @@ import org.junit.jupiter.api.TestFactory
 private val logger = KotlinLogging.logger {}
 
 private val testChild = DevPerson(ssn = "010617A123U", dateOfBirth = LocalDate.of(2017, 6, 1))
-
-private val sampleIncome =
-    DecisionIncome(
-        effect = IncomeEffect.INCOME,
-        data = mapOf("MAIN_INCOME" to 314100),
-        totalIncome = 314100,
-        totalExpenses = 0,
-        total = 314100,
-        worksAtECHA = false,
-    )
 
 private val samplePartner =
     PersonDetailed(
@@ -120,14 +109,7 @@ abstract class AbstractDecisionPdfGeneratorTest {
 
     protected open fun reasoningVariants(): List<PdfReasoning?> = listOf(null)
 
-    protected open fun baseFeeDecision(decisionType: FeeDecisionType): FeeDecisionDetailed =
-        createValidFeeDecision(municipality, decisionType)
-
-    protected open fun baseVoucherValueDecision(
-        decisionType: VoucherValueDecisionType
-    ): VoucherValueDecisionDetailed = createValidVoucherValueDecision(municipality, decisionType)
-
-    protected open val child: PersonDTO =
+    protected val child: PersonDTO =
         PersonDTO(
             testChild.id,
             null,
@@ -149,10 +131,10 @@ abstract class AbstractDecisionPdfGeneratorTest {
             "",
         )
 
-    protected open val restrictedChild: PersonDTO
+    private val restrictedChild: PersonDTO
         get() = child.copy(restrictedDetailsEnabled = true)
 
-    protected open val manager: UnitManager =
+    protected val manager: UnitManager =
         UnitManager(
             "Pirkko Päiväkodinjohtaja",
             "pirkko.paivakodinjohtaja@example.com",
@@ -179,6 +161,18 @@ abstract class AbstractDecisionPdfGeneratorTest {
                 null,
             ),
         )
+
+    protected val serviceNeedWithoutOption: ServiceNeed =
+        ServiceNeed(
+            startTime = "08:00",
+            endTime = "16:00",
+            shiftCare = false,
+            partTime = false,
+            serviceNeedOption = null,
+        )
+
+    protected val finnishAndSwedish: Set<OfficialLanguage> =
+        setOf(OfficialLanguage.FI, OfficialLanguage.SV)
 
     protected val emptyAddressHead: PersonDetailed =
         PersonDetailed(
@@ -244,7 +238,8 @@ abstract class AbstractDecisionPdfGeneratorTest {
     fun feeDecisionPdfs(): List<DynamicTest> =
         feeDecisionScenarios().flatMap { scenario ->
             val effectiveSettings = scenario.settings ?: settings
-            val decision = scenario.customize(baseFeeDecision(scenario.decisionType))
+            val decision =
+                scenario.customize(createValidFeeDecision(municipality, scenario.decisionType))
             scenario.languages.map { lang ->
                 val label = "${scenario.name}_${lang.name}"
                 DynamicTest.dynamicTest(label) {
@@ -262,7 +257,10 @@ abstract class AbstractDecisionPdfGeneratorTest {
     fun voucherValueDecisionPdfs(): List<DynamicTest> =
         voucherValueDecisionScenarios().flatMap { scenario ->
             val effectiveSettings = scenario.settings ?: settings
-            val decision = scenario.customize(baseVoucherValueDecision(scenario.decisionType))
+            val decision =
+                scenario.customize(
+                    createValidVoucherValueDecision(municipality, scenario.decisionType)
+                )
             scenario.languages.map { lang ->
                 val label = "${scenario.name}_${lang.name}"
                 DynamicTest.dynamicTest(label) {
@@ -374,46 +372,31 @@ private fun createValidDecisionUnit(
         language = language,
     )
 
-private fun createValidDecision(
-    id: DecisionId = DecisionId(UUID.randomUUID()),
-    createdBy: String = "John Doe",
-    type: DecisionType = DecisionType.DAYCARE,
-    startDate: LocalDate = LocalDate.of(2019, 1, 1),
-    endDate: LocalDate = LocalDate.of(2019, 12, 31),
-    unit: DecisionUnit = createValidDecisionUnit(),
-    applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
-    childId: ChildId = ChildId(UUID.randomUUID()),
-    documentKey: String? = null,
-    decisionNumber: Long = 123,
-    sentDate: LocalDate = LocalDate.now(),
-    status: DecisionStatus = DecisionStatus.ACCEPTED,
-    resolved: LocalDate? = null,
-): Decision {
-    return Decision(
-        id = id,
-        createdBy = createdBy,
+private fun createValidDecision(type: DecisionType, unit: DecisionUnit): Decision =
+    Decision(
+        id = DecisionId(UUID.randomUUID()),
+        createdBy = "John Doe",
         type = type,
-        startDate = startDate,
-        endDate = endDate,
+        startDate = LocalDate.of(2019, 1, 1),
+        endDate = LocalDate.of(2019, 12, 31),
         unit = unit,
-        applicationId = applicationId,
-        childId = childId,
-        documentKey = documentKey,
-        decisionNumber = decisionNumber,
-        sentDate = sentDate,
-        status = status,
+        applicationId = ApplicationId(UUID.randomUUID()),
+        childId = ChildId(UUID.randomUUID()),
+        documentKey = null,
+        decisionNumber = 123,
+        sentDate = LocalDate.now(),
+        status = DecisionStatus.ACCEPTED,
         childName = "Test Child",
-        requestedStartDate = startDate,
-        resolved = resolved,
+        requestedStartDate = LocalDate.of(2019, 1, 1),
+        resolved = null,
         resolvedByName = null,
         documentContainsContactInfo = false,
         archivedAt = null,
     )
-}
 
 private fun createValidFeeDecision(
     municipality: String,
-    decisionType: FeeDecisionType = FeeDecisionType.NORMAL,
+    decisionType: FeeDecisionType,
 ): FeeDecisionDetailed {
     return FeeDecisionDetailed(
         id = testDecision1.id,
@@ -433,8 +416,8 @@ private fun createValidFeeDecision(
                 restrictedDetailsEnabled = false,
             ),
         partner = samplePartner,
-        headOfFamilyIncome = sampleIncome,
-        partnerIncome = sampleIncome,
+        headOfFamilyIncome = testDecisionIncome,
+        partnerIncome = testDecisionIncome,
         familySize = 3,
         feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
         approvedAt = HelsinkiDateTime.of(LocalDate.of(2019, 4, 15), LocalTime.of(10, 15, 30)),
@@ -469,7 +452,7 @@ private fun createValidFeeDecision(
                     fee = it.fee,
                     feeAlterations = it.feeAlterations,
                     finalFee = it.finalFee,
-                    childIncome = sampleIncome,
+                    childIncome = testDecisionIncome,
                 )
             },
         financeDecisionHandlerFirstName = null,
@@ -481,7 +464,7 @@ private fun createValidFeeDecision(
 
 private fun createValidVoucherValueDecision(
     municipality: String,
-    decisionType: VoucherValueDecisionType = VoucherValueDecisionType.NORMAL,
+    decisionType: VoucherValueDecisionType,
 ): VoucherValueDecisionDetailed {
     return VoucherValueDecisionDetailed(
         id = VoucherValueDecisionId(testDecision1.id.raw),
@@ -508,9 +491,9 @@ private fun createValidVoucherValueDecision(
         financeDecisionHandlerLastName = null,
         familySize = 3,
         feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
-        headOfFamilyIncome = sampleIncome,
-        partnerIncome = sampleIncome,
-        childIncome = sampleIncome,
+        headOfFamilyIncome = testDecisionIncome,
+        partnerIncome = testDecisionIncome,
+        childIncome = testDecisionIncome,
         child =
             PersonDetailed(
                 id = PersonId(UUID.randomUUID()),
