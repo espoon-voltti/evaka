@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo, useState } from 'react'
+import styled from 'styled-components'
 
 import type { Action } from 'lib-common/generated/action'
 import type { DaycareGroupResponse } from 'lib-common/generated/api-types/daycare'
@@ -14,6 +15,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { cancelMutation } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -23,6 +25,7 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../../state/i18n'
 import { addFullAclForRoleMutation } from '../../queries'
@@ -152,24 +155,6 @@ export default React.memo(function AddAclModal({
       <FixedSpaceColumn>
         <FixedSpaceColumn $spacing="xs">
           <Label>
-            {`${i18n.unit.accessControl.addDaycareAclModal.role} *`}
-          </Label>
-          <Combobox
-            data-qa="role-combobox"
-            placeholder={i18n.unit.accessControl.chooseRole}
-            selectedItem={formData.role}
-            onChange={(item) =>
-              setFormData((prev) => ({ ...prev, role: item ?? 'STAFF' }))
-            }
-            items={roles}
-            menuEmptyLabel={i18n.common.noResults}
-            getItemLabel={(item) => i18n.roles.adRoles[item]}
-            getItemDataQa={(item) => `value-${item}`}
-          />
-        </FixedSpaceColumn>
-
-        <FixedSpaceColumn $spacing="xs">
-          <Label>
             {`${i18n.unit.accessControl.addDaycareAclModal.employees} *`}
           </Label>
           <Combobox
@@ -187,22 +172,23 @@ export default React.memo(function AddAclModal({
           />
         </FixedSpaceColumn>
 
-        {permittedActions.includes('UPDATE_STAFF_GROUP_ACL') && (
-          <FixedSpaceColumn $spacing="xs">
-            <Label>{i18n.unit.accessControl.chooseGroup}</Label>
-            <MultiSelect
-              data-qa="group-select"
-              value={formData.selectedGroups ?? []}
-              options={groupOptions}
-              getOptionId={(item) => item.id}
-              getOptionLabel={(item) => item.name}
-              onChange={(values) =>
-                setFormData((prev) => ({ ...prev, selectedGroups: values }))
-              }
-              placeholder={`${i18n.common.select}...`}
-            />
-          </FixedSpaceColumn>
-        )}
+        <FixedSpaceColumn $spacing="xs">
+          <Label>
+            {`${i18n.unit.accessControl.addDaycareAclModal.role} *`}
+          </Label>
+          <Combobox
+            data-qa="role-combobox"
+            placeholder={i18n.unit.accessControl.chooseRole}
+            selectedItem={formData.role}
+            onChange={(item) =>
+              setFormData((prev) => ({ ...prev, role: item ?? 'STAFF' }))
+            }
+            items={roles}
+            menuEmptyLabel={i18n.common.noResults}
+            getItemLabel={(item) => i18n.roles.adRoles[item]}
+            getItemDataQa={(item) => `value-${item}`}
+          />
+        </FixedSpaceColumn>
 
         {permittedActions.includes('UPSERT_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <Checkbox
@@ -219,6 +205,8 @@ export default React.memo(function AddAclModal({
           />
         )}
 
+        <SectionRuler />
+
         <FixedSpaceColumn $spacing="xs">
           <Label>{`${i18n.unit.accessControl.aclEndDate}`}</Label>
           <DatePicker
@@ -230,7 +218,28 @@ export default React.memo(function AddAclModal({
             locale={lang}
             minDate={LocalDate.todayInHelsinkiTz()}
           />
+          <ExtraSpan>{i18n.unit.accessControl.aclEndDateHelp}</ExtraSpan>
         </FixedSpaceColumn>
+
+        <SectionRuler />
+
+        {permittedActions.includes('UPDATE_STAFF_GROUP_ACL') && (
+          <FixedSpaceColumn $spacing="xs">
+            <Label>{i18n.unit.accessControl.chooseGroup}</Label>
+            <MultiSelect
+              data-qa="group-select"
+              value={formData.selectedGroups ?? []}
+              options={groupOptions}
+              getOptionId={(item) => item.id}
+              getOptionLabel={(item) => item.name}
+              onChange={(values) =>
+                setFormData((prev) => ({ ...prev, selectedGroups: values }))
+              }
+              placeholder={`${i18n.common.select}...`}
+            />
+            <ExtraSpan>{i18n.unit.accessControl.chooseGroupHelp}</ExtraSpan>
+          </FixedSpaceColumn>
+        )}
       </FixedSpaceColumn>
 
       {scheduledAclWarning && (
@@ -243,3 +252,14 @@ export default React.memo(function AddAclModal({
     </MutateFormModal>
   )
 })
+
+const ExtraSpan = styled.span`
+  font-size: 14px;
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-weight: 600;
+`
+
+const SectionRuler = styled(HorizontalLine)`
+  margin-block-start: ${defaultMargins.xs};
+  margin-block-end: ${defaultMargins.s};
+`

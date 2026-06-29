@@ -2036,8 +2036,10 @@ export const sv: typeof fi = {
       role: 'Roll',
       name: 'Namn',
       email: 'E-postadress',
-      aclStartDate: 'Tillstånd börjar',
-      aclEndDate: 'Tillstånd upphör',
+      aclStartDate: 'Tillstånd till enheten börjar',
+      aclEndDate: 'Tillstånd till enheten upphör',
+      aclEndDateHelp:
+        'Efter slutdatumet upphör personens tillgång till enheten och alla grupper.',
       removeConfirmation:
         'Vill du ta bort åtkomsträttigheterna från den valda personen?',
       removeScheduledConfirmation: 'Vill du ta bort det kommande tillståndet?',
@@ -2054,6 +2056,8 @@ export const sv: typeof fi = {
       chooseRole: 'Välj roll',
       choosePerson: 'Välj person',
       chooseGroup: 'Välj grupp',
+      chooseGroupHelp:
+        'Tillståndet för gruppen gäller under samma tidsperiod som enhetens tillstånd.',
       temporaryEmployees: {
         title: 'Tillfälliga vikarier',
         previousEmployeesTitle: 'Tidigare tillfälliga vikarier',
