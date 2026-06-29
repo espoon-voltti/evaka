@@ -3,19 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 export class LoginStatusChangeEvent extends CustomEvent<boolean> {
-  static name = 'loginstatuschange' as const
+  static eventName = 'loginstatuschange' as const
 
   constructor(loginStatus: boolean) {
-    super(LoginStatusChangeEvent.name, {
+    super(LoginStatusChangeEvent.eventName, {
       cancelable: true,
       detail: loginStatus
     })
   }
 }
 // TS typings to allow type safe listening for the custom event, e.g.:
-// window.addEventListener(LoginStatusChangeEvent.name, (e) => {e.detail /* <- TS knows this is a boolean */})
+// window.addEventListener(LoginStatusChangeEvent.eventName, (e) => {e.detail /* <- TS knows this is a boolean */})
 declare global {
   interface WindowEventMap {
-    [LoginStatusChangeEvent.name]: CustomEvent<boolean>
+    [LoginStatusChangeEvent.eventName]: CustomEvent<boolean>
   }
 }

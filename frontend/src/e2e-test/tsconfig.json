@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": ".",
     "composite": true,
     "jsx": "react-jsx",
     "outDir": "../../dist/e2e-test",
