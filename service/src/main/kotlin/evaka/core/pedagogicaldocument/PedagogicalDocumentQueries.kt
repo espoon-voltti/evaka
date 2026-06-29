@@ -77,11 +77,11 @@ ORDER BY pd.created_at DESC
 
 fun Database.Read.getPedagogicalDocumentChild(
     pedagogicalDocumentId: PedagogicalDocumentId
-): ChildId {
+): ChildId? {
     return createQuery {
             sql(
                 "SELECT child_id FROM pedagogical_document WHERE id = ${bind(pedagogicalDocumentId)}"
             )
         }
-        .exactlyOne<ChildId>()
+        .exactlyOneOrNull<ChildId>()
 }
