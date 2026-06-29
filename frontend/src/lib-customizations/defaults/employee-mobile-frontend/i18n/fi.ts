@@ -319,6 +319,9 @@ export const fi = {
       externalPersonCantFindYourName: 'Etkö löydä nimeäsi?',
       markExternalPerson: 'Kirjaa muu henkilö',
       markExternalPersonTitle: 'Kirjaa muu työntekijä sisään',
+      markExternalPersonNotificationTitle: 'Jos olet yksikön työntekijä',
+      markExternalPersonNotificationMessage:
+        'Pyydä yksikön johtajaa luvittamaan sinut yksikköön, niin nimesi ilmestyy listalle. Sen jälkeen voit kirjautua normaalisti listalta. Sinun tulee myös asettaa PIN-koodi tietokoneella.',
       markArrived: 'Kirjaudu läsnäolevaksi',
       markDeparted: 'Kirjaudu poissaolevaksi',
       loginWithPin: 'Kirjaudu PIN-koodilla',

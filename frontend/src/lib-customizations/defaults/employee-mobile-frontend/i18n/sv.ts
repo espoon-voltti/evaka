@@ -329,6 +329,9 @@ export const sv: typeof fi = {
       externalPersonCantFindYourName: 'Hittar du inte ditt namn?',
       markExternalPerson: 'Registrera annan person',
       markExternalPersonTitle: 'Registrera annan arbetstagare in',
+      markExternalPersonNotificationTitle: 'Om du är anställd i enheten',
+      markExternalPersonNotificationMessage:
+        'Be enhetschefen att godkänna dig till enheten, så kommer ditt namn att visas på listan. Därefter kan du logga in som vanligt från listan. Du måste också ställa in en PIN-kod på datorn.',
       markArrived: 'Anteckna dig som närvarande',
       markDeparted: 'Anteckna dig som frånvarande',
       loginWithPin: 'Logga in med PIN-kod',
