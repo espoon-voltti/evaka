@@ -2453,7 +2453,7 @@ export const sv: typeof fi = {
         groupNotesHeader: 'Gruppens anteckningar',
         stickyNotesHeader: 'Att uppmärksamma under närmaste dagarna',
         notesHint:
-          'Lekar, lyckanden, glädjeämnen och inlärda saker idag (inga hälsouppgifter eller sekretessbelagda uppgifter).',
+          'Lekar, aktiv rörelse, lyckanden, glädjeämnen och inlärda saker idag (inga hälsouppgifter eller sekretessbelagda uppgifter).',
         childStickyNoteHint:
           'Anteckning för personalen (inga hälsouppgifter eller sekretessbelagda uppgifter).',
         otherThings: 'Övriga ärenden',

@@ -298,7 +298,7 @@ export const sv: typeof fi = {
         LAUNDRY: 'Smutsiga kläder i ryggsäcken'
       },
       placeholders: {
-        note: 'Lekar, framgång, glädjeämnen och lärdomar i dag (inga hälsouppgifter eller andra sekretessbelagda uppgifter).',
+        note: 'Lekar, aktiv rörelse, framgång, glädjeämnen och lärdomar i dag (inga hälsouppgifter eller andra sekretessbelagda uppgifter).',
         childStickyNote:
           'Anteckning för personalen (inga hälsouppgifter eller andra sekretessbelagda uppgifter).',
         groupNote: 'Anteckning om hela gruppen',
