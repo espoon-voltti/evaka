@@ -2438,7 +2438,7 @@ export const fi = {
         groupNotesHeader: 'Ryhmän muistiinpanot',
         stickyNotesHeader: 'Huomioitavaa lähipäivinä',
         notesHint:
-          'Leikkejä, onnistumisia, ilonaiheita ja opittuja asioita tänään (ei terveystietoja tai salassapidettäviä tietoja).',
+          'Leikkejä, aktiivista liikkumista, onnistumisia, ilonaiheita ja opittuja asioita tänään (ei terveystietoja tai salassapidettäviä tietoja).',
         childStickyNoteHint:
           'Muistiinpano henkilökunnalle (ei terveystietoja tai salassapidettäviä tietoja).',
         otherThings: 'Muut asiat',

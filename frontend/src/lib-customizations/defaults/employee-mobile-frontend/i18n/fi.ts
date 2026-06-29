@@ -288,7 +288,7 @@ export const fi = {
         LAUNDRY: 'Repussa pyykkiä'
       },
       placeholders: {
-        note: 'Leikkejä, onnistumisia, ilonaiheita ja opittuja asioita tänään (ei terveystietoja tai salassapidettäviä tietoja).',
+        note: 'Leikkejä, aktiivista liikkumista, onnistumisia, ilonaiheita ja opittuja asioita tänään (ei terveystietoja tai salassapidettäviä tietoja).',
         childStickyNote:
           'Muistiinpano henkilökunnalle (ei terveystietoja tai salassapidettäviä tietoja).',
         groupNote: 'Koko ryhmää koskeva muistiinpano',
