@@ -17,6 +17,7 @@ import {
   testDaycareGroup,
   Fixture,
   testAdult,
+  testAdult2,
   testChild,
   testChild2,
   testCareArea,
@@ -60,10 +61,7 @@ test.beforeEach(async () => {
 
   await testCareArea.save()
   await testDaycare.save()
-  await Fixture.family({
-    guardian: testAdult,
-    children: [testChild, testChild2]
-  }).save()
+  await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
 
   decisionMaker = await Fixture.employee().director().save()
@@ -75,19 +73,12 @@ test.beforeEach(async () => {
       {
         guardianId: testAdult.id,
         childId: child.id
-      },
-      {
-        guardianId: testAdult.id,
-        childId: testChild2.id
       }
     ]
   })
 
   await createDaycarePlacements({
-    body: [
-      createDaycarePlacementFixture(randomId(), child.id, unitId),
-      createDaycarePlacementFixture(randomId(), testChild2.id, unitId)
-    ]
+    body: [createDaycarePlacementFixture(randomId(), child.id, unitId)]
   })
 
   templateIdVasu = (
@@ -257,12 +248,28 @@ test.describe('Citizen child documents listing page', () => {
   })
 
   test('Hojks category is hidden when there are no hojks documents', async ({
-    evaka
+    newEvakaPage
   }) => {
-    // testChild2 is a second child of the guardian with no child documents
-    const header = new CitizenHeader(evaka, 'desktop')
+    // a separate guardian whose only child has no child documents at all
+    await Fixture.family({
+      guardian: testAdult2,
+      children: [testChild2]
+    }).save()
+    await insertGuardians({
+      body: [{ guardianId: testAdult2.id, childId: testChild2.id }]
+    })
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(randomId(), testChild2.id, testDaycare.id)
+      ]
+    })
+
+    const page = await newEvakaPage({ mockedTime: mockedNow })
+    await enduserLogin(page, testAdult2, '/')
+
+    const header = new CitizenHeader(page, 'desktop')
     await header.openChildPage(testChild2.id)
-    const childPage = new CitizenChildPage(evaka)
+    const childPage = new CitizenChildPage(page)
     await childPage.openCollapsible('child-documents')
 
     await expect(childPage.childDocumentsCategoryTitle('plans')).toBeVisible()
