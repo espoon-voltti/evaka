@@ -28,7 +28,6 @@ import evaka.core.decision.reasoning.DecisionReasoningCollectionType.CLUB as CLU
 import evaka.core.decision.reasoning.DecisionReasoningCollectionType.DAYCARE as DAYCARE_COLLECTION
 import evaka.core.decision.reasoning.DecisionReasoningCollectionType.PRESCHOOL as PRESCHOOL_COLLECTION
 import evaka.core.decision.updateDecisionDrafts
-import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.DecisionGenericReasoningId
@@ -43,6 +42,7 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateRange
@@ -169,8 +169,7 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
     @Test
     fun `resolver returns the CLUB reasoning for CLUB and PRESCHOOL_CLUB`() {
-        val clubId =
-            insertGenericReasoning(CLUB_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
+        val clubId = insertGenericReasoning(CLUB_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
         insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
 
         val resolvedClub = db.read { tx ->
@@ -190,10 +189,7 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
     fun `default generic reasonings are inserted for every collection type`() {
         val inserted = db.transaction { tx -> tx.insertDefaultDecisionGenericReasonings() }
 
-        assertEquals(
-            DecisionReasoningCollectionType.entries.toSet(),
-            inserted.keys,
-        )
+        assertEquals(DecisionReasoningCollectionType.entries.toSet(), inserted.keys)
     }
 
     @Test
