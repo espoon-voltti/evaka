@@ -4129,6 +4129,7 @@ export const sv: typeof fi = {
         'Rapport över placerade barn utan personbeteckning för kontroll av OID-uppgifter',
       childName: 'Barnets namn',
       dateOfBirth: 'Födelsedatum',
+      placementStartDate: 'Placeringens startdatum',
       personOid: 'Barnets uppgifters OID',
       lastSentToVarda: 'Exporterat till Varda senast',
       lastSentToKoski: 'Exporterat till Koski senast',

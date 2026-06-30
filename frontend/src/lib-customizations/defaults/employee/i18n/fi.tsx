@@ -4096,6 +4096,7 @@ export const fi = {
         'Raportti hetuttomista sijoitetuista lapsista OID-tietojen tarkistamiseen',
       childName: 'Lapsen nimi',
       dateOfBirth: 'Syntymäpäivä',
+      placementStartDate: 'Sijoituksen alkupäivä',
       personOid: 'Lapsen tietojen OID',
       lastSentToVarda: 'Viety Vardaan viimeksi',
       lastSentToKoski: 'Viety Koskeen viimeksi',

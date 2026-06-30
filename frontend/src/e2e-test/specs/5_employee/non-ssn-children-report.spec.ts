@@ -116,12 +116,14 @@ test.describe('Non SSN children report', () => {
       {
         childName: `${child.lastName} ${child.firstName}`,
         dateOfBirth: child.dateOfBirth.format(),
+        placementStartDate: mockedToday.format(),
         ophPersonOid: child.ophPersonOid ?? '',
         lastSentToVarda: '-'
       },
       {
         childName: `${child2.lastName} ${child2.firstName}`,
         dateOfBirth: child2.dateOfBirth.format(),
+        placementStartDate: mockedToday.addDays(7).format(),
         ophPersonOid: child2.ophPersonOid ?? '',
         lastSentToVarda: '-'
       }

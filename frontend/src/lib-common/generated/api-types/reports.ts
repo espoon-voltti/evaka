@@ -627,6 +627,7 @@ export interface NonSsnChildrenReportRow {
   lastSentToKoski: HelsinkiDateTime | null
   lastSentToVarda: HelsinkiDateTime | null
   ophPersonOid: string | null
+  placementStartDate: LocalDate
 }
 
 /**
@@ -1346,7 +1347,8 @@ export function deserializeJsonNonSsnChildrenReportRow(json: JsonOf<NonSsnChildr
     ...json,
     dateOfBirth: LocalDate.parseIso(json.dateOfBirth),
     lastSentToKoski: (json.lastSentToKoski != null) ? HelsinkiDateTime.parseIso(json.lastSentToKoski) : null,
-    lastSentToVarda: (json.lastSentToVarda != null) ? HelsinkiDateTime.parseIso(json.lastSentToVarda) : null
+    lastSentToVarda: (json.lastSentToVarda != null) ? HelsinkiDateTime.parseIso(json.lastSentToVarda) : null,
+    placementStartDate: LocalDate.parseIso(json.placementStartDate)
   }
 }
 
