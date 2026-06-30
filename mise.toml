@@ -323,4 +323,4 @@ run = "docker compose exec -T db reset-it-db"
 
 [tasks.dump-schema]
 description = "Dump the database schema to docs/db/schema.sql"
-run = "bin/dump-db-schema.sh > docs/db/schema.sql"
+run = "bin/dump-db-schema-standalone.sh > docs/db/schema.sql"
