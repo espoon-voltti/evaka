@@ -13,12 +13,13 @@ export function decisionTypeToCollectionType(
   switch (type) {
     case 'DAYCARE':
     case 'DAYCARE_PART_TIME':
-    case 'CLUB':
     case 'PRESCHOOL_DAYCARE':
-    case 'PRESCHOOL_CLUB':
       return 'DAYCARE'
     case 'PRESCHOOL':
     case 'PREPARATORY_EDUCATION':
       return 'PRESCHOOL'
+    case 'CLUB':
+    case 'PRESCHOOL_CLUB':
+      return 'CLUB'
   }
 }

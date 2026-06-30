@@ -5261,23 +5261,24 @@ export const fi = {
   decisionReasonings: {
     tabs: {
       DAYCARE: 'Varhaiskasvatus',
-      PRESCHOOL: 'Esiopetus'
+      PRESCHOOL: 'Esiopetus',
+      CLUB: 'Kerho'
     },
     collectionInfo: {
       DAYCARE:
         'Varhaiskasvatusperusteluja käytetään päätöksissä, jotka koskevat sijoitustyyppejä:',
       PRESCHOOL:
-        'Esiopetusperusteluja käytetään päätöksissä, jotka koskevat sijoitustyyppejä:'
+        'Esiopetusperusteluja käytetään päätöksissä, jotka koskevat sijoitustyyppejä:',
+      CLUB: 'Kerhoperusteluja käytetään päätöksissä, jotka koskevat sijoitustyyppejä:'
     },
     placementTypes: {
       DAYCARE: [
         'Varhaiskasvatuspäätökset',
         'Osa-aikainen varhaiskasvatus',
-        'Liittyvä varhaiskasvatus',
-        'Kerho',
-        'Esiopetuksen kerho'
+        'Liittyvä varhaiskasvatus'
       ],
-      PRESCHOOL: ['Esiopetus', 'Valmistava opetus']
+      PRESCHOOL: ['Esiopetus', 'Valmistava opetus'],
+      CLUB: ['Kerho', 'Esiopetuksen kerho']
     },
     generic: {
       title: 'Yleiset perustelut',

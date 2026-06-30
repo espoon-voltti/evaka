@@ -5291,23 +5291,24 @@ export const sv: typeof fi = {
   decisionReasonings: {
     tabs: {
       DAYCARE: 'Småbarnspedagogik',
-      PRESCHOOL: 'Förskoleundervisning'
+      PRESCHOOL: 'Förskoleundervisning',
+      CLUB: 'Klubb'
     },
     collectionInfo: {
       DAYCARE:
         'Småbarnspedagogikmotiveringar används i beslut som gäller placeringstyper:',
       PRESCHOOL:
-        'Förskolemotiveringar används i beslut som gäller placeringstyper:'
+        'Förskolemotiveringar används i beslut som gäller placeringstyper:',
+      CLUB: 'Klubbmotiveringar används i beslut som gäller placeringstyper:'
     },
     placementTypes: {
       DAYCARE: [
         'Småbarnspedagogikbeslut',
         'Deltid småbarnspedagogik',
-        'Ansluten småbarnspedagogik',
-        'Klubb',
-        'Förskoleklubb'
+        'Ansluten småbarnspedagogik'
       ],
-      PRESCHOOL: ['Förskoleundervisning', 'Förberedande undervisning']
+      PRESCHOOL: ['Förskoleundervisning', 'Förberedande undervisning'],
+      CLUB: ['Klubb', 'Förskoleklubb']
     },
     generic: {
       title: 'Allmänna motiveringar',

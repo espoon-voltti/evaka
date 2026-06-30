@@ -126,6 +126,7 @@ export interface DecisionIndividualReasoningRequest {
 export type DecisionReasoningCollectionType =
   | 'DAYCARE'
   | 'PRESCHOOL'
+  | 'CLUB'
 
 /**
 * Generated from evaka.core.decision.DecisionStatus
