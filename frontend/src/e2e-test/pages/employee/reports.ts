@@ -17,6 +17,7 @@ import {
   Checkbox,
   Combobox,
   DatePicker,
+  DateRangePicker,
   MultiSelect,
   Select,
   TextInput,
@@ -61,6 +62,11 @@ export default class ReportsPage {
   async openPreschoolAbsenceReport() {
     await this.page.findByDataQa('report-preschool-absence').click()
     return new PreschoolAbsenceReport(this.page)
+  }
+
+  async openChildAbsenceReport() {
+    await this.page.findByDataQa('report-child-absence').click()
+    return new ChildAbsenceReport(this.page)
   }
 
   async openPreschoolApplicationReport() {
@@ -870,5 +876,74 @@ export class SextetReport {
   async assertSum(expected: number) {
     const sum = this.page.findByDataQa('data-sum')
     await expect(sum).toHaveText(`${expected}`)
+  }
+}
+
+export class ChildAbsenceReport {
+  unitSelector: Combobox
+  groupSelector: Combobox
+  filterByClosed: Checkbox
+  dateRange: DateRangePicker
+
+  constructor(private page: Page) {
+    this.unitSelector = new Combobox(this.page.findByDataQa('unit-select'))
+    this.groupSelector = new Combobox(this.page.findByDataQa('group-select'))
+    this.filterByClosed = new Checkbox(page.findByDataQa('filter-by-closed'))
+    this.dateRange = new DateRangePicker(page.findByDataQa('date-range'))
+  }
+
+  async selectUnit(unitName: string) {
+    await this.unitSelector.fillAndSelectFirst(unitName)
+  }
+
+  async selectRange(start: LocalDate, end: LocalDate) {
+    await this.dateRange.fill(start, end)
+  }
+
+  async assertRows(
+    expected: {
+      firstName: string
+      lastName: string
+      daycareName: string
+      groupName: string
+      TOTAL: string
+      OTHER_ABSENCE: string
+      SICKLEAVE: string
+      PLANNED_ABSENCE: string
+      UNKNOWN_ABSENCE: string
+    }[]
+  ) {
+    const rows = this.page.findAllByDataQa('child-absence-row')
+    await expect(rows).toHaveCount(expected.length)
+    await Promise.all(
+      expected.map(async (data, index) => {
+        const row = rows.nth(index)
+        await expect(row.findByDataQa('first-name-column')).toHaveText(
+          data.firstName
+        )
+        await expect(row.findByDataQa('last-name-column')).toHaveText(
+          data.lastName
+        )
+        await expect(row.findByDataQa('daycare-name-column')).toHaveText(
+          data.daycareName
+        )
+        await expect(row.findByDataQa('group-name-column')).toHaveText(
+          data.groupName
+        )
+        await expect(row.findByDataQa('total-column')).toHaveText(data.TOTAL)
+        await expect(row.findByDataQa('other-absence-column')).toHaveText(
+          data.OTHER_ABSENCE
+        )
+        await expect(row.findByDataQa('sickleave-column')).toHaveText(
+          data.SICKLEAVE
+        )
+        await expect(row.findByDataQa('planned-absence-column')).toHaveText(
+          data.PLANNED_ABSENCE
+        )
+        await expect(row.findByDataQa('unknown-absence-column')).toHaveText(
+          data.UNKNOWN_ABSENCE
+        )
+      })
+    )
   }
 }

@@ -53,6 +53,7 @@ import ReportApplications from './components/reports/Applications'
 import ReportAssistanceNeedsAndActions from './components/reports/AssistanceNeedsAndActions'
 import AttendanceReservation from './components/reports/AttendanceReservation'
 import AttendanceReservationByChild from './components/reports/AttendanceReservationByChild'
+import ChildAbsenceReport from './components/reports/ChildAbsenceReport'
 import ReportChildAgeLanguage from './components/reports/ChildAgeLanguage'
 import ChildAttendanceReport from './components/reports/ChildAttendanceReport'
 import ReportChildDocumentDecisions from './components/reports/ChildDocumentDecisionsReport'
@@ -333,6 +334,11 @@ const routes: EmployeeRoute[] = [
   {
     path: '/reports/family-daycare-meal-count',
     component: FamilyDaycareMealCount,
+    title: 'reports'
+  },
+  {
+    path: '/reports/child-absence',
+    component: ChildAbsenceReport,
     title: 'reports'
   },
   {

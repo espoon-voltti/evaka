@@ -21,6 +21,7 @@
 ;"Hetuttomat lapset -raportti";"READ_NON_SSN_CHILDREN_REPORT";x;;;x;;x;;;;;
 ;Kuusikkovertailu;READ_SEXTET_REPORT;x;x;x;;;;;;;;
 ;"Laskujen täsmäytys -raportti";READ_INVOICE_REPORT;x;;x;x;x;;;;;;
+;"Lasten poissaoloraportti alueittain";"READ_CHILD_ABSENCE_REPORT_FOR_AREA";x;;;x;;;;;;;
 ;"Monistuneet kuntalaiset -raportti";"READ_DUPLICATE_PEOPLE_REPORT";x;;;;;;;;;;
 ;"Muut päätökset -raportti";"READ_CHILD_DOCUMENT_DECISIONS_REPORT";x;;x;;;;;x;;x;
 ;"Patu-raportin lähetys";SEND_PATU_REPORT;;;;;;;;;;;
@@ -376,6 +377,7 @@ Yksikkö;"Tilapäisen sijaisen luku";READ_TEMPORARY_EMPLOYEE;x;;;;;;;x;;;x
 Yksikkö;"Tilapäisen sijaisen muokkaus";"UPDATE_TEMPORARY_EMPLOYEE";x;;;;;;;x;;;x
 Yksikkö;"Tilapäisen sijaisen poisto";"DELETE_TEMPORARY_EMPLOYEE";x;;;;;;;x;;;x
 Yksikkö;"Ruokailijamäärät-raportti";READ_MEAL_REPORT;x;;;;;;;x;;;x
+Yksikkö;"Lasten poissaoloraportti";"READ_CHILD_ABSENCE_REPORT_FOR_UNIT";x;;;x;;;;x;;;x
 Yksikkö;"Esiopetuksen poissaoloraportti";"READ_PRESCHOOL_ABSENCE_REPORT_FOR_UNIT";x;;;;;;;x;x;;
 Yksikkö;"Pedagogiset asiakirjat -raportti";"READ_CHILD_DOCUMENTS_REPORT";x;;x;;;;;x;;x;
 Yksikkö;"Ehdottava EO-raportti";"READ_PRESCHOOL_APPLICATION_REPORT";"TRE,NOK,YLO,KAN";;"TRE,NOK,YLO,KAN";;;"TRE,NOK,YLO,KAN";;"TRE,NOK,YLO,KAN";;;

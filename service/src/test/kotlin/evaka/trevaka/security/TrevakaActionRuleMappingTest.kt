@@ -430,6 +430,7 @@ private fun translate(action: Global) =
             Global.READ_AROMI_ORDERS -> "Aromi-raportti"
             Global.READ_PLACEMENT_DESKTOP_DAYCARES -> "Sijoittelutyöpöytä"
             Global.READ_DRAFT_OCCUPANCIES -> "Hahmotellun täyttö/käyttöasteen luku"
+            Global.READ_CHILD_ABSENCE_REPORT_FOR_AREA -> "Lasten poissaoloraportti alueittain"
             Global.READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA ->
                 "Esiopetuksen poissaoloraportti alueittain"
         }
@@ -703,6 +704,7 @@ private fun translate(entry: Enum<*>) =
             "UPDATE_TEMPORARY_EMPLOYEE" -> "Tilapäisen sijaisen muokkaus"
             "DELETE_TEMPORARY_EMPLOYEE" -> "Tilapäisen sijaisen poisto"
             "READ_MEAL_REPORT" -> "Ruokailijamäärät-raportti"
+            "READ_CHILD_ABSENCE_REPORT_FOR_UNIT" -> "Lasten poissaoloraportti"
             "READ_PRESCHOOL_ABSENCE_REPORT_FOR_UNIT" -> "Esiopetuksen poissaoloraportti"
             "READ_CHILD_DOCUMENTS_REPORT" -> "Pedagogiset asiakirjat -raportti"
             "READ_PRESCHOOL_APPLICATION_REPORT" -> "Ehdottava EO-raportti"

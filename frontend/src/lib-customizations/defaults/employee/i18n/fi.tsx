@@ -4271,6 +4271,33 @@ export const fi = {
         includeClosed: 'Näytä lopetetut yksiköt ja ryhmät'
       }
     },
+    childAbsences: {
+      title: 'Lasten poissaoloraportti',
+      description:
+        'Raportti listaa lasten koko päivän poissaolojen määrät päivinä valitulla aikavälillä. Auttaa esimerkiksi ilmoittamattomien poissaolojen seurannassa.',
+      firstName: 'Etunimi',
+      lastName: 'Sukunimi',
+      daycareName: 'Yksikkö',
+      groupName: 'Ryhmä',
+      days: '(päivää)',
+      total: 'Yhteensä',
+      filters: {
+        areaSelection: {
+          label: 'Alue:',
+          placeHolder: 'Valitse alue'
+        },
+        daycareSelection: {
+          label: 'Yksikkö:',
+          placeholder: 'Valitse yksikkö'
+        },
+        groupSelection: {
+          label: 'Ryhmä:',
+          placeholder: 'Valitse ryhmä'
+        },
+        range: 'Aikaväli:',
+        includeClosed: 'Näytä lopetetut yksiköt ja ryhmät'
+      }
+    },
     preschoolApplications: {
       title: 'Ehdottava EO-raportti',
       description:

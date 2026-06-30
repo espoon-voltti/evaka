@@ -17,6 +17,7 @@ enum class Report {
     ASSISTANCE_NEEDS_AND_ACTIONS,
     ASSISTANCE_NEEDS_AND_ACTIONS_BY_CHILD,
     ATTENDANCE_RESERVATION,
+    CHILD_ABSENCES,
     CHILD_AGE_LANGUAGE,
     CHILD_DOCUMENT_DECISIONS,
     CHILD_DOCUMENTS,
@@ -208,6 +209,14 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.MEALS.takeIf {
                     permittedActionsForSomeUnit.contains(Action.Unit.READ_MEAL_REPORT)
+                },
+                Report.CHILD_ABSENCES.takeIf {
+                    permittedGlobalActions.contains(
+                        Action.Global.READ_CHILD_ABSENCE_REPORT_FOR_AREA
+                    ) ||
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_CHILD_ABSENCE_REPORT_FOR_UNIT
+                        )
                 },
                 Report.PRESCHOOL_ABSENCES.takeIf {
                     permittedActionsForSomeUnit.contains(
