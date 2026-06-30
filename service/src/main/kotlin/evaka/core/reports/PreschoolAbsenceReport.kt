@@ -361,7 +361,8 @@ SELECT ppc.id AS child_id,
     ppc.placement_type
 FROM preschool_placement_children ppc
     LEFT JOIN unnest(${bind(absenceTypes)}::absence_type[]) AS types (absence_type) ON TRUE
-    LEFT JOIN absence ab ON ppc.examination_range @> ab.date
+    LEFT JOIN absence ab ON ${bind(preschoolTerm)} @> ab.date
+        AND ppc.examination_range @> ab.date
         AND ppc.id = ab.child_id
         AND ab.absence_type = types.absence_type
         AND ab.category = 'NONBILLABLE'
@@ -413,7 +414,8 @@ SELECT
     pgpc.placement_type
 FROM preschool_group_placement_children pgpc
     LEFT JOIN unnest(${bind(absenceTypes)}::absence_type[]) AS types (absence_type) ON TRUE
-    LEFT JOIN absence ab ON pgpc.examination_range @> ab.date
+    LEFT JOIN absence ab ON ${bind(preschoolTerm)} @> ab.date
+        AND pgpc.examination_range @> ab.date
         AND pgpc.id = ab.child_id
         AND ab.absence_type = types.absence_type
         AND ab.category = 'NONBILLABLE'
