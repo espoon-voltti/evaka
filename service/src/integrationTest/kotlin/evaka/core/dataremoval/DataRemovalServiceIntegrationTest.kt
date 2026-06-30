@@ -1571,14 +1571,17 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     fun `deleteExpiredApplications nulls all provenance references while keeping the referencing rows`() {
         val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
         val survivingChild = DevPerson()
+        val referencingPlacementId = PlacementId(UUID.randomUUID())
         db.transaction { tx ->
             tx.insert(survivingChild, DevPersonType.CHILD)
             tx.insert(
                 DevPlacement(
+                    id = referencingPlacementId,
                     childId = survivingChild.id,
                     unitId = daycare.id,
                     startDate = today.minusMonths(1),
                     endDate = today.plusMonths(1),
+                    source = PlacementSource.APPLICATION,
                     sourceApplicationId = tree.applicationId,
                 )
             )
@@ -1588,11 +1591,18 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         dataRemovalService.deleteExpiredApplications(db, now, applicationExpireDate, limit = 100)
 
         assertEquals(0, rowCount("application"))
+        assertEquals(
+            null to null,
+            readPlacementSource(referencingPlacementId),
+            "placement source and source_application_id should be nulled",
+        )
         listOf(
                 Triple("placement", "source_application_id", 2),
                 Triple("income", "application_id", 1),
                 Triple("fridge_child", "created_by_application", 1),
+                Triple("fridge_child", "create_source", 1),
                 Triple("fridge_partner", "created_from_application", 2),
+                Triple("fridge_partner", "create_source", 2),
                 Triple("message_thread", "application_id", 1),
             )
             .forEach { (table, column, survivingRows) ->
@@ -1600,6 +1610,19 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 assertEquals(0, countNonNull(table, column), "$table.$column should be nulled")
             }
     }
+
+    private fun readPlacementSource(id: PlacementId): Pair<PlacementSource?, ApplicationId?> =
+        db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT source, source_application_id FROM placement WHERE id = ${bind(id)}"
+                    )
+                }
+                .exactlyOne {
+                    column<PlacementSource?>("source") to
+                        column<ApplicationId?>("source_application_id")
+                }
+        }
 
     private fun attachApplicationProvenance(applicationId: ApplicationId) {
         db.transaction { tx ->
@@ -1629,7 +1652,7 @@ VALUES (${bind(head.id)}, '{}'::jsonb, ${bind(today)}, ${bind(applicationId)}, $
             tx.insert(fridgeChild)
             tx.execute {
                 sql(
-                    "UPDATE fridge_child SET created_by_application = ${bind(applicationId)} WHERE id = ${bind(fridgeChild.id)}"
+                    "UPDATE fridge_child SET create_source = 'APPLICATION', created_by_application = ${bind(applicationId)} WHERE id = ${bind(fridgeChild.id)}"
                 )
             }
 
@@ -1643,7 +1666,7 @@ VALUES (${bind(head.id)}, '{}'::jsonb, ${bind(today)}, ${bind(applicationId)}, $
             tx.insert(partnership)
             tx.execute {
                 sql(
-                    "UPDATE fridge_partner SET created_from_application = ${bind(applicationId)} WHERE partnership_id = ${bind(partnership.id)}"
+                    "UPDATE fridge_partner SET create_source = 'APPLICATION', created_from_application = ${bind(applicationId)} WHERE partnership_id = ${bind(partnership.id)}"
                 )
             }
 

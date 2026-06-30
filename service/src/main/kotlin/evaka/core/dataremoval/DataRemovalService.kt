@@ -435,7 +435,7 @@ GROUP BY a.id
     if (deletableIds.isNotEmpty()) {
         execute {
             sql(
-                "UPDATE placement SET source_application_id = NULL WHERE source_application_id = ANY(${bind(deletableIds)})"
+                "UPDATE placement SET source = NULL, source_application_id = NULL WHERE source_application_id = ANY(${bind(deletableIds)})"
             )
         }
         execute {
@@ -445,12 +445,12 @@ GROUP BY a.id
         }
         execute {
             sql(
-                "UPDATE fridge_child SET created_by_application = NULL WHERE created_by_application = ANY(${bind(deletableIds)})"
+                "UPDATE fridge_child SET create_source = NULL, created_by_application = NULL WHERE created_by_application = ANY(${bind(deletableIds)})"
             )
         }
         execute {
             sql(
-                "UPDATE fridge_partner SET created_from_application = NULL WHERE created_from_application = ANY(${bind(deletableIds)})"
+                "UPDATE fridge_partner SET create_source = NULL, created_from_application = NULL WHERE created_from_application = ANY(${bind(deletableIds)})"
             )
         }
         execute {
