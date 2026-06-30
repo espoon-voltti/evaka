@@ -20,7 +20,11 @@ import { logAuditEvent, logDebug } from './logging.ts'
 import { fromCallback } from './promise-utils.ts'
 import type { RedisClient } from './redis-client.ts'
 
-export type SessionType = 'citizen' | 'employee' | 'employee-mobile'
+export type SessionType =
+  | 'citizen'
+  | 'employee'
+  | 'employee-mobile'
+  | 'citizen-messaging'
 
 function cookiePrefix(sessionType: SessionType) {
   switch (sessionType) {
@@ -30,6 +34,8 @@ function cookiePrefix(sessionType: SessionType) {
       return 'evaka.employee'
     case 'employee-mobile':
       return 'evaka.employee'
+    case 'citizen-messaging':
+      return 'evaka.eugw.messaging'
   }
 }
 
@@ -47,6 +53,10 @@ function userSessionsKey(userIdHash: string) {
 
 function secondarySfiSessionsKey(sfiNameId: string) {
   return `sfisess:${sfiNameId}`
+}
+
+function messagingSessionKey(primarySessionId: string) {
+  return `msgsess:${primarySessionId}`
 }
 
 export function sessionCookie(sessionType: SessionType) {
@@ -217,6 +227,15 @@ export function sessionSupport<T extends SessionType>(
           secondarySfiSessionsKey(secondarySession)
         ])
       }
+
+      // Also clean up messaging session if it exists
+      const messagingSession = await redisClient.get(messagingSessionKey(sid))
+      if (messagingSession) {
+        await redisClient.del([
+          sessionKey(messagingSession),
+          messagingSessionKey(sid)
+        ])
+      }
     }
 
     return user
@@ -271,6 +290,17 @@ export function sessionSupport<T extends SessionType>(
         await redisClient.del([
           secondarySfiSessionsKey(sessionId),
           secondarySfiSessionsKey(secondarySession)
+        ])
+      }
+
+      // Also clean up messaging session if it exists
+      const messagingSession = await redisClient.get(
+        messagingSessionKey(sessionId)
+      )
+      if (messagingSession) {
+        await redisClient.del([
+          sessionKey(messagingSession),
+          messagingSessionKey(sessionId)
         ])
       }
     }
@@ -391,4 +421,19 @@ export function sessionSupport<T extends SessionType>(
     getUserHeader,
     isAuthenticated
   }
+}
+
+export async function linkMessagingSession(
+  redisClient: RedisClient,
+  primarySessionId: string,
+  messagingSessionId: string,
+  messagingTimeoutMinutes: number
+) {
+  await redisClient.set(
+    messagingSessionKey(primarySessionId),
+    messagingSessionId,
+    {
+      EX: messagingTimeoutMinutes * 60
+    }
+  )
 }
