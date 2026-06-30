@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { animated } from '@react-spring/web'
 import { useCallback } from 'react'
 import styled from 'styled-components'
 
@@ -11,7 +12,19 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft, faTimes } from 'lib-icons'
 
+import { zIndex } from '../constants'
+
 import { useTranslation } from './i18n'
+
+export const SearchContainer = animated(styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: ${colors.grayscale.g4};
+  width: 100vw;
+  overflow-y: auto;
+  z-index: ${zIndex.searchBar};
+`)
 
 const SearchInputContainer = styled.div`
   height: 60px;

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { animated, useSpring } from '@react-spring/web'
+import { useSpring } from '@react-spring/web'
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
@@ -38,12 +38,11 @@ import { faChevronDown, faChevronRight, faChevronUp } from 'lib-icons'
 
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
-import FreeTextSearch from '../common/FreeTextSearch'
+import FreeTextSearch, { SearchContainer } from '../common/FreeTextSearch'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
 import type { UnitOrGroup } from '../common/unit-or-group'
 import { isUnitView, toUnitOrGroup } from '../common/unit-or-group'
-import { zIndex } from '../constants'
 import { unitInfoQuery } from '../units/queries'
 
 import StaffListItem from './StaffListItem'
@@ -304,14 +303,6 @@ const StaffSearch = React.memo(function StaffSearch({
     </SearchContainer>
   )
 })
-
-const SearchContainer = animated(styled.div`
-  position: absolute;
-  background: ${colors.grayscale.g4};
-  width: 100vw;
-  overflow: hidden;
-  z-index: ${zIndex.searchBar};
-`)
 
 interface StaffMemberDay {
   employeeId: EmployeeId
