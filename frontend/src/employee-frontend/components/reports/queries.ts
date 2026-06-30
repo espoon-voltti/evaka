@@ -9,6 +9,7 @@ import { mergePeople, safeDeletePerson } from '../../generated/api-clients/pis'
 import {
   clearTitaniaErrors,
   getApplicationsReport,
+  getChildAbsenceReport,
   getNekkuOrderReportByUnit,
   getAssistanceNeedsAndActionsReport,
   getAssistanceNeedsAndActionsReportByChild,
@@ -162,6 +163,8 @@ export const preschoolSourceUnitsQuery = q.query(
 export const unitsReportQuery = q.query(getUnitsReport)
 
 export const mealReportByUnitQuery = q.query(getMealReportByUnit)
+
+export const childAbsenceReportQuery = q.query(getChildAbsenceReport)
 
 export const preschoolAbsenceReportQuery = q.query(getPreschoolAbsenceReport)
 

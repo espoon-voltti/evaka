@@ -14,6 +14,8 @@ import type { AttendanceReservationReportByChildBody } from 'lib-common/generate
 import type { AttendanceReservationReportByChildGroup } from 'lib-common/generated/api-types/reports'
 import type { AttendanceReservationReportRow } from 'lib-common/generated/api-types/reports'
 import type { CareType } from 'lib-common/generated/api-types/daycare'
+import type { ChildAbsenceReportBody } from 'lib-common/generated/api-types/reports'
+import type { ChildAbsenceReportRow } from 'lib-common/generated/api-types/reports'
 import type { ChildAgeLanguageReportRow } from 'lib-common/generated/api-types/reports'
 import type { ChildAttendanceReportRow } from 'lib-common/generated/api-types/reports'
 import type { ChildDocumentOrDecisionStatus } from 'lib-common/generated/api-types/document'
@@ -240,6 +242,23 @@ export async function getAttendanceReservationReportByUnit(
     params
   })
   return json.map(e => deserializeJsonAttendanceReservationReportRow(e))
+}
+
+
+/**
+* Generated from evaka.core.reports.ChildAbsenceReport.getChildAbsenceReport
+*/
+export async function getChildAbsenceReport(
+  request: {
+    body: ChildAbsenceReportBody
+  }
+): Promise<ChildAbsenceReportRow[]> {
+  const { data: json } = await client.request<JsonOf<ChildAbsenceReportRow[]>>({
+    url: uri`/employee/reports/child-absence`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<ChildAbsenceReportBody>
+  })
+  return json
 }
 
 

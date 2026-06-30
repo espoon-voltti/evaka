@@ -179,6 +179,29 @@ export interface AttendanceReservationReportRow {
 }
 
 /**
+* Generated from evaka.core.reports.ChildAbsenceReport.ChildAbsenceReportBody
+*/
+export interface ChildAbsenceReportBody {
+  areaId: AreaId | null
+  groupId: GroupId | null
+  range: FiniteDateRange
+  unitId: DaycareId | null
+}
+
+/**
+* Generated from evaka.core.reports.ChildAbsenceReportRow
+*/
+export interface ChildAbsenceReportRow {
+  absenceCountsByType: Partial<Record<AbsenceType, number>>
+  childId: PersonId
+  daycareName: string
+  firstName: string
+  groupName: string
+  lastName: string
+  placementType: PlacementType
+}
+
+/**
 * Generated from evaka.core.reports.ChildAgeLanguageReportRow
 */
 export interface ChildAgeLanguageReportRow {
@@ -907,6 +930,7 @@ export type Report =
   | 'ASSISTANCE_NEEDS_AND_ACTIONS'
   | 'ASSISTANCE_NEEDS_AND_ACTIONS_BY_CHILD'
   | 'ATTENDANCE_RESERVATION'
+  | 'CHILD_ABSENCES'
   | 'CHILD_AGE_LANGUAGE'
   | 'CHILD_DOCUMENT_DECISIONS'
   | 'CHILD_DOCUMENTS'
@@ -1252,6 +1276,14 @@ export function deserializeJsonAttendanceReservationReportRow(json: JsonOf<Atten
   return {
     ...json,
     dateTime: HelsinkiDateTime.parseIso(json.dateTime)
+  }
+}
+
+
+export function deserializeJsonChildAbsenceReportBody(json: JsonOf<ChildAbsenceReportBody>): ChildAbsenceReportBody {
+  return {
+    ...json,
+    range: FiniteDateRange.parseJson(json.range)
   }
 }
 
