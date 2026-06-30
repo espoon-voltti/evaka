@@ -43,9 +43,9 @@ const StaffBoxInfo = styled.div`
   min-height: ${imageHeight};
   color: ${colors.grayscale.g100};
   overflow: hidden;
-  `
-  
-  const StaffName = styled(Bold)`
+`
+
+const StaffName = styled(Bold)`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
