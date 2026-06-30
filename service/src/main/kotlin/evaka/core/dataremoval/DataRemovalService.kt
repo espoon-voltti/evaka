@@ -15,6 +15,8 @@ import evaka.core.shared.ChildImageId
 import evaka.core.shared.FinanceNoteId
 import evaka.core.shared.Id
 import evaka.core.shared.PersonId
+import evaka.core.shared.PlacementId
+import evaka.core.shared.ServiceApplicationId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.async.AsyncJobType
@@ -115,6 +117,8 @@ class DataRemovalService(
                     "holiday_questionnaire_answer",
                 ),
         )
+
+        deleteExpiredServiceApplications(dbc, expireDate = today.minusYears(10), limit)
 
         unsetExpiredChildReferences(
             dbc,
@@ -343,6 +347,74 @@ RETURNING finance_note.id
         }
         .executeAndReturnGeneratedKeys()
         .toList()
+
+fun deleteExpiredServiceApplications(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
+    logger.info { "Deleting at most $limit expired service applications" }
+    val (deleted, clearedPlacements) =
+        dbc.transaction { tx -> tx.deleteExpiredServiceApplicationsBatch(expireDate, limit) }
+    deleted.forEach { id ->
+        auditExpiredDelete(
+            entity = "service_application",
+            targetId = AuditId(id),
+            meta = mapOf("expireDate" to expireDate),
+        )
+    }
+    clearedPlacements.forEach { id ->
+        auditExpiredUnset(
+            entity = "placement",
+            targetId = AuditId(id),
+            meta =
+                mapOf(
+                    "expireDate" to expireDate,
+                    "clearedColumns" to listOf("source", "source_service_application_id"),
+                ),
+        )
+    }
+}
+
+private fun Database.Transaction.deleteExpiredServiceApplicationsBatch(
+    expireDate: LocalDate,
+    limit: Int,
+): Pair<List<ServiceApplicationId>, List<PlacementId>> {
+    val batch =
+        createQuery {
+                sql(
+                    """
+SELECT id
+FROM service_application
+WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
+FOR UPDATE
+LIMIT ${bind(limit)}
+"""
+                )
+            }
+            .toList<ServiceApplicationId>()
+
+    if (batch.isEmpty()) return emptyList<ServiceApplicationId>() to emptyList()
+
+    // A placement created from an accepted service application points back at it
+    // (source = 'SERVICE_APPLICATION'). The FK blocks deletion and
+    // check$source_service_application_ref
+    // forbids nulling the pointer while source = 'SERVICE_APPLICATION', so clear both: with
+    // source = NULL the CHECK's first disjunct is NULL (not FALSE) and the constraint passes.
+    val clearedPlacements =
+        createUpdate {
+                sql(
+                    """
+UPDATE placement
+SET source = NULL, source_service_application_id = NULL
+WHERE source_service_application_id = ANY(${bind(batch)})
+RETURNING id
+"""
+                )
+            }
+            .executeAndReturnGeneratedKeys()
+            .toList<PlacementId>()
+
+    execute { sql("DELETE FROM service_application WHERE id = ANY(${bind(batch)})") }
+
+    return batch to clearedPlacements
+}
 
 fun deleteExpiredCitizenUsers(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
     logger.info { "Deleting at most $limit expired citizen users" }
