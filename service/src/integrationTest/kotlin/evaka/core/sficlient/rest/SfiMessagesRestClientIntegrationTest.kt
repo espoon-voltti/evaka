@@ -168,6 +168,45 @@ class SfiMessagesRestClientIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
+    fun `it sends a sfi message with costPool when configured`() {
+        val costPoolValue = "test-cost-pool-123"
+        val envWithCostPool =
+            createEnv().let { it.copy(printing = it.printing.copy(costPool = costPoolValue)) }
+        val costPoolClient =
+            SfiMessagesRestClient(
+                envWithCostPool,
+                getDocument = { location ->
+                    assertEquals(message.documentBucket, location.bucket)
+                    assertEquals(message.documentKey, location.key)
+                    Document(location.key, fileContent, contentType = "content-type")
+                },
+                passwordStore =
+                    MockPasswordStore(
+                        initialPassword = MockSfiMessagesRestEndpoint.DEFAULT_PASSWORD
+                    ),
+            )
+
+        costPoolClient.send(message)
+
+        MockSfiMessagesRestEndpoint.getCapturedMessages().entries.let {
+            assertEquals(1, it.size)
+            val (_, captured) = it.first().value
+            assertEquals(costPoolValue, captured.paperMail.printingAndEnvelopingService.costPool)
+        }
+    }
+
+    @Test
+    fun `it sends a sfi message without costPool when not configured`() {
+        client.send(message)
+
+        MockSfiMessagesRestEndpoint.getCapturedMessages().entries.let {
+            assertEquals(1, it.size)
+            val (_, captured) = it.first().value
+            assertEquals(null, captured.paperMail.printingAndEnvelopingService.costPool)
+        }
+    }
+
+    @Test
     fun `it handles duplicate message status 409 correctly`() {
         client.send(message)
         assertEquals(1, MockSfiMessagesRestEndpoint.getCapturedMessages().size)

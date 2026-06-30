@@ -159,7 +159,14 @@ data class PaperMailPart(
 }
 
 // https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.PrintingAndEnvelopingService
-data class PrintingAndEnvelopingService(val postiMessaging: PostiMessaging)
+data class PrintingAndEnvelopingService(
+    val postiMessaging: PostiMessaging,
+    @JsonInclude(JsonInclude.Include.NON_NULL) val costPool: String? = null,
+) {
+    init {
+        require(costPool == null || costPool.isNotBlank()) { "costPool must not be blank" }
+    }
+}
 
 // https://api.messages-qa.suomi.fi/api-docs#model-messages.api.rest.v2.PostiMessaging
 data class PostiMessaging(
