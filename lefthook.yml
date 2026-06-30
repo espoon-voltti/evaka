@@ -8,7 +8,7 @@ pre-commit:
         parallel: true
         jobs:
           - &oxlint
-            run: npx oxlint --fix {staged_files}
+            run: npx oxlint --fix --no-error-on-unmatched-pattern {staged_files}
             glob: apigw/*.{ts,tsx,js,jsx,cjs,mjs}
             root: apigw
             stage_fixed: true
