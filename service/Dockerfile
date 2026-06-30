@@ -68,7 +68,7 @@ RUN curl -sSL https://github.com/espoon-voltti/s3-downloader/releases/download/$
  && echo "${S3_DOWNLOADER_SHA256}  /usr/local/bin/s3download" | sha256sum -c - \
  && chmod +x /usr/local/bin/s3download
 
-COPY --from=builder /evaka/service/build/download-only/dd-java-agent.jar /opt/dd-java-agent.jar
+COPY --chmod=0644 --from=builder /evaka/service/build/download-only/dd-java-agent.jar /opt/dd-java-agent.jar
 COPY ./service/dd-jmxfetch/ /etc/jmxfetch/
 
 COPY ./service/entrypoint.sh entrypoint.sh
