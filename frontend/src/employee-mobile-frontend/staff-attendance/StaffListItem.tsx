@@ -42,6 +42,13 @@ const StaffBoxInfo = styled.div`
   gap: ${defaultMargins.xs};
   min-height: ${imageHeight};
   color: ${colors.grayscale.g100};
+  overflow: hidden;
+  `
+  
+  const StaffName = styled(Bold)`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `
 
 export const IconBox = styled.div<{ $present: boolean }>`
@@ -57,6 +64,8 @@ export const IconBox = styled.div<{ $present: boolean }>`
 
 const StatusDot = styled.div<{ present: boolean }>`
   width: 12px;
+  flex-shrink: 0;
+  margin-left: ${defaultMargins.s};
   height: 12px;
   border-radius: 50%;
   background-color: ${(p) =>
@@ -91,7 +100,7 @@ export default React.memo(function StaffListItem({
           />
         </IconBox>
         <StaffBoxInfo>
-          <Bold data-qa="employee-name">{name}</Bold>
+          <StaffName data-qa="employee-name">{name}</StaffName>
           {present && occupancyEffect && (
             <RoundIcon
               content="K"
