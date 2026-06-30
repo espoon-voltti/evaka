@@ -198,7 +198,8 @@ CREATE TYPE public.daycare_assistance_level AS ENUM (
 
 CREATE TYPE public.decision_reasoning_collection_type AS ENUM (
     'DAYCARE',
-    'PRESCHOOL'
+    'PRESCHOOL',
+    'CLUB'
 );
 
 -- Name: decision_status; Type: TYPE; Schema: public
