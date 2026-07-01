@@ -257,6 +257,7 @@ export class Fixture {
         name: 'Unit Manager',
         phone: ''
       },
+      preschoolManagerName: '',
       financeDecisionHandler: null,
       clubApplyPeriod: null,
       daycareApplyPeriod: null,

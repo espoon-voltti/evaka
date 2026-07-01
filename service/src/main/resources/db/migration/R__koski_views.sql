@@ -10,7 +10,7 @@ DROP VIEW IF EXISTS koski_child;
 
 CREATE VIEW koski_unit (id, unit_language, provider_type, approver_name, oph_unit_oid, oph_organizer_oid) AS
 SELECT
-    id, language AS unit_language, provider_type, unit_manager_name AS approver_name,
+    id, language AS unit_language, provider_type, COALESCE(NULLIF(preschool_manager_name, ''), unit_manager_name) AS approver_name,
     nullif(oph_unit_oid, '') AS oph_unit_oid,
     nullif(oph_organizer_oid, '') AS oph_organizer_oid
 FROM daycare
