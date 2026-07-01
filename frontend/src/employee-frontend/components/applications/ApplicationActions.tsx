@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -22,10 +22,12 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import type { MenuItem } from '../common/EllipsisMenu'
 import EllipsisMenu from '../common/EllipsisMenu'
 
 import ActionCheckbox from './ActionCheckbox'
+import DecisionReasoningChips from './DecisionReasoningChips'
 import PrimaryAction from './PrimaryAction'
 import {
   cancelApplicationMutation,
@@ -96,6 +98,7 @@ export default React.memo(function ApplicationActions({
 }: Props) {
   const [, navigate] = useLocation()
   const { i18n } = useTranslation()
+  const { featureConfig } = useContext(UserContext)
   const [confirmingApplicationCancel, setConfirmingApplicationCancel] =
     useState(false)
 
@@ -220,16 +223,40 @@ export default React.memo(function ApplicationActions({
     [permittedActionsList]
   )
 
+  const showReasoningChips =
+    featureConfig?.decisionReasoningsEnabled === true &&
+    primaryAction?.id === 'edit-decisions'
+
+  const primaryActionElement = (
+    <PrimaryAction
+      applicationId={application.id}
+      action={primaryAction}
+      actionInProgress={actionInProgress}
+      onActionStarted={onActionStarted}
+      onActionEnded={onActionEnded}
+    />
+  )
+
   return (
     <>
       <ActionsContainer>
-        <PrimaryAction
-          applicationId={application.id}
-          action={primaryAction}
-          actionInProgress={actionInProgress}
-          onActionStarted={onActionStarted}
-          onActionEnded={onActionEnded}
-        />
+        {showReasoningChips ? (
+          <FixedSpaceColumn $spacing="xs" $alignItems="flex-start">
+            {primaryActionElement}
+            <DecisionReasoningChips
+              individualReasoningCount={application.individualReasoningCount}
+              reasoningWarningCount={application.reasoningWarningCount}
+              individualTooltip={i18n.applications.decisionReasoning.individualCountTooltip(
+                application.individualReasoningCount
+              )}
+              warningTooltip={
+                i18n.applications.decisionReasoning.genericNotReadyTooltip
+              }
+            />
+          </FixedSpaceColumn>
+        ) : (
+          primaryActionElement
+        )}
         <ActionMenu
           applicationId={application.id}
           actions={permittedActionsList}
