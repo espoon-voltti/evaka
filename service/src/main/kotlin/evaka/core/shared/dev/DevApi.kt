@@ -5,6 +5,7 @@
 package evaka.core.shared.dev
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import evaka.core.AuditContext
 import evaka.core.EvakaEnv
 import evaka.core.ExcludeCodeGen
 import evaka.core.Sensitive
@@ -1057,6 +1058,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     tx,
                     clock.now(),
                     fakeAdmin,
+                    AuditContext(),
                     body,
                     featureConfig.citizenReservationThresholdHours,
                     plannedAbsenceEnabledForHourBasedServiceNeeds = true,

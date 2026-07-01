@@ -5,6 +5,8 @@
 package evaka.core.reservations
 
 import evaka.core.Audit
+import evaka.core.AuditContext
+import evaka.core.AuditEvent
 import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.absence.AbsenceCategory
@@ -309,6 +311,7 @@ class AttendanceReservationController(
         @RequestBody body: List<DailyReservationRequest>,
     ) {
         val children = body.map { it.childId }.toSet()
+        val audit = AuditContext().add(children).observeDate(body.minOfOrNull { it.date })
 
         db.connect { dbc ->
                 dbc.transaction {
@@ -323,24 +326,14 @@ class AttendanceReservationController(
                         it,
                         clock.now(),
                         user,
+                        audit,
                         body,
                         featureConfig.citizenReservationThresholdHours,
                         env.plannedAbsenceEnabledForHourBasedServiceNeeds,
                     )
                 }
             }
-            ?.also {
-                Audit.AttendanceReservationEmployeeCreate.log(
-                    targetId = AuditId(children),
-                    meta =
-                        mapOf(
-                            "deletedAbsences" to it.deletedAbsences,
-                            "deletedReservations" to it.deletedReservations,
-                            "upsertedAbsences" to it.upsertedAbsences,
-                            "upsertedReservations" to it.upsertedReservations,
-                        ),
-                )
-            }
+            .also { audit.log(AuditEvent.AttendanceReservationEmployeeCreate, clock) }
     }
 
     @PostMapping("/employee/attendance-reservations/child-date")
@@ -350,6 +343,7 @@ class AttendanceReservationController(
         clock: EvakaClock,
         @RequestBody body: ChildDatePresence,
     ) {
+        val audit = AuditContext().add(body.childId).observeDate(body.date)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     ac.requirePermissionFor(
@@ -360,22 +354,10 @@ class AttendanceReservationController(
                         body.childId,
                     )
 
-                    upsertChildDatePresence(tx, user.evakaUserId, clock.now(), body)
+                    upsertChildDatePresence(tx, user.evakaUserId, clock.now(), body, audit)
                 }
             }
-            .also { result ->
-                Audit.ChildDatePresenceUpsert.log(
-                    targetId = AuditId(body.childId),
-                    meta =
-                        mapOf(
-                            "date" to body.date,
-                            "insertedReservations" to result.insertedReservations,
-                            "deletedReservations" to result.deletedReservations,
-                            "insertedAttendances" to result.insertedAttendances,
-                            "deletedAttendances" to result.deletedAttendances,
-                        ),
-                )
-            }
+            .also { audit.log(AuditEvent.ChildDatePresenceUpsert, clock) }
     }
 
     data class ExpectedAbsencesRequest(
