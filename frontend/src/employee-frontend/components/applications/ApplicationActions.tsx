@@ -227,18 +227,22 @@ export default React.memo(function ApplicationActions({
     featureConfig?.decisionReasoningsEnabled === true &&
     primaryAction?.id === 'edit-decisions'
 
+  const primaryActionElement = (
+    <PrimaryAction
+      applicationId={application.id}
+      action={primaryAction}
+      actionInProgress={actionInProgress}
+      onActionStarted={onActionStarted}
+      onActionEnded={onActionEnded}
+    />
+  )
+
   return (
     <>
       <ActionsContainer>
-        <FixedSpaceColumn $spacing="xs" $alignItems="flex-start">
-          <PrimaryAction
-            applicationId={application.id}
-            action={primaryAction}
-            actionInProgress={actionInProgress}
-            onActionStarted={onActionStarted}
-            onActionEnded={onActionEnded}
-          />
-          {showReasoningChips && (
+        {showReasoningChips ? (
+          <FixedSpaceColumn $spacing="xs" $alignItems="flex-start">
+            {primaryActionElement}
             <DecisionReasoningChips
               individualReasoningCount={application.individualReasoningCount}
               reasoningWarningCount={application.reasoningWarningCount}
@@ -249,8 +253,10 @@ export default React.memo(function ApplicationActions({
                 i18n.applications.decisionReasoning.genericNotReadyTooltip
               }
             />
-          )}
-        </FixedSpaceColumn>
+          </FixedSpaceColumn>
+        ) : (
+          primaryActionElement
+        )}
         <ActionMenu
           applicationId={application.id}
           actions={permittedActionsList}
