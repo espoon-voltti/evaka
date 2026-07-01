@@ -5,10 +5,15 @@
 package evaka.core.decision.reasoning
 
 import evaka.core.FullApplicationTest
+import evaka.core.application.ApplicationControllerV2
 import evaka.core.application.ApplicationStateService
 import evaka.core.application.ApplicationStatus
+import evaka.core.application.ApplicationStatusOption
 import evaka.core.application.ApplicationType
+import evaka.core.application.ApplicationTypeToggle
 import evaka.core.application.DaycarePlacementPlan
+import evaka.core.application.PagedApplicationSummaries
+import evaka.core.application.SearchApplicationRequest
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child
@@ -51,6 +56,7 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
     private val startDate: LocalDate = LocalDate.of(2026, 8, 1)
 
     @Autowired private lateinit var applicationStateService: ApplicationStateService
+    @Autowired private lateinit var applicationControllerV2: ApplicationControllerV2
 
     @BeforeEach
     fun beforeEach() {
@@ -279,5 +285,50 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
         val stats = db.read { it.getApplicationDecisionReasoningStats(setOf(applicationId)) }
 
         assertEquals(2, stats[applicationId]?.reasoningWarningCount)
+    }
+
+    private fun searchWaitingDecision(): PagedApplicationSummaries =
+        applicationControllerV2.getApplicationSummaries(
+            dbInstance(),
+            admin.user,
+            clock,
+            SearchApplicationRequest(
+                page = null,
+                sortBy = null,
+                sortDir = null,
+                areas = null,
+                units = null,
+                basis = null,
+                type = ApplicationTypeToggle.ALL,
+                preschoolType = null,
+                statuses = listOf(ApplicationStatusOption.WAITING_DECISION),
+                dateType = null,
+                distinctions = null,
+                periodStart = null,
+                periodEnd = null,
+                searchTerms = null,
+                transferApplications = null,
+                voucherApplications = null,
+            ),
+        )
+
+    @Test
+    fun `search endpoint populates reasoning counts when the feature is enabled`() {
+        insertGenericReasoning(ready = false)
+        val (decisionId, applicationId) = createPlannedDecision()
+        val r1 = insertIndividualReasoning()
+        db.transaction { tx ->
+            tx.setDecisionReasoningIndividualSelections(
+                decisionId = decisionId,
+                reasoningIds = setOf(r1),
+                createdAt = now,
+                createdBy = admin.evakaUserId,
+            )
+        }
+
+        val summary = searchWaitingDecision().data.single { it.id == applicationId }
+
+        assertEquals(1, summary.individualReasoningCount)
+        assertEquals(1, summary.reasoningWarningCount)
     }
 }
