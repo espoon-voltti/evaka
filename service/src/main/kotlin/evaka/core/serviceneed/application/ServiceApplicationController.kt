@@ -4,8 +4,8 @@
 
 package evaka.core.serviceneed.application
 
-import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
+import evaka.core.AuditEvent
 import evaka.core.absence.generateAbsencesFromIrregularDailyServiceTimes
 import evaka.core.placement.PlacementSource
 import evaka.core.placement.createPlacement
@@ -54,6 +54,7 @@ class ServiceApplicationController(
         clock: EvakaClock,
         @RequestParam childId: ChildId,
     ): List<EmployeeServiceApplication> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -74,6 +75,7 @@ class ServiceApplicationController(
                             clock,
                             applications.map { it.id },
                         )
+                    audit.add(applications.map { it.id })
                     applications.map { application ->
                         EmployeeServiceApplication(
                             data = application,
@@ -82,7 +84,7 @@ class ServiceApplicationController(
                     }
                 }
             }
-            .also { Audit.ChildServiceApplicationsRead.log(targetId = AuditId(childId)) }
+            .also { audit.log(AuditEvent.ChildServiceApplicationsRead, clock) }
     }
 
     @GetMapping("/undecided")
@@ -92,6 +94,7 @@ class ServiceApplicationController(
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
     ): List<UndecidedServiceApplicationSummary> {
+        val audit = AuditContext().add(unitId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -104,7 +107,7 @@ class ServiceApplicationController(
                     tx.getUndecidedServiceApplicationsByUnit(unitId)
                 }
             }
-            .also { Audit.UnitServiceApplicationsRead.log(targetId = AuditId(unitId)) }
+            .also { audit.log(AuditEvent.UnitServiceApplicationsRead, clock) }
     }
 
     data class AcceptServiceApplicationBody(val shiftCareType: ShiftCareType, val partWeek: Boolean)
@@ -117,6 +120,7 @@ class ServiceApplicationController(
         @PathVariable id: ServiceApplicationId,
         @RequestBody body: AcceptServiceApplicationBody,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -234,16 +238,14 @@ class ServiceApplicationController(
                         runAt = now,
                     )
 
-                    Triple(application.childId, serviceNeedId, placementId)
+                    audit
+                        .add(application.childId)
+                        .add(serviceNeedId)
+                        .add(placementId)
+                        .observeDate(range.start)
                 }
             }
-            .also { (childId, serviceNeedId, placementId) ->
-                Audit.ChildServiceApplicationAccept.log(
-                    targetId = AuditId(id),
-                    objectId = AuditId(serviceNeedId),
-                    meta = mapOf("childId" to childId, "placementId" to placementId),
-                )
-            }
+            .also { audit.log(AuditEvent.ChildServiceApplicationAccept, clock) }
     }
 
     data class ServiceApplicationRejection(val reason: String)
@@ -256,6 +258,7 @@ class ServiceApplicationController(
         @PathVariable id: ServiceApplicationId,
         @RequestBody body: ServiceApplicationRejection,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -278,14 +281,9 @@ class ServiceApplicationController(
                         runAt = clock.now(),
                     )
 
-                    application.childId
+                    audit.add(application.childId)
                 }
             }
-            .also { childId ->
-                Audit.ChildServiceApplicationReject.log(
-                    targetId = AuditId(id),
-                    objectId = AuditId(childId),
-                )
-            }
+            .also { audit.log(AuditEvent.ChildServiceApplicationReject, clock) }
     }
 }
