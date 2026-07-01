@@ -1990,6 +1990,7 @@ data class DevDaycare(
     val location: Coordinate? = null,
     val mailingAddress: MailingAddress = MailingAddress(),
     val unitManager: UnitManager = UnitManager(name = "Unit Manager", phone = "", email = ""),
+    val preschoolManagerName: String = "",
     val decisionCustomization: DaycareDecisionCustomization =
         DaycareDecisionCustomization(
             daycareName = name,
