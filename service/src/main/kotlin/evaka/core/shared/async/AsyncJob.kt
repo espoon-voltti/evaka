@@ -245,6 +245,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class DeleteDecisionPdf(val key: String) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data object DeleteExpiredData : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -513,6 +517,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     DeleteAttachment::class,
                     DeleteChildDocumentPdf::class,
                     DeleteChildImage::class,
+                    DeleteDecisionPdf::class,
                     DeleteExpiredData::class,
                     DeletePersonalDevicesIfNeeded::class,
                     DvvModificationsRefresh::class,

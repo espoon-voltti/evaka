@@ -826,6 +826,21 @@ fun Database.Transaction.deleteExpiredChildDocuments(
         createQuery {
                 sql(
                     """
+WITH del_batch AS (
+    SELECT cd.id
+    FROM child_document cd
+    JOIN document_template dt ON dt.id = cd.template_id
+    WHERE (NOT dt.archive_externally OR cd.archived_at IS NOT NULL)
+      AND CASE dt.deletion_retention_basis
+        WHEN 'STATUS_TRANSITION' THEN
+            cd.status_modified_at + make_interval(days => dt.deletion_retention_days) <= ${bind(now)}
+        WHEN 'PLACEMENT_END' THEN
+            (SELECT MAX(p.end_date) FROM placement p WHERE p.child_id = cd.child_id)
+                + make_interval(days => dt.deletion_retention_days) <= ${bind(today)}
+      END
+    FOR UPDATE OF cd
+    ${if (limit != null) "LIMIT ${bind(limit)}" else ""}
+)
 SELECT
     cd.id AS document_id,
     cd.decision_id,
@@ -838,20 +853,11 @@ SELECT
         array_agg(DISTINCT sm.id) FILTER (WHERE sm.id IS NOT NULL),
         '{}'
     ) AS sfi_message_ids
-FROM child_document cd
-JOIN document_template dt ON dt.id = cd.template_id
+FROM del_batch
+JOIN child_document cd ON cd.id = del_batch.id
 LEFT JOIN child_document_published_version v ON v.child_document_id = cd.id
 LEFT JOIN sfi_message sm ON sm.document_id = cd.id
-WHERE (NOT dt.archive_externally OR cd.archived_at IS NOT NULL)
-  AND CASE dt.deletion_retention_basis
-    WHEN 'STATUS_TRANSITION' THEN
-        cd.status_modified_at + make_interval(days => dt.deletion_retention_days) <= ${bind(now)}
-    WHEN 'PLACEMENT_END' THEN
-        (SELECT MAX(p.end_date) FROM placement p WHERE p.child_id = cd.child_id)
-            + make_interval(days => dt.deletion_retention_days) <= ${bind(today)}
-  END
 GROUP BY cd.id
-${if (limit != null) "LIMIT ${bind(limit)}" else ""}
 """
                 )
             }
