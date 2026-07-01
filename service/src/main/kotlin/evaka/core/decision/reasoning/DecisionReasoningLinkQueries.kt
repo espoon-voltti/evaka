@@ -21,7 +21,7 @@ fun DecisionType.applicableReasoningCollectionType(): DecisionReasoningCollectio
         DecisionType.PRESCHOOL_DAYCARE -> DecisionReasoningCollectionType.DAYCARE
         DecisionType.PREPARATORY_EDUCATION -> DecisionReasoningCollectionType.PRESCHOOL
         DecisionType.CLUB,
-        DecisionType.PRESCHOOL_CLUB -> DecisionReasoningCollectionType.DAYCARE
+        DecisionType.PRESCHOOL_CLUB -> DecisionReasoningCollectionType.CLUB
     }
 
 fun resolveApplicableGenericReasoning(

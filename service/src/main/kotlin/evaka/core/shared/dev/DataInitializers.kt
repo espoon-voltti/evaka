@@ -1976,6 +1976,15 @@ val defaultPreschoolDecisionReasoningGeneric =
         createdAt = HelsinkiDateTime.of(LocalDate.of(2000, 1, 1), LocalTime.of(12, 0, 0)),
         modifiedAt = HelsinkiDateTime.of(LocalDate.of(2000, 1, 1), LocalTime.of(12, 0, 0)),
     )
+val defaultClubDecisionReasoningGeneric =
+    DevDecisionReasoningGeneric(
+        collectionType = DecisionReasoningCollectionType.CLUB,
+        textFi = "Generic club reasoning",
+        textSv = "Generic club reasoning sv",
+        validFrom = LocalDate.of(2000, 1, 1),
+        createdAt = HelsinkiDateTime.of(LocalDate.of(2000, 1, 1), LocalTime.of(12, 0, 0)),
+        modifiedAt = HelsinkiDateTime.of(LocalDate.of(2000, 1, 1), LocalTime.of(12, 0, 0)),
+    )
 
 fun Database.Transaction.insertDefaultDecisionGenericReasonings():
     Map<DecisionReasoningCollectionType, DecisionGenericReasoningId> {
@@ -1983,6 +1992,7 @@ fun Database.Transaction.insertDefaultDecisionGenericReasonings():
         DecisionReasoningCollectionType.DAYCARE to insert(defaultDaycareDecisionReasoningGeneric),
         DecisionReasoningCollectionType.PRESCHOOL to
             insert(defaultPreschoolDecisionReasoningGeneric),
+        DecisionReasoningCollectionType.CLUB to insert(defaultClubDecisionReasoningGeneric),
     )
 }
 

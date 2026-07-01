@@ -46,6 +46,11 @@ export default React.memo(function DecisionReasoningsPage() {
       id: 'PRESCHOOL',
       label: t.tabs.PRESCHOOL,
       onClick: () => setCollectionType('PRESCHOOL')
+    },
+    {
+      id: 'CLUB',
+      label: t.tabs.CLUB,
+      onClick: () => setCollectionType('CLUB')
     }
   ]
 

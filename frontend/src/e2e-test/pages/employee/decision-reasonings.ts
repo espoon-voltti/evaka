@@ -8,6 +8,7 @@ import { DatePicker, Element, TextInput } from '../../utils/page'
 export class DecisionReasoningsPage {
   daycareTab: Element
   preschoolTab: Element
+  clubTab: Element
 
   // Generic section
   addGenericButton: Element
@@ -36,6 +37,7 @@ export class DecisionReasoningsPage {
   constructor(page: Page) {
     this.daycareTab = page.findByDataQa('DAYCARE-tab')
     this.preschoolTab = page.findByDataQa('PRESCHOOL-tab')
+    this.clubTab = page.findByDataQa('CLUB-tab')
     this.modalOkButton = page.findByDataQa('modal-okBtn')
 
     // Generic section

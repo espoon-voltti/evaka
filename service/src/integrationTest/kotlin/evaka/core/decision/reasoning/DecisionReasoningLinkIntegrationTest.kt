@@ -24,6 +24,7 @@ import evaka.core.decision.DecisionType.PRESCHOOL
 import evaka.core.decision.DecisionType.PRESCHOOL_CLUB
 import evaka.core.decision.DecisionType.PRESCHOOL_DAYCARE
 import evaka.core.decision.getDecisionsByApplication
+import evaka.core.decision.reasoning.DecisionReasoningCollectionType.CLUB as CLUB_COLLECTION
 import evaka.core.decision.reasoning.DecisionReasoningCollectionType.DAYCARE as DAYCARE_COLLECTION
 import evaka.core.decision.reasoning.DecisionReasoningCollectionType.PRESCHOOL as PRESCHOOL_COLLECTION
 import evaka.core.decision.updateDecisionDrafts
@@ -41,6 +42,7 @@ import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateRange
@@ -85,8 +87,8 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
             PRESCHOOL_COLLECTION,
             PREPARATORY_EDUCATION.applicableReasoningCollectionType(),
         )
-        assertEquals(DAYCARE_COLLECTION, CLUB.applicableReasoningCollectionType())
-        assertEquals(DAYCARE_COLLECTION, PRESCHOOL_CLUB.applicableReasoningCollectionType())
+        assertEquals(CLUB_COLLECTION, CLUB.applicableReasoningCollectionType())
+        assertEquals(CLUB_COLLECTION, PRESCHOOL_CLUB.applicableReasoningCollectionType())
     }
 
     private fun insertGenericReasoning(
@@ -166,17 +168,28 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
-    fun `resolver returns the DAYCARE reasoning for PRESCHOOL_CLUB`() {
-        val daycareId =
-            insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
-        insertGenericReasoning(PRESCHOOL_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
+    fun `resolver returns the CLUB reasoning for CLUB and PRESCHOOL_CLUB`() {
+        val clubId = insertGenericReasoning(CLUB_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
+        insertGenericReasoning(DAYCARE_COLLECTION, LocalDate.of(2026, 1, 1), ready = true)
 
-        val resolved = db.read { tx ->
+        val resolvedClub = db.read { tx ->
+            resolveApplicableGenericReasoning(tx, CLUB, LocalDate.of(2026, 8, 1))
+        }
+        val resolvedPreschoolClub = db.read { tx ->
             resolveApplicableGenericReasoning(tx, PRESCHOOL_CLUB, LocalDate.of(2026, 8, 1))
         }
 
-        assertEquals(DAYCARE_COLLECTION, resolved?.collectionType)
-        assertEquals(daycareId, resolved?.id)
+        assertEquals(CLUB_COLLECTION, resolvedClub?.collectionType)
+        assertEquals(clubId, resolvedClub?.id)
+        assertEquals(CLUB_COLLECTION, resolvedPreschoolClub?.collectionType)
+        assertEquals(clubId, resolvedPreschoolClub?.id)
+    }
+
+    @Test
+    fun `default generic reasonings are inserted for every collection type`() {
+        val inserted = db.transaction { tx -> tx.insertDefaultDecisionGenericReasonings() }
+
+        assertEquals(DecisionReasoningCollectionType.entries.toSet(), inserted.keys)
     }
 
     @Test
