@@ -17,7 +17,9 @@ import {
   testDaycareGroup,
   Fixture,
   testAdult,
+  testAdult2,
   testChild,
+  testChild2,
   testCareArea,
   testDaycare
 } from '../../dev-api/fixtures'
@@ -243,6 +245,35 @@ test.describe('Citizen child documents listing page', () => {
       evaka.url.endsWith(`/child-documents/${documentIdHojks}`)
     ).toBeTruthy()
     await expect(evaka.find('h1')).toHaveText('HOJKS 2023-2024')
+  })
+
+  test('Hojks category is hidden when there are no hojks documents', async ({
+    newEvakaPage
+  }) => {
+    // a separate guardian whose only child has no child documents at all
+    await Fixture.family({
+      guardian: testAdult2,
+      children: [testChild2]
+    }).save()
+    await insertGuardians({
+      body: [{ guardianId: testAdult2.id, childId: testChild2.id }]
+    })
+    await createDaycarePlacements({
+      body: [
+        createDaycarePlacementFixture(randomId(), testChild2.id, testDaycare.id)
+      ]
+    })
+
+    const page = await newEvakaPage({ mockedTime: mockedNow })
+    await enduserLogin(page, testAdult2, '/')
+
+    const header = new CitizenHeader(page, 'desktop')
+    await header.openChildPage(testChild2.id)
+    const childPage = new CitizenChildPage(page)
+    await childPage.openCollapsible('child-documents')
+
+    await expect(childPage.childDocumentsCategoryTitle('plans')).toBeVisible()
+    await expect(childPage.childDocumentsCategoryTitle('hojks')).toBeHidden()
   })
 
   test('Published pedagogical report is in the list', async ({ evaka }) => {

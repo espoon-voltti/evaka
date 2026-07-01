@@ -168,6 +168,9 @@ export class CitizenChildPage {
     )
   }
 
+  childDocumentsCategoryTitle = (category: 'plans' | 'hojks' | 'other') =>
+    this.page.findByDataQa(`child-documents-${category}-title`)
+
   childDocumentRow = (documentId: UUID) =>
     this.page.find(`tr[data-qa="child-document-${documentId}"]`)
 
