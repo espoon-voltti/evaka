@@ -55,7 +55,7 @@ const Root = styled.div`
   align-items: center;
 
   background: ${colors.grayscale.g0};
-  box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.15);
   margin-bottom: 0 !important;
   z-index: ${zIndex.bottomBar};
 `
@@ -159,10 +159,8 @@ export default function BottomNavbar({
                 onClick={() =>
                   selected !== 'staff' &&
                   navigate(
-                    routes.staffAttendancesToday(
-                      unitOrGroupForNonChildPages,
-                      'absent'
-                    ).value
+                    routes.staffAttendancesToday(unitOrGroupForNonChildPages)
+                      .value
                   )
                 }
               >

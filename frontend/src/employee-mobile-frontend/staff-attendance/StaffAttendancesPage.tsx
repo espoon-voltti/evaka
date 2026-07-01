@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useSpring } from '@react-spring/web'
 import sortBy from 'lodash/sortBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
@@ -19,7 +20,8 @@ import type LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -29,12 +31,14 @@ import { PersonName } from 'lib-components/molecules/PersonNames'
 import type { TabLink } from 'lib-components/molecules/Tabs'
 import { TabLinks } from 'lib-components/molecules/Tabs'
 import { fontWeights } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { fasExclamationTriangle } from 'lib-icons'
-import { faChevronDown, faChevronUp } from 'lib-icons'
-import { faPlus } from 'lib-icons'
+import { faChevronDown, faChevronRight, faChevronUp } from 'lib-icons'
 
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
+import FreeTextSearch, { SearchContainer } from '../common/FreeTextSearch'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
 import type { UnitOrGroup } from '../common/unit-or-group'
@@ -45,27 +49,12 @@ import StaffListItem from './StaffListItem'
 import { staffAttendanceQuery } from './queries'
 import { toStaff } from './utils'
 
-const StaticIconContainer = styled.div`
-  position: fixed;
-  bottom: 68px;
-  right: 8px;
-`
-
 type PrimaryTab = 'today' | 'planned'
-type StatusTab = 'present' | 'absent'
 
 type Props = {
   unitOrGroup: UnitOrGroup
   primaryTab: PrimaryTab
-} & (
-  | {
-      primaryTab: 'today'
-      statusTab: StatusTab
-    }
-  | {
-      primaryTab: 'planned'
-    }
-)
+}
 
 export default React.memo(function StaffAttendancesPage(props: Props) {
   const { i18n } = useTranslation()
@@ -74,14 +63,14 @@ export default React.memo(function StaffAttendancesPage(props: Props) {
   const unitId = unitOrGroup.unitId
   const unitInfoResponse = useQueryResult(unitInfoQuery({ unitId }))
 
+  const [showSearch, setShowSearch] = useState(false)
+  const toggleSearch = useCallback(() => setShowSearch((show) => !show), [])
+
   const changeGroup = useCallback(
     (group: GroupInfo | undefined) => {
       navigate(
         props.primaryTab === 'today'
-          ? routes.staffAttendancesToday(
-              toUnitOrGroup(unitId, group?.id),
-              props.statusTab
-            ).value
+          ? routes.staffAttendancesToday(toUnitOrGroup(unitId, group?.id)).value
           : routes.staffAttendancesPlanned(toUnitOrGroup(unitId, group?.id))
               .value
       )
@@ -118,31 +107,36 @@ export default React.memo(function StaffAttendancesPage(props: Props) {
   )
 
   return (
-    <PageWithNavigation
-      unitOrGroup={unitOrGroup}
-      selected="staff"
-      selectedGroup={selectedGroup}
-      onChangeGroup={changeGroup}
-    >
-      <TabLinks tabs={tabs} mobile />
-      {props.primaryTab === 'today' ? (
-        <StaffAttendancesToday
+    <>
+      {props.primaryTab === 'today' && (
+        <StaffSearch
           unitOrGroup={unitOrGroup}
-          tab={props.statusTab}
+          show={showSearch}
+          toggleShow={toggleSearch}
         />
-      ) : (
-        <StaffAttendancesPlanned unitOrGroup={unitOrGroup} />
       )}
-    </PageWithNavigation>
+      <PageWithNavigation
+        unitOrGroup={unitOrGroup}
+        selected="staff"
+        selectedGroup={selectedGroup}
+        onChangeGroup={changeGroup}
+        toggleSearch={props.primaryTab === 'today' ? toggleSearch : undefined}
+      >
+        <TabLinks tabs={tabs} mobile />
+        {props.primaryTab === 'today' ? (
+          <StaffAttendancesToday unitOrGroup={unitOrGroup} />
+        ) : (
+          <StaffAttendancesPlanned unitOrGroup={unitOrGroup} />
+        )}
+      </PageWithNavigation>
+    </>
   )
 })
 
 const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
-  unitOrGroup,
-  tab
+  unitOrGroup
 }: {
   unitOrGroup: UnitOrGroup
-  tab: StatusTab
 }) {
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
@@ -151,92 +145,162 @@ const StaffAttendancesToday = React.memo(function StaffAttendancesToday({
     staffAttendanceQuery({ unitId: unitOrGroup.unitId })
   )
 
+  const [presentOpen, setPresentOpen] = useState(true)
+  const [absentOpen, setAbsentOpen] = useState(true)
+
   const navigateToExternalMemberArrival = useCallback(
     () => navigate(routes.externalStaffAttendances(unitOrGroup).value),
     [unitOrGroup, navigate]
   )
 
-  const presentStaffCounts = useMemo(
+  const groupedStaff = useMemo(
     () =>
-      staffAttendanceResponse.map(
-        (res) =>
-          res.staff.filter((s) =>
-            isUnitView(unitOrGroup) ? s.present : s.present === unitOrGroup.id
-          ).length +
-          res.extraAttendances.filter(
-            (s) => isUnitView(unitOrGroup) || s.groupId === unitOrGroup.id
-          ).length
-      ),
-    [unitOrGroup, staffAttendanceResponse]
-  )
-
-  const tabs = useMemo(
-    (): TabLink[] => [
-      {
-        id: 'absent',
-        link: '/today/absent',
-        label: i18n.attendances.types.ABSENT
-      },
-      {
-        id: 'present',
-        link: '/today/present',
-        label: (
-          <>
-            {i18n.attendances.types.PRESENT}
-            <br />({presentStaffCounts.getOrElse('0')})
-          </>
+      staffAttendanceResponse.map((res) => {
+        const present = isUnitView(unitOrGroup)
+          ? [
+              ...res.staff.filter((s) => s.present !== null),
+              ...res.extraAttendances
+            ]
+          : [
+              ...res.staff.filter((s) => s.present === unitOrGroup.id),
+              ...res.extraAttendances.filter(
+                (s) => s.groupId === unitOrGroup.id
+              )
+            ]
+        const absent = res.staff.filter(
+          (s) =>
+            s.present === null &&
+            (isUnitView(unitOrGroup) || s.groupIds.includes(unitOrGroup.id))
         )
-      }
-    ],
-    [i18n, presentStaffCounts]
-  )
-
-  const filteredStaff = useMemo(
-    () =>
-      staffAttendanceResponse.map((res) =>
-        tab === 'present'
-          ? isUnitView(unitOrGroup)
-            ? [
-                ...res.staff.filter((s) => s.present !== null),
-                ...res.extraAttendances
-              ]
-            : [
-                ...res.staff.filter((s) => s.present === unitOrGroup.id),
-                ...res.extraAttendances.filter(
-                  (s) => s.groupId === unitOrGroup.id
-                )
-              ]
-          : res.staff.filter(
-              (s) =>
-                s.present === null &&
-                (isUnitView(unitOrGroup) || s.groupIds.includes(unitOrGroup.id))
-            )
-      ),
-    [unitOrGroup, tab, staffAttendanceResponse]
+        return { present, absent }
+      }),
+    [unitOrGroup, staffAttendanceResponse]
   )
 
   return (
     <>
-      <TabLinks tabs={tabs} mobile sticky />
-      {renderResult(filteredStaff, (staff) => (
+      {renderResult(groupedStaff, ({ present, absent }) => (
+        <StaffListSpacer $spacing="xs">
+          <StaffSection
+            dataQa="present"
+            title={i18n.attendances.types.PRESENT}
+            count={present.length}
+            open={presentOpen}
+            toggleOpen={() => setPresentOpen((prev) => !prev)}
+          >
+            {present.map((staffMember) => {
+              const s = toStaff(staffMember)
+              return (
+                <StaffListItem {...s} key={s.id} unitOrGroup={unitOrGroup} />
+              )
+            })}
+          </StaffSection>
+          <StaffSection
+            dataQa="absent"
+            title={i18n.attendances.types.ABSENT}
+            count={absent.length}
+            open={absentOpen}
+            toggleOpen={() => setAbsentOpen((prev) => !prev)}
+          >
+            {absent.map((staffMember) => {
+              const s = toStaff(staffMember)
+              return (
+                <StaffListItem {...s} key={s.id} unitOrGroup={unitOrGroup} />
+              )
+            })}
+          </StaffSection>
+        </StaffListSpacer>
+      ))}
+      <AddExternalMemberContainer>
+        <span>{i18n.attendances.staff.externalPersonCantFindYourName}</span>
+        <Button
+          data-qa="add-external-member-btn"
+          appearance="link"
+          text={i18n.attendances.staff.markExternalPerson}
+          onClick={navigateToExternalMemberArrival}
+        />
+      </AddExternalMemberContainer>
+    </>
+  )
+})
+
+const StaffSearch = React.memo(function StaffSearch({
+  unitOrGroup,
+  show,
+  toggleShow
+}: {
+  unitOrGroup: UnitOrGroup
+  show: boolean
+  toggleShow: () => void
+}) {
+  const { i18n } = useTranslation()
+  const containerSpring = useSpring<{ x: number }>({ x: show ? 1 : 0 })
+  const [freeText, setFreeText] = useState('')
+
+  const staffAttendanceResponse = useQueryResult(
+    staffAttendanceQuery({ unitId: unitOrGroup.unitId })
+  )
+
+  const staff = useMemo(
+    () =>
+      staffAttendanceResponse
+        .map((res) =>
+          isUnitView(unitOrGroup)
+            ? [...res.staff, ...res.extraAttendances]
+            : [
+                ...res.staff.filter(
+                  (s) =>
+                    s.groupIds.includes(unitOrGroup.id) ||
+                    s.present === unitOrGroup.id
+                ),
+                ...res.extraAttendances.filter(
+                  (s) => s.groupId === unitOrGroup.id
+                )
+              ]
+        )
+        .getOrElse([]),
+    [unitOrGroup, staffAttendanceResponse]
+  )
+
+  const searchResults = useMemo(
+    () =>
+      freeText === ''
+        ? []
+        : staff.filter((s) => {
+            const text = freeText.toLowerCase()
+            return 'employeeId' in s
+              ? s.firstName.toLowerCase().includes(text) ||
+                  s.lastName.toLowerCase().includes(text)
+              : s.name.toLowerCase().includes(text)
+          }),
+    [freeText, staff]
+  )
+
+  return (
+    <SearchContainer
+      style={{ height: containerSpring.x.to((x) => `${100 * x}%`) }}
+    >
+      <ContentArea
+        $opaque={false}
+        $paddingVertical="zero"
+        $paddingHorizontal="zero"
+      >
+        <FreeTextSearch
+          value={freeText}
+          setValue={setFreeText}
+          placeholder={i18n.attendances.staff.searchPlaceholder}
+          background={colors.grayscale.g0}
+          setShowSearch={toggleShow}
+          resultCount={searchResults.length}
+        />
         <FixedSpaceColumn $spacing="zero">
-          {staff.map((staffMember) => {
+          {searchResults.map((staffMember) => {
             const s = toStaff(staffMember)
             return <StaffListItem {...s} key={s.id} unitOrGroup={unitOrGroup} />
           })}
         </FixedSpaceColumn>
-      ))}
-      <StaticIconContainer>
-        <LegacyButton
-          primary
-          onClick={navigateToExternalMemberArrival}
-          data-qa="add-external-member-btn"
-        >
-          <FontAwesomeIcon icon={faPlus} size="sm" />{' '}
-          {i18n.attendances.staff.externalPerson}
-        </LegacyButton>
-      </StaticIconContainer>
-    </>
+      </ContentArea>
+    </SearchContainer>
   )
 })
 
@@ -487,4 +551,84 @@ const DetailsRow = styled(FixedSpaceRow)`
 const NoPlansSeparator = styled(HorizontalLine)`
   margin-block-start: 8px;
   margin-block-end: 16px;
+`
+
+const AddExternalMemberContainer = styled.div`
+  width: 100%;
+  background-color: ${(p) => p.theme.colors.grayscale.g0};
+  box-shadow: 0 0 4px 0 #0f0f0f15;
+  position: fixed;
+  bottom: 60px;
+  padding: ${defaultMargins.xs};
+  text-align: center;
+  font-weight: ${fontWeights.semibold};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: ${defaultMargins.xs};
+  font-size: 14px;
+`
+
+const StaffListSpacer = styled(FixedSpaceColumn)`
+  margin-bottom: 35px;
+`
+
+const StaffSection = React.memo(function StaffSection({
+  dataQa,
+  title,
+  count,
+  open,
+  toggleOpen,
+  children
+}: {
+  dataQa: string
+  title: string
+  count: number
+  open: boolean
+  toggleOpen: () => void
+  children: React.ReactNode
+}) {
+  const theme = useTheme()
+  return (
+    <div data-qa={`${dataQa}-section`}>
+      <SectionHeading
+        onClick={toggleOpen}
+        data-qa={`${dataQa}-section-header`}
+        aria-expanded={open}
+      >
+        <FontAwesomeIcon
+          icon={open ? faChevronDown : faChevronRight}
+          color={theme.colors.main.m2}
+        />
+        <SectionTitle data-qa={`${dataQa}-heading`}>
+          {title} <SectionCount>{count}</SectionCount>
+        </SectionTitle>
+      </SectionHeading>
+      {open && <FixedSpaceColumn $spacing="zero">{children}</FixedSpaceColumn>}
+    </div>
+  )
+})
+
+const SectionHeading = styled.button`
+  display: flex;
+  align-items: center;
+  gap: ${defaultMargins.s};
+  width: 100%;
+  padding: ${defaultMargins.s};
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-size: 16px;
+  color: ${(p) => p.theme.colors.main.m2};
+  border-bottom: 1px solid ${(p) => p.theme.colors.grayscale.g15};
+`
+
+const SectionTitle = styled.span`
+  font-weight: ${fontWeights.medium};
+`
+
+const SectionCount = styled.span`
+  margin-left: ${defaultMargins.xs};
+  font-weight: ${fontWeights.bold};
 `

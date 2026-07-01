@@ -29,7 +29,7 @@ export class StaffAttendancePage {
 
   #addNewExternalMemberButton: Element
   #primaryTabs: { today: Element; planned: Element }
-  #todayTabs: { present: Element; absent: Element }
+  #todayHeadings: { present: Element; absent: Element }
   pinInput: Element
 
   previousAttendancesPage: {
@@ -101,9 +101,9 @@ export class StaffAttendancePage {
       today: page.findByDataQa('today-tab'),
       planned: page.findByDataQa('planned-tab')
     }
-    this.#todayTabs = {
-      present: page.findByDataQa('present-tab'),
-      absent: page.findByDataQa('absent-tab')
+    this.#todayHeadings = {
+      present: page.findByDataQa('present-heading'),
+      absent: page.findByDataQa('absent-heading')
     }
 
     this.pinInput = page.findByDataQa('pin-input')
@@ -234,7 +234,7 @@ export class StaffAttendancePage {
   }
 
   async assertPresentStaffCount(expected: number) {
-    await expect(this.#todayTabs.present).toHaveText(`LÄSNÄ\n(${expected})`, {
+    await expect(this.#todayHeadings.present).toHaveText(`Läsnä ${expected}`, {
       useInnerText: true
     })
   }
@@ -249,10 +249,6 @@ export class StaffAttendancePage {
 
   async selectPrimaryTab(tab: 'today' | 'planned') {
     await this.#primaryTabs[tab].click()
-  }
-
-  async selectTab(tab: 'present' | 'absent') {
-    await this.#todayTabs[tab].click()
   }
 
   async goBackFromMemberPage() {
