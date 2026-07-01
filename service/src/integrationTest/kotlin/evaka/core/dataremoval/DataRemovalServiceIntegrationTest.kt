@@ -49,6 +49,7 @@ import evaka.core.shared.BackupPickupId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DecisionId
+import evaka.core.shared.PedagogicalDocumentId
 import evaka.core.shared.PersonId
 import evaka.core.shared.PlacementId
 import evaka.core.shared.ServiceApplicationId
@@ -82,6 +83,7 @@ import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevHolidayQuestionnaire
 import evaka.core.shared.dev.DevHolidayQuestionnaireAnswer
 import evaka.core.shared.dev.DevOtherAssistanceMeasure
+import evaka.core.shared.dev.DevPedagogicalDocument
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
@@ -1325,6 +1327,49 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         }
     }
 
+    private fun insertPedagogicalDocument(childId: ChildId): PedagogicalDocumentId =
+        db.transaction { tx ->
+            tx.insert(
+                DevPedagogicalDocument(
+                    id = PedagogicalDocumentId(UUID.randomUUID()),
+                    childId = childId,
+                    description = "desc",
+                    createdAt = now,
+                    modifiedAt = now,
+                )
+            )
+        }
+
+    private fun insertPedagogicalDocumentAttachment(
+        documentId: PedagogicalDocumentId
+    ): AttachmentId = db.transaction { tx ->
+        tx.insertAttachment(
+            admin.user,
+            now,
+            "ped-doc.pdf",
+            "application/pdf",
+            AttachmentParent.PedagogicalDocument(documentId),
+            type = null,
+        )
+    }
+
+    private fun insertPedagogicalDocumentRead(
+        documentId: PedagogicalDocumentId,
+        personId: PersonId,
+    ) {
+        db.transaction { tx ->
+            tx.createUpdate {
+                    sql(
+                        """
+INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
+VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
+"""
+                    )
+                }
+                .execute()
+        }
+    }
+
     private fun insertCalendarEvent(): DevCalendarEvent {
         val event =
             DevCalendarEvent(
@@ -1855,5 +1900,100 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
 
     private fun survivingDecisionIds(): List<DecisionId> = db.read { tx ->
         tx.createQuery { sql("SELECT id FROM decision") }.toList<DecisionId>()
+    }
+
+    @Test
+    fun `deleteExpiredPedagogicalDocuments deletes document and read markers and enqueues DeleteAttachment per attachment for a child whose last placement ended over ten years ago`() {
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        val documentId = insertPedagogicalDocument(child.id)
+        val attachmentA = insertPedagogicalDocumentAttachment(documentId)
+        val attachmentB = insertPedagogicalDocumentAttachment(documentId)
+        insertPedagogicalDocumentRead(documentId, child.id)
+
+        dataRemovalService.deleteExpiredPedagogicalDocuments(
+            db,
+            now,
+            expireDate = tenYearExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(0, rowCount("pedagogical_document"))
+        assertEquals(0, rowCount("pedagogical_document_read"))
+        assertEquals(
+            setOf(attachmentA.toString(), attachmentB.toString()),
+            scheduledAttachmentDeletionIds(),
+        )
+    }
+
+    @Test
+    fun `deleteExpiredPedagogicalDocuments preserves documents and attachments for a child whose last placement ended within ten years`() {
+        insertPlacementEnding(child.id, today.minusYears(9))
+        val documentId = insertPedagogicalDocument(child.id)
+        insertPedagogicalDocumentAttachment(documentId)
+        insertPedagogicalDocumentRead(documentId, child.id)
+
+        dataRemovalService.deleteExpiredPedagogicalDocuments(
+            db,
+            now,
+            expireDate = tenYearExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("pedagogical_document"))
+        assertEquals(1, rowCount("pedagogical_document_read"))
+        assertEquals(1, rowCount("attachment"))
+        assertTrue(scheduledAttachmentDeletionIds().isEmpty())
+    }
+
+    @Test
+    fun `deleteExpiredPedagogicalDocuments doesn't remove more than the limit`() {
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        repeat(3) {
+            val documentId = insertPedagogicalDocument(child.id)
+            insertPedagogicalDocumentAttachment(documentId)
+            insertPedagogicalDocumentRead(documentId, child.id)
+        }
+
+        dataRemovalService.deleteExpiredPedagogicalDocuments(
+            db,
+            now,
+            expireDate = tenYearExpireDate,
+            limit = 2,
+        )
+
+        assertEquals(1, rowCount("pedagogical_document"))
+        assertEquals(1, rowCount("pedagogical_document_read"))
+        assertEquals(2, scheduledAttachmentDeletionIds().size)
+    }
+
+    @Test
+    fun `deleteExpiredData removes pedagogical documents for a child whose last placement ended over ten years ago`() {
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        val documentId = insertPedagogicalDocument(child.id)
+        val attachmentId = insertPedagogicalDocumentAttachment(documentId)
+        insertPedagogicalDocumentRead(documentId, child.id)
+
+        withLimit(1000) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(0, rowCount("pedagogical_document"))
+        assertEquals(0, rowCount("pedagogical_document_read"))
+        assertEquals(setOf(attachmentId.toString()), scheduledAttachmentDeletionIds())
+    }
+
+    @Test
+    fun `deleteExpiredData keeps pedagogical documents for a child whose last placement ended within ten years`() {
+        insertPlacementEnding(child.id, today.minusYears(9))
+        val documentId = insertPedagogicalDocument(child.id)
+        insertPedagogicalDocumentAttachment(documentId)
+
+        withLimit(1000) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(1, rowCount("pedagogical_document"))
+        assertEquals(1, rowCount("attachment"))
+        assertTrue(scheduledAttachmentDeletionIds().isEmpty())
     }
 }
