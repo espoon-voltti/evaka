@@ -1280,7 +1280,8 @@ CREATE TABLE public.absence (
     modified_by uuid NOT NULL,
     category public.absence_category NOT NULL,
     questionnaire_id uuid
-);
+)
+WITH (autovacuum_analyze_scale_factor='0', autovacuum_analyze_threshold='50000');
 
 -- Name: daycare; Type: TABLE; Schema: public
 
@@ -1439,7 +1440,7 @@ CREATE VIEW public.koski_unit AS
  SELECT id,
     language AS unit_language,
     provider_type,
-    unit_manager_name AS approver_name,
+    COALESCE(NULLIF(preschool_manager_name, ''::text), unit_manager_name) AS approver_name,
     NULLIF(oph_unit_oid, ''::text) AS oph_unit_oid,
     NULLIF(oph_organizer_oid, ''::text) AS oph_organizer_oid
    FROM public.daycare
@@ -2065,7 +2066,8 @@ CREATE TABLE public.async_job (
     completed_at timestamp with time zone,
     payload jsonb NOT NULL,
     initial_retry_count integer
-);
+)
+WITH (autovacuum_analyze_scale_factor='0', autovacuum_analyze_threshold='50000');
 
 -- Name: async_job_work_permit; Type: TABLE; Schema: public
 
@@ -2109,7 +2111,8 @@ CREATE TABLE public.attendance_reservation (
     end_time time without time zone,
     CONSTRAINT attendance_reservation_start_before_end CHECK ((start_time < end_time)),
     CONSTRAINT attendance_reservation_times_consistency CHECK ((((start_time IS NOT NULL) AND (end_time IS NOT NULL)) OR ((start_time IS NULL) AND (end_time IS NULL))))
-);
+)
+WITH (autovacuum_analyze_scale_factor='0', autovacuum_analyze_threshold='50000');
 
 -- Name: backup_care; Type: TABLE; Schema: public
 
@@ -2263,7 +2266,8 @@ CREATE TABLE public.child_attendance (
     modified_by uuid NOT NULL,
     CONSTRAINT child_attendance_start_before_end CHECK ((start_time < end_time)),
     CONSTRAINT child_attendance_time_resolution CHECK (((EXTRACT(second FROM start_time) = (0)::numeric) AND (EXTRACT(second FROM end_time) = (0)::numeric)))
-);
+)
+WITH (autovacuum_analyze_scale_factor='0', autovacuum_analyze_threshold='50000');
 
 -- Name: child_daily_note; Type: TABLE; Schema: public
 
@@ -3258,7 +3262,8 @@ CREATE TABLE public.message (
     content_deleted_at timestamp with time zone,
     content_deleted_by_employee_id uuid,
     CONSTRAINT message_content_deleted_consistency CHECK (((content_deleted_at IS NULL) = (content_deleted_by_employee_id IS NULL)))
-);
+)
+WITH (autovacuum_analyze_scale_factor='0', autovacuum_analyze_threshold='50000');
 
 -- Name: message_account; Type: TABLE; Schema: public
 
@@ -3335,7 +3340,8 @@ CREATE TABLE public.message_recipients (
     recipient_id uuid NOT NULL,
     read_at timestamp with time zone,
     email_notification_sent_at timestamp with time zone
-);
+)
+WITH (autovacuum_analyze_scale_factor='0', autovacuum_analyze_threshold='50000');
 
 -- Name: message_thread; Type: TABLE; Schema: public
 
@@ -3349,7 +3355,8 @@ CREATE TABLE public.message_thread (
     is_copy boolean NOT NULL,
     application_id uuid,
     sensitive boolean NOT NULL
-);
+)
+WITH (autovacuum_analyze_scale_factor='0', autovacuum_analyze_threshold='50000');
 
 -- Name: message_thread_children; Type: TABLE; Schema: public
 
@@ -3359,7 +3366,8 @@ CREATE TABLE public.message_thread_children (
     updated timestamp with time zone DEFAULT now() NOT NULL,
     thread_id uuid NOT NULL,
     child_id uuid NOT NULL
-);
+)
+WITH (autovacuum_analyze_scale_factor='0', autovacuum_analyze_threshold='50000');
 
 -- Name: message_thread_folder; Type: TABLE; Schema: public
 
@@ -3383,7 +3391,8 @@ CREATE TABLE public.message_thread_participant (
     last_received_timestamp timestamp with time zone,
     last_sent_timestamp timestamp with time zone,
     folder_id uuid
-);
+)
+WITH (autovacuum_analyze_scale_factor='0', autovacuum_analyze_threshold='50000');
 
 -- Name: mobile_device_push_group; Type: TABLE; Schema: public
 
@@ -3918,7 +3927,8 @@ CREATE TABLE public.staff_attendance_realtime (
     updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED,
     CONSTRAINT check_group_id_if_working_in_group CHECK (((group_id IS NOT NULL) OR (type = ANY ('{TRAINING,OTHER_WORK,SICKNESS,CHILD_SICKNESS}'::public.staff_attendance_type[])))),
     CONSTRAINT staff_attendance_start_before_end CHECK ((arrived < departed))
-);
+)
+WITH (autovacuum_analyze_scale_factor='0', autovacuum_analyze_threshold='50000');
 
 -- Name: staff_occupancy_coefficient; Type: TABLE; Schema: public
 

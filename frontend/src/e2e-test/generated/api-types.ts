@@ -501,6 +501,7 @@ export interface DevDaycare {
   partnerCode: string
   phone: string | null
   preschoolApplyPeriod: DateRange | null
+  preschoolManagerName: string
   providerId: string
   providerType: ProviderType
   serviceWorkerNote: string
