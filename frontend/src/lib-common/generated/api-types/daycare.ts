@@ -125,7 +125,7 @@ export interface CaretakerRequest {
 }
 
 /**
-* Generated from evaka.core.daycare.service.Caretakers
+* Generated from evaka.core.daycare.Caretakers
 */
 export interface Caretakers {
   maximum: number
@@ -312,7 +312,7 @@ export interface DaycareFields {
 }
 
 /**
-* Generated from evaka.core.daycare.service.DaycareGroup
+* Generated from evaka.core.daycare.DaycareGroup
 */
 export interface DaycareGroup {
   aromiCustomerId: string | null
@@ -376,7 +376,7 @@ export interface GroupOccupancies {
 }
 
 /**
-* Generated from evaka.core.daycare.service.GroupStaffAttendance
+* Generated from evaka.core.daycare.GroupStaffAttendance
 */
 export interface GroupStaffAttendance {
   count: number
@@ -480,7 +480,7 @@ export interface ServiceWorkerNote {
 }
 
 /**
-* Generated from evaka.core.daycare.service.StaffAttendanceForDates
+* Generated from evaka.core.daycare.StaffAttendanceForDates
 */
 export interface StaffAttendanceForDates {
   attendances: Partial<Record<string, GroupStaffAttendance>>
@@ -491,7 +491,7 @@ export interface StaffAttendanceForDates {
 }
 
 /**
-* Generated from evaka.core.daycare.service.StaffAttendanceUpdate
+* Generated from evaka.core.daycare.StaffAttendanceUpdate
 */
 export interface StaffAttendanceUpdate {
   count: number | null

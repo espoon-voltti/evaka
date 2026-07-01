@@ -4,6 +4,7 @@
 
 package evaka.core.placement
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.absence.getAbsencesOfChildByRange
 import evaka.core.backupcare.getBackupCaresForChild
@@ -321,6 +322,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 it,
                 HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
                 unitSupervisor,
+                AuditContext(),
                 listOf(
                     DailyReservationRequest.Absent(childId = childId, date = firstAbsence),
                     DailyReservationRequest.Absent(childId = childId, date = secondAbsence),
@@ -416,6 +418,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 it,
                 HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
                 unitSupervisor,
+                AuditContext(),
                 listOf(
                     DailyReservationRequest.Reservations(
                         childId = childId,
@@ -528,6 +531,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 it,
                 HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
                 unitSupervisor,
+                AuditContext(),
                 listOf(
                     DailyReservationRequest.Absent(childId = childId, date = firstAbsence),
                     DailyReservationRequest.Absent(childId = childId, date = secondAbsence),
@@ -604,6 +608,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 it,
                 HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
                 unitSupervisor,
+                AuditContext(),
                 listOf(
                     DailyReservationRequest.Reservations(
                         childId = childId,
@@ -697,6 +702,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 it,
                 HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
                 unitSupervisor,
+                AuditContext(),
                 listOf(
                     DailyReservationRequest.Absent(childId = childId, date = firstAbsence),
                     DailyReservationRequest.Absent(childId = childId, date = secondAbsence),
@@ -770,6 +776,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 it,
                 HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
                 unitSupervisor,
+                AuditContext(),
                 listOf(
                     DailyReservationRequest.Reservations(
                         childId = childId,
@@ -835,6 +842,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 it,
                 HelsinkiDateTime.of(activePlacementStart, LocalTime.of(12, 0)),
                 unitSupervisor,
+                AuditContext(),
                 listOf(
                     DailyReservationRequest.Reservations(
                         childId = childId,

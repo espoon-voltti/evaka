@@ -20,7 +20,7 @@ import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child
 import evaka.core.application.persistence.daycare.DaycareFormV0
-import evaka.core.daycare.service.Caretakers
+import evaka.core.daycare.Caretakers
 import evaka.core.insertServiceNeedOptions
 import evaka.core.pis.Creator
 import evaka.core.pis.createParentship
