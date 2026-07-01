@@ -73,6 +73,7 @@ export default React.memo(function NonSsnChildren() {
               data={rows.map((row) => ({
                 ...row,
                 dateOfBirth: row.dateOfBirth.format(),
+                placementStartDate: row.placementStartDate.format(),
                 lastSentToVarda: row.lastSentToVarda?.format() ?? '-',
                 lastSentToKoski: row.lastSentToKoski?.format() ?? '-'
               }))}
@@ -88,6 +89,10 @@ export default React.memo(function NonSsnChildren() {
                 {
                   label: i18n.reports.nonSsnChildren.dateOfBirth,
                   value: (row) => row.dateOfBirth
+                },
+                {
+                  label: i18n.reports.nonSsnChildren.placementStartDate,
+                  value: (row) => row.placementStartDate
                 },
                 {
                   label: i18n.reports.nonSsnChildren.personOid,
@@ -133,6 +138,22 @@ export default React.memo(function NonSsnChildren() {
                     }
                   >
                     {i18n.childInformation.personDetails.birthday}
+                  </SortableTh>
+                  <SortableTh
+                    sorted={
+                      isEqual(sortColumns, [
+                        'placementStartDate',
+                        'lastName',
+                        'firstName'
+                      ])
+                        ? sortDirection
+                        : undefined
+                    }
+                    onClick={() =>
+                      sortBy(['placementStartDate', 'lastName', 'firstName'])
+                    }
+                  >
+                    {i18n.reports.nonSsnChildren.placementStartDate}
                   </SortableTh>
                   <SortableTh
                     sorted={
@@ -193,6 +214,9 @@ export default React.memo(function NonSsnChildren() {
                       </Link>
                     </Td>
                     <Td data-qa="date-of-birth">{row.dateOfBirth.format()}</Td>
+                    <Td data-qa="placement-start-date">
+                      {row.placementStartDate.format()}
+                    </Td>
                     <Td data-qa="oph-person-oid">{row.ophPersonOid}</Td>
                     <Td data-qa="last-sent-to-varda">
                       {row.lastSentToVarda?.format() ?? '-'}

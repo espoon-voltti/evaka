@@ -141,6 +141,7 @@ export class NonSsnChildrenReport {
     expected: {
       childName: string
       dateOfBirth: string
+      placementStartDate: string
       ophPersonOid: string
       lastSentToVarda: string
     }[]
@@ -152,6 +153,9 @@ export class NonSsnChildrenReport {
       await expect(row.findByDataQa('child-name')).toHaveText(data.childName)
       await expect(row.findByDataQa('date-of-birth')).toHaveText(
         data.dateOfBirth
+      )
+      await expect(row.findByDataQa('placement-start-date')).toHaveText(
+        data.placementStartDate
       )
       await expect(row.findByDataQa('oph-person-oid')).toHaveText(
         data.ophPersonOid
