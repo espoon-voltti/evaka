@@ -829,12 +829,7 @@ const DetailsToggle = React.memo(function DetailsToggle({
   departedAutomatically
 }: DetailsToggleProps) {
   const { i18n } = useTranslation()
-  const icon =
-    departedAutomatically && !hovered
-      ? fasExclamationTriangle
-      : allowDetailsModal && hovered
-        ? faCircleEllipsisVertical
-        : undefined
+  const showWarning = departedAutomatically && !hovered
 
   return (
     <DetailsCell
@@ -842,10 +837,11 @@ const DetailsToggle = React.memo(function DetailsToggle({
         departedAutomatically ? 'departed-automatically-icon' : undefined
       }
     >
-      {icon ? (
-        <IconOnlyButton
-          icon={icon}
-          color={departedAutomatically && !hovered ? 'warning' : 'default'}
+      {allowDetailsModal || showWarning ? (
+        <OpenDetailsButton
+          $dimmed={!hovered && !departedAutomatically}
+          icon={showWarning ? fasExclamationTriangle : faCircleEllipsisVertical}
+          color={showWarning ? 'warning' : 'default'}
           bubble={departedAutomatically && hovered ? 'warning' : undefined}
           onClick={allowDetailsModal ? onOpen : undefined}
           data-qa="open-details"
@@ -864,6 +860,10 @@ const DetailsCell = styled.div`
   align-items: center;
   justify-content: flex-end;
   padding: ${defaultMargins.xxs};
+`
+
+const OpenDetailsButton = styled(IconOnlyButton)<{ $dimmed: boolean }>`
+  opacity: ${(p) => (p.$dimmed ? 0 : 1)};
 `
 
 function getAttendancesForGroupAndDate(
