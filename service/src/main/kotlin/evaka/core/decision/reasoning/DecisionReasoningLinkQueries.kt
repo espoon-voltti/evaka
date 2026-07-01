@@ -5,6 +5,7 @@
 package evaka.core.decision.reasoning
 
 import evaka.core.decision.DecisionType
+import evaka.core.shared.ApplicationId
 import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.DecisionIndividualReasoningId
@@ -23,6 +24,59 @@ fun DecisionType.applicableReasoningCollectionType(): DecisionReasoningCollectio
         DecisionType.CLUB,
         DecisionType.PRESCHOOL_CLUB -> DecisionReasoningCollectionType.DAYCARE
     }
+
+data class DecisionReasoningStats(val individualReasoningCount: Int, val reasoningWarningCount: Int)
+
+fun Database.Read.getApplicationDecisionReasoningStats(
+    applicationIds: Set<ApplicationId>
+): Map<ApplicationId, DecisionReasoningStats> {
+    if (applicationIds.isEmpty()) return emptyMap()
+
+    val decisionTypes = DecisionType.entries.toList()
+    val collectionTypes = decisionTypes.map { it.applicableReasoningCollectionType() }
+
+    data class Row(
+        val applicationId: ApplicationId,
+        val individualReasoningCount: Int,
+        val reasoningWarningCount: Int,
+    )
+
+    return createQuery {
+            sql(
+                """
+SELECT
+    d.application_id,
+    coalesce(sum(sel.cnt), 0)::int AS individual_reasoning_count,
+    count(*) FILTER (WHERE NOT coalesce(gen.ready, false))::int AS reasoning_warning_count
+FROM decision d
+JOIN unnest(${bind(decisionTypes)}, ${bind(collectionTypes)})
+    AS type_collection(decision_type, collection_type)
+    ON type_collection.decision_type = d.type
+LEFT JOIN LATERAL (
+    SELECT count(*) AS cnt
+    FROM decision_reasoning_individual_selection s
+    WHERE s.decision_id = d.id
+) sel ON true
+LEFT JOIN LATERAL (
+    SELECT g.ready
+    FROM decision_reasoning_generic g
+    WHERE g.removed_at IS NULL
+      AND g.collection_type = type_collection.collection_type
+      AND g.valid_from <= d.start_date
+    ORDER BY g.valid_from DESC, g.created_at DESC
+    LIMIT 1
+) gen ON true
+WHERE d.application_id = ANY(${bind(applicationIds)}) AND d.sent_date IS NULL
+GROUP BY d.application_id
+"""
+            )
+        }
+        .toList<Row>()
+        .associate {
+            it.applicationId to
+                DecisionReasoningStats(it.individualReasoningCount, it.reasoningWarningCount)
+        }
+}
 
 fun resolveApplicableGenericReasoning(
     tx: Database.Read,
