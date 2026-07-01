@@ -117,6 +117,7 @@ enum class Audit(
     CalendarEventTimeReservationCreate,
     CalendarEventTimeReservationDelete,
     CalendarEventTimeReservationUpdate,
+    ChildAbsenceReport,
     ChildAdditionalInformationRead,
     ChildAdditionalInformationUpdate,
     ChildAgeLanguageReportRead,

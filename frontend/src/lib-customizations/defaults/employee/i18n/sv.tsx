@@ -4303,6 +4303,33 @@ export const sv: typeof fi = {
         includeClosed: 'Visa avslutade enheter och grupper'
       }
     },
+    childAbsences: {
+      title: 'Frånvarorapport för barn',
+      description:
+        'Rapporten listar antalet heldagsfrånvaron för barn i dagar under vald tidsperiod. Hjälper t.ex. med uppföljning av oanmälda frånvaron.',
+      firstName: 'Förnamn',
+      lastName: 'Efternamn',
+      daycareName: 'Enhet',
+      groupName: 'Grupp',
+      days: '(dagar)',
+      total: 'Totalt',
+      filters: {
+        areaSelection: {
+          label: 'Område:',
+          placeHolder: 'Välj område'
+        },
+        daycareSelection: {
+          label: 'Enhet:',
+          placeholder: 'Välj enhet'
+        },
+        groupSelection: {
+          label: 'Grupp:',
+          placeholder: 'Välj grupp'
+        },
+        range: 'Tidsperiod:',
+        includeClosed: 'Visa avslutade enheter och grupper'
+      }
+    },
     preschoolApplications: {
       title: 'Föreslagen FO-rapport kommande förskolebarn',
       description:

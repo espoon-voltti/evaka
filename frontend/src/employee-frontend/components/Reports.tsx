@@ -531,6 +531,20 @@ export default React.memo(function Reports() {
                   )
                 }
               : null,
+            reports.has('CHILD_ABSENCES')
+              ? {
+                  name: i18n.reports.childAbsences.title,
+                  item: (
+                    <Report
+                      data-qa="report-child-absence"
+                      path="/reports/child-absence"
+                      color={colors.main.m2}
+                      icon={faChild}
+                      i18n={i18n.reports.childAbsences}
+                    />
+                  )
+                }
+              : null,
             reports.has('PRESCHOOL_ABSENCES')
               ? {
                   name: i18n.reports.preschoolAbsences.title,
