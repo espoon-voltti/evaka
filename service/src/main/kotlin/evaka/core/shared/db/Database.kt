@@ -416,6 +416,8 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
          */
         fun <R> useIterable(f: (Iterable<T>) -> R): R = rows.use { f(it.asIterable()) }
 
+        fun forEach(action: (T) -> Unit) = useSequence { it.forEach(action) }
+
         fun toList(): List<T> = rows.use { it.toList() }
 
         fun toSet(): Set<T> = rows.use { it.toSet() }
