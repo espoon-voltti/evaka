@@ -10,10 +10,12 @@ import evaka.core.DataRemovalEnv
 import evaka.core.childimages.deleteImageFile
 import evaka.core.document.childdocument.deleteExpiredChildDocuments
 import evaka.core.s3.DocumentService
+import evaka.core.shared.AttachmentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.ChildImageId
 import evaka.core.shared.FinanceNoteId
 import evaka.core.shared.Id
+import evaka.core.shared.PedagogicalDocumentId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -116,6 +118,13 @@ class DataRemovalService(
                 ),
         )
 
+        deleteExpiredPedagogicalDocuments(
+            dbc,
+            now,
+            expireDate = today.minusYears(10),
+            limit = limit,
+        )
+
         unsetExpiredChildReferences(
             dbc,
             expireDate = today.minusYears(1),
@@ -188,6 +197,45 @@ class DataRemovalService(
                 targetId = AuditId(imageId),
                 meta = mapOf("expireDate" to expireDate),
             )
+        }
+    }
+
+    fun deleteExpiredPedagogicalDocuments(
+        dbc: Database.Connection,
+        now: HelsinkiDateTime,
+        expireDate: LocalDate,
+        limit: Int,
+    ) {
+        logger.info { "Deleting at most $limit expired pedagogical documents" }
+        val deleted = dbc.transaction { tx ->
+            val results = tx.deleteExpiredPedagogicalDocumentsBatch(expireDate, limit)
+            val attachmentIds = results.flatMap { it.attachmentIds }
+            if (attachmentIds.isNotEmpty()) {
+                asyncJobRunner.plan(
+                    tx,
+                    attachmentIds.map { AsyncJob.DeleteAttachment(it) },
+                    runAt = now,
+                )
+            }
+            results
+        }
+        logger.info { "Deleted ${deleted.size} expired pedagogical document(s)" }
+        deleted.forEach { doc ->
+            auditExpiredDelete(
+                entity = "pedagogical_document",
+                targetId = AuditId(doc.documentId),
+                meta =
+                    mapOf(
+                        "childId" to doc.childId,
+                        "attachmentIds" to doc.attachmentIds,
+                        "expireDate" to expireDate,
+                    ),
+            )
+        }
+        if (deleted.size >= limit) {
+            logger.info {
+                "Pedagogical document deletion hit batch limit of $limit; remaining backlog will be processed on the next run"
+            }
         }
     }
 
@@ -343,6 +391,62 @@ RETURNING finance_note.id
         }
         .executeAndReturnGeneratedKeys()
         .toList()
+
+data class DeletedPedagogicalDocument(
+    val documentId: PedagogicalDocumentId,
+    val childId: ChildId,
+    val attachmentIds: List<AttachmentId>,
+)
+
+private fun Database.Transaction.deleteExpiredPedagogicalDocumentsBatch(
+    expireDate: LocalDate,
+    limit: Int,
+): List<DeletedPedagogicalDocument> {
+    val documents =
+        createQuery {
+                sql(
+                    """
+SELECT id, child_id
+FROM pedagogical_document
+WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
+ORDER BY created_at
+LIMIT ${bind(limit)}
+FOR UPDATE
+"""
+                )
+            }
+            .toList { column<PedagogicalDocumentId>("id") to column<ChildId>("child_id") }
+
+    val documentIds = documents.map { it.first }
+    if (documentIds.isEmpty()) return emptyList()
+
+    val attachmentsByDocument =
+        createQuery {
+                sql(
+                    "SELECT id, pedagogical_document_id FROM attachment WHERE pedagogical_document_id = ANY(${bind(documentIds)})"
+                )
+            }
+            .toList {
+                column<PedagogicalDocumentId>("pedagogical_document_id") to
+                    column<AttachmentId>("id")
+            }
+            .groupBy({ it.first }, { it.second })
+
+    execute {
+        sql(
+            "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = ANY(${bind(documentIds)})"
+        )
+    }
+    execute { sql("DELETE FROM pedagogical_document WHERE id = ANY(${bind(documentIds)})") }
+
+    return documents.map { (documentId, childId) ->
+        DeletedPedagogicalDocument(
+            documentId = documentId,
+            childId = childId,
+            attachmentIds = attachmentsByDocument[documentId] ?: emptyList(),
+        )
+    }
+}
 
 fun deleteExpiredCitizenUsers(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
     logger.info { "Deleting at most $limit expired citizen users" }
