@@ -19,9 +19,11 @@ import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.finance.notes.createFinanceNote
 import evaka.core.holidayperiod.QuestionnaireType
+import evaka.core.insertServiceNeedOptions
 import evaka.core.nekku.NekkuProductMealType
 import evaka.core.note.child.sticky.ChildStickyNoteBody
 import evaka.core.note.child.sticky.createChildStickyNote
+import evaka.core.placement.PlacementSource
 import evaka.core.placement.PlacementType
 import evaka.core.s3.DocumentService
 import evaka.core.shared.AbsenceApplicationId
@@ -30,6 +32,8 @@ import evaka.core.shared.BackupPickupId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
+import evaka.core.shared.PlacementId
+import evaka.core.shared.ServiceApplicationId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.UserRole
@@ -65,11 +69,13 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevPreschoolAssistance
 import evaka.core.shared.dev.DevReservation
+import evaka.core.shared.dev.DevServiceApplication
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.snDefaultDaycare
 import evaka.core.specialdiet.MealTexture
 import evaka.core.specialdiet.SpecialDiet
 import evaka.core.specialdiet.setMealTextures
@@ -859,6 +865,112 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `deleteExpiredServiceApplications deletes application whose child's last placement ended over ten years ago`() {
+        val guardian = insertAdult()
+        setupServiceNeedOptions()
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        insertServiceApplication(child.id, guardian)
+
+        deleteExpiredServiceApplications(db, expireDate = tenYearExpireDate, limit = 100)
+
+        assertEquals(0, serviceApplicationCount())
+    }
+
+    @Test
+    fun `deleteExpiredServiceApplications keeps applications whose child's placement ends on or after the ten-year boundary`() {
+        val guardian = insertAdult()
+        setupServiceNeedOptions()
+
+        insertPlacementEnding(child.id, tenYearExpireDate)
+        insertServiceApplication(child.id, guardian)
+
+        val recentChild = DevPerson()
+        db.transaction { it.insert(recentChild, DevPersonType.CHILD) }
+        insertPlacementEnding(recentChild.id, tenYearExpireDate.plusDays(1))
+        insertServiceApplication(recentChild.id, guardian)
+
+        deleteExpiredServiceApplications(db, expireDate = tenYearExpireDate, limit = 100)
+
+        assertEquals(2, serviceApplicationCount(), "both applications are retained")
+    }
+
+    @Test
+    fun `deleteExpiredServiceApplications clears the provenance of an expired referenced placement but spares one whose child is still within retention`() {
+        val guardian = insertAdult()
+        setupServiceNeedOptions()
+
+        val expiredServiceApplicationId = insertServiceApplication(child.id, guardian)
+        val expiredPlacementId =
+            insertPlacementFromServiceApplication(
+                child.id,
+                expiredServiceApplicationId,
+                endDate = tenYearExpireDate.minusDays(1),
+            )
+
+        // this child's referenced placement is just as old, but a newer placement keeps the child
+        // within retention, so the application and the old placement's provenance must survive
+        val retainedChild = DevPerson()
+        db.transaction { it.insert(retainedChild, DevPersonType.CHILD) }
+        val retainedServiceApplicationId = insertServiceApplication(retainedChild.id, guardian)
+        val oldReferencedPlacementId =
+            insertPlacementFromServiceApplication(
+                retainedChild.id,
+                retainedServiceApplicationId,
+                endDate = tenYearExpireDate.minusDays(1),
+            )
+        insertPlacementEnding(retainedChild.id, tenYearExpireDate.plusYears(1))
+
+        deleteExpiredServiceApplications(db, expireDate = tenYearExpireDate, limit = 100)
+
+        assertEquals(
+            1,
+            serviceApplicationCount(),
+            "only the still-within-retention application remains",
+        )
+        assertEquals(3, rowCount("placement"), "all placements are retained")
+        assertEquals(
+            null to null,
+            readPlacementProvenance(expiredPlacementId),
+            "the expired child's placement provenance is cleared",
+        )
+        assertEquals(
+            PlacementSource.SERVICE_APPLICATION to retainedServiceApplicationId,
+            readPlacementProvenance(oldReferencedPlacementId),
+            "the within-retention child's old placement provenance is untouched",
+        )
+    }
+
+    @Test
+    fun `deleteExpiredServiceApplications doesn't remove more than the limit`() {
+        val guardian = insertAdult()
+        setupServiceNeedOptions()
+        val children = (1..5).map { DevPerson() }
+        db.transaction { tx -> children.forEach { tx.insert(it, DevPersonType.CHILD) } }
+        children.forEach {
+            insertPlacementEnding(it.id, tenYearExpireDate.minusDays(1))
+            insertServiceApplication(it.id, guardian)
+        }
+
+        deleteExpiredServiceApplications(db, expireDate = tenYearExpireDate, limit = 2)
+
+        assertEquals(3, serviceApplicationCount())
+    }
+
+    @Test
+    fun `deleteExpiredData removes expired service applications in the full pass`() {
+        val guardian = insertAdult()
+        setupServiceNeedOptions()
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        insertServiceApplication(child.id, guardian)
+
+        withLimit(100) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(0, serviceApplicationCount())
+    }
+
+    @Test
     fun `deleteExpiredData deletes finance notes only for adults whose family placements ended over five years ago`() {
         val expiredGuardian = insertAdult()
         insertGuardianship(expiredGuardian, child.id)
@@ -878,6 +990,58 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         assertEquals(0, financeNoteCount(expiredGuardian))
         assertEquals(1, financeNoteCount(activeGuardian))
+    }
+
+    private fun setupServiceNeedOptions() {
+        db.transaction { it.insertServiceNeedOptions() }
+    }
+
+    private fun insertServiceApplication(
+        childId: ChildId,
+        personId: PersonId,
+    ): ServiceApplicationId = db.transaction { tx ->
+        tx.insert(
+            DevServiceApplication(
+                sentAt = now,
+                personId = personId,
+                childId = childId,
+                startDate = today,
+                serviceNeedOptionId = snDefaultDaycare.id,
+            )
+        )
+    }
+
+    private fun insertPlacementFromServiceApplication(
+        childId: ChildId,
+        serviceApplicationId: ServiceApplicationId,
+        endDate: LocalDate,
+    ): PlacementId = db.transaction { tx ->
+        tx.insert(
+            DevPlacement(
+                childId = childId,
+                unitId = daycare.id,
+                startDate = endDate.minusYears(1),
+                endDate = endDate,
+                source = PlacementSource.SERVICE_APPLICATION,
+                sourceServiceApplicationId = serviceApplicationId,
+            )
+        )
+    }
+
+    private fun serviceApplicationCount(): Int = rowCount("service_application")
+
+    private fun readPlacementProvenance(
+        id: PlacementId
+    ): Pair<PlacementSource?, ServiceApplicationId?> = db.read { tx ->
+        tx.createQuery {
+                sql(
+                    "SELECT source, source_service_application_id FROM placement WHERE id = ${bind(id)}"
+                )
+            }
+            .exactlyOne {
+                column<PlacementSource?>("source") to
+                    column<ServiceApplicationId?>("source_service_application_id")
+            }
     }
 
     private fun insertAdult(): PersonId {
