@@ -12,7 +12,8 @@ import java.time.LocalDate
 
 enum class DecisionReasoningCollectionType : DatabaseEnum {
     DAYCARE,
-    PRESCHOOL;
+    PRESCHOOL,
+    CLUB;
 
     override val sqlType = "decision_reasoning_collection_type"
 }

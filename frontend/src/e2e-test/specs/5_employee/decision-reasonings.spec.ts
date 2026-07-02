@@ -127,6 +127,10 @@ test.describe('Employee - Decision reasonings', () => {
     await decisionReasoningsPage.preschoolTab.click()
     await expect(decisionReasoningsPage.genericCards).toHaveCount(0)
 
+    // Switch to club tab — should also be empty
+    await decisionReasoningsPage.clubTab.click()
+    await expect(decisionReasoningsPage.genericCards).toHaveCount(0)
+
     // Switch back to daycare — reasoning should still be there
     await decisionReasoningsPage.daycareTab.click()
     await expect(decisionReasoningsPage.genericCards).toHaveCount(1)
