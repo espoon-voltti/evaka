@@ -154,6 +154,7 @@ SELECT
 FROM daycare_group_placement dgp
 JOIN placement p ON p.id = dgp.daycare_placement_id
 WHERE
+    p.unit_id = ANY (${bind(unitIds)}) AND
     dgp.daycare_group_id = ${bind(groupId)} AND
     daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(range)}
 """
