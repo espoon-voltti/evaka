@@ -334,18 +334,18 @@ function ChildReservationInfo(props: { child: AttendanceChild }) {
 
   return (
     <em>
-      {reservations.length > 0
-        ? i18n.attendances.serviceTime.reservationNoTimes
-        : todaysServiceTime === 'not_set'
-          ? i18n.attendances.serviceTime.notSetShort
-          : todaysServiceTime === 'not_today'
-            ? i18n.attendances.serviceTime.noServiceTodayShort
-            : todaysServiceTime === 'variable_times'
-              ? i18n.attendances.serviceTime.variableTimesShort
-              : i18n.attendances.serviceTime.serviceTodayShort(
-                  todaysServiceTime.formatStart(),
-                  todaysServiceTime.formatEnd()
-                )}
+      {typeof todaysServiceTime !== 'string'
+        ? i18n.attendances.serviceTime.serviceTodayShort(
+            todaysServiceTime.formatStart(),
+            todaysServiceTime.formatEnd()
+          )
+        : reservations.length > 0
+          ? i18n.attendances.serviceTime.reservationNoTimes
+          : todaysServiceTime === 'not_set'
+            ? i18n.attendances.serviceTime.notSetShort
+            : todaysServiceTime === 'not_today'
+              ? i18n.attendances.serviceTime.noServiceTodayShort
+              : i18n.attendances.serviceTime.variableTimesShort}
     </em>
   )
 }
