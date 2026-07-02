@@ -308,18 +308,19 @@ const ChildAbsenceGrid = ({
     [reportResult, sortColumns, sortDirection]
   )
 
-  const sortable = (column: ReportColumnKey, label: string) => (
-    <SortableTh
-      sorted={
-        isEqual(sortColumns, [column, 'lastName', 'firstName', 'childId'])
-          ? sortDirection
-          : undefined
-      }
-      onClick={() => sortBy([column, 'lastName', 'firstName', 'childId'])}
-    >
-      {label}
-    </SortableTh>
-  )
+  const sortable = (column: ReportColumnKey, label: string) => {
+    const columns = [
+      ...new Set<ReportColumnKey>([column, 'lastName', 'firstName', 'childId'])
+    ]
+    return (
+      <SortableTh
+        sorted={isEqual(sortColumns, columns) ? sortDirection : undefined}
+        onClick={() => sortBy(columns)}
+      >
+        {label}
+      </SortableTh>
+    )
+  }
 
   return renderResult(sortedReportResult, (report) => (
     <>
