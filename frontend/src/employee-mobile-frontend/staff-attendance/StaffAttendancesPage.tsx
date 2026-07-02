@@ -38,6 +38,7 @@ import { faChevronDown, faChevronRight, faChevronUp } from 'lib-icons'
 
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
+import { bottomNavBarHeight } from '../common/BottomNavbar'
 import FreeTextSearch, { SearchContainer } from '../common/FreeTextSearch'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
@@ -244,22 +245,9 @@ const StaffSearch = React.memo(function StaffSearch({
   const staff = useMemo(
     () =>
       staffAttendanceResponse
-        .map((res) =>
-          isUnitView(unitOrGroup)
-            ? [...res.staff, ...res.extraAttendances]
-            : [
-                ...res.staff.filter(
-                  (s) =>
-                    s.groupIds.includes(unitOrGroup.id) ||
-                    s.present === unitOrGroup.id
-                ),
-                ...res.extraAttendances.filter(
-                  (s) => s.groupId === unitOrGroup.id
-                )
-              ]
-        )
+        .map((res) => [...res.staff, ...res.extraAttendances])
         .getOrElse([]),
-    [unitOrGroup, staffAttendanceResponse]
+    [staffAttendanceResponse]
   )
 
   const searchResults = useMemo(
@@ -558,7 +546,7 @@ const AddExternalMemberContainer = styled.div`
   background-color: ${(p) => p.theme.colors.grayscale.g0};
   box-shadow: 0 0 4px 0 #0f0f0f15;
   position: fixed;
-  bottom: 60px;
+  bottom: ${bottomNavBarHeight}px;
   padding: ${defaultMargins.xs};
   text-align: center;
   font-weight: ${fontWeights.semibold};

@@ -321,7 +321,7 @@ function StaffAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
         <StaffMarkDepartedPage unitOrGroup={unitOrGroup} />
       </Route>
       <Route>
-        <Redirect replace to="/today/absent" />
+        <Redirect replace to="/today" />
       </Route>
     </Switch>
   )

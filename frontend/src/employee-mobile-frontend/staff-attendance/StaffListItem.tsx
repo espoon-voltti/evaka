@@ -20,7 +20,7 @@ import type { Staff } from './utils'
 const StaffBox = styled.div`
   display: flex;
   flex-direction: row;
-  background-color: white;
+  background-color: ${colors.grayscale.g0};
   padding: ${defaultMargins.xs} ${defaultMargins.s};
   border-bottom: 1px solid ${colors.grayscale.g15};
 `
@@ -62,14 +62,14 @@ export const IconBox = styled.div<{ $present: boolean }>`
   border: 2px solid ${colors.grayscale.g0};
 `
 
-const StatusDot = styled.div<{ present: boolean }>`
+const StatusDot = styled.div<{ $present: boolean }>`
   width: 12px;
   flex-shrink: 0;
   margin-left: ${defaultMargins.s};
   height: 12px;
   border-radius: 50%;
   background-color: ${(p) =>
-    p.present ? colors.status.success : colors.accents.a8lightBlue};
+    p.$present ? colors.status.success : colors.accents.a8lightBlue};
 `
 
 export default React.memo(function StaffListItem({
@@ -110,7 +110,7 @@ export default React.memo(function StaffListItem({
             />
           )}
         </StaffBoxInfo>
-        <StatusDot present={present} />
+        <StatusDot $present={present} />
       </AttendanceLinkBox>
     </StaffBox>
   )
