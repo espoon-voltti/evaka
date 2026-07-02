@@ -89,9 +89,15 @@ export default {
     openExpandingInfo: 'Avaa lisätietokenttä',
     errors: {
       genericGetError: 'Tietojen hakeminen ei onnistunut',
+      genericGetErrorInfo:
+        'Kokeile päivittää sivu hetken kuluttua. Ongelma on yleensä hetkellinen.',
       http403Error: 'Oikeudet puuttuvat',
-      endpointDisabled:
-        'eVakassa on käynnissä osittainen huoltokatko. Osa toiminnoista ei ole tällä hetkellä käytettävissä. Yritä hetken kuluttua uudelleen.'
+      http403ErrorInfo: 'Sinulla ei ole oikeuksia nähdä näitä tietoja.',
+      endpointDisabled: 'Osittainen huoltokatko',
+      endpointDisabledInfo:
+        'Osa toiminnoista ei ole juuri nyt käytettävissä. Yritä uudelleen hetken kuluttua.',
+      networkError: 'Ei verkkoyhteyttä',
+      networkErrorInfo: 'Tarkista internet-yhteytesi ja kokeile uudelleen.'
     },
     today: 'Tänään',
     datetime: {

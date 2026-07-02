@@ -13,9 +13,13 @@ import { useTranslation } from './localization'
 function useFailureMessage() {
   const t = useTranslation().common.errors
   return {
-    generic: t.genericGetError,
-    http403: t.http403Error,
-    endpointDisabled: t.endpointDisabled
+    generic: { title: t.genericGetError, text: t.genericGetErrorInfo },
+    http403: { title: t.http403Error, text: t.http403ErrorInfo },
+    endpointDisabled: {
+      title: t.endpointDisabled,
+      text: t.endpointDisabledInfo
+    },
+    network: { title: t.networkError, text: t.networkErrorInfo }
   }
 }
 

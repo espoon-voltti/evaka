@@ -13,9 +13,19 @@ import { useTranslation } from '../state/i18n'
 function useFailureMessage() {
   const { i18n } = useTranslation()
   return {
-    generic: i18n.common.loadingFailed,
-    http403: i18n.common.noAccess,
-    endpointDisabled: i18n.common.endpointDisabled
+    generic: {
+      title: i18n.common.loadingFailed,
+      text: i18n.common.loadingFailedInfo
+    },
+    http403: { title: i18n.common.noAccess, text: i18n.common.noAccessInfo },
+    endpointDisabled: {
+      title: i18n.common.endpointDisabled,
+      text: i18n.common.endpointDisabledInfo
+    },
+    network: {
+      title: i18n.common.networkError,
+      text: i18n.common.networkErrorInfo
+    }
   }
 }
 

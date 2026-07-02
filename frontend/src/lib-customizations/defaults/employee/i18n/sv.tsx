@@ -71,10 +71,17 @@ export const sv: typeof fi = {
     yes: 'Ja',
     no: 'Nej',
     and: 'Ja',
-    loadingFailed: 'Hämtning av information misslyckades',
-    noAccess: 'Rättigheter saknas',
-    endpointDisabled:
-      'eVaka genomgår för närvarande ett partiellt underhållsavbrott. Vissa funktioner är inte tillgängliga just nu. Försök igen om en stund.',
+    loadingFailed: 'Datahämtningen misslyckades',
+    loadingFailedInfo:
+      'Försök att uppdatera sidan om en stund. Problemet är oftast tillfälligt.',
+    noAccess: 'Ingen tillgång',
+    noAccessInfo:
+      'Kontakta din chef eller systemadministratör om du behöver åtkomst.',
+    endpointDisabled: 'Delvis serviceavbrott',
+    endpointDisabledInfo:
+      'En del av funktionerna är inte tillgängliga just nu. Försök igen om en stund.',
+    networkError: 'Ingen internetanslutning',
+    networkErrorInfo: 'Kontrollera din internetanslutning och försök igen.',
     edit: 'Redigera',
     add: 'Lägg till',
     addNew: 'Lägg till ny',
