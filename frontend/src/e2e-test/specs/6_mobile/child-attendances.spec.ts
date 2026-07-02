@@ -1096,6 +1096,42 @@ test.describe('Child attendances', () => {
       )
     })
 
+    test("NO_TIMES reservation child's daily service time is shown when available", async ({
+      newEvakaPage
+    }) => {
+      await openPage(newEvakaPage)
+      const child = testChild2.id
+      await createPlacements(child)
+
+      const today = now.toLocalDate()
+      await Fixture.dailyServiceTime({
+        childId: child,
+        validityPeriod: new DateRange(today, today),
+        type: 'REGULAR',
+        regularTimes: new TimeRange(
+          now.subHours(3).toLocalTime(),
+          now.addHours(3).toLocalTime()
+        )
+      }).save()
+      await Fixture.holidayPeriod({
+        period: new FiniteDateRange(today, today)
+      }).save()
+      await Fixture.attendanceReservationRaw({
+        childId: child,
+        date: today,
+        range: null
+      }).save()
+
+      const mobileSignupUrl = await pairMobileDevice(testDaycare.id)
+      await page.goto(mobileSignupUrl)
+
+      await assertAttendanceCounts(1, 0, 0, 0, 1)
+      await listPage.selectChild(child)
+      await expect(childPage.reservation).toHaveText(
+        'Varhaiskasvatusaika tänään 10:00-16:00'
+      )
+    })
+
     test('Term break child is shown in absent list', async ({
       newEvakaPage
     }) => {

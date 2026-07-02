@@ -47,8 +47,9 @@ export default React.memo(function AttendanceDailyServiceTimes({
     )
   }
 
-  if (reservationsNoTimes.length > 0) {
-    // NO_TIMES reservation
+  const todaysTimes = getTodaysServiceTimes(dailyServiceTimes)
+
+  if (reservationsNoTimes.length > 0 && typeof todaysTimes === 'string') {
     return (
       <ServiceTime data-qa="reservation">
         <ReservationNoTimes hideLabel={hideLabel} />
@@ -56,7 +57,6 @@ export default React.memo(function AttendanceDailyServiceTimes({
     )
   }
 
-  const todaysTimes = getTodaysServiceTimes(dailyServiceTimes)
   return (
     <ServiceTime data-qa="reservation">
       {scheduleType === 'FIXED_SCHEDULE' ? (
