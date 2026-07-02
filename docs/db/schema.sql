@@ -2065,7 +2065,7 @@ CREATE TABLE public.async_job (
     started_at timestamp with time zone,
     completed_at timestamp with time zone,
     payload jsonb NOT NULL,
-    initial_retry_count bigint
+    initial_retry_count integer
 );
 
 -- Name: async_job_work_permit; Type: TABLE; Schema: public
