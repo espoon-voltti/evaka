@@ -463,9 +463,10 @@ const fi: DeepPartial<Translations> = {
             DAYCARE: 'Päivittäinen varhaiskasvatusaika '
           }
         },
-        preparatory: 'Lapsi tarvitsee tukea suomen kielen oppimisessa.',
+        preparatory:
+          'Lapsi on syntynyt Suomen ulkopuolella ja tarvitsee tukea suomen kielen oppimiseen. Nykyinen päiväkoti on suositellut lapselle valmistavaa opetusta, ja haen hänelle paikkaa myös perusopetukseen valmistavaan opetukseen.',
         preparatoryInfo:
-          'Jokaiselle lapselle, jonka äidinkieli ei ole suomi, ruotsi tai saame, tehdään kielenkartoitus ja sen perusteella suomi toisena kielenä (S2) -opetussuunnitelma. S2-opetus sisällytetään päivittäiseen toimintaan lapsen tarpeiden mukaisesti.'
+          'Perusopetukseen valmistavaan opetukseen voivat osallistua lapset, jotka ovat syntyneet Suomen ulkopuolella ja joilla ei vielä ole suomen kielen taitoa tai joiden suomen kielen taito on vasta kehittymässä. Esiopetusikäisten valmistavaa opetusta järjestetään ainoastaan kunnallisissa suomenkielisissä esiopetusryhmissä.'
       },
       contactInfo: {
         familyInfo: undefined,
