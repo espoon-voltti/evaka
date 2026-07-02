@@ -267,6 +267,7 @@ const StaffSearch = React.memo(function StaffSearch({
   return (
     <SearchContainer
       style={{ height: containerSpring.x.to((x) => `${100 * x}%`) }}
+      data-qa="staff-search"
     >
       <ContentArea
         $opaque={false}
