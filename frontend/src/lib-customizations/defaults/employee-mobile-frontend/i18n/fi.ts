@@ -8,7 +8,7 @@ export const fi = {
   common: {
     yesIDo: 'Kyllä',
     noIDoNot: 'En',
-    loadingFailed: 'Tietojen hakeminen eionnistunut',
+    loadingFailed: 'Tietojen hakeminen ei onnistunut',
     loadingFailedInfo:
       'Kokeile päivittää sivu hetken kuluttua. Ongelma on yleensä hetkellinen.',
     noAccess: 'Oikeudet puuttuvat',
