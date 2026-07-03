@@ -121,6 +121,7 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
                 onClick={onSearch}
                 icon={faSearch}
                 aria-label={i18n.common.search}
+                data-qa="search-button"
               />
             )}
           </GroupSelectorButtonRow>

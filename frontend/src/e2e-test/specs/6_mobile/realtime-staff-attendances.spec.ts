@@ -144,7 +144,6 @@ test.describe('Realtime staff attendance page', () => {
     const departureTime = '12:45'
 
     await staffAttendancePage.assertPresentStaffCount(0)
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
@@ -162,7 +161,6 @@ test.describe('Realtime staff attendance page', () => {
     await initPages(HelsinkiDateTime.fromLocal(date, LocalTime.of(13, 30)))
     await staffAttendancePage.assertPresentStaffCount(1)
 
-    await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.markStaffDeparted({ pin, time: departureTime })
@@ -209,7 +207,6 @@ test.describe('Realtime staff attendance page', () => {
     ).save()
     const arrivalTime = '05:59'
 
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.assertEmployeeStatus('Poissa')
 
@@ -242,7 +239,6 @@ test.describe('Realtime staff attendance page', () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 6, 0))
 
     await staffAttendancePage.assertPresentStaffCount(0)
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.markStaffArrived({
@@ -277,7 +273,6 @@ test.describe('Realtime staff attendance page', () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 0))
 
     await staffAttendancePage.assertPresentStaffCount(0)
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
     const arrivalTime = '07:30'
@@ -312,7 +307,6 @@ test.describe('Realtime staff attendance page', () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 0))
 
     await staffAttendancePage.assertPresentStaffCount(0)
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
     const arrivalTime = '07:30'
@@ -344,7 +338,6 @@ test.describe('Realtime staff attendance page', () => {
     await initPages(HelsinkiDateTime.fromLocal(saturday, LocalTime.of(16, 0)))
 
     await staffAttendancePage.assertPresentStaffCount(0)
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
@@ -379,7 +372,6 @@ test.describe('Realtime staff attendance page', () => {
 
     await initPages(mockedDateTime)
 
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await expect(
@@ -398,7 +390,6 @@ test.describe('Realtime staff attendance page', () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 12, 0))
 
     await staffAttendancePage.assertPresentStaffCount(0)
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
@@ -433,7 +424,6 @@ test.describe('Realtime staff attendance page', () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 7, 30))
 
     await staffAttendancePage.assertPresentStaffCount(0)
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
@@ -478,7 +468,6 @@ test.describe('Realtime staff attendance page', () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 30))
 
     await staffAttendancePage.assertPresentStaffCount(0)
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
@@ -527,7 +516,6 @@ test.describe('Realtime staff attendance page', () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 15, 30))
 
     await staffAttendancePage.assertPresentStaffCount(1)
-    await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
@@ -569,7 +557,6 @@ test.describe('Realtime staff attendance page', () => {
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 30))
 
     await staffAttendancePage.assertPresentStaffCount(1)
-    await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
@@ -620,7 +607,6 @@ test.describe('Realtime staff attendance page', () => {
     // Now it is 14:02
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2))
     await staffAttendancePage.assertPresentStaffCount(1)
-    await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
@@ -664,7 +650,6 @@ test.describe('Realtime staff attendance page', () => {
     // Now it is 14:02
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2))
     await staffAttendancePage.assertPresentStaffCount(1)
-    await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
@@ -708,7 +693,6 @@ test.describe('Realtime staff attendance page', () => {
 
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 12, 4))
     await staffAttendancePage.assertPresentStaffCount(0)
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
 
     await staffAttendancePage.assertEmployeeStatus('Poissa')
@@ -729,7 +713,6 @@ test.describe('Realtime staff attendance page', () => {
     // Clock is now 14:02
     await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2))
     await staffAttendancePage.assertPresentStaffCount(1)
-    await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
     await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
@@ -762,7 +745,6 @@ test.describe('Realtime staff attendance page', () => {
     )
     await staffAttendancePage.assertPresentStaffCount(1)
 
-    await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(name)
 
     await staffAttendancePage.assertEmployeeStatus('Läsnä')
@@ -785,7 +767,6 @@ test.describe('Realtime staff attendance page', () => {
       name,
       testDaycareGroup
     )
-    await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(name)
 
     await staffAttendancePage.externalMemberPage.departureTimeInput.fill(
@@ -1027,7 +1008,6 @@ test.describe('Realtime staff attendance edit page', () => {
     }).save()
 
     await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(10, 0)))
-    await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.previousAttendancesButton.click()
 
@@ -1071,7 +1051,6 @@ test.describe('Realtime staff attendance edit page', () => {
 
     await initPages(HelsinkiDateTime.fromLocal(today, LocalTime.of(21, 0)))
     await staffAttendancePage.assertPresentStaffCount(1)
-    await staffAttendancePage.selectTab('present')
     await staffAttendancePage.openStaffPage(employeeName)
     await staffAttendancePage.previousAttendancesButton.click()
 

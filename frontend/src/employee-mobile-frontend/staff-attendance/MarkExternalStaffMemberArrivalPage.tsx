@@ -9,8 +9,7 @@ import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
 import { useQueryResult } from 'lib-common/query'
-import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   MutateButton,
   cancelMutation
@@ -22,6 +21,7 @@ import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H1, H4, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faArrowLeft } from 'lib-icons'
@@ -88,14 +88,18 @@ export default function MarkExternalStaffMemberArrivalPage({
         $paddingHorizontal="s"
         $paddingVertical="m"
       >
-        <H1 $centered>{i18n.attendances.staff.markExternalPersonTitle}</H1>
-        <HorizontalLine />
+        <H1>{i18n.attendances.staff.markExternalPersonTitle}</H1>
+        <AlertBox
+          title={i18n.attendances.staff.markExternalPersonNotificationTitle}
+          message={i18n.attendances.staff.markExternalPersonNotificationMessage}
+        />
         {renderResult(unitInfoResponse, (unit) => (
           <>
             {unit.isOperationalDate ? (
               <ListGrid>
                 <Label>{i18n.attendances.arrivalTime}</Label>
                 <TimeInput
+                  size="wide"
                   value={form.arrived}
                   onChange={(arrived) =>
                     setForm((old) => ({ ...old, arrived }))
@@ -139,7 +143,7 @@ export default function MarkExternalStaffMemberArrivalPage({
             <Gap $size="xs" />
             <Actions>
               <FixedSpaceRow $fullWidth>
-                <LegacyButton
+                <Button
                   text={i18n.common.cancel}
                   onClick={() => history.go(-1)}
                 />

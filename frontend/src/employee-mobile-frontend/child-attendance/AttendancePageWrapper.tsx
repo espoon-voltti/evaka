@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { animated, useSpring } from '@react-spring/web'
+import { useSpring } from '@react-spring/web'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
-import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
@@ -20,13 +19,12 @@ import colors from 'lib-customizations/common'
 
 import { routes } from '../App'
 import { renderResult } from '../async-rendering'
-import FreeTextSearch from '../common/FreeTextSearch'
+import FreeTextSearch, { SearchContainer } from '../common/FreeTextSearch'
 import type { CountInfo } from '../common/GroupSelector'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
 import type { UnitOrGroup } from '../common/unit-or-group'
 import { toUnitOrGroup } from '../common/unit-or-group'
-import { zIndex } from '../constants'
 import { unitInfoQuery } from '../units/queries'
 
 import ChildList from './ChildList'
@@ -203,22 +201,23 @@ const ChildSearch = React.memo(function Search({
   const containerSpring = useSpring<{ x: number }>({ x: show ? 1 : 0 })
   const [freeText, setFreeText] = useState<string>('')
 
-  const searchResults = useMemo(
-    () =>
-      freeText === ''
-        ? []
-        : unitChildren
-            .filter(
-              (ac) =>
-                ac.firstName.toLowerCase().includes(freeText.toLowerCase()) ||
-                ac.lastName.toLowerCase().includes(freeText.toLowerCase())
-            )
-            .map((child) => ({
-              ...child,
-              status: childAttendanceStatus(child, attendanceStatuses).status
-            })),
-    [attendanceStatuses, freeText, unitChildren]
-  )
+  const searchResults = useMemo(() => {
+    const terms = freeText.toLowerCase().split(/\s+/).filter(Boolean)
+    if (terms.length === 0) return []
+    return unitChildren
+      .filter((ac) => {
+        const nameParts = [ac.firstName, ac.lastName].map((part) =>
+          part.toLowerCase()
+        )
+        return terms.every((term) =>
+          nameParts.some((part) => part.includes(term))
+        )
+      })
+      .map((child) => ({
+        ...child,
+        status: childAttendanceStatus(child, attendanceStatuses).status
+      }))
+  }, [attendanceStatuses, freeText, unitChildren])
 
   return (
     <SearchContainer
@@ -235,7 +234,7 @@ const ChildSearch = React.memo(function Search({
           placeholder={i18n.attendances.searchPlaceholder}
           background={colors.grayscale.g0}
           setShowSearch={toggleShow}
-          searchResults={searchResults}
+          resultCount={searchResults.length}
         />
         <ChildList
           unitOrGroup={unitOrGroup}
@@ -249,11 +248,3 @@ const ChildSearch = React.memo(function Search({
     </SearchContainer>
   )
 })
-
-const SearchContainer = animated(styled.div`
-  position: absolute;
-  background: ${colors.grayscale.g4};
-  width: 100vw;
-  overflow: hidden;
-  z-index: ${zIndex.searchBar};
-`)

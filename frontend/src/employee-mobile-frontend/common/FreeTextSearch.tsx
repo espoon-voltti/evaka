@@ -3,16 +3,28 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { animated } from '@react-spring/web'
 import { useCallback } from 'react'
 import styled from 'styled-components'
 
-import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft, faTimes } from 'lib-icons'
 
+import { zIndex } from '../constants'
+
 import { useTranslation } from './i18n'
+
+export const SearchContainer = animated(styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: ${colors.grayscale.g4};
+  width: 100vw;
+  overflow-y: auto;
+  z-index: ${zIndex.searchBar};
+`)
 
 const SearchInputContainer = styled.div`
   height: 60px;
@@ -20,6 +32,7 @@ const SearchInputContainer = styled.div`
   justify-content: center;
   align-items: center;
   margin-bottom: ${defaultMargins.xs};
+  position: relative;
 `
 
 const SearchInput = styled.input<{ $background?: string; $showClose: boolean }>`
@@ -34,8 +47,7 @@ const SearchInput = styled.input<{ $background?: string; $showClose: boolean }>`
   padding-left: 55px;
   font-size: 17px;
   outline: none;
-  margin-left: -38px;
-  margin-right: ${(p) => (p.$showClose ? '-25px' : '0')};
+  padding-right: ${(p) => (p.$showClose ? '50px' : '0')};
   color: ${colors.grayscale.g100};
   height: 100%;
 
@@ -55,7 +67,7 @@ const SearchInput = styled.input<{ $background?: string; $showClose: boolean }>`
 const CustomIcon = styled(FontAwesomeIcon)`
   color: ${colors.grayscale.g70};
   margin: 0 0.5rem;
-  position: relative;
+  position: absolute;
   left: 10px;
   font-size: 22px;
   cursor: pointer;
@@ -63,7 +75,7 @@ const CustomIcon = styled(FontAwesomeIcon)`
 
 const CustomIconButton = styled(IconOnlyButton)`
   float: right;
-  position: relative;
+  position: absolute;
   color: ${colors.grayscale.g35};
   right: 20px;
 `
@@ -74,7 +86,7 @@ type FreeTextSearchProps = {
   placeholder: string
   background?: string
   setShowSearch: (show: boolean) => void
-  searchResults: AttendanceChild[]
+  resultCount: number
 }
 
 export default function FreeTextSearch({
@@ -83,7 +95,7 @@ export default function FreeTextSearch({
   placeholder,
   background,
   setShowSearch,
-  searchResults
+  resultCount
 }: FreeTextSearchProps) {
   const clear = useCallback(() => setValue(''), [setValue])
   const { i18n } = useTranslation()
@@ -97,9 +109,9 @@ export default function FreeTextSearch({
         onChange={(e) => setValue(e.target.value)}
         data-qa="free-text-search-input"
         $background={background}
-        $showClose={searchResults.length > 1}
+        $showClose={resultCount > 1}
       />
-      {searchResults.length > 1 && (
+      {resultCount > 1 && (
         <CustomIconButton
           icon={faTimes}
           onClick={clear}

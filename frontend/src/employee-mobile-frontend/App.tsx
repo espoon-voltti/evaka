@@ -282,10 +282,7 @@ function StaffAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
       <Redirect
         replace
         to={
-          routes.staffAttendancesToday(
-            toUnitOrGroup(unitOrGroup.unitId),
-            'absent'
-          ).value
+          routes.staffAttendancesToday(toUnitOrGroup(unitOrGroup.unitId)).value
         }
       />
     )
@@ -293,22 +290,8 @@ function StaffAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
 
   return (
     <Switch>
-      <Route path="/today/absent">
-        <StaffAttendancesPage
-          primaryTab="today"
-          statusTab="absent"
-          unitOrGroup={unitOrGroup}
-        />
-      </Route>
-      <Route path="/today/present">
-        <StaffAttendancesPage
-          primaryTab="today"
-          statusTab="present"
-          unitOrGroup={unitOrGroup}
-        />
-      </Route>
       <Route path="/today">
-        <Redirect replace to="/today/absent" />
+        <StaffAttendancesPage primaryTab="today" unitOrGroup={unitOrGroup} />
       </Route>
       <Route path="/planned">
         <StaffAttendancesPage primaryTab="planned" unitOrGroup={unitOrGroup} />
@@ -338,7 +321,7 @@ function StaffAttendanceRouter({ unitOrGroup }: { unitOrGroup: UnitOrGroup }) {
         <StaffMarkDepartedPage unitOrGroup={unitOrGroup} />
       </Route>
       <Route>
-        <Redirect replace to="/today/absent" />
+        <Redirect replace to="/today" />
       </Route>
     </Switch>
   )
@@ -449,11 +432,8 @@ export const routes = {
   staffAttendanceRoot(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.unitOrGroup(unitOrGroup)}/staff-attendance`
   },
-  staffAttendancesToday(
-    unitOrGroup: UnitOrGroup,
-    tab: 'absent' | 'present'
-  ): Uri {
-    return uri`${this.staffAttendanceRoot(unitOrGroup)}/today/${tab}`
+  staffAttendancesToday(unitOrGroup: UnitOrGroup): Uri {
+    return uri`${this.staffAttendanceRoot(unitOrGroup)}/today`
   },
   staffAttendancesPlanned(unitOrGroup: UnitOrGroup): Uri {
     return uri`${this.staffAttendanceRoot(unitOrGroup)}/planned`

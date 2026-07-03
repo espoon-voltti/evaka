@@ -49,7 +49,7 @@ export default React.memo(function StaffMemberPlannedAttendancesPage({
 
   return renderResult(attendanceResponse, (staffMemberWithOperationalDays) => (
     <StaffMemberPageContainer
-      back={routes.staffAttendancesToday(unitOrGroup, 'present').value}
+      back={routes.staffAttendancesToday(unitOrGroup).value}
     >
       <EmployeeCardBackground
         staff={toStaff(staffMemberWithOperationalDays.staffMember)}

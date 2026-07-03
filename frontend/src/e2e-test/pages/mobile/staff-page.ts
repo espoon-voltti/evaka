@@ -29,7 +29,12 @@ export class StaffAttendancePage {
 
   #addNewExternalMemberButton: Element
   #primaryTabs: { today: Element; planned: Element }
-  #todayTabs: { present: Element; absent: Element }
+  #todayHeadings: { present: Element; absent: Element }
+  #sections: { present: Element; absent: Element }
+  #sectionHeaders: { present: Element; absent: Element }
+  #searchButton: Element
+  #staffSearch: Element
+  #searchInput: TextInput
   pinInput: Element
 
   previousAttendancesPage: {
@@ -101,10 +106,23 @@ export class StaffAttendancePage {
       today: page.findByDataQa('today-tab'),
       planned: page.findByDataQa('planned-tab')
     }
-    this.#todayTabs = {
-      present: page.findByDataQa('present-tab'),
-      absent: page.findByDataQa('absent-tab')
+    this.#todayHeadings = {
+      present: page.findByDataQa('present-heading'),
+      absent: page.findByDataQa('absent-heading')
     }
+    this.#sections = {
+      present: page.findByDataQa('present-section'),
+      absent: page.findByDataQa('absent-section')
+    }
+    this.#sectionHeaders = {
+      present: page.findByDataQa('present-section-header'),
+      absent: page.findByDataQa('absent-section-header')
+    }
+    this.#searchButton = page.findByDataQa('search-button')
+    this.#staffSearch = page.findByDataQa('staff-search')
+    this.#searchInput = new TextInput(
+      page.findByDataQa('free-text-search-input')
+    )
 
     this.pinInput = page.findByDataQa('pin-input')
     this.previousAttendancesPage = {
@@ -234,9 +252,53 @@ export class StaffAttendancePage {
   }
 
   async assertPresentStaffCount(expected: number) {
-    await expect(this.#todayTabs.present).toHaveText(`LÄSNÄ\n(${expected})`, {
+    await expect(this.#todayHeadings.present).toHaveText(`Läsnä ${expected}`, {
       useInnerText: true
     })
+  }
+
+  async assertAbsentStaffCount(expected: number) {
+    await expect(this.#todayHeadings.absent).toHaveText(`Poissa ${expected}`, {
+      useInnerText: true
+    })
+  }
+
+  async toggleSection(section: 'present' | 'absent') {
+    await this.#sectionHeaders[section].click()
+  }
+
+  async assertStaffInSection(
+    section: 'present' | 'absent',
+    name: string,
+    visible = true
+  ) {
+    const row = this.#sections[section].find('[data-qa="staff-link"]', {
+      hasText: name
+    })
+    if (visible) {
+      await expect(row).toBeVisible()
+    } else {
+      await expect(row).toBeHidden()
+    }
+  }
+
+  async openSearch() {
+    await this.#searchButton.click()
+  }
+
+  async searchStaff(text: string) {
+    await this.#searchInput.fill(text)
+  }
+
+  #searchResult = (name: string) =>
+    this.#staffSearch.find('[data-qa="staff-link"]', { hasText: name })
+
+  async assertSearchResultVisible(name: string, visible = true) {
+    if (visible) {
+      await expect(this.#searchResult(name)).toBeVisible()
+    } else {
+      await expect(this.#searchResult(name)).toBeHidden()
+    }
   }
 
   async openStaffPage(name: string) {
@@ -249,10 +311,6 @@ export class StaffAttendancePage {
 
   async selectPrimaryTab(tab: 'today' | 'planned') {
     await this.#primaryTabs[tab].click()
-  }
-
-  async selectTab(tab: 'present' | 'absent') {
-    await this.#todayTabs[tab].click()
   }
 
   async goBackFromMemberPage() {

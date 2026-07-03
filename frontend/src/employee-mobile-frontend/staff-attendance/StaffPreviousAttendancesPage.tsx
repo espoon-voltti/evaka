@@ -59,7 +59,7 @@ export default React.memo(function StaffPreviousAttendancesPage({
     combine(unitResponse, attendanceResponse),
     ([unitInfo, staffMemberWithOperationalDays]) => (
       <StaffMemberPageContainer
-        back={routes.staffAttendancesToday(unitOrGroup, 'present').value}
+        back={routes.staffAttendancesToday(unitOrGroup).value}
       >
         <EmployeeCardBackground
           staff={toStaff(staffMemberWithOperationalDays.staffMember)}

@@ -133,7 +133,7 @@ export default React.memo(function StaffMemberPage({
     employeeResponse,
     ({ isOperationalDate, staffMember }) => (
       <StaffMemberPageContainer
-        back={routes.staffAttendancesToday(unitOrGroup, 'present').value}
+        back={routes.staffAttendancesToday(unitOrGroup).value}
       >
         {staffMember === undefined ? (
           <ErrorSegment
