@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { onlineManager } from '@tanstack/react-query'
 import React, { useMemo } from 'react'
 import styled, { useTheme } from 'styled-components'
 
@@ -16,6 +15,7 @@ import {
   SpinnerOverlay,
   SpinnerSegment
 } from 'lib-components/atoms/state/Spinner'
+import { useIsOnline } from 'lib-components/utils/useIsOnline'
 import { faExclamationTriangle, faGear, faLockAlt } from 'lib-icons'
 
 import type { SpacingSize } from './white-space'
@@ -86,8 +86,9 @@ function FailureSegment({
   messages: FailureMessages
 }) {
   const { colors } = useTheme()
+  const online = useIsOnline()
 
-  if (!onlineManager.isOnline()) {
+  if (!online) {
     return (
       <NetworkSegment
         title={messages.network.title}

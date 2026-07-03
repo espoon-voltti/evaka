@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { onlineManager } from '@tanstack/react-query'
-import React, { useSyncExternalStore } from 'react'
+import React from 'react'
 
+import { useIsOnline } from '../../utils/useIsOnline'
 import type { SpacingSize } from '../../white-space'
 
 import NetworkSegment from './NetworkSegment'
@@ -17,16 +17,13 @@ interface LoadingSegmentProps {
   margin?: SpacingSize
 }
 
-const subscribe = (onChange: () => void) => onlineManager.subscribe(onChange)
-const getOnline = () => onlineManager.isOnline()
-
 export default React.memo(function LoadingSegment({
   networkTitle,
   networkInfo,
   size,
   margin
 }: LoadingSegmentProps) {
-  const online = useSyncExternalStore(subscribe, getOnline)
+  const online = useIsOnline()
 
   if (!online) {
     return <NetworkSegment title={networkTitle} info={networkInfo} />
