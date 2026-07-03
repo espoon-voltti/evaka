@@ -94,7 +94,7 @@ export default React.memo(function StaffListItem({
         <IconBox $present={present}>
           <RoundIcon
             content={farUser}
-            textColor="white"
+            textColor={colors.grayscale.g0}
             color={present ? colors.status.success : colors.main.m3}
             size="XL"
           />
