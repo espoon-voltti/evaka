@@ -55,7 +55,7 @@
     "@types/tough-cookie": "4.0.5",
     "@types/xml2js": "0.4.14",
     "concurrently": "10.0.3",
-    "nock": "14.0.15",
+    "nock": "14.0.16",
     "node-forge": "1.4.0",
     "oxfmt": "0.56.0",
     "oxlint": "1.71.0",
