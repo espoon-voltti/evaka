@@ -7,6 +7,8 @@ package evaka.core
 import evaka.core.shared.Id
 import fi.espoo.voltti.logging.loggers.audit
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 import kotlin.reflect.KProperty1
 
@@ -100,8 +102,10 @@ enum class Audit(
     AttachmentsUploadForMessage,
     AttachmentsUploadForMessageDraft,
     AttachmentsUploadForPedagogicalDocument,
+    AttendanceReservationCitizenCreate,
     AttendanceReservationCitizenRead,
     AttendanceReservationDelete,
+    AttendanceReservationEmployeeCreate,
     AttendanceReservationReportRead,
     BackupCareDelete,
     BackupCareUpdate,
@@ -153,6 +157,7 @@ enum class Audit(
     ChildDailyServiceTimesRead,
     ChildDailyServiceTimeNotificationsRead,
     ChildDailyServiceTimeNotificationsDismiss,
+    ChildDatePresenceUpsert,
     ChildDatePresenceExpectedAbsencesCheck,
     ChildDocumentProposeDecision,
     ChildDocumentAcceptDecision,
@@ -193,6 +198,9 @@ enum class Audit(
     ChildDocumentsReportRead,
     ChildDocumentsReportTemplatesRead,
     ChildSensitiveInfoRead,
+    ChildServiceApplicationsRead,
+    ChildServiceApplicationAccept,
+    ChildServiceApplicationReject,
     ChildServiceNeedsRead,
     ChildStickyNoteCreate,
     ChildStickyNoteUpdate,
@@ -557,6 +565,7 @@ enum class Audit(
     UnitAclRead,
     UnitScheduledAclRead,
     UnitApplicationsRead,
+    UnitServiceApplicationsRead,
     UnitAttendanceReservationsRead,
     UnitCalendarEventsRead,
     UnitFeaturesRead,
@@ -670,6 +679,36 @@ enum class Audit(
             eventCode
         }
     }
+
+    fun log(
+        // This is a hack to force passing all real parameters by name
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        today: LocalDate,
+        minDate: LocalDate?,
+        context: Map<String, Any?>,
+        meta: Map<String, Any?> = emptyMap(),
+    ) =
+        logger.audit(
+            mapOf(
+                "eventCode" to eventCode,
+                "context" to context,
+                "minDate" to minDate?.toString(),
+                "daysIntoHistory" to daysIntoHistory(minDate, today),
+                "securityLevel" to securityLevel,
+                "securityEvent" to securityEvent,
+            ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()
+        ) {
+            eventCode
+        }
+}
+
+/**
+ * How many days [minDate] reaches into the past relative to [today]. Returns `null` when [minDate]
+ * is null, and `0` when [minDate] is today or in the future, so the value never goes negative.
+ */
+fun daysIntoHistory(minDate: LocalDate?, today: LocalDate): Long? {
+    if (minDate == null) return null
+    return maxOf(0L, ChronoUnit.DAYS.between(minDate, today))
 }
 
 private val logger = KotlinLogging.logger {}

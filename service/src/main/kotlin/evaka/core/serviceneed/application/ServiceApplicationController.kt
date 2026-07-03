@@ -4,8 +4,8 @@
 
 package evaka.core.serviceneed.application
 
+import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditEvent
 import evaka.core.absence.generateAbsencesFromIrregularDailyServiceTimes
 import evaka.core.placement.PlacementSource
 import evaka.core.placement.createPlacement
@@ -84,7 +84,7 @@ class ServiceApplicationController(
                     }
                 }
             }
-            .also { audit.log(AuditEvent.ChildServiceApplicationsRead, clock) }
+            .also { audit.log(Audit.ChildServiceApplicationsRead, clock) }
     }
 
     @GetMapping("/undecided")
@@ -107,7 +107,7 @@ class ServiceApplicationController(
                     tx.getUndecidedServiceApplicationsByUnit(unitId)
                 }
             }
-            .also { audit.log(AuditEvent.UnitServiceApplicationsRead, clock) }
+            .also { audit.log(Audit.UnitServiceApplicationsRead, clock) }
     }
 
     data class AcceptServiceApplicationBody(val shiftCareType: ShiftCareType, val partWeek: Boolean)
@@ -245,7 +245,7 @@ class ServiceApplicationController(
                         .observeDate(range.start)
                 }
             }
-            .also { audit.log(AuditEvent.ChildServiceApplicationAccept, clock) }
+            .also { audit.log(Audit.ChildServiceApplicationAccept, clock) }
     }
 
     data class ServiceApplicationRejection(val reason: String)
@@ -284,6 +284,6 @@ class ServiceApplicationController(
                     audit.add(application.childId)
                 }
             }
-            .also { audit.log(AuditEvent.ChildServiceApplicationReject, clock) }
+            .also { audit.log(Audit.ChildServiceApplicationReject, clock) }
     }
 }

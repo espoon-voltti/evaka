@@ -7,10 +7,7 @@ package evaka.core
 import evaka.core.shared.DatabaseTable
 import evaka.core.shared.Id
 import evaka.core.shared.domain.EvakaClock
-import fi.espoo.voltti.logging.loggers.audit
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 class AuditContext {
     @PublishedApi internal val ids = mutableMapOf<String, MutableSet<Id<*>>>()
@@ -70,27 +67,11 @@ class AuditContext {
         get() = metaEntries.toMap()
 
     /** Emits the audit event for [event], using the accumulated context and the request [clock]. */
-    fun log(event: AuditEvent, clock: EvakaClock) =
-        logger.audit(logFields(event, clock.today())) { event.eventCode }
-
-    internal fun logFields(event: AuditEvent, today: LocalDate): Map<String, Any?> =
-        mapOf(
-            "eventCode" to event.eventCode,
-            "context" to context.mapValues { (_, ids) -> ids.map { it.raw.toString() } },
-            "minDate" to minDate?.toString(),
-            "daysIntoHistory" to daysIntoHistory(minDate, today),
-            "securityLevel" to event.securityLevel,
-            "securityEvent" to event.securityEvent,
-        ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()
-}
-
-private val logger = KotlinLogging.logger {}
-
-/**
- * How many days [minDate] reaches into the past relative to [today]. Returns `null` when [minDate]
- * is null, and `0` when [minDate] is today or in the future, so the value never goes negative.
- */
-fun daysIntoHistory(minDate: LocalDate?, today: LocalDate): Long? {
-    if (minDate == null) return null
-    return maxOf(0L, ChronoUnit.DAYS.between(minDate, today))
+    fun log(event: Audit, clock: EvakaClock) =
+        event.log(
+            today = clock.today(),
+            minDate = minDate,
+            context = context.mapValues { (_, ids) -> ids.map { it.raw.toString() } },
+            meta = meta,
+        )
 }

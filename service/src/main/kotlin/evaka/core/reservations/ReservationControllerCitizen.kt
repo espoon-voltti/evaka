@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditEvent
 import evaka.core.AuditId
 import evaka.core.CitizenCalendarEnv
 import evaka.core.EvakaEnv
@@ -297,7 +296,7 @@ class ReservationControllerCitizen(
                     )
                 }
             }
-            .also { audit.log(AuditEvent.AttendanceReservationCitizenCreate, clock) }
+            .also { audit.log(Audit.AttendanceReservationCitizenCreate, clock) }
     }
 
     @PostMapping("/citizen/absences")

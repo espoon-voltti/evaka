@@ -6,7 +6,6 @@ package evaka.core.reservations
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditEvent
 import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.absence.AbsenceCategory
@@ -333,7 +332,7 @@ class AttendanceReservationController(
                     )
                 }
             }
-            .also { audit.log(AuditEvent.AttendanceReservationEmployeeCreate, clock) }
+            .also { audit.log(Audit.AttendanceReservationEmployeeCreate, clock) }
     }
 
     @PostMapping("/employee/attendance-reservations/child-date")
@@ -357,7 +356,7 @@ class AttendanceReservationController(
                     upsertChildDatePresence(tx, user.evakaUserId, clock.now(), body, audit)
                 }
             }
-            .also { audit.log(AuditEvent.ChildDatePresenceUpsert, clock) }
+            .also { audit.log(Audit.ChildDatePresenceUpsert, clock) }
     }
 
     data class ExpectedAbsencesRequest(

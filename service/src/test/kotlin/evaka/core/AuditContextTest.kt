@@ -178,35 +178,4 @@ class AuditContextTest {
         assertEquals(1L, daysIntoHistory(minDate = LocalDate.of(2026, 6, 23), today = today))
         assertEquals(365L, daysIntoHistory(minDate = LocalDate.of(2025, 6, 24), today = today))
     }
-
-    @Test
-    fun `logFields assembles the accumulated context, meta, minDate and daysIntoHistory`() {
-        val ctx = auditContext()
-        val childId = ChildId(UUID.randomUUID())
-        ctx.add(childId).addMeta("count", 3).observeDate(LocalDate.of(2025, 6, 24))
-
-        val fields = ctx.logFields(AuditEvent.ChildServiceApplicationsRead, today)
-
-        assertEquals(
-            mapOf(
-                "eventCode" to "ChildServiceApplicationsRead",
-                "context" to mapOf("personId" to listOf(childId.raw.toString())),
-                "minDate" to "2025-06-24",
-                "daysIntoHistory" to 365L,
-                "securityLevel" to "low",
-                "securityEvent" to false,
-                "meta" to mapOf("count" to 3),
-            ),
-            fields,
-        )
-    }
-
-    @Test
-    fun `logFields omits the meta key when no meta was recorded`() {
-        val ctx = auditContext()
-        val fields = ctx.logFields(AuditEvent.UnitServiceApplicationsRead, today)
-        assertEquals(false, fields.containsKey("meta"))
-        assertNull(fields["minDate"])
-        assertNull(fields["daysIntoHistory"])
-    }
 }
