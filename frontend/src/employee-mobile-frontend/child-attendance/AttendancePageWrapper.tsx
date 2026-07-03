@@ -201,22 +201,23 @@ const ChildSearch = React.memo(function Search({
   const containerSpring = useSpring<{ x: number }>({ x: show ? 1 : 0 })
   const [freeText, setFreeText] = useState<string>('')
 
-  const searchResults = useMemo(
-    () =>
-      freeText === ''
-        ? []
-        : unitChildren
-            .filter(
-              (ac) =>
-                ac.firstName.toLowerCase().includes(freeText.toLowerCase()) ||
-                ac.lastName.toLowerCase().includes(freeText.toLowerCase())
-            )
-            .map((child) => ({
-              ...child,
-              status: childAttendanceStatus(child, attendanceStatuses).status
-            })),
-    [attendanceStatuses, freeText, unitChildren]
-  )
+  const searchResults = useMemo(() => {
+    const terms = freeText.toLowerCase().split(/\s+/).filter(Boolean)
+    if (terms.length === 0) return []
+    return unitChildren
+      .filter((ac) => {
+        const nameParts = [ac.firstName, ac.lastName].map((part) =>
+          part.toLowerCase()
+        )
+        return terms.every((term) =>
+          nameParts.some((part) => part.includes(term))
+        )
+      })
+      .map((child) => ({
+        ...child,
+        status: childAttendanceStatus(child, attendanceStatuses).status
+      }))
+  }, [attendanceStatuses, freeText, unitChildren])
 
   return (
     <SearchContainer

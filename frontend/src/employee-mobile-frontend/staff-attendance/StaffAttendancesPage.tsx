@@ -250,19 +250,18 @@ const StaffSearch = React.memo(function StaffSearch({
     [staffAttendanceResponse]
   )
 
-  const searchResults = useMemo(
-    () =>
-      freeText === ''
-        ? []
-        : staff.filter((s) => {
-            const text = freeText.toLowerCase()
-            return 'employeeId' in s
-              ? s.firstName.toLowerCase().includes(text) ||
-                  s.lastName.toLowerCase().includes(text)
-              : s.name.toLowerCase().includes(text)
-          }),
-    [freeText, staff]
-  )
+  const searchResults = useMemo(() => {
+    const terms = freeText.toLowerCase().split(/\s+/).filter(Boolean)
+    if (terms.length === 0) return []
+    return staff.filter((s) => {
+      const nameParts = (
+        'employeeId' in s ? [s.firstName, s.lastName] : [s.name]
+      ).map((part) => part.toLowerCase())
+      return terms.every((term) =>
+        nameParts.some((part) => part.includes(term))
+      )
+    })
+  }, [freeText, staff])
 
   return (
     <SearchContainer
