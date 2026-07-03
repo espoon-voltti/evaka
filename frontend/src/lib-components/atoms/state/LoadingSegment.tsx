@@ -5,29 +5,23 @@
 import React from 'react'
 
 import { useIsOnline } from '../../utils/useIsOnline'
-import type { SpacingSize } from '../../white-space'
 
-import NetworkSegment from './NetworkSegment'
+import type { FailureMessage } from './ErrorSegment'
+import OfflineSegment from './OfflineSegment'
 import { SpinnerSegment } from './Spinner'
 
 interface LoadingSegmentProps {
-  networkTitle: string
-  networkInfo?: string
-  size?: SpacingSize
-  margin?: SpacingSize
+  network: FailureMessage
 }
 
 export default React.memo(function LoadingSegment({
-  networkTitle,
-  networkInfo,
-  size,
-  margin
+  network
 }: LoadingSegmentProps) {
   const online = useIsOnline()
 
   if (!online) {
-    return <NetworkSegment title={networkTitle} info={networkInfo} />
+    return <OfflineSegment {...network} />
   }
 
-  return <SpinnerSegment size={size} margin={margin} />
+  return <SpinnerSegment />
 })

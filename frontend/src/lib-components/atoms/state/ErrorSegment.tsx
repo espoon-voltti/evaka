@@ -35,15 +35,18 @@ const Title = styled(H3)`
   font-weight: ${fontWeights.semibold};
 `
 
-interface ErrorSegmentProps {
-  title?: string
+export interface FailureMessage {
+  title: string
   info?: string
+}
+
+interface ErrorSegmentProps extends FailureMessage {
   icon?: IconDefinition
   iconColor?: string
 }
 
 export default React.memo(function ErrorSegment({
-  title = 'Tietojen hakeminen ei onnistunut',
+  title,
   info,
   icon = faExclamationTriangle,
   iconColor

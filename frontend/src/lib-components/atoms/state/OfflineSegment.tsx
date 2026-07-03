@@ -7,17 +7,13 @@ import { useTheme } from 'styled-components'
 
 import { faGlobe } from 'lib-icons'
 
+import type { FailureMessage } from './ErrorSegment'
 import ErrorSegment from './ErrorSegment'
 
-interface NetworkSegmentProps {
-  title: string
-  info?: string
-}
-
-export default React.memo(function NetworkSegment({
+export default React.memo(function OfflineSegment({
   title,
   info
-}: NetworkSegmentProps) {
+}: FailureMessage) {
   const { colors } = useTheme()
   return (
     <ErrorSegment
