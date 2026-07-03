@@ -184,11 +184,6 @@ class DataRemovalService(
                     ),
             )
         }
-        if (deleted.size >= limit) {
-            logger.info {
-                "Child document deletion hit batch limit of $limit; remaining backlog will be processed on the next run"
-            }
-        }
     }
 
     fun deleteExpiredApplications(
@@ -242,11 +237,6 @@ class DataRemovalService(
                         "expireDate" to expireDate,
                     ),
             )
-        }
-        if (deleted.size >= limit) {
-            logger.info {
-                "Application deletion hit batch limit of $limit; remaining backlog will be processed on the next run"
-            }
         }
     }
 
@@ -315,11 +305,6 @@ class DataRemovalService(
                         "expireDate" to expireDate,
                     ),
             )
-        }
-        if (deleted.size >= limit) {
-            logger.info {
-                "Pedagogical document deletion hit batch limit of $limit; remaining backlog will be processed on the next run"
-            }
         }
     }
 
