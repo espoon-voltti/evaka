@@ -7,16 +7,27 @@ package evaka.core.dataremoval
 import evaka.core.Audit
 import evaka.core.AuditId
 import evaka.core.DataRemovalEnv
+import evaka.core.caseprocess.deleteCaseProcesses
 import evaka.core.childimages.deleteImageFile
 import evaka.core.document.childdocument.deleteExpiredChildDocuments
+import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService
+import evaka.core.shared.ApplicationId
+import evaka.core.shared.AttachmentId
+import evaka.core.shared.CaseProcessId
 import evaka.core.shared.ChildId
 import evaka.core.shared.ChildImageId
+import evaka.core.shared.DecisionId
 import evaka.core.shared.FinanceNoteId
 import evaka.core.shared.Id
+import evaka.core.shared.IncomeId
+import evaka.core.shared.MessageThreadId
+import evaka.core.shared.ParentshipId
+import evaka.core.shared.PartnershipId
 import evaka.core.shared.PersonId
 import evaka.core.shared.PlacementId
 import evaka.core.shared.ServiceApplicationId
+import evaka.core.shared.SfiMessageId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.async.AsyncJobType
@@ -52,6 +63,7 @@ class DataRemovalService(
     init {
         asyncJobRunner.registerHandler(::deleteExpiredData)
         asyncJobRunner.registerHandler(::deleteChildImage)
+        asyncJobRunner.registerHandler(::deleteDecisionPdf)
     }
 
     fun planDataRemoval(db: Database.Connection, clock: EvakaClock) {
@@ -82,6 +94,8 @@ class DataRemovalService(
         }
 
         deleteExpiredChildDocuments(dbc, now, limit)
+
+        deleteExpiredApplications(dbc, now, expireDate = today.minusYears(10), limit)
 
         deleteExpiredChildLeafRows(
             dbc,
@@ -167,6 +181,73 @@ class DataRemovalService(
                 "Child document deletion hit batch limit of $limit; remaining backlog will be processed on the next run"
             }
         }
+    }
+
+    fun deleteExpiredApplications(
+        db: Database.Connection,
+        now: HelsinkiDateTime,
+        expireDate: LocalDate,
+        limit: Int,
+    ) {
+        logger.info { "Deleting at most $limit expired applications" }
+        val (deleted, unsetReferences) =
+            db.transaction { tx ->
+                val (results, unset) = tx.deleteExpiredApplicationsBatch(expireDate, limit)
+                val decisionKeys = results.flatMap { it.decisionDocumentKeys }
+                if (decisionKeys.isNotEmpty()) {
+                    asyncJobRunner.plan(
+                        tx = tx,
+                        payloads = decisionKeys.map { AsyncJob.DeleteDecisionPdf(it) },
+                        runAt = now,
+                    )
+                }
+                val attachmentIds = results.flatMap { it.attachmentIds }
+                if (attachmentIds.isNotEmpty()) {
+                    asyncJobRunner.plan(
+                        tx = tx,
+                        payloads = attachmentIds.map { AsyncJob.DeleteAttachment(it) },
+                        runAt = now,
+                    )
+                }
+                results to unset
+            }
+        unsetReferences.forEach { ref ->
+            auditExpiredUnset(
+                entity = ref.entity,
+                targetId = ref.targetId,
+                meta = mapOf("clearedColumns" to ref.clearedColumns, "expireDate" to expireDate),
+            )
+        }
+        logger.info { "Deleted ${deleted.size} expired application(s)" }
+        deleted.forEach { app ->
+            auditExpiredDelete(
+                entity = "application",
+                targetId = AuditId(app.applicationId),
+                meta =
+                    mapOf(
+                        "childId" to app.childId,
+                        "decisionIds" to app.decisionIds,
+                        "processId" to app.processId,
+                        "decisionDocumentKeys" to app.decisionDocumentKeys,
+                        "sfiMessageIds" to app.sfiMessageIds,
+                        "attachmentIds" to app.attachmentIds,
+                        "expireDate" to expireDate,
+                    ),
+            )
+        }
+        if (deleted.size >= limit) {
+            logger.info {
+                "Application deletion hit batch limit of $limit; remaining backlog will be processed on the next run"
+            }
+        }
+    }
+
+    fun deleteDecisionPdf(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.DeleteDecisionPdf,
+    ) {
+        documentClient.delete(DocumentKey.Decision(msg.key))
     }
 
     fun deleteExpiredChildImages(
@@ -310,6 +391,153 @@ GROUP BY child_id
 HAVING max(end_date) < ${bind(date)}
 """
     )
+}
+
+data class DeletedApplication(
+    val applicationId: ApplicationId,
+    val childId: ChildId,
+    val decisionIds: List<DecisionId>,
+    val processId: CaseProcessId?,
+    val decisionDocumentKeys: List<String>,
+    val sfiMessageIds: List<SfiMessageId>,
+    val attachmentIds: List<AttachmentId>,
+)
+
+private data class UnsetReference(
+    val entity: String,
+    val targetId: AuditId,
+    val clearedColumns: List<String>,
+)
+
+private fun Database.Transaction.deleteExpiredApplicationsBatch(
+    expireDate: LocalDate,
+    limit: Int,
+): Pair<List<DeletedApplication>, List<UnsetReference>> {
+    val deletableRows =
+        createQuery {
+                sql(
+                    """
+WITH del_batch AS (
+    SELECT id
+    FROM application
+    WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
+    FOR UPDATE
+    LIMIT ${bind(limit)}
+)
+SELECT
+    a.id AS application_id,
+    a.child_id,
+    a.process_id,
+    COALESCE(array_agg(DISTINCT d.id) FILTER (WHERE d.id IS NOT NULL), '{}') AS decision_ids,
+    COALESCE(array_agg(DISTINCT k.key) FILTER (WHERE k.key IS NOT NULL), '{}') AS decision_document_keys,
+    COALESCE(array_agg(DISTINCT sm.id) FILTER (WHERE sm.id IS NOT NULL), '{}') AS sfi_message_ids,
+    COALESCE(array_agg(DISTINCT att.id) FILTER (WHERE att.id IS NOT NULL), '{}') AS attachment_ids
+FROM del_batch
+JOIN application a ON a.id = del_batch.id
+LEFT JOIN decision d ON d.application_id = a.id
+LEFT JOIN LATERAL (VALUES (d.document_key), (d.other_guardian_document_key)) AS k(key)
+    ON k.key IS NOT NULL
+LEFT JOIN sfi_message sm ON sm.decision_id = d.id
+LEFT JOIN attachment att ON att.application_id = a.id
+GROUP BY a.id
+"""
+                )
+            }
+            .toList<DeletedApplication>()
+
+    val deletableIds = deletableRows.map { it.applicationId }
+    val decisionIds = deletableRows.flatMap { it.decisionIds }
+    val processIds = deletableRows.mapNotNull { it.processId }
+    val sfiMessageIds = deletableRows.flatMap { it.sfiMessageIds }
+
+    if (deletableIds.isEmpty()) return deletableRows to emptyList()
+
+    val unsetReferences = buildList {
+        createUpdate {
+                sql(
+                    "UPDATE placement SET source = NULL, source_application_id = NULL WHERE source_application_id = ANY(${bind(deletableIds)}) RETURNING id"
+                )
+            }
+            .executeAndReturnGeneratedKeys()
+            .mapTo<PlacementId>()
+            .forEach {
+                add(
+                    UnsetReference(
+                        "placement",
+                        AuditId(it),
+                        listOf("source", "source_application_id"),
+                    )
+                )
+            }
+        createUpdate {
+                sql(
+                    "UPDATE income SET application_id = NULL WHERE application_id = ANY(${bind(deletableIds)}) RETURNING id"
+                )
+            }
+            .executeAndReturnGeneratedKeys()
+            .mapTo<IncomeId>()
+            .forEach { add(UnsetReference("income", AuditId(it), listOf("application_id"))) }
+        createUpdate {
+                sql(
+                    "UPDATE fridge_child SET create_source = NULL, created_by_application = NULL WHERE created_by_application = ANY(${bind(deletableIds)}) RETURNING id"
+                )
+            }
+            .executeAndReturnGeneratedKeys()
+            .mapTo<ParentshipId>()
+            .forEach {
+                add(
+                    UnsetReference(
+                        "fridge_child",
+                        AuditId(it),
+                        listOf("create_source", "created_by_application"),
+                    )
+                )
+            }
+        createUpdate {
+                sql(
+                    "UPDATE fridge_partner SET create_source = NULL, created_from_application = NULL WHERE created_from_application = ANY(${bind(deletableIds)}) RETURNING partnership_id"
+                )
+            }
+            .executeAndReturnGeneratedKeys()
+            // fridge_partner has two rows per partnership (indx 1/2), both created from the same
+            // application, so RETURNING partnership_id yields each id twice
+            .mapTo<PartnershipId>()
+            .toSet()
+            .forEach {
+                add(
+                    UnsetReference(
+                        "fridge_partner",
+                        AuditId(it),
+                        listOf("create_source", "created_from_application"),
+                    )
+                )
+            }
+        createUpdate {
+                sql(
+                    "UPDATE message_thread SET application_id = NULL WHERE application_id = ANY(${bind(deletableIds)}) RETURNING id"
+                )
+            }
+            .executeAndReturnGeneratedKeys()
+            .mapTo<MessageThreadId>()
+            .forEach {
+                add(UnsetReference("message_thread", AuditId(it), listOf("application_id")))
+            }
+    }
+
+    if (sfiMessageIds.isNotEmpty()) {
+        execute {
+            sql("DELETE FROM sfi_message_event WHERE message_id = ANY(${bind(sfiMessageIds)})")
+        }
+        execute { sql("DELETE FROM sfi_message WHERE id = ANY(${bind(sfiMessageIds)})") }
+    }
+    if (decisionIds.isNotEmpty()) {
+        execute { sql("DELETE FROM decision WHERE id = ANY(${bind(decisionIds)})") }
+    }
+    execute { sql("DELETE FROM placement_plan WHERE application_id = ANY(${bind(deletableIds)})") }
+    execute { sql("DELETE FROM application WHERE id = ANY(${bind(deletableIds)})") }
+    deleteCaseProcesses(processIds)
+
+    return deletableRows to unsetReferences
 }
 
 fun deleteExpiredFinanceNotes(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
