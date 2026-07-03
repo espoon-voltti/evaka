@@ -10,11 +10,13 @@ import styled, { useTheme } from 'styled-components'
 import type { Failure, Result } from 'lib-common/api'
 import type { Theme } from 'lib-common/theme'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import LoadingSegment from 'lib-components/atoms/state/LoadingSegment'
+import NetworkSegment from 'lib-components/atoms/state/NetworkSegment'
 import {
   SpinnerOverlay,
   SpinnerSegment
 } from 'lib-components/atoms/state/Spinner'
-import { faExclamationTriangle, faGear, faGlobe, faLockAlt } from 'lib-icons'
+import { faExclamationTriangle, faGear, faLockAlt } from 'lib-icons'
 
 import type { SpacingSize } from './white-space'
 
@@ -57,14 +59,18 @@ function failureContent(
   messages: FailureMessages,
   colors: Theme['colors']
 ): FailureContent {
-  if (result.errorCode === 'ENDPOINT_DISABLED')
+  if (result.errorCode === 'ENDPOINT_DISABLED') {
     return {
       ...messages.endpointDisabled,
       icon: faGear,
       iconColor: colors.grayscale.g70
     }
-  if (result.statusCode === 403)
+  }
+
+  if (result.statusCode === 403) {
     return { ...messages.http403, icon: faLockAlt, iconColor: colors.main.m2 }
+  }
+
   return {
     ...messages.generic,
     icon: faExclamationTriangle,
@@ -81,14 +87,20 @@ function FailureSegment({
 }) {
   const { colors } = useTheme()
 
-  const online = onlineManager.isOnline()
-  const { title, text, icon, iconColor } = online
-    ? failureContent(result, messages, colors)
-    : {
-        ...messages.network,
-        icon: faGlobe,
-        iconColor: colors.status.warning
-      }
+  if (!onlineManager.isOnline()) {
+    return (
+      <NetworkSegment
+        title={messages.network.title}
+        info={messages.network.text}
+      />
+    )
+  }
+
+  const { title, text, icon, iconColor } = failureContent(
+    result,
+    messages,
+    colors
+  )
   return (
     <ErrorSegment title={title} info={text} icon={icon} iconColor={iconColor} />
   )
@@ -103,22 +115,37 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
   }: UnwrapResultProps<T>) {
     const failureMessages = useFailureMessage()
     return useMemo(() => {
+      if (result.isLoading) {
+        return loading ? (
+          loading()
+        ) : (
+          <LoadingSegment
+            networkTitle={failureMessages.network.title}
+            networkInfo={failureMessages.network.text}
+          />
+        )
+      }
+
       if (
-        result.isLoading ||
-        (result.isSuccess &&
-          result.isReloading &&
-          (!children || children.length === 1))
+        result.isSuccess &&
+        result.isReloading &&
+        (!children || children.length === 1)
       ) {
-        if (loading) return loading()
-        return <SpinnerSegment />
+        return loading ? loading() : <SpinnerSegment />
       }
+
       if (result.isFailure) {
-        if (failure) return failure()
-        return <FailureSegment result={result} messages={failureMessages} />
+        return failure ? (
+          failure()
+        ) : (
+          <FailureSegment result={result} messages={failureMessages} />
+        )
       }
+
       if (!children) {
         return null
       }
+
       return children(result.value, result.isReloading)
     }, [failureMessages, result, loading, failure, children])
   }
@@ -144,7 +171,9 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
     return useMemo(
       () =>
         result.isLoading ? (
-          <SpinnerSegment
+          <LoadingSegment
+            networkTitle={failureMessages.network.title}
+            networkInfo={failureMessages.network.text}
             size={spinnerOptions.size}
             margin={spinnerOptions.margin}
           />
