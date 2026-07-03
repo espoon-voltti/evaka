@@ -52,7 +52,7 @@ export default React.memo(function ErrorSegment({
   iconColor
 }: ErrorSegmentProps) {
   return (
-    <Card role="alert">
+    <Card role="status">
       <IconContainer $color={iconColor}>
         <FontAwesomeIcon icon={icon} />
       </IconContainer>
