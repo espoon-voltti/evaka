@@ -211,7 +211,6 @@ async function navigateToDecisionDrafts(
     HelsinkiDateTime.fromLocal(mockedDate, LocalTime.of(14, 0))
   )
 
-  await employeeLogin(page, serviceWorker)
   const applicationListView = new ApplicationListView(page)
   await page.goto(ApplicationListView.url)
   await applicationListView.filterByApplicationStatus('WAITING_DECISION')
