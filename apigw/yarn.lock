@@ -2016,7 +2016,7 @@ __metadata:
     pino-http: "npm:11.0.0"
     pino-pretty: "npm:13.1.3"
     pump: "npm:3.0.4"
-    query-string: "npm:9.4.0"
+    query-string: "npm:9.4.1"
     redis: "npm:6.0.1"
     split2: "npm:4.2.0"
     tough-cookie: "npm:6.0.1"
@@ -3727,14 +3727,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"query-string@npm:9.4.0":
-  version: 9.4.0
-  resolution: "query-string@npm:9.4.0"
+"query-string@npm:9.4.1":
+  version: 9.4.1
+  resolution: "query-string@npm:9.4.1"
   dependencies:
     decode-uri-component: "npm:^0.4.1"
     filter-obj: "npm:^5.1.0"
     split-on-first: "npm:^3.0.0"
-  checksum: 10/42f44eda9ad5e1d8551d9332dba53b19ebdeadd270316185bb65b2891518971b71c03f95a404da22cc7286c6ff29816a32c6b0b7a46b73df639ea2bb73ac210b
+  checksum: 10/27615731efdb2ce2a9c3c2699829923e41fa74727d26e5a347a4c55db89263be3f2a89f09e8aa146033292e89964107d527596672a509ba76bd657ba3fda477d
   languageName: node
   linkType: hard
 
