@@ -25,6 +25,10 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DATABASE
     -- App login user
     CREATE ROLE "evaka_application_local" WITH LOGIN PASSWORD 'app'
       IN ROLE "evaka_application_role_local";
+
+    -- Allow the migration role to terminate application connections so that
+    -- TemplateDbManager can DROP DATABASE ... WITH (FORCE)
+    GRANT pg_signal_backend TO "evaka_migration_role_local";
 EOSQL
 
 databases=${EVAKA_DATABASES:-evaka}
