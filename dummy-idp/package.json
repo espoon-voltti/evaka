@@ -26,7 +26,7 @@
     "nodemon": "3.1.14",
     "oxfmt": "0.57.0",
     "oxlint": "1.72.0",
-    "oxlint-tsgolint": "0.23.0",
+    "oxlint-tsgolint": "0.24.0",
     "prettier": "3.9.4",
     "tsx": "4.22.4",
     "typescript": "6.0.3"
