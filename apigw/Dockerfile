@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM node:24.16.0-trixie-slim AS base
+FROM node:24.18.0-trixie-slim AS base
 ARG CACHE_BUST
 
 WORKDIR /project
