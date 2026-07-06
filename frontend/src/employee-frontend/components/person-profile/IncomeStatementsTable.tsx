@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React from 'react'
+import sortBy from 'lodash/sortBy'
+import React, { useMemo } from 'react'
 import { Link } from 'wouter'
 
 import type { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
@@ -24,6 +25,11 @@ export default React.memo(function IncomeStatementsTable({
   incomeStatements: IncomeStatement[]
 }) {
   const i18n = useTranslation().i18n.personProfile.incomeStatement
+  const sortedIncomeStatements = useMemo(
+    () =>
+      sortBy(incomeStatements, (s) => -(s.citizenModifiedAt?.timestamp ?? 0)),
+    [incomeStatements]
+  )
   return incomeStatements.length === 0 ? (
     <div>{i18n.noIncomeStatements}</div>
   ) : (
@@ -32,11 +38,12 @@ export default React.memo(function IncomeStatementsTable({
         <Tr>
           <Th>{i18n.incomeStatementHeading}</Th>
           <Th>{i18n.sentAtHeading}</Th>
+          <Th>{i18n.citizenModifiedAtHeading}</Th>
           <Th>{i18n.handledHeading}</Th>
         </Tr>
       </Thead>
       <Tbody data-qa="income-statements">
-        {incomeStatements.map((incomeStatement) => (
+        {sortedIncomeStatements.map((incomeStatement) => (
           <IncomeStatementRow
             key={incomeStatement.id}
             personId={personId}
@@ -71,6 +78,9 @@ const IncomeStatementRow = React.memo(function IncomeStatementRow({
       </Td>
       <Td $verticalAlign="middle">
         {incomeStatement.sentAt?.toLocalDate()?.format() ?? '-'}
+      </Td>
+      <Td $verticalAlign="middle">
+        {incomeStatement.citizenModifiedAt?.toLocalDate()?.format() ?? '-'}
       </Td>
       <Td>
         <Checkbox

@@ -97,6 +97,7 @@ SELECT
     ist.created_at,
     ist.modified_at,
     ist.sent_at,
+    ist.citizen_modified_at,
     ist.handled_at,
     status,
     handler_note,
@@ -144,6 +145,7 @@ private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
     val createdAt = column<HelsinkiDateTime>("created_at")
     val modifiedAt = column<HelsinkiDateTime>("modified_at")
     val sentAt = column<HelsinkiDateTime?>("sent_at")
+    val citizenModifiedAt = column<HelsinkiDateTime?>("citizen_modified_at")
     val handledAt = column<HelsinkiDateTime?>("handled_at")
     val status = column<IncomeStatementStatus>("status")
     val handlerNote = if (isCitizen) "" else column("handler_note")
@@ -159,6 +161,7 @@ private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
                 createdAt = createdAt,
                 modifiedAt = modifiedAt,
                 sentAt = sentAt,
+                citizenModifiedAt = citizenModifiedAt,
                 handledAt = handledAt,
                 status = status,
                 handlerNote = handlerNote,
@@ -261,6 +264,7 @@ private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
                 createdAt = createdAt,
                 modifiedAt = modifiedAt,
                 sentAt = sentAt,
+                citizenModifiedAt = citizenModifiedAt,
                 handledAt = handledAt,
                 status = status,
                 handlerNote = handlerNote,
@@ -279,6 +283,7 @@ private fun Row.mapIncomeStatement(isCitizen: Boolean): IncomeStatement {
                 createdAt = createdAt,
                 modifiedAt = modifiedAt,
                 sentAt = sentAt,
+                citizenModifiedAt = citizenModifiedAt,
                 handledAt = handledAt,
                 status = status,
                 handlerNote = handlerNote,

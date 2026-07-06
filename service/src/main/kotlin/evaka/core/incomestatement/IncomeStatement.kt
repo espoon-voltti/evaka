@@ -277,6 +277,7 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
     abstract val createdAt: HelsinkiDateTime
     abstract val modifiedAt: HelsinkiDateTime
     abstract val sentAt: HelsinkiDateTime?
+    abstract val citizenModifiedAt: HelsinkiDateTime?
     abstract val handledAt: HelsinkiDateTime?
     abstract val status: IncomeStatementStatus
     abstract val handlerNote: String
@@ -292,6 +293,7 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val createdAt: HelsinkiDateTime,
         override val modifiedAt: HelsinkiDateTime,
         override val sentAt: HelsinkiDateTime?,
+        override val citizenModifiedAt: HelsinkiDateTime?,
         override val handledAt: HelsinkiDateTime?,
         override val status: IncomeStatementStatus,
         override val handlerNote: String,
@@ -313,6 +315,7 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val createdAt: HelsinkiDateTime,
         override val modifiedAt: HelsinkiDateTime,
         override val sentAt: HelsinkiDateTime?,
+        override val citizenModifiedAt: HelsinkiDateTime?,
         override val handledAt: HelsinkiDateTime?,
         override val status: IncomeStatementStatus,
         override val handlerNote: String,
@@ -331,6 +334,7 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         override val createdAt: HelsinkiDateTime,
         override val modifiedAt: HelsinkiDateTime,
         override val sentAt: HelsinkiDateTime?,
+        override val citizenModifiedAt: HelsinkiDateTime?,
         override val handledAt: HelsinkiDateTime?,
         override val status: IncomeStatementStatus,
         override val handlerNote: String,
