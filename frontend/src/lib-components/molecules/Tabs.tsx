@@ -125,7 +125,7 @@ const TabsContainer = styled.nav<{ $mobile?: boolean }>`
   ${(p) =>
     p.$mobile
       ? css`
-          background-color: ${p.theme.colors.grayscale.g4};
+          background-color: #f5f5f5; // employee-mobile body bg color
           border-bottom: 1px solid ${p.theme.colors.grayscale.g15};
         `
       : ''}
