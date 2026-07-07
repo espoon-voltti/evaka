@@ -10,7 +10,6 @@ import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
-import { Gap } from 'lib-components/white-space'
 
 import { routes } from '../App'
 import { UserContext } from '../auth/state'
@@ -78,7 +77,6 @@ export default React.memo(function TopBarWithGroupSelector({
   return (
     <>
       <TopBar {...topBarProps} unitId={unitId} sticky={false} />
-      <Gap $size="xxs" />
       <GroupSelectorBar
         unitId={unitId}
         selectedGroup={selectedGroup}

@@ -11,7 +11,8 @@ import { useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontSizesMobile, fontWeights } from 'lib-components/typography'
-import colors, { theme } from 'lib-customizations/common'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 import { faCheck } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
@@ -19,7 +20,7 @@ import { unitInfoQuery } from '../units/queries'
 
 import { useTranslation } from './i18n'
 
-interface GroupSelectorProps {
+export interface GroupSelectorProps {
   unitId: DaycareId
   selectedGroup: GroupInfo | undefined
   onChangeGroup: (group: GroupInfo | undefined) => void
@@ -130,7 +131,7 @@ const Info = styled.div`
   color: ${colors.grayscale.g70};
   text-align: center;
   width: 100%;
-  padding: 15px 16px 15px 16px;
+  padding: 15px ${defaultMargins.s};
 `
 
 type GroupProps = {
@@ -175,23 +176,37 @@ const Group = ({
           )}
       </Utilization>
     ) : (
-      count
+      <Count>{count}</Count>
     )}
   </GroupContainer>
 )
 
 const GroupContainer = styled(FixedSpaceRow)<{ $selected: boolean }>`
-  padding: 15px 16px 15px 16px;
+  align-items: center;
+  min-height: 56px;
+  &:first-child {
+    min-height: 47px;
+  }
+  padding: 0 ${defaultMargins.s};
   border-bottom: 1px solid ${colors.grayscale.g15};
+  &:last-child {
+    border-bottom: none;
+  }
   color: ${(p) => (p.$selected ? colors.main.m1 : colors.grayscale.g70)};
-  font-size: ${fontSizesMobile.h2};
-  font-weight: ${theme.typography.h2.mobile?.weight ??
-  theme.typography.h2.weight};
+  font-family: Montserrat, sans-serif;
+  font-size: ${fontSizesMobile.h3};
+  font-weight: ${fontWeights.semibold};
   cursor: pointer;
 `
 
-const SelectionIndicator = styled.span<{ $selected: boolean }>`
-  padding-right: 16px;
+export const IconSlot = styled.span`
+  display: flex;
+  justify-content: center;
+  width: 24px;
+  flex-shrink: 0;
+`
+
+const SelectionIndicator = styled(IconSlot)<{ $selected: boolean }>`
   opacity: ${(p) => (p.$selected ? 1 : 0)};
 `
 
@@ -201,15 +216,22 @@ const GroupName = styled.span`
 
 const Utilization = styled.span<{ $warn: boolean }>`
   text-align: right;
+  font-size: 14px;
   color: ${(p) => (p.$warn ? colors.status.danger : 'inherit')};
 `
 
 const Capacity = styled.span`
-  font-size: 16px;
+  font-size: 12px;
   font-weight: ${fontWeights.normal};
 `
 
+const Count = styled.span`
+  font-size: 14px;
+`
+
+export const listMaxHeightVh = 60
+
 const Wrapper = styled.div`
-  max-height: 60vh;
+  max-height: ${listMaxHeightVh}vh;
   overflow: auto;
 `
