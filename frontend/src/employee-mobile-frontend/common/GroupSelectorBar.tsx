@@ -22,7 +22,7 @@ import { useTranslation } from './i18n'
 
 const GroupContainer = styled.div`
   position: relative;
-  padding: ${defaultMargins.s};
+  padding: ${defaultMargins.s} ${defaultMargins.s} ${defaultMargins.xs};
 `
 
 const roundedBox = css`
