@@ -30,7 +30,7 @@ fun getPlacement(db: Database, clock: EvakaClock, @PathVariable id: PlacementId)
     return db.connect { dbc ->
         // Once the placement is fetched, record whose data was read.
         dbc.read { tx -> tx.getPlacement(id).also { audit.add(it.childId) } }
-    }.also { audit.log(AuditEvent.PlacementRead, clock) }
+    }.also { audit.log(Audit.PlacementRead, clock) }
 }
 
 // Any layer: pass the context in and register IDs, metadata, and dates as you discover them.
