@@ -102,10 +102,8 @@ enum class Audit(
     AttachmentsUploadForMessage,
     AttachmentsUploadForMessageDraft,
     AttachmentsUploadForPedagogicalDocument,
-    AttendanceReservationCitizenCreate,
     AttendanceReservationCitizenRead,
     AttendanceReservationDelete,
-    AttendanceReservationEmployeeCreate,
     AttendanceReservationReportRead,
     BackupCareDelete,
     BackupCareUpdate,
@@ -157,7 +155,6 @@ enum class Audit(
     ChildDailyServiceTimesRead,
     ChildDailyServiceTimeNotificationsRead,
     ChildDailyServiceTimeNotificationsDismiss,
-    ChildDatePresenceUpsert,
     ChildDatePresenceExpectedAbsencesCheck,
     ChildDocumentProposeDecision,
     ChildDocumentAcceptDecision,
@@ -198,9 +195,6 @@ enum class Audit(
     ChildDocumentsReportRead,
     ChildDocumentsReportTemplatesRead,
     ChildSensitiveInfoRead,
-    ChildServiceApplicationsRead,
-    ChildServiceApplicationAccept,
-    ChildServiceApplicationReject,
     ChildServiceNeedsRead,
     ChildStickyNoteCreate,
     ChildStickyNoteUpdate,
@@ -565,7 +559,6 @@ enum class Audit(
     UnitAclRead,
     UnitScheduledAclRead,
     UnitApplicationsRead,
-    UnitServiceApplicationsRead,
     UnitAttendanceReservationsRead,
     UnitCalendarEventsRead,
     UnitFeaturesRead,
@@ -603,7 +596,19 @@ enum class Audit(
     VoucherValueDecisionSearch,
     VoucherValueDecisionSend,
     VoucherValueDecisionSetType,
-    VoucherValueDecisionUnignore;
+    VoucherValueDecisionUnignore,
+
+    // Everything above still uses the legacy `Audit.<Event>.log(targetId = ...)` signature.
+    // Events below have been migrated to `audit.log(Audit.<Event>, clock)` via AuditContext.
+    // Move an event here (keeping this section alphabetical) once its endpoint is migrated; when
+    // the section above is empty, delete this separator and merge back into one alphabetical list.
+    AttendanceReservationCitizenCreate,
+    AttendanceReservationEmployeeCreate,
+    ChildDatePresenceUpsert,
+    ChildServiceApplicationAccept,
+    ChildServiceApplicationReject,
+    ChildServiceApplicationsRead,
+    UnitServiceApplicationsRead;
 
     private val eventCode = name
 
