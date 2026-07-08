@@ -7,6 +7,7 @@ package evaka.core.reservations
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.CitizenCalendarEnv
 import evaka.core.EvakaEnv
@@ -272,6 +273,7 @@ class ReservationControllerCitizen(
         @RequestBody body: List<DailyReservationRequest>,
     ) {
         val children = body.map { it.childId }.toSet()
+        val audit = AuditContext().add(children).observeDate(body.minOfOrNull { it.date })
 
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -287,24 +289,14 @@ class ReservationControllerCitizen(
                         tx,
                         clock.now(),
                         user,
+                        audit,
                         body,
                         featureConfig.citizenReservationThresholdHours,
                         env.plannedAbsenceEnabledForHourBasedServiceNeeds,
                     )
                 }
             }
-            ?.also {
-                Audit.AttendanceReservationCitizenCreate.log(
-                    targetId = AuditId(children),
-                    meta =
-                        mapOf(
-                            "deletedAbsences" to it.deletedAbsences,
-                            "deletedReservations" to it.deletedReservations,
-                            "upsertedAbsences" to it.upsertedAbsences,
-                            "upsertedReservations" to it.upsertedReservations,
-                        ),
-                )
-            }
+            .also { audit.log(Audit.AttendanceReservationCitizenCreate, clock) }
     }
 
     @PostMapping("/citizen/absences")
