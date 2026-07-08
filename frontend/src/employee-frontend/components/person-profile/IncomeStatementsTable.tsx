@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import sortBy from 'lodash/sortBy'
-import React, { useMemo } from 'react'
+import React from 'react'
 import { Link } from 'wouter'
 
 import type { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
@@ -25,11 +24,6 @@ export default React.memo(function IncomeStatementsTable({
   incomeStatements: IncomeStatement[]
 }) {
   const i18n = useTranslation().i18n.personProfile.incomeStatement
-  const sortedIncomeStatements = useMemo(
-    () =>
-      sortBy(incomeStatements, (s) => -(s.citizenModifiedAt?.timestamp ?? 0)),
-    [incomeStatements]
-  )
   return incomeStatements.length === 0 ? (
     <div>{i18n.noIncomeStatements}</div>
   ) : (
@@ -43,7 +37,7 @@ export default React.memo(function IncomeStatementsTable({
         </Tr>
       </Thead>
       <Tbody data-qa="income-statements">
-        {sortedIncomeStatements.map((incomeStatement) => (
+        {incomeStatements.map((incomeStatement) => (
           <IncomeStatementRow
             key={incomeStatement.id}
             personId={personId}
