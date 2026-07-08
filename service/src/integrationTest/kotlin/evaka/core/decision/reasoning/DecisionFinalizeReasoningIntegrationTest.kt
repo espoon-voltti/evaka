@@ -20,6 +20,7 @@ import evaka.core.decision.DecisionType.DAYCARE
 import evaka.core.decision.getDecisionsByApplication
 import evaka.core.decision.reasoning.DecisionReasoningCollectionType.DAYCARE as DAYCARE_COLLECTION
 import evaka.core.shared.ApplicationId
+import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.dev.DevCareArea
@@ -31,13 +32,14 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestApplication
-import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -63,9 +65,11 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
 
     // ── helpers ────────────────────────────────────────────────────────────────
 
-    private fun insertReadyGenericReasoning(
+    private fun insertGenericReasoning(
+        ready: Boolean = true,
         textSv: String = "sv-generic-text",
         textFi: String = "fi-generic-text",
+        createdAt: HelsinkiDateTime = now,
     ) = db.transaction { tx ->
         tx.insert(
             DevDecisionReasoningGeneric(
@@ -73,9 +77,9 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
                 validFrom = LocalDate.of(2026, 1, 1),
                 textFi = textFi,
                 textSv = textSv,
-                ready = true,
-                createdAt = now,
-                modifiedAt = now,
+                ready = ready,
+                createdAt = createdAt,
+                modifiedAt = createdAt,
             )
         )
     }
@@ -184,20 +188,20 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
     // ── tests ──────────────────────────────────────────────────────────────────
 
     @Test
-    fun `finalizing a Swedish-unit decision with empty generic textSv throws BadRequest`() {
-        insertReadyGenericReasoning(textSv = "")
+    fun `finalizing a Swedish-unit decision with empty generic textSv throws Conflict`() {
+        insertGenericReasoning(textSv = "")
         val (_, applicationId) = createPlannedDecision(Language.sv)
 
-        assertThrows<BadRequest> { finalizeViaService(applicationId) }
+        val exception = assertThrows<Conflict> { finalizeViaService(applicationId) }
+        assertEquals(DECISION_REASONING_NOT_FINALIZED, exception.errorCode)
     }
 
     @Test
-    fun `finalizing a Swedish-unit decision with linked individual reasoning with empty textSv throws BadRequest`() {
-        insertReadyGenericReasoning(textSv = "non-empty swedish generic text")
+    fun `finalizing a Swedish-unit decision with linked individual reasoning with empty textSv throws Conflict`() {
+        insertGenericReasoning(textSv = "non-empty swedish generic text")
         val (decisionId, applicationId) = createPlannedDecision(Language.sv)
         val badIndividualId = insertIndividualReasoning(titleSv = "ok-title", textSv = "")
 
-        // Link the bad individual reasoning to the decision
         db.transaction { tx ->
             tx.setDecisionReasoningIndividualSelections(
                 decisionId = decisionId,
@@ -207,12 +211,13 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        assertThrows<BadRequest> { finalizeViaService(applicationId) }
+        val exception = assertThrows<Conflict> { finalizeViaService(applicationId) }
+        assertEquals(DECISION_REASONING_NOT_FINALIZED, exception.errorCode)
     }
 
     @Test
     fun `finalizing a Swedish-unit decision with all Swedish text present succeeds`() {
-        insertReadyGenericReasoning(textSv = "non-empty swedish generic text")
+        insertGenericReasoning(textSv = "non-empty swedish generic text")
         val (decisionId, applicationId) = createPlannedDecision(Language.sv)
         val goodIndividualId = insertIndividualReasoning(titleSv = "sv-title", textSv = "sv-text")
 
@@ -230,9 +235,48 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
 
     @Test
     fun `finalizing a Finnish-unit decision with empty generic textSv succeeds`() {
-        insertReadyGenericReasoning(textSv = "")
+        insertGenericReasoning(textSv = "")
         val (_, applicationId) = createPlannedDecision(Language.fi)
 
         assertDoesNotThrow { finalizeViaService(applicationId) }
+    }
+
+    @Test
+    fun `finalizing with no applicable generic reasoning throws Conflict with error code`() {
+        val (_, applicationId) = createPlannedDecision(Language.fi)
+
+        val exception = assertThrows<Conflict> { finalizeViaService(applicationId) }
+        assertEquals(DECISION_REASONING_NOT_FINALIZED, exception.errorCode)
+    }
+
+    @Test
+    fun `finalizing with a not-ready generic reasoning throws Conflict with error code`() {
+        insertGenericReasoning(ready = false)
+        val (_, applicationId) = createPlannedDecision(Language.fi)
+
+        val exception = assertThrows<Conflict> { finalizeViaService(applicationId) }
+        assertEquals(DECISION_REASONING_NOT_FINALIZED, exception.errorCode)
+    }
+
+    @Test
+    fun `finalizing a decision with an already linked generic reasoning skips validation and keeps the link`() {
+        val linkedReasoningId = insertGenericReasoning(ready = true)
+        val (decisionId, applicationId) = createPlannedDecision(Language.fi)
+        db.transaction { tx -> tx.updateGenericReasoningToDecision(decisionId, linkedReasoningId) }
+        // a superseding not-ready reasoning appears afterwards (same validFrom, later createdAt)
+        insertGenericReasoning(ready = false, createdAt = now.plusHours(1))
+
+        assertDoesNotThrow { finalizeViaService(applicationId) }
+
+        val storedReasoningId = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        "SELECT generic_reasoning_id FROM decision WHERE id = ${bind(decisionId)} AND generic_reasoning_id IS NOT NULL"
+                    )
+                }
+                .toList<DecisionGenericReasoningId>()
+                .single()
+        }
+        assertEquals(linkedReasoningId, storedReasoningId)
     }
 }

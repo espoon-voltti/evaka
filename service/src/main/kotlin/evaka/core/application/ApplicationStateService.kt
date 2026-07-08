@@ -49,6 +49,7 @@ import evaka.core.decision.getDecisionsByApplication
 import evaka.core.decision.markApplicationDecisionsSent
 import evaka.core.decision.markDecisionAccepted
 import evaka.core.decision.markDecisionRejected
+import evaka.core.decision.reasoning.clearGenericReasoningFromUnsentDecisions
 import evaka.core.identity.ExternalIdentifier
 import evaka.core.messaging.MessageRecipient
 import evaka.core.messaging.MessageService
@@ -755,6 +756,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
+        decisionService.freezeDecisionReasonings(tx, application.id)
         tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(
             application.id,
@@ -781,6 +783,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
+        tx.clearGenericReasoningFromUnsentDecisions(application.id)
         tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
         Audit.ApplicationReturnToWaitingDecision.log(targetId = AuditId(applicationId))

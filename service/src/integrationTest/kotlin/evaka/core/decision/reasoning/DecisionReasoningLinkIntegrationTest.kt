@@ -43,6 +43,7 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.BadRequest
+import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -294,7 +295,7 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
     fun `sending a decision with no eligible generic reasoning throws`() {
         val (_, applicationId) = createPlannedDecisionWithApplication(DAYCARE)
 
-        assertThrows<NotFound> { sendDecisionViaService(applicationId) }
+        assertThrows<Conflict> { sendDecisionViaService(applicationId) }
     }
 
     @Test

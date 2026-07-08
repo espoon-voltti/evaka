@@ -42,6 +42,7 @@ import evaka.core.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -330,5 +331,17 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
 
         assertEquals(1, summary.individualReasoningCount)
         assertEquals(1, summary.reasoningWarningCount)
+    }
+
+    @Test
+    fun `unplanned drafts are excluded from the stats`() {
+        val (decisionId, applicationId) = createPlannedDecision()
+        db.transaction { tx ->
+            tx.execute { sql("UPDATE decision SET planned = false WHERE id = ${bind(decisionId)}") }
+        }
+
+        val stats = db.read { it.getApplicationDecisionReasoningStats(setOf(applicationId)) }
+
+        assertNull(stats[applicationId])
     }
 }

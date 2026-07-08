@@ -25,6 +25,7 @@ import evaka.core.shared.dev.DevGuardian
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertDefaultDecisionGenericReasonings
 import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -113,6 +114,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             tx.insert(specialEducationTeacher)
             listOf(adult1, adult2).forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(child1, child2, child3).forEach { tx.insert(it, DevPersonType.CHILD) }
+            tx.insertDefaultDecisionGenericReasonings()
         }
         MockPersonDetailsService.addPersons(adult1, adult2, child1)
         MockPersonDetailsService.addDependants(adult1, child1)
