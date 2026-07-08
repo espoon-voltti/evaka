@@ -41,7 +41,6 @@ import evaka.core.sficlient.SfiMessage
 import evaka.core.sficlient.storeSentSfiMessage
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DecisionId
-import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
@@ -195,14 +194,6 @@ class DecisionService(
         )
     }
 
-    private fun Database.Read.isDecisionForSecondGuardianRequired(
-        decision: Decision,
-        application: ApplicationDetails,
-        otherGuardian: PersonId,
-    ) =
-        decision.type != DecisionType.CLUB &&
-            !personService.personsLiveInTheSameAddress(this, application.guardianId, otherGuardian)
-
     private fun uploadPdfToS3(document: DocumentKey, bytes: ByteArray): DocumentLocation =
         documentClient.upload(document, bytes, "application/pdf").also {
             logger.debug { "PDF (object name: ${it.key}) uploaded to S3" }
@@ -253,7 +244,9 @@ class DecisionService(
         }
 
         if (
-            !applicationGuardian.restrictedDetailsEnabled && !decision.documentContainsContactInfo
+            !applicationGuardian.restrictedDetailsEnabled &&
+                !decision.documentContainsContactInfo &&
+                decision.type != DecisionType.CLUB
         ) {
             val otherGuardians = tx.getApplicationOtherGuardians(applicationId)
             for (guardianId in otherGuardians) {
@@ -261,20 +254,18 @@ class DecisionService(
                     tx.getPersonById(guardianId)
                         ?: error("Other guardian not found with id: $guardianId")
 
-                if (tx.isDecisionForSecondGuardianRequired(decision, application, guardianId)) {
-                    if (currentGuardians.contains(guardianId)) {
-                        deliverDecisionToGuardian(
-                            tx,
-                            now,
-                            decision,
-                            otherGuardian,
-                            documentLocation,
-                            skipGuardianApproval,
-                        )
-                    } else {
-                        logger.warn {
-                            "Skipping sending decision $decisionId to application other guardian $guardianId - not a current guardian or foster parent"
-                        }
+                if (currentGuardians.contains(guardianId)) {
+                    deliverDecisionToGuardian(
+                        tx,
+                        now,
+                        decision,
+                        otherGuardian,
+                        documentLocation,
+                        skipGuardianApproval,
+                    )
+                } else {
+                    logger.warn {
+                        "Skipping sending decision $decisionId to application other guardian $guardianId - not a current guardian or foster parent"
                     }
                 }
             }

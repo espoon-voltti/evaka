@@ -5,13 +5,17 @@
 package evaka.core.application
 
 import evaka.core.FullApplicationTest
+import evaka.core.application.persistence.club.ClubFormV0
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.DaycareFormV0
+import evaka.core.clubTerm2023
+import evaka.core.daycare.CareType
 import evaka.core.decision.getDecisionsByApplication
 import evaka.core.pis.service.blockGuardian
 import evaka.core.pis.updateFosterParentRelationshipValidity
 import evaka.core.sficlient.MockSfiMessagesClient
 import evaka.core.shared.ApplicationId
+import evaka.core.shared.DaycareId
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -112,6 +116,91 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             assertEquals(expectedOtherGuardians, getOtherGuardians())
         }
         assertEquals(expectedOtherGuardians + guardian.id, getSfiMessageRecipients())
+    }
+
+    @Test
+    fun `sfi messages are sent to both guardians when they live at the same address`() {
+        val clock = MockEvakaClock(2024, 1, 1, 12, 0)
+        val sameAddressGuardian =
+            otherVtjGuardian.copy(
+                streetAddress = guardian.streetAddress,
+                postalCode = guardian.postalCode,
+                postOffice = guardian.postOffice,
+            )
+        db.transaction { tx ->
+            tx.createUpdate {
+                    sql(
+                        """
+                        UPDATE person
+                        SET street_address = ${bind(sameAddressGuardian.streetAddress)},
+                            postal_code = ${bind(sameAddressGuardian.postalCode)},
+                            post_office = ${bind(sameAddressGuardian.postOffice)}
+                        WHERE id = ${bind(sameAddressGuardian.id)}
+                        """
+                    )
+                }
+                .execute()
+        }
+        MockPersonDetailsService.addPersons(sameAddressGuardian)
+
+        executeTestApplicationProcess(clock) {}
+
+        assertEquals(setOf(guardian.id, otherVtjGuardian.id), getSfiMessageRecipients())
+    }
+
+    @Test
+    fun `club decisions are sent only to the application guardian`() {
+        val clock = MockEvakaClock(2023, 3, 1, 12, 0)
+        val club =
+            DevDaycare(
+                areaId = area.id,
+                type = setOf(CareType.CLUB),
+                clubApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
+            )
+        val preferredStartDate = LocalDate.of(2024, 2, 1)
+        db.transaction { tx ->
+            tx.insert(clubTerm2023)
+            tx.insert(club)
+            tx.insertTestApplication(
+                id = application,
+                type = ApplicationType.CLUB,
+                status = ApplicationStatus.CREATED,
+                guardianId = guardian.id,
+                childId = child.id,
+                document =
+                    ClubFormV0(
+                        child =
+                            evaka.core.application.persistence.club.Child(
+                                dateOfBirth = child.dateOfBirth
+                            ),
+                        guardian =
+                            evaka.core.application.persistence.club.Adult(
+                                firstName = guardian.firstName,
+                                lastName = guardian.lastName,
+                                socialSecurityNumber = guardian.ssn!!,
+                            ),
+                        apply =
+                            evaka.core.application.persistence.club.Apply(
+                                preferredUnits = listOf(club.id)
+                            ),
+                        preferredStartDate = preferredStartDate,
+                    ),
+            )
+        }
+
+        sendApplication(clock)
+        moveToWaitingPlacement(clock)
+        createPlacementPlan(
+            clock,
+            period = FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1)),
+            unitId = club.id,
+        )
+        sendDecisionsWithoutProposal(clock)
+        asyncJobRunner.runPendingJobsSync(clock)
+        acceptDecisions(clock)
+
+        assertEquals(setOf(otherVtjGuardian.id), getOtherGuardians())
+        assertEquals(setOf(guardian.id), getSfiMessageRecipients())
     }
 
     @Test
@@ -284,16 +373,19 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
         applicationStateService.moveToWaitingPlacement(tx, serviceWorker.user, clock, application)
     }
 
-    private fun createPlacementPlan(clock: EvakaClock, period: FiniteDateRange) =
-        db.transaction { tx ->
-            applicationStateService.createPlacementPlan(
-                tx,
-                serviceWorker.user,
-                clock,
-                application,
-                DaycarePlacementPlan(daycare.id, period),
-            )
-        }
+    private fun createPlacementPlan(
+        clock: EvakaClock,
+        period: FiniteDateRange,
+        unitId: DaycareId = daycare.id,
+    ) = db.transaction { tx ->
+        applicationStateService.createPlacementPlan(
+            tx,
+            serviceWorker.user,
+            clock,
+            application,
+            DaycarePlacementPlan(unitId, period),
+        )
+    }
 
     private fun sendDecisionsWithoutProposal(clock: EvakaClock) {
         db.transaction { tx ->
