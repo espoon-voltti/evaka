@@ -8,11 +8,12 @@ import styled, { useTheme } from 'styled-components'
 import type { Failure, Result } from 'lib-common/api'
 import type { FailureMessage } from 'lib-components/atoms/state/ErrorSegment'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
-import LoadingSegment from 'lib-components/atoms/state/LoadingSegment'
-import OfflineSegment from 'lib-components/atoms/state/OfflineSegment'
-import { SpinnerOverlay } from 'lib-components/atoms/state/Spinner'
+import {
+  SpinnerOverlay,
+  SpinnerSegment
+} from 'lib-components/atoms/state/Spinner'
 import { useIsOnline } from 'lib-components/utils/useIsOnline'
-import { faGear, faLockAlt } from 'lib-icons'
+import { faGear, faGlobe, faLockAlt } from 'lib-icons'
 
 export type RenderResultFn<T> = (
   value: T,
@@ -44,7 +45,13 @@ function FailureSegment({
   const online = useIsOnline()
 
   if (!online) {
-    return <OfflineSegment {...messages.network} />
+    return (
+      <ErrorSegment
+        {...messages.network}
+        icon={faGlobe}
+        iconColor={colors.status.warning}
+      />
+    )
   }
 
   if (result.errorCode === 'ENDPOINT_DISABLED') {
@@ -72,6 +79,8 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
     children
   }: UnwrapResultProps<T>) {
     const failureMessages = useFailureMessage()
+    const online = useIsOnline()
+    const { colors } = useTheme()
     return useMemo(() => {
       if (
         result.isLoading ||
@@ -79,10 +88,15 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
           result.isReloading &&
           (!children || children.length === 1))
       ) {
-        return loading ? (
-          loading()
+        if (loading) return loading()
+        return online ? (
+          <SpinnerSegment />
         ) : (
-          <LoadingSegment network={failureMessages.network} />
+          <ErrorSegment
+            {...failureMessages.network}
+            icon={faGlobe}
+            iconColor={colors.status.warning}
+          />
         )
       }
 
@@ -99,7 +113,7 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
       }
 
       return children(result.value, result.isReloading)
-    }, [failureMessages, result, loading, failure, children])
+    }, [failureMessages, online, colors, result, loading, failure, children])
   }
 
   interface RenderResultProps<T> {
@@ -113,10 +127,20 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
 
   function RenderResult<T>({ result, renderer }: RenderResultProps<T>) {
     const failureMessages = useFailureMessage()
+    const online = useIsOnline()
+    const { colors } = useTheme()
     return useMemo(
       () =>
         result.isLoading ? (
-          <LoadingSegment network={failureMessages.network} />
+          online ? (
+            <SpinnerSegment />
+          ) : (
+            <ErrorSegment
+              {...failureMessages.network}
+              icon={faGlobe}
+              iconColor={colors.status.warning}
+            />
+          )
         ) : (
           <Relative>
             {result.isSuccess && result.isReloading && <SpinnerOverlay />}
@@ -127,7 +151,7 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
             ) : null}
           </Relative>
         ),
-      [result, renderer, failureMessages]
+      [result, renderer, failureMessages, online, colors]
     )
   }
 
