@@ -15,6 +15,7 @@ import evaka.core.decision.DecisionDraftUpdate
 import evaka.core.decision.DecisionType
 import evaka.core.decision.fetchDecisionDrafts
 import evaka.core.decision.getDecisionsByApplication
+import evaka.core.decision.reasoning.getApplicationDecisionReasoningStats
 import evaka.core.decision.reasoning.resolveApplicableGenericReasoning
 import evaka.core.decision.updateDecisionDrafts
 import evaka.core.identity.ExternalIdentifier
@@ -214,10 +215,24 @@ class ApplicationControllerV2(
                             clock,
                             summaries.data.map { it.id },
                         )
+                    val reasoningStats =
+                        if (evakaEnv.decisionReasoningEnabled)
+                            tx.getApplicationDecisionReasoningStats(
+                                summaries.data
+                                    .filter { it.status == ApplicationStatus.WAITING_DECISION }
+                                    .map { it.id }
+                                    .toSet()
+                            )
+                        else emptyMap()
                     summaries.copy(
                         data =
                             summaries.data.map {
-                                it.copy(permittedActions = permittedActions[it.id] ?: emptySet())
+                                val stats = reasoningStats[it.id]
+                                it.copy(
+                                    permittedActions = permittedActions[it.id] ?: emptySet(),
+                                    individualReasoningCount = stats?.individualReasoningCount ?: 0,
+                                    reasoningWarningCount = stats?.reasoningWarningCount ?: 0,
+                                )
                             }
                     )
                 }

@@ -42,7 +42,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -60,7 +59,6 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insert(admin) }
-        whenever(evakaEnv.decisionReasoningEnabled).thenReturn(true)
     }
 
     // ── helpers ────────────────────────────────────────────────────────────────

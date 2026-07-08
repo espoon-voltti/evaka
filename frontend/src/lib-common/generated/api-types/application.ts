@@ -318,6 +318,7 @@ export interface ApplicationSummary {
   extendedCare: boolean
   firstName: string
   id: ApplicationId
+  individualReasoningCount: number
   lastName: string
   origin: ApplicationOrigin
   permittedActions: Action.Application[]
@@ -329,6 +330,7 @@ export interface ApplicationSummary {
   postOffice: string | null
   postalCode: string | null
   preferredUnits: PreferredUnit[]
+  reasoningWarningCount: number
   serviceNeed: ServiceNeedOption | null
   serviceWorkerNote: string
   siblingBasis: boolean

@@ -80,6 +80,8 @@ data class ApplicationSummary(
     val postOffice: String?,
     val placementDraft: ApplicationSummaryPlacementDraft? = null,
     val permittedActions: Set<Action.Application> = emptySet(),
+    val individualReasoningCount: Int = 0,
+    val reasoningWarningCount: Int = 0,
 )
 
 data class ApplicationSummaryPlacementDraft(val unit: PreferredUnit, val startDate: LocalDate)
