@@ -429,6 +429,14 @@ export const sv: typeof fi = {
       checked: (count: number) =>
         count === 1 ? `${count} ansökan vald` : `${count} ansökningar valda`
     },
+    decisionReasoning: {
+      individualCountTooltip: (count: number) =>
+        count === 1
+          ? `Besluten har ${count} individuell motivering.`
+          : `Besluten har ${count} individuella motiveringar.`,
+      genericNotReadyTooltip:
+        'Den allmänna motiveringen för besluten är inte i bruk. Besluten kan skickas när motiveringen har tagits i bruk.'
+    },
     distinctiveDetails: {
       SECONDARY: 'Visa även om enhet sökts som 2. eller 3. önskemål'
     },

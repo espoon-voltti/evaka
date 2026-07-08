@@ -426,6 +426,14 @@ export const fi = {
       checked: (count: number) =>
         count === 1 ? `${count} hakemus valittu` : `${count} hakemusta valittu`
     },
+    decisionReasoning: {
+      individualCountTooltip: (count: number) =>
+        count === 1
+          ? `Päätöksillä on ${count} yksilöllinen perustelu.`
+          : `Päätöksillä on ${count} yksilöllistä perustelua.`,
+      genericNotReadyTooltip:
+        'Päätösten yleinen perustelu ei ole käytössä. Päätökset voidaan lähettää, kun perustelu on otettu käyttöön.'
+    },
     distinctiveDetails: {
       SECONDARY: 'Näytä myös, jos yksikköön on haettu 2. tai 3. toiveena'
     },
