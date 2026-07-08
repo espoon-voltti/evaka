@@ -53,6 +53,7 @@ const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
 
 test.beforeEach(async () => {
   await resetServiceState()
+  await Fixture.decisionReasoningGenericDefaults().save()
 
   await testCareArea.save()
   await testDaycare.save()
