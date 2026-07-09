@@ -724,6 +724,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
         )
 
         // attachments and otherInfo can be still updated after sending
+        val sentAt = getIncomeStatement(original.id).sentAt
+        clock.tick()
+
         updateSentIncomeStatement(
             id = original.id,
             body =
@@ -738,6 +741,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 listOf(idToAttachment(attachment1), idToAttachment(attachment3)),
                 it.attachments,
             )
+
+            // sentAt should not be updated, citizenModifiedAt is updated
+            assertEquals(sentAt, it.sentAt)
+            assertEquals(clock.now(), it.citizenModifiedAt)
         }
 
         // full update is not allowed after sending
