@@ -52,7 +52,6 @@ enum class Audit(
     private val securityEvent: Boolean = false,
     private val securityLevel: String = "low",
 ) {
-    AbsenceApplicationDelete,
     AbsenceApplicationPossibleRead,
     AbsenceApplicationRead,
     AbsenceApplicationReject,
@@ -602,6 +601,7 @@ enum class Audit(
     // the section above is empty, delete this separator and merge back into one alphabetical list.
     AbsenceApplicationAccept,
     AbsenceApplicationCreate,
+    AbsenceApplicationDelete,
     AbsenceCitizenCreate,
     AttendanceReservationCitizenCreate,
     AttendanceReservationEmployeeCreate,

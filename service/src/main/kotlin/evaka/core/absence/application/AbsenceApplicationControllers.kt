@@ -308,6 +308,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
         clock: EvakaClock,
         @PathVariable id: AbsenceApplicationId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -324,15 +325,15 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                             "Absence application ${application.id} is not waiting decision"
                         )
                     }
+                    audit
+                        .add(application.childId)
+                        .observeDate(application.startDate)
+                        .addMeta("startDate", application.startDate)
+                        .addMeta("endDate", application.endDate)
                     tx.deleteAbsenceApplication(application.id)
                 }
             }
-            .also {
-                Audit.AbsenceApplicationDelete.log(
-                    targetId = AuditId(it.id),
-                    objectId = AuditId(it.childId),
-                )
-            }
+            .also { audit.log(Audit.AbsenceApplicationDelete, clock) }
     }
 
     @GetMapping("/application-possible")
