@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { RedisStore } from 'connect-redis'
+import { signedCookie } from 'cookie-parser'
 import { addMinutes } from 'date-fns/addMinutes'
 import { differenceInMinutes } from 'date-fns/differenceInMinutes'
 import { differenceInSeconds } from 'date-fns/differenceInSeconds'
@@ -11,7 +12,7 @@ import type express from 'express'
 import session from 'express-session'
 
 import type { EvakaSessionUser } from './auth/index.ts'
-import { createUserHeader } from './auth/index.ts'
+import { createLogoutToken, createUserHeader } from './auth/index.ts'
 import type { SessionConfig } from './config.ts'
 import { createSha256Hash } from './crypto.ts'
 import type { LogoutToken } from './express.ts'
@@ -19,8 +20,11 @@ import { toMiddleware } from './express.ts'
 import { logAuditEvent, logDebug } from './logging.ts'
 import { fromCallback } from './promise-utils.ts'
 import type { RedisClient } from './redis-client.ts'
+import type { SamlSession } from './saml/index.ts'
 
 export type SessionType = 'citizen' | 'employee' | 'employee-mobile'
+
+export type LoginCorrelation = { ownSid?: string; secondarySid?: string }
 
 function cookiePrefix(sessionType: SessionType) {
   switch (sessionType) {
@@ -45,8 +49,20 @@ function userSessionsKey(userIdHash: string) {
   return `usess:${userIdHash}`
 }
 
-function secondarySfiSessionsKey(sfiNameId: string) {
-  return `sfisess:${sfiNameId}`
+function secondarySfiSessionKey(sfiSessionId: string) {
+  return `sfisess:${sfiSessionId}`
+}
+
+function sfiLoginKey(sfiSessionId: string) {
+  return `sfilogin:${sfiSessionId}`
+}
+
+function sfiSloKey(logoutToken: LogoutToken['value']) {
+  return `sfislo:${logoutToken}`
+}
+
+function loginCorrelationKey(token: string) {
+  return `sficorr:${token}`
 }
 
 export function sessionCookie(sessionType: SessionType) {
@@ -65,6 +81,15 @@ export interface Sessions<T extends SessionType> {
     req: express.Request,
     logoutToken?: LogoutToken['value']
   ): Promise<void>
+  saveRejectedSfiLogin(
+    linkedSessionIds: string[],
+    samlSession: SamlSession
+  ): Promise<void>
+  saveLoginCorrelation(
+    token: string,
+    correlation: LoginCorrelation
+  ): Promise<void>
+  consumeLoginCorrelation(token: string): Promise<LoginCorrelation>
   logoutWithToken(token: LogoutToken['value']): Promise<unknown>
 
   login(
@@ -78,10 +103,15 @@ export interface Sessions<T extends SessionType> {
   getUser(req: express.Request): EvakaSessionUser | undefined
   getSecondaryUserIfNewer(
     req: express.Request
-  ): Promise<EvakaSessionUser | undefined>
+  ): Promise<EvakaSessionUser | SamlSession | undefined>
   getUserHeader(req: express.Request): string | undefined
   isAuthenticated(req: express.Request): boolean
+  sessionIdFromCookie(rawCookie: string | undefined): string | undefined
 }
+
+// Only needs to bridge login-start -> login-callback while a human completes the
+// IdP login; independent of the 32-min rejected-login TTL.
+const LOGIN_CORRELATION_TTL_SECONDS = 15 * 60
 
 export function sessionSupport<T extends SessionType>(
   sessionType: T,
@@ -192,32 +222,144 @@ export function sessionSupport<T extends SessionType>(
     }
   }
 
+  async function saveRejectedSfiLogin(
+    linkedSessionIds: string[],
+    samlSession: SamlSession
+  ): Promise<void> {
+    if (!maxSessionTimeoutMinutes) return
+    const ids = linkedSessionIds.filter((id) => !!id)
+    if (ids.length === 0) return
+
+    const ttlSeconds = maxSessionTimeoutMinutes * 60
+    await redisClient.set(
+      sfiSloKey(createLogoutToken(samlSession)),
+      JSON.stringify({ samlSession, sessionIds: ids }),
+      { EX: ttlSeconds }
+    )
+    const record = JSON.stringify({ samlSession, createdAt: Date.now() })
+    for (const id of ids) {
+      await redisClient.set(sfiLoginKey(id), record, {
+        EX: ttlSeconds
+      })
+    }
+  }
+
+  async function saveLoginCorrelation(
+    token: string,
+    correlation: LoginCorrelation
+  ): Promise<void> {
+    await redisClient.set(
+      loginCorrelationKey(token),
+      JSON.stringify(correlation),
+      { EX: LOGIN_CORRELATION_TTL_SECONDS }
+    )
+  }
+
+  async function consumeLoginCorrelation(
+    token: string
+  ): Promise<LoginCorrelation> {
+    const key = loginCorrelationKey(token)
+    const raw = await redisClient.get(key)
+    await redisClient.del(key)
+    if (!raw) return {}
+    // oxlint-disable-next-line typescript/no-unsafe-assignment
+    const parsed = JSON.parse(raw)
+    return {
+      // oxlint-disable-next-line typescript/no-unsafe-assignment,typescript/no-unsafe-member-access
+      ownSid: typeof parsed?.ownSid === 'string' ? parsed.ownSid : undefined,
+      // oxlint-disable-next-line typescript/no-unsafe-assignment
+      secondarySid:
+        // oxlint-disable-next-line typescript/no-unsafe-member-access
+        typeof parsed?.secondarySid === 'string'
+          ? // oxlint-disable-next-line typescript/no-unsafe-member-access
+            parsed.secondarySid
+          : undefined
+    }
+  }
+
+  function storedLogoutToken(rawSession: string): string | undefined {
+    // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
+    const value = JSON.parse(rawSession)?.logoutToken?.value
+    return typeof value === 'string' ? value : undefined
+  }
+
+  function storedUser(rawSession: string): unknown {
+    // oxlint-disable-next-line typescript/no-unsafe-member-access
+    return JSON.parse(rawSession)?.passport?.user ?? undefined
+  }
+
+  function authTypeOf(user: unknown): string | undefined {
+    if (typeof user !== 'object' || user === null) return undefined
+    const authType = (user as Record<string, unknown>).authType
+    return typeof authType === 'string' ? authType : undefined
+  }
+
+  async function deleteSessionById(sessionId: string): Promise<void> {
+    const session = await redisClient.get(sessionKey(sessionId))
+    const keys = [sessionKey(sessionId), sfiLoginKey(sessionId)]
+    const token = session ? storedLogoutToken(session) : undefined
+    if (token) keys.push(logoutKey(token))
+    await redisClient.del(keys)
+  }
+
+  async function destroyLinkedSfiSession(sessionId: string): Promise<void> {
+    const secondarySessionId = await redisClient.get(
+      secondarySfiSessionKey(sessionId)
+    )
+    if (!secondarySessionId) return
+    await deleteSessionById(secondarySessionId)
+    await redisClient.del([
+      secondarySfiSessionKey(sessionId),
+      secondarySfiSessionKey(secondarySessionId)
+    ])
+  }
+
+  async function logoutWithRejectedSfiLogin(
+    logoutToken: LogoutToken['value']
+  ): Promise<unknown> {
+    const key = sfiSloKey(logoutToken)
+    const raw = await redisClient.get(key)
+    if (!raw) return
+    // oxlint-disable-next-line typescript/no-unsafe-assignment
+    const rejectedLogin = JSON.parse(raw)
+    // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
+    const samlSession = rejectedLogin?.samlSession
+    // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
+    const sessionIds = rejectedLogin?.sessionIds
+    if (!samlSession || !Array.isArray(sessionIds)) {
+      await redisClient.del(key)
+      return
+    }
+
+    let loggedOut = false
+    for (const sessionId of sessionIds) {
+      if (typeof sessionId !== 'string') continue
+      const alive = !!(await redisClient.get(sessionKey(sessionId)))
+      await deleteSessionById(sessionId)
+      if (!alive) continue
+      await destroyLinkedSfiSession(sessionId)
+      loggedOut = true
+    }
+    await redisClient.del(key)
+    return loggedOut ? samlSession : undefined
+  }
+
   async function logoutWithToken(
     logoutToken: LogoutToken['value']
   ): Promise<unknown> {
     if (!logoutToken) return
     const sid = await redisClient.get(logoutKey(logoutToken))
-    if (!sid) return
+    if (!sid) return await logoutWithRejectedSfiLogin(logoutToken)
     const session = await redisClient.get(sessionKey(sid))
-    await redisClient.del([sessionKey(sid), logoutKey(logoutToken)])
-    if (!session) return
-    // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
-    const user = JSON.parse(session)?.passport?.user
+    if (!session) {
+      await redisClient.del(logoutKey(logoutToken))
+      return
+    }
+    const user = storedUser(session)
+    await deleteSessionById(sid)
     if (!user) return
 
-    // oxlint-disable-next-line typescript/no-unsafe-member-access
-    if (user?.authType === 'sfi') {
-      const secondarySession = await redisClient.get(
-        secondarySfiSessionsKey(sid)
-      )
-      if (secondarySession) {
-        await redisClient.del(sessionKey(secondarySession))
-        await redisClient.del([
-          secondarySfiSessionsKey(sid),
-          secondarySfiSessionsKey(secondarySession)
-        ])
-      }
-    }
+    if (authTypeOf(user) === 'sfi') await destroyLinkedSfiSession(sid)
 
     return user
   }
@@ -263,16 +405,8 @@ export function sessionSupport<T extends SessionType>(
     }
 
     if (req.user?.authType === 'sfi' && sessionId) {
-      const secondarySession = await redisClient.get(
-        secondarySfiSessionsKey(sessionId)
-      )
-      if (secondarySession) {
-        await redisClient.del(sessionKey(secondarySession))
-        await redisClient.del([
-          secondarySfiSessionsKey(sessionId),
-          secondarySfiSessionsKey(secondarySession)
-        ])
-      }
+      await redisClient.del(sfiLoginKey(sessionId))
+      await destroyLinkedSfiSession(sessionId)
     }
   }
 
@@ -316,14 +450,14 @@ export function sessionSupport<T extends SessionType>(
       secondarySessionId
     ) {
       await redisClient.set(
-        secondarySfiSessionsKey(req.session.id),
+        secondarySfiSessionKey(req.session.id),
         secondarySessionId,
         {
           EX: maxSessionTimeoutMinutes * 60
         }
       )
       await redisClient.set(
-        secondarySfiSessionsKey(secondarySessionId),
+        secondarySfiSessionKey(secondarySessionId),
         req.session.id,
         {
           EX: maxSessionTimeoutMinutes * 60
@@ -338,32 +472,58 @@ export function sessionSupport<T extends SessionType>(
 
   async function getSecondaryUserIfNewer(
     req: express.Request
-  ): Promise<EvakaSessionUser | undefined> {
+  ): Promise<EvakaSessionUser | SamlSession | undefined> {
     const primaryUser = req.session?.evaka?.user
     if (!primaryUser || primaryUser.authType !== 'sfi') return undefined
 
     const primarySessionId = req.session.id
     const primaryUserCreatedAt = primaryUser.createdAt
 
+    let newest:
+      | { value: EvakaSessionUser | SamlSession; createdAt: number }
+      | undefined
+
+    // Candidate 1: the real other-side session via the bidirectional sfisess: link
+    // written by a successful co-resident login.
     const secondarySessionId = await redisClient.get(
-      secondarySfiSessionsKey(primarySessionId)
+      secondarySfiSessionKey(primarySessionId)
     )
-    if (!secondarySessionId) return undefined
+    if (secondarySessionId) {
+      const secondarySession = await redisClient.get(
+        sessionKey(secondarySessionId)
+      )
+      if (secondarySession) {
+        // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
+        const user = JSON.parse(secondarySession)?.evaka?.user
+        // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
+        const createdAt = user?.createdAt
+        if (typeof createdAt === 'number')
+          // oxlint-disable-next-line typescript/no-unsafe-assignment
+          newest = { value: user, createdAt }
+      }
+    }
 
-    const secondarySession = await redisClient.get(
-      sessionKey(secondarySessionId)
-    )
-    if (!secondarySession) return undefined
+    // Candidate 2: a validated-but-rejected co-resident login, which has no
+    // eVaka session of its own.
+    const raw = await redisClient.get(sfiLoginKey(primarySessionId))
+    if (raw) {
+      // oxlint-disable-next-line typescript/no-unsafe-assignment
+      const rejectedLogin = JSON.parse(raw)
+      // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
+      const createdAt = rejectedLogin?.createdAt
+      // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
+      const samlSession = rejectedLogin?.samlSession
+      if (
+        typeof createdAt === 'number' &&
+        samlSession &&
+        (!newest || createdAt > newest.createdAt)
+      )
+        // oxlint-disable-next-line typescript/no-unsafe-assignment
+        newest = { value: samlSession, createdAt }
+    }
 
-    // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
-    const user = JSON.parse(secondarySession)?.evaka?.user
-    // oxlint-disable-next-line typescript/no-unsafe-assignment,typescript/no-unsafe-member-access
-    const secondaryUserCreatedAt = user?.createdAt
-    if (!secondaryUserCreatedAt) return undefined
-
-    return secondaryUserCreatedAt > primaryUserCreatedAt
-      ? (user as EvakaSessionUser)
-      : undefined
+    if (!newest) return undefined
+    return newest.createdAt > primaryUserCreatedAt ? newest.value : undefined
   }
 
   function getUserHeader(req: express.Request): string | undefined {
@@ -375,6 +535,13 @@ export function sessionSupport<T extends SessionType>(
     return !!req.session?.passport?.user
   }
 
+  function sessionIdFromCookie(
+    rawCookie: string | undefined
+  ): string | undefined {
+    if (!rawCookie) return undefined
+    return signedCookie(rawCookie, config.cookieSecret) || undefined
+  }
+
   return {
     sessionType,
     cookieName,
@@ -382,6 +549,9 @@ export function sessionSupport<T extends SessionType>(
     requireAuthentication,
     save,
     saveLogoutToken,
+    saveRejectedSfiLogin,
+    saveLoginCorrelation,
+    consumeLoginCorrelation,
     logoutWithToken,
     login,
     destroy,
@@ -389,6 +559,7 @@ export function sessionSupport<T extends SessionType>(
     getUser,
     getSecondaryUserIfNewer,
     getUserHeader,
-    isAuthenticated
+    isAuthenticated,
+    sessionIdFromCookie
   }
 }

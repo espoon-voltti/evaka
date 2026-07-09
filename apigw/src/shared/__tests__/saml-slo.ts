@@ -239,3 +239,370 @@ function getSamlMessageFromRedirectResponse(res: AxiosResponse) {
   const inflated = zlib.inflateRawSync(decoded)
   return new xmldom.DOMParser({}).parseFromString(inflated.toString())
 }
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// Reads the SAML LogoutRequest that our /logout endpoint redirects the browser
+// to, and returns its SessionIndex.
+async function logoutRequestSessionIndex(
+  tester: GatewayTester,
+  logoutPath: string
+): Promise<string> {
+  const res = await tester.client.get(logoutPath, {
+    maxRedirects: 0,
+    validateStatus: () => true
+  })
+  expect(res.status).toBe(302)
+  const dom = getSamlMessageFromRedirectResponse(res)
+  // oxlint-disable-next-line typescript/no-unsafe-assignment
+  const json = await xml2js.parseStringPromise(dom)
+  // node-saml emits the SessionIndex element with a different (but
+  // equivalent) namespace prefix than the rest of the LogoutRequest, and
+  // since it declares that namespace inline, xml2js parses it as a node
+  // with attributes (`$`) rather than a plain string.
+  // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-assignment
+  const sessionIndexNode = json['samlp:LogoutRequest']['saml2p:SessionIndex'][0]
+  return typeof sessionIndexNode === 'string'
+    ? sessionIndexNode
+    : // oxlint-disable-next-line typescript/no-unsafe-member-access
+      (sessionIndexNode._ as string)
+}
+
+// The SP registers a single SLO callback for both audiences; an IdP-initiated
+// logout carries no eVaka RelayState, so it always dispatches to the citizen
+// integration regardless of which session it names.
+const SHARED_SLO_ENDPOINT = '/api/application/auth/saml/logout/callback'
+
+async function idpInitiatedSlo(
+  tester: GatewayTester,
+  nameId: string,
+  sessionIndex: string,
+  { withCookies }: { withCookies: boolean }
+): Promise<string> {
+  const cookies = withCookies
+    ? []
+    : [
+        await tester.getCookie(sessionCookie('citizen')),
+        await tester.getCookie(sessionCookie('employee'))
+      ]
+  // The IdP's logout request is cross-site, so SameSite=lax withholds our
+  // session cookies from it.
+  if (!withCookies) await tester.cookies.removeAllCookies()
+
+  const res = await tester.client.post(
+    SHARED_SLO_ENDPOINT,
+    new URLSearchParams({
+      SAMLRequest: buildIdPInitiatedLogoutRequest(nameId, sessionIndex)
+    }),
+    { maxRedirects: 0, validateStatus: () => true }
+  )
+  expect(res.status).toBe(302)
+
+  for (const cookie of cookies) if (cookie) await tester.setCookie(cookie)
+
+  const logoutResponse = getSamlMessageFromRedirectResponse(res)
+  // oxlint-disable-next-line typescript/no-unsafe-assignment
+  const json = await xml2js.parseStringPromise(logoutResponse)
+  // oxlint-disable-next-line typescript/no-unsafe-member-access,typescript/no-unsafe-return
+  return json['samlp:LogoutResponse']['samlp:Status'][0]['samlp:StatusCode'][0]
+    .$.Value
+}
+
+const SAML_SUCCESS = 'urn:oasis:names:tc:SAML:2.0:status:Success'
+
+async function isCitizenLoggedIn(tester: GatewayTester): Promise<boolean> {
+  tester.nockScope
+    .get(`/system/citizen/${mockUser.id}`)
+    .reply(200, { id: mockUser.id })
+  const res = await tester.client.get(SECURED_ENDPOINT, {
+    validateStatus: () => true
+  })
+  // oxlint-disable-next-line typescript/no-unsafe-member-access
+  return res.data?.loggedIn === true
+}
+
+async function isEmployeeLoggedIn(tester: GatewayTester): Promise<boolean> {
+  tester.nockScope.get(`/system/employee/${mockUser.id}`).reply(200, {
+    user: {
+      id: mockUser.id,
+      firstName: '',
+      lastName: '',
+      globalRoles: [],
+      allScopedRoles: [],
+      accessibleFeatures: {},
+      permittedGlobalActions: [],
+      startPage: '/'
+    },
+    featureConfig: {}
+  })
+  const res = await tester.client.get('/api/employee/auth/status', {
+    validateStatus: () => true
+  })
+  // oxlint-disable-next-line typescript/no-unsafe-member-access
+  return res.data?.loggedIn === true
+}
+
+// Starts a sfi login through /login so the co-resident session is captured in
+// the sfiCorr correlation record, then completes it at the shared callback.
+async function employeeSfiLogin(
+  tester: GatewayTester,
+  nameId: string,
+  sessionIndex: string,
+  { rejected }: { rejected: boolean }
+): Promise<void> {
+  const startRes = await tester.client.get(
+    '/api/employee/auth/sfi/login?RelayState=%2Femployee',
+    { maxRedirects: 0, validateStatus: () => true }
+  )
+  const relayState =
+    // oxlint-disable-next-line typescript/no-unsafe-argument
+    new URL(startRes.headers.location).searchParams.get('RelayState') ?? ''
+
+  const scope = tester.nockScope.post('/system/employee-sfi-login')
+  if (rejected) scope.reply(403)
+  else
+    scope.reply(200, { id: mockUser.id, globalRoles: [], allScopedRoles: [] })
+
+  await tester.client.post(
+    '/api/application/auth/saml/login/callback',
+    new URLSearchParams({
+      SAMLResponse: buildLoginResponse(nameId, sessionIndex, 'authnEmployee'),
+      RelayState: relayState
+    }),
+    { maxRedirects: 0, validateStatus: () => true }
+  )
+  tester.nockScope.done()
+}
+
+describe('SLO session tracking on rejected sfi login', () => {
+  let tester: GatewayTester
+
+  beforeEach(async () => {
+    const config: Config = {
+      ...configFromEnv(),
+      sfi: {
+        type: 'saml',
+        saml: {
+          callbackUrl: SP_CALLBACK_URL,
+          entryPoint: IDP_ENTRY_POINT_URL,
+          logoutUrl: IDP_ENTRY_POINT_URL,
+          issuer: SP_ISSUER,
+          publicCert: 'config/test-cert/slo-test-idp-cert.pem',
+          privateCert: 'config/test-cert/saml-private.pem',
+          validateInResponseTo: ValidateInResponseTo.never,
+          decryptAssertions: false,
+          acceptedClockSkewMs: 0
+        }
+      }
+    }
+    tester = await GatewayTester.start(config, 'citizen')
+  })
+  afterEach(async () => {
+    await tester?.afterEach()
+    await tester?.stop()
+  })
+
+  test('citizen logout uses the rejected employee login sessionIndex', async () => {
+    // 1. Citizen logs in via sfi.
+    const citizenSessionIndex = '_citizen-session-index'
+    await tester.login(mockUser, {
+      SAMLResponse: buildLoginResponse(
+        'citizen@local',
+        citizenSessionIndex,
+        'authnCitizen'
+      )
+    })
+
+    await delay(5) // guarantee the rejected login's createdAt is strictly newer
+
+    // 2. Employee sfi login: SAML validates, but eVaka rejects it.
+    //    Go through /login so the citizen session is captured in the sfiCorr
+    //    correlation record referenced by RelayState.
+    const startRes = await tester.client.get('/api/employee/auth/sfi/login', {
+      maxRedirects: 0,
+      validateStatus: () => true
+    })
+    const relayState =
+      // oxlint-disable-next-line typescript/no-unsafe-argument
+      new URL(startRes.headers.location).searchParams.get('RelayState') ?? ''
+    expect(relayState).toContain('sfiCorr=')
+
+    const employeeSessionIndex = '_employee-session-index'
+    tester.nockScope.post('/system/employee-sfi-login').reply(403)
+    await tester.client.post(
+      '/api/employee/auth/sfi/login/callback',
+      new URLSearchParams({
+        SAMLResponse: buildLoginResponse(
+          'employee@local',
+          employeeSessionIndex,
+          'authnEmployee'
+        ),
+        RelayState: relayState
+      }),
+      { maxRedirects: 0, validateStatus: () => true }
+    )
+    tester.nockScope.done()
+
+    // 3. Citizen logout must SLO with the employee (IdP-valid) sessionIndex.
+    expect(
+      await logoutRequestSessionIndex(tester, '/api/citizen/auth/logout')
+    ).toBe(employeeSessionIndex)
+  })
+
+  test('same-side: employee logout uses the rejected re-login sessionIndex', async () => {
+    // 1. Employee logs in via sfi (backend accepts).
+    const firstIndex = '_employee-first-index'
+    const startRes1 = await tester.client.get('/api/employee/auth/sfi/login', {
+      maxRedirects: 0,
+      validateStatus: () => true
+    })
+    const relayState1 =
+      // oxlint-disable-next-line typescript/no-unsafe-argument
+      new URL(startRes1.headers.location).searchParams.get('RelayState') ?? ''
+    tester.nockScope
+      .post('/system/employee-sfi-login')
+      .reply(200, { id: mockUser.id, globalRoles: [], allScopedRoles: [] })
+    await tester.client.post(
+      '/api/employee/auth/sfi/login/callback',
+      new URLSearchParams({
+        SAMLResponse: buildLoginResponse('emp@local', firstIndex, 'authn1'),
+        RelayState: relayState1
+      }),
+      { maxRedirects: 0, validateStatus: () => true }
+    )
+    tester.nockScope.done()
+
+    await delay(5)
+
+    // 2. Employee re-login on the same side: SAML validates, eVaka rejects.
+    //    The existing employee session is captured as the own-side session
+    //    via the correlation record.
+    const secondIndex = '_employee-second-index'
+    const startRes2 = await tester.client.get('/api/employee/auth/sfi/login', {
+      maxRedirects: 0,
+      validateStatus: () => true
+    })
+    const relayState2 =
+      // oxlint-disable-next-line typescript/no-unsafe-argument
+      new URL(startRes2.headers.location).searchParams.get('RelayState') ?? ''
+    expect(relayState2).toContain('sfiCorr=')
+    tester.nockScope.post('/system/employee-sfi-login').reply(403)
+    await tester.client.post(
+      '/api/employee/auth/sfi/login/callback',
+      new URLSearchParams({
+        SAMLResponse: buildLoginResponse('emp@local', secondIndex, 'authn2'),
+        RelayState: relayState2
+      }),
+      { maxRedirects: 0, validateStatus: () => true }
+    )
+    tester.nockScope.done()
+
+    // 3. Employee logout must SLO with the newer (rejected re-login) index.
+    expect(
+      await logoutRequestSessionIndex(tester, '/api/employee/auth/logout')
+    ).toBe(secondIndex)
+  })
+
+  test('IdP-initiated SLO without cookies logs out the session linked to a rejected login', async () => {
+    await tester.login(mockUser, {
+      SAMLResponse: buildLoginResponse('citizen@local', '_c-idx', 'authnC')
+    })
+    await delay(5) // guarantee the rejected login's createdAt is strictly newer
+    await employeeSfiLogin(tester, 'employee@local', '_e-idx', {
+      rejected: true
+    })
+    expect(await isCitizenLoggedIn(tester)).toBe(true)
+
+    const status = await idpInitiatedSlo(tester, 'employee@local', '_e-idx', {
+      withCookies: false
+    })
+
+    expect(status).toBe(SAML_SUCCESS)
+    expect(await isCitizenLoggedIn(tester)).toBe(false)
+  })
+
+  test('IdP-initiated SLO without cookies logs out both co-resident sessions', async () => {
+    await tester.login(mockUser, {
+      SAMLResponse: buildLoginResponse('citizen@local', '_c-idx', 'authnC')
+    })
+    await employeeSfiLogin(tester, 'employee@local', '_e-idx', {
+      rejected: false
+    })
+    expect(await isCitizenLoggedIn(tester)).toBe(true)
+    expect(await isEmployeeLoggedIn(tester)).toBe(true)
+
+    // Suomi.fi only knows the newest login, and expects it to log out both.
+    const status = await idpInitiatedSlo(tester, 'employee@local', '_e-idx', {
+      withCookies: false
+    })
+
+    expect(status).toBe(SAML_SUCCESS)
+    expect(await isCitizenLoggedIn(tester)).toBe(false)
+    expect(await isEmployeeLoggedIn(tester)).toBe(false)
+  })
+
+  test('no pre-existing session: rejected login writes nothing', async () => {
+    // Employee sfi login with no citizen or employee session present.
+    const startRes = await tester.client.get('/api/employee/auth/sfi/login', {
+      maxRedirects: 0,
+      validateStatus: () => true
+    })
+    const relayState =
+      // oxlint-disable-next-line typescript/no-unsafe-argument
+      new URL(startRes.headers.location).searchParams.get('RelayState') ?? ''
+    expect(relayState).not.toContain('sfiCorr=')
+
+    tester.nockScope.post('/system/employee-sfi-login').reply(403)
+    const res = await tester.client.post(
+      '/api/employee/auth/sfi/login/callback',
+      new URLSearchParams({
+        SAMLResponse: buildLoginResponse('nobody@local', '_x', 'authnX'),
+        RelayState: relayState
+      }),
+      { maxRedirects: 0, validateStatus: () => true }
+    )
+    // Login still fails (redirect to the employee error page); nothing persisted.
+    expect(res.status).toBe(302)
+    expect(res.headers.location).toContain('loginError')
+    tester.nockScope.done()
+  })
+
+  test('the latest rejected attempt replaces the previous one', async () => {
+    const citizenIndex = '_citizen-idx'
+    await tester.login(mockUser, {
+      SAMLResponse: buildLoginResponse('citizen@local', citizenIndex, 'authnC')
+    })
+
+    const attempt = async (employeeIndex: string) => {
+      await delay(5)
+      const startRes = await tester.client.get('/api/employee/auth/sfi/login', {
+        maxRedirects: 0,
+        validateStatus: () => true
+      })
+      const relayState =
+        // oxlint-disable-next-line typescript/no-unsafe-argument
+        new URL(startRes.headers.location).searchParams.get('RelayState') ?? ''
+      tester.nockScope.post('/system/employee-sfi-login').reply(403)
+      await tester.client.post(
+        '/api/employee/auth/sfi/login/callback',
+        new URLSearchParams({
+          SAMLResponse: buildLoginResponse(
+            'employee@local',
+            employeeIndex,
+            'authnE'
+          ),
+          RelayState: relayState
+        }),
+        { maxRedirects: 0, validateStatus: () => true }
+      )
+      tester.nockScope.done()
+    }
+
+    await attempt('_employee-idx-1')
+    await attempt('_employee-idx-2')
+
+    expect(
+      await logoutRequestSessionIndex(tester, '/api/citizen/auth/logout')
+    ).toBe('_employee-idx-2')
+  })
+})
