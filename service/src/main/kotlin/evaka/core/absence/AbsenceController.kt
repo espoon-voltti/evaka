@@ -5,6 +5,7 @@
 package evaka.core.absence
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.CitizenCalendarEnv
 import evaka.core.reservations.clearOldReservations
@@ -43,6 +44,7 @@ class AbsenceController(
         @RequestParam month: Int,
         @PathVariable groupId: GroupId,
     ): GroupMonthCalendar {
+        val audit = AuditContext().add(groupId).observeDate(LocalDate.of(year, month, 1))
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -53,22 +55,18 @@ class AbsenceController(
                         groupId,
                     )
                     getGroupMonthCalendar(
-                        it,
-                        clock.today(),
-                        groupId,
-                        year,
-                        month,
-                        featureConfig,
-                        citizenCalendarEnv.calendarOpenBeforePlacementDays,
-                    )
+                            it,
+                            clock.today(),
+                            groupId,
+                            year,
+                            month,
+                            featureConfig,
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                        )
+                        .also { calendar -> audit.add(calendar.children.map { child -> child.id }) }
                 }
             }
-            .also {
-                Audit.AbsenceRead.log(
-                    targetId = AuditId(groupId),
-                    meta = mapOf("year" to year, "month" to month),
-                )
-            }
+            .also { audit.log(Audit.AbsenceRead, clock) }
     }
 
     @PostMapping("/{groupId}")
@@ -230,6 +228,7 @@ class AbsenceController(
         @RequestParam year: Int,
         @RequestParam month: Int,
     ): List<Absence> {
+        val audit = AuditContext().add(childId).observeDate(LocalDate.of(year, month, 1))
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -242,11 +241,6 @@ class AbsenceController(
                     getAbsencesOfChildByMonth(it, childId, year, month)
                 }
             }
-            .also {
-                Audit.AbsenceRead.log(
-                    targetId = AuditId(childId),
-                    meta = mapOf("year" to year, "month" to month),
-                )
-            }
+            .also { audit.log(Audit.AbsenceRead, clock) }
     }
 }

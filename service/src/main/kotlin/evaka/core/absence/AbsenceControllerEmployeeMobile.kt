@@ -5,7 +5,7 @@
 package evaka.core.absence
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.shared.ChildId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
@@ -25,6 +25,7 @@ class AbsenceControllerEmployeeMobile(private val accessControl: AccessControl) 
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): List<Absence> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -37,6 +38,6 @@ class AbsenceControllerEmployeeMobile(private val accessControl: AccessControl) 
                     getFutureAbsencesOfChild(it, clock, childId)
                 }
             }
-            .also { Audit.AbsenceRead.log(targetId = AuditId(childId)) }
+            .also { audit.log(Audit.AbsenceRead, clock) }
     }
 }
