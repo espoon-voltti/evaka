@@ -237,6 +237,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
         clock: EvakaClock,
         @RequestBody body: AbsenceApplicationCreateRequest,
     ): AbsenceApplicationId {
+        val audit = AuditContext().add(body.childId).observeDate(body.startDate)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -256,15 +257,12 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                             .contains(body.childId)
                     )
                         throw BadRequest("Child does not have preschool placement")
-                    tx.insertAbsenceApplication(body, clock.now(), user.evakaUserId)
+                    tx.insertAbsenceApplication(body, clock.now(), user.evakaUserId).also {
+                        audit.add(it.id)
+                    }
                 }
             }
-            .also {
-                Audit.AbsenceApplicationCreate.log(
-                    targetId = AuditId(it.id),
-                    objectId = AuditId(it.childId),
-                )
-            }
+            .also { audit.log(Audit.AbsenceApplicationCreate, clock) }
             .id
     }
 
