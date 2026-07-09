@@ -5,14 +5,52 @@
 import React, { useMemo } from 'react'
 
 import type {
+  AbsenceCategory,
+  AbsenceType,
   AbsenceWithModifierInfo,
   ChildReservation
 } from 'lib-common/generated/api-types/absence'
 import type { ServiceTimesPresenceStatus } from 'lib-common/generated/api-types/dailyservicetimes'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type LocalDate from 'lib-common/local-date'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
+
+export interface AbsenceTooltipItem {
+  category: AbsenceCategory
+  absenceType: AbsenceType
+  modifiedAt: HelsinkiDateTime
+  modifiedByStaff: boolean
+}
+
+export const AbsencesTooltipContent = React.memo(
+  function AbsencesTooltipContent({
+    absences
+  }: {
+    absences: AbsenceTooltipItem[]
+  }) {
+    const { i18n } = useTranslation()
+    return (
+      <>
+        {absences.map(
+          ({ category, absenceType, modifiedAt, modifiedByStaff }, index) => (
+            <div key={index}>
+              {index !== 0 && <br />}
+              {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
+              <br />
+              {`${modifiedAt.format()} ${
+                modifiedByStaff
+                  ? i18n.absences.modifiedByStaff
+                  : i18n.absences.modifiedByCitizen
+              }`}
+            </div>
+          )
+        )}
+      </>
+    )
+  }
+)
 
 interface UnitCalendarMonthlyDayCellTooltipProps {
   date: LocalDate
@@ -104,22 +142,8 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
   )
 
   const absencesTooltip = useMemo(
-    () =>
-      absences.map(
-        ({ category, absenceType, modifiedAt, modifiedByStaff }, index) => (
-          <div key={index}>
-            {index !== 0 && <br />}
-            {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
-            <br />
-            {`${modifiedAt.toLocalDate().format()} ${
-              modifiedByStaff
-                ? i18n.absences.modifiedByStaff
-                : i18n.absences.modifiedByCitizen
-            }`}
-          </div>
-        )
-      ),
-    [i18n, absences]
+    () => <AbsencesTooltipContent absences={absences} />,
+    [absences]
   )
 
   const requiresBackupCareTooltip = useMemo(

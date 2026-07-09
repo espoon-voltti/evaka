@@ -12,10 +12,7 @@ import {
   isRegular,
   isVariableTime
 } from 'lib-common/api-types/daily-service-times'
-import type {
-  AbsenceType,
-  ChildServiceNeedInfo
-} from 'lib-common/generated/api-types/absence'
+import type { ChildServiceNeedInfo } from 'lib-common/generated/api-types/absence'
 import type { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
 import type { ScheduleType } from 'lib-common/generated/api-types/placement'
 import type {
@@ -32,6 +29,7 @@ import { faExclamationTriangle } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 
+import type { AbsenceWithCategory } from './AbsenceDay'
 import AbsenceDay from './AbsenceDay'
 import { DateCell, DetailsToggle, TimeCell, TimesRow } from './ChildDayCommons'
 
@@ -40,8 +38,7 @@ interface Props {
   reservationIndex: number
   dateInfo: UnitDateInfo
   reservation: ReservationResponse | undefined
-  absence: AbsenceType | null
-  absenceStaffCreated: boolean | undefined
+  absences: AbsenceWithCategory[]
   dailyServiceTimes: DailyServiceTimesValue | null
   inOtherUnit: boolean
   isInBackupGroup: boolean
@@ -55,8 +52,7 @@ export default React.memo(function ChildDayReservation({
   reservationIndex,
   dateInfo,
   reservation,
-  absence,
-  absenceStaffCreated,
+  absences,
   dailyServiceTimes,
   inOtherUnit,
   isInBackupGroup,
@@ -112,9 +108,9 @@ export default React.memo(function ChildDayReservation({
           <TimeCell data-qa="in-other-group">
             <Light>{i18n.unit.attendanceReservations.inOtherGroup}</Light>
           </TimeCell>
-        ) : absence ? (
+        ) : absences.length > 0 ? (
           reservationIndex === 0 ? (
-            <AbsenceDay type={absence} staffCreated={!!absenceStaffCreated} />
+            <AbsenceDay absences={absences} />
           ) : null
         ) : reservation && reservation.type === 'TIMES' ? (
           <ReservationTooltip

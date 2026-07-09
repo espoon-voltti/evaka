@@ -486,7 +486,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             childId = child1.id,
                             reservations = emptyList(),
                             attendances = emptyList(),
-                            absenceBillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
+                            absenceBillable =
+                                AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true, now),
                             absenceNonbillable = null,
                             possibleAbsenceCategories = setOf(AbsenceCategory.BILLABLE),
                             shiftCare = ShiftCareType.NONE,
@@ -1594,8 +1595,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             employee.evakaUser,
                         )
                     ),
-                absenceBillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
-                absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
+                absenceBillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true, testNow),
+                absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true, testNow),
                 possibleAbsenceCategories =
                     setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
                 shiftCare = null,
@@ -1658,8 +1659,8 @@ class AttendanceReservationsControllerIntegrationTest :
                             employee2.evakaUser,
                         )
                     ),
-                absenceBillable = AbsenceTypeResponse(AbsenceType.FORCE_MAJEURE, true),
-                absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true),
+                absenceBillable = AbsenceTypeResponse(AbsenceType.FORCE_MAJEURE, true, testNow),
+                absenceNonbillable = AbsenceTypeResponse(AbsenceType.OTHER_ABSENCE, true, testNow),
                 possibleAbsenceCategories =
                     setOf(AbsenceCategory.NONBILLABLE, AbsenceCategory.BILLABLE),
                 shiftCare = null,
