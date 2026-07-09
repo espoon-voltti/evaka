@@ -343,6 +343,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
         clock: EvakaClock,
         @RequestParam childId: ChildId,
     ): DateSet {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -367,11 +368,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                     )
                 }
             }
-            .also {
-                Audit.AbsenceApplicationPossibleRead.log(
-                    meta = mapOf("childId" to AuditId(childId))
-                )
-            }
+            .also { audit.log(Audit.AbsenceApplicationPossibleRead, clock) }
     }
 }
 
