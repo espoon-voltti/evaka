@@ -6,7 +6,6 @@ package evaka.core.absence.application
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.absence.AbsenceService
 import evaka.core.absence.AbsenceType
 import evaka.core.daycare.PreschoolTerm
@@ -180,9 +179,11 @@ class AbsenceApplicationControllerEmployee(
         @PathVariable id: AbsenceApplicationId,
         @RequestBody body: AbsenceApplicationRejectRequest,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     val application = getApplicationForDecision(tx, user, clock, id)
+                    audit.add(application.childId).observeDate(application.startDate)
                     tx.decideAbsenceApplication(
                         application.id,
                         AbsenceApplicationStatus.REJECTED,
@@ -195,15 +196,9 @@ class AbsenceApplicationControllerEmployee(
                         listOf(AsyncJob.SendAbsenceApplicationDecidedEmail(application.id)),
                         runAt = clock.now(),
                     )
-                    application
                 }
             }
-            .also {
-                Audit.AbsenceApplicationReject.log(
-                    targetId = AuditId(it.id),
-                    objectId = AuditId(it.childId),
-                )
-            }
+            .also { audit.log(Audit.AbsenceApplicationReject, clock) }
     }
 
     private fun getApplicationForDecision(
