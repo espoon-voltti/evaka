@@ -34,6 +34,23 @@ export interface FailureMessages {
   network: FailureMessage
 }
 
+function OfflineSegment({ title, info }: FailureMessage) {
+  const { colors } = useTheme()
+  return (
+    <ErrorSegment
+      title={title}
+      info={info}
+      icon={faGlobe}
+      iconColor={colors.status.warning}
+    />
+  )
+}
+
+function LoadingSegment({ network }: { network: FailureMessage }) {
+  const online = useIsOnline()
+  return online ? <SpinnerSegment /> : <OfflineSegment {...network} />
+}
+
 function FailureSegment({
   result,
   messages
@@ -45,13 +62,7 @@ function FailureSegment({
   const online = useIsOnline()
 
   if (!online) {
-    return (
-      <ErrorSegment
-        {...messages.network}
-        icon={faGlobe}
-        iconColor={colors.status.warning}
-      />
-    )
+    return <OfflineSegment {...messages.network} />
   }
 
   if (result.errorCode === 'ENDPOINT_DISABLED') {
@@ -79,8 +90,6 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
     children
   }: UnwrapResultProps<T>) {
     const failureMessages = useFailureMessage()
-    const online = useIsOnline()
-    const { colors } = useTheme()
     return useMemo(() => {
       if (
         result.isLoading ||
@@ -88,15 +97,10 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
           result.isReloading &&
           (!children || children.length === 1))
       ) {
-        if (loading) return loading()
-        return online ? (
-          <SpinnerSegment />
+        return loading ? (
+          loading()
         ) : (
-          <ErrorSegment
-            {...failureMessages.network}
-            icon={faGlobe}
-            iconColor={colors.status.warning}
-          />
+          <LoadingSegment network={failureMessages.network} />
         )
       }
 
@@ -113,7 +117,7 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
       }
 
       return children(result.value, result.isReloading)
-    }, [failureMessages, online, colors, result, loading, failure, children])
+    }, [failureMessages, result, loading, failure, children])
   }
 
   interface RenderResultProps<T> {
@@ -127,20 +131,10 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
 
   function RenderResult<T>({ result, renderer }: RenderResultProps<T>) {
     const failureMessages = useFailureMessage()
-    const online = useIsOnline()
-    const { colors } = useTheme()
     return useMemo(
       () =>
         result.isLoading ? (
-          online ? (
-            <SpinnerSegment />
-          ) : (
-            <ErrorSegment
-              {...failureMessages.network}
-              icon={faGlobe}
-              iconColor={colors.status.warning}
-            />
-          )
+          <LoadingSegment network={failureMessages.network} />
         ) : (
           <Relative>
             {result.isSuccess && result.isReloading && <SpinnerOverlay />}
@@ -151,7 +145,7 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
             ) : null}
           </Relative>
         ),
-      [result, renderer, failureMessages, online, colors]
+      [result, renderer, failureMessages]
     )
   }
 
