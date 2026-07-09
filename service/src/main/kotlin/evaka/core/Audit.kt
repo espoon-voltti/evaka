@@ -52,13 +52,11 @@ enum class Audit(
     private val securityEvent: Boolean = false,
     private val securityLevel: String = "low",
 ) {
-    AbsenceApplicationAccept,
     AbsenceApplicationCreate,
     AbsenceApplicationDelete,
     AbsenceApplicationPossibleRead,
     AbsenceApplicationRead,
     AbsenceApplicationReject,
-    AbsenceCitizenCreate,
     AbsenceRead,
     AbsenceDelete,
     AbsenceDeleteRange,
@@ -603,6 +601,8 @@ enum class Audit(
     // Events below have been migrated to `audit.log(Audit.<Event>, clock)` via AuditContext.
     // Move an event here (keeping this section alphabetical) once its endpoint is migrated; when
     // the section above is empty, delete this separator and merge back into one alphabetical list.
+    AbsenceApplicationAccept,
+    AbsenceCitizenCreate,
     AttendanceReservationCitizenCreate,
     AttendanceReservationEmployeeCreate,
     ChildDatePresenceUpsert,

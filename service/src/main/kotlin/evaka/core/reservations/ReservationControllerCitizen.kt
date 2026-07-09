@@ -306,8 +306,8 @@ class ReservationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: AbsenceRequest,
     ) {
-        val (deletedAbsences, deletedReservations, insertedAbsences) =
-            db.connect { dbc ->
+        val audit = AuditContext().add(body.childIds).observeDate(body.dateRange.start)
+        db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -316,18 +316,10 @@ class ReservationControllerCitizen(
                         Action.Citizen.Child.CREATE_ABSENCE,
                         body.childIds,
                     )
-                    absenceService.createAbsences(tx, user, clock, body)
+                    absenceService.createAbsences(tx, user, clock, audit, body)
                 }
             }
-        Audit.AbsenceCitizenCreate.log(
-            targetId = AuditId(body.childIds),
-            objectId = AuditId(insertedAbsences),
-            meta =
-                mapOf(
-                    "deletedAbsences" to deletedAbsences,
-                    "deletedReservations" to deletedReservations,
-                ),
-        )
+            .also { audit.log(Audit.AbsenceCitizenCreate, clock) }
     }
 
     data class OperationalDatesRequest(val range: FiniteDateRange, val childIds: Set<ChildId>)
