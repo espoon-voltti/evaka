@@ -90,10 +90,17 @@ const en: Translations = {
     },
     openExpandingInfo: 'Open the details',
     errors: {
-      genericGetError: 'Error in fetching the requested information',
-      http403Error: 'No access to the requested information',
-      endpointDisabled:
-        'eVaka is currently undergoing partial maintenance. Some features are temporarily unavailable. Please try again shortly.'
+      genericGetError: 'Error fetching the requested information',
+      genericGetErrorInfo:
+        'Try refreshing the page in a moment. The problem is usually temporary.',
+      http403Error: 'No access',
+      http403ErrorInfo:
+        'You do not have permission to view the requested information.',
+      endpointDisabled: 'Partial maintenance',
+      endpointDisabledInfo:
+        'Some features are temporarily unavailable. Try again shortly.',
+      networkError: 'No internet connection',
+      networkErrorInfo: 'Check your internet connection and try again.'
     },
     today: 'Today',
     datetime: {

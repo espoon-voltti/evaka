@@ -70,10 +70,17 @@ export const fi = {
     yes: 'Kyllä',
     no: 'Ei',
     and: 'Ja',
-    loadingFailed: 'Tietojen haku epäonnistui',
+    loadingFailed: 'Tietojen hakeminen ei onnistunut',
+    loadingFailedInfo:
+      'Kokeile päivittää sivu hetken kuluttua. Ongelma on yleensä hetkellinen.',
     noAccess: 'Oikeudet puuttuvat',
-    endpointDisabled:
-      'eVakassa on käynnissä osittainen huoltokatko. Osa toiminnoista ei ole tällä hetkellä käytettävissä. Yritä hetken kuluttua uudelleen.',
+    noAccessInfo:
+      'Jos tarvitset pääsyn, ota yhteys esihenkilöösi tai järjestelmänvalvojaan.',
+    endpointDisabled: 'Osittainen huoltokatko',
+    endpointDisabledInfo:
+      'Osa toiminnoista ei ole juuri nyt käytettävissä. Yritä uudelleen hetken kuluttua.',
+    networkError: 'Ei verkkoyhteyttä',
+    networkErrorInfo: 'Tarkista internet-yhteytesi ja kokeile uudelleen.',
     edit: 'Muokkaa',
     add: 'Lisää',
     addNew: 'Lisää uusi',

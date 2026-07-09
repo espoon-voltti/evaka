@@ -88,10 +88,17 @@ const sv: Translations = {
     },
     openExpandingInfo: 'Öppna detaljer',
     errors: {
-      genericGetError: 'Hämtning av information misslyckades',
-      http403Error: 'Ingen tillgång till informationen',
-      endpointDisabled:
-        'eVaka genomgår för närvarande ett partiellt underhållsavbrott. Vissa funktioner är inte tillgängliga just nu. Försök igen om en stund.'
+      genericGetError: 'Datahämtningen misslyckades',
+      genericGetErrorInfo:
+        'Försök att uppdatera sidan om en stund. Problemet är oftast tillfälligt.',
+      http403Error: 'Ingen tillgång',
+      http403ErrorInfo:
+        'Du har inte behörighet att visa den begärda informationen.',
+      endpointDisabled: 'Delvis serviceavbrott',
+      endpointDisabledInfo:
+        'En del av funktionerna är inte tillgängliga just nu. Försök igen om en stund.',
+      networkError: 'Ingen internetanslutning',
+      networkErrorInfo: 'Kontrollera din internetanslutning och försök igen.'
     },
     today: 'Idag',
     datetime: {

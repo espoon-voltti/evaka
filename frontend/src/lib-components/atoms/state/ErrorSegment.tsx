@@ -2,59 +2,68 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
-import { faMeh } from 'lib-icons'
+import { faExclamationTriangle } from 'lib-icons'
 
+import { fontWeights, H3, P } from '../../typography'
 import { defaultMargins, Gap } from '../../white-space'
 
-const StyledSegment = styled.div<{ $compact?: boolean }>`
+const Card = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  background: ${(p) => p.theme.colors.grayscale.g4};
-  color: ${(p) => p.theme.colors.grayscale.g35};
+  text-align: center;
 
-  div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+  border: 1px solid ${(p) => p.theme.colors.grayscale.g15};
+  border-radius: 4px;
+  background: ${(p) => p.theme.colors.grayscale.g0};
 
-  svg {
-    font-size: 1.5em;
-    margin-right: ${defaultMargins.s};
-  }
-
-  padding: ${(p) => (p.$compact ? defaultMargins.m : defaultMargins.XL)} 0;
+  padding: ${defaultMargins.m} ${defaultMargins.L};
 `
 
-interface ErrorSegmentProps {
-  title?: string
+const IconContainer = styled.div<{ $color?: string }>`
+  color: ${(p) => p.$color ?? p.theme.colors.grayscale.g70};
+  font-size: 40px;
+  line-height: 1;
+`
+
+const Title = styled(H3)`
+  font-weight: ${fontWeights.semibold};
+`
+
+export interface FailureMessage {
+  title: string
   info?: string
-  compact?: boolean
+}
+
+interface ErrorSegmentProps extends FailureMessage {
+  icon?: IconDefinition
+  iconColor?: string
 }
 
 export default React.memo(function ErrorSegment({
-  title = 'Tietojen hakeminen ei onnistunut',
+  title,
   info,
-  compact
+  icon = faExclamationTriangle,
+  iconColor
 }: ErrorSegmentProps) {
   return (
-    <StyledSegment $compact={compact}>
-      <div>
-        <FontAwesomeIcon icon={faMeh} />
-        <span>{title}</span>
-      </div>
+    <Card role="status">
+      <IconContainer $color={iconColor}>
+        <FontAwesomeIcon icon={icon} />
+      </IconContainer>
+      <Gap $size="s" />
+      <Title $noMargin>{title}</Title>
       {!!info && (
         <>
-          <Gap $size="s" />
-          <p>{info}</p>
+          <Gap $size="xs" />
+          <P $noMargin>{info}</P>
         </>
       )}
-    </StyledSegment>
+    </Card>
   )
 })

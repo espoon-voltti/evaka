@@ -3,16 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useMemo } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import type { Failure, Result } from 'lib-common/api'
+import type { FailureMessage } from 'lib-components/atoms/state/ErrorSegment'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import {
   SpinnerOverlay,
   SpinnerSegment
 } from 'lib-components/atoms/state/Spinner'
-
-import type { SpacingSize } from './white-space'
+import { useIsOnline } from 'lib-components/utils/useIsOnline'
+import { faGear, faGlobe, faLockAlt } from 'lib-icons'
 
 export type RenderResultFn<T> = (
   value: T,
@@ -26,24 +27,59 @@ export interface UnwrapResultProps<T> {
   children?: RenderResultFn<T>
 }
 
-export interface SpinnerOptions {
-  size?: SpacingSize
-  margin?: SpacingSize
+export interface FailureMessages {
+  generic: FailureMessage
+  http403: FailureMessage
+  endpointDisabled: FailureMessage
+  network: FailureMessage
 }
 
-interface FailureMessages {
-  generic: string
-  http403: string
-  endpointDisabled: string
+function OfflineSegment({ title, info }: FailureMessage) {
+  const { colors } = useTheme()
+  return (
+    <ErrorSegment
+      title={title}
+      info={info}
+      icon={faGlobe}
+      iconColor={colors.status.warning}
+    />
+  )
 }
 
-function failureTitle(
-  result: Failure<unknown>,
+function LoadingSegment({ network }: { network: FailureMessage }) {
+  const online = useIsOnline()
+  return online ? <SpinnerSegment /> : <OfflineSegment {...network} />
+}
+
+function FailureSegment({
+  result,
+  messages
+}: {
+  result: Failure<unknown>
   messages: FailureMessages
-): string {
-  if (result.errorCode === 'ENDPOINT_DISABLED') return messages.endpointDisabled
-  if (result.statusCode === 403) return messages.http403
-  return messages.generic
+}) {
+  const { colors } = useTheme()
+  const online = useIsOnline()
+
+  if (!online) {
+    return <OfflineSegment {...messages.network} />
+  }
+
+  if (result.errorCode === 'ENDPOINT_DISABLED') {
+    return <ErrorSegment {...messages.endpointDisabled} icon={faGear} />
+  }
+
+  if (result.statusCode === 403) {
+    return (
+      <ErrorSegment
+        {...messages.http403}
+        icon={faLockAlt}
+        iconColor={colors.main.m2}
+      />
+    )
+  }
+
+  return <ErrorSegment {...messages.generic} />
 }
 
 export function makeHelpers(useFailureMessage: () => FailureMessages) {
@@ -61,16 +97,25 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
           result.isReloading &&
           (!children || children.length === 1))
       ) {
-        if (loading) return loading()
-        return <SpinnerSegment />
+        return loading ? (
+          loading()
+        ) : (
+          <LoadingSegment network={failureMessages.network} />
+        )
       }
+
       if (result.isFailure) {
-        if (failure) return failure()
-        return <ErrorSegment title={failureTitle(result, failureMessages)} />
+        return failure ? (
+          failure()
+        ) : (
+          <FailureSegment result={result} messages={failureMessages} />
+        )
       }
+
       if (!children) {
         return null
       }
+
       return children(result.value, result.isReloading)
     }, [failureMessages, result, loading, failure, children])
   }
@@ -78,54 +123,34 @@ export function makeHelpers(useFailureMessage: () => FailureMessages) {
   interface RenderResultProps<T> {
     result: Result<T>
     renderer: RenderResultFn<T>
-    spinnerOptions?: SpinnerOptions
   }
 
   const Relative = styled.div`
     position: relative;
   `
 
-  const empty: SpinnerOptions = {}
-
-  function RenderResult<T>({
-    result,
-    renderer,
-    spinnerOptions = empty
-  }: RenderResultProps<T>) {
+  function RenderResult<T>({ result, renderer }: RenderResultProps<T>) {
     const failureMessages = useFailureMessage()
     return useMemo(
       () =>
         result.isLoading ? (
-          <SpinnerSegment
-            size={spinnerOptions.size}
-            margin={spinnerOptions.margin}
-          />
+          <LoadingSegment network={failureMessages.network} />
         ) : (
           <Relative>
             {result.isSuccess && result.isReloading && <SpinnerOverlay />}
             {result.isFailure ? (
-              <ErrorSegment title={failureTitle(result, failureMessages)} />
+              <FailureSegment result={result} messages={failureMessages} />
             ) : result.isSuccess ? (
               renderer(result.value, result.isReloading)
             ) : null}
           </Relative>
         ),
-      [result, renderer, failureMessages, spinnerOptions]
+      [result, renderer, failureMessages]
     )
   }
 
-  function renderResult<T>(
-    result: Result<T>,
-    renderer: RenderResultFn<T>,
-    spinnerOptions?: SpinnerOptions
-  ) {
-    return (
-      <RenderResult
-        result={result}
-        renderer={renderer}
-        spinnerOptions={spinnerOptions}
-      />
-    )
+  function renderResult<T>(result: Result<T>, renderer: RenderResultFn<T>) {
+    return <RenderResult result={result} renderer={renderer} />
   }
 
   return { UnwrapResult, renderResult }
