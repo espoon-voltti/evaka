@@ -52,7 +52,6 @@ enum class Audit(
     private val securityEvent: Boolean = false,
     private val securityLevel: String = "low",
 ) {
-    AbsenceDelete,
     AbsenceDeleteRange,
     AbsenceUpsert,
     AddressPageDownloadPdf,
@@ -602,6 +601,7 @@ enum class Audit(
     AbsenceApplicationRead,
     AbsenceApplicationReject,
     AbsenceCitizenCreate,
+    AbsenceDelete,
     AbsenceRead,
     AttendanceReservationCitizenCreate,
     AttendanceReservationEmployeeCreate,

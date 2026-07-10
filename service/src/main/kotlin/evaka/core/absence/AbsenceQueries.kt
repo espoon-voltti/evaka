@@ -12,6 +12,7 @@ import evaka.core.dailyservicetimes.toDailyServiceTimes
 import evaka.core.placement.PlacementType
 import evaka.core.reservations.Reservation
 import evaka.core.shared.AbsenceId
+import evaka.core.shared.AttendanceReservationId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EvakaUserId
@@ -191,19 +192,21 @@ data class HolidayReservationCreate(val childId: ChildId, val date: LocalDate)
 fun Database.Transaction.addMissingHolidayReservations(
     createdBy: EvakaUserId,
     additions: List<HolidayReservationCreate>,
-) {
-    executeBatch(additions) {
-        sql(
-            """
+): List<AttendanceReservationId> =
+    prepareBatch(additions) {
+            sql(
+                """
 INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
 SELECT ${bind { it.childId }}, ${bind { it.date }}, NULL, NULL, ${bind(createdBy)}
 WHERE
     EXISTS (SELECT 1 FROM holiday_period WHERE period @> ${bind { it.date }}) AND
     NOT EXISTS (SELECT 1 FROM attendance_reservation WHERE child_id = ${bind { it.childId }} AND date = ${bind { it.date }})
+RETURNING id
 """
-        )
-    }
-}
+            )
+        }
+        .executeAndReturn()
+        .toList()
 
 fun Database.Transaction.deleteChildAbsences(
     childId: ChildId,
