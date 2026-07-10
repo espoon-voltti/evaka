@@ -28,7 +28,7 @@
     "oxlint": "1.72.0",
     "oxlint-tsgolint": "0.24.0",
     "prettier": "3.9.4",
-    "tsx": "4.22.4",
+    "tsx": "4.23.0",
     "typescript": "6.0.3"
   },
   "overrides": {
