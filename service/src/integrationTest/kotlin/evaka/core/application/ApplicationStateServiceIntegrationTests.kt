@@ -1297,7 +1297,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             child = child1,
             applier = adult1,
             applierIsGuardian = true,
-            secondDecisionTo = null,
+            secondDecisionTo = adult2,
             manualMailing = false,
         )
 
