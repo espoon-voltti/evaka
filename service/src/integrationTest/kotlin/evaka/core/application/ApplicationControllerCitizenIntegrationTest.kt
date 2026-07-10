@@ -4,6 +4,7 @@
 
 package evaka.core.application
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
@@ -154,6 +155,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                 setOf(UserRole.SERVICE_WORKER),
                             ),
                         clock = clock,
+                        audit = AuditContext(),
                         applicationId = it,
                     )
                 }

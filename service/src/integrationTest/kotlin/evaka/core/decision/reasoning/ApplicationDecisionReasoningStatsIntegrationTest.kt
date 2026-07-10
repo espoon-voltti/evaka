@@ -4,6 +4,7 @@
 
 package evaka.core.decision.reasoning
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.application.ApplicationControllerV2
 import evaka.core.application.ApplicationStateService
@@ -137,6 +138,7 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
             tx = tx,
             user = admin.user,
             clock = clock,
+            audit = AuditContext(),
             applicationId = applicationId,
             confidential = false,
         )

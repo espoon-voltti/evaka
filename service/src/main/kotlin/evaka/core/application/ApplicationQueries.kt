@@ -1315,12 +1315,15 @@ WHERE application_id = ${bind(id)}
         }
         .toSet()
 
-fun Database.Transaction.syncApplicationOtherGuardians(id: ApplicationId, today: LocalDate) {
+fun Database.Transaction.syncApplicationOtherGuardians(
+    id: ApplicationId,
+    today: LocalDate,
+): Set<PersonId> {
     execute { sql("DELETE FROM application_other_guardian WHERE application_id = ${bind(id)}") }
 
-    execute {
-        sql(
-            """
+    return createUpdate {
+            sql(
+                """
 INSERT INTO application_other_guardian (application_id, guardian_id)
 SELECT application.id, other_citizen.id
 FROM application
@@ -1337,9 +1340,12 @@ JOIN LATERAL (
 ) other_citizen ON true
 WHERE application.id = ${bind(id)}
 AND other_citizen.id != application.guardian_id
+RETURNING guardian_id
 """
-        )
-    }
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .toSet<PersonId>()
 }
 
 fun Database.Transaction.setApplicationVerified(

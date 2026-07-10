@@ -818,11 +818,20 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: SimpleApplicationAction,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                applicationStateService.doSimpleAction(tx, user, clock, action, applicationId)
+                dbc.transaction { tx ->
+                    applicationStateService.doSimpleAction(
+                        tx,
+                        user,
+                        clock,
+                        audit,
+                        action,
+                        applicationId,
+                    )
+                }
             }
-        }
+            .also { audit.log(action.auditEvent, clock) }
     }
 
     @PostMapping("/batch/actions/{action}")
@@ -833,11 +842,20 @@ class ApplicationControllerV2(
         @PathVariable action: SimpleApplicationAction,
         @RequestBody body: SimpleBatchRequest,
     ) {
+        val audit = AuditContext().add(body.applicationIds)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                applicationStateService.doSimpleAction(tx, user, clock, action, body.applicationIds)
+                dbc.transaction { tx ->
+                    applicationStateService.doSimpleAction(
+                        tx,
+                        user,
+                        clock,
+                        audit,
+                        action,
+                        body.applicationIds,
+                    )
+                }
             }
-        }
+            .also { audit.log(action.auditEvent, clock) }
     }
 
     @GetMapping("/units/{unitId}")

@@ -4,6 +4,7 @@
 
 package evaka.core.decision.reasoning
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.application.ApplicationStateService
 import evaka.core.application.ApplicationStatus
@@ -141,6 +142,7 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
             tx = tx,
             user = admin.user,
             clock = clock,
+            audit = AuditContext(),
             applicationId = applicationId,
             confidential = false,
         )
@@ -167,7 +169,13 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
 
     private fun sendProposal(applicationId: ApplicationId) {
         db.transaction { tx ->
-            applicationStateService.sendPlacementProposal(tx, admin.user, clock, applicationId)
+            applicationStateService.sendPlacementProposal(
+                tx,
+                admin.user,
+                clock,
+                AuditContext(),
+                applicationId,
+            )
         }
     }
 
@@ -289,6 +297,7 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
                 tx,
                 admin.user,
                 clock,
+                AuditContext(),
                 fixture.applicationId,
             )
         }
@@ -310,6 +319,7 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
                         tx,
                         admin.user,
                         clock,
+                        AuditContext(),
                         SimpleApplicationAction.SEND_PLACEMENT_PROPOSAL,
                         setOf(goodFixture.applicationId, badFixture.applicationId),
                     )

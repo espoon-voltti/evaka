@@ -360,6 +360,7 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 tx = tx,
                 user = admin.user,
                 clock = clock,
+                audit = AuditContext(),
                 applicationId = applicationId,
             )
         }
@@ -379,6 +380,7 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 tx = tx,
                 user = admin.user,
                 clock = clock,
+                audit = AuditContext(),
                 applicationId = applicationId,
             )
         }
@@ -512,6 +514,7 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 tx = tx,
                 user = admin.user,
                 clock = clock,
+                audit = AuditContext(),
                 applicationId = applicationId,
             )
         }
@@ -521,6 +524,7 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
                 tx = tx,
                 user = admin.user,
                 clock = clock,
+                audit = AuditContext(),
                 applicationId = applicationId,
             )
         }

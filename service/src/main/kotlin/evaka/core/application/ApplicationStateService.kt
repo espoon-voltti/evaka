@@ -98,14 +98,14 @@ import java.time.format.FormatStyle
 import java.util.Locale
 import org.springframework.stereotype.Service
 
-enum class SimpleApplicationAction {
-    MOVE_TO_WAITING_PLACEMENT,
-    RETURN_TO_SENT,
-    CANCEL_PLACEMENT_PLAN,
-    SEND_DECISIONS_WITHOUT_PROPOSAL,
-    SEND_PLACEMENT_PROPOSAL,
-    WITHDRAW_PLACEMENT_PROPOSAL,
-    CONFIRM_DECISION_MAILED,
+enum class SimpleApplicationAction(val auditEvent: Audit) {
+    MOVE_TO_WAITING_PLACEMENT(Audit.ApplicationVerify),
+    RETURN_TO_SENT(Audit.ApplicationReturnToSent),
+    CANCEL_PLACEMENT_PLAN(Audit.ApplicationReturnToWaitingPlacement),
+    SEND_DECISIONS_WITHOUT_PROPOSAL(Audit.ApplicationSendDecisionsWithoutProposal),
+    SEND_PLACEMENT_PROPOSAL(Audit.PlacementProposalCreate),
+    WITHDRAW_PLACEMENT_PROPOSAL(Audit.ApplicationReturnToWaitingDecision),
+    CONFIRM_DECISION_MAILED(Audit.ApplicationConfirmDecisionsMailed),
 }
 
 @Service
@@ -125,6 +125,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         action: SimpleApplicationAction,
         applicationId: ApplicationId,
     ) {
@@ -137,31 +138,31 @@ class ApplicationStateService(
                     Action.Application.MOVE_TO_WAITING_PLACEMENT,
                     applicationId,
                 )
-                moveToWaitingPlacement(tx, user, clock, applicationId)
+                moveToWaitingPlacement(tx, user, clock, audit, applicationId)
             }
 
             SimpleApplicationAction.RETURN_TO_SENT -> {
-                returnToSent(tx, user, clock, applicationId)
+                returnToSent(tx, user, clock, audit, applicationId)
             }
 
             SimpleApplicationAction.CANCEL_PLACEMENT_PLAN -> {
-                cancelPlacementPlan(tx, user, clock, applicationId)
+                cancelPlacementPlan(tx, user, clock, audit, applicationId)
             }
 
             SimpleApplicationAction.SEND_DECISIONS_WITHOUT_PROPOSAL -> {
-                sendDecisionsWithoutProposal(tx, user, clock, applicationId)
+                sendDecisionsWithoutProposal(tx, user, clock, audit, applicationId)
             }
 
             SimpleApplicationAction.SEND_PLACEMENT_PROPOSAL -> {
-                sendPlacementProposal(tx, user, clock, applicationId)
+                sendPlacementProposal(tx, user, clock, audit, applicationId)
             }
 
             SimpleApplicationAction.WITHDRAW_PLACEMENT_PROPOSAL -> {
-                withdrawPlacementProposal(tx, user, clock, applicationId)
+                withdrawPlacementProposal(tx, user, clock, audit, applicationId)
             }
 
             SimpleApplicationAction.CONFIRM_DECISION_MAILED -> {
-                confirmDecisionMailed(tx, user, clock, applicationId)
+                confirmDecisionMailed(tx, user, clock, audit, applicationId)
             }
         }
     }
@@ -170,9 +171,10 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         action: SimpleApplicationAction,
         applicationIds: Set<ApplicationId>,
-    ) = applicationIds.forEach { doSimpleAction(tx, user, clock, action, it) }
+    ) = applicationIds.forEach { doSimpleAction(tx, user, clock, audit, action, it) }
 
     fun createApplication(
         tx: Database.Transaction,
@@ -494,9 +496,11 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
     ) {
         val application = getApplication(tx, applicationId)
+        audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, SENT)
 
         tx.upsertChild(
@@ -515,7 +519,7 @@ class ApplicationStateService(
             listOf(AsyncJob.InitializeFamilyFromApplication(application.id, user)),
             runAt = clock.now(),
         )
-        tx.syncApplicationOtherGuardians(applicationId, clock.today())
+        tx.syncApplicationOtherGuardians(applicationId, clock.today()).also { audit.add(it) }
         tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT, user.evakaUserId, clock.now())
 
@@ -529,14 +533,13 @@ class ApplicationStateService(
                 )
             }
         }
-
-        Audit.ApplicationVerify.log(targetId = AuditId(applicationId))
     }
 
     fun returnToSent(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
@@ -548,6 +551,7 @@ class ApplicationStateService(
         )
 
         val application = getApplication(tx, applicationId)
+        audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, setOf(WAITING_PLACEMENT, CANCELLED))
 
         if (application.status == CANCELLED) {
@@ -558,13 +562,11 @@ class ApplicationStateService(
             }
         }
 
-        tx.syncApplicationOtherGuardians(applicationId, clock.today())
+        tx.syncApplicationOtherGuardians(applicationId, clock.today()).also { audit.add(it) }
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
 
         tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
         tx.deleteApplicationPlacementDraftIfExists(applicationId)
-
-        Audit.ApplicationReturnToSent.log(targetId = AuditId(applicationId))
     }
 
     fun cancelApplication(
@@ -694,6 +696,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
@@ -705,18 +708,19 @@ class ApplicationStateService(
         )
 
         val application = getApplication(tx, applicationId)
+        audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, WAITING_DECISION)
         tx.deletePlacementPlans(listOf(application.id))
         tx.clearDecisionDrafts(listOf(application.id))
-        tx.syncApplicationOtherGuardians(applicationId, clock.today())
+        tx.syncApplicationOtherGuardians(applicationId, clock.today()).also { audit.add(it) }
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT, user.evakaUserId, clock.now())
-        Audit.ApplicationReturnToWaitingPlacement.log(targetId = AuditId(applicationId))
     }
 
     fun sendDecisionsWithoutProposal(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
         config: FeatureConfig = featureConfig,
     ) {
@@ -729,19 +733,18 @@ class ApplicationStateService(
         )
 
         val application = getApplication(tx, applicationId)
+        audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, WAITING_DECISION)
         decisionService.freezeGenericDecisionReasonings(tx, application.id)
-        val decisionIds = finalizeDecisions(tx, user, clock, application, config)
-        Audit.ApplicationSendDecisionsWithoutProposal.log(
-            targetId = AuditId(applicationId),
-            objectId = AuditId(decisionIds),
-        )
+        finalizeDecisions(tx, user, clock, application, config).also { audit.add(it) }
+        tx.getApplicationOtherGuardians(applicationId).also { audit.add(it) }
     }
 
     fun sendPlacementProposal(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
@@ -753,22 +756,23 @@ class ApplicationStateService(
         )
 
         val application = getApplication(tx, applicationId)
+        audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, WAITING_DECISION)
         decisionService.freezeGenericDecisionReasonings(tx, application.id)
-        tx.syncApplicationOtherGuardians(application.id, clock.today())
+        tx.syncApplicationOtherGuardians(application.id, clock.today()).also { audit.add(it) }
         tx.updateApplicationStatus(
             application.id,
             WAITING_UNIT_CONFIRMATION,
             user.evakaUserId,
             clock.now(),
         )
-        Audit.PlacementProposalCreate.log(targetId = AuditId(applicationId))
     }
 
     fun withdrawPlacementProposal(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
@@ -780,11 +784,11 @@ class ApplicationStateService(
         )
 
         val application = getApplication(tx, applicationId)
+        audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
         tx.clearGenericReasoningFromUnsentDecisions(application.id)
-        tx.syncApplicationOtherGuardians(application.id, clock.today())
+        tx.syncApplicationOtherGuardians(application.id, clock.today()).also { audit.add(it) }
         tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
-        Audit.ApplicationReturnToWaitingDecision.log(targetId = AuditId(applicationId))
     }
 
     fun respondToPlacementProposal(
@@ -932,6 +936,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(
@@ -944,13 +949,13 @@ class ApplicationStateService(
 
         val now = clock.now()
         val application = getApplication(tx, applicationId)
+        audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, WAITING_MAILING)
-        tx.syncApplicationOtherGuardians(application.id, now.toLocalDate())
+        tx.syncApplicationOtherGuardians(application.id, now.toLocalDate()).also { audit.add(it) }
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION, user.evakaUserId, now)
         tx.markApplicationDecisionsSent(application.id, now)
 
         asyncJobRunner.plan(tx, listOf(AsyncJob.SendNewDecisionEmail(application.id)), runAt = now)
-        Audit.ApplicationConfirmDecisionsMailed.log(targetId = AuditId(applicationId))
     }
 
     fun acceptDecision(
