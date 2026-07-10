@@ -21,12 +21,14 @@ export default React.memo(function ActionBar({
   checkedApplications,
   actionInProgress,
   onActionStarted,
-  onActionEnded
+  onActionEnded,
+  onDecisionReasoningBlocked
 }: {
   checkedApplications: ApplicationSummary[]
   actionInProgress: boolean
   onActionStarted: () => void
   onActionEnded: () => void
+  onDecisionReasoningBlocked: (applicationCount: number) => void
 }) {
   const { i18n } = useTranslation()
 
@@ -127,7 +129,12 @@ export default React.memo(function ActionBar({
               setCheckedIds([])
               onActionEnded()
             }}
-            onFailure={onActionEnded}
+            onFailure={(failure) => {
+              if (failure.errorCode === 'DECISION_REASONING_NOT_FINALIZED') {
+                onDecisionReasoningBlocked(checkedIds.length)
+              }
+              onActionEnded()
+            }}
             text={label}
             primary={primary}
             data-qa={`action-bar-${id}`}

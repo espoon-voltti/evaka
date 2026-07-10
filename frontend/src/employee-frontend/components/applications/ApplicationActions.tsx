@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
+import { Failure } from 'lib-common/api'
 import type { Action } from 'lib-common/generated/action'
 import type {
   ApplicationSummary,
@@ -22,10 +23,12 @@ import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import type { MenuItem } from '../common/EllipsisMenu'
 import EllipsisMenu from '../common/EllipsisMenu'
 
 import ActionCheckbox from './ActionCheckbox'
+import DecisionReasoningChips from './DecisionReasoningChips'
 import PrimaryAction from './PrimaryAction'
 import {
   cancelApplicationMutation,
@@ -85,6 +88,7 @@ type Props = {
   actionInProgress: boolean
   onActionStarted: () => void
   onActionEnded: () => void
+  onDecisionReasoningBlocked: (applicationCount: number) => void
 }
 
 export default React.memo(function ApplicationActions({
@@ -92,10 +96,12 @@ export default React.memo(function ApplicationActions({
   permittedActions,
   actionInProgress,
   onActionStarted,
-  onActionEnded
+  onActionEnded,
+  onDecisionReasoningBlocked
 }: Props) {
   const [, navigate] = useLocation()
   const { i18n } = useTranslation()
+  const { featureConfig } = useContext(UserContext)
   const [confirmingApplicationCancel, setConfirmingApplicationCancel] =
     useState(false)
 
@@ -220,20 +226,46 @@ export default React.memo(function ApplicationActions({
     [permittedActionsList]
   )
 
+  const showReasoningChips =
+    featureConfig?.decisionReasoningsEnabled === true &&
+    primaryAction?.id === 'edit-decisions'
+
+  const primaryActionElement = (
+    <PrimaryAction
+      applicationId={application.id}
+      action={primaryAction}
+      actionInProgress={actionInProgress}
+      onActionStarted={onActionStarted}
+      onActionEnded={onActionEnded}
+      onDecisionReasoningBlocked={onDecisionReasoningBlocked}
+    />
+  )
+
   return (
     <>
       <ActionsContainer>
-        <PrimaryAction
-          applicationId={application.id}
-          action={primaryAction}
-          actionInProgress={actionInProgress}
-          onActionStarted={onActionStarted}
-          onActionEnded={onActionEnded}
-        />
+        {showReasoningChips ? (
+          <FixedSpaceColumn $spacing="xs" $alignItems="flex-start">
+            {primaryActionElement}
+            <DecisionReasoningChips
+              individualReasoningCount={application.individualReasoningCount}
+              reasoningWarningCount={application.reasoningWarningCount}
+              individualTooltip={i18n.applications.decisionReasoning.individualCountTooltip(
+                application.individualReasoningCount
+              )}
+              warningTooltip={
+                i18n.applications.decisionReasoning.genericNotReadyTooltip
+              }
+            />
+          </FixedSpaceColumn>
+        ) : (
+          primaryActionElement
+        )}
         <ActionMenu
           applicationId={application.id}
           actions={permittedActionsList}
           actionInProgress={actionInProgress}
+          onDecisionReasoningBlocked={onDecisionReasoningBlocked}
         />
         <ActionCheckbox applicationId={application.id} />
       </ActionsContainer>
@@ -309,11 +341,13 @@ const ActionsContainer = styled.div`
 const ActionMenu = React.memo(function ActionMenu({
   applicationId,
   actions,
-  actionInProgress
+  actionInProgress,
+  onDecisionReasoningBlocked
 }: {
   applicationId: ApplicationId
   actions: ApplicationAction[]
   actionInProgress: boolean
+  onDecisionReasoningBlocked: (applicationCount: number) => void
 }) {
   const { mutateAsync } = useMutation(simpleApplicationActionMutation)
   const menuItems: MenuItem[] = useMemo(
@@ -322,11 +356,29 @@ const ActionMenu = React.memo(function ActionMenu({
         id: action.id,
         label: action.label,
         onClick: isSimpleApplicationMutationAction(action)
-          ? () => mutateAsync({ applicationId, action: action.actionType })
+          ? () =>
+              mutateAsync({ applicationId, action: action.actionType }).catch(
+                (e) => {
+                  const failure = Failure.fromError(e)
+                  if (
+                    failure.errorCode === 'DECISION_REASONING_NOT_FINALIZED'
+                  ) {
+                    onDecisionReasoningBlocked(1)
+                    return
+                  }
+                  throw e
+                }
+              )
           : action.onClick,
         disabled: actionInProgress
       })),
-    [applicationId, actions, actionInProgress, mutateAsync]
+    [
+      applicationId,
+      actions,
+      actionInProgress,
+      mutateAsync,
+      onDecisionReasoningBlocked
+    ]
   )
   return <EllipsisMenu items={menuItems} data-qa="application-actions-menu" />
 })

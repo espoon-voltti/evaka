@@ -40,6 +40,7 @@ test.describe('Employee application attachments', () => {
 
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
+    await Fixture.decisionReasoningGenericDefaults().save()
     await testCareArea.save()
     await testDaycare.save()
     await Fixture.family({

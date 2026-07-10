@@ -34,7 +34,7 @@ const TooltipPositioner = styled.div`
   display: flex;
 `
 
-const TooltipDiv = styled.div`
+const TooltipDiv = styled.div<{ $hyphens: Hyphens }>`
   position: static;
   color: ${(p) => p.theme.colors.grayscale.g0};
   font-size: 15px;
@@ -53,7 +53,7 @@ const TooltipDiv = styled.div`
   }
 
   overflow-wrap: anywhere;
-  hyphens: auto;
+  hyphens: ${(p) => p.$hyphens};
 `
 
 const beakPositions = (position: Position) => {
@@ -124,12 +124,14 @@ const Beak = styled.div<{ $position: Position }>`
 
 type Position = 'top' | 'bottom' | 'right' | 'left'
 type Width = 'small' | 'large'
+type Hyphens = 'auto' | 'manual'
 
 export type TooltipProps = BaseProps & {
   children?: React.ReactNode
   tooltip: React.ReactNode
   position?: Position
   width?: Width
+  hyphens?: Hyphens
   className?: string
   delayed?: boolean
 }
@@ -195,6 +197,7 @@ export const TooltipWithoutAnchor = React.memo(
       tooltip,
       'data-qa': dataQa,
       className,
+      hyphens,
       ...props
     }: Omit<TooltipProps, 'children'>,
     ref: React.ForwardedRef<HTMLDivElement>
@@ -217,7 +220,7 @@ export const TooltipWithoutAnchor = React.memo(
 
     return (
       <TooltipPositioner className={classNames('tooltip', className)} ref={ref}>
-        <TooltipDiv data-qa={dataQa}>
+        <TooltipDiv data-qa={dataQa} $hyphens={hyphens ?? 'auto'}>
           <Beak $position={position}>
             <FontAwesomeIcon
               icon={icon}

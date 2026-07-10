@@ -19,6 +19,7 @@ type Props = {
   actionInProgress: boolean
   onActionStarted: () => void
   onActionEnded: () => void
+  onDecisionReasoningBlocked: (applicationCount: number) => void
 }
 
 const PrimaryActionContainer = styled.div`
@@ -30,7 +31,8 @@ export default React.memo(function PrimaryAction({
   action,
   actionInProgress,
   onActionStarted,
-  onActionEnded
+  onActionEnded,
+  onDecisionReasoningBlocked
 }: Props) {
   return (
     <>
@@ -46,7 +48,12 @@ export default React.memo(function PrimaryAction({
                 return { applicationId, action: action.actionType }
               }}
               onSuccess={onActionEnded}
-              onFailure={onActionEnded}
+              onFailure={(failure) => {
+                if (failure.errorCode === 'DECISION_REASONING_NOT_FINALIZED') {
+                  onDecisionReasoningBlocked(1)
+                }
+                onActionEnded()
+              }}
               disabled={actionInProgress}
               data-qa={`primary-action-${action.id}`}
             />

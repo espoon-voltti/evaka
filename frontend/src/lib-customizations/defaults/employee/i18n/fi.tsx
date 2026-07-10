@@ -433,6 +433,22 @@ export const fi = {
       checked: (count: number) =>
         count === 1 ? `${count} hakemus valittu` : `${count} hakemusta valittu`
     },
+    decisionReasoning: {
+      individualCountTooltip: (count: number) =>
+        count === 1
+          ? `Päätöksillä on ${count} yksilöllinen perustelu.`
+          : `Päätöksillä on ${count} yksilöllistä perustelua.`,
+      genericNotReadyTooltip:
+        'Päätösten yleinen perustelu ei ole käytössä. Päätökset voidaan lähettää, kun perustelu on otettu käyttöön.',
+      sendBlockedTitle: (applicationCount: number): string =>
+        applicationCount === 1
+          ? 'Päätöksen lähettäminen ei onnistunut'
+          : 'Päätösten lähettäminen ei onnistunut',
+      sendBlockedText: (applicationCount: number): string =>
+        applicationCount === 1
+          ? 'Päätöksen perustelutekstit eivät ole valmiita. Voit lähettää päätöksen vasta, kun pääkäyttäjä on viimeistellyt perustelut.'
+          : 'Valituilla hakemuksilla on päätöksiä, joiden perustelutekstit eivät ole valmiita. Voit lähettää päätökset vasta, kun pääkäyttäjä on viimeistellyt perustelut. Yhtään hakemusta ei siirretty eteenpäin.'
+    },
     distinctiveDetails: {
       SECONDARY: 'Näytä myös, jos yksikköön on haettu 2. tai 3. toiveena'
     },

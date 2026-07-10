@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
@@ -36,12 +36,14 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { Bold, H1, Italic, LabelLike, Light } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
 import {
   faCheck,
   faCommentAlt,
+  faExclamation,
   faPaperclip,
   fasCommentAltLines,
   faTimes,
@@ -189,6 +191,14 @@ const ApplicationsList = React.memo(function Applications({
   // used to disable all actions when one is in progress
   const [actionInProgress, { on: actionStarted, off: actionEnded }] =
     useBoolean(false)
+
+  const [decisionReasoningBlockedCount, setDecisionReasoningBlockedCount] =
+    useState<number | null>(null)
+  const onDecisionReasoningBlocked = useCallback(
+    (applicationCount: number) =>
+      setDecisionReasoningBlockedCount(applicationCount),
+    []
+  )
 
   const [editedNote, setEditedNote] = useState<ApplicationSummary | null>(null)
 
@@ -447,6 +457,7 @@ const ApplicationsList = React.memo(function Applications({
               actionInProgress={actionInProgress}
               onActionStarted={actionStarted}
               onActionEnded={actionEnded}
+              onDecisionReasoningBlocked={onDecisionReasoningBlocked}
             />
           )}
         </Td>
@@ -548,6 +559,7 @@ const ApplicationsList = React.memo(function Applications({
           actionInProgress={actionInProgress}
           onActionStarted={actionStarted}
           onActionEnded={actionEnded}
+          onDecisionReasoningBlocked={onDecisionReasoningBlocked}
         />
       </ApplicationsTableContainer>
 
@@ -556,6 +568,24 @@ const ApplicationsList = React.memo(function Applications({
           applicationId={editedNote.id}
           serviceWorkerNote={editedNote.serviceWorkerNote}
           onClose={() => setEditedNote(null)}
+        />
+      )}
+
+      {decisionReasoningBlockedCount !== null && (
+        <InfoModal
+          type="danger"
+          icon={faExclamation}
+          title={i18n.applications.decisionReasoning.sendBlockedTitle(
+            decisionReasoningBlockedCount
+          )}
+          text={i18n.applications.decisionReasoning.sendBlockedText(
+            decisionReasoningBlockedCount
+          )}
+          resolve={{
+            action: () => setDecisionReasoningBlockedCount(null),
+            label: i18n.common.close
+          }}
+          data-qa="decision-reasoning-blocked-modal"
         />
       )}
     </div>

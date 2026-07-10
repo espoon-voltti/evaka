@@ -16,9 +16,10 @@ import evaka.core.daycare.domain.ProviderType
 import evaka.core.daycare.getDaycare
 import evaka.core.decision.reasoning.DecisionPdfReasoningSource
 import evaka.core.decision.reasoning.getDecisionPdfReasoningSource
-import evaka.core.decision.reasoning.getIndividualReasoningSelectionsForDecision
-import evaka.core.decision.reasoning.resolveApplicableGenericReasoning
+import evaka.core.decision.reasoning.getPlannedUnsentDecisions
+import evaka.core.decision.reasoning.hasLinkedGenericReasoning
 import evaka.core.decision.reasoning.updateGenericReasoningToDecision
+import evaka.core.decision.reasoning.validateResolvedGenericReasoning
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
@@ -46,7 +47,6 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
-import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
@@ -86,34 +86,7 @@ class DecisionService(
         val decisions = decisionIds.map { tx.getDecision(it)!! }
 
         if (evakaEnv.decisionReasoningEnabled) {
-            decisions.forEach { decision ->
-                val genericReasoning =
-                    resolveApplicableGenericReasoning(tx, decision.type, decision.startDate)
-                        ?.takeIf { it.ready }
-                        ?: throw NotFound(
-                            "No applicable generic reasoning found for decision ${decision.id} (type: ${decision.type}, start date: ${decision.startDate})"
-                        )
-
-                if (tx.getDecisionLanguage(decision.id) == OfficialLanguage.SV) {
-                    if (genericReasoning.textSv.isBlank()) {
-                        throw BadRequest(
-                            "Cannot finalize Swedish decision ${decision.id}: generic reasoning " +
-                                "${genericReasoning.id} has empty Swedish text"
-                        )
-                    }
-                    tx.getIndividualReasoningSelectionsForDecision(decision.id).forEach { individual
-                        ->
-                        if (individual.textSv.isBlank()) {
-                            throw BadRequest(
-                                "Cannot finalize Swedish decision ${decision.id}: individual reasoning " +
-                                    "${individual.id} has empty Swedish text"
-                            )
-                        }
-                    }
-                }
-
-                tx.updateGenericReasoningToDecision(decision.id, genericReasoning.id)
-            }
+            decisions.forEach { setGenericReasoningIfMissing(tx, it) }
         }
 
         asyncJobRunner.plan(
@@ -129,6 +102,29 @@ class DecisionService(
             runAt = now,
         )
         return decisionIds
+    }
+
+    fun freezeGenericDecisionReasonings(tx: Database.Transaction, applicationId: ApplicationId) {
+        if (!evakaEnv.decisionReasoningEnabled) return
+        tx.getPlannedUnsentDecisions(applicationId).forEach { decision ->
+            val genericReasoning =
+                validateResolvedGenericReasoning(tx, decision.id, decision.type, decision.startDate)
+            tx.updateGenericReasoningToDecision(decision.id, genericReasoning.id)
+        }
+    }
+
+    private fun setGenericReasoningIfMissing(tx: Database.Transaction, decision: Decision) {
+        // Generic reasonings are frozen when the service worker sends the decisions onward
+        // (sendDecisionsWithoutProposal / sendPlacementProposal). The reasoning is only missing
+        // here for placement proposals that were already waiting for unit confirmation when
+        // decision reasoning was enabled.
+        if (tx.hasLinkedGenericReasoning(decision.id)) return
+        logger.warn {
+            "Decision ${decision.id} had no frozen generic reasoning at finalization, resolving it now"
+        }
+        val genericReasoning =
+            validateResolvedGenericReasoning(tx, decision.id, decision.type, decision.startDate)
+        tx.updateGenericReasoningToDecision(decision.id, genericReasoning.id)
     }
 
     fun createDecisionPdf(tx: Database.Transaction, decisionId: DecisionId) {

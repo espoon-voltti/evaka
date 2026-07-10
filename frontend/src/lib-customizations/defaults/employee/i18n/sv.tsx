@@ -436,6 +436,22 @@ export const sv: typeof fi = {
       checked: (count: number) =>
         count === 1 ? `${count} ansökan vald` : `${count} ansökningar valda`
     },
+    decisionReasoning: {
+      individualCountTooltip: (count: number) =>
+        count === 1
+          ? `Besluten har ${count} individuell motivering.`
+          : `Besluten har ${count} individuella motiveringar.`,
+      genericNotReadyTooltip:
+        'Den allmänna motiveringen för besluten är inte i bruk. Besluten kan skickas när motiveringen har tagits i bruk.',
+      sendBlockedTitle: (applicationCount: number): string =>
+        applicationCount === 1
+          ? 'Beslutet kunde inte skickas'
+          : 'Besluten kunde inte skickas',
+      sendBlockedText: (applicationCount: number): string =>
+        applicationCount === 1
+          ? 'Beslutets motiveringstexter är inte färdiga. Du kan skicka beslutet först när huvudanvändaren har färdigställt motiveringarna.'
+          : 'De valda ansökningarna har beslut vars motiveringstexter inte är färdiga. Du kan skicka besluten först när huvudanvändaren har färdigställt motiveringarna. Ingen ansökan flyttades vidare.'
+    },
     distinctiveDetails: {
       SECONDARY: 'Visa även om enhet sökts som 2. eller 3. önskemål'
     },
