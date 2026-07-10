@@ -32,6 +32,7 @@ export default React.memo(function IncomeStatementsTable({
         <Tr>
           <Th>{i18n.incomeStatementHeading}</Th>
           <Th>{i18n.sentAtHeading}</Th>
+          <Th>{i18n.citizenModifiedAtHeading}</Th>
           <Th>{i18n.handledHeading}</Th>
         </Tr>
       </Thead>
@@ -71,6 +72,9 @@ const IncomeStatementRow = React.memo(function IncomeStatementRow({
       </Td>
       <Td $verticalAlign="middle">
         {incomeStatement.sentAt?.toLocalDate()?.format() ?? '-'}
+      </Td>
+      <Td $verticalAlign="middle">
+        {incomeStatement.citizenModifiedAt?.toLocalDate()?.format() ?? '-'}
       </Td>
       <Td>
         <Checkbox

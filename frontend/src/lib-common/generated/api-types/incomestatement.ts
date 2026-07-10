@@ -102,6 +102,7 @@ export namespace IncomeStatement {
   export interface ChildIncome {
     type: 'CHILD_INCOME'
     attachments: IncomeStatementAttachment[]
+    citizenModifiedAt: HelsinkiDateTime | null
     createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     firstName: string
@@ -122,6 +123,7 @@ export namespace IncomeStatement {
   */
   export interface HighestFee {
     type: 'HIGHEST_FEE'
+    citizenModifiedAt: HelsinkiDateTime | null
     createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     firstName: string
@@ -143,6 +145,7 @@ export namespace IncomeStatement {
     type: 'INCOME'
     alimonyPayer: boolean
     attachments: IncomeStatementAttachment[]
+    citizenModifiedAt: HelsinkiDateTime | null
     createdAt: HelsinkiDateTime
     endDate: LocalDate | null
     entrepreneur: Entrepreneur | null
@@ -449,6 +452,7 @@ export function deserializeJsonEstimatedIncome(json: JsonOf<EstimatedIncome>): E
 export function deserializeJsonIncomeStatementChildIncome(json: JsonOf<IncomeStatement.ChildIncome>): IncomeStatement.ChildIncome {
   return {
     ...json,
+    citizenModifiedAt: (json.citizenModifiedAt != null) ? HelsinkiDateTime.parseIso(json.citizenModifiedAt) : null,
     createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
     handledAt: (json.handledAt != null) ? HelsinkiDateTime.parseIso(json.handledAt) : null,
@@ -461,6 +465,7 @@ export function deserializeJsonIncomeStatementChildIncome(json: JsonOf<IncomeSta
 export function deserializeJsonIncomeStatementHighestFee(json: JsonOf<IncomeStatement.HighestFee>): IncomeStatement.HighestFee {
   return {
     ...json,
+    citizenModifiedAt: (json.citizenModifiedAt != null) ? HelsinkiDateTime.parseIso(json.citizenModifiedAt) : null,
     createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
     handledAt: (json.handledAt != null) ? HelsinkiDateTime.parseIso(json.handledAt) : null,
@@ -473,6 +478,7 @@ export function deserializeJsonIncomeStatementHighestFee(json: JsonOf<IncomeStat
 export function deserializeJsonIncomeStatementIncome(json: JsonOf<IncomeStatement.Income>): IncomeStatement.Income {
   return {
     ...json,
+    citizenModifiedAt: (json.citizenModifiedAt != null) ? HelsinkiDateTime.parseIso(json.citizenModifiedAt) : null,
     createdAt: HelsinkiDateTime.parseIso(json.createdAt),
     endDate: (json.endDate != null) ? LocalDate.parseIso(json.endDate) : null,
     entrepreneur: (json.entrepreneur != null) ? deserializeJsonEntrepreneur(json.entrepreneur) : null,

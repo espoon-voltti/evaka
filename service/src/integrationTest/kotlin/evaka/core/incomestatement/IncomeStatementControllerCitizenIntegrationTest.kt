@@ -86,6 +86,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     createdAt = incomeStatements[0].createdAt,
                     modifiedAt = incomeStatements[0].modifiedAt,
                     sentAt = incomeStatements[0].sentAt,
+                    citizenModifiedAt = incomeStatements[0].sentAt,
                     status = IncomeStatementStatus.SENT,
                     handledAt = null,
                     handlerNote = "",
@@ -196,6 +197,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     createdAt = incomeStatements[0].createdAt,
                     modifiedAt = incomeStatements[0].modifiedAt,
                     sentAt = incomeStatements[0].sentAt,
+                    citizenModifiedAt = incomeStatements[0].sentAt,
                     status = IncomeStatementStatus.SENT,
                     handlerNote = "",
                     handledAt = null,
@@ -249,6 +251,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     createdAt = incomeStatements[0].createdAt,
                     modifiedAt = incomeStatements[0].modifiedAt,
                     sentAt = incomeStatements[0].sentAt,
+                    citizenModifiedAt = incomeStatements[0].sentAt,
                     status = IncomeStatementStatus.SENT,
                     handlerNote = "",
                     handledAt = null,
@@ -438,6 +441,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     createdAt = incomeStatements[0].createdAt,
                     modifiedAt = incomeStatements[0].modifiedAt,
                     sentAt = incomeStatements[0].sentAt,
+                    citizenModifiedAt = incomeStatements[0].sentAt,
                     status = IncomeStatementStatus.SENT,
                     handlerNote = "",
                     handledAt = null,
@@ -518,6 +522,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                     createdAt = incomeStatements[0].createdAt,
                     modifiedAt = incomeStatements[0].modifiedAt,
                     sentAt = incomeStatements[0].sentAt,
+                    citizenModifiedAt = incomeStatements[0].sentAt,
                     status = IncomeStatementStatus.SENT,
                     handlerNote = "",
                     handledAt = null,
@@ -709,6 +714,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 createdAt = original.createdAt,
                 modifiedAt = modifiedAt,
                 sentAt = clock.now(),
+                citizenModifiedAt = clock.now(),
                 status = IncomeStatementStatus.SENT,
                 handlerNote = "",
                 handledAt = null,
@@ -718,6 +724,9 @@ class IncomeStatementControllerCitizenIntegrationTest :
         )
 
         // attachments and otherInfo can be still updated after sending
+        val sentAt = getIncomeStatement(original.id).sentAt
+        clock.tick()
+
         updateSentIncomeStatement(
             id = original.id,
             body =
@@ -732,6 +741,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
                 listOf(idToAttachment(attachment1), idToAttachment(attachment3)),
                 it.attachments,
             )
+
+            // sentAt should not be updated, citizenModifiedAt is updated
+            assertEquals(sentAt, it.sentAt)
+            assertEquals(clock.now(), it.citizenModifiedAt)
         }
 
         // full update is not allowed after sending

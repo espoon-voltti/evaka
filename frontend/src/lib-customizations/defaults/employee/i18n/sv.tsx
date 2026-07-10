@@ -1777,6 +1777,7 @@ export const sv: typeof fi = {
       noIncomeStatements: 'Inga inkomstutredningar',
       incomeStatementHeading: 'Klientens inkomstutredningsblankett',
       sentAtHeading: 'Ankomstdatum',
+      citizenModifiedAtHeading: 'Redigerad',
       handledHeading: 'Behandlad',
       open: 'Öppna blankett',
       handled: 'Inkomstutredning behandlad',

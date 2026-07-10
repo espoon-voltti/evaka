@@ -1768,6 +1768,7 @@ export const fi = {
       noIncomeStatements: 'Ei tuloselvityksiä',
       incomeStatementHeading: 'Asiakkaan tuloselvityslomake',
       sentAtHeading: 'Saapumispäivä',
+      citizenModifiedAtHeading: 'Muokattu',
       handledHeading: 'Käsitelty',
       open: 'Avaa lomake',
       handled: 'Tuloselvitys käsitelty',
