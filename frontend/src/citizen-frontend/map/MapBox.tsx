@@ -140,6 +140,7 @@ function AddressMarker({ address }: { address: MapAddress }) {
   return (
     <Marker
       title={address.streetAddress}
+      alt={address.streetAddress}
       position={[lat, lon]}
       icon={addressIcon}
       zIndexOffset={20}
@@ -205,6 +206,7 @@ const UnitMarker = React.memo(function UnitMarker({
   return (
     <Marker
       title={name}
+      alt={name}
       position={position}
       icon={isSelected ? unitHighlightIcon : unitIcon}
       zIndexOffset={isSelected ? 10 : 0}
