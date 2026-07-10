@@ -756,7 +756,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
-        decisionService.freezeDecisionReasonings(tx, application.id)
+        decisionService.freezeGenericDecisionReasonings(tx, application.id)
         tx.syncApplicationOtherGuardians(application.id, clock.today())
         tx.updateApplicationStatus(
             application.id,

@@ -115,7 +115,7 @@ class DecisionService(
         return decisionIds
     }
 
-    fun freezeDecisionReasonings(tx: Database.Transaction, applicationId: ApplicationId) {
+    fun freezeGenericDecisionReasonings(tx: Database.Transaction, applicationId: ApplicationId) {
         if (!evakaEnv.decisionReasoningEnabled) return
         tx.getPlannedUnsentDecisions(applicationId).forEach { decision ->
             val genericReasoning =
