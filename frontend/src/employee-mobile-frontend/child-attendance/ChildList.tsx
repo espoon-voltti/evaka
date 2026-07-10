@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback } from 'react'
+import React, { useMemo } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -14,17 +14,14 @@ import type {
 import type { UUID } from 'lib-common/types'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
-import {
-  FixedSpaceColumn,
-  FixedSpaceRow
-} from 'lib-components/layout/flex-helpers'
-import type { SpacingSize } from 'lib-components/white-space'
-import { defaultMargins, isSpacingSize } from 'lib-components/white-space'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faBarsSort, faTimes } from 'lib-icons'
 
 import { routes } from '../App'
+import { bottomNavBarHeight } from '../common/BottomNavbar'
 import { useTranslation } from '../common/i18n'
 import type { UnitOrGroup } from '../common/unit-or-group'
 
@@ -49,11 +46,6 @@ interface Props {
   setSelectedSortType: (sortType: SortType) => void
 }
 
-const NoChildrenOnList = styled.div`
-  text-align: center;
-  margin-top: 40px;
-`
-
 export default React.memo(function ChildList({
   unitOrGroup,
   items,
@@ -67,116 +59,116 @@ export default React.memo(function ChildList({
   const [, navigate] = useLocation()
   const unitId = unitOrGroup.unitId
 
-  const getSortOptions = useCallback(() => {
-    const baseOptions = [
+  const sortOptions = useMemo(() => {
+    const options: { value: SortType; label: string }[] = [
       {
-        value: 'CHILD_FIRST_NAME' as SortType,
+        value: 'CHILD_FIRST_NAME',
         label: i18n.attendances.actions.sortType.CHILD_FIRST_NAME
       }
     ]
-
     if (type === 'COMING') {
-      baseOptions.push({
+      options.push({
         value: 'RESERVATION_START_TIME',
         label: i18n.attendances.actions.sortType.RESERVATION_START_TIME
       })
     }
-
     if (type === 'PRESENT') {
-      baseOptions.push({
+      options.push({
         value: 'RESERVATION_END_TIME',
         label: i18n.attendances.actions.sortType.RESERVATION_END_TIME
       })
     }
-
-    return baseOptions
+    return options
   }, [type, i18n])
+
+  const multiselectAction =
+    type === 'COMING'
+      ? {
+          confirmText: i18n.attendances.actions.multiselect.confirmArrival,
+          confirmRoute: (children: UUID[]) =>
+            routes.markPresent(unitId, children, true),
+          dataQa: 'mark-multiple-arrived'
+        }
+      : type === 'PRESENT'
+        ? {
+            confirmText: i18n.attendances.actions.multiselect.confirmDeparture,
+            confirmRoute: (children: UUID[]) =>
+              routes.markDeparted(unitId, children, true),
+            dataQa: 'mark-multiple-departed'
+          }
+        : undefined
 
   return (
     <>
-      <FixedSpaceColumn>
-        <OrderedList $spacing="zero">
-          {items.length > 0 ? (
-            <>
-              {(type === 'COMING' || type === 'PRESENT') && (
-                <Li>
-                  <MultiselectToggleBox>
-                    <FixedSpaceRow
-                      $fullWidth
-                      $alignItems="baseline"
-                      $justifyContent="space-between"
-                    >
-                      {type === 'COMING' ||
-                      featureFlags.multiSelectDeparture ? (
-                        <Checkbox
-                          checked={multiselectChildren !== null}
-                          onChange={(checked) =>
-                            checked
-                              ? setMultiselectChildren([])
-                              : setMultiselectChildren(null)
-                          }
-                          label={i18n.attendances.actions.multiselect.toggle}
-                          data-qa="multiselect-toggle"
-                        />
-                      ) : (
-                        <div />
-                      )}
-                      <SortSelectWrapper>
-                        <SortSelect
-                          value={selectedSortType}
-                          onChange={(e) =>
-                            setSelectedSortType(e.target.value as SortType)
-                          }
-                          data-qa="sort-type-select"
-                          aria-label={i18n.common.sort}
-                        >
-                          {getSortOptions().map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </SortSelect>
-                        <SortIcon>
-                          <FontAwesomeIcon icon={faBarsSort} />
-                        </SortIcon>
-                      </SortSelectWrapper>
-                    </FixedSpaceRow>
-                  </MultiselectToggleBox>
-                </Li>
-              )}
-              {items.map((ac) => (
-                <Li key={ac.id}>
-                  <ChildListItem
-                    unitOrGroup={unitOrGroup}
-                    type={type}
-                    key={ac.id}
-                    child={ac}
-                    childAttendanceUrl={routes.child(unitId, ac.id).value}
-                    selected={
-                      multiselectChildren
-                        ? multiselectChildren.includes(ac.id)
-                        : null
-                    }
-                    onChangeSelected={(selected) => {
-                      if (multiselectChildren) {
-                        setMultiselectChildren(
-                          selected
-                            ? [...multiselectChildren, ac.id]
-                            : multiselectChildren.filter((id) => id !== ac.id)
-                        )
-                      }
-                    }}
-                  />
-                </Li>
-              ))}
-            </>
-          ) : (
-            <NoChildrenOnList data-qa="no-children-indicator">
-              {i18n.mobile.emptyList(type || 'ABSENT')}
-            </NoChildrenOnList>
+      {items.length > 0 ? (
+        <>
+          {(type === 'COMING' || type === 'PRESENT') && (
+            <MultiselectToggleBox>
+              {type === 'COMING' || featureFlags.multiSelectDeparture ? (
+                <Checkbox
+                  checked={multiselectChildren !== null}
+                  onChange={(checked) =>
+                    checked
+                      ? setMultiselectChildren([])
+                      : setMultiselectChildren(null)
+                  }
+                  label={i18n.attendances.actions.multiselect.toggle}
+                  data-qa="multiselect-toggle"
+                />
+              ) : null}
+              <SortSelectWrapper>
+                <SortSelect
+                  value={selectedSortType}
+                  onChange={(e) =>
+                    setSelectedSortType(e.target.value as SortType)
+                  }
+                  data-qa="sort-type-select"
+                  aria-label={i18n.common.sort}
+                >
+                  {sortOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </SortSelect>
+                <SortIcon>
+                  <FontAwesomeIcon icon={faBarsSort} />
+                </SortIcon>
+              </SortSelectWrapper>
+            </MultiselectToggleBox>
           )}
-        </OrderedList>
-      </FixedSpaceColumn>
+          <OrderedList>
+            {items.map((ac) => (
+              <li key={ac.id}>
+                <ChildListItem
+                  unitOrGroup={unitOrGroup}
+                  type={type}
+                  child={ac}
+                  childAttendanceUrl={routes.child(unitId, ac.id).value}
+                  selected={
+                    multiselectChildren
+                      ? multiselectChildren.includes(ac.id)
+                      : null
+                  }
+                  onChangeSelected={(selected) => {
+                    if (multiselectChildren) {
+                      setMultiselectChildren(
+                        selected
+                          ? [...multiselectChildren, ac.id]
+                          : multiselectChildren.filter((id) => id !== ac.id)
+                      )
+                    }
+                  }}
+                />
+              </li>
+            ))}
+          </OrderedList>
+        </>
+      ) : (
+        <NoChildrenOnList data-qa="no-children-indicator">
+          {i18n.mobile.emptyList(type ?? 'ABSENT')}
+        </NoChildrenOnList>
+      )}
       {multiselectChildren && (
         <MultiselectActions>
           <FixedSpaceRow
@@ -190,36 +182,18 @@ export default React.memo(function ChildList({
               icon={faTimes}
               onClick={() => setMultiselectChildren(null)}
             />
-            {type === 'COMING' && (
+            {multiselectAction && (
               <FloatingActionButton
                 appearance="button"
                 primary
-                text={i18n.attendances.actions.multiselect.confirmArrival(
-                  multiselectChildren.length
-                )}
+                text={multiselectAction.confirmText(multiselectChildren.length)}
                 disabled={multiselectChildren.length === 0}
                 onClick={() =>
                   navigate(
-                    routes.markPresent(unitId, multiselectChildren, true).value
+                    multiselectAction.confirmRoute(multiselectChildren).value
                   )
                 }
-                data-qa="mark-multiple-arrived"
-              />
-            )}
-            {type === 'PRESENT' && (
-              <FloatingActionButton
-                appearance="button"
-                primary
-                text={i18n.attendances.actions.multiselect.confirmDeparture(
-                  multiselectChildren.length
-                )}
-                disabled={multiselectChildren.length === 0}
-                onClick={() =>
-                  navigate(
-                    routes.markDeparted(unitId, multiselectChildren, true).value
-                  )
-                }
-                data-qa="mark-multiple-departed"
+                data-qa={multiselectAction.dataQa}
               />
             )}
           </FixedSpaceRow>
@@ -229,56 +203,41 @@ export default React.memo(function ChildList({
   )
 })
 
-// oxlint-disable-next-line typescript/no-redundant-type-constituents
-const OrderedList = styled.ol<{ $spacing?: SpacingSize | string }>`
-  list-style: none;
-  padding: 0;
-  margin-top: 0;
-
-  li {
-    margin-bottom: ${(p) =>
-      p.$spacing
-        ? isSpacingSize(p.$spacing)
-          ? defaultMargins[p.$spacing]
-          : p.$spacing
-        : defaultMargins.s};
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
+const NoChildrenOnList = styled.div`
+  text-align: center;
+  margin-top: 40px;
 `
 
-const Li = styled.li`
-  &:after {
-    content: '';
-    width: calc(100% - ${defaultMargins.s});
-    background: ${colors.grayscale.g15};
-    height: 1px;
-    display: block;
-    position: absolute;
-    left: ${defaultMargins.s};
+const OrderedList = styled.ol`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    border-bottom: 1px solid ${colors.grayscale.g15};
   }
 `
 
 const MultiselectToggleBox = styled.div`
-  align-items: center;
   display: flex;
-  padding: ${defaultMargins.s} ${defaultMargins.m};
-  border-radius: 2px;
   background-color: ${colors.grayscale.g0};
+  padding: ${defaultMargins.s} ${defaultMargins.m};
+  border-bottom: 1px solid ${colors.grayscale.g15};
 `
 
 const MultiselectActions = styled.div`
   position: sticky;
   z-index: 10;
-  bottom: 0;
+  bottom: ${bottomNavBarHeight}px;
   left: 0;
   right: 0;
   width: 100%;
   padding: ${defaultMargins.xs} ${defaultMargins.s};
   min-height: 30px;
   background-color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid ${colors.grayscale.g15};
+  border-top: 1px solid ${colors.grayscale.g15};
+  margin-top: -1px;
 `
 
 const FloatingActionButton = styled(Button)`
@@ -290,6 +249,7 @@ const FloatingActionButton = styled(Button)`
 const SortSelectWrapper = styled.div`
   position: relative;
   display: inline-block;
+  margin-left: auto;
 `
 
 const SortSelect = styled.select`
@@ -298,7 +258,6 @@ const SortSelect = styled.select`
   border: none;
   color: transparent;
   cursor: pointer;
-  font-size: 0;
   height: 40px;
   width: 40px;
   position: absolute;

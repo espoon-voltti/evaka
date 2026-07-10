@@ -33,6 +33,7 @@ const StickyableTopBar = styled.section<{
   height: ${topBarHeight};
   padding: 0 ${defaultMargins.s};
   z-index: ${zIndex.topBar};
+  box-shadow: 0 4px 4px 0 #00000026;
 
   display: flex;
   justify-content: space-between;

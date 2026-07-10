@@ -45,7 +45,7 @@ export const Tabs = React.memo(function Tabs({
       className={sticky ? 'sticky' : undefined}
       $topOffset={topOffset}
     >
-      <TabsContainer data-qa={dataQa} $shadow={mobile} id={id}>
+      <TabsContainer data-qa={dataQa} $mobile={mobile} id={id}>
         {tabs.map(({ id, onClick, label, counter }) => (
           <Tab
             key={id}
@@ -93,7 +93,7 @@ export const TabLinks = React.memo(function TabLinks({
       className={sticky ? 'sticky' : undefined}
       $topOffset={topOffset}
     >
-      <TabsContainer data-qa={dataQa} $shadow={mobile} id={id}>
+      <TabsContainer data-qa={dataQa} $mobile={mobile} id={id}>
         {tabs.map(({ id, link, label, counter }) => (
           <TabLink
             key={id}
@@ -119,15 +119,15 @@ const StickyableContainer = styled(Container)<{ $topOffset?: number }>`
   }
 `
 
-const TabsContainer = styled.nav<{ $shadow?: boolean }>`
+const TabsContainer = styled.nav<{ $mobile?: boolean }>`
   display: flex;
   flex-direction: row;
   ${(p) =>
-    p.$shadow
-      ? `
-      box-shadow: 0 2px 6px 0 ${p.theme.colors.grayscale.g15};
-      margin-bottom: ${defaultMargins.xxs};
-      `
+    p.$mobile
+      ? css`
+          background-color: #f5f5f5; // employee-mobile body bg color
+          border-bottom: 1px solid ${p.theme.colors.grayscale.g15};
+        `
       : ''}
 `
 
@@ -142,7 +142,8 @@ const tabStyles = css<{
   padding: 12px;
   flex-basis: content;
   flex-grow: 1;
-  background-color: ${(p) => p.theme.colors.grayscale.g0};
+  background-color: ${(p) =>
+    p.$mobile ? 'transparent' : p.theme.colors.grayscale.g0};
   text-align: center;
   max-width: ${(p) => p.$maxWidth ?? 'unset'};
 
@@ -155,7 +156,8 @@ const tabStyles = css<{
   ${(p) =>
     p.$mobile
       ? css`
-          border-bottom: 3px solid transparent;
+          margin-bottom: -1px;
+          border-bottom: 4px solid transparent;
         `
       : css`
           border: 2px solid transparent;
@@ -166,18 +168,18 @@ const tabStyles = css<{
         `}
 
   &.active {
-    background-color: ${(p) =>
-      p.$mobile ? p.theme.colors.grayscale.g0 : `${p.theme.colors.main.m3}33`};
-
     ${(p) =>
       p.$mobile
         ? css`
-            border-bottom: 3px solid ${p.theme.colors.main.m1};
+            border-bottom-color: ${p.theme.colors.main.m2};
           `
-        : ''}
+        : css`
+            background-color: ${p.theme.colors.main.m3}33;
+          `}
 
     ${NavLinkText} {
-      color: ${(p) => p.theme.colors.main.m1};
+      color: ${(p) =>
+        p.$mobile ? p.theme.colors.main.m2 : p.theme.colors.main.m1};
       font-weight: ${fontWeights.bold};
     }
   }

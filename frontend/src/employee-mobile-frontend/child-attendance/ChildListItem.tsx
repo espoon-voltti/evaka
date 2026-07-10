@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useMemo } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { Link } from 'wouter'
 
 import type {
@@ -44,7 +44,7 @@ const ChildBox = styled.div`
   background-color: ${colors.grayscale.g0};
 `
 
-const AttendanceLinkBox = styled(Link)`
+const contentBox = css`
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -52,12 +52,12 @@ const AttendanceLinkBox = styled(Link)`
   width: 100%;
 `
 
+const AttendanceLinkBox = styled(Link)`
+  ${contentBox}
+`
+
 const MultiselectBox = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
+  ${contentBox}
 `
 
 export const IconBox = styled.div<{ $type: AttendanceStatus }>`
@@ -72,7 +72,7 @@ const MainInfoColumn = styled.div`
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   min-height: ${imageHeight};
 `
 
@@ -106,6 +106,7 @@ const RoundImage = styled.img`
 
 const GroupName = styled(InformationText)`
   text-align: right;
+  font-size: 12px;
 `
 
 const RoundIconOnTop = styled(RoundIcon)`
@@ -113,15 +114,15 @@ const RoundIconOnTop = styled(RoundIcon)`
   left: 40px;
   top: -20px;
   z-index: 2;
+  & span {
+    font-size: 12px;
+  }
 `
 
 const IconPlacementBox = styled.div`
   position: relative;
   width: 0;
   height: 0;
-  &.m {
-    font-size: 14px;
-  }
 `
 
 const CheckCircleOff = styled.div`
@@ -181,31 +182,27 @@ export default React.memo(function ChildListItem({
   )
 
   const maybeGroupName = type && isUnitView(unitOrGroup) ? groupName : undefined
-  const today = LocalDate.todayInSystemTz()
 
-  const hasActiveStickyNote = useMemo(
-    () => child.stickyNotes.some((n) => n.expires.isEqualOrAfter(today)),
-    [child, today]
+  const hasActiveStickyNote = child.stickyNotes.some((n) =>
+    n.expires.isEqualOrAfter(LocalDate.todayInSystemTz())
   )
 
   return (
     <ChildBox data-qa={`child-${child.id}`}>
       {selected === null ? (
         <AttendanceLinkBox to={childAttendanceUrl}>
-          <ChildImage child={child} type={type} />
-          <MainInfoColumn>
-            <NameRow>
-              <Bold data-qa="child-name">
-                <PersonName person={child} format="First Last (Preferred)" />
-              </Bold>
-            </NameRow>
-            <FixedSpaceRow $spacing="xs">
-              <DetailsText>{infoText}</DetailsText>
-              {child.backup && (
-                <RoundIcon content="V" size="m" color={colors.main.m1} />
-              )}
-            </FixedSpaceRow>
-          </MainInfoColumn>
+          <ChildMainInfo
+            child={child}
+            type={type}
+            details={
+              <FixedSpaceRow $spacing="xs">
+                <DetailsText>{infoText}</DetailsText>
+                {child.backup && (
+                  <RoundIcon content="V" size="m" color={colors.main.m1} />
+                )}
+              </FixedSpaceRow>
+            }
+          />
           <RightColumn>
             <GroupName data-qa={`child-group-name-${child.id}`}>
               {maybeGroupName}
@@ -235,7 +232,7 @@ export default React.memo(function ChildListItem({
                   />
                 </Link>
               )}
-              {child.groupId && groupNotes.length > 0 ? (
+              {child.groupId && groupNotes.length > 0 && (
                 <Link
                   to={routes.childNotes(unitId, child.id).value}
                   data-qa="link-child-daycare-daily-note"
@@ -246,25 +243,23 @@ export default React.memo(function ChildListItem({
                     size="m"
                   />
                 </Link>
-              ) : null}
+              )}
             </FixedSpaceRow>
           </RightColumn>
         </AttendanceLinkBox>
       ) : (
         <MultiselectBox onClick={() => onChangeSelected(!selected)}>
-          <ChildImage child={child} type={type} />
-          <MainInfoColumn>
-            <NameRow>
-              <Bold data-qa="child-name">
-                <PersonName person={child} format="First Last (Preferred)" />
-              </Bold>
-            </NameRow>
-            <DetailsText>
-              {selected
-                ? i18n.attendances.actions.multiselect.selected
-                : i18n.attendances.actions.multiselect.select}
-            </DetailsText>
-          </MainInfoColumn>
+          <ChildMainInfo
+            child={child}
+            type={type}
+            details={
+              <DetailsText>
+                {selected
+                  ? i18n.attendances.actions.multiselect.selected
+                  : i18n.attendances.actions.multiselect.select}
+              </DetailsText>
+            }
+          />
           <RightColumn>
             {selected ? (
               <CheckCircleOn>
@@ -277,6 +272,30 @@ export default React.memo(function ChildListItem({
         </MultiselectBox>
       )}
     </ChildBox>
+  )
+})
+
+const ChildMainInfo = React.memo(function ChildMainInfo({
+  child,
+  type,
+  details
+}: {
+  child: ListItem
+  type?: AttendanceStatus
+  details: React.ReactNode
+}) {
+  return (
+    <>
+      <ChildImage child={child} type={type} />
+      <MainInfoColumn>
+        <NameRow>
+          <Bold data-qa="child-name">
+            <PersonName person={child} format="First Last (Preferred)" />
+          </Bold>
+        </NameRow>
+        {details}
+      </MainInfoColumn>
+    </>
   )
 })
 

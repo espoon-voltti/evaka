@@ -2,70 +2,90 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { animated, useSpring } from '@react-spring/web'
-import React, { useState } from 'react'
-import styled from 'styled-components'
+import React, { useCallback, useState } from 'react'
+import styled, { css } from 'styled-components'
 
-import type { GroupInfo } from 'lib-common/generated/api-types/attendance'
-import type { DaycareId } from 'lib-common/generated/api-types/shared'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { useCloseOnOutsideEvent } from 'lib-common/utils/useCloseOnOutsideEvent'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { fontSizesMobile, fontWeights } from 'lib-components/typography'
+import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faAngleDown, faAngleUp, faChevronUp, faSearch } from 'lib-icons'
+import { faChevronDown, farUsers, faSearch } from 'lib-icons'
 
 import { zIndex } from '../constants'
 
-import type { CountInfo } from './GroupSelector'
-import GroupSelector from './GroupSelector'
+import type { GroupSelectorProps } from './GroupSelector'
+import GroupSelector, { IconSlot, listMaxHeightVh } from './GroupSelector'
 import { useTranslation } from './i18n'
 
 const GroupContainer = styled.div`
-  display: block;
-  min-height: 48px;
-  margin-bottom: ${defaultMargins.xs};
+  position: relative;
+  padding: ${defaultMargins.s} ${defaultMargins.s} ${defaultMargins.xs};
 `
 
-const GroupSelectorButtonRow = styled.div`
+const roundedBox = css`
+  background-color: ${colors.grayscale.g0};
+  border: 1px solid ${colors.grayscale.g15};
+  border-radius: 24px;
+`
+
+const SelectorPill = styled.div`
+  ${roundedBox};
   display: flex;
-  justify-content: stretch;
   align-items: center;
+  height: 48px;
   padding: 0 ${defaultMargins.s};
 `
 
-const GroupSelectorButton = styled(LegacyInlineButton)`
-  border: none;
-  font-family: Montserrat, sans-serif;
-  font-size: 20px;
-  height: 48px;
+const GroupSelectorButton = styled.button`
+  display: flex;
+  align-items: center;
   flex-grow: 1;
-  flex-shrink: 0;
-  outline: none !important;
+  min-width: 0;
+  gap: ${defaultMargins.s};
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: ${colors.main.m2};
+  font-family: Montserrat, sans-serif;
+  font-size: ${fontSizesMobile.h3};
+  font-weight: ${fontWeights.semibold};
+  padding: 0;
+  cursor: pointer;
+  outline: none;
 `
 
-const GroupSelectorWrapper = animated(styled.div`
-  background-color: ${colors.grayscale.g0};
-  box-shadow: 0 2px 6px 0 ${colors.grayscale.g15};
+const GroupName = styled.span`
+  flex-grow: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`
+
+const PillDivider = styled.div`
+  flex-shrink: 0;
+  width: 1px;
+  height: 24px;
+  background-color: ${colors.grayscale.g15};
+  margin: 0 ${defaultMargins.s};
+`
+
+const DropdownBox = animated(styled.div`
+  ${roundedBox};
+  box-shadow: 0 2px 4px 0 #0000001a;
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  overflow-y: hidden;
-  min-height: 48px;
-  width: 100%;
+  top: ${defaultMargins.s};
+  left: ${defaultMargins.s};
+  right: ${defaultMargins.s};
+  overflow: hidden;
   z-index: ${zIndex.groupSelector};
 `)
 
-export interface Props {
-  unitId: DaycareId
-  selectedGroup: GroupInfo | undefined
-  onChangeGroup: (group: GroupInfo | undefined) => void
+export interface Props extends GroupSelectorProps {
   onSearch?: () => void
-  countInfo?: CountInfo
-  groups?: GroupInfo[]
-  includeSelectAll: boolean
-  shiftCareSelected?: boolean
-  onSelectShiftCare?: () => void
 }
 
 export const GroupSelectorBar = React.memo(function GroupSelectorBar({
@@ -80,52 +100,58 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
   onSelectShiftCare
 }: Props) {
   const { i18n } = useTranslation()
-  const [showGroupSelector, setShowGroupSelector] = useState<boolean>(false)
-  const groupSelectorSpring = useSpring<{ x: number }>({
+  const [showGroupSelector, setShowGroupSelector] = useState(false)
+  const containerRef = useCloseOnOutsideEvent(
+    showGroupSelector,
+    useCallback(() => setShowGroupSelector(false), [])
+  )
+  const { x } = useSpring({
     x: showGroupSelector ? 1 : 0,
     config: { duration: 100 }
   })
   const hasMultipleGroups = groups && groups.length > 1
+  const selectedName = shiftCareSelected
+    ? i18n.common.shiftCare
+    : selectedGroup
+      ? selectedGroup.name
+      : i18n.common.allGroups
   return (
     <GroupContainer
+      ref={containerRef}
       data-qa={`selected-group--${shiftCareSelected ? 'shift-care' : (selectedGroup?.id ?? 'all')}`}
     >
-      <GroupSelectorWrapper
+      <SelectorPill>
+        <GroupSelectorButton
+          onClick={() => setShowGroupSelector((show) => !show)}
+          aria-expanded={showGroupSelector}
+          data-qa="group-selector-button"
+        >
+          <IconSlot>
+            <FontAwesomeIcon icon={farUsers} />
+          </IconSlot>
+          <GroupName>{selectedName}</GroupName>
+          {hasMultipleGroups && <FontAwesomeIcon icon={faChevronDown} />}
+        </GroupSelectorButton>
+        {onSearch && (
+          <>
+            <PillDivider />
+            <IconOnlyButton
+              onClick={onSearch}
+              icon={faSearch}
+              aria-label={i18n.common.search}
+              data-qa="search-button"
+            />
+          </>
+        )}
+      </SelectorPill>
+      <DropdownBox
         style={{
-          maxHeight: groupSelectorSpring.x.to((x) => `${100 * x}%`)
+          opacity: x,
+          maxHeight: x.to((v) => `${v * listMaxHeightVh}vh`),
+          visibility: x.to((v) => (v === 0 ? 'hidden' : 'visible')),
+          pointerEvents: showGroupSelector ? 'auto' : 'none'
         }}
       >
-        {!showGroupSelector && (
-          <GroupSelectorButtonRow>
-            <GroupSelectorButton
-              text={
-                shiftCareSelected
-                  ? i18n.common.shiftCare
-                  : selectedGroup
-                    ? selectedGroup.name
-                    : i18n.common.allGroups
-              }
-              onClick={() => setShowGroupSelector(true)}
-              icon={
-                hasMultipleGroups
-                  ? showGroupSelector
-                    ? faAngleUp
-                    : faAngleDown
-                  : undefined
-              }
-              iconRight
-              data-qa="group-selector-button"
-            />
-            {onSearch && (
-              <IconOnlyButton
-                onClick={onSearch}
-                icon={faSearch}
-                aria-label={i18n.common.search}
-                data-qa="search-button"
-              />
-            )}
-          </GroupSelectorButtonRow>
-        )}
         <GroupSelector
           unitId={unitId}
           selectedGroup={shiftCareSelected ? undefined : selectedGroup}
@@ -145,23 +171,8 @@ export const GroupSelectorBar = React.memo(function GroupSelectorBar({
                 }
               : undefined
           }
-          data-qa="group-selector"
         />
-        <CloseButtonWrapper>
-          <Button
-            appearance="inline"
-            text={i18n.common.close}
-            icon={faChevronUp}
-            onClick={() => setShowGroupSelector(false)}
-          />
-        </CloseButtonWrapper>
-      </GroupSelectorWrapper>
-      <Gap $size="s" />
+      </DropdownBox>
     </GroupContainer>
   )
 })
-
-const CloseButtonWrapper = styled.span`
-  text-align: center;
-  padding: 19px;
-`
