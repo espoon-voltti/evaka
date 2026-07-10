@@ -116,15 +116,10 @@ export default React.memo(function ChildDayReservation({
           <ReservationTooltip
             tooltip={
               reservation &&
-              (reservation.staffCreated
-                ? i18n.unit.attendanceReservations.lastModifiedStaff(
-                    reservation.modifiedAt?.format() || '',
-                    reservation.modifiedBy?.name || ''
-                  )
-                : i18n.unit.attendanceReservations.lastModifiedOther(
-                    reservation.modifiedAt?.format() || '',
-                    reservation.modifiedBy?.name || ''
-                  ))
+              i18n.unit.attendanceReservations.lastModified(
+                reservation.modifiedAt?.format() || '',
+                reservation.modifiedBy?.name || ''
+              )
             }
           >
             <TimeCell

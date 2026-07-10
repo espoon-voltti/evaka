@@ -2494,15 +2494,7 @@ export const fi = {
       requiresBackupCare: 'Tee varasijoitus',
       openReservationModal: 'Tee toistuva varaus',
       childCount: 'Lapsia läsnä',
-      lastModifiedStaff: (date: string, name: string) => (
-        <div>
-          <p>*Henkilökunnan tekemä merkintä</p>
-          <p>
-            Viimeksi muokattu {date}; muokkaaja: {name}
-          </p>
-        </div>
-      ),
-      lastModifiedOther: (date: string, name: string) =>
+      lastModified: (date: string, name: string) =>
         `Viimeksi muokattu ${date}; muokkaaja: ${name}`,
       reservationModal: {
         title: 'Tee varaus',
