@@ -5,6 +5,7 @@
 package evaka.core.application
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.ConstList
 import evaka.core.EvakaEnv
@@ -457,11 +458,20 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestParam confidential: Boolean?,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-            dbc.transaction {
-                applicationStateService.setVerified(it, user, clock, applicationId, confidential)
+                dbc.transaction {
+                    applicationStateService.setVerified(
+                        it,
+                        user,
+                        clock,
+                        audit,
+                        applicationId,
+                        confidential,
+                    )
+                }
             }
-        }
+            .also { audit.log(Audit.ApplicationAdminDetailsUpdate, clock) }
     }
 
     @GetMapping("/{applicationId}/placement-draft")

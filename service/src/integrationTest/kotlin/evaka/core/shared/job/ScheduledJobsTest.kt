@@ -4,6 +4,7 @@
 
 package evaka.core.shared.job
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.application.ApplicationStateService
 import evaka.core.application.ApplicationStatus
@@ -364,6 +365,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                 it,
                 serviceWorker,
                 RealEvakaClock(),
+                AuditContext(),
                 applicationId,
                 false,
             )

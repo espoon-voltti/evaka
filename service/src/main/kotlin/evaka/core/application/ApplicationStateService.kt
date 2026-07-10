@@ -5,6 +5,7 @@
 package evaka.core.application
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.application.ApplicationStatus.ACTIVE
 import evaka.core.application.ApplicationStatus.CANCELLED
@@ -634,6 +635,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
         confidential: Boolean?,
     ) {
@@ -646,6 +648,7 @@ class ApplicationStateService(
         )
 
         val application = getApplication(tx, applicationId)
+        audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, WAITING_PLACEMENT)
 
         if (application.confidential == null) {
@@ -660,10 +663,6 @@ class ApplicationStateService(
         } else if (confidential != null) throw BadRequest("Confidentiality is already set")
 
         tx.setApplicationVerified(applicationId, true, clock.now(), user.evakaUserId)
-        Audit.ApplicationAdminDetailsUpdate.log(
-            targetId = AuditId(applicationId),
-            objectId = AuditId(application.childId),
-        )
     }
 
     fun createPlacementPlan(

@@ -4,6 +4,7 @@
 
 package evaka.core.application
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.CareDetails
@@ -459,7 +460,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         db.transaction { tx ->
             stateService.sendApplication(tx, serviceWorker, clock, applicationId)
             stateService.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
-            stateService.setVerified(tx, serviceWorker, clock, applicationId, null)
+            stateService.setVerified(tx, serviceWorker, clock, AuditContext(), applicationId, null)
             stateService.createPlacementPlan(
                 tx,
                 serviceWorker,

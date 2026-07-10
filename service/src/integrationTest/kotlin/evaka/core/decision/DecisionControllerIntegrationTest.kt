@@ -4,6 +4,7 @@
 
 package evaka.core.decision
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.application.ApplicationStateService
 import evaka.core.application.ApplicationStatus
@@ -230,6 +231,7 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx = tx,
             user = AuthenticatedUser.Employee(serviceWorker, setOf(UserRole.SERVICE_WORKER)),
             clock = clock,
+            audit = AuditContext(),
             applicationId = applicationId,
             confidential = false,
         )

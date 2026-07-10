@@ -4,6 +4,7 @@
 
 package evaka.core.application
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.application.notes.getApplicationNotes
 import evaka.core.application.notes.getServiceWorkerApplicationNote
@@ -778,7 +779,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.setVerified(tx, serviceWorker, clock, applicationId, confidential = null)
+            service.setVerified(
+                tx,
+                serviceWorker,
+                clock,
+                AuditContext(),
+                applicationId,
+                confidential = null,
+            )
         }
         db.read { tx ->
             // then
