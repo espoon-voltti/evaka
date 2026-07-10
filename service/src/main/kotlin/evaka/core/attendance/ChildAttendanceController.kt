@@ -5,6 +5,7 @@
 package evaka.core.attendance
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.absence.AbsenceCategory
 import evaka.core.absence.AbsenceType
@@ -671,23 +672,28 @@ class ChildAttendanceController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ) {
-        val deleted = db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Child.DELETE_ABSENCE_RANGE,
-                    childId,
-                )
-                tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to))
+        val audit =
+            AuditContext()
+                .add(unitId)
+                .add(childId)
+                .observeDate(from)
+                .addMeta("from", from)
+                .addMeta("to", to)
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.DELETE_ABSENCE_RANGE,
+                        childId,
+                    )
+                    tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to)).also {
+                        audit.add(it)
+                    }
+                }
             }
-        }
-        Audit.AbsenceDeleteRange.log(
-            targetId = AuditId(childId),
-            objectId = AuditId(deleted),
-            meta = mapOf("from" to from, "to" to to),
-        )
+            .also { audit.log(Audit.AbsenceDeleteRange, clock) }
     }
 }
 
