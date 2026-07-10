@@ -78,6 +78,8 @@ class AbsenceController(
         @PathVariable groupId: GroupId,
     ) {
         val children = absences.map { it.childId }.distinct()
+        val audit =
+            AuditContext().add(groupId).add(children).observeDate(absences.minOfOrNull { it.date })
 
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -119,20 +121,18 @@ class AbsenceController(
                             featureConfig.citizenReservationThresholdHours,
                         )
                     tx.clearOldReservations(
-                        absences
-                            .filter { reservableRange.includes(it.date) }
-                            .map { it.childId to it.date }
-                    )
+                            absences
+                                .filter { reservableRange.includes(it.date) }
+                                .map { it.childId to it.date }
+                        )
+                        .also { audit.add(it) }
 
-                    tx.upsertAbsences(clock.now(), user.evakaUserId, absences)
+                    tx.upsertAbsences(clock.now(), user.evakaUserId, absences).also {
+                        audit.add(it)
+                    }
                 }
             }
-            .also { absenceIdList ->
-                Audit.AbsenceUpsert.log(
-                    targetId = AuditId(groupId),
-                    objectId = AuditId(absenceIdList) + AuditId(children),
-                )
-            }
+            .also { audit.log(Audit.AbsenceUpsert, clock) }
     }
 
     @PostMapping("/{groupId}/present")
