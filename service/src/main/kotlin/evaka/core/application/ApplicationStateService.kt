@@ -571,6 +571,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
         confidential: Boolean?,
     ) {
@@ -583,6 +584,8 @@ class ApplicationStateService(
         )
 
         val application = getApplication(tx, applicationId)
+        audit.add(application.childId).add(application.guardianId)
+        tx.getApplicationOtherGuardians(applicationId).also { audit.add(it) }
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
 
         if (application.confidential == null) {
@@ -624,11 +627,6 @@ class ApplicationStateService(
                 )
             }
         }
-
-        Audit.ApplicationCancel.log(
-            targetId = AuditId(applicationId),
-            objectId = AuditId(application.childId),
-        )
     }
 
     fun setVerified(

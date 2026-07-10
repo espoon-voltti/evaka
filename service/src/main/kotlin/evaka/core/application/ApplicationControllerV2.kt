@@ -794,17 +794,20 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestParam confidential: Boolean?,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                applicationStateService.cancelApplication(
-                    tx,
-                    user,
-                    clock,
-                    applicationId,
-                    confidential,
-                )
+                dbc.transaction { tx ->
+                    applicationStateService.cancelApplication(
+                        tx,
+                        user,
+                        clock,
+                        audit,
+                        applicationId,
+                        confidential,
+                    )
+                }
             }
-        }
+            .also { audit.log(Audit.ApplicationCancel, clock) }
     }
 
     @PostMapping("/{applicationId}/actions/{action}")
