@@ -258,7 +258,6 @@ const SortSelect = styled.select`
   border: none;
   color: transparent;
   cursor: pointer;
-  font-size: 0;
   height: 40px;
   width: 40px;
   position: absolute;
