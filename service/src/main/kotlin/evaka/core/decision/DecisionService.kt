@@ -86,18 +86,7 @@ class DecisionService(
         val decisions = decisionIds.map { tx.getDecision(it)!! }
 
         if (evakaEnv.decisionReasoningEnabled) {
-            decisions.forEach { decision ->
-                if (!tx.hasLinkedGenericReasoning(decision.id)) {
-                    val genericReasoning =
-                        validateResolvedGenericReasoning(
-                            tx,
-                            decision.id,
-                            decision.type,
-                            decision.startDate,
-                        )
-                    tx.updateGenericReasoningToDecision(decision.id, genericReasoning.id)
-                }
-            }
+            decisions.forEach { setGenericReasoningIfMissing(tx, it) }
         }
 
         asyncJobRunner.plan(
@@ -122,6 +111,20 @@ class DecisionService(
                 validateResolvedGenericReasoning(tx, decision.id, decision.type, decision.startDate)
             tx.updateGenericReasoningToDecision(decision.id, genericReasoning.id)
         }
+    }
+
+    private fun setGenericReasoningIfMissing(tx: Database.Transaction, decision: Decision) {
+        // Generic reasonings are frozen when the service worker sends the decisions onward
+        // (sendDecisionsWithoutProposal / sendPlacementProposal). The reasoning is only missing
+        // here for placement proposals that were already waiting for unit confirmation when
+        // decision reasoning was enabled.
+        if (tx.hasLinkedGenericReasoning(decision.id)) return
+        logger.warn {
+            "Decision ${decision.id} had no frozen generic reasoning at finalization, resolving it now"
+        }
+        val genericReasoning =
+            validateResolvedGenericReasoning(tx, decision.id, decision.type, decision.startDate)
+        tx.updateGenericReasoningToDecision(decision.id, genericReasoning.id)
     }
 
     fun createDecisionPdf(tx: Database.Transaction, decisionId: DecisionId) {

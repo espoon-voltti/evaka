@@ -733,6 +733,7 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
+        decisionService.freezeGenericDecisionReasonings(tx, application.id)
         val decisionIds = finalizeDecisions(tx, user, clock, application, config)
         Audit.ApplicationSendDecisionsWithoutProposal.log(
             targetId = AuditId(applicationId),
