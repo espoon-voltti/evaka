@@ -5,6 +5,7 @@
 package evaka.core.pis.controllers
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.identity.ExternalIdentifier
@@ -612,8 +613,9 @@ class PersonController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable guardianId: PersonId,
-    ): ResponseEntity<*> =
-        db.connect { dbc ->
+    ): ResponseEntity<*> {
+        val audit = AuditContext().add(guardianId)
+        return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -642,7 +644,8 @@ class PersonController(
                         .body(resource)
                 }
             }
-            .also { Audit.AddressPageDownloadPdf.log(targetId = AuditId(guardianId)) }
+            .also { audit.log(Audit.AddressPageDownloadPdf, clock) }
+    }
 
     data class PersonResponse(val person: PersonBasicInfo, val permittedActions: Set<Action.Person>)
 
