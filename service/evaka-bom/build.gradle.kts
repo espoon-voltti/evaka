@@ -56,7 +56,7 @@ dependencies {
 
         // These constraints are needed for CVE fixes
         api("org.apache.tomcat.embed:tomcat-embed-core:11.0.24")
-        api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.23")
+        api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.24")
         api("org.postgresql:postgresql:42.7.12")
         api("org.apache.neethi:neethi:3.2.2")
     }
