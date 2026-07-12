@@ -1682,9 +1682,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.110.0":
-  version: 5.110.0
-  resolution: "dd-trace@npm:5.110.0"
+"dd-trace@npm:5.111.0":
+  version: 5.111.0
+  resolution: "dd-trace@npm:5.111.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.9.4"
     "@datadog/native-appsec": "npm:11.0.1"
@@ -1696,7 +1696,7 @@ __metadata:
     "@opentelemetry/api": "npm:>=1.0.0 <1.10.0"
     "@opentelemetry/api-logs": "npm:<1.0.0"
     dc-polyfill: "npm:^0.1.11"
-    import-in-the-middle: "npm:^3.1.0"
+    import-in-the-middle: "npm:^3.2.0"
     opentracing: "npm:>=0.14.7"
     oxc-parser: "npm:^0.132.0"
   dependenciesMeta:
@@ -1720,7 +1720,7 @@ __metadata:
       optional: true
     oxc-parser:
       optional: true
-  checksum: 10/5b65b7bae20a7794defd3780c792f9d26c6005ed0fd90b5a182e40476af09c835b0bdf72152c7241a2e2d8a584ee05d3081909d46e3807af9406dff506f70872
+  checksum: 10/ed39d09ae5c7e5b82188fefc83235a416d2ea3dcb460bb65855d48c6855ad4c3cb271e6217312adc4e89bd3475a0e614961a81d41d8b0c1805ecb252d2671979
   languageName: node
   linkType: hard
 
@@ -1978,7 +1978,7 @@ __metadata:
     cookie-parser: "npm:1.4.7"
     cookie-signature: "npm:1.2.2"
     date-fns: "npm:4.4.0"
-    dd-trace: "npm:5.110.0"
+    dd-trace: "npm:5.111.0"
     express: "npm:5.2.1"
     express-basic-auth: "npm:1.2.1"
     express-http-proxy: "npm:2.1.2"
@@ -2464,14 +2464,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:^3.1.0":
-  version: 3.3.0
-  resolution: "import-in-the-middle@npm:3.3.0"
+"import-in-the-middle@npm:^3.2.0":
+  version: 3.3.1
+  resolution: "import-in-the-middle@npm:3.3.1"
   dependencies:
     cjs-module-lexer: "npm:^2.2.0"
     es-module-lexer: "npm:^2.2.0"
     module-details-from-path: "npm:^1.0.4"
-  checksum: 10/c933cb64de7e562d3856e69041fc517c55e39a629751c444a0e9051af7522feb73e71f1d818f2190689a236da8eca0034336d403d262524f9680c6cb3df0acb5
+  checksum: 10/0b3e9de63816481b0fe07abb145258ecbc3c78251200807dacbff87bfcaaa3e5568e1184f26dba57da520a90843f51cf21d79fe3ea9383b6de3037a5976a96b3
   languageName: node
   linkType: hard
 
