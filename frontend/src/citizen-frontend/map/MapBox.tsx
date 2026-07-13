@@ -213,8 +213,25 @@ const UnitMarker = React.memo(function UnitMarker({
     [location]
   )
   const eventHandlers = useMemo<LeafletEventHandlerFnMap>(
-    () => ({ click: () => onClick(unit) }),
-    [onClick, unit]
+    () => ({
+      click: () => onClick(unit),
+      // on popup open, move focus to the popup so that screen
+      // readers can read the content without having to navigate
+      // through all the markers first
+      popupopen: (e) => {
+        const element = e.popup.getElement()
+        if (element) {
+          element.setAttribute('role', 'dialog')
+          element.setAttribute('aria-label', name)
+          element.setAttribute('tabindex', '-1')
+          element.focus({ preventScroll: true })
+        }
+      },
+      popupclose: () => {
+        markerRef.current?.getElement()?.focus({ preventScroll: true })
+      }
+    }),
+    [onClick, unit, name]
   )
 
   if (!location) return null
