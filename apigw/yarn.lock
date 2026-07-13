@@ -1682,9 +1682,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:5.111.0":
-  version: 5.111.0
-  resolution: "dd-trace@npm:5.111.0"
+"dd-trace@npm:6.1.0":
+  version: 6.1.0
+  resolution: "dd-trace@npm:6.1.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.9.4"
     "@datadog/native-appsec": "npm:11.0.1"
@@ -1696,7 +1696,7 @@ __metadata:
     "@opentelemetry/api": "npm:>=1.0.0 <1.10.0"
     "@opentelemetry/api-logs": "npm:<1.0.0"
     dc-polyfill: "npm:^0.1.11"
-    import-in-the-middle: "npm:^3.2.0"
+    import-in-the-middle: "npm:^3.3.1"
     opentracing: "npm:>=0.14.7"
     oxc-parser: "npm:^0.132.0"
   dependenciesMeta:
@@ -1720,7 +1720,7 @@ __metadata:
       optional: true
     oxc-parser:
       optional: true
-  checksum: 10/ed39d09ae5c7e5b82188fefc83235a416d2ea3dcb460bb65855d48c6855ad4c3cb271e6217312adc4e89bd3475a0e614961a81d41d8b0c1805ecb252d2671979
+  checksum: 10/745f2864a0fc75e502ba9a1266812beb93fe09b4d10b0dd46762c60ee4d5c456f94d82488107c07cf5e57dee174b8ddb07f759c4e9139c73130be64aff16d733
   languageName: node
   linkType: hard
 
@@ -1978,7 +1978,7 @@ __metadata:
     cookie-parser: "npm:1.4.7"
     cookie-signature: "npm:1.2.2"
     date-fns: "npm:4.4.0"
-    dd-trace: "npm:5.111.0"
+    dd-trace: "npm:6.1.0"
     express: "npm:5.2.1"
     express-basic-auth: "npm:1.2.1"
     express-http-proxy: "npm:2.1.2"
@@ -2464,7 +2464,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:^3.2.0":
+"import-in-the-middle@npm:^3.3.1":
   version: 3.3.1
   resolution: "import-in-the-middle@npm:3.3.1"
   dependencies:
