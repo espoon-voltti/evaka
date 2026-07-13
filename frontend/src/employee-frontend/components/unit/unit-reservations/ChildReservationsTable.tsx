@@ -30,6 +30,7 @@ import { ContractDaysIndicatorChip } from '../../common/ContractDaysIndicatorChi
 import EllipsisMenu from '../../common/EllipsisMenu'
 import type { AttendanceGroupFilter } from '../TabCalendar'
 
+import type { AbsenceWithCategory } from './AbsenceDay'
 import ChildDayAttendance from './ChildDayAttendance'
 import ChildDayReservation from './ChildDayReservation'
 import {
@@ -107,6 +108,22 @@ const isFullyAbsent = (child: ChildRecordOfDay) =>
         return child.absenceNonbillable !== null
     }
   })
+
+const absencesWithCategories = (
+  child: ChildRecordOfDay
+): AbsenceWithCategory[] => {
+  const absences: AbsenceWithCategory[] = []
+  if (child.absenceBillable !== null) {
+    absences.push({ category: 'BILLABLE', absence: child.absenceBillable })
+  }
+  if (child.absenceNonbillable !== null) {
+    absences.push({
+      category: 'NONBILLABLE',
+      absence: child.absenceNonbillable
+    })
+  }
+  return absences
+}
 
 const occupancyFormatter = new Intl.NumberFormat('fi-FI', {
   minimumFractionDigits: 2,
@@ -281,8 +298,8 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
             const fullyAbsent = !!child && isFullyAbsent(child)
             const hasReservations = !!child && child.reservations.length > 0
             const displayAbsence = fullyAbsent || !hasReservations
-            const absence =
-              child?.absenceBillable ?? child?.absenceNonbillable ?? null
+            const absences =
+              child && displayAbsence ? absencesWithCategories(child) : []
 
             return (
               <DayTd
@@ -299,10 +316,7 @@ const ChildRowGroup = React.memo(function ChildRowGroup({
                     reservationIndex={index}
                     dateInfo={dateInfo}
                     reservation={child.reservations[index]}
-                    absence={
-                      displayAbsence && absence ? absence.absenceType : null
-                    }
-                    absenceStaffCreated={absence?.staffCreated}
+                    absences={absences}
                     dailyServiceTimes={child.dailyServiceTimes}
                     inOtherUnit={child.inOtherUnit}
                     isInBackupGroup={

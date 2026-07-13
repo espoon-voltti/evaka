@@ -51,6 +51,7 @@ export interface AbsenceRequest {
 */
 export interface AbsenceTypeResponse {
   absenceType: AbsenceType
+  modifiedAt: HelsinkiDateTime
   staffCreated: boolean
 }
 
@@ -467,6 +468,14 @@ export function deserializeJsonAbsenceRequest(json: JsonOf<AbsenceRequest>): Abs
 }
 
 
+export function deserializeJsonAbsenceTypeResponse(json: JsonOf<AbsenceTypeResponse>): AbsenceTypeResponse {
+  return {
+    ...json,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt)
+  }
+}
+
+
 export function deserializeJsonAttendanceTimesForDate(json: JsonOf<AttendanceTimesForDate>): AttendanceTimesForDate {
   return {
     ...json,
@@ -499,6 +508,8 @@ export function deserializeJsonChildDatePresence(json: JsonOf<ChildDatePresence>
 export function deserializeJsonChildRecordOfDay(json: JsonOf<ChildRecordOfDay>): ChildRecordOfDay {
   return {
     ...json,
+    absenceBillable: (json.absenceBillable != null) ? deserializeJsonAbsenceTypeResponse(json.absenceBillable) : null,
+    absenceNonbillable: (json.absenceNonbillable != null) ? deserializeJsonAbsenceTypeResponse(json.absenceNonbillable) : null,
     attendances: json.attendances.map(e => deserializeJsonAttendanceTimesForDate(e)),
     dailyServiceTimes: (json.dailyServiceTimes != null) ? deserializeJsonDailyServiceTimesValue(json.dailyServiceTimes) : null,
     reservations: json.reservations.map(e => deserializeJsonReservationResponse(e))

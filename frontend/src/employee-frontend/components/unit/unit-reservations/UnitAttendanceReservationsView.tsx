@@ -20,7 +20,6 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import LabelValueList from 'lib-components/molecules/LabelValueList'
 import { fontWeights, Label } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
 import { faChevronDown, faChevronUp } from 'lib-icons'
@@ -51,6 +50,12 @@ const Time = styled.span`
 const AttendanceTime = styled(Time)`
   font-weight: ${fontWeights.semibold};
   background: ${colors.grayscale.g4};
+`
+
+const Footnote = styled.div`
+  color: ${colors.grayscale.g70};
+  font-size: 14px;
+  margin-top: -24px;
 `
 
 interface Props {
@@ -183,8 +188,10 @@ export default React.memo(function UnitAttendanceReservationsView({
               selectedDate={selectedDate}
               selectedGroup={selectedGroup}
             />
+            <Footnote data-qa="created-by-employee-footnote">
+              {i18n.unit.attendanceReservations.createdByEmployee}
+            </Footnote>
             <div>
-              <Gap $size="s" />
               <FixedSpaceRow $alignItems="center">
                 <Label id="legend-title-label">
                   {i18n.absences.legendTitle}

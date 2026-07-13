@@ -115,7 +115,7 @@ export default React.memo(function ChildDayAttendance({
       <Tooltip
         tooltip={
           attendance &&
-          i18n.unit.attendanceReservations.lastModifiedStaff(
+          i18n.unit.attendanceReservations.lastModified(
             attendance.modifiedAt.format(),
             attendance.modifiedBy.name
           )

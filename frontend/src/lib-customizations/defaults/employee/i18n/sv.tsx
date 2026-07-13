@@ -2526,15 +2526,7 @@ export const sv: typeof fi = {
       requiresBackupCare: 'Gör reservplacering',
       openReservationModal: 'Gör återkommande reservation',
       childCount: 'Barn närvarande',
-      lastModifiedStaff: (date: string, name: string) => (
-        <div>
-          <p>*Anteckning gjord av personal</p>
-          <p>
-            Senast redigerad {date}; redigerare: {name}
-          </p>
-        </div>
-      ),
-      lastModifiedOther: (date: string, name: string) =>
+      lastModified: (date: string, name: string) =>
         `Senast redigerad ${date}; redigerare: ${name}`,
       reservationModal: {
         title: 'Gör reservation',
