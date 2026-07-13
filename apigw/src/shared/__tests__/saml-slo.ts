@@ -541,6 +541,36 @@ describe('SLO session tracking on rejected sfi login', () => {
     expect(await isEmployeeLoggedIn(tester)).toBe(false)
   })
 
+  test('IdP-initiated SLO with cookies reports success for the session it names', async () => {
+    await tester.login(mockUser, {
+      SAMLResponse: buildLoginResponse('citizen@local', '_c-idx', 'authnC')
+    })
+    await employeeSfiLogin(tester, 'employee@local', '_e-idx', {
+      rejected: false
+    })
+
+    const status = await idpInitiatedSlo(tester, 'employee@local', '_e-idx', {
+      withCookies: true
+    })
+
+    expect(status).toBe(SAML_SUCCESS)
+    expect(await isCitizenLoggedIn(tester)).toBe(false)
+    expect(await isEmployeeLoggedIn(tester)).toBe(false)
+  })
+
+  test('IdP-initiated SLO for a principal we never logged in reports failure', async () => {
+    await tester.login(mockUser, {
+      SAMLResponse: buildLoginResponse('citizen@local', '_c-idx', 'authnC')
+    })
+
+    const status = await idpInitiatedSlo(tester, 'stranger@local', '_s-idx', {
+      withCookies: true
+    })
+
+    expect(status).not.toBe(SAML_SUCCESS)
+    expect(await isCitizenLoggedIn(tester)).toBe(false)
+  })
+
   test('no pre-existing session: rejected login writes nothing', async () => {
     // Employee sfi login with no citizen or employee session present.
     const startRes = await tester.client.get('/api/employee/auth/sfi/login', {

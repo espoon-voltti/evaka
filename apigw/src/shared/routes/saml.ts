@@ -382,23 +382,36 @@ export function createSamlIntegration<T extends SessionType>(
       // 2. SP-initiated logout, and we've just received a logout response -> profile is null, the SAML transaction
       // is complete, and we should redirect the user to some meaningful page
       if (profile) {
-        let user: unknown
+        // Suomi.fi issues a fresh nameID per login, so the session holding the
+        // cookie is not necessarily the one the logout request names. Collect
+        // every identity we log out, and report success if it covers that one.
+        const loggedOutIdentities: unknown[] = []
         const sessionUser = sessions.getUser(req)
         if (sessionUser) {
-          const userId = SamlProfileIdSchema.safeParse(sessionUser)
-          user = userId.success ? userId.data : undefined
-
+          loggedOutIdentities.push(sessionUser)
+          if (secondaryCookieConfig) {
+            // destroy() tears the co-resident session down too, but also deletes
+            // the keys this reads, so its identity must be resolved first.
+            const secondaryUser = await sessions.getSecondaryUserIfNewer(req)
+            if (secondaryUser) loggedOutIdentities.push(secondaryUser)
+          }
           await sessions.destroy(req, res)
         } else {
           // We're possibly doing SLO without a real session (e.g. browser has
           // 3rd party cookies disabled)
           const logoutToken = createLogoutToken(profile)
-          const sessionUser = await sessions.logoutWithToken(logoutToken)
-          const userId = SamlProfileIdSchema.safeParse(sessionUser)
-          user = userId.success ? userId.data : undefined
+          const tokenUser = await sessions.logoutWithToken(logoutToken)
+          if (tokenUser) loggedOutIdentities.push(tokenUser)
         }
         const profileId = SamlProfileIdSchema.safeParse(profile)
-        const success = profileId.success && _.isEqual(user, profileId.data)
+        const success =
+          profileId.success &&
+          loggedOutIdentities.some((identity) => {
+            const identityId = SamlProfileIdSchema.safeParse(identity)
+            return (
+              identityId.success && _.isEqual(identityId.data, profileId.data)
+            )
+          })
 
         url = await saml.getLogoutResponseUrlAsync(
           profile,
