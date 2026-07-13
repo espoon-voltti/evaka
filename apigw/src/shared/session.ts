@@ -227,7 +227,10 @@ export function sessionSupport<T extends SessionType>(
     samlSession: SamlSession
   ): Promise<void> {
     if (!maxSessionTimeoutMinutes) return
-    const ids = linkedSessionIds.filter((id) => !!id)
+    const ids: string[] = []
+    for (const id of linkedSessionIds) {
+      if (id && (await isSfiSession(id))) ids.push(id)
+    }
     if (ids.length === 0) return
 
     const ttlSeconds = maxSessionTimeoutMinutes * 60
@@ -292,6 +295,11 @@ export function sessionSupport<T extends SessionType>(
     if (typeof user !== 'object' || user === null) return undefined
     const authType = (user as Record<string, unknown>).authType
     return typeof authType === 'string' ? authType : undefined
+  }
+
+  async function isSfiSession(sessionId: string): Promise<boolean> {
+    const session = await redisClient.get(sessionKey(sessionId))
+    return !!session && authTypeOf(storedUser(session)) === 'sfi'
   }
 
   async function deleteSessionById(sessionId: string): Promise<void> {
@@ -447,7 +455,8 @@ export function sessionSupport<T extends SessionType>(
       req.session.id &&
       user.authType === 'sfi' &&
       maxSessionTimeoutMinutes &&
-      secondarySessionId
+      secondarySessionId &&
+      (await isSfiSession(secondarySessionId))
     ) {
       await redisClient.set(
         secondarySfiSessionKey(req.session.id),

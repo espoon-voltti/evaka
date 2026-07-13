@@ -205,6 +205,59 @@ describe('destroy clears the rejected sfi login', () => {
   })
 })
 
+describe('sfi session cross-link', () => {
+  const citizenSfiUser = {
+    id: '942b9cab-210d-4d49-b4c9-65f26390eed3',
+    authType: 'sfi',
+    userType: 'CITIZEN_STRONG',
+    createdAt: 1000,
+    samlSession
+  } as Parameters<ReturnType<typeof sessionSupport<'citizen'>>['login']>[1]
+
+  const loginReq = (id: string) =>
+    ({
+      session: {
+        id,
+        regenerate: (cb: () => void) => cb(),
+        save: (cb: () => void) => cb()
+      }
+    }) as express.Request
+
+  const storeSecondary = (
+    redis: MockRedisClient,
+    id: string,
+    authType: string
+  ) =>
+    redis.set(
+      `sess:${id}`,
+      JSON.stringify({ passport: { user: { authType } } })
+    )
+
+  test('links a co-resident sfi session in both directions', async () => {
+    const redis = new MockRedisClient()
+    const sessions = sessionSupport('citizen', redis, sessionConfig, 32)
+    await storeSecondary(redis, 'emp-sfi', 'sfi')
+
+    await sessions.login(loginReq('cit-1'), citizenSfiUser, 'emp-sfi')
+
+    expect(await redis.get('sfisess:cit-1')).toBe('emp-sfi')
+    expect(await redis.get('sfisess:emp-sfi')).toBe('cit-1')
+  })
+
+  test('does not link a secondary session that is not an sfi session', async () => {
+    const redis = new MockRedisClient()
+    const sessions = sessionSupport('citizen', redis, sessionConfig, 32)
+    // Only Suomi.fi couples sessions; an AD login on the employee side is not
+    // part of the SSO session and must survive a Suomi.fi logout.
+    await storeSecondary(redis, 'emp-ad', 'ad')
+
+    await sessions.login(loginReq('cit-2'), citizenSfiUser, 'emp-ad')
+
+    expect(await redis.get('sfisess:cit-2')).toBeNull()
+    expect(await redis.get('sfisess:emp-ad')).toBeNull()
+  })
+})
+
 describe('logoutWithToken via a rejected sfi login', () => {
   const rejectedLoginToken = createLogoutToken(samlSession)
 
@@ -255,6 +308,28 @@ describe('logoutWithToken via a rejected sfi login', () => {
     expect(await redis.get('slo:employee-token')).toBeNull()
     expect(await redis.get('sfisess:ovr-c')).toBeNull()
     expect(await redis.get('sfisess:ovr-e')).toBeNull()
+  })
+
+  test('is not recorded for a linked non-sfi session', async () => {
+    const redis = new MockRedisClient()
+    const sessions = sessionSupport('citizen', redis, sessionConfig, 32)
+    // A rejected employee sfi login links the record to the employee's own
+    // pre-existing AD session, which is not part of the Suomi.fi SSO session.
+    await storeSession(redis, 'ovr-ad', 'ad', 'ad-token')
+    await storeSession(redis, 'ovr-sfi', 'sfi', 'sfi-token')
+
+    await sessions.saveRejectedSfiLogin(['ovr-ad', 'ovr-sfi'], samlSession)
+
+    expect(await redis.get('sfilogin:ovr-ad')).toBeNull()
+    expect(await redis.get('sfilogin:ovr-sfi')).not.toBeNull()
+
+    // ...so a Suomi.fi logout tears down only the sfi session
+    expect(await sessions.logoutWithToken(rejectedLoginToken)).toEqual(
+      samlSession
+    )
+    expect(await redis.get('sess:ovr-sfi')).toBeNull()
+    expect(await redis.get('sess:ovr-ad')).not.toBeNull()
+    expect(await redis.get('slo:ad-token')).not.toBeNull()
   })
 
   test('reports nothing logged out when the linked session is already gone', async () => {
