@@ -25,7 +25,7 @@ import { mapConfig } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
 import { FooterContent } from '../Footer'
-import { useTranslation } from '../localization'
+import { useLang, useTranslation } from '../localization'
 
 import type { MapAddress } from './MapView'
 import { mapViewBreakpoint } from './const'
@@ -44,6 +44,8 @@ export interface Props {
 }
 
 export default React.memo(function MapBox(props: Props) {
+  const t = useTranslation()
+  const [lang] = useLang()
   return (
     <Wrapper className="map-box">
       <Map
@@ -52,7 +54,12 @@ export default React.memo(function MapBox(props: Props) {
         zoomControl={false}
       >
         <MapContents {...props} />
-        <ZoomControl position="bottomright" />
+        <ZoomControl
+          key={lang}
+          position="bottomright"
+          zoomInTitle={t.map.zoomIn}
+          zoomOutTitle={t.map.zoomOut}
+        />
       </Map>
       <FooterWrapper>
         <FooterContent />
@@ -86,7 +93,14 @@ function MapContents({
   selectedAddress,
   setSelectedUnit
 }: Props) {
+  const t = useTranslation()
   const map = useMap()
+
+  useEffect(() => {
+    const container = map.getContainer()
+    container.setAttribute('role', 'region')
+    container.setAttribute('aria-label', t.map.title)
+  }, [map, t])
 
   useEffect(() => {
     if (selectedAddress) {
@@ -189,8 +203,10 @@ const UnitMarker = React.memo(function UnitMarker({
     const element = markerRef.current?.getElement()
     if (element) {
       element.setAttribute('data-qa', `map-marker-${id}`)
+      element.setAttribute('title', name)
+      element.setAttribute('alt', name)
     }
-  }, [markerRef, id])
+  }, [markerRef, id, name])
 
   const position = useMemo<LatLngTuple>(
     () => [location?.lat ?? 0, location?.lon ?? 0],

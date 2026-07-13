@@ -389,7 +389,9 @@ export default {
     serviceVoucherLink:
       'https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/yksityiseen-varhaiskasvatukseen-hakeminen#section-55369',
     noApplying: 'Ei hakua eVakan kautta, ota yhteys yksikköön',
-    backToSearch: 'Takaisin hakuun'
+    backToSearch: 'Takaisin hakuun',
+    zoomIn: 'Lähennä',
+    zoomOut: 'Loitonna'
   },
   calendar: {
     title: 'Kalenteri',

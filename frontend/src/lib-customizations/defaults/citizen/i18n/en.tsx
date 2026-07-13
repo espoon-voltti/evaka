@@ -389,7 +389,9 @@ const en: Translations = {
     serviceVoucherLink:
       'https://www.espoo.fi/en/childcare-and-education/early-childhood-education/applying-private-early-childhood-education#section-55369',
     noApplying: 'No applying via eVaka, contact the unit',
-    backToSearch: 'Back to search'
+    backToSearch: 'Back to search',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out'
   },
   calendar: {
     title: 'Calendar',
