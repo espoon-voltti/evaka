@@ -5525,10 +5525,6 @@ CREATE INDEX "idx$calendar_event_type_period" ON public.calendar_event USING gis
 
 CREATE INDEX "idx$child_attendance_child" ON public.child_attendance USING btree (child_id, date);
 
--- Name: idx$child_attendance_child_range; Type: INDEX; Schema: public
-
-CREATE INDEX "idx$child_attendance_child_range" ON public.child_attendance USING gist (child_id, tstzrange(arrived, departed));
-
 -- Name: idx$child_attendance_unit; Type: INDEX; Schema: public
 
 CREATE INDEX "idx$child_attendance_unit" ON public.child_attendance USING btree (unit_id, date);
