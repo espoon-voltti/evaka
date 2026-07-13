@@ -381,7 +381,8 @@ const sv: Translations = {
     noApplying: 'Ingen sökning via eVaka, kontakta tjänsten',
     backToSearch: 'Tillbaka till sökning',
     zoomIn: 'Zooma in',
-    zoomOut: 'Zooma ut'
+    zoomOut: 'Zooma ut',
+    closePopup: 'Stäng enhetens information'
   },
   calendar: {
     title: 'Kalender',

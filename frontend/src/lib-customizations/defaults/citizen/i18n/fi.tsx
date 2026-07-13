@@ -391,7 +391,8 @@ export default {
     noApplying: 'Ei hakua eVakan kautta, ota yhteys yksikköön',
     backToSearch: 'Takaisin hakuun',
     zoomIn: 'Lähennä',
-    zoomOut: 'Loitonna'
+    zoomOut: 'Loitonna',
+    closePopup: 'Sulje yksikön tiedot'
   },
   calendar: {
     title: 'Kalenteri',

@@ -223,6 +223,9 @@ const UnitMarker = React.memo(function UnitMarker({
         if (element) {
           element.setAttribute('role', 'dialog')
           element.setAttribute('aria-label', name)
+          element
+            .querySelector('.leaflet-popup-close-button')
+            ?.setAttribute('aria-label', t.map.closePopup)
           element.setAttribute('tabindex', '-1')
           element.focus({ preventScroll: true })
         }
@@ -231,7 +234,7 @@ const UnitMarker = React.memo(function UnitMarker({
         markerRef.current?.getElement()?.focus({ preventScroll: true })
       }
     }),
-    [onClick, unit, name]
+    [onClick, unit, name, t]
   )
 
   if (!location) return null

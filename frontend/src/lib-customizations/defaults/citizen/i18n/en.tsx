@@ -391,7 +391,8 @@ const en: Translations = {
     noApplying: 'No applying via eVaka, contact the unit',
     backToSearch: 'Back to search',
     zoomIn: 'Zoom in',
-    zoomOut: 'Zoom out'
+    zoomOut: 'Zoom out',
+    closePopup: 'Close unit information'
   },
   calendar: {
     title: 'Calendar',
