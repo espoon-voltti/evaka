@@ -22,6 +22,7 @@ import evaka.core.daycare.DaycareDecisionCustomization
 import evaka.core.daycare.MailingAddress
 import evaka.core.daycare.UnitManager
 import evaka.core.daycare.VisitingAddress
+import evaka.core.identity.ExternalId
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.auth.UserRole
@@ -347,6 +348,10 @@ fun Database.Transaction.seedApplications(): List<SeededFamily> {
                 name = spec.name,
                 capacity = spec.capacity,
                 type = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION),
+                dailyPreschoolTime = SeedApplicationsConfig.UNIT_DAILY_PRESCHOOL_TIME,
+                dailyPreparatoryTime = SeedApplicationsConfig.UNIT_DAILY_PREPARATORY_TIME,
+                daycareApplyPeriod = SeedApplicationsConfig.UNIT_DAYCARE_APPLY_PERIOD,
+                preschoolApplyPeriod = SeedApplicationsConfig.UNIT_PRESCHOOL_APPLY_PERIOD,
                 openingDate = SeedApplicationsConfig.UNIT_OPENING_DATE,
                 enabledPilotFeatures = SeedApplicationsConfig.UNIT_PILOT_FEATURES.toSet(),
                 phone = spec.phone,
@@ -380,11 +385,21 @@ fun Database.Transaction.seedApplications(): List<SeededFamily> {
         insert(group)
         insert(DevDaycareCaretaker(groupId = group.id, amount = BigDecimal(spec.capacity / 7)))
         insert(
-            DevEmployee(firstName = spec.supervisor.firstName, lastName = spec.supervisor.lastName),
+            DevEmployee(
+                firstName = spec.supervisor.firstName,
+                lastName = spec.supervisor.lastName,
+                email = spec.supervisor.email,
+                externalId = ExternalId.of("espoo-ad", spec.supervisor.externalId),
+            ),
             unitRoles = mapOf(id to UserRole.UNIT_SUPERVISOR),
         )
         insert(
-            DevEmployee(firstName = spec.staff.firstName, lastName = spec.staff.lastName),
+            DevEmployee(
+                firstName = spec.staff.firstName,
+                lastName = spec.staff.lastName,
+                email = spec.staff.email,
+                externalId = ExternalId.of("espoo-ad", spec.staff.externalId),
+            ),
             unitRoles = mapOf(id to UserRole.STAFF),
         )
     }

@@ -9,10 +9,13 @@ import evaka.core.shared.ApplicationId
 import evaka.core.shared.AreaId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.domain.Coordinate
+import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.domain.europeHelsinki
 import evaka.core.shared.security.PilotFeature
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
 enum class SeedKind {
@@ -37,7 +40,12 @@ data class IndividualReasoningContent(
     val textSv: String,
 )
 
-data class SeededUnitPerson(val firstName: String, val lastName: String)
+data class SeededUnitPerson(
+    val firstName: String,
+    val lastName: String,
+    val email: String,
+    val externalId: String,
+)
 
 data class SeededUnit(
     val name: String,
@@ -315,6 +323,12 @@ object SeedApplicationsConfig {
 
     val UNIT_OPENING_DATE: LocalDate = LocalDate.of(2020, 8, 1)
 
+    val UNIT_DAILY_PRESCHOOL_TIME: TimeRange = TimeRange(LocalTime.of(9, 0), LocalTime.of(13, 0))
+    val UNIT_DAILY_PREPARATORY_TIME: TimeRange = TimeRange(LocalTime.of(9, 0), LocalTime.of(14, 0))
+
+    val UNIT_DAYCARE_APPLY_PERIOD: DateRange = DateRange(UNIT_OPENING_DATE, null)
+    val UNIT_PRESCHOOL_APPLY_PERIOD: DateRange = DateRange(UNIT_OPENING_DATE, null)
+
     val UNIT_PILOT_FEATURES: List<PilotFeature> =
         listOf(
             PilotFeature.MESSAGING,
@@ -342,9 +356,21 @@ object SeedApplicationsConfig {
                 streetAddress = "Kylvökuja 4",
                 postalCode = "02230",
                 postOffice = "Espoo",
-                location = Coordinate(24.6522, 60.2052),
-                supervisor = SeededUnitPerson("Marjatta", "Lahti-Kylväjä"),
-                staff = SeededUnitPerson("Pekka", "Nurmi-Kylväjä"),
+                location = Coordinate(60.2052, 24.6522),
+                supervisor =
+                    SeededUnitPerson(
+                        "Marjatta",
+                        "Lahti-Kylväjä",
+                        "marjatta.lahti-kylvaja@evaka.test",
+                        "seed-marjatta-lahti-kylvaja",
+                    ),
+                staff =
+                    SeededUnitPerson(
+                        "Pekka",
+                        "Nurmi-Kylväjä",
+                        "pekka.nurmi-kylvaja@evaka.test",
+                        "seed-pekka-nurmi-kylvaja",
+                    ),
             ),
             SeededUnit(
                 name = "Kylvömäen esiopetusyksikkö",
@@ -355,9 +381,21 @@ object SeedApplicationsConfig {
                 streetAddress = "Kylvömäentie 12",
                 postalCode = "02250",
                 postOffice = "Espoo",
-                location = Coordinate(24.759, 60.224),
-                supervisor = SeededUnitPerson("Helena", "Koski-Kylväjä"),
-                staff = SeededUnitPerson("Antero", "Vainio-Kylväjä"),
+                location = Coordinate(60.224, 24.759),
+                supervisor =
+                    SeededUnitPerson(
+                        "Helena",
+                        "Koski-Kylväjä",
+                        "helena.koski-kylvaja@evaka.test",
+                        "seed-helena-koski-kylvaja",
+                    ),
+                staff =
+                    SeededUnitPerson(
+                        "Antero",
+                        "Vainio-Kylväjä",
+                        "antero.vainio-kylvaja@evaka.test",
+                        "seed-antero-vainio-kylvaja",
+                    ),
             ),
         )
 
