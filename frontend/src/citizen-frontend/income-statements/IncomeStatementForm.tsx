@@ -39,15 +39,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import {
-  fontWeights,
-  H1,
-  H2,
-  H3,
-  H4,
-  Label,
-  P
-} from 'lib-components/typography'
+import { H1, H2, H3, H4, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
@@ -448,7 +440,7 @@ const IncomeTypeSelection = React.memo(
                 info={startDateInputInfo}
                 hideErrorsBeforeTouched={!showFormErrors}
                 locale={lang}
-                required={true}
+                required
                 isInvalidDate={(d) =>
                   isValidStartDate(d)
                     ? null
@@ -536,6 +528,7 @@ const IncomeTypeSelection = React.memo(
               name="income-type"
               checked={formData.highestFeeSelected}
               onChange={onSelectHighestFee}
+              required
             />
             {formData.highestFeeSelected && (
               <>
@@ -552,6 +545,7 @@ const IncomeTypeSelection = React.memo(
               name="income-type"
               data-qa="gross-income-checkbox"
               onChange={onSelectGross}
+              required
             />
             {formData.grossSelected && (
               <>
@@ -636,6 +630,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             name="income-source"
             checked={formData.incomeSource === 'INCOMES_REGISTER'}
             onChange={() => onIncomeSourceChange('INCOMES_REGISTER')}
+            required
           />
           <Gap $size="s" />
           <Radio
@@ -643,6 +638,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             name="income-source"
             checked={formData.incomeSource === 'ATTACHMENTS'}
             onChange={() => onIncomeSourceChange('ATTACHMENTS')}
+            required
           />
           <Gap $size="s" />
           <Radio
@@ -650,6 +646,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             name="income-source"
             checked={formData.incomeSource === 'NO_INCOME'}
             onChange={() => onIncomeSourceChange('NO_INCOME')}
+            required
           />
         </div>
         <Gap $size="s" />
@@ -674,6 +671,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
                 validate(formData.noIncomeDescription, required),
                 t.validationErrors
               )}
+              required
             />
           </>
         )}
@@ -691,16 +689,20 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
           formData.incomeSource === 'ATTACHMENTS') && (
           <>
             <Gap $size="L" />
-            <Label>{t.income.grossIncome.estimate}</Label>
+            <Label htmlFor="estimated-monthly-income-gross">
+              {t.income.grossIncome.estimate} *
+            </Label>
             <Gap $size="m" />
             <FixedSpaceRow>
               <FixedSpaceColumn>
-                <LightLabel htmlFor="estimated-monthly-income-gross">
-                  {t.income.grossIncome.estimatedMonthlyIncome} *
-                </LightLabel>
+                <P $noMargin id="estimated-monthly-income-gross-description">
+                  {t.income.grossIncome.estimatedMonthlyIncome}
+                </P>
+                <Gap $size="zero" />
                 <InputField
                   id="estimated-monthly-income-gross"
                   data-qa="gross-monthly-income-estimate"
+                  aria-describedby="estimated-monthly-income-gross-description"
                   value={formData.estimatedMonthlyIncome}
                   onChange={onEstimatedMonthlyIncomeChange}
                   required
@@ -721,7 +723,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
               {t.income.grossIncome.otherIncome}
             </Label>
             <Gap $size="s" />
-            {t.income.grossIncome.otherIncomeDescription}
+            <P $noMargin>{t.income.grossIncome.otherIncomeDescription}</P>
             <Gap $size="s" />
             <OtherIncomeWrapper>
               <MultiSelect
@@ -747,13 +749,16 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             {formData.otherIncome.length > 0 && (
               <>
                 <Gap $size="s" />
-                <Label>{t.income.grossIncome.otherIncomeInfoLabel}</Label>
+                <Label htmlFor="other-income-info">
+                  {t.income.grossIncome.otherIncomeInfoLabel}
+                </Label>
                 <Gap $size="s" />
                 <P $noMargin>
                   {t.income.grossIncome.otherIncomeInfoDescription}
                 </P>
                 <Gap $size="s" />
                 <InputField
+                  id="other-income-info"
                   value={formData.otherIncomeInfo}
                   onChange={onOtherIncomeInfoChange}
                 />
@@ -776,6 +781,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             name="entrepreneur-selected"
             onChange={entrepreneurYes}
             data-qa="entrepreneur-yes"
+            required
           />
           <Gap $size="s" />
           <Radio
@@ -784,6 +790,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             name="entrepreneur-selected"
             onChange={entrepreneurNo}
             data-qa="entrepreneur-no"
+            required
           />
         </div>
       </FixedSpaceColumn>
@@ -915,6 +922,7 @@ const EntrepreneurIncomeSelection = React.memo(
               name="spouse-works-in-company"
               checked={formData.spouseWorksInCompany === true}
               onChange={() => onSpouseWorksInCompanyChange(true)}
+              required
             />
             <Gap $size="s" />
             <Radio
@@ -923,6 +931,7 @@ const EntrepreneurIncomeSelection = React.memo(
               name="spouse-works-in-company"
               checked={formData.spouseWorksInCompany === false}
               onChange={() => onSpouseWorksInCompanyChange(false)}
+              required
             />
           </div>
           <Gap $size="L" />
@@ -1411,10 +1420,6 @@ const OtherInfo = React.memo(function OtherInfo({
 
 const FeeInfo = styled(P).attrs({ $noMargin: true })`
   margin-left: ${defaultMargins.XL};
-`
-
-const LightLabel = styled(Label)`
-  font-weight: ${fontWeights.normal};
 `
 
 const Indent = styled.div`
