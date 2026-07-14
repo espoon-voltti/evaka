@@ -119,7 +119,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </table>
 
     <div class="legal-content">
-        <p th:text="#{text.reference.p2}"></p>
+        <span th:text="#{text.reference.p2}"></span>
+        <span><a th:href="'mailto:' + #{text.reference.p2.email}" th:text="#{text.reference.p2.email}"></a>.</span>
         <p th:text="#{text.legal.p2}"></p>
         <p th:text="#{text.legal.p1}"></p>
         <span th:text="#{text.reference}"></span>
