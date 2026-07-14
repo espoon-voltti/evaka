@@ -25,7 +25,7 @@ import { mapConfig } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
 import { FooterContent } from '../Footer'
-import { useTranslation } from '../localization'
+import { useLang, useTranslation } from '../localization'
 
 import type { MapAddress } from './MapView'
 import { mapViewBreakpoint } from './const'
@@ -44,6 +44,8 @@ export interface Props {
 }
 
 export default React.memo(function MapBox(props: Props) {
+  const t = useTranslation()
+  const [lang] = useLang()
   return (
     <Wrapper className="map-box">
       <Map
@@ -52,7 +54,12 @@ export default React.memo(function MapBox(props: Props) {
         zoomControl={false}
       >
         <MapContents {...props} />
-        <ZoomControl position="bottomright" />
+        <ZoomControl
+          key={lang}
+          position="bottomright"
+          zoomInTitle={t.map.zoomIn}
+          zoomOutTitle={t.map.zoomOut}
+        />
       </Map>
       <FooterWrapper>
         <FooterContent />
@@ -86,7 +93,14 @@ function MapContents({
   selectedAddress,
   setSelectedUnit
 }: Props) {
+  const t = useTranslation()
   const map = useMap()
+
+  useEffect(() => {
+    const container = map.getContainer()
+    container.setAttribute('role', 'region')
+    container.setAttribute('aria-label', t.map.title)
+  }, [map, t])
 
   useEffect(() => {
     if (selectedAddress) {
@@ -140,6 +154,7 @@ function AddressMarker({ address }: { address: MapAddress }) {
   return (
     <Marker
       title={address.streetAddress}
+      alt={address.streetAddress}
       position={[lat, lon]}
       icon={addressIcon}
       zIndexOffset={20}
@@ -188,16 +203,38 @@ const UnitMarker = React.memo(function UnitMarker({
     const element = markerRef.current?.getElement()
     if (element) {
       element.setAttribute('data-qa', `map-marker-${id}`)
+      element.setAttribute('title', name)
+      element.setAttribute('alt', name)
     }
-  }, [markerRef, id])
+  }, [markerRef, id, name])
 
   const position = useMemo<LatLngTuple>(
     () => [location?.lat ?? 0, location?.lon ?? 0],
     [location]
   )
   const eventHandlers = useMemo<LeafletEventHandlerFnMap>(
-    () => ({ click: () => onClick(unit) }),
-    [onClick, unit]
+    () => ({
+      click: () => onClick(unit),
+      // on popup open, move focus to the popup so that screen
+      // readers can read the content without having to navigate
+      // through all the markers first
+      popupopen: (e) => {
+        const element = e.popup.getElement()
+        if (element) {
+          element.setAttribute('role', 'dialog')
+          element.setAttribute('aria-label', name)
+          element
+            .querySelector('.leaflet-popup-close-button')
+            ?.setAttribute('aria-label', t.map.closePopup)
+          element.setAttribute('tabindex', '-1')
+          element.focus({ preventScroll: true })
+        }
+      },
+      popupclose: () => {
+        markerRef.current?.getElement()?.focus({ preventScroll: true })
+      }
+    }),
+    [onClick, unit, name, t]
   )
 
   if (!location) return null
@@ -205,6 +242,7 @@ const UnitMarker = React.memo(function UnitMarker({
   return (
     <Marker
       title={name}
+      alt={name}
       position={position}
       icon={isSelected ? unitHighlightIcon : unitIcon}
       zIndexOffset={isSelected ? 10 : 0}

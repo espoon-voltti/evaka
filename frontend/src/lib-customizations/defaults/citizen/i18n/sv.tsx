@@ -379,7 +379,10 @@ const sv: Translations = {
     serviceVoucherLink:
       'https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/ansokan-till-privat-smabarnspedagogik#section-55369',
     noApplying: 'Ingen sökning via eVaka, kontakta tjänsten',
-    backToSearch: 'Tillbaka till sökning'
+    backToSearch: 'Tillbaka till sökning',
+    zoomIn: 'Zooma in',
+    zoomOut: 'Zooma ut',
+    closePopup: 'Stäng enhetens information'
   },
   calendar: {
     title: 'Kalender',
