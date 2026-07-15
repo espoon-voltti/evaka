@@ -35,6 +35,7 @@ import evaka.core.insertServiceNeedOptions
 import evaka.core.nekku.NekkuProductMealType
 import evaka.core.note.child.sticky.ChildStickyNoteBody
 import evaka.core.note.child.sticky.createChildStickyNote
+import evaka.core.pis.service.blockGuardian
 import evaka.core.placement.PlacementSource
 import evaka.core.placement.PlacementType
 import evaka.core.s3.DocumentService
@@ -1019,6 +1020,429 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(1, financeNoteCount(activeGuardian))
     }
 
+    @Test
+    fun `deleteExpiredGuardians deletes guardianship of child whose last placement ended over ten years ago`() {
+        val guardian = insertAdult()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+
+        deleteExpiredGuardians(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(0, rowCount("guardian"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardians keeps guardianship when the child's placement ends on or after the ten-year boundary`() {
+        val guardian = insertAdult()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate)
+
+        deleteExpiredGuardians(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("guardian"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardians keeps guardianship of a child with no placements`() {
+        val guardian = insertAdult()
+        insertGuardianship(guardian, child.id)
+
+        deleteExpiredGuardians(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("guardian"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardians keeps guardianship while the guardian's citizen user removal is pending and deletes it afterwards`() {
+        val guardian = insertAdultWithCitizenUser()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+
+        deleteExpiredGuardians(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("guardian"), "guardianship is kept while citizen user exists")
+
+        deleteExpiredCitizenUsers(db, expireDate = leafExpireDate, limit = 100)
+        deleteExpiredGuardians(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(0, rowCount("guardian"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardians deletes expired guardianship even when the guardian's citizen user is kept by another child's recent placement`() {
+        val guardian = insertAdultWithCitizenUser()
+        val recentChild = DevPerson()
+        db.transaction { it.insert(recentChild, DevPersonType.CHILD) }
+        insertGuardianship(guardian, child.id)
+        insertGuardianship(guardian, recentChild.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        insertPlacementEnding(recentChild.id, today.plusYears(1))
+
+        deleteExpiredGuardians(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("guardian"), "only the expired guardianship is deleted")
+        assertTrue(citizenUserExists(guardian))
+    }
+
+    @Test
+    fun `deleteExpiredGuardians keeps guardianship while the guardian's finance note removal is pending and deletes it afterwards`() {
+        val guardian = insertAdult()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        insertFinanceNote(guardian)
+
+        deleteExpiredGuardians(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("guardian"), "guardianship is kept while a finance note exists")
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredGuardians(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(0, rowCount("guardian"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardians respects limit`() {
+        val guardian = insertAdult()
+        val children = (1..5).map { DevPerson() }
+        db.transaction { tx -> children.forEach { tx.insert(it, DevPersonType.CHILD) } }
+        children.forEach {
+            insertPlacementEnding(it.id, tenYearExpireDate.minusDays(1))
+            insertGuardianship(guardian, it.id)
+        }
+
+        deleteExpiredGuardians(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 2,
+        )
+
+        assertEquals(3, rowCount("guardian"))
+    }
+
+    @Test
+    fun `deleteExpiredFosterParents deletes foster parenthood of child whose last placement ended over ten years ago`() {
+        val fosterParent = insertAdult()
+        insertFosterParenthood(fosterParent, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+
+        deleteExpiredFosterParents(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(0, rowCount("foster_parent"))
+    }
+
+    @Test
+    fun `deleteExpiredFosterParents keeps foster parenthood when the child's placement ends on or after the ten-year boundary`() {
+        val fosterParent = insertAdult()
+        insertFosterParenthood(fosterParent, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate)
+
+        deleteExpiredFosterParents(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("foster_parent"))
+    }
+
+    @Test
+    fun `deleteExpiredFosterParents keeps foster parenthood while the parent's citizen user removal is pending and deletes it afterwards`() {
+        val fosterParent = insertAdultWithCitizenUser()
+        insertFosterParenthood(fosterParent, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+
+        deleteExpiredFosterParents(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(
+            1,
+            rowCount("foster_parent"),
+            "foster parenthood is kept while citizen user exists",
+        )
+
+        deleteExpiredCitizenUsers(db, expireDate = leafExpireDate, limit = 100)
+        deleteExpiredFosterParents(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(0, rowCount("foster_parent"))
+    }
+
+    @Test
+    fun `deleteExpiredFosterParents keeps foster parenthood while the parent's finance note removal is pending and deletes it afterwards`() {
+        val fosterParent = insertAdult()
+        insertFosterParenthood(fosterParent, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        insertFinanceNote(fosterParent)
+
+        deleteExpiredFosterParents(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(
+            1,
+            rowCount("foster_parent"),
+            "foster parenthood is kept while a finance note exists",
+        )
+
+        deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
+        deleteExpiredFosterParents(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(0, rowCount("foster_parent"))
+    }
+
+    @Test
+    fun `deleteExpiredFosterParents respects limit`() {
+        val fosterParent = insertAdult()
+        val children = (1..5).map { DevPerson() }
+        db.transaction { tx -> children.forEach { tx.insert(it, DevPersonType.CHILD) } }
+        children.forEach {
+            insertPlacementEnding(it.id, tenYearExpireDate.minusDays(1))
+            insertFosterParenthood(fosterParent, it.id)
+        }
+
+        deleteExpiredFosterParents(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 2,
+        )
+
+        assertEquals(3, rowCount("foster_parent"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardianBlocklistRows deletes blocklist row of child whose last placement ended over ten years ago`() {
+        val blockedGuardian = insertAdult()
+        insertGuardianBlocklistRow(blockedGuardian, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+
+        deleteExpiredGuardianBlocklistRows(db, expireDate = tenYearExpireDate, limit = 100)
+
+        assertEquals(0, rowCount("guardian_blocklist"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardianBlocklistRows keeps blocklist row when the child's placement ends on or after the ten-year boundary`() {
+        val blockedGuardian = insertAdult()
+        insertGuardianBlocklistRow(blockedGuardian, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate)
+
+        deleteExpiredGuardianBlocklistRows(db, expireDate = tenYearExpireDate, limit = 100)
+
+        assertEquals(1, rowCount("guardian_blocklist"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardianBlocklistRows keeps blocklist row of a child with no placements`() {
+        val blockedGuardian = insertAdult()
+        insertGuardianBlocklistRow(blockedGuardian, child.id)
+
+        deleteExpiredGuardianBlocklistRows(db, expireDate = tenYearExpireDate, limit = 100)
+
+        assertEquals(1, rowCount("guardian_blocklist"))
+    }
+
+    @Test
+    fun `deleteExpiredGuardianBlocklistRows respects limit`() {
+        val blockedGuardian = insertAdult()
+        val children = (1..5).map { DevPerson() }
+        db.transaction { tx -> children.forEach { tx.insert(it, DevPersonType.CHILD) } }
+        children.forEach {
+            insertPlacementEnding(it.id, tenYearExpireDate.minusDays(1))
+            insertGuardianBlocklistRow(blockedGuardian, it.id)
+        }
+
+        deleteExpiredGuardianBlocklistRows(db, expireDate = tenYearExpireDate, limit = 2)
+
+        assertEquals(3, rowCount("guardian_blocklist"))
+    }
+
+    @Test
+    fun `deleteExpiredData removes expired guardian, foster parent and blocklist rows together with the person's citizen user and finance notes in a single pass`() {
+        val parent = insertAdultWithCitizenUser()
+        insertGuardianship(parent, child.id)
+        insertFosterParenthood(parent, child.id)
+        insertFinanceNote(parent)
+        val blockedGuardian = insertAdult()
+        insertGuardianBlocklistRow(blockedGuardian, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+
+        withLimit(100) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(0, rowCount("guardian"))
+        assertEquals(0, rowCount("foster_parent"))
+        assertEquals(0, rowCount("guardian_blocklist"))
+        assertFalse(citizenUserExists(parent))
+        assertEquals(0, financeNoteCount(parent))
+    }
+
+    @Test
+    fun `deleteExpiredData single pass on a mixed data set removes guardianships, blocklist rows and finance notes only for children whose placements ended over ten years ago`() {
+        val expiredChild1 = DevPerson()
+        val expiredChild2 = DevPerson()
+        val boundaryChild = DevPerson()
+        val multiPlacementChild = DevPerson()
+        val unplacedChild = DevPerson()
+        val recentChild = DevPerson()
+        db.transaction { tx ->
+            listOf(
+                    expiredChild1,
+                    expiredChild2,
+                    boundaryChild,
+                    multiPlacementChild,
+                    unplacedChild,
+                    recentChild,
+                )
+                .forEach { tx.insert(it, DevPersonType.CHILD) }
+        }
+        insertPlacementEnding(expiredChild1.id, tenYearExpireDate.minusDays(1))
+        insertPlacementEnding(expiredChild2.id, tenYearExpireDate.minusYears(2))
+        // ends exactly on the boundary -> not expired
+        insertPlacementEnding(boundaryChild.id, tenYearExpireDate)
+        // the newest placement determines expiry -> not expired
+        insertPlacementEnding(multiPlacementChild.id, tenYearExpireDate.minusYears(2))
+        insertPlacementEnding(multiPlacementChild.id, today.minusYears(3))
+        insertPlacementEnding(recentChild.id, today.minusMonths(6))
+
+        // guardian1's expired-child guardianship and finance note are removed, but the
+        // guardianship of the unplaced child is kept
+        val guardian1 = insertAdult()
+        insertGuardianship(guardian1, expiredChild1.id)
+        insertGuardianship(guardian1, unplacedChild.id)
+        insertFinanceNote(guardian1)
+
+        // guardian2 has one expired and one recent child -> only the expired guardianship is
+        // removed and the finance note is kept
+        val guardian2 = insertAdult()
+        insertGuardianship(guardian2, expiredChild2.id)
+        insertGuardianship(guardian2, recentChild.id)
+        insertFinanceNote(guardian2)
+
+        // guardian3's children are recent or on the boundary -> nothing is removed
+        val guardian3 = insertAdult()
+        insertGuardianship(guardian3, recentChild.id)
+        insertGuardianship(guardian3, boundaryChild.id)
+        insertFinanceNote(guardian3)
+
+        // guardian4 is the second guardian of an expired child -> that guardianship is removed
+        // for both guardians, while the multi-placement child keeps guardian4's other rows
+        val guardian4 = insertAdult()
+        insertGuardianship(guardian4, expiredChild1.id)
+        insertGuardianship(guardian4, multiPlacementChild.id)
+        insertFinanceNote(guardian4)
+
+        val blockedGuardian1 = insertAdult()
+        insertGuardianBlocklistRow(blockedGuardian1, expiredChild2.id)
+        insertGuardianBlocklistRow(blockedGuardian1, boundaryChild.id)
+        val blockedGuardian2 = insertAdult()
+        insertGuardianBlocklistRow(blockedGuardian2, recentChild.id)
+
+        withLimit(100) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(
+            setOf(
+                guardian1 to unplacedChild.id,
+                guardian2 to recentChild.id,
+                guardian3 to recentChild.id,
+                guardian3 to boundaryChild.id,
+                guardian4 to multiPlacementChild.id,
+            ),
+            guardianChildPairs("guardian"),
+        )
+        assertEquals(
+            setOf(blockedGuardian1 to boundaryChild.id, blockedGuardian2 to recentChild.id),
+            guardianChildPairs("guardian_blocklist"),
+        )
+        assertEquals(0, financeNoteCount(guardian1))
+        assertEquals(1, financeNoteCount(guardian2))
+        assertEquals(1, financeNoteCount(guardian3))
+        assertEquals(1, financeNoteCount(guardian4))
+    }
+
     private fun setupServiceNeedOptions() {
         db.transaction { it.insertServiceNeedOptions() }
     }
@@ -1139,6 +1563,10 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction { it.insert(DevGuardian(guardianId = guardian, childId = childId)) }
     }
 
+    private fun insertGuardianBlocklistRow(guardianId: PersonId, childId: ChildId) {
+        db.transaction { it.blockGuardian(childId = childId, guardianId = guardianId) }
+    }
+
     private fun insertFosterParenthood(
         parent: PersonId,
         childId: ChildId,
@@ -1160,6 +1588,12 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private fun citizenUserExists(id: PersonId): Boolean = db.read { tx ->
         tx.createQuery { sql("SELECT EXISTS(SELECT FROM citizen_user WHERE id = ${bind(id)})") }
             .exactlyOne<Boolean>()
+    }
+
+    private fun guardianChildPairs(table: String): Set<Pair<PersonId, ChildId>> = db.read { tx ->
+        tx.createQuery { sql("SELECT guardian_id, child_id FROM $table") }
+            .toList { column<PersonId>("guardian_id") to column<ChildId>("child_id") }
+            .toSet()
     }
 
     private val allLeafTables =
