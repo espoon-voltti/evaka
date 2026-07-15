@@ -758,11 +758,12 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
                   {t.income.grossIncome.otherIncomeInfoLabel}
                 </Label>
                 <Gap $size="s" />
-                <P $noMargin>
+                <P $noMargin id="other-income-info-description">
                   {t.income.grossIncome.otherIncomeInfoDescription}
                 </P>
                 <Gap $size="s" />
                 <InputField
+                  aria-describedby="other-income-info-description"
                   id="other-income-info"
                   value={formData.otherIncomeInfo}
                   onChange={onOtherIncomeInfoChange}
