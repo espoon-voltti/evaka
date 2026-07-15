@@ -28,6 +28,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <div class="page last-page">
     <div th:replace="~{ shared/common :: decision-details}"></div>
     <div th:utext="#{decision.legalInstructions}"></div>
+    <th:block th:if="${reasoning != null}">
+        <div th:replace="~{ shared/common :: decision-reasoning(${reasoning}) }"></div>
+    </th:block>
 </div>
 
 </body>
