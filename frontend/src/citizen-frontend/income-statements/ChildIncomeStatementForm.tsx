@@ -317,6 +317,8 @@ export default React.memo(
           <ContentArea $opaque $paddingVertical="L">
             <AssureCheckbox>
               <Checkbox
+                aria-required
+                hideAsterisk
                 label={t.income.assure}
                 checked={formData.assure}
                 data-qa="assure-checkbox"
