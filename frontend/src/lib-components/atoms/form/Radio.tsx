@@ -118,7 +118,6 @@ type RadioProps = BaseProps & {
   small?: boolean
   id?: string
   translate?: 'yes' | 'no'
-  required?: boolean
 } & ({ label: string } | { label: ReactNode; ariaLabel: string })
 
 export default React.memo(function Radio({
@@ -131,7 +130,6 @@ export default React.memo(function Radio({
   small,
   id,
   translate,
-  required,
   ...props
 }: RadioProps) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -159,7 +157,6 @@ export default React.memo(function Radio({
             if (onChange) onChange()
           }}
           readOnly={!onChange}
-          required={required}
           ref={inputRef}
           $small={small}
         />

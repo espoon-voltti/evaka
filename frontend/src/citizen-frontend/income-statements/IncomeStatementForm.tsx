@@ -510,7 +510,11 @@ const IncomeTypeSelection = React.memo(
               <Gap $size="s" />
             </>
           )}
-          <div role="group" aria-labelledby="income-type-label">
+          <div
+            role="radiogroup"
+            aria-required="true"
+            aria-labelledby="income-type-label"
+          >
             <LabelWithError
               label={`${t.income.incomeType.title} *`}
               labelId="income-type-label"
@@ -528,7 +532,6 @@ const IncomeTypeSelection = React.memo(
               name="income-type"
               checked={formData.highestFeeSelected}
               onChange={onSelectHighestFee}
-              required
             />
             {formData.highestFeeSelected && (
               <>
@@ -545,7 +548,6 @@ const IncomeTypeSelection = React.memo(
               name="income-type"
               data-qa="gross-income-checkbox"
               onChange={onSelectGross}
-              required
             />
             {formData.grossSelected && (
               <>
@@ -616,7 +618,11 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
         <Gap $size="m" />
         {t.income.grossIncome.description}
         <Gap $size="m" />
-        <div role="group" aria-labelledby="income-source-label">
+        <div
+          role="radiogroup"
+          aria-required="true"
+          aria-labelledby="income-source-label"
+        >
           <LabelWithError
             label={`${t.income.grossIncome.incomeSource} *`}
             labelId="income-source-label"
@@ -630,7 +636,6 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             name="income-source"
             checked={formData.incomeSource === 'INCOMES_REGISTER'}
             onChange={() => onIncomeSourceChange('INCOMES_REGISTER')}
-            required
           />
           <Gap $size="s" />
           <Radio
@@ -638,7 +643,6 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             name="income-source"
             checked={formData.incomeSource === 'ATTACHMENTS'}
             onChange={() => onIncomeSourceChange('ATTACHMENTS')}
-            required
           />
           <Gap $size="s" />
           <Radio
@@ -646,7 +650,6 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             name="income-source"
             checked={formData.incomeSource === 'NO_INCOME'}
             onChange={() => onIncomeSourceChange('NO_INCOME')}
-            required
           />
         </div>
         <Gap $size="s" />
@@ -767,7 +770,11 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
           </>
         )}
         <Gap $size="L" />
-        <div role="group" aria-labelledby="entrepreneur-select-label">
+        <div
+          role="radiogroup"
+          aria-required="true"
+          aria-labelledby="entrepreneur-select-label"
+        >
           <LabelWithError
             label={`${t.income.entrepreneurIncome.entrepreneurSelectTitle} *`}
             labelId="entrepreneur-select-label"
@@ -781,7 +788,6 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             name="entrepreneur-selected"
             onChange={entrepreneurYes}
             data-qa="entrepreneur-yes"
-            required
           />
           <Gap $size="s" />
           <Radio
@@ -790,7 +796,6 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
             name="entrepreneur-selected"
             onChange={entrepreneurNo}
             data-qa="entrepreneur-no"
-            required
           />
         </div>
       </FixedSpaceColumn>
@@ -906,7 +911,11 @@ const EntrepreneurIncomeSelection = React.memo(
             </FixedSpaceColumn>
           </FixedSpaceRow>
           <Gap $size="L" />
-          <div role="group" aria-labelledby="spouse-works-in-company-label">
+          <div
+            role="radiogroup"
+            aria-required="true"
+            aria-labelledby="spouse-works-in-company-label"
+          >
             <LabelWithError
               label={`${t.income.entrepreneurIncome.spouseWorksInCompany} *`}
               labelId="spouse-works-in-company-label"
@@ -922,7 +931,6 @@ const EntrepreneurIncomeSelection = React.memo(
               name="spouse-works-in-company"
               checked={formData.spouseWorksInCompany === true}
               onChange={() => onSpouseWorksInCompanyChange(true)}
-              required
             />
             <Gap $size="s" />
             <Radio
@@ -931,7 +939,6 @@ const EntrepreneurIncomeSelection = React.memo(
               name="spouse-works-in-company"
               checked={formData.spouseWorksInCompany === false}
               onChange={() => onSpouseWorksInCompanyChange(false)}
-              required
             />
           </div>
           <Gap $size="L" />
@@ -1226,18 +1233,21 @@ const LimitedCompanyIncomeSelection = React.memo(
             attachmentHandler={attachmentHandler}
             dense
           />
-          <Radio
-            label={t.income.limitedCompany.incomesRegister}
-            data-qa="llc-incomes-register"
-            checked={formData.incomeSource === 'INCOMES_REGISTER'}
-            onChange={() => onIncomeSourceChange('INCOMES_REGISTER')}
-          />
-          <Radio
-            label={t.income.limitedCompany.attachments}
-            data-qa="llc-attachments"
-            checked={formData.incomeSource === 'ATTACHMENTS'}
-            onChange={() => onIncomeSourceChange('ATTACHMENTS')}
-          />
+          <div role="radiogroup" aria-required="true">
+            <Radio
+              label={t.income.limitedCompany.incomesRegister}
+              data-qa="llc-incomes-register"
+              checked={formData.incomeSource === 'INCOMES_REGISTER'}
+              onChange={() => onIncomeSourceChange('INCOMES_REGISTER')}
+            />
+            <Gap $size="xs" />
+            <Radio
+              label={t.income.limitedCompany.attachments}
+              data-qa="llc-attachments"
+              checked={formData.incomeSource === 'ATTACHMENTS'}
+              onChange={() => onIncomeSourceChange('ATTACHMENTS')}
+            />
+          </div>
           {formData.incomeSource === 'ATTACHMENTS' && (
             <AttachmentSection
               attachmentType="PAYSLIP_LLC"
