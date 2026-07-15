@@ -869,12 +869,21 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: SimpleApplicationAction,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.ensureFakeAdminExists()
-                applicationStateService.doSimpleAction(tx, fakeAdmin, clock, action, applicationId)
+                dbc.transaction { tx ->
+                    tx.ensureFakeAdminExists()
+                    applicationStateService.doSimpleAction(
+                        tx,
+                        fakeAdmin,
+                        clock,
+                        audit,
+                        action,
+                        applicationId,
+                    )
+                }
             }
-        }
+            .also { audit.log(action.auditEvent, clock) }
         runAllAsyncJobs(clock)
     }
 

@@ -4,6 +4,7 @@
 
 package evaka.core.decision
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.application.AcceptDecisionRequest
 import evaka.core.application.ApplicationControllerCitizen
@@ -1419,7 +1420,14 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     ),
             )
 
-        applicationStateService.setVerified(tx, employee.user, clock, applicationId, false)
+        applicationStateService.setVerified(
+            tx,
+            employee.user,
+            clock,
+            AuditContext(),
+            applicationId,
+            false,
+        )
         applicationStateService.createPlacementPlan(
             tx,
             employee.user,

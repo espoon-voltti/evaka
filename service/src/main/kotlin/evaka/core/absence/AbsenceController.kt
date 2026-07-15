@@ -5,6 +5,7 @@
 package evaka.core.absence
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.CitizenCalendarEnv
 import evaka.core.reservations.clearOldReservations
@@ -43,6 +44,7 @@ class AbsenceController(
         @RequestParam month: Int,
         @PathVariable groupId: GroupId,
     ): GroupMonthCalendar {
+        val audit = AuditContext().add(groupId).observeDate(LocalDate.of(year, month, 1))
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -53,22 +55,18 @@ class AbsenceController(
                         groupId,
                     )
                     getGroupMonthCalendar(
-                        it,
-                        clock.today(),
-                        groupId,
-                        year,
-                        month,
-                        featureConfig,
-                        citizenCalendarEnv.calendarOpenBeforePlacementDays,
-                    )
+                            it,
+                            clock.today(),
+                            groupId,
+                            year,
+                            month,
+                            featureConfig,
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays,
+                        )
+                        .also { calendar -> audit.add(calendar.children.map { child -> child.id }) }
                 }
             }
-            .also {
-                Audit.AbsenceRead.log(
-                    targetId = AuditId(groupId),
-                    meta = mapOf("year" to year, "month" to month),
-                )
-            }
+            .also { audit.log(Audit.AbsenceRead, clock) }
     }
 
     @PostMapping("/{groupId}")
@@ -80,6 +78,8 @@ class AbsenceController(
         @PathVariable groupId: GroupId,
     ) {
         val children = absences.map { it.childId }.distinct()
+        val audit =
+            AuditContext().add(groupId).add(children).observeDate(absences.minOfOrNull { it.date })
 
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -121,20 +121,18 @@ class AbsenceController(
                             featureConfig.citizenReservationThresholdHours,
                         )
                     tx.clearOldReservations(
-                        absences
-                            .filter { reservableRange.includes(it.date) }
-                            .map { it.childId to it.date }
-                    )
+                            absences
+                                .filter { reservableRange.includes(it.date) }
+                                .map { it.childId to it.date }
+                        )
+                        .also { audit.add(it) }
 
-                    tx.upsertAbsences(clock.now(), user.evakaUserId, absences)
+                    tx.upsertAbsences(clock.now(), user.evakaUserId, absences).also {
+                        audit.add(it)
+                    }
                 }
             }
-            .also { absenceIdList ->
-                Audit.AbsenceUpsert.log(
-                    targetId = AuditId(groupId),
-                    objectId = AuditId(absenceIdList) + AuditId(children),
-                )
-            }
+            .also { audit.log(Audit.AbsenceUpsert, clock) }
     }
 
     @PostMapping("/{groupId}/present")
@@ -146,6 +144,8 @@ class AbsenceController(
         @RequestBody deletions: List<Presence>,
     ) {
         val children = deletions.map { it.childId }.distinct()
+        val audit =
+            AuditContext().add(groupId).add(children).observeDate(deletions.minOfOrNull { it.date })
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -162,22 +162,15 @@ class AbsenceController(
                         Action.Child.DELETE_ABSENCE,
                         children,
                     )
-                    val deletedAbsences = tx.batchDeleteAbsences(deletions)
-                    val addedReservations =
-                        tx.addMissingHolidayReservations(
+                    tx.batchDeleteAbsences(deletions).also { audit.add(it) }
+                    tx.addMissingHolidayReservations(
                             user.evakaUserId,
                             deletions.map { HolidayReservationCreate(it.childId, it.date) },
                         )
-                    Pair(deletedAbsences, addedReservations)
+                        .also { audit.add(it) }
                 }
             }
-            .also { (deleted, reservations) ->
-                Audit.AbsenceDelete.log(
-                    targetId = AuditId(groupId),
-                    objectId = AuditId(deleted) + AuditId(children),
-                    meta = mapOf("createdHolidayReservations" to reservations),
-                )
-            }
+            .also { audit.log(Audit.AbsenceDelete, clock) }
     }
 
     data class HolidayReservationsDelete(val childId: ChildId, val date: LocalDate)
@@ -230,6 +223,7 @@ class AbsenceController(
         @RequestParam year: Int,
         @RequestParam month: Int,
     ): List<Absence> {
+        val audit = AuditContext().add(childId).observeDate(LocalDate.of(year, month, 1))
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -242,11 +236,6 @@ class AbsenceController(
                     getAbsencesOfChildByMonth(it, childId, year, month)
                 }
             }
-            .also {
-                Audit.AbsenceRead.log(
-                    targetId = AuditId(childId),
-                    meta = mapOf("year" to year, "month" to month),
-                )
-            }
+            .also { audit.log(Audit.AbsenceRead, clock) }
     }
 }

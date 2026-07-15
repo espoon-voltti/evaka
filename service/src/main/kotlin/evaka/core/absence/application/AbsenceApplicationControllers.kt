@@ -5,7 +5,7 @@
 package evaka.core.absence.application
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.absence.AbsenceService
 import evaka.core.absence.AbsenceType
 import evaka.core.daycare.PreschoolTerm
@@ -27,7 +27,6 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.getPreschoolOperationalDatesForChild
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
-import evaka.core.shared.utils.mapOfNotNullValues
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -54,6 +53,8 @@ class AbsenceApplicationControllerEmployee(
         @RequestParam childId: ChildId?,
         @RequestParam status: AbsenceApplicationStatus?,
     ): List<AbsenceApplicationSummaryEmployee> {
+        val audit = AuditContext().add(listOfNotNull(unitId)).add(listOfNotNull(childId))
+        if (status != null) audit.addMeta("status", status)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val permissions =
@@ -104,31 +105,30 @@ class AbsenceApplicationControllerEmployee(
                                     )
                                     .spanningRange()
                         )
-                    applications.mapNotNull { application ->
-                        actions[application.id]
-                            ?.takeIf { it.contains(Action.AbsenceApplication.READ) }
-                            ?.let {
-                                AbsenceApplicationSummaryEmployee(
-                                    application,
-                                    it.filter { action ->
-                                            action != Action.AbsenceApplication.DECIDE_MAX_WEEK ||
-                                                isMaxWeek(tx, application, terms)
-                                        }
-                                        .toSet(),
-                                )
-                            }
-                    }
+                    applications
+                        .mapNotNull { application ->
+                            actions[application.id]
+                                ?.takeIf { it.contains(Action.AbsenceApplication.READ) }
+                                ?.let {
+                                    AbsenceApplicationSummaryEmployee(
+                                        application,
+                                        it.filter { action ->
+                                                action !=
+                                                    Action.AbsenceApplication.DECIDE_MAX_WEEK ||
+                                                    isMaxWeek(tx, application, terms)
+                                            }
+                                            .toSet(),
+                                    )
+                                }
+                        }
+                        .also { summaries ->
+                            audit
+                                .add(summaries.map { summary -> summary.data.id })
+                                .add(summaries.map { summary -> summary.data.child.id })
+                        }
                 }
             }
-            .also {
-                Audit.AbsenceApplicationRead.log(
-                    meta =
-                        mapOfNotNullValues(
-                            "unitId" to unitId?.let { AuditId(it) },
-                            "childId" to childId?.let { AuditId(it) },
-                        )
-                )
-            }
+            .also { audit.log(Audit.AbsenceApplicationRead, clock) }
     }
 
     @PostMapping("/{id}/accept")
@@ -138,9 +138,11 @@ class AbsenceApplicationControllerEmployee(
         clock: EvakaClock,
         @PathVariable id: AbsenceApplicationId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     val application = getApplicationForDecision(tx, user, clock, id)
+                    audit.add(application.childId).observeDate(application.startDate)
                     tx.decideAbsenceApplication(
                         application.id,
                         AbsenceApplicationStatus.ACCEPTED,
@@ -152,6 +154,7 @@ class AbsenceApplicationControllerEmployee(
                         tx,
                         user,
                         clock,
+                        audit,
                         AbsenceRequest(
                             setOf(application.childId),
                             FiniteDateRange(application.startDate, application.endDate),
@@ -163,15 +166,9 @@ class AbsenceApplicationControllerEmployee(
                         listOf(AsyncJob.SendAbsenceApplicationDecidedEmail(application.id)),
                         runAt = clock.now(),
                     )
-                    application
                 }
             }
-            .also {
-                Audit.AbsenceApplicationAccept.log(
-                    targetId = AuditId(it.id),
-                    objectId = AuditId(it.childId),
-                )
-            }
+            .also { audit.log(Audit.AbsenceApplicationAccept, clock) }
     }
 
     @PostMapping("/{id}/reject")
@@ -182,9 +179,11 @@ class AbsenceApplicationControllerEmployee(
         @PathVariable id: AbsenceApplicationId,
         @RequestBody body: AbsenceApplicationRejectRequest,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     val application = getApplicationForDecision(tx, user, clock, id)
+                    audit.add(application.childId).observeDate(application.startDate)
                     tx.decideAbsenceApplication(
                         application.id,
                         AbsenceApplicationStatus.REJECTED,
@@ -197,15 +196,9 @@ class AbsenceApplicationControllerEmployee(
                         listOf(AsyncJob.SendAbsenceApplicationDecidedEmail(application.id)),
                         runAt = clock.now(),
                     )
-                    application
                 }
             }
-            .also {
-                Audit.AbsenceApplicationReject.log(
-                    targetId = AuditId(it.id),
-                    objectId = AuditId(it.childId),
-                )
-            }
+            .also { audit.log(Audit.AbsenceApplicationReject, clock) }
     }
 
     private fun getApplicationForDecision(
@@ -239,6 +232,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
         clock: EvakaClock,
         @RequestBody body: AbsenceApplicationCreateRequest,
     ): AbsenceApplicationId {
+        val audit = AuditContext().add(body.childId).observeDate(body.startDate)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -258,15 +252,12 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                             .contains(body.childId)
                     )
                         throw BadRequest("Child does not have preschool placement")
-                    tx.insertAbsenceApplication(body, clock.now(), user.evakaUserId)
+                    tx.insertAbsenceApplication(body, clock.now(), user.evakaUserId).also {
+                        audit.add(it.id)
+                    }
                 }
             }
-            .also {
-                Audit.AbsenceApplicationCreate.log(
-                    targetId = AuditId(it.id),
-                    objectId = AuditId(it.childId),
-                )
-            }
+            .also { audit.log(Audit.AbsenceApplicationCreate, clock) }
             .id
     }
 
@@ -277,6 +268,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
         clock: EvakaClock,
         @RequestParam childId: ChildId,
     ): List<AbsenceApplicationSummaryCitizen> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -287,6 +279,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                         childId,
                     )
                     val applications = tx.selectAbsenceApplications(childId = childId)
+                    audit.add(applications.map { it.id })
                     val actions =
                         accessControl.getPermittedActions<
                             AbsenceApplicationId,
@@ -302,7 +295,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                     }
                 }
             }
-            .also { Audit.AbsenceApplicationRead.log(meta = mapOf("childId" to AuditId(childId))) }
+            .also { audit.log(Audit.AbsenceApplicationRead, clock) }
     }
 
     @DeleteMapping("/{id}")
@@ -312,6 +305,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
         clock: EvakaClock,
         @PathVariable id: AbsenceApplicationId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -328,15 +322,15 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                             "Absence application ${application.id} is not waiting decision"
                         )
                     }
+                    audit
+                        .add(application.childId)
+                        .observeDate(application.startDate)
+                        .addMeta("startDate", application.startDate)
+                        .addMeta("endDate", application.endDate)
                     tx.deleteAbsenceApplication(application.id)
                 }
             }
-            .also {
-                Audit.AbsenceApplicationDelete.log(
-                    targetId = AuditId(it.id),
-                    objectId = AuditId(it.childId),
-                )
-            }
+            .also { audit.log(Audit.AbsenceApplicationDelete, clock) }
     }
 
     @GetMapping("/application-possible")
@@ -346,6 +340,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
         clock: EvakaClock,
         @RequestParam childId: ChildId,
     ): DateSet {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -370,11 +365,7 @@ class AbsenceApplicationControllerCitizen(private val accessControl: AccessContr
                     )
                 }
             }
-            .also {
-                Audit.AbsenceApplicationPossibleRead.log(
-                    meta = mapOf("childId" to AuditId(childId))
-                )
-            }
+            .also { audit.log(Audit.AbsenceApplicationPossibleRead, clock) }
     }
 }
 

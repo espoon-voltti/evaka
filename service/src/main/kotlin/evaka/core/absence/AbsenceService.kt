@@ -5,6 +5,7 @@
 package evaka.core.absence
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import evaka.core.AuditContext
 import evaka.core.EvakaEnv
 import evaka.core.absence.AbsenceType.OTHER_ABSENCE
 import evaka.core.absence.AbsenceType.PLANNED_ABSENCE
@@ -35,7 +36,6 @@ import evaka.core.serviceneed.ShiftCareType
 import evaka.core.serviceneed.getActualServiceNeedInfosByRangeAndGroup
 import evaka.core.serviceneed.getServiceNeedsByChild
 import evaka.core.shared.AbsenceId
-import evaka.core.shared.AttendanceReservationId
 import evaka.core.shared.ChildId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.FeatureConfig
@@ -73,20 +73,16 @@ class AbsenceService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         body: AbsenceRequest,
-    ): Triple<List<AbsenceId>, List<AttendanceReservationId>?, List<AbsenceId>> {
+    ) {
         val now = clock.now()
         val today = now.toLocalDate()
         val reservableRange =
             getReservableRange(now, featureConfig.citizenReservationThresholdHours)
 
         val range =
-            body.dateRange.intersection(FiniteDateRange(today, reservableRange.end))
-                ?: return Triple<List<AbsenceId>, List<AttendanceReservationId>?, List<AbsenceId>>(
-                    emptyList(),
-                    emptyList(),
-                    emptyList(),
-                )
+            body.dateRange.intersection(FiniteDateRange(today, reservableRange.end)) ?: return
         if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType)) {
             throw BadRequest("Invalid absence type")
         }
@@ -177,7 +173,8 @@ class AbsenceService(
             asyncJobRunner.plan(tx, notifications, runAt = now)
         }
 
-        return Triple(deletedAbsences, deletedReservations, insertedAbsences)
+        audit.add(deletedAbsences).add(insertedAbsences)
+        deletedReservations?.let { audit.add(it) }
     }
 }
 

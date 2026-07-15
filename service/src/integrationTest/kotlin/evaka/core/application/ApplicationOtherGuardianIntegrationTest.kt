@@ -4,6 +4,7 @@
 
 package evaka.core.application
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.application.persistence.club.ClubFormV0
 import evaka.core.application.persistence.daycare.Apply
@@ -370,7 +371,13 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
     }
 
     private fun moveToWaitingPlacement(clock: EvakaClock) = db.transaction { tx ->
-        applicationStateService.moveToWaitingPlacement(tx, serviceWorker.user, clock, application)
+        applicationStateService.moveToWaitingPlacement(
+            tx,
+            serviceWorker.user,
+            clock,
+            AuditContext(),
+            application,
+        )
     }
 
     private fun createPlacementPlan(
@@ -393,6 +400,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker.user,
                 clock,
+                AuditContext(),
                 application,
             )
         }

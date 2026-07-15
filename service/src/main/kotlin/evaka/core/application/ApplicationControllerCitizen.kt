@@ -5,6 +5,7 @@
 package evaka.core.application
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.children.getCitizenChildIds
 import evaka.core.decision.Decision
@@ -406,6 +407,7 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     val application =
@@ -413,6 +415,7 @@ class ApplicationControllerCitizen(
                             ?: throw NotFound(
                                 "Application $applicationId of guardian ${user.id} not found"
                             )
+                    audit.add(application.childId).add(application.guardianId)
 
                     when (application.status) {
                         ApplicationStatus.CREATED -> {
@@ -423,7 +426,14 @@ class ApplicationControllerCitizen(
                                 Action.Citizen.Application.DELETE,
                                 applicationId,
                             )
+                            audit
+                                .addMeta("type", application.type)
+                                .addMeta(
+                                    "preferredStartDate",
+                                    application.form.preferences.preferredStartDate,
+                                )
                             tx.deleteApplication(applicationId)
+                            Audit.ApplicationDelete
                         }
 
                         ApplicationStatus.SENT -> {
@@ -431,9 +441,11 @@ class ApplicationControllerCitizen(
                                 tx,
                                 user,
                                 clock,
+                                audit,
                                 applicationId,
                                 null,
                             )
+                            Audit.ApplicationCancel
                         }
 
                         else -> {
@@ -442,15 +454,9 @@ class ApplicationControllerCitizen(
                             )
                         }
                     }
-                    application
                 }
             }
-            .also { application ->
-                Audit.ApplicationDelete.log(
-                    targetId = AuditId(applicationId),
-                    objectId = AuditId(application.childId),
-                )
-            }
+            .also { audit.log(it, clock) }
     }
 
     @PostMapping("/applications/{applicationId}/actions/send-application")

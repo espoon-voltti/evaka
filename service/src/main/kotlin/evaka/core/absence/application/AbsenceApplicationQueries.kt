@@ -114,21 +114,8 @@ WHERE id = ${bind(id)}
         .updateExactlyOne()
 
 fun Database.Transaction.deleteAbsenceApplication(id: AbsenceApplicationId) =
-    createUpdate {
-            sql(
-                """
-DELETE FROM absence_application
-WHERE id = ${bind(id)}
-RETURNING id,
-    created_at, created_by,
-    updated_at, modified_at, modified_by,
-    child_id, start_date, end_date, description, status,
-    decided_at, decided_by, rejected_reason
-    """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<AbsenceApplication>()
+    createUpdate { sql("DELETE FROM absence_application WHERE id = ${bind(id)}") }
+        .updateExactlyOne()
 
 fun Database.Read.getChildrenWithAbsenceApplicationPossibleOnSomeDate(
     childIds: Set<ChildId>,

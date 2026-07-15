@@ -4,6 +4,7 @@
 
 package evaka.core.application
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.CareDetails
@@ -458,8 +459,14 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
         db.transaction { tx ->
             stateService.sendApplication(tx, serviceWorker, clock, applicationId)
-            stateService.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
-            stateService.setVerified(tx, serviceWorker, clock, applicationId, null)
+            stateService.moveToWaitingPlacement(
+                tx,
+                serviceWorker,
+                clock,
+                AuditContext(),
+                applicationId,
+            )
+            stateService.setVerified(tx, serviceWorker, clock, AuditContext(), applicationId, null)
             stateService.createPlacementPlan(
                 tx,
                 serviceWorker,
@@ -470,7 +477,13 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                     period = FiniteDateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 7, 31)),
                 ),
             )
-            stateService.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
+            stateService.sendPlacementProposal(
+                tx,
+                serviceWorker,
+                clock,
+                AuditContext(),
+                applicationId,
+            )
         }
         return applicationId
     }
