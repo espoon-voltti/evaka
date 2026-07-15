@@ -299,6 +299,8 @@ export default React.memo(function IncomeStatementForm({
         <ContentArea $opaque $paddingVertical="L">
           <AssureCheckbox>
             <Checkbox
+              aria-required
+              hideAsterisk
               label={t.income.assure}
               checked={formData.assure}
               data-qa="assure-checkbox"
