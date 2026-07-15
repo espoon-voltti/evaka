@@ -426,6 +426,12 @@ class ApplicationControllerCitizen(
                                 Action.Citizen.Application.DELETE,
                                 applicationId,
                             )
+                            audit
+                                .addMeta("type", application.type)
+                                .addMeta(
+                                    "preferredStartDate",
+                                    application.form.preferences.preferredStartDate,
+                                )
                             tx.deleteApplication(applicationId)
                             Audit.ApplicationDelete
                         }
