@@ -2575,14 +2575,7 @@ const sv: Translations = {
       timeRange: 'Under perioden'
     },
     limitedCompany: {
-      info: (
-        <>
-          <strong>
-            Verifikaten över dividendinkomster ska skickas som bilaga.
-          </strong>{' '}
-          Välj ett lämpligt sätt att överföra övriga uppgifter nedan.
-        </>
-      ),
+      info: 'Välj ett lämplight sätt att överföra övriga uppgifter nedan',
       incomesRegister:
         'Mina inkomster kan kontrolleras direkt hos FPA och i inkomstregistret.',
       attachments:

@@ -1224,11 +1224,6 @@ const LimitedCompanyIncomeSelection = React.memo(
     return (
       <Indent>
         <FixedSpaceColumn>
-          <P $noMargin>{t.income.limitedCompany.info}</P>
-          {showFormErrors && formData.incomeSource === null && (
-            <LabelError text={t.income.errors.choose} />
-          )}
-          <Gap $size="xs" />
           <AttachmentSection
             attachmentType="ACCOUNTANT_REPORT_LLC"
             showFormErrors={showFormErrors}
@@ -1236,6 +1231,13 @@ const LimitedCompanyIncomeSelection = React.memo(
             dense
           />
           <div role="radiogroup" aria-required="true">
+            <LabelWithError
+              label={`${t.income.limitedCompany.info} *`}
+              labelId="llc-income-source-label"
+              showError={showFormErrors && formData.incomeSource === null}
+              errorText={t.income.errors.choose}
+            />
+            <Gap $size="s" />
             <Radio
               label={t.income.limitedCompany.incomesRegister}
               data-qa="llc-incomes-register"
