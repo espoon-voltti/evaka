@@ -1231,7 +1231,11 @@ const LimitedCompanyIncomeSelection = React.memo(
             attachmentHandler={attachmentHandler}
             dense
           />
-          <div role="radiogroup" aria-required="true">
+          <div
+            role="radiogroup"
+            aria-labelledby="llc-income-source-label"
+            aria-required="true"
+          >
             <LabelWithError
               label={`${t.income.limitedCompany.info} *`}
               labelId="llc-income-source-label"
