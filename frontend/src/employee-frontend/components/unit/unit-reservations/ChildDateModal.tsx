@@ -51,7 +51,10 @@ import { PersonName } from 'lib-components/molecules/PersonNames'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, H4 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
-import { absenceTypes } from 'lib-customizations/employee'
+import {
+  absenceTypes,
+  absenceTypesNotSelectableInWeekCalendar
+} from 'lib-customizations/employee'
 import { faPlus, fasExclamationTriangle, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
@@ -129,20 +132,14 @@ const form = transformed(
   }
 )
 
-const excludedAbsenceTypes = new Set<AbsenceType>([
-  'FREE_ABSENCE',
-  'PARENTLEAVE',
-  'PLANNED_ABSENCE',
-  'FORCE_MAJEURE'
-])
-const basicAbsenceTypes = absenceTypes.filter(
-  (t) => !excludedAbsenceTypes.has(t)
+const selectableAbsenceTypes = absenceTypes.filter(
+  (t) => !absenceTypesNotSelectableInWeekCalendar.includes(t)
 )
 const getAbsenceTypeOptions = (
   currentSelection: AbsenceType | null,
   names: Record<AbsenceType, string>
 ) => {
-  const availableTypes = [...basicAbsenceTypes]
+  const availableTypes = [...selectableAbsenceTypes]
   if (currentSelection && !availableTypes.includes(currentSelection)) {
     availableTypes.push(currentSelection)
   }
