@@ -2583,15 +2583,7 @@ export default {
       timeRange: 'Aikavälillä'
     },
     limitedCompany: {
-      info: (
-        <>
-          <strong>
-            Kirjanpitäjän selvitys luontoiseduista ja osingoista tulee toimittaa
-            liitteenä.
-          </strong>{' '}
-          Valitse alta sopiva tapa muiden tietojen toimittamiseen.
-        </>
-      ),
+      info: 'Valitse alta sopiva tapa muiden tietojen toimittamiseen',
       incomesRegister:
         'Tuloni voi tarkastaa tulorekisteristä sekä tarvittaessa Kelasta.',
       attachments:

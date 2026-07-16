@@ -96,6 +96,10 @@ function MultiSelect<T>({
               display: 'none'
             }
           }),
+          placeholder: (base) => ({
+            ...base,
+            color: colors.grayscale.g70
+          }),
           group: (base) => ({
             ...base,
             position: 'relative',

@@ -2321,14 +2321,7 @@ const en: Translations = {
       timeRange: 'Time range'
     },
     limitedCompany: {
-      info: (
-        <>
-          <strong>
-            Documents of dividend income must be submitted as an attachment.
-          </strong>{' '}
-          Select the appropriate method to provide other information below.
-        </>
-      ),
+      info: 'Select the appropriate method to provide other information below',
       incomesRegister:
         'My income can be checked directly from Kela and the Incomes Register.',
       attachments:

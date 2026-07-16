@@ -136,6 +136,7 @@ export interface CheckboxProps extends CommonProps {
   translate?: 'yes' | 'no'
   inputRef?: RefObject<HTMLInputElement | null>
   id?: string
+  hideAsterisk?: boolean
 }
 
 const Checkbox = React.memo(function Checkbox({
@@ -150,7 +151,8 @@ const Checkbox = React.memo(function Checkbox({
   translate,
   'data-qa': dataQa,
   inputRef,
-  id
+  id,
+  hideAsterisk
 }: CheckboxProps) {
   const generatedId = useUniqueId('checkbox')
   const ariaId = id ?? generatedId
@@ -181,7 +183,7 @@ const Checkbox = React.memo(function Checkbox({
         <LabelContainer>
           <label htmlFor={ariaId} translate={translate}>
             {label}
-            {ariaRequired ? ' *' : ''}
+            {ariaRequired && !hideAsterisk ? ' *' : ''}
           </label>
           <ExpandingInfoButtonSlot />
         </LabelContainer>
