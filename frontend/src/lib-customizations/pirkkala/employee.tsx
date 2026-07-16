@@ -328,6 +328,11 @@ const customizations: EmployeeCustomizations = {
     'FREE_ABSENCE',
     'UNAUTHORIZED_ABSENCE'
   ],
+  absenceTypesNotSelectableInWeekCalendar: [
+    'FREE_ABSENCE',
+    'PARENTLEAVE',
+    'FORCE_MAJEURE'
+  ],
   daycareAssistanceLevels: daycareAssistanceLevels.filter(
     (level) => level !== 'GENERAL_SUPPORT'
   ),
