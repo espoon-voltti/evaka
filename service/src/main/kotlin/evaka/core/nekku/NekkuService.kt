@@ -374,32 +374,28 @@ fun planNekkuSpecifyOrderJobs(
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
     now: HelsinkiDateTime,
 ) {
-    val fourDaysFromNow = now.toLocalDate().plusDays(4)
+    val deliveryDates = deliveryDatesToSpecifyOn(now.toLocalDate()) ?: return
 
     dbc.transaction { tx ->
-        val openGroups = tx.getNekkuOpenDaycareGroupDates(fourDaysFromNow)
+        val openGroups = tx.getNekkuOpenDaycareGroupDates(deliveryDates)
         val customerWeekdays = tx.getNekkuCustomerWeekdaysByGroups(openGroups.map { it.id })
-        val nekkuWeekday = getNekkuWeekday(fourDaysFromNow)
-
         asyncJobRunner.plan(
             tx,
-            openGroups.mapNotNull { nekkuGroup ->
-                val nekkuOrders =
-                    tx.getNekkuOrderReport(
-                        tx.getDaycareIdByGroup(nekkuGroup.id),
-                        nekkuGroup.id,
-                        fourDaysFromNow,
-                    )
-
-                val groupOperationDays = tx.getGroupOperationDays(nekkuGroup.id)
-                if (
-                    nekkuOrders.isNotEmpty() &&
-                        groupOperationDays != null &&
-                        isGroupOpenOnDate(fourDaysFromNow, groupOperationDays) &&
-                        nekkuWeekday in (customerWeekdays[nekkuGroup.id] ?: emptySet())
-                ) {
-                    AsyncJob.SendNekkuOrder(groupId = nekkuGroup.id, date = fourDaysFromNow)
-                } else null
+            openGroups.flatMap { nekkuGroup ->
+                val daycareId = tx.getDaycareIdByGroup(nekkuGroup.id)
+                val groupOperationDays =
+                    tx.getGroupOperationDays(nekkuGroup.id) ?: return@flatMap emptySequence()
+                deliveryDates.dates().mapNotNull { date ->
+                    val nekkuWeekday = getNekkuWeekday(date)
+                    if (
+                        isGroupValidOnDate(date, nekkuGroup) &&
+                            isGroupOpenOnDate(date, groupOperationDays) &&
+                            nekkuWeekday in (customerWeekdays[nekkuGroup.id] ?: emptySet()) &&
+                            tx.getNekkuOrderReport(daycareId, nekkuGroup.id, date).isNotEmpty()
+                    ) {
+                        AsyncJob.SendNekkuOrder(groupId = nekkuGroup.id, date = date)
+                    } else null
+                }
             },
             runAt = now,
             retryInterval = Duration.ofHours(1),
@@ -470,6 +466,27 @@ private fun getNekkuWeekday(date: LocalDate): NekkuCustomerWeekday {
             DayOfWeek.SUNDAY -> NekkuCustomerWeekday.SUNDAY
         }
     }
+}
+
+private const val SPECIFY_ORDER_WORKING_DAYS = 4
+
+private fun LocalDate.workingDaysAfter(): Sequence<LocalDate> =
+    generateSequence(plusDays(1)) { it.plusDays(1) }.filter { !it.isWeekendOrHoliday() }
+
+/**
+ * Returns the delivery dates whose specify deadline is today — usually one day, but several across
+ * weekends and holidays. Null when today is not a working day, and nothing is due.
+ */
+fun deliveryDatesToSpecifyOn(today: LocalDate): FiniteDateRange? {
+    // a deadline is always a working day, so a weekend or holiday run has nothing to send
+    if (today.isWeekendOrHoliday()) return null
+
+    // every delivery date strictly after the 3rd working day up to and including the 4th shares
+    // today as its deadline
+    val (thirdWorkingDay, fourthWorkingDay) =
+        today.workingDaysAfter().take(SPECIFY_ORDER_WORKING_DAYS).toList().takeLast(2)
+
+    return FiniteDateRange(thirdWorkingDay.plusDays(1), fourthWorkingDay)
 }
 
 fun createAndSendNekkuOrder(
