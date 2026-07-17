@@ -99,7 +99,7 @@ export const SamlSessionSchema = z.object({
   spNameQualifier: z.string().optional()
 })
 
-const SECONDARY_COOKIE_PARAM = '&secondarySessionCookie='
+const CORRELATION_TOKEN_PARAM = '&sfiCorr='
 
 export function getRawUnvalidatedRelayState(
   req: express.Request
@@ -110,20 +110,29 @@ export function getRawUnvalidatedRelayState(
   return relayState
 }
 
-export function buildRelayStateWithSecondarySessionCookie(
+export function buildRelayStateWithCorrelationToken(
   relayState: string,
-  secondarySessionCookie: string
+  token: string | undefined
 ): string {
-  return `${relayState}${SECONDARY_COOKIE_PARAM}${encodeURIComponent(secondarySessionCookie)}`
+  return token
+    ? `${relayState}${CORRELATION_TOKEN_PARAM}${encodeURIComponent(token)}`
+    : relayState
 }
 
-export function extractSecondarySessionCookie(
+export function extractCorrelationToken(
   req: express.Request
 ): string | undefined {
   const relayState = getRawUnvalidatedRelayState(req)
   if (!relayState) return undefined
-  const encoded = relayState.split(SECONDARY_COOKIE_PARAM)[1]
-  return encoded ? decodeURIComponent(encoded) : undefined
+  const start = relayState.lastIndexOf(CORRELATION_TOKEN_PARAM)
+  if (start < 0) return undefined
+  const encoded = relayState.slice(start + CORRELATION_TOKEN_PARAM.length)
+  if (!encoded) return undefined
+  try {
+    return decodeURIComponent(encoded)
+  } catch (err) {
+    return undefined
+  }
 }
 
 // SAML RelayState is an arbitrary string that gets passed in a SAML transaction.
@@ -132,10 +141,10 @@ export function extractSecondarySessionCookie(
 // is not signed or encrypted, we must make sure the URL points to our application
 // and not to some 3rd party domain
 export function validateRelayStateUrl(req: express.Request): URL | undefined {
-  const relayState = getRawUnvalidatedRelayState(req)?.split(
-    SECONDARY_COOKIE_PARAM
-  )[0]
-  if (relayState) {
+  const raw = getRawUnvalidatedRelayState(req)
+  if (raw) {
+    const i = raw.lastIndexOf(CORRELATION_TOKEN_PARAM)
+    const relayState = i >= 0 ? raw.slice(0, i) : raw
     const url = parseUrlWithOrigin(evakaBaseUrl, relayState)
     if (url) return url
     logError('Invalid RelayState in request', req)

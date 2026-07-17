@@ -87,6 +87,8 @@ export const systemUserHeader = JSON.stringify({ type: 'system' })
 
 export const integrationUserHeader = JSON.stringify({ type: 'integration' })
 
-export function createLogoutToken(profile: Profile) {
+export function createLogoutToken(
+  profile: Pick<Profile, 'nameID' | 'sessionIndex'>
+) {
   return `${profile.nameID}:::${profile.sessionIndex}`
 }

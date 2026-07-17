@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { randomUUID } from 'node:crypto'
 import * as url from 'node:url'
 
 import type { AuthOptions, Profile, SAML } from '@node-saml/node-saml'
@@ -14,21 +15,21 @@ import { createLogoutToken } from '../auth/index.ts'
 import { setDeviceAuthHistoryCookie } from '../device-cookies.ts'
 import type { AsyncRequestHandler } from '../express.ts'
 import { toRequestHandler } from '../express.ts'
-import { logAuditEvent, logDebug } from '../logging.ts'
+import { logAuditEvent, logDebug, logError } from '../logging.ts'
 import {
   parseDescriptionFromSamlError,
   samlErrorSchema
 } from '../saml/error-utils.ts'
 import type { AuthenticateProfile } from '../saml/index.ts'
 import {
-  buildRelayStateWithSecondarySessionCookie,
-  extractSecondarySessionCookie,
+  buildRelayStateWithCorrelationToken,
+  extractCorrelationToken,
   getRawUnvalidatedRelayState,
   SamlProfileIdSchema,
   SamlSessionSchema,
   validateRelayStateUrl
 } from '../saml/index.ts'
-import type { Sessions, SessionType } from '../session.ts'
+import type { LoginCorrelation, Sessions, SessionType } from '../session.ts'
 
 const urlencodedParser = express.urlencoded({ extended: false })
 
@@ -159,21 +160,33 @@ export function createSamlIntegration<T extends SessionType>(
     // Run cookieParser to get req.cookies, but do not pass cookie secret to get access to raw cookies
     await runMiddleware(cookieParser(), req, res)
     try {
-      let secondarySessionCookie: string | undefined
+      const relayState = getRawUnvalidatedRelayState(req) ?? ''
+      // Only sfi integrations have a co-resident session to correlate with, and
+      // only they can leave a rejected login behind that needs one.
+      let correlationToken: string | undefined
       if (secondaryCookieConfig) {
-        secondarySessionCookie = req.cookies[
+        const ownSid = sessions.sessionIdFromCookie(
+          req.cookies[sessions.cookieName] as string | undefined
+        )
+        const secondaryCookie = req.cookies[
           secondaryCookieConfig.cookieName
         ] as string | undefined
+        const secondarySid = secondaryCookie
+          ? signedCookie(secondaryCookie, secondaryCookieConfig.cookieSecret) ||
+            undefined
+          : undefined
+        if (ownSid || secondarySid) {
+          correlationToken = randomUUID()
+          await sessions.saveLoginCorrelation(correlationToken, {
+            ownSid,
+            secondarySid
+          })
+        }
       }
-      const relayState = getRawUnvalidatedRelayState(req) ?? ''
+      // The RelayState (redirect URL + correlation token) is sent unvalidated to
+      // the IdP here; it only matters in the login callback, where it is validated.
       const idpLoginUrl = await saml.getAuthorizeUrlAsync(
-        // no need for validation here, because the value only matters in the login callback request and is validated there
-        secondarySessionCookie
-          ? buildRelayStateWithSecondarySessionCookie(
-              relayState,
-              secondarySessionCookie
-            )
-          : relayState,
+        buildRelayStateWithCorrelationToken(relayState, correlationToken),
         undefined,
         samlRequestOptions(req)
       )
@@ -190,6 +203,19 @@ export function createSamlIntegration<T extends SessionType>(
       })
     }
   }
+  const persistRejectedSfiLogin = async (
+    profile: Profile,
+    correlation: LoginCorrelation
+  ): Promise<void> => {
+    const samlSession = SamlSessionSchema.safeParse(profile)
+    if (!samlSession.success) return
+    const ids = [correlation.ownSid, correlation.secondarySid].filter(
+      (id): id is string => !!id
+    )
+    if (ids.length === 0) return
+    await sessions.saveRejectedSfiLogin(ids, samlSession.data)
+  }
+
   const loginCallback: AsyncRequestHandler = async (req, res) => {
     logAuditEvent(eventCode('sign_in'), req, 'Login callback endpoint called')
     let profile: Profile
@@ -241,18 +267,13 @@ export function createSamlIntegration<T extends SessionType>(
         })
       }
     }
+    const correlationToken = extractCorrelationToken(req)
+    const correlation = correlationToken
+      ? await sessions.consumeLoginCorrelation(correlationToken)
+      : {}
     try {
       const user = await authenticate(req, profile)
-      const secondarySessionCookie = extractSecondarySessionCookie(req)
-      const secondarySessionId =
-        secondarySessionCookie && secondaryCookieConfig
-          ? signedCookie(
-              secondarySessionCookie,
-              secondaryCookieConfig.cookieSecret
-            ) || undefined
-          : undefined
-
-      await sessions.login(req, user, secondarySessionId)
+      await sessions.login(req, user, correlation.secondarySid)
       logAuditEvent(eventCode('sign_in'), req, 'User logged in successfully')
 
       // Set device cookie for citizen authentication
@@ -269,6 +290,16 @@ export function createSamlIntegration<T extends SessionType>(
       logDebug(`Redirecting to ${redirectUrl}`, req, { redirectUrl })
       return res.redirect(redirectUrl)
     } catch (err) {
+      try {
+        await persistRejectedSfiLogin(profile, correlation)
+      } catch (persistErr) {
+        logError(
+          'Failed to persist rejected sfi login',
+          req,
+          undefined,
+          persistErr instanceof Error ? persistErr : undefined
+        )
+      }
       logAuditEvent(
         eventCode('sign_in_failed'),
         req,
@@ -351,23 +382,36 @@ export function createSamlIntegration<T extends SessionType>(
       // 2. SP-initiated logout, and we've just received a logout response -> profile is null, the SAML transaction
       // is complete, and we should redirect the user to some meaningful page
       if (profile) {
-        let user: unknown
+        // Suomi.fi issues a fresh nameID per login, so the session holding the
+        // cookie is not necessarily the one the logout request names. Collect
+        // every identity we log out, and report success if it covers that one.
+        const loggedOutIdentities: unknown[] = []
         const sessionUser = sessions.getUser(req)
         if (sessionUser) {
-          const userId = SamlProfileIdSchema.safeParse(sessionUser)
-          user = userId.success ? userId.data : undefined
-
+          loggedOutIdentities.push(sessionUser)
+          if (secondaryCookieConfig) {
+            // destroy() tears the co-resident session down too, but also deletes
+            // the keys this reads, so its identity must be resolved first.
+            const secondaryUser = await sessions.getSecondaryUserIfNewer(req)
+            if (secondaryUser) loggedOutIdentities.push(secondaryUser)
+          }
           await sessions.destroy(req, res)
         } else {
           // We're possibly doing SLO without a real session (e.g. browser has
           // 3rd party cookies disabled)
           const logoutToken = createLogoutToken(profile)
-          const sessionUser = await sessions.logoutWithToken(logoutToken)
-          const userId = SamlProfileIdSchema.safeParse(sessionUser)
-          user = userId.success ? userId.data : undefined
+          const tokenUser = await sessions.logoutWithToken(logoutToken)
+          if (tokenUser) loggedOutIdentities.push(tokenUser)
         }
         const profileId = SamlProfileIdSchema.safeParse(profile)
-        const success = profileId.success && _.isEqual(user, profileId.data)
+        const success =
+          profileId.success &&
+          loggedOutIdentities.some((identity) => {
+            const identityId = SamlProfileIdSchema.safeParse(identity)
+            return (
+              identityId.success && _.isEqual(identityId.data, profileId.data)
+            )
+          })
 
         url = await saml.getLogoutResponseUrlAsync(
           profile,
