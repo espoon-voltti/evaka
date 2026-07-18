@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 [versions]
-bouncycastle = "1.84"
+bouncycastle = "1.85"
 dd-java-agent = "1.63.2"
 flyingsaucer = "10.3.0"
 flyway = "12.10.0"
