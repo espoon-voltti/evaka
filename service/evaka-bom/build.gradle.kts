@@ -61,7 +61,7 @@ dependencies {
         api("org.apache.neethi:neethi:3.2.2")
     }
 
-    api(platform("tools.jackson:jackson-bom:3.2.0"))
+    api(platform("tools.jackson:jackson-bom:3.2.1"))
     api(platform("com.squareup.okhttp3:okhttp-bom:5.4.0"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.63.0"))
     api(platform("io.netty:netty-bom:4.2.16.Final"))
