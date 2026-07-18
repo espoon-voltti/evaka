@@ -188,7 +188,7 @@ dependencies {
     testImplementation("com.networknt:json-schema-validator")
     testImplementation("com.squareup.okhttp3:mockwebserver")
     testImplementation("org.junit-pioneer:junit-pioneer:2.3.0")
-    testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.1")
+    testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.2")
 
     integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
