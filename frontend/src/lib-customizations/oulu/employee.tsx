@@ -329,6 +329,11 @@ const customizations: EmployeeCustomizations = {
     'FORCE_MAJEURE',
     'FREE_ABSENCE'
   ],
+  absenceTypesNotSelectableInWeekCalendar: [
+    'FREE_ABSENCE',
+    'PARENTLEAVE',
+    'FORCE_MAJEURE'
+  ],
   voucherValueDecisionTypes: [
     'NORMAL',
     'RELIEF_ACCEPTED',

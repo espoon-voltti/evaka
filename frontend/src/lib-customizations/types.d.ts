@@ -339,6 +339,7 @@ export interface EmployeeCustomizations {
   featureFlags: FeatureFlags
   placementTypes: PlacementType[]
   absenceTypes: AbsenceType[]
+  absenceTypesNotSelectableInWeekCalendar: AbsenceType[]
   daycareAssistanceLevels: DaycareAssistanceLevel[]
   otherAssistanceMeasureTypes: OtherAssistanceMeasureType[]
   placementPlanRejectReasons: PlacementPlanRejectReason[]
