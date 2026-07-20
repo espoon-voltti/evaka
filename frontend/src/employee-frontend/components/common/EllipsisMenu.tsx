@@ -105,9 +105,12 @@ const Menu = styled.div`
 const MenuItem = styled(Button)`
   color: ${({ theme }) => theme.colors.grayscale.g100};
   font-weight: 400;
-  white-space: nowrap;
   margin: ${defaultMargins.xs};
   cursor: pointer;
+
+  span {
+    white-space: nowrap;
+  }
 
   &:hover {
     color: ${({ theme }) => theme.colors.grayscale.g70};

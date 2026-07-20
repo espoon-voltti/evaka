@@ -21,6 +21,7 @@ export const ReturnButtonWrapper = styled.div<WrapperProps>`
     padding-left: 0;
     margin-left: 0;
     justify-content: flex-start;
+    color: ${(p) => p.theme.colors.main.m1};
   }
 
   @media (max-width: 1215px) {
