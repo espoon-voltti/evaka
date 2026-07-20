@@ -10,6 +10,7 @@ import evaka.core.DataRemovalEnv
 import evaka.core.caseprocess.deleteCaseProcesses
 import evaka.core.childimages.deleteImageFile
 import evaka.core.document.childdocument.deleteExpiredChildDocuments
+import evaka.core.incomestatement.IncomeStatementStatus
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService
 import evaka.core.shared.ApplicationId
@@ -21,6 +22,8 @@ import evaka.core.shared.DecisionId
 import evaka.core.shared.FinanceNoteId
 import evaka.core.shared.Id
 import evaka.core.shared.IncomeId
+import evaka.core.shared.IncomeNotificationId
+import evaka.core.shared.IncomeStatementId
 import evaka.core.shared.MessageThreadId
 import evaka.core.shared.ParentshipId
 import evaka.core.shared.PartnershipId
@@ -154,6 +157,16 @@ class DataRemovalService(
         deleteExpiredFinanceNotes(dbc, expireDate = today.minusYears(5), limit)
 
         deleteExpiredCitizenUsers(dbc, expireDate = today.minusYears(1), limit)
+
+        deleteExpiredIncomeStatements(
+            dbc,
+            now,
+            expireDate = today.minusYears(1),
+            statuses = setOf(IncomeStatementStatus.DRAFT, IncomeStatementStatus.HANDLED),
+            limit = limit,
+        )
+
+        deleteExpiredIncomeNotifications(dbc, expireDate = today.minusYears(1), limit)
     }
 
     fun deleteExpiredChildDocuments(db: Database.Connection, now: HelsinkiDateTime, limit: Int) {
@@ -302,6 +315,42 @@ class DataRemovalService(
                     mapOf(
                         "childId" to doc.childId,
                         "attachmentIds" to doc.attachmentIds,
+                        "expireDate" to expireDate,
+                    ),
+            )
+        }
+    }
+
+    fun deleteExpiredIncomeStatements(
+        dbc: Database.Connection,
+        now: HelsinkiDateTime,
+        expireDate: LocalDate,
+        statuses: Set<IncomeStatementStatus>,
+        limit: Int,
+    ) {
+        logger.info { "Deleting at most $limit expired income statements" }
+        val deleted = dbc.transaction { tx ->
+            val results = tx.deleteExpiredIncomeStatementsBatch(expireDate, statuses, limit)
+            val attachmentIds = results.flatMap { it.attachmentIds }
+            if (attachmentIds.isNotEmpty()) {
+                asyncJobRunner.plan(
+                    tx,
+                    attachmentIds.map { AsyncJob.DeleteAttachment(it) },
+                    runAt = now,
+                )
+            }
+            results
+        }
+        logger.info { "Deleted ${deleted.size} expired income statement(s)" }
+        deleted.forEach { statement ->
+            auditExpiredDelete(
+                entity = "income_statement",
+                targetId = AuditId(statement.incomeStatementId),
+                meta =
+                    mapOf(
+                        "personId" to statement.personId,
+                        "status" to statement.status,
+                        "attachmentIds" to statement.attachmentIds,
                         "expireDate" to expireDate,
                     ),
             )
@@ -731,6 +780,106 @@ FOR UPDATE
         )
     }
 }
+
+data class DeletedIncomeStatement(
+    val incomeStatementId: IncomeStatementId,
+    val personId: PersonId,
+    val status: IncomeStatementStatus,
+    val attachmentIds: List<AttachmentId>,
+)
+
+private fun Database.Transaction.deleteExpiredIncomeStatementsBatch(
+    expireDate: LocalDate,
+    statuses: Set<IncomeStatementStatus>,
+    limit: Int,
+): List<DeletedIncomeStatement> {
+    val expireAt = HelsinkiDateTime.atStartOfDay(expireDate)
+    val statements =
+        createQuery {
+                sql(
+                    """
+SELECT id, person_id, status
+FROM income_statement
+WHERE created_at < ${bind(expireAt)} AND status = ANY(${bind(statuses)})
+ORDER BY created_at
+LIMIT ${bind(limit)}
+FOR UPDATE
+"""
+                )
+            }
+            .toList {
+                Triple(
+                    column<IncomeStatementId>("id"),
+                    column<PersonId>("person_id"),
+                    column<IncomeStatementStatus>("status"),
+                )
+            }
+
+    val statementIds = statements.map { it.first }
+    if (statementIds.isEmpty()) return emptyList()
+
+    val attachmentsByStatement =
+        createQuery {
+                sql(
+                    "SELECT id, income_statement_id FROM attachment WHERE income_statement_id = ANY(${bind(statementIds)})"
+                )
+            }
+            .toList {
+                column<IncomeStatementId>("income_statement_id") to column<AttachmentId>("id")
+            }
+            .groupBy({ it.first }, { it.second })
+
+    execute { sql("DELETE FROM income_statement WHERE id = ANY(${bind(statementIds)})") }
+
+    return statements.map { (id, personId, status) ->
+        DeletedIncomeStatement(
+            incomeStatementId = id,
+            personId = personId,
+            status = status,
+            attachmentIds = attachmentsByStatement[id] ?: emptyList(),
+        )
+    }
+}
+
+fun deleteExpiredIncomeNotifications(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
+    logger.info { "Deleting at most $limit expired income notifications" }
+    val deleted = dbc.transaction { tx ->
+        tx.deleteExpiredIncomeNotificationsBatch(expireDate, limit)
+    }
+    deleted.forEach { notification ->
+        auditExpiredDelete(
+            entity = "income_notification",
+            targetId = AuditId(notification.id),
+            meta = mapOf("receiverId" to notification.receiverId, "expireDate" to expireDate),
+        )
+    }
+}
+
+data class DeletedIncomeNotification(val id: IncomeNotificationId, val receiverId: PersonId)
+
+private fun Database.Transaction.deleteExpiredIncomeNotificationsBatch(
+    expireDate: LocalDate,
+    limit: Int,
+): List<DeletedIncomeNotification> =
+    createUpdate {
+            sql(
+                """
+WITH del_batch AS (
+    SELECT id
+    FROM income_notification
+    WHERE created < ${bind(HelsinkiDateTime.atStartOfDay(expireDate))}
+    FOR UPDATE
+    LIMIT ${bind(limit)}
+)
+DELETE FROM income_notification
+USING del_batch
+WHERE income_notification.id = del_batch.id
+RETURNING income_notification.id, income_notification.receiver_id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .toList<DeletedIncomeNotification>()
 
 fun deleteExpiredCitizenUsers(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
     logger.info { "Deleting at most $limit expired citizen users" }
