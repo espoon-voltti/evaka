@@ -22,7 +22,6 @@ import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -81,7 +80,7 @@ const EmailForm = React.memo(function EmailForm({
         <InputFieldF bind={email} />
       </FixedSpaceColumn>
       <FixedSpaceRow>
-        <LegacyButton text={i18n.common.cancel} onClick={onCancel} />
+        <Button text={i18n.common.cancel} onClick={onCancel} />
         <MutateButton
           primary
           text={i18n.common.save}
@@ -135,7 +134,7 @@ const GlobalRolesForm = React.memo(function GlobalRolesForm({
         ))}
       </FixedSpaceColumn>
       <FixedSpaceRow>
-        <LegacyButton text={i18n.common.cancel} onClick={onCancel} />
+        <Button text={i18n.common.cancel} onClick={onCancel} />
         <MutateButton
           primary
           text={i18n.common.save}

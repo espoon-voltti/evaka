@@ -19,7 +19,7 @@ import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
@@ -290,7 +290,7 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
 
       <Gap $size="s" />
       <FixedSpaceRow $spacing="s">
-        <LegacyButton onClick={clearUiMode} text={i18n.common.cancel} />
+        <Button onClick={clearUiMode} text={i18n.common.cancel} />
         <AsyncButton
           primary
           type="submit"

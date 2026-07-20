@@ -26,7 +26,6 @@ import Tooltip from 'lib-components/atoms/Tooltip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -746,7 +745,7 @@ function StaffAttendanceDetailsModal<
         </ListGrid>
         <Gap $size="L" />
         <ModalActions>
-          <LegacyButton text={i18n.common.cancel} onClick={onClose} />
+          <Button text={i18n.common.cancel} onClick={onClose} />
           <AsyncButton
             primary
             text={i18n.unit.staffAttendance.saveChanges}

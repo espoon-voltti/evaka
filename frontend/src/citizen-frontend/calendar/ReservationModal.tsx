@@ -14,7 +14,7 @@ import type { ReservationsResponse } from 'lib-common/generated/api-types/reserv
 import LocalDate from 'lib-common/local-date'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   MutateButton,
   cancelMutation
@@ -377,7 +377,7 @@ export default React.memo(function ReservationModal({
               />
             )}
             <CalendarModalButtons>
-              <LegacyButton
+              <Button
                 onClick={onClose}
                 data-qa="modal-cancelBtn"
                 text={i18n.common.cancel}

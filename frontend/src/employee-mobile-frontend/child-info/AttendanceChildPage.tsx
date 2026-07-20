@@ -18,7 +18,7 @@ import {
 } from 'lib-common/query'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { PersonName } from 'lib-components/molecules/PersonNames'
@@ -316,7 +316,7 @@ export default React.memo(function AttendanceChildPage({
             onClose={() => setUiMode('default')}
           >
             <FixedSpaceColumn>
-              <LegacyButton
+              <Button
                 text={i18n.childInfo.image.modalMenu.takeImageButton}
                 primary
                 onClick={() => {
@@ -324,7 +324,7 @@ export default React.memo(function AttendanceChildPage({
                 }}
               />
               {child.isSuccess && !!child.value.imageUrl && (
-                <LegacyButton
+                <Button
                   text={i18n.childInfo.image.modalMenu.deleteImageButton}
                   onClick={() => setUiMode('img-delete')}
                 />

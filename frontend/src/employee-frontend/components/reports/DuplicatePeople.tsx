@@ -11,7 +11,7 @@ import type { PersonId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import Title from 'lib-components/atoms/Title'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Th, Tr, Td, Thead, Tbody } from 'lib-components/layout/Table'
@@ -120,13 +120,13 @@ export default React.memo(function DuplicatePeople() {
                       {duplicate ? (
                         duplicate.group === row.groupIndex ? (
                           duplicate.row === row.duplicateNumber ? (
-                            <LegacyButton
+                            <Button
                               className="inline"
                               onClick={() => setDuplicate(null)}
                               text={i18n.common.cancel}
                             />
                           ) : (
-                            <LegacyButton
+                            <Button
                               className="inline"
                               onClick={() =>
                                 setMaster({
@@ -139,7 +139,7 @@ export default React.memo(function DuplicatePeople() {
                           )
                         ) : null
                       ) : (
-                        <LegacyButton
+                        <Button
                           className="inline"
                           disabled={!hasReferences(row)}
                           onClick={() =>
@@ -153,7 +153,7 @@ export default React.memo(function DuplicatePeople() {
                       )}
                     </NoWrapTd>
                     <NoWrapTd>
-                      <LegacyButton
+                      <Button
                         className="inline"
                         disabled={duplicate != null || hasReferences(row)}
                         onClick={() => setDeleteId(row.id)}

@@ -49,13 +49,10 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import {
-  LegacyButton,
-  StyledButton
-} from 'lib-components/atoms/buttons/LegacyButton'
-import {
   MutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
+import { StyledButton } from 'lib-components/atoms/buttons/button-visuals'
 import { tabletMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,
@@ -216,7 +213,7 @@ function View({
   )
 
   const leftButton = reservationsEditable ? (
-    <LegacyButton
+    <Button
       onClick={onEditReservations}
       text={i18n.common.edit}
       data-qa="edit"
@@ -224,7 +221,7 @@ function View({
   ) : undefined
 
   const rightButton = absencesEditable ? (
-    <LegacyButton
+    <Button
       primary
       text={i18n.calendar.newAbsence}
       onClick={onCreateAbsence}
@@ -280,11 +277,7 @@ function Edit({
   const [showAllErrors, useShowAllErrors] = useBoolean(false)
 
   const leftButton = (
-    <LegacyButton
-      onClick={onCancel}
-      text={i18n.common.cancel}
-      data-qa="cancel"
-    />
+    <Button onClick={onCancel} text={i18n.common.cancel} data-qa="cancel" />
   )
 
   const rightButton = (

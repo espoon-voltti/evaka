@@ -2,15 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { useThrottledEventHandler } from 'lib-components/atoms/buttons/button-commons'
+import { renderBaseButton } from 'lib-components/atoms/buttons/button-visuals'
 import { zoomedMobileMax } from 'lib-components/breakpoints'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
+import type { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import { faComment } from 'lib-icons'
@@ -61,40 +64,38 @@ export default React.memo(function ActionPickerModal({
       <ModalBackground onClick={close}>
         <Container>
           {questionnaireAvailable && (
-            <Action onClick={openHolidays} data-qa="calendar-action-holidays">
+            <Action
+              onClick={openHolidays}
+              data-qa="calendar-action-holidays"
+              icon={faTreePalm}
+            >
               <ReportHolidayLabel
                 questionnaireAvailable={questionnaireAvailable}
               />
-              <IconBackground>
-                <FontAwesomeIcon icon={faTreePalm} size="1x" />
-              </IconBackground>
             </Action>
           )}
           {featureFlags.discussionReservations && isDiscussionActionVisible && (
             <Action
               onClick={onOpenDiscussionReservation}
               data-qa="calendar-action-discussions"
+              icon={faComment}
             >
               {i18n.calendar.discussionTimeReservation.surveyModalButtonText}
-              <IconBackground>
-                <FontAwesomeIcon icon={faComment} size="1x" />
-              </IconBackground>
             </Action>
           )}
-          <Action onClick={onCreateAbsences} data-qa="calendar-action-absences">
+          <Action
+            onClick={onCreateAbsences}
+            data-qa="calendar-action-absences"
+            icon={faUserMinus}
+          >
             {i18n.calendar.newAbsence}
-            <IconBackground>
-              <FontAwesomeIcon icon={faUserMinus} size="1x" />
-            </IconBackground>
           </Action>
           <Action
             onClick={openReservations}
             data-qa="calendar-action-reservations"
+            icon={faCalendarPlus}
           >
             {i18n.calendar.newReservationBtn}
-            <IconBackground>
-              <FontAwesomeIcon icon={faCalendarPlus} size="1x" />
-            </IconBackground>
           </Action>
         </Container>
       </ModalBackground>
@@ -132,12 +133,36 @@ const Container = styled.div`
   }
 `
 
-const Action = styled(LegacyButton)`
+const ActionButton = React.memo(function ActionButton({
+  onClick,
+  icon,
+  children,
+  ...props
+}: {
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
+  icon: IconDefinition
+  children: React.ReactNode
+} & BaseProps) {
+  const handleOnClick = useThrottledEventHandler(onClick)
+  return renderBaseButton({ ...props, text: '' }, handleOnClick, () => (
+    <>
+      {children}
+      <IconBackground>
+        <FontAwesomeIcon icon={icon} size="1x" />
+      </IconBackground>
+    </>
+  ))
+})
+
+const Action = styled(ActionButton)`
   border: none;
   background: none;
   color: ${(p) => p.theme.colors.grayscale.g0};
   padding: 0;
   min-height: 0;
+  svg {
+    margin-right: 0;
+  }
 `
 
 const IconBackground = styled.div`

@@ -15,16 +15,17 @@ import styled from 'styled-components'
 import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { uploadChildImageMutation } from '../child-attendance/queries'
-import { useTranslation } from '../common/i18n'
 
 import 'react-image-crop/dist/ReactCrop.css'
+
+import { useTranslation } from '../common/i18n'
 
 interface Props {
   unitId: DaycareId
@@ -126,7 +127,7 @@ export default React.memo(function ImageEditor({
           </InformationText>
 
           <ButtonRow>
-            <LegacyButton
+            <Button
               text={i18n.common.cancel}
               onClick={onReturn}
               disabled={submitting}

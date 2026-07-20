@@ -73,7 +73,7 @@ export type BaseButtonVisualProps = {
   id?: string
 } & BaseProps
 
-const StyledButton = styled.button<{
+export const StyledButton = styled.button<{
   $appearance: ButtonAppearance
   $order: ButtonOrder
 }>`

@@ -11,7 +11,7 @@ import type { Daycare } from 'lib-common/generated/api-types/daycare'
 import { careTypes } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -144,7 +144,7 @@ export default React.memo(function Units() {
           </div>
           <RequirePermittedGlobalAction oneOf={['CREATE_UNIT']}>
             <div>
-              <LegacyButton
+              <Button
                 data-qa="create-new-unit"
                 className="units-wrapper-create"
                 onClick={() => navigate('/units/new')}

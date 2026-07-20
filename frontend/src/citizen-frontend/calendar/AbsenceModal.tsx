@@ -27,7 +27,7 @@ import { constantQuery, useQueryResult } from 'lib-common/query'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   MutateButton,
   cancelMutation
@@ -366,7 +366,7 @@ export default React.memo(function AbsenceModal({
               </CalendarModalSection>
             </div>
             <CalendarModalButtons>
-              <LegacyButton
+              <Button
                 onClick={onReturn}
                 data-qa="modal-cancelBtn"
                 text={i18n.common.cancel}
