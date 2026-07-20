@@ -21,13 +21,13 @@ export type AsyncButtonProps<T> = BaseButtonVisualProps &
      *
      * Defaults to the button's text.
      */
-    textInProgress?: string
+    textInProgress?: React.ReactNode
     /**
      * Text to display when the async action is successful.
      *
      * Defaults to the button's text.
      */
-    textDone?: string
+    textDone?: React.ReactNode
     /**
      * If true, the success icon is hidden.
      */

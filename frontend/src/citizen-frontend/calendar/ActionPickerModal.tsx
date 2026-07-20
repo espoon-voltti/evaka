@@ -2,18 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
 import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { useThrottledEventHandler } from 'lib-components/atoms/buttons/button-commons'
-import { renderBaseButton } from 'lib-components/atoms/buttons/button-visuals'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { zoomedMobileMax } from 'lib-components/breakpoints'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
-import type { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import { faComment } from 'lib-icons'
@@ -67,36 +64,59 @@ export default React.memo(function ActionPickerModal({
             <Action
               onClick={openHolidays}
               data-qa="calendar-action-holidays"
-              icon={faTreePalm}
-            >
-              <ReportHolidayLabel
-                questionnaireAvailable={questionnaireAvailable}
-              />
-            </Action>
+              text={
+                <>
+                  <ReportHolidayLabel
+                    questionnaireAvailable={questionnaireAvailable}
+                  />
+                  <IconBackground>
+                    <FontAwesomeIcon icon={faTreePalm} size="1x" />
+                  </IconBackground>
+                </>
+              }
+            />
           )}
           {featureFlags.discussionReservations && isDiscussionActionVisible && (
             <Action
               onClick={onOpenDiscussionReservation}
               data-qa="calendar-action-discussions"
-              icon={faComment}
-            >
-              {i18n.calendar.discussionTimeReservation.surveyModalButtonText}
-            </Action>
+              text={
+                <>
+                  {
+                    i18n.calendar.discussionTimeReservation
+                      .surveyModalButtonText
+                  }
+                  <IconBackground>
+                    <FontAwesomeIcon icon={faComment} size="1x" />
+                  </IconBackground>
+                </>
+              }
+            />
           )}
           <Action
             onClick={onCreateAbsences}
             data-qa="calendar-action-absences"
-            icon={faUserMinus}
-          >
-            {i18n.calendar.newAbsence}
-          </Action>
+            text={
+              <>
+                {i18n.calendar.newAbsence}
+                <IconBackground>
+                  <FontAwesomeIcon icon={faUserMinus} size="1x" />
+                </IconBackground>
+              </>
+            }
+          />
           <Action
             onClick={openReservations}
             data-qa="calendar-action-reservations"
-            icon={faCalendarPlus}
-          >
-            {i18n.calendar.newReservationBtn}
-          </Action>
+            text={
+              <>
+                {i18n.calendar.newReservationBtn}
+                <IconBackground>
+                  <FontAwesomeIcon icon={faCalendarPlus} size="1x" />
+                </IconBackground>
+              </>
+            }
+          />
         </Container>
       </ModalBackground>
     </ModalAccessibilityWrapper>
@@ -133,28 +153,7 @@ const Container = styled.div`
   }
 `
 
-const ActionButton = React.memo(function ActionButton({
-  onClick,
-  icon,
-  children,
-  ...props
-}: {
-  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
-  icon: IconDefinition
-  children: React.ReactNode
-} & BaseProps) {
-  const handleOnClick = useThrottledEventHandler(onClick)
-  return renderBaseButton({ ...props, text: '' }, handleOnClick, () => (
-    <>
-      {children}
-      <IconBackground>
-        <FontAwesomeIcon icon={icon} size="1x" />
-      </IconBackground>
-    </>
-  ))
-})
-
-const Action = styled(ActionButton)`
+const Action = styled(Button)`
   border: none;
   background: none;
   color: ${(p) => p.theme.colors.grayscale.g0};
@@ -162,10 +161,11 @@ const Action = styled(ActionButton)`
   min-height: 0;
   svg {
     margin-right: 0;
+    font-size: 1em;
   }
 `
 
-const IconBackground = styled.div`
+const IconBackground = styled.span`
   display: inline-flex;
   justify-content: center;
   align-items: center;
