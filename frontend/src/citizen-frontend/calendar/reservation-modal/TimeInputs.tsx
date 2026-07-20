@@ -431,10 +431,9 @@ const TimeRanges = React.memo(function TimeRanges({
               }
               disabled={secondTimeRange !== undefined}
               onClick={() => {
-                bind.update(
-                  (prev) =>
-                    // use same valid range times as first reservation
-                    [prev[0], emptyTimeRange(prev[0].validRange)]
+                bind.update((prev) =>
+                  // use same valid range times as first reservation
+                  [prev[0], emptyTimeRange(prev[0].validRange)]
                 )
                 if (dataQaPrefix) {
                   focusElementOnNextFrame(`${dataQaPrefix}-time-1-start`)

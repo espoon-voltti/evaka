@@ -268,8 +268,9 @@ export function useFormElems<F extends AnyForm>({
           fn: (prev: StateOf<F>[number]) => StateOf<F>[number]
         ) => {
           update((prevElemStates) =>
-            prevElemStates.map((prevElemState: StateOf<F>[number], i: number) =>
-              i === index ? fn(prevElemState) : prevElemState
+            prevElemStates.map(
+              (prevElemState: StateOf<F>[number], i: number) =>
+                i === index ? fn(prevElemState) : prevElemState
             )
           )
         }
