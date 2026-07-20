@@ -7,16 +7,18 @@ import styled from 'styled-components'
 
 import { tabletMin } from '../../breakpoints'
 
-import type { InlineButtonProps } from './LegacyInlineButton'
-import LegacyInlineButton from './LegacyInlineButton'
+import type { ButtonProps } from './Button'
+import { Button } from './Button'
 
-interface ResponsiveInlineButtonProps extends InlineButtonProps {
+interface ResponsiveInlineButtonProps extends ButtonProps {
   breakpoint?: string
 }
 
-const ResponsiveText = styled.span<{ $breakpoint: string }>`
+const ResponsiveTextButton = styled(Button)<{ $breakpoint: string }>`
   @media (max-width: ${(p) => p.$breakpoint}) {
-    display: none;
+    span {
+      display: none;
+    }
   }
 `
 
@@ -26,8 +28,10 @@ export default React.memo(function ResponsiveInlineButton({
   ...props
 }: ResponsiveInlineButtonProps) {
   return (
-    <LegacyInlineButton
-      text={<ResponsiveText $breakpoint={breakpoint}>{text}</ResponsiveText>}
+    <ResponsiveTextButton
+      appearance="inline"
+      text={text}
+      $breakpoint={breakpoint}
       {...props}
     />
   )

@@ -36,7 +36,6 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -442,11 +441,11 @@ export function SingleThreadView({
   return (
     <ThreadContainer>
       <ContentArea $opaque $paddingVertical={defaultMargins.xs}>
-        <LegacyInlineButton
+        <Button
+          appearance="inline"
           icon={faAngleLeft}
           text={i18n.common.goBack}
           onClick={goBack}
-          color={colors.main.m2}
         />
       </ContentArea>
       <Gap $size="xs" />

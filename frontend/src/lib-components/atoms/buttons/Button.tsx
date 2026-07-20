@@ -4,7 +4,6 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
-import styled from 'styled-components'
 
 import { useThrottledEventHandler } from './button-commons'
 import type { BaseButtonVisualProps } from './button-visuals'
@@ -30,12 +29,8 @@ export const Button = React.memo(function Button({
   return renderBaseButton(props, handleOnClick, ({ text, icon, order }) => (
     <>
       {icon && order === 'icon-text' && <FontAwesomeIcon icon={icon} />}
-      <TextSpan>{text}</TextSpan>
+      <span>{text}</span>
       {icon && order === 'text-icon' && <FontAwesomeIcon icon={icon} />}
     </>
   ))
 })
-
-const TextSpan = styled.span`
-  white-space: pre-wrap;
-`

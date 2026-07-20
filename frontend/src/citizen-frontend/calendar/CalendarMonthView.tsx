@@ -17,13 +17,15 @@ import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
+import { useThrottledEventHandler } from 'lib-components/atoms/buttons/button-commons'
+import { renderBaseButton } from 'lib-components/atoms/buttons/button-visuals'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   ExpandingInfoBox,
   InlineInfoButton
 } from 'lib-components/molecules/ExpandingInfo'
 import { fontWeights, H1 } from 'lib-components/typography'
+import type { BaseProps } from 'lib-components/utils'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
@@ -54,6 +56,7 @@ import type { BackgroundHighlightType } from './calendar-elements'
 import { Reservations } from './calendar-elements'
 import { useMonthlySummaryInfo } from './hooks'
 import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
+import type { QuestionnaireAvailability } from './utils'
 import {
   countEventsForDay,
   getChildImages,
@@ -188,15 +191,9 @@ export default React.memo(function CalendarMonthView({
       <StickyTopBar>
         <ButtonContainer>
           {questionnaireAvailable && (
-            <LegacyInlineButton
+            <ReportHolidayButton
               onClick={onReportHolidaysClicked}
-              text={
-                <ReportHolidayLabel
-                  questionnaireAvailable={questionnaireAvailable}
-                  iconRight
-                />
-              }
-              icon={faTreePalm}
+              questionnaireAvailable={questionnaireAvailable}
               data-qa="open-holiday-modal"
             />
           )}
@@ -664,6 +661,30 @@ const MonthPicker = React.memo(function MonthPicker({
         data-qa="current-month-button"
       />
     </MonthPickerContainer>
+  )
+})
+
+const ReportHolidayButton = React.memo(function ReportHolidayButton({
+  onClick,
+  questionnaireAvailable,
+  ...props
+}: {
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
+  questionnaireAvailable: QuestionnaireAvailability
+} & BaseProps) {
+  const handleOnClick = useThrottledEventHandler(onClick)
+  return renderBaseButton(
+    { ...props, appearance: 'inline', text: '' },
+    handleOnClick,
+    () => (
+      <>
+        <FontAwesomeIcon icon={faTreePalm} />
+        <ReportHolidayLabel
+          questionnaireAvailable={questionnaireAvailable}
+          iconRight
+        />
+      </>
+    )
   )
 })
 
