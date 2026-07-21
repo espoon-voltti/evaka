@@ -3569,6 +3569,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/stylis@npm:^4.2.7":
+  version: 4.2.7
+  resolution: "@types/stylis@npm:4.2.7"
+  checksum: 10/068c7fd64ee2e1649b06615da57c76dd9f5be1836e310ebf94aa08193c3544d48944079ce6e94ba89b72b716944f217234a86fecc28185246c1787f02ad0eae1
+  languageName: node
+  linkType: hard
+
 "@vitejs/plugin-legacy@npm:8.2.0":
   version: 8.2.0
   resolution: "@vitejs/plugin-legacy@npm:8.2.0"
@@ -4731,6 +4738,7 @@ __metadata:
     "@types/punycode": "npm:2.1.4"
     "@types/react": "npm:19.2.17"
     "@types/react-dom": "npm:19.2.3"
+    "@types/stylis": "npm:^4.2.7"
     "@vitejs/plugin-legacy": "npm:8.2.0"
     "@vitejs/plugin-react": "npm:6.0.3"
     autosize: "npm:6.0.1"
