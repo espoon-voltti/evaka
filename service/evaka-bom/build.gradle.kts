@@ -9,7 +9,7 @@ javaPlatform { allowDependencies() }
 dependencies {
     constraints {
         api("ch.qos.logback.access:logback-access-tomcat:2.0.13")
-        api("com.auth0:java-jwt:4.5.2")
+        api("com.auth0:java-jwt:4.6.0")
         api("com.github.kagkarlsson:db-scheduler:16.12.0")
         api("com.github.mwiede:jsch:2.28.4")
         api("com.google.guava:guava:33.6.0-jre")
@@ -55,6 +55,7 @@ dependencies {
         api("org.apache.groovy:groovy") { version { strictly("5.0.3") } }
 
         // These constraints are needed for CVE fixes
+        api("com.fasterxml.jackson.core:jackson-databind:2.22.1")
         api("org.apache.tomcat.embed:tomcat-embed-core:11.0.24")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.24")
         api("org.postgresql:postgresql:42.7.13")
