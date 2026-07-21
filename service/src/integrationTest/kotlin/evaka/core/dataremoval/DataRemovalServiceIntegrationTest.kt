@@ -1205,6 +1205,22 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `deleteExpiredFosterParents keeps foster parenthood of a child with no placements`() {
+        val fosterParent = insertAdult()
+        insertFosterParenthood(fosterParent, child.id)
+
+        deleteExpiredFosterParents(
+            db,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("foster_parent"))
+    }
+
+    @Test
     fun `deleteExpiredFosterParents keeps foster parenthood while the parent's citizen user removal is pending and deletes it afterwards`() {
         val fosterParent = insertAdultWithCitizenUser()
         insertFosterParenthood(fosterParent, child.id)
