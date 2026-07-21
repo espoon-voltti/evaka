@@ -19,6 +19,7 @@ import evaka.core.shared.ChildId
 import evaka.core.shared.ChildImageId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.FinanceNoteId
+import evaka.core.shared.FosterParentId
 import evaka.core.shared.Id
 import evaka.core.shared.IncomeId
 import evaka.core.shared.MessageThreadId
@@ -151,9 +152,34 @@ class DataRemovalService(
 
         deleteExpiredChildImages(dbc, now, expireDate = today.minusMonths(1), limit)
 
-        deleteExpiredFinanceNotes(dbc, expireDate = today.minusYears(5), limit)
+        val financeNoteExpireDate = today.minusYears(5)
+        val citizenUserExpireDate = today.minusYears(1)
 
-        deleteExpiredCitizenUsers(dbc, expireDate = today.minusYears(1), limit)
+        deleteExpiredFinanceNotes(dbc, expireDate = financeNoteExpireDate, limit)
+
+        deleteExpiredCitizenUsers(dbc, expireDate = citizenUserExpireDate, limit)
+
+        // Guardian and foster parent relationships are the links used above to discover expired
+        // citizen users and finance notes, so guardian and foster parent records are deleted only
+        // after citizen users and finance notes are deleted, and skipped for persons whose citizen
+        // user or finance note removal is still pending
+        deleteExpiredGuardians(
+            dbc,
+            expireDate = today.minusYears(10),
+            citizenUserExpireDate = citizenUserExpireDate,
+            financeNoteExpireDate = financeNoteExpireDate,
+            limit = limit,
+        )
+
+        deleteExpiredFosterParents(
+            dbc,
+            expireDate = today.minusYears(10),
+            citizenUserExpireDate = citizenUserExpireDate,
+            financeNoteExpireDate = financeNoteExpireDate,
+            limit = limit,
+        )
+
+        deleteExpiredGuardianBlocklistRows(dbc, expireDate = today.minusYears(10), limit)
     }
 
     fun deleteExpiredChildDocuments(db: Database.Connection, now: HelsinkiDateTime, limit: Int) {
@@ -767,6 +793,181 @@ RETURNING citizen_user.id
         }
         .executeAndReturnGeneratedKeys()
         .toList()
+
+fun deleteExpiredGuardians(
+    dbc: Database.Connection,
+    expireDate: LocalDate,
+    citizenUserExpireDate: LocalDate,
+    financeNoteExpireDate: LocalDate,
+    limit: Int,
+) {
+    logger.info { "Deleting at most $limit expired guardian relationships" }
+    val deleted = dbc.transaction { tx ->
+        tx.deleteExpiredGuardiansBatch(
+            expireDate,
+            citizenUserExpireDate,
+            financeNoteExpireDate,
+            limit,
+        )
+    }
+    deleted.forEach { row ->
+        auditExpiredDelete(
+            entity = "guardian",
+            targetId = AuditId(row.guardianId),
+            meta = mapOf("childId" to row.childId, "expireDate" to expireDate),
+        )
+    }
+}
+
+private data class DeletedGuardian(val guardianId: PersonId, val childId: ChildId)
+
+private fun Database.Transaction.deleteExpiredGuardiansBatch(
+    expireDate: LocalDate,
+    citizenUserExpireDate: LocalDate,
+    financeNoteExpireDate: LocalDate,
+    limit: Int,
+): List<DeletedGuardian> =
+    createUpdate {
+            sql(
+                """
+WITH del_batch AS (
+    SELECT guardian_id, child_id
+    FROM guardian
+    WHERE
+        child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))}) AND
+        NOT guardian_id = ANY(${subquery(citizenUserIdsWithPlacementsEndingBefore(citizenUserExpireDate))}) AND
+        NOT guardian_id = ANY(${subquery(personIdsWithPendingFinanceNoteRemoval(financeNoteExpireDate))})
+    FOR UPDATE
+    LIMIT ${bind(limit)}
+)
+DELETE FROM guardian
+USING del_batch
+WHERE guardian.guardian_id = del_batch.guardian_id AND guardian.child_id = del_batch.child_id
+RETURNING guardian.guardian_id, guardian.child_id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .toList()
+
+fun deleteExpiredFosterParents(
+    dbc: Database.Connection,
+    expireDate: LocalDate,
+    citizenUserExpireDate: LocalDate,
+    financeNoteExpireDate: LocalDate,
+    limit: Int,
+) {
+    logger.info { "Deleting at most $limit expired foster parent relationships" }
+    val deleted = dbc.transaction { tx ->
+        tx.deleteExpiredFosterParentsBatch(
+            expireDate,
+            citizenUserExpireDate,
+            financeNoteExpireDate,
+            limit,
+        )
+    }
+    deleted.forEach { row ->
+        auditExpiredDelete(
+            entity = "foster_parent",
+            targetId = AuditId(row.id),
+            meta =
+                mapOf(
+                    "parentId" to row.parentId,
+                    "childId" to row.childId,
+                    "expireDate" to expireDate,
+                ),
+        )
+    }
+}
+
+private data class DeletedFosterParent(
+    val id: FosterParentId,
+    val parentId: PersonId,
+    val childId: ChildId,
+)
+
+private fun Database.Transaction.deleteExpiredFosterParentsBatch(
+    expireDate: LocalDate,
+    citizenUserExpireDate: LocalDate,
+    financeNoteExpireDate: LocalDate,
+    limit: Int,
+): List<DeletedFosterParent> =
+    createUpdate {
+            sql(
+                """
+WITH del_batch AS (
+    SELECT id
+    FROM foster_parent
+    WHERE
+        child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))}) AND
+        NOT parent_id = ANY(${subquery(citizenUserIdsWithPlacementsEndingBefore(citizenUserExpireDate))}) AND
+        NOT parent_id = ANY(${subquery(personIdsWithPendingFinanceNoteRemoval(financeNoteExpireDate))})
+    FOR UPDATE
+    LIMIT ${bind(limit)}
+)
+DELETE FROM foster_parent
+USING del_batch
+WHERE foster_parent.id = del_batch.id
+RETURNING foster_parent.id, foster_parent.parent_id, foster_parent.child_id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .toList()
+
+fun deleteExpiredGuardianBlocklistRows(
+    dbc: Database.Connection,
+    expireDate: LocalDate,
+    limit: Int,
+) {
+    logger.info { "Deleting at most $limit expired guardian blocklist rows" }
+    val deleted = dbc.transaction { tx ->
+        tx.deleteExpiredGuardianBlocklistBatch(expireDate, limit)
+    }
+    deleted.forEach { row ->
+        auditExpiredDelete(
+            entity = "guardian_blocklist",
+            targetId = AuditId(row.guardianId),
+            meta = mapOf("childId" to row.childId, "expireDate" to expireDate),
+        )
+    }
+}
+
+private fun Database.Transaction.deleteExpiredGuardianBlocklistBatch(
+    expireDate: LocalDate,
+    limit: Int,
+): List<DeletedGuardian> =
+    createUpdate {
+            sql(
+                """
+WITH del_batch AS (
+    SELECT guardian_id, child_id
+    FROM guardian_blocklist
+    WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
+    FOR UPDATE
+    LIMIT ${bind(limit)}
+)
+DELETE FROM guardian_blocklist
+USING del_batch
+WHERE
+    guardian_blocklist.guardian_id = del_batch.guardian_id AND
+    guardian_blocklist.child_id = del_batch.child_id
+RETURNING guardian_blocklist.guardian_id, guardian_blocklist.child_id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .toList()
+
+private fun personIdsWithPendingFinanceNoteRemoval(expireDate: LocalDate) = QuerySql {
+    sql(
+        """
+SELECT person_id
+FROM finance_note
+WHERE person_id = ANY(${subquery(personIdsWithExpiredFinanceConnections(expireDate))})
+"""
+    )
+}
 
 private fun citizenUserIdsWithPlacementsEndingBefore(date: LocalDate) = QuerySql {
     sql(
