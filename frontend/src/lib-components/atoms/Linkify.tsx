@@ -4,7 +4,7 @@
 
 import { toASCII } from 'punycode'
 
-import LinkifyIt from 'linkify-it'
+import { LinkifyIt } from 'linkify-it'
 import React, { useMemo } from 'react'
 
 import ExternalLink from './ExternalLink'
