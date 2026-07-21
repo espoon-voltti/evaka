@@ -160,8 +160,9 @@ class DataRemovalService(
         deleteExpiredCitizenUsers(dbc, expireDate = citizenUserExpireDate, limit)
 
         // Guardian and foster parent relationships are the links used above to discover expired
-        // citizen users and finance notes, so they are deleted only after those and skipped for
-        // persons whose citizen user or finance note removal is still pending
+        // citizen users and finance notes, so guardian and foster parent records are deleted only
+        // after citizen users and finance notes are deleted, and skipped for persons whose citizen
+        // user or finance note removal is still pending
         deleteExpiredGuardians(
             dbc,
             expireDate = today.minusYears(10),
