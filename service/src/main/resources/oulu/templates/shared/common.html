@@ -66,6 +66,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             font-size: 10pt;
         }
 
+        .page .reasoning-text {
+            white-space: pre-wrap;
+        }
+
         .page strong.semi {
             font-family: 'Open Sans SemiBold', sans-serif;
             font-weight: 600;
@@ -545,6 +549,14 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <span th:fragment="format-date (myDate)">
     <span th:text="${#temporals.format(myDate, 'd.M.yyyy')}"></span>
 </span>
+
+<div th:fragment="decision-reasoning(reasoning)">
+    <h2 th:text="#{decision.reasoning.title}"></h2>
+    <div class="reasoning-text" th:text="${reasoning.generic}"></div>
+    <th:block th:if="${not #lists.isEmpty(reasoning.individual)}">
+        <div th:each="ind : ${reasoning.individual}" class="reasoning-text" th:text="${ind}"></div>
+    </th:block>
+</div>
 
 <!-- Cover page -->
 <div class="ipost-letter-cover" th:fragment="cover(address, content)">
