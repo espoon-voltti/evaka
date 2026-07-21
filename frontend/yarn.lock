@@ -4757,7 +4757,7 @@ __metadata:
     lib-components: "link:src/lib-components"
     lib-customizations: "link:src/lib-customizations"
     lib-icons: "link:src/lib-icons"
-    linkify-it: "npm:5.0.2"
+    linkify-it: "npm:6.0.0"
     lodash: "npm:4.18.1"
     make-error-cause: "npm:2.3.0"
     oxfmt: "npm:0.59.0"
@@ -5467,12 +5467,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"linkify-it@npm:5.0.2":
-  version: 5.0.2
-  resolution: "linkify-it@npm:5.0.2"
+"linkify-it@npm:6.0.0":
+  version: 6.0.0
+  resolution: "linkify-it@npm:6.0.0"
   dependencies:
     uc.micro: "npm:^2.0.0"
-  checksum: 10/1d23387319c15f2c3d41cdada0fc2edac73afb6083e967ee051afc826f7d8d9f920e287fb7c32679b4516f60e6450853dee2b4339d7d2f313222e4b9e5be1476
+  checksum: 10/ae5a51d42a74c6540a414b971f7acd202762aaf4c6d2ff046564188b7094e61bb0ae03449568241fdc4f0a403fc124b8043e1a040c474ac4f1253de188b22d10
   languageName: node
   linkType: hard
 
