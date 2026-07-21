@@ -55,6 +55,7 @@ dependencies {
         api("org.apache.groovy:groovy") { version { strictly("5.0.3") } }
 
         // These constraints are needed for CVE fixes
+        api("com.fasterxml.jackson.core:jackson-databind:2.22.1")
         api("org.apache.tomcat.embed:tomcat-embed-core:11.0.24")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.24")
         api("org.postgresql:postgresql:42.7.13")
