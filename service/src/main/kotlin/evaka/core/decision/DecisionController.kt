@@ -5,6 +5,7 @@
 package evaka.core.decision
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.application.fetchApplicationDetails
@@ -51,35 +52,46 @@ class DecisionController(
         clock: EvakaClock,
         @RequestParam id: PersonId,
     ): List<DecisionWithPermittedActions> {
-        val decisions = db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Person.READ_DECISIONS,
-                    id,
-                )
-                val filter =
-                    accessControl.requireAuthorizationFilter(it, user, clock, Action.Decision.READ)
-                val decisions = it.getDecisionsByGuardian(id, filter)
-                val permittedActions =
-                    accessControl.getPermittedActions<DecisionId, Action.Decision>(
+        val audit = AuditContext().add(id)
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
                         it,
                         user,
                         clock,
-                        decisions.map(Decision::id),
+                        Action.Person.READ_DECISIONS,
+                        id,
                     )
-                decisions.map { decision ->
-                    DecisionWithPermittedActions(
-                        decision,
-                        permittedActions[decision.id] ?: emptySet(),
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Decision.READ,
+                        )
+                    val decisions = it.getDecisionsByGuardian(id, filter)
+                    audit
+                        .add(decisions.map(Decision::id))
+                        .add(decisions.map(Decision::childId))
+                        .add(decisions.map(Decision::applicationId))
+                        .add(decisions.map { decision -> decision.unit.id })
+                        .observeDate(decisions.minOfOrNull(Decision::startDate))
+                    val permittedActions =
+                        accessControl.getPermittedActions<DecisionId, Action.Decision>(
+                            it,
+                            user,
+                            clock,
+                            decisions.map(Decision::id),
+                        )
+                    decisions.map { decision ->
+                        DecisionWithPermittedActions(
+                            decision,
+                            permittedActions[decision.id] ?: emptySet(),
+                        )
+                    }
                 }
             }
-        }
-        Audit.DecisionRead.log(targetId = AuditId(id), meta = mapOf("count" to decisions.size))
-        return decisions
+            .also { audit.log(Audit.DecisionRead, clock) }
     }
 
     @GetMapping("/units")
