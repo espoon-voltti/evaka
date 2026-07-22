@@ -608,6 +608,7 @@ enum class Audit(
     ChildServiceApplicationAccept,
     ChildServiceApplicationReject,
     ChildServiceApplicationsRead,
+    DecisionArchive,
     DecisionUnitsRead,
     PlacementProposalCreate,
     PlacementToolApplicationCreate,
