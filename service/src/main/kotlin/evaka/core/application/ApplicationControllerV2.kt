@@ -702,22 +702,27 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan,
     ) {
-        val placementPlanId = db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Application.CREATE_PLACEMENT_PLAN,
-                    applicationId,
-                )
-                applicationStateService.createPlacementPlan(it, user, clock, applicationId, body)
+        val audit = AuditContext().add(applicationId)
+        db.connect { dbc ->
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Application.CREATE_PLACEMENT_PLAN,
+                        applicationId,
+                    )
+                    applicationStateService.createPlacementPlan(
+                        it,
+                        user,
+                        clock,
+                        audit,
+                        applicationId,
+                        body,
+                    )
+                }
             }
-        }
-        Audit.PlacementPlanCreate.log(
-            targetId = AuditId(listOf(applicationId, body.unitId)),
-            objectId = AuditId(placementPlanId),
-        )
+            .also { audit.log(Audit.PlacementPlanCreate, clock) }
     }
 
     @PostMapping("/{applicationId}/actions/respond-to-placement-proposal")

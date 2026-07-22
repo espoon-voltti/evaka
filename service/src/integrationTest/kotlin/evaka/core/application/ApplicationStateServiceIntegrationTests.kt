@@ -910,6 +910,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(unitId = daycare.id, period = mainPeriod),
             )
@@ -966,6 +967,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(unitId = daycare.id, period = mainPeriod),
             )
@@ -1022,6 +1024,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(unitId = daycare.id, period = mainPeriod),
             )
@@ -1098,6 +1101,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = daycare.id,
@@ -1187,6 +1191,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = daycare.id,
@@ -1264,6 +1269,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = daycare.id,
@@ -1371,6 +1377,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(unitId = daycare.id, period = mainPeriod),
             )
@@ -1495,6 +1502,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = daycare.id,
@@ -1531,6 +1539,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = daycare.id,
@@ -1578,6 +1587,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = daycare.id,
@@ -1660,6 +1670,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = daycare.id,
@@ -1769,6 +1780,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = daycare.id,
@@ -1852,6 +1864,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = daycare.id,
@@ -2638,6 +2651,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 testApplicationId,
                 DaycarePlacementPlan(
                     unitId = daycare.id,
@@ -2850,6 +2864,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = daycare.id,

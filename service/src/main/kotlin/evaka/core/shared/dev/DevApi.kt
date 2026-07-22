@@ -906,6 +906,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     tx,
                     fakeAdmin,
                     clock,
+                    AuditContext(),
                     applicationId,
                     body,
                 )
@@ -936,6 +937,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             tx,
                             fakeAdmin,
                             clock,
+                            AuditContext(),
                             applicationId,
                             it,
                         )

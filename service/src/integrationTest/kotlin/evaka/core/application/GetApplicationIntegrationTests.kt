@@ -471,6 +471,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = unitId,
