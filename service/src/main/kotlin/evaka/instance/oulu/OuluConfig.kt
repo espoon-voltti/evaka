@@ -196,6 +196,7 @@ class OuluConfig {
         return OuluPaymentIntegrationClient(
             paymentGenerator,
             SftpClient(ouluEnv.intimePayments.toSftpEnv(), ouluEnv.intimePayments.path),
+            RealEvakaClock(),
         )
     }
 

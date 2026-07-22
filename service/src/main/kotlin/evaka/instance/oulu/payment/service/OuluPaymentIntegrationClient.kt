@@ -7,16 +7,19 @@ package evaka.instance.oulu.payment.service
 import evaka.core.invoicing.domain.Payment
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.sftp.SftpClient
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.format.DateTimeFormatter
 
 private val logger = KotlinLogging.logger {}
+
+private val fileNameFormat = DateTimeFormatter.ofPattern("'proe-'yyyyMMdd-hhmmss'.txt'")
 
 class OuluPaymentIntegrationClient(
     private val paymentGenerator: ProEPaymentGenerator,
     private val sftpClient: SftpClient,
+    private val clock: EvakaClock,
 ) : PaymentIntegrationClient {
     override fun send(
         payments: List<Payment>,
@@ -33,7 +36,7 @@ class OuluPaymentIntegrationClient(
             try {
                 sftpClient.put(
                     generatorResult.paymentString.byteInputStream(Charsets.ISO_8859_1),
-                    SimpleDateFormat("'proe-'yyyyMMdd-hhmmss'.txt'").format(Date()),
+                    clock.now().toLocalDateTime().format(fileNameFormat),
                 )
                 logger.info { "Successfully sent ${successList.size} payments" }
             } catch (e: Exception) {
