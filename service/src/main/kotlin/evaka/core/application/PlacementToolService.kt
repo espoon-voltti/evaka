@@ -300,6 +300,7 @@ WHERE application.type = 'PRESCHOOL'
                     tx,
                     user,
                     clock,
+                    audit,
                     application.id,
                     DaycarePlacementPlan(
                         data.preschoolId,

@@ -389,6 +389,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             tx,
             serviceWorker.user,
             clock,
+            AuditContext(),
             application,
             DaycarePlacementPlan(unitId, period),
         )

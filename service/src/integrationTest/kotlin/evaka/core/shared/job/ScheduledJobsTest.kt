@@ -373,6 +373,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                 it,
                 serviceWorker,
                 RealEvakaClock(),
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     daycare.id,

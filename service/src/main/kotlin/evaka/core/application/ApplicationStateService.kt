@@ -669,6 +669,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
         placementPlan: DaycarePlacementPlan,
     ): PlacementPlanId {
@@ -685,8 +686,16 @@ class ApplicationStateService(
             placementPlanService.createPlacementPlan(tx, application, placementPlan)
         createDecisionDrafts(tx, user, application)
 
+        audit
+            .add(placementPlanId)
+            .add(application.childId)
+            .add(application.guardianId)
+            .add(placementPlan.unitId)
+            .observeDate(placementPlan.period.start)
+            .observeDate(placementPlan.preschoolDaycarePeriod?.start)
+
         personService.getGuardians(tx, user, now, application.childId)
-        tx.syncApplicationOtherGuardians(applicationId, today)
+        tx.syncApplicationOtherGuardians(applicationId, today).also { audit.add(it) }
         tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
         tx.deleteApplicationPlacementDraftIfExists(applicationId)
         return placementPlanId
