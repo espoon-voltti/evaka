@@ -776,17 +776,20 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest,
     ) {
+        val audit = AuditContext().add(applicationId).add(body.decisionId)
         db.connect { dbc ->
-            dbc.transaction {
-                applicationStateService.rejectDecision(
-                    it,
-                    user,
-                    clock,
-                    applicationId,
-                    body.decisionId,
-                )
+                dbc.transaction {
+                    applicationStateService.rejectDecision(
+                        it,
+                        user,
+                        clock,
+                        audit,
+                        applicationId,
+                        body.decisionId,
+                    )
+                }
             }
-        }
+            .also { audit.log(Audit.DecisionReject, clock) }
     }
 
     @PostMapping("/{applicationId}/actions/cancel-application")

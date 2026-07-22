@@ -618,18 +618,21 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: RejectDecisionRequest,
     ) {
-        // note: applicationStateService handles logging and authorization
+        // note: applicationStateService handles authorization
+        val audit = AuditContext().add(applicationId).add(body.decisionId)
         db.connect { dbc ->
-            dbc.transaction {
-                applicationStateService.rejectDecision(
-                    it,
-                    user,
-                    clock,
-                    applicationId,
-                    body.decisionId,
-                )
+                dbc.transaction {
+                    applicationStateService.rejectDecision(
+                        it,
+                        user,
+                        clock,
+                        audit,
+                        applicationId,
+                        body.decisionId,
+                    )
+                }
             }
-        }
+            .also { audit.log(Audit.DecisionReject, clock) }
     }
 
     @GetMapping("/decisions/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])

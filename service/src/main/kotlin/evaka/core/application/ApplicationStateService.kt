@@ -1112,6 +1112,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
         decisionId: DecisionId,
     ) {
@@ -1162,6 +1163,14 @@ class ApplicationStateService(
             }
         alsoReject?.let { tx.markDecisionRejected(user, clock, it.id) }
 
+        audit
+            .add(listOfNotNull(alsoReject?.id))
+            .add(application.childId)
+            .add(application.guardianId)
+            .add(tx.getApplicationOtherGuardians(applicationId))
+            .add(decision.unit.id)
+            .observeDate(decision.startDate)
+
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
         if (
@@ -1185,11 +1194,6 @@ class ApplicationStateService(
                 )
             }
         }
-
-        Audit.DecisionReject.log(
-            targetId = AuditId(decisionId),
-            meta = mapOf("childId" to decision.childId),
-        )
     }
 
     // CONTENT UPDATE
