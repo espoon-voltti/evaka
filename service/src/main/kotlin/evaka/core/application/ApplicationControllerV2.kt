@@ -484,6 +484,7 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
     ): PlacementPlanDraft {
+        val audit = AuditContext().add(applicationId)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -500,11 +501,14 @@ class ApplicationControllerV2(
                     )
                 }
             }
-            .also {
-                Audit.PlacementPlanDraftRead.log(
-                    targetId = AuditId(applicationId),
-                    objectId = AuditId(it.child.id),
-                )
+            .also { draft ->
+                audit
+                    .add(draft.child.id)
+                    .add(draft.preferredUnits.map { unit -> unit.id })
+                    .add(draft.placements.map { placement -> placement.id })
+                    .observeDate(draft.period.start)
+                    .observeDate(draft.preschoolDaycarePeriod?.start)
+                audit.log(Audit.PlacementPlanDraftRead, clock)
             }
     }
 
