@@ -100,6 +100,7 @@ class DecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): List<DecisionUnit> {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -108,10 +109,10 @@ class DecisionController(
                         clock,
                         Action.Global.READ_DECISION_UNITS,
                     )
-                    getDecisionUnits(it)
+                    getDecisionUnits(it).also { units -> audit.addMeta("count", units.size) }
                 }
             }
-            .also { Audit.UnitRead.log(meta = mapOf("count" to it.size)) }
+            .also { audit.log(Audit.DecisionUnitsRead, clock) }
     }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
