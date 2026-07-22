@@ -5,6 +5,7 @@
 package evaka.core.invoicing.controller
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.ConstList
 import evaka.core.EvakaEnv
@@ -432,29 +433,38 @@ class VoucherValueDecisionController(
             throw BadRequest("Archival is not enabled")
         }
 
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.VoucherValueDecision.ARCHIVE,
-                    id,
-                )
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.VoucherValueDecision.ARCHIVE,
+                        id,
+                    )
 
-                val decision =
-                    tx.getVoucherValueDecision(id)
-                        ?: throw NotFound("Voucher value decision $id not found")
-                validateArchivability(decision)
+                    val decision =
+                        tx.getVoucherValueDecision(id)
+                            ?: throw NotFound("Voucher value decision $id not found")
+                    validateArchivability(decision)
 
-                asyncJobRunner.plan(
-                    tx = tx,
-                    payloads = listOf(AsyncJob.ArchiveVoucherValueDecision(decision.id, user)),
-                    runAt = clock.now(),
-                    retryCount = 1,
-                )
+                    audit
+                        .add(decision.headOfFamily.id)
+                        .add(listOfNotNull(decision.partner?.id))
+                        .add(decision.child.id)
+                        .add(decision.placement.unit.id)
+                        .observeDate(decision.validFrom)
+
+                    asyncJobRunner.plan(
+                        tx = tx,
+                        payloads = listOf(AsyncJob.ArchiveVoucherValueDecision(decision.id, user)),
+                        runAt = clock.now(),
+                        retryCount = 1,
+                    )
+                }
             }
-        }
+            .also { audit.log(Audit.VoucherValueDecisionArchive, clock) }
     }
 }
 
