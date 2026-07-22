@@ -962,6 +962,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
         decisionId: DecisionId,
         requestedStartDate: LocalDate,
@@ -1060,13 +1061,24 @@ class ApplicationStateService(
 
         // everything validated now!
 
+        val placementUnitId =
+            if (featureConfig.applyPlacementUnitFromDecision) decision.unit.id else plan.unitId
+
+        audit
+            .add(application.childId)
+            .add(application.guardianId)
+            .add(tx.getApplicationOtherGuardians(applicationId))
+            .add(placementUnitId)
+            .observeDate(decision.startDate)
+            .addMeta("requestedStartDate", requestedStartDate)
+
         tx.markDecisionAccepted(user, clock, decision.id, requestedStartDate)
 
         placementPlanService.applyPlacementPlan(
             tx,
             clock,
             application,
-            if (featureConfig.applyPlacementUnitFromDecision) decision.unit.id else plan.unitId,
+            placementUnitId,
             plan.type,
             extent,
             clock.now(),
@@ -1094,16 +1106,6 @@ class ApplicationStateService(
                 }
             }
         }
-
-        Audit.DecisionAccept.log(
-            targetId = AuditId(decisionId),
-            meta =
-                mapOf(
-                    "applicationId" to applicationId,
-                    "requestedStartDate" to requestedStartDate,
-                    "childId" to decision.childId,
-                ),
-        )
     }
 
     fun rejectDecision(
@@ -1663,15 +1665,18 @@ class ApplicationStateService(
                         decision.type == DecisionType.PRESCHOOL ||
                             decision.type == DecisionType.PREPARATORY_EDUCATION
                     ) {
+                        val audit = AuditContext().add(application.id).add(decisionId)
                         acceptDecision(
                             tx,
                             AuthenticatedUser.SystemInternalUser,
                             clock,
+                            audit,
                             application.id,
                             decisionId,
                             decision.startDate,
                             true,
                         )
+                        audit.log(Audit.DecisionAccept, clock)
                     }
                 }
             }
