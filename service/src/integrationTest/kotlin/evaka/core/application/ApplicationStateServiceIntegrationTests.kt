@@ -2119,6 +2119,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
             )
@@ -2163,6 +2164,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
             )
@@ -2213,6 +2215,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 user,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
             )
@@ -2265,6 +2268,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     tx,
                     user,
                     clock,
+                    AuditContext(),
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
                 )
@@ -2472,6 +2476,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
             )
@@ -2514,6 +2519,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     tx,
                     serviceWorker,
                     clock,
+                    AuditContext(),
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
                 )
@@ -2530,6 +2536,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
             )
@@ -2541,6 +2548,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     tx,
                     serviceWorker,
                     clock,
+                    AuditContext(),
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
                 )
