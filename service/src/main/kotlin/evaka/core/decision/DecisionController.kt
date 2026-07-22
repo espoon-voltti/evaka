@@ -6,9 +6,9 @@ package evaka.core.decision
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.application.fetchApplicationDetails
+import evaka.core.application.getApplicationOtherGuardians
 import evaka.core.document.archival.validateArchivability
 import evaka.core.pis.getPersonById
 import evaka.core.shared.DecisionId
@@ -122,6 +122,7 @@ class DecisionController(
         clock: EvakaClock,
         @PathVariable id: DecisionId,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 val decision = dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -137,6 +138,14 @@ class DecisionController(
                     val application =
                         tx.fetchApplicationDetails(decision.applicationId)
                             ?: error("Cannot find application for decision id '$id'")
+
+                    audit
+                        .add(decision.applicationId)
+                        .add(application.childId)
+                        .add(application.guardianId)
+                        .add(tx.getApplicationOtherGuardians(decision.applicationId))
+                        .add(decision.unit.id)
+                        .observeDate(decision.startDate)
 
                     val child =
                         tx.getPersonById(application.childId)
@@ -160,7 +169,7 @@ class DecisionController(
                 }
                 decisionService.getDecisionPdf(dbc, decision)
             }
-            .also { Audit.DecisionDownloadPdf.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.DecisionDownloadPdf, clock) }
     }
 
     @PostMapping("/{decisionId}/archive")
