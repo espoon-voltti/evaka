@@ -414,6 +414,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     tx,
                     guardian.user(CitizenAuthLevel.STRONG),
                     clock,
+                    AuditContext(),
                     application,
                     decision.id,
                     requestedStartDate = decision.startDate,

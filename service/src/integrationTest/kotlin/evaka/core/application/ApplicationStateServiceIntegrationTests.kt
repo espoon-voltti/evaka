@@ -80,6 +80,7 @@ import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.security.actionrule.AccessControlFilter
 import evaka.core.snPreschoolClub45
 import evaka.core.snPreschoolDaycare45
+import evaka.core.test.getDecisionRowById
 import evaka.core.toApplicationType
 import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.LocalDate
@@ -1932,6 +1933,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
             with(getDecision(tx, DecisionType.PRESCHOOL)) {
                 assertEquals(DecisionStatus.ACCEPTED, status)
+                assertEquals(
+                    AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    tx.getDecisionRowById(id).resolvedBy,
+                )
             }
         }
     }
@@ -2149,6 +2154,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start,
@@ -2198,6 +2204,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 user,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start,
@@ -2236,6 +2243,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     tx,
                     user,
                     clock,
+                    AuditContext(),
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
                     mainPeriod.start,
@@ -2275,6 +2283,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start,
@@ -2283,6 +2292,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
                 connectedPeriod.start,
@@ -2335,6 +2345,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start,
@@ -2373,6 +2384,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start,
@@ -2381,6 +2393,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
                 LocalDate.of(2020, 8, 1),
@@ -2410,6 +2423,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     tx,
                     serviceWorker,
                     clock,
+                    AuditContext(),
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
                     mainPeriod.start,
@@ -2427,6 +2441,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start,
@@ -2439,6 +2454,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     tx,
                     serviceWorker,
                     clock,
+                    AuditContext(),
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
                     mainPeriod.start,
@@ -2467,6 +2483,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     tx,
                     serviceWorker,
                     clock,
+                    AuditContext(),
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
                     mainPeriod.start,
@@ -2484,6 +2501,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start,
@@ -2651,6 +2669,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx = tx,
                 user = guardian.user(CitizenAuthLevel.STRONG),
                 clock = clock,
+                AuditContext(),
                 applicationId = testApplicationId,
                 decisionId = decisionId,
                 requestedStartDate = clock.today().plusMonths(5),
