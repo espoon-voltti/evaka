@@ -804,6 +804,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
         status: PlacementPlanConfirmationStatus,
         rejectReason: PlacementPlanRejectReason? = null,
@@ -819,6 +820,13 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
+
+        audit
+            .add(application.childId)
+            .add(application.guardianId)
+            .add(tx.getApplicationOtherGuardians(applicationId))
+            .addMeta("status", status)
+        if (rejectReason != null) audit.addMeta("rejectReason", rejectReason)
 
         if (
             status == PlacementPlanConfirmationStatus.REJECTED ||
@@ -842,11 +850,6 @@ class ApplicationStateService(
         } else {
             tx.updatePlacementPlanUnitConfirmation(applicationId, status, null, null)
         }
-        Audit.PlacementPlanRespond.log(
-            targetId = AuditId(applicationId),
-            objectId = AuditId(application.childId),
-            meta = mapOf("status" to status),
-        )
     }
 
     fun confirmPlacementProposalChanges(

@@ -1604,6 +1604,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED,
             )
@@ -1707,6 +1708,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED,
             )
@@ -1798,6 +1800,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 PlacementPlanConfirmationStatus.REJECTED_NOT_CONFIRMED,
                 PlacementPlanRejectReason.REASON_1,
@@ -1883,6 +1886,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 PlacementPlanConfirmationStatus.REJECTED_NOT_CONFIRMED,
                 PlacementPlanRejectReason.OTHER,

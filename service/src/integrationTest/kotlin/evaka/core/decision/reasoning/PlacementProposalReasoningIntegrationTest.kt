@@ -268,6 +268,7 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
                 tx,
                 admin.user,
                 clock,
+                AuditContext(),
                 fixture.applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED,
             )
