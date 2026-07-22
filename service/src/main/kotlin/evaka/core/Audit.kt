@@ -610,9 +610,11 @@ enum class Audit(
     ChildServiceApplicationsRead,
     DecisionArchive,
     DecisionUnitsRead,
+    FeeDecisionArchive,
     PlacementProposalCreate,
     PlacementToolApplicationCreate,
-    UnitServiceApplicationsRead;
+    UnitServiceApplicationsRead,
+    VoucherValueDecisionArchive;
 
     private val eventCode = name
 
