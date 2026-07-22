@@ -184,27 +184,36 @@ class DecisionController(
             throw BadRequest("Archival is not enabled")
         }
 
+        val audit = AuditContext().add(decisionId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Decision.ARCHIVE,
-                    decisionId,
-                )
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Decision.ARCHIVE,
+                        decisionId,
+                    )
 
-                val decision =
-                    tx.getDecision(decisionId) ?: throw NotFound("Decision $decisionId not found")
-                validateArchivability(decision)
+                    val decision =
+                        tx.getDecision(decisionId)
+                            ?: throw NotFound("Decision $decisionId not found")
+                    validateArchivability(decision)
 
-                asyncJobRunner.plan(
-                    tx = tx,
-                    payloads = listOf(AsyncJob.ArchiveDecision(decision.id, user)),
-                    runAt = clock.now(),
-                    retryCount = 1,
-                )
+                    audit
+                        .add(decision.applicationId)
+                        .add(decision.childId)
+                        .add(decision.unit.id)
+                        .observeDate(decision.startDate)
+
+                    asyncJobRunner.plan(
+                        tx = tx,
+                        payloads = listOf(AsyncJob.ArchiveDecision(decision.id, user)),
+                        runAt = clock.now(),
+                        retryCount = 1,
+                    )
+                }
             }
-        }
+            .also { audit.log(Audit.DecisionArchive, clock) }
     }
 }
