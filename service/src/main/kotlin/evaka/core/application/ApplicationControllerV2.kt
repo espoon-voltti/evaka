@@ -737,19 +737,22 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: PlacementProposalConfirmationUpdate,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-            dbc.transaction {
-                applicationStateService.respondToPlacementProposal(
-                    it,
-                    user,
-                    clock,
-                    applicationId,
-                    body.status,
-                    body.reason,
-                    body.otherReason,
-                )
+                dbc.transaction {
+                    applicationStateService.respondToPlacementProposal(
+                        it,
+                        user,
+                        clock,
+                        audit,
+                        applicationId,
+                        body.status,
+                        body.reason,
+                        body.otherReason,
+                    )
+                }
             }
-        }
+            .also { audit.log(Audit.PlacementPlanRespond, clock) }
     }
 
     @PostMapping("/{applicationId}/actions/accept-decision")
