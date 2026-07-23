@@ -247,6 +247,7 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable guardianId: PersonId,
     ): List<PersonApplicationSummary> {
+        val audit = AuditContext().add(guardianId)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -259,7 +260,14 @@ class ApplicationControllerV2(
                     it.fetchApplicationSummariesForGuardian(guardianId)
                 }
             }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(guardianId)) }
+            .also { summaries ->
+                audit
+                    .add(summaries.map { it.applicationId })
+                    .add(summaries.map { it.childId })
+                    .add(summaries.mapNotNull { it.preferredUnitId })
+                    .observeDate(summaries.mapNotNull { it.preferredStartDate }.minOrNull())
+                audit.log(Audit.ApplicationRead, clock)
+            }
     }
 
     @GetMapping("/by-child/{childId}")
@@ -269,6 +277,7 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): List<PersonApplicationSummary> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -288,9 +297,13 @@ class ApplicationControllerV2(
                     it.fetchApplicationSummariesForChild(childId, filter)
                 }
             }
-            .also {
-                val applicationIds = it.map { application -> application.applicationId }.toSet()
-                Audit.ApplicationRead.log(targetId = AuditId(applicationIds))
+            .also { summaries ->
+                audit
+                    .add(summaries.map { it.applicationId })
+                    .add(summaries.map { it.guardianId })
+                    .add(summaries.mapNotNull { it.preferredUnitId })
+                    .observeDate(summaries.mapNotNull { it.preferredStartDate }.minOrNull())
+                audit.log(Audit.ApplicationRead, clock)
             }
     }
 
@@ -301,6 +314,7 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
     ): ApplicationResponse {
+        val audit = AuditContext().add(applicationId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     val application =
@@ -356,6 +370,17 @@ class ApplicationControllerV2(
                             applicationId,
                         )
 
+                    audit
+                        .add(application.childId)
+                        .add(application.guardianId)
+                        .add(guardians.map { it.id })
+                        .add(decisions.map { it.id })
+                        .add(decisions.map { it.unit.id })
+                        .add(application.form.preferences.preferredUnits.map { it.id })
+                        .add(attachments.map { it.id })
+                        .observeDate(decisions.minOfOrNull { it.startDate })
+                        .observeDate(application.form.preferences.preferredStartDate)
+
                     ApplicationResponse(
                         application = application.copy(attachments = attachments),
                         decisions = decisions,
@@ -365,14 +390,7 @@ class ApplicationControllerV2(
                     )
                 }
             }
-            .also {
-                Audit.ApplicationRead.log(targetId = AuditId(applicationId))
-                Audit.DecisionReadByApplication.log(
-                    targetId = AuditId(applicationId),
-                    objectId = AuditId(it.application.childId),
-                    meta = mapOf("count" to it.decisions.size),
-                )
-            }
+            .also { audit.log(Audit.ApplicationRead, clock) }
     }
 
     @PutMapping("/{applicationId}")

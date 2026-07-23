@@ -217,7 +217,7 @@ enum class Audit(
     DaycareGroupPlacementDelete,
     DaycareGroupPlacementTransfer,
     // DaycareBackupCareRead,
-    DecisionReadByApplication,
+    // DecisionReadByApplication,
     DecisionReasoningGenericCreate,
     DecisionReasoningGenericDelete,
     DecisionReasoningGenericRead,
