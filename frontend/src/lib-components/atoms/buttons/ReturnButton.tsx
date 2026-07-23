@@ -21,7 +21,6 @@ export const ReturnButtonWrapper = styled.div<WrapperProps>`
     padding-left: 0;
     margin-left: 0;
     justify-content: flex-start;
-    color: ${(p) => p.theme.colors.main.m1};
   }
 
   @media (max-width: 1215px) {
@@ -30,6 +29,14 @@ export const ReturnButtonWrapper = styled.div<WrapperProps>`
 
   @media print {
     display: none;
+  }
+`
+
+const DarkerInlineButton = styled(Button)`
+  color: ${(p) => p.theme.colors.main.m1};
+
+  &:hover {
+    color: ${(p) => p.theme.colors.main.m2Hover};
   }
 `
 
@@ -48,7 +55,7 @@ export default React.memo(function ReturnButton({
   const defaultBehaviour = useCallback(() => history.go(-1), [])
   return onClick || history.length > 1 ? (
     <ReturnButtonWrapper $margin={margin}>
-      <Button
+      <DarkerInlineButton
         appearance="inline"
         icon={faAngleLeft}
         text={label}

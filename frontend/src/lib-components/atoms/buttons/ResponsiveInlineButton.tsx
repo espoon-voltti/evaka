@@ -24,13 +24,11 @@ const ResponsiveTextButton = styled(Button)<{ $breakpoint: string }>`
 
 export default React.memo(function ResponsiveInlineButton({
   breakpoint = tabletMin,
-  text,
   ...props
 }: ResponsiveInlineButtonProps) {
   return (
     <ResponsiveTextButton
       appearance="inline"
-      text={text}
       $breakpoint={breakpoint}
       {...props}
     />
