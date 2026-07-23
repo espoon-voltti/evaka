@@ -14,7 +14,7 @@ import type LocalDate from 'lib-common/local-date'
 import type { MutateAsyncFn } from 'lib-common/query'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -257,7 +257,7 @@ function sendAbsenceUpdates(
   }
 }
 
-const AddAbsencesButton = styled(LegacyButton)`
+const AddAbsencesButton = styled(Button)`
   @media print {
     display: none;
   }

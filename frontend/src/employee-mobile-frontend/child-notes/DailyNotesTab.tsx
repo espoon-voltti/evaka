@@ -19,7 +19,7 @@ import type {
 import { useMutation, useMutationResult } from 'lib-common/query'
 import { ChipWrapper, SelectionChip } from 'lib-components/atoms/Chip'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ResponsiveInlineButton from 'lib-components/atoms/buttons/ResponsiveInlineButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -367,7 +367,7 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
       </ContentArea>
       <StickyActionContainer>
         <FixedSpaceRow $fullWidth $justifyContent="space-evenly" $spacing="xxs">
-          <LegacyButton
+          <Button
             onClick={goBackWithConfirm}
             text={i18n.common.cancel}
             data-qa="cancel-daily-note-btn"

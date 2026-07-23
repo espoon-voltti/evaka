@@ -6,7 +6,7 @@ import styled, { css } from 'styled-components'
 
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { fontWeights } from 'lib-components/typography'
 import type { SpacingSize } from 'lib-components/white-space'
@@ -92,7 +92,9 @@ export const CustomTitle = styled(Title)`
   text-align: center;
 `
 
-export const BackButtonInline = styled(LegacyInlineButton)`
+export const BackButtonInline = styled(Button).attrs({
+  appearance: 'inline'
+})`
   color: ${colors.main.m1};
   margin-top: ${defaultMargins.s};
   margin-left: ${defaultMargins.s};
@@ -100,6 +102,7 @@ export const BackButtonInline = styled(LegacyInlineButton)`
   overflow-x: hidden;
   width: calc(100vw - 16px);
   display: flex;
+  justify-content: flex-start;
 `
 
 export const TimeWrapper = styled.div`

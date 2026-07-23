@@ -34,7 +34,6 @@ import { useDebounce } from 'lib-common/utils/useDebounce'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
@@ -912,7 +911,7 @@ export default React.memo(function MessageEditor({
                   .map((r) => r.numberOfRecipientAccounts)
                   .getOrElse('')}
               </div>
-              <LegacyButton
+              <Button
                 text={
                   sending
                     ? i18n.messages.messageEditor.sending

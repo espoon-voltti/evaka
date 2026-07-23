@@ -16,7 +16,6 @@ import type { IsoLanguage } from 'lib-common/generated/language'
 import { isoLanguages } from 'lib-common/generated/language'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -513,10 +512,7 @@ export default React.memo(function AdditionalInformation({ childId }: Props) {
               )}
               <RightAlignedRow>
                 <FixedSpaceRow>
-                  <LegacyButton
-                    onClick={clearUiMode}
-                    text={i18n.common.cancel}
-                  />
+                  <Button onClick={clearUiMode} text={i18n.common.cancel} />
                   <MutateButton
                     primary
                     disabled={false}

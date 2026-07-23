@@ -8,7 +8,7 @@ import { useLocation } from 'wouter'
 
 import type { AttendanceChild } from 'lib-common/generated/api-types/attendance'
 import type { UUID } from 'lib-common/types'
-import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowRotateLeft } from 'lib-icons'
@@ -30,6 +30,7 @@ export default React.memo(function AttendanceChildDeparted({
 
   return (
     <ReturnToPresentButton
+      appearance="inline"
       icon={faArrowRotateLeft}
       text={i18n.attendances.actions.returnToPresent}
       onClick={() =>
@@ -40,7 +41,7 @@ export default React.memo(function AttendanceChildDeparted({
   )
 })
 
-export const ReturnToPresentButton = styled(LegacyInlineButton)`
+export const ReturnToPresentButton = styled(Button)`
   color: ${colors.main.m2};
   margin-top: ${defaultMargins.s};
   margin-left: ${defaultMargins.s};

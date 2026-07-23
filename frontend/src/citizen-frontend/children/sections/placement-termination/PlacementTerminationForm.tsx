@@ -16,7 +16,7 @@ import type {
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -236,11 +236,12 @@ export default React.memo(function PlacementTerminationForm({
         />
       </div>
 
-      <LegacyButton
+      <Button
         primary
         text={t.children.placementTermination.terminate}
         disabled={terminationState.type !== 'valid'}
         onClick={() => setShowConfirmDialog(true)}
+        data-qa="submit-termination-btn"
       />
 
       {showConfirmDialog && terminationState.type === 'valid' && (

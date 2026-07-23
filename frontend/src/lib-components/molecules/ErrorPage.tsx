@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { LegacyButton } from '../atoms/buttons/LegacyButton'
+import { Button } from '../atoms/buttons/Button'
 import Container, { ContentArea } from '../layout/Container'
 import { H1, P } from '../typography'
 
@@ -38,9 +38,7 @@ export default React.memo(function ErrorPage({
         <ErrorContainer $opaque $paddingVertical="XL">
           <H1>{title}</H1>
           <P $centered>{text}</P>
-          <LegacyButton primary onClick={onClick}>
-            {reload}
-          </LegacyButton>
+          <Button primary onClick={onClick} text={reload} />
         </ErrorContainer>
       </Container>
     </main>

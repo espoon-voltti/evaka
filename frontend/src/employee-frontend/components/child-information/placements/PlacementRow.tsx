@@ -24,7 +24,7 @@ import {
 } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -531,7 +531,7 @@ export default React.memo(function PlacementRow({
         {editing && (
           <ActionRow>
             <FixedSpaceRow>
-              <LegacyButton
+              <Button
                 onClick={() => setEditing(false)}
                 text={i18n.common.cancel}
               />

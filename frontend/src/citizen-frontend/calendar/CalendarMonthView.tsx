@@ -17,7 +17,6 @@ import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   ExpandingInfoBox,
@@ -34,6 +33,7 @@ import {
   faChevronLeft,
   faChevronRight,
   faComment,
+  faLockAlt,
   faTreePalm,
   faUserMinus
 } from 'lib-icons'
@@ -48,7 +48,6 @@ import {
 import { InlineWarningIcon } from './MonthElem'
 import type { MonthlyTimeSummary } from './MonthlyHoursSummary'
 import MonthlyHoursSummary from './MonthlyHoursSummary'
-import ReportHolidayLabel from './ReportHolidayLabel'
 import type { ChildImageData } from './RoundChildImages'
 import type { BackgroundHighlightType } from './calendar-elements'
 import { Reservations } from './calendar-elements'
@@ -188,17 +187,18 @@ export default React.memo(function CalendarMonthView({
       <StickyTopBar>
         <ButtonContainer>
           {questionnaireAvailable && (
-            <LegacyInlineButton
-              onClick={onReportHolidaysClicked}
-              text={
-                <ReportHolidayLabel
-                  questionnaireAvailable={questionnaireAvailable}
-                  iconRight
-                />
-              }
-              icon={faTreePalm}
-              data-qa="open-holiday-modal"
-            />
+            <ReportHolidayButtonContainer>
+              <Button
+                appearance="inline"
+                onClick={onReportHolidaysClicked}
+                text={i18n.calendar.newHoliday}
+                icon={faTreePalm}
+                data-qa="open-holiday-modal"
+              />
+              {questionnaireAvailable === 'with-strong-auth' && (
+                <FontAwesomeIcon icon={faLockAlt} size="xs" />
+              )}
+            </ReportHolidayButtonContainer>
           )}
           {featureFlags.discussionReservations && isDiscussionActionVisible && (
             <Button
@@ -699,6 +699,13 @@ const ButtonContainer = styled.div`
     max-width: 1344px;
     width: 1344px;
   }
+`
+
+const ReportHolidayButtonContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${defaultMargins.xs};
+  color: ${colors.main.m2};
 `
 
 const gridPattern = ($includeWeekends: boolean) => css`

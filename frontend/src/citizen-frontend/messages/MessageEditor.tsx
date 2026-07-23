@@ -25,8 +25,8 @@ import { useMutationResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { ScreenReaderOnlyInline } from 'lib-components/atoms/ScreenReaderOnly'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -453,7 +453,7 @@ export default React.memo(function MessageEditor({
             )}
           </FormArea>
           <BottomRow>
-            <LegacyButton
+            <Button
               text={i18n.messages.messageEditor.discard}
               onClick={onClose}
             />

@@ -10,7 +10,7 @@ import type {
 } from 'lib-common/generated/api-types/invoicing'
 import { useMutationResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
 
@@ -73,7 +73,7 @@ const Actions = React.memo(function Actions({
     <FixedSpaceRow $justifyContent="flex-end">
       {isDraft ? (
         <>
-          <LegacyButton
+          <Button
             onClick={goToDecisions}
             disabled={!modified}
             data-qa="decision-actions-close"
@@ -89,7 +89,7 @@ const Actions = React.memo(function Actions({
             data-qa="decision-actions-save"
           />
           {featureFlags.financeDecisionHandlerSelect ? (
-            <LegacyButton
+            <Button
               primary
               text={i18n.feeDecisions.buttons.createDecision(1)}
               disabled={modified}

@@ -8,7 +8,10 @@ import styled from 'styled-components'
 
 import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import {
+  defaultButtonTextStyle,
+  useThrottledEventHandler
+} from 'lib-components/atoms/buttons/button-commons'
 import { zoomedMobileMax } from 'lib-components/breakpoints'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
@@ -132,15 +135,48 @@ const Container = styled.div`
   }
 `
 
-const Action = styled(LegacyButton)`
+const Action = React.memo(function Action({
+  onClick,
+  children,
+  'data-qa': dataQa
+}: {
+  onClick: () => void
+  children: React.ReactNode
+  'data-qa': string
+}) {
+  const handleOnClick = useThrottledEventHandler(onClick)
+  return (
+    <StyledAction onClick={handleOnClick} data-qa={dataQa}>
+      {children}
+    </StyledAction>
+  )
+})
+
+const StyledAction = styled.button.attrs({ type: 'button' })`
+  ${defaultButtonTextStyle};
+  color: ${(p) => p.theme.colors.grayscale.g0};
   border: none;
   background: none;
-  color: ${(p) => p.theme.colors.grayscale.g0};
   padding: 0;
-  min-height: 0;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+
+  &:focus {
+    outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    color: ${(p) => p.theme.colors.main.m2Hover};
+  }
+
+  &:active {
+    color: ${(p) => p.theme.colors.main.m2Active};
+  }
 `
 
-const IconBackground = styled.div`
+const IconBackground = styled.span`
   display: inline-flex;
   justify-content: center;
   align-items: center;

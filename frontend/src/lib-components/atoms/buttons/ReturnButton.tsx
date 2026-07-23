@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback } from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled from 'styled-components'
 
 import { faAngleLeft } from 'lib-icons'
 
 import { defaultMargins } from '../../white-space'
 
-import LegacyInlineButton from './LegacyInlineButton'
+import { Button } from './Button'
 
 interface WrapperProps {
   $margin?: string
@@ -32,6 +32,14 @@ export const ReturnButtonWrapper = styled.div<WrapperProps>`
   }
 `
 
+const DarkerInlineButton = styled(Button)`
+  color: ${(p) => p.theme.colors.main.m1};
+
+  &:hover {
+    color: ${(p) => p.theme.colors.main.m2Hover};
+  }
+`
+
 type Props = {
   label: string
   'data-qa'?: string
@@ -44,16 +52,15 @@ export default React.memo(function ReturnButton({
   onClick,
   margin
 }: Props & { margin?: string }) {
-  const { colors } = useTheme()
   const defaultBehaviour = useCallback(() => history.go(-1), [])
   return onClick || history.length > 1 ? (
     <ReturnButtonWrapper $margin={margin}>
-      <LegacyInlineButton
+      <DarkerInlineButton
+        appearance="inline"
         icon={faAngleLeft}
         text={label}
         onClick={onClick ?? defaultBehaviour}
         data-qa={dataQa}
-        color={colors.main.m1}
       />
     </ReturnButtonWrapper>
   ) : null
