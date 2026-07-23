@@ -6,7 +6,6 @@ package evaka.core.application
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.ConstList
 import evaka.core.EvakaEnv
 import evaka.core.decision.Decision
@@ -419,26 +418,28 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Application.UPDATE,
-                    applicationId,
-                )
-                applicationStateService.updateApplicationContentsServiceWorker(
-                    it,
-                    user,
-                    clock.now(),
-                    applicationId,
-                    application,
-                    user.evakaUserId,
-                )
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Application.UPDATE,
+                        applicationId,
+                    )
+                    applicationStateService.updateApplicationContentsServiceWorker(
+                        it,
+                        user,
+                        clock.now(),
+                        audit,
+                        applicationId,
+                        application,
+                        user.evakaUserId,
+                    )
+                }
             }
-        }
-        Audit.ApplicationUpdate.log(targetId = AuditId(applicationId))
+            .also { audit.log(Audit.ApplicationUpdate, clock) }
     }
 
     @PostMapping("/{applicationId}/actions/send-application")
@@ -479,6 +480,7 @@ class ApplicationControllerV2(
                         it,
                         user,
                         clock.now(),
+                        audit,
                         applicationId,
                         application,
                         user.evakaUserId,

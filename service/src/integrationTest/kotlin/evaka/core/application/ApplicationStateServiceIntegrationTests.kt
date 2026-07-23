@@ -2595,6 +2595,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx = tx,
                 user = guardian.user(CitizenAuthLevel.STRONG),
                 now = clock.now(),
+                audit = AuditContext(),
                 applicationId = testApplicationId,
                 update =
                     CitizenApplicationUpdate(
