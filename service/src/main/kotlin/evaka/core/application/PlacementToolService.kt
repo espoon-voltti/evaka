@@ -109,6 +109,7 @@ WHERE application.type = 'PRESCHOOL'
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         file: MultipartFile,
     ) {
         val serviceNeedOptions = tx.getServiceNeedOptions()
@@ -121,42 +122,43 @@ WHERE application.type = 'PRESCHOOL'
                         "No service need option found: ${evakaEnv.placementToolServiceNeedOptionId}"
                     )
             } else null
-        val nextPreschoolTermId =
-            findNextPreschoolTerm(tx, clock.today())?.id
+        val nextPreschoolTerm =
+            findNextPreschoolTerm(tx, clock.today())
                 ?: throw NotFound("No next preschool term found")
+        val nextPreschoolTermId = nextPreschoolTerm.id
+        audit.add(nextPreschoolTermId).observeDate(nextPreschoolTerm.finnishPreschool.start)
         val placements = file.inputStream.use { parsePlacementToolCsv(it) }
-        asyncJobRunner
-            .plan(
-                tx,
-                placements.map { (childIdentifier, preschoolId) ->
-                    when {
-                        isValidSSN(childIdentifier) -> {
-                            AsyncJob.PlacementToolFromSSN(
-                                user,
-                                childIdentifier,
-                                preschoolId,
-                                serviceNeedOptionId,
-                                nextPreschoolTermId,
-                            )
-                        }
-
-                        else -> {
-                            AsyncJob.PlacementTool(
-                                user,
-                                PlacementToolData(
-                                    ChildId(UUID.fromString(childIdentifier)),
-                                    preschoolId,
-                                ),
-                                serviceNeedOptionId,
-                                nextPreschoolTermId,
-                            )
-                        }
+        audit.addMeta("count", placements.size)
+        asyncJobRunner.plan(
+            tx,
+            placements.map { (childIdentifier, preschoolId) ->
+                when {
+                    isValidSSN(childIdentifier) -> {
+                        AsyncJob.PlacementToolFromSSN(
+                            user,
+                            childIdentifier,
+                            preschoolId,
+                            serviceNeedOptionId,
+                            nextPreschoolTermId,
+                        )
                     }
-                },
-                runAt = clock.now(),
-                retryCount = 1,
-            )
-            .also { Audit.PlacementTool.log(meta = mapOf("total" to placements.size)) }
+
+                    else -> {
+                        AsyncJob.PlacementTool(
+                            user,
+                            PlacementToolData(
+                                ChildId(UUID.fromString(childIdentifier)),
+                                preschoolId,
+                            ),
+                            serviceNeedOptionId,
+                            nextPreschoolTermId,
+                        )
+                    }
+                }
+            },
+            runAt = clock.now(),
+            retryCount = 1,
+        )
     }
 
     fun createPlacementToolApplicationsFromSsn(
