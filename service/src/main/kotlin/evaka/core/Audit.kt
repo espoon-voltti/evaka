@@ -56,7 +56,6 @@ enum class Audit(
     ApplicationPlacementDraftDelete,
     ApplicationPlacementDraftUpdate,
     ApplicationReadMetadata,
-    ApplicationSearch,
     ApplicationUpdate,
     ApplicationsReportRead,
     AssistanceActionOptionsRead,
@@ -522,7 +521,6 @@ enum class Audit(
     UnitAclDeleteScheduled,
     UnitAclRead,
     UnitScheduledAclRead,
-    UnitApplicationsRead,
     UnitAttendanceReservationsRead,
     UnitCalendarEventsRead,
     UnitFeaturesRead,
@@ -589,6 +587,7 @@ enum class Audit(
     ApplicationReturnToSent,
     ApplicationReturnToWaitingDecision,
     ApplicationReturnToWaitingPlacement,
+    ApplicationSearch,
     ApplicationSend,
     ApplicationSendDecisionsWithoutProposal,
     ApplicationVerify,
@@ -613,6 +612,7 @@ enum class Audit(
     PlacementProposalAccept,
     PlacementProposalCreate,
     PlacementToolApplicationCreate,
+    UnitApplicationsRead,
     UnitServiceApplicationsRead,
     VoucherValueDecisionArchive;
 

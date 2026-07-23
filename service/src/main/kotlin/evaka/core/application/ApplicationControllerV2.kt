@@ -171,6 +171,19 @@ class ApplicationControllerV2(
                 "Date parameter periodEnd ($body.periodEnd) cannot be before periodStart ($body.periodStart)"
             )
         }
+        val audit =
+            AuditContext()
+                .add(body.units.orEmpty())
+                .add(body.areas.orEmpty())
+                .addMeta("type", body.type)
+                .observeDate(body.periodStart)
+        body.statuses?.let { audit.addMeta("statuses", it) }
+        body.basis?.let { audit.addMeta("basis", it) }
+        body.preschoolType?.let { audit.addMeta("preschoolType", it) }
+        body.dateType?.let { audit.addMeta("dateType", it) }
+        body.distinctions?.let { audit.addMeta("distinctions", it) }
+        body.transferApplications?.let { audit.addMeta("transferApplications", it) }
+        body.voucherApplications?.let { audit.addMeta("voucherApplications", it) }
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val canReadServiceWorkerNotes =
@@ -237,7 +250,10 @@ class ApplicationControllerV2(
                     )
                 }
             }
-            .also { Audit.ApplicationSearch.log(meta = mapOf("total" to it.total)) }
+            .also {
+                audit.addMeta("count", it.total)
+                audit.log(Audit.ApplicationSearch, clock)
+            }
     }
 
     @GetMapping("/by-guardian/{guardianId}")
@@ -924,6 +940,7 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
     ): UnitApplications {
+        val audit = AuditContext().add(unitId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -966,6 +983,18 @@ class ApplicationControllerV2(
                         )
                             tx.getTransferApplicationUnitSummaries(unitId, clock.today())
                         else null
+                    val plans = placementProposals + placementPlans
+                    audit
+                        .add(plans.map { it.id })
+                        .add(plans.map { it.applicationId })
+                        .add(plans.map { it.child.id })
+                        .add(applications.map { it.applicationId })
+                        .add(transferApplications.orEmpty().map { it.applicationId })
+                        .observeDate(applications.minOfOrNull { it.preferredStartDate })
+                        .observeDate(plans.minOfOrNull { it.period.start })
+                        .observeDate(
+                            transferApplications.orEmpty().minOfOrNull { it.preferredStartDate }
+                        )
                     UnitApplications(
                         placementProposals = placementProposals,
                         placementPlans = placementPlans,
@@ -974,7 +1003,7 @@ class ApplicationControllerV2(
                     )
                 }
             }
-            .also { Audit.UnitApplicationsRead.log(targetId = AuditId(unitId)) }
+            .also { audit.log(Audit.UnitApplicationsRead, clock) }
     }
 }
 
