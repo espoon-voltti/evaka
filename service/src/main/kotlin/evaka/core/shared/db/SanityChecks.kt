@@ -15,7 +15,7 @@ import evaka.core.shared.Id
 import evaka.core.shared.ServiceNeedId
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
-import fi.espoo.voltti.logging.loggers.warn
+import fi.espoo.voltti.logging.loggers.error
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 
@@ -57,7 +57,7 @@ fun runSanityChecks(tx: Database.Read, clock: EvakaClock) {
 
 private fun logResult(description: String, violations: List<Id<*>>) {
     if (violations.isNotEmpty()) {
-        logger.warn(mapOf("violations" to violations)) {
+        logger.error(mapOf("violations" to violations)) {
             "Sanity check failed - $description: $violations instances"
         }
     } else {
