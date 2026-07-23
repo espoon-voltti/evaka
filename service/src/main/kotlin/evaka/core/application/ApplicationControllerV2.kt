@@ -556,6 +556,7 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
     ): DecisionDraftGroup {
+        val audit = AuditContext().add(applicationId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -569,6 +570,7 @@ class ApplicationControllerV2(
                     val application =
                         tx.fetchApplicationDetails(applicationId)
                             ?: throw NotFound("Application $applicationId not found")
+                    audit.add(application.childId).add(application.guardianId)
 
                     if (application.status != ApplicationStatus.WAITING_DECISION) {
                         throw Conflict(
@@ -577,6 +579,7 @@ class ApplicationControllerV2(
                     }
 
                     val placementUnit = tx.getPlacementPlanUnit(applicationId)
+                    audit.add(placementUnit.id)
 
                     val decisionDrafts =
                         tx.fetchDecisionDrafts(applicationId).letIf(
@@ -596,6 +599,7 @@ class ApplicationControllerV2(
                                 )
                             }
                         }
+                    decisionDrafts.forEach { audit.add(it.id).observeDate(it.startDate) }
 
                     val (primaryDecision, connectedDecision) =
                         validateDecisionDrafts(decisionDrafts)
@@ -612,9 +616,10 @@ class ApplicationControllerV2(
                         it.id == application.guardianId
                     }
                     val otherGuardian =
-                        tx.getApplicationOtherGuardians(applicationId).firstOrNull()?.let {
-                            tx.getPersonById(it)
-                        }
+                        tx.getApplicationOtherGuardians(applicationId)
+                            .also { audit.add(it) }
+                            .firstOrNull()
+                            ?.let { tx.getPersonById(it) }
 
                     DecisionDraftGroup(
                         decisions = decisionDrafts,
@@ -649,12 +654,7 @@ class ApplicationControllerV2(
                     )
                 }
             }
-            .also {
-                Audit.DecisionDraftRead.log(
-                    targetId = AuditId(applicationId),
-                    meta = mapOf("count" to it.decisions.size),
-                )
-            }
+            .also { audit.log(Audit.DecisionDraftRead, clock) }
     }
 
     @PutMapping("/{applicationId}/decision-drafts")
@@ -665,30 +665,38 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: List<DecisionDraftUpdate>,
     ) {
+        val audit =
+            AuditContext()
+                .add(applicationId)
+                .add(body.map { it.id })
+                .add(body.map { it.unitId })
+                .add(body.flatMap { it.individualReasoningIds })
+        body.forEach { audit.observeDate(it.startDate) }
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Application.UPDATE_DECISION_DRAFT,
-                    applicationId,
-                )
-                updateDecisionDrafts(
-                    it,
-                    applicationId,
-                    body,
-                    clock.now(),
-                    user.evakaUserId,
-                    evakaEnv.decisionReasoningEnabled,
-                    featureConfig.decisionsWithoutReasonings,
-                )
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Application.UPDATE_DECISION_DRAFT,
+                        applicationId,
+                    )
+                    tx.fetchApplicationDetails(applicationId)?.also { application ->
+                        audit.add(application.childId).add(application.guardianId)
+                    }
+                    tx.getApplicationOtherGuardians(applicationId).also { audit.add(it) }
+                    updateDecisionDrafts(
+                        tx,
+                        applicationId,
+                        body,
+                        clock.now(),
+                        user.evakaUserId,
+                        evakaEnv.decisionReasoningEnabled,
+                        featureConfig.decisionsWithoutReasonings,
+                    )
+                }
             }
-        }
-        Audit.DecisionDraftUpdate.log(
-            targetId = AuditId(applicationId),
-            objectId = AuditId(body.map { it.id }),
-        )
+            .also { audit.log(Audit.DecisionDraftUpdate, clock) }
     }
 
     @PostMapping("/placement-proposals/{unitId}/accept")
