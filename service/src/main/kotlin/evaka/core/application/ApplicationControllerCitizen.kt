@@ -481,6 +481,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): ApplicationDecisions {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val filter =
@@ -492,6 +493,11 @@ class ApplicationControllerCitizen(
                         )
                     val children = tx.getCitizenChildIds(clock.today(), user.id)
                     val decisions = tx.getOwnDecisions(user.id, children, filter)
+                    audit
+                        .add(decisions.map { it.id })
+                        .add(decisions.map { it.childId })
+                        .add(decisions.map { it.applicationId })
+                        .observeDate(decisions.minOfOrNull { it.sentDate })
                     ApplicationDecisions(
                         decisions = decisions,
                         permittedActions =
@@ -511,12 +517,7 @@ class ApplicationControllerCitizen(
                     )
                 }
             }
-            .also {
-                Audit.DecisionRead.log(
-                    targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.decisions.size),
-                )
-            }
+            .also { audit.log(Audit.DecisionRead, clock) }
     }
 
     data class DecisionWithValidStartDatePeriod(
@@ -531,6 +532,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): List<DecisionWithValidStartDatePeriod> {
+        val audit = AuditContext().addMeta("pendingOnly", true)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val filter =
@@ -562,6 +564,12 @@ class ApplicationControllerCitizen(
                             clock,
                             actionableDecisions.map { it.id },
                         )
+                    audit
+                        .add(actionableDecisions.map { it.id })
+                        .add(actionableDecisions.map { it.childId })
+                        .add(actionableDecisions.map { it.applicationId })
+                        .add(actionableDecisions.map { it.unit.id })
+                        .observeDate(actionableDecisions.minOfOrNull { it.startDate })
                     actionableDecisions.map { decision ->
                         DecisionWithValidStartDatePeriod(
                             decision,
@@ -571,19 +579,7 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also { decisionWithValidStartDatePeriodList ->
-                val childIds =
-                    decisionWithValidStartDatePeriodList.map { it.decision.childId }.toSet()
-                Audit.DecisionRead.log(
-                    targetId = AuditId(user.id),
-                    objectId = AuditId(childIds),
-                    meta =
-                        mapOf(
-                            "count" to decisionWithValidStartDatePeriodList.size,
-                            "pendingOnly" to true,
-                        ),
-                )
-            }
+            .also { audit.log(Audit.DecisionRead, clock) }
     }
 
     @PostMapping("/applications/{applicationId}/actions/accept-decision")
@@ -644,25 +640,35 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable id: DecisionId,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
-            val decision =
-                dbc.transaction { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.Decision.DOWNLOAD_PDF,
-                        id,
-                    )
-                    tx.getSentDecision(id)
-                } ?: throw NotFound("Decision $id does not exist")
-            decisionService.getDecisionPdf(dbc, decision).also {
-                Audit.DecisionDownloadPdf.log(
-                    targetId = AuditId(id),
-                    objectId = AuditId(decision.childId),
-                )
+                val decision =
+                    dbc.transaction { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Citizen.Decision.DOWNLOAD_PDF,
+                            id,
+                        )
+                        tx.getSentDecision(id)?.also { decision ->
+                            audit
+                                .add(decision.applicationId)
+                                .add(decision.childId)
+                                .add(decision.unit.id)
+                                .observeDate(decision.startDate)
+                            tx.fetchApplicationDetails(decision.applicationId)?.also { application
+                                ->
+                                audit.add(application.guardianId)
+                            }
+                            tx.getApplicationOtherGuardians(decision.applicationId).also {
+                                audit.add(it)
+                            }
+                        }
+                    } ?: throw NotFound("Decision $id does not exist")
+                decisionService.getDecisionPdf(dbc, decision)
             }
-        }
+            .also { audit.log(Audit.DecisionDownloadPdf, clock) }
     }
 
     @GetMapping("/decisions/{id}")
@@ -672,6 +678,7 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable id: DecisionId,
     ): CitizenDecisionDetails {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -681,11 +688,17 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Decision.READ,
                         id,
                     )
-                    tx.getSentDecision(id)?.toCitizenDecisionDetails()
-                        ?: throw NotFound("Decision $id does not exist")
+                    val decision =
+                        tx.getSentDecision(id) ?: throw NotFound("Decision $id does not exist")
+                    audit
+                        .add(decision.applicationId)
+                        .add(decision.childId)
+                        .add(decision.unit.id)
+                        .observeDate(decision.startDate)
+                    decision.toCitizenDecisionDetails()
                 }
             }
-            .also { Audit.DecisionRead.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.DecisionRead, clock) }
     }
 
     @GetMapping("/applications/by-guardian/notifications")
