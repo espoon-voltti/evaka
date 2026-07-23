@@ -888,7 +888,10 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     )
                 }
             }
-            .also { audit.log(action.auditEvent, clock) }
+            .also { deferredAudits ->
+                deferredAudits.forEach { (event, eventAudit) -> eventAudit.log(event, clock) }
+                audit.log(action.auditEvent, clock)
+            }
         runAllAsyncJobs(clock)
     }
 

@@ -686,16 +686,19 @@ class ApplicationControllerV2(
         @RequestBody body: AcceptPlacementProposalRequest,
     ) {
         db.connect { dbc ->
-            dbc.transaction {
-                applicationStateService.confirmPlacementProposalChanges(
-                    it,
-                    user,
-                    clock,
-                    unitId,
-                    body.rejectReasonTranslations,
-                )
+                dbc.transaction {
+                    applicationStateService.confirmPlacementProposalChanges(
+                        it,
+                        user,
+                        clock,
+                        unitId,
+                        body.rejectReasonTranslations,
+                    )
+                }
             }
-        }
+            .also { deferredAudits ->
+                deferredAudits.forEach { (event, eventAudit) -> eventAudit.log(event, clock) }
+            }
     }
 
     @PostMapping("/{applicationId}/actions/create-placement-plan")
@@ -849,7 +852,10 @@ class ApplicationControllerV2(
                     )
                 }
             }
-            .also { audit.log(action.auditEvent, clock) }
+            .also { deferredAudits ->
+                deferredAudits.forEach { (event, eventAudit) -> eventAudit.log(event, clock) }
+                audit.log(action.auditEvent, clock)
+            }
     }
 
     @PostMapping("/batch/actions/{action}")
@@ -873,7 +879,10 @@ class ApplicationControllerV2(
                     )
                 }
             }
-            .also { audit.log(action.auditEvent, clock) }
+            .also { deferredAudits ->
+                deferredAudits.forEach { (event, eventAudit) -> eventAudit.log(event, clock) }
+                audit.log(action.auditEvent, clock)
+            }
     }
 
     @GetMapping("/units/{unitId}")
