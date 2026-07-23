@@ -865,6 +865,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
+        audit: AuditContext,
         unitId: DaycareId,
         rejectReasonTranslations: Map<PlacementPlanRejectReason, String>,
         config: FeatureConfig = featureConfig,
@@ -902,6 +903,7 @@ class ApplicationStateService(
             .executeAndReturnGeneratedKeys()
             .toList<PlacementPlanReject>()
             .forEach { placementPlan ->
+                audit.add(placementPlan.applicationId)
                 tx.clearDecisionDrafts(listOf(placementPlan.applicationId))
                 tx.updateApplicationStatus(
                     placementPlan.applicationId,
@@ -946,13 +948,14 @@ class ApplicationStateService(
                     )
                 }
                 .toList<ApplicationId>()
+                .also { audit.add(it) }
 
-        val deferredAudits =
-            validIds
-                .map { getApplication(tx, it) }
-                .flatMap { finalizeDecisions(tx, user, clock, AuditContext(), it, config) }
-        Audit.PlacementProposalAccept.log(targetId = AuditId(unitId), objectId = AuditId(validIds))
-        return deferredAudits
+        return validIds
+            .map { getApplication(tx, it) }
+            .flatMap { application ->
+                audit.add(application.childId).add(application.guardianId)
+                finalizeDecisions(tx, user, clock, audit, application, config)
+            }
     }
 
     fun confirmDecisionMailed(

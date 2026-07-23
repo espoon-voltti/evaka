@@ -685,12 +685,14 @@ class ApplicationControllerV2(
         @PathVariable unitId: DaycareId,
         @RequestBody body: AcceptPlacementProposalRequest,
     ) {
+        val audit = AuditContext().add(unitId)
         db.connect { dbc ->
                 dbc.transaction {
                     applicationStateService.confirmPlacementProposalChanges(
                         it,
                         user,
                         clock,
+                        audit,
                         unitId,
                         body.rejectReasonTranslations,
                     )
@@ -698,6 +700,7 @@ class ApplicationControllerV2(
             }
             .also { deferredAudits ->
                 deferredAudits.forEach { (event, eventAudit) -> eventAudit.log(event, clock) }
+                audit.log(Audit.PlacementProposalAccept, clock)
             }
     }
 
