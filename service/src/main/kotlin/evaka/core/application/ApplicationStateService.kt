@@ -6,7 +6,6 @@ package evaka.core.application
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.application.ApplicationStatus.ACTIVE
 import evaka.core.application.ApplicationStatus.CANCELLED
 import evaka.core.application.ApplicationStatus.CREATED
@@ -299,6 +298,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         applicationId: ApplicationId,
     ) {
         accessControl.requirePermissionFor(tx, user, clock, Action.Application.SEND, applicationId)
@@ -307,6 +307,11 @@ class ApplicationStateService(
         val currentDate = now.toLocalDate()
 
         val application = getApplication(tx, applicationId)
+        audit
+            .add(application.childId)
+            .add(application.guardianId)
+            .add(application.form.preferences.preferredUnits.map { it.id })
+            .observeDate(application.form.preferences.preferredStartDate)
         verifyStatus(application, CREATED)
         validateApplication(
             tx,
@@ -407,7 +412,7 @@ class ApplicationStateService(
             )
         }
 
-        tx.syncApplicationOtherGuardians(application.id, currentDate)
+        tx.syncApplicationOtherGuardians(application.id, currentDate).also { audit.add(it) }
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, now)
 
         metadata
@@ -424,11 +429,6 @@ class ApplicationStateService(
             }
 
         tx.resetCheckedByAdminAndConfidentiality(applicationId, now, user.evakaUserId)
-
-        Audit.ApplicationSend.log(
-            targetId = AuditId(applicationId),
-            objectId = AuditId(application.childId),
-        )
     }
 
     fun sendPlacementToolApplication(

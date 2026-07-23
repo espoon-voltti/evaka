@@ -320,7 +320,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
 
         db.read {
@@ -383,7 +383,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.read {
             // then
@@ -417,7 +417,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         // then
         assertDueDate(applicationId, null) // missing attachment
@@ -491,7 +491,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         // then
         assertDueDate(
@@ -522,7 +522,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.read {
             // then
@@ -555,7 +555,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.read {
             // then
@@ -587,7 +587,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
 
         db.read {
@@ -621,7 +621,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
         db.transaction { tx ->
             // when
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
 
         db.read {
@@ -644,7 +644,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
         db.transaction { tx ->
             assertThrows<BadRequest> {
-                service.sendApplication(tx, serviceWorker, clock, applicationId)
+                service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             }
         }
     }
@@ -657,7 +657,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
             // when
@@ -680,7 +680,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
             // when
@@ -702,7 +702,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
             // when
@@ -727,7 +727,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 preferredStartDate = LocalDate.of(2020, 8, 1),
                 guardianEmail = "",
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
             // when
@@ -751,7 +751,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 allergies = "pähkinät",
                 applicationId = applicationId,
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
             // when
@@ -774,7 +774,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
@@ -804,7 +804,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
             // when
@@ -825,7 +825,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
@@ -847,7 +847,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
@@ -869,7 +869,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.cancelApplication(tx, serviceWorker, clock, AuditContext(), applicationId, null)
 
             val process = tx.getCaseProcessByApplicationId(applicationId)
@@ -901,7 +901,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
@@ -958,7 +958,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
@@ -1015,7 +1015,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
@@ -1092,7 +1092,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
@@ -1182,7 +1182,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 preferredStartDate = LocalDate.of(2020, 8, 1),
                 serviceNeedOption = serviceNeedOption,
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
@@ -1263,7 +1263,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1371,7 +1371,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 13),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1496,7 +1496,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1533,7 +1533,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1581,7 +1581,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1666,7 +1666,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1778,7 +1778,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.createPlacementPlan(
                 tx,
@@ -1864,7 +1864,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.createPlacementPlan(
                 tx,
@@ -2111,7 +2111,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
 
@@ -2646,6 +2646,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 guardian.user(CitizenAuthLevel.STRONG),
                 clock,
+                AuditContext(),
                 testApplicationId,
             )
             service.moveToWaitingPlacement(
@@ -2866,7 +2867,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 preferredStartDate = preferredStartDate,
                 serviceNeedOption = serviceNeedOption,
             )
-            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.createPlacementPlan(
                 tx,

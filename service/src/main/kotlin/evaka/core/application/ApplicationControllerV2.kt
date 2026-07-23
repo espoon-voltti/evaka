@@ -412,11 +412,13 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-            dbc.transaction {
-                applicationStateService.sendApplication(it, user, clock, applicationId)
+                dbc.transaction {
+                    applicationStateService.sendApplication(it, user, clock, audit, applicationId)
+                }
             }
-        }
+            .also { audit.log(Audit.ApplicationSend, clock) }
     }
 
     @PutMapping("/{applicationId}/actions/update-and-send-application")
@@ -427,27 +429,28 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Application.UPDATE,
-                    applicationId,
-                )
-                applicationStateService.updateApplicationContentsServiceWorker(
-                    it,
-                    user,
-                    clock.now(),
-                    applicationId,
-                    application,
-                    user.evakaUserId,
-                )
-                applicationStateService.sendApplication(it, user, clock, applicationId)
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Application.UPDATE,
+                        applicationId,
+                    )
+                    applicationStateService.updateApplicationContentsServiceWorker(
+                        it,
+                        user,
+                        clock.now(),
+                        applicationId,
+                        application,
+                        user.evakaUserId,
+                    )
+                    applicationStateService.sendApplication(it, user, clock, audit, applicationId)
+                }
             }
-        }
-        Audit.ApplicationUpdate.log(targetId = AuditId(applicationId))
+            .also { audit.log(Audit.ApplicationSend, clock) }
     }
 
     @PostMapping("/{applicationId}/actions/set-verified")

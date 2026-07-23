@@ -466,11 +466,13 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-            dbc.transaction {
-                applicationStateService.sendApplication(it, user, clock, applicationId)
+                dbc.transaction {
+                    applicationStateService.sendApplication(it, user, clock, audit, applicationId)
+                }
             }
-        }
+            .also { audit.log(Audit.ApplicationSend, clock) }
     }
 
     @GetMapping("/decisions")
