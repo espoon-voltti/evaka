@@ -71,6 +71,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): List<ApplicationsOfChild> {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -123,7 +124,21 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
+            .also { applications ->
+                audit
+                    .add(applications.map { it.childId })
+                    .add(
+                        applications.flatMap { a ->
+                            a.applicationSummaries.map { it.applicationId }
+                        }
+                    )
+                    .observeDate(
+                        applications
+                            .flatMap { a -> a.applicationSummaries.mapNotNull { it.startDate } }
+                            .minOrNull()
+                    )
+                audit.log(Audit.ApplicationRead, clock)
+            }
     }
 
     @GetMapping("/applications/children")
@@ -132,6 +147,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): List<CitizenChildren> {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -144,7 +160,10 @@ class ApplicationControllerCitizen(
                     tx.getCitizenChildren(clock.today(), user.id)
                 }
             }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(user.id)) }
+            .also { children ->
+                audit.add(children.map { it.id })
+                audit.log(Audit.ApplicationRead, clock)
+            }
     }
 
     @GetMapping("/applications/{applicationId}")
@@ -154,6 +173,7 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
     ): ApplicationDetails {
+        val audit = AuditContext().add(applicationId)
         val application = db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -180,6 +200,13 @@ class ApplicationControllerCitizen(
                             application.guardianId,
                             application.childId,
                         )
+                    audit
+                        .add(application.childId)
+                        .add(application.guardianId)
+                        .add(listOfNotNull(otherGuardian?.id))
+                        .add(application.form.preferences.preferredUnits.map { it.id })
+                        .add(application.attachments.map { it.id })
+                        .observeDate(application.form.preferences.preferredStartDate)
                     application.copy(
                         hasOtherGuardian = otherGuardian != null,
                         otherGuardianLivesInSameAddress =
@@ -207,7 +234,7 @@ class ApplicationControllerCitizen(
             } else {
                 throw NotFound("Application not found")
             }
-            .also { Audit.ApplicationRead.log(targetId = AuditId(applicationId)) }
+            .also { audit.log(Audit.ApplicationRead, clock) }
     }
 
     @PostMapping("/applications")
@@ -276,6 +303,7 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): Map<ApplicationType, Boolean> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -295,12 +323,7 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also {
-                Audit.ApplicationReadDuplicates.log(
-                    targetId = AuditId(user.id),
-                    objectId = AuditId(childId),
-                )
-            }
+            .also { audit.log(Audit.ApplicationReadDuplicates, clock) }
     }
 
     @GetMapping("/applications/active-placements/{childId}")
@@ -310,6 +333,7 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): Map<ApplicationType, Boolean> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -328,7 +352,7 @@ class ApplicationControllerCitizen(
                     }
                 }
             }
-            .also { Audit.ApplicationReadActivePlacementsByType.log(targetId = AuditId(childId)) }
+            .also { audit.log(Audit.ApplicationReadActivePlacementsByType, clock) }
     }
 
     @PutMapping("/applications/{applicationId}")
@@ -707,6 +731,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): Int {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -719,7 +744,10 @@ class ApplicationControllerCitizen(
                     tx.fetchApplicationNotificationCountForCitizen(user.id, clock.today())
                 }
             }
-            .also { Audit.ApplicationReadNotifications.log(targetId = AuditId(user.id)) }
+            .also { count ->
+                audit.addMeta("count", count)
+                audit.log(Audit.ApplicationReadNotifications, clock)
+            }
     }
 
     @GetMapping("/finance-decisions/by-liable-citizen")
