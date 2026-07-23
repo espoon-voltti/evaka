@@ -167,7 +167,7 @@ return <UserCard user={user.value} />
 
 ## Deprecated Patterns
 
-⚠️ **wrapResult**, **useApiState**, and **useRestApi** - Deprecated patterns for manual API state management. Refactor to use the [query framework](queries.md) instead.
+⚠️ **wrapResult**, and **useRestApi** - Deprecated patterns for manual API state management. Refactor to use the [query framework](queries.md) instead.
 
 ## Common Patterns
 
