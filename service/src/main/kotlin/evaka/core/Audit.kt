@@ -52,7 +52,6 @@ enum class Audit(
     private val securityEvent: Boolean = false,
     private val securityLevel: String = "low",
 ) {
-    ApplicationCreate,
     ApplicationPlacementDraftDelete,
     ApplicationPlacementDraftUpdate,
     ApplicationReadMetadata,
@@ -579,6 +578,7 @@ enum class Audit(
     ApplicationAdminDetailsUpdate,
     ApplicationCancel,
     ApplicationConfirmDecisionsMailed,
+    ApplicationCreate,
     ApplicationDelete,
     ApplicationRead,
     ApplicationReadActivePlacementsByType,

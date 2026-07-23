@@ -131,6 +131,11 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @RequestBody body: PaperApplicationCreateRequest,
     ): ApplicationId {
+        val audit =
+            AuditContext()
+                .add(body.childId)
+                .addMeta("applicationType", body.type)
+                .observeDate(body.sentDate)
         val (guardianId, applicationId) =
             db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -151,11 +156,8 @@ class ApplicationControllerV2(
                     )
                 }
             }
-        Audit.ApplicationCreate.log(
-            targetId = AuditId(body.childId),
-            objectId = AuditId(applicationId),
-            meta = mapOf("guardianId" to guardianId, "applicationType" to body.type),
-        )
+        audit.add(guardianId).add(applicationId)
+        audit.log(Audit.ApplicationCreate, clock)
         return applicationId
     }
 

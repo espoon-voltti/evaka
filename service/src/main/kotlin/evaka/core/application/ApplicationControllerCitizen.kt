@@ -244,6 +244,7 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: CreateApplicationBody,
     ): ApplicationId {
+        val audit = AuditContext().add(body.childId).addMeta("applicationType", body.type)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -288,11 +289,8 @@ class ApplicationControllerCitizen(
                 }
             }
             .also { applicationId ->
-                Audit.ApplicationCreate.log(
-                    targetId = AuditId(body.childId),
-                    objectId = AuditId(applicationId),
-                    meta = mapOf("guardianId" to user.id, "applicationType" to body.type),
-                )
+                audit.add(applicationId)
+                audit.log(Audit.ApplicationCreate, clock)
             }
     }
 
