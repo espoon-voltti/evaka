@@ -121,13 +121,11 @@ export default React.memo(function DuplicatePeople() {
                         duplicate.group === row.groupIndex ? (
                           duplicate.row === row.duplicateNumber ? (
                             <Button
-                              className="inline"
                               onClick={() => setDuplicate(null)}
                               text={i18n.common.cancel}
                             />
                           ) : (
                             <Button
-                              className="inline"
                               onClick={() =>
                                 setMaster({
                                   group: row.groupIndex,
@@ -140,7 +138,6 @@ export default React.memo(function DuplicatePeople() {
                         ) : null
                       ) : (
                         <Button
-                          className="inline"
                           disabled={!hasReferences(row)}
                           onClick={() =>
                             setDuplicate({
@@ -154,7 +151,6 @@ export default React.memo(function DuplicatePeople() {
                     </NoWrapTd>
                     <NoWrapTd>
                       <Button
-                        className="inline"
                         disabled={duplicate != null || hasReferences(row)}
                         onClick={() => setDeleteId(row.id)}
                         text={i18n.common.remove}
