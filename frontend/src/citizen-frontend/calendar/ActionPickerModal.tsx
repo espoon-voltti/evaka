@@ -8,7 +8,10 @@ import styled from 'styled-components'
 
 import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { defaultButtonTextStyle } from 'lib-components/atoms/buttons/button-commons'
+import {
+  defaultButtonTextStyle,
+  useThrottledEventHandler
+} from 'lib-components/atoms/buttons/button-commons'
 import { zoomedMobileMax } from 'lib-components/breakpoints'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
@@ -132,7 +135,24 @@ const Container = styled.div`
   }
 `
 
-const Action = styled.button.attrs({ type: 'button' })`
+const Action = React.memo(function Action({
+  onClick,
+  children,
+  'data-qa': dataQa
+}: {
+  onClick: () => void
+  children: React.ReactNode
+  'data-qa': string
+}) {
+  const handleOnClick = useThrottledEventHandler(onClick)
+  return (
+    <StyledAction onClick={handleOnClick} data-qa={dataQa}>
+      {children}
+    </StyledAction>
+  )
+})
+
+const StyledAction = styled.button.attrs({ type: 'button' })`
   ${defaultButtonTextStyle};
   color: ${(p) => p.theme.colors.grayscale.g0};
   border: none;
@@ -149,6 +169,10 @@ const Action = styled.button.attrs({ type: 'button' })`
 
   &:hover {
     color: ${(p) => p.theme.colors.main.m2Hover};
+  }
+
+  &:active {
+    color: ${(p) => p.theme.colors.main.m2Active};
   }
 `
 
