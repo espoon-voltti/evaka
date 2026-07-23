@@ -36,9 +36,9 @@ export type ButtonOrder = 'icon-text' | 'text-icon'
  */
 export type BaseButtonVisualProps = {
   /**
-   * Text or other content to be displayed on the button
+   * Text to be displayed on the button
    */
-  text: React.ReactNode
+  text: string
   /**
    * An ARIA label that should be used as the "accessible name" instead of the text
    */
@@ -73,7 +73,7 @@ export type BaseButtonVisualProps = {
   id?: string
 } & BaseProps
 
-export const StyledButton = styled.button<{
+const StyledButton = styled.button<{
   $appearance: ButtonAppearance
   $order: ButtonOrder
 }>`
@@ -211,7 +211,7 @@ export const renderBaseButton = (
   }: BaseButtonVisualProps & { 'data-status'?: string; 'aria-busy'?: boolean },
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
   children: (props: {
-    text: React.ReactNode
+    text: string
     icon: IconDefinition | undefined
     appearance: ButtonAppearance
     order: ButtonOrder

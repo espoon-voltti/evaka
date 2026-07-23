@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import type LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
-import { Button } from 'lib-components/atoms/buttons/Button'
+import { defaultButtonTextStyle } from 'lib-components/atoms/buttons/button-commons'
 import { zoomedMobileMax } from 'lib-components/breakpoints'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
@@ -61,62 +61,41 @@ export default React.memo(function ActionPickerModal({
       <ModalBackground onClick={close}>
         <Container>
           {questionnaireAvailable && (
-            <Action
-              onClick={openHolidays}
-              data-qa="calendar-action-holidays"
-              text={
-                <>
-                  <ReportHolidayLabel
-                    questionnaireAvailable={questionnaireAvailable}
-                  />
-                  <IconBackground>
-                    <FontAwesomeIcon icon={faTreePalm} size="1x" />
-                  </IconBackground>
-                </>
-              }
-            />
+            <Action onClick={openHolidays} data-qa="calendar-action-holidays">
+              <ReportHolidayLabel
+                questionnaireAvailable={questionnaireAvailable}
+              />
+              <IconBackground>
+                <FontAwesomeIcon icon={faTreePalm} size="1x" />
+              </IconBackground>
+            </Action>
           )}
           {featureFlags.discussionReservations && isDiscussionActionVisible && (
             <Action
               onClick={onOpenDiscussionReservation}
               data-qa="calendar-action-discussions"
-              text={
-                <>
-                  {
-                    i18n.calendar.discussionTimeReservation
-                      .surveyModalButtonText
-                  }
-                  <IconBackground>
-                    <FontAwesomeIcon icon={faComment} size="1x" />
-                  </IconBackground>
-                </>
-              }
-            />
+            >
+              {i18n.calendar.discussionTimeReservation.surveyModalButtonText}
+              <IconBackground>
+                <FontAwesomeIcon icon={faComment} size="1x" />
+              </IconBackground>
+            </Action>
           )}
-          <Action
-            onClick={onCreateAbsences}
-            data-qa="calendar-action-absences"
-            text={
-              <>
-                {i18n.calendar.newAbsence}
-                <IconBackground>
-                  <FontAwesomeIcon icon={faUserMinus} size="1x" />
-                </IconBackground>
-              </>
-            }
-          />
+          <Action onClick={onCreateAbsences} data-qa="calendar-action-absences">
+            {i18n.calendar.newAbsence}
+            <IconBackground>
+              <FontAwesomeIcon icon={faUserMinus} size="1x" />
+            </IconBackground>
+          </Action>
           <Action
             onClick={openReservations}
             data-qa="calendar-action-reservations"
-            text={
-              <>
-                {i18n.calendar.newReservationBtn}
-                <IconBackground>
-                  <FontAwesomeIcon icon={faCalendarPlus} size="1x" />
-                </IconBackground>
-              </>
-            }
-          />
+          >
+            {i18n.calendar.newReservationBtn}
+            <IconBackground>
+              <FontAwesomeIcon icon={faCalendarPlus} size="1x" />
+            </IconBackground>
+          </Action>
         </Container>
       </ModalBackground>
     </ModalAccessibilityWrapper>
@@ -153,15 +132,23 @@ const Container = styled.div`
   }
 `
 
-const Action = styled(Button)`
+const Action = styled.button.attrs({ type: 'button' })`
+  ${defaultButtonTextStyle};
+  color: ${(p) => p.theme.colors.grayscale.g0};
   border: none;
   background: none;
-  color: ${(p) => p.theme.colors.grayscale.g0};
   padding: 0;
-  min-height: 0;
-  svg {
-    margin-right: 0;
-    font-size: 1em;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+
+  &:focus {
+    outline: 2px solid ${(p) => p.theme.colors.main.m2Focus};
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    color: ${(p) => p.theme.colors.main.m2Hover};
   }
 `
 

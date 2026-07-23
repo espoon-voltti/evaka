@@ -52,7 +52,6 @@ import {
   MutateButton,
   cancelMutation
 } from 'lib-components/atoms/buttons/MutateButton'
-import { StyledButton } from 'lib-components/atoms/buttons/button-visuals'
 import { tabletMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,
@@ -1100,7 +1099,7 @@ const ButtonFooter = styled.div`
     }
 
     // Fit more text to the buttons
-    & > ${StyledButton} {
+    & > button {
       padding: 0;
       width: 100%;
     }
