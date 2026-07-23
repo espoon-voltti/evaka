@@ -6,12 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
-import type { Result } from 'lib-common/api'
-import { Success } from 'lib-common/api'
-import type { ChildSensitiveInformation } from 'lib-common/generated/api-types/sensitive'
 import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
-import type { Arg0 } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
@@ -19,11 +15,10 @@ import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faPhone } from 'lib-icons'
 
-import type { PinLoginRequired } from '../auth/api'
-import { mapPinLoginRequiredError } from '../auth/api'
 import { renderPinRequiringResult } from '../auth/renderPinRequiringResult'
 import { useTranslation } from '../common/i18n'
-import { getSensitiveInfo } from '../generated/api-clients/sensitive'
+
+import { childSensitiveInfoQuery } from './queries'
 
 const Key = styled.span`
   font-weight: ${fontWeights.semibold};
@@ -74,16 +69,8 @@ export default React.memo(function ChildSensitiveInfo({
 }: Props) {
   const { i18n } = useTranslation()
 
-  const getSensitiveInfoResult = (
-    req: Arg0<typeof getSensitiveInfo>
-  ): Promise<Result<ChildSensitiveInformation | PinLoginRequired>> =>
-    getSensitiveInfo(req)
-      .then((v) => Success.of(v))
-      .catch(mapPinLoginRequiredError)
-
-  const [childSensitiveResult] = useApiState(
-    () => getSensitiveInfoResult({ childId }),
-    [childId]
+  const childSensitiveResult = useQueryResult(
+    childSensitiveInfoQuery({ childId })
   )
 
   return (
