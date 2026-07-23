@@ -241,6 +241,7 @@ export default React.memo(function PlacementTerminationForm({
         text={t.children.placementTermination.terminate}
         disabled={terminationState.type !== 'valid'}
         onClick={() => setShowConfirmDialog(true)}
+        data-qa="submit-termination-btn"
       />
 
       {showConfirmDialog && terminationState.type === 'valid' && (
