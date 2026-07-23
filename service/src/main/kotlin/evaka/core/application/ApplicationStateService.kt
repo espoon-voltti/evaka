@@ -566,7 +566,7 @@ class ApplicationStateService(
         tx.updateApplicationStatus(application.id, SENT, user.evakaUserId, clock.now())
 
         tx.resetCheckedByAdminAndConfidentiality(applicationId, clock.now(), user.evakaUserId)
-        tx.deleteApplicationPlacementDraftIfExists(applicationId)
+        tx.deleteApplicationPlacementDraftIfExists(applicationId)?.also { audit.add(it.unitId) }
     }
 
     fun cancelApplication(
@@ -617,7 +617,7 @@ class ApplicationStateService(
         } else if (confidential != null) throw BadRequest("Confidentiality is already set")
 
         tx.updateApplicationStatus(application.id, CANCELLED, user.evakaUserId, clock.now())
-        tx.deleteApplicationPlacementDraftIfExists(applicationId)
+        tx.deleteApplicationPlacementDraftIfExists(applicationId)?.also { audit.add(it.unitId) }
 
         tx.getCaseProcessByApplicationId(applicationId)?.also { process ->
             if (process.history.none { it.state == CaseProcessState.COMPLETED }) {
@@ -697,7 +697,7 @@ class ApplicationStateService(
         personService.getGuardians(tx, user, now, application.childId)
         tx.syncApplicationOtherGuardians(applicationId, today).also { audit.add(it) }
         tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
-        tx.deleteApplicationPlacementDraftIfExists(applicationId)
+        tx.deleteApplicationPlacementDraftIfExists(applicationId)?.also { audit.add(it.unitId) }
         return placementPlanId
     }
 
