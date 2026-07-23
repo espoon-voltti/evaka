@@ -276,6 +276,7 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
                 tx,
                 admin.user,
                 clock,
+                AuditContext(),
                 fixture.unitId,
                 rejectReasonTranslations = emptyMap(),
             )

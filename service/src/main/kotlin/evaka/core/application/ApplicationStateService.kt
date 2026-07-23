@@ -745,7 +745,7 @@ class ApplicationStateService(
         audit.add(application.childId).add(application.guardianId)
         verifyStatus(application, WAITING_DECISION)
         decisionService.freezeGenericDecisionReasonings(tx, application.id)
-        finalizeDecisions(tx, user, clock, application, config).also { audit.add(it) }
+        finalizeDecisions(tx, user, clock, audit, application, config)
         tx.getApplicationOtherGuardians(applicationId).also { audit.add(it) }
     }
 
@@ -856,6 +856,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
+        audit: AuditContext,
         unitId: DaycareId,
         rejectReasonTranslations: Map<PlacementPlanRejectReason, String>,
         config: FeatureConfig = featureConfig,
@@ -893,6 +894,7 @@ class ApplicationStateService(
             .executeAndReturnGeneratedKeys()
             .toList<PlacementPlanReject>()
             .forEach { placementPlan ->
+                audit.add(placementPlan.applicationId)
                 tx.clearDecisionDrafts(listOf(placementPlan.applicationId))
                 tx.updateApplicationStatus(
                     placementPlan.applicationId,
@@ -937,11 +939,14 @@ class ApplicationStateService(
                     )
                 }
                 .toList<ApplicationId>()
+                .also { audit.add(it) }
 
         validIds
             .map { getApplication(tx, it) }
-            .forEach { finalizeDecisions(tx, user, clock, it, config) }
-        Audit.PlacementProposalAccept.log(targetId = AuditId(unitId), objectId = AuditId(validIds))
+            .forEach { application ->
+                audit.add(application.childId).add(application.guardianId)
+                finalizeDecisions(tx, user, clock, audit, application, config)
+            }
     }
 
     fun confirmDecisionMailed(
@@ -1650,9 +1655,10 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         clock: EvakaClock,
+        audit: AuditContext,
         application: ApplicationDetails,
         config: FeatureConfig = featureConfig,
-    ): List<DecisionId> {
+    ) {
         val now = clock.now()
         val today = now.toLocalDate()
 
@@ -1661,17 +1667,12 @@ class ApplicationStateService(
                 application.type == ApplicationType.PRESCHOOL
         val sendBySfi = canSendDecisionsBySfi(tx, user, now, application)
         val decisionDrafts = tx.fetchDecisionDrafts(application.id)
-        return if (decisionDrafts.any { it.planned }) {
+        if (decisionDrafts.any { it.planned }) {
             val decisionIds =
-                decisionService.finalizeDecisions(
-                    tx,
-                    user,
-                    clock,
-                    application.id,
-                    sendBySfi,
-                    skipGuardian,
-                )
-            tx.syncApplicationOtherGuardians(application.id, today)
+                decisionService
+                    .finalizeDecisions(tx, user, clock, application.id, sendBySfi, skipGuardian)
+                    .also { audit.add(it) }
+            tx.syncApplicationOtherGuardians(application.id, today).also { audit.add(it) }
             val newStatus = if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING
             tx.updateApplicationStatus(application.id, newStatus, user.evakaUserId, now)
 
@@ -1714,10 +1715,6 @@ class ApplicationStateService(
                     )
                 }
             }
-
-            decisionIds
-        } else {
-            emptyList()
         }
     }
 

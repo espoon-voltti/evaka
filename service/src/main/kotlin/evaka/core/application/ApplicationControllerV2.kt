@@ -696,17 +696,20 @@ class ApplicationControllerV2(
         @PathVariable unitId: DaycareId,
         @RequestBody body: AcceptPlacementProposalRequest,
     ) {
+        val audit = AuditContext().add(unitId)
         db.connect { dbc ->
-            dbc.transaction {
-                applicationStateService.confirmPlacementProposalChanges(
-                    it,
-                    user,
-                    clock,
-                    unitId,
-                    body.rejectReasonTranslations,
-                )
+                dbc.transaction {
+                    applicationStateService.confirmPlacementProposalChanges(
+                        it,
+                        user,
+                        clock,
+                        audit,
+                        unitId,
+                        body.rejectReasonTranslations,
+                    )
+                }
             }
-        }
+            .also { audit.log(Audit.PlacementProposalAccept, clock) }
     }
 
     @PostMapping("/{applicationId}/actions/create-placement-plan")

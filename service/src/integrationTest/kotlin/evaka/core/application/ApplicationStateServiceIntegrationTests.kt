@@ -1612,6 +1612,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 daycare.id,
                 rejectReasonTranslations =
                     enumEntries<PlacementPlanRejectReason>().associateBy({ it }, { it.name }),
@@ -1716,6 +1717,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 daycare.id,
                 rejectReasonTranslations =
                     enumEntries<PlacementPlanRejectReason>().associateBy({ it }, { it.name }),
@@ -1809,6 +1811,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 daycare.id,
                 rejectReasonTranslations =
                     mapOf(PlacementPlanRejectReason.REASON_1 to rejectReason),
@@ -1896,6 +1899,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 daycare.id,
                 rejectReasonTranslations = mapOf(PlacementPlanRejectReason.OTHER to "Muu syy"),
             )
