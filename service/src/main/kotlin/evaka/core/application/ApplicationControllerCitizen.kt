@@ -361,6 +361,7 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId,
         @RequestBody update: CitizenApplicationUpdate,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
                 dbc.transaction {
                     accessControl.requirePermissionFor(
@@ -374,17 +375,13 @@ class ApplicationControllerCitizen(
                         it,
                         user,
                         clock.now(),
+                        audit,
                         applicationId,
                         update,
                     )
                 }
             }
-            .also { applicationDetails ->
-                Audit.ApplicationUpdate.log(
-                    targetId = AuditId(applicationId),
-                    objectId = AuditId(applicationDetails.childId),
-                )
-            }
+            .also { audit.log(Audit.ApplicationUpdate, clock) }
     }
 
     @PutMapping("/applications/{applicationId}/draft")
@@ -395,6 +392,7 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate,
     ) {
+        val audit = AuditContext().add(applicationId).addMeta("draft", true)
         db.connect { dbc ->
                 dbc.transaction {
                     accessControl.requirePermissionFor(
@@ -408,18 +406,14 @@ class ApplicationControllerCitizen(
                         it,
                         user,
                         clock.now(),
+                        audit,
                         applicationId,
                         CitizenApplicationUpdate(applicationForm, allowOtherGuardianAccess = false),
                         asDraft = true,
                     )
                 }
             }
-            .also { applicationDetails ->
-                Audit.ApplicationUpdate.log(
-                    targetId = AuditId(applicationId),
-                    objectId = AuditId(applicationDetails.childId),
-                )
-            }
+            .also { audit.log(Audit.ApplicationUpdate, clock) }
     }
 
     @DeleteMapping("/applications/{applicationId}")

@@ -1220,6 +1220,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser.Citizen,
         now: HelsinkiDateTime,
+        audit: AuditContext,
         applicationId: ApplicationId,
         update: CitizenApplicationUpdate,
         asDraft: Boolean = false,
@@ -1229,6 +1230,14 @@ class ApplicationStateService(
                 ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
         val updatedForm = original.form.update(update.form)
+        audit
+            .add(original.childId)
+            .add(original.guardianId)
+            .add(tx.getApplicationOtherGuardians(applicationId))
+            .add(original.form.preferences.preferredUnits.map { it.id })
+            .add(updatedForm.preferences.preferredUnits.map { it.id })
+            .observeDate(original.form.preferences.preferredStartDate)
+            .observeDate(updatedForm.preferences.preferredStartDate)
 
         if (!updatedForm.preferences.urgent) {
             tx.dissociateAttachmentsByApplicationAndType(
@@ -1290,6 +1299,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser,
         now: HelsinkiDateTime,
+        audit: AuditContext,
         applicationId: ApplicationId,
         update: ApplicationUpdate,
         userId: EvakaUserId,
@@ -1300,6 +1310,14 @@ class ApplicationStateService(
                 ?: throw NotFound("Application $applicationId was not found")
 
         val updatedForm = original.form.update(update.form)
+        audit
+            .add(original.childId)
+            .add(original.guardianId)
+            .add(tx.getApplicationOtherGuardians(applicationId))
+            .add(original.form.preferences.preferredUnits.map { it.id })
+            .add(updatedForm.preferences.preferredUnits.map { it.id })
+            .observeDate(original.form.preferences.preferredStartDate)
+            .observeDate(updatedForm.preferences.preferredStartDate)
         validateApplication(
             tx,
             original.type,
