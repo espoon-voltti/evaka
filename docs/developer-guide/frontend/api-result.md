@@ -165,10 +165,6 @@ if (user.isFailure) return <Error message={user.message} />
 return <UserCard user={user.value} />
 ```
 
-## Deprecated Patterns
-
-⚠️ **wrapResult** - Deprecated patterns for manual API state management. Refactor to use the [query framework](queries.md) instead.
-
 ## Common Patterns
 
 ### Conditional Rendering Based on Multiple Results
