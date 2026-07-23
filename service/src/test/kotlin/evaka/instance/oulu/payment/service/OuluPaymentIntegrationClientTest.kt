@@ -10,10 +10,9 @@ import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.invoicing.domain.PaymentUnit
 import evaka.core.shared.DaycareId
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.sftp.SftpClient
 import java.io.InputStream
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.UUID
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
@@ -33,9 +32,10 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 internal class OuluPaymentIntegrationClientTest {
     val paymentGenerator = mock<ProEPaymentGenerator>()
     val sftpClient = mock<SftpClient>()
-    val paymentClient = OuluPaymentIntegrationClient(paymentGenerator, sftpClient)
+    val clock = MockEvakaClock(2026, 7, 22, 9, 8, 7)
+    val paymentClient = OuluPaymentIntegrationClient(paymentGenerator, sftpClient, clock)
     val tx = mock<Database.Transaction>()
-    val fileName: String = SimpleDateFormat("'proe-'yyyyMMdd-hhmmss'.txt'").format(Date())
+    val fileName = "proe-20260722-090807.txt"
 
     @Test
     fun `should pass payments to the payment generator`() {
