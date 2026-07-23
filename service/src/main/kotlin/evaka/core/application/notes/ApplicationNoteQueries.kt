@@ -143,6 +143,21 @@ fun Database.Transaction.updateServiceWorkerApplicationNote(id: ApplicationId, c
         }
         .updateExactlyOne()
 
-fun Database.Transaction.deleteApplicationNote(id: ApplicationNoteId) = execute {
-    sql("DELETE FROM application_note WHERE id = ${bind(id)}")
-}
+data class DeletedApplicationNote(
+    val applicationId: ApplicationId,
+    val createdAt: HelsinkiDateTime,
+    val createdBy: EvakaUserId,
+    val messageContentId: MessageContentId?,
+)
+
+fun Database.Transaction.deleteApplicationNote(id: ApplicationNoteId): DeletedApplicationNote? =
+    createUpdate {
+            sql(
+                """
+DELETE FROM application_note WHERE id = ${bind(id)}
+RETURNING application_id, created_at, created_by, message_content_id
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOneOrNull()
