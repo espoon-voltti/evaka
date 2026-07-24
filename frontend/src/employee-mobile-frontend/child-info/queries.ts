@@ -18,12 +18,17 @@ async function getSensitiveInfoWithPinCheck(
   try {
     return await getSensitiveInfo(req)
   } catch (e) {
-    const result = mapPinLoginRequiredError(e)
-    if (result.isSuccess) {
-      return result.value
+    const pinLoginRequired = mapPinLoginRequiredError(e)
+    if (pinLoginRequired.isSuccess) {
+      return pinLoginRequired.value
     }
     throw e
   }
 }
 
-export const childSensitiveInfoQuery = q.query(getSensitiveInfoWithPinCheck)
+export const childSensitiveInfoQuery = q.query(getSensitiveInfoWithPinCheck, {
+  // Sensitive child data is PIN-gated and should not linger in the query cache.
+  // `gcTime: 0` drops the cached data as soon as this view unmounts.
+  // `RequirePinAuth` unmounts the subtree when the PIN session ends.
+  gcTime: 0
+})
