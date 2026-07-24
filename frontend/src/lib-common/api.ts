@@ -299,56 +299,8 @@ export function combine<A, B, C, D, E>(...args: unknown[]): Result<unknown> {
   throw new Error('not reached')
 }
 
-export interface Cancelled {
-  cancelled: true
-}
-
-export function Cancelled(): Cancelled {
-  return { cancelled: true }
-}
-
-export function isCancelled<T>(
-  value: Result<T> | Cancelled
-): value is Cancelled {
-  return 'cancelled' in value && value.cancelled
-}
-
 export function isLoading(value: Result<unknown>) {
   return value.isLoading || (value.isSuccess && value.isReloading)
-}
-
-// oxlint-disable-next-line typescript/no-explicit-any
-export type ApiFunction = (...args: any[]) => Promise<Result<any>>
-export type ApiResultOf<T extends ApiFunction> =
-  ReturnType<T> extends Promise<Result<infer R>> ? R : never
-
-/**
- * Converts an API function into another that cancels stale responses
- *
- * When you call the returned function, all results returned by earlier
- * invocations are replaced with Cancelled.
- */
-export function withStaleCancellation<F extends ApiFunction>(
-  f: F
-): (...args: Parameters<F>) => Promise<Result<ApiResultOf<F>> | Cancelled> {
-  let globalRequestId = 0
-  return (...args: Parameters<F>) => {
-    const requestId = ++globalRequestId
-    return new Promise<Result<ApiResultOf<F>> | Cancelled>(
-      (resolve, reject) => {
-        try {
-          f(...args)
-            // cancel if another request has been started
-            .then((result) =>
-              resolve(globalRequestId === requestId ? result : Cancelled())
-            )
-            .catch(reject)
-        } catch (e) {
-          reject(e)
-        }
-      }
-    )
-  }
 }
 
 export function createUrlSearchParams(

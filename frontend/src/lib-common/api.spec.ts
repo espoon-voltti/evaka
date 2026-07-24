@@ -4,15 +4,8 @@
 
 import { describe, expect, it } from 'vitest'
 
-import type { Cancelled, Result } from './api'
-import {
-  Failure,
-  isCancelled,
-  Loading,
-  Success,
-  withStaleCancellation,
-  combine
-} from './api'
+import type { Result } from './api'
+import { Failure, Loading, Success, combine } from './api'
 
 describe('combine', () => {
   const success = Success.of(1)
@@ -86,50 +79,6 @@ describe('mapAll', () => {
     expect(failure.mapAll(mapper)).toEqual('failure')
     expect(success.mapAll(mapper)).toEqual('yippee')
     expect(reloading.mapAll(mapper)).toEqual('yippee (reloading)')
-  })
-})
-
-describe('utils/async', () => {
-  describe('withCancellation', () => {
-    it('ignores stale resolved values', async () => {
-      const happyFunction = (value: string, delay: number) =>
-        new Promise<Result<string>>((resolve) =>
-          setTimeout(() => resolve(Success.of(value)), delay)
-        )
-      const wrapped = withStaleCancellation(happyFunction)
-
-      let state: Result<string> = Loading.of()
-
-      function setState(value: Result<string> | Cancelled) {
-        if (!isCancelled(value)) {
-          state = value
-        }
-      }
-
-      await Promise.all([
-        happyFunction('first slower wins', 100).then(setState),
-        happyFunction('second faster loses', 5).then(setState)
-      ])
-      expect(state).toEqual(Success.of('first slower wins'))
-
-      await Promise.all([
-        wrapped('first slower loses', 100).then(setState),
-        wrapped('second faster wins', 5).then(setState)
-      ])
-      expect(state).toEqual(Success.of('second faster wins'))
-
-      await Promise.all([
-        happyFunction('first faster loses', 5).then(setState),
-        happyFunction('second slower wins', 100).then(setState)
-      ])
-      expect(state).toEqual(Success.of('second slower wins'))
-
-      await Promise.all([
-        wrapped('first faster loses', 5).then(setState),
-        wrapped('second slower wins', 100).then(setState)
-      ])
-      expect(state).toEqual(Success.of('second slower wins'))
-    })
   })
 })
 
