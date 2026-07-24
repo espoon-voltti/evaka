@@ -135,7 +135,7 @@ const Container = styled.div`
   }
 `
 
-const Action = React.memo(function Action({
+function Action({
   onClick,
   children,
   'data-qa': dataQa
@@ -150,7 +150,7 @@ const Action = React.memo(function Action({
       {children}
     </StyledAction>
   )
-})
+}
 
 const StyledAction = styled.button.attrs({ type: 'button' })`
   ${defaultButtonTextStyle};
