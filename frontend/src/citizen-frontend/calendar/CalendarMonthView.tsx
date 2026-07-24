@@ -196,7 +196,7 @@ export default React.memo(function CalendarMonthView({
                 data-qa="open-holiday-modal"
               />
               {questionnaireAvailable === 'with-strong-auth' && (
-                <FontAwesomeIcon icon={faLockAlt} size="xs" />
+                <FontAwesomeIcon icon={faLockAlt} />
               )}
             </ReportHolidayButtonContainer>
           )}
@@ -706,6 +706,10 @@ const ReportHolidayButtonContainer = styled.div`
   align-items: center;
   gap: ${defaultMargins.xs};
   color: ${colors.main.m2};
+
+  svg {
+    font-size: 1.25em;
+  }
 `
 
 const gridPattern = ($includeWeekends: boolean) => css`

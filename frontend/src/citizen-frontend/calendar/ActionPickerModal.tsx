@@ -16,7 +16,7 @@ import { zoomedMobileMax } from 'lib-components/breakpoints'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
-import { faComment } from 'lib-icons'
+import { faComment, faLockAlt } from 'lib-icons'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
@@ -24,7 +24,6 @@ import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 import { mobileBottomNavHeight } from '../navigation/const'
 
-import ReportHolidayLabel from './ReportHolidayLabel'
 import { activeQuestionnaireQuery } from './queries'
 import { isQuestionnaireAvailable } from './utils'
 
@@ -65,9 +64,14 @@ export default React.memo(function ActionPickerModal({
         <Container>
           {questionnaireAvailable && (
             <Action onClick={openHolidays} data-qa="calendar-action-holidays">
-              <ReportHolidayLabel
-                questionnaireAvailable={questionnaireAvailable}
-              />
+              {questionnaireAvailable === 'with-strong-auth' ? (
+                <LabelContainer>
+                  <FontAwesomeIcon icon={faLockAlt} />
+                  {i18n.calendar.newHoliday}
+                </LabelContainer>
+              ) : (
+                i18n.calendar.newHoliday
+              )}
               <IconBackground>
                 <FontAwesomeIcon icon={faTreePalm} size="1x" />
               </IconBackground>
@@ -174,6 +178,16 @@ const StyledAction = styled.button.attrs({ type: 'button' })`
   &:active {
     color: ${(p) => p.theme.colors.main.m2Active};
   }
+
+  svg {
+    font-size: 1.25em;
+  }
+`
+
+const LabelContainer = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: ${defaultMargins.xs};
 `
 
 const IconBackground = styled.span`
