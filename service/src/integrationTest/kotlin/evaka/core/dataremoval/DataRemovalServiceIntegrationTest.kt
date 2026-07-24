@@ -10,6 +10,7 @@ import evaka.core.absence.application.AbsenceApplication
 import evaka.core.absence.application.AbsenceApplicationStatus
 import evaka.core.application.ApplicationAttachmentType
 import evaka.core.application.ApplicationType
+import evaka.core.application.notes.createApplicationNote
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child as ApplicationFormChild
@@ -32,6 +33,21 @@ import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.finance.notes.createFinanceNote
 import evaka.core.holidayperiod.QuestionnaireType
 import evaka.core.insertServiceNeedOptions
+import evaka.core.messaging.MessageType
+import evaka.core.messaging.UpdatableDraftContent
+import evaka.core.messaging.deleteDraft
+import evaka.core.messaging.getCitizenMessageAccount
+import evaka.core.messaging.initDraft
+import evaka.core.messaging.insertMessage
+import evaka.core.messaging.insertMessageContent
+import evaka.core.messaging.insertMessageThreadChildren
+import evaka.core.messaging.insertRecipients
+import evaka.core.messaging.insertThread
+import evaka.core.messaging.reAssociateMessageAttachments
+import evaka.core.messaging.updateDraft
+import evaka.core.messaging.upsertEmployeeMessageAccount
+import evaka.core.messaging.upsertRecipientThreadParticipants
+import evaka.core.messaging.upsertSenderThreadParticipants
 import evaka.core.nekku.NekkuProductMealType
 import evaka.core.note.child.sticky.ChildStickyNoteBody
 import evaka.core.note.child.sticky.createChildStickyNote
@@ -50,6 +66,10 @@ import evaka.core.shared.BackupPickupId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DecisionId
+import evaka.core.shared.MessageAccountId
+import evaka.core.shared.MessageContentId
+import evaka.core.shared.MessageDraftId
+import evaka.core.shared.MessageThreadId
 import evaka.core.shared.PedagogicalDocumentId
 import evaka.core.shared.PersonId
 import evaka.core.shared.PlacementId
@@ -133,12 +153,17 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val financeExpireDate = today.minusYears(5)
     private val tenYearExpireDate = today.minusYears(10)
     private val applicationExpireDate = today.minusYears(10)
+    private val bulletinExpiresBefore = now.minusYears(10)
 
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val careArea = DevCareArea()
     private val daycare = DevDaycare(areaId = careArea.id)
     private val daycareGroup = DevDaycareGroup(daycareId = daycare.id)
     private val child = DevPerson()
+    private val guardian = DevPerson()
+
+    private lateinit var senderAccount: MessageAccountId
+    private lateinit var recipientAccount: MessageAccountId
 
     @BeforeEach
     fun setup() {
@@ -148,6 +173,9 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.insert(daycare)
             tx.insert(daycareGroup)
             tx.insert(child, DevPersonType.CHILD)
+            tx.insert(guardian, DevPersonType.ADULT)
+            senderAccount = tx.upsertEmployeeMessageAccount(admin.id)
+            recipientAccount = tx.getCitizenMessageAccount(guardian.id)
         }
     }
 
@@ -2352,6 +2380,10 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
         tx.createQuery { sql("SELECT id FROM decision") }.toList<DecisionId>()
     }
 
+    private fun survivingMessageThreadIds(): List<MessageThreadId> = db.read { tx ->
+        tx.createQuery { sql("SELECT id FROM message_thread") }.toList<MessageThreadId>()
+    }
+
     @Test
     fun `deleteExpiredPedagogicalDocuments deletes document and read markers and enqueues DeleteAttachment per attachment for a child whose last placement ended over ten years ago`() {
         insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
@@ -2445,5 +2477,421 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
         assertEquals(1, rowCount("pedagogical_document"))
         assertEquals(1, rowCount("attachment"))
         assertTrue(scheduledAttachmentDeletionIds().isEmpty())
+    }
+
+    private fun insertBulletinContent(): MessageContentId = db.transaction { tx ->
+        tx.insertMessageContent("bulletin content", senderAccount)
+    }
+
+    private fun insertThreadWithMessage(
+        created: HelsinkiDateTime,
+        contentId: MessageContentId = insertBulletinContent(),
+        type: MessageType = MessageType.BULLETIN,
+        isCopy: Boolean = false,
+        children: Set<ChildId> = setOf(child.id),
+    ): MessageThreadId = db.transaction { tx ->
+        val threadId =
+            tx.insertThread(type, "title", urgent = false, sensitive = false, isCopy = isCopy)
+        val messageId =
+            tx.insertMessage(
+                now = created,
+                contentId = contentId,
+                threadId = threadId,
+                sender = senderAccount,
+                recipientNames = listOf("Recipient"),
+                municipalAccountName = "Espoo",
+                serviceWorkerAccountName = "Espoon palveluohjaus",
+                financeAccountName = "Espoon asiakasmaksut",
+                sentAt = created,
+            )
+        tx.insertRecipients(listOf(messageId to setOf(recipientAccount)))
+        tx.upsertSenderThreadParticipants(senderAccount, listOf(threadId), created)
+        tx.upsertRecipientThreadParticipants(contentId, created)
+        tx.insertMessageThreadChildren(listOf(threadId to children))
+        // insertThread relies on the created column default, which the mocked clock cannot affect
+        tx.createUpdate {
+                sql(
+                    "UPDATE message_thread SET created = ${bind(created)} WHERE id = ${bind(threadId)}"
+                )
+            }
+            .execute()
+        threadId
+    }
+
+    private fun insertFollowUpMessage(
+        threadId: MessageThreadId,
+        created: HelsinkiDateTime,
+    ): MessageContentId = db.transaction { tx ->
+        val contentId = tx.insertMessageContent("follow-up", senderAccount)
+        tx.insertMessage(
+            now = created,
+            contentId = contentId,
+            threadId = threadId,
+            sender = senderAccount,
+            recipientNames = listOf("Recipient"),
+            municipalAccountName = "Espoo",
+            serviceWorkerAccountName = "Espoon palveluohjaus",
+            financeAccountName = "Espoon asiakasmaksut",
+            sentAt = created,
+        )
+        contentId
+    }
+
+    // Sending a message with a related application links the thread to that application and records
+    // the message as an application note, as MessageService.sendMessageAsEmployee does
+    private fun linkThreadToApplication(
+        threadId: MessageThreadId,
+        applicationId: ApplicationId,
+        contentId: MessageContentId,
+    ) {
+        db.transaction { tx ->
+            tx.execute {
+                sql(
+                    "UPDATE message_thread SET application_id = ${bind(applicationId)} WHERE id = ${bind(threadId)}"
+                )
+            }
+        }
+        insertApplicationNote(applicationId, contentId)
+    }
+
+    private fun insertApplicationNote(applicationId: ApplicationId, contentId: MessageContentId) {
+        db.transaction { tx ->
+            tx.createApplicationNote(
+                now = now,
+                applicationId = applicationId,
+                content = "bulletin content",
+                createdBy = admin.evakaUserId,
+                messageContentId = contentId,
+            )
+        }
+    }
+
+    // Attachments can only be attached to a draft, and are moved to the content when it is sent
+    private fun insertMessageContentAttachment(contentId: MessageContentId): AttachmentId =
+        db.transaction { tx ->
+            val draftId = tx.initDraft(senderAccount, now)
+            val attachmentId =
+                tx.insertAttachment(
+                    admin.user,
+                    now,
+                    "bulletin.pdf",
+                    "application/pdf",
+                    AttachmentParent.MessageDraft(draftId),
+                    type = null,
+                )
+            tx.reAssociateMessageAttachments(setOf(attachmentId), contentId)
+            tx.deleteDraft(senderAccount, draftId)
+            attachmentId
+        }
+
+    private fun insertDraft(
+        createdAt: HelsinkiDateTime,
+        type: MessageType = MessageType.BULLETIN,
+        modifiedAt: HelsinkiDateTime = createdAt,
+    ): MessageDraftId = db.transaction { tx ->
+        val draftId = tx.initDraft(senderAccount, modifiedAt)
+        tx.updateDraft(
+            senderAccount,
+            draftId,
+            UpdatableDraftContent(
+                type = type,
+                title = "title",
+                content = "content",
+                urgent = false,
+                sensitive = false,
+                recipients = emptySet(),
+                recipientNames = emptyList(),
+            ),
+            modifiedAt,
+        )
+        // initDraft relies on the created_at column default, which the mocked clock cannot affect
+        tx.createUpdate {
+                sql(
+                    "UPDATE message_draft SET created_at = ${bind(createdAt)} WHERE id = ${bind(draftId)}"
+                )
+            }
+            .execute()
+        draftId
+    }
+
+    private fun insertDraftAttachment(draftId: MessageDraftId): AttachmentId =
+        db.transaction { tx ->
+            tx.insertAttachment(
+                admin.user,
+                now,
+                "draft.pdf",
+                "application/pdf",
+                AttachmentParent.MessageDraft(draftId),
+                type = null,
+            )
+        }
+
+    private fun deleteExpiredBulletinThreads(limit: Int = 100) =
+        dataRemovalService.deleteExpiredBulletinThreads(
+            db,
+            now,
+            expiresBefore = bulletinExpiresBefore,
+            limit = limit,
+        )
+
+    private fun deleteExpiredBulletinDrafts(limit: Int = 100) =
+        dataRemovalService.deleteExpiredBulletinDrafts(
+            db,
+            now,
+            expiresBefore = bulletinExpiresBefore,
+            limit = limit,
+        )
+
+    @Test
+    fun `deleteExpiredBulletinThreads deletes a bulletin thread with its messages, recipients, participants, children and content`() {
+        insertThreadWithMessage(created = bulletinExpiresBefore.minusDays(1))
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message"))
+        assertEquals(0, rowCount("message_recipients"))
+        assertEquals(0, rowCount("message_thread_participant"))
+        assertEquals(0, rowCount("message_thread_children"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads enqueues DeleteAttachment for each attachment of an expired bulletin`() {
+        val contentId = insertBulletinContent()
+        insertThreadWithMessage(created = bulletinExpiresBefore.minusDays(1), contentId = contentId)
+        val attachmentA = insertMessageContentAttachment(contentId)
+        val attachmentB = insertMessageContentAttachment(contentId)
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(
+            setOf(attachmentA.toString(), attachmentB.toString()),
+            scheduledAttachmentDeletionIds(),
+        )
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads keeps only the thread whose own follow-up is recent`() {
+        // A recent follow-up must protect its own thread and no other thread of the same batch
+        insertThreadWithMessage(created = bulletinExpiresBefore.minusDays(1))
+        val withFollowUp = insertThreadWithMessage(created = bulletinExpiresBefore.minusDays(1))
+        insertFollowUpMessage(withFollowUp, created = now.minusYears(1))
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(listOf(withFollowUp), survivingMessageThreadIds())
+        // The retained thread keeps both its messages and contents; the deleted one leaves none
+        assertEquals(2, rowCount("message"))
+        assertEquals(2, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads deletes every content of an expired thread whose follow-up has also expired`() {
+        val contentId = insertBulletinContent()
+        val threadId =
+            insertThreadWithMessage(
+                created = bulletinExpiresBefore.minusDays(2),
+                contentId = contentId,
+            )
+        val followUpContentId =
+            insertFollowUpMessage(threadId, created = bulletinExpiresBefore.minusDays(1))
+        val attachment = insertMessageContentAttachment(contentId)
+        val followUpAttachment = insertMessageContentAttachment(followUpContentId)
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message"))
+        assertEquals(0, rowCount("message_content"))
+        assertEquals(
+            setOf(attachment.toString(), followUpAttachment.toString()),
+            scheduledAttachmentDeletionIds(),
+        )
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads keeps an equally old regular message thread`() {
+        insertThreadWithMessage(
+            created = bulletinExpiresBefore.minusDays(1),
+            type = MessageType.MESSAGE,
+        )
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads keeps an expired bulletin thread that is linked to an application`() {
+        // Bulletins linked to an application exist only because of an earlier bug
+        val contentId = insertBulletinContent()
+        val threadId =
+            insertThreadWithMessage(
+                created = bulletinExpiresBefore.minusDays(1),
+                contentId = contentId,
+            )
+        val tree = insertApplicationTree(placementEnd = applicationExpireDate.plusDays(1))
+        linkThreadToApplication(threadId, tree.applicationId, contentId)
+        insertMessageContentAttachment(contentId)
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message"))
+        assertEquals(1, rowCount("message_content"))
+        assertEquals(1, countNonNull("application_note", "message_content_id"))
+        assertEquals(1, countNonNull("attachment", "message_content_id"))
+        assertTrue(scheduledAttachmentDeletionIds().isEmpty())
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads keeps a thread whose content an application note references`() {
+        // Bulletins linked to an application exist only because of an earlier bug
+        val contentId = insertBulletinContent()
+        insertThreadWithMessage(created = bulletinExpiresBefore.minusDays(1), contentId = contentId)
+        val tree = insertApplicationTree(placementEnd = applicationExpireDate.plusDays(1))
+        insertApplicationNote(tree.applicationId, contentId)
+        insertMessageContentAttachment(contentId)
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message"))
+        assertEquals(1, rowCount("message_content"))
+        assertEquals(1, countNonNull("application_note", "message_content_id"))
+        assertTrue(scheduledAttachmentDeletionIds().isEmpty())
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads deletes an expired staff copy thread`() {
+        insertThreadWithMessage(
+            created = bulletinExpiresBefore.minusDays(1),
+            isCopy = true,
+            children = emptySet(),
+        )
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads keeps a shared content until the last thread using it is deleted`() {
+        val contentId = insertBulletinContent()
+        val created = bulletinExpiresBefore.minusDays(1)
+        insertThreadWithMessage(created = created, contentId = contentId)
+        insertThreadWithMessage(created = created, contentId = contentId, isCopy = true)
+        val attachmentId = insertMessageContentAttachment(contentId)
+
+        deleteExpiredBulletinThreads(limit = 1)
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+        assertTrue(scheduledAttachmentDeletionIds().isEmpty())
+
+        deleteExpiredBulletinThreads(limit = 1)
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+        assertEquals(setOf(attachmentId.toString()), scheduledAttachmentDeletionIds())
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads doesn't remove more threads than the limit`() {
+        repeat(3) { insertThreadWithMessage(created = bulletinExpiresBefore.minusDays(1)) }
+
+        deleteExpiredBulletinThreads(limit = 2)
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinDrafts deletes an expired bulletin draft and enqueues its attachment deletion`() {
+        val draftId = insertDraft(createdAt = bulletinExpiresBefore.minusDays(1))
+        val attachmentId = insertDraftAttachment(draftId)
+
+        deleteExpiredBulletinDrafts()
+
+        assertEquals(0, rowCount("message_draft"))
+        assertEquals(setOf(attachmentId.toString()), scheduledAttachmentDeletionIds())
+    }
+
+    @Test
+    fun `deleteExpiredBulletinDrafts doesn't remove more drafts than the limit`() {
+        repeat(3) { insertDraft(createdAt = bulletinExpiresBefore.minusDays(1)) }
+
+        deleteExpiredBulletinDrafts(limit = 2)
+
+        assertEquals(1, rowCount("message_draft"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinDrafts keeps a recently modified bulletin draft and an equally old regular draft`() {
+        insertDraft(createdAt = bulletinExpiresBefore.minusDays(1), modifiedAt = now.minusYears(1))
+        insertDraft(createdAt = bulletinExpiresBefore.minusDays(1), type = MessageType.MESSAGE)
+
+        deleteExpiredBulletinDrafts()
+
+        assertEquals(2, rowCount("message_draft"))
+    }
+
+    @Test
+    fun `deleteExpiredData removes expired bulletin threads and drafts`() {
+        val expired = now.minusYears(10).minusDays(1)
+        val contentId = insertBulletinContent()
+        insertThreadWithMessage(created = expired, contentId = contentId)
+        val threadAttachment = insertMessageContentAttachment(contentId)
+        val draftAttachment = insertDraftAttachment(insertDraft(createdAt = expired))
+
+        withLimit(1000) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+        assertEquals(0, rowCount("message_draft"))
+        assertEquals(
+            setOf(threadAttachment.toString(), draftAttachment.toString()),
+            scheduledAttachmentDeletionIds(),
+        )
+    }
+
+    @Test
+    fun `deleteExpiredData removes an expired bulletin thread once its application has been removed`() {
+        // Bulletins linked to an application exist only because of an earlier bug
+        val contentId = insertBulletinContent()
+        val threadId = insertThreadWithMessage(created = now.minusYears(11), contentId = contentId)
+        val attachmentId = insertMessageContentAttachment(contentId)
+        val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
+        linkThreadToApplication(threadId, tree.applicationId, contentId)
+
+        withLimit(1000) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(0, rowCount("application"))
+        assertEquals(0, rowCount("application_note"))
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message"))
+        assertEquals(0, rowCount("message_content"))
+        assertTrue(scheduledAttachmentDeletionIds().contains(attachmentId.toString()))
+    }
+
+    @Test
+    fun `deleteExpiredData keeps bulletin threads and drafts that are exactly ten years old`() {
+        insertThreadWithMessage(created = now.minusYears(10))
+        insertDraft(createdAt = now.minusYears(10))
+
+        withLimit(1000) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_draft"))
     }
 }
