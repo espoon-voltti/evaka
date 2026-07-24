@@ -293,16 +293,17 @@ const customizations: CitizenCustomizations = {
                 'Lisää tähän molemmilta huoltajilta todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin'
             },
             preparatory:
-              'Lapsi tarvitsee tukea suomen kielen oppimisessa ja lapselle on suositeltu valmistavaa esiopetusta nykyisestä päiväkodista. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
+              'Lapsi on syntynyt Suomen ulkopuolella ja tarvitsee tukea suomen kielen oppimiseen. Nykyinen päiväkoti on suositellut lapselle valmistavaa esiopetusta, ja haen hänelle paikkaa myös perusopetukseen valmistavaan opetukseen. Hakemus ei koske ruotsinkielistä esiopetusta.',
             preparatoryInfo: null,
             preparatoryExtraInstructions: (
               <>
                 <P>
-                  Esiopetuksessa toteutettavaan perusopetukseen valmistavaan
-                  opetukseen voivat hakeutua lapset, joilla ei ole vielä suomen
-                  kielen taitoa tai jotka osaavat jo jonkin verran suomea.
-                  Esiopetusikäisten perusopetukseen valmistavaa opetusta
-                  järjestetään kunnallisissa suomenkielisissä esiopetusryhmissä.
+                  Perusopetukseen valmistavaan opetukseen voivat osallistua
+                  lapset, jotka ovat syntyneet Suomen ulkopuolella ja joilla ei
+                  vielä ole suomen kielen taitoa tai joiden suomen kielen taito
+                  on vasta kehittymässä. Esiopetusikäisten valmistavaa opetusta
+                  järjestetään ainoastaan kunnallisissa suomenkielisissä
+                  esiopetusryhmissä.
                 </P>
                 <P>
                   Pidennetyn oppivelvollisuuden piirissä olevilla lapsilla ei
@@ -853,17 +854,17 @@ const customizations: CitizenCustomizations = {
               )
             },
             preparatory:
-              'Barnet behöver stöd med att lära sig finska och ja barnets nuvarande daghem har rekommenderat att barnet deltar i undervisning som förbereder för grundläggande utbildning. Jag ansöker också till undervisning som förbereder för grundläggande utbildning. Gäller inte svenskspråkig förskoleundervisning.',
+              'Barnet är fött utanför Finland och behöver stöd med att lära sig finska. Barnets nuvarande daghem har rekommenderat förberedande förskoleundervisning för barnet, och jag ansöker också om en plats för barnet i undervisning som förbereder för grundläggande utbildning. Gäller inte svenskspråkig förskoleundervisning.',
             preparatoryInfo: null,
             preparatoryExtraInstructions: (
               <>
                 <P>
-                  Plats inom undervisning som förbereder för grundläggande
-                  utbildning och som genomförs inom förskoleundervisningen kan
-                  sökas för barn som ännu inte kan finska eller som kan lite
-                  finska. Undervisning som förbereder för grundläggande
-                  utbildning för barn i förskoleåldern ordnas i kommunala,
-                  finskspråkiga förskolegrupper.
+                  Barn som är födda utanför Finland och som ännu inte kan finska
+                  eller vars kunskaper i finska först håller på att utvecklas
+                  kan delta i undervisning som förbereder för grundläggande
+                  utbildning. Undervisning som förbereder för grundläggande
+                  utbildning för barn i förskoleåldern ordnas endast i
+                  kommunala, finskspråkiga förskolegrupper.
                 </P>
                 <P>
                   Barn med förlängd läroplikt har inte rätt att delta i
@@ -1434,16 +1435,17 @@ const customizations: CitizenCustomizations = {
               )
             },
             preparatory:
-              'My child needs support in learning Finnish and the child’s current day care centre has recommended that the child attend preparatory pre-primary education. I am also applying for preparatory education. This does not apply to Swedish pre-primary education.',
+              'My child was born outside Finland and needs support in learning Finnish. The child’s current day care centre has recommended preparatory pre-primary education for the child, and I am also applying for a place in preparatory education for the child. This application does not apply to Swedish pre-primary education.',
             preparatoryInfo: null,
             preparatoryExtraInstructions: (
               <>
                 <P>
-                  Preparatory education is offered in connection with
-                  pre-primary education to children who do not yet have Finnish
-                  language skills or who know some Finnish. Preparatory
-                  education is offered to children of pre-primary education age
-                  in Finnish-speaking municipal pre-primary education groups.
+                  Preparatory education is open to children who were born
+                  outside Finland and who do not yet have Finnish language
+                  skills or whose Finnish language skills are still developing.
+                  Preparatory education is offered to children of pre-primary
+                  education age only in Finnish-speaking municipal pre-primary
+                  education groups.
                 </P>
                 <P>
                   Children attending extended compulsory education are not
