@@ -5,7 +5,7 @@
 package evaka.core.decision.reasoning
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.EvakaEnv
 import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionIndividualReasoningId
@@ -34,6 +34,8 @@ class DecisionReasoningController(
         clock: EvakaClock,
         @RequestParam collectionType: DecisionReasoningCollectionType,
     ): List<DecisionGenericReasoning> {
+        val audit = AuditContext()
+        audit.addMeta("collectionType", collectionType)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -45,7 +47,10 @@ class DecisionReasoningController(
                     tx.getGenericReasonings(collectionType, clock.today())
                 }
             }
-            .also { Audit.DecisionReasoningGenericRead.log() }
+            .also { reasonings ->
+                audit.addMeta("count", reasonings.size)
+                audit.log(Audit.DecisionReasoningGenericRead, clock)
+            }
     }
 
     @PostMapping("/generic")
@@ -55,6 +60,10 @@ class DecisionReasoningController(
         clock: EvakaClock,
         @RequestBody body: DecisionGenericReasoningRequest,
     ): DecisionGenericReasoningId {
+        val audit = AuditContext()
+        audit.addMeta("collectionType", body.collectionType)
+        audit.addMeta("ready", body.ready)
+        audit.observeDate(body.validFrom)
         if (featureConfig.placementDecisionSwedishLanguageEnabled && body.textSv.isBlank()) {
             throw BadRequest("Swedish reasoning text is required")
         }
@@ -69,7 +78,10 @@ class DecisionReasoningController(
                     tx.insertGenericReasoning(body, clock.now())
                 }
             }
-            .also { Audit.DecisionReasoningGenericCreate.log(targetId = AuditId(it)) }
+            .also { id ->
+                audit.add(id)
+                audit.log(Audit.DecisionReasoningGenericCreate, clock)
+            }
     }
 
     @PutMapping("/generic/{id}")
@@ -80,6 +92,9 @@ class DecisionReasoningController(
         @PathVariable id: DecisionGenericReasoningId,
         @RequestBody body: DecisionGenericReasoningRequest,
     ) {
+        val audit = AuditContext().add(id)
+        audit.addMeta("ready", body.ready)
+        audit.observeDate(body.validFrom)
         if (featureConfig.placementDecisionSwedishLanguageEnabled && body.textSv.isBlank()) {
             throw BadRequest("Swedish reasoning text is required")
         }
@@ -94,7 +109,7 @@ class DecisionReasoningController(
                 tx.updateGenericReasoning(id, body, clock.now())
             }
         }
-        Audit.DecisionReasoningGenericUpdate.log(targetId = AuditId(id))
+        audit.log(Audit.DecisionReasoningGenericUpdate, clock)
     }
 
     @DeleteMapping("/generic/{id}")
@@ -104,18 +119,23 @@ class DecisionReasoningController(
         clock: EvakaClock,
         @PathVariable id: DecisionGenericReasoningId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Global.WRITE_DECISION_REASONINGS,
-                )
-                tx.deleteGenericReasoning(id)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.WRITE_DECISION_REASONINGS,
+                    )
+                    tx.deleteGenericReasoning(id)
+                }
             }
-        }
-        Audit.DecisionReasoningGenericDelete.log(targetId = AuditId(id))
+            .also { deleted ->
+                audit.addMeta("collectionType", deleted.collectionType)
+                audit.observeDate(deleted.validFrom)
+                audit.log(Audit.DecisionReasoningGenericDelete, clock)
+            }
     }
 
     @PutMapping("/generic/{id}/remove")
@@ -125,6 +145,7 @@ class DecisionReasoningController(
         clock: EvakaClock,
         @PathVariable id: DecisionGenericReasoningId,
     ) {
+        val audit = AuditContext().add(id)
         if (!evakaEnv.decisionReasoningGenericRemovalEnabled) {
             throw Forbidden("Feature not enabled")
         }
@@ -139,7 +160,7 @@ class DecisionReasoningController(
                 tx.removeGenericReasoning(id, clock.now())
             }
         }
-        Audit.DecisionReasoningGenericRemove.log(targetId = AuditId(id))
+        audit.log(Audit.DecisionReasoningGenericRemove, clock)
     }
 
     @GetMapping("/individual")
@@ -149,6 +170,8 @@ class DecisionReasoningController(
         clock: EvakaClock,
         @RequestParam collectionType: DecisionReasoningCollectionType,
     ): List<DecisionIndividualReasoning> {
+        val audit = AuditContext()
+        audit.addMeta("collectionType", collectionType)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -160,7 +183,10 @@ class DecisionReasoningController(
                     tx.getIndividualReasonings(collectionType)
                 }
             }
-            .also { Audit.DecisionReasoningIndividualRead.log() }
+            .also { reasonings ->
+                audit.addMeta("count", reasonings.size)
+                audit.log(Audit.DecisionReasoningIndividualRead, clock)
+            }
     }
 
     @PostMapping("/individual")
@@ -170,6 +196,8 @@ class DecisionReasoningController(
         clock: EvakaClock,
         @RequestBody body: DecisionIndividualReasoningRequest,
     ): DecisionIndividualReasoningId {
+        val audit = AuditContext()
+        audit.addMeta("collectionType", body.collectionType)
         if (
             featureConfig.placementDecisionSwedishLanguageEnabled &&
                 (body.titleSv.isBlank() || body.textSv.isBlank())
@@ -187,7 +215,10 @@ class DecisionReasoningController(
                     tx.insertIndividualReasoning(body, clock.now())
                 }
             }
-            .also { Audit.DecisionReasoningIndividualCreate.log(targetId = AuditId(it)) }
+            .also { id ->
+                audit.add(id)
+                audit.log(Audit.DecisionReasoningIndividualCreate, clock)
+            }
     }
 
     @PutMapping("/individual/{id}/remove")
@@ -197,6 +228,7 @@ class DecisionReasoningController(
         clock: EvakaClock,
         @PathVariable id: DecisionIndividualReasoningId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -208,6 +240,6 @@ class DecisionReasoningController(
                 tx.removeIndividualReasoning(id, clock.now())
             }
         }
-        Audit.DecisionReasoningIndividualRemove.log(targetId = AuditId(id))
+        audit.log(Audit.DecisionReasoningIndividualRemove, clock)
     }
 }
