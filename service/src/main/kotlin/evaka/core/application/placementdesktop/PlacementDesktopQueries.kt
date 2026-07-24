@@ -54,15 +54,22 @@ fun Database.Transaction.upsertApplicationPlacementDraft(
     return startDateWithDefault
 }
 
-fun Database.Transaction.deleteApplicationPlacementDraftIfExists(applicationId: ApplicationId) =
-    execute {
-        sql(
-            """
+data class DeletedPlacementDraft(val unitId: DaycareId, val startDate: LocalDate)
+
+fun Database.Transaction.deleteApplicationPlacementDraftIfExists(
+    applicationId: ApplicationId
+): DeletedPlacementDraft? =
+    createUpdate {
+            sql(
+                """
             DELETE FROM placement_draft
             WHERE application_id = ${bind(applicationId)}
+            RETURNING unit_id, start_date
         """
-        )
-    }
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOneOrNull()
 
 fun Database.Read.getPlacementDesktopDaycaresWithoutOccupancies(unitIds: Set<DaycareId>) =
     createQuery {

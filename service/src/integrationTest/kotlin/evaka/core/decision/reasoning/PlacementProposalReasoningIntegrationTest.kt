@@ -150,6 +150,7 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
             tx = tx,
             user = admin.user,
             clock = clock,
+            AuditContext(),
             applicationId = applicationId,
             placementPlan =
                 DaycarePlacementPlan(
@@ -267,6 +268,7 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
                 tx,
                 admin.user,
                 clock,
+                AuditContext(),
                 fixture.applicationId,
                 PlacementPlanConfirmationStatus.ACCEPTED,
             )
@@ -274,6 +276,7 @@ class PlacementProposalReasoningIntegrationTest : FullApplicationTest(resetDbBef
                 tx,
                 admin.user,
                 clock,
+                AuditContext(),
                 fixture.unitId,
                 rejectReasonTranslations = emptyMap(),
             )

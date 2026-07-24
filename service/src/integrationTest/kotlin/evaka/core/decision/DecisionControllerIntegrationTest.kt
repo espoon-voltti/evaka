@@ -239,6 +239,7 @@ class DecisionControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx = tx,
             user = AuthenticatedUser.Employee(serviceWorker, setOf(UserRole.SERVICE_WORKER)),
             clock = clock,
+            AuditContext(),
             applicationId = applicationId,
             placementPlan =
                 DaycarePlacementPlan(

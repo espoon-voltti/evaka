@@ -5,7 +5,7 @@
 package evaka.core.application
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.daycare.PreschoolTerm
 import evaka.core.shared.AttachmentId
 import evaka.core.shared.auth.AuthenticatedUser
@@ -35,6 +35,7 @@ class PlacementToolController(
         clock: EvakaClock,
         @RequestPart("file") file: MultipartFile,
     ): PlacementToolValidation {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -46,7 +47,10 @@ class PlacementToolController(
                     placementToolService.validatePlacementToolApplications(tx, clock, file)
                 }
             }
-            .also { Audit.PlacementToolValidate.log() }
+            .also { validation ->
+                audit.addMeta("count", validation.count).addMeta("existing", validation.existing)
+                audit.log(Audit.PlacementToolValidate, clock)
+            }
     }
 
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -56,6 +60,7 @@ class PlacementToolController(
         clock: EvakaClock,
         @RequestPart("file") file: MultipartFile,
     ): AttachmentId {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -64,13 +69,19 @@ class PlacementToolController(
                         clock,
                         Action.Global.PLACEMENT_TOOL,
                     )
-                    placementToolService.createPlacementToolApplications(tx, user, clock, file)
+                    placementToolService.createPlacementToolApplications(
+                        tx,
+                        user,
+                        clock,
+                        audit,
+                        file,
+                    )
 
                     // this is needed for fileUpload component
                     AttachmentId(UUID.randomUUID())
                 }
             }
-            .also { Audit.PlacementTool.log() }
+            .also { audit.log(Audit.PlacementTool, clock) }
     }
 
     @GetMapping("/next-term")
@@ -79,6 +90,7 @@ class PlacementToolController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): List<PreschoolTerm> {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -92,10 +104,9 @@ class PlacementToolController(
                     )
                 }
             }
-            .also {
-                Audit.PlacementTool.log(
-                    objectId = it.firstOrNull()?.let { term -> AuditId(term.id) }
-                )
+            .also { terms ->
+                audit.add(terms.map { it.id })
+                audit.log(Audit.PreschoolTermRead, clock)
             }
     }
 }

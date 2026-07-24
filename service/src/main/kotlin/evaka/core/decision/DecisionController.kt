@@ -5,9 +5,10 @@
 package evaka.core.decision
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.EvakaEnv
 import evaka.core.application.fetchApplicationDetails
+import evaka.core.application.getApplicationOtherGuardians
 import evaka.core.document.archival.validateArchivability
 import evaka.core.pis.getPersonById
 import evaka.core.shared.DecisionId
@@ -51,35 +52,46 @@ class DecisionController(
         clock: EvakaClock,
         @RequestParam id: PersonId,
     ): List<DecisionWithPermittedActions> {
-        val decisions = db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Person.READ_DECISIONS,
-                    id,
-                )
-                val filter =
-                    accessControl.requireAuthorizationFilter(it, user, clock, Action.Decision.READ)
-                val decisions = it.getDecisionsByGuardian(id, filter)
-                val permittedActions =
-                    accessControl.getPermittedActions<DecisionId, Action.Decision>(
+        val audit = AuditContext().add(id)
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
                         it,
                         user,
                         clock,
-                        decisions.map(Decision::id),
+                        Action.Person.READ_DECISIONS,
+                        id,
                     )
-                decisions.map { decision ->
-                    DecisionWithPermittedActions(
-                        decision,
-                        permittedActions[decision.id] ?: emptySet(),
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Decision.READ,
+                        )
+                    val decisions = it.getDecisionsByGuardian(id, filter)
+                    audit
+                        .add(decisions.map(Decision::id))
+                        .add(decisions.map(Decision::childId))
+                        .add(decisions.map(Decision::applicationId))
+                        .add(decisions.map { decision -> decision.unit.id })
+                        .observeDate(decisions.minOfOrNull(Decision::startDate))
+                    val permittedActions =
+                        accessControl.getPermittedActions<DecisionId, Action.Decision>(
+                            it,
+                            user,
+                            clock,
+                            decisions.map(Decision::id),
+                        )
+                    decisions.map { decision ->
+                        DecisionWithPermittedActions(
+                            decision,
+                            permittedActions[decision.id] ?: emptySet(),
+                        )
+                    }
                 }
             }
-        }
-        Audit.DecisionRead.log(targetId = AuditId(id), meta = mapOf("count" to decisions.size))
-        return decisions
+            .also { audit.log(Audit.DecisionRead, clock) }
     }
 
     @GetMapping("/units")
@@ -88,6 +100,7 @@ class DecisionController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): List<DecisionUnit> {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -96,10 +109,10 @@ class DecisionController(
                         clock,
                         Action.Global.READ_DECISION_UNITS,
                     )
-                    getDecisionUnits(it)
+                    getDecisionUnits(it).also { units -> audit.addMeta("count", units.size) }
                 }
             }
-            .also { Audit.UnitRead.log(meta = mapOf("count" to it.size)) }
+            .also { audit.log(Audit.DecisionUnitsRead, clock) }
     }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
@@ -109,6 +122,7 @@ class DecisionController(
         clock: EvakaClock,
         @PathVariable id: DecisionId,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 val decision = dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -124,6 +138,14 @@ class DecisionController(
                     val application =
                         tx.fetchApplicationDetails(decision.applicationId)
                             ?: error("Cannot find application for decision id '$id'")
+
+                    audit
+                        .add(decision.applicationId)
+                        .add(application.childId)
+                        .add(application.guardianId)
+                        .add(tx.getApplicationOtherGuardians(decision.applicationId))
+                        .add(decision.unit.id)
+                        .observeDate(decision.startDate)
 
                     val child =
                         tx.getPersonById(application.childId)
@@ -147,7 +169,7 @@ class DecisionController(
                 }
                 decisionService.getDecisionPdf(dbc, decision)
             }
-            .also { Audit.DecisionDownloadPdf.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.DecisionDownloadPdf, clock) }
     }
 
     @PostMapping("/{decisionId}/archive")
@@ -162,27 +184,36 @@ class DecisionController(
             throw BadRequest("Archival is not enabled")
         }
 
+        val audit = AuditContext().add(decisionId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Decision.ARCHIVE,
-                    decisionId,
-                )
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Decision.ARCHIVE,
+                        decisionId,
+                    )
 
-                val decision =
-                    tx.getDecision(decisionId) ?: throw NotFound("Decision $decisionId not found")
-                validateArchivability(decision)
+                    val decision =
+                        tx.getDecision(decisionId)
+                            ?: throw NotFound("Decision $decisionId not found")
+                    validateArchivability(decision)
 
-                asyncJobRunner.plan(
-                    tx = tx,
-                    payloads = listOf(AsyncJob.ArchiveDecision(decision.id, user)),
-                    runAt = clock.now(),
-                    retryCount = 1,
-                )
+                    audit
+                        .add(decision.applicationId)
+                        .add(decision.childId)
+                        .add(decision.unit.id)
+                        .observeDate(decision.startDate)
+
+                    asyncJobRunner.plan(
+                        tx = tx,
+                        payloads = listOf(AsyncJob.ArchiveDecision(decision.id, user)),
+                        runAt = clock.now(),
+                        retryCount = 1,
+                    )
+                }
             }
-        }
+            .also { audit.log(Audit.DecisionArchive, clock) }
     }
 }

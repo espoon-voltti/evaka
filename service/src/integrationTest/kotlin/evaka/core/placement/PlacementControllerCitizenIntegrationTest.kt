@@ -4,6 +4,7 @@
 
 package evaka.core.placement
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.absence.AbsenceCategory
 import evaka.core.absence.AbsenceType
@@ -1373,7 +1374,13 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             )
         }
         db.transaction { tx ->
-            applicationStateService.sendApplication(tx, admin.user, clock, applicationId)
+            applicationStateService.sendApplication(
+                tx,
+                admin.user,
+                clock,
+                AuditContext(),
+                applicationId,
+            )
         }
         return applicationId
     }
