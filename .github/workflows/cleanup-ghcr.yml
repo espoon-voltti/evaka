@@ -31,20 +31,53 @@ jobs:
           - evaka/service
           - evaka/service-builder
           - evaka/api-gateway
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PACKAGE: ${{ matrix.package }}
     steps:
+      # We delete via the REST API instead of actions/delete-package-versions
+      # because that action aborts on the first 404 ("delete version API failed.
+      # Package not found."). GHCR returns 404s routinely here: deleting one
+      # untagged manifest prunes sibling manifests that were already listed, so
+      # a later delete of a now-gone version 404s. We tolerate 404 and only fail
+      # on a genuinely unexpected error.
       - name: Delete untagged versions of ${{ matrix.package }}
-        uses: actions/delete-package-versions@v5
-        with:
-          owner: espoon-voltti
-          package-name: ${{ matrix.package }}
-          package-type: container
-          delete-only-untagged-versions: 'true'
+        run: |
+          set -euo pipefail
+          base="/orgs/espoon-voltti/packages/container/${PACKAGE//\//%2F}/versions"
+          mapfile -t ids < <(gh api --paginate "${base}?per_page=100&state=active" \
+            -q '.[] | select((.metadata.container.tags // []) | length == 0) | .id')
+          echo "untagged versions to delete: ${#ids[@]}"
+          deleted=0
+          for id in "${ids[@]}"; do
+            if out=$(gh api -X DELETE "${base}/${id}" 2>&1); then
+              deleted=$((deleted + 1))
+            elif printf '%s' "$out" | grep -q "HTTP 404"; then
+              : # already pruned along with a sibling manifest — expected
+            else
+              echo "::error::delete failed for version $id: $out"; exit 1
+            fi
+          done
+          echo "deleted $deleted untagged version(s)"
 
       - name: Keep newest 100 versions of ${{ matrix.package }}
         if: matrix.package == 'evaka/frontend' # Extend this in future if needed.
-        uses: actions/delete-package-versions@v5
-        with:
-          owner: espoon-voltti
-          package-name: ${{ matrix.package }}
-          package-type: container
-          min-versions-to-keep: 100
+        run: |
+          set -euo pipefail
+          base="/orgs/espoon-voltti/packages/container/${PACKAGE//\//%2F}/versions"
+          # Sort all versions oldest-first across every page, then drop the
+          # newest 100 from the tail; the remainder is what we delete.
+          mapfile -t ids < <(gh api --paginate --slurp "${base}?per_page=100&state=active" \
+            | jq -r '[.[][]] | sort_by(.created_at) | .[0:(length - 100)] | .[].id')
+          echo "versions to delete beyond the newest 100: ${#ids[@]}"
+          deleted=0
+          for id in "${ids[@]}"; do
+            if out=$(gh api -X DELETE "${base}/${id}" 2>&1); then
+              deleted=$((deleted + 1))
+            elif printf '%s' "$out" | grep -q "HTTP 404"; then
+              :
+            else
+              echo "::error::delete failed for version $id: $out"; exit 1
+            fi
+          done
+          echo "deleted $deleted old version(s)"
