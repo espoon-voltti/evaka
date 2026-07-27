@@ -706,6 +706,9 @@ class MessageController(
                             "Municipal message accounts are only allowed to send bulletins"
                         )
                     }
+                    if (body.type == MessageType.BULLETIN && body.relatedApplicationId != null) {
+                        throw BadRequest("Bulletins cannot be related to an application")
+                    }
                     if (senderAccountType == AccountType.SERVICE_WORKER) {
                         if (body.relatedApplicationId == null) {
                             throw BadRequest(
