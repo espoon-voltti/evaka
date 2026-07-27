@@ -7,8 +7,8 @@ import styled from 'styled-components'
 
 import { useBoolean } from 'lib-common/form/hooks'
 import { useCloseOnOutsideEvent } from 'lib-common/utils/useCloseOnOutsideEvent'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
 import { defaultMargins } from 'lib-components/white-space'
 import { faEllipsisVAlt } from 'lib-icons'
 
@@ -78,6 +78,7 @@ const MenuList = React.memo(function MenuList({
             onClick()
             closeMenu()
           }}
+          appearance="inline"
           disabled={disabled}
           data-qa={`menu-item-${id}`}
           text={label}
@@ -101,12 +102,15 @@ const Menu = styled.div`
   cursor: auto;
 `
 
-const MenuItem = styled(LegacyInlineButton)`
+const MenuItem = styled(Button)`
   color: ${({ theme }) => theme.colors.grayscale.g100};
   font-weight: 400;
-  white-space: nowrap;
   margin: ${defaultMargins.xs};
   cursor: pointer;
+
+  span {
+    white-space: nowrap;
+  }
 
   &:hover {
     color: ${({ theme }) => theme.colors.grayscale.g70};

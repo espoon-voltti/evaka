@@ -8,9 +8,8 @@ import styled from 'styled-components'
 
 import type { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
-import LegacyInlineButton from 'lib-components/atoms/buttons/LegacyInlineButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import colors from 'lib-customizations/common'
 import { faArrowRotateLeft } from 'lib-icons'
 
 import { ArrivalTime } from '../common/components'
@@ -50,12 +49,12 @@ export default React.memo(function ArrivalAndDeparture({
                 <span>{`${dateInfo(arrived.toLocalDate())} ${arrived.toLocalTime().format()}`}</span>
               </ArrivalTime>
               {!departed && (
-                <LegacyInlineButton
+                <Button
                   icon={faArrowRotateLeft}
                   text={i18n.common.cancel}
                   onClick={returnToComing}
                   data-qa="cancel-arrival-button"
-                  color={colors.main.m2}
+                  appearance="inline"
                 />
               )}
             </FixedSpaceRow>

@@ -16,7 +16,7 @@ import type { ServiceNeedOptionVoucherValueId } from 'lib-common/generated/api-t
 import { isValidCents, parseCentsOrThrow } from 'lib-common/money'
 import { useMutationResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Td, Tr } from 'lib-components/layout/Table'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -264,7 +264,7 @@ export default React.memo(function VoucherValueEditor({
           />
         </Td>
         <Td>
-          <LegacyButton text={i18n.common.cancel} onClick={close} />
+          <Button text={i18n.common.cancel} onClick={close} />
           <AsyncButton
             primary
             text={i18n.common.save}

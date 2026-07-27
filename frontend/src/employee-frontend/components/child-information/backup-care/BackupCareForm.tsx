@@ -28,7 +28,7 @@ import {
   useQueryResult,
   useSelectMutation
 } from 'lib-common/query'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   cancelMutation,
   MutateButton
@@ -343,7 +343,7 @@ export default function BackupCareForm({
           </div>
         ))}
         <ActionButtons>
-          <LegacyButton
+          <Button
             onClick={() => clearUiMode()}
             text={i18n.common.cancel}
             data-qa="cancel-backup-care-form"

@@ -67,6 +67,10 @@ export type BaseButtonVisualProps = {
    * If true, the button is disabled and can't be clicked
    */
   disabled?: boolean
+  /**
+   * ID given to the button. Used for identifying the button in other contexts
+   */
+  id?: string
 } & BaseProps
 
 const StyledButton = styled.button<{

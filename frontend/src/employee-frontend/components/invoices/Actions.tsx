@@ -8,7 +8,6 @@ import styled from 'styled-components'
 import type { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import type { InvoiceId } from 'lib-common/generated/api-types/shared'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { fontWeights } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -89,7 +88,7 @@ const Actions = React.memo(function Actions({
       )}
       <Gap $size="s" $horizontal />
       {canSend && (
-        <LegacyButton
+        <Button
           primary
           disabled={
             (!fullAreaSelection && checkedInvoices.size === 0) ||

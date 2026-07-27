@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import type { ChildId, DaycareId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -81,7 +81,7 @@ export default React.memo(function MarkAbsent({
             <Gap $size="m" />
             <Actions>
               <FixedSpaceRow $fullWidth>
-                <LegacyButton
+                <Button
                   text={i18n.common.cancel}
                   onClick={() => history.go(-1)}
                 />
@@ -105,11 +105,7 @@ export default React.memo(function MarkAbsent({
                     data-qa="mark-absent-btn"
                   />
                 ) : (
-                  <LegacyButton
-                    primary
-                    text={i18n.common.confirm}
-                    disabled={true}
-                  />
+                  <Button primary text={i18n.common.confirm} disabled={true} />
                 )}
               </FixedSpaceRow>
             </Actions>

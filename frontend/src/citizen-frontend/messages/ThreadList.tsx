@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
@@ -13,12 +12,11 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { OnEnterView } from 'lib-components/OnEnterView'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { buttonBounceAnimation } from 'lib-components/atoms/buttons/button-commons'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { TabletAndDesktop } from 'lib-components/layout/responsive-layout'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -95,7 +93,7 @@ export default React.memo(function ThreadList({
           <DottedLine />
           <Gap $size="s" />
           <HeaderContainer>
-            <LegacyButton
+            <Button
               text={t.messages.messageEditor.newMessage}
               onClick={() => setEditorVisible(true)}
               primary
@@ -112,12 +110,9 @@ export default React.memo(function ThreadList({
             primary
             data-qa="new-message-btn-mobile"
             disabled={!newMessageButtonEnabled}
-          >
-            <FixedSpaceRow $spacing="xs" $alignItems="center">
-              <FontAwesomeIcon icon={faPlus} />
-              <div>{t.messages.messageEditor.newMessage}</div>
-            </FixedSpaceRow>
-          </FloatingButton>
+            text={t.messages.messageEditor.newMessage}
+            icon={faPlus}
+          />
         </MobileOnly>
 
         {renderResult(threads, (threads) =>
@@ -242,7 +237,7 @@ const ThreadListItems = styled.ul`
   margin: 0;
 `
 
-const FloatingButton = styled(LegacyButton)`
+const FloatingButton = styled(Button)`
   position: fixed;
   bottom: calc(${defaultMargins.s} + ${mobileBottomNavHeight}px);
   right: ${defaultMargins.s};

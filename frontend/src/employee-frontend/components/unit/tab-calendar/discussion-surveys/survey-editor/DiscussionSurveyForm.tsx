@@ -16,7 +16,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import { cancelMutation } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import type { TreeNode } from 'lib-components/atoms/dropdowns/TreeDropdown'
 import TreeDropdown, {
@@ -178,7 +178,7 @@ export default React.memo(function DiscussionSurveyForm({
       </SurveyFormSectionGroup>
 
       <FixedSpaceRow $justifyContent="flex-start" $alignItems="center">
-        <LegacyButton
+        <Button
           text={t.discussionReservation.cancelButton}
           onClick={() => setCancelConfirmModalVisible(true)}
           data-qa="cancel-button"

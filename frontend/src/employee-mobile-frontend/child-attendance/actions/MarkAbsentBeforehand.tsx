@@ -16,8 +16,8 @@ import { mockNow } from 'lib-common/utils/helpers'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import InputField from 'lib-components/atoms/form/InputField'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -218,7 +218,7 @@ export default React.memo(function MarkAbsentBeforehand({
               <P>{i18n.absences.fullDayHint}</P>
               <Actions>
                 <FixedSpaceRow $fullWidth>
-                  <LegacyButton text={i18n.common.cancel} onClick={goBack} />
+                  <Button text={i18n.common.cancel} onClick={goBack} />
                   {selectedAbsenceType !== undefined &&
                   selectedAbsenceType !== 'NO_ABSENCE' &&
                   canSave ? (
@@ -230,7 +230,7 @@ export default React.memo(function MarkAbsentBeforehand({
                       data-qa="mark-absent-btn"
                     />
                   ) : (
-                    <LegacyButton
+                    <Button
                       primary
                       text={i18n.common.confirm}
                       disabled={true}

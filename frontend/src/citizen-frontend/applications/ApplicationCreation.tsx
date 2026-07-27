@@ -11,7 +11,7 @@ import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Main from 'lib-components/atoms/Main'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   MutateButton,
   cancelMutation
@@ -184,7 +184,7 @@ export default React.memo(function ApplicationCreation() {
                       onSuccess={(id) => navigate(`/applications/${id}/edit`)}
                       data-qa="submit"
                     />
-                    <LegacyButton
+                    <Button
                       text={t.common.cancel}
                       onClick={() => navigate('/applications')}
                     />

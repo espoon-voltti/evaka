@@ -24,7 +24,7 @@ import LocalTime from 'lib-common/local-time'
 import { useMutationResult } from 'lib-common/query'
 import TimeRange from 'lib-common/time-range'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Radio from 'lib-components/atoms/form/Radio'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { Table, Tbody, Td, Tr } from 'lib-components/layout/Table'
@@ -301,7 +301,7 @@ export const DailyServiceTimesCreationForm = React.memo(
         />
         <FixedSpaceRow $justifyContent="flex-end">
           <FixedSpaceRow $spacing="s">
-            <LegacyButton text={i18n.common.cancel} onClick={() => onClose()} />
+            <Button text={i18n.common.cancel} onClick={() => onClose()} />
             <AsyncButton
               text={i18n.common.confirm}
               primary
@@ -493,10 +493,7 @@ const DailyServiceTimesEditFullForm = React.memo(
         )}
         <FixedSpaceRow $justifyContent="flex-end">
           <FixedSpaceRow $spacing="s">
-            <LegacyButton
-              text={i18n.common.cancel}
-              onClick={() => onClose(false)}
-            />
+            <Button text={i18n.common.cancel} onClick={() => onClose(false)} />
             <AsyncButton
               text={i18n.common.confirm}
               primary
@@ -554,10 +551,7 @@ const DailyServiceTimesEditEndForm = React.memo(
         <DailyServiceTimesReadOnly times={initialData} />
         <FixedSpaceRow $justifyContent="flex-end">
           <FixedSpaceRow $spacing="s">
-            <LegacyButton
-              text={i18n.common.cancel}
-              onClick={() => onClose(false)}
-            />
+            <Button text={i18n.common.cancel} onClick={() => onClose(false)} />
             <AsyncButton
               text={i18n.common.confirm}
               primary

@@ -4,9 +4,9 @@
 
 import styled from 'styled-components'
 
-import { LegacyButton } from '../atoms/buttons/LegacyButton'
+import { Button } from '../atoms/buttons/Button'
 
-export const ScreenReaderButton = styled(LegacyButton)`
+export const ScreenReaderButton = styled(Button)`
   position: absolute;
   z-index: 10000;
   left: -10000px;

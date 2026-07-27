@@ -19,7 +19,6 @@ import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -250,7 +249,7 @@ export default React.memo(function StaffMemberPage({
                 )}
                 <FixedSpaceColumn $alignItems="center">
                   {staffMember.present ? (
-                    <LegacyButton
+                    <Button
                       primary
                       data-qa="mark-departed-btn"
                       onClick={() =>
@@ -261,9 +260,8 @@ export default React.memo(function StaffMemberPage({
                           ).value
                         )
                       }
-                    >
-                      {i18n.attendances.staff.markDeparted}
-                    </LegacyButton>
+                      text={i18n.attendances.staff.markDeparted}
+                    />
                   ) : (
                     <>
                       {!isOperationalDate && (
@@ -271,7 +269,7 @@ export default React.memo(function StaffMemberPage({
                           {i18n.attendances.notOperationalDate}
                         </H4>
                       )}
-                      <LegacyButton
+                      <Button
                         primary
                         data-qa="mark-arrived-btn"
                         disabled={
@@ -285,9 +283,8 @@ export default React.memo(function StaffMemberPage({
                             ).value
                           )
                         }
-                      >
-                        {i18n.attendances.staff.markArrived}
-                      </LegacyButton>
+                        text={i18n.attendances.staff.markArrived}
+                      />
                     </>
                   )}
                   <Button

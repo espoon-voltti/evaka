@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
 import React, { useMemo, useState } from 'react'
@@ -45,7 +44,6 @@ import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import Title from 'lib-components/atoms/Title'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { SelectF } from 'lib-components/atoms/dropdowns/Select'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
@@ -330,16 +328,15 @@ const StaffAttendancesEditor = ({
         </ContentArea>
         <ContentArea $opaque $paddingHorizontal="s">
           <FixedSpaceRow $justifyContent="space-between">
-            <LegacyButton
+            <Button
               data-qa="cancel"
               onClick={() => {
                 pinCode.update(() => EMPTY_PIN)
                 setErrorCode(undefined)
                 setMode('editor')
               }}
-            >
-              {i18n.common.cancel}
-            </LegacyButton>
+              text={i18n.common.cancel}
+            />
             <MutateButton
               primary
               data-qa="confirm"
@@ -542,7 +539,7 @@ const StaffAttendancesEditor = ({
       </ContentArea>
       <ContentArea $opaque $paddingHorizontal="s">
         <FixedSpaceRow $justifyContent="space-between">
-          <LegacyButton
+          <Button
             data-qa="cancel"
             onClick={() =>
               navigate(
@@ -550,17 +547,16 @@ const StaffAttendancesEditor = ({
                   .value
               )
             }
-          >
-            {i18n.common.cancel}
-          </LegacyButton>
-          <LegacyButton
+            text={i18n.common.cancel}
+          />
+          <Button
             primary
             data-qa="save"
             onClick={() => setMode('pin')}
             disabled={!form.isValid()}
-          >
-            <FontAwesomeIcon icon={faLockAlt} /> {i18n.common.saveChanges}
-          </LegacyButton>
+            text={i18n.common.saveChanges}
+            icon={faLockAlt}
+          />
         </FixedSpaceRow>
       </ContentArea>
     </>

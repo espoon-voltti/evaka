@@ -9,7 +9,7 @@ import type { Result } from 'lib-common/api'
 import { combine, Loading } from 'lib-common/api'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   MutateButton,
   cancelMutation
@@ -62,7 +62,7 @@ export default React.memo(function CreateUnitPage() {
             >
               {(getFormData, isValid) => (
                 <>
-                  <LegacyButton
+                  <Button
                     onClick={() => history.go(-1)}
                     text={i18n.common.cancel}
                   />

@@ -14,7 +14,7 @@ import LocalDate from 'lib-common/local-date'
 import { isValidCents, parseCents, parseCentsOrThrow } from 'lib-common/money'
 import { useMutationResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
@@ -420,7 +420,7 @@ export default React.memo(function FeeThresholdsEditor({
         </SaveError>
       ) : null}
       <ButtonRow>
-        <LegacyButton text={i18n.common.cancel} onClick={close} />
+        <Button text={i18n.common.cancel} onClick={close} />
         <AsyncButton
           primary
           text={i18n.common.save}

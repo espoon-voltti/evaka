@@ -51,13 +51,6 @@ table.compact tr th {
   padding: 8px;
 }
 
-button.inline {
-  padding: 0;
-  border-width: 0;
-  height: unset;
-  min-width: unset;
-}
-
 .column.no-padding {
   padding: 0;
 }

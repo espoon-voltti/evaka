@@ -11,7 +11,7 @@ import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   MutateButton,
   cancelMutation
@@ -72,10 +72,7 @@ export default React.memo(function UnitDetailsPage() {
             >
               {(getFormData, isValid) => (
                 <>
-                  <LegacyButton
-                    onClick={useEditable.off}
-                    text={i18n.common.cancel}
-                  />
+                  <Button onClick={useEditable.off} text={i18n.common.cancel} />
                   <MutateButton
                     primary
                     preventDefault

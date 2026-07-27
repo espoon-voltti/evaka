@@ -16,7 +16,7 @@ import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   MutateButton,
   cancelMutation
@@ -276,7 +276,7 @@ export default React.memo(function StaffMarkDepartedPage({
                 <Gap $size="xs" />
                 <Actions>
                   <FixedSpaceRow $fullWidth>
-                    <LegacyButton
+                    <Button
                       text={i18n.common.cancel}
                       onClick={() => history.go(-1)}
                     />

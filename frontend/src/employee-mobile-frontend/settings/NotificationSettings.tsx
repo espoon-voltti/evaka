@@ -33,7 +33,6 @@ import { pushNotificationCategories } from 'lib-common/generated/api-types/webpu
 import { useQueryResult } from 'lib-common/query'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox, { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -291,7 +290,7 @@ const SettingsSectionsEditor = React.memo(function SettingsSectionsEditor({
       />
       <Gap $size="L" />
       <FixedSpaceRow>
-        <LegacyButton
+        <Button
           data-qa="cancel"
           onClick={stopEditing}
           text={i18n.common.cancel}

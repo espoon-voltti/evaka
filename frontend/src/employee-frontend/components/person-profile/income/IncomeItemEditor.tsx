@@ -26,7 +26,7 @@ import { useMutationResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -406,7 +406,7 @@ const IncomeItemEditor = React.memo(function IncomeItemEditor(props: Props) {
         </>
       )}
       <ButtonsContainer>
-        <LegacyButton
+        <Button
           onClick={cancel}
           text={i18n.common.cancel}
           data-qa="cancel-income-edit"

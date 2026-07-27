@@ -48,10 +48,6 @@ Reference for eVaka's component library - what components exist and when to use 
 
 **AsyncIconOnlyButton** - ⚠️ Deprecated, use MutateIconOnlyButton instead
 
-**LegacyButton** - ⚠️ Deprecated, use Button instead
-
-**LegacyInlineButton** - ⚠️ Deprecated, use Button with appearance="inline" instead
-
 ## Form Inputs
 
 Standard components work standalone. F-postfix variants integrate with the [form framework](forms.md) for automatic validation, error display, and state management.

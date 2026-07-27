@@ -10,7 +10,7 @@ import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -136,7 +136,7 @@ const PinLoginForm = React.memo(function PinLoginForm({
 
           <Gap $size="s" />
 
-          <LegacyButton
+          <Button
             primary
             disabled={!valid || submitting}
             text={i18n.pin.login}

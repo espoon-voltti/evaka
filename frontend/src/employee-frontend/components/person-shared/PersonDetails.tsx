@@ -25,7 +25,6 @@ import {
   InlineExternalLinkButton,
   InlineInternalLinkButton
 } from 'lib-components/atoms/buttons/InlineLinkButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -693,10 +692,7 @@ export default React.memo(function PersonDetails({
       {editing && (
         <RightAlignedRow>
           <FixedSpaceRow>
-            <LegacyButton
-              onClick={() => clearUiMode()}
-              text={i18n.common.cancel}
-            />
+            <Button onClick={() => clearUiMode()} text={i18n.common.cancel} />
             <MutateButton
               primary
               disabled={!emailIsValid || !sensitiveDetails}

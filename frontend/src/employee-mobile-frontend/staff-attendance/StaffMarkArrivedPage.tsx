@@ -20,7 +20,7 @@ import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Title from 'lib-components/atoms/Title'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import {
   MutateButton,
   cancelMutation
@@ -296,10 +296,7 @@ const StaffMarkArrivedInner = React.memo(function StaffMarkArrivedInner({
       <Gap $size="xs" />
       <Actions>
         <FixedSpaceRow $fullWidth>
-          <LegacyButton
-            text={i18n.common.cancel}
-            onClick={() => history.go(-1)}
-          />
+          <Button text={i18n.common.cancel} onClick={() => history.go(-1)} />
           <MutateButton
             primary
             text={i18n.common.confirm}

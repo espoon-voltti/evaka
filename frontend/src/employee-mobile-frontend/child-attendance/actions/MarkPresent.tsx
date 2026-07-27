@@ -19,7 +19,7 @@ import { useMutationResult, useQueryResult } from 'lib-common/query'
 import type { UUID } from 'lib-common/types'
 import Title from 'lib-components/atoms/Title'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
+import { Button } from 'lib-components/atoms/buttons/Button'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -128,10 +128,7 @@ const MarkPresentInner = React.memo(function MarkPresentInner({
         <Gap $size="xs" />
         <Actions>
           <FixedSpaceRow $fullWidth>
-            <LegacyButton
-              text={i18n.common.cancel}
-              onClick={() => history.go(-1)}
-            />
+            <Button text={i18n.common.cancel} onClick={() => history.go(-1)} />
             <AsyncButton
               primary
               text={i18n.common.confirm}

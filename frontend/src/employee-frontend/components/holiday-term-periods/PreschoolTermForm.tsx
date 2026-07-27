@@ -24,7 +24,6 @@ import { useMutationResult } from 'lib-common/query'
 import UnderRowStatusIcon from 'lib-components/atoms/StatusIcon'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { LegacyButton } from 'lib-components/atoms/buttons/LegacyButton'
 import { InputFieldUnderRow } from 'lib-components/atoms/form/InputField'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import ListGrid from 'lib-components/layout/ListGrid'
@@ -318,7 +317,7 @@ export default React.memo(function PreschoolTermForm({
           onClick={onSubmit}
           data-qa="save-btn"
         />
-        <LegacyButton onClick={onCancel} text={i18n.common.goBack} />
+        <Button onClick={onCancel} text={i18n.common.goBack} />
       </ButtonContainer>
     </>
   )
