@@ -55,19 +55,6 @@ export function pinLogout(): Promise<Result<void>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export const PinLoginRequired: unique symbol = Symbol('pin-login-required')
-export type PinLoginRequired = typeof PinLoginRequired
-
-export const mapPinLoginRequiredError = (
-  e: unknown
-  // oxlint-disable-next-line typescript/no-explicit-any
-): Failure<any> | Success<PinLoginRequired> => {
-  const failure = Failure.fromError(e)
-  return failure.errorCode === 'PIN_LOGIN_REQUIRED'
-    ? Success.of(PinLoginRequired)
-    : failure
-}
-
 export function authMobile(
   id: string,
   challengeKey: string,
