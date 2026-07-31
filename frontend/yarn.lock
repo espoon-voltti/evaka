@@ -3704,9 +3704,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-legacy@npm:8.2.1":
-  version: 8.2.1
-  resolution: "@vitejs/plugin-legacy@npm:8.2.1"
+"@vitejs/plugin-legacy@npm:8.2.2":
+  version: 8.2.2
+  resolution: "@vitejs/plugin-legacy@npm:8.2.2"
   dependencies:
     "@babel/core": "npm:^7.29.7"
     "@babel/plugin-transform-dynamic-import": "npm:^7.29.7"
@@ -3717,13 +3717,13 @@ __metadata:
     browserslist: "npm:^4.28.6"
     browserslist-to-esbuild: "npm:^2.1.1"
     core-js: "npm:^3.49.0"
-    magic-string: "npm:^0.30.21"
+    magic-string: "npm:^1.0.0"
     regenerator-runtime: "npm:^0.14.1"
     systemjs: "npm:^6.15.1"
   peerDependencies:
     terser: ^5.16.0
     vite: ^8.0.0
-  checksum: 10/729a154c4d255491cd6c4cf37a8666bc1e5dfb3236152f4ffddacf9dfd5b435882b3806e9c771050c78a28c07b813d07170691b70966c34359c71ed992aa490a
+  checksum: 10/ebe174fda0be382100ea0937ed31ba4cdf4c12685ca821e19c3f92fe3a22bb488673b67560a865c111c65541a6851085a8ebffb50135b4eb50a23a6cc81fbae8
   languageName: node
   linkType: hard
 
@@ -4866,7 +4866,7 @@ __metadata:
     "@types/react": "npm:19.2.17"
     "@types/react-dom": "npm:19.2.3"
     "@types/stylis": "npm:4.2.7"
-    "@vitejs/plugin-legacy": "npm:8.2.1"
+    "@vitejs/plugin-legacy": "npm:8.2.2"
     "@vitejs/plugin-react": "npm:6.0.3"
     autosize: "npm:6.0.1"
     axios: "npm:1.18.1"
@@ -5676,6 +5676,15 @@ __metadata:
   dependencies:
     "@jridgewell/sourcemap-codec": "npm:^1.5.5"
   checksum: 10/57d5691f41ed40d962d8bd300148114f53db67fadbff336207db10a99f2bdf4a1be9cac3a68ee85dba575912ee1d4402e4396408196ec2d3afd043b076156221
+  languageName: node
+  linkType: hard
+
+"magic-string@npm:^1.0.0":
+  version: 1.1.0
+  resolution: "magic-string@npm:1.1.0"
+  dependencies:
+    "@jridgewell/sourcemap-codec": "npm:^1.5.5"
+  checksum: 10/01e9b5c05c3bfe219cf6ffe0d0f9158b1c72becfe4bfa8e4896122bcbd44665b10cdfbd2d0b9cd850fa0876a756f80c9cd47b4086a946e3022d73ad467490c8c
   languageName: node
   linkType: hard
 
