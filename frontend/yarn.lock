@@ -4885,7 +4885,7 @@ __metadata:
     lib-components: "link:src/lib-components"
     lib-customizations: "link:src/lib-customizations"
     lib-icons: "link:src/lib-icons"
-    linkify-it: "npm:6.0.0"
+    linkify-it: "npm:6.1.0"
     lodash: "npm:4.18.1"
     make-error-cause: "npm:2.3.0"
     oxfmt: "npm:0.59.0"
@@ -5595,12 +5595,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"linkify-it@npm:6.0.0":
-  version: 6.0.0
-  resolution: "linkify-it@npm:6.0.0"
+"linkify-it@npm:6.1.0":
+  version: 6.1.0
+  resolution: "linkify-it@npm:6.1.0"
   dependencies:
-    uc.micro: "npm:^2.0.0"
-  checksum: 10/ae5a51d42a74c6540a414b971f7acd202762aaf4c6d2ff046564188b7094e61bb0ae03449568241fdc4f0a403fc124b8043e1a040c474ac4f1253de188b22d10
+    uc.micro: "npm:^3.0.0"
+  checksum: 10/56ab9197658ef434d85c6a71039a3e4ed01b0eea0956d850c0597d5769c42625d1a9584880d3607844ae06c810b26e3b3246f718cec8c23db09f0ab4dca697c2
   languageName: node
   linkType: hard
 
@@ -7931,10 +7931,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uc.micro@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "uc.micro@npm:2.0.0"
-  checksum: 10/86e142c239ed01360b9d705a9e194cfb55cfee2dbd22ffa52465a6270e3308dfc23347550d46836e60ea97dcf6cf57eef9531e5ac22e418fb994c0f761a74fa0
+"uc.micro@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "uc.micro@npm:3.0.0"
+  checksum: 10/780ac93f6dbce82e621821430331d7b1378313ec2cf27c2e9b1cd71f9658940bade498d7eab418d6f8eca21c157b3e44baea7f290cf12574d925d269cd7c0ac0
   languageName: node
   linkType: hard
 
