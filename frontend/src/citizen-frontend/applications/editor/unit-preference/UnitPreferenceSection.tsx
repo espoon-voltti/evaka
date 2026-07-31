@@ -4,7 +4,8 @@
 
 import React, { useContext, useEffect } from 'react'
 
-import type { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UnitPreferenceFormData } from 'lib-common/application/ApplicationFormData'
+import type { ApplicationFormDataErrors } from 'lib-common/application/validations'
 import { getErrorCount } from 'lib-common/form-validation'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import type LocalDate from 'lib-common/local-date'
@@ -16,7 +17,6 @@ import { useTranslation } from '../../../localization'
 import { OverlayContext } from '../../../overlay/state'
 import { applicationUnitsQuery } from '../../queries'
 import EditorSection from '../EditorSection'
-import type { ApplicationFormDataErrors } from '../validations'
 
 import SiblingBasisSubSection from './SiblingBasisSubSection'
 import UnitsSubSection from './UnitsSubSection'
