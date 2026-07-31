@@ -6,18 +6,14 @@ import React, { useCallback } from 'react'
 
 import type { UnitPreferenceFormData } from 'lib-common/application/ApplicationFormData'
 import { constantQuery, useQueryResult } from 'lib-common/query'
-import AdditionalDetailsSection from 'lib-components/application-editor/AdditionalDetailsSection'
-import Heading from 'lib-components/application-editor/Heading'
-import ContactInfoSection from 'lib-components/application-editor/contact-info/ContactInfoSection'
-import ServiceNeedSection from 'lib-components/application-editor/service-need/ServiceNeedSection'
-import UnitPreferenceSection from 'lib-components/application-editor/unit-preference/UnitPreferenceSection'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { featureFlags } from 'lib-customizations/citizen'
 
-import { renderResult } from '../../async-rendering'
-import { serviceNeedOptionPublicInfosQuery } from '../queries'
-
-import type { ApplicationFormProps } from './ApplicationEditor'
+import AdditionalDetailsSection from './AdditionalDetailsSection'
+import Heading from './Heading'
+import ContactInfoSection from './contact-info/ContactInfoSection'
+import ServiceNeedSection from './service-need/ServiceNeedSection'
+import type { ApplicationFormProps } from './types'
+import UnitPreferenceSection from './unit-preference/UnitPreferenceSection'
 
 export default React.memo(function ApplicationFormPreschool({
   deps,
@@ -32,6 +28,7 @@ export default React.memo(function ApplicationFormPreschool({
   maxDate,
   terms
 }: ApplicationFormProps) {
+  const { featureFlags, serviceNeedOptionPublicInfosQuery, renderResult } = deps
   const applicationType = 'PRESCHOOL'
 
   const serviceNeedOptions = useQueryResult(

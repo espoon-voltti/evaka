@@ -33,7 +33,9 @@ import LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
-import type { ApplicationEditorDeps } from 'lib-components/application-editor/types'
+import ApplicationFormClub from 'lib-components/application-editor/ApplicationFormClub'
+import ApplicationFormDaycare from 'lib-components/application-editor/ApplicationFormDaycare'
+import ApplicationFormPreschool from 'lib-components/application-editor/ApplicationFormPreschool'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton, {
@@ -63,31 +65,12 @@ import {
   updateApplicationMutation
 } from '../queries'
 
-import ApplicationFormClub from './ApplicationFormClub'
-import ApplicationFormDaycare from './ApplicationFormDaycare'
-import ApplicationFormPreschool from './ApplicationFormPreschool'
 import { useApplicationEditorDeps } from './useApplicationEditorDeps'
 import ApplicationVerificationView from './verification/ApplicationVerificationView'
 
 type ApplicationEditorContentProps = {
   application: ApplicationDetailsGen
   citizenChildren: CitizenChildren[]
-}
-
-export type ApplicationFormProps = {
-  application: ApplicationDetailsGen
-  formData: ApplicationFormData
-  setFormData: (
-    update: (old: ApplicationFormData) => ApplicationFormData
-  ) => void
-  errors: ApplicationFormDataErrors
-  verificationRequested: boolean
-  alertTrigger: number
-  isInvalidDate: ((localDate: LocalDate) => string | null) | undefined
-  minDate: LocalDate
-  maxDate: LocalDate
-  terms?: Term[]
-  deps: ApplicationEditorDeps
 }
 
 const StickyContainer = styled(Container)`
