@@ -4,7 +4,10 @@
 
 import type { ReactNode } from 'react'
 
+import type { ErrorKey } from 'lib-common/form-validation'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type { ProviderType } from 'lib-common/generated/api-types/daycare'
+import type { PlacementType } from 'lib-common/generated/api-types/placement'
 
 export interface ApplicationEditorTexts {
   heading: {
@@ -450,4 +453,15 @@ export interface ApplicationEditorTexts {
     text: string
     ok: string
   }
+}
+
+export interface ApplicationEditorTranslations {
+  applications: {
+    editor: ApplicationEditorTexts
+    creation: { daycare4monthWarning: ReactNode }
+  }
+  applicationsList: { transferApplication: string }
+  common: { unit: { providerTypes: Record<ProviderType, string> } }
+  placement: { type: Record<PlacementType, string> }
+  validationErrors: Record<ErrorKey, string>
 }
