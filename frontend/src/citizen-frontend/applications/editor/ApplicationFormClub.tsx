@@ -6,12 +6,12 @@ import React, { useCallback } from 'react'
 
 import AdditionalDetailsSection from 'lib-components/application-editor/AdditionalDetailsSection'
 import Heading from 'lib-components/application-editor/Heading'
+import ContactInfoSection from 'lib-components/application-editor/contact-info/ContactInfoSection'
 import ServiceNeedSection from 'lib-components/application-editor/service-need/ServiceNeedSection'
 import UnitPreferenceSection from 'lib-components/application-editor/unit-preference/UnitPreferenceSection'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import type { ApplicationFormProps } from './ApplicationEditor'
-import ContactInfoSection from './contact-info/ContactInfoSection'
 
 export default React.memo(function ApplicationFormClub({
   deps,
