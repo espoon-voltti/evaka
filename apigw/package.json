@@ -54,7 +54,7 @@
     "@types/split2": "4.2.3",
     "@types/tough-cookie": "4.0.5",
     "@types/xml2js": "0.4.14",
-    "concurrently": "10.0.3",
+    "concurrently": "10.0.4",
     "nock": "14.0.16",
     "node-forge": "1.4.0",
     "oxfmt": "0.59.0",
