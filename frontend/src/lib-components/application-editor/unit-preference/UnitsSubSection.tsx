@@ -22,10 +22,6 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
 import { useScreenReaderMessage } from 'lib-components/utils/useScreenReaderMessage'
 import { Gap } from 'lib-components/white-space'
-import { getMaxPreferredUnits } from 'lib-customizations/citizen'
-import colors from 'lib-customizations/common'
-
-import { useTranslation } from '../../../localization'
 
 import PreferredUnitBox from './PreferredUnitBox'
 import type { UnitPreferenceSectionProps } from './UnitPreferenceSection'
@@ -35,6 +31,7 @@ interface Props extends UnitPreferenceSectionProps {
 }
 
 export default React.memo(function UnitsSubSection({
+  deps,
   formData,
   updateFormData,
   errors,
@@ -43,7 +40,7 @@ export default React.memo(function UnitsSubSection({
   preferredStartDate,
   units
 }: Props) {
-  const t = useTranslation()
+  const { translations: t, getMaxPreferredUnits } = deps
   const emptyPreferredUnitsLabel = useRef<HTMLLabelElement>(null)
   const availableLanguages = useMemo(
     () => new Set((units ?? []).map((u) => u.language)),
@@ -276,6 +273,7 @@ export default React.memo(function UnitsSubSection({
                         unit ? (
                           <PreferredUnitBox
                             key={unit.id}
+                            deps={deps}
                             unit={unit}
                             n={i + 1}
                             remove={() => removeChoice(i, unit)}
@@ -323,6 +321,6 @@ const FixedWidthDiv = styled.div`
 `
 
 const Info = styled(P)`
-  color: ${colors.grayscale.g70};
+  color: ${(p) => p.theme.colors.grayscale.g70};
   margin: 0;
 `

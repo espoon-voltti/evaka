@@ -14,18 +14,17 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../../../localization'
-
 import type { UnitPreferenceSectionCommonProps } from './UnitPreferenceSection'
 
 export default React.memo(function SiblingBasisSubSection({
+  deps,
   applicationType,
   formData,
   updateFormData,
   errors,
   verificationRequested
 }: UnitPreferenceSectionCommonProps) {
-  const t = useTranslation()
+  const { translations: t } = deps
 
   return (
     <>

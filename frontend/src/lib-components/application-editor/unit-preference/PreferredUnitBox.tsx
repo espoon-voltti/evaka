@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import type {
   Language,
   PublicUnit
 } from 'lib-common/generated/api-types/daycare'
+import type { Theme } from 'lib-common/theme'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -20,12 +21,12 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { BigNumber, H4 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 import { faArrowDown, faArrowUp, faTimes } from 'lib-icons'
 
-import { useTranslation } from '../../../localization'
+import type { ApplicationEditorDeps } from '../types'
 
 export type PreferredUnitBoxProps = {
+  deps: ApplicationEditorDeps
   unit: PublicUnit
   n: number
   remove: () => void
@@ -34,13 +35,15 @@ export type PreferredUnitBoxProps = {
 }
 
 export default React.memo(function PreferredUnitBox({
+  deps,
   unit,
   n,
   remove,
   moveUp,
   moveDown
 }: PreferredUnitBoxProps) {
-  const t = useTranslation()
+  const { translations: t } = deps
+  const { colors } = useTheme()
 
   const providerTypeText =
     unit.providerType === 'PRIVATE_SERVICE_VOUCHER'
@@ -90,7 +93,7 @@ export default React.memo(function PreferredUnitBox({
             )}
           </FixedSpaceColumn>
           <FixedSpaceFlexWrap $horizontalSpacing="xs" $verticalSpacing="xs">
-            <StaticChip $color={unitLanguageChipColor[unit.language]}>
+            <StaticChip $color={unitLanguageColors(colors)[unit.language]}>
               {
                 t.applications.editor.unitPreference.units.preferences[
                   unit.language
@@ -150,18 +153,20 @@ export default React.memo(function PreferredUnitBox({
   )
 })
 
-const unitLanguageChipColor: Record<Language, string> = {
+const unitLanguageColors = (
+  colors: Theme['colors']
+): Record<Language, string> => ({
   fi: colors.main.m3,
   sv: colors.accents.a5orangeLight,
   en: colors.accents.a10powder
-}
+})
 
 const noOp = () => undefined
 
 const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
-  border: 1px solid ${colors.main.m2};
+  border: 1px solid ${(p) => p.theme.colors.main.m2};
   box-sizing: border-box;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.15);
   border-radius: 2px;
