@@ -4,11 +4,10 @@
 
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
+import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
 import {
-  createDaycarePlacementFixture,
   testDaycareGroup,
   Fixture,
   familyWithTwoGuardians,
@@ -17,7 +16,6 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createDaycareGroups,
-  createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
 import type { PedagogicalDocumentsSection } from '../../pages/employee/child-information'
@@ -53,12 +51,12 @@ test.describe('Child Information - Pedagogical documents', () => {
     const unitId = testDaycare.id
     childId = familyWithTwoGuardians.children[0].id
 
-    const daycarePlacementFixture = createDaycarePlacementFixture(
-      randomId(),
+    await Fixture.placement({
       childId,
-      unitId
-    )
-    await createDaycarePlacements({ body: [daycarePlacementFixture] })
+      unitId,
+      startDate: LocalDate.of(2022, 5, 1),
+      endDate: LocalDate.of(2023, 8, 31)
+    }).save()
 
     const admin = await Fixture.employee().admin().save()
 

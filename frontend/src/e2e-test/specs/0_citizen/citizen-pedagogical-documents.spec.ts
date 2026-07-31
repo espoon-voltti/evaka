@@ -3,21 +3,17 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
+import LocalDate from 'lib-common/local-date'
 
 import { insertPedagogicalDocumentAttachment } from '../../dev-api'
 import {
-  createDaycarePlacementFixture,
   Fixture,
   testAdult,
   testCareArea,
   testChild,
   testDaycare
 } from '../../dev-api/fixtures'
-import {
-  createDaycarePlacements,
-  resetServiceState
-} from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
@@ -43,11 +39,12 @@ test.describe('Citizen pedagogical documents', () => {
     await testDaycare.save()
     await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
 
-    await createDaycarePlacements({
-      body: [
-        createDaycarePlacementFixture(randomId(), testChild.id, testDaycare.id)
-      ]
-    })
+    await Fixture.placement({
+      childId: testChild.id,
+      unitId: testDaycare.id,
+      startDate: LocalDate.of(2022, 5, 1),
+      endDate: LocalDate.of(2023, 8, 31)
+    }).save()
 
     page = evaka
     await enduserLogin(page, testAdult, '/')

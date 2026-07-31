@@ -3,10 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
-import type {
-  CalendarEventId,
-  PlacementId
-} from 'lib-common/generated/api-types/shared'
+import type { CalendarEventId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
@@ -14,7 +11,6 @@ import LocalTime from 'lib-common/local-time'
 import type { UUID } from 'lib-common/types'
 
 import {
-  createDaycarePlacementFixture,
   Fixture,
   testAdult,
   testCareArea,
@@ -23,10 +19,7 @@ import {
   testChildRestricted,
   testDaycare
 } from '../../dev-api/fixtures'
-import {
-  createDaycarePlacements,
-  resetServiceState
-} from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { test } from '../../playwright'
@@ -49,32 +42,23 @@ test.beforeEach(async () => {
   children = [testChild, testChild2, testChildRestricted]
   jariId = testChild.id
   await Fixture.family({ guardian: testAdult, children }).save()
-  const placementIds = new Map(
-    children.map((child) => [child.id, randomId<PlacementId>()])
-  )
-  await createDaycarePlacements({
-    body: children.map((child) =>
-      createDaycarePlacementFixture(
-        placementIds.get(child.id)!,
-        child.id,
-        testDaycare.id,
-        today,
-        today.addYears(1)
-      )
-    )
-  })
-
   const daycareGroup = await Fixture.daycareGroup({
     daycareId: testDaycare.id,
     name: 'Group 1'
   }).save()
 
   for (const child of children) {
+    const placement = await Fixture.placement({
+      childId: child.id,
+      unitId: testDaycare.id,
+      startDate: today,
+      endDate: today.addYears(1)
+    }).save()
     await Fixture.groupPlacement({
       startDate: today,
       endDate: today.addYears(1),
       daycareGroupId: daycareGroup.id,
-      daycarePlacementId: placementIds.get(child.id)!
+      daycarePlacementId: placement.id
     }).save()
   }
 

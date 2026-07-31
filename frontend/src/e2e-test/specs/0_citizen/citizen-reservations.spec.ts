@@ -8,7 +8,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { evakaUserId, randomId } from 'lib-common/id-type'
+import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
@@ -17,7 +17,6 @@ import type { DeepPartial, FeatureFlags } from 'lib-customizations/types'
 import {
   testCareArea2,
   testCareArea,
-  createDaycarePlacementFixture,
   testDaycare2,
   testDaycare,
   testChild2,
@@ -29,7 +28,6 @@ import {
   preschoolTerm2021
 } from '../../dev-api/fixtures'
 import {
-  createDaycarePlacements,
   createDefaultServiceNeedOptions,
   getAbsences,
   resetServiceState
@@ -88,34 +86,27 @@ for (const env of ['desktop', 'mobile'] as const) {
         'DAYCARE'
       ] as const
 
-      const placementFixtures = zip(children, placementTypes).map(
-        ([child, placementType]) =>
-          createDaycarePlacementFixture(
-            randomId(),
-            child!.id,
-            testDaycare.id,
-            today,
-            today.addYears(1),
-            placementType
-          )
-      )
-      await createDaycarePlacements({ body: placementFixtures })
       await createDefaultServiceNeedOptions()
 
       const group = await Fixture.daycareGroup({
         daycareId: testDaycare.id
       }).save()
 
-      await Promise.all(
-        placementFixtures.map((placement) =>
-          Fixture.groupPlacement({
-            daycareGroupId: group.id,
-            daycarePlacementId: placement.id,
-            startDate: placement.startDate,
-            endDate: placement.endDate
-          }).save()
-        )
-      )
+      for (const [child, placementType] of zip(children, placementTypes)) {
+        const placement = await Fixture.placement({
+          childId: child!.id,
+          unitId: testDaycare.id,
+          startDate: today,
+          endDate: today.addYears(1),
+          type: placementType
+        }).save()
+        await Fixture.groupPlacement({
+          daycareGroupId: group.id,
+          daycarePlacementId: placement.id,
+          startDate: placement.startDate,
+          endDate: placement.endDate
+        }).save()
+      }
     })
 
     test('Citizen creates a repeating reservation for all children', async ({
@@ -1566,31 +1557,24 @@ test.describe('Citizen calendar child visibility', () => {
     child = testChild
     child2 = testChild2
 
-    await createDaycarePlacements({
-      body: [
-        createDaycarePlacementFixture(
-          randomId(),
-          child.id,
-          testDaycare.id,
-          placement1start,
-          placement1end
-        ),
-        createDaycarePlacementFixture(
-          randomId(),
-          child.id,
-          testDaycare.id,
-          placement2start,
-          placement2end
-        ),
-        createDaycarePlacementFixture(
-          randomId(),
-          child2.id,
-          testDaycare.id,
-          placement1start.subYears(1),
-          placement1start.subDays(2)
-        )
-      ]
-    })
+    await Fixture.placement({
+      childId: child.id,
+      unitId: testDaycare.id,
+      startDate: placement1start,
+      endDate: placement1end
+    }).save()
+    await Fixture.placement({
+      childId: child.id,
+      unitId: testDaycare.id,
+      startDate: placement2start,
+      endDate: placement2end
+    }).save()
+    await Fixture.placement({
+      childId: child2.id,
+      unitId: testDaycare.id,
+      startDate: placement1start.subYears(1),
+      endDate: placement1start.subDays(2)
+    }).save()
   })
 
   test('Child visible only while placement is active', async ({
@@ -1658,16 +1642,12 @@ test.describe('Citizen calendar child visibility', () => {
     }).save()
 
     // Sibling is in 24/7 daycare with shift care
-    const placement = createDaycarePlacementFixture(
-      randomId(),
-      testChild2.id,
-      testDaycare2.id,
-      placement1start,
-      placement1end
-    )
-    await createDaycarePlacements({
-      body: [placement]
-    })
+    const placement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare2.id,
+      startDate: placement1start,
+      endDate: placement1end
+    }).save()
     const serviceNeedOption = await Fixture.serviceNeedOption().save()
     const unitSupervisor = await Fixture.employee()
       .unitSupervisor(daycare.id)
@@ -1710,16 +1690,12 @@ test.describe('Citizen calendar child visibility', () => {
     const child = testChild2
 
     // Child is in 24/7 daycare with shift care
-    const placement = createDaycarePlacementFixture(
-      randomId(),
-      testChild2.id,
-      testDaycare2.id,
-      placement1start,
-      placement1end
-    )
-    await createDaycarePlacements({
-      body: [placement]
-    })
+    const placement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare2.id,
+      startDate: placement1start,
+      endDate: placement1end
+    }).save()
     const serviceNeedOption = await Fixture.serviceNeedOption().save()
     const unitSupervisor = await Fixture.employee()
       .unitSupervisor(daycare.id)
@@ -1830,17 +1806,12 @@ test.describe('Citizen calendar visibility', () => {
     newEvakaPage
   }) => {
     const visibilityToday = LocalDate.todayInSystemTz()
-    await createDaycarePlacements({
-      body: [
-        createDaycarePlacementFixture(
-          randomId(),
-          child.id,
-          daycareId,
-          visibilityToday.subYears(1),
-          visibilityToday.subDays(1)
-        )
-      ]
-    })
+    await Fixture.placement({
+      childId: child.id,
+      unitId: daycareId,
+      startDate: visibilityToday.subYears(1),
+      endDate: visibilityToday.subDays(1)
+    }).save()
 
     const page = await newEvakaPage({
       mockedTime: visibilityToday.toHelsinkiDateTime(LocalTime.of(12, 0))
@@ -2146,17 +2117,12 @@ for (const env of ['desktop', 'mobile'] as const) {
       const careArea = await testCareArea2.save()
       await Fixture.daycare({ ...testDaycare2, areaId: careArea.id }).save()
 
-      await createDaycarePlacements({
-        body: [
-          createDaycarePlacementFixture(
-            randomId(),
-            testChild2.id,
-            testDaycare2.id,
-            placement1start,
-            placement1end
-          )
-        ]
-      })
+      await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testDaycare2.id,
+        startDate: placement1start,
+        endDate: placement1end
+      }).save()
       const page = await newEvakaPage({
         mockedTime: today.toHelsinkiDateTime(LocalTime.of(12, 0))
       })
