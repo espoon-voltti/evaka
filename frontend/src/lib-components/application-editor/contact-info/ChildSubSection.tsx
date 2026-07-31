@@ -18,19 +18,17 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { useLang, useTranslation } from '../../../localization'
-
 import type { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function ChildSubSection({
+  deps,
   formData,
   updateFormData,
   errors,
   verificationRequested,
   fullFamily
 }: ContactInfoSectionProps) {
-  const t = useTranslation()
-  const [lang] = useLang()
+  const { translations: t, lang } = deps
 
   return (
     <>

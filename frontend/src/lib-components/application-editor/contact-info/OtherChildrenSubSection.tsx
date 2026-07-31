@@ -22,17 +22,16 @@ import { useScreenReaderMessage } from 'lib-components/utils/useScreenReaderMess
 import { Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 
-import { useTranslation } from '../../../localization'
-
 import type { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function OtherChildrenSubSection({
+  deps,
   formData,
   updateFormData,
   errors,
   verificationRequested
 }: ContactInfoSectionProps) {
-  const t = useTranslation()
+  const { translations: t } = deps
   const otherChildrenExistsRef = React.useRef<HTMLInputElement>(null)
   const [screenReaderMessage, setScreenReaderMessage] = useScreenReaderMessage()
 

@@ -9,11 +9,10 @@ import type { ApplicationFormDataErrors } from 'lib-common/application/validatio
 import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
-import EditorSection from 'lib-components/application-editor/EditorSection'
-import type { ApplicationEditorDeps } from 'lib-components/application-editor/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
-import { useTranslation } from '../../../localization'
+import EditorSection from '../EditorSection'
+import type { ApplicationEditorDeps } from '../types'
 
 import ChildSubSection from './ChildSubSection'
 import GuardianSubSection from './GuardianSubSection'
@@ -35,7 +34,7 @@ export type ContactInfoSectionProps = {
 export default React.memo(function ContactInfoSection(
   props: ContactInfoSectionProps
 ) {
-  const t = useTranslation()
+  const { translations: t } = props.deps
 
   return (
     <EditorSection
