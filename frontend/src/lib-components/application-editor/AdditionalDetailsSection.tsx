@@ -16,11 +16,11 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../../localization'
-
 import EditorSection from './EditorSection'
+import type { ApplicationEditorDeps } from './types'
 
 type Props = {
+  deps: ApplicationEditorDeps
   formData: AdditionalDetailsFormData
   updateFormData: UpdateStateFn<AdditionalDetailsFormData>
   errors: ApplicationFormDataErrors['additionalDetails']
@@ -29,16 +29,18 @@ type Props = {
 }
 
 export default React.memo(function AdditionalDetailsSection({
+  deps,
   formData,
   updateFormData,
   verificationRequested,
   errors,
   applicationType
 }: Props) {
-  const t = useTranslation()
+  const { translations: t } = deps
 
   return (
     <EditorSection
+      deps={deps}
       title={t.applications.editor.additionalDetails.title}
       validationErrors={verificationRequested ? getErrorCount(errors) : 0}
       data-qa="additionalDetails-section"
