@@ -10,18 +10,20 @@ import { getErrorCount } from 'lib-common/form-validation'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import type LocalDate from 'lib-common/local-date'
 import { constantQuery, useQuery } from 'lib-common/query'
+import EditorSection from 'lib-components/application-editor/EditorSection'
+import type { ApplicationEditorDeps } from 'lib-components/application-editor/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { faExclamation } from 'lib-icons'
 
 import { useTranslation } from '../../../localization'
 import { OverlayContext } from '../../../overlay/state'
 import { applicationUnitsQuery } from '../../queries'
-import EditorSection from '../EditorSection'
 
 import SiblingBasisSubSection from './SiblingBasisSubSection'
 import UnitsSubSection from './UnitsSubSection'
 
 export type UnitPreferenceSectionCommonProps = {
+  deps: ApplicationEditorDeps
   formData: UnitPreferenceFormData
   updateFormData: (
     updater: (prev: UnitPreferenceFormData) => Partial<UnitPreferenceFormData>
@@ -106,6 +108,7 @@ export default React.memo(function UnitPreferenceSection(
 
   return (
     <EditorSection
+      deps={props.deps}
       title={t.applications.editor.unitPreference.title}
       validationErrors={
         props.verificationRequested ? getErrorCount(props.errors) : 0
