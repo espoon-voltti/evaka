@@ -8,12 +8,12 @@ import { formatPersonName } from 'lib-common/names'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
 
 import type { UnitPreferenceSectionCommonProps } from './UnitPreferenceSection'

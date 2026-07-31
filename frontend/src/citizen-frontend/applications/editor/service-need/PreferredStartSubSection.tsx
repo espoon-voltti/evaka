@@ -11,6 +11,7 @@ import { useMutationResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
@@ -25,7 +26,6 @@ import {
   applicationAttachment
 } from '../../../attachments/attachments'
 import { deleteAttachmentMutation } from '../../../attachments/queries'
-import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 
 import { ClubTermsInfo } from './ClubTermsInfo'

@@ -29,6 +29,7 @@ import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
   FixedSpaceColumn,
@@ -54,7 +55,6 @@ import {
 } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
-import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
 import { openAttendanceQuery } from '../queries'
 
 export interface ModalAttendance {

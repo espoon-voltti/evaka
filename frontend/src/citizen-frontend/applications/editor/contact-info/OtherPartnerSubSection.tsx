@@ -6,6 +6,7 @@ import React from 'react'
 
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import {
   FixedSpaceColumn,
@@ -14,7 +15,6 @@ import {
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
 
 import type { ContactInfoSectionProps } from './ContactInfoSection'
