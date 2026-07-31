@@ -27,14 +27,6 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
-
-import {
-  getAttachmentUrl,
-  applicationAttachment
-} from '../../../attachments/attachments'
-import { deleteAttachmentMutation } from '../../../attachments/queries'
-import { useLang, useTranslation } from '../../../localization'
 
 import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
@@ -47,6 +39,7 @@ type ServiceTimeSubSectionProps = Omit<ServiceNeedSectionProps, 'type'>
 const applicationType = 'PRESCHOOL'
 
 export default React.memo(function ServiceTimeSubSectionPreschool({
+  deps,
   isInvalidDate,
   minDate,
   maxDate,
@@ -56,8 +49,14 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
   verificationRequested,
   serviceNeedOptions
 }: ServiceTimeSubSectionProps) {
-  const [lang] = useLang()
-  const t = useTranslation()
+  const {
+    translations: t,
+    lang,
+    featureFlags,
+    applicationAttachmentUploadHandler,
+    getAttachmentUrl,
+    deleteAttachmentMutation
+  } = deps
   const applicationId = useIdRouteParam<ApplicationId>('applicationId')
   const labelId = useUniqueId()
 
@@ -102,6 +101,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
       }
     }
   }, [
+    featureFlags.preschoolApplication.serviceNeedOption,
     preferredStartDate,
     formData.placementType,
     formData.serviceNeedOption,
@@ -338,7 +338,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
               <FileUpload
                 files={formData.shiftCareAttachments}
-                uploadHandler={applicationAttachment(
+                uploadHandler={applicationAttachmentUploadHandler(
                   applicationId,
                   'EXTENDED_CARE',
                   deleteAttachment
