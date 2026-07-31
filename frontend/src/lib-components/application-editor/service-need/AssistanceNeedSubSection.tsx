@@ -11,20 +11,18 @@ import { errorToInputInfo } from 'lib-components/input-info-helper'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
-
-import { useTranslation } from '../../../localization'
 
 import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function AssistanceNeedSubSection({
+  deps,
   type,
   formData,
   errors,
   verificationRequested,
   updateFormData
 }: ServiceNeedSectionProps) {
-  const t = useTranslation()
+  const { translations: t, featureFlags } = deps
 
   return (
     <>

@@ -19,20 +19,13 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
-
-import {
-  getAttachmentUrl,
-  applicationAttachment
-} from '../../../attachments/attachments'
-import { deleteAttachmentMutation } from '../../../attachments/queries'
-import { useLang, useTranslation } from '../../../localization'
 
 import { ClubTermsInfo } from './ClubTermsInfo'
 import { PreschoolTermsInfoSection } from './PreschoolTermInfoSection'
 import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function PreferredStartSubSection({
+  deps,
   isInvalidDate,
   minDate,
   maxDate,
@@ -44,8 +37,14 @@ export default React.memo(function PreferredStartSubSection({
   terms
 }: ServiceNeedSectionProps) {
   const applicationId = useIdRouteParam<ApplicationId>('applicationId')
-  const t = useTranslation()
-  const [lang] = useLang()
+  const {
+    translations: t,
+    lang,
+    featureFlags,
+    applicationAttachmentUploadHandler,
+    getAttachmentUrl,
+    deleteAttachmentMutation
+  } = deps
   const labelId = useUniqueId()
   const { mutateAsync: deleteAttachment } = useMutationResult(
     deleteAttachmentMutation
@@ -69,10 +68,14 @@ export default React.memo(function PreferredStartSubSection({
           <P key={index}>{info}</P>
         ))}
 
-        {type === 'CLUB' && <ClubTermsInfo clubTerms={terms ?? []} />}
+        {type === 'CLUB' && (
+          <ClubTermsInfo deps={deps} clubTerms={terms ?? []} />
+        )}
         {type === 'PRESCHOOL' &&
           featureFlags.showCitizenApplicationPreschoolTerms &&
-          terms && <PreschoolTermsInfoSection preschoolTerms={terms} />}
+          terms && (
+            <PreschoolTermsInfoSection deps={deps} preschoolTerms={terms} />
+          )}
 
         <ExpandingInfo
           data-qa="startdate-instructions"
@@ -159,7 +162,7 @@ export default React.memo(function PreferredStartSubSection({
 
                 <FileUpload
                   files={formData.urgencyAttachments}
-                  uploadHandler={applicationAttachment(
+                  uploadHandler={applicationAttachmentUploadHandler(
                     applicationId,
                     'URGENCY',
                     deleteAttachment

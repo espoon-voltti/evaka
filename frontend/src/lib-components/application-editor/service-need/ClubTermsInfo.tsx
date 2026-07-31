@@ -8,18 +8,19 @@ import type { Term } from 'lib-common/application/validations'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../../../localization'
+import type { ApplicationEditorDeps } from '../types'
 
 const Ul = styled.ul`
   margin: 0;
 `
 
 interface Props {
+  deps: ApplicationEditorDeps
   clubTerms: Term[]
 }
 
-export function ClubTermsInfo({ clubTerms }: Props) {
-  const i18n = useTranslation()
+export function ClubTermsInfo({ deps, clubTerms }: Props) {
+  const { translations: i18n } = deps
 
   return (
     <>

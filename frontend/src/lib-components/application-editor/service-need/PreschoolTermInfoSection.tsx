@@ -8,18 +8,19 @@ import type { Term } from 'lib-common/application/validations'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../../../localization'
+import type { ApplicationEditorDeps } from '../types'
 
 const Ul = styled.ul`
   margin: 0;
 `
 
 interface Props {
+  deps: ApplicationEditorDeps
   preschoolTerms: Term[] | undefined
 }
 
-export function PreschoolTermsInfoSection({ preschoolTerms }: Props) {
-  const i18n = useTranslation()
+export function PreschoolTermsInfoSection({ deps, preschoolTerms }: Props) {
+  const { translations: i18n } = deps
   return (
     <>
       <Label>
