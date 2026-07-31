@@ -4,7 +4,9 @@
 
 import React from 'react'
 
-import type { ServiceNeedFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ServiceNeedFormData } from 'lib-common/application/ApplicationFormData'
+import type { Term } from 'lib-common/application/validations'
+import type { ApplicationFormDataErrors } from 'lib-common/application/validations'
 import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
 import type {
@@ -16,9 +18,7 @@ import type LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
 import { useTranslation } from '../../../localization'
-import type { Term } from '../ApplicationEditor'
 import EditorSection from '../EditorSection'
-import type { ApplicationFormDataErrors } from '../validations'
 
 import AssistanceNeedSubSection from './AssistanceNeedSubSection'
 import PreferredStartSubSection from './PreferredStartSubSection'

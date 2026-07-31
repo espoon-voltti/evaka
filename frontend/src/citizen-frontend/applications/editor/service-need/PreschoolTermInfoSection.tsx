@@ -4,11 +4,11 @@
 
 import styled from 'styled-components'
 
+import type { Term } from 'lib-common/application/validations'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../localization'
-import type { Term } from '../ApplicationEditor'
 
 const Ul = styled.ul`
   margin: 0;

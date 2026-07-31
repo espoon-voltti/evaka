@@ -4,6 +4,8 @@
 
 import React from 'react'
 
+import type { ApplicationFormDataErrors } from 'lib-common/application/validations'
+import { applicationHasErrors } from 'lib-common/application/validations'
 import { getErrorCount } from 'lib-common/form-validation'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -14,9 +16,6 @@ import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../localization'
-
-import type { ApplicationFormDataErrors } from './validations'
-import { applicationHasErrors } from './validations'
 
 type HeadingProps = {
   type: ApplicationType

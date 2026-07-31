@@ -5,7 +5,11 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
+import {
+  getShiftCareAttachmentsValidStatus,
+  getUrgencyAttachmentValidStatus
+} from 'lib-common/application/validations'
 import type {
   ApplicationDetails as ApplicationDetailsGen,
   ApplicationType
@@ -15,14 +19,11 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { H1, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faInfo } from 'lib-icons'
 
 import { useTranslation } from '../../../localization'
-import {
-  getShiftCareAttachmentsValidStatus,
-  getUrgencyAttachmentValidStatus
-} from '../validations'
 
 import AdditionalDetailsSection from './AdditionalDetailsSection'
 import BasicsSection from './BasicsSection'
@@ -57,12 +58,14 @@ export default React.memo(function ApplicationVerificationViewDaycare({
   const missingUrgencyAttachments =
     getUrgencyAttachmentValidStatus(
       formData.serviceNeed.urgent,
-      formData.serviceNeed.urgencyAttachments
+      formData.serviceNeed.urgencyAttachments,
+      featureFlags
     ) === 'notify'
   const missingShiftCareAttachments =
     getShiftCareAttachmentsValidStatus(
       formData.serviceNeed.shiftCare,
-      formData.serviceNeed.shiftCareAttachments
+      formData.serviceNeed.shiftCareAttachments,
+      featureFlags
     ) === 'notify'
 
   const missingAttachments =

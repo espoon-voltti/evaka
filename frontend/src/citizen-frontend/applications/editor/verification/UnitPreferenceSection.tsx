@@ -5,7 +5,7 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import type { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UnitPreferenceFormData } from 'lib-common/application/ApplicationFormData'
 import { formatPersonName } from 'lib-common/names'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H2, H3, Label } from 'lib-components/typography'
