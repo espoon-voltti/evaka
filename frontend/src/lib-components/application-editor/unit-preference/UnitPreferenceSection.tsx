@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React, { useEffect } from 'react'
 
 import type { UnitPreferenceFormData } from 'lib-common/application/ApplicationFormData'
 import type { ApplicationFormDataErrors } from 'lib-common/application/validations'
@@ -10,14 +10,11 @@ import { getErrorCount } from 'lib-common/form-validation'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import type LocalDate from 'lib-common/local-date'
 import { constantQuery, useQuery } from 'lib-common/query'
-import EditorSection from 'lib-components/application-editor/EditorSection'
-import type { ApplicationEditorDeps } from 'lib-components/application-editor/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { faExclamation } from 'lib-icons'
 
-import { useTranslation } from '../../../localization'
-import { OverlayContext } from '../../../overlay/state'
-import { applicationUnitsQuery } from '../../queries'
+import EditorSection from '../EditorSection'
+import type { ApplicationEditorDeps } from '../types'
 
 import SiblingBasisSubSection from './SiblingBasisSubSection'
 import UnitsSubSection from './UnitsSubSection'
@@ -46,7 +43,7 @@ export type UnitPreferenceSectionProps = UnitPreferenceSectionCommonProps & {
 export default React.memo(function UnitPreferenceSection(
   props: UnitPreferenceSectionProps
 ) {
-  const t = useTranslation()
+  const { translations: t, applicationUnitsQuery, infoDialog } = props.deps
 
   const {
     updateFormData,
@@ -55,8 +52,6 @@ export default React.memo(function UnitPreferenceSection(
     preferredStartDate,
     shiftCare
   } = props
-
-  const { setInfoMessage, clearInfoMessage } = useContext(OverlayContext)
 
   const { data: units = null } = useQuery(
     preferredStartDate
@@ -84,13 +79,13 @@ export default React.memo(function UnitPreferenceSection(
         : prev.preferredUnits
 
       if (preferredUnits.length < prev.preferredUnits.length) {
-        setInfoMessage({
+        infoDialog.show({
           title: t.applications.editor.unitChangeWarning.title,
           text: t.applications.editor.unitChangeWarning.text,
           type: 'warning',
           icon: faExclamation,
           resolve: {
-            action: clearInfoMessage,
+            action: infoDialog.close,
             label: t.applications.editor.unitChangeWarning.ok
           }
         })
@@ -101,8 +96,7 @@ export default React.memo(function UnitPreferenceSection(
   }, [
     units,
     updateFormData,
-    setInfoMessage,
-    clearInfoMessage,
+    infoDialog,
     t.applications.editor.unitChangeWarning
   ])
 
