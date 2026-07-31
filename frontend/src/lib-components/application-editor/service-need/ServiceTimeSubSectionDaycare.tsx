@@ -24,15 +24,6 @@ import FileUpload from 'lib-components/molecules/FileUpload'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
-import { placementTypes } from 'lib-customizations/employee'
-
-import {
-  getAttachmentUrl,
-  applicationAttachment
-} from '../../../attachments/attachments'
-import { deleteAttachmentMutation } from '../../../attachments/queries'
-import { useLang, useTranslation } from '../../../localization'
 
 import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
@@ -45,14 +36,22 @@ type ServiceTimeSubSectionProps = Omit<ServiceNeedSectionProps, 'type'>
 const applicationType = 'DAYCARE'
 
 export default React.memo(function ServiceTimeSubSectionDaycare({
+  deps,
   formData,
   updateFormData,
   errors,
   verificationRequested,
   serviceNeedOptions
 }: ServiceTimeSubSectionProps) {
-  const [lang] = useLang()
-  const t = useTranslation()
+  const {
+    translations: t,
+    lang,
+    featureFlags,
+    placementTypes,
+    applicationAttachmentUploadHandler,
+    getAttachmentUrl,
+    deleteAttachmentMutation
+  } = deps
   const applicationId = useIdRouteParam<ApplicationId>('applicationId')
 
   const preferredStartDate = formData.preferredStartDate
@@ -65,7 +64,11 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
             )
           )
         : [],
-    [serviceNeedOptions, preferredStartDate]
+    [
+      featureFlags.daycareApplication.serviceNeedOption,
+      serviceNeedOptions,
+      preferredStartDate
+    ]
   )
   const fullTimeOptions = useMemo(
     () =>
@@ -96,6 +99,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
       }
     }
   }, [
+    featureFlags.daycareApplication.serviceNeedOption,
     preferredStartDate,
     formData.serviceNeedOption,
     optionsValidAtTime,
@@ -348,7 +352,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
           <FileUpload
             files={formData.shiftCareAttachments}
-            uploadHandler={applicationAttachment(
+            uploadHandler={applicationAttachmentUploadHandler(
               applicationId,
               'EXTENDED_CARE',
               deleteAttachment

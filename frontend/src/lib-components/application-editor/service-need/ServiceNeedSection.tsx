@@ -15,11 +15,10 @@ import type {
 } from 'lib-common/generated/api-types/application'
 import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import type LocalDate from 'lib-common/local-date'
-import EditorSection from 'lib-components/application-editor/EditorSection'
-import type { ApplicationEditorDeps } from 'lib-components/application-editor/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
-import { useTranslation } from '../../../localization'
+import EditorSection from '../EditorSection'
+import type { ApplicationEditorDeps } from '../types'
 
 import AssistanceNeedSubSection from './AssistanceNeedSubSection'
 import PreferredStartSubSection from './PreferredStartSubSection'
@@ -44,7 +43,7 @@ export type ServiceNeedSectionProps = {
 export default React.memo(function ServiceNeedSection(
   props: ServiceNeedSectionProps
 ) {
-  const t = useTranslation()
+  const { translations: t } = props.deps
 
   return (
     <EditorSection
