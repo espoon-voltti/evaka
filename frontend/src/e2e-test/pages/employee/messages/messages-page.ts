@@ -404,6 +404,10 @@ export class MessageEditor extends Element {
     await expect(this).toBeHidden()
   }
 
+  async assertMessageType(type: MessageType) {
+    await expect(this).toHaveAttribute('data-type', type)
+  }
+
   async assertSimpleViewVisible() {
     await expect(this.inputTitle).toBeVisible()
     await expect(this.messageTypeMessage).toBeHidden()

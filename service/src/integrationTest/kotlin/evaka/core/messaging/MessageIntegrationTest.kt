@@ -3097,6 +3097,23 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     inner class Bulletins {
 
         @Test
+        fun `bulletins cannot be related to an application`() {
+            val exception =
+                assertThrows<BadRequest> {
+                    postNewThread(
+                        title = "title",
+                        message = "content",
+                        messageType = MessageType.BULLETIN,
+                        sender = serviceWorkerAccount,
+                        recipients = listOf(MessageRecipient.Citizen(adult1.id)),
+                        user = serviceWorker.user,
+                        relatedApplicationId = ApplicationId(UUID.randomUUID()),
+                    )
+                }
+            assertEquals("Bulletins cannot be related to an application", exception.message)
+        }
+
+        @Test
         fun `a bulletin cannot be replied to by the recipients`() {
             // when a bulletin thread is created
             postNewThread(

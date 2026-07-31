@@ -11,9 +11,11 @@ import type { UpdateStateFn } from 'lib-common/form-state'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { Attachment } from 'lib-common/generated/api-types/attachment'
 import type {
+  AccountType,
   AuthorizedMessageAccount,
   DraftContent,
   MessageThreadFolder,
+  MessageType,
   PostMessageBody,
   PostMessageFilters,
   SelectableRecipientsResponse,
@@ -125,11 +127,30 @@ const getEmptyMessage = (
   type: 'MESSAGE' as const
 })
 
+// Municipal accounts can only send bulletins, and service worker messages are
+// always related to an application, which bulletins cannot be
+const messageTypeForSender = (
+  senderAccountType: AccountType | undefined,
+  type: MessageType
+): MessageType =>
+  senderAccountType === 'MUNICIPAL'
+    ? 'BULLETIN'
+    : senderAccountType === 'SERVICE_WORKER'
+      ? 'MESSAGE'
+      : type
+
 const getInitialMessage = (
   draft: DraftContent | undefined,
   sender: SelectOption<MessageAccountId>,
-  title: string
-): Message => (draft ? { ...draft, sender } : getEmptyMessage(sender, title))
+  title: string,
+  senderAccountType: AccountType | undefined
+): Message => {
+  const message = draft ? { ...draft, sender } : getEmptyMessage(sender, title)
+  return {
+    ...message,
+    type: messageTypeForSender(senderAccountType, message.type)
+  }
+}
 
 const areRequiredFieldsFilled = (
   msg: Message,
@@ -255,8 +276,18 @@ export default React.memo(function MessageEditor({
     }))
   )
 
+  const getSenderAccount = useCallback(
+    (senderId: string) =>
+      accounts.find(({ account }) => account.id === senderId),
+    [accounts]
+  )
   const [message, setMessage] = useState<Message>(() =>
-    getInitialMessage(draftContent, defaultSender, defaultTitle)
+    getInitialMessage(
+      draftContent,
+      defaultSender,
+      defaultTitle,
+      getSenderAccount(defaultSender.value)?.account.type
+    )
   )
   const [initialFolder, setInitialFolder] =
     useState<MessageThreadFolder | null>(null)
@@ -285,11 +316,6 @@ export default React.memo(function MessageEditor({
       )
     },
     [message, recipientTree, setDraft]
-  )
-  const getSenderAccount = useCallback(
-    (senderId: string) =>
-      accounts.find(({ account }) => account.id === senderId),
-    [accounts]
   )
   const senderAccountType = useMemo(
     () => getSenderAccount(message.sender.value)?.account.type,
@@ -335,10 +361,14 @@ export default React.memo(function MessageEditor({
         }
         return
       }
+      const type = messageTypeForSender(
+        getSenderAccount(sender.value)?.account.type,
+        message.type
+      )
       if (shouldResetSensitivity) {
-        updateMessage({ sender, sensitive: false })
+        updateMessage({ sender, type, sensitive: false })
       } else {
-        updateMessage({ sender })
+        updateMessage({ sender, type })
       }
 
       const accountRecipients = selectableRecipientsToNode(
@@ -355,7 +385,8 @@ export default React.memo(function MessageEditor({
       i18n.messages.recipientSelection.starters,
       message.type,
       selectedRecipients,
-      updateMessage
+      updateMessage,
+      getSenderAccount
     ]
   )
   const handleRecipientChange = useCallback(
@@ -478,12 +509,6 @@ export default React.memo(function MessageEditor({
       })),
     [accounts]
   )
-
-  useEffect(() => {
-    if (senderAccountType === 'MUNICIPAL' && message.type !== 'BULLETIN') {
-      updateMessage({ type: 'BULLETIN' })
-    }
-  }, [senderAccountType, message.type, updateMessage])
 
   const sendEnabled =
     !sending &&
@@ -608,6 +633,7 @@ export default React.memo(function MessageEditor({
         <Container
           data-qa="message-editor"
           data-status={draftState}
+          data-type={message.type}
           className={classNames({ fullscreen: expandedView })}
         >
           <TopBar>
