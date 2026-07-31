@@ -24,6 +24,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { desktopMinPx } from 'lib-components/breakpoints'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import {
   FixedSpaceColumn,
@@ -34,7 +35,6 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H1, H2, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 import useTitle from '../useTitle'
 

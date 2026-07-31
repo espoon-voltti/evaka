@@ -5,24 +5,24 @@
 import React from 'react'
 
 import { formatPersonName } from 'lib-common/names'
+import { focusElementAfterDelay } from 'lib-common/utils/focus'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
 import { H3, Label, P } from 'lib-components/typography'
+import { useScreenReaderMessage } from 'lib-components/utils/useScreenReaderMessage'
 import { Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 
-import { useScreenReaderMessage } from '../../../calendar/hooks'
-import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
-import { focusElementAfterDelay } from '../../../utils/focus'
 
 import type { ContactInfoSectionProps } from './ContactInfoSection'
 
