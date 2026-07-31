@@ -13,11 +13,11 @@ import { useQueryResult } from 'lib-common/query'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1, H2, P } from 'lib-components/typography'
+import { useScreenReaderMessage } from 'lib-components/utils/useScreenReaderMessage'
 import { Gap } from 'lib-components/white-space'
 import { farMap } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
-import { useScreenReaderMessage } from '../calendar/hooks'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 

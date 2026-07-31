@@ -7,12 +7,12 @@ import styled from 'styled-components'
 
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import TextArea from 'lib-components/atoms/form/TextArea'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
-import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
 
 import type { ServiceNeedSectionProps } from './ServiceNeedSection'

@@ -20,11 +20,11 @@ import {
 import LanguageFilterChips from 'lib-components/molecules/LanguageFilterChips'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
+import { useScreenReaderMessage } from 'lib-components/utils/useScreenReaderMessage'
 import { Gap } from 'lib-components/white-space'
 import { getMaxPreferredUnits } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
-import { useScreenReaderMessage } from '../../../calendar/hooks'
 import { useTranslation } from '../../../localization'
 
 import PreferredUnitBox from './PreferredUnitBox'

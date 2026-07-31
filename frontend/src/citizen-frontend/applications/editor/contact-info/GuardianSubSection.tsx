@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { useQueryResult } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
 import {
   FixedSpaceColumn,
@@ -21,7 +22,6 @@ import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { renderResult } from '../../../async-rendering'
-import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
 import { emailVerificationStatusQuery } from '../../../personal-details/queries'
 

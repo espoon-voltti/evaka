@@ -23,6 +23,7 @@ import {
   useSelectMutation
 } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
@@ -36,7 +37,6 @@ import { fasExclamationTriangle } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import { UserContext } from '../../state/user'
-import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 import { renderResult } from '../async-rendering'
 
 import Actions from './Actions'
