@@ -9,20 +9,15 @@ import type { RenderResultFn } from '../async-rendering'
 import { renderResult } from '../async-rendering'
 
 import { PinLogin } from './PinLogin'
-import { PinLoginRequired } from './api'
-
-function isResultT<T>(res: Result<T | PinLoginRequired>): res is Result<T> {
-  return !(res.isSuccess && res.value === PinLoginRequired)
-}
 
 export function renderPinRequiringResult<T>(
-  result: Result<T | PinLoginRequired>,
+  result: Result<T>,
   unitId: DaycareId,
   renderer: RenderResultFn<T>
 ) {
-  return isResultT(result) ? (
-    renderResult(result, renderer)
-  ) : (
+  return result.isFailure && result.errorCode === 'PIN_LOGIN_REQUIRED' ? (
     <PinLogin unitId={unitId} />
+  ) : (
+    renderResult(result, renderer)
   )
 }

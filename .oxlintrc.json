@@ -43,7 +43,7 @@
 
     "oxc/no-map-spread": "off",
 
-    "react/exhaustive-deps": ["error", { "additionalHooks": "(useApiState)" }],
+    "react/exhaustive-deps": "error",
     "react/forward-ref-uses-ref": "error",
     "react/display-name": "error",
     "react/iframe-missing-sandbox": "error",

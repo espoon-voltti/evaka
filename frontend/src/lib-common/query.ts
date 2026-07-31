@@ -239,6 +239,7 @@ export interface QueryOptions {
   refetchOnWindowFocus?: boolean | 'always'
   refetchOnReconnect?: boolean | 'always'
   staleTime?: number
+  gcTime?: number
   refetchInterval?: number
 }
 
