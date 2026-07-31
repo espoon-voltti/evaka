@@ -4,7 +4,8 @@
 
 import React from 'react'
 
-import type { ContactInfoFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ContactInfoFormData } from 'lib-common/application/ApplicationFormData'
+import type { ApplicationFormDataErrors } from 'lib-common/application/validations'
 import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
@@ -12,7 +13,6 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
 import { useTranslation } from '../../../localization'
 import EditorSection from '../EditorSection'
-import type { ApplicationFormDataErrors } from '../validations'
 
 import ChildSubSection from './ChildSubSection'
 import GuardianSubSection from './GuardianSubSection'

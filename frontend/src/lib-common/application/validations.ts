@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
+import type { FeatureFlags } from 'lib-common/feature-flags'
+import type FiniteDateRange from 'lib-common/finite-date-range'
 import type { ErrorKey, ErrorsOf } from 'lib-common/form-validation'
 import {
   email,
@@ -22,9 +24,11 @@ import type {
   ApplicationDetails as ApplicationDetailsGen
 } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
-import { featureFlags } from 'lib-customizations/citizen'
 
-import type { Term } from './ApplicationEditor'
+export interface Term {
+  term: FiniteDateRange
+  extendedTerm: FiniteDateRange
+}
 
 export type ApplicationFormDataErrors = {
   [section in keyof ApplicationFormData]: ErrorsOf<ApplicationFormData[section]>
@@ -112,7 +116,8 @@ const connectedDaycarePreferredStartDateValidator =
 
 export const getUrgencyAttachmentValidStatus = (
   urgent: boolean,
-  urgencyAttachments: ApplicationAttachment[]
+  urgencyAttachments: ApplicationAttachment[],
+  featureFlags: FeatureFlags
 ) =>
   urgent && urgencyAttachments.length === 0 && featureFlags.urgencyAttachments
     ? featureFlags.requireAttachments
@@ -122,7 +127,8 @@ export const getUrgencyAttachmentValidStatus = (
 
 export const getShiftCareAttachmentsValidStatus = (
   shiftCare: boolean,
-  shiftCareAttachments: ApplicationAttachment[]
+  shiftCareAttachments: ApplicationAttachment[],
+  featureFlags: FeatureFlags
 ) =>
   shiftCare && shiftCareAttachments.length === 0
     ? featureFlags.requireAttachments
@@ -133,6 +139,7 @@ export const getShiftCareAttachmentsValidStatus = (
 export const validateApplication = (
   apiData: ApplicationDetailsGen,
   form: ApplicationFormData,
+  featureFlags: FeatureFlags,
   terms?: Term[]
 ): ApplicationFormDataErrors => {
   const requireFullFamily =
@@ -212,7 +219,8 @@ export const validateApplication = (
       urgencyAttachments:
         getUrgencyAttachmentValidStatus(
           form.serviceNeed.urgent,
-          form.serviceNeed.urgencyAttachments
+          form.serviceNeed.urgencyAttachments,
+          featureFlags
         ) === 'require'
           ? {
               arrayErrors: 'required',
@@ -225,7 +233,8 @@ export const validateApplication = (
       shiftCareAttachments:
         getShiftCareAttachmentsValidStatus(
           form.serviceNeed.shiftCare,
-          form.serviceNeed.shiftCareAttachments
+          form.serviceNeed.shiftCareAttachments,
+          featureFlags
         ) === 'require'
           ? {
               arrayErrors:

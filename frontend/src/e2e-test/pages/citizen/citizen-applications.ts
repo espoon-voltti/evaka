@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
 import type { ServiceNeedOption } from 'lib-common/generated/api-types/application'
 import type { Language } from 'lib-common/generated/api-types/daycare'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'

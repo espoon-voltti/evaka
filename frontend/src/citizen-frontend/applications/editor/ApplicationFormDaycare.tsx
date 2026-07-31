@@ -4,7 +4,7 @@
 
 import React, { useCallback } from 'react'
 
-import type { UnitPreferenceFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { UnitPreferenceFormData } from 'lib-common/application/ApplicationFormData'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/citizen'

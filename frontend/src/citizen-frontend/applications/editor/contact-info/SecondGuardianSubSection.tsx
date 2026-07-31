@@ -7,7 +7,8 @@ import React from 'react'
 import type {
   ContactInfoFormData,
   SelectableOtherGuardianAgreementStatus
-} from 'lib-common/api-types/application/ApplicationFormData'
+} from 'lib-common/application/ApplicationFormData'
+import type { ApplicationFormDataErrors } from 'lib-common/application/validations'
 import type { UpdateStateFn } from 'lib-common/form-state'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -20,7 +21,6 @@ import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../localization'
-import type { ApplicationFormDataErrors } from '../validations'
 
 type SecondGuardianSubSectionProps = {
   type: ApplicationType

@@ -9,12 +9,21 @@ import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
-import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
 import {
   apiDataToFormData,
   formDataToApiData
-} from 'lib-common/api-types/application/ApplicationFormData'
-import type FiniteDateRange from 'lib-common/finite-date-range'
+} from 'lib-common/application/ApplicationFormData'
+import type {
+  ApplicationFormDataErrors,
+  Term
+} from 'lib-common/application/validations'
+import {
+  applicationHasErrors,
+  maxPreferredStartDate,
+  minPreferredStartDate,
+  validateApplication
+} from 'lib-common/application/validations'
 import type {
   ApplicationDetails as ApplicationDetailsGen,
   CitizenChildren
@@ -56,13 +65,6 @@ import {
 import ApplicationFormClub from './ApplicationFormClub'
 import ApplicationFormDaycare from './ApplicationFormDaycare'
 import ApplicationFormPreschool from './ApplicationFormPreschool'
-import type { ApplicationFormDataErrors } from './validations'
-import {
-  applicationHasErrors,
-  maxPreferredStartDate,
-  minPreferredStartDate,
-  validateApplication
-} from './validations'
 import ApplicationVerificationView from './verification/ApplicationVerificationView'
 
 type ApplicationEditorContentProps = {
@@ -83,11 +85,6 @@ export type ApplicationFormProps = {
   minDate: LocalDate
   maxDate: LocalDate
   terms?: Term[]
-}
-
-export interface Term {
-  term: FiniteDateRange
-  extendedTerm: FiniteDateRange
 }
 
 const StickyContainer = styled(Container)`
@@ -167,7 +164,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     useState<boolean>(application.allowOtherGuardianAccess)
 
   const errors = useMemo<ApplicationFormDataErrors>(
-    () => validateApplication(application, formData, terms),
+    () => validateApplication(application, formData, featureFlags, terms),
     [application, formData, terms]
   )
 

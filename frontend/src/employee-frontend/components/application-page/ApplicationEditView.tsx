@@ -9,7 +9,7 @@ import styled from 'styled-components'
 import { Link } from 'wouter'
 
 import type { Result } from 'lib-common/api'
-import type { SelectableOtherGuardianAgreementStatus } from 'lib-common/api-types/application/ApplicationFormData'
+import type { SelectableOtherGuardianAgreementStatus } from 'lib-common/application/ApplicationFormData'
 import { swapElements } from 'lib-common/array'
 import DateRange from 'lib-common/date-range'
 import type {

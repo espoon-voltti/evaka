@@ -5,7 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import type { AdditionalDetailsFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { AdditionalDetailsFormData } from 'lib-common/application/ApplicationFormData'
+import type { ApplicationFormDataErrors } from 'lib-common/application/validations'
 import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
@@ -18,7 +19,6 @@ import { Gap } from 'lib-components/white-space'
 import { useTranslation } from '../../localization'
 
 import EditorSection from './EditorSection'
-import type { ApplicationFormDataErrors } from './validations'
 
 type Props = {
   formData: AdditionalDetailsFormData
