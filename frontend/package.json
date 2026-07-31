@@ -83,7 +83,7 @@
     "oxlint": "1.74.0",
     "oxlint-tsgolint": "7.0.2001",
     "playwright": "1.61.1",
-    "postcss": "8.5.21",
+    "postcss": "8.5.23",
     "postcss-preset-env": "11.3.2",
     "rollup": "4.62.3",
     "terser": "5.49.0",
@@ -111,7 +111,7 @@
   },
   "resolutions": {
     "@react-leaflet/core@npm:^3.0.0": "patch:@react-leaflet/core@npm%3A3.0.0#~/.yarn/patches/@react-leaflet-core-npm-3.0.0-4e3f2d62b5.patch",
-    "postcss": "8.5.21",
+    "postcss": "8.5.23",
     "tar": "7.5.21"
   },
   "browserslist": [
