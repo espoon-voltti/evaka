@@ -33,6 +33,7 @@ import LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
+import type { ApplicationEditorDeps } from 'lib-components/application-editor/types'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton, {
@@ -65,6 +66,7 @@ import {
 import ApplicationFormClub from './ApplicationFormClub'
 import ApplicationFormDaycare from './ApplicationFormDaycare'
 import ApplicationFormPreschool from './ApplicationFormPreschool'
+import { useApplicationEditorDeps } from './useApplicationEditorDeps'
 import ApplicationVerificationView from './verification/ApplicationVerificationView'
 
 type ApplicationEditorContentProps = {
@@ -85,6 +87,7 @@ export type ApplicationFormProps = {
   minDate: LocalDate
   maxDate: LocalDate
   terms?: Term[]
+  deps: ApplicationEditorDeps
 }
 
 const StickyContainer = styled(Container)`
@@ -111,6 +114,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   citizenChildren
 }: ApplicationEditorContentProps) {
   const t = useTranslation()
+  const deps = useApplicationEditorDeps()
   useTitle(t, t.applications.editor.heading.title[application.type])
   const [, navigate] = useLocation()
 
@@ -333,6 +337,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       case 'DAYCARE':
         return (
           <ApplicationFormDaycare
+            deps={deps}
             application={application}
             formData={formData}
             setFormData={setFormData}
@@ -347,6 +352,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       case 'PRESCHOOL':
         return (
           <ApplicationFormPreschool
+            deps={deps}
             application={application}
             formData={formData}
             setFormData={setFormData}
@@ -362,6 +368,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       case 'CLUB':
         return (
           <ApplicationFormClub
+            deps={deps}
             application={application}
             formData={formData}
             setFormData={setFormData}
