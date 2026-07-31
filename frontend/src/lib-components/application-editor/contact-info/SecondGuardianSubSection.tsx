@@ -20,9 +20,10 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../../../localization'
+import type { ApplicationEditorDeps } from '../types'
 
 type SecondGuardianSubSectionProps = {
+  deps: ApplicationEditorDeps
   type: ApplicationType
   formData: ContactInfoFormData
   updateFormData: UpdateStateFn<ContactInfoFormData>
@@ -32,6 +33,7 @@ type SecondGuardianSubSectionProps = {
 }
 
 export default React.memo(function SecondGuardianSubSection({
+  deps,
   type,
   formData,
   updateFormData,
@@ -39,7 +41,7 @@ export default React.memo(function SecondGuardianSubSection({
   verificationRequested,
   otherGuardianStatus
 }: SecondGuardianSubSectionProps) {
-  const t = useTranslation()
+  const { translations: t } = deps
 
   const agreementStatuses: SelectableOtherGuardianAgreementStatus[] = [
     'AGREED',

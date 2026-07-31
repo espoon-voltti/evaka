@@ -15,17 +15,16 @@ import {
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../../../localization'
-
 import type { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function OtherPartnerSubSection({
+  deps,
   formData,
   updateFormData,
   errors,
   verificationRequested
 }: ContactInfoSectionProps) {
-  const t = useTranslation()
+  const { translations: t } = deps
 
   return (
     <>

@@ -5,7 +5,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import { errorToInputInfo } from 'lib-components/input-info-helper'
@@ -21,23 +21,26 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { renderResult } from '../../../async-rendering'
-import { useLang, useTranslation } from '../../../localization'
-import { emailVerificationStatusQuery } from '../../../personal-details/queries'
-
 import type { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function GuardianSubSection({
+  deps,
   formData,
   updateFormData,
   errors,
   verificationRequested
 }: ContactInfoSectionProps) {
-  const t = useTranslation()
-  const [lang] = useLang()
-  const verifiedEmail = useQueryResult(emailVerificationStatusQuery()).map(
-    (res) => res.verifiedEmail
-  )
+  const {
+    translations: t,
+    lang,
+    emailVerificationStatusQuery,
+    renderResult
+  } = deps
+  const verifiedEmail = useQueryResult(
+    emailVerificationStatusQuery !== null
+      ? emailVerificationStatusQuery()
+      : constantQuery(null)
+  ).map((res) => (res === null ? null : res.verifiedEmail))
 
   if (
     verifiedEmail.isSuccess &&
