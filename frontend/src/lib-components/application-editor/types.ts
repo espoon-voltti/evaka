@@ -6,9 +6,15 @@ import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import type { ReactElement } from 'react'
 
 import type { Result } from 'lib-common/api'
+import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
+import type {
+  ApplicationFormDataErrors,
+  Term
+} from 'lib-common/application/validations'
 import type { FeatureFlags } from 'lib-common/feature-flags'
 import type {
   ApplicationAttachmentType,
+  ApplicationDetails,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
 import type {
@@ -83,4 +89,20 @@ export interface ApplicationEditorDeps {
     }) => void
     close: () => void
   }
+}
+
+export type ApplicationFormProps = {
+  application: ApplicationDetails
+  formData: ApplicationFormData
+  setFormData: (
+    update: (old: ApplicationFormData) => ApplicationFormData
+  ) => void
+  errors: ApplicationFormDataErrors
+  verificationRequested: boolean
+  alertTrigger: number
+  isInvalidDate: ((localDate: LocalDate) => string | null) | undefined
+  minDate: LocalDate
+  maxDate: LocalDate
+  terms?: Term[]
+  deps: ApplicationEditorDeps
 }
