@@ -15,10 +15,11 @@ import type {
 } from 'lib-common/generated/api-types/application'
 import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import type LocalDate from 'lib-common/local-date'
+import EditorSection from 'lib-components/application-editor/EditorSection'
+import type { ApplicationEditorDeps } from 'lib-components/application-editor/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
 import { useTranslation } from '../../../localization'
-import EditorSection from '../EditorSection'
 
 import AssistanceNeedSubSection from './AssistanceNeedSubSection'
 import PreferredStartSubSection from './PreferredStartSubSection'
@@ -26,6 +27,7 @@ import ServiceTimeSubSectionDaycare from './ServiceTimeSubSectionDaycare'
 import ServiceTimeSubSectionPreschool from './ServiceTimeSubSectionPreschool'
 
 export type ServiceNeedSectionProps = {
+  deps: ApplicationEditorDeps
   status: ApplicationStatus
   isInvalidDate: ((localDate: LocalDate) => string | null) | undefined
   minDate: LocalDate
@@ -46,6 +48,7 @@ export default React.memo(function ServiceNeedSection(
 
   return (
     <EditorSection
+      deps={props.deps}
       title={t.applications.editor.serviceNeed.title}
       validationErrors={
         props.verificationRequested ? getErrorCount(props.errors) : 0

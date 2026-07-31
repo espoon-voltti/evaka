@@ -4,16 +4,17 @@
 
 import React, { useCallback } from 'react'
 
+import AdditionalDetailsSection from 'lib-components/application-editor/AdditionalDetailsSection'
+import Heading from 'lib-components/application-editor/Heading'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
-import AdditionalDetailsSection from './AdditionalDetailsSection'
 import type { ApplicationFormProps } from './ApplicationEditor'
-import Heading from './Heading'
 import ContactInfoSection from './contact-info/ContactInfoSection'
 import ServiceNeedSection from './service-need/ServiceNeedSection'
 import UnitPreferenceSection from './unit-preference/UnitPreferenceSection'
 
 export default React.memo(function ApplicationFormClub({
+  deps,
   application,
   formData,
   setFormData,
@@ -30,6 +31,7 @@ export default React.memo(function ApplicationFormClub({
   return (
     <FixedSpaceColumn $spacing="s">
       <Heading
+        deps={deps}
         type={applicationType}
         transferApplication={application.transferApplication}
         firstName={application.form.child.person.firstName}
@@ -39,6 +41,7 @@ export default React.memo(function ApplicationFormClub({
       />
 
       <ServiceNeedSection
+        deps={deps}
         status={application.status}
         isInvalidDate={isInvalidDate}
         minDate={minDate}
@@ -61,6 +64,7 @@ export default React.memo(function ApplicationFormClub({
       />
 
       <UnitPreferenceSection
+        deps={deps}
         formData={formData.unitPreference}
         updateFormData={useCallback(
           (fn) =>
@@ -82,6 +86,7 @@ export default React.memo(function ApplicationFormClub({
       />
 
       <ContactInfoSection
+        deps={deps}
         type={applicationType}
         formData={formData.contactInfo}
         updateFormData={(data) =>
@@ -106,6 +111,7 @@ export default React.memo(function ApplicationFormClub({
       />
 
       <AdditionalDetailsSection
+        deps={deps}
         formData={formData.additionalDetails}
         updateFormData={(data) =>
           setFormData((old) => ({

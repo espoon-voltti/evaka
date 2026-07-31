@@ -15,9 +15,10 @@ import { PersonName } from 'lib-components/molecules/PersonNames'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-import { useTranslation } from '../../localization'
+import type { ApplicationEditorDeps } from './types'
 
 type HeadingProps = {
+  deps: ApplicationEditorDeps
   type: ApplicationType
   firstName: string
   lastName: string
@@ -29,13 +30,14 @@ type HeadingProps = {
   alertTrigger: number
 }
 export default React.memo(function Heading({
+  deps,
   type,
   errors,
   transferApplication,
   alertTrigger,
   ...name
 }: HeadingProps) {
-  const t = useTranslation()
+  const { translations: t } = deps
 
   return (
     <ContentArea $opaque $paddingVertical="L">

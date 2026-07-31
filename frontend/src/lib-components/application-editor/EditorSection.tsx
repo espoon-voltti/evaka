@@ -4,18 +4,18 @@
 
 import type { ReactNode } from 'react'
 import React, { useCallback, useRef, useState } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
 import { scrollToRef } from 'lib-common/utils/scrolling'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import colors from 'lib-customizations/common'
 
-import { useLang, useTranslation } from '../../localization'
+import type { ApplicationEditorDeps } from './types'
 
 type Props = {
+  deps: ApplicationEditorDeps
   title: string
   validationErrors: number
   openInitially?: boolean
@@ -24,8 +24,8 @@ type Props = {
 }
 
 export default React.memo(function EditorSection(props: Props) {
-  const i18n = useTranslation()
-  const [lang] = useLang()
+  const { translations: i18n, lang } = props.deps
+  const { colors } = useTheme()
   const [open, setOpen] = useState(props.openInitially === true)
   const ref = useRef<HTMLDivElement>(null)
   const toggleOpen = useCallback(() => {

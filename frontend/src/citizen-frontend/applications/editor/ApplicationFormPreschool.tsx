@@ -6,20 +6,21 @@ import React, { useCallback } from 'react'
 
 import type { UnitPreferenceFormData } from 'lib-common/application/ApplicationFormData'
 import { constantQuery, useQueryResult } from 'lib-common/query'
+import AdditionalDetailsSection from 'lib-components/application-editor/AdditionalDetailsSection'
+import Heading from 'lib-components/application-editor/Heading'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import { renderResult } from '../../async-rendering'
 import { serviceNeedOptionPublicInfosQuery } from '../queries'
 
-import AdditionalDetailsSection from './AdditionalDetailsSection'
 import type { ApplicationFormProps } from './ApplicationEditor'
-import Heading from './Heading'
 import ContactInfoSection from './contact-info/ContactInfoSection'
 import ServiceNeedSection from './service-need/ServiceNeedSection'
 import UnitPreferenceSection from './unit-preference/UnitPreferenceSection'
 
 export default React.memo(function ApplicationFormPreschool({
+  deps,
   application,
   formData,
   setFormData,
@@ -62,6 +63,7 @@ export default React.memo(function ApplicationFormPreschool({
   return renderResult(serviceNeedOptions, (serviceNeedOptions) => (
     <FixedSpaceColumn $spacing="s">
       <Heading
+        deps={deps}
         type={applicationType}
         transferApplication={application.transferApplication}
         firstName={application.form.child.person.firstName}
@@ -71,6 +73,7 @@ export default React.memo(function ApplicationFormPreschool({
       />
 
       <ServiceNeedSection
+        deps={deps}
         status={application.status}
         isInvalidDate={isInvalidDate}
         minDate={minDate}
@@ -97,6 +100,7 @@ export default React.memo(function ApplicationFormPreschool({
       />
 
       <UnitPreferenceSection
+        deps={deps}
         formData={formData.unitPreference}
         updateFormData={updateUnitPreferenceFormData}
         applicationType={applicationType}
@@ -108,6 +112,7 @@ export default React.memo(function ApplicationFormPreschool({
       />
 
       <ContactInfoSection
+        deps={deps}
         type={applicationType}
         formData={formData.contactInfo}
         updateFormData={(data) =>
@@ -136,6 +141,7 @@ export default React.memo(function ApplicationFormPreschool({
       />
 
       <AdditionalDetailsSection
+        deps={deps}
         formData={formData.additionalDetails}
         updateFormData={(data) =>
           setFormData((old) =>
