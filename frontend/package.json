@@ -74,7 +74,7 @@
     "@types/react-dom": "19.2.3",
     "@types/stylis": "4.2.7",
     "@vitejs/plugin-legacy": "8.2.2",
-    "@vitejs/plugin-react": "6.0.3",
+    "@vitejs/plugin-react": "6.0.4",
     "concurrently": "10.0.4",
     "eslint-plugin-lodash": "8.0.0",
     "jsdom": "29.1.1",
