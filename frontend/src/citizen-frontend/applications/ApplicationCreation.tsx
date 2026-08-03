@@ -202,9 +202,7 @@ export default React.memo(function ApplicationCreation() {
 
 const PreschoolDaycareInfo = styled.p`
   margin: 0;
-  margin-left: calc(
-    36px + ${defaultMargins.s}
-  ); // width of the radio input's icon + the margin on label
+  margin-left: calc(36px + ${defaultMargins.s}); // width of the radio input's icon + the margin on label
   font-weight: ${fontWeights.semibold};
   font-size: 0.875em;
 `

@@ -441,8 +441,7 @@ const Zindex = styled.div`
 `
 
 const ChildBackground = styled.div<{ $status: AttendanceStatus }>`
-  background-color: ${(p) =>
-    attendanceColors[p.$status]}48; // hex 48 is 0.3 alpha
+  background-color: ${(p) => attendanceColors[p.$status]}48; // hex 48 is 0.3 alpha
   display: flex;
   flex-direction: column;
   align-items: center;
