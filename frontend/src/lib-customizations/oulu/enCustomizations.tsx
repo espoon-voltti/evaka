@@ -473,9 +473,10 @@ const fi: DeepPartial<Translations> = {
             DAYCARE: 'Daily time in early childhood education and care'
           }
         },
-        preparatory: 'The child needs support to learn Finnish.',
+        preparatory:
+          'My child was born outside Finland and needs support to learn Finnish. The child’s current daycare centre has recommended instruction in preparation for basic education for the child, and I am also applying for a place in it for the child.',
         preparatoryInfo:
-          "A language assessment is conducted for each child whose mother tongue is not Finnish, Swedish, or Sami. This assessment will serve as a basis for constructing a Finnish as a Second Language (S2) curriculum. S2 education is integrated into daily activities according to the child's needs."
+          'Instruction in preparation for basic education is open to children who were born outside Finland and who do not yet have Finnish language skills or whose Finnish language skills are still developing. Instruction in preparation for basic education is offered to children of pre-primary education age only in Finnish-speaking municipal pre-primary education groups.'
       },
       contactInfo: {
         familyInfo: undefined,
