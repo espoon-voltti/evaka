@@ -14,6 +14,7 @@ import type {
   ApplicationType
 } from 'lib-common/generated/api-types/application'
 import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
@@ -27,6 +28,7 @@ import ServiceTimeSubSectionPreschool from './ServiceTimeSubSectionPreschool'
 
 export type ServiceNeedSectionProps = {
   deps: ApplicationEditorDeps
+  applicationId: ApplicationId
   status: ApplicationStatus
   isInvalidDate: ((localDate: LocalDate) => string | null) | undefined
   minDate: LocalDate

@@ -29,6 +29,7 @@ export function useApplicationEditorDeps(): ApplicationEditorDeps {
 
   return useMemo(
     () => ({
+      actor: 'citizen',
       lang,
       translations: t,
       featureFlags,
