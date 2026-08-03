@@ -28,6 +28,7 @@ import {
 } from 'lib-common/form/hooks'
 import type { Form, StateOf } from 'lib-common/form/types'
 import { combine, ValidationSuccess } from 'lib-common/form/types'
+import type { ChildServiceNeedInfo } from 'lib-common/generated/api-types/absence'
 import type {
   Child,
   DailyReservationRequest
@@ -54,6 +55,7 @@ import { faUserMinus } from 'lib-icons'
 import { faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
+import { renderResult } from '../../async-rendering'
 import { childServiceNeedsQuery, postReservationsMutation } from '../queries'
 
 interface Props {
@@ -283,28 +285,37 @@ function resetIrregularTimes(
   }
 }
 
-export default React.memo(function ReservationModalSingleChild({
-  onClose,
-  child,
-  normalOperationDays,
-  shiftCareOperationDays
-}: Props) {
-  const { i18n, lang } = useTranslation()
-
+export default React.memo(function ReservationModalSingleChild(props: Props) {
   const childServiceNeeds = useQueryResult(
     childServiceNeedsQuery({
-      childId: child.id,
+      childId: props.child.id,
       from: LocalDate.todayInSystemTz()
     })
   )
 
+  return renderResult(childServiceNeeds, (serviceNeeds) => (
+    <ReservationForm {...props} childServiceNeeds={serviceNeeds} />
+  ))
+})
+
+interface ReservationFormProps extends Props {
+  childServiceNeeds: ChildServiceNeedInfo[]
+}
+
+const ReservationForm = React.memo(function ReservationForm({
+  onClose,
+  child,
+  normalOperationDays,
+  shiftCareOperationDays,
+  childServiceNeeds
+}: ReservationFormProps) {
+  const { i18n, lang } = useTranslation()
+
   const getIncludedDaysForRange = useCallback(
     (selectedRange: FiniteDateRange): number[] => {
-      if (!childServiceNeeds.isSuccess) return []
-
       const allowedDays = new Set<number>()
 
-      for (const serviceNeed of childServiceNeeds.value) {
+      for (const serviceNeed of childServiceNeeds) {
         if (!serviceNeed.validDuring.overlaps(selectedRange)) continue
 
         const hasShiftCare = serviceNeed.shiftCare !== 'NONE'
@@ -329,9 +340,7 @@ export default React.memo(function ReservationModalSingleChild({
       ? new Set(shiftCareOperationDays)
       : undefined
     return (date: LocalDate): boolean => {
-      if (!childServiceNeeds.isSuccess) return false
-
-      const serviceNeed = childServiceNeeds.value.find((sn) =>
+      const serviceNeed = childServiceNeeds.find((sn) =>
         sn.validDuring.includes(date)
       )
 
