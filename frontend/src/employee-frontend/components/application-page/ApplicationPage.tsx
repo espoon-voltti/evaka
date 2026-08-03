@@ -107,6 +107,15 @@ export default React.memo(function ApplicationPage() {
     ApplicationAttachment[]
   >([])
 
+  // Must be referentially stable: shared editor sections key effects on the
+  // update callbacks derived from this (e.g. the stale-preferred-unit
+  // cleanup), and an unstable identity re-triggers them on every render.
+  const updateFormData = useCallback(
+    (update: (old: ApplicationFormData) => ApplicationFormData) =>
+      setFormData((prev) => (prev === undefined ? prev : update(prev))),
+    []
+  )
+
   const application = useQueryResult(applicationDetailsQuery({ applicationId }))
 
   const formDataInitialized = formData !== undefined
@@ -221,11 +230,7 @@ export default React.memo(function ApplicationPage() {
                   <ApplicationEditView
                     application={applicationData.application}
                     formData={formData}
-                    setFormData={(update) =>
-                      setFormData((prev) =>
-                        prev === undefined ? prev : update(prev)
-                      )
-                    }
+                    setFormData={updateFormData}
                     errors={errors}
                     terms={terms}
                     guardians={applicationData.guardians}
