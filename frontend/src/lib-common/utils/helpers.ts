@@ -48,9 +48,3 @@ declare global {
     keepSessionAliveThrottleTime?: number
   }
 }
-
-/**
- * @deprecated use HelsinkiDateTime.now() instead
- */
-export const mockNow = (): Date | undefined =>
-  typeof window !== 'undefined' ? window.evaka?.mockedTime : undefined
