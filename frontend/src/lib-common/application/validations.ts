@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
+import type {
+  ApplicationEditorActor,
+  ApplicationFormData
+} from 'lib-common/application/ApplicationFormData'
 import type { FeatureFlags } from 'lib-common/feature-flags'
 import type FiniteDateRange from 'lib-common/finite-date-range'
 import type { ErrorKey, ErrorsOf } from 'lib-common/form-validation'
@@ -79,6 +82,18 @@ const preferredStartDateValidator =
       ? undefined
       : err
 
+const termMembershipValidator =
+  (terms?: Term[]) =>
+  (
+    val: LocalDate | null,
+    err: ErrorKey = 'preferredStartDate'
+  ): ErrorKey | undefined =>
+    val &&
+    (terms === undefined ||
+      terms.some((term) => term.extendedTerm.includes(val)))
+      ? undefined
+      : err
+
 const connectedDaycarePreferredStartDateValidator =
   (preferredStartDate: LocalDate | null, terms?: Term[]) =>
   (
@@ -140,8 +155,11 @@ export const validateApplication = (
   apiData: ApplicationDetailsGen,
   form: ApplicationFormData,
   featureFlags: FeatureFlags,
+  actor: ApplicationEditorActor,
   terms?: Term[]
 ): ApplicationFormDataErrors => {
+  const citizen = actor === 'citizen'
+
   const requireFullFamily =
     apiData.type === 'DAYCARE' ||
     (apiData.type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
@@ -156,12 +174,14 @@ export const validateApplication = (
       preferredStartDate: validate(
         form.serviceNeed.preferredStartDate,
         required,
-        preferredStartDateValidator(
-          apiData.status !== 'CREATED'
-            ? apiData.form.preferences.preferredStartDate
-            : null,
-          terms
-        )
+        citizen
+          ? preferredStartDateValidator(
+              apiData.status !== 'CREATED'
+                ? apiData.form.preferences.preferredStartDate
+                : null,
+              terms
+            )
+          : termMembershipValidator(terms)
       ),
       connectedDaycarePreferredStartDate:
         apiData.type === 'PRESCHOOL' &&
@@ -203,6 +223,7 @@ export const validateApplication = (
             regexp(form.serviceNeed.endTime, TIME_REGEXP, 'timeFormat')
           : undefined,
       partTimeLimit:
+        citizen &&
         apiData.type === 'DAYCARE' &&
         featureFlags.daycareApplication.dailyTimes &&
         form.serviceNeed.partTime
@@ -217,6 +238,7 @@ export const validateApplication = (
         ? required(form.serviceNeed.assistanceDescription)
         : undefined,
       urgencyAttachments:
+        citizen &&
         getUrgencyAttachmentValidStatus(
           form.serviceNeed.urgent,
           form.serviceNeed.urgencyAttachments,
@@ -231,6 +253,7 @@ export const validateApplication = (
             }
           : undefined,
       shiftCareAttachments:
+        citizen &&
         getShiftCareAttachmentsValidStatus(
           form.serviceNeed.shiftCare,
           form.serviceNeed.shiftCareAttachments,
@@ -250,15 +273,20 @@ export const validateApplication = (
     },
     unitPreference: {
       siblingName:
-        form.unitPreference.siblingBasis && !siblingSelected
+        citizen && form.unitPreference.siblingBasis && !siblingSelected
           ? validate(form.unitPreference.siblingName, required)
           : undefined,
-      siblingSsn:
-        form.unitPreference.siblingBasis && !siblingSelected
+      siblingSsn: citizen
+        ? form.unitPreference.siblingBasis && !siblingSelected
           ? validate(form.unitPreference.siblingSsn, required, ssn)
+          : undefined
+        : form.unitPreference.siblingBasis && form.unitPreference.siblingSsn
+          ? ssn(form.unitPreference.siblingSsn)
           : undefined,
       siblingUnit:
-        form.unitPreference.siblingBasis && apiData.type === 'PRESCHOOL'
+        citizen &&
+        form.unitPreference.siblingBasis &&
+        apiData.type === 'PRESCHOOL'
           ? validate(form.unitPreference.siblingUnit, required)
           : undefined,
       preferredUnits: {
@@ -273,81 +301,109 @@ export const validateApplication = (
       }
     },
     contactInfo: {
-      childMoveDate: form.contactInfo.childFutureAddressExists
-        ? validate(form.contactInfo.childMoveDate, required)
-        : undefined,
-      childFutureStreet: form.contactInfo.childFutureAddressExists
-        ? validate(form.contactInfo.childFutureStreet, required)
-        : undefined,
-      childFuturePostalCode: form.contactInfo.childFutureAddressExists
-        ? validate(form.contactInfo.childFuturePostalCode, required)
-        : undefined,
-      childFuturePostOffice: form.contactInfo.childFutureAddressExists
-        ? validate(form.contactInfo.childFuturePostOffice, required)
-        : undefined,
-      guardianPhone: validate(form.contactInfo.guardianPhone, required, phone),
-      guardianEmail:
-        form.contactInfo.noGuardianEmail &&
-        form.contactInfo.guardianEmail.length === 0
+      childMoveDate:
+        citizen && form.contactInfo.childFutureAddressExists
+          ? validate(form.contactInfo.childMoveDate, required)
+          : undefined,
+      childFutureStreet:
+        citizen && form.contactInfo.childFutureAddressExists
+          ? validate(form.contactInfo.childFutureStreet, required)
+          : undefined,
+      childFuturePostalCode:
+        citizen && form.contactInfo.childFutureAddressExists
+          ? validate(form.contactInfo.childFuturePostalCode, required)
+          : undefined,
+      childFuturePostOffice:
+        citizen && form.contactInfo.childFutureAddressExists
+          ? validate(form.contactInfo.childFuturePostOffice, required)
+          : undefined,
+      guardianPhone: citizen
+        ? validate(form.contactInfo.guardianPhone, required, phone)
+        : form.contactInfo.guardianPhone
+          ? phone(form.contactInfo.guardianPhone)
+          : undefined,
+      guardianEmail: citizen
+        ? form.contactInfo.noGuardianEmail &&
+          form.contactInfo.guardianEmail.length === 0
           ? undefined
-          : validate(form.contactInfo.guardianEmail, email, required),
-      guardianEmailVerification:
-        form.contactInfo.noGuardianEmail &&
-        form.contactInfo.guardianEmailVerification.length === 0
+          : validate(form.contactInfo.guardianEmail, email, required)
+        : form.contactInfo.guardianEmail
+          ? email(form.contactInfo.guardianEmail)
+          : undefined,
+      guardianEmailVerification: citizen
+        ? form.contactInfo.noGuardianEmail &&
+          form.contactInfo.guardianEmailVerification.length === 0
           ? undefined
           : validate(
               form.contactInfo.guardianEmailVerification,
               email,
               emailVerificationCheck(form.contactInfo.guardianEmail)
-            ),
-      guardianMoveDate: form.contactInfo.guardianFutureAddressExists
-        ? validate(form.contactInfo.guardianMoveDate, required)
+            )
         : undefined,
-      guardianFutureStreet: form.contactInfo.guardianFutureAddressExists
-        ? validate(form.contactInfo.guardianFutureStreet, required)
-        : undefined,
-      guardianFuturePostalCode: form.contactInfo.guardianFutureAddressExists
-        ? validate(form.contactInfo.guardianFuturePostalCode, required)
-        : undefined,
-      guardianFuturePostOffice: form.contactInfo.guardianFutureAddressExists
-        ? validate(form.contactInfo.guardianFuturePostOffice, required)
-        : undefined,
+      guardianMoveDate:
+        citizen && form.contactInfo.guardianFutureAddressExists
+          ? validate(form.contactInfo.guardianMoveDate, required)
+          : undefined,
+      guardianFutureStreet:
+        citizen && form.contactInfo.guardianFutureAddressExists
+          ? validate(form.contactInfo.guardianFutureStreet, required)
+          : undefined,
+      guardianFuturePostalCode:
+        citizen && form.contactInfo.guardianFutureAddressExists
+          ? validate(form.contactInfo.guardianFuturePostalCode, required)
+          : undefined,
+      guardianFuturePostOffice:
+        citizen && form.contactInfo.guardianFutureAddressExists
+          ? validate(form.contactInfo.guardianFuturePostOffice, required)
+          : undefined,
       otherGuardianAgreementStatus:
+        citizen &&
         apiData.type !== 'CLUB' &&
         apiData.hasOtherGuardian &&
         apiData.otherGuardianLivesInSameAddress === false
           ? requiredSelection(form.contactInfo.otherGuardianAgreementStatus)
           : undefined,
-      otherGuardianPhone:
-        apiData.type !== 'CLUB' &&
-        apiData.hasOtherGuardian &&
-        apiData.otherGuardianLivesInSameAddress === false &&
-        form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
+      otherGuardianPhone: citizen
+        ? apiData.type !== 'CLUB' &&
+          apiData.hasOtherGuardian &&
+          apiData.otherGuardianLivesInSameAddress === false &&
+          form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
+          ? phone(form.contactInfo.otherGuardianPhone)
+          : undefined
+        : form.contactInfo.otherGuardianPhone
           ? phone(form.contactInfo.otherGuardianPhone)
           : undefined,
-      otherGuardianEmail:
-        apiData.type !== 'CLUB' &&
-        apiData.hasOtherGuardian &&
-        apiData.otherGuardianLivesInSameAddress === false &&
-        form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
+      otherGuardianEmail: citizen
+        ? apiData.type !== 'CLUB' &&
+          apiData.hasOtherGuardian &&
+          apiData.otherGuardianLivesInSameAddress === false &&
+          form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
+          ? email(form.contactInfo.otherGuardianEmail)
+          : undefined
+        : form.contactInfo.otherGuardianEmail
           ? email(form.contactInfo.otherGuardianEmail)
           : undefined,
       otherPartnerFirstName:
-        requireFullFamily && form.contactInfo.otherPartnerExists
+        citizen && requireFullFamily && form.contactInfo.otherPartnerExists
           ? validate(form.contactInfo.otherPartnerFirstName, required)
           : undefined,
       otherPartnerLastName:
-        requireFullFamily && form.contactInfo.otherPartnerExists
+        citizen && requireFullFamily && form.contactInfo.otherPartnerExists
           ? validate(form.contactInfo.otherPartnerLastName, required)
           : undefined,
-      otherPartnerSSN:
-        requireFullFamily && form.contactInfo.otherPartnerExists
+      otherPartnerSSN: citizen
+        ? requireFullFamily && form.contactInfo.otherPartnerExists
           ? validate(form.contactInfo.otherPartnerSSN, required, ssn)
+          : undefined
+        : requireFullFamily &&
+            form.contactInfo.otherPartnerExists &&
+            form.contactInfo.otherPartnerSSN
+          ? ssn(form.contactInfo.otherPartnerSSN)
           : undefined,
       otherChildren: {
         arrayErrors: undefined,
         itemErrors: form.contactInfo.otherChildren.map((child) =>
-          requireFullFamily && form.contactInfo.otherChildrenExists
+          citizen && requireFullFamily && form.contactInfo.otherChildrenExists
             ? {
                 firstName: validate(child.firstName, required),
                 lastName: validate(child.lastName, required),
@@ -360,7 +416,13 @@ export const validateApplication = (
             : {
                 firstName: undefined,
                 lastName: undefined,
-                socialSecurityNumber: undefined
+                socialSecurityNumber:
+                  !citizen &&
+                  requireFullFamily &&
+                  form.contactInfo.otherChildrenExists &&
+                  child.socialSecurityNumber
+                    ? ssn(child.socialSecurityNumber)
+                    : undefined
               }
         )
       }

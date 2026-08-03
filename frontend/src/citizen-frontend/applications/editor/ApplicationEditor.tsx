@@ -151,7 +151,14 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     useState<boolean>(application.allowOtherGuardianAccess)
 
   const errors = useMemo<ApplicationFormDataErrors>(
-    () => validateApplication(application, formData, featureFlags, terms),
+    () =>
+      validateApplication(
+        application,
+        formData,
+        featureFlags,
+        'citizen',
+        terms
+      ),
     [application, formData, terms]
   )
 
