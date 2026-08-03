@@ -7,10 +7,14 @@ import styled from 'styled-components'
 
 import type {
   ApplicationDetails,
-  ApplicationStatus
+  ApplicationStatus,
+  ApplicationUpdate
 } from 'lib-common/generated/api-types/application'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
+import {
+  cancelMutation,
+  MutateButton
+} from 'lib-components/atoms/buttons/MutateButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
@@ -19,7 +23,6 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
 
@@ -34,7 +37,7 @@ type Props = {
   editing: boolean
   setEditing: (v: boolean) => void
   application: ApplicationDetails
-  editedApplication: ApplicationDetails
+  applicationUpdate: ApplicationUpdate | null
   errors: boolean
 }
 
@@ -43,7 +46,7 @@ export default React.memo(function ApplicationActionsBar({
   editing,
   setEditing,
   application,
-  editedApplication,
+  applicationUpdate,
   errors
 }: Props) {
   const { i18n } = useTranslation()
@@ -146,28 +149,19 @@ export default React.memo(function ApplicationActionsBar({
       component: (
         <MutateButton
           mutation={
-            editedApplication.status === 'CREATED'
+            applicationStatus === 'CREATED'
               ? updateAndSendApplicationMutation
               : updateApplicationMutation
           }
-          onClick={() => {
-            const applicationData = { ...editedApplication }
-            if (
-              !featureFlags.daycareApplication.dailyTimes &&
-              applicationData.form.preferences.serviceNeed
-            ) {
-              applicationData.form.preferences.serviceNeed.startTime = ''
-              applicationData.form.preferences.serviceNeed.endTime = ''
-            }
-            return {
-              applicationId: editedApplication.id,
-              body: applicationData
-            }
-          }}
+          onClick={() =>
+            applicationUpdate !== null
+              ? { applicationId: application.id, body: applicationUpdate }
+              : cancelMutation
+          }
           text={i18n.common.save}
           textInProgress={i18n.common.saving}
           textDone={i18n.common.saved}
-          disabled={!editedApplication || errors}
+          disabled={applicationUpdate === null || errors}
           onSuccess={() => setEditing(false)}
           primary
           data-qa="save-application"
