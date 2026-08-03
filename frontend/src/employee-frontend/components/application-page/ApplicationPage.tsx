@@ -18,6 +18,7 @@ import {
 } from 'lib-common/application/validations'
 import type { Term } from 'lib-common/application/validations'
 import type {
+  ApplicationAttachment,
   ApplicationResponse,
   ApplicationUpdate
 } from 'lib-common/generated/api-types/application'
@@ -99,6 +100,12 @@ export default React.memo(function ApplicationPage() {
   const [editing, setEditing] = useState(creatingNew)
   const [formData, setFormData] = useState<ApplicationFormData>()
   const [dueDate, setDueDate] = useState<LocalDate | null>(null)
+  // Seeded once alongside formData and kept at this level (not inside
+  // ApplicationEditView) so in-session uploads/deletes survive the view
+  // unmounting when the user cancels editing and edits again.
+  const [serviceWorkerAttachments, setServiceWorkerAttachments] = useState<
+    ApplicationAttachment[]
+  >([])
 
   const application = useQueryResult(applicationDetailsQuery({ applicationId }))
 
@@ -107,6 +114,11 @@ export default React.memo(function ApplicationPage() {
     if (application.isSuccess && !formDataInitialized) {
       setFormData(apiDataToFormData(application.value.application, []))
       setDueDate(application.value.application.dueDate)
+      setServiceWorkerAttachments(
+        application.value.application.attachments.filter(
+          (a) => a.type === 'SERVICE_WORKER_ATTACHMENT'
+        )
+      )
     }
   }, [application, formDataInitialized])
 
@@ -219,6 +231,8 @@ export default React.memo(function ApplicationPage() {
                     guardians={applicationData.guardians}
                     dueDate={dueDate}
                     setDueDate={setDueDate}
+                    serviceWorkerAttachments={serviceWorkerAttachments}
+                    setServiceWorkerAttachments={setServiceWorkerAttachments}
                     deps={deps}
                   />
                 ) : null

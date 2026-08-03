@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 
 import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
 import type {
@@ -50,6 +50,10 @@ interface Props {
   guardians: PersonJSON[]
   dueDate: LocalDate | null
   setDueDate: (d: LocalDate | null) => void
+  serviceWorkerAttachments: ApplicationAttachment[]
+  setServiceWorkerAttachments: React.Dispatch<
+    React.SetStateAction<ApplicationAttachment[]>
+  >
   deps: ApplicationEditorDeps
 }
 
@@ -62,6 +66,8 @@ export default React.memo(function ApplicationEditView({
   guardians,
   dueDate,
   setDueDate,
+  serviceWorkerAttachments,
+  setServiceWorkerAttachments,
   deps
 }: Props) {
   const { i18n } = useTranslation()
@@ -134,13 +140,6 @@ export default React.memo(function ApplicationEditView({
     type === 'DAYCARE' ||
     (type === 'PRESCHOOL' && formData.serviceNeed.connectedDaycare)
 
-  const [serviceWorkerAttachments, setServiceWorkerAttachments] = useState<
-    ApplicationAttachment[]
-  >(
-    application.attachments.filter(
-      (a) => a.type === 'SERVICE_WORKER_ATTACHMENT'
-    )
-  )
   const { mutateAsync: deleteAttachment } = useMutationResult(
     deps.deleteAttachmentMutation
   )
