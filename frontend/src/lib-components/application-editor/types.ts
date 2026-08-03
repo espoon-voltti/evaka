@@ -6,7 +6,10 @@ import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import type { ReactElement } from 'react'
 
 import type { Result } from 'lib-common/api'
-import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
+import type {
+  ApplicationEditorActor,
+  ApplicationFormData
+} from 'lib-common/application/ApplicationFormData'
 import type {
   ApplicationFormDataErrors,
   Term
@@ -37,6 +40,7 @@ import type { UploadHandler } from 'lib-components/molecules/FileUpload'
 import type { ApplicationEditorTranslations } from './translations'
 
 export interface ApplicationEditorDeps {
+  actor: ApplicationEditorActor
   lang: Language
   translations: ApplicationEditorTranslations
   featureFlags: FeatureFlags

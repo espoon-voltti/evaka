@@ -6,10 +6,8 @@ import React, { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
 import DateRange from 'lib-common/date-range'
-import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutationResult } from 'lib-common/query'
-import { useIdRouteParam } from 'lib-common/useRouteParams'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
@@ -37,6 +35,7 @@ const applicationType = 'DAYCARE'
 
 export default React.memo(function ServiceTimeSubSectionDaycare({
   deps,
+  applicationId,
   formData,
   updateFormData,
   errors,
@@ -52,7 +51,6 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
     getAttachmentUrl,
     deleteAttachmentMutation
   } = deps
-  const applicationId = useIdRouteParam<ApplicationId>('applicationId')
 
   const preferredStartDate = formData.preferredStartDate
   const optionsValidAtTime = useMemo(

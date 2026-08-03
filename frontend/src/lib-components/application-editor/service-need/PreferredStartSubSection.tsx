@@ -4,11 +4,9 @@
 
 import React from 'react'
 
-import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { useMutationResult } from 'lib-common/query'
-import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import { errorToInputInfo } from 'lib-components/input-info-helper'
@@ -26,6 +24,7 @@ import type { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function PreferredStartSubSection({
   deps,
+  applicationId,
   isInvalidDate,
   minDate,
   maxDate,
@@ -36,7 +35,6 @@ export default React.memo(function PreferredStartSubSection({
   verificationRequested,
   terms
 }: ServiceNeedSectionProps) {
-  const applicationId = useIdRouteParam<ApplicationId>('applicationId')
   const {
     translations: t,
     lang,

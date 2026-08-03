@@ -64,6 +64,7 @@ export default React.memo(function ApplicationFormDaycare({
 
       <ServiceNeedSection
         deps={deps}
+        applicationId={application.id}
         status={application.status}
         isInvalidDate={isInvalidDate}
         minDate={minDate}
