@@ -269,7 +269,16 @@ tasks.getByName<BootJar>("bootJar") { archiveClassifier.set("boot") }
 tasks {
     test {
         systemProperty("spring.profiles.active", "test")
-        useJUnitPlatform { excludeTags("schemaValidation") }
+        useJUnitPlatform { excludeTags("schemaValidation", "dvvSandbox") }
+    }
+
+    register<Test>("dvvSandboxTest") {
+        description = "Runs live queries against DVV's public sandbox (requires network access)"
+        group = "verification"
+        testClassesDirs = sourceSets["test"].output.classesDirs
+        classpath = sourceSets["test"].runtimeClasspath
+        useJUnitPlatform { includeTags("dvvSandbox") }
+        outputs.upToDateWhen { false }
     }
 
     register<Test>("validateArchiveMetadata") {
