@@ -150,9 +150,10 @@ const fi: DeepPartial<Translations> = {
         }
       },
       serviceNeed: {
-        preparatory: 'Lapsi tarvitsee tukea suomen kielen oppimisessa.',
+        preparatory:
+          'Lapsi on syntynyt Suomen ulkopuolella ja tarvitsee tukea suomen kielen oppimiseen. Nykyinen päiväkoti on suositellut lapselle valmistavaa esiopetusta, ja haen hänelle paikkaa myös perusopetukseen valmistavaan opetukseen. Hakemus ei koske ruotsinkielistä esiopetusta.',
         preparatoryInfo:
-          'Jokaiselle lapselle, jonka äidinkieli ei ole suomi, ruotsi tai saame. Turun varhaiskasvatuksessa arvioidaan lapsen valmistavan opetuksen tarve.',
+          'Perusopetukseen valmistavaan opetukseen voivat osallistua lapset, jotka ovat syntyneet Suomen ulkopuolella ja joilla ei vielä ole suomen kielen taitoa tai joiden suomen kielen taito on vasta kehittymässä. Esiopetusikäisten valmistavaa opetusta järjestetään ainoastaan kunnallisissa suomenkielisissä esiopetusryhmissä.',
         startDate: {
           header: {
             DAYCARE: 'Varhaiskasvatuksen aloitus',

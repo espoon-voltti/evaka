@@ -167,9 +167,10 @@ const sv: DeepPartial<Translations> = {
         }
       },
       serviceNeed: {
-        preparatory: 'Barnet behöver stöd i att lära sig finska.',
+        preparatory:
+          'Barnet är fött utanför Finland och behöver stöd i att lära sig finska. Barnets nuvarande daghem har rekommenderat förberedande förskoleundervisning för barnet, och jag ansöker också om en plats för barnet i förberedande undervisning för den grundläggande utbildningen. Gäller inte svenskspråkig förskoleundervisning.',
         preparatoryInfo:
-          'Avsett för barn vars modersmål inte är finska, svenska eller samiska. Barnets behov av förberedande undervisning bedöms i småbarnspedagogiken.',
+          'Barn som är födda utanför Finland och som ännu inte kan finska eller vars kunskaper i finska först håller på att utvecklas kan delta i förberedande undervisning för den grundläggande utbildningen. Förberedande undervisning för den grundläggande utbildningen för barn i förskoleåldern ordnas endast i kommunala, finskspråkiga förskolegrupper.',
         startDate: {
           header: {
             DAYCARE: 'Småbarnspedagogiken inleds',

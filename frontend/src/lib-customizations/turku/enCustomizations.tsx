@@ -168,9 +168,10 @@ const en: DeepPartial<Translations> = {
         }
       },
       serviceNeed: {
-        preparatory: 'Child needs assistance in learning Finnish.',
+        preparatory:
+          'My child was born outside Finland and needs support in learning Finnish. The child’s current daycare centre has recommended preparatory pre-primary education for the child, and I am also applying for a place in instruction in preparation for basic education for the child. This application does not apply to Swedish pre-primary education.',
         preparatoryInfo:
-          'Each child whose mother tongue is not Finnish, Swedish or Sámi. Turku early childhood education and care will assess the child’s need for instruction in preparation for basic education.',
+          'Instruction in preparation for basic education is open to children who were born outside Finland and who do not yet have Finnish language skills or whose Finnish language skills are still developing. Instruction in preparation for basic education is offered to children of pre-primary education age only in Finnish-speaking municipal pre-primary education groups.',
         startDate: {
           header: {
             DAYCARE: 'Start of early childhood education and care',
