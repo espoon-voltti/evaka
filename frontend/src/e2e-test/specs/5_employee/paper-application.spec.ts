@@ -27,19 +27,6 @@ import { employeeLogin } from '../../utils/user'
 
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
-const formatPersonName = (person: { firstName: string; lastName: string }) =>
-  `${person.lastName} ${person.firstName}`
-
-const formatPersonAddress = ({
-  streetAddress,
-  postalCode,
-  postOffice
-}: {
-  streetAddress?: string
-  postalCode?: string
-  postOffice?: string
-}) => `${streetAddress ?? ''}, ${postalCode ?? ''} ${postOffice ?? ''}`
-
 test.describe('Employee - paper application', () => {
   let page: Page
   let childInformationPage: ChildInformationPage
@@ -74,9 +61,10 @@ test.describe('Employee - paper application', () => {
   test('Paper application can be created for guardian and child with ssn', async () => {
     const applicationEditPage = await createApplicationModal.submit()
     await applicationEditPage.assertGuardian(
-      formatPersonName(testAdult),
+      testAdult.firstName,
+      testAdult.lastName,
       testAdult.ssn ?? '',
-      formatPersonAddress(testAdult)
+      testAdult.streetAddress
     )
   })
 
@@ -87,9 +75,10 @@ test.describe('Employee - paper application', () => {
     const applicationEditPage = await createApplicationModal.submit()
 
     await applicationEditPage.assertGuardian(
-      formatPersonName(testAdult2),
+      testAdult2.firstName,
+      testAdult2.lastName,
       testAdult2.ssn ?? '',
-      formatPersonAddress(testAdult2)
+      testAdult2.streetAddress
     )
   })
 
@@ -113,9 +102,10 @@ test.describe('Employee - paper application', () => {
     const applicationEditPage = await createApplicationModal.submit()
 
     await applicationEditPage.assertGuardian(
-      'Korhonen-Hämäläinen Sirkka-Liisa Marja-Leena Minna-Mari Anna-Kaisa',
+      'Sirkka-Liisa Marja-Leena Minna-Mari Anna-Kaisa',
+      'Korhonen-Hämäläinen',
       '270372-905L',
-      'Kamreerintie 2, 00370 Espoo'
+      'Kamreerintie 2'
     )
   })
 
@@ -133,9 +123,10 @@ test.describe('Employee - paper application', () => {
     const applicationEditPage = await createApplicationModal.submit()
 
     await applicationEditPage.assertGuardian(
-      'Testinen Testi',
+      'Testi',
+      'Testinen',
       '',
-      'Katuosoite A1, 02200 Espoo'
+      'Katuosoite A1'
     )
   })
 

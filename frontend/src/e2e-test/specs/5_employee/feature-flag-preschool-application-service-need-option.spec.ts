@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import {
@@ -38,6 +39,8 @@ test.use({
   }
 })
 
+let vakaServiceNeedOptionId: ServiceNeedOptionId
+
 test.beforeEach(async () => {
   await resetServiceState()
   await preschoolTerm2022.save()
@@ -45,10 +48,11 @@ test.beforeEach(async () => {
   await testDaycare.save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
-  await Fixture.serviceNeedOption({
+  const vakaServiceNeedOption = await Fixture.serviceNeedOption({
     validPlacementType: 'PRESCHOOL_DAYCARE',
     nameFi: 'vaka'
   }).save()
+  vakaServiceNeedOptionId = vakaServiceNeedOption.id
   await Fixture.serviceNeedOption({
     validPlacementType: 'PRESCHOOL_CLUB',
     nameFi: 'kerho'
@@ -83,7 +87,9 @@ test.describe('Employee - paper application', () => {
       now.toLocalDate().format()
     )
     await applicationEditPage.selectPreschoolPlacementType('PRESCHOOL_DAYCARE')
-    await applicationEditPage.selectPreschoolServiceNeedOption('vaka')
+    await applicationEditPage.selectPreschoolServiceNeedOption(
+      vakaServiceNeedOptionId
+    )
     await applicationEditPage.pickUnit(testDaycare.name)
     await applicationEditPage.fillApplicantPhoneAndEmail(
       '123456',
