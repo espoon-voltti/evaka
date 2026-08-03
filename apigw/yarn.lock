@@ -63,15 +63,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:5.15.1":
-  version: 5.15.1
-  resolution: "@datadog/pprof@npm:5.15.1"
+"@datadog/pprof@npm:5.17.0":
+  version: 5.17.0
+  resolution: "@datadog/pprof@npm:5.17.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^4.8.4"
     pprof-format: "npm:^2.2.1"
-    source-map: "npm:^0.7.4"
-  checksum: 10/6c72c5f954f32d0d4228be17edbbe0763da9a3cd9693901208e6475c2e1dd3b1278f2392645409e98b35874055c76543799b07db6afa375a09fb8f6c55c55938
+    source-map: "npm:^0.8.0"
+  checksum: 10/b50d5cb7d77eca165bdc4a6d81d6d9c44c67aeaf4e86bc7702af3f601ace5d73c255849e5e4a00770f1ffa40fb4bb992b720fe29efd0f0d695da47c16680a83d
   languageName: node
   linkType: hard
 
@@ -1822,21 +1822,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:6.4.0":
-  version: 6.4.0
-  resolution: "dd-trace@npm:6.4.0"
+"dd-trace@npm:6.7.0":
+  version: 6.7.0
+  resolution: "dd-trace@npm:6.7.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.9.4"
     "@datadog/native-appsec": "npm:11.0.1"
     "@datadog/native-iast-taint-tracking": "npm:4.2.0"
     "@datadog/native-metrics": "npm:3.1.2"
     "@datadog/openfeature-node-server": "npm:2.0.0"
-    "@datadog/pprof": "npm:5.15.1"
+    "@datadog/pprof": "npm:5.17.0"
     "@datadog/wasm-js-rewriter": "npm:5.0.1"
     "@opentelemetry/api": "npm:>=1.0.0 <1.10.0"
     "@opentelemetry/api-logs": "npm:<1.0.0"
     dc-polyfill: "npm:^0.1.11"
-    import-in-the-middle: "npm:^3.3.1"
+    import-in-the-middle: "npm:^3.3.2"
     opentracing: "npm:>=0.14.7"
     oxc-parser: "npm:^0.132.0"
   dependenciesMeta:
@@ -1860,7 +1860,7 @@ __metadata:
       optional: true
     oxc-parser:
       optional: true
-  checksum: 10/c33d71e6ed491e003b3042555201103b3cac00eb354027ab7ea6680e58ef9adcacef55784be3840bdec006fa0be81caae7483f76abb64c9c563abaa693c85b95
+  checksum: 10/34fff1846045483aa52f4c9311fe5138699c94831598c1c7a23fca2d282ad9a2b8976ae0301aaf3fcc79227ff8298042430f1b4932bce2794b2d9473340a1285
   languageName: node
   linkType: hard
 
@@ -2118,7 +2118,7 @@ __metadata:
     cookie-parser: "npm:1.4.7"
     cookie-signature: "npm:1.2.2"
     date-fns: "npm:4.4.0"
-    dd-trace: "npm:6.4.0"
+    dd-trace: "npm:6.7.0"
     express: "npm:5.2.1"
     express-basic-auth: "npm:1.2.1"
     express-http-proxy: "npm:2.1.2"
@@ -2604,14 +2604,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:^3.3.1":
-  version: 3.3.1
-  resolution: "import-in-the-middle@npm:3.3.1"
+"import-in-the-middle@npm:^3.3.2":
+  version: 3.3.3
+  resolution: "import-in-the-middle@npm:3.3.3"
   dependencies:
     cjs-module-lexer: "npm:^2.2.0"
     es-module-lexer: "npm:^2.2.0"
     module-details-from-path: "npm:^1.0.4"
-  checksum: 10/0b3e9de63816481b0fe07abb145258ecbc3c78251200807dacbff87bfcaaa3e5568e1184f26dba57da520a90843f51cf21d79fe3ea9383b6de3037a5976a96b3
+  checksum: 10/d8bb529b3320c12e82285187032597cb4f3f00076e8c9b0c61b0bb72e727db83dfaa4fe439da13b03fd64f4ad594ddda8acc0c10e874812dce5b49939cc0be8b
   languageName: node
   linkType: hard
 
@@ -4249,10 +4249,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map@npm:^0.7.4":
-  version: 0.7.4
-  resolution: "source-map@npm:0.7.4"
-  checksum: 10/a0f7c9b797eda93139842fd28648e868a9a03ea0ad0d9fa6602a0c1f17b7fb6a7dcca00c144476cccaeaae5042e99a285723b1a201e844ad67221bf5d428f1dc
+"source-map@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "source-map@npm:0.8.0"
+  checksum: 10/ad71b0c03715d970c2d114f0d403cc02c1e60e9ce997715f0a69bde2604b1d1ac287760f93d9763313a2a2b2c297df901f3378569f750a240e936ac5ddfd6b31
   languageName: node
   linkType: hard
 
