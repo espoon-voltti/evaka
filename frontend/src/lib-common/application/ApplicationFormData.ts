@@ -16,6 +16,8 @@ import type {
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type LocalDate from 'lib-common/local-date'
 
+export type ApplicationEditorActor = 'citizen' | 'employee'
+
 export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null
   urgent: boolean
@@ -74,6 +76,7 @@ export type ContactInfoFormData = {
   guardianFutureStreet: string
   guardianFuturePostalCode: string
   guardianFuturePostOffice: string
+  otherGuardianExists: boolean
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null
   otherGuardianPhone: string
   otherGuardianEmail: string
@@ -265,6 +268,7 @@ export function apiDataToFormData(
         application.form.guardian.futureAddress?.postalCode ?? '',
       guardianFuturePostOffice:
         application.form.guardian.futureAddress?.postOffice ?? '',
+      otherGuardianExists: application.form.secondGuardian !== null,
       otherGuardianAgreementStatus:
         application.form.secondGuardian?.agreementStatus ?? null,
       otherGuardianPhone: application.form.secondGuardian?.phoneNumber ?? '',
@@ -293,9 +297,14 @@ export function formDataToApiData(
     otherGuardianLivesInSameAddress
   }: ApplicationDetails,
   form: ApplicationFormData,
-  dailyTimes: boolean,
-  isDraft = false
+  options: {
+    actor: ApplicationEditorActor
+    dailyTimes: boolean
+    isDraft?: boolean
+  }
 ): ApplicationFormUpdate {
+  const { actor, dailyTimes, isDraft = false } = options
+  const requireMoveDate = actor === 'citizen' && !isDraft
   const fullFamily =
     type === 'DAYCARE' ||
     (type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
@@ -311,9 +320,9 @@ export function formDataToApiData(
             street: form.contactInfo.childFutureStreet,
             postalCode: form.contactInfo.childFuturePostalCode,
             postOffice: form.contactInfo.childFuturePostOffice,
-            movingDate: isDraft
-              ? form.contactInfo.childMoveDate
-              : throwIfNull(form.contactInfo.childMoveDate)
+            movingDate: requireMoveDate
+              ? throwIfNull(form.contactInfo.childMoveDate)
+              : form.contactInfo.childMoveDate
           }
         : null,
       allergies: type !== 'CLUB' ? form.additionalDetails.allergies : '',
@@ -327,29 +336,39 @@ export function formDataToApiData(
             street: form.contactInfo.guardianFutureStreet,
             postalCode: form.contactInfo.guardianFuturePostalCode,
             postOffice: form.contactInfo.guardianFuturePostOffice,
-            movingDate: isDraft
-              ? form.contactInfo.guardianMoveDate
-              : throwIfNull(form.contactInfo.guardianMoveDate)
+            movingDate: requireMoveDate
+              ? throwIfNull(form.contactInfo.guardianMoveDate)
+              : form.contactInfo.guardianMoveDate
           }
         : null,
       phoneNumber: form.contactInfo.guardianPhone,
       email: form.contactInfo.guardianEmail
     },
     secondGuardian:
-      type !== 'CLUB' && hasOtherGuardian && !otherGuardianLivesInSameAddress
-        ? {
-            agreementStatus:
-              form.contactInfo.otherGuardianAgreementStatus ?? 'NOT_AGREED',
-            phoneNumber:
-              form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
-                ? form.contactInfo.otherGuardianPhone
-                : '',
-            email:
-              form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
-                ? form.contactInfo.otherGuardianEmail
-                : ''
-          }
-        : null,
+      actor === 'employee'
+        ? type !== 'CLUB' && form.contactInfo.otherGuardianExists
+          ? {
+              agreementStatus: form.contactInfo.otherGuardianAgreementStatus,
+              phoneNumber: form.contactInfo.otherGuardianPhone,
+              email: form.contactInfo.otherGuardianEmail
+            }
+          : null
+        : type !== 'CLUB' &&
+            hasOtherGuardian &&
+            !otherGuardianLivesInSameAddress
+          ? {
+              agreementStatus:
+                form.contactInfo.otherGuardianAgreementStatus ?? 'NOT_AGREED',
+              phoneNumber:
+                form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
+                  ? form.contactInfo.otherGuardianPhone
+                  : '',
+              email:
+                form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
+                  ? form.contactInfo.otherGuardianEmail
+                  : ''
+            }
+          : null,
     otherPartner:
       fullFamily && form.contactInfo.otherPartnerExists
         ? {

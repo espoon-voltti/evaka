@@ -210,12 +210,11 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const onSaveDraft = () => {
-    const body = formDataToApiData(
-      application,
-      formData,
-      featureFlags.daycareApplication.dailyTimes,
-      true
-    )
+    const body = formDataToApiData(application, formData, {
+      actor: 'citizen',
+      dailyTimes: featureFlags.daycareApplication.dailyTimes,
+      isDraft: true
+    })
     void saveApplicationDraft({ applicationId: application.id, body })
       .then(() => {
         setInfoMessage({
@@ -244,11 +243,10 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
   const onSend = () => {
     const body = {
-      form: formDataToApiData(
-        application,
-        formData,
-        featureFlags.daycareApplication.dailyTimes
-      ),
+      form: formDataToApiData(application, formData, {
+        actor: 'citizen',
+        dailyTimes: featureFlags.daycareApplication.dailyTimes
+      }),
       allowOtherGuardianAccess
     }
     updateApplication({ applicationId: application.id, body })
@@ -281,11 +279,10 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
   const onUpdate = () => {
     const body = {
-      form: formDataToApiData(
-        application,
-        formData,
-        featureFlags.daycareApplication.dailyTimes
-      ),
+      form: formDataToApiData(application, formData, {
+        actor: 'citizen',
+        dailyTimes: featureFlags.daycareApplication.dailyTimes
+      }),
       allowOtherGuardianAccess
     }
     updateApplication({ applicationId: application.id, body })
