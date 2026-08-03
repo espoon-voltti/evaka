@@ -59,8 +59,8 @@ import {
 } from './queries'
 import { useApplicationEditorDeps } from './useApplicationEditorDeps'
 
-const ApplicationArea = styled(ContentArea)`
-  width: 77%;
+const ApplicationArea = styled(ContentArea)<{ $fullWidth: boolean }>`
+  width: ${(p) => (p.$fullWidth ? '100%' : '77%')};
 `
 
 const SidebarArea = styled(ContentArea)`
@@ -211,7 +211,7 @@ export default React.memo(function ApplicationPage() {
         <ReturnButton label={i18n.common.goBack} data-qa="close-application" />
         {renderResult(application, (applicationData) => (
           <FixedSpaceRow>
-            <ApplicationArea $opaque>
+            <ApplicationArea $opaque $fullWidth={editing}>
               {editing ? (
                 formData !== undefined && errors !== undefined ? (
                   <ApplicationEditView
@@ -230,37 +230,38 @@ export default React.memo(function ApplicationPage() {
                 <ApplicationReadView application={applicationData} />
               )}
             </ApplicationArea>
-            {(applicationData.permittedActions.includes('READ_NOTES') ||
-              applicationData.permittedActions.includes(
-                'READ_SPECIAL_EDUCATION_TEACHER_NOTES'
-              )) && (
-              <SidebarArea $opaque={false}>
-                <ApplicationNotes
-                  applicationId={applicationId}
-                  allowCreate={applicationData.permittedActions.includes(
-                    'CREATE_NOTE'
-                  )}
-                />
-                <Gap $size="m" />
-                {application.isSuccess &&
-                  application.value.permittedActions.includes(
-                    'READ_SERVICE_WORKER_ACCOUNT_MESSAGES'
-                  ) && (
-                    <AddButton
-                      onClick={() =>
-                        window.open(
-                          getSendMessageUrl(applicationData),
-                          '_blank'
-                        )
-                      }
-                      text={i18n.application.messaging.sendMessage}
-                      darker
-                      icon={faEnvelope}
-                      data-qa="send-message-button"
-                    />
-                  )}
-              </SidebarArea>
-            )}
+            {!editing &&
+              (applicationData.permittedActions.includes('READ_NOTES') ||
+                applicationData.permittedActions.includes(
+                  'READ_SPECIAL_EDUCATION_TEACHER_NOTES'
+                )) && (
+                <SidebarArea $opaque={false}>
+                  <ApplicationNotes
+                    applicationId={applicationId}
+                    allowCreate={applicationData.permittedActions.includes(
+                      'CREATE_NOTE'
+                    )}
+                  />
+                  <Gap $size="m" />
+                  {application.isSuccess &&
+                    application.value.permittedActions.includes(
+                      'READ_SERVICE_WORKER_ACCOUNT_MESSAGES'
+                    ) && (
+                      <AddButton
+                        onClick={() =>
+                          window.open(
+                            getSendMessageUrl(applicationData),
+                            '_blank'
+                          )
+                        }
+                        text={i18n.application.messaging.sendMessage}
+                        darker
+                        icon={faEnvelope}
+                        data-qa="send-message-button"
+                      />
+                    )}
+                </SidebarArea>
+              )}
           </FixedSpaceRow>
         ))}
         {infoDialog}
