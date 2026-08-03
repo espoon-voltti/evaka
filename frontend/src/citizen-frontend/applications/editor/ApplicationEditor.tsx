@@ -151,10 +151,12 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     useState<boolean>(application.allowOtherGuardianAccess)
 
   const [errors, setErrors] = useState<ApplicationFormDataErrors>(
-    validateApplication(application, formData, featureFlags)
+    validateApplication(application, formData, featureFlags, 'citizen')
   )
   useEffect(() => {
-    setErrors(validateApplication(application, formData, featureFlags, terms))
+    setErrors(
+      validateApplication(application, formData, featureFlags, 'citizen', terms)
+    )
   }, [application, formData, terms])
 
   const originalPreferredStartDate =
@@ -200,7 +202,9 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const submitting = savingDraft || updatingApplication || sendingApplication
 
   const onVerify = () => {
-    setErrors(validateApplication(application, formData, featureFlags, terms))
+    setErrors(
+      validateApplication(application, formData, featureFlags, 'citizen', terms)
+    )
     setVerificationRequested(true)
     setVerificationCount((prev) => prev + 1)
 
