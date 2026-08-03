@@ -89,6 +89,7 @@ export default React.memo(function ApplicationFormClub({
       <ContactInfoSection
         deps={deps}
         type={applicationType}
+        application={application}
         formData={formData.contactInfo}
         updateFormData={(data) =>
           setFormData((old) => ({

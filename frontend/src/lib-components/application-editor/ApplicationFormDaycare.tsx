@@ -104,6 +104,7 @@ export default React.memo(function ApplicationFormDaycare({
       <ContactInfoSection
         deps={deps}
         type={applicationType}
+        application={application}
         formData={formData.contactInfo}
         updateFormData={(data) =>
           setFormData((old) =>

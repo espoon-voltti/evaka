@@ -383,11 +383,16 @@ export interface ApplicationEditorTexts {
     childFirstName: string
     childLastName: string
     childSSN: string
+    childInformationLink: string
+    childDateOfBirth: string
+    nationality: string
+    language: string
     homeAddress: string
     moveDate: string
     street: string
     postalCode: string
     postOffice: string
+    addressRestricted: string
     guardianInfoTitle: string
     guardianFirstName: string
     guardianLastName: string
@@ -398,6 +403,7 @@ export interface ApplicationEditorTexts {
     emailChangeTip: string
     emailChangeTipLink: string
     noEmail: string
+    secondGuardianExists: string
     secondGuardianInfoTitle: string
     secondGuardianInfo: string
     secondGuardianNotFound: string
@@ -407,6 +413,7 @@ export interface ApplicationEditorTexts {
       AGREED: string
       NOT_AGREED: string
       RIGHT_TO_GET_NOTIFIED: string
+      NOT_SET: string
     }
     secondGuardianPhone: string
     secondGuardianEmail: string
