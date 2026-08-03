@@ -280,7 +280,7 @@ export const validateApplication = (
         ? form.unitPreference.siblingBasis && !siblingSelected
           ? validate(form.unitPreference.siblingSsn, required, ssn)
           : undefined
-        : form.unitPreference.siblingSsn
+        : form.unitPreference.siblingBasis && form.unitPreference.siblingSsn
           ? ssn(form.unitPreference.siblingSsn)
           : undefined,
       siblingUnit:
@@ -395,7 +395,9 @@ export const validateApplication = (
         ? requireFullFamily && form.contactInfo.otherPartnerExists
           ? validate(form.contactInfo.otherPartnerSSN, required, ssn)
           : undefined
-        : form.contactInfo.otherPartnerSSN
+        : requireFullFamily &&
+            form.contactInfo.otherPartnerExists &&
+            form.contactInfo.otherPartnerSSN
           ? ssn(form.contactInfo.otherPartnerSSN)
           : undefined,
       otherChildren: {
@@ -415,7 +417,10 @@ export const validateApplication = (
                 firstName: undefined,
                 lastName: undefined,
                 socialSecurityNumber:
-                  !citizen && child.socialSecurityNumber
+                  !citizen &&
+                  requireFullFamily &&
+                  form.contactInfo.otherChildrenExists &&
+                  child.socialSecurityNumber
                     ? ssn(child.socialSecurityNumber)
                     : undefined
               }
