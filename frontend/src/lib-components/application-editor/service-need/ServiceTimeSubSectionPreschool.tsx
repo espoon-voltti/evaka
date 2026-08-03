@@ -187,6 +187,7 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                             serviceNeedOption: null
                           })
                         }}
+                        data-qa={`preschool-placement-type-${type}`}
                       />
                       {formData.placementType === type && (
                         <SubRadios>
