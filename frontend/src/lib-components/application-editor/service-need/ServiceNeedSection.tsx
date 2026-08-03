@@ -31,8 +31,8 @@ export type ServiceNeedSectionProps = {
   applicationId: ApplicationId
   status: ApplicationStatus
   isInvalidDate: ((localDate: LocalDate) => string | null) | undefined
-  minDate: LocalDate
-  maxDate: LocalDate
+  minDate?: LocalDate
+  maxDate?: LocalDate
   type: ApplicationType
   formData: ServiceNeedFormData
   updateFormData: UpdateStateFn<ServiceNeedFormData>
