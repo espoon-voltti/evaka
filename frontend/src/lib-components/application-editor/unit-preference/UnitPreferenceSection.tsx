@@ -43,7 +43,12 @@ export type UnitPreferenceSectionProps = UnitPreferenceSectionCommonProps & {
 export default React.memo(function UnitPreferenceSection(
   props: UnitPreferenceSectionProps
 ) {
-  const { translations: t, applicationUnitsQuery, infoDialog } = props.deps
+  const {
+    translations: t,
+    applicationUnitsQuery,
+    infoDialog,
+    actor
+  } = props.deps
 
   const {
     updateFormData,
@@ -52,6 +57,12 @@ export default React.memo(function UnitPreferenceSection(
     preferredStartDate,
     shiftCare
   } = props
+
+  // Employees transcribing paper applications must see every unit
+  // regardless of the shift-care checkbox (e.g. a shift-care application for
+  // a unit that doesn't offer shift care is a legacy scenario they still
+  // need to be able to enter). Only citizens get units filtered by it.
+  const shiftCareFilter = actor === 'citizen' ? shiftCare : null
 
   const { data: units = null } = useQuery(
     preferredStartDate
@@ -65,7 +76,7 @@ export default React.memo(function UnitPreferenceSection(
                   ? 'PREPARATORY'
                   : 'PRESCHOOL',
           date: preferredStartDate,
-          shiftCare
+          shiftCare: shiftCareFilter
         })
       : constantQuery(null)
   )
