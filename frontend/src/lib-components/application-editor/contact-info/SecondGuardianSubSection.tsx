@@ -11,6 +11,7 @@ import type {
 import type { ApplicationFormDataErrors } from 'lib-common/application/validations'
 import type { UpdateStateFn } from 'lib-common/form-state'
 import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import { errorToInputInfo } from 'lib-components/input-info-helper'
@@ -41,13 +42,111 @@ export default React.memo(function SecondGuardianSubSection({
   verificationRequested,
   otherGuardianStatus
 }: SecondGuardianSubSectionProps) {
-  const { translations: t } = deps
+  const { translations: t, actor } = deps
 
   const agreementStatuses: SelectableOtherGuardianAgreementStatus[] = [
     'AGREED',
     'NOT_AGREED',
     'RIGHT_TO_GET_NOTIFIED'
   ]
+
+  if (actor === 'employee') {
+    const employeeAgreementStatuses: (SelectableOtherGuardianAgreementStatus | null)[] =
+      ['AGREED', 'NOT_AGREED', 'RIGHT_TO_GET_NOTIFIED', null]
+    return (
+      <>
+        <H3>{t.applications.editor.contactInfo.secondGuardianInfoTitle}</H3>
+        <Checkbox
+          checked={formData.otherGuardianExists}
+          label={t.applications.editor.contactInfo.secondGuardianExists}
+          data-qa="application-second-guardian-toggle"
+          onChange={(checked) => {
+            updateFormData({ otherGuardianExists: checked })
+            if (!checked) {
+              updateFormData({
+                otherGuardianAgreementStatus: null,
+                otherGuardianPhone: '',
+                otherGuardianEmail: ''
+              })
+            }
+          }}
+        />
+        {formData.otherGuardianExists && (
+          <>
+            <Gap $size="s" />
+            <AdaptiveFlex $breakpoint="1060px">
+              <FixedSpaceColumn>
+                <Label htmlFor="other-guardian-phone">
+                  {t.applications.editor.contactInfo.secondGuardianPhone}
+                </Label>
+                <InputField
+                  id="other-guardian-phone"
+                  type="tel"
+                  value={formData.otherGuardianPhone}
+                  data-qa="application-second-guardian-phone"
+                  onChange={(value) =>
+                    updateFormData({ otherGuardianPhone: value })
+                  }
+                  info={errorToInputInfo(
+                    errors.otherGuardianPhone,
+                    t.validationErrors
+                  )}
+                  hideErrorsBeforeTouched={!verificationRequested}
+                  width="L"
+                />
+              </FixedSpaceColumn>
+              <FixedSpaceColumn>
+                <Label htmlFor="other-guardian-email">
+                  {t.applications.editor.contactInfo.secondGuardianEmail}
+                </Label>
+                <InputField
+                  id="other-guardian-email"
+                  type="email"
+                  value={formData.otherGuardianEmail}
+                  data-qa="application-second-guardian-email"
+                  onChange={(value) =>
+                    updateFormData({ otherGuardianEmail: value })
+                  }
+                  info={errorToInputInfo(
+                    errors.otherGuardianEmail,
+                    t.validationErrors
+                  )}
+                  hideErrorsBeforeTouched={!verificationRequested}
+                  width="L"
+                />
+              </FixedSpaceColumn>
+            </AdaptiveFlex>
+            <Gap $size="s" />
+            <FixedSpaceColumn>
+              <Label>
+                {
+                  t.applications.editor.contactInfo
+                    .secondGuardianAgreementStatus.label
+                }
+              </Label>
+              {employeeAgreementStatuses.map((status) => (
+                <Radio
+                  key={status ?? 'NOT_SET'}
+                  checked={formData.otherGuardianAgreementStatus === status}
+                  data-qa={`radio-other-guardian-agreement-status-${status ?? 'null'}`}
+                  label={
+                    status !== null
+                      ? t.applications.editor.contactInfo
+                          .secondGuardianAgreementStatus[status]
+                      : t.applications.editor.contactInfo
+                          .secondGuardianAgreementStatus.NOT_SET
+                  }
+                  onChange={() =>
+                    updateFormData({ otherGuardianAgreementStatus: status })
+                  }
+                />
+              ))}
+            </FixedSpaceColumn>
+          </>
+        )}
+      </>
+    )
+  }
 
   return (
     <>

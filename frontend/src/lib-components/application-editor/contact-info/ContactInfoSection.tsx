@@ -8,7 +8,10 @@ import type { ContactInfoFormData } from 'lib-common/application/ApplicationForm
 import type { ApplicationFormDataErrors } from 'lib-common/application/validations'
 import type { UpdateStateFn } from 'lib-common/form-state'
 import { getErrorCount } from 'lib-common/form-validation'
-import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type {
+  ApplicationDetails,
+  ApplicationType
+} from 'lib-common/generated/api-types/application'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 
 import EditorSection from '../EditorSection'
@@ -23,6 +26,7 @@ import SecondGuardianSubSection from './SecondGuardianSubSection'
 export type ContactInfoSectionProps = {
   deps: ApplicationEditorDeps
   type: ApplicationType
+  application: ApplicationDetails
   formData: ContactInfoFormData
   updateFormData: UpdateStateFn<ContactInfoFormData>
   errors: ApplicationFormDataErrors['contactInfo']

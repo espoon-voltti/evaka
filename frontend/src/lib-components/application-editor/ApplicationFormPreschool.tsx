@@ -112,6 +112,7 @@ export default React.memo(function ApplicationFormPreschool({
       <ContactInfoSection
         deps={deps}
         type={applicationType}
+        application={application}
         formData={formData.contactInfo}
         updateFormData={(data) =>
           setFormData((old) =>

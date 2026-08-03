@@ -25,6 +25,7 @@ import type { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function GuardianSubSection({
   deps,
+  application,
   formData,
   updateFormData,
   errors,
@@ -36,6 +37,7 @@ export default React.memo(function GuardianSubSection({
     emailVerificationStatusQuery,
     renderResult
   } = deps
+  const employee = deps.actor === 'employee'
   const verifiedEmail = useQueryResult(
     emailVerificationStatusQuery !== null
       ? emailVerificationStatusQuery()
@@ -61,21 +63,25 @@ export default React.memo(function GuardianSubSection({
       <AdaptiveFlex $breakpoint="1060px" $horizontalSpacing="XL">
         <FixedSpaceColumn $spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianFirstName}</Label>
-          <PersonName
-            person={{ firstName: formData.guardianFirstName }}
-            format="First"
-          />
+          <span data-qa="guardian-first-name">
+            <PersonName
+              person={{ firstName: formData.guardianFirstName }}
+              format="First"
+            />
+          </span>
         </FixedSpaceColumn>
         <FixedSpaceColumn $spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianLastName}</Label>
-          <PersonName
-            person={{ lastName: formData.guardianLastName }}
-            format="Last"
-          />
+          <span data-qa="guardian-last-name">
+            <PersonName
+              person={{ lastName: formData.guardianLastName }}
+              format="Last"
+            />
+          </span>
         </FixedSpaceColumn>
         <FixedSpaceColumn $spacing="xs">
           <Label>{t.applications.editor.contactInfo.guardianSSN}</Label>
-          <span>{formData.guardianSSN}</span>
+          <span data-qa="guardian-ssn">{formData.guardianSSN}</span>
         </FixedSpaceColumn>
       </AdaptiveFlex>
 
@@ -83,7 +89,15 @@ export default React.memo(function GuardianSubSection({
 
       <FixedSpaceColumn $spacing="xs">
         <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
-        <span translate="no">{formData.guardianHomeAddress}</span>
+        {employee && application.guardianRestricted ? (
+          <span data-qa="guardian-restricted">
+            {t.applications.editor.contactInfo.addressRestricted}
+          </span>
+        ) : (
+          <span data-qa="guardian-home-address" translate="no">
+            {formData.guardianHomeAddress}
+          </span>
+        )}
       </FixedSpaceColumn>
 
       <Gap $size="s" />
@@ -92,7 +106,7 @@ export default React.memo(function GuardianSubSection({
         <AdaptiveFlex $breakpoint="860px">
           <FixedSpaceColumn $spacing="xs">
             <Label htmlFor="guardian-phone">
-              {t.applications.editor.contactInfo.phone + ' *'}
+              {t.applications.editor.contactInfo.phone + (employee ? '' : ' *')}
             </Label>
             <InputField
               id="guardian-phone"
@@ -104,254 +118,294 @@ export default React.memo(function GuardianSubSection({
               hideErrorsBeforeTouched={!verificationRequested}
               placeholder={t.applications.editor.contactInfo.phone}
               width="m"
-              required={true}
+              required={!employee}
             />
           </FixedSpaceColumn>
         </AdaptiveFlex>
       </FixedSpaceRow>
       <Gap $size="m" />
 
-      <EmailRow $breakpoint="860px" $verticalSpacing="zero">
-        {renderResult(verifiedEmail, (verifiedEmail) =>
-          verifiedEmail ? (
-            <FixedSpaceColumn $spacing="xs">
-              <Label>{t.applications.editor.contactInfo.email + ' *'}</Label>
-              <FixedSpaceFlexWrap $horizontalSpacing="X3L" $verticalSpacing="L">
-                <span translate="no" data-qa="verified-email">
-                  {verifiedEmail}
-                </span>
-                <div>
-                  {t.applications.editor.contactInfo.emailChangeTip}
-                  <a href="/personal-details" target="_blank" rel="noreferrer">
-                    {t.applications.editor.contactInfo.emailChangeTipLink}
-                  </a>
-                </div>
-              </FixedSpaceFlexWrap>
-            </FixedSpaceColumn>
-          ) : (
-            <>
+      {employee ? (
+        <FixedSpaceColumn $spacing="xs">
+          <Label htmlFor="guardian-email">
+            {t.applications.editor.contactInfo.email}
+          </Label>
+          <InputField
+            id="guardian-email"
+            type="email"
+            value={formData.guardianEmail}
+            data-qa="guardianEmail-input"
+            onChange={(value) =>
+              updateFormData({
+                guardianEmail: value,
+                guardianEmailVerification: value,
+                noGuardianEmail: false
+              })
+            }
+            info={errorToInputInfo(errors.guardianEmail, t.validationErrors)}
+            hideErrorsBeforeTouched={!verificationRequested}
+            width="L"
+          />
+        </FixedSpaceColumn>
+      ) : (
+        <EmailRow $breakpoint="860px" $verticalSpacing="zero">
+          {renderResult(verifiedEmail, (verifiedEmail) =>
+            verifiedEmail ? (
               <FixedSpaceColumn $spacing="xs">
-                <Label htmlFor="guardian-email">
-                  {t.applications.editor.contactInfo.email}
-                  {formData.noGuardianEmail ? '' : ' *'}
-                </Label>
-                <InputField
-                  id="guardian-email"
-                  type="email"
-                  value={formData.guardianEmail}
-                  data-qa="guardianEmail-input"
-                  onChange={(value) =>
-                    updateFormData({
-                      guardianEmail: value,
-                      noGuardianEmail: false
-                    })
-                  }
-                  info={errorToInputInfo(
-                    errors.guardianEmail,
-                    t.validationErrors
-                  )}
-                  hideErrorsBeforeTouched={!verificationRequested}
-                  placeholder={t.applications.editor.contactInfo.email}
-                  width="L"
-                  required={!formData.noGuardianEmail}
-                  readonly={formData.noGuardianEmail}
-                />
-                <Gap $size="xs" />
-                <Label htmlFor="verify-guardian-email">
-                  {t.applications.editor.contactInfo.verifyEmail}
-                  {formData.noGuardianEmail ? '' : ' *'}
-                </Label>
-                <InputField
-                  id="verify-guardian-email"
-                  type="email"
-                  value={formData.guardianEmailVerification}
-                  data-qa="guardianEmailVerification-input"
-                  onChange={(value) =>
-                    updateFormData({
-                      guardianEmailVerification: value,
-                      noGuardianEmail: false
-                    })
-                  }
-                  info={errorToInputInfo(
-                    errors.guardianEmailVerification,
-                    t.validationErrors
-                  )}
-                  hideErrorsBeforeTouched={!verificationRequested}
-                  placeholder={t.applications.editor.contactInfo.verifyEmail}
-                  width="L"
-                  required={!formData.noGuardianEmail}
-                  readonly={formData.noGuardianEmail}
-                />
+                <Label>{t.applications.editor.contactInfo.email + ' *'}</Label>
+                <FixedSpaceFlexWrap
+                  $horizontalSpacing="X3L"
+                  $verticalSpacing="L"
+                >
+                  <span translate="no" data-qa="verified-email">
+                    {verifiedEmail}
+                  </span>
+                  <div>
+                    {t.applications.editor.contactInfo.emailChangeTip}
+                    <a
+                      href="/personal-details"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {t.applications.editor.contactInfo.emailChangeTipLink}
+                    </a>
+                  </div>
+                </FixedSpaceFlexWrap>
               </FixedSpaceColumn>
-              <div>
-                <Gap $size="m" />
-                <Checkbox
-                  label={t.applications.editor.contactInfo.noEmail}
-                  checked={formData.noGuardianEmail}
-                  data-qa="noGuardianEmail-input"
-                  onChange={(checked) =>
-                    updateFormData({
-                      guardianEmail: '',
-                      guardianEmailVerification: '',
-                      noGuardianEmail: checked
-                    })
-                  }
-                />
-              </div>
-            </>
-          )
-        )}
-      </EmailRow>
+            ) : (
+              <>
+                <FixedSpaceColumn $spacing="xs">
+                  <Label htmlFor="guardian-email">
+                    {t.applications.editor.contactInfo.email}
+                    {formData.noGuardianEmail ? '' : ' *'}
+                  </Label>
+                  <InputField
+                    id="guardian-email"
+                    type="email"
+                    value={formData.guardianEmail}
+                    data-qa="guardianEmail-input"
+                    onChange={(value) =>
+                      updateFormData({
+                        guardianEmail: value,
+                        noGuardianEmail: false
+                      })
+                    }
+                    info={errorToInputInfo(
+                      errors.guardianEmail,
+                      t.validationErrors
+                    )}
+                    hideErrorsBeforeTouched={!verificationRequested}
+                    placeholder={t.applications.editor.contactInfo.email}
+                    width="L"
+                    required={!formData.noGuardianEmail}
+                    readonly={formData.noGuardianEmail}
+                  />
+                  <Gap $size="xs" />
+                  <Label htmlFor="verify-guardian-email">
+                    {t.applications.editor.contactInfo.verifyEmail}
+                    {formData.noGuardianEmail ? '' : ' *'}
+                  </Label>
+                  <InputField
+                    id="verify-guardian-email"
+                    type="email"
+                    value={formData.guardianEmailVerification}
+                    data-qa="guardianEmailVerification-input"
+                    onChange={(value) =>
+                      updateFormData({
+                        guardianEmailVerification: value,
+                        noGuardianEmail: false
+                      })
+                    }
+                    info={errorToInputInfo(
+                      errors.guardianEmailVerification,
+                      t.validationErrors
+                    )}
+                    hideErrorsBeforeTouched={!verificationRequested}
+                    placeholder={t.applications.editor.contactInfo.verifyEmail}
+                    width="L"
+                    required={!formData.noGuardianEmail}
+                    readonly={formData.noGuardianEmail}
+                  />
+                </FixedSpaceColumn>
+                <div>
+                  <Gap $size="m" />
+                  <Checkbox
+                    label={t.applications.editor.contactInfo.noEmail}
+                    checked={formData.noGuardianEmail}
+                    data-qa="noGuardianEmail-input"
+                    onChange={(checked) =>
+                      updateFormData({
+                        guardianEmail: '',
+                        guardianEmailVerification: '',
+                        noGuardianEmail: checked
+                      })
+                    }
+                  />
+                </div>
+              </>
+            )
+          )}
+        </EmailRow>
+      )}
       <Gap $size="m" />
 
       <P>{t.applications.editor.contactInfo.emailInfoText}</P>
       <Gap $size="m" />
 
-      <ExpandingInfo
-        data-qa="guardian-future-address-info"
-        info={t.applications.editor.contactInfo.futureAddressInfo}
-      >
-        <Checkbox
-          label={t.applications.editor.contactInfo.hasFutureAddress}
-          checked={formData.guardianFutureAddressExists}
-          data-qa="guardianFutureAddressExists-input"
-          onChange={(checked) => {
-            updateFormData({
-              guardianFutureAddressExists: checked
-            })
-          }}
-        />
-      </ExpandingInfo>
-      {formData.guardianFutureAddressExists && (
+      {!(employee && application.guardianRestricted) && (
         <>
-          <Gap $size="m" />
-          {formData.childFutureAddressExists && (
+          <ExpandingInfo
+            data-qa="guardian-future-address-info"
+            info={t.applications.editor.contactInfo.futureAddressInfo}
+          >
+            <Checkbox
+              label={t.applications.editor.contactInfo.hasFutureAddress}
+              checked={formData.guardianFutureAddressExists}
+              data-qa="guardianFutureAddressExists-input"
+              onChange={(checked) => {
+                updateFormData({
+                  guardianFutureAddressExists: checked
+                })
+              }}
+            />
+          </ExpandingInfo>
+          {formData.guardianFutureAddressExists && (
             <>
-              <Checkbox
-                label={
-                  t.applications.editor.contactInfo
-                    .guardianFutureAddressEqualsChildFutureAddress
-                }
-                checked={formData.guardianFutureAddressEqualsChild}
-                data-qa="guardianFutureAddressEqualsChild-input"
-                onChange={(checked) => {
-                  updateFormData({
-                    guardianFutureAddressEqualsChild: checked
-                  })
-                  if (checked) {
-                    updateFormData({
-                      guardianMoveDate: formData.childMoveDate,
-                      guardianFutureStreet: formData.childFutureStreet,
-                      guardianFuturePostalCode: formData.childFuturePostalCode,
-                      guardianFuturePostOffice: formData.childFuturePostOffice
-                    })
-                  }
-                }}
-              />
               <Gap $size="m" />
+              {formData.childFutureAddressExists && (
+                <>
+                  <Checkbox
+                    label={
+                      t.applications.editor.contactInfo
+                        .guardianFutureAddressEqualsChildFutureAddress
+                    }
+                    checked={formData.guardianFutureAddressEqualsChild}
+                    data-qa="guardianFutureAddressEqualsChild-input"
+                    onChange={(checked) => {
+                      updateFormData({
+                        guardianFutureAddressEqualsChild: checked
+                      })
+                      if (checked) {
+                        updateFormData({
+                          guardianMoveDate: formData.childMoveDate,
+                          guardianFutureStreet: formData.childFutureStreet,
+                          guardianFuturePostalCode:
+                            formData.childFuturePostalCode,
+                          guardianFuturePostOffice:
+                            formData.childFuturePostOffice
+                        })
+                      }
+                    }}
+                  />
+                  <Gap $size="m" />
+                </>
+              )}
+              <FixedSpaceColumn $spacing="xs">
+                <Label htmlFor="guardian-move-date">
+                  {t.applications.editor.contactInfo.moveDate + ' *'}
+                </Label>
+                <DatePicker
+                  id="guardian-move-date"
+                  required
+                  date={formData.guardianMoveDate}
+                  data-qa="guardianMoveDate-input"
+                  onChange={(value) =>
+                    updateFormData({ guardianMoveDate: value })
+                  }
+                  locale={lang}
+                  info={errorToInputInfo(
+                    errors.guardianMoveDate,
+                    t.validationErrors
+                  )}
+                  hideErrorsBeforeTouched={!verificationRequested}
+                />
+              </FixedSpaceColumn>
+              <Gap $size="s" />
+              <FixedSpaceRow $spacing="XL">
+                <AdaptiveFlex $breakpoint="1060px">
+                  <FixedSpaceColumn $spacing="xs">
+                    <Label htmlFor="guardian-future-street">
+                      {t.applications.editor.contactInfo.street + ' *'}
+                    </Label>
+                    <InputField
+                      id="guardian-future-street"
+                      value={formData.guardianFutureStreet}
+                      data-qa="guardianFutureStreet-input"
+                      onChange={(value) =>
+                        updateFormData({
+                          guardianFutureStreet: value
+                        })
+                      }
+                      info={errorToInputInfo(
+                        errors.guardianFutureStreet,
+                        t.validationErrors
+                      )}
+                      hideErrorsBeforeTouched={!verificationRequested}
+                      placeholder={
+                        t.applications.editor.contactInfo.streetPlaceholder
+                      }
+                      readonly={formData.guardianFutureAddressEqualsChild}
+                      width="L"
+                      required
+                    />
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn $spacing="xs">
+                    <Label htmlFor="guardian-future-postal-code">
+                      {t.applications.editor.contactInfo.postalCode + ' *'}
+                    </Label>
+                    <InputField
+                      id="guardian-future-postal-code"
+                      value={formData.guardianFuturePostalCode}
+                      data-qa="guardianFuturePostalCode-input"
+                      onChange={(value) =>
+                        updateFormData({
+                          guardianFuturePostalCode: value
+                        })
+                      }
+                      info={errorToInputInfo(
+                        errors.guardianFuturePostalCode,
+                        t.validationErrors
+                      )}
+                      hideErrorsBeforeTouched={!verificationRequested}
+                      placeholder={
+                        t.applications.editor.contactInfo.postalCodePlaceholder
+                      }
+                      readonly={formData.guardianFutureAddressEqualsChild}
+                      width="m"
+                      required
+                    />
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn $spacing="xs">
+                    <Label htmlFor="guardian-future-post-office">
+                      {t.applications.editor.contactInfo.postOffice + ' *'}
+                    </Label>
+                    <InputField
+                      id="guardian-future-post-office"
+                      value={formData.guardianFuturePostOffice}
+                      data-qa="guardianFuturePostOffice-input"
+                      onChange={(value) =>
+                        updateFormData({
+                          guardianFuturePostOffice: value
+                        })
+                      }
+                      info={errorToInputInfo(
+                        errors.guardianFuturePostOffice,
+                        t.validationErrors
+                      )}
+                      hideErrorsBeforeTouched={!verificationRequested}
+                      placeholder={
+                        t.applications.editor.contactInfo
+                          .municipalityPlaceholder
+                      }
+                      readonly={formData.guardianFutureAddressEqualsChild}
+                      width="m"
+                      required
+                    />
+                  </FixedSpaceColumn>
+                </AdaptiveFlex>
+              </FixedSpaceRow>
             </>
           )}
-          <FixedSpaceColumn $spacing="xs">
-            <Label htmlFor="guardian-move-date">
-              {t.applications.editor.contactInfo.moveDate + ' *'}
-            </Label>
-            <DatePicker
-              id="guardian-move-date"
-              required
-              date={formData.guardianMoveDate}
-              data-qa="guardianMoveDate-input"
-              onChange={(value) => updateFormData({ guardianMoveDate: value })}
-              locale={lang}
-              info={errorToInputInfo(
-                errors.guardianMoveDate,
-                t.validationErrors
-              )}
-              hideErrorsBeforeTouched={!verificationRequested}
-            />
-          </FixedSpaceColumn>
-          <Gap $size="s" />
-          <FixedSpaceRow $spacing="XL">
-            <AdaptiveFlex $breakpoint="1060px">
-              <FixedSpaceColumn $spacing="xs">
-                <Label htmlFor="guardian-future-street">
-                  {t.applications.editor.contactInfo.street + ' *'}
-                </Label>
-                <InputField
-                  id="guardian-future-street"
-                  value={formData.guardianFutureStreet}
-                  data-qa="guardianFutureStreet-input"
-                  onChange={(value) =>
-                    updateFormData({
-                      guardianFutureStreet: value
-                    })
-                  }
-                  info={errorToInputInfo(
-                    errors.guardianFutureStreet,
-                    t.validationErrors
-                  )}
-                  hideErrorsBeforeTouched={!verificationRequested}
-                  placeholder={
-                    t.applications.editor.contactInfo.streetPlaceholder
-                  }
-                  readonly={formData.guardianFutureAddressEqualsChild}
-                  width="L"
-                  required
-                />
-              </FixedSpaceColumn>
-              <FixedSpaceColumn $spacing="xs">
-                <Label htmlFor="guardian-future-postal-code">
-                  {t.applications.editor.contactInfo.postalCode + ' *'}
-                </Label>
-                <InputField
-                  id="guardian-future-postal-code"
-                  value={formData.guardianFuturePostalCode}
-                  data-qa="guardianFuturePostalCode-input"
-                  onChange={(value) =>
-                    updateFormData({
-                      guardianFuturePostalCode: value
-                    })
-                  }
-                  info={errorToInputInfo(
-                    errors.guardianFuturePostalCode,
-                    t.validationErrors
-                  )}
-                  hideErrorsBeforeTouched={!verificationRequested}
-                  placeholder={
-                    t.applications.editor.contactInfo.postalCodePlaceholder
-                  }
-                  readonly={formData.guardianFutureAddressEqualsChild}
-                  width="m"
-                  required
-                />
-              </FixedSpaceColumn>
-              <FixedSpaceColumn $spacing="xs">
-                <Label htmlFor="guardian-future-post-office">
-                  {t.applications.editor.contactInfo.postOffice + ' *'}
-                </Label>
-                <InputField
-                  id="guardian-future-post-office"
-                  value={formData.guardianFuturePostOffice}
-                  data-qa="guardianFuturePostOffice-input"
-                  onChange={(value) =>
-                    updateFormData({
-                      guardianFuturePostOffice: value
-                    })
-                  }
-                  info={errorToInputInfo(
-                    errors.guardianFuturePostOffice,
-                    t.validationErrors
-                  )}
-                  hideErrorsBeforeTouched={!verificationRequested}
-                  placeholder={
-                    t.applications.editor.contactInfo.municipalityPlaceholder
-                  }
-                  readonly={formData.guardianFutureAddressEqualsChild}
-                  width="m"
-                  required
-                />
-              </FixedSpaceColumn>
-            </AdaptiveFlex>
-          </FixedSpaceRow>
         </>
       )}
     </>

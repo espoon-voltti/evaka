@@ -1583,11 +1583,16 @@ const en: Translations = {
         childFirstName: "Child's first name(s)",
         childLastName: "Child's last name",
         childSSN: "Child's personal identity code",
+        childInformationLink: "Child's information",
+        childDateOfBirth: 'Date of birth',
+        nationality: 'Nationality',
+        language: 'Language',
         homeAddress: 'Home address',
         moveDate: 'Date of move',
         street: 'Street address',
         postalCode: 'Postal code',
         postOffice: 'Post office',
+        addressRestricted: 'Address not available due to a safety ban',
         guardianInfoTitle: 'Guardian information',
         guardianFirstName: 'Guardian first name(s)',
         guardianLastName: 'Guardian last name',
@@ -1599,6 +1604,8 @@ const en: Translations = {
           'Om du vill ändra din e-postadress kan du göra det i dina ',
         emailChangeTipLink: 'personuppgifter.',
         noEmail: "I don't have an email address",
+        secondGuardianExists:
+          "The applicant has provided the second guardian's information",
         secondGuardianInfoTitle: 'Second guardian information',
         secondGuardianInfo:
           'Second guardian information is automatically fetched from VTJ',
@@ -1614,7 +1621,8 @@ const en: Translations = {
           NOT_AGREED:
             'We have not agreed with the other guardian about this application.',
           RIGHT_TO_GET_NOTIFIED:
-            'The other guardian has only the right to get notified about the placement.'
+            'The other guardian has only the right to get notified about the placement.',
+          NOT_SET: 'Guardians live at the same address'
         },
         secondGuardianPhone: "Other guardian's phone number",
         secondGuardianEmail: "Other guardian's email",

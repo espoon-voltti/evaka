@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { Link } from 'wouter'
 
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -22,6 +23,7 @@ import type { ContactInfoSectionProps } from './ContactInfoSection'
 
 export default React.memo(function ChildSubSection({
   deps,
+  application,
   formData,
   updateFormData,
   errors,
@@ -29,6 +31,7 @@ export default React.memo(function ChildSubSection({
   fullFamily
 }: ContactInfoSectionProps) {
   const { translations: t, lang } = deps
+  const employee = deps.actor === 'employee'
 
   return (
     <>
@@ -62,149 +65,201 @@ export default React.memo(function ChildSubSection({
       <Gap $size="s" />
       <FixedSpaceColumn $spacing="xs">
         <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
-        <span data-qa="child-street-address" translate="no">
-          {formData.childStreet}
-        </span>
+        {employee && application.childRestricted ? (
+          <span data-qa="child-restricted">
+            {t.applications.editor.contactInfo.addressRestricted}
+          </span>
+        ) : (
+          <span data-qa="child-street-address" translate="no">
+            {formData.childStreet}
+          </span>
+        )}
       </FixedSpaceColumn>
-      <Gap $size="m" />
-
-      <ExpandingInfo
-        data-qa="child-future-address-info"
-        info={t.applications.editor.contactInfo.futureAddressInfo}
-      >
-        <Checkbox
-          label={t.applications.editor.contactInfo.hasFutureAddress}
-          checked={formData.childFutureAddressExists}
-          data-qa="childFutureAddressExists-input"
-          onChange={(checked) => {
-            updateFormData({
-              childFutureAddressExists: checked
-            })
-            if (!checked) {
-              updateFormData({
-                guardianFutureAddressEqualsChild: false
-              })
-            }
-          }}
-        />
-      </ExpandingInfo>
-
-      {formData.childFutureAddressExists && (
+      {employee && (
         <>
-          <Gap $size="m" />
-          <FixedSpaceColumn $spacing="xs">
-            <Label htmlFor="child-move-date">
-              {t.applications.editor.contactInfo.moveDate + ' *'}
-            </Label>
-            <DatePicker
-              id="child-move-date"
-              required
-              date={formData.childMoveDate}
-              data-qa="childMoveDate-input"
-              onChange={(value) =>
-                formData.guardianFutureAddressEqualsChild
-                  ? updateFormData({
-                      guardianMoveDate: value,
-                      childMoveDate: value
-                    })
-                  : updateFormData({ childMoveDate: value })
-              }
-              locale={lang}
-              info={errorToInputInfo(errors.childMoveDate, t.validationErrors)}
-              hideErrorsBeforeTouched={!verificationRequested}
-            />
-          </FixedSpaceColumn>
           <Gap $size="s" />
           <FixedSpaceRow $spacing="XL">
             <AdaptiveFlex $breakpoint="1060px">
+              {!formData.childSSN && (
+                <FixedSpaceColumn $spacing="xs">
+                  <Label>
+                    {t.applications.editor.contactInfo.childDateOfBirth}
+                  </Label>
+                  <span data-qa="child-dob">
+                    {application.form.child.dateOfBirth?.format()}
+                  </span>
+                </FixedSpaceColumn>
+              )}
               <FixedSpaceColumn $spacing="xs">
-                <Label htmlFor="child-future-street">
-                  {t.applications.editor.contactInfo.street + ' *'}
-                </Label>
-                <InputField
-                  required
-                  id="child-future-street"
-                  value={formData.childFutureStreet}
-                  data-qa="childFutureStreet-input"
-                  onChange={(value) =>
-                    formData.guardianFutureAddressEqualsChild
-                      ? updateFormData({
-                          childFutureStreet: value,
-                          guardianFutureStreet: value
-                        })
-                      : updateFormData({
-                          childFutureStreet: value
-                        })
-                  }
-                  info={errorToInputInfo(
-                    errors.childFutureStreet,
-                    t.validationErrors
-                  )}
-                  hideErrorsBeforeTouched={!verificationRequested}
-                  placeholder={
-                    t.applications.editor.contactInfo.streetPlaceholder
-                  }
-                  width="L"
-                />
+                <Label>{t.applications.editor.contactInfo.nationality}</Label>
+                <span data-qa="child-nationality">
+                  {application.form.child.nationality}
+                </span>
               </FixedSpaceColumn>
               <FixedSpaceColumn $spacing="xs">
-                <Label htmlFor="child-future-postal-code">
-                  {t.applications.editor.contactInfo.postalCode + ' *'}
-                </Label>
-                <InputField
-                  required
-                  id="child-future-postal-code"
-                  value={formData.childFuturePostalCode}
-                  data-qa="childFuturePostalCode-input"
-                  onChange={(value) =>
-                    formData.guardianFutureAddressEqualsChild
-                      ? updateFormData({
-                          guardianFuturePostalCode: value,
-                          childFuturePostalCode: value
-                        })
-                      : updateFormData({ childFuturePostalCode: value })
-                  }
-                  info={errorToInputInfo(
-                    errors.childFuturePostalCode,
-                    t.validationErrors
-                  )}
-                  hideErrorsBeforeTouched={!verificationRequested}
-                  placeholder={
-                    t.applications.editor.contactInfo.postalCodePlaceholder
-                  }
-                  width="m"
-                />
-              </FixedSpaceColumn>
-              <FixedSpaceColumn $spacing="xs">
-                <Label htmlFor="child-future-post-office">
-                  {t.applications.editor.contactInfo.postOffice + ' *'}
-                </Label>
-                <InputField
-                  required
-                  id="child-future-post-office"
-                  value={formData.childFuturePostOffice}
-                  data-qa="childFuturePostOffice-input"
-                  onChange={(value) =>
-                    formData.guardianFutureAddressEqualsChild
-                      ? updateFormData({
-                          guardianFuturePostOffice: value,
-                          childFuturePostOffice: value
-                        })
-                      : updateFormData({ childFuturePostOffice: value })
-                  }
-                  info={errorToInputInfo(
-                    errors.childFuturePostOffice,
-                    t.validationErrors
-                  )}
-                  hideErrorsBeforeTouched={!verificationRequested}
-                  placeholder={
-                    t.applications.editor.contactInfo.municipalityPlaceholder
-                  }
-                  width="m"
-                />
+                <Label>{t.applications.editor.contactInfo.language}</Label>
+                <span data-qa="child-language">
+                  {application.form.child.language}
+                </span>
               </FixedSpaceColumn>
             </AdaptiveFlex>
           </FixedSpaceRow>
+          <Gap $size="s" />
+          <Link
+            to={`/child-information/${application.childId}`}
+            data-qa="link-child-name"
+          >
+            {t.applications.editor.contactInfo.childInformationLink}
+          </Link>
+        </>
+      )}
+      <Gap $size="m" />
+
+      {!(employee && application.childRestricted) && (
+        <>
+          <ExpandingInfo
+            data-qa="child-future-address-info"
+            info={t.applications.editor.contactInfo.futureAddressInfo}
+          >
+            <Checkbox
+              label={t.applications.editor.contactInfo.hasFutureAddress}
+              checked={formData.childFutureAddressExists}
+              data-qa="childFutureAddressExists-input"
+              onChange={(checked) => {
+                updateFormData({
+                  childFutureAddressExists: checked
+                })
+                if (!checked) {
+                  updateFormData({
+                    guardianFutureAddressEqualsChild: false
+                  })
+                }
+              }}
+            />
+          </ExpandingInfo>
+
+          {formData.childFutureAddressExists && (
+            <>
+              <Gap $size="m" />
+              <FixedSpaceColumn $spacing="xs">
+                <Label htmlFor="child-move-date">
+                  {t.applications.editor.contactInfo.moveDate + ' *'}
+                </Label>
+                <DatePicker
+                  id="child-move-date"
+                  required
+                  date={formData.childMoveDate}
+                  data-qa="childMoveDate-input"
+                  onChange={(value) =>
+                    formData.guardianFutureAddressEqualsChild
+                      ? updateFormData({
+                          guardianMoveDate: value,
+                          childMoveDate: value
+                        })
+                      : updateFormData({ childMoveDate: value })
+                  }
+                  locale={lang}
+                  info={errorToInputInfo(
+                    errors.childMoveDate,
+                    t.validationErrors
+                  )}
+                  hideErrorsBeforeTouched={!verificationRequested}
+                />
+              </FixedSpaceColumn>
+              <Gap $size="s" />
+              <FixedSpaceRow $spacing="XL">
+                <AdaptiveFlex $breakpoint="1060px">
+                  <FixedSpaceColumn $spacing="xs">
+                    <Label htmlFor="child-future-street">
+                      {t.applications.editor.contactInfo.street + ' *'}
+                    </Label>
+                    <InputField
+                      required
+                      id="child-future-street"
+                      value={formData.childFutureStreet}
+                      data-qa="childFutureStreet-input"
+                      onChange={(value) =>
+                        formData.guardianFutureAddressEqualsChild
+                          ? updateFormData({
+                              childFutureStreet: value,
+                              guardianFutureStreet: value
+                            })
+                          : updateFormData({
+                              childFutureStreet: value
+                            })
+                      }
+                      info={errorToInputInfo(
+                        errors.childFutureStreet,
+                        t.validationErrors
+                      )}
+                      hideErrorsBeforeTouched={!verificationRequested}
+                      placeholder={
+                        t.applications.editor.contactInfo.streetPlaceholder
+                      }
+                      width="L"
+                    />
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn $spacing="xs">
+                    <Label htmlFor="child-future-postal-code">
+                      {t.applications.editor.contactInfo.postalCode + ' *'}
+                    </Label>
+                    <InputField
+                      required
+                      id="child-future-postal-code"
+                      value={formData.childFuturePostalCode}
+                      data-qa="childFuturePostalCode-input"
+                      onChange={(value) =>
+                        formData.guardianFutureAddressEqualsChild
+                          ? updateFormData({
+                              guardianFuturePostalCode: value,
+                              childFuturePostalCode: value
+                            })
+                          : updateFormData({ childFuturePostalCode: value })
+                      }
+                      info={errorToInputInfo(
+                        errors.childFuturePostalCode,
+                        t.validationErrors
+                      )}
+                      hideErrorsBeforeTouched={!verificationRequested}
+                      placeholder={
+                        t.applications.editor.contactInfo.postalCodePlaceholder
+                      }
+                      width="m"
+                    />
+                  </FixedSpaceColumn>
+                  <FixedSpaceColumn $spacing="xs">
+                    <Label htmlFor="child-future-post-office">
+                      {t.applications.editor.contactInfo.postOffice + ' *'}
+                    </Label>
+                    <InputField
+                      required
+                      id="child-future-post-office"
+                      value={formData.childFuturePostOffice}
+                      data-qa="childFuturePostOffice-input"
+                      onChange={(value) =>
+                        formData.guardianFutureAddressEqualsChild
+                          ? updateFormData({
+                              guardianFuturePostOffice: value,
+                              childFuturePostOffice: value
+                            })
+                          : updateFormData({ childFuturePostOffice: value })
+                      }
+                      info={errorToInputInfo(
+                        errors.childFuturePostOffice,
+                        t.validationErrors
+                      )}
+                      hideErrorsBeforeTouched={!verificationRequested}
+                      placeholder={
+                        t.applications.editor.contactInfo
+                          .municipalityPlaceholder
+                      }
+                      width="m"
+                    />
+                  </FixedSpaceColumn>
+                </AdaptiveFlex>
+              </FixedSpaceRow>
+            </>
+          )}
         </>
       )}
     </>
