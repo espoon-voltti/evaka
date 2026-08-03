@@ -8,10 +8,8 @@ import styled from 'styled-components'
 import DateRange from 'lib-common/date-range'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { useMutationResult } from 'lib-common/query'
-import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -40,6 +38,7 @@ const applicationType = 'PRESCHOOL'
 
 export default React.memo(function ServiceTimeSubSectionPreschool({
   deps,
+  applicationId,
   isInvalidDate,
   minDate,
   maxDate,
@@ -57,7 +56,6 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
     getAttachmentUrl,
     deleteAttachmentMutation
   } = deps
-  const applicationId = useIdRouteParam<ApplicationId>('applicationId')
   const labelId = useUniqueId()
 
   const serviceNeedOptionsByType = useMemo(

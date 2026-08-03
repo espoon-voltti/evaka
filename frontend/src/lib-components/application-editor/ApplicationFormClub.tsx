@@ -42,6 +42,7 @@ export default React.memo(function ApplicationFormClub({
 
       <ServiceNeedSection
         deps={deps}
+        applicationId={application.id}
         status={application.status}
         isInvalidDate={isInvalidDate}
         minDate={minDate}
