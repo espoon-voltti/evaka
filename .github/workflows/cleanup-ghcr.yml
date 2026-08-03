@@ -45,8 +45,13 @@ jobs:
         run: |
           set -euo pipefail
           base="/orgs/espoon-voltti/packages/container/${PACKAGE//\//%2F}/versions"
-          mapfile -t ids < <(gh api --paginate "${base}?per_page=100&state=active" \
-            -q '.[] | select((.metadata.container.tags // []) | length == 0) | .id')
+          # Capture the listing separately so a failed API call aborts the job
+          # (a process substitution would swallow the error and pass green).
+          if ! raw=$(gh api --paginate "${base}?per_page=100&state=active" \
+            -q '.[] | select((.metadata.container.tags // []) | length == 0) | .id'); then
+            echo "::error::failed to list versions for ${PACKAGE}"; exit 1
+          fi
+          mapfile -t ids < <(printf '%s\n' "$raw" | grep -E '^[0-9]+$' || true)
           echo "untagged versions to delete: ${#ids[@]}"
           deleted=0
           for id in "${ids[@]}"; do
@@ -66,9 +71,14 @@ jobs:
           set -euo pipefail
           base="/orgs/espoon-voltti/packages/container/${PACKAGE//\//%2F}/versions"
           # Sort all versions oldest-first across every page, then drop the
-          # newest 100 from the tail; the remainder is what we delete.
-          mapfile -t ids < <(gh api --paginate --slurp "${base}?per_page=100&state=active" \
-            | jq -r '[.[][]] | sort_by(.created_at) | .[0:(length - 100)] | .[].id')
+          # newest 100 from the tail; the remainder is what we delete. The
+          # `max 0` guards the case of <100 versions, where `length - 100` is
+          # negative and jq's slice would otherwise keep only a few newest.
+          if ! raw=$(gh api --paginate --slurp "${base}?per_page=100&state=active" \
+            | jq -r '[.[][]] | sort_by(.created_at) | .[0:([length - 100, 0] | max)] | .[].id'); then
+            echo "::error::failed to list versions for ${PACKAGE}"; exit 1
+          fi
+          mapfile -t ids < <(printf '%s\n' "$raw" | grep -E '^[0-9]+$' || true)
           echo "versions to delete beyond the newest 100: ${#ids[@]}"
           deleted=0
           for id in "${ids[@]}"; do
