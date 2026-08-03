@@ -10,7 +10,6 @@ import LocalTime from 'lib-common/local-time'
 
 import config from '../../config'
 import {
-  createDaycarePlacementFixture,
   testDaycare,
   testDaycarePrivateVoucher,
   testChild2,
@@ -21,7 +20,6 @@ import {
   testCareArea
 } from '../../dev-api/fixtures'
 import {
-  createDaycarePlacements,
   createDefaultServiceNeedOptions,
   createFeeDecisions,
   createVoucherValueDecisions,
@@ -152,17 +150,12 @@ test.describe('Person finance decisions', () => {
       endDate: LocalDate.of(2099, 1, 1)
     }).save()
 
-    await createDaycarePlacements({
-      body: [
-        createDaycarePlacementFixture(
-          randomId(),
-          testChild2.id,
-          testDaycarePrivateVoucher.id,
-          from,
-          LocalDate.todayInSystemTz()
-        )
-      ]
-    })
+    await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycarePrivateVoucher.id,
+      startDate: from,
+      endDate: LocalDate.todayInSystemTz()
+    }).save()
 
     const adminUser = await Fixture.employee().admin().save()
     page = await newEvakaPage()

@@ -6,8 +6,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import type {
   CalendarEventId,
   CalendarEventTimeId,
-  GroupId,
-  PlacementId
+  GroupId
 } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
@@ -15,7 +14,6 @@ import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 
 import {
-  createDaycarePlacementFixture,
   Fixture,
   testAdult,
   testAdult2,
@@ -24,10 +22,7 @@ import {
   testChild2,
   testDaycare
 } from '../../dev-api/fixtures'
-import {
-  createDaycarePlacements,
-  resetServiceState
-} from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import type { DevCalendarEventTime, DevPerson } from '../../generated/api-types'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { DiscussionSurveyModal } from '../../pages/citizen/citizen-discussion-surveys'
@@ -79,22 +74,6 @@ for (const env of ['desktop', 'mobile'] as const) {
         children: children
       }).save()
 
-      const placementIds = new Map(
-        children.map((child) => [child.id, randomId<PlacementId>()])
-      )
-
-      await createDaycarePlacements({
-        body: children.map((child) =>
-          createDaycarePlacementFixture(
-            placementIds.get(child.id)!,
-            child.id,
-            testDaycare.id,
-            today,
-            today.addYears(1)
-          )
-        )
-      })
-
       const daycareGroup = await Fixture.daycareGroup({
         id: groupId,
         daycareId: testDaycare.id,
@@ -102,11 +81,17 @@ for (const env of ['desktop', 'mobile'] as const) {
       }).save()
 
       for (const child of children) {
+        const placement = await Fixture.placement({
+          childId: child.id,
+          unitId: testDaycare.id,
+          startDate: today,
+          endDate: today.addYears(1)
+        }).save()
         await Fixture.groupPlacement({
           startDate: today,
           endDate: today.addYears(1),
           daycareGroupId: daycareGroup.id,
-          daycarePlacementId: placementIds.get(child.id)!
+          daycarePlacementId: placement.id
         }).save()
       }
 
@@ -434,22 +419,6 @@ for (const env of ['desktop', 'mobile'] as const) {
         children: children
       }).save()
 
-      const placementIds = new Map(
-        children.map((child) => [child.id, randomId<PlacementId>()])
-      )
-
-      await createDaycarePlacements({
-        body: children.map((child) =>
-          createDaycarePlacementFixture(
-            placementIds.get(child.id)!,
-            child.id,
-            testDaycare.id,
-            today,
-            today.addYears(1)
-          )
-        )
-      })
-
       const daycareGroup = await Fixture.daycareGroup({
         id: groupId,
         daycareId: testDaycare.id,
@@ -457,11 +426,17 @@ for (const env of ['desktop', 'mobile'] as const) {
       }).save()
 
       for (const child of children) {
+        const placement = await Fixture.placement({
+          childId: child.id,
+          unitId: testDaycare.id,
+          startDate: today,
+          endDate: today.addYears(1)
+        }).save()
         await Fixture.groupPlacement({
           startDate: today,
           endDate: today.addYears(1),
           daycareGroupId: daycareGroup.id,
-          daycarePlacementId: placementIds.get(child.id)!
+          daycarePlacementId: placement.id
         }).save()
       }
 
@@ -525,25 +500,19 @@ for (const env of ['desktop', 'mobile'] as const) {
     test('Citizen receives only one correct set of event times despite 2 placements', async ({
       newEvakaPage
     }) => {
-      const placement1 = createDaycarePlacementFixture(
-        randomId(),
-        testChild2.id,
-        testDaycare.id,
-        today,
-        today.addDays(2)
-      )
+      const placement1 = await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        startDate: today,
+        endDate: today.addDays(2)
+      }).save()
 
-      const placement2 = createDaycarePlacementFixture(
-        randomId(),
-        testChild2.id,
-        testDaycare.id,
-        today.addDays(4),
-        today.addDays(4)
-      )
-
-      await createDaycarePlacements({
-        body: [placement1, placement2]
-      })
+      const placement2 = await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        startDate: today.addDays(4),
+        endDate: today.addDays(4)
+      }).save()
 
       await Fixture.groupPlacement({
         startDate: today,
@@ -576,17 +545,12 @@ for (const env of ['desktop', 'mobile'] as const) {
     test('Citizen receives only one correct set of event times despite 2 group placements', async ({
       newEvakaPage
     }) => {
-      const placement1 = createDaycarePlacementFixture(
-        randomId(),
-        testChild2.id,
-        testDaycare.id,
-        today,
-        today.addDays(4)
-      )
-
-      await createDaycarePlacements({
-        body: [placement1]
-      })
+      const placement1 = await Fixture.placement({
+        childId: testChild2.id,
+        unitId: testDaycare.id,
+        startDate: today,
+        endDate: today.addDays(4)
+      }).save()
 
       await Fixture.groupPlacement({
         startDate: today,

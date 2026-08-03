@@ -2,10 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type {
-  ApplicationId,
-  PlacementId
-} from 'lib-common/generated/api-types/shared'
+import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
@@ -13,7 +10,6 @@ import LocalTime from 'lib-common/local-time'
 import config from '../../config'
 import {
   applicationFixture,
-  createDaycarePlacementFixture,
   testDaycare,
   Fixture,
   testAdult,
@@ -24,7 +20,6 @@ import {
 } from '../../dev-api/fixtures'
 import {
   createApplications,
-  createDaycarePlacements,
   resetServiceState
 } from '../../generated/api-clients'
 import type { DevApplicationWithForm } from '../../generated/api-types'
@@ -136,13 +131,12 @@ test.describe('Placement sketching report', () => {
     const preferredUnit = testDaycare
     const currentUnit = preferredUnit
 
-    const daycarePlacementFixture = createDaycarePlacementFixture(
-      randomId<PlacementId>(),
-      createdApplication.childId,
-      preferredUnit.id,
-      placementStartDate
-    )
-    await createDaycarePlacements({ body: [daycarePlacementFixture] })
+    await Fixture.placement({
+      childId: createdApplication.childId,
+      unitId: preferredUnit.id,
+      startDate: placementStartDate,
+      endDate: LocalDate.of(2023, 8, 31)
+    }).save()
 
     const report = await openPlacementSketchingReport()
     await report.assertRow(

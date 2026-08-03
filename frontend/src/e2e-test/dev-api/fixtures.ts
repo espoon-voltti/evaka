@@ -27,7 +27,6 @@ import type {
   FeeThresholds,
   IncomeNotification
 } from 'lib-common/generated/api-types/invoicing'
-import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import type { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import type {
@@ -37,11 +36,9 @@ import type {
   DecisionGenericReasoningId,
   DecisionIndividualReasoningId,
   EmployeeId,
-  EvakaUserId,
   FeeDecisionId,
   GroupId,
   PersonId,
-  PlacementId,
   VoucherValueDecisionId
 } from 'lib-common/generated/api-types/shared'
 import type { EvakaUser } from 'lib-common/generated/api-types/user'
@@ -156,7 +153,6 @@ import type {
   NekkuCustomer,
   NekkuSpecialDiet,
   PlacementPlan,
-  PlacementSource,
   ReservationInsert,
   VoucherValueDecision
 } from '../generated/api-types'
@@ -3047,41 +3043,6 @@ export const testDaycareGroup = Fixture.daycareGroup({
   aromiCustomerId: null,
   nekkuCustomerNumber: null
 })
-
-/**
- *  @deprecated Use `Fixture.placement()` instead
- **/
-export function createDaycarePlacementFixture(
-  id: PlacementId,
-  childId: PersonId,
-  unitId: DaycareId,
-  startDate = LocalDate.of(2022, 5, 1),
-  endDate = LocalDate.of(2023, 8, 31),
-  type: PlacementType = 'DAYCARE',
-  placeGuarantee = false,
-  createdAt = HelsinkiDateTime.now(),
-  createdBy = systemInternalUser.id,
-  source: PlacementSource = 'MANUAL',
-  modifiedAt: HelsinkiDateTime | null = HelsinkiDateTime.now(),
-  modifiedBy: EvakaUserId | null = systemInternalUser.id
-): DevPlacement {
-  return Fixture.placement({
-    id,
-    type,
-    childId,
-    unitId,
-    startDate,
-    endDate,
-    placeGuarantee,
-    createdAt,
-    createdBy,
-    source,
-    modifiedAt,
-    modifiedBy,
-    terminationRequestedDate: null,
-    terminatedBy: null
-  })
-}
 
 export const DecisionIncomeFixture = (total: number): DecisionIncome => ({
   id: null,

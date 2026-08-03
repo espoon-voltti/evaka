@@ -3,11 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
 
 import config from '../../config'
 import {
-  createDaycarePlacementFixture,
   testDaycare,
   testDaycare2,
   testChild,
@@ -18,10 +16,7 @@ import {
   testCareArea,
   testCareArea2
 } from '../../dev-api/fixtures'
-import {
-  createDaycarePlacements,
-  resetServiceState
-} from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import {
   FinancePage,
@@ -85,24 +80,18 @@ test.describe('Income statements', () => {
     const startDate = today.addYears(-1)
     const endDate = today
 
-    await createDaycarePlacements({
-      body: [
-        createDaycarePlacementFixture(
-          randomId(),
-          testChild.id,
-          testDaycare.id,
-          startDate,
-          endDate
-        ),
-        createDaycarePlacementFixture(
-          randomId(),
-          testChild2.id,
-          testDaycare2.id,
-          startDate,
-          endDate
-        )
-      ]
-    })
+    await Fixture.placement({
+      childId: testChild.id,
+      unitId: testDaycare.id,
+      startDate,
+      endDate
+    }).save()
+    await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare2.id,
+      startDate,
+      endDate
+    }).save()
 
     await Fixture.incomeStatement({
       personId: testAdult.id,
@@ -197,17 +186,12 @@ test.describe('Income statements', () => {
     const startDate = today.addYears(-1)
     const endDate = today
 
-    await createDaycarePlacements({
-      body: [
-        createDaycarePlacementFixture(
-          randomId(),
-          testChild.id,
-          testDaycare.id,
-          startDate,
-          endDate
-        )
-      ]
-    })
+    await Fixture.placement({
+      childId: testChild.id,
+      unitId: testDaycare.id,
+      startDate,
+      endDate
+    }).save()
 
     await Fixture.incomeStatement({
       personId: testAdult.id,

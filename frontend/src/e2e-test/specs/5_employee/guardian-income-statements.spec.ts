@@ -3,23 +3,18 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { randomId } from 'lib-common/id-type'
+import LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
-  createDaycarePlacementFixture,
   testDaycare,
   testAdult,
   Fixture,
   testChildRestricted,
   testCareArea
 } from '../../dev-api/fixtures'
-import {
-  createDaycarePlacements,
-  insertGuardians,
-  resetServiceState
-} from '../../generated/api-clients'
+import { insertGuardians, resetServiceState } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import GuardianInformationPage from '../../pages/employee/guardian-information'
 import { test } from '../../playwright'
@@ -54,12 +49,12 @@ test.describe('Guardian income statements', () => {
   })
 
   test("Shows placed child's income statements", async () => {
-    const daycarePlacementFixture = createDaycarePlacementFixture(
-      randomId(),
-      child.id,
-      testDaycare.id
-    )
-    await createDaycarePlacements({ body: [daycarePlacementFixture] })
+    await Fixture.placement({
+      childId: child.id,
+      unitId: testDaycare.id,
+      startDate: LocalDate.of(2022, 5, 1),
+      endDate: LocalDate.of(2023, 8, 31)
+    }).save()
 
     await insertGuardians({
       body: [

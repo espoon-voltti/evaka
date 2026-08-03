@@ -4,15 +4,13 @@
 
 import type {
   ApplicationId,
-  DecisionId,
-  PlacementId
+  DecisionId
 } from 'lib-common/generated/api-types/shared'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
 import {
   applicationFixture,
-  createDaycarePlacementFixture,
   testDaycare,
   testDaycareGroup,
   decisionFixture,
@@ -26,7 +24,6 @@ import {
 import {
   createApplications,
   createDaycareGroups,
-  createDaycarePlacements,
   createDecisions,
   deleteDaycareCostCenter,
   resetServiceState
@@ -52,11 +49,10 @@ test.describe('Employee - Guardian Information', () => {
 
     const admin = await Fixture.employee().admin().save()
 
-    const daycarePlacementFixture = createDaycarePlacementFixture(
-      randomId<PlacementId>(),
-      testChild.id,
-      testDaycare.id
-    )
+    await Fixture.placement({
+      childId: testChild.id,
+      unitId: testDaycare.id
+    }).save()
     const application = applicationFixture(testChild, testAdult)
 
     const application2 = {
@@ -69,7 +65,6 @@ test.describe('Employee - Guardian Information', () => {
     }
 
     const startDate = LocalDate.of(2021, 8, 16)
-    await createDaycarePlacements({ body: [daycarePlacementFixture] })
     await createApplications({ body: [application, application2] })
     await createDecisions({
       body: [

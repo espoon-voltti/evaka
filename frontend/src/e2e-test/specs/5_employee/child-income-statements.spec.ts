@@ -2,22 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
-  createDaycarePlacementFixture,
   testDaycare,
   testChild,
   Fixture,
   testCareArea
 } from '../../dev-api/fixtures'
-import {
-  createDaycarePlacements,
-  resetServiceState
-} from '../../generated/api-clients'
+import { resetServiceState } from '../../generated/api-clients'
 import ChildInformationPage from '../../pages/employee/child-information'
 import { test } from '../../playwright'
 import type { Page } from '../../utils/page'
@@ -43,12 +38,10 @@ test.describe('Child profile income statements', () => {
   })
 
   test('Shows income statements', async () => {
-    const daycarePlacementFixture = createDaycarePlacementFixture(
-      randomId(),
-      testChild.id,
-      testDaycare.id
-    )
-    await createDaycarePlacements({ body: [daycarePlacementFixture] })
+    await Fixture.placement({
+      childId: testChild.id,
+      unitId: testDaycare.id
+    }).save()
 
     await Fixture.incomeStatement({
       personId: testChild.id,
