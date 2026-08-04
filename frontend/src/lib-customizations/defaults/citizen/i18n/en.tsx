@@ -2261,6 +2261,7 @@ const en: Translations = {
         ALIMONY: 'Maintenance allowance/support',
         INTEREST_AND_INVESTMENT_INCOME: 'Income from interest and dividends',
         RENTAL_INCOME: 'Rental income',
+        GENERAL_SOCIAL_SECURITY_BENEFIT: 'General social security benefit',
         UNEMPLOYMENT_ALLOWANCE: 'Unemployment benefit',
         LABOUR_MARKET_SUBSIDY: 'Labour market subsidy',
         ADJUSTED_DAILY_ALLOWANCE: 'Adjusted unemployment benefit',
@@ -2372,6 +2373,8 @@ const en: Translations = {
         FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Decision on care allowance',
         ALIMONY:
           'Child maintenance agreement or decision on maintenance allowance',
+        GENERAL_SOCIAL_SECURITY_BENEFIT:
+          'Decision on general social security benefit',
         UNEMPLOYMENT_ALLOWANCE: 'Decision on unemployment benefit',
         LABOUR_MARKET_SUBSIDY: 'Decision on labour market subsidy',
         ADJUSTED_DAILY_ALLOWANCE: 'Decision on the daily allowance',
@@ -2422,6 +2425,8 @@ const en: Translations = {
           'Add decision on care allowance',
         ALIMONY:
           'Add child maintenance agreement or decision on maintenance allowance',
+        GENERAL_SOCIAL_SECURITY_BENEFIT:
+          'Add decision on general social security benefit',
         UNEMPLOYMENT_ALLOWANCE: 'Add decision on unemployment benefit',
         LABOUR_MARKET_SUBSIDY: 'Add decision on labour market subsidy',
         ADJUSTED_DAILY_ALLOWANCE: 'Add decision on the daily allowance',
