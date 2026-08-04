@@ -8,8 +8,7 @@ import {
   isVariableTime
 } from 'lib-common/api-types/daily-service-times'
 import type { DailyServiceTimesValue } from 'lib-common/generated/api-types/dailyservicetimes'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import type LocalDate from 'lib-common/local-date'
+import LocalDate from 'lib-common/local-date'
 import type TimeRange from 'lib-common/time-range'
 
 const dayNames = [
@@ -23,8 +22,7 @@ const dayNames = [
 type DayName = (typeof dayNames)[number]
 
 function getToday(): DayName | undefined {
-  // Sunday is 0
-  const dayIndex = (HelsinkiDateTime.now().toSystemTzDate().getDay() + 6) % 7
+  const dayIndex = LocalDate.todayInSystemTz().getIsoDayOfWeek() - 1
   return dayNames[dayIndex]
 }
 
