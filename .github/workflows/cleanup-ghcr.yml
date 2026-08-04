@@ -24,27 +24,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package:
-          - evaka/frontend
-          - evaka/frontend-multi
-          - evaka/frontend-builder
-          - evaka/service
-          - evaka/service-builder
-          - evaka/api-gateway
+        # keep: newest versions to retain; 0 deletes untagged versions only.
+        include:
+          - { package: evaka/frontend, keep: 100 }
+          - { package: evaka/frontend-multi, keep: 0 }
+          - { package: evaka/frontend-builder, keep: 0 }
+          - { package: evaka/service, keep: 0 }
+          - { package: evaka/service-builder, keep: 0 }
+          - { package: evaka/api-gateway, keep: 0 }
     steps:
-      - name: Delete untagged versions of ${{ matrix.package }}
-        uses: actions/delete-package-versions@v5
+      - uses: espoon-voltti/voltti-actions/ghcr-cleanup@master
         with:
-          owner: espoon-voltti
-          package-name: ${{ matrix.package }}
-          package-type: container
-          delete-only-untagged-versions: 'true'
-
-      - name: Keep newest 100 versions of ${{ matrix.package }}
-        if: matrix.package == 'evaka/frontend' # Extend this in future if needed.
-        uses: actions/delete-package-versions@v5
-        with:
-          owner: espoon-voltti
-          package-name: ${{ matrix.package }}
-          package-type: container
-          min-versions-to-keep: 100
+          package: ${{ matrix.package }}
+          keep: ${{ matrix.keep }}
