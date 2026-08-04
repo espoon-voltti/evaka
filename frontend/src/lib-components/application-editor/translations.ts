@@ -269,8 +269,8 @@ export interface ApplicationEditorTexts {
     assistanceNeedLabel: string
     assistanceNeedPlaceholder: string
     assistanceNeedInstructions: {
-      DAYCARE: string
-      CLUB: string
+      DAYCARE: ReactNode
+      CLUB: ReactNode
       PRESCHOOL: ReactNode
     }
     assistanceNeedExtraInstructions: {
