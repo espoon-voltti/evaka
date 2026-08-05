@@ -29,9 +29,9 @@ UPDATE SET
     valid_from = EXCLUDED.valid_from,
     valid_to = EXCLUDED.valid_to
 WHERE
-    assistance_action_option.name_fi <> EXCLUDED.name_fi OR
+    assistance_action_option.name_fi IS DISTINCT FROM EXCLUDED.name_fi OR
     assistance_action_option.description_fi IS DISTINCT FROM EXCLUDED.description_fi OR
     assistance_action_option.display_order IS DISTINCT FROM EXCLUDED.display_order OR
-    assistance_action_option.category <> EXCLUDED.category OR
+    assistance_action_option.category IS DISTINCT FROM EXCLUDED.category OR
     assistance_action_option.valid_from IS DISTINCT FROM EXCLUDED.valid_from OR
     assistance_action_option.valid_to IS DISTINCT FROM EXCLUDED.valid_to;
