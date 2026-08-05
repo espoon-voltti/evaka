@@ -251,25 +251,34 @@ export default React.memo(function StaffAttendanceEditPage({
     [employeeId, unitInfoResponse, staffAttendanceResponse]
   )
 
-  return renderResult(combinedResult, ({ groups, staff, staffMember }) => (
-    <StaffMemberPageContainer>
-      {staffMember === undefined || staff === undefined ? (
-        <ErrorSegment title={i18n.attendances.staff.errors.employeeNotFound} />
-      ) : !staff.pinSet ? (
-        <ErrorSegment title={i18n.attendances.staff.pinNotSet} />
-      ) : staff.pinLocked ? (
-        <ErrorSegment title={i18n.attendances.staff.pinLocked} />
-      ) : (
-        <StaffAttendancesEditor
-          date={date}
-          unitOrGroup={unitOrGroup}
-          employeeId={employeeId}
-          groups={groups}
-          staffMember={staffMember}
-        />
-      )}
-    </StaffMemberPageContainer>
-  ))
+  return renderResult(
+    combinedResult,
+    ({ groups, staff, staffMember }, isReloading) => {
+      if (isReloading) return null
+
+      return (
+        <StaffMemberPageContainer>
+          {staffMember === undefined || staff === undefined ? (
+            <ErrorSegment
+              title={i18n.attendances.staff.errors.employeeNotFound}
+            />
+          ) : !staff.pinSet ? (
+            <ErrorSegment title={i18n.attendances.staff.pinNotSet} />
+          ) : staff.pinLocked ? (
+            <ErrorSegment title={i18n.attendances.staff.pinLocked} />
+          ) : (
+            <StaffAttendancesEditor
+              date={date}
+              unitOrGroup={unitOrGroup}
+              employeeId={employeeId}
+              groups={groups}
+              staffMember={staffMember}
+            />
+          )}
+        </StaffMemberPageContainer>
+      )
+    }
+  )
 })
 
 const StaffAttendancesEditor = ({
