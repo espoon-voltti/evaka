@@ -10,9 +10,9 @@ import type {
   CareType,
   PublicUnit
 } from 'lib-common/generated/api-types/daycare'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { capitalizeFirstLetter } from 'lib-common/string'
-import { mockNow } from 'lib-common/utils/helpers'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -82,7 +82,7 @@ export default React.memo(function UnitDetailsPanel({
     const end = encodeURIComponent(
       `${unit.streetAddress}, ${unit.postOffice}::${unit.location.lat},${unit.location.lon}`
     )
-    let arrival = addDays(mockNow() ?? new Date(), 1)
+    let arrival = addDays(HelsinkiDateTime.now().toSystemTzDate(), 1)
     if (isSaturday(arrival)) {
       arrival = addDays(arrival, 2)
     } else if (isSunday(arrival)) {

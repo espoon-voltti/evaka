@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from '../local-date'
-
 export const getEnvironment = (): string => {
   if (
     window.location.host.startsWith('localhost') ||
@@ -49,18 +47,4 @@ declare global {
     mockedTime?: Date | undefined
     keepSessionAliveThrottleTime?: number
   }
-}
-
-/**
- * @deprecated use HelsinkiDateTime.now() instead
- */
-export const mockNow = (): Date | undefined =>
-  typeof window !== 'undefined' ? window.evaka?.mockedTime : undefined
-
-/**
- * @deprecated use LocalDate.todayInHelsinkiTz() or LocalDate.todayInSystemTz() instead
- */
-export function mockToday(): LocalDate | undefined {
-  const mockedTime = mockNow()
-  return mockedTime ? LocalDate.fromSystemTzDate(mockedTime) : undefined
 }

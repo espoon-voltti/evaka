@@ -13,7 +13,6 @@ import React, {
 } from 'react'
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
-import { mockNow } from 'lib-common/utils/helpers'
 
 import { UserContext } from '../auth/state'
 import { upsertPushSubscription } from '../generated/api-clients/webpush'
@@ -171,7 +170,7 @@ export class PushNotifications {
     }
     const sub = await this.pushManager.getSubscription()
     if (sub) {
-      const now = mockNow() ?? new Date()
+      const now = HelsinkiDateTime.now().toSystemTzDate()
       const expiringSoon = sub.expirationTime
         ? differenceInDays(now, sub.expirationTime) < 7
         : false

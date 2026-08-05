@@ -17,7 +17,6 @@ import type { RealtimeOccupancy } from 'lib-common/generated/api-types/occupancy
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { mockNow } from 'lib-common/utils/helpers'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -432,7 +431,7 @@ function graphData(
 
 function getCurrentMinute(): HelsinkiDateTime {
   return HelsinkiDateTime.fromSystemTzDate(
-    roundToNearestMinutes(mockNow() ?? new Date())
+    roundToNearestMinutes(HelsinkiDateTime.now().toSystemTzDate())
   )
 }
 
