@@ -264,7 +264,12 @@ tasks.register<KtfmtFormatTask>("ktfmtPrecommit") {
 
 tasks.getByName<Jar>("jar") { archiveClassifier.set("") }
 
-tasks.getByName<BootJar>("bootJar") { archiveClassifier.set("boot") }
+tasks.getByName<BootJar>("bootJar") {
+    archiveClassifier.set("boot")
+    // The DVV POC truststore is only reachable from bootRun, which serves the main source set
+    // directly; nothing outside the POC reads it, so it has no reason to be in the shipped artifact
+    exclude("certs/**")
+}
 
 tasks {
     test {
