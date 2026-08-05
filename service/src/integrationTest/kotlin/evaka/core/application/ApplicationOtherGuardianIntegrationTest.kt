@@ -366,6 +366,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             tx,
             guardian.user(CitizenAuthLevel.STRONG),
             clock,
+            AuditContext(),
             application,
         )
     }
@@ -389,6 +390,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
             tx,
             serviceWorker.user,
             clock,
+            AuditContext(),
             application,
             DaycarePlacementPlan(unitId, period),
         )
@@ -414,6 +416,7 @@ class ApplicationOtherGuardianIntegrationTest : FullApplicationTest(resetDbBefor
                     tx,
                     guardian.user(CitizenAuthLevel.STRONG),
                     clock,
+                    AuditContext(),
                     application,
                     decision.id,
                     requestedStartDate = decision.startDate,

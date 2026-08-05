@@ -458,7 +458,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         val today = LocalDate.of(2021, 1, 1)
         val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
         db.transaction { tx ->
-            stateService.sendApplication(tx, serviceWorker, clock, applicationId)
+            stateService.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             stateService.moveToWaitingPlacement(
                 tx,
                 serviceWorker,
@@ -471,6 +471,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                 tx,
                 serviceWorker,
                 clock,
+                AuditContext(),
                 applicationId,
                 DaycarePlacementPlan(
                     unitId = unitId,

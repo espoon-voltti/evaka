@@ -104,21 +104,26 @@ WHERE id = ${bind(id)} AND ready = false
     }
 }
 
-fun Database.Transaction.deleteGenericReasoning(id: DecisionGenericReasoningId) {
-    val deleted =
-        createUpdate {
-                sql(
-                    """
+data class DeletedGenericReasoning(
+    val collectionType: DecisionReasoningCollectionType,
+    val validFrom: LocalDate,
+)
+
+fun Database.Transaction.deleteGenericReasoning(
+    id: DecisionGenericReasoningId
+): DeletedGenericReasoning =
+    createUpdate {
+            sql(
+                """
 DELETE FROM decision_reasoning_generic
 WHERE id = ${bind(id)} AND ready = false
+RETURNING collection_type, valid_from
 """
-                )
-            }
-            .execute()
-    if (deleted == 0) {
-        throw NotFound("Generic reasoning $id not found in expected state (not ready)")
-    }
-}
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOneOrNull()
+        ?: throw NotFound("Generic reasoning $id not found in expected state (not ready)")
 
 fun Database.Transaction.removeGenericReasoning(
     id: DecisionGenericReasoningId,

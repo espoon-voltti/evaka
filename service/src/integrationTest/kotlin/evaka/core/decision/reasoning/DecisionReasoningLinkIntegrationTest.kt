@@ -491,6 +491,7 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
             tx = tx,
             user = admin.user,
             clock = clock,
+            AuditContext(),
             applicationId = applicationId,
             placementPlan =
                 DaycarePlacementPlan(

@@ -5,8 +5,10 @@
 package evaka.core.application.notes
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.application.ApplicationNote
+import evaka.core.application.fetchApplicationDetails
+import evaka.core.application.getApplicationOtherGuardians
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.ApplicationNoteId
 import evaka.core.shared.FeatureConfig
@@ -37,6 +39,7 @@ class NoteController(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
     ): List<ApplicationNoteResponse> {
+        val audit = AuditContext().add(applicationId)
         val notesQuery: (Database.Read) -> List<ApplicationNote> = { tx ->
             if (
                 accessControl.hasPermissionFor(
@@ -88,11 +91,11 @@ class NoteController(
                     }
                 }
             }
-            .also {
-                Audit.NoteRead.log(
-                    targetId = AuditId(applicationId),
-                    meta = mapOf("count" to it.size),
-                )
+            .also { notes ->
+                audit
+                    .add(notes.map { it.note.id })
+                    .observeDate(notes.minOfOrNull { it.note.createdAt }?.toLocalDate())
+                audit.log(Audit.NoteRead, clock)
             }
     }
 
@@ -104,16 +107,21 @@ class NoteController(
         @PathVariable applicationId: ApplicationId,
         @RequestBody note: NoteRequest,
     ): ApplicationNote {
+        val audit = AuditContext().add(applicationId)
         return db.connect { dbc ->
-                dbc.transaction {
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Application.CREATE_NOTE,
                         applicationId,
                     )
-                    it.createApplicationNote(
+                    tx.fetchApplicationDetails(applicationId)?.also { application ->
+                        audit.add(application.childId).add(application.guardianId)
+                    }
+                    tx.getApplicationOtherGuardians(applicationId).also { audit.add(it) }
+                    tx.createApplicationNote(
                         clock.now(),
                         applicationId,
                         note.text,
@@ -121,8 +129,9 @@ class NoteController(
                     )
                 }
             }
-            .also {
-                Audit.NoteCreate.log(targetId = AuditId(applicationId), objectId = AuditId(it.id))
+            .also { createdNote ->
+                audit.add(createdNote.id)
+                audit.log(Audit.NoteCreate, clock)
             }
     }
 
@@ -134,19 +143,30 @@ class NoteController(
         @PathVariable noteId: ApplicationNoteId,
         @RequestBody note: NoteRequest,
     ) {
+        val audit = AuditContext().add(noteId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.ApplicationNote.UPDATE,
-                    noteId,
-                )
-                tx.updateApplicationNote(noteId, note.text, user.evakaUserId, clock.now())
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ApplicationNote.UPDATE,
+                        noteId,
+                    )
+                    val updatedNote =
+                        tx.updateApplicationNote(noteId, note.text, user.evakaUserId, clock.now())
+                    audit
+                        .add(updatedNote.applicationId)
+                        .observeDate(updatedNote.createdAt.toLocalDate())
+                    tx.fetchApplicationDetails(updatedNote.applicationId)?.also { application ->
+                        audit.add(application.childId).add(application.guardianId)
+                    }
+                    tx.getApplicationOtherGuardians(updatedNote.applicationId).also {
+                        audit.add(it)
+                    }
+                }
             }
-        }
-        Audit.NoteUpdate.log(targetId = AuditId(noteId))
+            .also { audit.log(Audit.NoteUpdate, clock) }
     }
 
     @DeleteMapping("/{noteId}")
@@ -156,19 +176,32 @@ class NoteController(
         clock: EvakaClock,
         @PathVariable noteId: ApplicationNoteId,
     ) {
+        val audit = AuditContext().add(noteId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.ApplicationNote.DELETE,
-                    noteId,
-                )
-                tx.deleteApplicationNote(noteId)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ApplicationNote.DELETE,
+                        noteId,
+                    )
+                    tx.deleteApplicationNote(noteId)?.also { deletedNote ->
+                        audit
+                            .add(deletedNote.applicationId)
+                            .add(deletedNote.createdBy)
+                            .add(listOfNotNull(deletedNote.messageContentId))
+                            .observeDate(deletedNote.createdAt.toLocalDate())
+                        tx.fetchApplicationDetails(deletedNote.applicationId)?.also { application ->
+                            audit.add(application.childId).add(application.guardianId)
+                        }
+                        tx.getApplicationOtherGuardians(deletedNote.applicationId).also {
+                            audit.add(it)
+                        }
+                    }
+                }
             }
-        }
-        Audit.NoteDelete.log(targetId = AuditId(noteId))
+            .also { audit.log(Audit.NoteDelete, clock) }
     }
 
     @PutMapping("/service-worker/application/{applicationId}")
@@ -179,18 +212,23 @@ class NoteController(
         @PathVariable applicationId: ApplicationId,
         @RequestBody note: NoteRequest,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Global.WRITE_SERVICE_WORKER_APPLICATION_NOTES,
-                )
-                tx.updateServiceWorkerApplicationNote(applicationId, note.text)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.WRITE_SERVICE_WORKER_APPLICATION_NOTES,
+                    )
+                    tx.fetchApplicationDetails(applicationId)?.also { application ->
+                        audit.add(application.childId).add(application.guardianId)
+                    }
+                    tx.getApplicationOtherGuardians(applicationId).also { audit.add(it) }
+                    tx.updateServiceWorkerApplicationNote(applicationId, note.text)
+                }
             }
-        }
-        Audit.ServiceWorkerNoteUpdate.log(targetId = AuditId(applicationId))
+            .also { audit.log(Audit.ServiceWorkerNoteUpdate, clock) }
     }
 }
 
