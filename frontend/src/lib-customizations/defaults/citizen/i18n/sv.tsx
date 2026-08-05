@@ -2514,6 +2514,7 @@ const sv: Translations = {
         ALIMONY: 'Underhållsbidrag eller -stöd',
         INTEREST_AND_INVESTMENT_INCOME: 'Ränte- och dividendinkomster',
         RENTAL_INCOME: 'Hyresinkomster',
+        GENERAL_SOCIAL_SECURITY_BENEFIT: 'Allmänt stöd',
         UNEMPLOYMENT_ALLOWANCE: 'Arbetslöshetsdagpenning',
         LABOUR_MARKET_SUBSIDY: 'Arbetsmarknadsstöd',
         ADJUSTED_DAILY_ALLOWANCE: 'Jämkad dagpenning',
@@ -2625,6 +2626,7 @@ const sv: Translations = {
         HOME_CARE_ALLOWANCE: 'Beslut om hemvårdsstöd',
         FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE: 'Beslut om vårdpenning',
         ALIMONY: 'Underhållsavtal eller beslut om underhållsstöd',
+        GENERAL_SOCIAL_SECURITY_BENEFIT: 'Beslut om allmänt stöd',
         UNEMPLOYMENT_ALLOWANCE: 'Beslut om arbetslöshetsdagpenning',
         LABOUR_MARKET_SUBSIDY: 'Beslut om arbetsmarknadsstöd',
         ADJUSTED_DAILY_ALLOWANCE: 'Beslut om dagpenning',
@@ -2674,6 +2676,7 @@ const sv: Translations = {
         FLEXIBLE_AND_PARTIAL_HOME_CARE_ALLOWANCE:
           'Lägg till beslut om vårdpenning',
         ALIMONY: 'Lägg till underhållsavtal eller beslut om underhållsstöd',
+        GENERAL_SOCIAL_SECURITY_BENEFIT: 'Lägg till beslut om allmänt stöd',
         UNEMPLOYMENT_ALLOWANCE: 'Lägg till beslut om arbetslöshetsdagpenning',
         LABOUR_MARKET_SUBSIDY: 'Lägg till beslut om arbetsmarknadsstöd',
         ADJUSTED_DAILY_ALLOWANCE: 'Lägg till beslut om dagpenning',
