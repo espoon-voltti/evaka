@@ -5,4 +5,4 @@
 INSERT INTO special_diet (id, abbreviation)
 VALUES (0, 'erityisruokavalio')
 ON CONFLICT (id) DO UPDATE SET abbreviation = EXCLUDED.abbreviation
-WHERE special_diet.abbreviation <> EXCLUDED.abbreviation;
+WHERE special_diet.abbreviation IS DISTINCT FROM EXCLUDED.abbreviation;

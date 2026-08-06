@@ -20,7 +20,7 @@ UPDATE SET
     display_order = EXCLUDED.display_order,
     category = EXCLUDED.category
 WHERE
-    assistance_action_option.name_fi <> EXCLUDED.name_fi OR
+    assistance_action_option.name_fi IS DISTINCT FROM EXCLUDED.name_fi OR
     assistance_action_option.description_fi IS DISTINCT FROM EXCLUDED.description_fi OR
-    assistance_action_option.display_order <> EXCLUDED.display_order OR
-    assistance_action_option.category <> EXCLUDED.category;
+    assistance_action_option.display_order IS DISTINCT FROM EXCLUDED.display_order OR
+    assistance_action_option.category IS DISTINCT FROM EXCLUDED.category;

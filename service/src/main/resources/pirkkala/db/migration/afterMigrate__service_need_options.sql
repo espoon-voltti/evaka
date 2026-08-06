@@ -58,26 +58,26 @@ UPDATE SET
     show_for_citizen = EXCLUDED.show_for_citizen,
     display_order = EXCLUDED.display_order
 WHERE
-    service_need_option.name_fi <> EXCLUDED.name_fi OR
-    service_need_option.name_sv <> EXCLUDED.name_sv OR
-    service_need_option.name_en <> EXCLUDED.name_en OR
-    service_need_option.valid_placement_type <> EXCLUDED.valid_placement_type OR
-    service_need_option.default_option <> EXCLUDED.default_option OR
-    service_need_option.fee_coefficient <> EXCLUDED.fee_coefficient OR
-    service_need_option.occupancy_coefficient <> EXCLUDED.occupancy_coefficient OR
-    service_need_option.occupancy_coefficient_under_3y <> EXCLUDED.occupancy_coefficient_under_3y OR
-    service_need_option.realized_occupancy_coefficient <> EXCLUDED.realized_occupancy_coefficient OR
-    service_need_option.realized_occupancy_coefficient_under_3y <> EXCLUDED.realized_occupancy_coefficient_under_3y OR
-    service_need_option.daycare_hours_per_week <> EXCLUDED.daycare_hours_per_week OR
+    service_need_option.name_fi IS DISTINCT FROM EXCLUDED.name_fi OR
+    service_need_option.name_sv IS DISTINCT FROM EXCLUDED.name_sv OR
+    service_need_option.name_en IS DISTINCT FROM EXCLUDED.name_en OR
+    service_need_option.valid_placement_type IS DISTINCT FROM EXCLUDED.valid_placement_type OR
+    service_need_option.default_option IS DISTINCT FROM EXCLUDED.default_option OR
+    service_need_option.fee_coefficient IS DISTINCT FROM EXCLUDED.fee_coefficient OR
+    service_need_option.occupancy_coefficient IS DISTINCT FROM EXCLUDED.occupancy_coefficient OR
+    service_need_option.occupancy_coefficient_under_3y IS DISTINCT FROM EXCLUDED.occupancy_coefficient_under_3y OR
+    service_need_option.realized_occupancy_coefficient IS DISTINCT FROM EXCLUDED.realized_occupancy_coefficient OR
+    service_need_option.realized_occupancy_coefficient_under_3y IS DISTINCT FROM EXCLUDED.realized_occupancy_coefficient_under_3y OR
+    service_need_option.daycare_hours_per_week IS DISTINCT FROM EXCLUDED.daycare_hours_per_week OR
     service_need_option.contract_days_per_month IS DISTINCT FROM EXCLUDED.contract_days_per_month OR
     service_need_option.daycare_hours_per_month IS DISTINCT FROM EXCLUDED.daycare_hours_per_month OR
-    service_need_option.part_day <> EXCLUDED.part_day OR
-    service_need_option.part_week <> EXCLUDED.part_week OR
-    service_need_option.fee_description_fi <> EXCLUDED.fee_description_fi OR
-    service_need_option.fee_description_sv <> EXCLUDED.fee_description_sv OR
-    service_need_option.voucher_value_description_fi <> EXCLUDED.voucher_value_description_fi OR
-    service_need_option.voucher_value_description_sv <> EXCLUDED.voucher_value_description_sv OR
-    service_need_option.valid_from <> EXCLUDED.valid_from OR
+    service_need_option.part_day IS DISTINCT FROM EXCLUDED.part_day OR
+    service_need_option.part_week IS DISTINCT FROM EXCLUDED.part_week OR
+    service_need_option.fee_description_fi IS DISTINCT FROM EXCLUDED.fee_description_fi OR
+    service_need_option.fee_description_sv IS DISTINCT FROM EXCLUDED.fee_description_sv OR
+    service_need_option.voucher_value_description_fi IS DISTINCT FROM EXCLUDED.voucher_value_description_fi OR
+    service_need_option.voucher_value_description_sv IS DISTINCT FROM EXCLUDED.voucher_value_description_sv OR
+    service_need_option.valid_from IS DISTINCT FROM EXCLUDED.valid_from OR
     service_need_option.valid_to IS DISTINCT FROM EXCLUDED.valid_to OR
-    service_need_option.show_for_citizen <> EXCLUDED.show_for_citizen OR
-    service_need_option.display_order <> EXCLUDED.display_order;
+    service_need_option.show_for_citizen IS DISTINCT FROM EXCLUDED.show_for_citizen OR
+    service_need_option.display_order IS DISTINCT FROM EXCLUDED.display_order;
