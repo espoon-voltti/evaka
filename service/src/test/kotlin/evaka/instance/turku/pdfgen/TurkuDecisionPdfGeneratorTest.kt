@@ -24,6 +24,8 @@ class TurkuDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
     override val templateProvider: ITemplateProvider = TurkuTemplateProvider()
     override val settings = populatedSettings
 
+    override fun reasoningVariants() = listOf(null, reasoning)
+
     override fun decisionScenarios() =
         listOf(
             DecisionScenario("kerho", DecisionType.CLUB, languages = finnishAndSwedish),
