@@ -113,6 +113,8 @@ abstract class AbstractDecisionPdfGeneratorTest {
 
     protected open fun reasoningVariants(): List<PdfReasoning?> = listOf(null)
 
+    protected open val decisionsWithoutReasonings: Set<DecisionType> = emptySet()
+
     protected val child: PersonDTO =
         PersonDTO(
             testChild.id,
@@ -233,11 +235,15 @@ abstract class AbstractDecisionPdfGeneratorTest {
                             )
                         assertNotNull(bytes)
                         val text = extractText(bytes)
-                        if (reasoningOrNull != null) {
+                        if (
+                            reasoningOrNull != null &&
+                                scenario.decisionType !in decisionsWithoutReasonings
+                        ) {
                             assertContains(text, reasoningOrNull.generic)
                             reasoningOrNull.individual.forEach { assertContains(text, it) }
                         } else {
                             assertFalse(text.contains(reasoning.generic))
+                            reasoning.individual.forEach { assertFalse(text.contains(it)) }
                         }
                         writeTempFile("decision_${municipality}_$label", bytes)
                     }

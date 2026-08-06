@@ -112,6 +112,7 @@ fun updateDecisionDrafts(
     now: HelsinkiDateTime,
     userId: EvakaUserId,
     decisionReasoningEnabled: Boolean,
+    decisionsWithoutReasonings: Set<DecisionType> = emptySet(),
 ) {
     val updated =
         tx.prepareBatch(updates) {
@@ -135,8 +136,14 @@ fun updateDecisionDrafts(
 
     val typeById = updated.associate { it.id to it.type }
     updates.forEach { update ->
-        val applicableCollectionType =
-            typeById.getValue(update.id).applicableReasoningCollectionType()
+        val type = typeById.getValue(update.id)
+        if (type in decisionsWithoutReasonings) {
+            if (update.individualReasoningIds.isNotEmpty()) {
+                throw BadRequest("Individual reasonings cannot be selected for decision type $type")
+            }
+            return@forEach
+        }
+        val applicableCollectionType = type.applicableReasoningCollectionType()
         update.individualReasoningIds.forEach { reasoningId ->
             val reasoning =
                 tx.getIndividualReasoning(reasoningId)
@@ -147,7 +154,7 @@ fun updateDecisionDrafts(
             if (reasoning.collectionType != applicableCollectionType) {
                 throw BadRequest(
                     "Individual reasoning $reasoningId has collection_type ${reasoning.collectionType}, " +
-                        "which does not apply to decision ${update.id} of type ${typeById.getValue(update.id)}"
+                        "which does not apply to decision ${update.id} of type $type"
                 )
             }
         }

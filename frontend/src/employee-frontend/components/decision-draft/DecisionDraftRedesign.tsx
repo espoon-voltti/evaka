@@ -355,9 +355,12 @@ const DecisionDraftRedesignInner = React.memo(
                 startDate: d.startDate,
                 endDate: d.endDate,
                 planned: d.planned,
-                individualReasoningIds: misconfigured(d.unitId)
-                  ? []
-                  : d.individualReasoningIds
+                individualReasoningIds:
+                  misconfigured(d.unitId) ||
+                  (featureConfig?.decisionsWithoutReasonings.includes(d.type) ??
+                    false)
+                    ? []
+                    : d.individualReasoningIds
               }))
             })}
             onSuccess={() => redirectToMainPage(navigate)}

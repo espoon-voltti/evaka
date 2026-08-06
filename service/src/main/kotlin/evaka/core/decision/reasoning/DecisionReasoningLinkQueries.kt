@@ -33,11 +33,12 @@ fun DecisionType.applicableReasoningCollectionType(): DecisionReasoningCollectio
 data class DecisionReasoningStats(val individualReasoningCount: Int, val reasoningWarningCount: Int)
 
 fun Database.Read.getApplicationDecisionReasoningStats(
-    applicationIds: Set<ApplicationId>
+    applicationIds: Set<ApplicationId>,
+    decisionsWithoutReasonings: Set<DecisionType> = emptySet(),
 ): Map<ApplicationId, DecisionReasoningStats> {
     if (applicationIds.isEmpty()) return emptyMap()
 
-    val decisionTypes = DecisionType.entries.toList()
+    val decisionTypes = DecisionType.entries.filter { it !in decisionsWithoutReasonings }
     val collectionTypes = decisionTypes.map { it.applicableReasoningCollectionType() }
 
     data class Row(

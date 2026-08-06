@@ -4,6 +4,7 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { DecisionType } from './decision'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import type { Id } from '../../id-type'
 import type { JsonOf } from '../../json'
@@ -123,6 +124,7 @@ export interface EmployeeFeatureConfig {
   allowEnglishChildDocumentsForAllTypes: boolean
   decisionReasoningGenericRemoval: boolean
   decisionReasoningsEnabled: boolean
+  decisionsWithoutReasonings: DecisionType[]
   deletedMessagePlaceholderBody: string
   messageSupportEmail: string | null
   openRangesHolidayQuestionnaire: boolean
