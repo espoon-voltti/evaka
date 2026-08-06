@@ -113,7 +113,7 @@ class DvvSoapRestParityTest {
     @Test
     fun `SOAP also carries the kuntakoodi, which its mapper discards`() {
         // Storing the code rather than the name was therefore always available on the SOAP path —
-        // it is not something REST forces. Relevant to how the municipality gap gets closed.
+        // it is not something REST forces.
         val henkilo =
             checkNotNull(
                     javaClass.getResourceAsStream(

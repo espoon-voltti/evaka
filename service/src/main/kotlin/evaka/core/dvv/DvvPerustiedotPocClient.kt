@@ -53,7 +53,7 @@ class DvvPerustiedotPocClient(private val jsonMapper: JsonMapper, env: DvvPerust
     }
 
     /**
-     * Fetches basic details for the given SSNs. DVV allows up to 1000 SSNs per call.
+     * DVV allows up to 1000 SSNs per call.
      *
      * @param tietoryhmat which data groups to return; when empty, DVV returns everything the
      *   product's tietosuojalupa permits
@@ -87,11 +87,7 @@ class DvvPerustiedotPocClient(private val jsonMapper: JsonMapper, env: DvvPerust
         )
     }
 
-    /**
-     * Same query as [getPerustiedot], but parsed and mapped onto eVaka's [VtjPerson] via
-     * [toVtjPerson]. Guardians/dependants come back as name+SSN stubs; hydrating them is a second
-     * call.
-     */
+    /** Guardians/dependants come back as name+SSN stubs; hydrating them is a second call. */
     fun getPerustiedotAsVtjPersons(
         ssns: List<String>,
         today: LocalDate,
