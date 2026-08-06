@@ -23,6 +23,7 @@ import evaka.core.pis.getEmployees
 import evaka.core.pis.getFinanceDecisionHandlers
 import evaka.core.pis.isPinLocked
 import evaka.core.pis.setEmployeePreferredFirstName
+import evaka.core.pis.splitFirstNames
 import evaka.core.pis.updateEmployeeActive
 import evaka.core.pis.updateEmployeeEmail
 import evaka.core.pis.updateEmployeeGlobalRoles
@@ -497,7 +498,7 @@ class EmployeeController(private val accessControl: AccessControl, private val e
     }
 
     private fun possiblePreferredFirstNames(employee: Employee): List<String> {
-        val fullFirstNames = employee.firstName.split("\\s+".toRegex())
+        val fullFirstNames = splitFirstNames(employee.firstName)
         val splitTwoPartNames =
             fullFirstNames.filter { it.contains('-') }.map { it.split("\\-+".toRegex()) }.flatten()
 

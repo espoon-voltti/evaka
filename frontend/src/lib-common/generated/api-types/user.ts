@@ -4,7 +4,20 @@
 
 // GENERATED FILE: no manual modifications
 
+import type { CitizenPasskeyId } from './shared'
 import type { EvakaUserId } from './shared'
+import HelsinkiDateTime from '../../helsinki-date-time'
+import type { JsonOf } from '../../json'
+
+/**
+* Generated from evaka.core.user.CitizenPasskey
+*/
+export interface CitizenPasskey {
+  createdAt: HelsinkiDateTime
+  id: CitizenPasskeyId
+  lastUsedAt: HelsinkiDateTime | null
+  name: string
+}
 
 /**
 * Generated from evaka.core.user.EvakaUser
@@ -24,3 +37,12 @@ export type EvakaUserType =
   | 'EMPLOYEE'
   | 'MOBILE_DEVICE'
   | 'UNKNOWN'
+
+
+export function deserializeJsonCitizenPasskey(json: JsonOf<CitizenPasskey>): CitizenPasskey {
+  return {
+    ...json,
+    createdAt: HelsinkiDateTime.parseIso(json.createdAt),
+    lastUsedAt: (json.lastUsedAt != null) ? HelsinkiDateTime.parseIso(json.lastUsedAt) : null
+  }
+}

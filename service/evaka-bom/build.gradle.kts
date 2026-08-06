@@ -14,6 +14,8 @@ dependencies {
         api("com.github.mwiede:jsch:2.28.6")
         api("com.google.guava:guava:33.7.1-jre")
         api("com.networknt:json-schema-validator:3.0.6")
+        api("com.upokecenter:cbor:4.5.6")
+        api("com.yubico:webauthn-server-core:2.9.0")
         api("com.zaxxer:HikariCP:7.1.0")
         api("io.github.oshai:kotlin-logging-jvm:8.0.4")
         api("io.kotest:kotest-property:6.2.4")

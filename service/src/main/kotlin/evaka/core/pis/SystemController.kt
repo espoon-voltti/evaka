@@ -49,6 +49,7 @@ class SystemController(
     private val accessControlCitizen: AccessControlCitizen,
     private val env: EvakaEnv,
     private val passwordService: PasswordService,
+    private val passkeyService: PasskeyService,
     private val webPush: WebPush?,
     private val featureConfig: FeatureConfig,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
@@ -112,30 +113,7 @@ class SystemController(
             if (!isMatch || citizen == null) throw Forbidden()
 
             dbc.transaction { tx ->
-                    val userIdHash =
-                        Hashing.sha256()
-                            .hashString(citizen.id.toString(), StandardCharsets.UTF_8)
-                            .toString()
-                    if (!request.deviceAuthHistory.contains(userIdHash)) {
-                        logger.info(
-                            mapOf(
-                                "eventCode" to "NEW_DEVICE_LOGIN",
-                                "citizenIdHash" to userIdHash,
-                                "deviceAuthHistorySize" to request.deviceAuthHistory.size,
-                            )
-                        ) {
-                            "Login from new device detected"
-                        }
-                        if (env.newBrowserLoginEmailEnabled) {
-                            asyncJobRunner.plan(
-                                tx,
-                                sequenceOf(
-                                    AsyncJob.SendNewBrowserLoginEmail(personId = citizen.id)
-                                ),
-                                runAt = clock.now(),
-                            )
-                        }
-                    }
+                    checkForNewDevice(tx, clock, citizen.id, request.deviceAuthHistory)
                     if (passwordService.needsRehashing(citizen.password)) {
                         tx.updatePasswordWithoutTimestamp(
                             citizen.id,
@@ -154,6 +132,83 @@ class SystemController(
                         targetId = AuditId(request.username),
                         objectId = AuditId(it.id),
                     )
+                }
+        }
+    }
+
+    private fun checkForNewDevice(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        personId: PersonId,
+        deviceAuthHistory: List<String>,
+    ) {
+        val userIdHash =
+            Hashing.sha256().hashString(personId.toString(), StandardCharsets.UTF_8).toString()
+        if (!deviceAuthHistory.contains(userIdHash)) {
+            logger.info(
+                mapOf(
+                    "eventCode" to "NEW_DEVICE_LOGIN",
+                    "citizenIdHash" to userIdHash,
+                    "deviceAuthHistorySize" to deviceAuthHistory.size,
+                )
+            ) {
+                "Login from new device detected"
+            }
+            if (env.newBrowserLoginEmailEnabled) {
+                asyncJobRunner.plan(
+                    tx,
+                    sequenceOf(AsyncJob.SendNewBrowserLoginEmail(personId = personId)),
+                    runAt = clock.now(),
+                )
+            }
+        }
+    }
+
+    @PostMapping("/system/passkey-login/options")
+    fun citizenPasskeyLoginOptions(
+        db: Database,
+        user: AuthenticatedUser.SystemInternalUser,
+        clock: EvakaClock,
+    ): StartedPasskeyAssertion = passkeyService.startAssertion()
+
+    @PostMapping("/system/passkey-login/finish")
+    fun citizenPasskeyLogin(
+        db: Database,
+        user: AuthenticatedUser.SystemInternalUser,
+        clock: EvakaClock,
+        @RequestBody request: CitizenPasskeyLoginRequest,
+    ): CitizenUserIdentity {
+        Audit.CitizenPasskeyLoginAttempt.log()
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                    val finished =
+                        passkeyService.finishAssertion(
+                            tx,
+                            assertionRequestJson = request.assertionRequest,
+                            credentialJson = request.credential,
+                        )
+                    checkForNewDevice(tx, clock, finished.person, request.deviceAuthHistory)
+                    val now = clock.now()
+                    if (
+                        tx.updatePasskeyAfterLogin(
+                            finished.passkey.id,
+                            now,
+                            finished.signatureCounter,
+                        ) == 0
+                    ) {
+                        throw Forbidden()
+                    }
+                    tx.updateLastWeakLogin(now, finished.person)
+                    tx.updateCitizenOnLogin(now, finished.person)
+                    personService.getPersonWithChildren(tx, user, now, finished.person)
+                    finished.passkey.id to CitizenUserIdentity(finished.person)
+                }
+                .let { (passkeyId, identity) ->
+                    Audit.CitizenPasskeyLogin.log(
+                        targetId = AuditId(passkeyId),
+                        objectId = AuditId(identity.id),
+                    )
+                    identity
                 }
         }
     }
@@ -503,6 +558,13 @@ class SystemController(
         val socialSecurityNumber: String,
         val firstName: String,
         val lastName: String,
+    )
+
+    data class CitizenPasskeyLoginRequest(
+        val assertionRequest: String,
+        /** JSON serialization of the PublicKeyCredential returned by the browser */
+        val credential: String,
+        val deviceAuthHistory: List<String> = emptyList(),
     )
 
     data class CitizenWeakLoginRequest(
