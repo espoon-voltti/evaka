@@ -478,6 +478,14 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendPasskeyAddedEmail(val personId: PersonId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendPasskeyRemovedEmail(val personId: PersonId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendEmailChangedEmail(val personId: PersonId, val oldEmail: String) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -584,6 +592,8 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendNewFeeDecisionEmail::class,
                     SendNewVoucherValueDecisionEmail::class,
                     SendOutdatedIncomeNotificationEmail::class,
+                    SendPasskeyAddedEmail::class,
+                    SendPasskeyRemovedEmail::class,
                     SendPasswordChangedEmail::class,
                     SendPedagogicalDocumentNotificationEmail::class,
                     SendPendingDecisionEmail::class,

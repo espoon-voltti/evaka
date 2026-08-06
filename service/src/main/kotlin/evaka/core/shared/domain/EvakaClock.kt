@@ -15,7 +15,7 @@ interface EvakaClock {
     fun now(): HelsinkiDateTime
 }
 
-class MockEvakaClock(private var now: HelsinkiDateTime) : EvakaClock {
+data class MockEvakaClock(private var now: HelsinkiDateTime) : EvakaClock {
     constructor(
         year: Int,
         month: Int,
