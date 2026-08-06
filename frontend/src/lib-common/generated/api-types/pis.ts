@@ -397,6 +397,14 @@ export interface FamilyOverviewPerson {
 }
 
 /**
+* Generated from evaka.core.pis.controllers.PasskeyControllerCitizen.FinishPasskeyRegistrationRequest
+*/
+export interface FinishPasskeyRegistrationRequest {
+  credential: string
+  name: string
+}
+
+/**
 * Generated from evaka.core.pis.controllers.FosterParentRelationship
 */
 export interface FosterParentRelationship {
@@ -534,6 +542,13 @@ export interface PartnershipUpdateRequest {
 export interface PartnershipWithPermittedActions {
   data: Partnership
   permittedActions: Action.Partnership[]
+}
+
+/**
+* Generated from evaka.core.pis.controllers.PasskeyControllerCitizen.PasskeyRegistrationOptions
+*/
+export interface PasskeyRegistrationOptions {
+  credentialsCreate: string
 }
 
 /**

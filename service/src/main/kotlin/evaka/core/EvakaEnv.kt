@@ -60,6 +60,10 @@ data class EvakaEnv(
     val passwordBlacklistDirectory: String?,
     val placementToolServiceNeedOptionId: ServiceNeedOptionId?,
     val newBrowserLoginEmailEnabled: Boolean,
+    /** Plain domain, e.g. espoonvarhaiskasvatus.fi, evaka.turku.fi */
+    val webAuthnRpId: String,
+    /** Full origin, e.g. https://espoonvarhaiskasvatus.fi, https://evaka.turku.fi */
+    val webAuthnOrigin: String,
     val staffAttendanceDriftMinutes: Duration,
     val decisionReasoningGenericRemovalEnabled: Boolean,
     val decisionReasoningEnabled: Boolean,
@@ -118,6 +122,8 @@ data class EvakaEnv(
                     },
                 newBrowserLoginEmailEnabled =
                     env.lookup("evaka.new_browser_login_email.enabled") ?: false,
+                webAuthnRpId = env.lookup("evaka.webauthn.rp_id"),
+                webAuthnOrigin = env.lookup("evaka.webauthn.origin"),
                 staffAttendanceDriftMinutes =
                     Duration.ofMinutes(
                         env.lookup("evaka.integration.staff_attendance_drift_minutes") ?: 5
