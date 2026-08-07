@@ -15,6 +15,10 @@ import { useLocation, useParams, useSearchParams } from 'wouter'
 import { combine } from 'lib-common/api'
 import type { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
+import {
+  focusElementAfterDelay,
+  focusElementOnNextFrame
+} from 'lib-common/utils/focus'
 import { NotificationsContext } from 'lib-components/Notifications'
 import Main from 'lib-components/atoms/Main'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
@@ -29,7 +33,6 @@ import { useUser } from '../auth/state'
 import { childrenQuery } from '../children/queries'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
-import { focusElementAfterDelay, focusElementOnNextFrame } from '../utils/focus'
 
 import EmptyThreadView from './EmptyThreadView'
 import MessageEditor from './MessageEditor'

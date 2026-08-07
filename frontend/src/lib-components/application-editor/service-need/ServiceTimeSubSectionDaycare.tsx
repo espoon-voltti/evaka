@@ -1,0 +1,391 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import React, { useEffect, useMemo } from 'react'
+import styled from 'styled-components'
+
+import DateRange from 'lib-common/date-range'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { useMutationResult } from 'lib-common/query'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
+import TimeInput from 'lib-components/atoms/form/TimeInput'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
+import AdaptiveFlex from 'lib-components/layout/AdaptiveFlex'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
+import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
+import FileUpload from 'lib-components/molecules/FileUpload'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { H3, Label } from 'lib-components/typography'
+import { defaultMargins, Gap } from 'lib-components/white-space'
+
+import type { ServiceNeedSectionProps } from './ServiceNeedSection'
+
+const Hyphenbox = styled.div`
+  padding-top: 36px;
+`
+
+type ServiceTimeSubSectionProps = Omit<ServiceNeedSectionProps, 'type'>
+
+const applicationType = 'DAYCARE'
+
+export default React.memo(function ServiceTimeSubSectionDaycare({
+  deps,
+  applicationId,
+  formData,
+  updateFormData,
+  errors,
+  verificationRequested,
+  serviceNeedOptions
+}: ServiceTimeSubSectionProps) {
+  const {
+    translations: t,
+    lang,
+    featureFlags,
+    placementTypes,
+    applicationAttachmentUploadHandler,
+    getAttachmentUrl,
+    deleteAttachmentMutation
+  } = deps
+
+  const preferredStartDate = formData.preferredStartDate
+  const optionsValidAtTime = useMemo(
+    () =>
+      featureFlags.daycareApplication.serviceNeedOption && preferredStartDate
+        ? serviceNeedOptions.filter((opt) =>
+            new DateRange(opt.validFrom, opt.validTo).includes(
+              preferredStartDate
+            )
+          )
+        : [],
+    [
+      featureFlags.daycareApplication.serviceNeedOption,
+      serviceNeedOptions,
+      preferredStartDate
+    ]
+  )
+  const fullTimeOptions = useMemo(
+    () =>
+      optionsValidAtTime.filter((opt) => opt.validPlacementType === 'DAYCARE'),
+    [optionsValidAtTime]
+  )
+  const partTimeOptions = useMemo(
+    () =>
+      optionsValidAtTime.filter(
+        (opt) => opt.validPlacementType === 'DAYCARE_PART_TIME'
+      ),
+    [optionsValidAtTime]
+  )
+
+  useEffect(() => {
+    if (
+      featureFlags.daycareApplication.serviceNeedOption &&
+      preferredStartDate &&
+      formData.serviceNeedOption
+    ) {
+      const validSelectedType = optionsValidAtTime?.find(
+        (opt) =>
+          opt.id === formData.serviceNeedOption?.id &&
+          new DateRange(opt.validFrom, opt.validTo).includes(preferredStartDate)
+      )
+      if (!validSelectedType) {
+        updateFormData({ serviceNeedOption: null })
+      }
+    }
+  }, [
+    featureFlags.daycareApplication.serviceNeedOption,
+    preferredStartDate,
+    formData.serviceNeedOption,
+    optionsValidAtTime,
+    updateFormData
+  ])
+
+  const { mutateAsync: deleteAttachment } = useMutationResult(
+    deleteAttachmentMutation
+  )
+
+  const updateServiceNeed = (partTime: boolean) => {
+    let serviceNeedOption = formData.serviceNeedOption
+    if (partTime && partTimeOptions.length > 0) {
+      serviceNeedOption = partTimeOptions[0]
+    } else if (!partTime && fullTimeOptions.length > 0) {
+      serviceNeedOption = fullTimeOptions[0]
+    }
+    updateFormData({
+      partTime,
+      serviceNeedOption
+    })
+  }
+
+  function renderServiceNeedSelection() {
+    if (serviceNeedOptions.length > 0 && !preferredStartDate) {
+      return (
+        <div>
+          <AlertBox
+            message={t.applications.editor.serviceNeed.startDate.missing}
+          />
+        </div>
+      )
+    }
+
+    return (
+      <FixedSpaceColumn
+        role="group"
+        aria-labelledby="service-need-part-time-label"
+      >
+        <Label id="service-need-part-time-label">
+          {t.applications.editor.serviceNeed.partTime.label}
+        </Label>
+        {placementTypes.includes('DAYCARE_PART_TIME') && (
+          <Radio
+            id="service-need-part-time-true"
+            label={t.applications.editor.serviceNeed.partTime.true}
+            checked={formData.partTime}
+            data-qa="partTime-input-true"
+            onChange={() =>
+              updateFormData({
+                partTime: true,
+                serviceNeedOption: partTimeOptions[0] ?? null
+              })
+            }
+            name="service-need-part-time-radio"
+          />
+        )}
+        {formData.partTime && partTimeOptions.length > 0 && (
+          <SubRadios>
+            <FixedSpaceColumn $spacing="xs">
+              {partTimeOptions.map((opt) => (
+                <Radio
+                  key={opt.id}
+                  label={
+                    (lang === 'fi' && opt.nameFi) ||
+                    (lang === 'sv' && opt.nameSv) ||
+                    (lang === 'en' && opt.nameEn) ||
+                    opt.id
+                  }
+                  checked={formData.serviceNeedOption?.id === opt.id}
+                  onChange={() => updateFormData({ serviceNeedOption: opt })}
+                  data-qa={`part-time-option-${opt.id}`}
+                  name="part-time-sub-radio"
+                />
+              ))}
+            </FixedSpaceColumn>
+          </SubRadios>
+        )}
+        <Radio
+          id="service-need-part-time-false"
+          label={t.applications.editor.serviceNeed.partTime.false}
+          checked={!formData.partTime}
+          data-qa="partTime-input-false"
+          onChange={() => updateServiceNeed(false)}
+          name="service-need-part-time-radio"
+        />
+        {!formData.partTime && fullTimeOptions.length > 0 && (
+          <SubRadios>
+            <FixedSpaceColumn $spacing="xs">
+              {fullTimeOptions.map((opt) => (
+                <Radio
+                  key={opt.id}
+                  label={
+                    (lang === 'fi' && opt.nameFi) ||
+                    (lang === 'sv' && opt.nameSv) ||
+                    (lang === 'en' && opt.nameEn) ||
+                    opt.id
+                  }
+                  checked={formData.serviceNeedOption?.id === opt.id}
+                  onChange={() => updateFormData({ serviceNeedOption: opt })}
+                  data-qa={`full-time-option-${opt.id}`}
+                  name="full-time-sub-radio"
+                />
+              ))}
+            </FixedSpaceColumn>
+          </SubRadios>
+        )}
+        {errors.serviceNeedOption && verificationRequested && (
+          <div>
+            <AlertBox
+              message={t.validationErrors[errors.serviceNeedOption]}
+              thin
+              noMargin
+            />
+          </div>
+        )}
+      </FixedSpaceColumn>
+    )
+  }
+
+  function renderServiceNeedDailyTimeSelection() {
+    return (
+      featureFlags.daycareApplication.dailyTimes && (
+        <div role="group" aria-labelledby="daily-time-label">
+          <ExpandingInfo
+            info={
+              t.applications.editor.serviceNeed.dailyTime.instructions[
+                applicationType
+              ]
+            }
+            inlineChildren
+          >
+            <Label id="daily-time-label">
+              {t.applications.editor.serviceNeed.dailyTime
+                .usualArrivalAndDeparture[applicationType] + ' *'}
+            </Label>
+          </ExpandingInfo>
+
+          <Gap $size="s" />
+
+          <FixedSpaceRow $spacing="s">
+            <FixedSpaceColumn $spacing="xs">
+              <Label htmlFor="daily-time-starts">
+                {t.applications.editor.serviceNeed.dailyTime.starts}
+              </Label>
+              <TimeInput
+                required
+                id="daily-time-starts"
+                value={formData.startTime}
+                data-qa="startTime-input"
+                onChange={(value) => updateFormData({ startTime: value })}
+                info={errorToInputInfo(errors.startTime, t.validationErrors)}
+                hideErrorsBeforeTouched={!verificationRequested}
+              />
+            </FixedSpaceColumn>
+
+            <Hyphenbox>–</Hyphenbox>
+
+            <FixedSpaceColumn $spacing="xs">
+              <Label htmlFor="daily-time-ends">
+                {t.applications.editor.serviceNeed.dailyTime.ends}
+              </Label>
+              <TimeInput
+                required
+                id="daily-time-ends"
+                value={formData.endTime}
+                data-qa="endTime-input"
+                onChange={(value) => updateFormData({ endTime: value })}
+                info={errorToInputInfo(errors.endTime, t.validationErrors)}
+                hideErrorsBeforeTouched={!verificationRequested}
+              />
+            </FixedSpaceColumn>
+          </FixedSpaceRow>
+
+          <Gap $size="s" />
+
+          {errors.partTimeLimit && (
+            <AlertBox
+              message={t.validationErrors[errors.partTimeLimit]}
+              thin
+              noMargin
+              data-qa="part-time-limit-error"
+            />
+          )}
+        </div>
+      )
+    )
+  }
+
+  return (
+    <>
+      <H3>
+        {t.applications.editor.serviceNeed.dailyTime.label[applicationType]}
+      </H3>
+
+      <Gap $size="s" />
+
+      {renderServiceNeedSelection()}
+
+      <Gap $size="m" />
+
+      {renderServiceNeedDailyTimeSelection()}
+
+      <Gap $size="L" />
+
+      <ExpandingInfo
+        data-qa="shiftcare-instructions"
+        info={t.applications.editor.serviceNeed.shiftCare.instructions}
+        margin="xs"
+      >
+        <Checkbox
+          checked={formData.shiftCare}
+          data-qa="shiftCare-input"
+          label={t.applications.editor.serviceNeed.shiftCare.label}
+          onChange={(checked) =>
+            updateFormData({
+              shiftCare: checked
+            })
+          }
+        />
+      </ExpandingInfo>
+
+      {formData.shiftCare && (
+        <>
+          <Gap $size="s" />
+
+          {
+            t.applications.editor.serviceNeed.shiftCare.attachmentsMessage
+              .DAYCARE
+          }
+
+          <Gap $size="s" />
+
+          <AdaptiveFlex>
+            <strong>
+              {t.applications.editor.serviceNeed.shiftCare.attachmentsSubtitle}
+            </strong>
+            {verificationRequested &&
+              errors.shiftCareAttachments?.arrayErrors && (
+                <AlertBox
+                  message={
+                    t.validationErrors[errors.shiftCareAttachments.arrayErrors]
+                  }
+                  thin
+                />
+              )}
+          </AdaptiveFlex>
+
+          <Gap $size="s" />
+
+          <FileUpload
+            files={formData.shiftCareAttachments}
+            uploadHandler={applicationAttachmentUploadHandler(
+              applicationId,
+              'EXTENDED_CARE',
+              deleteAttachment
+            )}
+            onUploaded={(attachment) =>
+              updateFormData({
+                shiftCareAttachments: [
+                  ...formData.shiftCareAttachments,
+                  {
+                    ...attachment,
+                    receivedAt: HelsinkiDateTime.now(),
+                    type: 'EXTENDED_CARE',
+                    uploadedByEmployee: null,
+                    uploadedByPerson: null
+                  }
+                ]
+              })
+            }
+            onDeleted={(id) =>
+              updateFormData({
+                shiftCareAttachments: formData.shiftCareAttachments.filter(
+                  (file) => file.id !== id
+                )
+              })
+            }
+            getDownloadUrl={getAttachmentUrl}
+            data-qa="shift-care-file-upload"
+          />
+        </>
+      )}
+    </>
+  )
+})
+
+const SubRadios = styled.div`
+  margin-bottom: ${defaultMargins.s};
+  margin-left: ${defaultMargins.XL};
+`

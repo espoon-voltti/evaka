@@ -7,26 +7,31 @@ import styled from 'styled-components'
 import { useSearchParams } from 'wouter'
 
 import { combine } from 'lib-common/api'
-import type FiniteDateRange from 'lib-common/finite-date-range'
+import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
+import {
+  apiDataToFormData,
+  formDataToApiData
+} from 'lib-common/application/ApplicationFormData'
+import {
+  applicationHasErrors,
+  validateApplication
+} from 'lib-common/application/validations'
+import type { Term } from 'lib-common/application/validations'
 import type {
-  ApplicationDetails,
+  ApplicationAttachment,
   ApplicationResponse,
-  ApplicationType
+  ApplicationUpdate
 } from 'lib-common/generated/api-types/application'
-import type { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import type { ThreadByApplicationResponse } from 'lib-common/generated/api-types/messaging'
-import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import {
   constantQuery,
-  pendingQuery,
   useChainedQuery,
   useQueryResult
 } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
-import { useDebounce } from 'lib-common/utils/useDebounce'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -38,10 +43,7 @@ import { faEnvelope } from 'lib-icons'
 import { getEmployeeUrlPrefix } from '../../constants'
 import type { Translations } from '../../state/i18n'
 import { useTranslation } from '../../state/i18n'
-import { asUnitType } from '../../types/daycare'
 import { useTitle } from '../../utils/useTitle'
-import { isSsnValid, isTimeValid } from '../../utils/validation/validations'
-import { serviceNeedPublicInfosQuery } from '../applications/queries'
 import MetadataSection from '../archive-metadata/MetadataSection'
 import { renderResult } from '../async-rendering'
 
@@ -52,26 +54,20 @@ import ApplicationReadView from './ApplicationReadView'
 import {
   applicationDetailsQuery,
   applicationMetadataQuery,
-  applicationUnitsQuery,
   clubTermsQuery,
   preschoolTermsQuery,
   threadByApplicationIdQuery
 } from './queries'
+import { useApplicationEditorDeps } from './useApplicationEditorDeps'
 
-const ApplicationArea = styled(ContentArea)`
-  width: 77%;
+const ApplicationArea = styled(ContentArea)<{ $fullWidth: boolean }>`
+  width: ${(p) => (p.$fullWidth ? '100%' : '77%')};
 `
 
 const SidebarArea = styled(ContentArea)`
   width: 23%;
   padding: 0;
 `
-
-const placementTypeFilters: Record<ApplicationType, PlacementType[]> = {
-  DAYCARE: ['DAYCARE', 'DAYCARE_PART_TIME'],
-  PRESCHOOL: ['PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'],
-  CLUB: []
-}
 
 const getMessageSubject = (
   i18n: Translations,
@@ -102,22 +98,38 @@ export default React.memo(function ApplicationPage() {
   const [searchParams] = useSearchParams()
   const creatingNew = searchParams.get('create') === 'true'
   const [editing, setEditing] = useState(creatingNew)
-  const [editedApplication, setEditedApplication] =
-    useState<ApplicationDetails>()
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string>
-  >({})
+  const [formData, setFormData] = useState<ApplicationFormData>()
+  const [dueDate, setDueDate] = useState<LocalDate | null>(null)
+  // Seeded once alongside formData and kept at this level (not inside
+  // ApplicationEditView) so in-session uploads/deletes survive the view
+  // unmounting when the user cancels editing and edits again.
+  const [serviceWorkerAttachments, setServiceWorkerAttachments] = useState<
+    ApplicationAttachment[]
+  >([])
+
+  // Must be referentially stable: shared editor sections key effects on the
+  // update callbacks derived from this (e.g. the stale-preferred-unit
+  // cleanup), and an unstable identity re-triggers them on every render.
+  const updateFormData = useCallback(
+    (update: (old: ApplicationFormData) => ApplicationFormData) =>
+      setFormData((prev) => (prev === undefined ? prev : update(prev))),
+    []
+  )
 
   const application = useQueryResult(applicationDetailsQuery({ applicationId }))
 
-  const editedApplicationInitialized = editedApplication !== undefined
+  const formDataInitialized = formData !== undefined
   useEffect(() => {
-    if (application.isSuccess) {
-      if (!editedApplicationInitialized) {
-        setEditedApplication(application.value.application)
-      }
+    if (application.isSuccess && !formDataInitialized) {
+      setFormData(apiDataToFormData(application.value.application, []))
+      setDueDate(application.value.application.dueDate)
+      setServiceWorkerAttachments(
+        application.value.application.attachments.filter(
+          (a) => a.type === 'SERVICE_WORKER_ATTACHMENT'
+        )
+      )
     }
-  }, [application, i18n, editedApplicationInitialized])
+  }, [application, formDataInitialized])
 
   useTitle(
     application.map(
@@ -149,62 +161,42 @@ export default React.memo(function ApplicationPage() {
   )
 
   const terms = combine(application, preschoolTerms, clubTerms)
-    .map(([application, preschoolTerms, clubTerms]) =>
-      application.application.type === 'PRESCHOOL'
-        ? preschoolTerms.map((term) => term.extendedTerm)
-        : application.application.type === 'CLUB'
-          ? clubTerms.map(({ term }) => term)
+    .map(([applicationData, preschoolTerms, clubTerms]): Term[] | undefined =>
+      applicationData.application.type === 'PRESCHOOL'
+        ? preschoolTerms.map((term) => ({
+            term: term.finnishPreschool,
+            extendedTerm: term.extendedTerm
+          }))
+        : applicationData.application.type === 'CLUB'
+          ? clubTerms.map(({ term }) => ({ term, extendedTerm: term }))
           : undefined
     )
     .getOrElse(undefined)
 
-  const units = useQueryResult(
-    editing && editedApplication
-      ? applicationUnitsQuery({
-          type: asUnitType(
-            editedApplication.type === 'PRESCHOOL' &&
-              editedApplication.form.preferences.preparatory
-              ? 'PREPARATORY'
-              : editedApplication.type
-          ),
-          date:
-            editedApplication.form.preferences.preferredStartDate ??
-            LocalDate.todayInSystemTz(),
-          shiftCare: null
-        })
-      : pendingQuery<PublicUnit[]>()
-  )
+  const { deps, infoDialog } = useApplicationEditorDeps()
 
-  // this is used because text inputs become too sluggish without it
-  const debouncedEditedApplication = useDebounce(editedApplication, 50)
-
-  useEffect(() => {
-    if (debouncedEditedApplication && units.isSuccess) {
-      setValidationErrors(
-        validateApplication(
-          debouncedEditedApplication,
-          units.value,
-          terms,
-          i18n
+  const errors =
+    application.isSuccess && formData !== undefined
+      ? validateApplication(
+          application.value.application,
+          formData,
+          featureFlags,
+          'employee',
+          terms
         )
-      )
-    }
-  }, [debouncedEditedApplication]) // oxlint-disable-line react-hooks/exhaustive-deps
+      : undefined
+  const hasErrors = errors !== undefined && applicationHasErrors(errors)
 
-  const shouldLoadServiceNeedOptions =
-    editedApplication !== undefined &&
-    ((editedApplication.type === 'DAYCARE' &&
-      featureFlags.daycareApplication.serviceNeedOption) ||
-      (editedApplication.type === 'PRESCHOOL' &&
-        featureFlags.preschoolApplication.serviceNeedOption))
-
-  const serviceNeedOptions = useQueryResult(
-    shouldLoadServiceNeedOptions
-      ? serviceNeedPublicInfosQuery({
-          placementTypes: placementTypeFilters[editedApplication.type]
-        })
-      : constantQuery([])
-  )
+  const applicationUpdate: ApplicationUpdate | null =
+    application.isSuccess && formData !== undefined
+      ? {
+          form: formDataToApiData(application.value.application, formData, {
+            actor: 'employee',
+            dailyTimes: featureFlags.daycareApplication.dailyTimes
+          }),
+          dueDate
+        }
+      : null
 
   const getSendMessageUrl = useCallback(
     (applicationData: ApplicationResponse) => {
@@ -230,27 +222,31 @@ export default React.memo(function ApplicationPage() {
     <>
       <Container>
         <ReturnButton label={i18n.common.goBack} data-qa="close-application" />
-        {renderResult(
-          combine(application, serviceNeedOptions),
-          ([applicationData, serviceNeedOptions]) => (
-            <FixedSpaceRow>
-              <ApplicationArea $opaque>
-                {editing ? (
-                  editedApplication ? (
-                    <ApplicationEditView
-                      application={editedApplication}
-                      setApplication={setEditedApplication}
-                      errors={validationErrors}
-                      units={units}
-                      guardians={applicationData.guardians}
-                      serviceNeedOptions={serviceNeedOptions}
-                    />
-                  ) : null
-                ) : (
-                  <ApplicationReadView application={applicationData} />
-                )}
-              </ApplicationArea>
-              {(applicationData.permittedActions.includes('READ_NOTES') ||
+        {renderResult(application, (applicationData) => (
+          <FixedSpaceRow>
+            <ApplicationArea $opaque $fullWidth={editing}>
+              {editing ? (
+                formData !== undefined && errors !== undefined ? (
+                  <ApplicationEditView
+                    application={applicationData.application}
+                    formData={formData}
+                    setFormData={updateFormData}
+                    errors={errors}
+                    terms={terms}
+                    guardians={applicationData.guardians}
+                    dueDate={dueDate}
+                    setDueDate={setDueDate}
+                    serviceWorkerAttachments={serviceWorkerAttachments}
+                    setServiceWorkerAttachments={setServiceWorkerAttachments}
+                    deps={deps}
+                  />
+                ) : null
+              ) : (
+                <ApplicationReadView application={applicationData} />
+              )}
+            </ApplicationArea>
+            {!editing &&
+              (applicationData.permittedActions.includes('READ_NOTES') ||
                 applicationData.permittedActions.includes(
                   'READ_SPECIAL_EDUCATION_TEACHER_NOTES'
                 )) && (
@@ -281,9 +277,9 @@ export default React.memo(function ApplicationPage() {
                     )}
                 </SidebarArea>
               )}
-            </FixedSpaceRow>
-          )
-        )}
+          </FixedSpaceRow>
+        ))}
+        {infoDialog}
         {!editing &&
           application.isSuccess &&
           application.value.permittedActions.includes('READ_METADATA') && (
@@ -298,130 +294,16 @@ export default React.memo(function ApplicationPage() {
       <Gap />
       {application.isSuccess &&
         application.value.permittedActions.includes('UPDATE') &&
-        editedApplication && (
+        applicationUpdate !== null && (
           <ApplicationActionsBar
             applicationStatus={application.value.application.status}
             editing={editing}
             setEditing={setEditing}
             application={application.value.application}
-            editedApplication={editedApplication}
-            errors={Object.keys(validationErrors).length > 0}
+            applicationUpdate={applicationUpdate}
+            errors={hasErrors}
           />
         )}
     </>
   )
 })
-
-function validateApplication(
-  application: ApplicationDetails,
-  units: PublicUnit[],
-  terms: FiniteDateRange[] | undefined,
-  i18n: Translations
-): Record<string, string> {
-  const errors: Record<string, string> = {}
-
-  const {
-    form: { child, preferences, otherPartner, otherChildren }
-  } = application
-
-  const preferredStartDate = preferences.preferredStartDate
-  if (!preferredStartDate) {
-    errors['form.preferences.preferredStartDate'] =
-      i18n.validationError.mandatoryField
-  }
-
-  if (
-    terms &&
-    preferredStartDate &&
-    !terms.some((term) => term.includes(preferredStartDate))
-  ) {
-    errors['form.preferences.preferredStartDate'] =
-      i18n.validationError.startDateNotOnTerm
-  }
-
-  if (preferences.preferredUnits.length === 0) {
-    errors['form.preferences.preferredUnits'] =
-      i18n.application.preferences.missingPreferredUnits
-  }
-
-  if (
-    preferences.preferredUnits.some(
-      ({ id }) => units.find((unit) => unit.id === id) === undefined
-    )
-  ) {
-    errors['form.preferences.preferredUnits'] =
-      i18n.application.preferences.unitMismatch
-  }
-
-  if (
-    preferences.serviceNeed !== null &&
-    ((application.type === 'DAYCARE' &&
-      featureFlags.daycareApplication.dailyTimes) ||
-      (application.type === 'PRESCHOOL' &&
-        !featureFlags.preschoolApplication.serviceNeedOption))
-  ) {
-    if (!preferences.serviceNeed.startTime) {
-      errors['form.preferences.serviceNeed.startTime'] =
-        i18n.validationError.mandatoryField
-    } else if (!isTimeValid(preferences.serviceNeed.startTime)) {
-      errors['form.preferences.serviceNeed.startTime'] =
-        i18n.validationError.time
-    }
-
-    if (!preferences.serviceNeed.endTime) {
-      errors['form.preferences.serviceNeed.endTime'] =
-        i18n.validationError.mandatoryField
-    } else if (!isTimeValid(preferences.serviceNeed.endTime)) {
-      errors['form.preferences.serviceNeed.endTime'] = i18n.validationError.time
-    }
-  }
-
-  if (
-    application.type === 'PRESCHOOL' &&
-    preferences.serviceNeed !== null &&
-    featureFlags.preschoolApplication.connectedDaycarePreferredStartDate
-  ) {
-    const connectedDaycarePreferredStartDate =
-      preferences.connectedDaycarePreferredStartDate
-    if (!connectedDaycarePreferredStartDate) {
-      errors['form.preferences.connectedDaycarePreferredStartDate'] =
-        i18n.validationError.mandatoryField
-    }
-  }
-
-  if (
-    application.type === 'PRESCHOOL' &&
-    preferences.serviceNeed !== null &&
-    featureFlags.preschoolApplication.serviceNeedOption
-  ) {
-    if (!preferences.serviceNeed?.serviceNeedOption) {
-      errors['form.preferences.serviceNeed.serviceNeedOption'] =
-        i18n.validationError.mandatoryField
-    }
-  }
-
-  if (
-    otherPartner &&
-    otherPartner.socialSecurityNumber &&
-    !isSsnValid(otherPartner.socialSecurityNumber)
-  ) {
-    errors['form.otherPartner.socialSecurityNumber'] = i18n.validationError.ssn
-  }
-
-  otherChildren.forEach(({ socialSecurityNumber }, index) => {
-    if (socialSecurityNumber && !isSsnValid(socialSecurityNumber)) {
-      errors[`form.otherChildren.${index}.socialSecurityNumber`] =
-        i18n.validationError.ssn
-    }
-  })
-
-  if (
-    child.assistanceNeeded &&
-    child.assistanceDescription.trim().length === 0
-  ) {
-    errors['form.child.assistanceDescription'] =
-      i18n.validationError.mandatoryField
-  }
-
-  return errors
-}

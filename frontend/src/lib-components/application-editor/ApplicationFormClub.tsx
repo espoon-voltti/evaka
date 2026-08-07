@@ -1,0 +1,133 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import React, { useCallback } from 'react'
+
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+
+import AdditionalDetailsSection from './AdditionalDetailsSection'
+import Heading from './Heading'
+import ContactInfoSection from './contact-info/ContactInfoSection'
+import ServiceNeedSection from './service-need/ServiceNeedSection'
+import type { ApplicationFormProps } from './types'
+import UnitPreferenceSection from './unit-preference/UnitPreferenceSection'
+
+export default React.memo(function ApplicationFormClub({
+  deps,
+  application,
+  formData,
+  setFormData,
+  errors,
+  verificationRequested,
+  alertTrigger,
+  isInvalidDate,
+  minDate,
+  maxDate,
+  terms
+}: ApplicationFormProps) {
+  const applicationType = 'CLUB'
+
+  return (
+    <FixedSpaceColumn $spacing="s">
+      <Heading
+        deps={deps}
+        type={applicationType}
+        transferApplication={application.transferApplication}
+        firstName={application.form.child.person.firstName}
+        lastName={application.form.child.person.lastName}
+        errors={verificationRequested ? errors : undefined}
+        alertTrigger={alertTrigger}
+      />
+
+      <ServiceNeedSection
+        deps={deps}
+        applicationId={application.id}
+        status={application.status}
+        isInvalidDate={isInvalidDate}
+        minDate={minDate}
+        maxDate={maxDate}
+        type={applicationType}
+        formData={formData.serviceNeed}
+        updateFormData={(data) =>
+          setFormData((old) => ({
+            ...old,
+            serviceNeed: {
+              ...old.serviceNeed,
+              ...data
+            }
+          }))
+        }
+        errors={errors.serviceNeed}
+        verificationRequested={verificationRequested}
+        terms={terms}
+        serviceNeedOptions={[]}
+      />
+
+      <UnitPreferenceSection
+        deps={deps}
+        formData={formData.unitPreference}
+        updateFormData={useCallback(
+          (fn) =>
+            setFormData((old) => ({
+              ...old,
+              unitPreference: {
+                ...old.unitPreference,
+                ...fn(old.unitPreference)
+              }
+            })),
+          [setFormData]
+        )}
+        applicationType={applicationType}
+        preparatory={false}
+        preferredStartDate={formData.serviceNeed.preferredStartDate}
+        errors={errors.unitPreference}
+        verificationRequested={verificationRequested}
+        shiftCare={formData.serviceNeed.shiftCare}
+      />
+
+      <ContactInfoSection
+        deps={deps}
+        type={applicationType}
+        application={application}
+        formData={formData.contactInfo}
+        updateFormData={(data) =>
+          setFormData((old) => ({
+            ...old,
+            contactInfo: {
+              ...old.contactInfo,
+              ...data
+            }
+          }))
+        }
+        errors={errors.contactInfo}
+        verificationRequested={verificationRequested}
+        fullFamily={false}
+        otherGuardianStatus={
+          application.hasOtherGuardian
+            ? application.otherGuardianLivesInSameAddress
+              ? 'SAME_ADDRESS'
+              : 'DIFFERENT_ADDRESS'
+            : 'NO'
+        }
+      />
+
+      <AdditionalDetailsSection
+        deps={deps}
+        formData={formData.additionalDetails}
+        updateFormData={(data) =>
+          setFormData((old) => ({
+            ...old,
+            additionalDetails: {
+              ...old.additionalDetails,
+              ...data
+            }
+          }))
+        }
+        errors={errors.additionalDetails}
+        verificationRequested={verificationRequested}
+        applicationType={applicationType}
+      />
+    </FixedSpaceColumn>
+  )
+})

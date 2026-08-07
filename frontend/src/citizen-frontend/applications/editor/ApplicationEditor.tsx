@@ -9,12 +9,21 @@ import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
 import { combine } from 'lib-common/api'
-import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
 import {
   apiDataToFormData,
   formDataToApiData
-} from 'lib-common/api-types/application/ApplicationFormData'
-import type FiniteDateRange from 'lib-common/finite-date-range'
+} from 'lib-common/application/ApplicationFormData'
+import type {
+  ApplicationFormDataErrors,
+  Term
+} from 'lib-common/application/validations'
+import {
+  applicationHasErrors,
+  maxPreferredStartDate,
+  minPreferredStartDate,
+  validateApplication
+} from 'lib-common/application/validations'
 import type {
   ApplicationDetails as ApplicationDetailsGen,
   CitizenChildren
@@ -24,6 +33,9 @@ import LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
+import ApplicationFormClub from 'lib-components/application-editor/ApplicationFormClub'
+import ApplicationFormDaycare from 'lib-components/application-editor/ApplicationFormDaycare'
+import ApplicationFormPreschool from 'lib-components/application-editor/ApplicationFormPreschool'
 import Main from 'lib-components/atoms/Main'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import ReturnButton, {
@@ -53,41 +65,12 @@ import {
   updateApplicationMutation
 } from '../queries'
 
-import ApplicationFormClub from './ApplicationFormClub'
-import ApplicationFormDaycare from './ApplicationFormDaycare'
-import ApplicationFormPreschool from './ApplicationFormPreschool'
-import type { ApplicationFormDataErrors } from './validations'
-import {
-  applicationHasErrors,
-  maxPreferredStartDate,
-  minPreferredStartDate,
-  validateApplication
-} from './validations'
+import { useApplicationEditorDeps } from './useApplicationEditorDeps'
 import ApplicationVerificationView from './verification/ApplicationVerificationView'
 
 type ApplicationEditorContentProps = {
   application: ApplicationDetailsGen
   citizenChildren: CitizenChildren[]
-}
-
-export type ApplicationFormProps = {
-  application: ApplicationDetailsGen
-  formData: ApplicationFormData
-  setFormData: (
-    update: (old: ApplicationFormData) => ApplicationFormData
-  ) => void
-  errors: ApplicationFormDataErrors
-  verificationRequested: boolean
-  alertTrigger: number
-  isInvalidDate: ((localDate: LocalDate) => string | null) | undefined
-  minDate: LocalDate
-  maxDate: LocalDate
-  terms?: Term[]
-}
-
-export interface Term {
-  term: FiniteDateRange
-  extendedTerm: FiniteDateRange
 }
 
 const StickyContainer = styled(Container)`
@@ -114,6 +97,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   citizenChildren
 }: ApplicationEditorContentProps) {
   const t = useTranslation()
+  const deps = useApplicationEditorDeps()
   useTitle(t, t.applications.editor.heading.title[application.type])
   const [, navigate] = useLocation()
 
@@ -167,10 +151,12 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     useState<boolean>(application.allowOtherGuardianAccess)
 
   const [errors, setErrors] = useState<ApplicationFormDataErrors>(
-    validateApplication(application, formData)
+    validateApplication(application, formData, featureFlags, 'citizen')
   )
   useEffect(() => {
-    setErrors(validateApplication(application, formData, terms))
+    setErrors(
+      validateApplication(application, formData, featureFlags, 'citizen', terms)
+    )
   }, [application, formData, terms])
 
   const originalPreferredStartDate =
@@ -216,7 +202,9 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const submitting = savingDraft || updatingApplication || sendingApplication
 
   const onVerify = () => {
-    setErrors(validateApplication(application, formData, terms))
+    setErrors(
+      validateApplication(application, formData, featureFlags, 'citizen', terms)
+    )
     setVerificationRequested(true)
     setVerificationCount((prev) => prev + 1)
 
@@ -229,12 +217,11 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const onSaveDraft = () => {
-    const body = formDataToApiData(
-      application,
-      formData,
-      featureFlags.daycareApplication.dailyTimes,
-      true
-    )
+    const body = formDataToApiData(application, formData, {
+      actor: 'citizen',
+      dailyTimes: featureFlags.daycareApplication.dailyTimes,
+      isDraft: true
+    })
     void saveApplicationDraft({ applicationId: application.id, body })
       .then(() => {
         setInfoMessage({
@@ -263,11 +250,10 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
   const onSend = () => {
     const body = {
-      form: formDataToApiData(
-        application,
-        formData,
-        featureFlags.daycareApplication.dailyTimes
-      ),
+      form: formDataToApiData(application, formData, {
+        actor: 'citizen',
+        dailyTimes: featureFlags.daycareApplication.dailyTimes
+      }),
       allowOtherGuardianAccess
     }
     updateApplication({ applicationId: application.id, body })
@@ -300,11 +286,10 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
   const onUpdate = () => {
     const body = {
-      form: formDataToApiData(
-        application,
-        formData,
-        featureFlags.daycareApplication.dailyTimes
-      ),
+      form: formDataToApiData(application, formData, {
+        actor: 'citizen',
+        dailyTimes: featureFlags.daycareApplication.dailyTimes
+      }),
       allowOtherGuardianAccess
     }
     updateApplication({ applicationId: application.id, body })
@@ -339,6 +324,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       case 'DAYCARE':
         return (
           <ApplicationFormDaycare
+            deps={deps}
             application={application}
             formData={formData}
             setFormData={setFormData}
@@ -353,6 +339,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       case 'PRESCHOOL':
         return (
           <ApplicationFormPreschool
+            deps={deps}
             application={application}
             formData={formData}
             setFormData={setFormData}
@@ -368,6 +355,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       case 'CLUB':
         return (
           <ApplicationFormClub
+            deps={deps}
             application={application}
             formData={formData}
             setFormData={setFormData}

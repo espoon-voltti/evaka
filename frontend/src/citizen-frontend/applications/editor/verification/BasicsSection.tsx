@@ -4,7 +4,7 @@
 
 import React from 'react'
 
-import type { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
 import type { ApplicationDetails as ApplicationDetailsGen } from 'lib-common/generated/api-types/application'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { PersonName } from 'lib-components/molecules/PersonNames'

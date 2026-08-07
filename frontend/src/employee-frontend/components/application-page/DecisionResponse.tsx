@@ -16,6 +16,7 @@ import {
 } from 'lib-common/query'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Radio from 'lib-components/atoms/form/Radio'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -23,7 +24,6 @@ import {
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 
 import { useTranslation } from '../../state/i18n'
-import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 
 import { acceptDecisionMutation, rejectDecisionMutation } from './queries'
 
