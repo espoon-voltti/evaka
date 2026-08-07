@@ -25,7 +25,7 @@ const prod: FeatureFlags = {
   decisionDraftMultipleUnits: true,
   urgencyAttachments: true,
   preschool: true,
-  preparatory: true,
+  preparatory: false,
   assistanceActionOther: false,
   financeDecisionHandlerSelect: true,
   feeDecisionPreschoolClubFilter: true,

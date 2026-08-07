@@ -33,11 +33,6 @@ class NokiaDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 serviceNeed = standardServiceNeed,
             ),
             DecisionScenario(
-                "valmistava",
-                DecisionType.PREPARATORY_EDUCATION,
-                serviceNeed = standardServiceNeed,
-            ),
-            DecisionScenario(
                 "vaka_siirto",
                 DecisionType.DAYCARE,
                 isTransferApplication = true,
