@@ -456,22 +456,8 @@ const fi: DeepPartial<Translations> = {
     }
   },
   loginPage: {
-    applying: {
-      infoBullets: [
-        `hakea lapsellesi varhaiskasvatus-${
-          preschoolEnabled ? ', esiopetus' : ''
-        } tai kerhopaikkaa tai tarkastella aiemmin tekemääsi hakemusta`,
-        `tarkastella lapsesi varhaiskasvatukseen${
-          preschoolEnabled ? ' ja esiopetukseen' : ''
-        } liittyviä kuvia ja muita dokumentteja`,
-        'ilmoittaa omat tai lapsesi tulotiedot',
-        `hyväksyä lapsesi varhaiskasvatus-${
-          preschoolEnabled ? ', esiopetus-' : ''
-        } tai kerhopaikan`,
-        serviceApplicationsEnabled ? 'muuttaa lapsesi palveluntarvetta' : '',
-        'irtisanoa lapsen varhaiskasvatus- tai kerhopaikan.'
-      ].filter((s) => s.length > 0)
-    },
+    helpUrl:
+      'https://www.tampere.fi/varhaiskasvatus-ja-esiopetus/varhaiskasvatus/evaka-tampere-jarjestelma',
     login: {
       infoBoxText: (
         <>

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { useLocation } from 'wouter'
 
 import { useQuery } from 'lib-common/query'
@@ -16,6 +16,7 @@ import colors from 'lib-customizations/common'
 
 import { useUser } from '../auth/state'
 import { unreadMessagesCountQuery } from '../messages/queries'
+import { loginPageWidth } from '../page-widths'
 
 import CityLogo from './CityLogo'
 import DesktopNav from './DesktopNav'
@@ -34,11 +35,11 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   const unreadDecisions = useUnreadDecisions()
 
   const [path] = useLocation()
-  const isLoginPage = path === '/login'
+  const isLoginPage = path === '/login' || path === '/login/form'
 
   return (
     <>
-      <HeaderContainer aria-hidden={props.ariaHidden}>
+      <HeaderContainer aria-hidden={props.ariaHidden} $narrow={isLoginPage}>
         <CityLogo />
         <EvakaLogo />
         {isLoginPage && (
@@ -56,7 +57,25 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   )
 })
 
-const HeaderContainer = styled.header`
+const wideWidthStyles = css`
+  @media screen and (min-width: 1152px) {
+    max-width: 1152px;
+    width: 1152px;
+  }
+  @media screen and (min-width: 1408px) {
+    max-width: 1344px;
+    width: 1344px;
+  }
+`
+
+const narrowWidthStyles = css`
+  @media (min-width: ${desktopMin}) {
+    max-width: ${loginPageWidth};
+    width: ${loginPageWidth};
+  }
+`
+
+const HeaderContainer = styled.header<{ $narrow: boolean }>`
   z-index: 25;
   color: ${colors.grayscale.g100};
   background-color: ${colors.grayscale.g0};
@@ -81,18 +100,8 @@ const HeaderContainer = styled.header`
     box-shadow: none;
   }
 
-  @media screen and (min-width: 1152px) and (max-width: 1215px) {
-    max-width: 1152px;
-    width: 1152px;
-  }
-  @media screen and (min-width: 1216px) {
-    max-width: 1152px;
-    width: 1152px;
-  }
-  @media screen and (min-width: 1408px) {
-    max-width: 1344px;
-    width: 1344px;
-  }
+  ${(p) => (p.$narrow ? narrowWidthStyles : wideWidthStyles)}
+
   @media print {
     display: none;
   }

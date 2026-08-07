@@ -12,33 +12,36 @@ import { nonBlank } from 'lib-common/form/validators'
 import { useMutationResult } from 'lib-common/query'
 import { parseUrlWithOrigin } from 'lib-common/utils/parse-url-with-origin'
 import Main from 'lib-components/atoms/Main'
-import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
-import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import {
-  MobileOnly,
-  TabletAndDesktop
-} from 'lib-components/layout/responsive-layout'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import PasswordInputF from 'lib-components/molecules/PasswordInputF'
-import { H1, Label } from 'lib-components/typography'
+import { H1, H2, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
 import { authPasskeyLogin, passkeysSupported } from '../auth/passkeys'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
+import { getStrongLoginUri } from '../navigation/const'
 import useTitle from '../useTitle'
 
 import { rememberLastLoginMethod } from './last-login-method'
+import {
+  HelpLinkRow,
+  LoginCard,
+  LoginColumns,
+  LoginContainer,
+  TopGap,
+  WideAsyncButton,
+  WideLinkButton
+} from './layout'
 import { authWeakLoginMutation } from './queries'
 
 export default React.memo(function WeakLoginFormPage() {
   const i18n = useTranslation()
-  useTitle(i18n, i18n.loginPage.login.title)
+  useTitle(i18n, i18n.loginPage.login.formTitle)
   const user = useUser()
 
   const [searchParams] = useSearchParams()
@@ -50,25 +53,44 @@ export default React.memo(function WeakLoginFormPage() {
 
   return (
     <Main>
-      <TabletAndDesktop>
-        <Gap $size="L" />
-      </TabletAndDesktop>
-      <MobileOnly>
-        <Gap $size="xs" />
-      </MobileOnly>
-      <Container>
-        <FixedSpaceColumn $spacing="s">
-          <ReturnButton label={i18n.common.goBack} data-qa="navigate-back" />
-          <ContentArea $opaque>
-            <H1 $noMargin $hyphenate>
-              {i18n.loginPage.login.title}
-            </H1>
-            <Gap $size="m" />
-            <WeakLoginForm unvalidatedNextPath={unvalidatedNextPath} />
-          </ContentArea>
-        </FixedSpaceColumn>
-      </Container>
-      <Footer />
+      <TopGap />
+      <LoginContainer>
+        <ReturnButton label={i18n.common.goBack} data-qa="navigate-back" />
+        <LoginCard>
+          <H1 $noMargin $hyphenate>
+            {i18n.loginPage.login.formTitle}
+          </H1>
+          <Gap $size="L" />
+          <LoginColumns>
+            <section>
+              <WeakLoginForm unvalidatedNextPath={unvalidatedNextPath} />
+            </section>
+            <section>
+              <H2 $noMargin $smaller>
+                {i18n.loginPage.login.forgotPassword}
+              </H2>
+              <Gap $size="xs" />
+              <P $noMargin>{i18n.loginPage.login.forgotPasswordInfo}</P>
+              <Gap $size="m" />
+              <H2 $noMargin $smaller>
+                {i18n.loginPage.login.noUsername}
+              </H2>
+              <Gap $size="xs" />
+              <P $noMargin>{i18n.loginPage.login.noUsernameInfo}</P>
+              <Gap $size="m" />
+              <WideLinkButton
+                href={getStrongLoginUri(unvalidatedNextPath ?? '/')}
+                $style="secondary"
+                data-qa="strong-login"
+              >
+                {i18n.loginPage.applying.link}
+              </WideLinkButton>
+            </section>
+          </LoginColumns>
+        </LoginCard>
+        <HelpLinkRow />
+      </LoginContainer>
+      <Footer narrow />
     </Main>
   )
 })
@@ -134,8 +156,8 @@ const WeakLoginForm = React.memo(function WeakLogin({
       onSubmit={(e) => e.preventDefault()}
       data-qa="weak-login-form"
     >
-      <FixedSpaceColumn $spacing="L">
-        {rateLimitError && <AlertBox message={t.rateLimitError} />}
+      <FixedSpaceColumn $spacing="m">
+        {rateLimitError && <AlertBox message={t.rateLimitError} noMargin />}
         <FixedSpaceColumn $spacing="zero">
           <Label htmlFor="username">{t.username}</Label>
           <InputFieldF
@@ -143,8 +165,8 @@ const WeakLoginForm = React.memo(function WeakLogin({
             data-qa="username"
             autoComplete="username webauthn"
             bind={username}
-            placeholder={t.username}
-            width="L"
+            placeholder={t.usernamePlaceholder}
+            width="full"
             hideErrorsBeforeTouched={true}
           />
         </FixedSpaceColumn>
@@ -156,11 +178,11 @@ const WeakLoginForm = React.memo(function WeakLogin({
             autoComplete="current-password"
             bind={password}
             placeholder={t.password}
-            width="L"
+            width="full"
             hideErrorsBeforeTouched={true}
           />
         </FixedSpaceColumn>
-        <AsyncButton
+        <WideAsyncButton
           primary
           data-qa="login"
           type="submit"
@@ -180,10 +202,6 @@ const WeakLoginForm = React.memo(function WeakLogin({
             }
           }}
         />
-        <ExpandingInfo info={t.forgotPasswordInfo}>
-          {t.forgotPassword}
-        </ExpandingInfo>
-        <ExpandingInfo info={t.noUsernameInfo}>{t.noUsername}</ExpandingInfo>
       </FixedSpaceColumn>
     </form>
   )
