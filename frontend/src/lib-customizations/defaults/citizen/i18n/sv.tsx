@@ -2174,16 +2174,30 @@ const sv: Translations = {
         myndigheten för digitalisering och befolkningsdata (DVV).
       </P>
     ),
+    editInfo:
+      'Vi hämtar ditt namn och din adress i befolkningsdatasystemet. Om de ändras ska du göra en anmälan till myndigheten för digitalisering och befolkningsdata (DVV).',
+    tasks: {
+      verifyEmail: {
+        title: 'Bekräfta din e-postadress',
+        description: 'Du kan ta emot e-postmeddelanden.'
+      },
+      addPhone: {
+        title: 'Lägg till ett telefonnummer',
+        description: 'Du kan nås i brådskande ärenden.'
+      }
+    },
     familySizeSection: {
       title: 'Familjestorlek',
       description: (
-        <P>
+        <P $noMargin>
           Antalet vuxna och barn som bor i samma hushåll påverkar
           klientavgifterna. Om uppgifterna om familjen har ändrats, kontakta
           enheten för klientavgifter, e-post{' '}
           <a href="mailto:vaka.maksut@espoo.fi">vaka.maksut@espoo.fi</a>.
         </P>
       ),
+      summary: (adults: number, children: number) =>
+        `${adults} ${adults === 1 ? 'vuxen' : 'vuxna'} och ${children} barn`,
       adults: 'Vuxna',
       children: 'Barn',
       self: '(du)'
@@ -2223,7 +2237,7 @@ const sv: Translations = {
           `För att ändra ditt användarnamn, ange den bekräftelsekod som skickats till ${verification.email}. Koden är giltig till och med ${verification.expiresAt.toLocalTime().format()}.`,
         toast: 'Användarnamnet har ändrats.'
       },
-      codeNotReceived: 'Jag har inte fått koden.',
+      codeNotReceived: 'Har du inte fått koden?',
       codeNotReceivedInfo:
         'Kontrollera din skräppostmapp och att din e-postadress är rätt stavad.',
       verificationForm: 'Ange den bekräftelsekod som du har fått',
@@ -2242,18 +2256,15 @@ const sv: Translations = {
         `Uppdatera till användarnamn to ${newUsername}`
     },
     loginDetailsSection: {
-      title: 'Inloggningsinformation',
+      title: 'E-postinloggning',
       weakLoginCredentials: 'Inloggning med e-post',
       status: {
-        enabled: 'Tillåtet',
-        disabled: 'Inte tillåtet',
-        info: 'Genom att logga in med e-post kan du läsa inkommande meddelanden från eVaka och göra närvaroanmälningar utan stark autentisering.'
+        enabled: 'Aktiverad'
       },
-      usernameInfo: 'Använd detta ID för att logga in på eVaka',
       weakLoginUsername: 'Användarnamn',
       password: 'Lösenord',
       unverifiedEmailWarning:
-        'Inloggning med e-post är endast tillåten om du har bekräftat din e-postadress',
+        'Du kan ta detta i bruk när du har bekräftat din e-postadress.',
       updatePassword: 'Uppdatera lösenord',
       activateCredentials: 'Tillåt inloggning med e-post',
       activationSuccess: 'E-postinloggning aktiverad',
@@ -2281,17 +2292,19 @@ const sv: Translations = {
         `Användarnamnet ${username} används redan av en annan person`
     },
     notificationsSection: {
-      title: 'E-postmeddelanden',
-      info: 'Du kan få e-postmeddelanden om följande ämnen. Du kan redigera inställningarna genom att klicka på knappen Redigera.',
-      subtitle: 'Meddelande som skickas till e-posten',
-      message: 'Meddelanden som personalen skickat i eVaka',
-      bulletin: 'Bulletiner i eVaka',
-      income: 'Påminnelse om att uppdatera inkomstuppgifter',
+      title: 'Aviseringar',
+      subtitle: 'Jag vill få ett meddelande',
+      moreInfo: 'Mer information',
+      email: 'E-post',
+      push: 'Push',
+      message: 'Meddelanden som personalen skickat',
+      bulletin: 'Kommunens allmänna bulletiner',
+      income: 'Behovet att uppdatera inkomstuppgifter',
       incomeInfo:
         'Om familjen inte betalar den högsta avgiften ska inkomstuppgifterna uppdateras regelbundet. Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',
       incomeWarning:
         'Om inkomstuppgifterna saknas eller är föråldrade, uppbärs högsta avgift för småbarnspedagogiken.',
-      calendarEvent: 'Påminnelser om nya händelser som antecknats i kalendern',
+      calendarEvent: 'Nya kalenderhändelser',
       decision: 'Om inkomna beslut',
       document: 'Om inkomna pedagogiska dokument',
       documentInfo:
@@ -2299,13 +2312,13 @@ const sv: Translations = {
       informalDocument: 'Om andra dokument som gäller barnets vardag',
       informalDocumentInfo:
         'Dessa kan till exempel vara bilder på teckningar som barnet gjort.',
-      attendanceReservation: 'Påminnelser om närvaroanmälningar som saknas',
+      attendanceReservation: 'Närvaroanmälningar som saknas',
       attendanceReservationInfo:
         'Påminnelsen skickas före deadline för närvaroanmälan om något av dina barn saknar anmälan om närvaro eller frånvaro under de kommande två veckorna.',
-      discussionTime: 'Meddelanden om samtalstider',
+      discussionTime: 'Ärenden som gäller samtalstider',
       discussionTimeInfo: (
         <div>
-          <div>Du får ett meddelande när vi skickar:</div>
+          <div>Meddelanden när vi skickar:</div>
           <ul>
             <li>
               en förfrågan om lämpliga tider till exempel för samtal om ditt

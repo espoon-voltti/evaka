@@ -2,28 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useRef, useEffect } from 'react'
+import styled from 'styled-components'
 
 import { boolean } from 'lib-common/form/fields'
 import { object } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
+import type { BoundFormState } from 'lib-common/form/hooks'
 import type { StateOf } from 'lib-common/form/types'
 import type { EmailMessageType } from 'lib-common/generated/api-types/pis'
 import { emailMessageTypes } from 'lib-common/generated/api-types/pis'
-import { Button } from 'lib-components/atoms/buttons/Button'
-import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
-import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { H2, P, Strong } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
-import { faPen } from 'lib-icons'
+import { faChevronDown, faChevronUp, faEnvelope } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
-import { EditButtonRow } from './components'
+import { EditableSectionHeader } from './components'
 import { updateNotificationSettingsMutation } from './queries'
 
 const notificationSettingsForm = object({
@@ -82,6 +80,58 @@ const getInitialState = (
   discussionTime: !disabledTypes.includes('DISCUSSION_TIME_NOTIFICATION')
 })
 
+const channelColumns = '60px'
+
+const TableHeaderRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr ${channelColumns};
+  gap: ${defaultMargins.s};
+  align-items: end;
+  font-weight: 600;
+  padding-bottom: ${defaultMargins.xs};
+  border-bottom: 2px solid ${(p) => p.theme.colors.grayscale.g15};
+`
+
+const ChannelHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  gap: ${defaultMargins.xxs};
+  text-align: center;
+  hyphens: auto;
+  color: ${(p) => p.theme.colors.grayscale.g100};
+`
+
+const SettingRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr ${channelColumns};
+  column-gap: ${defaultMargins.s};
+  align-items: start;
+  padding: ${defaultMargins.s} 0;
+  border-bottom: 1px solid ${(p) => p.theme.colors.grayscale.g15};
+
+  &:last-child {
+    border-bottom: none;
+  }
+`
+
+const RowInfoCell = styled.div`
+  grid-column: 1 / -1;
+`
+
+const ChannelCell = styled.div`
+  display: flex;
+  justify-content: center;
+`
+
+interface NotificationRow {
+  dataQa: string
+  label: string
+  info?: React.ReactNode
+  bind: BoundFormState<boolean>
+}
+
 export interface Props {
   initialData: EmailMessageType[]
 }
@@ -92,6 +142,7 @@ export default React.memo(
     ref: React.Ref<HTMLDivElement>
   ) {
     const t = useTranslation()
+    const tn = t.personalDetails.notificationsSection
     const [editing, useEditing] = useBoolean(false)
     const firstCheckboxRef = useRef<HTMLDivElement>(null)
 
@@ -119,146 +170,150 @@ export default React.memo(
       }
     }, [editing])
 
+    const rows: NotificationRow[] = [
+      { dataQa: 'message', bind: message, label: tn.message },
+      { dataQa: 'bulletin', bind: bulletin, label: tn.bulletin },
+      { dataQa: 'income', bind: income, label: tn.income, info: tn.incomeInfo },
+      {
+        dataQa: 'calendar-event',
+        bind: calendarEvent,
+        label: tn.calendarEvent
+      },
+      { dataQa: 'decision', bind: decision, label: tn.decision },
+      {
+        dataQa: 'document',
+        bind: document,
+        label: tn.document,
+        info: tn.documentInfo
+      },
+      {
+        dataQa: 'informal-document',
+        bind: informalDocument,
+        label: tn.informalDocument,
+        info: tn.informalDocumentInfo
+      },
+      {
+        dataQa: 'attendance-reservation',
+        bind: attendanceReservation,
+        label: tn.attendanceReservation,
+        info: tn.attendanceReservationInfo
+      },
+      ...(featureFlags.discussionReservations
+        ? [
+            {
+              dataQa: 'discussion-time',
+              bind: discussionTime,
+              label: tn.discussionTime,
+              info: tn.discussionTimeInfo
+            }
+          ]
+        : [])
+    ]
+
     return (
       <div data-qa="notification-settings-section" ref={ref}>
-        <EditButtonRow>
-          <Button
-            appearance="inline"
-            text={t.common.edit}
-            icon={faPen}
-            onClick={useEditing.on}
-            disabled={editing}
-            data-qa="start-editing"
-          />
-        </EditButtonRow>
-        <H2 $noMargin>{t.personalDetails.notificationsSection.title}</H2>
-        <P>{t.personalDetails.notificationsSection.info}</P>
-        <P>
-          <Strong>{t.personalDetails.notificationsSection.subtitle}</Strong>
-        </P>
+        <EditableSectionHeader
+          title={tn.title}
+          editing={editing}
+          onStartEditing={useEditing.on}
+          onCancel={() => {
+            form.set(getInitialState(initialData))
+            useEditing.off()
+          }}
+          mutation={updateNotificationSettingsMutation}
+          onSave={() => ({
+            body: emailMessageTypes.filter(
+              (type) => !isEnabled(form.state, type)
+            )
+          })}
+          onSaveSuccess={useEditing.off}
+        />
+
+        <Gap $size="xs" />
+
+        <TableHeaderRow>
+          <div>{tn.subtitle}</div>
+          <ChannelHeader>
+            <FontAwesomeIcon size="lg" icon={faEnvelope} />
+            {tn.email}
+          </ChannelHeader>
+        </TableHeaderRow>
         <div ref={firstCheckboxRef}>
-          <CheckboxF
-            bind={message}
-            label={t.personalDetails.notificationsSection.message}
-            disabled={!editing}
-            data-qa="message"
-          />
+          {rows.map((row) => (
+            <React.Fragment key={row.dataQa}>
+              <SettingRow>
+                <div>{row.label}</div>
+                <ChannelCell>
+                  <CheckboxF
+                    bind={row.bind}
+                    label={row.label}
+                    hiddenLabel
+                    disabled={!editing}
+                    data-qa={row.dataQa}
+                  />
+                </ChannelCell>
+                {row.info !== undefined && (
+                  <RowInfoCell>
+                    <RowInfo info={row.info} />
+                  </RowInfoCell>
+                )}
+              </SettingRow>
+              {row.dataQa === 'income' && income.state === false ? (
+                <>
+                  <Gap $size="s" />
+                  <AlertBox noMargin message={tn.incomeWarning} />
+                  <Gap $size="s" />
+                </>
+              ) : null}
+            </React.Fragment>
+          ))}
         </div>
-        <Gap $size="s" />
-        <CheckboxF
-          bind={bulletin}
-          label={t.personalDetails.notificationsSection.bulletin}
-          disabled={!editing}
-          data-qa="bulletin"
-        />
-        <Gap $size="s" />
-        <ExpandingInfo info={t.personalDetails.notificationsSection.incomeInfo}>
-          <CheckboxF
-            bind={income}
-            label={t.personalDetails.notificationsSection.income}
-            disabled={!editing}
-            data-qa="income"
-          />
-        </ExpandingInfo>
-        {income.state === false ? (
-          <>
-            <Gap $size="s" />
-            <AlertBox
-              noMargin
-              message={t.personalDetails.notificationsSection.incomeWarning}
-            />
-          </>
-        ) : null}
-        <Gap $size="s" />
-        <CheckboxF
-          bind={calendarEvent}
-          label={t.personalDetails.notificationsSection.calendarEvent}
-          disabled={!editing}
-          data-qa="calendar-event"
-        />
-        <Gap $size="s" />
-        <CheckboxF
-          bind={decision}
-          label={t.personalDetails.notificationsSection.decision}
-          disabled={!editing}
-          data-qa="decision"
-        />
-        <Gap $size="s" />
-        <ExpandingInfo
-          info={t.personalDetails.notificationsSection.documentInfo}
-        >
-          <CheckboxF
-            bind={document}
-            label={t.personalDetails.notificationsSection.document}
-            disabled={!editing}
-            data-qa="document"
-          />
-        </ExpandingInfo>
-        <Gap $size="s" />
-        <ExpandingInfo
-          info={t.personalDetails.notificationsSection.informalDocumentInfo}
-        >
-          <CheckboxF
-            bind={informalDocument}
-            label={t.personalDetails.notificationsSection.informalDocument}
-            disabled={!editing}
-            data-qa="informal-document"
-          />
-        </ExpandingInfo>
-        <Gap $size="s" />
-        <ExpandingInfo
-          info={
-            t.personalDetails.notificationsSection.attendanceReservationInfo
-          }
-        >
-          <CheckboxF
-            bind={attendanceReservation}
-            label={t.personalDetails.notificationsSection.attendanceReservation}
-            disabled={!editing}
-            data-qa="attendance-reservation"
-          />
-        </ExpandingInfo>
-        <Gap $size="s" />
-        {featureFlags.discussionReservations && (
-          <>
-            <ExpandingInfo
-              info={t.personalDetails.notificationsSection.discussionTimeInfo}
-            >
-              <CheckboxF
-                bind={discussionTime}
-                label={t.personalDetails.notificationsSection.discussionTime}
-                disabled={!editing}
-                data-qa="discussion-time"
-              />
-            </ExpandingInfo>
-            <Gap $size="s" />
-          </>
-        )}
-        {editing ? (
-          <FixedSpaceRow $justifyContent="flex-end">
-            <Button
-              onClick={() => {
-                form.set(getInitialState(initialData))
-                useEditing.off()
-              }}
-              text={t.common.cancel}
-              data-qa="cancel"
-            />
-            <MutateButton
-              mutation={updateNotificationSettingsMutation}
-              onClick={() => ({
-                body: emailMessageTypes.filter(
-                  (type) => !isEnabled(form.state, type)
-                )
-              })}
-              onSuccess={useEditing.off}
-              text={t.common.save}
-              primary
-              data-qa="save"
-            />
-          </FixedSpaceRow>
-        ) : null}
       </div>
     )
   })
 )
+
+const InfoToggleContainer = styled.div<{ $open: boolean }>`
+  margin-top: ${defaultMargins.s};
+  border-left: 4px solid
+    ${(p) => (p.$open ? p.theme.colors.main.m2 : 'transparent')};
+  padding-left: ${defaultMargins.s};
+`
+
+const InfoText = styled.p`
+  margin: ${defaultMargins.xs} 0 0;
+  font-weight: 600;
+  font-size: 14px;
+`
+
+const InfoToggleButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: ${defaultMargins.xs};
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${(p) => p.theme.colors.main.m2};
+`
+
+const RowInfo = React.memo(function RowInfo({
+  info
+}: {
+  info: React.ReactNode
+}) {
+  const t = useTranslation()
+  const [open, { toggle }] = useBoolean(false)
+  return (
+    <InfoToggleContainer $open={open}>
+      <InfoToggleButton type="button" onClick={toggle} aria-expanded={open}>
+        {t.personalDetails.notificationsSection.moreInfo}
+        <FontAwesomeIcon icon={open ? faChevronUp : faChevronDown} />
+      </InfoToggleButton>
+      {open && <InfoText>{info}</InfoText>}
+    </InfoToggleContainer>
+  )
+})
