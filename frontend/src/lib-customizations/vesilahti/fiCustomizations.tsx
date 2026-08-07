@@ -448,22 +448,7 @@ const fi: DeepPartial<Translations> = {
     }
   },
   loginPage: {
-    applying: {
-      infoBullets: [
-        `hakea lapsellesi varhaiskasvatus-${
-          preschoolEnabled ? '  tai esiopetus' : ''
-        }paikkaa tai tarkastella aiemmin tekemääsi hakemusta`,
-        `tarkastella lapsesi varhaiskasvatukseen${
-          preschoolEnabled ? ' ja esiopetukseen' : ''
-        } liittyviä kuvia ja muita dokumentteja`,
-        'ilmoittaa omat tai lapsesi tulotiedot',
-        `hyväksyä lapsesi varhaiskasvatus-${
-          preschoolEnabled ? '  tai esiopetus' : ''
-        }paikan`,
-        serviceApplicationsEnabled ? 'muuttaa lapsesi palveluntarvetta' : '',
-        'irtisanoa lapsen varhaiskasvatuspaikan.'
-      ].filter((s) => s.length > 0)
-    },
+    helpUrl: 'https://www.vesilahti.fi/kasvatus-ja-opetus/varhaiskasvatus/',
     login: {
       infoBoxText: (
         <P>

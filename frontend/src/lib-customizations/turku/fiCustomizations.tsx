@@ -629,9 +629,9 @@ const fi: DeepPartial<Translations> = {
     }
   },
   loginPage: {
+    helpUrl: null,
     title: 'Turun kaupungin varhaiskasvatus',
     login: {
-      title: 'Kirjaudu käyttäjätunnuksella',
       paragraph:
         'Huoltajat, joiden lapsi on jo varhaiskasvatuksessa tai esiopetuksessa: hoida lapsesi päivittäisiä varhaiskasvatusasioita kuten lue viestejä ja ilmoita lapsen läsnäoloajat ja poissaolot.',
       link: 'Kirjaudu sisään',

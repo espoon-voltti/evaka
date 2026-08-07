@@ -11,7 +11,6 @@ import type { EmailVerification } from 'lib-common/generated/api-types/pis'
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
-import OrderedList from 'lib-components/atoms/OrderedList'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import type { Translations as ComponentTranslations } from 'lib-components/i18n'
@@ -207,49 +206,16 @@ export default {
     )
   },
   loginPage: {
+    welcomeTitle: 'Tervetuloa eVakaan',
     title: 'Espoon kaupungin varhaiskasvatus',
     systemNotification: 'Tärkeä tiedote',
-    addToHomeScreen: {
-      title: 'Haluatko löytää tälle sivulle helpommin?',
-      subTitle: 'Lisää eVaka puhelimesi kotivalikkoon!',
-      ios: 'Lisää pikakuvake iOS-laitteella (Safari)',
-      android: 'Lisää pikakuvake Android-laitteella (Chrome)',
-      instructions: {
-        ios: (
-          <>
-            <OrderedList>
-              <li>
-                Paina “jaa”-ikonia selaimen alalaidassa (neliö, jossa on
-                ylöspäin osoittava nuoli)
-              </li>
-              <li>Skrollaa alas ja valitse “lisää kotivalikkoon”</li>
-              <li>Kirjoita halutessasi pikakuvakkeelle nimi</li>
-              <li>Paina “Lisää” sivun yläreunasta</li>
-            </OrderedList>
-            <P>
-              Nyt kotivalikossasi pitäisi näkyä ikoni, jonka painaminen avaa
-              tämän sivun.
-            </P>
-          </>
-        ),
-        android: (
-          <>
-            <OrderedList>
-              <li>Paina “valikko”-ikonia (⋮) selaimen oikeassa ylänurkassa</li>
-              <li>Valitse “Lisää aloitusnäyttöön”</li>
-              <li>Kirjoita halutessasi pikakuvakkeelle nimi</li>
-              <li>Paina “Luo pikakuvake”</li>
-            </OrderedList>
-            <P>
-              Nyt kotivalikossasi pitäisi näkyä ikoni, jonka painaminen avaa
-              tämän sivun.
-            </P>
-          </>
-        )
-      }
-    },
+    helpLink: 'Ohjeet',
+    // Municipalities without a guide page set this to null, which hides the link
+    helpUrl: 'https://www.espoo.fi/fi/palvelut/evaka' as string | null,
     login: {
-      title: 'Kirjaudu käyttäjätunnuksella',
+      title: 'Kirjaudu sisään',
+      formTitle: 'Kirjaudu sähköpostiosoitteella',
+      emailLink: 'Kirjaudu sähköpostiosoitteella',
       paragraph:
         'Huoltajat, joiden lapsi on jo varhaiskasvatuksessa tai esiopetuksessa: hoida lapsesi päivittäisiä varhaiskasvatusasioita kuten lue viestejä ja ilmoita lapsen läsnäoloajat ja poissaolot.',
       link: 'Kirjaudu sisään',
@@ -269,32 +235,30 @@ export default {
         </>
       ),
       username: 'Käyttäjätunnus',
+      usernamePlaceholder: 'Sähköpostiosoite',
       password: 'Salasana',
       rateLimitError:
         'Käyttäjätunnuksesi on väliaikaisesti lukittu kirjautumisyritysten määrästä johtuen. Kokeile myöhemmin uudelleen.',
-      forgotPassword: 'Unohditko salasanasi?',
+      forgotPassword: 'Salasana unohtui?',
       forgotPasswordInfo:
-        'Voit vaihtaa salasanan omissa tiedoissasi kirjautumalla vahvasti.',
-      noUsername: 'Ei käyttäjätunnuksia?',
+        'Tunnistaudu Suomi.fi-palvelussa vaihtaaksesi salasanan Omat tiedot -sivulla.',
+      noUsername: 'Ei käyttäjätunnusta?',
       noUsernameInfo:
-        'Voit luoda käyttäjätunnuksen kirjautumalla vahvasti ja sallimalla kirjautumisen sähköpostilla "Omat tiedot"-sivulla',
-      passkeyLink: 'Kirjaudu ilman salasanaa',
+        'Tunnistaudu Suomi.fi-palvelussa ja salli sähköpostikirjautuminen Omat tiedot -sivulla.',
+      passkeyLink: 'Kirjaudu ilman salasanaa · Passkey',
+      passkeyDescriptionDesktop: 'Tällä laitteella tai puhelimella',
+      passkeyDescriptionMobile: 'Face ID, Touch ID tai PIN-koodi',
       passkeyError:
         'Kirjautuminen Passkeyllä ei onnistunut. Voit kirjautua sähköpostiosoitteella ja salasanalla.',
-      usedLast: 'Käytetty viimeksi'
+      usedLast: 'Käytit viimeksi'
     },
     applying: {
-      title: 'Kirjaudu Suomi.fi:ssä',
-      paragraph: 'Tunnistautumalla eVakaan vahvasti Suomi.fi:ssä voit',
+      title: 'Ensimmäistä kertaa täällä?',
+      paragraph:
+        'Tunnistaudu Suomi.fi-palvelussa tehdäksesi hakemuksen, luodaksesi Passkey-avaimen tai ottaaksesi käyttöön sähköpostikirjautumisen.',
       infoBoxText:
-        'Tunnistautumisen yhteydessä väestötietojärjestelmästä haetaan kirjautujan, toisen huoltajan sekä alaikäisten huollettavien henkilö- ja osoitetiedot.  ',
-      infoBullets: [
-        'hakea lapsellesi varhaiskasvatus-, esiopetus- tai kerhopaikkaa tai tarkastella aiemmin tekemääsi hakemusta',
-        'tarkastella lapsesi varhaiskasvatukseen tai esiopetukseen liittyviä kuvia ja muita dokumentteja',
-        'ilmoittaa omat tai lapsesi tulotiedot',
-        'hyväksyä tai hylätä päätöksen, jos olet hakemuksen tekijä'
-      ],
-      link: 'Tunnistaudu',
+        'Tunnistautumisen yhteydessä eVaka hakee väestötietojärjestelmästä kirjautujan, toisen huoltajan sekä alaikäisten huollettavien henkilö- ja osoitetiedot.',
+      link: 'Tunnistaudu · Suomi.fi',
       mapText: 'Katso kartalta yksiköt, joihin voit hakea eVakassa.',
       mapLink: 'Yksiköt kartalla'
     }

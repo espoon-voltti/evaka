@@ -636,9 +636,9 @@ const sv: DeepPartial<Translations> = {
     )
   },
   loginPage: {
+    helpUrl: null,
     title: 'Åbo stads småbarnspedagogik',
     login: {
-      title: 'Logga in med ditt användarnamn',
       paragraph:
         'Vårdnadshavare vars barn redan har en plats i småbarnspedagogiken eller förskoleundervisningen: sköt vardagliga ärenden, t.ex. läs meddelanden eller rapportera barnets när- och frånvarotider.',
       link: 'Logga in',
