@@ -26,14 +26,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 </div>
 
 <div class="page last-page">
-    <th:block th:switch="${decision.type.name()}">
-        <th:block th:case="'PRESCHOOL'">
-            <div th:replace="~{shared/preschool-correction :: correction}" />
-        </th:block>
-        <th:block th:case="*">
-            <div th:replace="~{shared/daycare-correction :: correction}" />
-        </th:block>
-    </th:block>
+    <div th:replace="~{shared/daycare-correction :: correction}"></div>
 </div>
 
 </body>
