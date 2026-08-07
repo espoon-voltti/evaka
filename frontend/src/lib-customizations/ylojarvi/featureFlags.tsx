@@ -36,7 +36,7 @@ const prod: FeatureFlags = {
   voucherUnitPayments: false,
   voucherValueSeparation: false,
   extendedPreschoolTerm: false,
-  hideClubApplication: false,
+  hideClubApplication: true,
   discussionReservations: true,
   jamixIntegration: true,
   serviceApplications: true,

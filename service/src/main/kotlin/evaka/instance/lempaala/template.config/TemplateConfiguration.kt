@@ -22,7 +22,7 @@ class TemplateConfiguration {
 class LempaalaTemplateProvider : ITemplateProvider {
     override fun getLocalizedFilename(type: DecisionType, lang: OfficialLanguage): String =
         when (type) {
-            DecisionType.CLUB -> "Kerhopäätös"
+            DecisionType.CLUB -> throw Error("Not supported")
 
             DecisionType.DAYCARE,
             DecisionType.DAYCARE_PART_TIME -> "Varhaiskasvatuspäätös"
@@ -39,7 +39,7 @@ class LempaalaTemplateProvider : ITemplateProvider {
 
     override fun getVoucherValueDecisionPath(): String = "fee-decision/voucher-value-decision"
 
-    override fun getClubDecisionPath(): String = "club/decision"
+    override fun getClubDecisionPath(): String = throw Error("Not supported")
 
     override fun getDaycareVoucherDecisionPath(): String = "daycare/voucher/decision"
 

@@ -22,7 +22,6 @@ class YlojarviDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
 
     override fun decisionScenarios() =
         listOf(
-            DecisionScenario("kerho", DecisionType.CLUB),
             DecisionScenario("vaka", DecisionType.DAYCARE, serviceNeed = standardServiceNeed),
             DecisionScenario(
                 "esiopetus",
