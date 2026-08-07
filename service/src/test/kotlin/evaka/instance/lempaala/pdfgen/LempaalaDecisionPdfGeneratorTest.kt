@@ -19,6 +19,8 @@ class LempaalaDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
     override val municipality = "lempaala"
     override val templateProvider: ITemplateProvider = LempaalaTemplateProvider()
 
+    override fun reasoningVariants() = listOf(null, reasoning)
+
     override fun decisionScenarios() =
         listOf(
             DecisionScenario("vaka", DecisionType.DAYCARE, serviceNeed = standardServiceNeed),
@@ -37,6 +39,21 @@ class LempaalaDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 "vaka_palse",
                 DecisionType.DAYCARE,
                 providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+                serviceNeed = standardServiceNeed,
+            ),
+            DecisionScenario(
+                "esiopetus",
+                DecisionType.PRESCHOOL,
+                serviceNeed = standardServiceNeed,
+            ),
+            DecisionScenario(
+                "vaka_osa-aika",
+                DecisionType.DAYCARE_PART_TIME,
+                serviceNeed = standardServiceNeed,
+            ),
+            DecisionScenario(
+                "vaka_liittyvä_kerho",
+                DecisionType.PRESCHOOL_CLUB,
                 serviceNeed = standardServiceNeed,
             ),
         )

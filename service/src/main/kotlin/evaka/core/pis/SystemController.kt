@@ -353,6 +353,7 @@ class SystemController(
                             decisionReasoningGenericRemoval =
                                 env.decisionReasoningGenericRemovalEnabled,
                             decisionReasoningsEnabled = env.decisionReasoningEnabled,
+                            decisionsWithoutReasonings = featureConfig.decisionsWithoutReasonings,
                             placementDecisionSwedishLanguageEnabled =
                                 featureConfig.placementDecisionSwedishLanguageEnabled,
                             openRangesHolidayQuestionnaire =

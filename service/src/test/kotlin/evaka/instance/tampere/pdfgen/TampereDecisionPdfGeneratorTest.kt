@@ -14,12 +14,18 @@ import evaka.core.pdfgen.FeeDecisionScenario
 import evaka.core.pdfgen.VoucherValueDecisionScenario
 import evaka.core.placement.PlacementType
 import evaka.core.shared.template.ITemplateProvider
+import evaka.instance.tampere.TampereConfig
 import evaka.instance.tampere.template.config.TampereTemplateProvider
 
 class TampereDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
     override val municipality = "tampere"
     override val templateProvider: ITemplateProvider = TampereTemplateProvider()
     override val settings = populatedSettings
+
+    override fun reasoningVariants() = listOf(null, reasoning)
+
+    override val decisionsWithoutReasonings =
+        TampereConfig().featureConfig().decisionsWithoutReasonings
 
     override fun decisionScenarios() =
         listOf(

@@ -11,6 +11,7 @@ import evaka.core.bi.BiExportClient
 import evaka.core.bi.BiExportConfig
 import evaka.core.bi.BiExportJob
 import evaka.core.bi.BiTable
+import evaka.core.decision.DecisionType
 import evaka.core.document.archival.ArchivalIntegrationClient
 import evaka.core.invoicing.domain.PaymentIntegrationClient
 import evaka.core.mealintegration.DefaultMealTypeMapper
@@ -133,6 +134,7 @@ class TampereConfig {
                 "Lähettäjä on poistanut viestin. Sinun ei tarvitse tehdä mitään.\n\n" +
                     "The sender has deleted this message. No action is needed on your part.",
             deletedMessagePlaceholderTitle = "Viesti on poistettu / Message was deleted",
+            decisionsWithoutReasonings = setOf(DecisionType.CLUB),
         )
 
     @Bean

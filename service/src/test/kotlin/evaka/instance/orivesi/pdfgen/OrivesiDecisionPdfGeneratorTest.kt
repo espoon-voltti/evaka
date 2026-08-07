@@ -19,6 +19,8 @@ class OrivesiDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
     override val municipality = "orivesi"
     override val templateProvider: ITemplateProvider = OrivesiTemplateProvider()
 
+    override fun reasoningVariants() = listOf(null, reasoning)
+
     override fun decisionScenarios() =
         listOf(
             DecisionScenario("vaka", DecisionType.DAYCARE, serviceNeed = standardServiceNeed),
@@ -42,6 +44,16 @@ class OrivesiDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 "vaka_palse",
                 DecisionType.DAYCARE,
                 providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+                serviceNeed = standardServiceNeed,
+            ),
+            DecisionScenario(
+                "vaka_osa-aika",
+                DecisionType.DAYCARE_PART_TIME,
+                serviceNeed = standardServiceNeed,
+            ),
+            DecisionScenario(
+                "vaka_liittyvä_kerho",
+                DecisionType.PRESCHOOL_CLUB,
                 serviceNeed = standardServiceNeed,
             ),
         )

@@ -6,6 +6,7 @@ package evaka.core.shared
 
 import evaka.core.application.ApplicationStatus
 import evaka.core.application.ApplicationType
+import evaka.core.decision.DecisionType
 import evaka.core.holidayperiod.QuestionnaireType
 import java.time.MonthDay
 
@@ -156,6 +157,9 @@ data class FeatureConfig(
 
     /** Whether placement decisions can be made in Swedish. */
     val placementDecisionSwedishLanguageEnabled: Boolean,
+
+    /** Decision types whose decisions are made without decision reasonings */
+    val decisionsWithoutReasonings: Set<DecisionType> = emptySet(),
 )
 
 enum class ArchiveProcessType {
