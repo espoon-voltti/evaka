@@ -3,7 +3,12 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "files": ["vite.config.ts", "vitest.config.ts", "vitest.setup.ts"],
+  "files": [
+    "vite.config.ts",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "bin/generate-passkey-provider-names.ts"
+  ],
   "references": [
     { "path": "./src/citizen-frontend" },
     { "path": "./src/lib-common" },

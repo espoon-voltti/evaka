@@ -22,6 +22,7 @@ import { faChevronRight, fasInfo } from 'lib-icons'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
+import { passkeysSupported } from '../auth/passkeys'
 import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
@@ -30,6 +31,7 @@ import ContactDetailsSection from './ContactDetailsSection'
 import FamilySizeSection from './FamilySizeSection'
 import LoginDetailsSection from './LoginDetailsSection'
 import NotificationSettingsSection from './NotificationSettingsSection'
+import PasskeysSection from './PasskeysSection'
 import PersonalDetailsSection from './PersonalDetailsSection'
 import { isEmailVerified } from './emailVerification'
 import {
@@ -239,6 +241,21 @@ export default React.memo(function PersonalDetails() {
               )
           )}
         </ContentArea>
+
+        {passkeysSupported() && (
+          <>
+            <Gap $size="s" />
+            <ContentArea $opaque $paddingVertical="m">
+              {renderResult(user, (user) =>
+                user ? (
+                  <PasskeysSection user={user} />
+                ) : (
+                  <Redirect replace to="/" />
+                )
+              )}
+            </ContentArea>
+          </>
+        )}
 
         <Gap $size="s" />
 

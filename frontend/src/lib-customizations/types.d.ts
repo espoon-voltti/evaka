@@ -324,6 +324,11 @@ interface BaseFeatureFlags {
    * Enable language selection in employee frontends
    */
   employeeLanguageSelection?: boolean
+
+  /**
+   * EXPERIMENTAL: Enable passkey login and passkey management for citizens
+   */
+  passkeys?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

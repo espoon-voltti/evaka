@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Redirect, useSearchParams } from 'wouter'
 
 import { string } from 'lib-common/form/fields'
@@ -28,10 +28,12 @@ import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
+import { authPasskeyLogin, passkeysSupported } from '../auth/passkeys'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 
+import { rememberLastLoginMethod } from './last-login-method'
 import { authWeakLoginMutation } from './queries'
 
 export default React.memo(function WeakLoginFormPage() {
@@ -103,6 +105,29 @@ const WeakLoginForm = React.memo(function WeakLogin({
     i18n.validationErrors
   )
   const { username, password } = useFormFields(form)
+
+  // Offer passkeys in the username field's autofill as an invisible
+  // enhancement (WebAuthn conditional mediation)
+  useEffect(() => {
+    if (!passkeysSupported()) return
+    const abortController = new AbortController()
+    void (async () => {
+      if (!(await PublicKeyCredential.isConditionalMediationAvailable?.())) {
+        return
+      }
+      const result = await authPasskeyLogin(
+        'conditional',
+        abortController.signal
+      )
+      if (result === 'success') {
+        rememberLastLoginMethod('passkey')
+        window.location.replace(nextUrl ?? '/')
+      }
+    })().catch(() => undefined)
+
+    // Abort the pending passkey login if the component unmounts or nextUrl changes
+    return () => abortController.abort()
+  }, [nextUrl])
   return (
     <form
       action=""
@@ -116,7 +141,7 @@ const WeakLoginForm = React.memo(function WeakLogin({
           <InputFieldF
             id="username"
             data-qa="username"
-            autoComplete="username"
+            autoComplete="username webauthn"
             bind={username}
             placeholder={t.username}
             width="L"
@@ -145,7 +170,10 @@ const WeakLoginForm = React.memo(function WeakLogin({
             const { username, password } = form.value()
             return authWeakLogin({ username, password })
           }}
-          onSuccess={() => window.location.replace(nextUrl ?? '/')}
+          onSuccess={() => {
+            rememberLastLoginMethod('email')
+            window.location.replace(nextUrl ?? '/')
+          }}
           onFailure={(error) => {
             if (error.statusCode === 429) {
               setRateLimitError(true)
