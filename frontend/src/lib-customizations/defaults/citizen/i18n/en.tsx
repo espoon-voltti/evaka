@@ -282,7 +282,11 @@ const en: Translations = {
         'You can change your password in your profile by logging in using strong authentication',
       noUsername: 'No username?',
       noUsernameInfo:
-        'You can create a username by logging in using strong authentication and enabling login via email on the "Personal information" page.'
+        'You can create a username by logging in using strong authentication and enabling login via email on the "Personal information" page.',
+      passkeyLink: 'Log in without a password',
+      passkeyError:
+        'Passkey login failed. You can log in with your email address and password.',
+      usedLast: 'Used last'
     },
     applying: {
       title: 'Sign in using Suomi.fi',
@@ -2035,6 +2039,25 @@ const en: Translations = {
       unacceptablePassword: 'The password is too easy to guess',
       usernameConflict: (username: string): ReactNode =>
         `The username ${username} is already in use by another person`
+    },
+    passkeysSection: {
+      title: 'Passkeys',
+      description:
+        'With a Passkey you can log in to eVaka without a password, for example with your fingerprint, face recognition or device PIN.',
+      added: 'Added',
+      lastUsed: 'Last used',
+      neverUsed: 'Never',
+      addPasskey: 'Add Passkey',
+      defaultName: 'Passkey',
+      nameModalTitle: 'Name the Passkey',
+      nameLabel: 'Name',
+      deletePasskey: 'Delete Passkey',
+      deleteConfirmTitle: 'Delete Passkey?',
+      deleteConfirmText: (name: string) =>
+        `The Passkey "${name}" will be deleted and can no longer be used to log in to eVaka. Deleting it will log out your other sessions.`,
+      limitError:
+        'You can add at most 10 Passkeys. Delete a Passkey before adding a new one.',
+      addError: 'Adding the Passkey failed. Please try again.'
     },
     notificationsSection: {
       title: 'Notifications',
