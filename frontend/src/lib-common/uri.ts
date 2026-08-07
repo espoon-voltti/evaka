@@ -32,7 +32,8 @@ class Uri {
   }
 
   appendQuery(params: URLSearchParams): Uri {
-    return params.size > 0 ? new Uri(`${this.value}?${params}`) : this
+    const query = params.toString()
+    return query ? new Uri(`${this.value}?${query}`) : this
   }
 
   toString(): string {
