@@ -12,10 +12,10 @@ fun Database.Transaction.updatePersonalDetails(personId: PersonId, body: Persona
             sql(
                 """
                 UPDATE person SET
-                    preferred_name = ${bind(body.preferredName)},
-                    phone = ${bind(body.phone)},
-                    backup_phone = ${bind(body.backupPhone)},
-                    email = ${bind(body.email)}
+                    preferred_name = coalesce(${bind(body.preferredName)}, preferred_name),
+                    phone = coalesce(${bind(body.phone)}, phone),
+                    backup_phone = coalesce(${bind(body.backupPhone)}, backup_phone),
+                    email = coalesce(${bind(body.email)}, email)
                 WHERE id = ${bind(personId)}
                 """
             )
