@@ -9,6 +9,8 @@ export interface RedisClient extends RedisCommands {
 
   get(key: string): Promise<string | null>
 
+  getDel(key: string): Promise<string | null>
+
   set(
     key: string,
     value: string,
