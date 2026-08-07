@@ -12,6 +12,7 @@ export default class CitizenPersonalDetails {
   loginDetailsSection: LoginDetailsSection
   notificationSettingsSection: CitizenNotificationSettingsSection
   familySizeSection: FamilySizeSection
+  passkeysSection: PasskeysSection
   verifyEmailTask: Element
   addPhoneTask: Element
 
@@ -30,6 +31,9 @@ export default class CitizenPersonalDetails {
     )
     this.familySizeSection = new FamilySizeSection(
       page.findByDataQa('family-size-section')
+    )
+    this.passkeysSection = new PasskeysSection(
+      page.findByDataQa('passkeys-section')
     )
     this.verifyEmailTask = page.findByDataQa('task-verify-email')
     this.addPhoneTask = page.findByDataQa('task-add-phone')
@@ -139,6 +143,44 @@ export class FamilySizeSection extends Element {
     await expect(this.#member(personId)).toHaveText(
       isSelf ? `${name} (sinä)` : name
     )
+  }
+}
+
+export class PasskeysSection extends Element {
+  addPasskey = this.findByDataQa('add-passkey')
+  addError = this.findByDataQa('add-passkey-error')
+  passkeys = this.findAllByDataQa('passkey')
+
+  passkeyName(nth: number) {
+    return this.passkeys.nth(nth).findByDataQa('passkey-name')
+  }
+
+  passkeyLastUsed(nth: number) {
+    return this.passkeys.nth(nth).findByDataQa('passkey-last-used')
+  }
+
+  deletePasskey(nth: number) {
+    return this.passkeys.nth(nth).findByDataQa('delete-passkey')
+  }
+}
+
+export class PasskeyNameModal extends Element {
+  name: TextInput
+  ok: Element
+
+  constructor(page: Page) {
+    super(page.findByDataQa('passkey-name-modal'))
+    this.name = new TextInput(this.findByDataQa('passkey-name-input'))
+    this.ok = this.findByDataQa('modal-okBtn')
+  }
+}
+
+export class DeletePasskeyModal extends Element {
+  ok: Element
+
+  constructor(page: Page) {
+    super(page.findByDataQa('delete-passkey-modal'))
+    this.ok = this.findByDataQa('modal-okBtn')
   }
 }
 

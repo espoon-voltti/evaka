@@ -277,7 +277,11 @@ export default {
         'Voit vaihtaa salasanan omissa tiedoissasi kirjautumalla vahvasti.',
       noUsername: 'Ei käyttäjätunnuksia?',
       noUsernameInfo:
-        'Voit luoda käyttäjätunnuksen kirjautumalla vahvasti ja sallimalla kirjautumisen sähköpostilla "Omat tiedot"-sivulla'
+        'Voit luoda käyttäjätunnuksen kirjautumalla vahvasti ja sallimalla kirjautumisen sähköpostilla "Omat tiedot"-sivulla',
+      passkeyLink: 'Kirjaudu ilman salasanaa',
+      passkeyError:
+        'Kirjautuminen Passkeyllä ei onnistunut. Voit kirjautua sähköpostiosoitteella ja salasanalla.',
+      usedLast: 'Käytetty viimeksi'
     },
     applying: {
       title: 'Kirjaudu Suomi.fi:ssä',
@@ -2304,6 +2308,25 @@ export default {
       unacceptablePassword: 'Salasana on liian helposti arvattava',
       usernameConflict: (username: string): ReactNode =>
         `Käyttäjätunnus ${username} on jo käytössä toisella henkilöllä`
+    },
+    passkeysSection: {
+      title: 'Passkeyt',
+      description:
+        'Passkeyllä voit kirjautua eVakaan ilman salasanaa esimerkiksi sormenjäljellä, kasvojentunnistuksella tai laitteen PIN-koodilla.',
+      added: 'Lisätty',
+      lastUsed: 'Käytetty viimeksi',
+      neverUsed: 'Ei koskaan',
+      addPasskey: 'Lisää Passkey',
+      defaultName: 'Passkey',
+      nameModalTitle: 'Nimeä Passkey',
+      nameLabel: 'Nimi',
+      deletePasskey: 'Poista Passkey',
+      deleteConfirmTitle: 'Poistetaanko Passkey?',
+      deleteConfirmText: (name: string) =>
+        `Passkey "${name}" poistetaan, eikä sillä voi enää kirjautua eVakaan. Poistaminen kirjaa ulos muut istuntosi.`,
+      limitError:
+        'Voit lisätä enintään 10 Passkeytä. Poista jokin Passkey ennen uuden lisäämistä.',
+      addError: 'Passkeyn lisääminen ei onnistunut. Yritä uudelleen.'
     },
     notificationsSection: {
       title: 'Ilmoitukset',
