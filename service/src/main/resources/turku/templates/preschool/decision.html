@@ -29,8 +29,13 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 <div class="page last-page">
     <div th:utext="#{decision.notification}"></div>
-    <div th:utext="#{decision.preSchoolLegalInstructions}"></div>
-    <div th:utext="#{decision.reasoning}"></div>
+    <th:block th:if="${reasoning == null}">
+        <div th:utext="#{decision.preSchoolLegalInstructions.old}"></div>
+        <div th:utext="#{decision.reasoning.old}"></div>
+    </th:block>
+    <th:block th:if="${reasoning != null}">
+        <div th:replace="~{shared/decision-reasoning :: section(${reasoning})}"></div>
+    </th:block>
     <div th:utext="#{decision.appeal}"></div>
     <div th:replace="~{shared/daycare-correction :: preschool-correction}"></div>
 </div>

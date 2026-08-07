@@ -57,9 +57,13 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
+import kotlin.test.assertContains
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
+import org.openpdf.text.pdf.PdfReader
+import org.openpdf.text.pdf.parser.PdfTextExtractor
 
 private val logger = KotlinLogging.logger {}
 
@@ -228,6 +232,13 @@ abstract class AbstractDecisionPdfGeneratorTest {
                                 reasoningOrNull,
                             )
                         assertNotNull(bytes)
+                        val text = extractText(bytes)
+                        if (reasoningOrNull != null) {
+                            assertContains(text, reasoningOrNull.generic)
+                            reasoningOrNull.individual.forEach { assertContains(text, it) }
+                        } else {
+                            assertFalse(text.contains(reasoning.generic))
+                        }
                         writeTempFile("decision_${municipality}_$label", bytes)
                     }
                 }
@@ -321,6 +332,13 @@ abstract class AbstractDecisionPdfGeneratorTest {
         val file = File.createTempFile("${prefix}_", ".pdf")
         FileOutputStream(file).use { it.write(bytes) }
         logger.debug { "Generated PDF to ${file.absolutePath}" }
+    }
+
+    private fun extractText(bytes: ByteArray): String {
+        val reader = PdfReader(bytes)
+        return (1..reader.numberOfPages)
+            .joinToString(" ") { PdfTextExtractor(reader).getTextFromPage(it) }
+            .replace(Regex("\\s+"), " ")
     }
 }
 
