@@ -19,6 +19,7 @@ import evaka.core.pis.getGuardianDependants
 import evaka.core.pis.getPersonById
 import evaka.core.pis.getPersonBySSN
 import evaka.core.pis.lockPersonBySSN
+import evaka.core.pis.splitFirstNames
 import evaka.core.pis.updateNonSsnPersonDetails
 import evaka.core.pis.updatePersonFromVtj
 import evaka.core.pis.updatePersonNonVtjDetails
@@ -872,7 +873,7 @@ fun createAddressPagePdf(
     guardian: PersonDTO,
 ): Document {
     val personDetails = guardian.let {
-        val firstWordOfFirstName = it.firstName.trim().substringBefore(' ')
+        val firstWordOfFirstName = splitFirstNames(it.firstName).firstOrNull() ?: ""
 
         PersonDetailed(
             dateOfBirth = it.dateOfBirth,
