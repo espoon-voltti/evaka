@@ -68,36 +68,40 @@ class PersonalDataControllerCitizen(
 
                 val validationErrors =
                     listOfNotNull(
-                        "invalid preferredName"
-                            .takeUnless {
-                                person.firstName.split(" ").contains(body.preferredName)
-                            },
-                        "invalid phone".takeUnless { PHONE_PATTERN.matches(body.phone) },
-                        "invalid backup phone"
-                            .takeUnless {
-                                body.backupPhone.isBlank() ||
-                                    PHONE_PATTERN.matches(body.backupPhone)
-                            },
-                        "invalid email"
-                            .takeUnless {
-                                body.email.isBlank() || EMAIL_PATTERN.matches(body.email)
-                            },
+                        body.preferredName?.let { preferredName ->
+                            "invalid preferredName"
+                                .takeUnless { person.firstName.split(" ").contains(preferredName) }
+                        },
+                        body.phone?.let { phone ->
+                            "invalid phone".takeUnless { PHONE_PATTERN.matches(phone) }
+                        },
+                        body.backupPhone?.let { backupPhone ->
+                            "invalid backup phone"
+                                .takeUnless {
+                                    backupPhone.isBlank() || PHONE_PATTERN.matches(backupPhone)
+                                }
+                        },
+                        body.email?.let { email ->
+                            "invalid email"
+                                .takeUnless { email.isBlank() || EMAIL_PATTERN.matches(email) }
+                        },
                     )
 
                 if (validationErrors.isNotEmpty())
                     throw BadRequest(validationErrors.joinToString(", "))
 
                 tx.updatePersonalDetails(user.id, body)
-                val hasWeakCredentials = tx.hasWeakCredentials(user.id)
-                if (hasWeakCredentials) {
-                    sendEmailVerificationCode(tx, clock, user)
-                }
-                if (body.email != person.email && person.email != null) {
-                    asyncJobRunner.plan(
-                        tx,
-                        listOf(AsyncJob.SendEmailChangedEmail(user.id, person.email)),
-                        runAt = clock.now(),
-                    )
+                if (body.email != null) {
+                    if (tx.hasWeakCredentials(user.id)) {
+                        sendEmailVerificationCode(tx, clock, user)
+                    }
+                    if (body.email != person.email && person.email != null) {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(AsyncJob.SendEmailChangedEmail(user.id, person.email)),
+                            runAt = clock.now(),
+                        )
+                    }
                 }
             }
         }

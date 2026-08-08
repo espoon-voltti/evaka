@@ -697,10 +697,10 @@ export interface PersonWithChildrenDTO {
 * Generated from evaka.core.pis.PersonalDataUpdate
 */
 export interface PersonalDataUpdate {
-  backupPhone: string
-  email: string
-  phone: string
-  preferredName: string
+  backupPhone: string | null
+  email: string | null
+  phone: string | null
+  preferredName: string | null
 }
 
 /**

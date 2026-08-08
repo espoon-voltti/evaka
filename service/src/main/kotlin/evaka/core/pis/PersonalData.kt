@@ -8,10 +8,10 @@ import evaka.core.ConstList
 import evaka.core.shared.db.DatabaseEnum
 
 data class PersonalDataUpdate(
-    val preferredName: String,
-    val phone: String,
-    val backupPhone: String,
-    val email: String,
+    val preferredName: String? = null,
+    val phone: String? = null,
+    val backupPhone: String? = null,
+    val email: String? = null,
 )
 
 @ConstList("emailMessageTypes")

@@ -15,11 +15,12 @@ import {
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import type {
   CitizenNotificationSettingsSection,
-  CitizenPersonalDetailsSection,
-  FamilySizeSection
+  ContactDetailsSection,
+  FamilySizeSection,
+  PersonDetailsSection
 } from '../../pages/citizen/citizen-personal-details'
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
-import { test } from '../../playwright'
+import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
@@ -37,7 +38,8 @@ const citizenFixture = Fixture.person({
 })
 
 test.describe('Citizen personal details', () => {
-  let section: CitizenPersonalDetailsSection
+  let personSection: PersonDetailsSection
+  let contactSection: ContactDetailsSection
 
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
@@ -50,51 +52,58 @@ test.describe('Citizen personal details', () => {
     header = new CitizenHeader(page)
 
     personalDetailsPage = new CitizenPersonalDetailsPage(page)
-    section = personalDetailsPage.personalDetailsSection
+    personSection = personalDetailsPage.personDetailsSection
+    contactSection = personalDetailsPage.contactDetailsSection
   })
 
   test('Citizen sees indications of missing email and phone', async () => {
     await header.checkPersonalDetailsAttentionIndicatorsAreShown()
-    await section.checkMissingEmailWarningIsShown()
-    await section.checkMissingPhoneWarningIsShown()
+    await expect(personalDetailsPage.verifyEmailTask).toBeVisible()
+    await expect(personalDetailsPage.addPhoneTask).toBeVisible()
   })
 
   test('Citizen fills successfully personal data without email by selecting I have no email -option', async () => {
-    const data = {
-      preferredName: citizenFixture.firstName.split(' ')[1],
+    const preferredName = citizenFixture.firstName.split(' ')[1]
+    const contactData = {
       phone: '123123',
       backupPhone: '456456',
       email: null
     }
 
-    await section.editPersonalData(data, true)
-    await section.checkPersonalData(data)
-    await section.assertAlertIsNotShown()
+    await personSection.editPreferredName(preferredName)
+    await contactSection.editContactDetails(contactData, true)
+
+    await personSection.assertPreferredName(preferredName)
+    await contactSection.checkContactDetails(contactData)
+    await expect(personalDetailsPage.addPhoneTask).toBeHidden()
   })
 
-  test('Citizen fills in personal data but cannot save without phone', async () => {
-    const data = {
-      preferredName: citizenFixture.firstName.split(' ')[1],
-      phone: null,
-      backupPhone: '456456',
-      email: 'a@b.com'
-    }
-
-    await section.editPersonalData(data, false)
-    await section.assertSaveIsDisabled()
+  test('Citizen fills in contact details but cannot save without phone', async () => {
+    await contactSection.editContactDetails(
+      {
+        phone: null,
+        backupPhone: '456456',
+        email: 'a@b.com'
+      },
+      false
+    )
+    await contactSection.assertSaveIsDisabled()
   })
 
   test('Citizen fills in personal data correctly and saves', async () => {
-    const data = {
-      preferredName: citizenFixture.firstName.split(' ')[1],
+    const preferredName = citizenFixture.firstName.split(' ')[1]
+    const contactData = {
       phone: '123456789',
       backupPhone: '456456',
       email: 'a@b.com'
     }
 
-    await section.editPersonalData(data, true)
-    await section.checkPersonalData(data)
-    await section.assertAlertIsNotShown()
+    await personSection.editPreferredName(preferredName)
+    await contactSection.editContactDetails(contactData, true)
+
+    await personSection.assertPreferredName(preferredName)
+    await contactSection.checkContactDetails(contactData)
+    await expect(personalDetailsPage.addPhoneTask).toBeHidden()
   })
 })
 
@@ -112,7 +121,7 @@ test.describe('Citizen notification settings', () => {
     header = new CitizenHeader(page)
 
     personalDetailsPage = new CitizenPersonalDetailsPage(page)
-    section = personalDetailsPage.notificationSettingsSectiong
+    section = personalDetailsPage.notificationSettingsSection
   })
 
   test('Edit and cancel work', async () => {
