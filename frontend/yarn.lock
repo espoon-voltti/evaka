@@ -4839,7 +4839,7 @@ __metadata:
     react-select: "npm:5.10.2"
     rollup: "npm:4.62.4"
     seamless-scroll-polyfill: "npm:2.3.4"
-    styled-components: "npm:6.4.4"
+    styled-components: "npm:6.5.0"
     terser: "npm:5.49.1"
     ts-node: "npm:10.9.2"
     tsx: "npm:4.23.5"
@@ -7487,9 +7487,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"styled-components@npm:6.4.4":
-  version: 6.4.4
-  resolution: "styled-components@npm:6.4.4"
+"styled-components@npm:6.5.0":
+  version: 6.5.0
+  resolution: "styled-components@npm:6.5.0"
   dependencies:
     "@emotion/is-prop-valid": "npm:1.4.0"
     css-to-react-native: "npm:3.2.0"
@@ -7507,7 +7507,7 @@ __metadata:
       optional: true
     react-native:
       optional: true
-  checksum: 10/3188c2946740a025dc202d560ec1112318c3be9b14480f4de0832961c556468504677a4dfc458813e234d58a41efab8f209f75bea62a4dd55e5a66ced5dbc1fa
+  checksum: 10/3e502161bd06a54d861c23c2222d5bba63e0deaa97042c761ed8041d8ba3ac841649fe4090f86b65055aedadf93686129466acbe3ca2b2967b711b92c3c61893
   languageName: node
   linkType: hard
 
