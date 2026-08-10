@@ -763,7 +763,11 @@ const en: Translations = {
                 You can find further information about early childhood education
                 fees, additional fees for service voucher users and how to
                 deliver the income statement form here:{' '}
-                <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees">
+                <a
+                  href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Early childhood education fees
                 </a>
                 .

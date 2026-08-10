@@ -40,7 +40,7 @@ export default React.memo(function UnitsSubSection({
   preferredStartDate,
   units
 }: Props) {
-  const { translations: t, getMaxPreferredUnits } = deps
+  const { actor, translations: t, getMaxPreferredUnits } = deps
   const emptyPreferredUnitsLabel = useRef<HTMLLabelElement>(null)
   const availableLanguages = useMemo(
     () => new Set((units ?? []).map((u) => u.language)),
@@ -136,11 +136,13 @@ export default React.memo(function UnitsSubSection({
       <H3>{t.applications.editor.unitPreference.units.title(maxUnits)}</H3>
       {t.applications.editor.unitPreference.units.info[applicationType]}
 
-      <ExternalLink
-        href="/map"
-        text={t.applications.editor.unitPreference.units.mapLink}
-        newTab
-      />
+      {actor === 'citizen' && (
+        <ExternalLink
+          href="/map"
+          text={t.applications.editor.unitPreference.units.mapLink}
+          newTab
+        />
+      )}
 
       <Gap $size="s" />
 

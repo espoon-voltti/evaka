@@ -761,7 +761,11 @@ const sv: Translations = {
                 Mer information om småbarnspedagogikens avgifter, hur man gör
                 inkomstutredningen och servicesedelns tilläggspris hittar du
                 här:{' '}
-                <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/klientavgifterna-smabarnspedagogik">
+                <a
+                  href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/klientavgifterna-smabarnspedagogik"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Avgifter för småbarnspedagogik
                 </a>
                 .

@@ -20,11 +20,14 @@ import { renderResult } from '../async-rendering'
 interface VTJGuardianProps {
   guardianId: PersonId | undefined | null
   otherGuardianLivesInSameAddress?: boolean
+  // opens the profile link in a new tab so unsaved edits are not lost
+  openLinkInNewTab?: boolean
 }
 
 export default React.memo(function VTJGuardian({
   guardianId,
-  otherGuardianLivesInSameAddress
+  otherGuardianLivesInSameAddress,
+  openLinkInNewTab = false
 }: VTJGuardianProps) {
   const { i18n } = useTranslation()
   const guardianResult = useQueryResult(
@@ -43,11 +46,24 @@ export default React.memo(function VTJGuardian({
         renderResult(guardianResult, (guardian: PersonJSON) => (
           <ListGrid>
             <Label>{i18n.application.person.name}</Label>
-            <Link to={`/profile/${guardian.id}`} data-qa="vtj-guardian-name">
-              <span data-qa="link-vtj-guardian-name">
-                <PersonName person={guardian} format="Last First" />
-              </span>
-            </Link>
+            {openLinkInNewTab ? (
+              <a
+                href={`/employee/profile/${guardian.id}`}
+                target="_blank"
+                rel="noreferrer"
+                data-qa="vtj-guardian-name"
+              >
+                <span data-qa="link-vtj-guardian-name">
+                  <PersonName person={guardian} format="Last First" />
+                </span>
+              </a>
+            ) : (
+              <Link to={`/profile/${guardian.id}`} data-qa="vtj-guardian-name">
+                <span data-qa="link-vtj-guardian-name">
+                  <PersonName person={guardian} format="Last First" />
+                </span>
+              </Link>
+            )}
             <Label>{i18n.application.person.ssn}</Label>
             <span data-qa="vtj-guardian-ssn">
               {guardian.socialSecurityNumber}

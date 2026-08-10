@@ -764,7 +764,11 @@ export default {
               <P>
                 Lisätietoa varhaiskasvatuksen maksuista, tuloselvityksen
                 toimittamisesta ja palvelusetelin lisämaksusta löydät täältä:{' '}
-                <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa">
+                <a
+                  href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Maksut varhaiskasvatuksessa
                 </a>
                 .
