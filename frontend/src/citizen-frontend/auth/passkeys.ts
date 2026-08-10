@@ -54,10 +54,18 @@ export async function authPasskeyLogin(
     return 'cancelled'
   }
   if (!(credential instanceof PublicKeyCredential)) return 'failure'
+
+  // Some password managers (e.g. 1Password) don't include the required `clientExtensionResults`
+  // field in the credential, which causes the backend to reject the registration.
+  const credentialJson = credential.toJSON()
+  if (!credentialJson.clientExtensionResults) {
+    credentialJson.clientExtensionResults = {}
+  }
+
   try {
     await client.post('/citizen/auth/passkey-login/finish', {
       challengeKey: data.challengeKey,
-      credential: JSON.stringify(credential.toJSON())
+      credential: JSON.stringify(credentialJson)
     })
   } catch {
     return 'failure'
@@ -107,9 +115,17 @@ export async function createPasskeyCredential(): Promise<PasskeyCreationResult> 
   ) {
     return { status: 'failure', errorCode: undefined }
   }
+
+  // Some password managers (e.g. 1Password) don't include the required `clientExtensionResults`
+  // field in the credential, which causes the backend to reject the registration.
+  const credentialJson = credential.toJSON()
+  if (!credentialJson.clientExtensionResults) {
+    credentialJson.clientExtensionResults = {}
+  }
+
   return {
     status: 'success',
-    credential: JSON.stringify(credential.toJSON()),
+    credential: JSON.stringify(credentialJson),
     providerName: passkeyProviderName(credential.response)
   }
 }
