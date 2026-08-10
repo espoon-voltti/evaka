@@ -620,7 +620,6 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     otherPartner = null,
                     otherChildren = emptyList(),
                     otherInfo = "",
-                    maxFeeAccepted = false,
                     clubDetails = null,
                 ),
             status = ApplicationStatus.SENT,

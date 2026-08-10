@@ -422,7 +422,6 @@ export function formDataToApiData(
       preparatory: type === 'PRESCHOOL' && form.serviceNeed.preparatory,
       urgent: type === 'DAYCARE' && form.serviceNeed.urgent
     },
-    maxFeeAccepted: false,
     otherInfo: form.additionalDetails.otherInfo,
     clubDetails:
       type === 'CLUB'

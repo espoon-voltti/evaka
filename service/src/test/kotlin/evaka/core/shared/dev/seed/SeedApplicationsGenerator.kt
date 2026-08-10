@@ -228,7 +228,6 @@ fun buildApplication(
                         preparatory = spec.preparatory,
                         urgent = false,
                     ),
-                maxFeeAccepted = false,
                 otherInfo = "",
                 clubDetails = ClubDetails(wasOnDaycare = false, wasOnClubCare = false),
             ),

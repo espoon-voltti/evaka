@@ -538,49 +538,6 @@ const sv: DeepPartial<Translations> = {
         futureAddressInfo:
           'Åbo småbarnspedagogik anser att den officiella adressen är den som finns i befolkningsdatasystemet. Den sökande kan ändra adressen i befolkningsdatasystemet genom att göra en flyttanmälan i till Posti eller Myndigheten för digitalisering och befolkningsdata.'
       },
-      fee: {
-        info: {
-          DAYCARE: (
-            <P>
-              Kundavgifterna inom den kommunala småbarnspedagogiken och
-              servicesedelns självriskandel beräknas i procentandel av familjens
-              bruttoinkomster. Avgiften varierar beroende på familjens storlek
-              och inkomster samt på det hur mycket barnet deltar i
-              småbarnspedagogiken. Om avgiften för platsen för småbarnspedagogik
-              överstiger servicesedelns värde är det familjen som betalar
-              skillnaden. Familjen ska lämna in en inkomstutredning om sina
-              bruttoinkomster på inkomstutredningsblanketten så snart som
-              möjligt efter att barnet har börjat inom småbarnspedagogiken.
-            </P>
-          ),
-          PRESCHOOL: (
-            <P>
-              Förskoleundervisningen är avgiftsfri, men den kompletterande
-              småbarnspedagogiken är avgiftsbelagd. Om barnet deltar i
-              kompletterande småbarnspedagogik ska familjen lämna in en
-              utredning om sina bruttoinkomster via inkomstutredningsblanketten
-              så snart som möjligt efter att barnet har börjat på
-              småbarnspedagogiken.
-            </P>
-          )
-        },
-        links: (
-          <>
-            <P>
-              Ni hittar inkomstutredningsblanketten i eVaka under
-              Inkomstuppgifter i Användare-menyn.
-            </P>
-            <P>
-              Mer information om kundavgifterna finns på Åbo stads webbplats:{' '}
-              <ExternalLink
-                href="https://www.turku.fi/varhaiskasvatus-ja-esiopetus/maksut-tuet-ja-palveluseteli"
-                text="Avgifter inom småbarnspedagogiken."
-                newTab
-              />
-            </P>
-          </>
-        )
-      },
       sentInfo: {
         title: 'Ansökan har skickats in',
         text: 'Vårdnadshavaren kan göra ändringar i ansökan via e-tjänsten tills småbarnspedagogikens servicehandledning börjar behandla ansökan.',

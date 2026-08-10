@@ -451,7 +451,6 @@ class PlacementDesktopIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                             preparatory = false,
                             urgent = false,
                         ),
-                    maxFeeAccepted = true,
                     otherInfo = otherInfo,
                     clubDetails = null,
                 ),
