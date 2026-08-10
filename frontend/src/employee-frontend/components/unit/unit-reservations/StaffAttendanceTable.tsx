@@ -409,22 +409,20 @@ function getStaffRows(
 ): StaffRow[] {
   return sortBy(
     staffAttendances
-      .map(
-        (entry): StaffRow => ({
-          employeeId: entry.employeeId,
-          name: formatPersonName(entry, 'Last FirstFirst'),
-          attendances: sortBy(
-            entry.attendances.filter(
-              (a) => !groupFilter || (a.groupId && groupFilter([a.groupId]))
-            ),
-            ({ departed }) => departed?.timestamp ?? Infinity
+      .map((entry): StaffRow => ({
+        employeeId: entry.employeeId,
+        name: formatPersonName(entry, 'Last FirstFirst'),
+        attendances: sortBy(
+          entry.attendances.filter(
+            (a) => !groupFilter || (a.groupId && groupFilter([a.groupId]))
           ),
-          plannedAttendances: entry.plannedAttendances,
-          employeeGroups: entry.groups,
-          currentOccupancyCoefficient: entry.currentOccupancyCoefficient,
-          allowedToEdit: entry.allowedToEdit
-        })
-      )
+          ({ departed }) => departed?.timestamp ?? Infinity
+        ),
+        plannedAttendances: entry.plannedAttendances,
+        employeeGroups: entry.groups,
+        currentOccupancyCoefficient: entry.currentOccupancyCoefficient,
+        allowedToEdit: entry.allowedToEdit
+      }))
       .filter(
         (row) =>
           !groupFilter ||
@@ -447,16 +445,14 @@ function getExternalRows(
 ): ExternalRow[] {
   return sortBy(
     Object.entries(groupBy(externalAttendances, (a) => a.name))
-      .map(
-        ([name, attendances]): ExternalRow => ({
-          name,
-          attendances: sortBy(
-            attendances.filter((a) => !groupFilter || groupFilter([a.groupId])),
-            ({ departed }) => departed?.timestamp ?? Infinity
-          ),
-          allowedToEdit: true
-        })
-      )
+      .map(([name, attendances]): ExternalRow => ({
+        name,
+        attendances: sortBy(
+          attendances.filter((a) => !groupFilter || groupFilter([a.groupId])),
+          ({ departed }) => departed?.timestamp ?? Infinity
+        ),
+        allowedToEdit: true
+      }))
       .filter((row) => row.attendances.length > 0),
     (attendance) => attendance.name
   )
