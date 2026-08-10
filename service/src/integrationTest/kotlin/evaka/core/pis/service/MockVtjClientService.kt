@@ -76,7 +76,7 @@ class MockVtjClientService : IVtjClientService {
                     }
                 it.vakinainenKotimainenLahiosoite =
                     VTJHenkiloVastaussanoma.Henkilo.VakinainenKotimainenLahiosoite().also { o ->
-                        o.postitoimipaikkaS = person.streetAddress
+                        o.lahiosoiteS = person.streetAddress
                         o.postitoimipaikkaS = person.postOffice
                         o.postinumero = person.postalCode
                     }
