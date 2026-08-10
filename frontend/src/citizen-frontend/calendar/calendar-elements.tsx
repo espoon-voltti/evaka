@@ -264,11 +264,9 @@ const groupChildren = ({
       }),
       ({ type, text }) => `${type},${text ?? ''}`
     )
-  ).map(
-    ([key, children]): GroupedDailyChildren => ({
-      type: children[0].type,
-      text: children[0].text,
-      childIds: children.map(({ childId }) => childId),
-      key
-    })
-  )
+  ).map(([key, children]): GroupedDailyChildren => ({
+    type: children[0].type,
+    text: children[0].text,
+    childIds: children.map(({ childId }) => childId),
+    key
+  }))
