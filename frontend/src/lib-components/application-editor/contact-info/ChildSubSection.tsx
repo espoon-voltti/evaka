@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import { Link } from 'wouter'
 
 import Checkbox from 'lib-components/atoms/form/Checkbox'
 import InputField from 'lib-components/atoms/form/InputField'
@@ -105,12 +104,14 @@ export default React.memo(function ChildSubSection({
             </AdaptiveFlex>
           </FixedSpaceRow>
           <Gap $size="s" />
-          <Link
-            to={`/child-information/${application.childId}`}
+          <a
+            href={`/employee/child-information/${application.childId}`}
+            target="_blank"
+            rel="noreferrer"
             data-qa="link-child-name"
           >
             {t.applications.editor.contactInfo.childInformationLink}
-          </Link>
+          </a>
         </>
       )}
       <Gap $size="m" />

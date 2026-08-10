@@ -196,7 +196,7 @@ export default React.memo(function ApplicationEditView({
             title={i18n.application.guardians.title}
             icon={faUserFriends}
           >
-            <VTJGuardian guardianId={otherGuardian?.id} />
+            <VTJGuardian guardianId={otherGuardian?.id} openLinkInNewTab />
           </CollapsibleSection>
 
           <CollapsibleSection
