@@ -57,6 +57,32 @@ class MockVtjClientService : IVtjClientService {
                 }
         }
 
+        fun addHUOLLETTAVAHUOLTAJATRequestExpectation(
+            person: DevPerson,
+            guardians: List<DevPerson>,
+        ) {
+            queryRequestResponse[
+                Pair(person.ssn!!, IVtjClientService.RequestType.HUOLLETTAVA_HUOLTAJAT)] =
+                devPersonToVTJHenkiloVastaussanomaHenkilo(person).also { huollettava ->
+                    huollettava.huoltaja.addAll(
+                        0,
+                        guardians.map { guardian ->
+                            VTJHenkiloVastaussanoma.Henkilo.Huoltaja().also {
+                                it.henkilotunnus = guardian.ssn
+
+                                it.nykyisetEtunimet =
+                                    VTJHenkiloVastaussanoma.Henkilo.Huoltaja.NykyisetEtunimet()
+                                        .also { e -> e.etunimet = guardian.firstName }
+
+                                it.nykyinenSukunimi =
+                                    VTJHenkiloVastaussanoma.Henkilo.Huoltaja.NykyinenSukunimi()
+                                        .also { s -> s.sukunimi = guardian.lastName }
+                            }
+                        },
+                    )
+                }
+        }
+
         fun getPERUSSANOMA3RequestCount(person: DevPerson): Int {
             return queryCounts[Pair(person.ssn!!, IVtjClientService.RequestType.PERUSSANOMA3)] ?: 0
         }
