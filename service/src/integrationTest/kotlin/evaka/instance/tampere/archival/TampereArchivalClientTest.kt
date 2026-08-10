@@ -681,7 +681,6 @@ private val testApplicationDaycare =
                         preparatory = false,
                         urgent = false,
                     ),
-                maxFeeAccepted = false,
                 otherInfo = "",
                 clubDetails = null,
             ),

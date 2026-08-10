@@ -173,7 +173,6 @@ export interface ApplicationForm {
   child: ChildDetails
   clubDetails: ClubDetails | null
   guardian: Guardian
-  maxFeeAccepted: boolean
   otherChildren: PersonBasics[]
   otherInfo: string
   otherPartner: PersonBasics | null
@@ -188,7 +187,6 @@ export interface ApplicationFormUpdate {
   child: ChildDetailsUpdate
   clubDetails: ClubDetails | null
   guardian: GuardianUpdate
-  maxFeeAccepted: boolean
   otherChildren: PersonBasics[]
   otherInfo: string
   otherPartner: PersonBasics | null

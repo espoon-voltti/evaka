@@ -1452,55 +1452,6 @@ export default {
         removePreferredUnitScreenReaderMessage: (unitName: string) =>
           `Hakutoive ${unitName} poistettu`
       },
-      fee: {
-        title: 'Varhaiskasvatusmaksu',
-        info: {
-          DAYCARE: (
-            <P>
-              Kunnallisen varhaiskasvatuksen asiakasmaksut ja palvelusetelin
-              omavastuuosuus määräytyvät prosenttiosuutena perheen
-              bruttotuloista. Maksut vaihtelevat perheen koon ja tulojen sekä
-              varhaiskasvatusajan mukaan maksuttomasta varhaiskasvatuksesta
-              enintään 288 euron kuukausimaksuun lasta kohden.
-              Palveluseteliyksiköissä voidaan kuitenkin periä 0-50€/kk/lapsi
-              lisämaksu. Perhe toimittaa tuloselvityksen bruttotuloistaan
-              tuloselvityslomakkeella, viimeistään kahden viikon kuluessa siitä,
-              kun lapsi on aloittanut varhaiskasvatuksessa.
-            </P>
-          ),
-          PRESCHOOL: (
-            <P>
-              Esiopetus on maksutonta, mutta siihen liittyvä varhaiskasvatus on
-              maksullista. Jos lapsi osallistuu liittyvään varhaiskasvatukseen,
-              perhe toimittaa tuloselvityksen bruttotuloistaan
-              tuloselvityslomakkeella viimeistään kahden viikon kuluessa siitä,
-              kun lapsi on aloittanut varhaiskasvatuksessa.
-            </P>
-          ),
-          CLUB: <P />
-        },
-        emphasis: (
-          <strong>
-            Tuloselvitystä ei tarvita, jos perhe suostuu korkeimpaan maksuun.
-          </strong>
-        ),
-        checkbox:
-          'Annan suostumuksen korkeimpaan maksuun. Suostumus on voimassa toistaiseksi, kunnes toisin ilmoitan.',
-        links: (
-          <P>
-            Lisätietoa varhaiskasvatuksen maksuista, palvelusetelin lisämaksusta
-            ja tuloselvityslomakkeen löydät täältä:
-            <br />
-            <a
-              href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Maksut varhaiskasvatuksessa
-            </a>
-          </P>
-        )
-      },
       additionalDetails: {
         title: 'Muut lisätiedot',
         otherInfoLabel: 'Hakuun liittyvät lisätiedot',

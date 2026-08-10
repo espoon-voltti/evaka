@@ -626,7 +626,6 @@ export const sv: typeof fi = {
       applicationInfo: 'Ansökans tilläggsuppgifter',
       allergies: 'Allergier',
       diet: 'Specialdiet',
-      maxFeeAccepted: 'Samtycke till högsta avgift',
       serviceWorkerAttachmentsTitle: 'Bilagor från servicerådgivningen',
       noAttachments: 'Inga bilagor'
     },
@@ -3141,8 +3140,7 @@ export const sv: typeof fi = {
         return: 'Tillbaka'
       },
       income: {
-        title: 'Familjens inkomstuppgifter',
-        maxFeeAccepted: 'Vårdnadshavarens samtycke till högsta avgiftsklass.'
+        title: 'Familjens inkomstuppgifter'
       },
       child: {
         ssn: 'Personbeteckning',

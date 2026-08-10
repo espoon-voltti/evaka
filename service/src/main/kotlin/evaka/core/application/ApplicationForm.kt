@@ -21,7 +21,6 @@ data class ApplicationFormUpdate(
     val otherPartner: PersonBasics?,
     val otherChildren: List<PersonBasics>,
     val preferences: Preferences,
-    val maxFeeAccepted: Boolean,
     val otherInfo: String,
     val clubDetails: ClubDetails?,
 ) {
@@ -46,7 +45,6 @@ data class ApplicationFormUpdate(
                 otherPartner = form.otherPartner,
                 otherChildren = form.otherChildren,
                 preferences = form.preferences,
-                maxFeeAccepted = form.maxFeeAccepted,
                 otherInfo = form.otherInfo,
                 clubDetails = form.clubDetails,
             )
@@ -61,7 +59,6 @@ data class ApplicationForm(
     val otherPartner: PersonBasics?,
     val otherChildren: List<PersonBasics>,
     val preferences: Preferences,
-    val maxFeeAccepted: Boolean,
     val otherInfo: String,
     val clubDetails: ClubDetails?,
 ) {
@@ -217,7 +214,6 @@ data class ApplicationForm(
                                 urgent = v0.urgent,
                             ),
                         otherInfo = v0.additionalDetails.otherInfo,
-                        maxFeeAccepted = v0.maxFeeAccepted,
                         clubDetails = null,
                     )
                 }
@@ -313,7 +309,6 @@ data class ApplicationForm(
                                 urgent = false,
                             ),
                         otherInfo = v0.additionalDetails.otherInfo,
-                        maxFeeAccepted = false,
                         clubDetails =
                             ClubDetails(
                                 wasOnClubCare = v0.wasOnClubCare,
@@ -400,7 +395,6 @@ data class ApplicationForm(
                         preparatory = false,
                         urgent = false,
                     ),
-                maxFeeAccepted = false,
                 otherInfo = "",
                 clubDetails =
                     if (type == ApplicationType.CLUB) {
@@ -432,7 +426,6 @@ data class ApplicationForm(
             otherPartner = updated.otherPartner,
             otherChildren = updated.otherChildren,
             preferences = updated.preferences,
-            maxFeeAccepted = updated.maxFeeAccepted,
             otherInfo = updated.otherInfo,
             clubDetails = updated.clubDetails,
         )

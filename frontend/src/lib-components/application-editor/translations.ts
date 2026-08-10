@@ -353,17 +353,6 @@ export interface ApplicationEditorTexts {
     ) => string
     removePreferredUnitScreenReaderMessage: (unitName: string) => string
   }
-  fee: {
-    title: string
-    info: {
-      DAYCARE: ReactNode
-      PRESCHOOL: ReactNode
-      CLUB: ReactNode
-    }
-    emphasis: ReactNode
-    checkbox: string
-    links: ReactNode
-  }
   additionalDetails: {
     title: string
     otherInfoLabel: string

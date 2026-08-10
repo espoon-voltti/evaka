@@ -363,42 +363,6 @@ const en: DeepPartial<Translations> = {
           preschoolEnabled ? ' and pre-school education' : ''
         } in Vesilahti, the official address is the address obtained from population data. The address in the population data register changes when the applicant submits a notification of change of address to the post office or the local register office.`
       },
-      fee: {
-        info: {
-          DAYCARE: (
-            <P>
-              The client fees for municipal early childhood education and the
-              own deductible part of the service voucher are based on the Act on
-              Client Fees in Early Childhood Education and Care (1503/2016). The
-              client fee is determined by the size of the family, the need for
-              service as well the gross income. New clients must fill in the
-              client fee form and submit the required appendices to the Client
-              fees of Early childhood education within a month from when the
-              care started at the latest.
-            </P>
-          ),
-          PRESCHOOL: (
-            <P>
-              TODO: Esiopetus on maksutonta, mutta sitä täydentävä toiminta on
-              maksullista. Jos lapsi osallistuu esiopetusta täydentävään
-              toimintaan, perhe toimittaa tuloselvityksen bruttotuloistaan
-              tuloselvityslomakkeella viimeistään kahden viikon kuluessa siitä,
-              kun lapsi on aloittanut esiopetuksen.
-            </P>
-          )
-        },
-        links: (
-          <P>
-            You will find further information on client fees for early childhood
-            education on{' '}
-            <ExternalLink
-              href="https://www.vesilahti.fi/kasvatus-ja-opetus/varhaiskasvatus/asiakasmaksut/"
-              text="the website of the municipality of Vesilahti"
-              newTab
-            />
-          </P>
-        )
-      },
       additionalDetails: {
         dietInfo: (
           <>

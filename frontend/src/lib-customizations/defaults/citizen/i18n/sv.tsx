@@ -1443,57 +1443,6 @@ const sv: Translations = {
         removePreferredUnitScreenReaderMessage: (unitName: string) =>
           `Önskemål ${unitName} har tagits bort`
       },
-      fee: {
-        title: 'Avgiften för småbarnspedagogik',
-        info: {
-          DAYCARE: (
-            <P>
-              Klientavgiften inom den kommunala småbarnspedagogiken och för
-              servicesedelns självriskandel är en procentandel av familjens
-              bruttoinkomster. Avgiften varierar från avgiftsfri
-              småbarnspedagogik till högst 288 euro i månaden, beroende på
-              familjens storlek, familjens inkomster och barnets vårdtid för
-              familjens första barn. Servicesedel enheterna kan dock ta ut
-              tilläggspris mellan 0-50€/mån/barn. Familjen ska lämna in en
-              utredning över sina bruttoinkomster på en särskild blankett,
-              senast inom två veckor från det att barnet har inlett
-            </P>
-          ),
-          PRESCHOOL: (
-            <P>
-              Förskoleundervisning är avgiftsfri, men för småbarnspedagogik i
-              samband med förskoleundervisning uppbärs en avgift. Om barnet
-              deltar i småbarnspedagogisk verksamhet i samband med
-              förskoleundervisning ska familjen lämna in en utredning över sina
-              bruttoinkomster på en särskild blankett, senast inom två veckor
-              från det att barnet har inlett.
-            </P>
-          ),
-          CLUB: <P />
-        },
-        emphasis: (
-          <strong>
-            Om familjen samtycker till den högsta avgiften behövs ingen
-            inkomstutredning.
-          </strong>
-        ),
-        checkbox:
-          'Jag ger mitt samtycke till att betala den högsta avgiften. Samtycket gäller tills vidare, tills jag meddelar något annat.',
-        links: (
-          <P>
-            Mer information om småbarnspedagogikens avgifter, servicesedelns
-            tilläggspris och blanketten för inkomstutredning finns här:
-            <br />
-            <a
-              href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/klientavgifterna-smabarnspedagogik"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Avgifter för småbarnspedagogik
-            </a>
-          </P>
-        )
-      },
       additionalDetails: {
         title: 'Övriga tilläggsuppgifter',
         otherInfoLabel: 'Övriga tilläggsuppgifter',

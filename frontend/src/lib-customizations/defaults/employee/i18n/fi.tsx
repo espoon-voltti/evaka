@@ -620,7 +620,6 @@ export const fi = {
       applicationInfo: 'Hakemuksen lisätiedot',
       allergies: 'Allergiat',
       diet: 'Erityisruokavalio',
-      maxFeeAccepted: 'Suostumus korkeimpaan maksuun',
       serviceWorkerAttachmentsTitle: 'Palveluohjauksen liitteet',
       noAttachments: 'Ei liitteitä'
     },
@@ -3116,8 +3115,7 @@ export const fi = {
         return: 'Palaa'
       },
       income: {
-        title: 'Perheen tulotiedot',
-        maxFeeAccepted: 'Huoltajan suostumus korkeimpaan maksuluokkaan.'
+        title: 'Perheen tulotiedot'
       },
       child: {
         ssn: 'Henkilötunnus',
