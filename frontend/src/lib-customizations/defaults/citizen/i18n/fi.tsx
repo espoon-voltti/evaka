@@ -245,17 +245,17 @@ export default {
       noUsername: 'Ei käyttäjätunnusta?',
       noUsernameInfo:
         'Tunnistaudu Suomi.fi-palvelussa ja salli sähköpostikirjautuminen Omat tiedot -sivulla.',
-      passkeyLink: 'Kirjaudu ilman salasanaa · Passkey',
+      passkeyLink: 'Kirjaudu pääsyavaimella (passkey)',
       passkeyDescriptionDesktop: 'Tällä laitteella tai puhelimella',
       passkeyDescriptionMobile: 'Face ID, Touch ID tai PIN-koodi',
       passkeyError:
-        'Kirjautuminen Passkeyllä ei onnistunut. Voit kirjautua sähköpostiosoitteella ja salasanalla.',
+        'Kirjautuminen pääsyavaimella ei onnistunut. Voit kirjautua sähköpostiosoitteella ja salasanalla.',
       usedLast: 'Käytit viimeksi'
     },
     applying: {
       title: 'Ensimmäistä kertaa täällä?',
       paragraph:
-        'Tunnistaudu Suomi.fi-palvelussa tehdäksesi hakemuksen, luodaksesi Passkey-avaimen tai ottaaksesi käyttöön sähköpostikirjautumisen.',
+        'Tunnistaudu Suomi.fi-palvelussa tehdäksesi hakemuksen, luodaksesi pääsyavaimen (passkey) tai ottaaksesi käyttöön sähköpostikirjautumisen.',
       infoBoxText:
         'Tunnistautumisen yhteydessä eVaka hakee väestötietojärjestelmästä kirjautujan, toisen huoltajan sekä alaikäisten huollettavien henkilö- ja osoitetiedot.',
       link: 'Tunnistaudu · Suomi.fi',
@@ -2274,23 +2274,23 @@ export default {
         `Käyttäjätunnus ${username} on jo käytössä toisella henkilöllä`
     },
     passkeysSection: {
-      title: 'Passkeyt',
+      title: 'Pääsyavaimet',
       description:
-        'Passkeyllä voit kirjautua eVakaan ilman salasanaa esimerkiksi sormenjäljellä, kasvojentunnistuksella tai laitteen PIN-koodilla.',
+        'Pääsyavaimella (passkey) voit kirjautua eVakaan ilman salasanaa esimerkiksi sormenjäljellä, kasvojentunnistuksella tai laitteen PIN-koodilla.',
       added: 'Lisätty',
       lastUsed: 'Käytetty viimeksi',
       neverUsed: 'Ei koskaan',
-      addPasskey: 'Lisää Passkey',
-      defaultName: 'Passkey',
-      nameModalTitle: 'Nimeä Passkey',
+      addPasskey: 'Lisää pääsyavain',
+      defaultName: 'Pääsyavain',
+      nameModalTitle: 'Nimeä pääsyavain',
       nameLabel: 'Nimi',
-      deletePasskey: 'Poista Passkey',
-      deleteConfirmTitle: 'Poistetaanko Passkey?',
+      deletePasskey: 'Poista pääsyavain',
+      deleteConfirmTitle: 'Poistetaanko pääsyavain?',
       deleteConfirmText: (name: string) =>
-        `Passkey "${name}" poistetaan, eikä sillä voi enää kirjautua eVakaan. Poistaminen kirjaa ulos muut istuntosi.`,
+        `Pääsyavain "${name}" poistetaan, eikä sillä voi enää kirjautua eVakaan. Poistaminen kirjaa ulos muut istuntosi.`,
       limitError:
-        'Voit lisätä enintään 10 Passkeytä. Poista jokin Passkey ennen uuden lisäämistä.',
-      addError: 'Passkeyn lisääminen ei onnistunut. Yritä uudelleen.'
+        'Voit lisätä enintään 10 pääsyavainta. Poista jokin pääsyavain ennen uuden lisäämistä.',
+      addError: 'Pääsyavaimen lisääminen ei onnistunut. Yritä uudelleen.'
     },
     notificationsSection: {
       title: 'Ilmoitukset',
