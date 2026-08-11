@@ -1038,6 +1038,47 @@ class AttendanceReservationsControllerIntegrationTest :
     }
 
     @Test
+    fun `citizen-marked absence includes the citizen's name`() {
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(
+                DevPlacement(
+                    childId = child1.id,
+                    unitId = daycare.id,
+                    startDate = mon,
+                    endDate = fri,
+                )
+            )
+            tx.insert(
+                DevAbsence(
+                    childId = child1.id,
+                    date = tue,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedAt = now,
+                    modifiedBy = adult.evakaUserId(),
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                )
+            )
+        }
+
+        val child =
+            getAttendanceReservations()
+                .days
+                .first { it.date == tue }
+                .children
+                .single { it.childId == child1.id }
+        assertEquals(
+            AbsenceTypeResponse(
+                absenceType = AbsenceType.SICKLEAVE,
+                staffCreated = false,
+                modifiedByName = adult.evakaUser().name,
+                modifiedAt = now,
+            ),
+            child.absenceBillable,
+        )
+    }
+
+    @Test
     fun `set confirmed range reservation does not update any fields when form values remain the same`() {
         val initialCreatedAt = clock.now()
         val mobileDevice = DevMobileDevice(unitId = daycare.id)

@@ -1000,6 +1000,52 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     }
 
     @Test
+    fun `citizen-marked absence includes the citizen's name`() {
+        insertGroupPlacement(child1.id, PlacementType.PRESCHOOL_DAYCARE)
+
+        val citizen = DevPerson(firstName = "Johannes", lastName = "Karhula")
+        val absenceDate = placementEnd
+        val result = db.transaction { tx ->
+            tx.insert(citizen, DevPersonType.ADULT)
+            tx.insert(
+                DevAbsence(
+                    childId = child1.id,
+                    date = absenceDate,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedAt = now,
+                    modifiedBy = citizen.evakaUserId(),
+                    absenceCategory = AbsenceCategory.NONBILLABLE,
+                )
+            )
+            getGroupMonthCalendar(
+                tx,
+                absenceDate,
+                group.id,
+                absenceDate.year,
+                absenceDate.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
+        val child =
+            result.days.find { it.date == absenceDate }?.children?.find { it.childId == child1.id }
+                ?: error("Day or child not found")
+
+        assertEquals(
+            listOf(
+                AbsenceWithModifierInfo(
+                    category = AbsenceCategory.NONBILLABLE,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedByStaff = false,
+                    modifiedByName = citizen.evakaUser().name,
+                    modifiedAt = now,
+                )
+            ),
+            child.absences,
+        )
+    }
+
+    @Test
     fun `cannot create multiple absences for same placement type and same date`() {
         insertGroupPlacement(child1.id, PlacementType.PRESCHOOL_DAYCARE)
 
