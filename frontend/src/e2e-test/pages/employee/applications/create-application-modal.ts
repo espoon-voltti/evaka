@@ -26,9 +26,9 @@ export default class CreateApplicationModal extends Element {
 
   #submit = this.findByDataQa('modal-okBtn')
 
-  async submit() {
+  async submit(legacyEditor = false) {
     await this.#submit.click()
-    return new ApplicationEditView(this.page)
+    return new ApplicationEditView(this.page, legacyEditor)
   }
 
   #guardianRadio = new Radio(this.findByDataQa('select-guardian-radio'))

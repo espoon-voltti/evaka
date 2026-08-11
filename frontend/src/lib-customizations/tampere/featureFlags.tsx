@@ -61,11 +61,13 @@ const prod: FeatureFlags = {
 const features: Features = {
   default: {
     ...prod,
-    environmentLabel: 'Test'
+    environmentLabel: 'Test',
+    sharedApplicationEditor: true
   },
   staging: {
     ...prod,
-    environmentLabel: 'Staging'
+    environmentLabel: 'Staging',
+    sharedApplicationEditor: true
   },
   prod
 }

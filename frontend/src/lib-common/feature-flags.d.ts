@@ -234,6 +234,15 @@ interface BaseFeatureFlags {
    * Enable language selection in employee frontends
    */
   employeeLanguageSelection?: boolean
+
+  /**
+   * Use the shared citizen/employee application editor in the employee frontend
+   * instead of the legacy employee-only one.
+   *
+   * Temporary: remove this flag and the legacy editor once the shared editor has
+   * been validated in production.
+   */
+  sharedApplicationEditor?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>
