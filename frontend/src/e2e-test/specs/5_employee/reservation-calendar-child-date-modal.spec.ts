@@ -395,7 +395,8 @@ test.describe('Reservation calendar child date modal', () => {
 
       const monthCalendar = await weekCalendar.openMonthCalendar()
       await monthCalendar.assertTooltipContains(childId, date1, [
-        'Ilta-/vuorohoito Odottaa varasijoitusta'
+        'Ilta-/vuorohoito',
+        'Odottaa varasijoitusta'
       ])
     })
 
@@ -450,7 +451,8 @@ test.describe('Reservation calendar child date modal', () => {
       const monthCalendar = await weekCalendar.openMonthCalendar()
       await monthCalendar.changeWeekToDate(date1)
       await monthCalendar.assertTooltipContains(childId, date1, [
-        'Ilta-/vuorohoito Odottaa varasijoitusta'
+        'Ilta-/vuorohoito',
+        'Odottaa varasijoitusta'
       ])
     })
 
@@ -480,7 +482,8 @@ test.describe('Reservation calendar child date modal', () => {
 
       const monthCalendar = await weekCalendar.openMonthCalendar()
       await monthCalendar.assertTooltipContains(childId, date, [
-        'Ilta-/vuorohoito Odottaa varasijoitusta'
+        'Ilta-/vuorohoito',
+        'Odottaa varasijoitusta'
       ])
     })
   })

@@ -11,6 +11,7 @@ import TimeRange from 'lib-common/time-range'
 
 import {
   systemInternalUser,
+  testAdult,
   testCareArea,
   testDaycare,
   testDaycareGroup,
@@ -163,8 +164,8 @@ test.describe('Employee - Unit month calendar', () => {
 
     // Hover shows type and who is the absence maker
     await monthCalendarPage.assertTooltipContains(testChild2.id, today, [
-      'Varhaiskasvatus: Ilmoittamaton poissaolo',
-      `${LocalDate.todayInSystemTz().formatIso()} Henkilökunta)`
+      'Varhaiskasvatus (maksullinen): Ilmoittamaton poissaolo',
+      `${today.toHelsinkiDateTime(LocalTime.of(8, 0)).format()} Henkilökunta`
     ])
 
     // Can clear an absence
@@ -228,8 +229,9 @@ test.describe('Employee - Unit month calendar', () => {
 
     // Hover shows type and who is the absence maker
     await monthCalendarPage.assertTooltipContains(testChild2.id, today, [
-      'Varhaiskasvatus: Ilmoittamaton poissaolo',
-      `${LocalDate.todayInSystemTz().formatIso()} Henkilökunta)`
+      'Varhaiskasvatus (maksullinen): Sairaus',
+      'Esiopetus, valmistava, 5-vuotiaiden varhaiskasvatus tai kerhotoiminta: Ilmoittamaton poissaolo',
+      `${today.toHelsinkiDateTime(LocalTime.of(8, 0)).format()} Henkilökunta`
     ])
 
     // Can clear an absence
@@ -245,6 +247,44 @@ test.describe('Employee - Unit month calendar', () => {
       today,
       'NONBILLABLE'
     )
+  })
+
+  test('Absence tooltip shows the name of the guardian who made the absence', async () => {
+    const placement = await Fixture.placement({
+      childId: testChild2.id,
+      unitId: testDaycare.id,
+      startDate: today,
+      endDate: today.addYears(1)
+    }).save()
+    await Fixture.groupPlacement({
+      daycarePlacementId: placement.id,
+      daycareGroupId: group.id,
+      startDate: placement.startDate,
+      endDate: placement.endDate
+    }).save()
+
+    const guardian = await testAdult.saveAdult()
+    const modifiedAt = today.toHelsinkiDateTime(LocalTime.of(7, 0))
+    await Fixture.absence({
+      childId: testChild2.id,
+      date: today,
+      absenceType: 'SICKLEAVE',
+      absenceCategory: 'BILLABLE',
+      modifiedBy: evakaUserId(guardian.id),
+      modifiedAt
+    }).save()
+
+    await unitPage.navigateToUnit(testDaycare.id)
+    const groupsPage = await unitPage.openGroupsPage()
+    const groupSection = await groupsPage.openGroupCollapsible(
+      testDaycareGroup.id
+    )
+    const monthCalendarPage = await groupSection.openMonthCalendar()
+
+    await monthCalendarPage.assertTooltipContains(testChild2.id, today, [
+      'Varhaiskasvatus (maksullinen): Sairaus',
+      `${modifiedAt.format()} ${guardian.lastName} ${guardian.firstName} (huoltaja)`
+    ])
   })
 
   test('User can edit staff attendances', async () => {
