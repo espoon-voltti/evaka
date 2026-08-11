@@ -10,6 +10,7 @@ import evaka.core.shared.MessageDraftId
 import evaka.core.shared.MessageThreadId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
 
 data class DeletedBulletinContent(
     val contentId: MessageContentId,
@@ -24,11 +25,19 @@ data class DeletedBulletinThreadBatch(
 data class DeletedBulletinDraft(val draftId: MessageDraftId, val attachmentIds: List<AttachmentId>)
 
 fun Database.Transaction.deleteExpiredBulletinThreads(
+    recipientExpireDate: LocalDate,
     expiresBefore: HelsinkiDateTime,
     limit: Int,
 ): DeletedBulletinThreadBatch {
-    // The original sender can reply to a bulletin, so a long-expired thread may still hold a recent
-    // follow-up. Such a thread is kept until the follow-up expires too.
+    // A municipal bulletin shares one thread across a whole area or unit and records no children at
+    // all, so it has no placement to expire by and falls to the age limit instead.
+    //
+    // A staff copy shares its content with the bulletin it copies. A copy is deleted as soon as the
+    // original bulletin is gone, which takes one further round.
+    //
+    // The original sender can reply to a bulletin, so a thread expiring by age may still hold a
+    // recent follow-up, and is kept until the follow-up expires too. A thread expiring by placement
+    // is not held back this way, as its retention does not run from when anything was written.
     //
     // Bulletins linked to an application exist only because of an earlier bug. Those bulletins are
     // deleted after the application is expired and deleted.
@@ -38,15 +47,33 @@ fun Database.Transaction.deleteExpiredBulletinThreads(
                     """
 SELECT mt.id
 FROM message_thread mt
+LEFT JOIN LATERAL (
+    SELECT max(pl.end_date) AS last_placement_end
+    FROM message_thread_children mtc
+    JOIN placement pl ON pl.child_id = mtc.child_id
+    WHERE mtc.thread_id = mt.id
+) recipients ON true
 WHERE
     mt.message_type = 'BULLETIN' AND
     mt.application_id IS NULL AND
-    mt.created < ${bind(expiresBefore)} AND
-    NOT EXISTS (
-        SELECT 1
-        FROM message m
-        WHERE m.thread_id = mt.id AND m.created >= ${bind(expiresBefore)}
-    ) AND
+    CASE
+        WHEN mt.is_copy THEN NOT EXISTS (
+            SELECT 1
+            FROM message copy_message
+            JOIN message original ON original.content_id = copy_message.content_id
+            JOIN message_thread original_thread ON original_thread.id = original.thread_id
+            WHERE copy_message.thread_id = mt.id AND NOT original_thread.is_copy
+        )
+        WHEN recipients.last_placement_end IS NOT NULL THEN
+            recipients.last_placement_end < ${bind(recipientExpireDate)}
+        ELSE
+            mt.created < ${bind(expiresBefore)} AND
+            NOT EXISTS (
+                SELECT 1
+                FROM message m
+                WHERE m.thread_id = mt.id AND m.created >= ${bind(expiresBefore)}
+            )
+    END AND
     NOT EXISTS (
         SELECT 1
         FROM message m

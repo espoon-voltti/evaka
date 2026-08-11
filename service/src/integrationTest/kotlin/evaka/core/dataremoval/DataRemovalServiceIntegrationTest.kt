@@ -154,6 +154,8 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val tenYearExpireDate = today.minusYears(10)
     private val applicationExpireDate = today.minusYears(10)
     private val bulletinExpiresBefore = now.minusYears(10)
+    private val bulletinRecipientExpiresBefore = now.minusYears(5)
+    private val bulletinRecipientExpireDate = today.minusYears(5)
 
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val careArea = DevCareArea()
@@ -2488,6 +2490,8 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
         contentId: MessageContentId = insertBulletinContent(),
         type: MessageType = MessageType.BULLETIN,
         isCopy: Boolean = false,
+        // Empty for municipal bulletins and staff copies, which record no children and expire by
+        // age only
         children: Set<ChildId> = setOf(child.id),
     ): MessageThreadId = db.transaction { tx ->
         val threadId =
@@ -2537,13 +2541,18 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
         contentId
     }
 
-    // Sending a message with a related application links the thread to that application and records
-    // the message as an application note, as MessageService.sendMessageAsEmployee does
+    // Mirrors MessageService.sendMessageAsEmployee, which also records the message as an
+    // application note
     private fun linkThreadToApplication(
         threadId: MessageThreadId,
         applicationId: ApplicationId,
         contentId: MessageContentId,
     ) {
+        setThreadApplication(threadId, applicationId)
+        insertApplicationNote(applicationId, contentId)
+    }
+
+    private fun setThreadApplication(threadId: MessageThreadId, applicationId: ApplicationId) {
         db.transaction { tx ->
             tx.execute {
                 sql(
@@ -2551,7 +2560,6 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
                 )
             }
         }
-        insertApplicationNote(applicationId, contentId)
     }
 
     private fun insertApplicationNote(applicationId: ApplicationId, contentId: MessageContentId) {
@@ -2630,6 +2638,7 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
         dataRemovalService.deleteExpiredBulletinThreads(
             db,
             now,
+            recipientExpireDate = bulletinRecipientExpireDate,
             expiresBefore = bulletinExpiresBefore,
             limit = limit,
         )
@@ -2654,6 +2663,177 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
         assertEquals(0, rowCount("message_thread_participant"))
         assertEquals(0, rowCount("message_thread_children"))
         assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads deletes a bulletin whose children all left care over five years ago`() {
+        insertPlacementEnding(child.id, bulletinRecipientExpireDate.minusDays(1))
+        insertThreadWithMessage(created = bulletinRecipientExpiresBefore.minusDays(1))
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_thread_children"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads keeps a bulletin whose child left care exactly five years ago`() {
+        insertPlacementEnding(child.id, bulletinRecipientExpireDate)
+        insertThreadWithMessage(created = bulletinRecipientExpiresBefore.minusDays(1))
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads takes the latest placement of its children as the expiry anchor`() {
+        // Both children have left care, but the later of the two placements ended on the expiry
+        // date rather than before it
+        val leftEarlier = DevPerson()
+        db.transaction { tx -> tx.insert(leftEarlier, DevPersonType.CHILD) }
+        insertPlacement(
+            leftEarlier.id,
+            startDate = today.minusYears(10),
+            endDate = today.minusYears(7),
+        )
+        insertPlacement(
+            child.id,
+            startDate = today.minusYears(10),
+            endDate = bulletinRecipientExpireDate,
+        )
+        insertThreadWithMessage(
+            created = now.minusYears(8),
+            children = setOf(leftEarlier.id, child.id),
+        )
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads keeps a bulletin over ten years old whose child placement ended after the expiry date`() {
+        // The age limit only decides when no placement is found, so lowering it can never delete a
+        // bulletin whose children left care less than the recipient retention period ago
+        insertPlacement(
+            child.id,
+            startDate = today.minusYears(11),
+            endDate = bulletinRecipientExpireDate.plusDays(1),
+        )
+        insertThreadWithMessage(created = bulletinExpiresBefore.minusDays(1))
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads keeps a bulletin whose child has no placements until it is ten years old`() {
+        // Without placements there is nothing to measure the recipient retention from
+        val fiveYearsOld =
+            insertThreadWithMessage(created = bulletinRecipientExpiresBefore.minusDays(1))
+        insertThreadWithMessage(created = bulletinExpiresBefore.minusDays(1))
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(listOf(fiveYearsOld), survivingMessageThreadIds())
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads keeps a municipal bulletin, which records no children, until it is ten years old`() {
+        insertPlacementEnding(child.id, bulletinRecipientExpireDate.minusDays(1))
+        insertThreadWithMessage(
+            created = bulletinRecipientExpiresBefore.minusDays(1),
+            children = emptySet(),
+        )
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads deletes a bulletin with a recent follow-up whose child placement ended before the expiry date`() {
+        // A follow-up must not restart the retention of a bulletin that is anchored to placements,
+        // unlike one expiring by age
+        insertPlacementEnding(child.id, bulletinRecipientExpireDate.minusDays(1))
+        val threadId =
+            insertThreadWithMessage(created = bulletinRecipientExpiresBefore.minusDays(1))
+        insertFollowUpMessage(threadId, created = now.minusYears(1))
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads deletes a staff copy only after the bulletin it copies`() {
+        insertPlacementEnding(child.id, bulletinRecipientExpireDate.minusDays(1))
+        val contentId = insertBulletinContent()
+        val created = bulletinRecipientExpiresBefore.minusDays(1)
+        insertThreadWithMessage(created = created, contentId = contentId)
+        val copyId =
+            insertThreadWithMessage(
+                created = created,
+                contentId = contentId,
+                isCopy = true,
+                children = emptySet(),
+            )
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(listOf(copyId), survivingMessageThreadIds())
+        assertEquals(1, rowCount("message_content"))
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredBulletinThreads keeps a staff copy while the bulletin it copies is retained`() {
+        insertActivePlacement(child.id)
+        val contentId = insertBulletinContent()
+        val created = bulletinRecipientExpiresBefore.minusDays(1)
+        insertThreadWithMessage(created = created, contentId = contentId)
+        insertThreadWithMessage(
+            created = created,
+            contentId = contentId,
+            isCopy = true,
+            children = emptySet(),
+        )
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(2, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredData removes a bulletin five years after its children left care`() {
+        insertPlacementEnding(child.id, bulletinRecipientExpireDate.minusDays(1))
+        val contentId = insertBulletinContent()
+        insertThreadWithMessage(
+            created = bulletinRecipientExpiresBefore.minusDays(1),
+            contentId = contentId,
+        )
+        val attachmentId = insertMessageContentAttachment(contentId)
+
+        withLimit(1000) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+        assertTrue(scheduledAttachmentDeletionIds().contains(attachmentId.toString()))
     }
 
     @Test
@@ -2726,7 +2906,9 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
 
     @Test
     fun `deleteExpiredBulletinThreads keeps an expired bulletin thread that is linked to an application`() {
-        // Bulletins linked to an application exist only because of an earlier bug
+        // Bulletins linked to an application exist only because of an earlier bug. The note that
+        // such a message also creates can be deleted by an employee, so the link alone has to keep
+        // the thread.
         val contentId = insertBulletinContent()
         val threadId =
             insertThreadWithMessage(
@@ -2734,15 +2916,15 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
                 contentId = contentId,
             )
         val tree = insertApplicationTree(placementEnd = applicationExpireDate.plusDays(1))
-        linkThreadToApplication(threadId, tree.applicationId, contentId)
+        setThreadApplication(threadId, tree.applicationId)
         insertMessageContentAttachment(contentId)
 
         deleteExpiredBulletinThreads()
 
+        assertEquals(0, countNonNull("application_note", "message_content_id"))
         assertEquals(1, rowCount("message_thread"))
         assertEquals(1, rowCount("message"))
         assertEquals(1, rowCount("message_content"))
-        assertEquals(1, countNonNull("application_note", "message_content_id"))
         assertEquals(1, countNonNull("attachment", "message_content_id"))
         assertTrue(scheduledAttachmentDeletionIds().isEmpty())
     }
@@ -2784,16 +2966,21 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
         val contentId = insertBulletinContent()
         val created = bulletinExpiresBefore.minusDays(1)
         insertThreadWithMessage(created = created, contentId = contentId)
-        insertThreadWithMessage(created = created, contentId = contentId, isCopy = true)
+        insertThreadWithMessage(
+            created = created,
+            contentId = contentId,
+            isCopy = true,
+            children = emptySet(),
+        )
         val attachmentId = insertMessageContentAttachment(contentId)
 
-        deleteExpiredBulletinThreads(limit = 1)
+        deleteExpiredBulletinThreads()
 
         assertEquals(1, rowCount("message_thread"))
         assertEquals(1, rowCount("message_content"))
         assertTrue(scheduledAttachmentDeletionIds().isEmpty())
 
-        deleteExpiredBulletinThreads(limit = 1)
+        deleteExpiredBulletinThreads()
 
         assertEquals(0, rowCount("message_thread"))
         assertEquals(0, rowCount("message_content"))

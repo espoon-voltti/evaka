@@ -148,7 +148,13 @@ class DataRemovalService(
 
         val bulletinExpiresBefore = now.minusYears(10)
 
-        deleteExpiredBulletinThreads(dbc, now, expiresBefore = bulletinExpiresBefore, limit = limit)
+        deleteExpiredBulletinThreads(
+            dbc,
+            now,
+            recipientExpireDate = today.minusYears(5),
+            expiresBefore = bulletinExpiresBefore,
+            limit = limit,
+        )
 
         deleteExpiredBulletinDrafts(dbc, now, expiresBefore = bulletinExpiresBefore, limit = limit)
 
@@ -346,13 +352,14 @@ class DataRemovalService(
     fun deleteExpiredBulletinThreads(
         dbc: Database.Connection,
         now: HelsinkiDateTime,
+        recipientExpireDate: LocalDate,
         expiresBefore: HelsinkiDateTime,
         limit: Int,
     ) {
         logger.info { "Deleting at most $limit expired bulletin threads" }
         val deleted = dbc.transaction { tx ->
             tx.setStatementTimeout(Duration.ofMinutes(10))
-            val batch = tx.deleteExpiredBulletinThreads(expiresBefore, limit)
+            val batch = tx.deleteExpiredBulletinThreads(recipientExpireDate, expiresBefore, limit)
             asyncJobRunner.plan(
                 tx = tx,
                 payloads =
@@ -369,14 +376,20 @@ class DataRemovalService(
             auditExpiredDelete(
                 entity = "message_thread",
                 targetId = AuditId(threadId),
-                meta = mapOf("expireDate" to expireDate),
+                meta =
+                    mapOf("expireDate" to expireDate, "recipientExpireDate" to recipientExpireDate),
             )
         }
         deleted.contents.forEach { content ->
             auditExpiredDelete(
                 entity = "message_content",
                 targetId = AuditId(content.contentId),
-                meta = mapOf("attachmentIds" to content.attachmentIds, "expireDate" to expireDate),
+                meta =
+                    mapOf(
+                        "attachmentIds" to content.attachmentIds,
+                        "expireDate" to expireDate,
+                        "recipientExpireDate" to recipientExpireDate,
+                    ),
             )
         }
     }
