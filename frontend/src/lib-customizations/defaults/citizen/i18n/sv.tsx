@@ -249,8 +249,13 @@ const sv: Translations = {
       passkeyLink: 'Logga in med inloggningsnyckel (passkey)',
       passkeyDescriptionDesktop: 'På den här enheten eller telefonen',
       passkeyDescriptionMobile: 'Face ID, Touch ID eller PIN-kod',
-      passkeyError:
-        'Inloggningen med inloggningsnyckel misslyckades. Du kan logga in med e-postadress och lösenord.',
+      passkeyError: (strongLoginUri: string): ReactNode => (
+        <>
+          Inloggningen med inloggningsnyckel avbröts. Försök igen, logga in med
+          e-postadress eller{' '}
+          <a href={strongLoginUri}>autentisera dig i tjänsten Suomi.fi</a>.
+        </>
+      ),
       usedLast: 'Senast använd'
     },
     applying: {
