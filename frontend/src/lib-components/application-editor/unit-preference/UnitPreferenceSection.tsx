@@ -33,15 +33,8 @@ export type UnitPreferenceSectionCommonProps = {
   shiftCare: boolean
 }
 
-export type UnitPreferenceSectionProps = UnitPreferenceSectionCommonProps & {
-  applicationType: ApplicationType
-  preparatory: boolean
-  preferredStartDate: LocalDate | null
-  shiftCare: boolean
-}
-
 export default React.memo(function UnitPreferenceSection(
-  props: UnitPreferenceSectionProps
+  props: UnitPreferenceSectionCommonProps
 ) {
   const { translations: t, applicationUnitsQuery, infoDialog } = props.deps
 

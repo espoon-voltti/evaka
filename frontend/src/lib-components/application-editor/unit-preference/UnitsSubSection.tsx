@@ -24,9 +24,9 @@ import { useScreenReaderMessage } from 'lib-components/utils/useScreenReaderMess
 import { Gap } from 'lib-components/white-space'
 
 import PreferredUnitBox from './PreferredUnitBox'
-import type { UnitPreferenceSectionProps } from './UnitPreferenceSection'
+import type { UnitPreferenceSectionCommonProps } from './UnitPreferenceSection'
 
-interface Props extends UnitPreferenceSectionProps {
+interface Props extends UnitPreferenceSectionCommonProps {
   units: PublicUnit[] | null
 }
 
