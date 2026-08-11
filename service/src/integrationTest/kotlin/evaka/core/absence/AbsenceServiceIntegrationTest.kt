@@ -669,6 +669,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                             ),
                                                         createdByEvakaUserType =
                                                             EvakaUserType.EMPLOYEE,
+                                                        createdByName = employee.evakaUser.name,
                                                     )
                                                 ),
                                         )
@@ -702,6 +703,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                             ),
                                                         createdByEvakaUserType =
                                                             EvakaUserType.EMPLOYEE,
+                                                        createdByName = employee.evakaUser.name,
                                                     )
                                                 ),
                                         )
@@ -1000,7 +1002,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     }
 
     @Test
-    fun `citizen-marked absence includes the citizen's name`() {
+    fun `citizen-marked absence and reservation include the citizen's name`() {
         insertGroupPlacement(child1.id, PlacementType.PRESCHOOL_DAYCARE)
 
         val citizen = DevPerson(firstName = "Johannes", lastName = "Karhula")
@@ -1015,6 +1017,16 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     modifiedAt = now,
                     modifiedBy = citizen.evakaUserId(),
                     absenceCategory = AbsenceCategory.NONBILLABLE,
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = child1.id,
+                    date = absenceDate,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdAt = now,
+                    createdBy = citizen.evakaUserId(),
                 )
             )
             getGroupMonthCalendar(
@@ -1042,6 +1054,18 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 )
             ),
             child.absences,
+        )
+        assertEquals(
+            listOf(
+                ChildReservation(
+                    reservation =
+                        Reservation.Times(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))),
+                    createdByEvakaUserType = EvakaUserType.CITIZEN,
+                    createdByName = citizen.evakaUser().name,
+                    created = now,
+                )
+            ),
+            child.reservations,
         )
     }
 

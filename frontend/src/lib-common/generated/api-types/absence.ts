@@ -142,6 +142,7 @@ export interface AbsenceWithModifierInfo {
 export interface ChildReservation {
   created: HelsinkiDateTime
   createdByEvakaUserType: EvakaUserType
+  createdByName: string
   reservation: Reservation
 }
 

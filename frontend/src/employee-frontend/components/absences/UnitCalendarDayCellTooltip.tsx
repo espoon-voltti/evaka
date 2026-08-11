@@ -104,7 +104,7 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
             : i18n.absences.present
         const userTypeText =
           res.createdByEvakaUserType === 'CITIZEN'
-            ? i18n.absences.guardian
+            ? i18n.absences.modifiedByCitizen(res.createdByName)
             : i18n.absences.staff
         return (
           <div key={index}>
