@@ -462,7 +462,9 @@ data class KoskiActivePreparatoryDataRaw(
                         OsasuorituksenLaajuus(
                             arvo = 25,
                             yksikkö =
-                                Laajuusyksikkö(koodiarvo = LaajuusyksikköKoodiarvo.VUOSIVIIKKOTUNTI),
+                                Laajuusyksikkö(
+                                    koodiarvo = LaajuusyksikköKoodiarvo.VUOSIVIIKKOTUNTI
+                                ),
                         ),
                     ),
                     listOf(

@@ -305,8 +305,8 @@ private fun Database.Read.getRealtimeStaffAttendancesForGroups(
         val occupancyCoefficient: BigDecimal,
     )
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT group_id, arrived, departed, occupancy_coefficient
 FROM staff_attendance_realtime
 WHERE departed IS NOT NULL
@@ -322,8 +322,8 @@ WHERE departed IS NOT NULL
 AND group_id = ANY(${bind(groups)})
 AND tstzrange(arrived, departed) && ${bind(range)}
 """
-            )
-        }
+        )
+    }
         .mapTo<StaffAttendance>()
         .useSequence { rows ->
             rows
@@ -347,15 +347,15 @@ private fun Database.Read.getStaffCountsForGroups(
 ): Map<GroupId, DateMap<BigDecimal>> {
     data class StaffCount(val groupId: GroupId, val date: LocalDate, val count: BigDecimal)
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT group_id, date, count
 FROM staff_attendance
 WHERE group_id = ANY(${bind(groups)})
 AND between_start_and_end(${bind(range)}, date)
 """
-            )
-        }
+        )
+    }
         .mapTo<StaffCount>()
         .useSequence { rows ->
             rows
@@ -449,10 +449,9 @@ private fun Database.Read.getDailyGroupCaretakers(
         groupValidity.includes(date) &&
             operationDays.contains(date.dayOfWeek.value) &&
             (shiftCareOpenOnHolidays || date !in holidays)
-    val groups =
-        createQuery {
-                sql(
-                    """
+    val groups = createQuery {
+        sql(
+            """
 SELECT
     g.id AS group_id, g.name AS group_name,
     u.id AS unit_id, u.name AS unit_name,
@@ -464,9 +463,9 @@ JOIN daycare u ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[
 JOIN care_area a ON a.id = u.care_area_id
 WHERE ${predicate(unitPredicate.forTable("u").and(groupPredicate.forTable("g")))}
 """
-                )
-            }
-            .toList<OccupancyGroup>()
+        )
+    }
+        .toList<OccupancyGroup>()
 
     val dailyCountsByGroup =
         when (type) {
@@ -514,8 +513,8 @@ private fun Database.Read.getPlacementDrafts(
         val familyUnitPlacement: Boolean,
     )
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT 
             a.id AS application_id,
             a.child_id,
@@ -527,8 +526,8 @@ private fun Database.Read.getPlacementDrafts(
         JOIN daycare u ON pd.unit_id = u.id
         WHERE a.status = 'WAITING_PLACEMENT' AND pd.unit_id = ANY(${bind(unitIds)}) 
     """
-            )
-        }
+        )
+    }
         .toList<QueryResult>()
         .mapNotNull { row ->
             // todo: optimize to avoid fetching full application details just to get the derived
@@ -763,14 +762,13 @@ WHERE sn.placement_id = ANY(${bind(placements.mapNotNull { it.placementId })})
                 column<PlacementType>("valid_placement_type") to row<ServiceNeedCoefficients>()
             }
 
-    val assistanceFactors =
-        createQuery {
-                sql(
-                    "SELECT child_id, capacity_factor, valid_during AS period FROM assistance_factor WHERE child_id = ANY(${bind(childIds)})"
-                )
-            }
-            .toList<AssistanceFactor>()
-            .groupBy { it.childId }
+    val assistanceFactors = createQuery {
+        sql(
+            "SELECT child_id, capacity_factor, valid_during AS period FROM assistance_factor WHERE child_id = ANY(${bind(childIds)})"
+        )
+    }
+        .toList<AssistanceFactor>()
+        .groupBy { it.childId }
 
     val absences =
         if (type == OccupancyType.REALIZED) {

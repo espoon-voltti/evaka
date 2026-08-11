@@ -18,18 +18,17 @@ fun Database.Read.getOutOfOfficePeriods(
     employeeId: EmployeeId,
     today: LocalDate,
 ): List<OutOfOfficePeriod> {
-    val result =
-        createQuery {
-                sql(
-                    """
+    val result = createQuery {
+        sql(
+            """
 SELECT id, period
 FROM out_of_office
 WHERE employee_id = ${bind(employeeId)}
 AND period && DATERANGE(${bind(today)}, NULL)
 """
-                )
-            }
-            .toList<OutOfOfficePeriod>()
+        )
+    }
+        .toList<OutOfOfficePeriod>()
     return result
 }
 
@@ -39,36 +38,36 @@ fun Database.Transaction.upsertOutOfOfficePeriod(
 ) {
     if (period.id == null) {
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
 INSERT INTO out_of_office (employee_id, period)
 VALUES (${bind(employeeId)}, DATERANGE(${bind(period.period.start)}, ${bind(period.period.end)}, '[]'))
 """
-                )
-            }
+            )
+        }
             .execute()
     } else {
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
 UPDATE out_of_office
 SET period = DATERANGE(${bind(period.period.start)}, ${bind(period.period.end)}, '[]')
 WHERE id = ${bind(period.id)}
 """
-                )
-            }
+            )
+        }
             .updateExactlyOne()
     }
 }
 
 fun Database.Transaction.deleteOutOfOfficePeriod(id: OutOfOfficeId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM out_of_office
 WHERE id = ${bind(id)}
 """
-            )
-        }
+        )
+    }
         .updateExactlyOne()
 }

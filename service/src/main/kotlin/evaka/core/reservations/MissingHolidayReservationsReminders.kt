@@ -90,10 +90,9 @@ class MissingHolidayReservationsReminders(
     fun Database.Read.getChildrenWithWithMissingReservations(
         theDate: LocalDate,
         personId: PersonId? = null,
-    ): List<PersonId> =
-        createQuery {
-                sql(
-                    """
+    ): List<PersonId> = createQuery {
+        sql(
+            """
 WITH reservable_placements AS
      (SELECT p.child_id, p.unit_id, sn.shift_care
       FROM placement p
@@ -121,18 +120,17 @@ WHERE
         WHERE a.child_id = p.child_id AND a.date = ${bind(theDate)}
     )
 """
-                )
-            }
-            .mapTo<PersonId>()
-            .toList()
+        )
+    }
+        .mapTo<PersonId>()
+        .toList()
 
     fun Database.Read.getChildGuardiansToNotify(
         today: LocalDate,
         childIds: List<PersonId>,
-    ): List<PersonId> =
-        createQuery {
-                sql(
-                    """
+    ): List<PersonId> = createQuery {
+        sql(
+            """
 SELECT DISTINCT(COALESCE(g.guardian_id, fp.parent_id))
 FROM person p
 LEFT JOIN guardian g ON p.id = g.child_id
@@ -140,11 +138,11 @@ LEFT JOIN foster_parent fp ON fp.child_id = p.id AND fp.valid_during @> ${bind(t
 WHERE p.id = ANY(${bind(childIds)})
  AND (g.guardian_id IS NOT NULL OR fp.parent_id IS NOT NULL)
                     """
-                        .trimIndent()
-                )
-            }
-            .mapTo<PersonId>()
-            .toList()
+                .trimIndent()
+        )
+    }
+        .mapTo<PersonId>()
+        .toList()
 
     fun sendMissingHolidayReminders(
         db: Database.Connection,

@@ -50,10 +50,9 @@ private fun Database.Read.getPlacementGuaranteeRows(
     filter: AccessControlFilter<DaycareId>,
     date: LocalDate,
     unitId: DaycareId?,
-): List<PlacementGuaranteeReportRow> =
-    createQuery {
-            sql(
-                """
+): List<PlacementGuaranteeReportRow> = createQuery {
+    sql(
+        """
 SELECT
   child.id AS child_id,
   child.last_name AS child_last_name,
@@ -74,10 +73,10 @@ WHERE placement.place_guarantee = TRUE
   AND (${bind(unitId)} IS NULL OR ${bind(unitId)} = placement.unit_id)
   AND NOT EXISTS (SELECT FROM placement WHERE child_id = child.id AND ${bind(date)} BETWEEN start_date AND end_date)
     """
-                    .trimIndent()
-            )
-        }
-        .toList<PlacementGuaranteeReportRow>()
+            .trimIndent()
+    )
+}
+    .toList<PlacementGuaranteeReportRow>()
 
 data class PlacementGuaranteeReportRow(
     val childId: ChildId,

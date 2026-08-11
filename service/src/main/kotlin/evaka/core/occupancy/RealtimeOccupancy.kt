@@ -145,8 +145,8 @@ EXISTS(
             }
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT 
     ca.child_id,
     ca.arrived,
@@ -169,8 +169,8 @@ WHERE
     tstzrange(ca.arrived, ca.departed) && ${bind(timeRange)} AND
     ${predicate(groupFilter)}
 """
-            )
-        }
+        )
+    }
         .toList<ChildOccupancyAttendance>()
 }
 
@@ -183,8 +183,8 @@ fun Database.Read.getStaffOccupancyAttendances(
         if (groupIds == null) Predicate.alwaysTrue()
         else Predicate { where("$it.group_id = ANY (${bind(groupIds)})") }
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT sa.arrived, sa.departed, sa.occupancy_coefficient AS capacity
 FROM staff_attendance_realtime sa
 JOIN daycare_group dg ON dg.id = sa.group_id
@@ -203,7 +203,7 @@ WHERE
     tstzrange(sae.arrived, sae.departed) && ${bind(timeRange)} AND
     ${predicate(groupFilter.forTable("sae"))}
 """
-            )
-        }
+        )
+    }
         .toList<StaffOccupancyAttendance>()
 }

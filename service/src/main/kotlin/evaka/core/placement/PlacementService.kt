@@ -468,8 +468,8 @@ fun Database.Read.getUnitChildrenCapacities(
     date: LocalDate,
 ): List<UnitChildrenCapacityFactors> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     ch.id AS child_id,
     COALESCE(an.capacity_factor, 1) AS assistance_need_factor,
@@ -487,8 +487,8 @@ LEFT JOIN service_need_option default_sno on pl.placement_type = default_sno.val
 LEFT JOIN assistance_factor an ON an.child_id = ch.id AND an.valid_during @> ${bind(date)}
 WHERE ch.id = ANY(${bind(childIds)})
 """
-            )
-        }
+        )
+    }
         .toList<UnitChildrenCapacityFactors>()
 }
 

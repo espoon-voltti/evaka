@@ -20,10 +20,9 @@ fun Database.Transaction.insertAssistanceAction(
     childId: ChildId,
     data: AssistanceActionRequest,
 ): AssistanceAction {
-    val id =
-        createQuery {
-                sql(
-                    """
+    val id = createQuery {
+        sql(
+            """
 INSERT INTO assistance_action (
     child_id, 
     start_date, 
@@ -44,9 +43,9 @@ VALUES (
 )
 RETURNING id
 """
-                )
-            }
-            .exactlyOne<AssistanceActionId>()
+        )
+    }
+        .exactlyOne<AssistanceActionId>()
 
     insertAssistanceActionOptionRefs(id, data.actions)
 
@@ -67,10 +66,9 @@ ON CONFLICT DO NOTHING
         )
     }
 
-fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAction =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAction = createQuery {
+    sql(
+        """
 SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action,
     aa.modified_at,
     e.id AS modified_by_id,
@@ -83,17 +81,16 @@ LEFT JOIN evaka_user e ON aa.modified_by = e.id
 WHERE aa.id = ${bind(id)}
 GROUP BY aa.id, child_id, start_date, end_date, other_action, aa.modified_at, e.id, e.name, e.type
 """
-            )
-        }
-        .exactlyOne()
+    )
+}
+    .exactlyOne()
 
 fun Database.Read.getAssistanceActionsByChild(
     childId: ChildId,
     filter: AccessControlFilter<AssistanceActionId> = AccessControlFilter.PermitAll,
-): List<AssistanceAction> =
-    createQuery {
-            sql(
-                """
+): List<AssistanceAction> = createQuery {
+    sql(
+        """
 SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action,
     aa.modified_at,
     e.id AS modified_by_id,
@@ -107,9 +104,9 @@ WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("aa"))}
 GROUP BY aa.id, child_id, start_date, end_date, other_action, aa.modified_at, e.id, e.name, e.type
 ORDER BY start_date DESC
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 fun Database.Transaction.updateAssistanceAction(
     user: AuthenticatedUser,
@@ -118,8 +115,8 @@ fun Database.Transaction.updateAssistanceAction(
     data: AssistanceActionRequest,
 ): AssistanceAction {
     createQuery {
-            sql(
-                """
+        sql(
+            """
 UPDATE assistance_action SET 
     start_date = ${bind(data.startDate)},
     end_date = ${bind(data.endDate)},
@@ -129,8 +126,8 @@ UPDATE assistance_action SET
 WHERE id = ${bind(id)}
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull<AssistanceActionId>() ?: throw NotFound("Assistance action $id not found")
 
     deleteAssistanceActionOptionRefsByActionId(id, data.actions)
@@ -175,13 +172,12 @@ AND option_id NOT IN (SELECT id FROM assistance_action_option WHERE value = ANY(
     )
 }
 
-fun Database.Read.getAssistanceActionOptions(): List<AssistanceActionOption> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getAssistanceActionOptions(): List<AssistanceActionOption> = createQuery {
+    sql(
+        """
                     SELECT value, name_fi, description_fi, category, display_order, valid_from, valid_to 
                     FROM assistance_action_option 
                 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()

@@ -88,7 +88,8 @@ internal val titaniaUpdateRequestValidExampleData =
                                                                 type = TitaniaPayrollItemType.THIS,
                                                                 name = "Saldo",
                                                                 value = "90",
-                                                                unit = TitaniaPayrollItemUnit.MINUTE,
+                                                                unit =
+                                                                    TitaniaPayrollItemUnit.MINUTE,
                                                             )
                                                         )
                                                 ),

@@ -35,10 +35,9 @@ fun Database.Read.getDaycareAclRows(
     includeStaffOccupancy: Boolean,
     includeStaffEmployeeNumber: Boolean,
     role: UserRole? = null,
-): List<DaycareAclRow> =
-    createQuery {
-            sql(
-                """
+): List<DaycareAclRow> = createQuery {
+    sql(
+        """
 SELECT e.id,
        e.first_name,
        e.last_name,
@@ -65,22 +64,21 @@ FROM daycare_acl
          LEFT JOIN staff_occupancy_coefficient soc USING (daycare_id, employee_id)
 WHERE daycare_id = ${bind(daycareId)} ${if (role != null) "AND role = ${bind(role)}" else ""}
     """
-            )
-        }
-        .toList<DaycareAclRow>()
+    )
+}
+    .toList<DaycareAclRow>()
 
-fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean =
-    createQuery {
-            sql(
-                """
+fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean = createQuery {
+    sql(
+        """
         SELECT EXISTS(
             SELECT 1 FROM daycare_acl
             WHERE employee_id = ${bind(employeeId)}
         )
     """
-            )
-        }
-        .exactlyOne<Boolean>()
+    )
+}
+    .exactlyOne<Boolean>()
 
 fun Database.Transaction.insertDaycareAclRow(
     daycareId: DaycareId,
@@ -113,25 +111,25 @@ WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
 
 fun Database.Read.getDaycareAclRole(daycareId: DaycareId, employeeId: EmployeeId): UserRole? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT role FROM daycare_acl
 WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
     """
-            )
-        }
-        .exactlyOneOrNull<UserRole>()
+        )
+    }
+    .exactlyOneOrNull<UserRole>()
 
 fun Database.Read.getDaycareAclEndDate(daycareId: DaycareId, employeeId: EmployeeId): LocalDate? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT end_date FROM daycare_acl
 WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
     """
-            )
-        }
-        .exactlyOneOrNull<LocalDate>()
+        )
+    }
+    .exactlyOneOrNull<LocalDate>()
 
 fun Database.Transaction.deleteDaycareAclRow(
     daycareId: DaycareId,
@@ -154,17 +152,16 @@ data class EndedDaycareAclRow(
     val role: UserRole,
 )
 
-fun Database.Read.getEndedDaycareAclRows(today: LocalDate) =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getEndedDaycareAclRows(today: LocalDate) = createQuery {
+    sql(
+        """
 SELECT daycare_id, employee_id, role
 FROM daycare_acl
 WHERE end_date IS NOT NULL AND end_date < ${bind(today)}
     """
-            )
-        }
-        .toList<EndedDaycareAclRow>()
+    )
+}
+    .toList<EndedDaycareAclRow>()
 
 fun Database.Transaction.syncDaycareGroupAcl(
     daycareId: DaycareId,
@@ -174,8 +171,8 @@ fun Database.Transaction.syncDaycareGroupAcl(
 ) {
     // Delete rows that are not in the supplied groupIds
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM daycare_group_acl
 WHERE employee_id = ${bind(employeeId)}
 AND daycare_group_id IN (
@@ -183,8 +180,8 @@ AND daycare_group_id IN (
 )
 AND daycare_group_id <> ALL (${bind(groupIds)})
 """
-            )
-        }
+        )
+    }
         .execute()
 
     // Insert rows that are in the supplied groupIds and do not already exist
@@ -215,10 +212,9 @@ data class ScheduledDaycareAclRow(
 fun Database.Read.getScheduledDaycareAclRows(
     daycareId: DaycareId,
     includeStaffEmployeeNumber: Boolean,
-): List<ScheduledDaycareAclRow> =
-    createQuery {
-            sql(
-                """
+): List<ScheduledDaycareAclRow> = createQuery {
+    sql(
+        """
 SELECT e.id,
        e.first_name,
        e.last_name,
@@ -234,9 +230,9 @@ FROM daycare_acl_schedule das
 JOIN employee e on das.employee_id = e.id
 WHERE das.daycare_id = ${bind(daycareId)}
     """
-            )
-        }
-        .toList<ScheduledDaycareAclRow>()
+    )
+}
+    .toList<ScheduledDaycareAclRow>()
 
 fun Database.Transaction.insertScheduledDaycareAclRow(
     employeeId: EmployeeId,
@@ -277,10 +273,9 @@ WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
     )
 }
 
-fun Database.Transaction.upsertAclRowsFromScheduled(today: LocalDate) =
-    createQuery {
-            sql(
-                """
+fun Database.Transaction.upsertAclRowsFromScheduled(today: LocalDate) = createQuery {
+    sql(
+        """
 WITH rows_to_activate AS (
     DELETE FROM daycare_acl_schedule
     WHERE start_date <= ${bind(today)}
@@ -291,6 +286,6 @@ SELECT daycare_id, employee_id, role, end_date FROM rows_to_activate
 ON CONFLICT (daycare_id, employee_id) DO UPDATE SET role = excluded.role, end_date = excluded.end_date
 RETURNING employee_id
     """
-            )
-        }
-        .toSet<EmployeeId>()
+    )
+}
+    .toSet<EmployeeId>()

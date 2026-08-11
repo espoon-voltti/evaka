@@ -54,7 +54,8 @@ fun Arb.Companion.helsinkiDateTime(
 
 fun Arb.Companion.helsinkiDateTimeRange(
     start: Arb<HelsinkiDateTime> = Arb.helsinkiDateTime(),
-    duration: Arb<Duration> = Arb.positiveLong(max = 48L * 60L * 60L).map { Duration.ofSeconds(it) },
+    duration: Arb<Duration> =
+        Arb.positiveLong(max = 48L * 60L * 60L).map { Duration.ofSeconds(it) },
 ): Arb<HelsinkiDateTimeRange> =
     Arb.bind(start, duration) { startTimestamp, duration ->
         HelsinkiDateTimeRange(startTimestamp, startTimestamp.plus(duration))

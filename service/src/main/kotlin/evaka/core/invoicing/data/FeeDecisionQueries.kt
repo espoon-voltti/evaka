@@ -359,8 +359,8 @@ fun Database.Transaction.deleteFeeDecisionChildren(decisionIds: List<FeeDecision
     if (decisionIds.isEmpty()) return
 
     createUpdate {
-            sql("DELETE FROM fee_decision_child WHERE fee_decision_id = ANY(${bind(decisionIds)})")
-        }
+        sql("DELETE FROM fee_decision_child WHERE fee_decision_id = ANY(${bind(decisionIds)})")
+    }
         .execute()
 }
 
@@ -509,10 +509,9 @@ fun Database.Read.searchFeeDecisions(
             else null,
         )
 
-    val youngestChildQuery =
-        QuerySql {
-                sql(
-                    """
+    val youngestChildQuery = QuerySql {
+        sql(
+            """
             SELECT
                 fee_decision_child.fee_decision_id AS decision_id,
                 care_area.short_name AS area,
@@ -522,21 +521,17 @@ fun Database.Read.searchFeeDecisions(
             LEFT JOIN daycare ON fee_decision_child.placement_unit_id = daycare.id
             LEFT JOIN care_area ON daycare.care_area_id = care_area.id
         """
-                )
-            }
-            .takeIf { areas.isNotEmpty() || financeDecisionHandlerId != null }
-    val youngestChildJoin =
-        QuerySql {
-                sql(
-                    "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
-                )
-            }
-            .takeIf { areas.isNotEmpty() || financeDecisionHandlerId != null }
+        )
+    }
+        .takeIf { areas.isNotEmpty() || financeDecisionHandlerId != null }
+    val youngestChildJoin = QuerySql {
+        sql("LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1")
+    }
+        .takeIf { areas.isNotEmpty() || financeDecisionHandlerId != null }
 
-    val firstPlacementStartingThisMonthChildQuery =
-        QuerySql {
-                sql(
-                    """
+    val firstPlacementStartingThisMonthChildQuery = QuerySql {
+        sql(
+            """
             SELECT DISTINCT(fdc.fee_decision_id)
             FROM placement p
             JOIN person c ON p.child_id = c.id
@@ -544,37 +539,34 @@ fun Database.Read.searchFeeDecisions(
             LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
             WHERE p.start_date >= ${bind(today.withDayOfMonth(1))} AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
         """
-                )
-            }
-            .takeIf { noStartingPlacements }
+        )
+    }
+        .takeIf { noStartingPlacements }
 
-    val firstPlacementStartingThisMonthChildIdsQueryJoin =
-        QuerySql {
-                sql(
-                    "LEFT JOIN decisions_with_first_placement_starting_this_month ON decision.id = decisions_with_first_placement_starting_this_month.fee_decision_id"
-                )
-            }
-            .takeIf { noStartingPlacements }
+    val firstPlacementStartingThisMonthChildIdsQueryJoin = QuerySql {
+        sql(
+            "LEFT JOIN decisions_with_first_placement_starting_this_month ON decision.id = decisions_with_first_placement_starting_this_month.fee_decision_id"
+        )
+    }
+        .takeIf { noStartingPlacements }
 
-    val preschoolClubPlacementQuery =
-        QuerySql {
-                sql(
-                    """
+    val preschoolClubPlacementQuery = QuerySql {
+        sql(
+            """
             SELECT DISTINCT(fdc.fee_decision_id)
             FROM fee_decision_child fdc
             WHERE fdc.placement_type = 'PRESCHOOL_CLUB'::placement_type
         """
-                )
-            }
-            .takeIf { preschoolClub }
+        )
+    }
+        .takeIf { preschoolClub }
 
-    val preschoolClubQueryJoin =
-        QuerySql {
-                sql(
-                    "LEFT JOIN decisions_with_preschool_club_placement ON decision.id = decisions_with_preschool_club_placement.fee_decision_id"
-                )
-            }
-            .takeIf { preschoolClub }
+    val preschoolClubQueryJoin = QuerySql {
+        sql(
+            "LEFT JOIN decisions_with_preschool_club_placement ON decision.id = decisions_with_preschool_club_placement.fee_decision_id"
+        )
+    }
+        .takeIf { preschoolClub }
 
     val ctes = QuerySql {
         ctesNotNull(
@@ -741,15 +733,15 @@ WHERE fd.id = ${bind { id -> id }} AND fee_decision.id = fd.id
 
 fun Database.Transaction.setFeeDecisionWaitingForManualSending(id: FeeDecisionId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE fee_decision
 SET status = ${bind(FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING.toString())}::fee_decision_status
 WHERE id = ${bind(id)}
 AND status = ${bind(FeeDecisionStatus.WAITING_FOR_SENDING.toString())}::fee_decision_status
 """
-            )
-        }
+        )
+    }
         .execute()
 }
 
@@ -783,46 +775,46 @@ WHERE id = ${bind { it.id }}
 
 fun Database.Transaction.updateFeeDecisionDocumentKey(id: FeeDecisionId, key: String) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE fee_decision
                 SET document_key = ${bind(key)}
                 WHERE id = ${bind(id)}
                 """
-            )
-        }
+        )
+    }
         .execute()
 }
 
 fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecisionType) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE fee_decision
 SET decision_type = ${bind(type.toString())}::fee_decision_type
 WHERE id = ${bind(id)}
     AND status = ${bind(FeeDecisionStatus.DRAFT.toString())}::fee_decision_status
 """
-            )
-        }
+        )
+    }
         .execute()
 }
 
 fun Database.Transaction.setFeeDecisionToIgnored(id: FeeDecisionId) {
     createUpdate {
-            sql(
-                "UPDATE fee_decision SET status = 'IGNORED' WHERE id = ${bind(id)} AND status = 'DRAFT'"
-            )
-        }
+        sql(
+            "UPDATE fee_decision SET status = 'IGNORED' WHERE id = ${bind(id)} AND status = 'DRAFT'"
+        )
+    }
         .updateExactlyOne()
 }
 
 fun Database.Transaction.setFeeDecisionProcessId(id: FeeDecisionId, processId: CaseProcessId) {
     createUpdate {
-            sql(
-                "UPDATE fee_decision SET process_id = ${bind(processId)} WHERE id = ${bind(id)} AND process_id IS NULL"
-            )
-        }
+        sql(
+            "UPDATE fee_decision SET process_id = ${bind(processId)} WHERE id = ${bind(id)} AND process_id IS NULL"
+        )
+    }
         .updateExactlyOne()
 }
 
@@ -833,10 +825,10 @@ fun Database.Transaction.removeFeeDecisionIgnore(id: FeeDecisionId) {
 
 fun Database.Transaction.lockFeeDecisionsForHeadOfFamily(headOfFamily: PersonId) {
     createUpdate {
-            sql(
-                "SELECT id FROM fee_decision WHERE head_of_family_id = ${bind(headOfFamily)} FOR UPDATE"
-            )
-        }
+        sql(
+            "SELECT id FROM fee_decision WHERE head_of_family_id = ${bind(headOfFamily)} FOR UPDATE"
+        )
+    }
         .execute()
 }
 
@@ -849,8 +841,8 @@ fun Database.Read.getFeeDecisionByLiableCitizen(
     citizenId: PersonId
 ): List<FeeDecisionCitizenInfoRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT fd.id,
        fd.valid_during,
        fd.sent_at,
@@ -862,8 +854,8 @@ AND fd.document_key IS NOT NULL
 AND (fd.head_of_family_id = ${bind(citizenId)}
     OR fd.partner_id = ${bind(citizenId)})
     """
-            )
-        }
+        )
+    }
         .toList<FeeDecisionCitizenInfoRow>()
 }
 
@@ -877,6 +869,6 @@ data class FeeDecisionCitizenInfoRow(
 
 fun Database.Transaction.markFeeDecisionAsArchived(id: FeeDecisionId, now: HelsinkiDateTime) =
     createUpdate {
-            sql("UPDATE fee_decision SET archived_at = ${bind(now)} WHERE id = ${bind(id)}")
-        }
-        .updateExactlyOne()
+        sql("UPDATE fee_decision SET archived_at = ${bind(now)} WHERE id = ${bind(id)}")
+    }
+    .updateExactlyOne()

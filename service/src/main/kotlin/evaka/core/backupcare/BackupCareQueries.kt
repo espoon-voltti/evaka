@@ -16,10 +16,9 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 
-fun Database.Read.getBackupCaresForChild(childId: ChildId): List<ChildBackupCare> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getBackupCaresForChild(childId: ChildId): List<ChildBackupCare> = createQuery {
+    sql(
+        """
 SELECT
   backup_care.id,
   daycare.id AS unit_id,
@@ -34,17 +33,16 @@ LEFT JOIN daycare_group
 ON daycare_group.id = group_id
 WHERE child_id = ${bind(childId)}
 """
-            )
-        }
-        .toList<ChildBackupCare>()
+    )
+}
+    .toList<ChildBackupCare>()
 
 fun Database.Read.getBackupCaresForDaycare(
     daycareId: DaycareId,
     period: FiniteDateRange,
-): List<UnitBackupCare> =
-    createQuery {
-            sql(
-                """
+): List<UnitBackupCare> = createQuery {
+    sql(
+        """
 SELECT
   backup_care.id,
   person.id AS child_id,
@@ -80,49 +78,46 @@ JOIN LATERAL (
 WHERE unit_id = ${bind(daycareId)}
 AND daterange(backup_care.start_date, backup_care.end_date, '[]') && ${bind(period)}
 """
-            )
-        }
-        .toList<UnitBackupCare>()
+    )
+}
+    .toList<UnitBackupCare>()
 
 fun Database.Read.getBackupCareChildrenInGroup(
     daycareId: DaycareId,
     groupId: GroupId,
     period: FiniteDateRange,
-): List<ChildId> =
-    createQuery {
-            sql(
-                """
+): List<ChildId> = createQuery {
+    sql(
+        """
 SELECT child_id FROM backup_care
 WHERE unit_id = ${bind(daycareId)}
   AND group_id = ${bind(groupId)}
   AND daterange(start_date, end_date, '[]') && ${bind(period)}
 """
-            )
-        }
-        .toList<ChildId>()
+    )
+}
+    .toList<ChildId>()
 
 data class BackupCareInfo(val childId: ChildId, val unitId: DaycareId, val period: FiniteDateRange)
 
-fun Database.Read.getBackupCare(id: BackupCareId): BackupCareInfo? =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getBackupCare(id: BackupCareId): BackupCareInfo? = createQuery {
+    sql(
+        """
 SELECT child_id, unit_id, daterange(start_date, end_date, '[]') period FROM backup_care
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull<BackupCareInfo>()
+    )
+}
+    .exactlyOneOrNull<BackupCareInfo>()
 
 fun Database.Transaction.createBackupCare(
     user: EvakaUserId,
     now: HelsinkiDateTime,
     childId: ChildId,
     backupCare: NewBackupCare,
-): BackupCareId =
-    createUpdate {
-            sql(
-                """
+): BackupCareId = createUpdate {
+    sql(
+        """
 INSERT INTO backup_care (created_at, created_by, modified_at, modified_by, child_id, unit_id, group_id, start_date, end_date)
 VALUES (
   ${bind(now)},
@@ -137,10 +132,10 @@ VALUES (
 )
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<BackupCareId>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<BackupCareId>()
 
 fun Database.Transaction.updateBackupCare(
     user: EvakaUserId,
@@ -172,15 +167,14 @@ WHERE id = ${bind(id)}
     )
 }
 
-fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId = createQuery {
+    sql(
+        """
 SELECT child_id FROM backup_care WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOne<ChildId>()
+    )
+}
+    .exactlyOne<ChildId>()
 
 /** Recreates backup cares for a child so that they are always within placements. */
 fun Database.Transaction.recreateBackupCares(

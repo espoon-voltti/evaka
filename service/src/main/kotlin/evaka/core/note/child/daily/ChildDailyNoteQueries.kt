@@ -58,14 +58,14 @@ fun Database.Transaction.createChildDailyNote(
     note: ChildDailyNoteBody,
 ): ChildDailyNoteId {
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO child_daily_note (child_id, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note)
 VALUES (${bind(childId)}, ${bind(note.note)}, ${bind(note.feedingNote)}, ${bind(note.sleepingNote)}, ${bind(note.sleepingMinutes)}, ${bind(note.reminders)}::child_daily_note_reminder[], ${bind(note.reminderNote)})
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<ChildDailyNoteId>()
 }
@@ -77,8 +77,8 @@ fun Database.Transaction.updateChildDailyNote(
 ): ChildDailyNote {
     val now = clock.now()
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE child_daily_note SET
     note = ${bind(note.note)}, 
     feeding_note = ${bind(note.feedingNote)}, 
@@ -90,8 +90,8 @@ UPDATE child_daily_note SET
 WHERE id = ${bind(id)}
 RETURNING *
 """
-            )
-        }
+        )
+    }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<ChildDailyNote>()
 }
@@ -102,10 +102,8 @@ fun Database.Transaction.deleteChildDailyNote(noteId: ChildDailyNoteId) {
 
 fun Database.Transaction.deleteExpiredNotes(now: HelsinkiDateTime) {
     createUpdate {
-            sql(
-                "DELETE FROM child_daily_note WHERE modified_at < ${bind(now)} - INTERVAL '14 hours'"
-            )
-        }
+        sql("DELETE FROM child_daily_note WHERE modified_at < ${bind(now)} - INTERVAL '14 hours'")
+    }
         .execute()
 
     createUpdate { sql("DELETE FROM child_sticky_note WHERE expires < ${bind(now.toLocalDate())}") }

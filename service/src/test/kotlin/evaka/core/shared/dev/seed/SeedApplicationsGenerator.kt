@@ -470,10 +470,10 @@ fun Database.Transaction.seedApplications(): List<SeededFamily> {
             insertApplication(application)
             application.otherGuardians.forEach { otherGuardianId ->
                 createUpdate {
-                        sql(
-                            "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(application.id)}, ${bind(otherGuardianId)})"
-                        )
-                    }
+                    sql(
+                        "INSERT INTO application_other_guardian (application_id, guardian_id) VALUES (${bind(application.id)}, ${bind(otherGuardianId)})"
+                    )
+                }
                     .execute()
             }
             isFirstApplication = false

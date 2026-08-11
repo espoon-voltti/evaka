@@ -172,11 +172,11 @@ RETURNING id
 
 fun Database.Read.getAttachment(id: AttachmentId): Pair<Attachment, AttachmentParent>? =
     createQuery {
-            check(AttachmentForeignKeys.idFieldCount == 8) {
-                "Unexpected AttachmentForeignKeys field count"
-            }
-            sql(
-                """
+        check(AttachmentForeignKeys.idFieldCount == 8) {
+            "Unexpected AttachmentForeignKeys field count"
+        }
+        sql(
+            """
         SELECT
             id, name, content_type,
             application_id,
@@ -190,27 +190,26 @@ fun Database.Read.getAttachment(id: AttachmentId): Pair<Attachment, AttachmentPa
         FROM attachment
         WHERE id = ${bind(id)}
         """
-            )
-        }
-        .exactlyOneOrNull {
-            Pair(
-                Attachment(
-                    id = column("id"),
-                    name = column("name"),
-                    contentType = column("content_type"),
-                ),
-                row<AttachmentForeignKeys>().parent(),
-            )
-        }
+        )
+    }
+    .exactlyOneOrNull {
+        Pair(
+            Attachment(
+                id = column("id"),
+                name = column("name"),
+                contentType = column("content_type"),
+            ),
+            row<AttachmentForeignKeys>().parent(),
+        )
+    }
 
 fun Database.Transaction.dissociateAttachmentsByApplicationAndType(
     applicationId: ApplicationId,
     type: ApplicationAttachmentType,
     userId: EvakaUserId,
-): List<AttachmentId> =
-    createQuery {
-            sql(
-                """
+): List<AttachmentId> = createQuery {
+    sql(
+        """
 UPDATE attachment
 SET application_id = NULL
 WHERE application_id = ${bind(applicationId)} 
@@ -218,22 +217,21 @@ AND type = ${bind(type)}
 AND uploaded_by = ${bind(userId)}
 RETURNING id
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 /** Changes the parent of *all attachments* that match the given predicate */
 private fun Database.Transaction.changeParent(
     newParent: AttachmentParent,
     predicate: Predicate,
-): Int =
-    createUpdate {
-            val fks = AttachmentForeignKeys(newParent)
-            check(AttachmentForeignKeys.idFieldCount == 8) {
-                "Unexpected AttachmentForeignKeys field count"
-            }
-            sql(
-                """
+): Int = createUpdate {
+    val fks = AttachmentForeignKeys(newParent)
+    check(AttachmentForeignKeys.idFieldCount == 8) {
+        "Unexpected AttachmentForeignKeys field count"
+    }
+    sql(
+        """
 UPDATE attachment
 SET
     application_id = ${bind(fks.applicationId)},
@@ -246,9 +244,9 @@ SET
     pedagogical_document_id = ${bind(fks.pedagogicalDocumentId)}
 WHERE ${predicate(predicate.forTable("attachment"))}
 """
-            )
-        }
-        .execute()
+    )
+}
+    .execute()
 
 /**
  * Associates *orphan* attachments with a new parent.
@@ -343,26 +341,26 @@ AND $it.pedagogical_document_id IS NULL
 
 fun Database.Read.userAttachmentCount(userId: EvakaUserId, parent: AttachmentParent): Int =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT count(*)
 FROM attachment
 WHERE uploaded_by = ${bind(userId)}
 AND ${predicate(parent.toPredicate().forTable("attachment"))}
 """
-            )
-        }
-        .exactlyOne<Int>()
+        )
+    }
+    .exactlyOne<Int>()
 
 fun Database.Read.getOrphanAttachments(olderThan: HelsinkiDateTime): List<AttachmentId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id
 FROM attachment
 WHERE created_at < ${bind(olderThan)}
 AND ${predicate(AttachmentParent.None.toPredicate().forTable("attachment"))}
 """
-            )
-        }
-        .toList()
+        )
+    }
+    .toList()

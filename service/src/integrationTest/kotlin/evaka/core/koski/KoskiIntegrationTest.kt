@@ -319,7 +319,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `simple preschool placement changes to preparatory`() {
         insertPlacement(
             type = PlacementType.PRESCHOOL,
-            period = FiniteDateRange(preschoolTerm2019.start, preschoolTerm2019.start.plusMonths(4)),
+            period =
+                FiniteDateRange(preschoolTerm2019.start, preschoolTerm2019.start.plusMonths(4)),
         )
         insertPlacement(
             type = PlacementType.PREPARATORY,
@@ -465,7 +466,8 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 modifiedBy = employee.evakaUser,
                 childId = child1.id,
                 validDuring = testPeriod(0L to 1L),
-                level = PreschoolAssistanceLevel.CHILD_SUPPORT_AND_OLD_EXTENDED_COMPULSORY_EDUCATION,
+                level =
+                    PreschoolAssistanceLevel.CHILD_SUPPORT_AND_OLD_EXTENDED_COMPULSORY_EDUCATION,
             )
 
         insertPlacement(child1)
@@ -821,7 +823,10 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         insertAbsences(
             child1.id,
             AbsenceType.UNKNOWN_ABSENCE,
-            FiniteDateRange(preschoolTerm2020.start.plusDays(1), preschoolTerm2020.end.minusDays(1)),
+            FiniteDateRange(
+                preschoolTerm2020.start.plusDays(1),
+                preschoolTerm2020.end.minusDays(1),
+            ),
         )
 
         val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus
@@ -844,7 +849,10 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         insertAbsences(
             child1.id,
             AbsenceType.UNKNOWN_ABSENCE,
-            FiniteDateRange(preschoolTerm2019.start.plusDays(1), preschoolTerm2019.end.minusDays(1)),
+            FiniteDateRange(
+                preschoolTerm2019.start.plusDays(1),
+                preschoolTerm2019.end.minusDays(1),
+            ),
         )
 
         val opiskeluoikeus = koskiEndpoint.getStudyRights().values.single().opiskeluoikeus

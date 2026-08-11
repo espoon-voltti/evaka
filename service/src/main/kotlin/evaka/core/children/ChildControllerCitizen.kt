@@ -219,10 +219,9 @@ data class AttendanceSummary(val attendanceDays: Int)
 private fun Database.Read.getChildrenWithServiceApplicationPossibleOnSomeDate(
     childIds: Set<ChildId>,
     today: LocalDate,
-): Set<ChildId> =
-    createQuery {
-            sql(
-                """
+): Set<ChildId> = createQuery {
+    sql(
+        """
         SELECT DISTINCT child_id
         FROM placement pl
         JOIN service_need_option sno ON
@@ -235,6 +234,6 @@ private fun Database.Read.getChildrenWithServiceApplicationPossibleOnSomeDate(
             daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(today)}, null, '[]') AND
             'SERVICE_APPLICATIONS' = ANY(d.enabled_pilot_features)
     """
-            )
-        }
-        .toSet()
+    )
+}
+    .toSet()

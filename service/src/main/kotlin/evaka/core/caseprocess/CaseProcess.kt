@@ -94,8 +94,8 @@ fun Database.Transaction.insertCaseProcess(
         )
     }
     return createQuery {
-            sql(
-                """
+        sql(
+            """
     INSERT INTO case_process (process_definition_number, year, number, organization, archive_duration_months, migrated)
     VALUES (
         ${bind(processDefinitionNumber)}, 
@@ -111,15 +111,14 @@ fun Database.Transaction.insertCaseProcess(
     )
     RETURNING id, case_identifier, process_definition_number, year, number, organization, archive_duration_months, migrated, '[]'::jsonb AS history
 """
-            )
-        }
+        )
+    }
         .exactlyOne()
 }
 
-fun Database.Read.getCaseProcess(id: CaseProcessId): CaseProcess? =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getCaseProcess(id: CaseProcessId): CaseProcess? = createQuery {
+    sql(
+        """
     SELECT
         ap.id,
         ap.case_identifier,
@@ -148,30 +147,30 @@ fun Database.Read.getCaseProcess(id: CaseProcessId): CaseProcess? =
     FROM case_process ap
     WHERE ap.id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+    )
+}
+    .exactlyOneOrNull()
 
 fun Database.Read.getCaseProcessByChildDocumentId(documentId: ChildDocumentId): CaseProcess? {
     return createQuery {
-            sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}")
-        }
+        sql("SELECT process_id FROM child_document WHERE id = ${bind(documentId)}")
+    }
         .exactlyOneOrNull<CaseProcessId?>()
         ?.let { processId -> getCaseProcess(processId) }
 }
 
 fun Database.Read.getCaseProcessByApplicationId(applicationId: ApplicationId): CaseProcess? {
     return createQuery {
-            sql("SELECT process_id FROM application WHERE id = ${bind(applicationId)}")
-        }
+        sql("SELECT process_id FROM application WHERE id = ${bind(applicationId)}")
+    }
         .exactlyOneOrNull<CaseProcessId?>()
         ?.let { processId -> getCaseProcess(processId) }
 }
 
 fun Database.Read.getCaseProcessByFeeDecisionId(feeDecisionId: FeeDecisionId): CaseProcess? {
     return createQuery {
-            sql("SELECT process_id FROM fee_decision WHERE id = ${bind(feeDecisionId)}")
-        }
+        sql("SELECT process_id FROM fee_decision WHERE id = ${bind(feeDecisionId)}")
+    }
         .exactlyOneOrNull<CaseProcessId?>()
         ?.let { processId -> getCaseProcess(processId) }
 }
@@ -180,10 +179,10 @@ fun Database.Read.getCaseProcessByVoucherValueDecisionId(
     voucherValueDecisionId: VoucherValueDecisionId
 ): CaseProcess? {
     return createQuery {
-            sql(
-                "SELECT process_id FROM voucher_value_decision WHERE id = ${bind(voucherValueDecisionId)}"
-            )
-        }
+        sql(
+            "SELECT process_id FROM voucher_value_decision WHERE id = ${bind(voucherValueDecisionId)}"
+        )
+    }
         .exactlyOneOrNull<CaseProcessId?>()
         ?.let { processId -> getCaseProcess(processId) }
 }
@@ -310,8 +309,8 @@ fun Database.Transaction.cancelLastCaseProcessHistoryRow(
     stateToCancel: CaseProcessState,
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
     DELETE FROM case_process_history aph
     WHERE aph.process_id = ${bind(processId)} AND aph.state = ${bind(stateToCancel)} AND 
         aph.row_index = (
@@ -320,7 +319,7 @@ fun Database.Transaction.cancelLastCaseProcessHistoryRow(
             WHERE process_id = ${bind(processId)}
         )
 """
-            )
-        }
+        )
+    }
         .updateExactlyOne()
 }

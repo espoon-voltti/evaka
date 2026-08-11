@@ -63,10 +63,9 @@ class FamilyDaycareMealReport(private val accessControl: AccessControl) {
         endDate: LocalDate,
         mealTimes: MealReportConfig,
     ): FamilyDaycareMealReportResult {
-        val resultRows =
-            createQuery {
-                    sql(
-                        """
+        val resultRows = createQuery {
+            sql(
+                """
 WITH allplacements as (
     SELECT child_id, unit_id, start_date, end_date FROM placement
     UNION
@@ -118,10 +117,10 @@ GROUP BY ROLLUP ((a.id, a.name), (d.id, d.name), (p.id, p.first_name, p.last_nam
 ORDER BY a.name, d.name, p.last_name, p.first_name, p.id ASC;
 
             """
-                            .trimIndent()
-                    )
-                }
-                .toList<FamilyDaycareMealReportRow>()
+                    .trimIndent()
+            )
+        }
+            .toList<FamilyDaycareMealReportRow>()
 
         val childrenByDaycare = mutableMapOf<String, MutableList<FamilyDaycareMealChildResult>>()
         val daycaresByArea = mutableMapOf<String, MutableList<FamilyDaycareMealDaycareResult>>()

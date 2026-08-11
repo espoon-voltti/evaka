@@ -31,55 +31,54 @@ import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Read.getPlacement(id: PlacementId): Placement? {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.source_application_id, p.source_service_application_id, p.modified_at, p.modified_by
 FROM placement p
 WHERE p.id = ${bind(id)}
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull<Placement>()
 }
 
 fun Database.Read.getPlacementSummary(childId: ChildId): List<PlacementSummary> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT p.id, p.type, p.child_id, d.id AS unit_id, d.name AS unit_name, p.start_date, p.end_date, 'RESERVATIONS' = ANY(d.enabled_pilot_features) AS reservations_enabled
 FROM placement p
 JOIN daycare d on p.unit_id = d.id
 WHERE p.child_id = ${bind(childId)}
 """
-            )
-        }
+        )
+    }
         .toList<PlacementSummary>()
 }
 
 fun Database.Read.getPlacementsForChild(childId: ChildId): List<Placement> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.source_application_id, p.source_service_application_id, p.modified_at, p.modified_by
 FROM placement p
 WHERE p.child_id = ${bind(childId)}
 """
-            )
-        }
+        )
+    }
         .toList<Placement>()
 }
 
-fun Database.Read.getPlacements(where: Predicate): List<Placement> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getPlacements(where: Predicate): List<Placement> = createQuery {
+    sql(
+        """
 SELECT p.id, p.type, p.child_id, p.unit_id, p.start_date, p.end_date, p.termination_requested_date, p.terminated_by, p.place_guarantee, p.created_at, p.created_by, p.source, p.source_application_id, p.source_service_application_id, p.modified_at, p.modified_by
 FROM placement p
 WHERE ${predicate(where.forTable("p"))}
 """
-            )
-        }
-        .toList<Placement>()
+    )
+}
+    .toList<Placement>()
 
 fun Database.Read.getPlacementsForChildDuring(
     childId: ChildId,
@@ -107,17 +106,16 @@ fun Database.Read.getCurrentPlacementForChild(clock: EvakaClock, childId: ChildI
 fun Database.Read.getChildIdsWithPlacementInRange(
     childIds: Collection<ChildId>,
     range: FiniteDateRange,
-): Set<ChildId> =
-    createQuery {
-            sql(
-                """
+): Set<ChildId> = createQuery {
+    sql(
+        """
 SELECT DISTINCT child_id
 FROM placement
 WHERE child_id = ANY(${bind(childIds)}) AND daterange(start_date, end_date, '[]') && ${bind(range)}
 """
-            )
-        }
-        .toSet<ChildId>()
+    )
+}
+    .toSet<ChildId>()
 
 fun Database.Read.getPlacementsForChildrenAt(
     childIds: Set<ChildId>,
@@ -148,8 +146,8 @@ fun Database.Transaction.insertPlacement(
     sourceServiceApplicationId: ServiceApplicationId? = null,
 ): Placement {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO placement (
     type,
     child_id,
@@ -181,8 +179,8 @@ INSERT INTO placement (
 )
 RETURNING *
 """
-            )
-        }
+        )
+    }
         .mapTo<Placement>()
         .exactlyOne()
 }
@@ -197,8 +195,8 @@ fun Database.Transaction.insertDerivedPlacement(
     modifiedBy: EvakaUserId,
 ): Placement {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO placement (
     type,
     child_id,
@@ -230,8 +228,8 @@ INSERT INTO placement (
 )
 RETURNING *
 """
-            )
-        }
+        )
+    }
         .mapTo<Placement>()
         .exactlyOne()
 }
@@ -243,13 +241,12 @@ data class PlacementChildAndRange(
     val unitId: DaycareId,
 )
 
-fun Database.Read.getPlacementChildAndRange(placementId: PlacementId) =
-    createQuery {
-            sql(
-                "SELECT child_id, start_date, end_date, unit_id FROM placement WHERE id = ${bind(placementId)}"
-            )
-        }
-        .exactlyOne<PlacementChildAndRange>()
+fun Database.Read.getPlacementChildAndRange(placementId: PlacementId) = createQuery {
+    sql(
+        "SELECT child_id, start_date, end_date, unit_id FROM placement WHERE id = ${bind(placementId)}"
+    )
+}
+    .exactlyOne<PlacementChildAndRange>()
 
 fun Database.Transaction.updatePlacementStartDate(
     placementId: PlacementId,
@@ -260,10 +257,10 @@ fun Database.Transaction.updatePlacementStartDate(
     val placement = getPlacementChildAndRange(placementId)
 
     createUpdate {
-            sql(
-                "UPDATE placement SET start_date = ${bind(date)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
-            )
-        }
+        sql(
+            "UPDATE placement SET start_date = ${bind(date)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
+        )
+    }
         .execute()
 
     recreateBackupCares(modifiedBy, modifiedAt, placement.childId)
@@ -277,10 +274,10 @@ fun Database.Transaction.updatePlacementEndDate(
 ) {
     val placement = getPlacementChildAndRange(placementId)
     createUpdate {
-            sql(
-                "UPDATE placement SET end_date = ${bind(date)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
-            )
-        }
+        sql(
+            "UPDATE placement SET end_date = ${bind(date)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
+        )
+    }
         .execute()
 
     recreateBackupCares(modifiedBy, modifiedAt, placement.childId)
@@ -295,10 +292,10 @@ fun Database.Transaction.updatePlacementStartAndEndDate(
 ) {
     val placement = getPlacementChildAndRange(placementId)
     createUpdate {
-            sql(
-                "UPDATE placement SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
-            )
-        }
+        sql(
+            "UPDATE placement SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
+        )
+    }
         .execute()
 
     recreateBackupCares(modifiedBy, modifiedAt, placement.childId)
@@ -311,10 +308,10 @@ fun Database.Transaction.updatePlacementType(
     modifiedBy: EvakaUserId,
 ) {
     createUpdate {
-            sql(
-                "UPDATE placement SET type = ${bind(type)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
-            )
-        }
+        sql(
+            "UPDATE placement SET type = ${bind(type)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)} WHERE id = ${bind(placementId)}"
+        )
+    }
         .execute()
 }
 
@@ -343,8 +340,8 @@ fun Database.Transaction.cancelPlacement(
     )
 
     createUpdate {
-            sql("DELETE FROM daycare_group_placement WHERE daycare_placement_id = ${bind(id)}")
-        }
+        sql("DELETE FROM daycare_group_placement WHERE daycare_placement_id = ${bind(id)}")
+    }
         .execute()
 
     deleteServiceNeedsFromPlacement(id)
@@ -363,23 +360,23 @@ fun Database.Transaction.cancelPlacement(
 
 fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, date: LocalDate) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE from daycare_group_placement
                 WHERE daycare_placement_id = ${bind(placementId)} AND start_date > ${bind(date)}
                 """
-            )
-        }
+        )
+    }
         .execute()
 
     createUpdate {
-            sql(
-                """
+        sql(
+            """
             UPDATE daycare_group_placement SET end_date = ${bind(date)}
             WHERE daycare_placement_id = ${bind(placementId)} AND start_date <= ${bind(date)} AND end_date > ${bind(date)}
         """
-            )
-        }
+        )
+    }
         .execute()
 
     val placement = getPlacement(placementId)
@@ -395,23 +392,23 @@ fun Database.Transaction.clearGroupPlacementsAfter(placementId: PlacementId, dat
 
 fun Database.Transaction.clearGroupPlacementsBefore(placementId: PlacementId, date: LocalDate) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
         DELETE from daycare_group_placement
         WHERE daycare_placement_id = ${bind(placementId)} AND end_date < ${bind(date)}
         """
-            )
-        }
+        )
+    }
         .execute()
 
     createUpdate {
-            sql(
-                """
+        sql(
+            """
             UPDATE daycare_group_placement SET start_date = ${bind(date)}
             WHERE daycare_placement_id = ${bind(placementId)} AND start_date < ${bind(date)} AND end_date >= ${bind(date)}
         """
-            )
-        }
+        )
+    }
         .execute()
 
     val placement = getPlacement(placementId)
@@ -433,8 +430,8 @@ fun Database.Transaction.clearCalendarEventAttendees(
     val startDate = range?.start?.takeIf { !it.isEqual(LocalDate.MIN) }
     val endDate = range?.end?.takeIf { !it.isEqual(LocalDate.MAX) }
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM calendar_event_attendee cea
 WHERE cea.child_id = ${bind(childId)}
   AND cea.unit_id = ${bind(unitId)}
@@ -447,21 +444,21 @@ WHERE cea.child_id = ${bind(childId)}
     (SELECT upper(ce.period) FROM calendar_event ce WHERE ce.id = cea.calendar_event_id) < ${bind(endDate)}
   )
 """
-            )
-        }
+        )
+    }
         .execute()
 
     // clear events that no longer have any attendees
     createUpdate {
-            sql(
-                """
+        sql(
+            """
             DELETE FROM calendar_event ce
             WHERE NOT EXISTS(
                 SELECT 1 FROM calendar_event_attendee cea WHERE cea.calendar_event_id = ce.id
             )
         """
-            )
-        }
+        )
+    }
         .execute()
 }
 
@@ -478,8 +475,8 @@ fun Database.Read.getDaycarePlacements(
             if (childId != null) Predicate { where("$it.child_id = ${bind(childId)}") } else null,
         )
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT
             pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.termination_requested_date,
             terminated_by.id AS terminated_by_id,
@@ -528,8 +525,8 @@ fun Database.Read.getDaycarePlacements(
         WHERE daterange(pl.start_date, pl.end_date, '[]') && daterange(${bind(startDate)}, ${bind(endDate)}, '[]')
         AND ${predicate(placementPredicate.forTable("pl"))}
 """
-            )
-        }
+        )
+    }
         .toList {
             val sourceApplicationType = column<ApplicationOrigin?>("source_application_type")
             val sourceApplicationCreatedBy = column<EvakaUserType?>("source_application_created_by")
@@ -654,10 +651,9 @@ fun Database.Read.getTerminatedPlacements(
     daycareId: DaycareId,
     terminationRequestedMinDate: LocalDate?,
     terminationRequestedMaxDate: LocalDate?,
-): List<TerminatedPlacement> =
-    createQuery {
-            sql(
-                """
+): List<TerminatedPlacement> = createQuery {
+    sql(
+        """
 SELECT
     pl.id, pl.end_date, pl.type, pl.termination_requested_date, 
     ch.id AS child_id,
@@ -685,9 +681,9 @@ SELECT
     WHERE pl.unit_id = ${bind(daycareId)}
     AND daterange(${bind(terminationRequestedMinDate)}, ${bind(terminationRequestedMaxDate)}, '[]') @> pl.termination_requested_date 
     """
-            )
-        }
-        .toList<TerminatedPlacement>()
+    )
+}
+    .toList<TerminatedPlacement>()
 
 data class TerminatedPlacement(
     val id: PlacementId,
@@ -716,10 +712,9 @@ data class ChildPlacement(
 fun Database.Read.getCitizenChildPlacements(
     today: LocalDate,
     childId: ChildId,
-): List<ChildPlacement> =
-    createQuery {
-            sql(
-                """
+): List<ChildPlacement> = createQuery {
+    sql(
+        """
 SELECT
     child.id AS child_id,
     p.id,
@@ -741,14 +736,14 @@ WHERE
     p.child_id = ${bind(childId)}
     AND p.end_date >= ${bind(today)}::date
     """
-            )
-        }
-        .toList<ChildPlacement>()
+    )
+}
+    .toList<ChildPlacement>()
 
 fun Database.Read.getDaycareGroupPlacement(id: GroupPlacementId): DaycareGroupPlacement? {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT 
                     gp.id, 
                     gp.daycare_group_id AS group_id,
@@ -760,8 +755,8 @@ fun Database.Read.getDaycareGroupPlacement(id: GroupPlacementId): DaycareGroupPl
                 JOIN daycare_group dg ON dg.id = gp.daycare_group_id
                 WHERE gp.id = ${bind(id)}
                 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull<DaycareGroupPlacement>()
 }
 
@@ -771,8 +766,8 @@ fun Database.Read.getIdenticalPrecedingGroupPlacement(
     startDate: LocalDate,
 ): DaycareGroupPlacement? {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT 
     gp.id, 
     gp.daycare_group_id AS group_id,
@@ -784,8 +779,8 @@ FROM daycare_group_placement gp
 JOIN daycare_group dg ON dg.id = gp.daycare_group_id
 WHERE daycare_placement_id = ${bind(daycarePlacementId)} AND daycare_group_id = ${bind(groupId)} AND gp.end_date = ${bind(startDate.minusDays(1))}
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull<DaycareGroupPlacement>()
 }
 
@@ -795,8 +790,8 @@ fun Database.Read.getIdenticalPostcedingGroupPlacement(
     endDate: LocalDate,
 ): DaycareGroupPlacement? {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT 
     gp.id, 
     gp.daycare_group_id AS group_id,
@@ -808,26 +803,25 @@ FROM daycare_group_placement gp
 JOIN daycare_group dg ON dg.id = gp.daycare_group_id
 WHERE daycare_placement_id = ${bind(daycarePlacementId)} AND daycare_group_id = ${bind(groupId)} AND gp.start_date = ${bind(endDate.plusDays(1))}
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull<DaycareGroupPlacement>()
 }
 
-fun Database.Read.hasGroupPlacements(groupId: GroupId): Boolean =
-    createQuery {
-            sql(
-                "SELECT EXISTS (SELECT 1 FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)})"
-            )
-        }
-        .exactlyOne<Boolean>()
+fun Database.Read.hasGroupPlacements(groupId: GroupId): Boolean = createQuery {
+    sql(
+        "SELECT EXISTS (SELECT 1 FROM daycare_group_placement WHERE daycare_group_id = ${bind(groupId)})"
+    )
+}
+    .exactlyOne<Boolean>()
 
 fun Database.Read.getGroupPlacementsAtDaycare(
     daycareId: DaycareId,
     placementRange: DateRange,
 ): List<DaycareGroupPlacement> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT 
     gp.id, 
     gp.daycare_group_id AS group_id,
@@ -844,8 +838,8 @@ WHERE EXISTS (
     AND daterange(p.start_date, p.end_date, '[]') && ${bind(placementRange)}
 )
 """
-            )
-        }
+        )
+    }
         .toList<DaycareGroupPlacement>()
 }
 
@@ -854,8 +848,8 @@ fun Database.Read.getGroupPlacementsByChildren(
     range: FiniteDateRange,
 ): Map<ChildId, ChildDaycareGroupPlacement> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT pl.child_id, gp.daycare_group_id AS group_id, dg.name AS group_name
 FROM daycare_group_placement gp
 JOIN daycare_group dg ON dg.id = gp.daycare_group_id
@@ -863,16 +857,16 @@ JOIN placement pl ON pl.id = gp.daycare_placement_id
 WHERE pl.child_id = ANY(${bind(childIds)}) AND daterange(gp.start_date, gp.end_date, '[]') && ${bind(range)}
 ORDER BY gp.start_date
 """
-            )
-        }
+        )
+    }
         .toList<ChildDaycareGroupPlacement>()
         .associateBy { it.childId }
 }
 
 fun Database.Read.getChildGroupPlacements(childId: ChildId): List<DaycareGroupPlacement> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT 
     gp.id, 
     gp.daycare_group_id AS group_id,
@@ -885,8 +879,8 @@ JOIN daycare_group dg ON dg.id = gp.daycare_group_id
 JOIN placement pl ON pl.id = gp.daycare_placement_id
 WHERE pl.child_id = ${bind(childId)}
 """
-            )
-        }
+        )
+    }
         .toList<DaycareGroupPlacement>()
 }
 
@@ -895,15 +889,15 @@ fun Database.Read.getGroupPlacementChildren(
     range: FiniteDateRange,
 ): List<ChildId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT DISTINCT pl.child_id
         FROM daycare_group_placement gp
         JOIN placement pl ON pl.id = gp.daycare_placement_id
         WHERE gp.daycare_group_id = ${bind(groupId)} AND daterange(gp.start_date, gp.end_date, '[]') && ${bind(range)}
         """
-            )
-        }
+        )
+    }
         .toList<ChildId>()
 }
 
@@ -914,14 +908,14 @@ fun Database.Transaction.createGroupPlacement(
     endDate: LocalDate,
 ): GroupPlacementId {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO daycare_group_placement (daycare_placement_id, daycare_group_id, start_date, end_date)
 VALUES (${bind(placementId)}, ${bind(groupId)}, ${bind(startDate)}, ${bind(endDate)})
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .exactlyOne<GroupPlacementId>()
 }
 
@@ -930,10 +924,10 @@ fun Database.Transaction.updateGroupPlacementStartDate(
     startDate: LocalDate,
 ): Boolean {
     return createQuery {
-            sql(
-                "UPDATE daycare_group_placement SET start_date = ${bind(startDate)} WHERE id = ${bind(id)} RETURNING id"
-            )
-        }
+        sql(
+            "UPDATE daycare_group_placement SET start_date = ${bind(startDate)} WHERE id = ${bind(id)} RETURNING id"
+        )
+    }
         .exactlyOneOrNull<GroupPlacementId>() != null
 }
 
@@ -942,10 +936,10 @@ fun Database.Transaction.updateGroupPlacementEndDate(
     endDate: LocalDate,
 ): Boolean {
     return createQuery {
-            sql(
-                "UPDATE daycare_group_placement SET end_date = ${bind(endDate)} WHERE id = ${bind(id)} RETURNING id"
-            )
-        }
+        sql(
+            "UPDATE daycare_group_placement SET end_date = ${bind(endDate)} WHERE id = ${bind(id)} RETURNING id"
+        )
+    }
         .exactlyOneOrNull<GroupPlacementId>() != null
 }
 
@@ -959,8 +953,8 @@ fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
         }
     }
     return createQuery {
-            sql("DELETE FROM daycare_group_placement WHERE id = ${bind(id)} RETURNING id")
-        }
+        sql("DELETE FROM daycare_group_placement WHERE id = ${bind(id)} RETURNING id")
+    }
         .exactlyOneOrNull<GroupPlacementId>() != null
 }
 
@@ -1001,25 +995,25 @@ private val toDaycarePlacement: Row.() -> DaycarePlacement = {
 
 fun Database.Transaction.deleteServiceNeedsFromPlacementAfter(id: PlacementId, date: LocalDate) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM service_need
 WHERE placement_id = ${bind(id)} AND start_date > ${bind(date)}
 """
-            )
-        }
+        )
+    }
         .execute()
 
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE service_need
 SET end_date = ${bind(date)}
 WHERE placement_id = ${bind(id)}
     AND daterange(start_date, end_date, '[]') @> ${bind(date)}::date
 """
-            )
-        }
+        )
+    }
         .execute()
 }
 
@@ -1035,16 +1029,16 @@ fun Database.Transaction.terminatePlacementFrom(
     val placement = getPlacementChildAndRange(placementId)
 
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE placement
 SET termination_requested_date = ${bind(now.toLocalDate())},
     terminated_by = ${bind(terminatedBy)},
     end_date = ${bind(terminationDate)}
 WHERE id = ${bind(placementId)}
         """
-            )
-        }
+        )
+    }
         .execute()
 
     recreateBackupCares(terminatedBy, now, placement.childId)
@@ -1056,42 +1050,40 @@ fun Database.Transaction.updatePlacementTermination(
     terminatedBy: EvakaUserId,
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE placement SET
     termination_requested_date = ${bind(terminationDate)},
     terminated_by = ${bind(terminatedBy)}
 WHERE id = ${bind(placementId)}
 """
-            )
-        }
+        )
+    }
         .execute()
 }
 
 fun Database.Read.childPlacementsHasConsecutiveRange(
     childId: ChildId,
     range: FiniteDateRange,
-): Boolean =
-    createQuery {
-            sql(
-                """
+): Boolean = createQuery {
+    sql(
+        """
     SELECT (
         SELECT range_agg(daterange(start_date, end_date, '[]')) FROM placement
         WHERE child_id = ${bind(childId)}
     ) @> ${bind(range)}
     """
-            )
-        }
-        .exactlyOne<Boolean>()
+    )
+}
+    .exactlyOne<Boolean>()
 
 fun Database.Read.getConsecutivePlacementRanges(
     childIds: List<ChildId>,
     types: List<PlacementType>,
     period: FiniteDateRange,
-): Map<ChildId, DateSet> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, DateSet> = createQuery {
+    sql(
+        """
 SELECT child_id, range_agg(daterange(start_date, end_date, '[]')) AS ranges
 FROM placement
 WHERE child_id = ANY (${bind(childIds)})
@@ -1100,9 +1092,9 @@ WHERE child_id = ANY (${bind(childIds)})
   AND start_date <= ${bind(period.end)}
 GROUP BY child_id
 """
-            )
-        }
-        .toMap { columnPair<ChildId, DateSet>("child_id", "ranges") }
+    )
+}
+    .toMap { columnPair<ChildId, DateSet>("child_id", "ranges") }
 
 fun Database.Transaction.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
     childId: ChildId,

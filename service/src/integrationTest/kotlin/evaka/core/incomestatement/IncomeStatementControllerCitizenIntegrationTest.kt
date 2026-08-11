@@ -381,7 +381,8 @@ class IncomeStatementControllerCitizenIntegrationTest :
                             partnership = true,
                             lightEntrepreneur = false,
                             // Accountant name, phone or email cannot be empty
-                            accountant = Accountant(name = "", address = "", phone = "", email = ""),
+                            accountant =
+                                Accountant(name = "", address = "", phone = "", email = ""),
                         ),
                     student = false,
                     alimonyPayer = false,
@@ -779,7 +780,10 @@ class IncomeStatementControllerCitizenIntegrationTest :
         assertThrows<Forbidden> {
             updateIncomeStatement(
                 id,
-                IncomeStatementBody.HighestFee(startDate = LocalDate.of(2030, 4, 3), endDate = null),
+                IncomeStatementBody.HighestFee(
+                    startDate = LocalDate.of(2030, 4, 3),
+                    endDate = null,
+                ),
             )
         }
     }

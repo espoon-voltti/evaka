@@ -705,8 +705,8 @@ private fun Database.Read.fetchChildPlacementBasics(
     today: LocalDate,
 ): ChildPlacementBasics =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT rp.placement_type, c.date_of_birth
 FROM person c 
 JOIN realized_placement_all(${bind(today)}) rp
@@ -714,8 +714,8 @@ ON c.id = rp.child_id
 WHERE c.id = ${bind(childId)} AND rp.unit_id = ${bind(unitId)}
 LIMIT 1
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull<ChildPlacementBasics>()
         ?: throw BadRequest("Child $childId has no placement in unit $unitId on date $today")
 
@@ -726,18 +726,17 @@ private fun Database.Read.fetchChildPlacementTypeDates(
     unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate,
-): List<PlacementTypeDate> =
-    createQuery {
-            sql(
-                """
+): List<PlacementTypeDate> = createQuery {
+    sql(
+        """
 SELECT DISTINCT d::date AS date, placement_type
 FROM generate_series(${bind(startDate)}, ${bind(endDate)}, '1 day') d
 JOIN realized_placement_all(d::date) rp ON true
 WHERE rp.child_id = ${bind(childId)} AND rp.unit_id = ${bind(unitId)}
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 private fun getChildAttendanceStatus(
     now: HelsinkiDateTime,

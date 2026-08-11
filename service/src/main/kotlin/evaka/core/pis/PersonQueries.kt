@@ -71,22 +71,22 @@ data class CitizenUserDetails(
     val weakLoginUsername: String?,
 )
 
-fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? = createQuery {
+    sql(
+        """
 SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email, citizen_user.username AS weak_login_username
 FROM person
 LEFT JOIN citizen_user USING (id)
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+    )
+}
+    .exactlyOneOrNull()
 
-fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUserIdentity? =
-    createQuery { sql("SELECT id FROM person WHERE social_security_number = ${bind(ssn)}") }
-        .exactlyOneOrNull<CitizenUserIdentity>()
+fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUserIdentity? = createQuery {
+    sql("SELECT id FROM person WHERE social_security_number = ${bind(ssn)}")
+}
+    .exactlyOneOrNull<CitizenUserIdentity>()
 
 fun Database.Read.getPersonById(id: PersonId): PersonDTO? {
     return createQuery {
@@ -107,15 +107,15 @@ data class PersonNameDetails(val id: PersonId, val firstName: String, val lastNa
 
 fun Database.Read.getPersonNameDetailsById(personIds: Set<PersonId>): List<PersonNameDetails> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
 id, first_name, last_name
 FROM person
 WHERE id = ANY(${bind(personIds)})
         """
-            )
-        }
+        )
+    }
         .toList<PersonNameDetails>()
 }
 
@@ -123,19 +123,18 @@ fun Database.Read.isDuplicate(id: PersonId): Boolean =
     createQuery { sql("SELECT duplicate_of IS NOT NULL FROM person WHERE id = ${bind(id)}") }
         .exactlyOneOrNull<Boolean>() ?: false
 
-fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? =
-    createQuery {
-            sql(
-                """
+fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? = createQuery {
+    sql(
+        """
 SELECT
 $commaSeparatedPersonDTOColumns
 FROM person
 WHERE social_security_number = ${bind(ssn)}
 FOR UPDATE
     """
-            )
-        }
-        .exactlyOneOrNull(toPersonDTO)
+    )
+}
+    .exactlyOneOrNull(toPersonDTO)
 
 fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
     return createQuery {
@@ -151,18 +150,16 @@ WHERE social_security_number = ${bind(ssn)}
         .exactlyOneOrNull(toPersonDTO)
 }
 
-fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<PersonDTO> =
-    createQuery {
-            sql(
-                "SELECT $commaSeparatedPersonDTOColumns FROM person WHERE duplicate_of = ${bind(id)}"
-            )
-        }
-        .toList(toPersonDTO)
+fun Database.Read.listPersonByDuplicateOf(id: PersonId): List<PersonDTO> = createQuery {
+    sql("SELECT $commaSeparatedPersonDTOColumns FROM person WHERE duplicate_of = ${bind(id)}")
+}
+    .toList(toPersonDTO)
 
-fun Database.Read.getPersonDuplicateOf(id: PersonId): PersonId? =
-    createQuery { sql("SELECT duplicate_of FROM person WHERE id = ${bind(id)}") }
-        .mapTo<PersonId>()
-        .exactlyOneOrNull()
+fun Database.Read.getPersonDuplicateOf(id: PersonId): PersonId? = createQuery {
+    sql("SELECT duplicate_of FROM person WHERE id = ${bind(id)}")
+}
+    .mapTo<PersonId>()
+    .exactlyOneOrNull()
 
 private val personSortColumns = listOf("first_name", "last_name", "date_of_birth", "street_address")
 
@@ -216,8 +213,8 @@ fun Database.Read.searchPeople(
         }
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT
             id,
             -- SSN is intentionally excluded from search results to avoid exposing sensitive data
@@ -235,21 +232,21 @@ fun Database.Read.searchPeople(
         ORDER BY $orderBy
         LIMIT 100
     """
-            )
-        }
+        )
+    }
         .toList()
 }
 
 fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO person (first_name, last_name, date_of_birth, street_address, postal_code, post_office, phone, email)
 VALUES (${bind(person.firstName)}, ${bind(person.lastName)}, ${bind(person.dateOfBirth)}, ${bind(person.streetAddress)}, ${bind(person.postalCode)}, ${bind(person.postOffice)}, ${bind(person.phone)}, ${bind(person.email)})
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .exactlyOne<PersonId>()
 }
 
@@ -299,10 +296,9 @@ RETURNING *
         .exactlyOne(toPersonDTO)
 }
 
-fun Database.Transaction.duplicatePerson(id: PersonId): PersonId? =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.duplicatePerson(id: PersonId): PersonId? = createUpdate {
+    sql(
+        """
 INSERT INTO person (
     first_name,
     last_name,
@@ -359,10 +355,10 @@ SELECT
 FROM person WHERE id = ${bind(id)}
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOneOrNull<PersonId>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull<PersonId>()
 
 fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
     val p = person.copy(updatedFromVtj = HelsinkiDateTime.now())
@@ -400,24 +396,24 @@ fun Database.Transaction.updatePersonBasicContactInfo(
     phone: String,
 ): Boolean {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 UPDATE person SET
     email = CASE WHEN verified_email IS NULL THEN ${bind(email)} ELSE email END,
     phone = ${bind(phone)}
 WHERE id = ${bind(id)}
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull<PersonId>() != null
 }
 
 // Update those person fields which do not come from VTJ
 fun Database.Transaction.updatePersonNonVtjDetails(id: PersonId, patch: PersonPatch): Boolean {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 UPDATE person SET
     email = coalesce(${bind(patch.email)}, email),
     phone = coalesce(${bind(patch.phone)}, phone),
@@ -431,15 +427,15 @@ UPDATE person SET
 WHERE id = ${bind(id)}
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull<PersonId>() != null
 }
 
 fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPatch): Boolean {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 UPDATE person SET
     first_name = coalesce(${bind(patch.firstName)}, first_name),
     last_name = coalesce(${bind(patch.lastName)}, last_name),
@@ -460,15 +456,15 @@ UPDATE person SET
 WHERE id = ${bind(id)} AND social_security_number IS NULL
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull<PersonId>() != null
 }
 
 fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: String) {
     createUpdate {
-            sql("UPDATE person SET social_security_number = ${bind(ssn)} WHERE id = ${bind(id)}")
-        }
+        sql("UPDATE person SET social_security_number = ${bind(ssn)} WHERE id = ${bind(id)}")
+    }
         .execute()
 }
 
@@ -510,24 +506,23 @@ private val toPersonDTO: Row.() -> PersonDTO = {
     )
 }
 
-fun Database.Transaction.updateCitizenOnLogin(now: HelsinkiDateTime, id: PersonId) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.updateCitizenOnLogin(now: HelsinkiDateTime, id: PersonId) = createUpdate {
+    sql(
+        """
 UPDATE person 
 SET last_login = ${bind(now)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
 data class PersonReference(val table: String, val column: String)
 
 fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 select source.relname as "table", attr.attname as "column"
 from pg_constraint const
     join pg_class source on source.oid = const.conrelid
@@ -539,60 +534,59 @@ where const.contype = 'f'
     and source.relname not like 'old_%'
 order by source.relname, attr.attname
 """
-            )
-        }
+        )
+    }
         .toList<PersonReference>()
 }
 
-fun Database.Read.getGuardianDependants(personId: PersonId) =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getGuardianDependants(personId: PersonId) = createQuery {
+    sql(
+        """
 SELECT
 $commaSeparatedPersonDTOColumns
 FROM person
 WHERE id IN (SELECT child_id FROM guardian WHERE guardian_id = ${bind(personId)})
         """
-            )
-        }
-        .toList(toPersonDTO)
+    )
+}
+    .toList(toPersonDTO)
 
-fun Database.Read.getDependantGuardians(personId: ChildId) =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getDependantGuardians(personId: ChildId) = createQuery {
+    sql(
+        """
 SELECT
 $commaSeparatedPersonDTOColumns
 FROM person
 WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = ${bind(personId)})
         """
-            )
-        }
-        .toList(toPersonDTO)
+    )
+}
+    .toList(toPersonDTO)
 
 fun Database.Transaction.updatePersonSsnAddingDisabled(id: PersonId, disabled: Boolean) {
     createUpdate {
-            sql("UPDATE person SET ssn_adding_disabled = ${bind(disabled)} WHERE id = ${bind(id)}")
-        }
+        sql("UPDATE person SET ssn_adding_disabled = ${bind(disabled)} WHERE id = ${bind(id)}")
+    }
         .execute()
 }
 
 fun Database.Transaction.updatePreferredName(id: PersonId, preferredName: String) {
     createUpdate {
-            sql("UPDATE person SET preferred_name = ${bind(preferredName)} WHERE id = ${bind(id)}")
-        }
+        sql("UPDATE person SET preferred_name = ${bind(preferredName)} WHERE id = ${bind(id)}")
+    }
         .execute()
 }
 
 fun Database.Transaction.updateOphPersonOid(id: PersonId, ophPersonOid: String) {
     createUpdate {
-            sql("UPDATE person SET oph_person_oid = ${bind(ophPersonOid)} WHERE id = ${bind(id)}")
-        }
+        sql("UPDATE person SET oph_person_oid = ${bind(ophPersonOid)} WHERE id = ${bind(id)}")
+    }
         .updateExactlyOne()
 }
 
 data class PersonEmails(val email: String?, val verifiedEmail: String?)
 
-fun Database.Read.getPersonEmails(id: PersonId): PersonEmails =
-    createQuery { sql("SELECT email, verified_email FROM person WHERE id = ${bind(id)}") }
-        .exactlyOne()
+fun Database.Read.getPersonEmails(id: PersonId): PersonEmails = createQuery {
+    sql("SELECT email, verified_email FROM person WHERE id = ${bind(id)}")
+}
+    .exactlyOne()

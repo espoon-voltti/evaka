@@ -137,17 +137,16 @@ fun Database.Transaction.markManuallySent(
     invoiceIds: List<InvoiceId>,
 ) {
 
-    val updatedIds =
-        createQuery {
-                sql(
-                    """
+    val updatedIds = createQuery {
+        sql(
+            """
 UPDATE invoice SET status = ${bind(InvoiceStatus.SENT)}, sent_at = ${bind(now)}, sent_by = ${bind(user.evakaUserId)}
 WHERE id = ANY(${bind(invoiceIds)}) AND status = ${bind(InvoiceStatus.WAITING_FOR_SENDING)}
 RETURNING id
 """
-                )
-            }
-            .toList<InvoiceId>()
+        )
+    }
+        .toList<InvoiceId>()
 
     if (updatedIds.toSet() != invoiceIds.toSet())
         throw BadRequest("Some invoices have incorrect status")

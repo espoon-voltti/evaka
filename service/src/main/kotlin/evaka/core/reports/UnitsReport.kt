@@ -42,8 +42,8 @@ class UnitsReportController(private val accessControl: AccessControl) {
 
 private fun Database.Read.getUnitRows(today: LocalDate): List<UnitsReportRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
             SELECT 
                 u.id,
                 u.name,
@@ -79,8 +79,8 @@ private fun Database.Read.getUnitRows(today: LocalDate): List<UnitsReportRow> {
             JOIN care_area ca ON ca.id = u.care_area_id
             WHERE u.closing_date IS NULL OR u.closing_date >= ${bind(today)}
         """
-            )
-        }
+        )
+    }
         .toList<UnitsReportRow>()
 }
 

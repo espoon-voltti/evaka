@@ -232,8 +232,8 @@ fun Database.Read.isFamilyContactForChild(
     personId: PersonId,
 ): Boolean {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT EXISTS (
     -- is a guardian
     SELECT 1 FROM guardian
@@ -260,15 +260,15 @@ SELECT EXISTS (
         )
 )
 """
-            )
-        }
+        )
+    }
         .exactlyOne<Boolean>()
 }
 
 fun Database.Read.fetchFamilyContacts(today: LocalDate, childId: ChildId): List<FamilyContact> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH child_guardian AS (
     SELECT guardian_id AS id FROM guardian
     WHERE child_id = ${bind(childId)}
@@ -316,12 +316,12 @@ FROM contact
 JOIN person p USING (id)
 LEFT JOIN family_contact ON family_contact.contact_person_id = contact.id AND family_contact.child_id = ${bind(childId)}
 """
-            )
-        }
-        .toList<FamilyContact>()
-        .sortedBy { it.role.ordinal }
-        .let(::addDefaultPriorities)
-        .sortedWith(compareBy({ it.priority ?: Int.MAX_VALUE }, { it.role.ordinal }))
+        )
+    }
+    .toList<FamilyContact>()
+    .sortedBy { it.role.ordinal }
+    .let(::addDefaultPriorities)
+    .sortedWith(compareBy({ it.priority ?: Int.MAX_VALUE }, { it.role.ordinal }))
 
 private val defaultContacts =
     setOf(LOCAL_GUARDIAN, LOCAL_FOSTER_PARENT, REMOTE_GUARDIAN, REMOTE_FOSTER_PARENT)

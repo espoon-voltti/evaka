@@ -23,8 +23,10 @@ import java.time.Instant
 import java.time.LocalDate
 
 fun Database.Read.getApplicationStatus(applicationId: ApplicationId): ApplicationStatus =
-    createQuery { sql("SELECT status FROM application WHERE id = ${bind(applicationId)}") }
-        .exactlyOne()
+    createQuery {
+        sql("SELECT status FROM application WHERE id = ${bind(applicationId)}")
+    }
+    .exactlyOne()
 
 data class DecisionTableRow(
     val id: DecisionId,
@@ -45,17 +47,15 @@ data class DecisionTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun Database.Read.getDecisionRowsByApplication(applicationId: ApplicationId) =
-    createQuery {
-            sql(
-                "SELECT * FROM decision WHERE application_id = ${bind(applicationId)} ORDER BY type"
-            )
-        }
-        .mapTo<DecisionTableRow>()
+fun Database.Read.getDecisionRowsByApplication(applicationId: ApplicationId) = createQuery {
+    sql("SELECT * FROM decision WHERE application_id = ${bind(applicationId)} ORDER BY type")
+}
+    .mapTo<DecisionTableRow>()
 
-fun Database.Read.getDecisionRowById(id: DecisionId) =
-    createQuery { sql("SELECT * FROM decision WHERE id = ${bind(id)}") }
-        .exactlyOne<DecisionTableRow>()
+fun Database.Read.getDecisionRowById(id: DecisionId) = createQuery {
+    sql("SELECT * FROM decision WHERE id = ${bind(id)}")
+}
+    .exactlyOne<DecisionTableRow>()
 
 data class PlacementTableRow(
     val id: PlacementId,
@@ -68,11 +68,10 @@ data class PlacementTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun Database.Read.getPlacementRowsByChild(childId: ChildId) =
-    createQuery {
-            sql("SELECT * FROM placement WHERE child_id = ${bind(childId)} ORDER BY start_date")
-        }
-        .mapTo<PlacementTableRow>()
+fun Database.Read.getPlacementRowsByChild(childId: ChildId) = createQuery {
+    sql("SELECT * FROM placement WHERE child_id = ${bind(childId)} ORDER BY start_date")
+}
+    .mapTo<PlacementTableRow>()
 
 data class PlacementPlanTableRow(
     val id: PlacementPlanId,
@@ -97,11 +96,10 @@ data class PlacementPlanTableRow(
         }
 }
 
-fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId) =
-    createQuery {
-            sql("SELECT * FROM placement_plan WHERE application_id = ${bind(applicationId)}")
-        }
-        .exactlyOne<PlacementPlanTableRow>()
+fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId) = createQuery {
+    sql("SELECT * FROM placement_plan WHERE application_id = ${bind(applicationId)}")
+}
+    .exactlyOne<PlacementPlanTableRow>()
 
 data class BackupCareTableRow(
     val id: BackupCareId,
@@ -114,12 +112,12 @@ data class BackupCareTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun Database.Read.getBackupCareRowById(id: BackupCareId) =
-    createQuery { sql("SELECT * FROM backup_care WHERE id = ${bind(id)}") }
-        .exactlyOne<BackupCareTableRow>()
+fun Database.Read.getBackupCareRowById(id: BackupCareId) = createQuery {
+    sql("SELECT * FROM backup_care WHERE id = ${bind(id)}")
+}
+    .exactlyOne<BackupCareTableRow>()
 
-fun Database.Read.getBackupCareRowsByChild(childId: ChildId) =
-    createQuery {
-            sql("SELECT * FROM backup_care WHERE child_id = ${bind(childId)} ORDER BY start_date")
-        }
-        .mapTo<BackupCareTableRow>()
+fun Database.Read.getBackupCareRowsByChild(childId: ChildId) = createQuery {
+    sql("SELECT * FROM backup_care WHERE child_id = ${bind(childId)} ORDER BY start_date")
+}
+    .mapTo<BackupCareTableRow>()

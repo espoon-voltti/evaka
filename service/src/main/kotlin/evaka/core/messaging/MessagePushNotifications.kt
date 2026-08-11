@@ -106,31 +106,29 @@ WHERE notification.message = ANY(${bind(messages)})
     private fun Database.Read.getNotification(
         messageRecipient: MessageRecipientId,
         device: MobileDeviceId,
-    ): GroupMessageNotification? =
-        createQuery {
-                sql(
-                    """
+    ): GroupMessageNotification? = createQuery {
+        sql(
+            """
 SELECT group_id, group_name, sender_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
 FROM (${subquery(getPendingPushNotifications())}) notification
 JOIN mobile_device_push_subscription mdps ON mdps.device = notification.device
 WHERE notification.recipient = ${bind(messageRecipient)}
 AND notification.device = ${bind(device)}
 """
-                )
-            }
-            .exactlyOneOrNull {
-                GroupMessageNotification(
-                    groupId = column("group_id"),
-                    groupName = column("group_name"),
-                    senderName = column("sender_name"),
-                    WebPushEndpoint(
-                        uri = column("endpoint"),
-                        ecdhPublicKey =
-                            WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
-                        authSecret = column("auth_secret"),
-                    ),
-                )
-            }
+        )
+    }
+        .exactlyOneOrNull {
+            GroupMessageNotification(
+                groupId = column("group_id"),
+                groupName = column("group_name"),
+                senderName = column("sender_name"),
+                WebPushEndpoint(
+                    uri = column("endpoint"),
+                    ecdhPublicKey = WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
+                    authSecret = column("auth_secret"),
+                ),
+            )
+        }
 
     fun send(
         dbc: Database.Connection,

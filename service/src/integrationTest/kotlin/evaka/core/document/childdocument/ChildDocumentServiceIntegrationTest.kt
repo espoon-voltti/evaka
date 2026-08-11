@@ -272,8 +272,10 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun Database.Read.getStatusModifiedAt(id: ChildDocumentId): HelsinkiDateTime =
-        createQuery { sql("SELECT status_modified_at FROM child_document WHERE id = ${bind(id)}") }
-            .exactlyOne()
+        createQuery {
+            sql("SELECT status_modified_at FROM child_document WHERE id = ${bind(id)}")
+        }
+        .exactlyOne()
 
     @Test
     fun `child document notification email is not sent if placement has ended and document won't be visible anyway`() {

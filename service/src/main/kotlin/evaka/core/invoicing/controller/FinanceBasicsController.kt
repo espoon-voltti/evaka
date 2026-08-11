@@ -313,10 +313,9 @@ private fun calculateMaxFeeFromThresholds(
     return roundToEuros(BigDecimal(maxThreshold - minThreshold) * multiplier).toInt()
 }
 
-fun Database.Read.getFeeThresholds(): List<FeeThresholdsWithId> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getFeeThresholds(): List<FeeThresholdsWithId> = createQuery {
+    sql(
+        """
 SELECT
     id,
     valid_during,
@@ -346,14 +345,14 @@ SELECT
     temporary_fee_sibling_part_day
 FROM fee_thresholds
 """
-            )
-        }
-        .toList<FeeThresholdsWithId>()
+    )
+}
+    .toList<FeeThresholdsWithId>()
 
 fun Database.Transaction.insertNewFeeThresholds(thresholds: FeeThresholds): FeeThresholdsId =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO fee_thresholds (
     id,
     valid_during,
@@ -411,23 +410,21 @@ INSERT INTO fee_thresholds (
 )
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<FeeThresholdsId>()
+        )
+    }
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<FeeThresholdsId>()
 
 fun Database.Transaction.updateFeeThresholdsValidity(id: FeeThresholdsId, newValidity: DateRange) =
     createUpdate {
-            sql(
-                "UPDATE fee_thresholds SET valid_during = ${bind(newValidity)} WHERE id = ${bind(id)}"
-            )
-        }
-        .execute()
+        sql("UPDATE fee_thresholds SET valid_during = ${bind(newValidity)} WHERE id = ${bind(id)}")
+    }
+    .execute()
 
 fun Database.Transaction.updateFeeThresholds(id: FeeThresholdsId, feeThresholds: FeeThresholds) =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE fee_thresholds
 SET
     valid_during = ${bind(feeThresholds.validDuring)},
@@ -457,16 +454,15 @@ SET
     temporary_fee_sibling_part_day = ${bind(feeThresholds.temporaryFeeSiblingPartDay)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .execute()
+        )
+    }
+    .execute()
 
 fun Database.Read.getServiceNeedVoucherValuesByVoucherValueRangeId(
     voucherValueId: ServiceNeedOptionVoucherValueId
-): List<ServiceNeedOptionVoucherValueRangeWithId> =
-    createQuery {
-            sql(
-                """
+): List<ServiceNeedOptionVoucherValueRangeWithId> = createQuery {
+    sql(
+        """
 SELECT
     id,
     service_need_option_id,
@@ -485,16 +481,15 @@ WHERE service_need_option_id = (
 )
 ORDER by upper(validity) DESC
 """
-            )
-        }
-        .toList<ServiceNeedOptionVoucherValueRangeWithId>()
+    )
+}
+    .toList<ServiceNeedOptionVoucherValueRangeWithId>()
 
 fun Database.Transaction.insertNewVoucherValue(
     voucherValue: ServiceNeedOptionVoucherValueRange
-): ServiceNeedOptionVoucherValueId =
-    createUpdate {
-            sql(
-                """
+): ServiceNeedOptionVoucherValueId = createUpdate {
+    sql(
+        """
 INSERT INTO service_need_option_voucher_value (
     service_need_option_id,
     validity,
@@ -517,10 +512,10 @@ INSERT INTO service_need_option_voucher_value (
 )
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<ServiceNeedOptionVoucherValueId>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<ServiceNeedOptionVoucherValueId>()
 
 fun Database.Transaction.updateVouchervalue(
     id: ServiceNeedOptionVoucherValueId,
@@ -547,14 +542,14 @@ fun Database.Transaction.updateVouchervalue(
 
 fun Database.Transaction.deleteVoucherValue(id: ServiceNeedOptionVoucherValueId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE
                 FROM service_need_option_voucher_value
                 WHERE id = ${bind(id)}
             """
-            )
-        }
+        )
+    }
         .execute()
 }
 
@@ -563,14 +558,14 @@ fun Database.Transaction.updateVoucherValueEndDate(
     endDate: LocalDate?,
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE service_need_option_voucher_value
                 SET validity = daterange(lower(validity), ${bind(endDate)}, '[]')
                 WHERE id = ${bind(id)}
             """
-            )
-        }
+        )
+    }
         .execute()
 }
 

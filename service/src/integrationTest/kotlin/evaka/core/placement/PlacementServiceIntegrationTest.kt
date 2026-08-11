@@ -1326,7 +1326,10 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     child1.dateOfBirth,
                     listOf(),
                     "Kokopäiväinen",
-                    FiniteDateRange(evakaLaunch.plusMonths(6).plusDays(1), evakaLaunch.plusYears(1)),
+                    FiniteDateRange(
+                        evakaLaunch.plusMonths(6).plusDays(1),
+                        evakaLaunch.plusYears(1),
+                    ),
                 )
             ),
             group,

@@ -52,8 +52,8 @@ private fun Database.Read.getFamilyContacts(
     unitId: DaycareId,
 ): List<FamilyContactReportRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH all_placements AS (
     SELECT pl.child_id, dgp.daycare_group_id AS group_id
     FROM placement pl
@@ -103,8 +103,8 @@ LEFT JOIN person gu1 ON gu1.id = g1.guardian_id
 LEFT JOIN person gu2 ON gu2.id = g2.guardian_id
 ORDER BY dg.name, ch.last_name, ch.first_name
 """
-            )
-        }
+        )
+    }
         .toList<FamilyContactReportRow>()
 }
 

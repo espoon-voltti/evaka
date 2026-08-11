@@ -122,8 +122,8 @@ fun Database.Transaction.updateParentshipDuration(
         }
 
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE fridge_child 
                 SET 
                     start_date = ${bind(startDate)}, 
@@ -133,8 +133,8 @@ fun Database.Transaction.updateParentshipDuration(
                     modified_at = ${bind(now)}
                 WHERE id = ${bind(id)}
             """
-            )
-        }
+        )
+    }
         .execute() > 0
 }
 
@@ -144,15 +144,15 @@ fun Database.Transaction.retryParentship(
     userId: EvakaUserId,
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
         UPDATE fridge_child 
         SET conflict = false, modify_source = 'USER', modified_by_user = ${bind(userId)}, modified_at = ${bind(now)} 
         WHERE id = ${bind(id)}
     """
-                    .trimIndent()
-            )
-        }
+                .trimIndent()
+        )
+    }
         .execute()
 }
 
@@ -163,14 +163,14 @@ fun Database.Transaction.deleteParentship(id: ParentshipId): Boolean {
 
 fun Database.Read.personIsHeadOfFamily(personId: PersonId, date: LocalDate): Boolean {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT EXISTS(
     SELECT * FROM fridge_child WHERE head_of_child = ${bind(personId)} AND daterange(start_date, end_date, '[]') @> ${bind(date)} AND NOT conflict
 )
 """
-            )
-        }
+        )
+    }
         .exactlyOne<Boolean>()
 }
 

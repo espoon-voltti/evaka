@@ -281,7 +281,10 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 period =
                     FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1)),
                 preschoolDaycarePeriod =
-                    FiniteDateRange(preferredStartDate.minusDays(1), defaultClubEndDate.plusDays(1)),
+                    FiniteDateRange(
+                        preferredStartDate.minusDays(1),
+                        defaultClubEndDate.plusDays(1),
+                    ),
             ),
         )
     }

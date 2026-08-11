@@ -105,8 +105,8 @@ fun Database.Read.getIncome(
     id: IncomeId,
 ): Income? {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT 
     income.*,
     created_by.id AS created_by_id,
@@ -131,8 +131,8 @@ JOIN evaka_user created_by ON income.created_by = created_by.id
 JOIN evaka_user modified_by ON income.modified_by = modified_by.id
 WHERE income.id = ${bind(id)}
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
@@ -143,8 +143,8 @@ fun Database.Read.getIncomesForPerson(
     validAt: LocalDate? = null,
 ): List<Income> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     income.*,
     created_by.id AS created_by_id,
@@ -171,8 +171,8 @@ WHERE person_id = ${bind(personId)}
 AND (${bind(validAt)}::timestamp IS NULL OR tsrange(valid_from, valid_to) @> ${bind(validAt)}::timestamp)
 ORDER BY valid_from DESC
         """
-            )
-        }
+        )
+    }
         .toList { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 
@@ -185,8 +185,8 @@ fun Database.Read.getIncomesFrom(
     if (personIds.isEmpty()) return emptyList()
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     income.*,
     created_by.id AS created_by_id,
@@ -203,8 +203,8 @@ WHERE
     person_id = ANY(${bind(personIds)})
     AND (valid_to IS NULL OR valid_to >= ${bind(from)})
 """
-            )
-        }
+        )
+    }
         .toList { toIncome(incomeTypesProvider.get(), coefficientMultiplierProvider) }
 }
 

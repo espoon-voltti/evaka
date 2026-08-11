@@ -608,7 +608,8 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     it.copy(
                         id = InvoiceId(UUID.randomUUID()),
                         number = null,
-                        rows = it.rows.map { row -> row.copy(id = InvoiceRowId(UUID.randomUUID())) },
+                        rows =
+                            it.rows.map { row -> row.copy(id = InvoiceRowId(UUID.randomUUID())) },
                     )
                 }
             }
@@ -625,18 +626,18 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `send saves cost center information to invoice rows`() {
         fun Database.Read.readCostCenterFields(invoiceId: InvoiceId): Pair<String, String> =
             createQuery {
-                    sql(
-                        """
+                sql(
+                    """
                 SELECT saved_cost_center, saved_sub_cost_center FROM invoice_row WHERE invoice_id = ${bind(invoiceId)}
             """
-                    )
-                }
-                .exactlyOne {
-                    Pair(
-                        column<String>("saved_cost_center"),
-                        column<String>("saved_sub_cost_center"),
-                    )
-                }
+                )
+            }
+            .exactlyOne {
+                Pair(
+                    column<String>("saved_cost_center"),
+                    column<String>("saved_sub_cost_center"),
+                )
+            }
 
         val draft = testInvoices[2]
         db.transaction { tx -> tx.insert(listOf(draft)) }

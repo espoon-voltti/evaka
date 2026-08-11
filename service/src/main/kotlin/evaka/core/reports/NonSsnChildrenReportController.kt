@@ -54,10 +54,9 @@ data class NonSsnChildrenReportRow(
 
 private fun Database.Read.getNonSsnChildren(
     examinationDate: LocalDate
-): List<NonSsnChildrenReportRow> =
-    createQuery {
-            sql(
-                """
+): List<NonSsnChildrenReportRow> = createQuery {
+    sql(
+        """
 SELECT
     p.first_name,
     p.last_name,
@@ -82,6 +81,6 @@ JOIN LATERAL (
 ) pl ON true
 WHERE p.social_security_number IS NULL
 """
-            )
-        }
-        .toList<NonSsnChildrenReportRow>()
+    )
+}
+    .toList<NonSsnChildrenReportRow>()

@@ -1057,7 +1057,12 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     ),
                     50,
                 ),
-                Tuple(child1.dateOfBirth, subPeriod2, emptySet<VoucherValueDecisionDifference>(), 0),
+                Tuple(
+                    child1.dateOfBirth,
+                    subPeriod2,
+                    emptySet<VoucherValueDecisionDifference>(),
+                    0,
+                ),
             )
     }
 

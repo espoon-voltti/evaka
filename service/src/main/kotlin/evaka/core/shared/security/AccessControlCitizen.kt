@@ -44,8 +44,8 @@ class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
     ): Boolean {
         val today = clock.today()
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH children AS (
     SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
@@ -68,8 +68,8 @@ SELECT EXISTS (
     WHERE p.id = ${bind(userId)} AND m.sent_at IS NOT NULL
 )
 """
-                )
-            }
+            )
+        }
             .exactlyOne<Boolean>()
     }
 
@@ -79,8 +79,8 @@ SELECT EXISTS (
     ): Boolean {
         val today = clock.today()
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH children AS (
     SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
@@ -93,8 +93,8 @@ SELECT EXISTS (
     WHERE daterange((pl.start_date - interval '2 weeks')::date, pl.end_date, '[]') @> ${bind(today)}
 )
 """
-                )
-            }
+            )
+        }
             .exactlyOne<Boolean>()
     }
 
@@ -105,8 +105,8 @@ SELECT EXISTS (
     ): Boolean {
         val today = clock.today()
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH children AS (
     SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
@@ -120,8 +120,8 @@ SELECT EXISTS (
     WHERE 'RESERVATIONS' = ANY(enabled_pilot_features)
 )
 """
-                )
-            }
+            )
+        }
             .exactlyOne<Boolean>()
     }
 
@@ -132,8 +132,8 @@ SELECT EXISTS (
     ): Boolean {
         val today = clock.today()
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH children AS (
     SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION ALL
@@ -156,8 +156,8 @@ SELECT EXISTS (
     )
 )
 """
-                )
-            }
+            )
+        }
             .exactlyOne<Boolean>()
     }
 }

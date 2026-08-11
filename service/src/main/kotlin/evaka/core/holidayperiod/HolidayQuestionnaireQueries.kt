@@ -64,8 +64,8 @@ fun Database.Read.getChildrenWithContinuousPlacement(
     period: FiniteDateRange,
 ): List<ChildId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION
@@ -80,21 +80,21 @@ HAVING bool_and(d::date <@ ANY (
     WHERE p.child_id = c.child_id
 ))
 """
-            )
-        }
+        )
+    }
         .toList<ChildId>()
 }
 
 fun Database.Read.getUserChildIds(today: LocalDate, userId: PersonId): List<ChildId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
 UNION
 SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
 """
-            )
-        }
+        )
+    }
         .toList<ChildId>()
 }
 
@@ -127,10 +127,9 @@ fun Database.Read.getHolidayQuestionnaires(type: QuestionnaireType): List<Holida
 
 fun Database.Transaction.createFixedPeriodQuestionnaire(
     data: QuestionnaireBody.FixedPeriodQuestionnaireBody
-): HolidayQuestionnaireId =
-    createQuery {
-            sql(
-                """
+): HolidayQuestionnaireId = createQuery {
+    sql(
+        """
 INSERT INTO holiday_period_questionnaire (
     type,
     absence_type,
@@ -157,17 +156,16 @@ VALUES (
 )
 RETURNING id
 """
-            )
-        }
-        .exactlyOne<HolidayQuestionnaireId>()
+    )
+}
+    .exactlyOne<HolidayQuestionnaireId>()
 
 fun Database.Transaction.updateFixedPeriodQuestionnaire(
     id: HolidayQuestionnaireId,
     data: QuestionnaireBody.FixedPeriodQuestionnaireBody,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE holiday_period_questionnaire
 SET
     type = ${bind(QuestionnaireType.FIXED_PERIOD)},
@@ -182,9 +180,9 @@ SET
     condition_continuous_placement = ${bind(data.conditions.continuousPlacement)}
 WHERE id = ${bind(id)} AND type = ${bind(QuestionnaireType.FIXED_PERIOD)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
 fun Database.Read.getOpenRangesQuestionnaire(
     id: HolidayQuestionnaireId
@@ -198,10 +196,9 @@ fun Database.Read.getOpenRangesQuestionnaire(
 
 fun Database.Transaction.createOpenRangesQuestionnaire(
     data: QuestionnaireBody.OpenRangesQuestionnaireBody
-): HolidayQuestionnaireId =
-    createQuery {
-            sql(
-                """
+): HolidayQuestionnaireId = createQuery {
+    sql(
+        """
 INSERT INTO holiday_period_questionnaire (
     type,
     absence_type,
@@ -228,18 +225,17 @@ VALUES (
 )
 RETURNING id
                 """
-                    .trimIndent()
-            )
-        }
-        .exactlyOne<HolidayQuestionnaireId>()
+            .trimIndent()
+    )
+}
+    .exactlyOne<HolidayQuestionnaireId>()
 
 fun Database.Transaction.updateOpenRangesQuestionnaire(
     id: HolidayQuestionnaireId,
     data: QuestionnaireBody.OpenRangesQuestionnaireBody,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE holiday_period_questionnaire
 SET
     type = ${bind(QuestionnaireType.OPEN_RANGES)},
@@ -254,13 +250,14 @@ SET
     absence_type_threshold = ${bind(data.absenceTypeThreshold)}
 WHERE id = ${bind(id)} AND type = ${bind(QuestionnaireType.OPEN_RANGES)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
-fun Database.Transaction.deleteHolidayQuestionnaire(id: HolidayQuestionnaireId) =
-    createUpdate { sql("DELETE FROM holiday_period_questionnaire WHERE id = ${bind(id)}") }
-        .execute()
+fun Database.Transaction.deleteHolidayQuestionnaire(id: HolidayQuestionnaireId) = createUpdate {
+    sql("DELETE FROM holiday_period_questionnaire WHERE id = ${bind(id)}")
+}
+    .execute()
 
 fun Database.Transaction.insertQuestionnaireAnswers(
     modifiedBy: PersonId,
@@ -295,29 +292,27 @@ ON CONFLICT(questionnaire_id, child_id)
 fun Database.Read.getQuestionnaireAnswers(
     id: HolidayQuestionnaireId,
     childIds: List<ChildId>,
-): List<HolidayQuestionnaireAnswer> =
-    createQuery {
-            sql(
-                """
+): List<HolidayQuestionnaireAnswer> = createQuery {
+    sql(
+        """
 SELECT questionnaire_id, child_id, fixed_period, open_ranges
 FROM holiday_questionnaire_answer
 WHERE questionnaire_id = ${bind(id)} AND child_id = ANY(${bind(childIds)})
         """
-            )
-        }
-        .toList<HolidayQuestionnaireAnswer>()
+    )
+}
+    .toList<HolidayQuestionnaireAnswer>()
 
 fun Database.Read.getQuestionnaireAnswers(
     ids: List<HolidayQuestionnaireId>,
     childIds: List<ChildId>,
-): List<HolidayQuestionnaireAnswer> =
-    createQuery {
-            sql(
-                """
+): List<HolidayQuestionnaireAnswer> = createQuery {
+    sql(
+        """
 SELECT questionnaire_id, child_id, fixed_period, open_ranges
 FROM holiday_questionnaire_answer
 WHERE questionnaire_id = ANY(${bind(ids)}) AND child_id = ANY(${bind(childIds)})
             """
-            )
-        }
-        .toList<HolidayQuestionnaireAnswer>()
+    )
+}
+    .toList<HolidayQuestionnaireAnswer>()

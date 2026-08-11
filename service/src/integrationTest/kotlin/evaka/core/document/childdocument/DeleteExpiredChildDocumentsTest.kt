@@ -540,34 +540,40 @@ class DeleteExpiredChildDocumentsTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 }
 
-private fun Database.Read.countPublishedVersions(id: ChildDocumentId): Int =
-    createQuery {
-            sql(
-                "SELECT count(*) FROM child_document_published_version WHERE child_document_id = ${bind(id)}"
-            )
-        }
-        .exactlyOne<Int>()
+private fun Database.Read.countPublishedVersions(id: ChildDocumentId): Int = createQuery {
+    sql(
+        "SELECT count(*) FROM child_document_published_version WHERE child_document_id = ${bind(id)}"
+    )
+}
+    .exactlyOne<Int>()
 
-private fun Database.Read.countReadMarkers(id: ChildDocumentId): Int =
-    createQuery { sql("SELECT count(*) FROM child_document_read WHERE document_id = ${bind(id)}") }
-        .exactlyOne<Int>()
+private fun Database.Read.countReadMarkers(id: ChildDocumentId): Int = createQuery {
+    sql("SELECT count(*) FROM child_document_read WHERE document_id = ${bind(id)}")
+}
+    .exactlyOne<Int>()
 
 private fun Database.Read.findDecision(id: ChildDocumentDecisionId): ChildDocumentDecisionId? =
-    createQuery { sql("SELECT id FROM child_document_decision WHERE id = ${bind(id)}") }
-        .exactlyOneOrNull<ChildDocumentDecisionId>()
+    createQuery {
+        sql("SELECT id FROM child_document_decision WHERE id = ${bind(id)}")
+    }
+    .exactlyOneOrNull<ChildDocumentDecisionId>()
 
-private fun Database.Read.findCaseProcess(id: CaseProcessId): CaseProcessId? =
-    createQuery { sql("SELECT id FROM case_process WHERE id = ${bind(id)}") }
-        .exactlyOneOrNull<CaseProcessId>()
+private fun Database.Read.findCaseProcess(id: CaseProcessId): CaseProcessId? = createQuery {
+    sql("SELECT id FROM case_process WHERE id = ${bind(id)}")
+}
+    .exactlyOneOrNull<CaseProcessId>()
 
-private fun Database.Read.countCaseProcessHistory(id: CaseProcessId): Int =
-    createQuery { sql("SELECT count(*) FROM case_process_history WHERE process_id = ${bind(id)}") }
-        .exactlyOne<Int>()
+private fun Database.Read.countCaseProcessHistory(id: CaseProcessId): Int = createQuery {
+    sql("SELECT count(*) FROM case_process_history WHERE process_id = ${bind(id)}")
+}
+    .exactlyOne<Int>()
 
-private fun Database.Read.findSfiMessage(id: SfiMessageId): SfiMessageId? =
-    createQuery { sql("SELECT id FROM sfi_message WHERE id = ${bind(id)}") }
-        .exactlyOneOrNull<SfiMessageId>()
+private fun Database.Read.findSfiMessage(id: SfiMessageId): SfiMessageId? = createQuery {
+    sql("SELECT id FROM sfi_message WHERE id = ${bind(id)}")
+}
+    .exactlyOneOrNull<SfiMessageId>()
 
-private fun Database.Read.countSfiMessageEvents(id: SfiMessageId): Int =
-    createQuery { sql("SELECT count(*) FROM sfi_message_event WHERE message_id = ${bind(id)}") }
-        .exactlyOne<Int>()
+private fun Database.Read.countSfiMessageEvents(id: SfiMessageId): Int = createQuery {
+    sql("SELECT count(*) FROM sfi_message_event WHERE message_id = ${bind(id)}")
+}
+    .exactlyOne<Int>()

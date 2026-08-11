@@ -74,8 +74,8 @@ private fun Database.Read.getStartingPlacementsRows(
 ): List<StartingPlacementsRow> {
     val range = FiniteDateRange.ofMonth(year, Month.of(month))
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT p.child_id, p.start_date AS placement_start, c.first_name, c.last_name, c.date_of_birth,
     (CASE
         WHEN u.provider_type = 'PRIVATE_SERVICE_VOUCHER' THEN 'palvelusetelialue'
@@ -91,7 +91,7 @@ LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_da
 WHERE between_start_and_end(${bind(range)}, p.start_date) AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
 AND ${predicate(unitFilter.forTable("u"))} 
 """
-            )
-        }
+        )
+    }
         .toList<StartingPlacementsRow>()
 }

@@ -15,10 +15,9 @@ import evaka.core.shared.db.Predicate
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
-fun Database.Read.getServiceApplications(where: Predicate): List<ServiceApplication> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getServiceApplications(where: Predicate): List<ServiceApplication> = createQuery {
+    sql(
+        """
         SELECT 
             sa.id,
             sa.sent_at,
@@ -54,9 +53,9 @@ fun Database.Read.getServiceApplications(where: Predicate): List<ServiceApplicat
         LEFT JOIN employee dm ON dm.id = sa.decided_by
         WHERE ${predicate(where.forTable("sa"))}
     """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 fun Database.Read.getServiceApplication(id: ServiceApplicationId): ServiceApplication? =
     getServiceApplications(Predicate { where("$it.id = ${bind(id)}") }).firstOrNull()
@@ -66,10 +65,9 @@ fun Database.Read.getServiceApplicationsOfChild(childId: ChildId): List<ServiceA
 
 fun Database.Read.getUndecidedServiceApplicationsByUnit(
     unitId: DaycareId
-): List<UndecidedServiceApplicationSummary> =
-    createQuery {
-            sql(
-                """
+): List<UndecidedServiceApplicationSummary> = createQuery {
+    sql(
+        """
     SELECT
         sa.id,
         sa.sent_at,
@@ -90,9 +88,9 @@ fun Database.Read.getUndecidedServiceApplicationsByUnit(
     WHERE sa.decision_status IS NULL AND pl.unit_id = ${bind(unitId)}
     ORDER BY sa.sent_at, sa.start_date
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 fun Database.Transaction.insertServiceApplication(
     sentAt: HelsinkiDateTime,
@@ -101,18 +99,17 @@ fun Database.Transaction.insertServiceApplication(
     startDate: LocalDate,
     serviceNeedOptionId: ServiceNeedOptionId,
     additionalInfo: String,
-): ServiceApplicationId =
-    createUpdate {
-            sql(
-                """
+): ServiceApplicationId = createUpdate {
+    sql(
+        """
     INSERT INTO service_application (sent_at, person_id, child_id, start_date, service_need_option_id, additional_info, decision_status, decided_by, decided_at, rejected_reason)
     VALUES (${bind(sentAt)}, ${bind(personId)}, ${bind(childId)}, ${bind(startDate)}, ${bind(serviceNeedOptionId)}, ${bind(additionalInfo)}, NULL, NULL, NULL, NULL)
     RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne()
 
 fun Database.Transaction.deleteUndecidedServiceApplication(id: ServiceApplicationId) = execute {
     sql(
@@ -127,31 +124,29 @@ fun Database.Transaction.setServiceApplicationAccepted(
     id: ServiceApplicationId,
     now: HelsinkiDateTime,
     user: AuthenticatedUser.Employee,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
     UPDATE service_application
     SET decision_status = 'ACCEPTED', decided_by = ${bind(user.id)}, decided_at = ${bind(now)}
     WHERE id = ${bind(id)} AND decision_status IS NULL
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
 fun Database.Transaction.setServiceApplicationRejected(
     id: ServiceApplicationId,
     now: HelsinkiDateTime,
     user: AuthenticatedUser.Employee,
     rejectedReason: String,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
     UPDATE service_application
     SET decision_status = 'REJECTED', decided_by = ${bind(user.id)}, decided_at = ${bind(now)}, rejected_reason = ${bind(rejectedReason)}
     WHERE id = ${bind(id)} AND decision_status IS NULL
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()

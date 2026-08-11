@@ -32,10 +32,9 @@ fun Database.Transaction.resetSpecialDietsNotContainedWithin(
 ): List<NulledSpecialDiet> {
     val newSpecialDietIds = specialDietList.map { it.id }
 
-    val previousDiets =
-        createQuery {
-                sql(
-                    """
+    val previousDiets = createQuery {
+        sql(
+            """
 SELECT
     pl.unit_id,
     child.id AS child_id,
@@ -51,9 +50,9 @@ JOIN LATERAL (
 JOIN special_diet ON child.diet_id = special_diet.id
 WHERE child.diet_id != ALL (${bind(newSpecialDietIds)})
         """
-                )
-            }
-            .toList<NulledSpecialDiet>()
+        )
+    }
+        .toList<NulledSpecialDiet>()
 
     execute {
         sql("UPDATE child SET diet_id = null WHERE diet_id != ALL (${bind(newSpecialDietIds)})")

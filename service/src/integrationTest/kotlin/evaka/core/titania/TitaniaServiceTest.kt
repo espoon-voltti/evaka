@@ -2271,16 +2271,15 @@ internal class TitaniaServiceTest : FullApplicationTest(resetDbBeforeEach = true
     }
 }
 
-fun Database.Read.fetchReportRows(): List<TitaniaTestDbRow> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.fetchReportRows(): List<TitaniaTestDbRow> = createQuery {
+    sql(
+        """
                 SELECT request_time, employee_id, shift_date, shift_begins, shift_ends, overlapping_shift_begins, overlapping_shift_ends
                 FROM titania_errors
             """
-            )
-        }
-        .toList<TitaniaTestDbRow>()
+    )
+}
+    .toList<TitaniaTestDbRow>()
 
 data class TitaniaTestDbRow(
     val requestTime: HelsinkiDateTime,

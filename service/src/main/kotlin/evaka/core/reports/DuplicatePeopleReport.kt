@@ -44,8 +44,8 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
 private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
     val personReferences = getTransferablePersonReferences()
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         WITH people AS (
             SELECT
                 p.id,
@@ -116,8 +116,8 @@ private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
         JOIN person p ON p.id = dups.id
         ORDER BY key, social_security_number, p.id
         """
-            )
-        }
+        )
+    }
         .toList<DuplicatePeopleReportRow>()
 }
 

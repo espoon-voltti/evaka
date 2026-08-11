@@ -64,10 +64,10 @@ WHERE doc.id = ${bind(id)} AND p.email IS NOT NULL
         date: HelsinkiDateTime,
     ) {
         createUpdate {
-                sql(
-                    "UPDATE pedagogical_document SET email_job_created_at = ${bind(date)} WHERE id = ${bind(id)}"
-                )
-            }
+            sql(
+                "UPDATE pedagogical_document SET email_job_created_at = ${bind(date)} WHERE id = ${bind(id)}"
+            )
+        }
             .updateExactlyOne()
     }
 
@@ -77,8 +77,8 @@ WHERE doc.id = ${bind(id)} AND p.email IS NOT NULL
         // notification job should be created only if description is set or an attachment is
         // uploaded
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT EXISTS(
     SELECT 1
     FROM pedagogical_document doc
@@ -89,8 +89,8 @@ SELECT EXISTS(
         (LENGTH(doc.description) > 0 OR a.id IS NOT NULL)
 )
             """
-                )
-            }
+            )
+        }
             .exactlyOne<Boolean>()
     }
 
@@ -152,13 +152,13 @@ private fun Database.Transaction.markPedagogicalDocumentNotificationSent(
     id: PedagogicalDocumentId
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE pedagogical_document
                 SET email_sent = TRUE 
                 WHERE id = ${bind(id)}
                 """
-            )
-        }
+        )
+    }
         .updateExactlyOne()
 }

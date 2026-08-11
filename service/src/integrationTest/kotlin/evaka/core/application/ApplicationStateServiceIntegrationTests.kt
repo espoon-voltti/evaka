@@ -1794,7 +1794,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 serviceWorker,
                 clock,
                 daycare.id,
-                rejectReasonTranslations = mapOf(PlacementPlanRejectReason.REASON_1 to rejectReason),
+                rejectReasonTranslations =
+                    mapOf(PlacementPlanRejectReason.REASON_1 to rejectReason),
             )
         }
         asyncJobRunner.runPendingJobsSync(clock)

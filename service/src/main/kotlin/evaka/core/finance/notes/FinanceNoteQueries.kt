@@ -10,10 +10,9 @@ import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.HelsinkiDateTime
 
-fun Database.Read.getFinanceNotes(personId: PersonId): List<FinanceNote> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getFinanceNotes(personId: PersonId): List<FinanceNote> = createQuery {
+    sql(
+        """
 SELECT
     n.id,
     n.content,
@@ -29,19 +28,18 @@ LEFT JOIN evaka_user m ON n.modified_by = m.id
 WHERE n.person_id = ${bind(personId)}
 ORDER BY n.created_at DESC
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 fun Database.Transaction.createFinanceNote(
     personId: PersonId,
     content: String,
     user: AuthenticatedUser.Employee,
     now: HelsinkiDateTime,
-): FinanceNoteId =
-    createUpdate {
-            sql(
-                """
+): FinanceNoteId = createUpdate {
+    sql(
+        """
     INSERT INTO finance_note (
         person_id,
         content,
@@ -60,29 +58,28 @@ fun Database.Transaction.createFinanceNote(
         ${bind(now)}
     ) RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<FinanceNoteId>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<FinanceNoteId>()
 
 fun Database.Transaction.updateFinanceNote(
     id: FinanceNoteId,
     content: String,
     user: AuthenticatedUser.Employee,
     now: HelsinkiDateTime,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
     UPDATE finance_note SET
         content = ${bind(content)},
         modified_at = ${bind(now)},
         modified_by = ${bind(user.evakaUserId)}
     WHERE id = ${bind(id)}
 """
-            )
-        }
-        .execute()
+    )
+}
+    .execute()
 
 fun Database.Transaction.deleteFinanceNote(id: FinanceNoteId) = execute {
     sql("DELETE FROM finance_note WHERE id = ${bind(id)}")

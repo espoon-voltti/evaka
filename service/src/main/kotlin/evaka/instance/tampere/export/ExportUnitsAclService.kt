@@ -63,10 +63,9 @@ class ExportUnitsAclService(
     }
 }
 
-fun Database.Read.getUnitAclRows() =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getUnitAclRows() = createQuery {
+    sql(
+        """
 SELECT
     d.id AS unit_id,
     d.name AS unit_name,
@@ -79,6 +78,6 @@ FROM daycare_acl
 JOIN daycare d ON daycare_acl.daycare_id = d.id
 JOIN employee e ON daycare_acl.employee_id = e.id
 """
-            )
-        }
-        .toList<UnitAclRow>()
+    )
+}
+    .toList<UnitAclRow>()

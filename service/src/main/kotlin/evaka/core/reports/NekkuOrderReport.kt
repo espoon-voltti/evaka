@@ -89,8 +89,8 @@ fun Database.Read.getNekkuReportRows(
     end: LocalDate,
 ): List<NekkuOrderRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
             SELECT 
                 nor.delivery_date as date, 
                 nor.meal_sku as sku,
@@ -109,8 +109,8 @@ fun Database.Read.getNekkuReportRows(
                 AND nor.delivery_date BETWEEN ${bind(start)} AND ${bind(end)}
                 ORDER BY nor.delivery_date, nor.group_id, nor.meal_time, nor.meal_sku
             """
-            )
-        }
+        )
+    }
         .toList<NekkuOrderRow>()
 }
 

@@ -9,44 +9,41 @@ import evaka.core.shared.MobileDeviceId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 
-fun Database.Transaction.upsertCitizenUser(id: PersonId) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.upsertCitizenUser(id: PersonId) = createUpdate {
+    sql(
+        """
 INSERT INTO evaka_user (id, type, citizen_id, name)
 SELECT id, 'CITIZEN', id, last_name || ' ' || first_name
 FROM person
 WHERE id = ${bind(id)}
 ON CONFLICT (id) DO UPDATE SET name = excluded.name
 """
-            )
-        }
-        .execute()
+    )
+}
+    .execute()
 
-fun Database.Transaction.upsertEmployeeUser(id: EmployeeId) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.upsertEmployeeUser(id: EmployeeId) = createUpdate {
+    sql(
+        """
 INSERT INTO evaka_user (id, type, employee_id, name)
 SELECT id, 'EMPLOYEE', id, last_name || ' ' || coalesce(preferred_first_name, first_name)
 FROM employee
 WHERE id = ${bind(id)}
 ON CONFLICT (id) DO UPDATE SET name = excluded.name
 """
-            )
-        }
-        .execute()
+    )
+}
+    .execute()
 
-fun Database.Transaction.upsertMobileDeviceUser(id: MobileDeviceId) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.upsertMobileDeviceUser(id: MobileDeviceId) = createUpdate {
+    sql(
+        """
 INSERT INTO evaka_user (id, type, mobile_device_id, name)
 SELECT id, 'MOBILE_DEVICE', id, name
 FROM mobile_device
 WHERE id = ${bind(id)}
 ON CONFLICT (id) DO UPDATE SET name = excluded.name
 """
-            )
-        }
-        .execute()
+    )
+}
+    .execute()

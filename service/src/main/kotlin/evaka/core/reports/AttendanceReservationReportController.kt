@@ -158,8 +158,8 @@ private fun Database.Read.getPlacementInfo(
 ): List<PlacementInfoRow> {
     val dates = generateSequence(start) { if (it < end) it.plusDays(1) else null }.toList()
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH dates AS (
     SELECT unnest(${bind(dates)}::date[]) AS date
 )
@@ -204,8 +204,8 @@ LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = 
 LEFT JOIN daycare_group dg ON dg.id = bc.group_id
 WHERE bc.unit_id = ${bind(unitId)} AND (${bind(groupIds)}::uuid[] IS NULL OR dg.id = ANY(${bind(groupIds)}));
 """
-            )
-        }
+        )
+    }
         .toList<PlacementInfoRow>()
 }
 
@@ -218,14 +218,14 @@ private data class ChildRow(
 
 private fun Database.Read.getChildInfo(children: Set<ChildId>): List<ChildRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT p.id as child_id, p.date_of_birth, p.last_name, p.first_name
 FROM person p
 WHERE p.id = ANY(${bind(children)})
 """
-            )
-        }
+        )
+    }
         .toList<ChildRow>()
 }
 
@@ -243,8 +243,8 @@ private fun Database.Read.getServiceNeeds(
     children: Set<ChildId>,
 ): List<ServiceNeedRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     pl.child_id,
     daterange(sn.start_date, sn.end_date, '[]') * daterange(${bind(start)}, ${bind(end)}, '[]') as range,
@@ -256,8 +256,8 @@ JOIN placement pl on pl.id = sn.placement_id
 LEFT JOIN service_need_option sno ON sno.id = sn.option_id
 WHERE pl.child_id = ANY(${bind(children)}) AND daterange(sn.start_date, sn.end_date, '[]') && daterange(${bind(start)}, ${bind(end)}, '[]');
     """
-            )
-        }
+        )
+    }
         .toList<ServiceNeedRow>()
 }
 
@@ -270,10 +270,9 @@ private data class AssistanceNeedRow(
 private fun Database.Read.getCapacityFactors(
     range: FiniteDateRange,
     children: Set<ChildId>,
-): List<AssistanceNeedRow> =
-    createQuery {
-            sql(
-                """
+): List<AssistanceNeedRow> = createQuery {
+    sql(
+        """
 SELECT
     child_id,
     valid_during * ${bind(range)} AS range,
@@ -281,9 +280,9 @@ SELECT
 FROM assistance_factor af
 WHERE child_id = ANY(${bind(children)}) AND valid_during && ${bind(range)}
 """
-            )
-        }
-        .toList<AssistanceNeedRow>()
+    )
+}
+    .toList<AssistanceNeedRow>()
 
 private data class ReservationRow(
     val date: LocalDate,

@@ -33,10 +33,9 @@ END AS content
 fun Database.Read.getApplicationNotes(
     applicationId: ApplicationId,
     deletedMessageBody: String,
-): List<ApplicationNote> =
-    createQuery {
-            sql(
-                """
+): List<ApplicationNote> = createQuery {
+    sql(
+        """
 SELECT
     n.id, n.application_id,
     ${subquery(redactedNoteContent(deletedMessageBody))},
@@ -48,17 +47,16 @@ LEFT JOIN message m ON m.content_id = n.message_content_id
 WHERE application_id = ${bind(applicationId)}
 ORDER BY n.created_at
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 fun Database.Read.getApplicationSpecialEducationTeacherNotes(
     applicationId: ApplicationId,
     deletedMessageBody: String,
-): List<ApplicationNote> =
-    createQuery {
-            sql(
-                """
+): List<ApplicationNote> = createQuery {
+    sql(
+        """
 SELECT
     n.id, n.application_id,
     ${subquery(redactedNoteContent(deletedMessageBody))},
@@ -69,9 +67,9 @@ WHERE application_id = ${bind(applicationId)}
 AND created_by IN (SELECT employee_id FROM daycare_acl WHERE role = 'SPECIAL_EDUCATION_TEACHER'::user_role)
 ORDER BY n.created
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 fun Database.Transaction.createApplicationNote(
     now: HelsinkiDateTime,
@@ -79,10 +77,9 @@ fun Database.Transaction.createApplicationNote(
     content: String,
     createdBy: EvakaUserId,
     messageContentId: MessageContentId? = null,
-): ApplicationNote =
-    createQuery {
-            sql(
-                """
+): ApplicationNote = createQuery {
+    sql(
+        """
 WITH new_note AS (
     INSERT INTO application_note (application_id, content, created_at, created_by, modified_at, modified_by, message_content_id) 
     VALUES (${bind(applicationId)}, ${bind(content)}, ${bind(now)}, ${bind(createdBy)}, ${bind(now)}, ${bind(createdBy)}, ${bind(messageContentId)})
@@ -101,19 +98,18 @@ SELECT
 FROM new_note n
 LEFT JOIN evaka_user eu ON n.created_by = eu.id
 """
-            )
-        }
-        .exactlyOne()
+    )
+}
+    .exactlyOne()
 
 fun Database.Transaction.updateApplicationNote(
     id: ApplicationNoteId,
     content: String,
     modifiedBy: EvakaUserId,
     now: HelsinkiDateTime,
-): ApplicationNote =
-    createQuery {
-            sql(
-                """
+): ApplicationNote = createQuery {
+    sql(
+        """
 WITH updated_note AS (
     UPDATE application_note SET content = ${bind(content)}, modified_at = ${bind(now)}, modified_by = ${bind(modifiedBy)}
     WHERE id = ${bind(id)}
@@ -125,23 +121,20 @@ SELECT
     n.modified_at, n.modified_by, (SELECT name FROM evaka_user WHERE id = n.modified_by) AS modified_by_name
 FROM updated_note n
 """
-            )
-        }
-        .exactlyOne()
+    )
+}
+    .exactlyOne()
 
-fun Database.Read.getServiceWorkerApplicationNote(id: ApplicationId) =
-    createQuery {
-            sql("SELECT application.service_worker_note FROM application WHERE id = ${bind(id)}")
-        }
-        .exactlyOne<String>()
+fun Database.Read.getServiceWorkerApplicationNote(id: ApplicationId) = createQuery {
+    sql("SELECT application.service_worker_note FROM application WHERE id = ${bind(id)}")
+}
+    .exactlyOne<String>()
 
 fun Database.Transaction.updateServiceWorkerApplicationNote(id: ApplicationId, content: String) =
     createUpdate {
-            sql(
-                "UPDATE application SET service_worker_note = ${bind(content)} WHERE id = ${bind(id)}"
-            )
-        }
-        .updateExactlyOne()
+        sql("UPDATE application SET service_worker_note = ${bind(content)} WHERE id = ${bind(id)}")
+    }
+    .updateExactlyOne()
 
 fun Database.Transaction.deleteApplicationNote(id: ApplicationNoteId) = execute {
     sql("DELETE FROM application_note WHERE id = ${bind(id)}")

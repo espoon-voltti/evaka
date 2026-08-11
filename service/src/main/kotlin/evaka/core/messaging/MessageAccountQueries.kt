@@ -17,13 +17,13 @@ import java.time.LocalDate
 
 fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT acc.id FROM message_account acc
 WHERE acc.person_id = ${bind(personId)} AND acc.active = true
 """
-            )
-        }
+        )
+    }
         .exactlyOne<MessageAccountId>()
 }
 
@@ -31,14 +31,14 @@ fun Database.Read.getEmployeeMessageAccountIds(
     idFilter: AccessControlFilter<MessageAccountId>
 ): Set<MessageAccountId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id
 FROM message_account
 WHERE (${predicate(idFilter.forTable("message_account"))})
         """
-            )
-        }
+        )
+    }
         .toSet<MessageAccountId>()
 }
 
@@ -65,8 +65,8 @@ fun Database.Read.getAuthorizedMessageAccountsForEmployee(
     today: LocalDate,
 ): List<AuthorizedMessageAccount> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT DISTINCT ON (acc.id)
     acc.id AS account_id,
     name_view.name AS account_name,
@@ -91,8 +91,8 @@ AND (
     OR acc.type = 'FINANCE'
 )
 """
-            )
-        }
+        )
+    }
         .toList {
             AuthorizedMessageAccount(
                 account =
@@ -132,8 +132,8 @@ fun Database.Read.getAccountNames(
 ): List<String> {
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT CASE mav.type 
     WHEN 'SERVICE_WORKER' THEN ${bind(serviceWorkerAccountName)} 
     WHEN 'FINANCE' THEN ${bind(financeAccountName)} 
@@ -142,8 +142,8 @@ END as name
 FROM message_account_view mav
 WHERE mav.id = ANY(${bind(accountIds)})
 """
-            )
-        }
+        )
+    }
         .toList<String>()
 }
 
@@ -154,8 +154,8 @@ fun Database.Read.getMessageAccount(
     financeAccountName: String,
 ): MessageAccount {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     acc.id,
     acc.name,
@@ -164,8 +164,8 @@ SELECT
 FROM message_account_view acc
 WHERE acc.id = ${bind(accountId)}
 """
-            )
-        }
+        )
+    }
         .exactlyOne {
             column<AccountType>("type").let { accountType ->
                 MessageAccount(
@@ -206,61 +206,61 @@ fun Database.Transaction.createDaycareGroupMessageAccount(
     daycareGroupId: GroupId
 ): MessageAccountId {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO message_account (daycare_group_id, type) VALUES (${bind(daycareGroupId)}, 'GROUP')
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .exactlyOne<MessageAccountId>()
 }
 
 fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM message_account WHERE daycare_group_id = ${bind(daycareGroupId)}
 """
-            )
-        }
+        )
+    }
         .execute()
 }
 
 fun Database.Transaction.createPersonMessageAccount(personId: PersonId): MessageAccountId {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO message_account (person_id, type) VALUES (${bind(personId)}, 'CITIZEN')
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .exactlyOne<MessageAccountId>()
 }
 
 fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): MessageAccountId {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO message_account (employee_id, type) VALUES (${bind(employeeId)}, ${bind(AccountType.PERSONAL)})
 ON CONFLICT (employee_id) WHERE employee_id IS NOT NULL DO UPDATE SET active = true
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .exactlyOne<MessageAccountId>()
 }
 
 fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE message_account SET active = false
 WHERE employee_id = ${bind(employeeId)}
 """
-            )
-        }
+        )
+    }
         .execute()
 }
 
@@ -270,13 +270,15 @@ fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountTyp
 }
 
 fun Database.Read.findMessageAccountIdByDraftId(id: MessageDraftId): MessageAccountId? =
-    createQuery { sql("SELECT account_id FROM message_draft WHERE id = ${bind(id)}") }
-        .exactlyOneOrNull<MessageAccountId>()
+    createQuery {
+        sql("SELECT account_id FROM message_draft WHERE id = ${bind(id)}")
+    }
+    .exactlyOneOrNull<MessageAccountId>()
 
 fun Database.Read.getMessageAccountIdsByContentId(id: MessageContentId): List<MessageAccountId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT msg.sender_id
 FROM message_content content
 JOIN message msg ON content.id = msg.content_id
@@ -288,14 +290,16 @@ JOIN message msg ON content.id = msg.content_id
 JOIN message_recipients rec ON msg.id = rec.message_id
 WHERE content.id = ${bind(id)}
 """
-            )
-        }
-        .toList<MessageAccountId>()
+        )
+    }
+    .toList<MessageAccountId>()
 
-fun Database.Read.getServiceWorkerAccountId(): MessageAccountId? =
-    createQuery { sql("SELECT id FROM message_account WHERE type = 'SERVICE_WORKER'") }
-        .exactlyOneOrNull<MessageAccountId>()
+fun Database.Read.getServiceWorkerAccountId(): MessageAccountId? = createQuery {
+    sql("SELECT id FROM message_account WHERE type = 'SERVICE_WORKER'")
+}
+    .exactlyOneOrNull<MessageAccountId>()
 
-fun Database.Read.getFinanceAccountId(): MessageAccountId? =
-    createQuery { sql("SELECT id FROM message_account WHERE type = 'FINANCE'") }
-        .exactlyOneOrNull<MessageAccountId>()
+fun Database.Read.getFinanceAccountId(): MessageAccountId? = createQuery {
+    sql("SELECT id FROM message_account WHERE type = 'FINANCE'")
+}
+    .exactlyOneOrNull<MessageAccountId>()

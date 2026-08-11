@@ -69,8 +69,8 @@ class BulletinMessageThreadMigrationService(asyncJobRunner: AsyncJobRunner<Async
 
 private fun Database.Read.findMunicipalContentIdWithDuplicateThreads(): MessageContentId? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT m.content_id
 FROM message m
 JOIN message_thread mt ON mt.id = m.thread_id
@@ -79,14 +79,14 @@ GROUP BY m.content_id, mt.is_copy
 HAVING COUNT(*) > 1
 LIMIT 1
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }
+    .exactlyOneOrNull()
 
 private fun Database.Read.findBulletinContentIdWithDuplicateStaffCopyThreads(): MessageContentId? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT m.content_id
 FROM message m
 JOIN message_thread mt ON mt.id = m.thread_id
@@ -95,9 +95,9 @@ GROUP BY m.content_id
 HAVING COUNT(*) > 1
 LIMIT 1
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }
+    .exactlyOneOrNull()
 
 private fun Database.Transaction.consolidateMessageThreads(
     contentId: MessageContentId,
@@ -118,20 +118,19 @@ private fun Database.Transaction.consolidateMessageThreads(
             Predicate.alwaysTrue()
         }
 
-    val threadsAndMessages: Map<Boolean, List<ThreadAndMessage>> =
-        createQuery {
-                sql(
-                    """
+    val threadsAndMessages: Map<Boolean, List<ThreadAndMessage>> = createQuery {
+        sql(
+            """
 SELECT mt.id AS thread_id, m.id AS message_id, mt.is_copy
 FROM message_thread mt
 JOIN message m ON m.thread_id = mt.id
 WHERE m.content_id = ${bind(contentId)} AND ${predicate(isCopyPredicate.forTable("mt"))}
 ORDER BY mt.is_copy, mt.id
 """
-                )
-            }
-            .toList<ThreadAndMessage>()
-            .groupBy { it.isCopy }
+        )
+    }
+        .toList<ThreadAndMessage>()
+        .groupBy { it.isCopy }
 
     threadsAndMessages.forEach { (isCopy, group) ->
         if (group.size <= 1) {

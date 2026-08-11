@@ -25,8 +25,10 @@ import kotlin.test.assertTrue
 import org.jdbi.v3.json.Json
 import org.junit.jupiter.api.Test
 
-private inline fun <reified T : Any> Database.Read.passThrough(input: T) =
-    createQuery { sql("SELECT ${bind(input)} AS output") }.exactlyOne { column<T>("output") }
+private inline fun <reified T : Any> Database.Read.passThrough(input: T) = createQuery {
+    sql("SELECT ${bind(input)} AS output")
+}
+    .exactlyOne { column<T>("output") }
 
 private inline fun <reified T : Any> Database.Read.checkMatch(sql: QuerySql, input: T) =
     createQuery(sql).bind("input", input).exactlyOne<Boolean>()

@@ -368,10 +368,9 @@ private inline fun <reified T : Id<*>> Database.Transaction.deleteExpiredChildLe
     expireDate: LocalDate,
     limit: Int,
     table: String,
-): List<T> =
-    createUpdate {
-            sql(
-                """
+): List<T> = createUpdate {
+    sql(
+        """
 WITH del_batch AS (
     SELECT id
     FROM $table
@@ -384,10 +383,10 @@ USING del_batch
 WHERE $table.id = del_batch.id
 RETURNING $table.id
         """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .toList()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .toList()
 
 fun unsetExpiredChildReferences(
     dbc: Database.Connection,
@@ -416,10 +415,9 @@ fun Database.Transaction.unsetExpiredChildReference(
     expireDate: LocalDate,
     limit: Int,
     column: String,
-): List<ChildId> =
-    createUpdate {
-            sql(
-                """
+): List<ChildId> = createUpdate {
+    sql(
+        """
 WITH update_batch AS (
     SELECT id
     FROM child
@@ -435,10 +433,10 @@ FROM update_batch
 WHERE child.id = update_batch.id
 RETURNING child.id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .toList()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .toList()
 
 private fun childIdsWithPlacementsEndingBefore(date: LocalDate) = QuerySql {
     sql(
@@ -471,10 +469,9 @@ private fun Database.Transaction.deleteExpiredApplicationsBatch(
     expireDate: LocalDate,
     limit: Int,
 ): Pair<List<DeletedApplication>, List<UnsetReference>> {
-    val deletableRows =
-        createQuery {
-                sql(
-                    """
+    val deletableRows = createQuery {
+        sql(
+            """
 WITH del_batch AS (
     SELECT id
     FROM application
@@ -499,9 +496,9 @@ LEFT JOIN sfi_message sm ON sm.decision_id = d.id
 LEFT JOIN attachment att ON att.application_id = a.id
 GROUP BY a.id
 """
-                )
-            }
-            .toList<DeletedApplication>()
+        )
+    }
+        .toList<DeletedApplication>()
 
     val deletableIds = deletableRows.map { it.applicationId }
     val decisionIds = deletableRows.flatMap { it.decisionIds }
@@ -512,10 +509,10 @@ GROUP BY a.id
 
     val unsetReferences = buildList {
         createUpdate {
-                sql(
-                    "UPDATE placement SET source = NULL, source_application_id = NULL WHERE source_application_id = ANY(${bind(deletableIds)}) RETURNING id"
-                )
-            }
+            sql(
+                "UPDATE placement SET source = NULL, source_application_id = NULL WHERE source_application_id = ANY(${bind(deletableIds)}) RETURNING id"
+            )
+        }
             .executeAndReturnGeneratedKeys()
             .mapTo<PlacementId>()
             .forEach {
@@ -528,18 +525,18 @@ GROUP BY a.id
                 )
             }
         createUpdate {
-                sql(
-                    "UPDATE income SET application_id = NULL WHERE application_id = ANY(${bind(deletableIds)}) RETURNING id"
-                )
-            }
+            sql(
+                "UPDATE income SET application_id = NULL WHERE application_id = ANY(${bind(deletableIds)}) RETURNING id"
+            )
+        }
             .executeAndReturnGeneratedKeys()
             .mapTo<IncomeId>()
             .forEach { add(UnsetReference("income", AuditId(it), listOf("application_id"))) }
         createUpdate {
-                sql(
-                    "UPDATE fridge_child SET create_source = NULL, created_by_application = NULL WHERE created_by_application = ANY(${bind(deletableIds)}) RETURNING id"
-                )
-            }
+            sql(
+                "UPDATE fridge_child SET create_source = NULL, created_by_application = NULL WHERE created_by_application = ANY(${bind(deletableIds)}) RETURNING id"
+            )
+        }
             .executeAndReturnGeneratedKeys()
             .mapTo<ParentshipId>()
             .forEach {
@@ -552,10 +549,10 @@ GROUP BY a.id
                 )
             }
         createUpdate {
-                sql(
-                    "UPDATE fridge_partner SET create_source = NULL, created_from_application = NULL WHERE created_from_application = ANY(${bind(deletableIds)}) RETURNING partnership_id"
-                )
-            }
+            sql(
+                "UPDATE fridge_partner SET create_source = NULL, created_from_application = NULL WHERE created_from_application = ANY(${bind(deletableIds)}) RETURNING partnership_id"
+            )
+        }
             .executeAndReturnGeneratedKeys()
             // fridge_partner has two rows per partnership (indx 1/2), both created from the same
             // application, so RETURNING partnership_id yields each id twice
@@ -571,10 +568,10 @@ GROUP BY a.id
                 )
             }
         createUpdate {
-                sql(
-                    "UPDATE message_thread SET application_id = NULL WHERE application_id = ANY(${bind(deletableIds)}) RETURNING id"
-                )
-            }
+            sql(
+                "UPDATE message_thread SET application_id = NULL WHERE application_id = ANY(${bind(deletableIds)}) RETURNING id"
+            )
+        }
             .executeAndReturnGeneratedKeys()
             .mapTo<MessageThreadId>()
             .forEach {
@@ -613,10 +610,9 @@ fun deleteExpiredFinanceNotes(dbc: Database.Connection, expireDate: LocalDate, l
 private fun Database.Transaction.deleteExpiredFinanceNotesBatch(
     expireDate: LocalDate,
     limit: Int,
-): List<FinanceNoteId> =
-    createUpdate {
-            sql(
-                """
+): List<FinanceNoteId> = createUpdate {
+    sql(
+        """
 WITH del_batch AS (
     SELECT id
     FROM finance_note
@@ -629,10 +625,10 @@ USING del_batch
 WHERE finance_note.id = del_batch.id
 RETURNING finance_note.id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .toList()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .toList()
 
 fun deleteExpiredServiceApplications(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
     logger.info { "Deleting at most $limit expired service applications" }
@@ -662,19 +658,18 @@ private fun Database.Transaction.deleteExpiredServiceApplicationsBatch(
     expireDate: LocalDate,
     limit: Int,
 ): Pair<List<ServiceApplicationId>, List<PlacementId>> {
-    val batch =
-        createQuery {
-                sql(
-                    """
+    val batch = createQuery {
+        sql(
+            """
 SELECT id
 FROM service_application
 WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
 FOR UPDATE
 LIMIT ${bind(limit)}
 """
-                )
-            }
-            .toList<ServiceApplicationId>()
+        )
+    }
+        .toList<ServiceApplicationId>()
 
     if (batch.isEmpty()) return emptyList<ServiceApplicationId>() to emptyList()
 
@@ -683,19 +678,18 @@ LIMIT ${bind(limit)}
     // check$source_service_application_ref
     // forbids nulling the pointer while source = 'SERVICE_APPLICATION', so clear both: with
     // source = NULL the CHECK's first disjunct is NULL (not FALSE) and the constraint passes.
-    val clearedPlacements =
-        createUpdate {
-                sql(
-                    """
+    val clearedPlacements = createUpdate {
+        sql(
+            """
 UPDATE placement
 SET source = NULL, source_service_application_id = NULL
 WHERE source_service_application_id = ANY(${bind(batch)})
 RETURNING id
 """
-                )
-            }
-            .executeAndReturnGeneratedKeys()
-            .toList<PlacementId>()
+        )
+    }
+        .executeAndReturnGeneratedKeys()
+        .toList<PlacementId>()
 
     execute { sql("DELETE FROM service_application WHERE id = ANY(${bind(batch)})") }
 
@@ -712,10 +706,9 @@ private fun Database.Transaction.deleteExpiredPedagogicalDocumentsBatch(
     expireDate: LocalDate,
     limit: Int,
 ): List<DeletedPedagogicalDocument> {
-    val documents =
-        createQuery {
-                sql(
-                    """
+    val documents = createQuery {
+        sql(
+            """
 SELECT id, child_id
 FROM pedagogical_document
 WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
@@ -723,24 +716,22 @@ ORDER BY created_at
 LIMIT ${bind(limit)}
 FOR UPDATE
 """
-                )
-            }
-            .toList { column<PedagogicalDocumentId>("id") to column<ChildId>("child_id") }
+        )
+    }
+        .toList { column<PedagogicalDocumentId>("id") to column<ChildId>("child_id") }
 
     val documentIds = documents.map { it.first }
     if (documentIds.isEmpty()) return emptyList()
 
-    val attachmentsByDocument =
-        createQuery {
-                sql(
-                    "SELECT id, pedagogical_document_id FROM attachment WHERE pedagogical_document_id = ANY(${bind(documentIds)})"
-                )
-            }
-            .toList {
-                column<PedagogicalDocumentId>("pedagogical_document_id") to
-                    column<AttachmentId>("id")
-            }
-            .groupBy({ it.first }, { it.second })
+    val attachmentsByDocument = createQuery {
+        sql(
+            "SELECT id, pedagogical_document_id FROM attachment WHERE pedagogical_document_id = ANY(${bind(documentIds)})"
+        )
+    }
+        .toList {
+            column<PedagogicalDocumentId>("pedagogical_document_id") to column<AttachmentId>("id")
+        }
+        .groupBy({ it.first }, { it.second })
 
     execute {
         sql(
@@ -773,10 +764,9 @@ fun deleteExpiredCitizenUsers(dbc: Database.Connection, expireDate: LocalDate, l
 private fun Database.Transaction.deleteExpiredCitizenUsersBatch(
     expireDate: LocalDate,
     limit: Int,
-): List<PersonId> =
-    createUpdate {
-            sql(
-                """
+): List<PersonId> = createUpdate {
+    sql(
+        """
 WITH del_batch AS (
     SELECT id
     FROM citizen_user
@@ -789,10 +779,10 @@ USING del_batch
 WHERE citizen_user.id = del_batch.id
 RETURNING citizen_user.id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .toList()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .toList()
 
 fun deleteExpiredGuardians(
     dbc: Database.Connection,
@@ -826,10 +816,9 @@ private fun Database.Transaction.deleteExpiredGuardiansBatch(
     citizenUserExpireDate: LocalDate,
     financeNoteExpireDate: LocalDate,
     limit: Int,
-): List<DeletedGuardian> =
-    createUpdate {
-            sql(
-                """
+): List<DeletedGuardian> = createUpdate {
+    sql(
+        """
 WITH del_batch AS (
     SELECT guardian_id, child_id
     FROM guardian
@@ -845,10 +834,10 @@ USING del_batch
 WHERE guardian.guardian_id = del_batch.guardian_id AND guardian.child_id = del_batch.child_id
 RETURNING guardian.guardian_id, guardian.child_id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .toList()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .toList()
 
 fun deleteExpiredFosterParents(
     dbc: Database.Connection,
@@ -891,10 +880,9 @@ private fun Database.Transaction.deleteExpiredFosterParentsBatch(
     citizenUserExpireDate: LocalDate,
     financeNoteExpireDate: LocalDate,
     limit: Int,
-): List<DeletedFosterParent> =
-    createUpdate {
-            sql(
-                """
+): List<DeletedFosterParent> = createUpdate {
+    sql(
+        """
 WITH del_batch AS (
     SELECT id
     FROM foster_parent
@@ -910,10 +898,10 @@ USING del_batch
 WHERE foster_parent.id = del_batch.id
 RETURNING foster_parent.id, foster_parent.parent_id, foster_parent.child_id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .toList()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .toList()
 
 fun deleteExpiredGuardianBlocklistRows(
     dbc: Database.Connection,
@@ -936,10 +924,9 @@ fun deleteExpiredGuardianBlocklistRows(
 private fun Database.Transaction.deleteExpiredGuardianBlocklistBatch(
     expireDate: LocalDate,
     limit: Int,
-): List<DeletedGuardian> =
-    createUpdate {
-            sql(
-                """
+): List<DeletedGuardian> = createUpdate {
+    sql(
+        """
 WITH del_batch AS (
     SELECT guardian_id, child_id
     FROM guardian_blocklist
@@ -954,10 +941,10 @@ WHERE
     guardian_blocklist.child_id = del_batch.child_id
 RETURNING guardian_blocklist.guardian_id, guardian_blocklist.child_id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .toList()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .toList()
 
 private fun personIdsWithPendingFinanceNoteRemoval(expireDate: LocalDate) = QuerySql {
     sql(

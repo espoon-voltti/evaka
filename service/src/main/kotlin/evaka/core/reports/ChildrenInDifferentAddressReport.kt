@@ -48,10 +48,9 @@ class ChildrenInDifferentAddressReportController(private val accessControl: Acce
 private fun Database.Read.getChildrenInDifferentAddressRows(
     clock: EvakaClock,
     unitFilter: AccessControlFilter<DaycareId>,
-): List<ChildrenInDifferentAddressReportRow> =
-    createQuery {
-            sql(
-                """
+): List<ChildrenInDifferentAddressReportRow> = createQuery {
+    sql(
+        """
         SELECT
             ca.name AS care_area_name,
             u.id AS unit_id,
@@ -89,10 +88,10 @@ private fun Database.Read.getChildrenInDifferentAddressRows(
             lower(ch.street_address) <> 'poste restante'
         ORDER BY u.name, p.last_name, p.first_name, ch.last_name, ch.first_name;
         """
-                    .trimIndent()
-            )
-        }
-        .toList<ChildrenInDifferentAddressReportRow>()
+            .trimIndent()
+    )
+}
+    .toList<ChildrenInDifferentAddressReportRow>()
 
 data class ChildrenInDifferentAddressReportRow(
     val careAreaName: String,

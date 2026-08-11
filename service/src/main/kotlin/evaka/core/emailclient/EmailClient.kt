@@ -110,8 +110,8 @@ private fun Database.Read.getEmailAddressAndDisabledTypes(
     personId: PersonId
 ): EmailAndEnabledEmailTypes {
     return createQuery {
-            sql("""SELECT email, disabled_email_types FROM person WHERE id = ${bind(personId)}""")
-        }
+        sql("""SELECT email, disabled_email_types FROM person WHERE id = ${bind(personId)}""")
+    }
         .exactlyOne<EmailAndEnabledEmailTypes>()
         .let { it.copy(email = it.email?.trim()) }
 }

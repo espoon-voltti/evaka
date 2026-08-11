@@ -44,10 +44,9 @@ class FamilyConflictReportController(private val accessControl: AccessControl) {
 
 private fun Database.Read.getFamilyConflicts(
     unitFilter: AccessControlFilter<DaycareId>
-): List<FamilyConflictReportRow> =
-    createQuery {
-            sql(
-                """
+): List<FamilyConflictReportRow> = createQuery {
+    sql(
+        """
         WITH child_conflicts AS (
             SELECT head_of_child as id, count(*) as child_conflict_count
             FROM fridge_child
@@ -87,10 +86,10 @@ private fun Database.Read.getFamilyConflicts(
         WHERE ${predicate(unitFilter.forTable("u"))}
         ORDER BY ca.name, u.name, co.last_name, co.first_name
             """
-                    .trimIndent()
-            )
-        }
-        .toList<FamilyConflictReportRow>()
+            .trimIndent()
+    )
+}
+    .toList<FamilyConflictReportRow>()
 
 data class FamilyConflictReportRow(
     val careAreaName: String,

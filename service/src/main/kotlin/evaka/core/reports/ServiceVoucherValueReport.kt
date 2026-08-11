@@ -290,18 +290,17 @@ private fun Database.Read.getServiceVoucherValues(
     unitIds: Set<DaycareId>? = null,
 ): List<ServiceVoucherValueRow> {
     val reportDate = LocalDate.of(year, month, 1)
-    val minChangeMonth =
-        createQuery {
-                sql(
-                    """
+    val minChangeMonth = createQuery {
+        sql(
+            """
     SELECT coalesce(min(valid_from), ${bind(reportDate)})
     FROM voucher_value_decision
     WHERE status != 'DRAFT'
     """
-                )
-            }
-            .exactlyOne<LocalDate>()
-            .withDayOfMonth(1)
+        )
+    }
+        .exactlyOne<LocalDate>()
+        .withDayOfMonth(1)
     val holidays =
         getHolidays(FiniteDateRange(minChangeMonth, reportDate.plusMonths(1).minusDays(1)))
     return createQuery {
@@ -523,10 +522,10 @@ WHERE (${bind(areaId)}::uuid IS NULL OR area.id = ${bind(areaId)}) AND (${bind(u
 
 private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
     return createQuery {
-            sql(
-                "SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= ${bind(year)} AND month >= ${bind(month)} LIMIT 1"
-            )
-        }
+        sql(
+            "SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= ${bind(year)} AND month >= ${bind(month)} LIMIT 1"
+        )
+    }
         .exactlyOneOrNull<HelsinkiDateTime>()
         ?.toLocalDate()
 }
@@ -535,10 +534,10 @@ data class MonthOfYear(val year: Int, val month: Int)
 
 fun Database.Read.getLastSnapshotMonth(): MonthOfYear? {
     return createQuery {
-            sql(
-                "SELECT year, month FROM voucher_value_report_snapshot ORDER BY year DESC, month DESC LIMIT 1"
-            )
-        }
+        sql(
+            "SELECT year, month FROM voucher_value_report_snapshot ORDER BY year DESC, month DESC LIMIT 1"
+        )
+    }
         .exactlyOneOrNull<MonthOfYear>()
 }
 
@@ -549,8 +548,8 @@ private fun Database.Read.getSnapshotVoucherValues(
     unitIds: Set<DaycareId>? = null,
 ): List<ServiceVoucherValueRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     child.id AS child_id,
     child.first_name AS child_first_name,
@@ -601,7 +600,7 @@ WHERE sn.year = ${bind(year)} AND sn.month = ${bind(month)}
 AND (${bind(areaId)}::uuid IS NULL OR area.id = ${bind(areaId)})
 AND (${bind(unitIds)}::uuid[] IS NULL OR unit.id = ANY(${bind(unitIds)}))
 """
-            )
-        }
+        )
+    }
         .toList<ServiceVoucherValueRow>()
 }

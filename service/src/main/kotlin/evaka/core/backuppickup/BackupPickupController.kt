@@ -129,40 +129,39 @@ class BackupPickupController(private val accessControl: AccessControl) {
 fun Database.Transaction.createBackupPickup(
     childId: ChildId,
     data: ChildBackupPickupContent,
-): BackupPickupId =
-    createQuery {
-            sql(
-                """
+): BackupPickupId = createQuery {
+    sql(
+        """
 INSERT INTO backup_pickup (child_id, name, phone)
 VALUES (${bind(childId)}, ${bind(data.name)}, ${bind(data.phone)})
 RETURNING id
 """
-            )
-        }
-        .exactlyOne()
+    )
+}
+    .exactlyOne()
 
 fun Database.Read.getBackupPickupsForChild(childId: ChildId): List<ChildBackupPickup> =
     createQuery {
-            sql(
-                "SELECT id, child_id, name, phone FROM backup_pickup WHERE child_Id = ${bind(childId)}"
-            )
-        }
-        .toList()
+        sql("SELECT id, child_id, name, phone FROM backup_pickup WHERE child_Id = ${bind(childId)}")
+    }
+    .toList()
 
 fun Database.Transaction.updateBackupPickup(id: BackupPickupId, data: ChildBackupPickupContent) =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE backup_pickup
 SET name = ${bind(data.name)}, phone = ${bind(data.phone)}
 WHERE id  = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }
+    .updateExactlyOne()
 
-fun Database.Transaction.deleteBackupPickup(id: BackupPickupId) =
-    createUpdate { sql("DELETE FROM backup_pickup WHERE id = ${bind(id)}") }.updateExactlyOne()
+fun Database.Transaction.deleteBackupPickup(id: BackupPickupId) = createUpdate {
+    sql("DELETE FROM backup_pickup WHERE id = ${bind(id)}")
+}
+    .updateExactlyOne()
 
 data class ChildBackupPickupContent(val name: String, val phone: String)
 

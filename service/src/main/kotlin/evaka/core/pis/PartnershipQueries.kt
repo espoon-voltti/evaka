@@ -182,14 +182,14 @@ fun Database.Transaction.updatePartnershipDuration(
     modifiedBy: EvakaUserId?,
 ): Boolean {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         UPDATE fridge_partner SET start_date = ${bind(startDate)}, end_date = ${bind(endDate)}, modify_source = ${bind(modifySource)}, modified_at = ${bind(modifiedAt)}, modified_by = ${bind(modifiedBy)}
         WHERE partnership_id = ${bind(id)}
         RETURNING partnership_id
         """
-            )
-        }
+        )
+    }
         .mapTo<PartnershipId>()
         .useIterable { it.firstOrNull() } != null
 }
@@ -200,22 +200,22 @@ fun Database.Transaction.retryPartnership(
     modificationDate: HelsinkiDateTime,
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
         UPDATE fridge_partner SET conflict = false, modified_by = ${bind(modifiedById)}, modified_at = ${bind(modificationDate)}
         WHERE partnership_id = ${bind(id)}
     """
-            )
-        }
+        )
+    }
         .execute()
 }
 
 fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {
     return createQuery {
-            sql(
-                "DELETE FROM fridge_partner WHERE partnership_id = ${bind(id)} RETURNING partnership_id"
-            )
-        }
+        sql(
+            "DELETE FROM fridge_partner WHERE partnership_id = ${bind(id)} RETURNING partnership_id"
+        )
+    }
         .mapTo<PartnershipId>()
         .useIterable { it.firstOrNull() } != null
 }

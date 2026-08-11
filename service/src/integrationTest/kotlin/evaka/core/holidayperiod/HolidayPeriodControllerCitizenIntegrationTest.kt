@@ -770,11 +770,8 @@ class HolidayPeriodControllerCitizenIntegrationTest :
         val category: AbsenceCategory,
     )
 
-    private fun Database.Read.getAllAbsences(): List<Absence> =
-        createQuery {
-                sql(
-                    "SELECT a.child_id, a.date, a.absence_type as type FROM absence a ORDER BY date"
-                )
-            }
-            .toList<Absence>()
+    private fun Database.Read.getAllAbsences(): List<Absence> = createQuery {
+        sql("SELECT a.child_id, a.date, a.absence_type as type FROM absence a ORDER BY date")
+    }
+        .toList<Absence>()
 }

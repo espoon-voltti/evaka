@@ -114,15 +114,15 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
 
     val unit =
         createQuery {
-                sql(
-                    """
+            sql(
+                """
         SELECT id, name, enabled_pilot_features AS features, 
             operation_days, shift_care_operation_days, shift_care_open_on_holidays
         FROM daycare u
         WHERE u.id = ${bind(unitId)}
         """
-                )
-            }
+            )
+        }
             .exactlyOneOrNull<UnitBasics>() ?: throw NotFound("Unit $unitId not found")
 
     val isOperationalDate =
@@ -137,10 +137,9 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         val childCapacity: Double,
     )
 
-    val tmpGroups =
-        createQuery {
-                sql(
-                    """
+    val tmpGroups = createQuery {
+        sql(
+            """
         WITH child AS (
             SELECT
                 pl.group_id,
@@ -228,9 +227,9 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             LEFT JOIN staff s ON s.group_id = g.id
         WHERE u.id = ${bind(unitId)};
         """
-                )
-            }
-            .toList<TempGroupInfo>()
+        )
+    }
+        .toList<TempGroupInfo>()
 
     val totalChildCapacity = tmpGroups.sumOf { it.childCapacity }
     val totalStaffCapacity = tmpGroups.sumOf { it.staffCapacity }
@@ -245,10 +244,9 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             .map { GroupInfo(it.id, it.name, it.childCapacity, it.staffCapacity, it.utilization) }
             .sortedBy { it.name }
 
-    val staff =
-        createQuery {
-                sql(
-                    """
+    val staff = createQuery {
+        sql(
+            """
         SELECT
             COALESCE(e.preferred_first_name, e.first_name) AS first_name,
             e.last_name,
@@ -268,9 +266,9 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         ) group_acl ON acl.employee_id = group_acl.employee_id
         WHERE acl.daycare_id = ${bind(unitId)} AND e.active
         """
-                )
-            }
-            .toList<Staff>()
+        )
+    }
+        .toList<Staff>()
 
     return UnitInfo(
         id = unit.id,
@@ -295,8 +293,8 @@ data class UnitStats(
 
 fun Database.Read.fetchUnitStats(unitIds: List<DaycareId>, date: LocalDate): List<UnitStats> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH present_children AS (
     SELECT
         ca.unit_id,
@@ -369,6 +367,6 @@ LEFT JOIN present_staff ps ON ps.unit_id = u.id
 LEFT JOIN total_staff ts ON ts.unit_id = u.id
 WHERE u.id = ANY(${bind(unitIds)})
 """
-            )
-        }
-        .toList()
+        )
+    }
+    .toList()

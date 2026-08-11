@@ -54,8 +54,8 @@ private fun Database.Read.getEndedPlacementsRows(
     to: LocalDate,
 ): List<EndedPlacementsReportRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH ended_placements AS (
     SELECT 
         p.id AS child_id,
@@ -93,8 +93,8 @@ GROUP BY ep.child_id, ep.first_name, ep.last_name, ep.date_of_birth, ep.placemen
 HAVING min(next_pl.start_date) IS NULL OR min(next_pl.start_date) > ${bind(to)}
 ORDER BY last_name, first_name, ep.child_id
 """
-            )
-        }
+        )
+    }
         .toList<EndedPlacementsReportRow>()
 }
 

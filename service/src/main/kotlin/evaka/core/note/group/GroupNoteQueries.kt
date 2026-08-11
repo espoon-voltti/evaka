@@ -15,26 +15,26 @@ fun Database.Read.getGroupNotesForGroup(groupId: GroupId): List<GroupNote> {
 
 private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<GroupNote> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires, gn.created_at
 FROM group_note gn
 WHERE group_id = ANY(${bind(groupIds)})
 """
-            )
-        }
-        .toList<GroupNote>()
+        )
+    }
+    .toList<GroupNote>()
 
 fun Database.Transaction.createGroupNote(groupId: GroupId, note: GroupNoteBody): GroupNoteId {
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO group_note (group_id, note, expires)
 VALUES (${bind(groupId)}, ${bind(note.note)}, ${bind(note.expires)})
 RETURNING id
         """
-            )
-        }
+        )
+    }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<GroupNoteId>()
 }
@@ -46,8 +46,8 @@ fun Database.Transaction.updateGroupNote(
 ): GroupNote {
     val now = clock.now()
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE group_note SET
     note = ${bind(note.note)},
     expires = ${bind(note.expires)},
@@ -55,8 +55,8 @@ UPDATE group_note SET
 WHERE id = ${bind(id)}
 RETURNING *
         """
-            )
-        }
+        )
+    }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<GroupNote>()
 }

@@ -38,9 +38,10 @@ WHERE ${predicate(predicate.forTable("a"))}
     )
 }
 
-fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> =
-    createQuery { getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") }) }
-        .toList<AssistanceFactor>()
+fun Database.Read.getAssistanceFactors(child: ChildId): List<AssistanceFactor> = createQuery {
+    getAssistanceFactors(Predicate { where("$it.child_id = ${bind(child)}") })
+}
+    .toList<AssistanceFactor>()
 
 fun Database.Read.getAssistanceFactorsForChildrenOverRange(
     childIds: Set<PersonId>,
@@ -49,63 +50,61 @@ fun Database.Read.getAssistanceFactorsForChildrenOverRange(
     if (childIds.isEmpty()) emptyList()
     else
         createQuery {
-                getAssistanceFactors(
-                    Predicate {
-                        where(
-                            "$it.child_id = ANY (${bind(childIds)}) AND $it.valid_during && ${bind(range)}"
-                        )
-                    }
-                )
-            }
+            getAssistanceFactors(
+                Predicate {
+                    where(
+                        "$it.child_id = ANY (${bind(childIds)}) AND $it.valid_during && ${bind(range)}"
+                    )
+                }
+            )
+        }
             .toList<AssistanceFactor>()
 
 fun Database.Read.getAssistanceFactorsByChildId(
     childId: ChildId,
     filter: AccessControlFilter<AssistanceFactorId>,
-): List<AssistanceFactor> =
-    createQuery {
-            sql(
-                """
+): List<AssistanceFactor> = createQuery {
+    sql(
+        """
 SELECT $assistanceSelectFields
 FROM assistance_factor a
 LEFT JOIN evaka_user e ON a.modified_by = e.id
 WHERE child_id = ${bind(childId)} AND ${predicate(filter.forTable("a"))}
 """
-            )
-        }
-        .toList<AssistanceFactor>()
+    )
+}
+    .toList<AssistanceFactor>()
 
-fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
-    createQuery { getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") }) }
-        .exactlyOneOrNull<AssistanceFactor>()
+fun Database.Read.getAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? = createQuery {
+    getAssistanceFactors(Predicate { where("$it.id = ${bind(id)}") })
+}
+    .exactlyOneOrNull<AssistanceFactor>()
 
 fun Database.Transaction.insertAssistanceFactor(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     child: ChildId,
     update: AssistanceFactorUpdate,
-): AssistanceFactorId =
-    createUpdate {
-            sql(
-                """
+): AssistanceFactorId = createUpdate {
+    sql(
+        """
 INSERT INTO assistance_factor (child_id, modified_at, modified_by, valid_during, capacity_factor)
 VALUES (${bind(child)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(update.validDuring)}, ${bind(update.capacityFactor)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<AssistanceFactorId>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<AssistanceFactorId>()
 
 fun Database.Transaction.updateAssistanceFactor(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     id: AssistanceFactorId,
     update: AssistanceFactorUpdate,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE assistance_factor
 SET
     capacity_factor = ${bind(update.capacityFactor)},
@@ -114,28 +113,28 @@ SET
     modified_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
 fun Database.Transaction.deleteAssistanceFactor(id: AssistanceFactorId): AssistanceFactor? =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 WITH a AS (
     DELETE FROM assistance_factor WHERE id = ${bind(id)}
     RETURNING id, child_id, valid_during, capacity_factor, modified_at, modified_by
 ) SELECT $assistanceSelectFields FROM a LEFT JOIN evaka_user e ON a.modified_by = e.id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOneOrNull<AssistanceFactor>()
+        )
+    }
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull<AssistanceFactor>()
 
 fun Database.Transaction.endAssistanceFactorsWhichBelongToPastPlacements(date: LocalDate) =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 WITH
 adjacent_placement AS (
   SELECT
@@ -152,53 +151,50 @@ WHERE adjacent_placement.child_id = assistance_factor.child_id
   AND NOT adjacent_placement.valid_during @> (upper(assistance_factor.valid_during) - interval '1 day')::date
   AND upper(adjacent_placement.valid_during) = ${bind(date)}
 """
-            )
-        }
-        .execute()
+        )
+    }
+    .execute()
 
 fun Database.Read.getDaycareAssistanceByChildId(
     child: ChildId,
     filter: AccessControlFilter<DaycareAssistanceId>,
-): List<DaycareAssistance> =
-    createQuery {
-            sql(
-                """
+): List<DaycareAssistance> = createQuery {
+    sql(
+        """
 SELECT d.id, d.child_id, d.valid_during, d.level, d.modified, e.id AS modified_by_id, e.name AS modified_by_name, e.type AS modified_by_type
 FROM daycare_assistance d
 LEFT JOIN evaka_user e ON d.modified_by = e.id
 WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("d"))}
 """
-            )
-        }
-        .toList<DaycareAssistance>()
+    )
+}
+    .toList<DaycareAssistance>()
 
 fun Database.Transaction.insertDaycareAssistance(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     child: ChildId,
     update: DaycareAssistanceUpdate,
-): DaycareAssistanceId =
-    createUpdate {
-            sql(
-                """
+): DaycareAssistanceId = createUpdate {
+    sql(
+        """
 INSERT INTO daycare_assistance (child_id, modified, modified_by, valid_during, level)
 VALUES (${bind(child)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(update.validDuring)}, ${bind(update.level)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<DaycareAssistanceId>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<DaycareAssistanceId>()
 
 fun Database.Transaction.updateDaycareAssistance(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     id: DaycareAssistanceId,
     update: DaycareAssistanceUpdate,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE daycare_assistance
 SET
     level = ${bind(update.level)},
@@ -207,12 +203,14 @@ SET
     modified_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
-fun Database.Transaction.deleteDaycareAssistance(id: DaycareAssistanceId) =
-    createUpdate { sql("DELETE FROM daycare_assistance WHERE id = ${bind(id)}") }.execute()
+fun Database.Transaction.deleteDaycareAssistance(id: DaycareAssistanceId) = createUpdate {
+    sql("DELETE FROM daycare_assistance WHERE id = ${bind(id)}")
+}
+    .execute()
 
 private const val preschoolAssistanceSelectFields =
     """
@@ -226,62 +224,58 @@ private const val preschoolAssistanceSelectFields =
     e.type AS modified_by_type
 """
 
-fun Database.Read.getPreschoolAssistances(child: ChildId): List<PreschoolAssistance> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getPreschoolAssistances(child: ChildId): List<PreschoolAssistance> = createQuery {
+    sql(
+        """
 SELECT $preschoolAssistanceSelectFields
 FROM preschool_assistance p
 LEFT JOIN evaka_user e ON p.modified_by = e.id
 WHERE child_id = ${bind(child)}
 """
-            )
-        }
-        .toList<PreschoolAssistance>()
+    )
+}
+    .toList<PreschoolAssistance>()
 
 fun Database.Read.getPreschoolAssistanceByChildId(
     child: ChildId,
     filter: AccessControlFilter<PreschoolAssistanceId>,
-): List<PreschoolAssistance> =
-    createQuery {
-            sql(
-                """
+): List<PreschoolAssistance> = createQuery {
+    sql(
+        """
 SELECT $preschoolAssistanceSelectFields
 FROM preschool_assistance p
 LEFT JOIN evaka_user e ON p.modified_by = e.id
 WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("p"))}
 """
-            )
-        }
-        .toList<PreschoolAssistance>()
+    )
+}
+    .toList<PreschoolAssistance>()
 
 fun Database.Transaction.insertPreschoolAssistance(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     child: ChildId,
     update: PreschoolAssistanceUpdate,
-): PreschoolAssistanceId =
-    createUpdate {
-            sql(
-                """
+): PreschoolAssistanceId = createUpdate {
+    sql(
+        """
 INSERT INTO preschool_assistance (child_id, modified, modified_by, valid_during, level)
 VALUES (${bind(child)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(update.validDuring)}, ${bind(update.level)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<PreschoolAssistanceId>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<PreschoolAssistanceId>()
 
 fun Database.Transaction.updatePreschoolAssistance(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     id: PreschoolAssistanceId,
     update: PreschoolAssistanceUpdate,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE preschool_assistance
 SET
     level = ${bind(update.level)},
@@ -290,12 +284,14 @@ SET
     modified_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
-fun Database.Transaction.deletePreschoolAssistance(id: PreschoolAssistanceId) =
-    createUpdate { sql("DELETE FROM preschool_assistance WHERE id = ${bind(id)}") }.execute()
+fun Database.Transaction.deletePreschoolAssistance(id: PreschoolAssistanceId) = createUpdate {
+    sql("DELETE FROM preschool_assistance WHERE id = ${bind(id)}")
+}
+    .execute()
 
 private const val otherAssistanceSelectFields =
     """
@@ -312,46 +308,43 @@ private const val otherAssistanceSelectFields =
 fun Database.Read.getOtherAssistanceMeasuresByChildId(
     child: ChildId,
     filter: AccessControlFilter<OtherAssistanceMeasureId>,
-): List<OtherAssistanceMeasure> =
-    createQuery {
-            sql(
-                """
+): List<OtherAssistanceMeasure> = createQuery {
+    sql(
+        """
 SELECT $otherAssistanceSelectFields
 FROM other_assistance_measure o
 LEFT JOIN evaka_user e ON o.modified_by = e.id
 WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("o"))}
 """
-            )
-        }
-        .toList<OtherAssistanceMeasure>()
+    )
+}
+    .toList<OtherAssistanceMeasure>()
 
 fun Database.Transaction.insertOtherAssistanceMeasure(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     child: ChildId,
     update: OtherAssistanceMeasureUpdate,
-): OtherAssistanceMeasureId =
-    createUpdate {
-            sql(
-                """
+): OtherAssistanceMeasureId = createUpdate {
+    sql(
+        """
 INSERT INTO other_assistance_measure (child_id, modified, modified_by, valid_during, type)
 VALUES (${bind(child)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(update.validDuring)}, ${bind(update.type)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<OtherAssistanceMeasureId>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<OtherAssistanceMeasureId>()
 
 fun Database.Transaction.updateOtherAssistanceMeasure(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     id: OtherAssistanceMeasureId,
     update: OtherAssistanceMeasureUpdate,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE other_assistance_measure
 SET
     type = ${bind(update.type)},
@@ -360,9 +353,11 @@ SET
     modified_by = ${bind(user.evakaUserId)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
-fun Database.Transaction.deleteOtherAssistanceMeasure(id: OtherAssistanceMeasureId) =
-    createUpdate { sql("DELETE FROM other_assistance_measure WHERE id = ${bind(id)}") }.execute()
+fun Database.Transaction.deleteOtherAssistanceMeasure(id: OtherAssistanceMeasureId) = createUpdate {
+    sql("DELETE FROM other_assistance_measure WHERE id = ${bind(id)}")
+}
+    .execute()

@@ -23,8 +23,10 @@ internal data class KoskiStudyRightRaw(
     val payload: String,
 )
 
-internal fun Database.Read.getStoredResults() =
-    createQuery { sql("SELECT * FROM koski_study_right") }.toList<KoskiStudyRightRaw>()
+internal fun Database.Read.getStoredResults() = createQuery {
+    sql("SELECT * FROM koski_study_right")
+}
+    .toList<KoskiStudyRightRaw>()
 
 internal fun Database.Transaction.setUnitOid(unit: DaycareId, oid: String) = execute {
     sql("UPDATE daycare SET oph_unit_oid = ${bind(oid)} WHERE daycare.id = ${bind(unit)}")

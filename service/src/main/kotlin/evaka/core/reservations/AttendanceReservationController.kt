@@ -1005,10 +1005,9 @@ private data class ChildBackupPlacement(
 private fun Database.Read.getPlacements(
     unitId: DaycareId,
     dateRange: FiniteDateRange,
-): Map<ChildId, List<ChildPlacement>> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, List<ChildPlacement>> = createQuery {
+    sql(
+        """
 SELECT
     daterange(p.start_date, p.end_date, '[]') AS period,
     p.child_id,
@@ -1016,18 +1015,17 @@ SELECT
 FROM placement p
 WHERE p.unit_id = ${bind(unitId)} AND daterange(p.start_date, p.end_date, '[]') && ${bind(dateRange)}
 """
-            )
-        }
-        .toList<ChildPlacement>()
-        .groupBy { it.childId }
+    )
+}
+    .toList<ChildPlacement>()
+    .groupBy { it.childId }
 
 private fun Database.Read.getGroupPlacements(
     unitId: DaycareId,
     dateRange: FiniteDateRange,
-): Map<ChildId, List<ChildGroupPlacement>> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, List<ChildGroupPlacement>> = createQuery {
+    sql(
+        """
 SELECT
     daterange(dgp.start_date, dgp.end_date, '[]') AS period,
     p.child_id,
@@ -1037,18 +1035,17 @@ FROM daycare_group_placement dgp
 JOIN placement p ON p.id = dgp.daycare_placement_id
 WHERE p.unit_id = ${bind(unitId)} AND daterange(dgp.start_date, dgp.end_date, '[]') && ${bind(dateRange)}
 """
-            )
-        }
-        .toList<ChildGroupPlacement>()
-        .groupBy { it.childId }
+    )
+}
+    .toList<ChildGroupPlacement>()
+    .groupBy { it.childId }
 
 private fun Database.Read.getBackupPlacements(
     unitId: DaycareId,
     dateRange: FiniteDateRange,
-): Map<ChildId, List<ChildBackupPlacement>> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, List<ChildBackupPlacement>> = createQuery {
+    sql(
+        """
 SELECT
     daterange(bc.start_date, bc.end_date, '[]') AS period,
     bc.child_id,
@@ -1059,10 +1056,10 @@ FROM backup_care bc
 JOIN placement p ON p.child_id = bc.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(bc.start_date, bc.end_date, '[]')
 WHERE (p.unit_id = ${bind(unitId)} OR bc.unit_id = ${bind(unitId)}) AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(dateRange)}
 """
-            )
-        }
-        .toList<ChildBackupPlacement>()
-        .groupBy { it.childId }
+    )
+}
+    .toList<ChildBackupPlacement>()
+    .groupBy { it.childId }
 
 data class ChildData(
     val child: UnitAttendanceReservations.Child,
@@ -1130,8 +1127,8 @@ fun Database.Read.getChildData(
     val serviceNeedInfos = getChildServiceNeedInfos(unitId, childIds, dateRange)
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     p.id,
     p.first_name,
@@ -1190,8 +1187,8 @@ SELECT
 FROM person p
 WHERE p.id = ANY(${bind(childIds)})
 """
-            )
-        }
+        )
+    }
         .toList<ChildDataQueryResult>()
         .map { row ->
             ChildData(

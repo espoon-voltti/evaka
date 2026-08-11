@@ -14,40 +14,40 @@ fun Database.Transaction.storeDvvModificationToken(
     modificationsReceived: Int,
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO dvv_modification_token (token, next_token, ssns_sent, modifications_received) 
 VALUES (${bind(token)}, ${bind(nextToken)}, ${bind(ssnsSent)}, ${bind(modificationsReceived)})
 """
-            )
-        }
+        )
+    }
         .execute()
 }
 
 fun Database.Read.getNextDvvModificationToken(): String {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT next_token
 FROM dvv_modification_token
 ORDER BY created DESC
 LIMIT 1
 """
-            )
-        }
+        )
+    }
         .exactlyOne<String>()
 }
 
 fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT token, next_token, ssns_sent, modifications_received
 FROM dvv_modification_token
 WHERE token = ${bind(token)}
 """
-            )
-        }
+        )
+    }
         .exactlyOne<DvvModificationToken>()
 }
 
@@ -58,14 +58,14 @@ fun Database.Transaction.deleteDvvModificationToken(token: String) {
 
 fun Database.Read.getPersonIdsBySsns(ssns: List<String>): List<PersonId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id 
 FROM person
 WHERE social_security_number = ANY (${bind(ssns)})
 """
-            )
-        }
+        )
+    }
         .toList<PersonId>()
 }
 

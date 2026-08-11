@@ -1130,7 +1130,9 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 1,
                 1,
             ),
-            getIncomeStatementsAwaitingHandler(SearchIncomeStatementsRequest(sentStartDate = today)),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(sentStartDate = today)
+            ),
         )
     }
 

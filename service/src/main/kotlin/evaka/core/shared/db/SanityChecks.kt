@@ -67,49 +67,49 @@ private fun logResult(description: String, violations: List<Id<*>>) {
 
 fun Database.Read.sanityCheckAttendancesInFuture(today: LocalDate): List<ChildAttendanceId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT id
         FROM child_attendance 
         WHERE date > ${bind(today)}
     """
-            )
-        }
+        )
+    }
         .toList()
 }
 
 fun Database.Read.sanityCheckServiceNeedOutsidePlacement(): List<ServiceNeedId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT sn.id
         FROM (SELECT * FROM service_need WHERE start_date >= ${bind(checkStart)}) sn
         JOIN placement pl on pl.id = sn.placement_id
         WHERE sn.start_date < pl.start_date OR sn.end_date > pl.end_date
     """
-            )
-        }
+        )
+    }
         .toList()
 }
 
 fun Database.Read.sanityCheckGroupPlacementOutsidePlacement(): List<GroupPlacementId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT gpl.id
         FROM (SELECT * FROM daycare_group_placement WHERE start_date >= ${bind(checkStart)}) gpl
         JOIN placement pl on pl.id = gpl.daycare_placement_id
         WHERE gpl.start_date < pl.start_date OR gpl.end_date > pl.end_date
     """
-            )
-        }
+        )
+    }
         .toList()
 }
 
 fun Database.Read.sanityCheckBackupCareOutsidePlacement(): List<BackupCareId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT bc.id
         FROM (SELECT * FROM backup_care WHERE start_date >= ${bind(checkStart)}) bc
         WHERE NOT isempty(
@@ -120,8 +120,8 @@ fun Database.Read.sanityCheckBackupCareOutsidePlacement(): List<BackupCareId> {
             )
         )
     """
-            )
-        }
+        )
+    }
         .toList()
 }
 
@@ -129,8 +129,8 @@ fun Database.Read.sanityCheckReservationsOutsidePlacements(
     today: LocalDate
 ): List<AttendanceReservationId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT ar.id
         FROM attendance_reservation ar
         WHERE
@@ -140,8 +140,8 @@ fun Database.Read.sanityCheckReservationsOutsidePlacements(
                 WHERE p.child_id = ar.child_id AND daterange(p.start_date, p.end_date, '[]') @> ar.date
             )
     """
-            )
-        }
+        )
+    }
         .toList()
 }
 
@@ -149,15 +149,15 @@ fun Database.Read.sanityCheckReservationsDuringFixedSchedulePlacements(
     today: LocalDate
 ): List<AttendanceReservationId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT ar.id
         FROM attendance_reservation ar
         JOIN placement pl ON pl.child_id = ar.child_id AND daterange(pl.start_date, pl.end_date, '[]') @> ar.date
         WHERE ar.date >= ${bind(today)} AND pl.type IN ('PRESCHOOL', 'PREPARATORY')
     """
-            )
-        }
+        )
+    }
         .toList()
 }
 
@@ -165,8 +165,8 @@ fun Database.Read.sanityCheckChildInOverlappingFeeDecisions(
     statuses: List<FeeDecisionStatus>
 ): List<ChildId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT DISTINCT fdc.child_id
         FROM (SELECT * FROM fee_decision WHERE ${bind(checkRange)} @> valid_during) fd
         JOIN fee_decision_child fdc on fdc.fee_decision_id = fd.id
@@ -182,15 +182,15 @@ fun Database.Read.sanityCheckChildInOverlappingFeeDecisions(
                     fd_overlapping.status = ANY(${bind(statuses)})
             )
     """
-            )
-        }
+        )
+    }
         .toList()
 }
 
 fun Database.Read.sanityCheckChildDocumentPublishingByStatus(): List<ChildDocumentId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT cd.id
         FROM child_document cd
         LEFT JOIN child_document_published_version v
@@ -203,7 +203,7 @@ fun Database.Read.sanityCheckChildDocumentPublishingByStatus(): List<ChildDocume
                     cd.status != 'DRAFT' AND v.id IS NULL
             END
     """
-            )
-        }
+        )
+    }
         .toList()
 }

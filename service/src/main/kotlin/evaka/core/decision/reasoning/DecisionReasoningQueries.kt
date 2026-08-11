@@ -27,18 +27,17 @@ fun Database.Read.getGenericReasonings(
     collectionType: DecisionReasoningCollectionType,
     today: LocalDate,
 ): List<DecisionGenericReasoning> {
-    val rows =
-        createQuery {
-                sql(
-                    """
+    val rows = createQuery {
+        sql(
+            """
 SELECT id, collection_type, valid_from, text_fi, text_sv, ready, created_at, modified_at
 FROM decision_reasoning_generic
 WHERE collection_type = ${bind(collectionType)} AND removed_at IS NULL
 ORDER BY valid_from DESC, created_at DESC
 """
-                )
-            }
-            .toList<DecisionGenericReasoningRow>()
+        )
+    }
+        .toList<DecisionGenericReasoningRow>()
     val sortedUniqueValidFrom = rows.map { it.validFrom }.distinct().sorted()
     return rows.map { row ->
         val idx = sortedUniqueValidFrom.indexOf(row.validFrom)
@@ -66,28 +65,26 @@ ORDER BY valid_from DESC, created_at DESC
 fun Database.Transaction.insertGenericReasoning(
     request: DecisionGenericReasoningRequest,
     now: HelsinkiDateTime,
-): DecisionGenericReasoningId =
-    createUpdate {
-            sql(
-                """
+): DecisionGenericReasoningId = createUpdate {
+    sql(
+        """
 INSERT INTO decision_reasoning_generic (collection_type, valid_from, text_fi, text_sv, ready, created_at, modified_at)
 VALUES (${bind(request.collectionType)}, ${bind(request.validFrom)}, ${bind(request.textFi)}, ${bind(request.textSv)}, ${bind(request.ready)}, ${bind(now)}, ${bind(now)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<DecisionGenericReasoningId>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<DecisionGenericReasoningId>()
 
 fun Database.Transaction.updateGenericReasoning(
     id: DecisionGenericReasoningId,
     request: DecisionGenericReasoningRequest,
     now: HelsinkiDateTime,
 ) {
-    val updated =
-        createUpdate {
-                sql(
-                    """
+    val updated = createUpdate {
+        sql(
+            """
 UPDATE decision_reasoning_generic
 SET valid_from = ${bind(request.validFrom)},
     text_fi = ${bind(request.textFi)},
@@ -96,25 +93,24 @@ SET valid_from = ${bind(request.validFrom)},
     modified_at = ${bind(now)}
 WHERE id = ${bind(id)} AND ready = false
 """
-                )
-            }
-            .execute()
+        )
+    }
+        .execute()
     if (updated == 0) {
         throw NotFound("Generic reasoning $id not found in expected state (not ready)")
     }
 }
 
 fun Database.Transaction.deleteGenericReasoning(id: DecisionGenericReasoningId) {
-    val deleted =
-        createUpdate {
-                sql(
-                    """
+    val deleted = createUpdate {
+        sql(
+            """
 DELETE FROM decision_reasoning_generic
 WHERE id = ${bind(id)} AND ready = false
 """
-                )
-            }
-            .execute()
+        )
+    }
+        .execute()
     if (deleted == 0) {
         throw NotFound("Generic reasoning $id not found in expected state (not ready)")
     }
@@ -125,38 +121,36 @@ fun Database.Transaction.removeGenericReasoning(
     now: HelsinkiDateTime,
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE decision_reasoning_generic
 SET removed_at = ${bind(now)}, modified_at = ${bind(now)}
 WHERE id = ${bind(id)} AND removed_at IS NULL
 """
-            )
-        }
+        )
+    }
         .updateExactlyOne()
 }
 
 fun Database.Read.getIndividualReasonings(
     collectionType: DecisionReasoningCollectionType
-): List<DecisionIndividualReasoning> =
-    createQuery {
-            sql(
-                """
+): List<DecisionIndividualReasoning> = createQuery {
+    sql(
+        """
 SELECT id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at
 FROM decision_reasoning_individual
 WHERE collection_type = ${bind(collectionType)}
 ORDER BY created_at DESC
 """
-            )
-        }
-        .toList<DecisionIndividualReasoning>()
+    )
+}
+    .toList<DecisionIndividualReasoning>()
 
 fun Database.Read.getIndividualReasoningSelectionsForDecision(
     decisionId: DecisionId
-): List<DecisionIndividualReasoning> =
-    createQuery {
-            sql(
-                """
+): List<DecisionIndividualReasoning> = createQuery {
+    sql(
+        """
 SELECT id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at
 FROM decision_reasoning_individual
 WHERE EXISTS (
@@ -166,55 +160,52 @@ WHERE EXISTS (
 )
 ORDER BY created_at DESC
 """
-            )
-        }
-        .toList<DecisionIndividualReasoning>()
+    )
+}
+    .toList<DecisionIndividualReasoning>()
 
 fun Database.Read.getIndividualReasoning(
     id: DecisionIndividualReasoningId
-): DecisionIndividualReasoning? =
-    createQuery {
-            sql(
-                """
+): DecisionIndividualReasoning? = createQuery {
+    sql(
+        """
 SELECT id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at
 FROM decision_reasoning_individual
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull<DecisionIndividualReasoning>()
+    )
+}
+    .exactlyOneOrNull<DecisionIndividualReasoning>()
 
 fun Database.Transaction.insertIndividualReasoning(
     request: DecisionIndividualReasoningRequest,
     now: HelsinkiDateTime,
-): DecisionIndividualReasoningId =
-    createUpdate {
-            sql(
-                """
+): DecisionIndividualReasoningId = createUpdate {
+    sql(
+        """
 INSERT INTO decision_reasoning_individual (collection_type, title_fi, title_sv, text_fi, text_sv, created_at, modified_at)
 VALUES (${bind(request.collectionType)}, ${bind(request.titleFi)}, ${bind(request.titleSv)}, ${bind(request.textFi)}, ${bind(request.textSv)}, ${bind(now)}, ${bind(now)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<DecisionIndividualReasoningId>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<DecisionIndividualReasoningId>()
 
 fun Database.Transaction.removeIndividualReasoning(
     id: DecisionIndividualReasoningId,
     now: HelsinkiDateTime,
 ) {
-    val updated =
-        createUpdate {
-                sql(
-                    """
+    val updated = createUpdate {
+        sql(
+            """
 UPDATE decision_reasoning_individual
 SET removed_at = ${bind(now)}, modified_at = ${bind(now)}
 WHERE id = ${bind(id)} AND removed_at IS NULL
 """
-                )
-            }
-            .execute()
+        )
+    }
+        .execute()
     if (updated == 0) {
         throw NotFound("Individual reasoning $id not found")
     }

@@ -53,11 +53,10 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
 private fun Database.Read.getMissingHeadOfFamilyRows(
     from: LocalDate,
     to: LocalDate?,
-): List<MissingHeadOfFamilyReportRow> =
-    createQuery {
-            val dateRange = DateRange(from, to)
-            sql(
-                """
+): List<MissingHeadOfFamilyReportRow> = createQuery {
+    val dateRange = DateRange(from, to)
+    sql(
+        """
 SELECT child_id, first_name, last_name, without_head
 FROM (
     SELECT
@@ -102,16 +101,16 @@ FROM (
 WHERE NOT isempty(without_head)
 ORDER BY last_name, first_name
         """
-            )
-        }
-        .toList {
-            MissingHeadOfFamilyReportRow(
-                childId = column("child_id"),
-                firstName = column("first_name"),
-                lastName = column("last_name"),
-                rangesWithoutHead = column<DateSet>("without_head").ranges().toList(),
-            )
-        }
+    )
+}
+    .toList {
+        MissingHeadOfFamilyReportRow(
+            childId = column("child_id"),
+            firstName = column("first_name"),
+            lastName = column("last_name"),
+            rangesWithoutHead = column<DateSet>("without_head").ranges().toList(),
+        )
+    }
 
 data class MissingHeadOfFamilyReportRow(
     val childId: ChildId,
