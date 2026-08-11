@@ -8,6 +8,7 @@ import evaka.core.decision.DecisionType
 import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.template.ITemplateProvider
+import evaka.trevaka.template.decisionFilename
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -20,19 +21,7 @@ class TemplateConfiguration {
 
 class VesilahtiTemplateProvider : ITemplateProvider {
     override fun getLocalizedFilename(type: DecisionType, lang: OfficialLanguage): String =
-        when (type) {
-            DecisionType.CLUB -> throw Error("Not supported")
-
-            DecisionType.DAYCARE,
-            DecisionType.DAYCARE_PART_TIME -> "Varhaiskasvatuspäätös"
-
-            DecisionType.PRESCHOOL -> "Esiopetuspäätös"
-
-            DecisionType.PRESCHOOL_DAYCARE,
-            DecisionType.PRESCHOOL_CLUB -> "Esiopetusta_täydentävän_toiminnan_päätös"
-
-            DecisionType.PREPARATORY_EDUCATION -> throw Error("Not supported")
-        }
+        decisionFilename(type)
 
     override fun getFeeDecisionPath(): String = "fee-decision/decision"
 
