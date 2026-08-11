@@ -10,7 +10,7 @@ import type {
   DecisionType
 } from 'lib-common/generated/api-types/decision'
 import type { DecisionIndividualReasoningId } from 'lib-common/generated/api-types/shared'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { Chip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -170,10 +170,11 @@ export default React.memo(function DecisionCard({
   const reasoningsExempt =
     featureConfig?.decisionsWithoutReasonings.includes(decision.type) ?? false
   const individualReasoningsResult = useQueryResult(
-    getIndividualReasoningsQuery({
-      collectionType: decisionTypeToCollectionType(decision.type)
-    }),
-    { enabled: !reasoningsExempt }
+    reasoningsExempt
+      ? constantQuery([])
+      : getIndividualReasoningsQuery({
+          collectionType: decisionTypeToCollectionType(decision.type)
+        })
   )
 
   const typeLabel =
