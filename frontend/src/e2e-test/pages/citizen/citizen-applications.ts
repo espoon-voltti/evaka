@@ -23,6 +23,7 @@ import {
   TextInput,
   FileUpload
 } from '../../utils/page'
+import { ApplicationEditorSections } from '../application-editor-sections'
 
 export default class CitizenApplicationsPage {
   #createNewApplicationButton: Element
@@ -202,7 +203,10 @@ class CitizenApplicationEditor {
   modalOkBtn: Element
   guardianPhoneInput: TextInput
 
+  #sections: ApplicationEditorSections
+
   constructor(private readonly page: Page) {
+    this.#sections = new ApplicationEditorSections(page)
     this.#verifyButton = page.findByDataQa('verify-btn')
     this.#verifyCheckbox = new Checkbox(page.findByDataQa('verify-checkbox'))
     this.#allowOtherGuardianAccess = new Checkbox(
@@ -235,10 +239,6 @@ class CitizenApplicationEditor {
       page.findByDataQa('guardianPhone-input')
     )
   }
-
-  #section = (name: string) => this.page.findByDataQa(`${name}-section`)
-  #sectionHeader = (name: string) =>
-    this.page.findByDataQa(`${name}-section-header`)
 
   async writeAssistanceNeedDescription(description: string) {
     const assistanceNeededCheckbox = new Checkbox(
@@ -285,11 +285,7 @@ class CitizenApplicationEditor {
   }
 
   async openSection(section: string) {
-    await expect(this.#section(section)).toHaveAttribute('data-status', /.*/)
-    const status = await this.#section(section).getAttribute('data-status')
-    if (status !== 'open') {
-      await this.#sectionHeader(section).click()
-    }
+    await this.#sections.open(section)
   }
 
   async selectServiceNeedOption(option: ServiceNeedOption) {
