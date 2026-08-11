@@ -186,6 +186,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.NONBILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
+                    modifiedByName = "eVaka",
                     modifiedAt = now,
                 ),
                 Absence(
@@ -194,6 +195,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
+                    modifiedByName = "eVaka",
                     modifiedAt = now,
                 ),
             ),
@@ -207,6 +209,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
+                    modifiedByName = "eVaka",
                     modifiedAt = now,
                 )
             ),
@@ -383,6 +386,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
+                    modifiedByName = "eVaka",
                     modifiedAt = now,
                 )
             ),

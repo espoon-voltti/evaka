@@ -1180,6 +1180,7 @@ SELECT
             'absenceTypeResponse', jsonb_build_object(
                 'absenceType', a.absence_type,
                 'staffCreated', eu.type <> 'CITIZEN',
+                'modifiedByName', eu.name,
                 'modifiedAt', a.modified_at
             )
         ) ORDER BY a.date)

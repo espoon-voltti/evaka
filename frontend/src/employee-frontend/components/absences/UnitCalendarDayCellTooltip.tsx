@@ -22,6 +22,7 @@ export interface AbsenceTooltipItem {
   absenceType: AbsenceType
   modifiedAt: HelsinkiDateTime
   modifiedByStaff: boolean
+  modifiedByName: string
 }
 
 export const AbsencesTooltipContent = React.memo(
@@ -34,7 +35,16 @@ export const AbsencesTooltipContent = React.memo(
     return (
       <>
         {absences.map(
-          ({ category, absenceType, modifiedAt, modifiedByStaff }, index) => (
+          (
+            {
+              category,
+              absenceType,
+              modifiedAt,
+              modifiedByStaff,
+              modifiedByName
+            },
+            index
+          ) => (
             <div key={index}>
               {index !== 0 && <br />}
               {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
@@ -42,7 +52,7 @@ export const AbsencesTooltipContent = React.memo(
               {`${modifiedAt.format()} ${
                 modifiedByStaff
                   ? i18n.absences.modifiedByStaff
-                  : i18n.absences.modifiedByCitizen
+                  : i18n.absences.modifiedByCitizen(modifiedByName)
               }`}
             </div>
           )

@@ -3411,7 +3411,7 @@ export const sv: typeof fi = {
       BILLABLE: 'Småbarnspedagogik (avgiftsbelagd)'
     },
     modifiedByStaff: 'Personal',
-    modifiedByCitizen: 'Vårdnadshavare',
+    modifiedByCitizen: (name: string) => `${name} (vårdnadshavare)`,
     modal: {
       absenceSectionLabel: 'Orsak till frånvaro',
       placementSectionLabel: 'Verksamhetsform som frånvaron gäller',

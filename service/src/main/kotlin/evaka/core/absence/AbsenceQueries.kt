@@ -437,6 +437,7 @@ SELECT
     a.absence_type,
     a.category,
     eu.type <> 'CITIZEN' AS modified_by_staff,
+    eu.name AS modified_by_name,
     a.modified_at,
     a.questionnaire_id IS NOT NULL AS belongs_to_questionnaire
 FROM absence a

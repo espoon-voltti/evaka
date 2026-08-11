@@ -16,6 +16,7 @@ import { groupAbsencesByDateRange } from './absences'
 const base = {
   childId: randomId<ChildId>(),
   modifiedByStaff: true,
+  modifiedByName: 'Testaaja Testi',
   modifiedAt: HelsinkiDateTime.now()
 }
 
