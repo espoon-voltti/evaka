@@ -66,7 +66,7 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(1, MockEmailClient.emails.size)
         assertContains(
             MockEmailClient.emails.first().content.subject,
-            "eVaka-tilillesi on lisätty Passkey",
+            "eVaka-tilillesi on lisätty pääsyavain",
         )
 
         val identity = passkeyLogin(authenticator)
@@ -153,7 +153,7 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         assertContains(
             MockEmailClient.emails.map { it.content.subject }.last(),
-            "eVaka-tililtäsi on poistettu Passkey",
+            "eVaka-tililtäsi on poistettu pääsyavain",
         )
 
         assertThrows<Forbidden> { passkeyLogin(authenticator) }

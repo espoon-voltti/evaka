@@ -246,17 +246,17 @@ const sv: Translations = {
       noUsername: 'Inget användarnamn?',
       noUsernameInfo:
         'Autentisera dig i tjänsten Suomi.fi och tillåt inloggning med e-post på sidan Egna uppgifter.',
-      passkeyLink: 'Logga in utan lösenord · Passkey',
+      passkeyLink: 'Logga in med inloggningsnyckel (passkey)',
       passkeyDescriptionDesktop: 'På den här enheten eller telefonen',
       passkeyDescriptionMobile: 'Face ID, Touch ID eller PIN-kod',
       passkeyError:
-        'Inloggningen med Passkey misslyckades. Du kan logga in med e-postadress och lösenord.',
+        'Inloggningen med inloggningsnyckel misslyckades. Du kan logga in med e-postadress och lösenord.',
       usedLast: 'Senast använd'
     },
     applying: {
       title: 'Första gången här?',
       paragraph:
-        'Autentisera dig i tjänsten Suomi.fi för att ansöka, skapa en Passkey-nyckel eller ta i bruk inloggning med e-post.',
+        'Autentisera dig i tjänsten Suomi.fi för att ansöka, skapa en inloggningsnyckel (passkey) eller ta i bruk inloggning med e-post.',
       infoBoxText:
         'I samband med autentiseringen hämtar eVaka person- och adressuppgifter för den som loggar in, den andra vårdnadshavaren samt minderåriga barn från befolkningsdatasystemet.',
       link: 'Autentisera · Suomi.fi',
@@ -2261,23 +2261,23 @@ const sv: Translations = {
         `Användarnamnet ${username} används redan av en annan person`
     },
     passkeysSection: {
-      title: 'Passkeys',
+      title: 'Inloggningsnycklar',
       description:
-        'Med en Passkey kan du logga in i eVaka utan lösenord, till exempel med fingeravtryck, ansiktsigenkänning eller enhetens PIN-kod.',
+        'Med en inloggningsnyckel (passkey) kan du logga in i eVaka utan lösenord, till exempel med fingeravtryck, ansiktsigenkänning eller enhetens PIN-kod.',
       added: 'Tillagd',
       lastUsed: 'Senast använd',
       neverUsed: 'Aldrig',
-      addPasskey: 'Lägg till Passkey',
-      defaultName: 'Passkey',
-      nameModalTitle: 'Namnge Passkeyn',
+      addPasskey: 'Lägg till inloggningsnyckel',
+      defaultName: 'Inloggningsnyckel',
+      nameModalTitle: 'Namnge inloggningsnyckeln',
       nameLabel: 'Namn',
-      deletePasskey: 'Ta bort Passkeyn',
-      deleteConfirmTitle: 'Ta bort Passkeyn?',
+      deletePasskey: 'Ta bort inloggningsnyckeln',
+      deleteConfirmTitle: 'Ta bort inloggningsnyckeln?',
       deleteConfirmText: (name: string) =>
-        `Passkeyn "${name}" tas bort och kan inte längre användas för att logga in i eVaka. Borttagningen loggar ut dina andra sessioner.`,
+        `Inloggningsnyckeln "${name}" tas bort och kan inte längre användas för att logga in i eVaka. Borttagningen loggar ut dina andra sessioner.`,
       limitError:
-        'Du kan lägga till högst 10 Passkeys. Ta bort en Passkey innan du lägger till en ny.',
-      addError: 'Det gick inte att lägga till Passkeyn. Försök igen.'
+        'Du kan lägga till högst 10 inloggningsnycklar. Ta bort en inloggningsnyckel innan du lägger till en ny.',
+      addError: 'Det gick inte att lägga till inloggningsnyckeln. Försök igen.'
     },
     notificationsSection: {
       title: 'Aviseringar',

@@ -247,7 +247,7 @@ const en: Translations = {
       noUsername: 'No username?',
       noUsernameInfo:
         'Authenticate in the Suomi.fi service and enable email login on the Personal information page.',
-      passkeyLink: 'Log in without a password · Passkey',
+      passkeyLink: 'Log in with a passkey',
       passkeyDescriptionDesktop: 'On this device or your phone',
       passkeyDescriptionMobile: 'Face ID, Touch ID or PIN code',
       passkeyError:
@@ -257,7 +257,7 @@ const en: Translations = {
     applying: {
       title: 'First time here?',
       paragraph:
-        'Authenticate in the Suomi.fi service to apply, to create a Passkey, or to enable email login.',
+        'Authenticate in the Suomi.fi service to apply, to create a passkey, or to enable email login.',
       infoBoxText:
         'During authentication, eVaka retrieves the personal and address information of the person logging in, the other guardian and any minor dependants from the population information system.',
       link: 'Authenticate · Suomi.fi',
@@ -2004,21 +2004,21 @@ const en: Translations = {
     passkeysSection: {
       title: 'Passkeys',
       description:
-        'With a Passkey you can log in to eVaka without a password, for example with your fingerprint, face recognition or device PIN.',
+        'With a passkey you can log in to eVaka without a password, for example with your fingerprint, face recognition or device PIN.',
       added: 'Added',
       lastUsed: 'Last used',
       neverUsed: 'Never',
-      addPasskey: 'Add Passkey',
+      addPasskey: 'Add passkey',
       defaultName: 'Passkey',
-      nameModalTitle: 'Name the Passkey',
+      nameModalTitle: 'Name the passkey',
       nameLabel: 'Name',
-      deletePasskey: 'Delete Passkey',
-      deleteConfirmTitle: 'Delete Passkey?',
+      deletePasskey: 'Delete passkey',
+      deleteConfirmTitle: 'Delete passkey?',
       deleteConfirmText: (name: string) =>
-        `The Passkey "${name}" will be deleted and can no longer be used to log in to eVaka. Deleting it will log out your other sessions.`,
+        `The passkey "${name}" will be deleted and can no longer be used to log in to eVaka. Deleting it will log out your other sessions.`,
       limitError:
-        'You can add at most 10 Passkeys. Delete a Passkey before adding a new one.',
-      addError: 'Adding the Passkey failed. Please try again.'
+        'You can add at most 10 passkeys. Delete a passkey before adding a new one.',
+      addError: 'Adding the passkey failed. Please try again.'
     },
     notificationsSection: {
       title: 'Notifications',
