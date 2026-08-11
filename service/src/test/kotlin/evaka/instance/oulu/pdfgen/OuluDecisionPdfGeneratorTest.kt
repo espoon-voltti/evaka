@@ -24,6 +24,8 @@ class OuluDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
     override val templateProvider: ITemplateProvider = OuluTemplateProvider()
     override val settings = populatedSettings
 
+    override fun reasoningVariants() = listOf(null, reasoning)
+
     override fun decisionScenarios() =
         listOf(
             DecisionScenario("kerho", DecisionType.CLUB),

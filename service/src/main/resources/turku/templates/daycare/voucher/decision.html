@@ -30,7 +30,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <div th:utext="#{decision.notification}"></div>
     <div th:utext="#{decision.jurisdiction}"></div>
     <div th:replace="~{ shared/common :: decision-details }"></div>
-    <p th:utext="#{decision.legalInstructions}"></p>
+    <p th:if="${reasoning == null}" th:utext="#{decision.legalInstructions.old}"></p>
+    <th:block th:if="${reasoning != null}">
+        <div th:replace="~{shared/decision-reasoning :: section(${reasoning})}"></div>
+    </th:block>
     <div th:replace="~{ shared/daycare-correction :: daycare-correction}"></div>
 </div>
 
