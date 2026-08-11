@@ -25,164 +25,6 @@ export interface ApplicationEditorTexts {
     hasErrors: string
     invalidFields: (count: number) => string
   }
-  actions: {
-    verify: string
-    hasVerified: string
-    allowOtherGuardianAccess: ReactNode
-    returnToEdit: string
-    returnToEditBtn: string
-    cancel: string
-    send: string
-    update: string
-    sendError: string
-    saveDraft: string
-    updateError: string
-  }
-  verification: {
-    title: {
-      DAYCARE: string
-      PRESCHOOL: string
-      CLUB: string
-    }
-    notYetSent: ReactNode
-    notYetSaved: ReactNode
-    no: string
-    basics: {
-      created: string
-      modified: string
-    }
-    attachmentBox: {
-      nb: string
-      headline: string
-      urgency: string
-      shiftCare: string
-      goBackLinkText: string
-      goBackRestText: string
-    }
-    serviceNeed: {
-      title: string
-      wasOnDaycare: string
-      wasOnDaycareYes: string
-      wasOnClubCare: string
-      wasOnClubCareYes: string
-      connectedDaycare: {
-        label: string
-        withConnectedDaycare: string
-        withoutConnectedDaycare: string
-        startDate: string
-        serviceNeed: string
-      }
-      attachments: {
-        label: string
-        withoutAttachments: string
-      }
-      startDate: {
-        title: {
-          DAYCARE: string
-          PRESCHOOL: string
-          CLUB: string
-        }
-        preferredStartDate: string
-        urgency: string
-        withUrgency: string
-        withoutUrgency: string
-      }
-      dailyTime: {
-        title: string
-        partTime: string
-        withPartTime: string
-        withoutPartTime: string
-        dailyTime: string
-        shiftCare: string
-        withShiftCare: string
-        withoutShiftCare: string
-      }
-      assistanceNeed: {
-        title: string
-        assistanceNeed: string
-        withAssistanceNeed: string
-        withoutAssistanceNeed: string
-        description: string
-      }
-      preparatoryEducation: {
-        label: string
-        withPreparatory: string
-        withoutPreparatory: string
-      }
-    }
-    unitPreference: {
-      title: string
-      siblingBasis: {
-        title: string
-        siblingBasisLabel: string
-        siblingBasisYes: string
-        name: string
-        ssn: string
-        unit: string
-      }
-      units: {
-        title: string
-        label: string
-      }
-    }
-    contactInfo: {
-      title: string
-      child: {
-        title: string
-        name: string
-        ssn: string
-        streetAddress: string
-        isAddressChanging: string
-        hasFutureAddress: string
-        addressChangesAt: string
-        newAddress: string
-      }
-      guardian: {
-        title: string
-        name: string
-        ssn: string
-        streetAddress: string
-        tel: string
-        email: string
-        isAddressChanging: string
-        hasFutureAddress: string
-        addressChangesAt: string
-        newAddress: string
-      }
-      secondGuardian: {
-        title: string
-        email: string
-        tel: string
-        info: string
-        agreed: string
-        notAgreed: string
-        rightToGetNotified: string
-        noAgreementStatus: string
-      }
-      fridgePartner: {
-        title: string
-        fridgePartner: string
-        name: string
-        ssn: string
-      }
-      fridgeChildren: {
-        title: string
-        name: string
-        ssn: string
-        noOtherChildren: string
-      }
-    }
-    additionalDetails: {
-      title: string
-      otherInfoLabel: string
-      dietLabel: string
-      allergiesLabel: string
-    }
-    otherGuardianAgreement: {
-      title: string
-      text: string
-    }
-  }
   serviceNeed: {
     title: string
     startDate: {
@@ -372,16 +214,11 @@ export interface ApplicationEditorTexts {
     childFirstName: string
     childLastName: string
     childSSN: string
-    childInformationLink: string
-    childDateOfBirth: string
-    nationality: string
-    language: string
     homeAddress: string
     moveDate: string
     street: string
     postalCode: string
     postOffice: string
-    addressRestricted: string
     guardianInfoTitle: string
     guardianFirstName: string
     guardianLastName: string
@@ -392,7 +229,6 @@ export interface ApplicationEditorTexts {
     emailChangeTip: string
     emailChangeTipLink: string
     noEmail: string
-    secondGuardianExists: string
     secondGuardianInfoTitle: string
     secondGuardianInfo: string
     secondGuardianNotFound: string
@@ -402,7 +238,6 @@ export interface ApplicationEditorTexts {
       AGREED: string
       NOT_AGREED: string
       RIGHT_TO_GET_NOTIFIED: string
-      NOT_SET: string
     }
     secondGuardianPhone: string
     secondGuardianEmail: string
@@ -429,21 +264,6 @@ export interface ApplicationEditorTexts {
     areExtraChildren: string
     choosePlaceholder: string
   }
-  draftPolicyInfo: {
-    title: string
-    text: string
-    ok: string
-  }
-  sentInfo: {
-    title: string
-    text: string
-    ok: string
-  }
-  updateInfo: {
-    title: string
-    text: string
-    ok: string
-  }
   unitChangeWarning: {
     title: string
     text: string
@@ -460,4 +280,23 @@ export interface ApplicationEditorTranslations {
   common: { unit: { providerTypes: Record<ProviderType, string> } }
   placement: { type: Record<PlacementType, string> }
   validationErrors: Record<ErrorKey, string>
+}
+
+/**
+ * Labels for the parts of the editor only a service worker sees: the read-only
+ * VTJ data about the child, and the manually entered second guardian.
+ *
+ * These deliberately live outside {@link ApplicationEditorTranslations}, which
+ * is satisfied by the citizen translation bundle. Municipalities customize
+ * citizen and employee wording separately, so employee-only labels are supplied
+ * from the employee bundle instead of being added to the citizen one.
+ */
+export interface EmployeeApplicationEditorTexts {
+  childInformationLink: string
+  childDateOfBirth: string
+  nationality: string
+  language: string
+  addressRestricted: string
+  secondGuardianExists: string
+  secondGuardianAgreementStatusNotSet: string
 }

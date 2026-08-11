@@ -604,6 +604,7 @@ export const sv: typeof fi = {
         title: 'Uppgifter om meddelad andra vuxen',
         checkboxLabel:
           'Sökande har meddelat den andra vårdnadshavarens uppgifter',
+        agreementStatusNotSet: 'Vårdnadshavare bor på samma adress',
         exists: 'Barnet har en annan vårdnadshavare',
         sameAddress: 'Andra vårdnadshavaren bor på samma adress',
         separated: 'Andra vårdnadshavaren bor på annan adress',

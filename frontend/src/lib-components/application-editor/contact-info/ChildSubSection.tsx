@@ -29,8 +29,7 @@ export default React.memo(function ChildSubSection({
   verificationRequested,
   fullFamily
 }: ContactInfoSectionProps) {
-  const { translations: t, lang } = deps
-  const employee = deps.actor === 'employee'
+  const { translations: t, lang, employeeTexts } = deps
 
   return (
     <>
@@ -64,9 +63,9 @@ export default React.memo(function ChildSubSection({
       <Gap $size="s" />
       <FixedSpaceColumn $spacing="xs">
         <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
-        {employee && application.childRestricted ? (
+        {employeeTexts && application.childRestricted ? (
           <span data-qa="child-restricted">
-            {t.applications.editor.contactInfo.addressRestricted}
+            {employeeTexts.addressRestricted}
           </span>
         ) : (
           <span data-qa="child-street-address" translate="no">
@@ -74,29 +73,27 @@ export default React.memo(function ChildSubSection({
           </span>
         )}
       </FixedSpaceColumn>
-      {employee && (
+      {employeeTexts && (
         <>
           <Gap $size="s" />
           <FixedSpaceRow $spacing="XL">
             <AdaptiveFlex $breakpoint="1060px">
               {!formData.childSSN && (
                 <FixedSpaceColumn $spacing="xs">
-                  <Label>
-                    {t.applications.editor.contactInfo.childDateOfBirth}
-                  </Label>
+                  <Label>{employeeTexts.childDateOfBirth}</Label>
                   <span data-qa="child-dob">
                     {application.form.child.dateOfBirth?.format()}
                   </span>
                 </FixedSpaceColumn>
               )}
               <FixedSpaceColumn $spacing="xs">
-                <Label>{t.applications.editor.contactInfo.nationality}</Label>
+                <Label>{employeeTexts.nationality}</Label>
                 <span data-qa="child-nationality">
                   {application.form.child.nationality}
                 </span>
               </FixedSpaceColumn>
               <FixedSpaceColumn $spacing="xs">
-                <Label>{t.applications.editor.contactInfo.language}</Label>
+                <Label>{employeeTexts.language}</Label>
                 <span data-qa="child-language">
                   {application.form.child.language}
                 </span>
@@ -110,13 +107,13 @@ export default React.memo(function ChildSubSection({
             rel="noreferrer"
             data-qa="link-child-name"
           >
-            {t.applications.editor.contactInfo.childInformationLink}
+            {employeeTexts.childInformationLink}
           </a>
         </>
       )}
       <Gap $size="m" />
 
-      {!(employee && application.childRestricted) && (
+      {!(employeeTexts && application.childRestricted) && (
         <>
           <ExpandingInfo
             data-qa="child-future-address-info"

@@ -1524,16 +1524,11 @@ const sv: Translations = {
         childFirstName: 'Alla förnamn',
         childLastName: 'Efternamn',
         childSSN: 'Personbeteckning',
-        childInformationLink: 'Barnets uppgifter',
-        childDateOfBirth: 'Födelsedatum',
-        nationality: 'Medborgarskap',
-        language: 'Språk',
         homeAddress: 'Hemadress',
         moveDate: 'Flyttdatum',
         street: 'Gatuadress',
         postalCode: 'Postnummer',
         postOffice: 'Postanstalt',
-        addressRestricted: 'Spärr markering i kraft',
         guardianInfoTitle: 'Vårdnadshavarens uppgifter',
         guardianFirstName: 'Vårdnadshavarens alla förnamn',
         guardianLastName: 'Efternamn',
@@ -1545,8 +1540,6 @@ const sv: Translations = {
           'If you wish to change the email address, please update it in your ',
         emailChangeTipLink: 'personal information.',
         noEmail: 'Jag har inte en e-postadress',
-        secondGuardianExists:
-          'Sökande har meddelat den andra vårdnadshavarens uppgifter',
         secondGuardianInfoTitle: 'Uppgifter om den andra vårdnadshavaren',
         secondGuardianInfo:
           'Den andra vårdnadshavarens information hämtas automatiskt från befolkningsinformationssystemet.',
@@ -1560,8 +1553,7 @@ const sv: Translations = {
           AGREED: 'Vi har tillsammans kommit överens om att fylla i ansökan.',
           NOT_AGREED: 'Vi har inte kunnat komma överens om ansökan.',
           RIGHT_TO_GET_NOTIFIED:
-            'Den andra vårdnadshavaren har endast rätt att få uppgifter om barnet.',
-          NOT_SET: 'Vårdnadshavare bor på samma adress'
+            'Den andra vårdnadshavaren har endast rätt att få uppgifter om barnet.'
         },
         secondGuardianPhone: 'Den andra vårdnadshavarens telefonnummer',
         secondGuardianEmail: 'Den andra vårdnadshavarens e-postadress',

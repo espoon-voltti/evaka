@@ -32,6 +32,7 @@ export function useApplicationEditorDeps(): ApplicationEditorDeps {
       actor: 'citizen',
       lang,
       translations: t,
+      employeeTexts: null,
       featureFlags,
       getMaxPreferredUnits,
       placementTypes,

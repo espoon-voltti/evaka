@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import React, { useMemo, useState } from 'react'
 
-import type { ApplicationEditorDeps } from 'lib-components/application-editor/types'
+import type {
+  ApplicationEditorDeps,
+  InfoDialogMessage
+} from 'lib-components/application-editor/types'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import {
   getMaxPreferredUnits,
@@ -21,19 +23,11 @@ import { renderResult } from '../async-rendering'
 
 import { applicationUnitsQuery } from './queries'
 
-interface InfoDialogMessage {
-  title: string
-  text: string
-  type: 'warning'
-  icon: IconProp
-  resolve: { action: () => void; label: string }
-}
-
 export function useApplicationEditorDeps(): {
   deps: ApplicationEditorDeps
   infoDialog: React.ReactNode
 } {
-  const { lang } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [infoDialogMessage, setInfoDialogMessage] =
     useState<InfoDialogMessage | null>(null)
 
@@ -41,7 +35,21 @@ export function useApplicationEditorDeps(): {
     () => ({
       actor: 'employee',
       lang,
+      // The service worker sees the application substantially as the guardian
+      // does, so the shared form text — including municipality customizations —
+      // comes from the citizen bundle. Only employee-only labels are overridden.
       translations: citizenTranslations[lang],
+      employeeTexts: {
+        childInformationLink: i18n.application.child.title,
+        childDateOfBirth: i18n.application.person.dob,
+        nationality: i18n.application.person.nationality,
+        language: i18n.application.person.language,
+        addressRestricted: i18n.application.person.restricted,
+        secondGuardianExists:
+          i18n.application.guardians.secondGuardian.checkboxLabel,
+        secondGuardianAgreementStatusNotSet:
+          i18n.application.guardians.secondGuardian.agreementStatusNotSet
+      },
       featureFlags,
       getMaxPreferredUnits,
       placementTypes,
@@ -57,7 +65,7 @@ export function useApplicationEditorDeps(): {
         close: () => setInfoDialogMessage(null)
       }
     }),
-    [lang]
+    [i18n, lang]
   )
 
   const infoDialog = infoDialogMessage ? (

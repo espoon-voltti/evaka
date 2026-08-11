@@ -23,6 +23,72 @@ import { Gap } from 'lib-components/white-space'
 
 import type { ApplicationEditorDeps } from '../types'
 
+type OtherGuardianContactFieldsProps = {
+  translations: ApplicationEditorDeps['translations']
+  formData: ContactInfoFormData
+  updateFormData: UpdateStateFn<ContactInfoFormData>
+  errors: ApplicationFormDataErrors['contactInfo']
+  verificationRequested: boolean
+  phoneDataQa: string
+  emailDataQa: string
+  withPlaceholders: boolean
+}
+
+const OtherGuardianContactFields = React.memo(
+  function OtherGuardianContactFields({
+    translations: t,
+    formData,
+    updateFormData,
+    errors,
+    verificationRequested,
+    phoneDataQa,
+    emailDataQa,
+    withPlaceholders
+  }: OtherGuardianContactFieldsProps) {
+    const phoneLabel = t.applications.editor.contactInfo.secondGuardianPhone
+    const emailLabel = t.applications.editor.contactInfo.secondGuardianEmail
+
+    return (
+      <AdaptiveFlex $breakpoint="1060px">
+        <FixedSpaceColumn>
+          <Label htmlFor="other-guardian-phone">{phoneLabel}</Label>
+          <InputField
+            id="other-guardian-phone"
+            type="tel"
+            value={formData.otherGuardianPhone}
+            data-qa={phoneDataQa}
+            onChange={(value) => updateFormData({ otherGuardianPhone: value })}
+            placeholder={withPlaceholders ? phoneLabel : undefined}
+            info={errorToInputInfo(
+              errors.otherGuardianPhone,
+              t.validationErrors
+            )}
+            hideErrorsBeforeTouched={!verificationRequested}
+            width="L"
+          />
+        </FixedSpaceColumn>
+        <FixedSpaceColumn>
+          <Label htmlFor="other-guardian-email">{emailLabel}</Label>
+          <InputField
+            id="other-guardian-email"
+            type="email"
+            value={formData.otherGuardianEmail}
+            data-qa={emailDataQa}
+            onChange={(value) => updateFormData({ otherGuardianEmail: value })}
+            placeholder={withPlaceholders ? emailLabel : undefined}
+            info={errorToInputInfo(
+              errors.otherGuardianEmail,
+              t.validationErrors
+            )}
+            hideErrorsBeforeTouched={!verificationRequested}
+            width="L"
+          />
+        </FixedSpaceColumn>
+      </AdaptiveFlex>
+    )
+  }
+)
+
 type SecondGuardianSubSectionProps = {
   deps: ApplicationEditorDeps
   type: ApplicationType
@@ -42,7 +108,7 @@ export default React.memo(function SecondGuardianSubSection({
   verificationRequested,
   otherGuardianStatus
 }: SecondGuardianSubSectionProps) {
-  const { translations: t, actor } = deps
+  const { translations: t, employeeTexts } = deps
 
   const agreementStatuses: SelectableOtherGuardianAgreementStatus[] = [
     'AGREED',
@@ -50,15 +116,17 @@ export default React.memo(function SecondGuardianSubSection({
     'RIGHT_TO_GET_NOTIFIED'
   ]
 
-  if (actor === 'employee') {
+  if (employeeTexts) {
+    // Employees can also record that the status was never set, which citizens
+    // cannot choose for themselves.
     const employeeAgreementStatuses: (SelectableOtherGuardianAgreementStatus | null)[] =
-      ['AGREED', 'NOT_AGREED', 'RIGHT_TO_GET_NOTIFIED', null]
+      [...agreementStatuses, null]
     return (
       <>
         <H3>{t.applications.editor.contactInfo.secondGuardianInfoTitle}</H3>
         <Checkbox
           checked={formData.otherGuardianExists}
-          label={t.applications.editor.contactInfo.secondGuardianExists}
+          label={employeeTexts.secondGuardianExists}
           data-qa="application-second-guardian-toggle"
           onChange={(checked) => {
             updateFormData({ otherGuardianExists: checked })
@@ -74,48 +142,16 @@ export default React.memo(function SecondGuardianSubSection({
         {formData.otherGuardianExists && (
           <>
             <Gap $size="s" />
-            <AdaptiveFlex $breakpoint="1060px">
-              <FixedSpaceColumn>
-                <Label htmlFor="other-guardian-phone">
-                  {t.applications.editor.contactInfo.secondGuardianPhone}
-                </Label>
-                <InputField
-                  id="other-guardian-phone"
-                  type="tel"
-                  value={formData.otherGuardianPhone}
-                  data-qa="application-second-guardian-phone"
-                  onChange={(value) =>
-                    updateFormData({ otherGuardianPhone: value })
-                  }
-                  info={errorToInputInfo(
-                    errors.otherGuardianPhone,
-                    t.validationErrors
-                  )}
-                  hideErrorsBeforeTouched={!verificationRequested}
-                  width="L"
-                />
-              </FixedSpaceColumn>
-              <FixedSpaceColumn>
-                <Label htmlFor="other-guardian-email">
-                  {t.applications.editor.contactInfo.secondGuardianEmail}
-                </Label>
-                <InputField
-                  id="other-guardian-email"
-                  type="email"
-                  value={formData.otherGuardianEmail}
-                  data-qa="application-second-guardian-email"
-                  onChange={(value) =>
-                    updateFormData({ otherGuardianEmail: value })
-                  }
-                  info={errorToInputInfo(
-                    errors.otherGuardianEmail,
-                    t.validationErrors
-                  )}
-                  hideErrorsBeforeTouched={!verificationRequested}
-                  width="L"
-                />
-              </FixedSpaceColumn>
-            </AdaptiveFlex>
+            <OtherGuardianContactFields
+              translations={t}
+              formData={formData}
+              updateFormData={updateFormData}
+              errors={errors}
+              verificationRequested={verificationRequested}
+              phoneDataQa="application-second-guardian-phone"
+              emailDataQa="application-second-guardian-email"
+              withPlaceholders={false}
+            />
             <Gap $size="s" />
             <FixedSpaceColumn>
               <Label>
@@ -133,8 +169,7 @@ export default React.memo(function SecondGuardianSubSection({
                     status !== null
                       ? t.applications.editor.contactInfo
                           .secondGuardianAgreementStatus[status]
-                      : t.applications.editor.contactInfo
-                          .secondGuardianAgreementStatus.NOT_SET
+                      : employeeTexts.secondGuardianAgreementStatusNotSet
                   }
                   onChange={() =>
                     updateFormData({ otherGuardianAgreementStatus: status })
@@ -209,58 +244,16 @@ export default React.memo(function SecondGuardianSubSection({
               {formData.otherGuardianAgreementStatus === 'NOT_AGREED' && (
                 <>
                   <Gap />
-                  <AdaptiveFlex $breakpoint="1060px">
-                    <FixedSpaceColumn>
-                      <Label htmlFor="other-guardian-phone">
-                        {t.applications.editor.contactInfo.secondGuardianPhone}
-                      </Label>
-                      <InputField
-                        id="other-guardian-phone"
-                        type="tel"
-                        value={formData.otherGuardianPhone}
-                        data-qa="otherGuardianPhone-input"
-                        onChange={(value) =>
-                          updateFormData({
-                            otherGuardianPhone: value
-                          })
-                        }
-                        placeholder={
-                          t.applications.editor.contactInfo.secondGuardianPhone
-                        }
-                        info={errorToInputInfo(
-                          errors.otherGuardianPhone,
-                          t.validationErrors
-                        )}
-                        hideErrorsBeforeTouched={!verificationRequested}
-                        width="L"
-                      />
-                    </FixedSpaceColumn>
-                    <FixedSpaceColumn>
-                      <Label htmlFor="other-guardian-email">
-                        {t.applications.editor.contactInfo.secondGuardianEmail}
-                      </Label>
-                      <InputField
-                        id="other-guardian-email"
-                        type="email"
-                        value={formData.otherGuardianEmail}
-                        data-qa="otherGuardianEmail-input"
-                        onChange={(value) =>
-                          updateFormData({
-                            otherGuardianEmail: value
-                          })
-                        }
-                        placeholder={
-                          t.applications.editor.contactInfo.secondGuardianEmail
-                        }
-                        info={errorToInputInfo(
-                          errors.otherGuardianEmail,
-                          t.validationErrors
-                        )}
-                        hideErrorsBeforeTouched={!verificationRequested}
-                        width="L"
-                      />
-                    </FixedSpaceColumn>
-                  </AdaptiveFlex>
+                  <OtherGuardianContactFields
+                    translations={t}
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    errors={errors}
+                    verificationRequested={verificationRequested}
+                    phoneDataQa="otherGuardianPhone-input"
+                    emailDataQa="otherGuardianEmail-input"
+                    withPlaceholders={true}
+                  />
                 </>
               )}
             </>
