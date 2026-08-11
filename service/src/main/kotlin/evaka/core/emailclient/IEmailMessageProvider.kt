@@ -147,37 +147,9 @@ interface IEmailMessageProvider {
 
     fun newBrowserLoginNotification(): EmailContent
 
-    fun passkeyAdded(): EmailContent =
-        EmailContent.fromHtml(
-            subject =
-                "eVaka-tilillesi on lisätty Passkey / En Passkey har lagts till i ditt eVaka-konto / A Passkey has been added to your eVaka account",
-            html =
-                """<p>eVaka-tilillesi on lisätty Passkey.</p>
-<p>Jos lisäsit Passkeyn itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella (Kirjaudu Suomi.fi:ssä) ja poista Passkey omista tiedoistasi.</p>
-<hr>
-<p>En Passkey har lagts till i ditt eVaka-konto.</p>
-<p>Om du själv lade till Passkeyn kan du ignorera det här meddelandet. Om inte, logga in i eVaka med stark identifiering (Logga in via Suomi.fi) och ta bort Passkeyn i dina uppgifter.</p>
-<hr>
-<p>A Passkey has been added to your eVaka account.</p>
-<p>If you added the Passkey yourself, you can ignore this message. If not, log in to eVaka with strong authentication (Sign in using Suomi.fi) and remove the Passkey from your personal details.</p>
-""",
-        )
+    fun passkeyAdded(): EmailContent
 
-    fun passkeyRemoved(): EmailContent =
-        EmailContent.fromHtml(
-            subject =
-                "eVaka-tililtäsi on poistettu Passkey / En Passkey har tagits bort från ditt eVaka-konto / A Passkey has been removed from your eVaka account",
-            html =
-                """<p>eVaka-tililtäsi on poistettu Passkey.</p>
-<p>Jos poistit Passkeyn itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella (Kirjaudu Suomi.fi:ssä) ja tarkista omat tietosi.</p>
-<hr>
-<p>En Passkey har tagits bort från ditt eVaka-konto.</p>
-<p>Om du själv tog bort Passkeyn kan du ignorera det här meddelandet. Om inte, logga in i eVaka med stark identifiering (Logga in via Suomi.fi) och kontrollera dina uppgifter.</p>
-<hr>
-<p>A Passkey has been removed from your eVaka account.</p>
-<p>If you removed the Passkey yourself, you can ignore this message. If not, log in to eVaka with strong authentication (Sign in using Suomi.fi) and check your personal details.</p>
-""",
-        )
+    fun passkeyRemoved(): EmailContent
 
     fun messageDeletionSenderEmail(
         supportEmail: String?,
