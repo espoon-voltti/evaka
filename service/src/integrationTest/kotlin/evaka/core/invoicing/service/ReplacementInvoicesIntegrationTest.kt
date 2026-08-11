@@ -5,6 +5,7 @@
 package evaka.core.invoicing.service
 
 import evaka.core.FullApplicationTest
+import evaka.core.TestInvoiceProductProvider
 import evaka.core.absence.AbsenceCategory
 import evaka.core.absence.AbsenceType
 import evaka.core.invoicing.controller.InvoiceController
@@ -14,6 +15,7 @@ import evaka.core.invoicing.domain.FeeDecisionStatus
 import evaka.core.invoicing.domain.InvoiceDetailed
 import evaka.core.invoicing.domain.InvoiceReplacementReason
 import evaka.core.invoicing.domain.InvoiceStatus
+import evaka.core.placement.PlacementType
 import evaka.core.shared.FeeDecisionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.PlacementId
@@ -25,6 +27,7 @@ import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevEmployee
 import evaka.core.shared.dev.DevFeeDecision
 import evaka.core.shared.dev.DevFeeDecisionChild
+import evaka.core.shared.dev.DevInvoiceCorrection
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
@@ -51,6 +54,7 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Autowired private lateinit var invoiceGenerationLogicChooser: InvoiceGenerationLogicChooser
 
     private val replacementInvoicesStart = YearMonth.of(2021, 1)
+    private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
     private lateinit var invoiceGenerator: InvoiceGenerator
 
     private val now = HelsinkiDateTime.of(LocalDate.of(2024, 11, 4), LocalTime.of(8, 0))
@@ -339,6 +343,51 @@ class ReplacementInvoicesIntegrationTest : FullApplicationTest(resetDbBeforeEach
         assertEquals(2, original.size)
         assertTrue(original.any { it.headOfFamily.id == headOfFamily.id })
         assertTrue(original.any { it.headOfFamily.id == headOfFamily2.id })
+        assertEquals(1, replacement.size)
+        assertEquals(headOfFamily.id, replacement.single().headOfFamily.id)
+    }
+
+    @Test
+    fun `another head of family's invoice correction does not affect an individual head of family`() {
+        val headOfFamily2 = DevPerson(ssn = "010101-9998")
+        val child2 = DevPerson()
+        db.transaction { tx ->
+            tx.insert(headOfFamily2, DevPersonType.ADULT)
+            tx.insert(child2, DevPersonType.CHILD)
+        }
+
+        insertPlacementAndFeeDecision(headOfFamily, child)
+        insertPlacementAndFeeDecision(headOfFamily2, child2)
+
+        generateAndSendInvoices()
+
+        db.transaction { tx ->
+            tx.insert(
+                DevAbsence(
+                    childId = child.id,
+                    date = previousMonth.atDay(1),
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                    absenceType = AbsenceType.FORCE_MAJEURE,
+                )
+            )
+            tx.insert(
+                DevInvoiceCorrection(
+                    targetMonth = previousMonth,
+                    headOfFamilyId = headOfFamily2.id,
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    product = productProvider.mapToProduct(PlacementType.DAYCARE),
+                    period = FiniteDateRange.ofMonth(previousMonth),
+                    amount = 1,
+                    unitPrice = 1000,
+                    description = "",
+                    note = "",
+                )
+            )
+        }
+
+        val replacement = generateReplacementDraftsForHeadOfFamily(headOfFamily.id)
+
         assertEquals(1, replacement.size)
         assertEquals(headOfFamily.id, replacement.single().headOfFamily.id)
     }

@@ -166,7 +166,13 @@ class InvoiceGenerator(
 
         val invoicesWithCorrections =
             tracer.withSpan("applyCorrections") {
-                applyCorrectionsForMonth(tx, month, invoices, invoiceCalculationData.areaIds)
+                applyCorrectionsForMonth(
+                    tx,
+                    month,
+                    invoices,
+                    invoiceCalculationData.areaIds,
+                    headOfFamilyId,
+                )
             }
         val headsOfFamilyWithInvoices = invoicesWithCorrections.map { it.headOfFamily }.toSet()
         val sentInvoices =
@@ -410,9 +416,12 @@ class InvoiceGenerator(
         targetMonth: YearMonth,
         invoices: List<DraftInvoice>,
         areaIds: Map<DaycareId, AreaId>,
+        headOfFamilyId: PersonId?,
     ): List<DraftInvoice> {
         val correctionsForMonth =
-            tx.getInvoiceCorrectionsForMonth(targetMonth).groupBy { it.headOfFamilyId }
+            tx.getInvoiceCorrectionsForMonth(targetMonth, headOfFamilyId).groupBy {
+                it.headOfFamilyId
+            }
         return applyCorrections(targetMonth, invoices, correctionsForMonth, areaIds)
     }
 
