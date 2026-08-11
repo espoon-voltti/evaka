@@ -2,15 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React from 'react'
 
-import type { UnitPreferenceFormData } from 'lib-common/application/ApplicationFormData'
-import { constantQuery, useQueryResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import AdditionalDetailsSection from './AdditionalDetailsSection'
 import Heading from './Heading'
 import ContactInfoSection from './contact-info/ContactInfoSection'
+import {
+  useApplicationServiceNeedOptions,
+  useSectionUpdaters
+} from './formState'
 import ServiceNeedSection from './service-need/ServiceNeedSection'
 import type { ApplicationFormProps } from './types'
 import UnitPreferenceSection from './unit-preference/UnitPreferenceSection'
@@ -27,28 +29,11 @@ export default React.memo(function ApplicationFormDaycare({
   minDate,
   maxDate
 }: ApplicationFormProps) {
-  const { featureFlags, serviceNeedOptionPublicInfosQuery, renderResult } = deps
+  const { renderResult } = deps
   const applicationType = 'DAYCARE'
+  const update = useSectionUpdaters(setFormData)
 
-  const serviceNeedOptions = useQueryResult(
-    featureFlags.daycareApplication.serviceNeedOption
-      ? serviceNeedOptionPublicInfosQuery({
-          placementTypes: ['DAYCARE', 'DAYCARE_PART_TIME']
-        })
-      : constantQuery([])
-  )
-
-  const updateUnitPreferenceFormData = useCallback(
-    (fn: (prev: UnitPreferenceFormData) => Partial<UnitPreferenceFormData>) =>
-      setFormData((old) => ({
-        ...old,
-        unitPreference: {
-          ...old.unitPreference,
-          ...fn(old.unitPreference)
-        }
-      })),
-    [setFormData]
-  )
+  const serviceNeedOptions = useApplicationServiceNeedOptions(deps, application)
 
   return renderResult(serviceNeedOptions, (serviceNeedOptions) => (
     <FixedSpaceColumn $spacing="s">
@@ -71,19 +56,7 @@ export default React.memo(function ApplicationFormDaycare({
         maxDate={maxDate}
         type={applicationType}
         formData={formData.serviceNeed}
-        updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  serviceNeed: {
-                    ...old?.serviceNeed,
-                    ...data
-                  }
-                }
-              : old
-          )
-        }
+        updateFormData={update.serviceNeed}
         errors={errors.serviceNeed}
         verificationRequested={verificationRequested}
         serviceNeedOptions={serviceNeedOptions}
@@ -92,7 +65,7 @@ export default React.memo(function ApplicationFormDaycare({
       <UnitPreferenceSection
         deps={deps}
         formData={formData.unitPreference}
-        updateFormData={updateUnitPreferenceFormData}
+        updateFormData={update.unitPreference}
         applicationType={applicationType}
         preparatory={false}
         preferredStartDate={formData.serviceNeed.preferredStartDate}
@@ -106,19 +79,7 @@ export default React.memo(function ApplicationFormDaycare({
         type={applicationType}
         application={application}
         formData={formData.contactInfo}
-        updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  contactInfo: {
-                    ...old?.contactInfo,
-                    ...data
-                  }
-                }
-              : old
-          )
-        }
+        updateFormData={update.contactInfo}
         errors={errors.contactInfo}
         verificationRequested={verificationRequested}
         fullFamily={true}
@@ -134,19 +95,7 @@ export default React.memo(function ApplicationFormDaycare({
       <AdditionalDetailsSection
         deps={deps}
         formData={formData.additionalDetails}
-        updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  additionalDetails: {
-                    ...old?.additionalDetails,
-                    ...data
-                  }
-                }
-              : old
-          )
-        }
+        updateFormData={update.additionalDetails}
         errors={errors.additionalDetails}
         verificationRequested={verificationRequested}
         applicationType={applicationType}

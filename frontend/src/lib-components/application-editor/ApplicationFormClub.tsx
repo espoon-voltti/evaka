@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React from 'react'
 
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import AdditionalDetailsSection from './AdditionalDetailsSection'
 import Heading from './Heading'
 import ContactInfoSection from './contact-info/ContactInfoSection'
+import { useSectionUpdaters } from './formState'
 import ServiceNeedSection from './service-need/ServiceNeedSection'
 import type { ApplicationFormProps } from './types'
 import UnitPreferenceSection from './unit-preference/UnitPreferenceSection'
@@ -27,6 +28,7 @@ export default React.memo(function ApplicationFormClub({
   terms
 }: ApplicationFormProps) {
   const applicationType = 'CLUB'
+  const update = useSectionUpdaters(setFormData)
 
   return (
     <FixedSpaceColumn $spacing="s">
@@ -49,15 +51,7 @@ export default React.memo(function ApplicationFormClub({
         maxDate={maxDate}
         type={applicationType}
         formData={formData.serviceNeed}
-        updateFormData={(data) =>
-          setFormData((old) => ({
-            ...old,
-            serviceNeed: {
-              ...old.serviceNeed,
-              ...data
-            }
-          }))
-        }
+        updateFormData={update.serviceNeed}
         errors={errors.serviceNeed}
         verificationRequested={verificationRequested}
         terms={terms}
@@ -67,17 +61,7 @@ export default React.memo(function ApplicationFormClub({
       <UnitPreferenceSection
         deps={deps}
         formData={formData.unitPreference}
-        updateFormData={useCallback(
-          (fn) =>
-            setFormData((old) => ({
-              ...old,
-              unitPreference: {
-                ...old.unitPreference,
-                ...fn(old.unitPreference)
-              }
-            })),
-          [setFormData]
-        )}
+        updateFormData={update.unitPreference}
         applicationType={applicationType}
         preparatory={false}
         preferredStartDate={formData.serviceNeed.preferredStartDate}
@@ -91,15 +75,7 @@ export default React.memo(function ApplicationFormClub({
         type={applicationType}
         application={application}
         formData={formData.contactInfo}
-        updateFormData={(data) =>
-          setFormData((old) => ({
-            ...old,
-            contactInfo: {
-              ...old.contactInfo,
-              ...data
-            }
-          }))
-        }
+        updateFormData={update.contactInfo}
         errors={errors.contactInfo}
         verificationRequested={verificationRequested}
         fullFamily={false}
@@ -115,15 +91,7 @@ export default React.memo(function ApplicationFormClub({
       <AdditionalDetailsSection
         deps={deps}
         formData={formData.additionalDetails}
-        updateFormData={(data) =>
-          setFormData((old) => ({
-            ...old,
-            additionalDetails: {
-              ...old.additionalDetails,
-              ...data
-            }
-          }))
-        }
+        updateFormData={update.additionalDetails}
         errors={errors.additionalDetails}
         verificationRequested={verificationRequested}
         applicationType={applicationType}
