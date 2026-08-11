@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React from 'react'
 
 import type { ApplicationFormData } from 'lib-common/application/ApplicationFormData'
+import { requiresFullFamily } from 'lib-common/application/ApplicationFormData'
 import type {
   ApplicationFormDataErrors,
   Term
@@ -12,15 +13,14 @@ import type {
 import type { ApplicationDetails } from 'lib-common/generated/api-types/application'
 import type { PersonJSON } from 'lib-common/generated/api-types/pis'
 import type LocalDate from 'lib-common/local-date'
-import {
-  constantQuery,
-  useMutationResult,
-  useQueryResult
-} from 'lib-common/query'
+import { useMutationResult } from 'lib-common/query'
 import AdditionalDetailsSection from 'lib-components/application-editor/AdditionalDetailsSection'
 import ContactInfoSection from 'lib-components/application-editor/contact-info/ContactInfoSection'
+import {
+  useApplicationServiceNeedOptions,
+  useSectionUpdaters
+} from 'lib-components/application-editor/formState'
 import ServiceNeedSection from 'lib-components/application-editor/service-need/ServiceNeedSection'
-import type { ApplicationEditorDeps } from 'lib-components/application-editor/types'
 import UnitPreferenceSection from 'lib-components/application-editor/unit-preference/UnitPreferenceSection'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
@@ -34,6 +34,7 @@ import { useTranslation } from '../../state/i18n'
 import ApplicationStatusSection from './ApplicationStatusSection'
 import ApplicationTitle from './ApplicationTitle'
 import VTJGuardian from './VTJGuardian'
+import { useApplicationEditorDeps } from './useApplicationEditorDeps'
 
 interface Props {
   application: ApplicationDetails
@@ -46,7 +47,6 @@ interface Props {
   guardians: PersonJSON[]
   dueDate: LocalDate | null
   setDueDate: (d: LocalDate | null) => void
-  deps: ApplicationEditorDeps
 }
 
 export default React.memo(function ApplicationEditView({
@@ -57,78 +57,20 @@ export default React.memo(function ApplicationEditView({
   terms,
   guardians,
   dueDate,
-  setDueDate,
-  deps
+  setDueDate
 }: Props) {
   const { i18n } = useTranslation()
-  const {
-    featureFlags,
-    serviceNeedOptionPublicInfosQuery,
-    renderResult,
-    lang
-  } = deps
+  // Owned here rather than by ApplicationPage so that the citizen translation
+  // bundle these deps pull in stays inside this lazily loaded chunk.
+  const { deps, infoDialog } = useApplicationEditorDeps()
+  const { renderResult, lang } = deps
   const type = application.type
 
-  const serviceNeedOptions = useQueryResult(
-    type === 'DAYCARE' && featureFlags.daycareApplication.serviceNeedOption
-      ? serviceNeedOptionPublicInfosQuery({
-          placementTypes: ['DAYCARE', 'DAYCARE_PART_TIME']
-        })
-      : type === 'PRESCHOOL' &&
-          featureFlags.preschoolApplication.serviceNeedOption
-        ? serviceNeedOptionPublicInfosQuery({
-            placementTypes: [
-              'PRESCHOOL_DAYCARE',
-              ...(application.form.preferences.serviceNeed?.serviceNeedOption
-                ?.validPlacementType === 'PRESCHOOL_CLUB'
-                ? (['PRESCHOOL_CLUB'] as const)
-                : [])
-            ]
-          })
-        : constantQuery([])
-  )
-
-  const updateServiceNeed = useCallback(
-    (data: Partial<ApplicationFormData['serviceNeed']>) =>
-      setFormData((old) => ({
-        ...old,
-        serviceNeed: { ...old.serviceNeed, ...data }
-      })),
-    [setFormData]
-  )
-  const updateUnitPreference = useCallback(
-    (
-      fn: (
-        prev: ApplicationFormData['unitPreference']
-      ) => Partial<ApplicationFormData['unitPreference']>
-    ) =>
-      setFormData((old) => ({
-        ...old,
-        unitPreference: { ...old.unitPreference, ...fn(old.unitPreference) }
-      })),
-    [setFormData]
-  )
-  const updateContactInfo = useCallback(
-    (data: Partial<ApplicationFormData['contactInfo']>) =>
-      setFormData((old) => ({
-        ...old,
-        contactInfo: { ...old.contactInfo, ...data }
-      })),
-    [setFormData]
-  )
-  const updateAdditionalDetails = useCallback(
-    (data: Partial<ApplicationFormData['additionalDetails']>) =>
-      setFormData((old) => ({
-        ...old,
-        additionalDetails: { ...old.additionalDetails, ...data }
-      })),
-    [setFormData]
-  )
+  const serviceNeedOptions = useApplicationServiceNeedOptions(deps, application)
+  const update = useSectionUpdaters(setFormData)
 
   const otherGuardian = guardians.find((g) => g.id !== application.guardianId)
-  const fullFamily =
-    type === 'DAYCARE' ||
-    (type === 'PRESCHOOL' && formData.serviceNeed.connectedDaycare)
+  const fullFamily = requiresFullFamily(type, formData)
 
   const { mutateAsync: deleteAttachment } = useMutationResult(
     deps.deleteAttachmentMutation
@@ -147,7 +89,7 @@ export default React.memo(function ApplicationEditView({
             isInvalidDate={undefined}
             type={type}
             formData={formData.serviceNeed}
-            updateFormData={updateServiceNeed}
+            updateFormData={update.serviceNeed}
             errors={errors.serviceNeed}
             verificationRequested={true}
             terms={terms}
@@ -156,7 +98,7 @@ export default React.memo(function ApplicationEditView({
           <UnitPreferenceSection
             deps={deps}
             formData={formData.unitPreference}
-            updateFormData={updateUnitPreference}
+            updateFormData={update.unitPreference}
             applicationType={type}
             preparatory={
               type === 'PRESCHOOL' && formData.serviceNeed.preparatory
@@ -171,7 +113,7 @@ export default React.memo(function ApplicationEditView({
             type={type}
             application={application}
             formData={formData.contactInfo}
-            updateFormData={updateContactInfo}
+            updateFormData={update.contactInfo}
             errors={errors.contactInfo}
             verificationRequested={true}
             fullFamily={fullFamily}
@@ -186,7 +128,7 @@ export default React.memo(function ApplicationEditView({
           <AdditionalDetailsSection
             deps={deps}
             formData={formData.additionalDetails}
-            updateFormData={updateAdditionalDetails}
+            updateFormData={update.additionalDetails}
             errors={errors.additionalDetails}
             verificationRequested={true}
             applicationType={type}
@@ -232,6 +174,7 @@ export default React.memo(function ApplicationEditView({
           />
         </FixedSpaceColumn>
       ))}
+      {infoDialog}
     </div>
   )
 })

@@ -11,10 +11,7 @@ import type {
   ApplicationUpdate
 } from 'lib-common/generated/api-types/application'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import {
-  cancelMutation,
-  MutateButton
-} from 'lib-components/atoms/buttons/MutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import Radio from 'lib-components/atoms/form/Radio'
 import StickyFooter from 'lib-components/layout/StickyFooter'
 import {
@@ -37,7 +34,7 @@ type Props = {
   editing: boolean
   setEditing: (v: boolean) => void
   application: ApplicationDetails
-  applicationUpdate: ApplicationUpdate | null
+  applicationUpdate: ApplicationUpdate
   errors: boolean
 }
 
@@ -153,15 +150,14 @@ export default React.memo(function ApplicationActionsBar({
               ? updateAndSendApplicationMutation
               : updateApplicationMutation
           }
-          onClick={() =>
-            applicationUpdate !== null
-              ? { applicationId: application.id, body: applicationUpdate }
-              : cancelMutation
-          }
+          onClick={() => ({
+            applicationId: application.id,
+            body: applicationUpdate
+          })}
           text={i18n.common.save}
           textInProgress={i18n.common.saving}
           textDone={i18n.common.saved}
-          disabled={applicationUpdate === null || errors}
+          disabled={errors}
           onSuccess={() => setEditing(false)}
           primary
           data-qa="save-application"
