@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import styled from 'styled-components'
 import { useSearchParams } from 'wouter'
 
@@ -14,9 +20,9 @@ import {
 } from 'lib-common/application/ApplicationFormData'
 import {
   applicationHasErrors,
+  toApplicationTerms,
   validateApplication
 } from 'lib-common/application/validations'
-import type { Term } from 'lib-common/application/validations'
 import type {
   ApplicationResponse,
   ApplicationUpdate
@@ -47,7 +53,6 @@ import MetadataSection from '../archive-metadata/MetadataSection'
 import { renderResult } from '../async-rendering'
 
 import ApplicationActionsBar from './ApplicationActionsBar'
-import ApplicationEditView from './ApplicationEditView'
 import ApplicationNotes from './ApplicationNotes'
 import ApplicationReadView from './ApplicationReadView'
 import {
@@ -57,7 +62,6 @@ import {
   preschoolTermsQuery,
   threadByApplicationIdQuery
 } from './queries'
-import { useApplicationEditorDeps } from './useApplicationEditorDeps'
 
 const ApplicationArea = styled(ContentArea)<{ $fullWidth: boolean }>`
   width: ${(p) => (p.$fullWidth ? '100%' : '77%')};
@@ -90,6 +94,10 @@ const ApplicationMetadataSection = React.memo(
     return <MetadataSection metadataResult={result} />
   }
 )
+
+// Lazily loaded: it is the employee frontend's only entry point into the
+// citizen translation bundle, which would otherwise ship on every page.
+const ApplicationEditView = React.lazy(() => import('./ApplicationEditView'))
 
 export default React.memo(function ApplicationPage() {
   const applicationId = useIdRouteParam<ApplicationId>('id')
@@ -147,43 +155,57 @@ export default React.memo(function ApplicationPage() {
     )
   )
 
-  const terms = combine(application, preschoolTerms, clubTerms)
-    .map(([applicationData, preschoolTerms, clubTerms]): Term[] | undefined =>
-      applicationData.application.type === 'PRESCHOOL'
-        ? preschoolTerms.map((term) => ({
-            term: term.finnishPreschool,
-            extendedTerm: term.extendedTerm
-          }))
-        : applicationData.application.type === 'CLUB'
-          ? clubTerms.map(({ term }) => ({ term, extendedTerm: term }))
-          : undefined
-    )
-    .getOrElse(undefined)
-
-  const { deps, infoDialog } = useApplicationEditorDeps()
-
-  const errors =
-    application.isSuccess && formData !== undefined
-      ? validateApplication(
-          application.value.application,
-          formData,
-          featureFlags,
-          'employee',
-          terms
+  const terms = useMemo(
+    () =>
+      combine(application, preschoolTerms, clubTerms)
+        .map(([applicationData, preschoolTerms, clubTerms]) =>
+          // Employees record paper applications against any term, so no
+          // filtering by open application period here.
+          toApplicationTerms(
+            applicationData.application.type,
+            preschoolTerms,
+            clubTerms,
+            false
+          )
         )
-      : undefined
+        .getOrElse(undefined),
+    [application, preschoolTerms, clubTerms]
+  )
+
+  const applicationDetails = application.isSuccess
+    ? application.value.application
+    : undefined
+
+  // Validation only gates the Save button, which exists only while editing —
+  // running it in read view would traverse the whole form for nothing.
+  const errors = useMemo(
+    () =>
+      editing && applicationDetails !== undefined && formData !== undefined
+        ? validateApplication(
+            applicationDetails,
+            formData,
+            featureFlags,
+            'employee',
+            terms
+          )
+        : undefined,
+    [editing, applicationDetails, formData, terms]
+  )
   const hasErrors = errors !== undefined && applicationHasErrors(errors)
 
-  const applicationUpdate: ApplicationUpdate | null =
-    application.isSuccess && formData !== undefined
-      ? {
-          form: formDataToApiData(application.value.application, formData, {
-            actor: 'employee',
-            dailyTimes: featureFlags.daycareApplication.dailyTimes
-          }),
-          dueDate
-        }
-      : null
+  const applicationUpdate = useMemo(
+    (): ApplicationUpdate | null =>
+      applicationDetails !== undefined && formData !== undefined
+        ? {
+            form: formDataToApiData(applicationDetails, formData, {
+              actor: 'employee',
+              dailyTimes: featureFlags.daycareApplication.dailyTimes
+            }),
+            dueDate
+          }
+        : null,
+    [applicationDetails, formData, dueDate]
+  )
 
   const getSendMessageUrl = useCallback(
     (applicationData: ApplicationResponse) => {
@@ -214,17 +236,18 @@ export default React.memo(function ApplicationPage() {
             <ApplicationArea $opaque $fullWidth={editing}>
               {editing ? (
                 formData !== undefined && errors !== undefined ? (
-                  <ApplicationEditView
-                    application={applicationData.application}
-                    formData={formData}
-                    setFormData={updateFormData}
-                    errors={errors}
-                    terms={terms}
-                    guardians={applicationData.guardians}
-                    dueDate={dueDate}
-                    setDueDate={setDueDate}
-                    deps={deps}
-                  />
+                  <Suspense fallback={null}>
+                    <ApplicationEditView
+                      application={applicationData.application}
+                      formData={formData}
+                      setFormData={updateFormData}
+                      errors={errors}
+                      terms={terms}
+                      guardians={applicationData.guardians}
+                      dueDate={dueDate}
+                      setDueDate={setDueDate}
+                    />
+                  </Suspense>
                 ) : null
               ) : (
                 <ApplicationReadView application={applicationData} />
@@ -264,7 +287,6 @@ export default React.memo(function ApplicationPage() {
               )}
           </FixedSpaceRow>
         ))}
-        {infoDialog}
         {!editing &&
           application.isSuccess &&
           application.value.permittedActions.includes('READ_METADATA') && (

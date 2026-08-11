@@ -22,6 +22,7 @@ import {
   applicationHasErrors,
   maxPreferredStartDate,
   minPreferredStartDate,
+  toApplicationTerms,
   validateApplication
 } from 'lib-common/application/validations'
 import type {
@@ -29,7 +30,7 @@ import type {
   CitizenChildren
 } from 'lib-common/generated/api-types/application'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
-import LocalDate from 'lib-common/local-date'
+import type LocalDate from 'lib-common/local-date'
 import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
@@ -110,34 +111,16 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const { data: clubTerms } = useQuery(clubTermsQuery(), {
     enabled: application.type === 'CLUB'
   })
-  const terms = useMemo<Term[] | undefined>(() => {
-    switch (application.type) {
-      case 'PRESCHOOL':
-        return (preschoolTerms ?? [])
-          .filter(({ applicationPeriod, extendedTerm }) => {
-            const today = LocalDate.todayInSystemTz()
-            return (
-              applicationPeriod.start.isEqualOrBefore(today) &&
-              extendedTerm.end.isEqualOrAfter(today)
-            )
-          })
-          .map((term) => ({
-            term: term.finnishPreschool,
-            extendedTerm: term.extendedTerm
-          }))
-      case 'CLUB':
-        return (clubTerms ?? [])
-          .filter(({ applicationPeriod }) =>
-            applicationPeriod.includes(LocalDate.todayInHelsinkiTz())
-          )
-          .map(({ term }) => ({
-            term,
-            extendedTerm: term
-          }))
-      default:
-        return undefined
-    }
-  }, [application.type, clubTerms, preschoolTerms])
+  const terms = useMemo<Term[] | undefined>(
+    () =>
+      toApplicationTerms(
+        application.type,
+        preschoolTerms ?? [],
+        clubTerms ?? [],
+        true
+      ),
+    [application.type, clubTerms, preschoolTerms]
+  )
 
   const [formData, setFormData] = useState<ApplicationFormData>(
     apiDataToFormData(application, citizenChildren)
