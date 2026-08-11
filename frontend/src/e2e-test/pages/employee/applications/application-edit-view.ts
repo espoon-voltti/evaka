@@ -16,6 +16,7 @@ import {
   Radio,
   TextInput
 } from '../../../utils/page'
+import { ApplicationEditorSections } from '../../application-editor-sections'
 
 import ApplicationReadView from './application-read-view'
 
@@ -41,7 +42,9 @@ export default class ApplicationEditView {
   #secondGuardianToggle: Checkbox
   #secondGuardianPhone: TextInput
   #secondGuardianEmail: TextInput
+  #sections: ApplicationEditorSections
   constructor(private readonly page: Page) {
+    this.#sections = new ApplicationEditorSections(page)
     this.#saveButton = page.findByDataQa('save-application')
     this.#urgentCheckbox = new Checkbox(page.findByDataQa('urgent-input'))
     this.urgentAttachmentFileUpload = new FileUpload(
@@ -89,18 +92,6 @@ export default class ApplicationEditView {
     )
   }
 
-  #section = (name: string) => this.page.findByDataQa(`${name}-section`)
-  #sectionHeader = (name: string) =>
-    this.page.findByDataQa(`${name}-section-header`)
-
-  async #openSection(name: string) {
-    await expect(this.#section(name)).toHaveAttribute('data-status', /.*/)
-    const status = await this.#section(name).getAttribute('data-status')
-    if (status !== 'open') {
-      await this.#sectionHeader(name).click()
-    }
-  }
-
   async saveApplication() {
     await this.#saveButton.click()
     return new ApplicationReadView(this.page)
@@ -142,13 +133,13 @@ export default class ApplicationEditView {
   }
 
   async pickUnit(unitName: string) {
-    await this.#openSection('unitPreference')
+    await this.#sections.open('unitPreference')
     await this.#preferredUnitsInput.type(unitName)
     await this.page.keyboard.press('Enter')
   }
 
   async fillApplicantPhoneAndEmail(phone: string, email: string) {
-    await this.#openSection('contactInfo')
+    await this.#sections.open('contactInfo')
     await this.#applicantPhone.fill(phone)
     await this.#applicantEmail.fill(email)
   }
@@ -177,7 +168,7 @@ export default class ApplicationEditView {
     expectedSsn: string,
     expectedAddress: string
   ) {
-    await this.#openSection('contactInfo')
+    await this.#sections.open('contactInfo')
     // toHaveText (not findText().toBeVisible()) because an empty ssn/address
     // renders as a zero-size <span>, which Playwright reports as hidden.
     await expect(this.#guardianFirstName).toHaveText(expectedFirstName)
@@ -194,7 +185,7 @@ export default class ApplicationEditView {
     )
 
   async fillSecondGuardianContactInfo(phone: string, email: string) {
-    await this.#openSection('contactInfo')
+    await this.#sections.open('contactInfo')
     await this.#secondGuardianToggle.check()
     await this.#secondGuardianPhone.fill(phone)
     await this.#secondGuardianEmail.fill(email)
@@ -203,7 +194,7 @@ export default class ApplicationEditView {
   async setGuardianAgreementStatus(
     status: OtherGuardianAgreementStatus | null
   ) {
-    await this.#openSection('contactInfo')
+    await this.#sections.open('contactInfo')
     await this.#guardianAgreementStatus(status).check()
   }
 }
