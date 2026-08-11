@@ -600,6 +600,7 @@ export const fi = {
       secondGuardian: {
         title: 'Ilmoitetun toisen aikuisen tiedot',
         checkboxLabel: 'Hakija on ilmoittanut toisen huoltajan tiedot',
+        agreementStatusNotSet: 'Huoltajat asuvat samassa osoitteessa',
         exists: 'Lapsella on toinen huoltaja',
         sameAddress: 'Toinen huoltaja asuu samassa osoitteessa',
         separated: 'Toinen huoltaja asuu eri osoitteessa',

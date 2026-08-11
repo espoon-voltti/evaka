@@ -37,12 +37,17 @@ import type { MutationDescription, QueriesQuery } from 'lib-common/query'
 import type { RenderResultFn } from 'lib-components/async-rendering'
 import type { UploadHandler } from 'lib-components/molecules/FileUpload'
 
-import type { ApplicationEditorTranslations } from './translations'
+import type {
+  ApplicationEditorTranslations,
+  EmployeeApplicationEditorTexts
+} from './translations'
 
 export interface ApplicationEditorDeps {
   actor: ApplicationEditorActor
   lang: Language
   translations: ApplicationEditorTranslations
+  /** Non-null exactly when `actor` is `'employee'`. */
+  employeeTexts: EmployeeApplicationEditorTexts | null
   featureFlags: FeatureFlags
   getMaxPreferredUnits: (type: ApplicationType) => number
   placementTypes: readonly PlacementType[]
@@ -84,15 +89,17 @@ export interface ApplicationEditorDeps {
     EmailVerificationStatusResponse
   > | null
   infoDialog: {
-    show: (message: {
-      title: string
-      text: string
-      type: 'warning'
-      icon: IconProp
-      resolve: { action: () => void; label: string }
-    }) => void
+    show: (message: InfoDialogMessage) => void
     close: () => void
   }
+}
+
+export interface InfoDialogMessage {
+  title: string
+  text: string
+  type: 'warning'
+  icon: IconProp
+  resolve: { action: () => void; label: string }
 }
 
 export type ApplicationFormProps = {

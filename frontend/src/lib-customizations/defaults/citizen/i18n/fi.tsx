@@ -1508,16 +1508,11 @@ export default {
         childFirstName: 'Lapsen etunimet',
         childLastName: 'Lapsen sukunimi',
         childSSN: 'Lapsen henkilötunnus',
-        childInformationLink: 'Lapsen tiedot',
-        childDateOfBirth: 'Syntymäaika',
-        nationality: 'Kansalaisuus',
-        language: 'Kieli',
         homeAddress: 'Kotiosoite',
         moveDate: 'Muuttopäivämäärä',
         street: 'Katuosoite',
         postalCode: 'Postinumero',
         postOffice: 'Postitoimipaikka',
-        addressRestricted: 'Turvakielto voimassa',
         guardianInfoTitle: 'Huoltajan tiedot',
         guardianFirstName: 'Huoltajan etunimet',
         guardianLastName: 'Huoltajan sukunimi',
@@ -1529,7 +1524,6 @@ export default {
           'Jos haluat muuttaa sähköpostiosoitettasi, voit tehdä sen ',
         emailChangeTipLink: 'omissa tiedoissasi.',
         noEmail: 'Minulla ei ole sähköpostiosoitetta',
-        secondGuardianExists: 'Hakija on ilmoittanut toisen huoltajan tiedot',
         secondGuardianInfoTitle: 'Toisen huoltajan tiedot',
         secondGuardianInfo:
           'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
@@ -1543,8 +1537,7 @@ export default {
           AGREED: 'Olemme yhdessä sopineet hakemuksen tekemisestä.',
           NOT_AGREED: 'Emme ole voineet sopia hakemuksen tekemisestä yhdessä.',
           RIGHT_TO_GET_NOTIFIED:
-            'Toisella huoltajalla on vain tiedonsaantioikeus.',
-          NOT_SET: 'Huoltajat asuvat samassa osoitteessa'
+            'Toisella huoltajalla on vain tiedonsaantioikeus.'
         },
         secondGuardianPhone: 'Toisen huoltajan puhelinnumero',
         secondGuardianEmail: 'Toisen huoltajan sähköpostiosoite',

@@ -37,6 +37,7 @@ export default React.memo(function GuardianSubSection({
     emailVerificationStatusQuery,
     renderResult
   } = deps
+  const { employeeTexts } = deps
   const employee = deps.actor === 'employee'
   const verifiedEmail = useQueryResult(
     emailVerificationStatusQuery !== null
@@ -89,9 +90,9 @@ export default React.memo(function GuardianSubSection({
 
       <FixedSpaceColumn $spacing="xs">
         <Label>{t.applications.editor.contactInfo.homeAddress}</Label>
-        {employee && application.guardianRestricted ? (
+        {employeeTexts && application.guardianRestricted ? (
           <span data-qa="guardian-restricted">
-            {t.applications.editor.contactInfo.addressRestricted}
+            {employeeTexts.addressRestricted}
           </span>
         ) : (
           <span data-qa="guardian-home-address" translate="no">
@@ -252,7 +253,7 @@ export default React.memo(function GuardianSubSection({
       <P>{t.applications.editor.contactInfo.emailInfoText}</P>
       <Gap $size="m" />
 
-      {!(employee && application.guardianRestricted) && (
+      {!(employeeTexts && application.guardianRestricted) && (
         <>
           <ExpandingInfo
             data-qa="guardian-future-address-info"
