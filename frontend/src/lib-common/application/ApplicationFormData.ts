@@ -8,6 +8,7 @@ import type {
   ApplicationAttachment,
   ApplicationDetails,
   ApplicationFormUpdate,
+  ApplicationType,
   CitizenChildren,
   OtherGuardianAgreementStatus,
   PreferredUnit,
@@ -17,6 +18,19 @@ import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type LocalDate from 'lib-common/local-date'
 
 export type ApplicationEditorActor = 'citizen' | 'employee'
+
+/**
+ * Whether the application collects details about the whole family (the other
+ * partner and the other children living in the same household). Drives the
+ * form, its validation and what gets submitted, so it must be decided in one
+ * place.
+ */
+export const requiresFullFamily = (
+  type: ApplicationType,
+  form: ApplicationFormData
+): boolean =>
+  type === 'DAYCARE' ||
+  (type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
 
 export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null
@@ -305,9 +319,7 @@ export function formDataToApiData(
 ): ApplicationFormUpdate {
   const { actor, dailyTimes, isDraft = false } = options
   const requireMoveDate = actor === 'citizen' && !isDraft
-  const fullFamily =
-    type === 'DAYCARE' ||
-    (type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
+  const fullFamily = requiresFullFamily(type, form)
 
   const selectedSibling = form.unitPreference.vtjSiblings.find(
     (s) => s.selected
