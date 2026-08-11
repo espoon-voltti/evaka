@@ -83,12 +83,10 @@ test.describe('Citizen passkeys', () => {
     await expect(section.passkeys).toHaveCount(0)
     await header.logout()
 
-    // the deleted passkey no longer works: the attempt leaves the citizen on
-    // the login page, with no error shown
+    // the deleted passkey no longer works
     await evaka.goto(config.enduserLoginUrl)
     await evaka.findByDataQa('passkey-login').click()
-    await expect(evaka.page).toHaveURL(config.enduserLoginUrl)
-    await expect(evaka.findByDataQa('passkey-login')).toBeVisible()
+    await expect(evaka.findByDataQa('passkey-login-error')).toBeVisible()
   })
 
   test('the login page presents the last used method first with a tag', async ({

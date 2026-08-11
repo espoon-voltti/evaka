@@ -248,8 +248,13 @@ export default {
       passkeyLink: 'Kirjaudu pääsyavaimella (passkey)',
       passkeyDescriptionDesktop: 'Tällä laitteella tai puhelimella',
       passkeyDescriptionMobile: 'Face ID, Touch ID tai PIN-koodi',
-      passkeyError:
-        'Kirjautuminen pääsyavaimella ei onnistunut. Voit kirjautua sähköpostiosoitteella ja salasanalla.',
+      passkeyError: (strongLoginUri: string): ReactNode => (
+        <>
+          Kirjautuminen pääsyavaimella keskeytyi. Yritä uudelleen, kirjaudu
+          sähköpostiosoitteella tai{' '}
+          <a href={strongLoginUri}>tunnistaudu Suomi.fi-palvelussa</a>.
+        </>
+      ),
       usedLast: 'Käytit viimeksi'
     },
     applying: {

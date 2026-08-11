@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { Fragment, useCallback, useMemo } from 'react'
+import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link, Redirect, useLocation, useSearchParams } from 'wouter'
 
@@ -11,7 +11,7 @@ import { useQueryResult } from 'lib-common/query'
 import { parseUrlWithOrigin } from 'lib-common/utils/parse-url-with-origin'
 import Main from 'lib-components/atoms/Main'
 import { desktopMin } from 'lib-components/breakpoints'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { H1, H2, P, Title } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { farMap } from 'lib-icons'
@@ -51,6 +51,7 @@ export default React.memo(function LoginPage() {
   const unvalidatedNextPath = searchParams.get('next')
 
   const systemNotifications = useQueryResult(systemNotificationsQuery())
+  const [passkeyFailed, setPasskeyFailed] = useState(false)
 
   if (user) {
     return <Redirect to="/" replace />
@@ -95,13 +96,29 @@ export default React.memo(function LoginPage() {
           </H1>
           <Subtitle>{i18n.loginPage.title}</Subtitle>
           <Gap $size="XXL" />
+          {passkeyFailed && (
+            <>
+              <InfoBox
+                message={i18n.loginPage.login.passkeyError(
+                  getStrongLoginUri(unvalidatedNextPath ?? '/')
+                )}
+                wide
+                noMargin
+                data-qa="passkey-login-error"
+              />
+              <Gap $size="XXL" />
+            </>
+          )}
           <LoginColumns>
             <section>
               <H2 $noMargin $hyphenate>
                 {i18n.loginPage.login.title}
               </H2>
               <Gap $size="m" />
-              <WeakLoginMethods unvalidatedNextPath={unvalidatedNextPath} />
+              <WeakLoginMethods
+                unvalidatedNextPath={unvalidatedNextPath}
+                setPasskeyFailed={setPasskeyFailed}
+              />
             </section>
             <section>
               <H2 $noMargin>{i18n.loginPage.applying.title}</H2>
@@ -158,9 +175,11 @@ const MapLink = styled(Link)`
 `
 
 const WeakLoginMethods = React.memo(function WeakLoginMethods({
-  unvalidatedNextPath
+  unvalidatedNextPath,
+  setPasskeyFailed
 }: {
   unvalidatedNextPath: string | null
+  setPasskeyFailed: (failed: boolean) => void
 }) {
   const i18n = useTranslation()
   const t = i18n.loginPage.login
@@ -178,12 +197,15 @@ const WeakLoginMethods = React.memo(function WeakLoginMethods({
   )
 
   const loginWithPasskey = useCallback(async () => {
+    setPasskeyFailed(false)
     const result = await authPasskeyLogin()
     if (result === 'success') {
       rememberLastLoginMethod('passkey')
       window.location.replace(nextUrl ?? '/')
+    } else {
+      setPasskeyFailed(true)
     }
-  }, [nextUrl])
+  }, [nextUrl, setPasskeyFailed])
 
   const emailButton = (isPrimary: boolean) => (
     <LoginMethod key="email">

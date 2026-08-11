@@ -250,8 +250,13 @@ const en: Translations = {
       passkeyLink: 'Log in with a passkey',
       passkeyDescriptionDesktop: 'On this device or your phone',
       passkeyDescriptionMobile: 'Face ID, Touch ID or PIN code',
-      passkeyError:
-        'Passkey login failed. You can log in with your email address and password.',
+      passkeyError: (strongLoginUri: string): ReactNode => (
+        <>
+          Logging in with a passkey was interrupted. Try again, log in with your
+          email address or{' '}
+          <a href={strongLoginUri}>authenticate in the Suomi.fi service</a>.
+        </>
+      ),
       usedLast: 'Used last'
     },
     applying: {
