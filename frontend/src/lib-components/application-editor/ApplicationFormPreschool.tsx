@@ -2,15 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React from 'react'
 
-import type { UnitPreferenceFormData } from 'lib-common/application/ApplicationFormData'
-import { constantQuery, useQueryResult } from 'lib-common/query'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import AdditionalDetailsSection from './AdditionalDetailsSection'
 import Heading from './Heading'
 import ContactInfoSection from './contact-info/ContactInfoSection'
+import {
+  useApplicationServiceNeedOptions,
+  useSectionUpdaters
+} from './formState'
 import ServiceNeedSection from './service-need/ServiceNeedSection'
 import type { ApplicationFormProps } from './types'
 import UnitPreferenceSection from './unit-preference/UnitPreferenceSection'
@@ -28,34 +30,11 @@ export default React.memo(function ApplicationFormPreschool({
   maxDate,
   terms
 }: ApplicationFormProps) {
-  const { featureFlags, serviceNeedOptionPublicInfosQuery, renderResult } = deps
+  const { renderResult } = deps
   const applicationType = 'PRESCHOOL'
+  const update = useSectionUpdaters(setFormData)
 
-  const serviceNeedOptions = useQueryResult(
-    featureFlags.preschoolApplication.serviceNeedOption
-      ? serviceNeedOptionPublicInfosQuery({
-          placementTypes: [
-            'PRESCHOOL_DAYCARE',
-            ...(application.form.preferences.serviceNeed?.serviceNeedOption
-              ?.validPlacementType === 'PRESCHOOL_CLUB'
-              ? (['PRESCHOOL_CLUB'] as const)
-              : [])
-          ]
-        })
-      : constantQuery([])
-  )
-
-  const updateUnitPreferenceFormData = useCallback(
-    (fn: (prev: UnitPreferenceFormData) => Partial<UnitPreferenceFormData>) =>
-      setFormData((old) => ({
-        ...old,
-        unitPreference: {
-          ...old.unitPreference,
-          ...fn(old.unitPreference)
-        }
-      })),
-    [setFormData]
-  )
+  const serviceNeedOptions = useApplicationServiceNeedOptions(deps, application)
 
   return renderResult(serviceNeedOptions, (serviceNeedOptions) => (
     <FixedSpaceColumn $spacing="s">
@@ -78,19 +57,7 @@ export default React.memo(function ApplicationFormPreschool({
         maxDate={maxDate}
         type={applicationType}
         formData={formData.serviceNeed}
-        updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  serviceNeed: {
-                    ...old?.serviceNeed,
-                    ...data
-                  }
-                }
-              : old
-          )
-        }
+        updateFormData={update.serviceNeed}
         errors={errors.serviceNeed}
         verificationRequested={verificationRequested}
         terms={terms}
@@ -100,7 +67,7 @@ export default React.memo(function ApplicationFormPreschool({
       <UnitPreferenceSection
         deps={deps}
         formData={formData.unitPreference}
-        updateFormData={updateUnitPreferenceFormData}
+        updateFormData={update.unitPreference}
         applicationType={applicationType}
         preparatory={formData.serviceNeed.preparatory}
         preferredStartDate={formData.serviceNeed.preferredStartDate}
@@ -114,19 +81,7 @@ export default React.memo(function ApplicationFormPreschool({
         type={applicationType}
         application={application}
         formData={formData.contactInfo}
-        updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  contactInfo: {
-                    ...old?.contactInfo,
-                    ...data
-                  }
-                }
-              : old
-          )
-        }
+        updateFormData={update.contactInfo}
         errors={errors.contactInfo}
         verificationRequested={verificationRequested}
         fullFamily={formData.serviceNeed.connectedDaycare}
@@ -142,19 +97,7 @@ export default React.memo(function ApplicationFormPreschool({
       <AdditionalDetailsSection
         deps={deps}
         formData={formData.additionalDetails}
-        updateFormData={(data) =>
-          setFormData((old) =>
-            old
-              ? {
-                  ...old,
-                  additionalDetails: {
-                    ...old?.additionalDetails,
-                    ...data
-                  }
-                }
-              : old
-          )
-        }
+        updateFormData={update.additionalDetails}
         errors={errors.additionalDetails}
         verificationRequested={verificationRequested}
         applicationType={applicationType}
