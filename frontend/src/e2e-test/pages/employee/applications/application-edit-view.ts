@@ -11,6 +11,7 @@ import { expect } from '../../../playwright'
 import type { Page, Element } from '../../../utils/page'
 import {
   Checkbox,
+  Combobox,
   DatePicker,
   FileUpload,
   Radio,
@@ -44,8 +45,20 @@ export default class ApplicationEditView {
   #secondGuardianPhone: TextInput
   #secondGuardianEmail: TextInput
   #sections: ApplicationEditorSections
-  constructor(private readonly page: Page) {
+  #legacyPreferredUnit: Combobox
+  /**
+   * The legacy employee-only editor, rendered when the sharedApplicationEditor
+   * feature flag is off. Its `data-qa` attributes were aligned with the shared
+   * editor's, so only genuinely different widgets need to branch on this.
+   */
+  constructor(
+    private readonly page: Page,
+    private readonly legacy = false
+  ) {
     this.#sections = new ApplicationEditorSections(page)
+    this.#legacyPreferredUnit = new Combobox(
+      page.findByDataQa('select-preferred-unit')
+    )
     this.#saveButton = page.findByDataQa('save-application')
     this.#urgentCheckbox = new Checkbox(page.findByDataQa('urgent-input'))
     this.urgentAttachmentFileUpload = new FileUpload(
@@ -143,6 +156,12 @@ export default class ApplicationEditView {
 
   async pickUnit(unitName: string) {
     await this.#sections.open('unitPreference')
+    if (this.legacy) {
+      // a single-select combobox that appends on selection, not the shared
+      // editor's multi-select text input
+      await this.#legacyPreferredUnit.fillAndSelectFirst(unitName)
+      return
+    }
     await this.#preferredUnitsInput.type(unitName)
     await this.page.keyboard.press('Enter')
   }
@@ -183,7 +202,9 @@ export default class ApplicationEditView {
     await expect(this.#guardianFirstName).toHaveText(expectedFirstName)
     await expect(this.#guardianLastName).toHaveText(expectedLastName)
     await expect(this.#guardianSsn).toHaveText(expectedSsn)
-    await expect(this.#guardianAddress).toHaveText(expectedAddress)
+    // toContainText, not toHaveText: the legacy editor renders the whole address
+    // ("street, postal postOffice") in one element, the shared one the street alone
+    await expect(this.#guardianAddress).toContainText(expectedAddress)
   }
 
   #guardianAgreementStatus = (status: OtherGuardianAgreementStatus | null) =>

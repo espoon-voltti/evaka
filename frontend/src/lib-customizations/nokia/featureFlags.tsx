@@ -58,7 +58,8 @@ const prod: FeatureFlags = {
 const features: Features = {
   default: {
     ...prod,
-    environmentLabel: 'Test'
+    environmentLabel: 'Test',
+    sharedApplicationEditor: true
   },
   prod
 }

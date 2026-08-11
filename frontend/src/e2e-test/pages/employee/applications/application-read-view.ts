@@ -203,9 +203,9 @@ export default class ApplicationReadView {
     )
   }
 
-  async startEditing(): Promise<ApplicationEditView> {
+  async startEditing(legacyEditor = false): Promise<ApplicationEditView> {
     await this.#editButton.click()
-    return new ApplicationEditView(this.page)
+    return new ApplicationEditView(this.page, legacyEditor)
   }
 
   async openMessagesPage(): Promise<MessagesPage> {
