@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { useQueryClient } from '@tanstack/react-query'
 import React, { useMemo, useState } from 'react'
 
 import type {
@@ -21,13 +22,14 @@ import { useTranslation } from '../../state/i18n'
 import { serviceNeedPublicInfosQuery } from '../applications/queries'
 import { renderResult } from '../async-rendering'
 
-import { applicationUnitsQuery } from './queries'
+import { applicationDetailsQuery, applicationUnitsQuery } from './queries'
 
 export function useApplicationEditorDeps(): {
   deps: ApplicationEditorDeps
   infoDialog: React.ReactNode
 } {
   const { i18n, lang } = useTranslation()
+  const queryClient = useQueryClient()
   const [infoDialogMessage, setInfoDialogMessage] =
     useState<InfoDialogMessage | null>(null)
 
@@ -57,7 +59,37 @@ export function useApplicationEditorDeps(): {
       applicationUnitsQuery,
       serviceNeedOptionPublicInfosQuery: serviceNeedPublicInfosQuery,
       deleteAttachmentMutation,
-      applicationAttachmentUploadHandler: applicationAttachment,
+      applicationAttachmentUploadHandler: (
+        applicationId,
+        type,
+        deleteAttachment
+      ) => {
+        const handler = applicationAttachment(
+          applicationId,
+          type,
+          deleteAttachment
+        )
+        // The upload endpoint is not a query framework mutation and
+        // deleteAttachmentMutation invalidates nothing, so without this the
+        // application query keeps serving the attachment list from before the
+        // upload -- most visibly in the read view after editing is cancelled.
+        const invalidate = () =>
+          void queryClient.invalidateQueries({
+            queryKey: applicationDetailsQuery({ applicationId }).queryKey
+          })
+        return {
+          upload: async (file, onUploadProgress) => {
+            const result = await handler.upload(file, onUploadProgress)
+            if (result.isSuccess) invalidate()
+            return result
+          },
+          delete: async (arg) => {
+            const result = await handler.delete(arg)
+            if (result.isSuccess) invalidate()
+            return result
+          }
+        }
+      },
       getAttachmentUrl,
       emailVerificationStatusQuery: null,
       infoDialog: {
@@ -65,7 +97,7 @@ export function useApplicationEditorDeps(): {
         close: () => setInfoDialogMessage(null)
       }
     }),
-    [i18n, lang]
+    [i18n, lang, queryClient]
   )
 
   const infoDialog = infoDialogMessage ? (

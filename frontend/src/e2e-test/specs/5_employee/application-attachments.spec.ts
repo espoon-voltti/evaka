@@ -101,6 +101,21 @@ test.describe('Employee application attachments', () => {
     )
   })
 
+  test('Attachment uploaded before cancelling is visible in the read view', async () => {
+    await applicationListView.searchButton.click()
+    const applicationView = await applicationListView
+      .applicationRow(applicationFixtureId)
+      .openApplication()
+    const applicationEditView = await applicationView.startEditing()
+
+    await applicationEditView.serviceWorkerAttachmentFileUpload.uploadTestFile()
+
+    // The upload attaches the file to the application server side, so cancelling
+    // does not undo it -- the read view must show it without a page reload.
+    const readView = await applicationEditView.cancelEditing()
+    await readView.assertServiceWorkerAttachmentExists(testFileName)
+  })
+
   test('Extended care attachment is visible to appropriate unit supervisor', async ({
     newEvakaPage
   }) => {
