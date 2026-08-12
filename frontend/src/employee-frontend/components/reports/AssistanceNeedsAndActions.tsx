@@ -1485,6 +1485,10 @@ const ReportByChildTable = ({
             label: i18n.reports.common.age,
             value: (row) => row.childAge
           },
+          {
+            label: i18n.reports.common.yearOfBirth,
+            value: (row) => row.childYearOfBirth
+          },
           ...selectedDaycareColumns.map((level) => ({
             label:
               i18n.childInformation.assistance.types.daycareAssistanceLevel[
@@ -1552,6 +1556,7 @@ const ReportByChildTable = ({
             </Th>
             <Th>{i18n.reports.common.groupName}</Th>
             <Th>{i18n.reports.common.age}</Th>
+            <Th>{i18n.reports.common.yearOfBirth}</Th>
             {selectedDaycareColumns.map((level) => (
               <Th key={level}>
                 {
@@ -1614,9 +1619,8 @@ const ReportByChildTable = ({
                       {data.name}
                     </div>
                   </Td>
-                  <Td>
-                    {/*This is to add an empty Ikä column to daycare row */}
-                  </Td>
+                  <Td />
+                  <Td />
                   <Td />
                   {selectedDaycareColumns.map((level) => (
                     <Td key={level}>
@@ -1670,6 +1674,7 @@ const ReportByChildTable = ({
                     </Td>
                     <Td>{row.groupName}</Td>
                     <Td>{row.childAge}</Td>
+                    <Td>{row.childYearOfBirth}</Td>
                     {selectedDaycareColumns.map((level) => (
                       <Td key={level}>
                         {row.daycareAssistanceCounts[level] ?? 0}
@@ -1725,6 +1730,7 @@ const ReportByChildTable = ({
         <TableFooter>
           <Tr>
             <Td className="bold">{i18n.reports.common.total}</Td>
+            <Td />
             <Td />
             <Td />
             {selectedDaycareColumns.map((level) => (

@@ -3613,6 +3613,7 @@ export const sv: typeof fi = {
       over3y: '3+',
       age: 'Ålder',
       dateOfBirth: 'Födelsedatum',
+      yearOfBirth: 'Födelseår',
       attendanceType: 'Närvaro',
       attendanceTypes: {
         RESERVATION: 'Reservering',

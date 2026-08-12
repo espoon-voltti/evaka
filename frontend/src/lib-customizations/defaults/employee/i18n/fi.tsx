@@ -3582,6 +3582,7 @@ export const fi = {
       over3y: '3+',
       age: 'Ikä',
       dateOfBirth: 'Syntymäaika',
+      yearOfBirth: 'Syntymävuosi',
       attendanceType: 'Läsnäolo',
       attendanceTypes: {
         RESERVATION: 'Varaus',
