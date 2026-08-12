@@ -150,7 +150,7 @@ class DataRemovalService(
             dbc,
             now,
             recipientExpireDate = today.minusYears(5),
-            expiresBefore = now.minusYears(10),
+            expiresBefore = now.minusYears(5),
             limit = limit,
         )
 

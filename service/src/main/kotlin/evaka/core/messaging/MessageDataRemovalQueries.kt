@@ -35,10 +35,6 @@ fun Database.Transaction.deleteExpiredBulletinThreads(
     // A staff copy shares its content with the bulletin it copies. A copy is deleted as soon as the
     // original bulletin is gone, which takes one further round.
     //
-    // The original sender can reply to a bulletin, so a thread expiring by age may still hold a
-    // recent follow-up, and is kept until the follow-up expires too. A thread expiring by placement
-    // is not held back this way, as its retention does not run from when anything was written.
-    //
     // Bulletins linked to an application exist only because of an earlier bug. Those bulletins are
     // deleted after the application is expired and deleted.
     val threadIds =
