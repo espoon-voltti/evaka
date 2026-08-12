@@ -35,6 +35,7 @@ export default class ApplicationEditView {
   #applicantEmail: TextInput
   #shiftCareCheckbox: Checkbox
   shiftCareAttachmentFileUpload: FileUpload
+  serviceWorkerAttachmentFileUpload: FileUpload
   #guardianFirstName: Element
   #guardianLastName: Element
   #guardianSsn: Element
@@ -77,6 +78,9 @@ export default class ApplicationEditView {
     this.shiftCareAttachmentFileUpload = new FileUpload(
       page.findByDataQa('shift-care-file-upload')
     )
+    this.serviceWorkerAttachmentFileUpload = new FileUpload(
+      page.findByDataQa('file-upload-service-worker')
+    )
     this.#guardianFirstName = page.findByDataQa('guardian-first-name')
     this.#guardianLastName = page.findByDataQa('guardian-last-name')
     this.#guardianSsn = page.findByDataQa('guardian-ssn')
@@ -94,6 +98,11 @@ export default class ApplicationEditView {
 
   async saveApplication() {
     await this.#saveButton.click()
+    return new ApplicationReadView(this.page)
+  }
+
+  async cancelEditing() {
+    await this.page.findByDataQa('cancel-editing').click()
     return new ApplicationReadView(this.page)
   }
 

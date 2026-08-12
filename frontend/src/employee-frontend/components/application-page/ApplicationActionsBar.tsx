@@ -130,7 +130,11 @@ export default React.memo(function ApplicationActionsBar({
       id: 'cancel-editing',
       enabled: editing && applicationStatus !== 'CREATED',
       component: (
-        <Button onClick={() => setEditing(false)} text={i18n.common.cancel} />
+        <Button
+          onClick={() => setEditing(false)}
+          text={i18n.common.cancel}
+          data-qa="cancel-editing"
+        />
       )
     },
     {
