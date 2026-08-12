@@ -22,7 +22,7 @@ data class DeletedBulletinThreadBatch(
     val contents: List<DeletedBulletinContent>,
 )
 
-data class DeletedBulletinDraft(val draftId: MessageDraftId, val attachmentIds: List<AttachmentId>)
+data class DeletedMessageDraft(val draftId: MessageDraftId, val attachmentIds: List<AttachmentId>)
 
 fun Database.Transaction.deleteExpiredBulletinThreads(
     recipientExpireDate: LocalDate,
@@ -146,20 +146,17 @@ WHERE
     return deletableIds.map { DeletedBulletinContent(it, attachmentsByContent[it] ?: emptyList()) }
 }
 
-fun Database.Transaction.deleteExpiredBulletinDrafts(
+fun Database.Transaction.deleteExpiredMessageDrafts(
     expiresBefore: HelsinkiDateTime,
     limit: Int,
-): List<DeletedBulletinDraft> {
+): List<DeletedMessageDraft> {
     val draftIds =
         createQuery {
                 sql(
                     """
 SELECT id
 FROM message_draft
-WHERE
-    type = 'BULLETIN' AND
-    created_at < ${bind(expiresBefore)} AND
-    modified_at < ${bind(expiresBefore)}
+WHERE created_at < ${bind(expiresBefore)}
 LIMIT ${bind(limit)}
 FOR UPDATE
 """
@@ -182,5 +179,5 @@ FOR UPDATE
 
     execute { sql("DELETE FROM message_draft WHERE id = ANY(${bind(draftIds)})") }
 
-    return draftIds.map { DeletedBulletinDraft(it, attachmentsByDraft[it] ?: emptyList()) }
+    return draftIds.map { DeletedMessageDraft(it, attachmentsByDraft[it] ?: emptyList()) }
 }

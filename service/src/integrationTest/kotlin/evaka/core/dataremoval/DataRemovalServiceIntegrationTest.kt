@@ -156,6 +156,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val bulletinExpiresBefore = now.minusYears(10)
     private val bulletinRecipientExpiresBefore = now.minusYears(5)
     private val bulletinRecipientExpireDate = today.minusYears(5)
+    private val draftExpiresBefore = now.minusYears(1)
 
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val careArea = DevCareArea()
@@ -2594,7 +2595,7 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
 
     private fun insertDraft(
         createdAt: HelsinkiDateTime,
-        type: MessageType = MessageType.BULLETIN,
+        type: MessageType = MessageType.MESSAGE,
         modifiedAt: HelsinkiDateTime = createdAt,
     ): MessageDraftId = db.transaction { tx ->
         val draftId = tx.initDraft(senderAccount, modifiedAt)
@@ -2643,11 +2644,11 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
             limit = limit,
         )
 
-    private fun deleteExpiredBulletinDrafts(limit: Int = 100) =
-        dataRemovalService.deleteExpiredBulletinDrafts(
+    private fun deleteExpiredMessageDrafts(limit: Int = 100) =
+        dataRemovalService.deleteExpiredMessageDrafts(
             db,
             now,
-            expiresBefore = bulletinExpiresBefore,
+            expiresBefore = draftExpiresBefore,
             limit = limit,
         )
 
@@ -2998,42 +2999,61 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
     }
 
     @Test
-    fun `deleteExpiredBulletinDrafts deletes an expired bulletin draft and enqueues its attachment deletion`() {
-        val draftId = insertDraft(createdAt = bulletinExpiresBefore.minusDays(1))
+    fun `deleteExpiredMessageDrafts deletes an expired draft and enqueues its attachment deletion`() {
+        val draftId = insertDraft(createdAt = draftExpiresBefore.minusDays(1))
         val attachmentId = insertDraftAttachment(draftId)
 
-        deleteExpiredBulletinDrafts()
+        deleteExpiredMessageDrafts()
 
         assertEquals(0, rowCount("message_draft"))
         assertEquals(setOf(attachmentId.toString()), scheduledAttachmentDeletionIds())
     }
 
     @Test
-    fun `deleteExpiredBulletinDrafts doesn't remove more drafts than the limit`() {
-        repeat(3) { insertDraft(createdAt = bulletinExpiresBefore.minusDays(1)) }
+    fun `deleteExpiredMessageDrafts doesn't remove more drafts than the limit`() {
+        repeat(3) { insertDraft(createdAt = draftExpiresBefore.minusDays(1)) }
 
-        deleteExpiredBulletinDrafts(limit = 2)
+        deleteExpiredMessageDrafts(limit = 2)
 
         assertEquals(1, rowCount("message_draft"))
     }
 
     @Test
-    fun `deleteExpiredBulletinDrafts keeps a recently modified bulletin draft and an equally old regular draft`() {
-        insertDraft(createdAt = bulletinExpiresBefore.minusDays(1), modifiedAt = now.minusYears(1))
-        insertDraft(createdAt = bulletinExpiresBefore.minusDays(1), type = MessageType.MESSAGE)
+    fun `deleteExpiredMessageDrafts deletes an expired draft of every type`() {
+        MessageType.entries.forEach {
+            insertDraft(createdAt = draftExpiresBefore.minusDays(1), type = it)
+        }
 
-        deleteExpiredBulletinDrafts()
+        deleteExpiredMessageDrafts()
 
-        assertEquals(2, rowCount("message_draft"))
+        assertEquals(0, rowCount("message_draft"))
     }
 
     @Test
-    fun `deleteExpiredData removes expired bulletin threads and drafts`() {
-        val expired = now.minusYears(10).minusDays(1)
+    fun `deleteExpiredMessageDrafts deletes a draft created over a year ago even if it was modified today`() {
+        insertDraft(createdAt = draftExpiresBefore.minusDays(1), modifiedAt = now)
+
+        deleteExpiredMessageDrafts()
+
+        assertEquals(0, rowCount("message_draft"))
+    }
+
+    @Test
+    fun `deleteExpiredMessageDrafts keeps a draft created less than a year ago`() {
+        insertDraft(createdAt = draftExpiresBefore)
+
+        deleteExpiredMessageDrafts()
+
+        assertEquals(1, rowCount("message_draft"))
+    }
+
+    @Test
+    fun `deleteExpiredData removes expired bulletin threads and message drafts`() {
         val contentId = insertBulletinContent()
-        insertThreadWithMessage(created = expired, contentId = contentId)
+        insertThreadWithMessage(created = now.minusYears(10).minusDays(1), contentId = contentId)
         val threadAttachment = insertMessageContentAttachment(contentId)
-        val draftAttachment = insertDraftAttachment(insertDraft(createdAt = expired))
+        val draftAttachment =
+            insertDraftAttachment(insertDraft(createdAt = now.minusYears(1).minusDays(1)))
 
         withLimit(1000) {
             dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
@@ -3070,9 +3090,9 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
     }
 
     @Test
-    fun `deleteExpiredData keeps bulletin threads and drafts that are exactly ten years old`() {
+    fun `deleteExpiredData keeps a bulletin thread of exactly ten years and a draft of exactly one year`() {
         insertThreadWithMessage(created = now.minusYears(10))
-        insertDraft(createdAt = now.minusYears(10))
+        insertDraft(createdAt = now.minusYears(1))
 
         withLimit(1000) {
             dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)

@@ -10,8 +10,8 @@ import evaka.core.DataRemovalEnv
 import evaka.core.caseprocess.deleteCaseProcesses
 import evaka.core.childimages.deleteImageFile
 import evaka.core.document.childdocument.deleteExpiredChildDocuments
-import evaka.core.messaging.deleteExpiredBulletinDrafts
 import evaka.core.messaging.deleteExpiredBulletinThreads
+import evaka.core.messaging.deleteExpiredMessageDrafts
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService
 import evaka.core.shared.ApplicationId
@@ -146,17 +146,15 @@ class DataRemovalService(
             limit = limit,
         )
 
-        val bulletinExpiresBefore = now.minusYears(10)
-
         deleteExpiredBulletinThreads(
             dbc,
             now,
             recipientExpireDate = today.minusYears(5),
-            expiresBefore = bulletinExpiresBefore,
+            expiresBefore = now.minusYears(10),
             limit = limit,
         )
 
-        deleteExpiredBulletinDrafts(dbc, now, expiresBefore = bulletinExpiresBefore, limit = limit)
+        deleteExpiredMessageDrafts(dbc, now, expiresBefore = now.minusYears(1), limit = limit)
 
         unsetExpiredChildReferences(
             dbc,
@@ -394,15 +392,15 @@ class DataRemovalService(
         }
     }
 
-    fun deleteExpiredBulletinDrafts(
+    fun deleteExpiredMessageDrafts(
         dbc: Database.Connection,
         now: HelsinkiDateTime,
         expiresBefore: HelsinkiDateTime,
         limit: Int,
     ) {
-        logger.info { "Deleting at most $limit expired bulletin drafts" }
+        logger.info { "Deleting at most $limit expired message drafts" }
         val deleted = dbc.transaction { tx ->
-            val drafts = tx.deleteExpiredBulletinDrafts(expiresBefore, limit)
+            val drafts = tx.deleteExpiredMessageDrafts(expiresBefore, limit)
             asyncJobRunner.plan(
                 tx = tx,
                 payloads =
@@ -411,7 +409,7 @@ class DataRemovalService(
             )
             drafts
         }
-        logger.info { "Deleted ${deleted.size} expired bulletin draft(s)" }
+        logger.info { "Deleted ${deleted.size} expired message draft(s)" }
         val expireDate = expiresBefore.toLocalDate()
         deleted.forEach { draft ->
             auditExpiredDelete(
