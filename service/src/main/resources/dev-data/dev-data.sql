@@ -2,12 +2,6 @@
 --
 -- SPDX-License-Identifier: LGPL-2.1-or-later
 
-INSERT INTO care_area (id, name, created, updated, area_code, sub_cost_center, short_name)
-VALUES ('a01b0e03-b86e-4cbc-a744-6a35473b9628', 'Alue A', '2019-04-16 05:26:06.303078+00',
-        '2020-04-02 11:40:46.780692+00', 249, '01', 'alue-a'),
-       ('801a6cc7-e8a5-4279-b192-4e8192d82c18', 'Alue B', '2019-04-16 05:26:06.303078+00',
-        '2020-04-02 11:40:46.780692+00', 249, '01', 'alue-b');
-
 INSERT INTO message_thread_folder (owner_id, name)
 SELECT ma.id, ca.name
 FROM message_account ma
@@ -96,27 +90,6 @@ VALUES ('6f82b730-5963-11ea-b4d8-6f19186c8118', 3, '2020-03-01', NULL),
 INSERT INTO message_account (daycare_group_id, type)
 SELECT id, 'GROUP'::message_account_type as type
 FROM daycare_group;
-
-INSERT INTO assistance_action_option (value, name_fi, display_order, category, valid_from, valid_to)
-VALUES ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10, 'DAYCARE', NULL, NULL),
-       ('ASSISTANCE_SERVICE_UNIT', 'Avustamispalvelut yksikköön', 20, 'DAYCARE', NULL, NULL),
-       ('SMALLER_GROUP', 'Pedagogisesti vahvistettu ryhmä', 30, 'DAYCARE', NULL, NULL),
-       ('SPECIAL_GROUP', 'Erityisryhmä', 40, 'DAYCARE', NULL, NULL),
-       ('PERVASIVE_VEO_SUPPORT', 'Laaja-alaisen veon tuki', 50, 'DAYCARE', NULL, NULL),
-       ('RESOURCE_PERSON', 'Resurssihenkilö', 60, 'DAYCARE', NULL, NULL),
-       ('RATIO_DECREASE', 'Suhdeluvun väljennys', 70, 'DAYCARE', NULL, NULL),
-       ('PERIODICAL_VEO_SUPPORT', 'Lisäresurssi hankerahoituksella', 80, 'DAYCARE', NULL, NULL),
-
-       ('PART_TIME_SPECIAL_EDUCATION', 'Osa-aikainen erityisopetus esiopetuksessa', 0, 'PRESCHOOL', NULL,
-        '2025-07-31'::date),
-       ('FULL_VEO_SUPPORT_IN_SMALLER_GROUP', 'Kokoaikainen erityisopettajan antama opetus pienryhmässä', 10,
-        'PRESCHOOL', '2025-08-01'::date, NULL),
-       ('REGULAR_VEO_SUPPORT_PARTIALLY_IN_SMALLER_GROUP',
-        'Säännöllinen erityisopettajan antama opetus osittain pienryhmässä ja muun opetuksen yhteydessä', 20,
-        'PRESCHOOL', '2025-08-01'::date, NULL),
-       ('PERSONAL_ASSISTANT', 'Lapsikohtainen avustaja', 30, 'PRESCHOOL', '2025-08-01'::date, NULL),
-       ('ASSISTIVE_DEVICES', 'Apuvälineet', 40, 'PRESCHOOL', '2025-08-01'::date, NULL),
-       ('INTERPRETATION_SERVICES', 'Tulkitsemispalvelut', 50, 'PRESCHOOL', '2025-08-01'::date, NULL);
 
 UPDATE daycare
 SET enabled_pilot_features = '{MESSAGING, MOBILE, RESERVATIONS, VASU_AND_PEDADOC, MOBILE_MESSAGING, OTHER_DECISION, CITIZEN_BASIC_DOCUMENT}';

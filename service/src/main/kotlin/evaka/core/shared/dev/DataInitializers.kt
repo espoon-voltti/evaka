@@ -150,7 +150,7 @@ fun Database.Transaction.resetDatabase() {
 const val INSERT_APPLICATION_PLACEMENT_TEST_DATA = false
 
 fun Database.Transaction.ensureDevData() {
-    if (createQuery { sql("SELECT count(*) FROM care_area") }.exactlyOne<Int>() == 0) {
+    if (createQuery { sql("SELECT count(*) FROM daycare") }.exactlyOne<Int>() == 0) {
         listOf(
                 "dev-data/dev-data.sql",
                 "dev-data/employees.sql",
