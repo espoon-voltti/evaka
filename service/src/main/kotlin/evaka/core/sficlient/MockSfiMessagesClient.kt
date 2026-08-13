@@ -18,6 +18,8 @@ import kotlin.concurrent.write
 
 private typealias MessageId = String
 
+private const val DEFAULT_CONTINUATION_TOKEN = "test_continuation_token"
+
 class MockSfiMessagesClient : SfiMessagesClient {
     private val logger = KotlinLogging.logger {}
 
@@ -35,14 +37,20 @@ class MockSfiMessagesClient : SfiMessagesClient {
         logger.info {
             "Mock message client got request to fetch events with continuationToken $continuationToken"
         }
-        return events.removeFirst()
+        return lock.write {
+            events.removeFirstOrNull()
+                ?: GetEventsResponse(
+                    continuationToken = continuationToken ?: DEFAULT_CONTINUATION_TOKEN,
+                    events = emptyList(),
+                )
+        }
     }
 
     private fun addEventsResponseFromMessage(message: SfiMessage) {
         logger.info { "Mock message client adding event from $message" }
         addEventsResponse(
             GetEventsResponse(
-                continuationToken = "test_continuation_token",
+                continuationToken = DEFAULT_CONTINUATION_TOKEN,
                 events =
                     listOf(
                         GetEvent(
