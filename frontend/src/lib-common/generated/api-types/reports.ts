@@ -116,6 +116,7 @@ export interface AssistanceNeedsAndActionsReportRowByChild {
   childFirstName: string
   childId: PersonId
   childLastName: string
+  childYearOfBirth: number
   daycareAssistanceCounts: Partial<Record<DaycareAssistanceLevel, number>>
   documentDecisionCounts: Partial<Record<string, number>>
   groupId: GroupId
