@@ -5,13 +5,13 @@
 INSERT INTO assistance_action_option
     (value, name_fi, description_fi, display_order, category, valid_from, valid_to)
 VALUES
-    ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', NULL, 10, 'DAYCARE', NULL, NULL),
-    ('ASSISTANCE_SERVICE_UNIT', 'Avustamispalvelut yksikköön', NULL, 20, 'DAYCARE', NULL, NULL),
-    ('SMALLER_GROUP', 'Pedagogisesti vahvistettu ryhmä', NULL, 30, 'DAYCARE', NULL, NULL),
+    ('ASSISTANCE_SERVICE_CHILD', 'Lapsikohtainen avustamispalvelu', NULL, 10, 'DAYCARE', NULL, NULL),
+    ('ASSISTANCE_SERVICE_UNIT', 'Ryhmäkohtaiset avustamispalvelut', NULL, 20, 'DAYCARE', NULL, NULL),
+    ('SMALLER_GROUP', 'Pienennetty ryhmä', NULL, 30, 'DAYCARE', NULL, NULL),
     ('SPECIAL_GROUP', 'Erityisryhmä', NULL, 40, 'DAYCARE', NULL, NULL),
-    ('PERVASIVE_VEO_SUPPORT', 'Laaja-alaisen veon tuki', NULL, 50, 'DAYCARE', NULL, NULL),
-    ('RESOURCE_PERSON', 'Resurssihenkilö', NULL, 60, 'DAYCARE', NULL, NULL),
-    ('RATIO_DECREASE', 'Suhdeluvun väljennys', NULL, 70, 'DAYCARE', NULL, NULL),
+    ('PERVASIVE_VEO_SUPPORT', 'Varhaiskasvatuksen erityisopettajan tuki', NULL, 50, 'DAYCARE', NULL, NULL),
+    ('RESOURCE_PERSON', 'Tuen lastenhoitaja', NULL, 60, 'DAYCARE', NULL, NULL),
+    ('RATIO_DECREASE', 'Ryhmäkoon pienennys', NULL, 70, 'DAYCARE', NULL, NULL),
     ('PERIODICAL_VEO_SUPPORT', 'Lisäresurssi hankerahoituksella', NULL, 80, 'DAYCARE', NULL, NULL),
     ('FULL_VEO_SUPPORT_IN_SMALLER_GROUP', 'Kokoaikainen erityisopettajan antama opetus pienryhmässä', NULL, 10, 'PRESCHOOL', '2025-08-01', NULL),
     ('REGULAR_VEO_SUPPORT_PARTIALLY_IN_SMALLER_GROUP', 'Säännöllinen erityisopettajan antama opetus osittain pienryhmässä ja muun opetuksen yhteydessä', NULL, 20, 'PRESCHOOL', '2025-08-01', NULL),
