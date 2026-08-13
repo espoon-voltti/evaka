@@ -2874,6 +2874,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
 
         val messageId = MockSfiMessagesClient.getMessages().first().messageId
+        val expectedEventTime = MockSfiMessagesClient.getEvents().first().events.first().eventTime
 
         db.read { assertEquals(0, it.getSfiGetEventsContinuationTokens().size) }
 
@@ -2883,6 +2884,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             val processedEvents = it.getSfiMessageEventsByMessageId(messageId)
             assertEquals(1, processedEvents.size)
             assertEquals(EventType.ELECTRONIC_MESSAGE_CREATED, processedEvents[0].eventType)
+            assertEquals(expectedEventTime, processedEvents[0].eventTime)
 
             assertEquals(1, it.getSfiGetEventsContinuationTokens().size)
         }

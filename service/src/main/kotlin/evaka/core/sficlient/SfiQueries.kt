@@ -144,11 +144,13 @@ fun Database.Transaction.upsertSfiMessageEventIfSfiMessageExists(
 WITH existing_message AS (
     SELECT 1 FROM sfi_message WHERE id = ${bind(event.messageId)}
 )
-INSERT INTO sfi_message_event (message_id, event_type)
-SELECT ${bind(event.messageId)}, ${bind(event.eventType)}
+INSERT INTO sfi_message_event (message_id, event_type, event_time)
+SELECT ${bind(event.messageId)}, ${bind(event.eventType)}, ${bind(event.eventTime)}
 FROM existing_message
 ON CONFLICT (message_id, event_type)
-DO UPDATE SET updated_at = now()
+DO UPDATE SET
+    updated_at = now(),
+    event_time = least(sfi_message_event.event_time, EXCLUDED.event_time)
 RETURNING id
             """
     )
@@ -160,7 +162,7 @@ fun Database.Read.getSfiMessageEventsByMessageId(messageId: SfiMessageId): List<
     createQuery {
         sql(
             """
-SELECT id, created_at, updated_at, message_id, event_type
+SELECT id, created_at, updated_at, message_id, event_type, event_time
 FROM sfi_message_event
 WHERE message_id = ${bind(messageId)}
                 """
@@ -175,6 +177,8 @@ data class SfiMessageEvent(
     val updatedAt: HelsinkiDateTime? = null,
     val messageId: SfiMessageId,
     val eventType: EventType,
+    /** Timestamp reported by Suomi.fi, which can be much earlier than the ingest time */
+    val eventTime: HelsinkiDateTime,
 )
 
 fun Database.Read.getSfiGetEventsContinuationTokens(): List<String> = createQuery {

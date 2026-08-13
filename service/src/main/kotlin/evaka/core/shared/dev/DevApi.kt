@@ -2717,6 +2717,7 @@ data class DevSfiMessageEvent(
     val eventType: EventType,
     val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val updatedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val eventTime: HelsinkiDateTime = HelsinkiDateTime.now(),
 )
 
 data class DevHolidayQuestionnaire(
