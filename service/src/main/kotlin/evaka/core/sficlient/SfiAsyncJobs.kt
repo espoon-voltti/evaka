@@ -49,6 +49,7 @@ class SfiAsyncJobs(
                             SfiMessageEvent(
                                 messageId = SfiMessageId(externalId),
                                 eventType = event.type,
+                                eventTime = event.eventTime,
                             )
                         )
                     if (id != null) {

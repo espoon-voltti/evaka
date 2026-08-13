@@ -1074,20 +1074,40 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             )
 
         assertThat(metadata.primaryDocument.sfiDeliveries)
-            .extracting({ it.recipientName }, { it.method })
-            .containsExactly(Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.PENDING))
+            .extracting({ it.recipientName }, { it.method }, { it.readAt })
+            .containsExactly(Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.PENDING, null))
         // mock sfi event
+        val sentAt = HelsinkiDateTime.of(LocalDate.of(2026, 3, 12), LocalTime.of(10, 0))
         db.transaction { tx ->
             tx.insert(
                 DevSfiMessageEvent(
                     messageId = MockSfiMessagesClient.getMessages().first().messageId,
                     eventType = EventType.ELECTRONIC_MESSAGE_CREATED,
+                    eventTime = sentAt,
                 )
             )
         }
         assertThat(getChildDocumentMetadata(documentId).data!!.primaryDocument.sfiDeliveries)
-            .extracting({ it.recipientName }, { it.method })
-            .containsExactly(Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.ELECTRONIC))
+            .extracting({ it.recipientName }, { it.method }, { it.time }, { it.readAt })
+            .containsExactly(
+                Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.ELECTRONIC, sentAt, null)
+            )
+
+        val readAt = HelsinkiDateTime.of(LocalDate.of(2026, 3, 13), LocalTime.of(9, 12))
+        db.transaction { tx ->
+            tx.insert(
+                DevSfiMessageEvent(
+                    messageId = MockSfiMessagesClient.getMessages().first().messageId,
+                    eventType = EventType.ELECTRONIC_MESSAGE_READ,
+                    eventTime = readAt,
+                )
+            )
+        }
+        assertThat(getChildDocumentMetadata(documentId).data!!.primaryDocument.sfiDeliveries)
+            .extracting({ it.recipientName }, { it.method }, { it.time }, { it.readAt })
+            .containsExactly(
+                Tuple("${adult.lastName} ${adult.firstName}", SfiMethod.ELECTRONIC, sentAt, readAt)
+            )
     }
 
     @Test
