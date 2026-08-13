@@ -56,6 +56,7 @@ import evaka.core.snDaycareContractDays15
 import evaka.core.snDaycareFullDay35
 import evaka.core.snDefaultPreschoolDaycare
 import evaka.core.snPreschoolDaycareContractDays13
+import evaka.core.snPreschoolDaycarePartDay35to45
 import evaka.core.toFeeDecisionServiceNeed
 import java.math.BigDecimal
 import java.time.DayOfWeek
@@ -2736,6 +2737,84 @@ class InvoiceGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 assertEquals(8, invoiceRow.amount)
                 assertEquals(2890, invoiceRow.unitPrice) // 28900 / 10
                 assertEquals(23120, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `placement without contract days changes to one with contract days for the last weekend of the month`() {
+        val month = YearMonth.of(2026, 5)
+
+        db.transaction(
+            insertChildParentRelation(
+                adult1.id,
+                child1.id,
+                FiniteDateRange(LocalDate.of(2025, 8, 6), LocalDate.of(2026, 6, 26)),
+            )
+        )
+
+        // PRESCHOOL_DAYCARE without contract days until Fri 2026-05-29
+        val preschoolDaycareDecision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                FiniteDateRange(LocalDate.of(2025, 8, 6), LocalDate.of(2026, 5, 29)),
+                adult1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = child1.id,
+                        dateOfBirth = child1.dateOfBirth,
+                        placementUnitId = daycare.id,
+                        placementType = PlacementType.PRESCHOOL_DAYCARE,
+                        serviceNeed = snPreschoolDaycarePartDay35to45.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 17340,
+                        feeAlterations = listOf(),
+                    )
+                ),
+            )
+        // DAYCARE with 10 contract days from Sat 2026-05-30, so the placement has no
+        // operational days in May (30th and 31st are a weekend)
+        val contractDaysDecision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                FiniteDateRange(LocalDate.of(2026, 5, 30), LocalDate.of(2026, 6, 26)),
+                adult1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = child1.id,
+                        dateOfBirth = child1.dateOfBirth,
+                        placementUnitId = daycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareContractDays10.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 14450,
+                        feeAlterations = listOf(),
+                    )
+                ),
+            )
+        // The contract days decision is inserted first: the fee decision query has no
+        // ORDER BY, so the generator sees the decisions in an arbitrary order and picks
+        // the contract days of whichever decision happens to be first
+        insertDecisionsAndPlacementsAndServiceNeeds(
+            listOf(contractDaysDecision, preschoolDaycareDecision)
+        )
+
+        db.transaction { generator.generateAllDraftInvoices(it, month) }
+
+        val result = db.read { it.getAllInvoices() }
+        assertEquals(1, result.size)
+
+        // The whole month should be invoiced as a full month of the preschool daycare
+        // decision, without any contract day surplus rows
+        result.first().let { invoice ->
+            assertEquals(17340, invoice.totalPrice)
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(17340, invoiceRow.unitPrice)
+                assertEquals(17340, invoiceRow.price)
             }
         }
     }
