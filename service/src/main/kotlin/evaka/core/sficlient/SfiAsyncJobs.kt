@@ -31,43 +31,54 @@ class SfiAsyncJobs(
     }
 
     fun getEvents(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { tx ->
-            logger.info { "SfiAsyncJobs: starting to fetch events" }
-
-            val continuationToken = tx.getLatestSfiGetEventsContinuationToken()
-            val eventsResponse = sfiClient.getEvents(continuationToken)
-            logger.info { "SfiAsyncJobs: got ${eventsResponse.events.size} events" }
-            eventsResponse.events.forEach { event ->
-                logger.info { "SfiAsyncJobs: processing event $event" }
-                try {
-                    val externalId =
-                        UUID.fromString(event.metadata.externalId)
-                            ?: throw IllegalStateException("SfiAsyncJobs: external ID is null")
-
-                    val id =
-                        tx.upsertSfiMessageEventIfSfiMessageExists(
-                            SfiMessageEvent(
-                                messageId = SfiMessageId(externalId),
-                                eventType = event.type,
-                                eventTime = event.eventTime,
-                            )
-                        )
-                    if (id != null) {
-                        logger.info {
-                            "SfiAsyncJobs: successfully processed event $event with id $id"
-                        }
-                    } else {
-                        logger.info {
-                            "SfiAsyncJobs: skipped event $event (no matching sfi_message)"
-                        }
-                    }
-                } catch (e: Exception) {
-                    logger.error(e) { "SfiAsyncJobs: failed to process event $event" }
-                }
+        logger.info { "SfiAsyncJobs: starting to fetch events" }
+        // The API returns a limited number of events per request and signals that everything
+        // has been consumed by returning an empty batch. Events expire after 60 days, so a
+        // single request per run would let them be lost if we ever fall behind.
+        repeat(MAX_EVENT_BATCHES) {
+            val batchSize = db.transaction { tx -> fetchAndStoreEventBatch(tx) }
+            if (batchSize == 0) {
+                logger.info { "SfiAsyncJobs: done fetching events" }
+                return
             }
-
-            tx.storeSfiGetEventsContinuationToken(eventsResponse.continuationToken)
-            logger.info { "SfiAsyncJobs: done fetching ${eventsResponse.events.size} events" }
+        }
+        logger.warn {
+            "SfiAsyncJobs: stopped after $MAX_EVENT_BATCHES batches, more events may be pending"
         }
     }
+
+    private fun fetchAndStoreEventBatch(tx: Database.Transaction): Int {
+        val continuationToken = tx.getLatestSfiGetEventsContinuationToken()
+        val eventsResponse = sfiClient.getEvents(continuationToken)
+        logger.info { "SfiAsyncJobs: got ${eventsResponse.events.size} events" }
+        eventsResponse.events.forEach { event ->
+            logger.info { "SfiAsyncJobs: processing event $event" }
+            try {
+                val externalId =
+                    UUID.fromString(event.metadata.externalId)
+                        ?: throw IllegalStateException("SfiAsyncJobs: external ID is null")
+
+                val id =
+                    tx.upsertSfiMessageEventIfSfiMessageExists(
+                        SfiMessageEvent(
+                            messageId = SfiMessageId(externalId),
+                            eventType = event.type,
+                            eventTime = event.eventTime,
+                        )
+                    )
+                if (id != null) {
+                    logger.info { "SfiAsyncJobs: successfully processed event $event with id $id" }
+                } else {
+                    logger.info { "SfiAsyncJobs: skipped event $event (no matching sfi_message)" }
+                }
+            } catch (e: Exception) {
+                logger.error(e) { "SfiAsyncJobs: failed to process event $event" }
+            }
+        }
+
+        tx.storeSfiGetEventsContinuationToken(eventsResponse.continuationToken)
+        return eventsResponse.events.size
+    }
 }
+
+private const val MAX_EVENT_BATCHES = 100

@@ -119,6 +119,32 @@ class SfiAsyncJobsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         }
     }
 
+    @Test
+    fun `events are fetched until an empty batch is returned`() {
+        val messageId = createSfiMessage()
+        val sentAt = HelsinkiDateTime.of(LocalDate.of(2026, 3, 12), LocalTime.of(10, 0))
+        val readAt = HelsinkiDateTime.of(LocalDate.of(2026, 3, 13), LocalTime.of(9, 12))
+        MockSfiMessagesClient.addEventsResponse(
+            eventsResponse(
+                "token-1",
+                event(messageId, EventType.ELECTRONIC_MESSAGE_CREATED, sentAt),
+            )
+        )
+        MockSfiMessagesClient.addEventsResponse(
+            eventsResponse("token-2", event(messageId, EventType.ELECTRONIC_MESSAGE_READ, readAt))
+        )
+
+        sfiAsyncJobs.getEvents(db, clock)
+
+        db.read {
+            assertEquals(
+                setOf(EventType.ELECTRONIC_MESSAGE_CREATED, EventType.ELECTRONIC_MESSAGE_READ),
+                it.getSfiMessageEventsByMessageId(messageId).map { e -> e.eventType }.toSet(),
+            )
+            assertEquals("token-2", it.getLatestSfiGetEventsContinuationToken())
+        }
+    }
+
     private fun createSfiMessage(): SfiMessageId {
         val guardian = DevPerson()
         return db.transaction { tx ->
