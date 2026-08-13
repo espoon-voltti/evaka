@@ -60,7 +60,9 @@ import java.util.UUID
 import kotlin.test.assertContains
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import org.openpdf.text.pdf.PdfReader
 import org.openpdf.text.pdf.parser.PdfTextExtractor
@@ -112,6 +114,8 @@ abstract class AbstractDecisionPdfGeneratorTest {
         )
 
     protected open fun reasoningVariants(): List<PdfReasoning?> = listOf(null)
+
+    protected open val decisionsWithoutReasonings: Set<DecisionType> = emptySet()
 
     protected val child: PersonDTO =
         PersonDTO(
@@ -196,6 +200,17 @@ abstract class AbstractDecisionPdfGeneratorTest {
             restrictedDetailsEnabled = false,
         )
 
+    // Decision types that are no longer offered still have decisions from the past, and those PDFs
+    // must remain downloadable
+    @Test
+    fun `every decision type has a file name`() {
+        DecisionType.entries.forEach { type ->
+            OfficialLanguage.entries.forEach { lang ->
+                assertTrue(templateProvider.getLocalizedFilename(type, lang).isNotBlank())
+            }
+        }
+    }
+
     @TestFactory
     fun applicationDecisionPdfs(): List<DynamicTest> =
         decisionScenarios().flatMap { scenario ->
@@ -233,11 +248,15 @@ abstract class AbstractDecisionPdfGeneratorTest {
                             )
                         assertNotNull(bytes)
                         val text = extractText(bytes)
-                        if (reasoningOrNull != null) {
+                        if (
+                            reasoningOrNull != null &&
+                                scenario.decisionType !in decisionsWithoutReasonings
+                        ) {
                             assertContains(text, reasoningOrNull.generic)
                             reasoningOrNull.individual.forEach { assertContains(text, it) }
                         } else {
                             assertFalse(text.contains(reasoning.generic))
+                            reasoning.individual.forEach { assertFalse(text.contains(it)) }
                         }
                         writeTempFile("decision_${municipality}_$label", bytes)
                     }

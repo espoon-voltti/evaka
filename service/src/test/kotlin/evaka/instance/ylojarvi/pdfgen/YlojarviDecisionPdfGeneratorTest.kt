@@ -20,18 +20,14 @@ class YlojarviDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
     override val templateProvider: ITemplateProvider = YlojarviTemplateProvider()
     override val settings = populatedSettings
 
+    override fun reasoningVariants() = listOf(null, reasoning)
+
     override fun decisionScenarios() =
         listOf(
-            DecisionScenario("kerho", DecisionType.CLUB),
             DecisionScenario("vaka", DecisionType.DAYCARE, serviceNeed = standardServiceNeed),
             DecisionScenario(
                 "esiopetus",
                 DecisionType.PRESCHOOL,
-                serviceNeed = standardServiceNeed,
-            ),
-            DecisionScenario(
-                "valmistava",
-                DecisionType.PREPARATORY_EDUCATION,
                 serviceNeed = standardServiceNeed,
             ),
             DecisionScenario(
@@ -44,6 +40,21 @@ class YlojarviDecisionPdfGeneratorTest : AbstractDecisionPdfGeneratorTest() {
                 "vaka_palse",
                 DecisionType.DAYCARE,
                 providerType = ProviderType.PRIVATE_SERVICE_VOUCHER,
+                serviceNeed = standardServiceNeed,
+            ),
+            DecisionScenario(
+                "vaka_liittyvä",
+                DecisionType.PRESCHOOL_DAYCARE,
+                serviceNeed = standardServiceNeed,
+            ),
+            DecisionScenario(
+                "vaka_osa-aika",
+                DecisionType.DAYCARE_PART_TIME,
+                serviceNeed = standardServiceNeed,
+            ),
+            DecisionScenario(
+                "vaka_liittyvä_kerho",
+                DecisionType.PRESCHOOL_CLUB,
                 serviceNeed = standardServiceNeed,
             ),
         )

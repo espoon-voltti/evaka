@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import type {
@@ -10,7 +10,7 @@ import type {
   DecisionType
 } from 'lib-common/generated/api-types/decision'
 import type { DecisionIndividualReasoningId } from 'lib-common/generated/api-types/shared'
-import { useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { Chip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -23,6 +23,7 @@ import colors from 'lib-customizations/common'
 import { faFile } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 
 import IndividualReasoningPickerModal from './IndividualReasoningPickerModal'
@@ -163,12 +164,17 @@ export default React.memo(function DecisionCard({
   onReasoningIdsChange
 }: Props) {
   const { i18n } = useTranslation()
+  const { featureConfig } = useContext(UserContext)
   const [pickerOpen, setPickerOpen] = useState(false)
   const checkboxId = useUniqueId('planned')
+  const reasoningsExempt =
+    featureConfig?.decisionsWithoutReasonings.includes(decision.type) ?? false
   const individualReasoningsResult = useQueryResult(
-    getIndividualReasoningsQuery({
-      collectionType: decisionTypeToCollectionType(decision.type)
-    })
+    reasoningsExempt
+      ? constantQuery([])
+      : getIndividualReasoningsQuery({
+          collectionType: decisionTypeToCollectionType(decision.type)
+        })
   )
 
   const typeLabel =
@@ -215,7 +221,7 @@ export default React.memo(function DecisionCard({
             data-qa="unit-language-unsupported-warning"
             title={i18n.decisionDraft.reasonings.unitLanguageUnsupported}
           />
-        ) : (
+        ) : reasoningsExempt ? null : (
           <DecisionWrapper>
             <div>
               <GenericHeader>
@@ -298,7 +304,7 @@ export default React.memo(function DecisionCard({
         )}
       </Body>
 
-      {pickerOpen && !unitLanguageUnsupported && (
+      {pickerOpen && !unitLanguageUnsupported && !reasoningsExempt && (
         <IndividualReasoningPickerModal
           decisionType={decision.type}
           childName={childName}

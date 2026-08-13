@@ -56,7 +56,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         </div>
       </div>
 
-      <p th:utext="#{decision.instructions}"></p>
+      <p th:if="${reasoning == null}" th:utext="#{decision.instructions.old}"></p>
+      <th:block th:if="${reasoning != null}">
+        <div th:replace="~{shared/decision-reasoning :: section(${reasoning})}"></div>
+        <div th:utext="#{decision.instructionsAfterReasoning}"></div>
+      </th:block>
     </div>
 
     <div class="page">

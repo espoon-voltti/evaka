@@ -8,6 +8,7 @@ import evaka.core.decision.DecisionType
 import evaka.core.shared.config.pdfTemplateEngine
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.template.ITemplateProvider
+import evaka.trevaka.template.decisionFilename
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.thymeleaf.ITemplateEngine
@@ -21,25 +22,13 @@ class TemplateConfiguration {
 
 class HameenkyroTemplateProvider : ITemplateProvider {
     override fun getLocalizedFilename(type: DecisionType, lang: OfficialLanguage): String =
-        when (type) {
-            DecisionType.CLUB -> "Kerhopäätös"
-
-            DecisionType.DAYCARE,
-            DecisionType.DAYCARE_PART_TIME -> "Varhaiskasvatuspäätös"
-
-            DecisionType.PRESCHOOL -> "Esiopetuspäätös"
-
-            DecisionType.PRESCHOOL_DAYCARE,
-            DecisionType.PRESCHOOL_CLUB -> "Esiopetusta_täydentävän_toiminnan_päätös"
-
-            DecisionType.PREPARATORY_EDUCATION -> "Valmistavan_opetuksen_päätös"
-        }
+        decisionFilename(type)
 
     override fun getFeeDecisionPath(): String = "fee-decision/decision"
 
     override fun getVoucherValueDecisionPath(): String = "fee-decision/voucher-value-decision"
 
-    override fun getClubDecisionPath(): String = "club/decision"
+    override fun getClubDecisionPath(): String = throw Error("Not supported")
 
     override fun getDaycareVoucherDecisionPath(): String = "daycare/voucher/decision"
 

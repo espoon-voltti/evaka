@@ -36,6 +36,7 @@ import evaka.core.shared.AreaId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.DecisionId
+import evaka.core.shared.FeatureConfig
 import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
@@ -121,6 +122,7 @@ class ApplicationControllerV2(
     private val applicationStateService: ApplicationStateService,
     private val placementPlanService: PlacementPlanService,
     private val evakaEnv: EvakaEnv,
+    private val featureConfig: FeatureConfig,
 ) {
     @PostMapping
     fun createPaperApplication(
@@ -221,7 +223,8 @@ class ApplicationControllerV2(
                                 summaries.data
                                     .filter { it.status == ApplicationStatus.WAITING_DECISION }
                                     .map { it.id }
-                                    .toSet()
+                                    .toSet(),
+                                featureConfig.decisionsWithoutReasonings,
                             )
                         else emptyMap()
                     summaries.copy(
@@ -575,7 +578,14 @@ class ApplicationControllerV2(
                             drafts.map {
                                 it.copy(
                                     genericReasoning =
-                                        resolveApplicableGenericReasoning(tx, it.type, it.startDate)
+                                        if (it.type in featureConfig.decisionsWithoutReasonings)
+                                            null
+                                        else
+                                            resolveApplicableGenericReasoning(
+                                                tx,
+                                                it.type,
+                                                it.startDate,
+                                            )
                                 )
                             }
                         }
@@ -664,6 +674,7 @@ class ApplicationControllerV2(
                     clock.now(),
                     user.evakaUserId,
                     evakaEnv.decisionReasoningEnabled,
+                    featureConfig.decisionsWithoutReasonings,
                 )
             }
         }

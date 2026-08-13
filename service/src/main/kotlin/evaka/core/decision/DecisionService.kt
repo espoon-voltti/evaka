@@ -42,6 +42,7 @@ import evaka.core.sficlient.SfiMessage
 import evaka.core.sficlient.storeSentSfiMessage
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DecisionId
+import evaka.core.shared.FeatureConfig
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
@@ -71,6 +72,7 @@ class DecisionService(
     private val emailClient: EmailClient,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val evakaEnv: EvakaEnv,
+    private val featureConfig: FeatureConfig,
 ) {
     fun finalizeDecisions(
         tx: Database.Transaction,
@@ -85,7 +87,9 @@ class DecisionService(
         val decisions = decisionIds.map { tx.getDecision(it)!! }
 
         if (evakaEnv.decisionReasoningEnabled) {
-            decisions.forEach { setGenericReasoningIfMissing(tx, it) }
+            decisions
+                .filterNot { it.type in featureConfig.decisionsWithoutReasonings }
+                .forEach { setGenericReasoningIfMissing(tx, it) }
         }
 
         asyncJobRunner.plan(
@@ -105,11 +109,18 @@ class DecisionService(
 
     fun freezeGenericDecisionReasonings(tx: Database.Transaction, applicationId: ApplicationId) {
         if (!evakaEnv.decisionReasoningEnabled) return
-        tx.getPlannedUnsentDecisions(applicationId).forEach { decision ->
-            val genericReasoning =
-                validateResolvedGenericReasoning(tx, decision.id, decision.type, decision.startDate)
-            tx.updateGenericReasoningToDecision(decision.id, genericReasoning.id)
-        }
+        tx.getPlannedUnsentDecisions(applicationId)
+            .filterNot { it.type in featureConfig.decisionsWithoutReasonings }
+            .forEach { decision ->
+                val genericReasoning =
+                    validateResolvedGenericReasoning(
+                        tx,
+                        decision.id,
+                        decision.type,
+                        decision.startDate,
+                    )
+                tx.updateGenericReasoningToDecision(decision.id, genericReasoning.id)
+            }
     }
 
     private fun setGenericReasoningIfMissing(tx: Database.Transaction, decision: Decision) {
@@ -139,7 +150,10 @@ class DecisionService(
                 ?: error("Child not found with id: ${application.childId}")
         val unit = tx.getDaycare(decision.unit.id) ?: error("No unit with id: ${decision.unit.id}")
         val reasoning =
-            if (evakaEnv.decisionReasoningEnabled) {
+            if (
+                evakaEnv.decisionReasoningEnabled &&
+                    decision.type !in featureConfig.decisionsWithoutReasonings
+            ) {
                 buildPdfReasoning(decisionLanguage, tx.getDecisionPdfReasoningSource(decisionId))
             } else {
                 null

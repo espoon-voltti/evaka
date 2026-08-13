@@ -21,7 +21,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <h1 th:text="${#messages.msgOrNull('decision.title.' + decision.type)} ?: #{decision.title}"></h1>
     <div th:replace="~{shared/common :: child-and-unit-details}"></div>
 
-    <div th:utext="${#messages.msgOrNull('decision.instructions.' + decision.type)} ?: #{decision.instructions}"></div>
+    <div th:if="${reasoning == null}" th:utext="${#messages.msgOrNull('decision.instructions.' + decision.type + '.old')} ?: #{decision.instructions.old}"></div>
+    <th:block th:if="${reasoning != null}">
+        <div th:utext="${#messages.msgOrNull('decision.instructionsBeforeReasoning.' + decision.type)} ?: #{decision.instructionsBeforeReasoning}"></div>
+        <div th:replace="~{shared/decision-reasoning :: section(${reasoning})}"></div>
+        <div th:utext="${#messages.msgOrNull('decision.instructionsAfterReasoning.' + decision.type)} ?: #{decision.instructionsAfterReasoning}"></div>
+    </th:block>
     <div th:replace="~{shared/common :: decision-details }"></div>
 </div>
 
