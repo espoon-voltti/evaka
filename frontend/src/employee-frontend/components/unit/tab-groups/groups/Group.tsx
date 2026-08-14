@@ -29,6 +29,7 @@ import type {
   GroupId,
   PersonId
 } from 'lib-common/generated/api-types/shared'
+import LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import {
   first,
@@ -798,42 +799,57 @@ const DailyNote = React.memo(function DaycareDailyNote({
     const childNote = notes.childDailyNotes.find(
       (note) => note.childId === placement.child.id
     )
+    const childStickyNotes = notes.childStickyNotes.filter(
+      (note) =>
+        note.childId === placement.child.id &&
+        note.expires.isEqualOrAfter(LocalDate.todayInHelsinkiTz())
+    )
+    const hasNotes = childNote !== undefined || childStickyNotes.length > 0
     return (
       <Tooltip
         data-qa={`daycare-daily-note-hover-${placement.child.id}`}
         position="top"
         tooltip={
-          childNote ? (
+          hasNotes ? (
             <div>
-              <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
-              <p>{childNote.note}</p>
-              <h5>{i18n.unit.groups.daycareDailyNote.feedingHeader}</h5>
-              <p>
-                {childNote.feedingNote
-                  ? i18n.unit.groups.daycareDailyNote.level[
-                      childNote.feedingNote
-                    ]
-                  : ''}
-              </p>
-              <h5>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</h5>
-              <p>{formatSleepingTooltipText(childNote, i18n)}</p>
-              <h5>{i18n.unit.groups.daycareDailyNote.reminderHeader}</h5>
-              <p>
-                {childNote.reminders
-                  .map(
-                    (reminder) =>
-                      i18n.unit.groups.daycareDailyNote.reminderType[reminder]
-                  )
-                  .join(',')}
-              </p>
-              <h5>
-                {i18n.unit.groups.daycareDailyNote.otherThingsToRememberHeader}
-              </h5>
-              <p>{childNote.reminderNote}</p>
-              {notes.childStickyNotes.length > 0 && (
+              {childNote && (
+                <>
+                  <h4>{i18n.unit.groups.daycareDailyNote.header}</h4>
+                  <p>{childNote.note}</p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.feedingHeader}</h5>
+                  <p>
+                    {childNote.feedingNote
+                      ? i18n.unit.groups.daycareDailyNote.level[
+                          childNote.feedingNote
+                        ]
+                      : ''}
+                  </p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.sleepingHeader}</h5>
+                  <p>{formatSleepingTooltipText(childNote, i18n)}</p>
+                  <h5>{i18n.unit.groups.daycareDailyNote.reminderHeader}</h5>
+                  <p>
+                    {childNote.reminders
+                      .map(
+                        (reminder) =>
+                          i18n.unit.groups.daycareDailyNote.reminderType[
+                            reminder
+                          ]
+                      )
+                      .join(',')}
+                  </p>
+                  <h5>
+                    {
+                      i18n.unit.groups.daycareDailyNote
+                        .otherThingsToRememberHeader
+                    }
+                  </h5>
+                  <p>{childNote.reminderNote}</p>
+                </>
+              )}
+              {childStickyNotes.length > 0 && (
                 <>
                   <h5>{i18n.unit.groups.daycareDailyNote.stickyNotesHeader}</h5>
-                  {notes.childStickyNotes.map((stickyNote) => (
+                  {childStickyNotes.map((stickyNote) => (
                     <p key={stickyNote.id}>{stickyNote.note}</p>
                   ))}
                 </>
@@ -853,7 +869,7 @@ const DailyNote = React.memo(function DaycareDailyNote({
         }
       >
         <RoundIcon
-          active={childNote != null || notes.childStickyNotes.length > 0}
+          active={hasNotes}
           data-qa={`daycare-daily-note-icon-${placement.child.id}`}
           content={faStickyNote}
           color={colors.main.m2}

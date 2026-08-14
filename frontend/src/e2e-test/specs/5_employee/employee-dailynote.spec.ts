@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import type { ChildDailyNoteBody } from 'lib-common/generated/api-types/note'
+import LocalDate from 'lib-common/local-date'
 
 import {
   Fixture,
@@ -13,6 +14,7 @@ import {
 import {
   createDefaultServiceNeedOptions,
   postChildDailyNote,
+  postChildStickyNote,
   resetServiceState
 } from '../../generated/api-clients'
 import type { DevDaycare, DevDaycareGroup } from '../../generated/api-types'
@@ -110,6 +112,29 @@ test.describe('Mobile employee daily notes', () => {
     await noteModal.submitButton.click()
 
     await childRow.assertDailyNoteContainsText('aardvark')
+  })
+
+  test('Child sticky note affects the note indicator of that child only', async () => {
+    const stickyNote = 'Huomioitavaa lähipäivinä'
+    await postChildStickyNote({
+      childId: testChild.id,
+      body: {
+        note: stickyNote,
+        expires: LocalDate.todayInHelsinkiTz().addDays(7)
+      }
+    })
+
+    await unitPage.navigateToUnit(daycare.id)
+    const groupsSection = await unitPage.openGroupsPage()
+    const group = await groupsSection.openGroupCollapsible(daycareGroup.id)
+
+    const childWithNote = group.childRow(testChild.id)
+    await childWithNote.assertDailyNoteIconActive(true)
+    await childWithNote.assertDailyNoteContainsText(stickyNote)
+
+    const otherChild = group.childRow(testChild2.id)
+    await otherChild.assertDailyNoteIconActive(false)
+    await otherChild.assertDailyNoteDoesNotContainText(stickyNote)
   })
 
   test('Group daycare daily notes can be written and are shown on group notes tab', async () => {
