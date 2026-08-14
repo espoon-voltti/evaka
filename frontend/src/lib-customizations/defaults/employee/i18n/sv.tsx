@@ -3451,8 +3451,6 @@ export const sv: typeof fi = {
     absence: 'Frånvaro',
     reservation: 'Reservering',
     present: 'Närvarande',
-    guardian: 'Vårdnadshavare',
-    staff: 'Personal',
     dailyServiceTime: 'Avtalstid'
   },
   placementDraft: {

@@ -3423,8 +3423,6 @@ export const fi = {
     absence: 'Poissaolo',
     reservation: 'Varaus',
     present: 'Läsnä',
-    guardian: 'Huoltaja',
-    staff: 'Henkilökunta',
     dailyServiceTime: 'Sopimusaika'
   },
   placementDraft: {
