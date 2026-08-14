@@ -64,12 +64,16 @@ data class FinishedPasskeyAssertion(
 )
 
 @Service
-class PasskeyService(env: EvakaEnv) {
-    private val identity = RelyingPartyIdentity.builder().id(env.webAuthnRpId).name("eVaka").build()
-    private val origins = setOf(env.webAuthnOrigin)
+class PasskeyService(private val env: EvakaEnv) {
+    private fun relyingParty(credentialRepository: CredentialRepository): RelyingParty {
+        val webAuthnRpId =
+            env.webAuthnRpId ?: throw IllegalStateException("WebAuthn RP ID not configured")
+        val webAuthOrigin =
+            env.webAuthnOrigin ?: throw IllegalStateException("WebAuthn Origin not configured")
 
-    private fun relyingParty(credentialRepository: CredentialRepository): RelyingParty =
-        RelyingParty.builder()
+        val identity = RelyingPartyIdentity.builder().id(webAuthnRpId).name("eVaka").build()
+        val origins = setOf(webAuthOrigin)
+        return RelyingParty.builder()
             .identity(identity)
             .credentialRepository(credentialRepository)
             .origins(origins)
@@ -77,6 +81,7 @@ class PasskeyService(env: EvakaEnv) {
             .allowUntrustedAttestation(true)
             .validateSignatureCounter(false)
             .build()
+    }
 
     fun startRegistration(
         person: PersonId,
