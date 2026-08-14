@@ -13,7 +13,7 @@ import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Main from 'lib-components/atoms/Main'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { desktopMin } from 'lib-components/breakpoints'
-import Container, { ContentArea } from 'lib-components/layout/Container'
+import { ContentArea, NarrowContainer } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -37,13 +37,6 @@ import {
   notificationSettingsQuery,
   passwordConstraintsQuery
 } from './queries'
-
-const NarrowContainer = styled(Container)`
-  @media screen and (min-width: 1024px) {
-    width: 840px;
-    max-width: 840px;
-  }
-`
 
 const DesktopTopGap = styled.div`
   display: none;

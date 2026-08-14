@@ -64,6 +64,13 @@ export const Container = styled.div<{
         `}
 `
 
+export const NarrowContainer = styled(Container)`
+  @media screen and (min-width: ${desktopMin}) {
+    width: 840px;
+    max-width: 840px;
+  }
+`
+
 const spacing = (
   // oxlint-disable-next-line typescript/no-redundant-type-constituents
   spacing?: SpacingSize | string,
