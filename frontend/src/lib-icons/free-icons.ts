@@ -90,6 +90,7 @@ export { faHourglassStart } from '@fortawesome/free-solid-svg-icons/faHourglassS
 export { faInfo } from '@fortawesome/free-solid-svg-icons/faInfo'
 export { faInfo as fasInfo } from '@fortawesome/free-solid-svg-icons/faInfo'
 export { faInfoCircle } from '@fortawesome/free-solid-svg-icons/faInfoCircle'
+export { faKey } from '@fortawesome/free-solid-svg-icons/faKey'
 export { faLink } from '@fortawesome/free-solid-svg-icons/faLink'
 export { faList } from '@fortawesome/free-solid-svg-icons/faList'
 export { faLock as faLockAlt } from '@fortawesome/free-solid-svg-icons/faLock'

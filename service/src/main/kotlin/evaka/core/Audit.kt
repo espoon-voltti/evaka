@@ -193,6 +193,7 @@ enum class Audit(
     CitizenPasskeyRegister(securityEvent = true, securityLevel = "high"),
     CitizenPasskeyRegisterAttempt(securityEvent = true, securityLevel = "high"),
     CitizenPasskeysRead,
+    CitizenPasskeyUpdate(securityEvent = true),
     CitizenUserDetailsRead(securityEvent = true, securityLevel = "high"),
     CitizenWeakLogin(securityEvent = true, securityLevel = "high"),
     CitizenWeakLoginAttempt(securityEvent = true, securityLevel = "high"),

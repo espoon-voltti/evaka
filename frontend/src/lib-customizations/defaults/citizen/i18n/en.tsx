@@ -2007,16 +2007,16 @@ const en: Translations = {
         `The username ${username} is already in use by another person`
     },
     passkeysSection: {
-      title: 'Passkeys',
+      title: 'Passkey login',
       description:
-        'With a passkey you can log in to eVaka without a password, for example with your fingerprint, face recognition or device PIN.',
-      added: 'Added',
+        'Log in without a password with your fingerprint, face recognition or PIN code.',
+      added: 'Created',
       lastUsed: 'Last used',
       neverUsed: 'Never',
-      addPasskey: 'Add passkey',
+      addPasskey: 'Create a new passkey',
       defaultName: 'Passkey',
-      nameModalTitle: 'Name the passkey',
-      nameLabel: 'Name',
+      nameLabel: 'Passkey name',
+      editName: 'Edit passkey name',
       deletePasskey: 'Delete passkey',
       deleteConfirmTitle: 'Delete passkey?',
       deleteConfirmText: (name: string) =>

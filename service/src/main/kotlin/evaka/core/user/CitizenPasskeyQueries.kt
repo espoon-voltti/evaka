@@ -99,6 +99,24 @@ RETURNING id, name, created_at, last_used_at
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 
+fun Database.Transaction.updateCitizenPasskeyName(
+    person: PersonId,
+    id: CitizenPasskeyId,
+    name: String,
+): CitizenPasskey? =
+    createUpdate {
+            sql(
+                """
+UPDATE citizen_passkey
+SET name = ${bind(name)}
+WHERE id = ${bind(id)} AND citizen_user_id = ${bind(person)}
+RETURNING id, name, created_at, last_used_at
+"""
+            )
+        }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOneOrNull()
+
 fun Database.Transaction.deleteCitizenPasskey(
     person: PersonId,
     id: CitizenPasskeyId,

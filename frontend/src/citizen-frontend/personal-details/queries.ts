@@ -14,6 +14,7 @@ import {
   getPasswordConstraints,
   sendEmailVerificationCode,
   updateNotificationSettings,
+  updatePasskeyName,
   updatePersonalData,
   updateWeakLoginCredentials,
   verifyEmail
@@ -57,5 +58,9 @@ export const finishPasskeyRegistrationMutation = q.mutation(
   finishPasskeyRegistration,
   [passkeysQuery]
 )
+
+export const updatePasskeyNameMutation = q.mutation(updatePasskeyName, [
+  passkeysQuery
+])
 
 export const deletePasskeyMutation = q.mutation(deletePasskey, [passkeysQuery])

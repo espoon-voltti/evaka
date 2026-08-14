@@ -16,6 +16,7 @@ import type { JsonOf } from 'lib-common/json'
 import type { PasskeyRegistrationOptions } from 'lib-common/generated/api-types/pis'
 import type { PasswordConstraints } from 'lib-common/generated/api-types/shared'
 import type { PersonalDataUpdate } from 'lib-common/generated/api-types/pis'
+import type { UpdatePasskeyNameRequest } from 'lib-common/generated/api-types/pis'
 import type { UpdateWeakLoginCredentialsRequest } from 'lib-common/generated/api-types/pis'
 import { client } from '../../api-client'
 import { deserializeJsonCitizenPasskey } from 'lib-common/generated/api-types/user'
@@ -75,6 +76,24 @@ export async function startPasskeyRegistration(): Promise<PasskeyRegistrationOpt
   const { data: json } = await client.request<JsonOf<PasskeyRegistrationOptions>>({
     url: uri`/citizen/passkeys/register`.toString(),
     method: 'POST'
+  })
+  return json
+}
+
+
+/**
+* Generated from evaka.core.pis.controllers.PasskeyControllerCitizen.updatePasskeyName
+*/
+export async function updatePasskeyName(
+  request: {
+    id: CitizenPasskeyId,
+    body: UpdatePasskeyNameRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/passkeys/${request.id}/name`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<UpdatePasskeyNameRequest>
   })
   return json
 }

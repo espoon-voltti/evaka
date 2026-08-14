@@ -99,6 +99,55 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `a citizen can rename a passkey`() {
+        val passkey = registerPasskey(SoftwareAuthenticator(), name = "Pääsyavain")
+
+        controller.updatePasskeyName(
+            dbInstance(),
+            strongUser,
+            clock,
+            passkey.id,
+            PasskeyControllerCitizen.UpdatePasskeyNameRequest("  My phone  "),
+        )
+
+        assertEquals("My phone", db.read { it.getCitizenPasskeys(person.id) }.single().name)
+    }
+
+    @Test
+    fun `renaming an unknown passkey fails`() {
+        val other = registerPasskey(SoftwareAuthenticator())
+        controller.deletePasskey(dbInstance(), strongUser, clock, other.id)
+        assertThrows<NotFound> {
+            controller.updatePasskeyName(
+                dbInstance(),
+                strongUser,
+                clock,
+                other.id,
+                PasskeyControllerCitizen.UpdatePasskeyNameRequest("New name"),
+            )
+        }
+    }
+
+    @Test
+    fun `renaming requires a strong session`() {
+        val passkey = registerPasskey(SoftwareAuthenticator())
+        assertThrows<Forbidden> {
+            controller.updatePasskeyName(
+                dbInstance(),
+                weakUser,
+                clock,
+                passkey.id,
+                PasskeyControllerCitizen.UpdatePasskeyNameRequest("New name"),
+            )
+        }
+    }
+
+    @Test
+    fun `a blank passkey name is rejected`() {
+        assertThrows<BadRequest> { PasskeyControllerCitizen.UpdatePasskeyNameRequest("   ") }
+    }
+
+    @Test
     fun `deletion requires a strong session`() {
         val passkey = registerPasskey(SoftwareAuthenticator())
         assertThrows<Forbidden> {

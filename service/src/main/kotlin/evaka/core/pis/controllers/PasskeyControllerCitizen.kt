@@ -28,6 +28,7 @@ import evaka.core.user.deleteCitizenPasskey
 import evaka.core.user.getCitizenPasskeyCredentialIds
 import evaka.core.user.getCitizenPasskeys
 import evaka.core.user.insertCitizenPasskey
+import evaka.core.user.updateCitizenPasskeyName
 import evaka.core.user.upsertCitizenUserForPasskey
 import evaka.core.user.upsertPasskeyRegistration
 import java.time.Duration
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -181,6 +183,36 @@ class PasskeyControllerCitizen(
                     objectId = AuditId(it.id),
                 )
             }
+
+    data class UpdatePasskeyNameRequest(val name: String) {
+        init {
+            if (name.isBlank() || name.length > 100) throw BadRequest("Invalid passkey name")
+        }
+    }
+
+    @PutMapping("/{id}/name")
+    fun updatePasskeyName(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable id: CitizenPasskeyId,
+        @RequestBody body: UpdatePasskeyNameRequest,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Person.UPDATE_PASSKEY_NAME,
+                    user.id,
+                )
+                tx.updateCitizenPasskeyName(user.id, id, body.name.trim())
+                    ?: throw NotFound("Passkey not found")
+            }
+        }
+        Audit.CitizenPasskeyUpdate.log(targetId = AuditId(user.id), objectId = AuditId(id))
+    }
 
     @DeleteMapping("/{id}")
     fun deletePasskey(
