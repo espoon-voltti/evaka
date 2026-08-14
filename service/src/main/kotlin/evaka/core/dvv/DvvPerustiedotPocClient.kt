@@ -39,17 +39,21 @@ private val logger = KotlinLogging.logger {}
 @Service
 class DvvPerustiedotPocClient(private val jsonMapper: JsonMapper, env: DvvPerustiedotPocEnv?) {
     private val serviceUrl = env?.url
-    private val httpClient = env?.let {
-        buildHttpClient(
-            rootUrl = URI(it.url),
-            jsonMapper = jsonMapper,
-            interceptors =
-                listOf(
-                    headerInterceptor("Accept", "application/json"),
-                    basicAuthInterceptor(it.userId, it.password.value),
-                ),
-            customize = dvvTrustConfiguration(),
-        )
+
+    /** Lazy: the truststore is excluded from the boot jar, so eager init would fail startup. */
+    private val httpClient by lazy {
+        env?.let {
+            buildHttpClient(
+                rootUrl = URI(it.url),
+                jsonMapper = jsonMapper,
+                interceptors =
+                    listOf(
+                        headerInterceptor("Accept", "application/json"),
+                        basicAuthInterceptor(it.userId, it.password.value),
+                    ),
+                customize = dvvTrustConfiguration(),
+            )
+        }
     }
 
     /**
