@@ -169,10 +169,6 @@ const customizations: EmployeeCustomizations = {
                 'Erityinen tuki ja pidennetty oppivelvollisuus - muu kuin vaikeimmin kehitysvammainen (Koskeen)',
               SPECIAL_SUPPORT_WITH_DECISION_LEVEL_2:
                 'Erityinen tuki ja pidennetty oppivelvollisuus - vaikeimmin kehitysvammainen (Koskeen)'
-            },
-            otherAssistanceMeasureType: {
-              TRANSPORT_BENEFIT: 'Kuljetusetu (esioppilailla Koski-tieto)',
-              ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)'
             }
           }
         },

@@ -870,7 +870,7 @@ export const fi = {
         },
         otherAssistanceMeasureType: {
           TRANSPORT_BENEFIT: 'Kuljetusetu (esioppilailla Koski-tieto)',
-          ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (ELY)',
+          ACCULTURATION_SUPPORT: 'Lapsen kotoutumisen tuki (EVK)',
           ANOMALOUS_EDUCATION_START: 'Opetuksen poikkeava aloittamisajankohta',
           CHILD_DISCUSSION_OFFERED: 'Lapset puheeksi tarjottu',
           CHILD_DISCUSSION_HELD: 'Lapset puheeksi pidetty',
