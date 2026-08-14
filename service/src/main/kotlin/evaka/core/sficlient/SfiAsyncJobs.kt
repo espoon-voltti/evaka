@@ -55,8 +55,16 @@ class SfiAsyncJobs(
             logger.info { "SfiAsyncJobs: processing event $event" }
             try {
                 val externalId =
-                    UUID.fromString(event.metadata.externalId)
-                        ?: throw IllegalStateException("SfiAsyncJobs: external ID is null")
+                    event.metadata.externalId?.let {
+                        runCatching { UUID.fromString(it) }.getOrNull()
+                    }
+                if (externalId == null) {
+                    // Messages sent before the external ID became the sfi_message ID used formats
+                    // such as "<decisionId>|<guardianId>", and Suomi.fi still reports events for
+                    // them
+                    logger.info { "SfiAsyncJobs: skipped event $event (external ID is not a UUID)" }
+                    return@forEach
+                }
 
                 val id =
                     tx.upsertSfiMessageEventIfSfiMessageExists(

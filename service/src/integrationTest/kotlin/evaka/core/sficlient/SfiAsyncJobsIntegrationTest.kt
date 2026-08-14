@@ -68,6 +68,36 @@ class SfiAsyncJobsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `event with a legacy external ID is skipped without error and continuation token advances`() {
+        // Decisions sent before the external ID became the sfi_message ID used this format
+        val legacyExternalId = "${UUID.randomUUID()}|${UUID.randomUUID()}"
+        MockSfiMessagesClient.addEventsResponse(
+            GetEventsResponse(
+                continuationToken = "token-after-legacy",
+                events =
+                    listOf(
+                        GetEvent(
+                            eventTime = clock.now(),
+                            type = EventType.ELECTRONIC_MESSAGE_READ,
+                            metadata =
+                                MessageEventMetadata(
+                                    messageId = 1L,
+                                    externalId = legacyExternalId,
+                                    serviceId = "espoo_ws_vaka",
+                                ),
+                        )
+                    ),
+            )
+        )
+
+        sfiAsyncJobs.getEvents(db, clock)
+
+        db.read {
+            assertEquals(listOf("token-after-legacy"), it.getSfiGetEventsContinuationTokens())
+        }
+    }
+
+    @Test
     fun `events are stored with the time reported by Suomi fi, not the ingest time`() {
         val messageId = createSfiMessage()
         val sentAt = HelsinkiDateTime.of(LocalDate.of(2026, 3, 12), LocalTime.of(10, 0))
