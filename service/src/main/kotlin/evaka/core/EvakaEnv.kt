@@ -60,10 +60,8 @@ data class EvakaEnv(
     val passwordBlacklistDirectory: String?,
     val placementToolServiceNeedOptionId: ServiceNeedOptionId?,
     val newBrowserLoginEmailEnabled: Boolean,
-    /** Plain domain, e.g. espoonvarhaiskasvatus.fi, evaka.turku.fi */
-    val webAuthnRpId: String,
-    /** Full origin, e.g. https://espoonvarhaiskasvatus.fi, https://evaka.turku.fi */
-    val webAuthnOrigin: String,
+    val webAuthnRpId: String?,
+    val webAuthnOrigin: String?,
     val staffAttendanceDriftMinutes: Duration,
     val decisionReasoningGenericRemovalEnabled: Boolean,
     val decisionReasoningEnabled: Boolean,
