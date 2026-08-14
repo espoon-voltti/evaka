@@ -2182,7 +2182,7 @@ export default {
   personalDetails: {
     title: 'Omat tiedot',
     editInfo:
-      'Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.',
+      'Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne muuttuvat, sinun tulee tehdä ilmoitus Digi- ja väestötietovirastoon.',
     tasks: {
       verifyEmail: {
         title: 'Vahvista sähköpostiosoite',
