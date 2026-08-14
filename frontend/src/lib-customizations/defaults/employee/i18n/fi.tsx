@@ -3383,7 +3383,7 @@ export const fi = {
       BILLABLE: 'Varhaiskasvatus (maksullinen)'
     },
     modifiedByStaff: 'Henkilökunta',
-    modifiedByCitizen: 'Huoltaja',
+    modifiedByCitizen: (name: string) => `${name} (huoltaja)`,
     modal: {
       absenceSectionLabel: 'Poissaolon syy',
       placementSectionLabel: 'Toimintamuoto, jota poissaolo koskee',
@@ -3423,8 +3423,6 @@ export const fi = {
     absence: 'Poissaolo',
     reservation: 'Varaus',
     present: 'Läsnä',
-    guardian: 'Huoltaja',
-    staff: 'Henkilökunta',
     dailyServiceTime: 'Sopimusaika'
   },
   placementDraft: {

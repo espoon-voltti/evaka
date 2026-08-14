@@ -115,6 +115,7 @@ sealed class Reservation : Comparable<Reservation> {
 data class AbsenceTypeResponse(
     val absenceType: AbsenceType,
     val staffCreated: Boolean,
+    val modifiedByName: String,
     val modifiedAt: HelsinkiDateTime,
 )
 

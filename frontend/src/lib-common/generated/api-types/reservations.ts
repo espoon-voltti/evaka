@@ -52,6 +52,7 @@ export interface AbsenceRequest {
 export interface AbsenceTypeResponse {
   absenceType: AbsenceType
   modifiedAt: HelsinkiDateTime
+  modifiedByName: string
   staffCreated: boolean
 }
 

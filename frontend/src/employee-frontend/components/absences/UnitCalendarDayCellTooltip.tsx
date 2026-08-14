@@ -13,6 +13,7 @@ import type {
 import type { ServiceTimesPresenceStatus } from 'lib-common/generated/api-types/dailyservicetimes'
 import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import type LocalDate from 'lib-common/local-date'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
@@ -22,6 +23,7 @@ export interface AbsenceTooltipItem {
   absenceType: AbsenceType
   modifiedAt: HelsinkiDateTime
   modifiedByStaff: boolean
+  modifiedByName: string
 }
 
 export const AbsencesTooltipContent = React.memo(
@@ -32,22 +34,33 @@ export const AbsencesTooltipContent = React.memo(
   }) {
     const { i18n } = useTranslation()
     return (
-      <>
+      <FixedSpaceColumn $spacing="xs">
         {absences.map(
-          ({ category, absenceType, modifiedAt, modifiedByStaff }, index) => (
+          (
+            {
+              category,
+              absenceType,
+              modifiedAt,
+              modifiedByStaff,
+              modifiedByName
+            },
+            index
+          ) => (
             <div key={index}>
-              {index !== 0 && <br />}
-              {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
-              <br />
-              {`${modifiedAt.format()} ${
-                modifiedByStaff
-                  ? i18n.absences.modifiedByStaff
-                  : i18n.absences.modifiedByCitizen
-              }`}
+              <div>
+                {`${i18n.absences.absenceCategories[category]}: ${i18n.absences.absenceTypes[absenceType]}`}
+              </div>
+              <div>
+                {`${modifiedAt.format()} ${
+                  modifiedByStaff
+                    ? i18n.absences.modifiedByStaff
+                    : i18n.absences.modifiedByCitizen(modifiedByName)
+                }`}
+              </div>
             </div>
           )
         )}
-      </>
+      </FixedSpaceColumn>
     )
   }
 )
@@ -94,13 +107,14 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
             : i18n.absences.present
         const userTypeText =
           res.createdByEvakaUserType === 'CITIZEN'
-            ? i18n.absences.guardian
-            : i18n.absences.staff
+            ? i18n.absences.modifiedByCitizen(res.createdByName)
+            : i18n.absences.modifiedByStaff
         return (
           <div key={index}>
-            {reservationText}
-            <br />
-            {res.created.toLocalDate().format()} {userTypeText}
+            <div>{reservationText}</div>
+            <div>
+              {res.created.toLocalDate().format()} {userTypeText}
+            </div>
           </div>
         )
       }),
@@ -109,30 +123,20 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
 
   const missingHolidayReservationTooltip = useMemo(
     () => (
-      <div>
-        {i18n.absences.missingHolidayReservation}
-        {dailyServiceTimeTooltip !== undefined ? (
-          <div>
-            <br />
-            {dailyServiceTimeTooltip}
-          </div>
-        ) : undefined}
-      </div>
+      <FixedSpaceColumn $spacing="xs">
+        <div>{i18n.absences.missingHolidayReservation}</div>
+        {dailyServiceTimeTooltip}
+      </FixedSpaceColumn>
     ),
     [i18n, dailyServiceTimeTooltip]
   )
 
   const missingQuestionnaireAnswerTooltip = useMemo(
     () => (
-      <div>
-        {i18n.absences.missingHolidayQuestionnaireAnswer}
-        {dailyServiceTimeTooltip !== undefined ? (
-          <div>
-            <br />
-            {dailyServiceTimeTooltip}
-          </div>
-        ) : undefined}
-      </div>
+      <FixedSpaceColumn $spacing="xs">
+        <div>{i18n.absences.missingHolidayQuestionnaireAnswer}</div>
+        {dailyServiceTimeTooltip}
+      </FixedSpaceColumn>
     ),
     [i18n, dailyServiceTimeTooltip]
   )
@@ -149,9 +153,8 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
   const requiresBackupCareTooltip = useMemo(
     () => (
       <div>
-        {i18n.absences.shiftCare}
-        <br />
-        {i18n.absences.requiresBackupCare}
+        <div>{i18n.absences.shiftCare}</div>
+        <div>{i18n.absences.requiresBackupCare}</div>
       </div>
     ),
     [i18n]
@@ -171,11 +174,10 @@ export default React.memo(function UnitCalendarMonthlyDayCellTooltip({
       ) : requiresBackupCare ? (
         requiresBackupCareTooltip
       ) : reservations.length > 0 || dailyServiceTimes !== null ? (
-        <div>
+        <FixedSpaceColumn $spacing="xs">
           {reservationTooltip}
-          {reservationTooltip.length > 0 && <br />}
           {dailyServiceTimeTooltip}
-        </div>
+        </FixedSpaceColumn>
       ) : undefined}
     </div>
   )

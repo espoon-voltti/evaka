@@ -33,7 +33,8 @@ export default React.memo(function AbsenceDay({ absences }: Props) {
         category,
         absenceType: absence.absenceType,
         modifiedAt: absence.modifiedAt,
-        modifiedByStaff: absence.staffCreated
+        modifiedByStaff: absence.staffCreated,
+        modifiedByName: absence.modifiedByName
       })),
     [absences]
   )

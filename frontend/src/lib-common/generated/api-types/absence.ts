@@ -33,6 +33,7 @@ export interface Absence {
   childId: PersonId
   date: LocalDate
   modifiedAt: HelsinkiDateTime
+  modifiedByName: string
   modifiedByStaff: boolean
 }
 
@@ -131,6 +132,7 @@ export interface AbsenceWithModifierInfo {
   absenceType: AbsenceType
   category: AbsenceCategory
   modifiedAt: HelsinkiDateTime
+  modifiedByName: string
   modifiedByStaff: boolean
 }
 
@@ -140,6 +142,7 @@ export interface AbsenceWithModifierInfo {
 export interface ChildReservation {
   created: HelsinkiDateTime
   createdByEvakaUserType: EvakaUserType
+  createdByName: string
   reservation: Reservation
 }
 

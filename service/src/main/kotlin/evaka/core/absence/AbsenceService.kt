@@ -778,6 +778,7 @@ data class Absence(
     val category: AbsenceCategory,
     val absenceType: AbsenceType,
     val modifiedByStaff: Boolean,
+    val modifiedByName: String,
     val modifiedAt: HelsinkiDateTime,
     val belongsToQuestionnaire: Boolean = false,
 ) {
@@ -789,6 +790,7 @@ data class AbsenceWithModifierInfo(
     val absenceType: AbsenceType,
     val category: AbsenceCategory,
     val modifiedByStaff: Boolean,
+    val modifiedByName: String,
     val modifiedAt: HelsinkiDateTime,
 ) {
     companion object {
@@ -797,6 +799,7 @@ data class AbsenceWithModifierInfo(
                 absence.absenceType,
                 absence.category,
                 absence.modifiedByStaff,
+                absence.modifiedByName,
                 absence.modifiedAt,
             )
     }

@@ -437,6 +437,7 @@ SELECT
     a.absence_type,
     a.category,
     eu.type <> 'CITIZEN' AS modified_by_staff,
+    eu.name AS modified_by_name,
     a.modified_at,
     a.questionnaire_id IS NOT NULL AS belongs_to_questionnaire
 FROM absence a
@@ -548,6 +549,7 @@ AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(period)}
 data class ChildReservation(
     val reservation: Reservation,
     val createdByEvakaUserType: EvakaUserType,
+    val createdByName: String,
     val created: HelsinkiDateTime,
 )
 
@@ -561,7 +563,7 @@ fun Database.Read.getGroupReservations(
 WITH all_placements AS (
   ${subquery(placementsQuery(dateRange, groupId))}
 )
-SELECT r.child_id, r.date, r.start_time, r.end_time, e.type AS created_by_evaka_user_type, r.created_at AS created_date
+SELECT r.child_id, r.date, r.start_time, r.end_time, e.type AS created_by_evaka_user_type, e.name AS created_by_name, r.created_at AS created_date
 FROM attendance_reservation r
 JOIN evaka_user e ON r.created_by = e.id
 WHERE between_start_and_end(${bind(dateRange)}, r.date)
@@ -580,6 +582,7 @@ AND EXISTS (
                 ChildReservation(
                     Reservation.of(column("start_time"), column("end_time")),
                     column("created_by_evaka_user_type"),
+                    column("created_by_name"),
                     column("created_date"),
                 )
             Pair(childId, date) to reservation

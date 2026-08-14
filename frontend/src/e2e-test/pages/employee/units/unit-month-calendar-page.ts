@@ -69,9 +69,10 @@ export class UnitMonthCalendarPage extends UnitCalendarPageBase {
     expectedTexts: string[]
   ) {
     await this.absenceCell(childId, date).hover()
-    const tooltipText =
-      (await this.page.findByDataQa('absence-cell-tooltip').text) || ''
-    return expectedTexts.every((text) => tooltipText.includes(text))
+    const tooltip = this.page.findByDataQa('absence-cell-tooltip')
+    for (const text of expectedTexts) {
+      await expect(tooltip).toContainText(text)
+    }
   }
 
   async childHasNoAbsence(

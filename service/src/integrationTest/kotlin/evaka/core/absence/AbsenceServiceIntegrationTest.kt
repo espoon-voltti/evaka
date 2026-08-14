@@ -669,6 +669,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                             ),
                                                         createdByEvakaUserType =
                                                             EvakaUserType.EMPLOYEE,
+                                                        createdByName = employee.evakaUser.name,
                                                     )
                                                 ),
                                         )
@@ -702,6 +703,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                             ),
                                                         createdByEvakaUserType =
                                                             EvakaUserType.EMPLOYEE,
+                                                        createdByName = employee.evakaUser.name,
                                                     )
                                                 ),
                                         )
@@ -724,6 +726,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                                                         category = AbsenceCategory.BILLABLE,
                                                         absenceType = AbsenceType.OTHER_ABSENCE,
                                                         modifiedByStaff = true,
+                                                        modifiedByName = employee.evakaUser.name,
                                                         modifiedAt =
                                                             HelsinkiDateTime.of(
                                                                 placementStart,
@@ -990,10 +993,79 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                     category = initialAbsence.category,
                     absenceType = initialAbsence.absenceType,
                     modifiedByStaff = true,
+                    modifiedByName = employee.evakaUser.name,
                     modifiedAt = now,
                 )
             ),
             child.absences,
+        )
+    }
+
+    @Test
+    fun `citizen-marked absence and reservation include the citizen's name`() {
+        insertGroupPlacement(child1.id, PlacementType.PRESCHOOL_DAYCARE)
+
+        val citizen = DevPerson(firstName = "Johannes", lastName = "Karhula")
+        val absenceDate = placementEnd
+        val result = db.transaction { tx ->
+            tx.insert(citizen, DevPersonType.ADULT)
+            tx.insert(
+                DevAbsence(
+                    childId = child1.id,
+                    date = absenceDate,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedAt = now,
+                    modifiedBy = citizen.evakaUserId(),
+                    absenceCategory = AbsenceCategory.NONBILLABLE,
+                )
+            )
+            tx.insert(
+                DevReservation(
+                    childId = child1.id,
+                    date = absenceDate,
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(16, 0),
+                    createdAt = now,
+                    createdBy = citizen.evakaUserId(),
+                )
+            )
+            getGroupMonthCalendar(
+                tx,
+                absenceDate,
+                group.id,
+                absenceDate.year,
+                absenceDate.monthValue,
+                testFeatureConfig,
+                calendarOpenBeforePlacementDays = 0,
+            )
+        }
+        val child =
+            result.days.find { it.date == absenceDate }?.children?.find { it.childId == child1.id }
+                ?: error("Day or child not found")
+
+        assertEquals(
+            listOf(
+                AbsenceWithModifierInfo(
+                    category = AbsenceCategory.NONBILLABLE,
+                    absenceType = AbsenceType.SICKLEAVE,
+                    modifiedByStaff = false,
+                    modifiedByName = citizen.evakaUser().name,
+                    modifiedAt = now,
+                )
+            ),
+            child.absences,
+        )
+        assertEquals(
+            listOf(
+                ChildReservation(
+                    reservation =
+                        Reservation.Times(TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))),
+                    createdByEvakaUserType = EvakaUserType.CITIZEN,
+                    createdByName = citizen.evakaUser().name,
+                    created = now,
+                )
+            ),
+            child.reservations,
         )
     }
 

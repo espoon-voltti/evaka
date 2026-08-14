@@ -140,6 +140,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         date = date,
                         absenceCategory = AbsenceCategory.BILLABLE,
                         modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 )
                 tx.insert(
@@ -148,6 +149,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                         date = date,
                         absenceCategory = AbsenceCategory.NONBILLABLE,
                         modifiedAt = now,
+                        modifiedBy = employee.evakaUserId,
                     )
                 )
             }
@@ -159,6 +161,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = firstAbsenceDate,
                     absenceCategory = AbsenceCategory.BILLABLE,
                     modifiedAt = now,
+                    modifiedBy = employee.evakaUserId,
                 )
             )
         }
@@ -186,6 +189,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.NONBILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
+                    modifiedByName = employee.evakaUser.name,
                     modifiedAt = now,
                 ),
                 Absence(
@@ -194,6 +198,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
+                    modifiedByName = employee.evakaUser.name,
                     modifiedAt = now,
                 ),
             ),
@@ -207,6 +212,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
+                    modifiedByName = employee.evakaUser.name,
                     modifiedAt = now,
                 )
             ),
@@ -340,6 +346,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate,
                     absenceCategory = AbsenceCategory.BILLABLE,
                     modifiedAt = now,
+                    modifiedBy = employee.evakaUserId,
                 )
             )
             tx.insert(
@@ -348,6 +355,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     date = startDate.plusDays(1),
                     absenceCategory = AbsenceCategory.BILLABLE,
                     modifiedAt = now,
+                    modifiedBy = employee.evakaUserId,
                 )
             )
         }
@@ -383,6 +391,7 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     category = AbsenceCategory.BILLABLE,
                     absenceType = AbsenceType.OTHER_ABSENCE,
                     modifiedByStaff = true,
+                    modifiedByName = employee.evakaUser.name,
                     modifiedAt = now,
                 )
             ),
