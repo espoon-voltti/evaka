@@ -2181,13 +2181,6 @@ export default {
   },
   personalDetails: {
     title: 'Omat tiedot',
-    description: (
-      <P>
-        Täällä voit tarkistaa ja täydentää omat henkilö- ja yhteystietosi.
-        Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne
-        muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
-      </P>
-    ),
     editInfo:
       'Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.',
     tasks: {

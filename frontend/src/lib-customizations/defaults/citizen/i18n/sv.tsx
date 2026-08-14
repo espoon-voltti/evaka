@@ -2166,14 +2166,6 @@ const sv: Translations = {
   },
   personalDetails: {
     title: 'Personuppgifter',
-    description: (
-      <P>
-        Här kan du kontrollera och komplettera dina egna person- och
-        kontaktuppgifter. Vi hämtar ditt namn och din adress i
-        befolkningsdatasystemet och om de ändras ska du göra en anmälan till
-        myndigheten för digitalisering och befolkningsdata (DVV).
-      </P>
-    ),
     editInfo:
       'Vi hämtar ditt namn och din adress i befolkningsdatasystemet. Om de ändras ska du göra en anmälan till myndigheten för digitalisering och befolkningsdata (DVV).',
     tasks: {

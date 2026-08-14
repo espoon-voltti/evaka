@@ -1916,14 +1916,6 @@ const en: Translations = {
   },
   personalDetails: {
     title: 'Personal information',
-    description: (
-      <P>
-        Here you can check and update your personal and contact information.
-        Your name and address are retrieved from the Population Information
-        System. If they change, you will need to inform the Digital and
-        Population Data Services Agency (DVV).
-      </P>
-    ),
     editInfo:
       'Your name and address are retrieved from the Population Information System. If they change, you will need to inform the Digital and Population Data Services Agency (DVV).',
     tasks: {
