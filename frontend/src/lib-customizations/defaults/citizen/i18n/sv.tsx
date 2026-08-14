@@ -2266,16 +2266,16 @@ const sv: Translations = {
         `Användarnamnet ${username} används redan av en annan person`
     },
     passkeysSection: {
-      title: 'Inloggningsnycklar',
+      title: 'Inloggning med inloggningsnyckel',
       description:
-        'Med en inloggningsnyckel (passkey) kan du logga in i eVaka utan lösenord, till exempel med fingeravtryck, ansiktsigenkänning eller enhetens PIN-kod.',
-      added: 'Tillagd',
+        'Logga in utan lösenord med fingeravtryck, ansiktsigenkänning eller PIN-kod.',
+      added: 'Skapad',
       lastUsed: 'Senast använd',
       neverUsed: 'Aldrig',
-      addPasskey: 'Lägg till inloggningsnyckel',
+      addPasskey: 'Skapa en ny inloggningsnyckel (passkey)',
       defaultName: 'Inloggningsnyckel',
-      nameModalTitle: 'Namnge inloggningsnyckeln',
-      nameLabel: 'Namn',
+      nameLabel: 'Inloggningsnyckelns namn',
+      editName: 'Redigera inloggningsnyckelns namn',
       deletePasskey: 'Ta bort inloggningsnyckeln',
       deleteConfirmTitle: 'Ta bort inloggningsnyckeln?',
       deleteConfirmText: (name: string) =>

@@ -800,6 +800,13 @@ export interface TemporaryEmployee {
 }
 
 /**
+* Generated from evaka.core.pis.controllers.PasskeyControllerCitizen.UpdatePasskeyNameRequest
+*/
+export interface UpdatePasskeyNameRequest {
+  name: string
+}
+
+/**
 * Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest
 */
 export interface UpdateWeakLoginCredentialsRequest {

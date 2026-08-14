@@ -2275,16 +2275,16 @@ export default {
         `Käyttäjätunnus ${username} on jo käytössä toisella henkilöllä`
     },
     passkeysSection: {
-      title: 'Pääsyavaimet',
+      title: 'Pääsyavainkirjautuminen',
       description:
-        'Pääsyavaimella (passkey) voit kirjautua eVakaan ilman salasanaa esimerkiksi sormenjäljellä, kasvojentunnistuksella tai laitteen PIN-koodilla.',
-      added: 'Lisätty',
+        'Kirjaudu ilman salasanaa sormenjäljellä, kasvojentunnistuksella tai PIN-koodilla.',
+      added: 'Luotu',
       lastUsed: 'Käytetty viimeksi',
       neverUsed: 'Ei koskaan',
-      addPasskey: 'Lisää pääsyavain',
+      addPasskey: 'Luo uusi pääsyavain (passkey)',
       defaultName: 'Pääsyavain',
-      nameModalTitle: 'Nimeä pääsyavain',
-      nameLabel: 'Nimi',
+      nameLabel: 'Pääsyavaimen nimi',
+      editName: 'Muokkaa pääsyavaimen nimeä',
       deletePasskey: 'Poista pääsyavain',
       deleteConfirmTitle: 'Poistetaanko pääsyavain?',
       deleteConfirmText: (name: string) =>

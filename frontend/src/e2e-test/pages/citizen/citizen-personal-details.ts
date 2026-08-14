@@ -156,16 +156,13 @@ export class PasskeysSection extends Element {
   deletePasskey(nth: number) {
     return this.passkeys.nth(nth).findByDataQa('delete-passkey')
   }
-}
 
-export class PasskeyNameModal extends Element {
-  name: TextInput
-  ok: Element
-
-  constructor(page: Page) {
-    super(page.findByDataQa('passkey-name-modal'))
-    this.name = new TextInput(this.findByDataQa('passkey-name-input'))
-    this.ok = this.findByDataQa('modal-okBtn')
+  async editPasskeyName(nth: number, name: string) {
+    const passkey = this.passkeys.nth(nth)
+    await passkey.findByDataQa('edit-passkey').click()
+    await new TextInput(passkey.findByDataQa('passkey-name-input')).fill(name)
+    await passkey.findByDataQa('save-passkey-name').click()
+    await expect(this.passkeyName(nth)).toHaveText(name)
   }
 }
 

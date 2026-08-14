@@ -81,6 +81,7 @@ declare module 'Icons' {
   const faHourglassStart: IconDefinition
   const faInfo: IconDefinition
   const faInfoCircle: IconDefinition
+  const faKey: IconDefinition
   const faLink: IconDefinition
   const faList: IconDefinition
   const faLockAlt: IconDefinition

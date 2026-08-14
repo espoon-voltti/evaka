@@ -10,8 +10,7 @@ import { resetServiceState } from '../../generated/api-clients'
 import type { DevPerson } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage, {
-  DeletePasskeyModal,
-  PasskeyNameModal
+  DeletePasskeyModal
 } from '../../pages/citizen/citizen-personal-details'
 import { test, expect } from '../../playwright'
 import type { Page } from '../../utils/page'
@@ -46,41 +45,40 @@ test.beforeEach(async () => {
   })
 })
 
-async function registerPasskey(page: Page, name: string) {
+async function registerPasskey(page: Page) {
   await enduserLogin(page, citizen, '/personal-details')
   const personalDetailsPage = new CitizenPersonalDetailsPage(page)
   await personalDetailsPage.passkeysSection.addPasskey.click()
-  const nameModal = new PasskeyNameModal(page)
-  await nameModal.name.fill(name)
-  await nameModal.ok.click()
   await expect(personalDetailsPage.passkeysSection.passkeys).toHaveCount(1)
 }
 
 test.describe('Citizen passkeys', () => {
-  test('a citizen can register a passkey, log in with it, and delete it', async ({
+  test('a citizen can register a passkey, rename it, log in with it, and delete it', async ({
     evaka
   }) => {
     await addVirtualAuthenticator(evaka)
     const header = new CitizenHeader(evaka)
 
-    await registerPasskey(evaka, 'Oma Passkey')
+    // a new passkey gets a default name that the citizen can then edit
+    await registerPasskey(evaka)
+    const passkeys = new CitizenPersonalDetailsPage(evaka).passkeysSection
+    await expect(passkeys.passkeyName(0)).toHaveText('Pääsyavain')
+    await passkeys.editPasskeyName(0, 'Oma Passkey')
     await header.logout()
 
     await enduserLoginPasskey(evaka)
 
     // the list is visible under the weak session and shows the last use
     await evaka.goto(config.enduserUrl + '/personal-details')
-    const personalDetailsPage = new CitizenPersonalDetailsPage(evaka)
-    const section = personalDetailsPage.passkeysSection
-    await expect(section.passkeyName(0)).toHaveText('Oma Passkey')
-    await expect(section.passkeyLastUsed(0)).not.toContainText('Ei koskaan')
+    await expect(passkeys.passkeyName(0)).toHaveText('Oma Passkey')
+    await expect(passkeys.passkeyLastUsed(0)).not.toContainText('Ei koskaan')
     await header.logout()
 
     // deletion requires a strong session
     await enduserLogin(evaka, citizen, '/personal-details')
-    await section.deletePasskey(0).click()
+    await passkeys.deletePasskey(0).click()
     await new DeletePasskeyModal(evaka).ok.click()
-    await expect(section.passkeys).toHaveCount(0)
+    await expect(passkeys.passkeys).toHaveCount(0)
     await header.logout()
 
     // the deleted passkey no longer works
@@ -112,7 +110,7 @@ test.describe('Citizen passkeys', () => {
     await expect(evaka.findByDataQa('used-last-tag')).toBeVisible()
 
     // after a passkey login the passkey method is first and tagged
-    await registerPasskey(evaka, 'Oma Passkey')
+    await registerPasskey(evaka)
     await header.logout()
     await enduserLoginPasskey(evaka)
     await header.logout()
