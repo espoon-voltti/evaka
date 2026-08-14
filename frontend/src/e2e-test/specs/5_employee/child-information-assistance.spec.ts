@@ -283,7 +283,7 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.save.click()
 
       const row = assistance.otherAssistanceMeasureRow(0)
-      await expect(row.type).toHaveText('Lapsen kotoutumisen tuki (ELY)')
+      await expect(row.type).toHaveText('Lapsen kotoutumisen tuki (EVK)')
       await expect(row.validDuring).toHaveText(validDuring.format())
     })
 
@@ -306,7 +306,7 @@ test.describe('Child Information assistance functionality for employees', () => 
       await form.type.selectOption('ACCULTURATION_SUPPORT')
       await form.save.click()
 
-      await expect(row.type).toHaveText('Lapsen kotoutumisen tuki (ELY)')
+      await expect(row.type).toHaveText('Lapsen kotoutumisen tuki (EVK)')
     })
 
     test('can be deleted', async () => {
