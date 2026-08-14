@@ -69,7 +69,7 @@ dependencies {
     api(platform("tools.jackson:jackson-bom:3.2.1"))
     api(platform("com.squareup.okhttp3:okhttp-bom:5.4.0"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.64.0"))
-    api(platform("io.netty:netty-bom:4.2.16.Final"))
+    api(platform("io.netty:netty-bom:4.2.17.Final"))
     api(platform("org.apache.cxf:cxf-bom:4.2.3"))
     api(platform("org.jdbi:jdbi3-bom:3.54.0"))
     api(platform(libs.kotlin.bom))
