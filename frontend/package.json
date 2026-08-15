@@ -55,7 +55,7 @@
     "react-leaflet": "5.0.0",
     "react-select": "5.10.2",
     "seamless-scroll-polyfill": "2.3.4",
-    "styled-components": "6.5.0",
+    "styled-components": "6.5.1",
     "wouter": "3.10.0"
   },
   "devDependencies": {
