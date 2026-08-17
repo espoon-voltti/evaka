@@ -5,7 +5,6 @@
 package evaka.core.shared.dev
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import evaka.core.Audit
 import evaka.core.AuditContext
 import evaka.core.EvakaEnv
 import evaka.core.ExcludeCodeGen
@@ -483,25 +482,22 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
 
     @PostMapping("/decisions/{id}/actions/reject-by-citizen")
     fun rejectDecisionByCitizen(db: Database, clock: EvakaClock, @PathVariable id: DecisionId) {
-        val audit = AuditContext().add(id)
         db.connect { dbc ->
-                dbc.transaction { tx ->
-                    val decision = tx.getDecision(id) ?: throw NotFound("decision not found")
-                    val application =
-                        tx.fetchApplicationDetails(decision.applicationId)
-                            ?: throw NotFound("application not found")
-                    audit.add(application.id)
-                    applicationStateService.rejectDecision(
-                        tx,
-                        AuthenticatedUser.Citizen(application.guardianId, CitizenAuthLevel.STRONG),
-                        clock,
-                        audit,
-                        application.id,
-                        id,
-                    )
-                }
+            dbc.transaction { tx ->
+                val decision = tx.getDecision(id) ?: throw NotFound("decision not found")
+                val application =
+                    tx.fetchApplicationDetails(decision.applicationId)
+                        ?: throw NotFound("application not found")
+                applicationStateService.rejectDecision(
+                    tx,
+                    AuthenticatedUser.Citizen(application.guardianId, CitizenAuthLevel.STRONG),
+                    clock,
+                    AuditContext(),
+                    application.id,
+                    id,
+                )
             }
-            .also { audit.log(Audit.DecisionReject, clock) }
+        }
     }
 
     @PostMapping("/decision-reasonings/generic")
@@ -874,21 +870,19 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: SimpleApplicationAction,
     ) {
-        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-                dbc.transaction { tx ->
-                    tx.ensureFakeAdminExists()
-                    applicationStateService.doSimpleAction(
-                        tx,
-                        fakeAdmin,
-                        clock,
-                        audit,
-                        action,
-                        applicationId,
-                    )
-                }
+            dbc.transaction { tx ->
+                tx.ensureFakeAdminExists()
+                applicationStateService.doSimpleAction(
+                    tx,
+                    fakeAdmin,
+                    clock,
+                    AuditContext(),
+                    action,
+                    applicationId,
+                )
             }
-            .also { audit.log(action.auditEvent, clock) }
+        }
         runAllAsyncJobs(clock)
     }
 
