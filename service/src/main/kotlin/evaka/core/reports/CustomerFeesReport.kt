@@ -81,8 +81,8 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                 placementType?.let { PredicateSql { where("fdc.placement_type = ${bind(it)}") } },
             )
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
                     SELECT fdc.final_fee AS fee_amount, count(*) AS count
                     FROM fee_decision_child fdc
                     JOIN fee_decision fd ON fd.id = fdc.fee_decision_id
@@ -91,8 +91,8 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                       AND fd.valid_during @> ${bind(date)}
                     GROUP BY fdc.final_fee
                 """
-                )
-            }
+            )
+        }
             .toList()
     }
 
@@ -111,8 +111,8 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                 placementType?.let { PredicateSql { where("vvd.placement_type = ${bind(it)}") } },
             )
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
                     SELECT vvd.final_co_payment AS fee_amount, count(*) AS count
                     FROM voucher_value_decision vvd
                     JOIN daycare d ON d.id = vvd.placement_unit_id
@@ -120,8 +120,8 @@ class CustomerFeesReport(private val accessControl: AccessControl) {
                       AND ${bind(date)} BETWEEN vvd.valid_from AND vvd.valid_to
                     GROUP BY vvd.final_co_payment
                 """
-                )
-            }
+            )
+        }
             .toList()
     }
 }

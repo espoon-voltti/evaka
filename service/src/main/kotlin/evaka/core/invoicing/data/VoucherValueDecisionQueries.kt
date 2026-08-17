@@ -34,8 +34,8 @@ fun Database.Transaction.upsertValueDecisions(decisions: List<VoucherValueDecisi
     decisions.forEach { decision ->
         // TODO: use batch once JDBI makes it less buggy
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
 INSERT INTO voucher_value_decision (
     id,
     status,
@@ -142,8 +142,8 @@ INSERT INTO voucher_value_decision (
     difference = ${bind(decision.difference)},
     created = ${bind(decision.created)}
 """
-                )
-            }
+            )
+        }
             .execute()
     }
 }
@@ -152,8 +152,8 @@ fun Database.Read.getValueDecisionsByIds(
     ids: List<VoucherValueDecisionId>
 ): List<VoucherValueDecision> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     id,
     valid_from,
@@ -196,8 +196,8 @@ SELECT
 FROM voucher_value_decision
 WHERE id = ANY(${bind(ids)})
         """
-            )
-        }
+        )
+    }
         .toList<VoucherValueDecision>()
 }
 
@@ -208,8 +208,8 @@ fun Database.Read.findValueDecisionsForChild(
     lockForUpdate: Boolean = false,
 ): List<VoucherValueDecision> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     id,
     valid_from,
@@ -255,8 +255,8 @@ AND (${bind(period)}::daterange IS NULL OR daterange(valid_from, valid_to, '[]')
 AND (${bind(statuses)}::text[] IS NULL OR status = ANY(${bind(statuses)}::voucher_value_decision_status[]))
 ${if (lockForUpdate) "FOR UPDATE" else ""}
 """
-            )
-        }
+        )
+    }
         .toList<VoucherValueDecision>()
 }
 
@@ -460,8 +460,8 @@ fun Database.Read.getVoucherValueDecision(
     id: VoucherValueDecisionId
 ): VoucherValueDecisionDetailed? {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     decision.*,
     date_part('year', age(decision.valid_from, decision.child_date_of_birth)) child_age,
@@ -510,8 +510,8 @@ LEFT JOIN employee as approved_by ON decision.approved_by = approved_by.id
 LEFT JOIN employee as finance_decision_handler ON finance_decision_handler.id = decision.decision_handler
 WHERE decision.id = ${bind(id)}
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull<VoucherValueDecisionDetailed>()
         ?.let {
             it.copy(
@@ -530,8 +530,8 @@ fun Database.Read.getHeadOfFamilyVoucherValueDecisions(
     headOfFamilyId: PersonId
 ): List<VoucherValueDecisionSummary> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     decision.id,
     decision.status,
@@ -561,8 +561,8 @@ JOIN person head ON decision.head_of_family_id = head.id
 JOIN person child ON decision.child_id = child.id
 WHERE decision.head_of_family_id = ${bind(headOfFamilyId)}
 """
-            )
-        }
+        )
+    }
         .toList<VoucherValueDecisionSummary>()
 }
 
@@ -599,8 +599,8 @@ fun Database.Read.getVoucherValueDecisionByLiableCitizen(
     citizenId: PersonId
 ): List<VoucherValueDecisionCitizenInfoRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT vvd.id,
        vvd.valid_from,
        vvd.valid_to,
@@ -614,8 +614,8 @@ AND vvd.document_key IS NOT NULL
 AND (vvd.head_of_family_id = ${bind(citizenId)}
     OR vvd.partner_id = ${bind(citizenId)})
 """
-            )
-        }
+        )
+    }
         .toList<VoucherValueDecisionCitizenInfoRow>()
 }
 
@@ -634,10 +634,10 @@ fun Database.Transaction.updateVoucherValueDecisionDocumentKey(
     documentKey: String,
 ) {
     createUpdate {
-            sql(
-                "UPDATE voucher_value_decision SET document_key = ${bind(documentKey)} WHERE id = ${bind(id)}"
-            )
-        }
+        sql(
+            "UPDATE voucher_value_decision SET document_key = ${bind(documentKey)} WHERE id = ${bind(id)}"
+        )
+    }
         .execute()
 }
 
@@ -646,10 +646,10 @@ fun Database.Transaction.updateVoucherValueDecisionStatus(
     status: VoucherValueDecisionStatus,
 ) {
     createUpdate {
-            sql(
-                "UPDATE voucher_value_decision SET status = ${bind(status)}::voucher_value_decision_status WHERE id = ANY(${bind(ids)})"
-            )
-        }
+        sql(
+            "UPDATE voucher_value_decision SET status = ${bind(status)}::voucher_value_decision_status WHERE id = ANY(${bind(ids)})"
+        )
+    }
         .execute()
 }
 
@@ -658,15 +658,15 @@ fun Database.Transaction.setVoucherValueDecisionType(
     type: VoucherValueDecisionType,
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE voucher_value_decision
 SET decision_type = ${bind(type.toString())}::voucher_value_decision_type
 WHERE id = ${bind(id)}
   AND status = ${bind(VoucherValueDecisionStatus.DRAFT.toString())}::voucher_value_decision_status
 """
-            )
-        }
+        )
+    }
         .execute()
 }
 
@@ -675,10 +675,10 @@ fun Database.Transaction.markVoucherValueDecisionsSent(
     now: HelsinkiDateTime,
 ) {
     createUpdate {
-            sql(
-                "UPDATE voucher_value_decision SET status = ${bind(VoucherValueDecisionStatus.SENT)}::voucher_value_decision_status, sent_at = ${bind(now)} WHERE id = ANY(${bind(ids)})"
-            )
-        }
+        sql(
+            "UPDATE voucher_value_decision SET status = ${bind(VoucherValueDecisionStatus.SENT)}::voucher_value_decision_status, sent_at = ${bind(now)} WHERE id = ANY(${bind(ids)})"
+        )
+    }
         .execute()
 }
 
@@ -706,19 +706,19 @@ fun Database.Transaction.annulVoucherValueDecisions(
     if (ids.isEmpty()) return
 
     createUpdate {
-            sql(
-                "UPDATE voucher_value_decision SET status = ${bind(VoucherValueDecisionStatus.ANNULLED)}, annulled_at = ${bind(now)} WHERE id = ANY(${bind(ids)})"
-            )
-        }
+        sql(
+            "UPDATE voucher_value_decision SET status = ${bind(VoucherValueDecisionStatus.ANNULLED)}, annulled_at = ${bind(now)} WHERE id = ANY(${bind(ids)})"
+        )
+    }
         .execute()
 }
 
 fun Database.Transaction.setVoucherValueDecisionToIgnored(id: VoucherValueDecisionId) {
     createUpdate {
-            sql(
-                "UPDATE voucher_value_decision SET status = 'IGNORED' WHERE id = ${bind(id)} AND status = 'DRAFT'"
-            )
-        }
+        sql(
+            "UPDATE voucher_value_decision SET status = 'IGNORED' WHERE id = ${bind(id)} AND status = 'DRAFT'"
+        )
+    }
         .updateExactlyOne()
 }
 
@@ -727,43 +727,38 @@ fun Database.Transaction.setVoucherValueDecisionProcessId(
     processId: CaseProcessId,
 ) {
     createUpdate {
-            sql(
-                "UPDATE voucher_value_decision SET process_id = ${bind(processId)} WHERE id = ${bind(id)} AND process_id IS NULL"
-            )
-        }
+        sql(
+            "UPDATE voucher_value_decision SET process_id = ${bind(processId)} WHERE id = ${bind(id)} AND process_id IS NULL"
+        )
+    }
         .updateExactlyOne()
 }
 
 fun Database.Transaction.removeVoucherValueDecisionIgnore(id: VoucherValueDecisionId) {
     createUpdate {
-            sql("DELETE FROM voucher_value_decision WHERE id = ${bind(id)} AND status = 'IGNORED'")
-        }
+        sql("DELETE FROM voucher_value_decision WHERE id = ${bind(id)} AND status = 'IGNORED'")
+    }
         .updateExactlyOne()
 }
 
 fun Database.Transaction.lockValueDecisionsForChild(childId: ChildId) {
     createUpdate {
-            sql(
-                "SELECT id FROM voucher_value_decision WHERE child_id = ${bind(childId)} FOR UPDATE"
-            )
-        }
+        sql("SELECT id FROM voucher_value_decision WHERE child_id = ${bind(childId)} FOR UPDATE")
+    }
         .execute()
 }
 
 fun Database.Transaction.lockValueDecisions(ids: List<VoucherValueDecisionId>) {
     createUpdate {
-            sql("SELECT id FROM voucher_value_decision WHERE id = ANY(${bind(ids)}) FOR UPDATE")
-        }
+        sql("SELECT id FROM voucher_value_decision WHERE id = ANY(${bind(ids)}) FOR UPDATE")
+    }
         .execute()
 }
 
 fun Database.Transaction.markVoucherValueDecisionAsArchived(
     id: VoucherValueDecisionId,
     now: HelsinkiDateTime,
-) =
-    createUpdate {
-            sql(
-                "UPDATE voucher_value_decision SET archived_at = ${bind(now)} WHERE id = ${bind(id)}"
-            )
-        }
-        .updateExactlyOne()
+) = createUpdate {
+    sql("UPDATE voucher_value_decision SET archived_at = ${bind(now)} WHERE id = ${bind(id)}")
+}
+    .updateExactlyOne()

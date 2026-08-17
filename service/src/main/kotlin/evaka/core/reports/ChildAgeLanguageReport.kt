@@ -53,10 +53,9 @@ class ChildAgeLanguageReportController(private val accessControl: AccessControl)
 private fun Database.Read.getChildAgeLanguageRows(
     date: LocalDate,
     unitFilter: AccessControlFilter<DaycareId>,
-): List<ChildAgeLanguageReportRow> =
-    createQuery {
-            sql(
-                """
+): List<ChildAgeLanguageReportRow> = createQuery {
+    sql(
+        """
         WITH children AS (
             SELECT id, extract(year from age(${bind(date)}, date_of_birth)) age, language
             FROM person
@@ -103,11 +102,11 @@ private fun Database.Read.getChildAgeLanguageRows(
         GROUP BY ca.name, u.id, u.name, u.type, u.provider_type
         ORDER BY ca.name, u.name;
             """
-                    .trimIndent()
-            )
-        }
-        .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
-        .toList<ChildAgeLanguageReportRow>()
+            .trimIndent()
+    )
+}
+    .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
+    .toList<ChildAgeLanguageReportRow>()
 
 data class ChildAgeLanguageReportRow(
     val careAreaName: String,

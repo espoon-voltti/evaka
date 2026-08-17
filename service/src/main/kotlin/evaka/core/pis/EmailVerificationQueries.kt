@@ -15,18 +15,17 @@ import evaka.core.shared.domain.HelsinkiDateTime
  *
  * This function returns only a verification if one matches the current non-verified e-mail address.
  */
-fun Database.Read.getLatestEmailVerification(person: PersonId): EmailVerification? =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getLatestEmailVerification(person: PersonId): EmailVerification? = createQuery {
+    sql(
+        """
 SELECT pev.id, pev.email, pev.expires_at, pev.sent_at
 FROM person p
 JOIN person_email_verification pev ON p.id = pev.person_id AND p.email = pev.email
 WHERE p.id = ${bind(person)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+    )
+}
+    .exactlyOneOrNull()
 
 /**
  * Upserts a new email verification
@@ -39,10 +38,9 @@ fun Database.Transaction.upsertEmailVerification(
     person: PersonId,
     email: String,
     verification: NewEmailVerification,
-): EmailVerification =
-    createUpdate {
-            sql(
-                """
+): EmailVerification = createUpdate {
+    sql(
+        """
 INSERT INTO person_email_verification AS pev (person_id, email, verification_code, expires_at)
 VALUES (${bind(person)}, ${bind(email)}, ${bind(verification.verificationCode)}, ${bind(verification.expiresAt)})
 ON CONFLICT (person_id) DO UPDATE SET
@@ -52,10 +50,10 @@ ON CONFLICT (person_id) DO UPDATE SET
     sent_at = CASE WHEN pev.expires_at < ${bind(now)} OR pev.email != excluded.email THEN NULL ELSE pev.sent_at END
 RETURNING id, email, expires_at, sent_at
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<EmailVerification>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<EmailVerification>()
 
 /**
  * Verifies a person's e-mail address using a verification code.
@@ -72,8 +70,8 @@ fun Database.Transaction.verifyAndUpdateEmail(
 ) {
     val email =
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
 DELETE FROM person_email_verification
 WHERE id = ${bind(id)}
 AND person_id = ${bind(personId)}
@@ -81,8 +79,8 @@ AND expires_at > ${bind(now)}
 AND verification_code = ${bind(verificationCode)}
 RETURNING email
 """
-                )
-            }
+            )
+        }
             .executeAndReturnGeneratedKeys()
             .exactlyOneOrNull<String>() ?: throw BadRequest("Failed to verify e-mail")
     execute {
@@ -124,5 +122,7 @@ fun Database.Transaction.markEmailVerificationSent(
 }
 
 fun Database.Transaction.deleteExpiredEmailVerifications(now: HelsinkiDateTime): Int =
-    createUpdate { sql("DELETE FROM person_email_verification WHERE expires_at <= ${bind(now)}") }
-        .execute()
+    createUpdate {
+        sql("DELETE FROM person_email_verification WHERE expires_at <= ${bind(now)}")
+    }
+    .execute()

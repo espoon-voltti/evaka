@@ -458,27 +458,27 @@ private data class HeadOfChildRelation(
 
 private fun Database.Read.getHeadOfChildRelations(childId: ChildId): List<HeadOfChildRelation> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
             SELECT head_of_child, daterange(start_date, end_date, '[]') as finite_range
             FROM fridge_child
             WHERE child_id = ${bind(childId)} AND NOT conflict
         """
-            )
-        }
+        )
+    }
         .toList<HeadOfChildRelation>()
 }
 
 private fun Database.Read.getChild(childId: ChildId): ChildWithDateOfBirth {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
             SELECT id, date_of_birth
             FROM person
             WHERE id = ${bind(childId)}
         """
-            )
-        }
+        )
+    }
         .exactlyOne<ChildWithDateOfBirth>()
 }
 

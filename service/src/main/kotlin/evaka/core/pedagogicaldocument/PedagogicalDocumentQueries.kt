@@ -16,8 +16,8 @@ fun Database.Read.getPedagogicalDocumentAttachments(
     pedagogicalDocumentId: PedagogicalDocumentId
 ): List<Attachment> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT 
                     a.id,
                     a.name,
@@ -26,8 +26,8 @@ fun Database.Read.getPedagogicalDocumentAttachments(
                 JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
                 WHERE pd.id = ${bind(pedagogicalDocumentId)}
                 """
-            )
-        }
+        )
+    }
         .toList<Attachment>()
 }
 
@@ -45,8 +45,8 @@ fun Database.Read.getChildPedagogicalDocuments(
     userId: PersonId,
 ): List<PedagogicalDocumentCitizen> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT 
     pd.id,
     pd.child_id,
@@ -69,8 +69,8 @@ LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id A
 WHERE pd.child_id = ${bind(childId)}
 ORDER BY pd.created_at DESC
 """
-            )
-        }
+        )
+    }
         .toList<PedagogicalDocumentCitizen>()
         .map { if (it.attachments.isEmpty()) it.copy(isRead = true) else it }
 }
@@ -79,9 +79,7 @@ fun Database.Read.getPedagogicalDocumentChild(
     pedagogicalDocumentId: PedagogicalDocumentId
 ): ChildId? {
     return createQuery {
-            sql(
-                "SELECT child_id FROM pedagogical_document WHERE id = ${bind(pedagogicalDocumentId)}"
-            )
-        }
+        sql("SELECT child_id FROM pedagogical_document WHERE id = ${bind(pedagogicalDocumentId)}")
+    }
         .exactlyOneOrNull<ChildId>()
 }

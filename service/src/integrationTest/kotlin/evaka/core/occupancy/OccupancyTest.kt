@@ -1042,7 +1042,8 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                             endDate = today.plusDays(preschool.last.toLong()),
                             preschoolDaycareStartDate =
                                 today.plusDays(preschoolDaycare.first.toLong()),
-                            preschoolDaycareEndDate = today.plusDays(preschoolDaycare.last.toLong()),
+                            preschoolDaycareEndDate =
+                                today.plusDays(preschoolDaycare.last.toLong()),
                         )
                     )
                 }

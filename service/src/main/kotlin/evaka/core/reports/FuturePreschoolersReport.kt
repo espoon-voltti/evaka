@@ -88,8 +88,8 @@ fun Database.Read.getFuturePreschoolerRows(today: LocalDate): List<FuturePrescho
     val preschoolStartYear = if (today.monthValue >= 6) today.year + 1 else today.year
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT p.id,
     p.last_name AS child_last_name,
     p.first_name AS child_first_name,
@@ -115,15 +115,15 @@ ELSE
     extract(year from p.date_of_birth) = ${bind(preschoolStartYear - 6)}
 END
             """
-            )
-        }
+        )
+    }
         .toList<FuturePreschoolersReportRow>()
 }
 
 fun Database.Read.getPreschoolUnitsRows(today: LocalDate): List<PreschoolUnitsReportRow> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT d.id, 
     d.name AS unit_name,
     d.street_address AS address,
@@ -147,14 +147,13 @@ FROM daycare d
 WHERE d.type && '{PRESCHOOL}'::care_types[] AND
 d.opening_date <= ${bind(today)} AND (d.closing_date IS NULL OR d.closing_date >= ${bind(today)})
             """
-            )
-        }
-        .toList<PreschoolUnitsReportRow>()
+        )
+    }
+    .toList<PreschoolUnitsReportRow>()
 
-fun Database.Read.getSourceUnitsRows(today: LocalDate): List<SourceUnitsReportRow> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getSourceUnitsRows(today: LocalDate): List<SourceUnitsReportRow> = createQuery {
+    sql(
+        """
 SELECT d.id,
     d.name AS unit_name,
     d.street_address AS address,
@@ -163,9 +162,9 @@ SELECT d.id,
 FROM daycare d
 WHERE d.opening_date <= ${bind(today)} AND (d.closing_date IS NULL OR d.closing_date >= ${bind(today)})
             """
-            )
-        }
-        .toList<SourceUnitsReportRow>()
+    )
+}
+    .toList<SourceUnitsReportRow>()
 
 data class FuturePreschoolersReportRow(
     val id: ChildId,

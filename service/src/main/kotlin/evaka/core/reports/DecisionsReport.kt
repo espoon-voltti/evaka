@@ -66,10 +66,9 @@ private fun Database.Read.getDecisionsRows(
         Predicate.allNotNull(
             applicationType?.let { Predicate { table -> where("$table.type = ${bind(it)}") } }
         )
-    val queryResult =
-        createQuery {
-                sql(
-                    """
+    val queryResult = createQuery {
+        sql(
+            """
 SELECT 
     ca.name AS care_area_name,
     u.id AS unit_id,
@@ -91,9 +90,9 @@ JOIN person ch ON ch.id = a.child_id
 WHERE de.sent_date IS NOT NULL AND de.sent_date BETWEEN ${bind(range.start)} AND ${bind(range.end)}
   AND ${predicate(applicationPredicates.forTable("a"))}
 """
-                )
-            }
-            .toList<DecisionsReportQueryRow>()
+        )
+    }
+        .toList<DecisionsReportQueryRow>()
 
     return queryResult
         .groupBy { it.unitId }

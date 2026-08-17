@@ -30,8 +30,10 @@ class PredicateTest {
     @Test
     fun `a predicate with parameter binding generates correct SQL`() {
         val value = "value"
-        val predicate =
-            Predicate { where("$it.some_column = ${bind(value)}") }.forTable("some_table")
+        val predicate = Predicate {
+            where("$it.some_column = ${bind(value)}")
+        }
+            .forTable("some_table")
         assertEquals("(some_table.some_column = ?)", predicate.sql.toString())
         assertEquals(listOf(ValueBinding.of(value)), predicate.bindings)
     }

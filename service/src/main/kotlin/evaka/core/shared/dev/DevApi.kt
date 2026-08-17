@@ -1832,28 +1832,27 @@ private fun Database.Connection.waitUntilNoQueriesRunning(timeout: Duration) {
     error("Timed out while waiting for database activity to finish: $connections")
 }
 
-private fun Database.Read.getActiveConnections(): List<ActiveConnection> =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getActiveConnections(): List<ActiveConnection> = createQuery {
+    sql(
+        """
 SELECT state, xact_start, query_start, left(query, 100) AS query FROM pg_stat_activity
 WHERE pid <> pg_backend_pid() AND datname = current_database() AND usename = current_user AND backend_type = 'client backend'
 AND state != 'idle'
     """
-            )
-        }
-        .toList<ActiveConnection>()
+    )
+}
+    .toList<ActiveConnection>()
 
 fun Database.Transaction.ensureFakeAdminExists() {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO employee (id, first_name, last_name, email, external_id, roles, active)
 VALUES (${bind(fakeAdmin.id)}, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad:' || ${bind(fakeAdmin.id)}, '{ADMIN, SERVICE_WORKER}'::user_role[], TRUE)
 ON CONFLICT DO NOTHING
 """
-            )
-        }
+        )
+    }
         .execute()
     upsertEmployeeUser(fakeAdmin.id)
 }
@@ -1918,15 +1917,14 @@ INSERT INTO service_need_option_voucher_value (service_need_option_id, validity,
     }
 }
 
-fun Database.Transaction.updateFeeDecisionSentAt(feeDecision: FeeDecision) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.updateFeeDecisionSentAt(feeDecision: FeeDecision) = createUpdate {
+    sql(
+        """
 UPDATE fee_decision SET sent_at = ${bind(feeDecision.sentAt)} WHERE id = ${bind(feeDecision.id)}    
 """
-            )
-        }
-        .execute()
+    )
+}
+    .execute()
 
 data class DevCareArea(
     val id: AreaId = AreaId(UUID.randomUUID()),

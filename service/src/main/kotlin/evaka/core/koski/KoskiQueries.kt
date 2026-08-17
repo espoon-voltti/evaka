@@ -27,8 +27,8 @@ fun Database.Read.getPendingStudyRights(
         where("$it.data_version IS DISTINCT FROM $KOSKI_DATA_VERSION")
     }
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT kasr.child_id, kasr.unit_id, 'PRESCHOOL'::koski_study_right_type AS type
 FROM koski_active_preschool_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
 LEFT JOIN koski_study_right ksr
@@ -55,8 +55,8 @@ SELECT kvsr.child_id, kvsr.unit_id, kvsr.type
 FROM koski_voided_study_right(${bind(today)}) kvsr
 WHERE kvsr.void_date IS NULL
 """
-            )
-        }
+        )
+    }
         .toList<KoskiStudyRightKey>()
 }
 
@@ -91,8 +91,8 @@ FROM koski_active_preparatory_study_right(${bind(today)}, ${bind(syncRangeStart)
         }
     }
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO koski_study_right (child_id, unit_id, type, void_date, preschool_input_data, preparatory_input_data, data_version, payload, version)
 SELECT
     child_id, unit_id, type,
@@ -114,8 +114,8 @@ DO UPDATE SET
     study_right_oid = CASE WHEN koski_study_right.void_date IS NULL THEN koski_study_right.study_right_oid END
 RETURNING id, void_date IS NOT NULL AS voided
 """
-            )
-        }
+        )
+    }
         .exactlyOne { columnPair<KoskiStudyRightId, Boolean>("id", "voided") }
 }
 
@@ -152,8 +152,8 @@ fun Database.Transaction.beginKoskiUpload(
         when (key.type) {
             OpiskeluoikeudenTyyppiKoodi.PRESCHOOL -> {
                 createQuery {
-                        sql(
-                            """
+                    sql(
+                        """
             SELECT
                 kasr.child_id, kasr.unit_id, (kasr.input_data).*,
                 ksr.id AS study_right_id, ksr.study_right_oid,
@@ -166,15 +166,15 @@ fun Database.Transaction.beginKoskiUpload(
             JOIN koski_child pr ON ksr.child_id = pr.id
             WHERE ksr.id = ${bind(id)}
                     """
-                        )
-                    }
+                    )
+                }
                     .exactlyOneOrNull<KoskiActivePreschoolDataRaw>()
             }
 
             OpiskeluoikeudenTyyppiKoodi.PREPARATORY -> {
                 createQuery {
-                        sql(
-                            """
+                    sql(
+                        """
             SELECT
                 kasr.child_id, kasr.unit_id, (kasr.input_data).*,
                 ksr.id AS study_right_id, ksr.study_right_oid,
@@ -187,8 +187,8 @@ fun Database.Transaction.beginKoskiUpload(
             JOIN koski_child pr ON ksr.child_id = pr.id
             WHERE ksr.id = ${bind(id)}
                     """
-                        )
-                    }
+                    )
+                }
                     .exactlyOneOrNull<KoskiActivePreparatoryDataRaw>()
             }
         }?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
@@ -205,8 +205,8 @@ data class KoskiUploadResponse(
 
 fun Database.Read.isPayloadChanged(key: KoskiStudyRightKey, payload: String): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT ksr.payload != ${bind(payload)}::jsonb
 FROM (
     SELECT ${bind(key.childId)} AS child_id, ${bind(key.unitId)} AS unit_id, ${bind(key.type)} AS type
@@ -214,19 +214,18 @@ FROM (
 LEFT JOIN koski_study_right ksr
 USING (child_id, unit_id, type)
 """
-            )
-        }
-        .exactlyOne<Boolean>()
+        )
+    }
+    .exactlyOne<Boolean>()
 
-fun Database.Transaction.finishKoskiUpload(response: KoskiUploadResponse) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.finishKoskiUpload(response: KoskiUploadResponse) = createUpdate {
+    sql(
+        """
 UPDATE koski_study_right
 SET study_right_oid = ${bind(response.studyRightOid)}, person_oid = ${bind(response.personOid)},
     version = ${bind(response.version)}, payload = ${bind(response.payload)}::jsonb
 WHERE id = ${bind(response.id)}
 """
-            )
-        }
-        .execute()
+    )
+}
+    .execute()

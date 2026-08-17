@@ -14,10 +14,9 @@ fun Database.Read.getChildrenByParent(
     id: PersonId,
     today: LocalDate,
     calendarOpenBeforePlacementDays: Int,
-): List<Child> =
-    createQuery {
-            sql(
-                """
+): List<Child> = createQuery {
+    sql(
+        """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = :id
     UNION
@@ -58,47 +57,46 @@ LEFT JOIN LATERAL (
 LEFT JOIN daycare upcoming_unit ON upcoming_pl.unit_id = upcoming_unit.id
 ORDER BY p.date_of_birth, p.last_name, p.first_name, p.duplicate_of
 """
-            )
-        }
-        .bind("id", id)
-        .bind("today", today)
-        .bind("calendarOpenBeforePlacementDays", calendarOpenBeforePlacementDays)
-        .toList()
+    )
+}
+    .bind("id", id)
+    .bind("today", today)
+    .bind("calendarOpenBeforePlacementDays", calendarOpenBeforePlacementDays)
+    .toList()
 
 fun Database.Read.getCitizenChildIds(today: LocalDate, userId: PersonId): List<ChildId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
 UNION ALL
 SELECT child_id FROM foster_parent WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(today)}
 """
-            )
-        }
-        .toList()
+        )
+    }
+    .toList()
 
 fun Database.Read.getChildIdsByGuardians(guardianIds: Set<PersonId>): Map<PersonId, Set<ChildId>> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT guardian_id, child_id
 FROM guardian
 WHERE guardian_id = ANY (${bind(guardianIds)})
 """
-            )
-        }
-        .map { columnPair<PersonId, ChildId>("guardian_id", "child_id") }
-        .useSequence { rows ->
-            rows.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }
-        }
+        )
+    }
+    .map { columnPair<PersonId, ChildId>("guardian_id", "child_id") }
+    .useSequence { rows ->
+        rows.groupBy({ it.first }, { it.second }).mapValues { it.value.toSet() }
+    }
 
 fun Database.Read.getChildIdsByHeadsOfFamily(
     headOfFamilyIds: Set<PersonId>,
     range: FiniteDateRange,
-): Map<PersonId, Map<ChildId, FiniteDateRange>> =
-    createQuery {
-            sql(
-                """
+): Map<PersonId, Map<ChildId, FiniteDateRange>> = createQuery {
+    sql(
+        """
 SELECT head_of_child, child_id, daterange(start_date, end_date, '[]') * ${bind(range)} AS valid_during
 FROM fridge_child
 WHERE
@@ -106,17 +104,17 @@ WHERE
     head_of_child = ANY (${bind(headOfFamilyIds)}) AND
     daterange(start_date, end_date, '[]') && ${bind(range)}
 """
-            )
+    )
+}
+    .map {
+        Triple(
+            column<PersonId>("head_of_child"),
+            column<PersonId>("child_id"),
+            column<FiniteDateRange>("valid_during"),
+        )
+    }
+    .useSequence { rows ->
+        rows.groupBy({ it.first }, { it.second to it.third }).mapValues { (_, value) ->
+            value.associateBy({ it.first }, { it.second })
         }
-        .map {
-            Triple(
-                column<PersonId>("head_of_child"),
-                column<PersonId>("child_id"),
-                column<FiniteDateRange>("valid_during"),
-            )
-        }
-        .useSequence { rows ->
-            rows.groupBy({ it.first }, { it.second to it.third }).mapValues { (_, value) ->
-                value.associateBy({ it.first }, { it.second })
-            }
-        }
+    }

@@ -384,7 +384,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
 
         assertEquals(
             documentId,
-            controller.getDocument(dbInstance(), veoInPlacementUnit.user, clock, documentId).data.id,
+            controller
+                .getDocument(dbInstance(), veoInPlacementUnit.user, clock, documentId)
+                .data
+                .id,
         )
         assertEquals(1, getDocuments(child.id, user = veoInPlacementUnit.user).size)
         // remove child placement so child is not in VEO's unit so no document should be visible
@@ -876,7 +879,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                         AnsweredQuestion.CheckboxAnswer("q2", true),
                         AnsweredQuestion.CheckboxGroupAnswer(
                             "q3",
-                            listOf(CheckboxGroupAnswerContent("a"), CheckboxGroupAnswerContent("c")),
+                            listOf(
+                                CheckboxGroupAnswerContent("a"),
+                                CheckboxGroupAnswerContent("c"),
+                            ),
                         ),
                         AnsweredQuestion.RadioButtonGroupAnswer("q4", "b"),
                         AnsweredQuestion.StaticTextDisplayAnswer("q5", null),
@@ -941,7 +947,10 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     listOf(
                         AnsweredQuestion.CheckboxGroupAnswer(
                             "q3",
-                            listOf(CheckboxGroupAnswerContent("a"), CheckboxGroupAnswerContent("d")),
+                            listOf(
+                                CheckboxGroupAnswerContent("a"),
+                                CheckboxGroupAnswerContent("d"),
+                            ),
                         )
                     )
             )

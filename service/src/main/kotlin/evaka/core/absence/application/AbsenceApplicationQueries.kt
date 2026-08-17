@@ -19,10 +19,9 @@ fun Database.Transaction.insertAbsenceApplication(
     application: AbsenceApplicationCreateRequest,
     createdAt: HelsinkiDateTime,
     createdBy: EvakaUserId,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 INSERT INTO absence_application (created_by, modified_at, modified_by, child_id, start_date, end_date, description, status)
 VALUES (
     ${bind(createdBy)},
@@ -40,10 +39,10 @@ RETURNING id,
     child_id, start_date, end_date, description, status,
     decided_at, decided_by, rejected_reason
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<AbsenceApplication>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<AbsenceApplication>()
 
 fun Database.Read.selectAbsenceApplications(
     unitId: DaycareId? = null,
@@ -74,8 +73,8 @@ WHERE placement.unit_id = ${bind(it)}
 
 fun Database.Read.selectAbsenceApplication(id: AbsenceApplicationId, forUpdate: Boolean = false) =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id,
     created_at, created_by,
     updated_at, modified_at, modified_by,
@@ -85,9 +84,9 @@ FROM absence_application
 WHERE id = ${bind(id)}
 ${if (forUpdate) "FOR UPDATE" else ""}
 """
-            )
-        }
-        .exactlyOneOrNull<AbsenceApplication>()
+        )
+    }
+    .exactlyOneOrNull<AbsenceApplication>()
 
 fun Database.Transaction.decideAbsenceApplication(
     id: AbsenceApplicationId,
@@ -95,10 +94,9 @@ fun Database.Transaction.decideAbsenceApplication(
     decidedAt: HelsinkiDateTime,
     decidedBy: EvakaUserId,
     rejectedReason: String?,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE absence_application SET
     modified_at = ${bind(decidedAt)},
     modified_by = ${bind(decidedBy)},
@@ -109,47 +107,46 @@ UPDATE absence_application SET
 WHERE id = ${bind(id)}
   AND status = 'WAITING_DECISION'
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
-fun Database.Transaction.deleteAbsenceApplication(id: AbsenceApplicationId) =
-    createUpdate { sql("DELETE FROM absence_application WHERE id = ${bind(id)}") }
-        .updateExactlyOne()
+fun Database.Transaction.deleteAbsenceApplication(id: AbsenceApplicationId) = createUpdate {
+    sql("DELETE FROM absence_application WHERE id = ${bind(id)}")
+}
+    .updateExactlyOne()
 
 fun Database.Read.getChildrenWithAbsenceApplicationPossibleOnSomeDate(
     childIds: Set<ChildId>,
     today: LocalDate,
-): Set<ChildId> =
-    createQuery {
-            sql(
-                """
+): Set<ChildId> = createQuery {
+    sql(
+        """
 SELECT DISTINCT child_id
 FROM placement
 WHERE type = ANY (${bind(PlacementType.preschool)})
   AND child_id = ANY (${bind(childIds)})
   AND daterange(start_date, end_date, '[]') && daterange(${bind(today)}, null, '[]')
         """
-            )
-        }
-        .toSet()
+    )
+}
+    .toSet()
 
 fun Database.Read.getAbsenceApplicationDateRanges(
     childId: ChildId,
     today: LocalDate,
-): Set<FiniteDateRange> =
-    createQuery {
-            sql(
-                """
+): Set<FiniteDateRange> = createQuery {
+    sql(
+        """
 SELECT daterange(start_date, end_date, '[]') AS range
 FROM placement
 WHERE type = ANY (${bind(PlacementType.preschool)})
     AND child_id = ${bind(childId)}
     AND daterange(start_date, end_date, '[]') && daterange(${bind(today)}, null, '[]')
           """
-            )
-        }
-        .toSet()
+    )
+}
+    .toSet()
 
 private fun Database.Read.absenceApplicationSummaryQuery(predicate: Predicate) = createQuery {
     sql(

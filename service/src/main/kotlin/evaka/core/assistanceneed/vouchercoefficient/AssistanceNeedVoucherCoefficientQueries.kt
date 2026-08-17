@@ -29,49 +29,47 @@ fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
     now: HelsinkiDateTime,
     childId: ChildId,
     data: AssistanceNeedVoucherCoefficientRequest,
-): AssistanceNeedVoucherCoefficient =
-    createQuery {
-            sql(
-                """
+): AssistanceNeedVoucherCoefficient = createQuery {
+    sql(
+        """
 WITH a AS (
     INSERT INTO assistance_need_voucher_coefficient (child_id, coefficient, validity_period, modified_at, modified_by)
     VALUES (${bind(childId)}, ${bind(data.coefficient)}, ${bind(data.validityPeriod)}, ${bind(now)}, ${bind(user.evakaUserId)})
     RETURNING id, child_id, coefficient, validity_period, modified_at, modified_by
 ) SELECT $anvcSelectFields FROM a LEFT JOIN evaka_user e ON a.modified_by = e.id
 """
-            )
-        }
-        .exactlyOne()
+    )
+}
+    .exactlyOne()
 
 fun Database.Read.getAssistanceNeedVoucherCoefficientById(
     id: AssistanceNeedVoucherCoefficientId
 ): AssistanceNeedVoucherCoefficient =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT $anvcSelectFields
 FROM assistance_need_voucher_coefficient a
 LEFT JOIN evaka_user e ON a.modified_by = e.id
 WHERE a.id = ${bind(id)}
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
 
 fun Database.Read.getAssistanceNeedVoucherCoefficientsForChild(
     childId: ChildId
-): List<AssistanceNeedVoucherCoefficient> =
-    createQuery {
-            sql(
-                """
+): List<AssistanceNeedVoucherCoefficient> = createQuery {
+    sql(
+        """
 SELECT $anvcSelectFields
 FROM assistance_need_voucher_coefficient a
 LEFT JOIN evaka_user e ON a.modified_by = e.id
 WHERE a.child_id = ${bind(childId)}
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
     user: AuthenticatedUser,
@@ -80,8 +78,8 @@ fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
     data: AssistanceNeedVoucherCoefficientRequest,
 ): AssistanceNeedVoucherCoefficient =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH a AS (
     UPDATE assistance_need_voucher_coefficient
     SET coefficient = ${bind(data.coefficient)},
@@ -92,42 +90,40 @@ WITH a AS (
     RETURNING id, child_id, coefficient, validity_period, modified_at, modified_by
 ) SELECT $anvcSelectFields FROM a LEFT JOIN evaka_user e ON a.modified_by = e.id
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
 
 fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(
     id: AssistanceNeedVoucherCoefficientId
-): AssistanceNeedVoucherCoefficient? =
-    createQuery {
-            sql(
-                """
+): AssistanceNeedVoucherCoefficient? = createQuery {
+    sql(
+        """
 WITH a AS (
     DELETE FROM assistance_need_voucher_coefficient
     WHERE id = ${bind(id)}
     RETURNING id, child_id, coefficient, validity_period, modified_at, modified_by
 ) SELECT $anvcSelectFields FROM a LEFT JOIN evaka_user e ON a.modified_by = e.id
 """
-            )
-        }
-        .exactlyOneOrNull()
+    )
+}
+    .exactlyOneOrNull()
 
 fun Database.Read.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
     childId: ChildId,
     range: FiniteDateRange,
-): List<AssistanceNeedVoucherCoefficient> =
-    createQuery {
-            sql(
-                """
+): List<AssistanceNeedVoucherCoefficient> = createQuery {
+    sql(
+        """
 SELECT $anvcSelectFields
 FROM assistance_need_voucher_coefficient a
 LEFT JOIN evaka_user e ON a.modified_by = e.id
 WHERE a.child_id = ${bind(childId)}
   AND ${bind(range)} && a.validity_period
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 /**
  * End a voucher coefficient if 1) placement has ended yesterday, or 2) there is a new placement,

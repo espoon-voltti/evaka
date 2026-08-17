@@ -484,8 +484,8 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
         statDay: LocalDate
     ): List<MunicipalVoucherCount> {
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
                 SELECT 
                     count(pl.id) FILTER ( WHERE date_part('year', age(${bind(statDay)}, p.date_of_birth)) < 3)  as under_3_voucher_count,
                     count(pl.id) FILTER ( WHERE date_part('year', age(${bind(statDay)}, p.date_of_birth)) >= 3) as over_3_voucher_count,
@@ -499,8 +499,8 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
                 AND d.provider_type = 'PRIVATE_SERVICE_VOUCHER'
                 GROUP BY upper(d.post_office) 
                 """
-                )
-            }
+            )
+        }
             .toList<MunicipalVoucherCount>()
     }
 
@@ -622,8 +622,8 @@ class TampereRegionalSurvey(private val accessControl: AccessControl) {
         statDays: List<LocalDate>,
     ): List<MonthlyMunicipalDaycareResult> {
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH child_rows AS (SELECT pl.child_id,
                            p.date_of_birth,
                            CASE
@@ -668,8 +668,8 @@ FROM unnest(${bind(statDays)}::date[]) day
          LEFT JOIN child_rows row on validity @> day
 GROUP BY month 
                 """
-                )
-            }
+            )
+        }
             .toList<MonthlyMunicipalDaycareResult>()
     }
 
@@ -678,8 +678,8 @@ GROUP BY month
         statDays: List<LocalDate>,
     ): List<MonthlyMunicipalShiftCareResult> {
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH child_rows AS (SELECT pl.child_id,
                            daterange(sn.start_date, sn.end_date, '[]') * ${bind(range)} AS validity
                     FROM placement pl
@@ -697,8 +697,8 @@ FROM unnest(${bind(statDays)}::date[]) day
          LEFT JOIN child_rows row on validity @> day
 GROUP BY month
                 """
-                )
-            }
+            )
+        }
             .toList<MonthlyMunicipalShiftCareResult>()
     }
 
@@ -706,8 +706,8 @@ GROUP BY month
         reportingDays: List<LocalDate>
     ): List<MonthlyAssistanceResult> {
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT extract(MONTH FROM day)     as month,
        count(distinct pl.child_id) as assistance_count
 FROM unnest(${bind(reportingDays)}::date[]) day
@@ -726,8 +726,8 @@ WHERE pl.type = ANY ('{DAYCARE}')
                  AND an.child_id = pl.child_id))
 GROUP BY day
                 """
-                )
-            }
+            )
+        }
             .toList<MonthlyAssistanceResult>()
     }
 
@@ -736,8 +736,8 @@ GROUP BY day
         daycarePred: Predicate,
     ): SingularCount {
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT count(pl.child_id) as placement_count
 FROM placement pl
          JOIN daycare d ON pl.unit_id = d.id
@@ -752,8 +752,8 @@ WHERE ${predicate(daycarePred.forTable("d"))}
                WHERE aao.value = ANY ('{10,40}')
                  AND an.child_id = pl.child_id))
                 """
-                )
-            }
+            )
+        }
             .exactlyOne<SingularCount>()
     }
 
@@ -762,8 +762,8 @@ WHERE ${predicate(daycarePred.forTable("d"))}
         range: FiniteDateRange,
     ): List<MonthlyFamilyDaycareResult> {
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH child_rows AS (SELECT pl.child_id,
                            p.date_of_birth,
                            daterange(pl.start_date, pl.end_date, '[]') * ${bind(range)} AS validity
@@ -783,8 +783,8 @@ FROM unnest(${bind(statDays)}::date[]) day
          LEFT JOIN child_rows row on validity @> day
 GROUP BY month
                 """
-                )
-            }
+            )
+        }
             .toList<MonthlyFamilyDaycareResult>()
     }
 
@@ -795,8 +795,8 @@ GROUP BY month
         statDay: LocalDate,
     ): AgeDivisionCount {
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH child_rows AS (SELECT pl.child_id,
                            date_part('year', age(${bind(statDay)}, p.date_of_birth)) as age
                     FROM placement pl
@@ -812,8 +812,8 @@ SELECT count(row.child_id)
        FILTER ( WHERE row.age >= 3) AS over_3_count
 FROM child_rows row
                 """
-                )
-            }
+            )
+        }
             .exactlyOne<AgeDivisionCount>()
     }
 
@@ -823,8 +823,8 @@ FROM child_rows row
     ): AgeDivisionCount {
         val holidays = getHolidays(range)
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH unit_operational_days AS (SELECT d.id AS unit_id, date
                                FROM generate_series(${bind(range.start)}, ${bind(range.end)}, interval '1 day') date
                                         JOIN daycare d ON extract(isodow from date) = ANY
@@ -884,8 +884,8 @@ WHERE NOT EXISTS (SELECT 1
     (ep.has_shift_care AND d.shift_care_open_on_holidays) OR ep.date != ALL (${bind(holidays)})
     )
     """
-                )
-            }
+            )
+        }
             .exactlyOne<AgeDivisionCount>()
     }
 
@@ -896,8 +896,8 @@ WHERE NOT EXISTS (SELECT 1
         statDay: LocalDate,
     ): SingularCount {
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT count(p.id) AS placement_count
 FROM placement pl
          JOIN person p ON p.id = pl.child_id
@@ -907,8 +907,8 @@ WHERE ${predicate(placementPred.forTable("pl"))}
   AND ${predicate(personPred.forTable("p"))}
   AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
                 """
-                )
-            }
+            )
+        }
             .exactlyOne<SingularCount>()
     }
 
@@ -921,8 +921,8 @@ WHERE ${predicate(placementPred.forTable("pl"))}
         statDay: LocalDate,
     ): SingularCount {
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT count(p.id) AS placement_count
 FROM placement pl
          JOIN person p ON p.id = pl.child_id
@@ -936,8 +936,8 @@ WHERE ${predicate(placementPred.forTable("pl"))}
   AND ${predicate(serviceNeedPred.forTable("sn"))}
   AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
                 """
-                )
-            }
+            )
+        }
             .exactlyOne<SingularCount>()
     }
 
@@ -946,8 +946,8 @@ WHERE ${predicate(placementPred.forTable("pl"))}
         daycarePred: Predicate,
     ): DaycareAssistanceLevelCounts {
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT count(CASE WHEN da.level = ${bind(DaycareAssistanceLevel.GENERAL_SUPPORT_WITH_DECISION)} THEN 1 END )  AS general_support_with_decision_count,
        count(CASE WHEN da.level = ${bind(DaycareAssistanceLevel.SPECIAL_SUPPORT)} THEN 1 END ) AS special_support_count,
        count(CASE WHEN da.level = ${bind(DaycareAssistanceLevel.INTENSIFIED_SUPPORT)} THEN 1 END ) AS intensified_support_count
@@ -960,8 +960,8 @@ WHERE ${predicate(daycarePred.forTable("d"))}
   AND pl.type = ANY ('{DAYCARE}')
   AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(statDay)}
                 """
-                )
-            }
+            )
+        }
             .exactlyOne<DaycareAssistanceLevelCounts>()
     }
 }

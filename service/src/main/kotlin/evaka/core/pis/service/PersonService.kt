@@ -851,19 +851,19 @@ private fun getMunicipalityOfResidenceByLanguage(vtjPerson: VtjPersonDTO): Strin
 
 private fun Database.Transaction.updateVtjDependantsQueriedTimestamp(personId: PersonId) =
     createUpdate {
-            sql(
-                "UPDATE person SET vtj_dependants_queried = ${bind(HelsinkiDateTime.now())} WHERE id = ${bind(personId)}"
-            )
-        }
-        .execute()
+        sql(
+            "UPDATE person SET vtj_dependants_queried = ${bind(HelsinkiDateTime.now())} WHERE id = ${bind(personId)}"
+        )
+    }
+    .execute()
 
 private fun Database.Transaction.updateVtjGuardiansQueriedTimestamp(personId: ChildId) =
     createUpdate {
-            sql(
-                "UPDATE person SET vtj_guardians_queried = ${bind(HelsinkiDateTime.now())} WHERE id = ${bind(personId)}"
-            )
-        }
-        .execute()
+        sql(
+            "UPDATE person SET vtj_guardians_queried = ${bind(HelsinkiDateTime.now())} WHERE id = ${bind(personId)}"
+        )
+    }
+    .execute()
 
 fun createAddressPagePdf(
     pdfGenerator: PdfGenerator,

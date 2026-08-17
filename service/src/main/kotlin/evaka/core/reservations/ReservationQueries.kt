@@ -40,10 +40,10 @@ fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(
     childIds: Set<ChildId>,
 ) {
     createUpdate {
-            sql(
-                "DELETE FROM absence WHERE child_id = ANY(${bind(childIds)}) AND questionnaire_id = ${bind(questionnaireId)}"
-            )
-        }
+        sql(
+            "DELETE FROM absence WHERE child_id = ANY(${bind(childIds)}) AND questionnaire_id = ${bind(questionnaireId)}"
+        )
+    }
         .execute()
 }
 
@@ -64,23 +64,23 @@ RETURNING id
 
 fun Database.Transaction.deleteReservationsInRange(childId: ChildId, range: DateRange): Int {
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE FROM attendance_reservation
                 WHERE child_id = ${bind(childId)}
                 AND between_start_and_end(${bind(range)}, date)
                 """
-            )
-        }
+        )
+    }
         .execute()
 }
 
 fun Database.Transaction.deleteAllCitizenReservationsInRange(range: FiniteDateRange) {
     createUpdate {
-            sql(
-                "DELETE FROM attendance_reservation WHERE created_by IN (SELECT id FROM evaka_user WHERE type = 'CITIZEN') AND between_start_and_end(${bind(range)}, date)"
-            )
-        }
+        sql(
+            "DELETE FROM attendance_reservation WHERE created_by IN (SELECT id FROM evaka_user WHERE type = 'CITIZEN') AND between_start_and_end(${bind(range)}, date)"
+        )
+    }
         .execute()
 }
 
@@ -110,8 +110,8 @@ fun Database.Transaction.insertValidReservations(
 ): List<AttendanceReservationId> {
     return reservations.mapNotNull {
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_at, created_by)
 SELECT ${bind(it.childId)}, ${bind(it.date)}, ${bind(it.range?.start)}, ${bind(it.range?.end)}, ${bind(createdAt)}, ${bind(userId)}
 FROM realized_placement_all(${bind(it.date)}) rp
@@ -137,16 +137,15 @@ WHERE
 ON CONFLICT DO NOTHING
 RETURNING id
 """
-                )
-            }
+            )
+        }
             .exactlyOneOrNull<AttendanceReservationId>()
     }
 }
 
-fun Database.Read.getReservations(where: Predicate): List<ReservationRow> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getReservations(where: Predicate): List<ReservationRow> = createQuery {
+    sql(
+        """
 SELECT
   ar.date,
   ar.child_id,
@@ -161,22 +160,22 @@ FROM attendance_reservation ar
 JOIN evaka_user eu ON ar.created_by = eu.id
 WHERE ${predicate(where.forTable("ar"))}
 """
-            )
-        }
-        .toList {
-            ReservationRow(
-                column("date"),
-                column("child_id"),
-                Reservation.of(column("start_time"), column("end_time")),
-                column("staff_created"),
-                column("created_at"),
-                EvakaUser(
-                    column("created_by_id"),
-                    column("created_by_name"),
-                    column("created_by_type"),
-                ),
-            )
-        }
+    )
+}
+    .toList {
+        ReservationRow(
+            column("date"),
+            column("child_id"),
+            Reservation.of(column("start_time"), column("end_time")),
+            column("staff_created"),
+            column("created_at"),
+            EvakaUser(
+                column("created_by_id"),
+                column("created_by_name"),
+                column("created_by_type"),
+            ),
+        )
+    }
 
 fun Database.Read.getUnitReservations(
     unitId: DaycareId,
@@ -272,8 +271,8 @@ fun Database.Read.getReservationChildren(
     calendarOpenBeforePlacementDays: Int,
 ): List<ReservationChildRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = ${bind(guardianId)}
     UNION
@@ -296,8 +295,8 @@ AND EXISTS (
 )
 ORDER BY p.date_of_birth, p.duplicate_of
         """
-            )
-        }
+        )
+    }
         .toList<ReservationChildRow>()
 }
 
@@ -341,10 +340,9 @@ data class ReservationPlacementRow(
 fun Database.Read.getReservationPlacements(
     childIds: Set<ChildId>,
     range: DateRange,
-): Map<ChildId, List<ReservationPlacement>> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, List<ReservationPlacement>> = createQuery {
+    sql(
+        """
 SELECT
     pl.child_id,
     pl.id AS placement_id,
@@ -369,39 +367,39 @@ WHERE
     daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)} AND
     'RESERVATIONS' = ANY(u.enabled_pilot_features)
 """
-            )
-        }
-        .toList<ReservationPlacementRow>()
-        .groupBy { it.placementId }
-        .map { (_, rows) ->
-            ReservationPlacement(
-                childId = rows[0].childId,
-                range = rows[0].range,
-                type = rows[0].type,
-                unitLanguage = rows[0].unitLanguage,
-                unitName = rows[0].unitName,
-                operationTimes = rows[0].operationTimes,
-                shiftCareOperationTimes = rows[0].shiftCareOperationTimes,
-                shiftCareOpenOnHolidays = rows[0].shiftCareOpenOnHolidays,
-                dailyPreschoolTime = rows[0].dailyPreschoolTime,
-                dailyPreparatoryTime = rows[0].dailyPreparatoryTime,
-                serviceNeeds =
-                    rows
-                        .mapNotNull {
-                            if (it.serviceNeedRange == null || it.shiftCareType == null) null
-                            else
-                                ReservationServiceNeed(
-                                    range = it.serviceNeedRange,
-                                    shiftCareType = it.shiftCareType,
-                                    daycareHoursPerMonth = it.daycareHoursPerMonth,
-                                )
-                        }
-                        .sortedBy { it.range.start }
-                        .toList(),
-            )
-        }
-        .groupBy { it.childId }
-        .mapValues { (_, value) -> value.sortedBy { it.range.start } }
+    )
+}
+    .toList<ReservationPlacementRow>()
+    .groupBy { it.placementId }
+    .map { (_, rows) ->
+        ReservationPlacement(
+            childId = rows[0].childId,
+            range = rows[0].range,
+            type = rows[0].type,
+            unitLanguage = rows[0].unitLanguage,
+            unitName = rows[0].unitName,
+            operationTimes = rows[0].operationTimes,
+            shiftCareOperationTimes = rows[0].shiftCareOperationTimes,
+            shiftCareOpenOnHolidays = rows[0].shiftCareOpenOnHolidays,
+            dailyPreschoolTime = rows[0].dailyPreschoolTime,
+            dailyPreparatoryTime = rows[0].dailyPreparatoryTime,
+            serviceNeeds =
+                rows
+                    .mapNotNull {
+                        if (it.serviceNeedRange == null || it.shiftCareType == null) null
+                        else
+                            ReservationServiceNeed(
+                                range = it.serviceNeedRange,
+                                shiftCareType = it.shiftCareType,
+                                daycareHoursPerMonth = it.daycareHoursPerMonth,
+                            )
+                    }
+                    .sortedBy { it.range.start }
+                    .toList(),
+        )
+    }
+    .groupBy { it.childId }
+    .mapValues { (_, value) -> value.sortedBy { it.range.start } }
 
 data class ReservationBackupPlacement(
     val childId: ChildId,
@@ -416,8 +414,8 @@ fun Database.Read.getReservationBackupPlacements(
     range: FiniteDateRange,
 ): Map<ChildId, List<ReservationBackupPlacement>> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     bc.child_id,
     daterange(bc.start_date, bc.end_date, '[]') * ${bind(range)} AS range,
@@ -432,8 +430,8 @@ WHERE
     daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)} AND
     'RESERVATIONS' = ANY(u.enabled_pilot_features)
 """
-            )
-        }
+        )
+    }
         .toList<ReservationBackupPlacement>()
         .groupBy { it.childId }
 }
@@ -452,8 +450,8 @@ fun Database.Read.getPlannedAbsenceEnabledRanges(
         }
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH relevant_placements AS
          (SELECT pl.id,
                  pl.type,
@@ -507,8 +505,8 @@ FROM (SELECT ro.child_id,
                  ro.contract_days_per_month IS NOT NULL)) AS un
 GROUP BY un.child_id;
             """
-            )
-        }
+        )
+    }
         .toMap { columnPair("child_id", "enabled_ranges") }
 }
 
@@ -551,8 +549,8 @@ fun Database.Read.getChildReservationsOfUnitForDay(
             }
         else Predicate.alwaysTrue()
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT pcd.child_id,
        p.date_of_birth,
        p.first_name,
@@ -604,8 +602,8 @@ WHERE (pcd.unit_id = ${bind(unitId)} OR pcd.placement_unit_id = ${bind(unitId)})
   AND (pcd.group_id IS NOT NULL OR pcd.unit_id <> ${bind(unitId)})
   AND ${predicate(shiftCarePredicate.forTable("pcd"))}
 """
-            )
-        }
+        )
+    }
         .toList<DailyChildReservationInfoRow>()
 }
 
@@ -630,8 +628,8 @@ fun Database.Read.getReservationStatisticsForUnit(
             Predicate { where("$it.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])") }
         else Predicate.alwaysTrue()
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 select date,
        count(1) FILTER ( WHERE NOT a.child_in_unit ) AS absent,
        count(1) FILTER ( WHERE a.child_in_unit )     AS present,
@@ -707,8 +705,8 @@ from (SELECT d                                     AS date,
 WHERE a.affected_group_id IS NOT NULL
 GROUP BY a.date, a.affected_group_id
 """
-            )
-        }
+        )
+    }
         .toList<GroupReservationStatisticsRow>()
         .groupBy { it.date }
 }
@@ -717,31 +715,30 @@ data class ReservationEnabledPlacementRange(val created: LocalDate, val range: F
 
 fun Database.Read.getReservationEnabledPlacementRangesByChild(
     childIds: Set<PersonId>
-): Map<ChildId, List<ReservationEnabledPlacementRange>> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, List<ReservationEnabledPlacementRange>> = createQuery {
+    sql(
+        """
                 SELECT pl.child_id, pl.created_at, daterange(pl.start_date, pl.end_date, '[]') AS range
                 FROM placement pl
                 JOIN daycare d ON pl.unit_id = d.id
                 WHERE pl.child_id = ANY(${bind(childIds)}) AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
                 """
+    )
+}
+    .map {
+        column<ChildId>("child_id") to
+            ReservationEnabledPlacementRange(
+                column<HelsinkiDateTime>("created_at").toLocalDate(),
+                column("range"),
             )
-        }
-        .map {
-            column<ChildId>("child_id") to
-                ReservationEnabledPlacementRange(
-                    column<HelsinkiDateTime>("created_at").toLocalDate(),
-                    column("range"),
-                )
-        }
-        .useSequence { rows -> rows.groupBy({ it.first }, { it.second }) }
+    }
+    .useSequence { rows -> rows.groupBy({ it.first }, { it.second }) }
 
 fun Database.Transaction.deleteInvalidatedShiftCareReservationsAfterDate(date: LocalDate): Int {
     val futureHolidays = getHolidays(FiniteDateRange(date, date.plusMonths(6)))
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
                         DELETE
                         FROM attendance_reservation
                         WHERE id in (
@@ -759,7 +756,7 @@ fun Database.Transaction.deleteInvalidatedShiftCareReservationsAfterDate(date: L
                                 ))
                         )
                     """
-            )
-        }
+        )
+    }
         .execute()
 }

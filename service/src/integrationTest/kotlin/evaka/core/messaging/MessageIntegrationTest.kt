@@ -1805,7 +1805,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
                 assertEquals(
                     3,
-                    it.createQuery { sql("SELECT COUNT(id) FROM message_thread") }.exactlyOne<Int>(),
+                    it.createQuery { sql("SELECT COUNT(id) FROM message_thread") }
+                        .exactlyOne<Int>(),
                 )
                 assertEquals(
                     3,
@@ -2189,7 +2190,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     user = employee1,
                     sender = employee1Account,
                     recipients =
-                        listOf(MessageRecipient.Child(child1.id), MessageRecipient.Child(child3.id)),
+                        listOf(
+                            MessageRecipient.Child(child1.id),
+                            MessageRecipient.Child(child3.id),
+                        ),
                 )
             assertEquals(PostMessagePreflightResponse(numberOfRecipientAccounts = 3), response)
         }

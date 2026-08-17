@@ -47,7 +47,8 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
         cfg: ChildAclConfig,
         idChildQuery:
             QuerySql.Builder.(
-                user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime,
+                user: AuthenticatedUser.MobileDevice,
+                now: HelsinkiDateTime,
             ) -> QuerySql,
     ): DatabaseActionRule.Scoped<T, IsMobile> =
         DatabaseActionRule.Scoped.Simple(

@@ -58,10 +58,9 @@ private fun Database.Read.getApplicationsRows(
     from: LocalDate,
     to: LocalDate,
     unitFilter: AccessControlFilter<DaycareId>,
-): List<ApplicationsReportRow> =
-    createQuery {
-            sql(
-                """
+): List<ApplicationsReportRow> = createQuery {
+    sql(
+        """
         WITH data AS (
             SELECT
                 ca.name AS care_area_name,
@@ -95,10 +94,10 @@ private fun Database.Read.getApplicationsRows(
         GROUP BY care_area_name, unit_id, unit_name, unit_provider_type
         ORDER BY care_area_name, unit_name;
         """
-                    .trimIndent()
-            )
-        }
-        .toList<ApplicationsReportRow>()
+            .trimIndent()
+    )
+}
+    .toList<ApplicationsReportRow>()
 
 data class ApplicationsReportRow(
     val careAreaName: String,

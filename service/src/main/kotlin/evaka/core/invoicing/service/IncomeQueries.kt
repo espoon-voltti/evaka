@@ -16,15 +16,15 @@ import java.time.LocalDate
 
 fun Database.Read.personHasActiveIncomeOnDate(personId: PersonId, theDate: LocalDate): Boolean {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT 1
                 FROM income
                 WHERE daterange(valid_from, valid_to, '[]') @> ${bind(theDate)}
                     AND person_id = ${bind(personId)}
                 """
-            )
-        }
+        )
+    }
         .toList<Int>()
         .isNotEmpty()
 }
@@ -48,8 +48,8 @@ fun Database.Read.expiringIncomes(
 ): List<PersonIncomeExpirationDate> {
     val dayAfterExpiration = checkForExpirationRange.end.plusDays(1)
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH latest_income AS (
     SELECT DISTINCT ON (person_id)
     id, person_id, valid_to
@@ -97,8 +97,8 @@ ${if (checkForExistingRecentIncomeNotificationType != null) """AND NOT EXISTS (
 )""" else ""}                
 ${if (aPersonId != null) " AND person_id = ${bind(aPersonId)}" else ""}
 """
-            )
-        }
+        )
+    }
         .toList<PersonIncomeExpirationDate>()
 }
 
@@ -120,8 +120,8 @@ fun Database.Read.newCustomerIdsForIncomeNotifications(
         }
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH previously_placed_children AS (
     SELECT pl.child_id, fc.head_of_child
     FROM placement pl
@@ -196,8 +196,8 @@ AND NOT EXISTS (
       AND created > ${bind(today)} - INTERVAL '1 month'
 )
 """
-            )
-        }
+        )
+    }
         .toList<PersonId>()
 }
 
@@ -212,22 +212,22 @@ fun Database.Transaction.createIncomeNotification(
     notificationType: IncomeNotificationType,
 ): IncomeNotificationId {
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO income_notification(receiver_id, notification_type)
 VALUES (${bind(receiverId)}, ${bind(notificationType)})
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .executeAndReturnGeneratedKeys()
         .exactlyOne<IncomeNotificationId>()
 }
 
 fun Database.Read.getIncomeNotifications(receiverId: PersonId): List<IncomeNotification> =
     createQuery {
-            sql(
-                "SELECT receiver_id, notification_type, created FROM income_notification WHERE receiver_id = ${bind(receiverId)}"
-            )
-        }
-        .toList<IncomeNotification>()
+        sql(
+            "SELECT receiver_id, notification_type, created FROM income_notification WHERE receiver_id = ${bind(receiverId)}"
+        )
+    }
+    .toList<IncomeNotification>()

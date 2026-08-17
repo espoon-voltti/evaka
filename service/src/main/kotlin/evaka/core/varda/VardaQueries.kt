@@ -47,8 +47,8 @@ fun Database.Read.getVardaServiceNeeds(
     range: DateRange,
 ): Map<ChildId, List<VardaServiceNeed>> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     p.child_id AS child_id,
     daterange(sn.start_date, sn.end_date, '[]') * ${bind(range)} AS range,
@@ -95,8 +95,8 @@ WHERE
     u.oph_unit_oid IS NOT NULL
 ORDER BY 1, 2
 """
-            )
-        }
+        )
+    }
         .mapTo<VardaServiceNeed>()
         .useSequence { rows -> rows.groupBy { it.childId } }
 }
@@ -116,10 +116,9 @@ data class VardaFeeData(
 fun Database.Read.getVardaFeeData(
     childIds: List<ChildId>,
     range: DateRange,
-): Map<ChildId, List<VardaFeeData>> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, List<VardaFeeData>> = createQuery {
+    sql(
+        """
 SELECT
     fdc.child_id,
     fd.valid_during * ${bind(range)} AS valid_during,
@@ -162,10 +161,10 @@ WHERE
 
 ORDER BY 1, 2
 """
-            )
-        }
-        .mapTo<VardaFeeData>()
-        .useSequence { rows -> rows.groupBy { it.childId } }
+    )
+}
+    .mapTo<VardaFeeData>()
+    .useSequence { rows -> rows.groupBy { it.childId } }
 
 data class VardaChild(
     val id: ChildId,
@@ -177,8 +176,8 @@ data class VardaChild(
 
 fun Database.Read.getVardaChildren(childIds: List<ChildId>): Map<ChildId, VardaChild> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT
                     id,
                     first_name,
@@ -188,10 +187,10 @@ fun Database.Read.getVardaChildren(childIds: List<ChildId>): Map<ChildId, VardaC
                 FROM person
                 WHERE id = ANY(${bind(childIds)})
                 """
-            )
-        }
-        .mapTo<VardaChild>()
-        .useSequence { rows -> rows.associateBy { it.id } }
+        )
+    }
+    .mapTo<VardaChild>()
+    .useSequence { rows -> rows.associateBy { it.id } }
 
 data class VardaGuardian(
     val id: PersonId,
@@ -204,8 +203,8 @@ data class VardaGuardian(
 
 fun Database.Read.getVardaGuardians(childIds: List<ChildId>): Map<ChildId, List<VardaGuardian>> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT
                     p.id,
                     g.child_id,
@@ -217,10 +216,10 @@ fun Database.Read.getVardaGuardians(childIds: List<ChildId>): Map<ChildId, List<
                 JOIN person p ON p.id = g.guardian_id
                 WHERE g.child_id = ANY(${bind(childIds)})
                 """
-            )
-        }
-        .mapTo<VardaGuardian>()
-        .useSequence { rows -> rows.groupBy { it.childId } }
+        )
+    }
+    .mapTo<VardaGuardian>()
+    .useSequence { rows -> rows.groupBy { it.childId } }
 
 fun Database.Transaction.addNewChildrenForVardaUpdate(): Int {
     return execute {
@@ -240,8 +239,10 @@ fun Database.Transaction.addNewChildrenForVardaUpdate(): Int {
     }
 }
 
-fun Database.Read.getVardaUpdateChildIds(): List<ChildId> =
-    createQuery { sql("SELECT child_id FROM varda_state") }.toList()
+fun Database.Read.getVardaUpdateChildIds(): List<ChildId> = createQuery {
+    sql("SELECT child_id FROM varda_state")
+}
+    .toList()
 
 /**
  * In addition to returning `null` if `state` is `NULL`, also returns `null` if the state cannot be
@@ -251,24 +252,23 @@ fun Database.Read.getVardaUpdateChildIds(): List<ChildId> =
  */
 inline fun <reified T> Database.Read.getVardaUpdateState(
     childIds: List<ChildId>
-): Map<ChildId, T?> =
-    createQuery {
-            sql("SELECT child_id, state FROM varda_state WHERE child_id = ANY (${bind(childIds)})")
-        }
-        .toMap {
-            val childId = column<ChildId>("child_id")
-            val state =
-                try {
-                    jsonColumn<T?>("state")
-                } catch (exc: UnableToProduceResultException) {
-                    if (exc.cause is DatabindException) {
-                        null
-                    } else {
-                        throw exc
-                    }
+): Map<ChildId, T?> = createQuery {
+    sql("SELECT child_id, state FROM varda_state WHERE child_id = ANY (${bind(childIds)})")
+}
+    .toMap {
+        val childId = column<ChildId>("child_id")
+        val state =
+            try {
+                jsonColumn<T?>("state")
+            } catch (exc: UnableToProduceResultException) {
+                if (exc.cause is DatabindException) {
+                    null
+                } else {
+                    throw exc
                 }
-            childId to state
-        }
+            }
+        childId to state
+    }
 
 fun Database.Transaction.setVardaUpdateSuccess(
     childId: ChildId,
@@ -276,8 +276,8 @@ fun Database.Transaction.setVardaUpdateSuccess(
     state: Any?,
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE varda_state SET
                     state = ${bindJson(state)},
                     last_success_at = ${bind(now)},
@@ -286,8 +286,8 @@ fun Database.Transaction.setVardaUpdateSuccess(
                     error = NULL
                 WHERE child_id = ${bind(childId)}
                 """
-            )
-        }
+        )
+    }
         .execute()
 }
 
@@ -297,8 +297,8 @@ fun Database.Transaction.setVardaUpdateError(
     error: String,
 ) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 UPDATE varda_state SET
                     state = null,
                     errored_at = ${bind(now)},
@@ -306,7 +306,7 @@ fun Database.Transaction.setVardaUpdateError(
                     error = ${bind(error)}
                 WHERE child_id = ${bind(childId)}
                 """
-            )
-        }
+        )
+    }
         .execute()
 }

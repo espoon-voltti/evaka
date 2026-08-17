@@ -23,10 +23,9 @@ fun Database.Read.getCurrentOrNextPlacement(
     childId: ChildId,
     date: LocalDate,
     daysAllowedBeforePlacementStart: Int,
-): DocumentPlacementInfo? =
-    createQuery {
-            sql(
-                """
+): DocumentPlacementInfo? = createQuery {
+    sql(
+        """
 SELECT pl.start_date, pl.type, d.language AS unit_language, d.enabled_pilot_features AS enabled_pilot_features
 FROM placement pl
 JOIN daycare d on d.id = pl.unit_id
@@ -36,9 +35,9 @@ WHERE pl.child_id = ${bind(childId)}
 ORDER BY pl.start_date
 LIMIT 1
 """
-            )
-        }
-        .exactlyOneOrNull<DocumentPlacementInfo>()
+    )
+}
+    .exactlyOneOrNull<DocumentPlacementInfo>()
 
 private val PEDAGOGICAL_DOCUMENT_TYPES =
     setOf(

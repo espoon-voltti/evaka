@@ -63,64 +63,61 @@ private fun Database.Read.getChildAttendanceRows(
         val startTime: LocalTime,
         val endTime: LocalTime,
     )
-    val reservations =
-        createQuery {
-                sql(
-                    """
+    val reservations = createQuery {
+        sql(
+            """
         SELECT date, start_time, end_time
         FROM attendance_reservation
         WHERE child_id = ${bind(childId)} AND between_start_and_end(${bind(range)}, date) 
             AND start_time IS NOT NULL AND end_time IS NOT NULL
     """
-                )
-            }
-            .toList<SimpleReservation>()
-            .groupBy(
-                keySelector = { it.date },
-                valueTransform = { TimeRange(it.startTime, it.endTime) },
-            )
+        )
+    }
+        .toList<SimpleReservation>()
+        .groupBy(
+            keySelector = { it.date },
+            valueTransform = { TimeRange(it.startTime, it.endTime) },
+        )
 
     data class SimpleAttendance(
         val date: LocalDate,
         val startTime: LocalTime,
         val endTime: LocalTime?,
     )
-    val attendances =
-        createQuery {
-                sql(
-                    """
+    val attendances = createQuery {
+        sql(
+            """
         SELECT date, start_time, end_time
         FROM child_attendance
         WHERE child_id = ${bind(childId)} AND between_start_and_end(${bind(range)}, date)
     """
-                )
-            }
-            .toList<SimpleAttendance>()
-            .groupBy(
-                keySelector = { it.date },
-                valueTransform = { TimeInterval(it.startTime, it.endTime) },
-            )
+        )
+    }
+        .toList<SimpleAttendance>()
+        .groupBy(
+            keySelector = { it.date },
+            valueTransform = { TimeInterval(it.startTime, it.endTime) },
+        )
 
     data class SimpleAbsence(
         val date: LocalDate,
         val absenceType: AbsenceType,
         val category: AbsenceCategory,
     )
-    val absences =
-        createQuery {
-                sql(
-                    """
+    val absences = createQuery {
+        sql(
+            """
         SELECT date, absence_type, category
         FROM absence
         WHERE child_id = ${bind(childId)} AND between_start_and_end(${bind(range)}, date)
     """
-                )
-            }
-            .toList<SimpleAbsence>()
-            .associateBy(
-                keySelector = { Pair(it.date, it.category) },
-                valueTransform = { it.absenceType },
-            )
+        )
+    }
+        .toList<SimpleAbsence>()
+        .associateBy(
+            keySelector = { Pair(it.date, it.category) },
+            valueTransform = { it.absenceType },
+        )
 
     return range
         .dates()

@@ -70,7 +70,10 @@ class IcsBuilderTest {
                             start =
                                 HelsinkiDateTime.of(LocalDate.of(2026, 6, 24), LocalTime.of(10, 0)),
                             end =
-                                HelsinkiDateTime.of(LocalDate.of(2026, 6, 24), LocalTime.of(10, 30)),
+                                HelsinkiDateTime.of(
+                                    LocalDate.of(2026, 6, 24),
+                                    LocalTime.of(10, 30),
+                                ),
                         ),
                 ),
                 dtstamp = dtstamp,

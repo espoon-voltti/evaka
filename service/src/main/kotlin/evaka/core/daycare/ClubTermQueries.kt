@@ -37,27 +37,26 @@ data class ClubTerm(
 
 fun Database.Read.getClubTerms(range: FiniteDateRange?): List<ClubTerm> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
     SELECT id, term, application_period, term_breaks 
     FROM club_term
     ${if (range != null) "WHERE term && ${bind(range)}" else ""}
     ORDER BY term
     """
-            )
-        }
+        )
+    }
         .toList()
 }
 
-fun Database.Read.getClubTerm(id: ClubTermId): ClubTerm? =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getClubTerm(id: ClubTermId): ClubTerm? = createQuery {
+    sql(
+        """
                SELECT id, term, application_period, term_breaks FROM club_term WHERE id = ${bind(id)}
             """
-            )
-        }
-        .exactlyOneOrNull()
+    )
+}
+    .exactlyOneOrNull()
 
 fun Database.Read.getClubTerm(date: LocalDate): ClubTerm? =
     getClubTerms(range = date.toFiniteDateRange()).firstOrNull()
@@ -68,14 +67,14 @@ fun Database.Transaction.insertClubTerm(
     termBreaks: DateSet,
 ): ClubTermId {
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
         INSERT INTO club_term (term, application_period, term_breaks)
         VALUES (${bind(term)}, ${bind(applicationPeriod)}, ${bind(termBreaks)})
         RETURNING id
         """
-            )
-        }
+        )
+    }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 }
@@ -85,10 +84,9 @@ fun Database.Transaction.updateClubTerm(
     term: FiniteDateRange,
     applicationPeriod: FiniteDateRange,
     termBreaks: DateSet,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
             UPDATE club_term 
             SET 
                 term = ${bind(term)},
@@ -96,18 +94,18 @@ fun Database.Transaction.updateClubTerm(
                 term_breaks =  ${bind(termBreaks)}
             WHERE id = ${bind(id)}
             """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
 fun Database.Transaction.deleteFutureClubTerm(clock: EvakaClock, termId: ClubTermId) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
            DELETE FROM club_term
            WHERE id = ${bind(termId)} AND lower(term) > ${bind(clock.today())}
         """
-            )
-        }
+        )
+    }
         .updateExactlyOne()
 }

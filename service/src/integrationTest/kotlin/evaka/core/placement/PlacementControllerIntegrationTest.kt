@@ -1173,7 +1173,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 DevBackupCare(
                     childId = childId,
                     unitId = daycare2.id,
-                    period = FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(5)),
+                    period =
+                        FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(5)),
                 )
             )
         }

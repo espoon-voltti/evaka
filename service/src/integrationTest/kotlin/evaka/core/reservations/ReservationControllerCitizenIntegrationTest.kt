@@ -1390,7 +1390,9 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     UsedServiceResult(
                                         reservedMinutes = 420,
                                         usedServiceMinutes = 455,
-                                        listOf(TimeRange(LocalTime.of(8, 45), LocalTime.of(16, 20))),
+                                        listOf(
+                                            TimeRange(LocalTime.of(8, 45), LocalTime.of(16, 20))
+                                        ),
                                     ),
                             )
                         ),
@@ -1794,7 +1796,10 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     dayChild(
                                         child.id,
                                         absence =
-                                            AbsenceInfo(AbsenceType.OTHER_ABSENCE, editable = false),
+                                            AbsenceInfo(
+                                                AbsenceType.OTHER_ABSENCE,
+                                                editable = false,
+                                            ),
                                     )
                                 ),
                         ),
@@ -2052,7 +2057,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             child.id,
-                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
+                            absence =
+                                AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
                         )
                     )
                     .sortedBy { it.childId },
@@ -2229,7 +2235,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             child1.id,
-                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
+                            absence =
+                                AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
                         ),
                         dayChild(
                             child2.id,
@@ -2249,7 +2256,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                 listOf(
                         dayChild(
                             child1.id,
-                            absence = AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
+                            absence =
+                                AbsenceInfo(type = AbsenceType.OTHER_ABSENCE, editable = true),
                         ),
                         dayChild(
                             child2.id,

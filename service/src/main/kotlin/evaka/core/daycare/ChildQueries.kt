@@ -10,10 +10,9 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.HelsinkiDateTime
 
 fun Database.Read.getChild(id: ChildId): Child? {
-    val child =
-        createQuery {
-                sql(
-                    """
+    val child = createQuery {
+        sql(
+            """
 SELECT child.*, person.preferred_name, special_diet.id as special_diet_id, special_diet.abbreviation as special_diet_abbreviation, meal_texture.name AS meal_texture_name, (
   SELECT jsonb_agg(jsonb_build_object('dietId', diet_id, 'fieldId', field_id, 'value', value))
   FROM nekku_special_diet_choices
@@ -22,9 +21,9 @@ SELECT child.*, person.preferred_name, special_diet.id as special_diet_id, speci
 FROM child JOIN person ON child.id = person.id LEFT JOIN special_diet on child.diet_id = special_diet.id LEFT JOIN meal_texture on child.meal_texture_id = meal_texture.id
 WHERE child.id = ${bind(id)}
 """
-                )
-            }
-            .exactlyOneOrNull<Child>()
+        )
+    }
+        .exactlyOneOrNull<Child>()
     return child
 }
 

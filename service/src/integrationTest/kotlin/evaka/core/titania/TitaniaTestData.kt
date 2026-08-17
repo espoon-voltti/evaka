@@ -88,7 +88,8 @@ internal val titaniaUpdateRequestValidExampleData =
                                                                 type = TitaniaPayrollItemType.THIS,
                                                                 name = "Saldo",
                                                                 value = "90",
-                                                                unit = TitaniaPayrollItemUnit.MINUTE,
+                                                                unit =
+                                                                    TitaniaPayrollItemUnit.MINUTE,
                                                             )
                                                         )
                                                 ),
@@ -194,7 +195,8 @@ internal val titaniaUpdateRequestConflictingExampleData =
                                                                 type = TitaniaPayrollItemType.THIS,
                                                                 name = "Saldo",
                                                                 value = "90",
-                                                                unit = TitaniaPayrollItemUnit.MINUTE,
+                                                                unit =
+                                                                    TitaniaPayrollItemUnit.MINUTE,
                                                             )
                                                         )
                                                 ),
@@ -274,7 +276,8 @@ internal val titaniaUpdateRequestInvalidExampleData =
                                                                 type = TitaniaPayrollItemType.THIS,
                                                                 name = "Saldo",
                                                                 value = "90",
-                                                                unit = TitaniaPayrollItemUnit.MINUTE,
+                                                                unit =
+                                                                    TitaniaPayrollItemUnit.MINUTE,
                                                             )
                                                         )
                                                 ),

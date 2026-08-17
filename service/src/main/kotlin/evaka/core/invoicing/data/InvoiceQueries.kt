@@ -162,13 +162,13 @@ fun Database.Read.getInvoicesByIds(ids: List<InvoiceId>): List<InvoiceDetailed> 
 
 fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyId: PersonId): List<InvoiceDetailed> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 ${subquery(invoiceDetailedQuery(Predicate { where("$it.head_of_family = ${bind(headOfFamilyId)}") }))}
 ORDER BY invoice.period_start DESC, invoice.revision_number DESC NULLS LAST
 """
-            )
-        }
+        )
+    }
         .toList()
 }
 
@@ -179,8 +179,8 @@ fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
 
 fun Database.Read.getReplacingInvoiceFor(id: InvoiceId): InvoiceDetailed? {
     return createQuery {
-            invoiceDetailedQuery(Predicate { where("invoice.replaced_invoice_id = ${bind(id)}") })
-        }
+        invoiceDetailedQuery(Predicate { where("invoice.replaced_invoice_id = ${bind(id)}") })
+    }
         .exactlyOneOrNull()
 }
 
@@ -198,19 +198,19 @@ fun Database.Read.getSentInvoicesOfMonth(
             PredicateSql.alwaysTrue()
         }
     return createQuery {
-            invoiceDetailedQuery(
-                Predicate {
-                    where(
-                        """
+        invoiceDetailedQuery(
+            Predicate {
+                where(
+                    """
                             $it.period_start = ${bind(periodStart)} AND
                             $it.period_end = ${bind(periodEnd)} AND
                             $it.status = ANY (${bind(statuses)}) AND
                             ${predicate(headOfFamilyFilter)}
                             """
-                    )
-                }
-            )
-        }
+                )
+            }
+        )
+    }
         .toList()
 }
 
@@ -220,15 +220,15 @@ fun Database.Read.getInvoiceIdsByDatesAndStatus(
     status: InvoiceStatus,
 ): List<InvoiceId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT id FROM invoice
                 WHERE between_start_and_end(${bind(range)}, invoice_date)
                 AND area_id IN (SELECT id FROM care_area WHERE short_name = ANY(${bind(areas)}))
                 AND status = ${bind(status)}
                 """
-            )
-        }
+        )
+    }
         .toList<InvoiceId>()
 }
 
@@ -367,13 +367,13 @@ fun Database.Read.searchInvoices(
         )
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 ${subquery(invoiceDetailedQuery(predicate))}
 ORDER BY status DESC, due_date, invoice.id
 """
-            )
-        }
+        )
+    }
         .toList()
 }
 
@@ -385,10 +385,10 @@ fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
     if (draftIds.isEmpty()) return
 
     createUpdate {
-            sql(
-                "DELETE FROM invoice WHERE status = ${bind(InvoiceStatus.DRAFT.toString())}::invoice_status AND id = ANY(${bind(draftIds)})"
-            )
-        }
+        sql(
+            "DELETE FROM invoice WHERE status = ${bind(InvoiceStatus.DRAFT.toString())}::invoice_status AND id = ANY(${bind(draftIds)})"
+        )
+    }
         .execute()
 }
 
@@ -416,19 +416,18 @@ WHERE id = ${bind { it.id }}
     }
 }
 
-fun Database.Transaction.saveCostCenterFields(invoiceIds: List<InvoiceId>) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.saveCostCenterFields(invoiceIds: List<InvoiceId>) = createUpdate {
+    sql(
+        """
 UPDATE invoice_row
 SET saved_cost_center = daycare.cost_center, saved_sub_cost_center = care_area.sub_cost_center
 FROM daycare, care_area WHERE invoice_row.unit_id = daycare.id
 AND daycare.care_area_id = care_area.id
 AND invoice_id = ANY(${bind(invoiceIds)})
 """
-            )
-        }
-        .execute()
+    )
+}
+    .execute()
 
 fun Database.Transaction.setDraftsWaitingForManualSending(invoices: List<InvoiceDetailed>) {
     if (invoices.isEmpty()) return
@@ -593,10 +592,9 @@ fun Database.Transaction.setReplacementDraftSent(
     reason: InvoiceReplacementReason,
     notes: String,
 ) {
-    val replacedInvoiceId =
-        createQuery {
-                sql(
-                    """
+    val replacedInvoiceId = createQuery {
+        sql(
+            """
 UPDATE invoice
 SET status = 'SENT',
     replacement_reason = ${bind(reason)},
@@ -606,25 +604,26 @@ SET status = 'SENT',
 WHERE id = ${bind(invoiceId)} AND status = 'REPLACEMENT_DRAFT'
 RETURNING replaced_invoice_id
 """
-                )
-            }
-            .exactlyOne<InvoiceId?>()
+        )
+    }
+        .exactlyOne<InvoiceId?>()
     if (replacedInvoiceId != null) {
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
 UPDATE invoice
 SET status = ${bind(InvoiceStatus.REPLACED)}
 WHERE id = ${bind(replacedInvoiceId)}
 """
-                )
-            }
+            )
+        }
             .updateExactlyOne()
     }
 }
 
-fun Database.Read.getLastInvoicedMonth(): YearMonth? =
-    createQuery { sql("SELECT MAX(invoice_date) AS month FROM invoice WHERE status = 'SENT'") }
-        .exactlyOneOrNull<YearMonth>()
-        // Invoices of month M are sent in month M+1
-        ?.minusMonths(1)
+fun Database.Read.getLastInvoicedMonth(): YearMonth? = createQuery {
+    sql("SELECT MAX(invoice_date) AS month FROM invoice WHERE status = 'SENT'")
+}
+    .exactlyOneOrNull<YearMonth>()
+    // Invoices of month M are sent in month M+1
+    ?.minusMonths(1)

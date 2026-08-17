@@ -207,7 +207,8 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decisionFixture(
                         headOfFamily = adult2.id,
                         children = listOf(childFixture(child2, daycare2.id)),
-                        period = FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 8, 1)),
+                        period =
+                            FiniteDateRange(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 8, 1)),
                     ),
                 )
             )
@@ -278,12 +279,14 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decisionFixture(
                         headOfFamily = adult1.id,
                         children = listOf(childFixture(child1)),
-                        period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 5, 1)),
+                        period =
+                            FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 5, 1)),
                     ),
                     decisionFixture(
                         headOfFamily = adult2.id,
                         children = listOf(childFixture(child2)),
-                        period = FiniteDateRange(LocalDate.of(2022, 6, 1), LocalDate.of(2023, 1, 1)),
+                        period =
+                            FiniteDateRange(LocalDate.of(2022, 6, 1), LocalDate.of(2023, 1, 1)),
                     ),
                 )
             )

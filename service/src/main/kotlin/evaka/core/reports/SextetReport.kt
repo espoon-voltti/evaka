@@ -93,8 +93,8 @@ fun Database.Read.sextetReport(
         )
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH operational_days AS (
     SELECT daycare.id AS unit_id, date
     FROM generate_series(${bind(from)}, ${bind(to)}, '1 day'::interval) date
@@ -145,8 +145,8 @@ AND ${predicate(unitPredicates.forTable("d"))}
 GROUP BY ep.unit_id, d.name
 ORDER BY d.name
     """
-            )
-        }
+        )
+    }
         .toList<SextetReportRow>()
 }
 

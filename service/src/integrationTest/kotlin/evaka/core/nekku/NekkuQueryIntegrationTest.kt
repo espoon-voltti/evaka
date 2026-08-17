@@ -482,7 +482,8 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
                 modifiedBy = employee.evakaUserId,
                 eventType = CalendarEventType.DAYCARE_EVENT,
-                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH, NekkuProductMealTime.SNACK),
+                nekkuUnorderedMeals =
+                    listOf(NekkuProductMealTime.LUNCH, NekkuProductMealTime.SNACK),
             )
         val eventAttendee =
             DevCalendarEventAttendee(
@@ -522,7 +523,8 @@ class NekkuQueryIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                     HelsinkiDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.of(12, 34, 56)),
                 modifiedBy = employee.evakaUserId,
                 eventType = CalendarEventType.DAYCARE_EVENT,
-                nekkuUnorderedMeals = listOf(NekkuProductMealTime.LUNCH, NekkuProductMealTime.SNACK),
+                nekkuUnorderedMeals =
+                    listOf(NekkuProductMealTime.LUNCH, NekkuProductMealTime.SNACK),
             )
         val event2 =
             DevCalendarEvent(

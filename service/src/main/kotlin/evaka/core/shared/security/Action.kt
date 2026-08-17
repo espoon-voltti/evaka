@@ -421,7 +421,8 @@ sealed interface Action {
             ),
             READ_PEDAGOGICAL_DOCUMENTS(
                 IsCitizen(allowWeakLogin = false).guardianOfChildWithActiveOrUpcomingPlacement(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildWithActiveOrUpcomingPlacement(),
+                IsCitizen(allowWeakLogin = false)
+                    .fosterParentOfChildWithActiveOrUpcomingPlacement(),
             ),
             CREATE_ABSENCE_APPLICATION(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
@@ -450,7 +451,8 @@ sealed interface Action {
             ),
             READ_CHILD_DOCUMENTS(
                 IsCitizen(allowWeakLogin = false).guardianOfChildWithActiveOrUpcomingPlacement(),
-                IsCitizen(allowWeakLogin = false).fosterParentOfChildWithActiveOrUpcomingPlacement(),
+                IsCitizen(allowWeakLogin = false)
+                    .fosterParentOfChildWithActiveOrUpcomingPlacement(),
             ),
             CREATE_CALENDAR_EVENT_TIME_RESERVATION(
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
@@ -590,7 +592,8 @@ sealed interface Action {
         ) : ScopedAction<CalendarEventTimeId> {
             CANCEL_RESERVATION(
                 IsCitizen(allowWeakLogin = true).guardianOfChildOfCalendarEventTimeReservation(),
-                IsCitizen(allowWeakLogin = true).fosterParentOfChildOfCalendarEventTimeReservation(),
+                IsCitizen(allowWeakLogin = true)
+                    .fosterParentOfChildOfCalendarEventTimeReservation(),
             )
         }
     }
@@ -792,7 +795,8 @@ sealed interface Action {
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
                 .inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
             IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocumentOfAttachment(),
-            IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPedagogicalDocumentOfAttachment(),
+            IsCitizen(allowWeakLogin = false)
+                .fosterParentOfChildOfPedagogicalDocumentOfAttachment(),
         ),
         READ_FEE_ALTERATION_ATTACHMENT(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         DELETE_ORPHAN_ATTACHMENT(

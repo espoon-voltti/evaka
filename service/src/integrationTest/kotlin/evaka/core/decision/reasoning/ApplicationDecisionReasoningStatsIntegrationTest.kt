@@ -222,7 +222,8 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
                     textSv = "sv-generic-text",
                     ready = true,
                     createdAt = HelsinkiDateTime.of(LocalDate.of(2026, 5, 10), LocalTime.of(12, 0)),
-                    modifiedAt = HelsinkiDateTime.of(LocalDate.of(2026, 5, 10), LocalTime.of(12, 0)),
+                    modifiedAt =
+                        HelsinkiDateTime.of(LocalDate.of(2026, 5, 10), LocalTime.of(12, 0)),
                 )
             )
         }

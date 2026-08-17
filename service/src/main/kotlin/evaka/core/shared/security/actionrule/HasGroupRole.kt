@@ -221,23 +221,23 @@ WHERE employee_id = ${bind(user.id)}
         val childDocumentFilters =
             PredicateSql.allNotNull(
                 PredicateSql {
-                        where(
-                            "status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])"
-                        )
-                    }
+                    where(
+                        "status = ANY(${bind(DocumentStatus.entries.filter { it.employeeEditable })}::child_document_status[])"
+                    )
+                }
                     .takeIf { editable },
                 PredicateSql {
-                        where(
-                            "status = 'DRAFT' AND NOT EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = child_document.id)"
-                        )
-                    }
+                    where(
+                        "status = 'DRAFT' AND NOT EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = child_document.id)"
+                    )
+                }
                     .takeIf { deletable },
                 PredicateSql { where("status <> 'COMPLETED'") }.takeIf { publishable },
                 PredicateSql {
-                        where(
-                            "child_document.type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb AND child_document.status <> 'COMPLETED'"
-                        )
-                    }
+                    where(
+                        "child_document.type = 'CITIZEN_BASIC' AND child_document.content -> 'answers' = '[]'::jsonb AND child_document.status <> 'COMPLETED'"
+                    )
+                }
                     .takeIf { canGoToPrevStatus },
                 PredicateSql { where("child_document.type <> 'OTHER_DECISION'") }
                     .takeIf { denyForDecisions },

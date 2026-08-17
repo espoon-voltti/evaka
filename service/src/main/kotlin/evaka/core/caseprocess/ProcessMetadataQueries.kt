@@ -49,8 +49,8 @@ val sfiDeliverySelect =
 
 fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): DocumentMetadata =
     createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT 
             dt.id,
             dt.name,
@@ -87,38 +87,38 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
         LEFT JOIN evaka_user e ON e.employee_id = cd.created_by
         WHERE cd.id = ${bind(documentId)}
     """
-            )
-        }
-        .map {
-            val createdAt = column<HelsinkiDateTime>("created_at")
-            DocumentMetadata(
-                documentId = column("id"),
-                name = column("name"),
-                createdAtDate = createdAt.toLocalDate(),
-                createdAtTime = createdAt.toLocalTime(),
-                createdBy =
-                    column<EvakaUserId?>("created_by_id")?.let {
-                        EvakaUser(
-                            id = it,
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        )
-                    },
-                confidential = column("confidential"),
-                confidentiality =
-                    if (column<Boolean>("confidential")) {
-                        DocumentConfidentiality(
-                            durationYears = column("confidentiality_duration_years"),
-                            basis = column("confidentiality_basis"),
-                        )
-                    } else null,
-                downloadPath = "/employee/child-documents/$documentId/pdf",
-                receivedBy = null,
-                sfiDeliveries = jsonColumn("sfi_deliveries"),
-                publishedVersions = jsonColumn("published_versions"),
-            )
-        }
-        .exactlyOne()
+        )
+    }
+    .map {
+        val createdAt = column<HelsinkiDateTime>("created_at")
+        DocumentMetadata(
+            documentId = column("id"),
+            name = column("name"),
+            createdAtDate = createdAt.toLocalDate(),
+            createdAtTime = createdAt.toLocalTime(),
+            createdBy =
+                column<EvakaUserId?>("created_by_id")?.let {
+                    EvakaUser(
+                        id = it,
+                        name = column("created_by_name"),
+                        type = column("created_by_type"),
+                    )
+                },
+            confidential = column("confidential"),
+            confidentiality =
+                if (column<Boolean>("confidential")) {
+                    DocumentConfidentiality(
+                        durationYears = column("confidentiality_duration_years"),
+                        basis = column("confidentiality_basis"),
+                    )
+                } else null,
+            downloadPath = "/employee/child-documents/$documentId/pdf",
+            receivedBy = null,
+            sfiDeliveries = jsonColumn("sfi_deliveries"),
+            publishedVersions = jsonColumn("published_versions"),
+        )
+    }
+    .exactlyOne()
 
 private fun applicationDocumentName(applicationType: ApplicationType): String =
     when (applicationType) {
@@ -130,8 +130,8 @@ private fun applicationDocumentName(applicationType: ApplicationType): String =
 
 fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): DocumentMetadata =
     createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT 
             a.id,
             a.type,
@@ -146,54 +146,54 @@ fun Database.Read.getApplicationDocumentMetadata(applicationId: ApplicationId): 
         LEFT JOIN evaka_user e ON e.id = a.created_by
         WHERE a.id = ${bind(applicationId)}
     """
-            )
-        }
-        .map {
-            val applicationType = column<ApplicationType>("type")
-            DocumentMetadata(
-                documentId = column("id"),
-                name = applicationDocumentName(applicationType),
-                applicationType = applicationType,
-                createdAtDate = column("sentdate"),
-                createdAtTime = column("senttime"),
-                createdBy =
-                    column<EvakaUserId?>("created_by_id")?.let {
-                        EvakaUser(
-                            id = it,
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        )
-                    },
-                confidential = column("confidential"),
-                confidentiality =
-                    if (column<Boolean?>("confidential") == true) {
-                        DocumentConfidentiality(durationYears = 100, basis = "JulkL 24.1 §")
-                    } else null,
-                downloadPath = null,
-                receivedBy =
-                    column<ApplicationOrigin>("origin").let {
-                        when (it) {
-                            ApplicationOrigin.ELECTRONIC -> DocumentOrigin.ELECTRONIC
-                            ApplicationOrigin.PAPER -> DocumentOrigin.PAPER
-                        }
-                    },
-                sfiDeliveries = emptyList(),
-            )
-        }
-        .exactlyOne()
+        )
+    }
+    .map {
+        val applicationType = column<ApplicationType>("type")
+        DocumentMetadata(
+            documentId = column("id"),
+            name = applicationDocumentName(applicationType),
+            applicationType = applicationType,
+            createdAtDate = column("sentdate"),
+            createdAtTime = column("senttime"),
+            createdBy =
+                column<EvakaUserId?>("created_by_id")?.let {
+                    EvakaUser(
+                        id = it,
+                        name = column("created_by_name"),
+                        type = column("created_by_type"),
+                    )
+                },
+            confidential = column("confidential"),
+            confidentiality =
+                if (column<Boolean?>("confidential") == true) {
+                    DocumentConfidentiality(durationYears = 100, basis = "JulkL 24.1 §")
+                } else null,
+            downloadPath = null,
+            receivedBy =
+                column<ApplicationOrigin>("origin").let {
+                    when (it) {
+                        ApplicationOrigin.ELECTRONIC -> DocumentOrigin.ELECTRONIC
+                        ApplicationOrigin.PAPER -> DocumentOrigin.PAPER
+                    }
+                },
+            sfiDeliveries = emptyList(),
+        )
+    }
+    .exactlyOne()
 
 fun Database.Read.getSentDecisionIdsByApplication(applicationId: ApplicationId): List<DecisionId> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
         SELECT d.id
         FROM application a
         JOIN decision d ON a.id = d.application_id
         WHERE a.id = ${bind(applicationId)} AND d.sent_date IS NOT NULL   
     """
-            )
-        }
-        .toList()
+        )
+    }
+    .toList()
 
 private fun applicationDecisionDocumentName(decisionType: DecisionType): String =
     when (decisionType) {
@@ -209,10 +209,9 @@ private fun applicationDecisionDocumentName(decisionType: DecisionType): String 
 fun Database.Read.getApplicationDecisionDocumentMetadata(
     decisionId: DecisionId,
     isCitizen: Boolean,
-): DocumentMetadata =
-    createQuery {
-            sql(
-                """
+): DocumentMetadata = createQuery {
+    sql(
+        """
         SELECT 
             d.id,
             d.type,
@@ -230,44 +229,43 @@ fun Database.Read.getApplicationDecisionDocumentMetadata(
         LEFT JOIN evaka_user e ON e.id = d.created_by
         WHERE d.id = ${bind(decisionId)}
     """
-            )
-        }
-        .map {
-            val decisionType = column<DecisionType>("type")
-            DocumentMetadata(
-                documentId = column("id"),
-                name = applicationDecisionDocumentName(decisionType),
-                decisionType = decisionType,
-                createdAtDate = column("sent_date"),
-                createdAtTime = column("sent_time"),
-                createdBy =
-                    column<EvakaUserId?>("created_by_id")?.let {
-                        EvakaUser(
-                            id = it,
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        )
-                    },
-                confidential = false,
-                confidentiality = null,
-                downloadPath =
-                    column<String?>("document_key")?.let {
-                        val prefix = if (isCitizen) "citizen" else "employee"
-                        "/$prefix/decisions/$decisionId/download"
-                    },
-                receivedBy = null,
-                sfiDeliveries = jsonColumn("sfi_deliveries"),
-            )
-        }
-        .exactlyOne()
+    )
+}
+    .map {
+        val decisionType = column<DecisionType>("type")
+        DocumentMetadata(
+            documentId = column("id"),
+            name = applicationDecisionDocumentName(decisionType),
+            decisionType = decisionType,
+            createdAtDate = column("sent_date"),
+            createdAtTime = column("sent_time"),
+            createdBy =
+                column<EvakaUserId?>("created_by_id")?.let {
+                    EvakaUser(
+                        id = it,
+                        name = column("created_by_name"),
+                        type = column("created_by_type"),
+                    )
+                },
+            confidential = false,
+            confidentiality = null,
+            downloadPath =
+                column<String?>("document_key")?.let {
+                    val prefix = if (isCitizen) "citizen" else "employee"
+                    "/$prefix/decisions/$decisionId/download"
+                },
+            receivedBy = null,
+            sfiDeliveries = jsonColumn("sfi_deliveries"),
+        )
+    }
+    .exactlyOne()
 
 fun Database.Read.getFeeDecisionDocumentMetadata(
     decisionId: FeeDecisionId,
     isCitizen: Boolean,
-): DocumentMetadata =
-    createQuery {
-            sql(
-                """
+): DocumentMetadata = createQuery {
+    sql(
+        """
         SELECT 
             d.id,
             d.created,
@@ -282,43 +280,41 @@ fun Database.Read.getFeeDecisionDocumentMetadata(
         LEFT JOIN evaka_user e ON e.employee_id = d.approved_by_id
         WHERE d.id = ${bind(decisionId)}
     """
-            )
-        }
-        .map {
-            val createdAt = column<HelsinkiDateTime>("created")
-            DocumentMetadata(
-                documentId = column("id"),
-                name = "Maksupäätös",
-                financeDecisionType = FinanceDecisionType.FEE_DECISION,
-                createdAtDate = createdAt.toLocalDate(),
-                createdAtTime = createdAt.toLocalTime(),
-                createdBy =
-                    column<EvakaUserId?>("created_by_id")?.let {
-                        EvakaUser(
-                            id = it,
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        )
-                    },
-                confidential = true,
-                confidentiality =
-                    DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
-                downloadPath =
-                    if (isCitizen) "/citizen/fee-decisions/$decisionId/download"
-                    else "/employee/fee-decisions/pdf/$decisionId",
-                receivedBy = null,
-                sfiDeliveries = jsonColumn("sfi_deliveries"),
-            )
-        }
-        .exactlyOne()
+    )
+}
+    .map {
+        val createdAt = column<HelsinkiDateTime>("created")
+        DocumentMetadata(
+            documentId = column("id"),
+            name = "Maksupäätös",
+            financeDecisionType = FinanceDecisionType.FEE_DECISION,
+            createdAtDate = createdAt.toLocalDate(),
+            createdAtTime = createdAt.toLocalTime(),
+            createdBy =
+                column<EvakaUserId?>("created_by_id")?.let {
+                    EvakaUser(
+                        id = it,
+                        name = column("created_by_name"),
+                        type = column("created_by_type"),
+                    )
+                },
+            confidential = true,
+            confidentiality = DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
+            downloadPath =
+                if (isCitizen) "/citizen/fee-decisions/$decisionId/download"
+                else "/employee/fee-decisions/pdf/$decisionId",
+            receivedBy = null,
+            sfiDeliveries = jsonColumn("sfi_deliveries"),
+        )
+    }
+    .exactlyOne()
 
 fun Database.Read.getVoucherValueDecisionDocumentMetadata(
     voucherValueDecisionId: VoucherValueDecisionId,
     isCitizen: Boolean,
-): DocumentMetadata =
-    createQuery {
-            sql(
-                """
+): DocumentMetadata = createQuery {
+    sql(
+        """
         SELECT
             d.id,
             d.created,
@@ -334,33 +330,31 @@ fun Database.Read.getVoucherValueDecisionDocumentMetadata(
         LEFT JOIN evaka_user e ON e.employee_id = d.approved_by
         WHERE d.id = ${bind(voucherValueDecisionId)}
     """
-            )
-        }
-        .map {
-            val createdAt = column<HelsinkiDateTime?>("created")
-            DocumentMetadata(
-                documentId = column("id"),
-                name = "Arvopäätös",
-                financeDecisionType = FinanceDecisionType.VOUCHER_VALUE_DECISION,
-                createdAtDate = createdAt?.toLocalDate(),
-                createdAtTime = createdAt?.toLocalTime(),
-                createdBy =
-                    column<EvakaUserId?>("created_by_id")?.let {
-                        EvakaUser(
-                            id = it,
-                            name = column("created_by_name"),
-                            type = column("created_by_type"),
-                        )
-                    },
-                confidential = true,
-                confidentiality =
-                    DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
-                downloadPath =
-                    if (isCitizen)
-                        "/citizen/voucher-value-decisions/$voucherValueDecisionId/download"
-                    else "/employee/value-decisions/pdf/$voucherValueDecisionId",
-                receivedBy = null,
-                sfiDeliveries = jsonColumn("sfi_deliveries"),
-            )
-        }
-        .exactlyOne()
+    )
+}
+    .map {
+        val createdAt = column<HelsinkiDateTime?>("created")
+        DocumentMetadata(
+            documentId = column("id"),
+            name = "Arvopäätös",
+            financeDecisionType = FinanceDecisionType.VOUCHER_VALUE_DECISION,
+            createdAtDate = createdAt?.toLocalDate(),
+            createdAtTime = createdAt?.toLocalTime(),
+            createdBy =
+                column<EvakaUserId?>("created_by_id")?.let {
+                    EvakaUser(
+                        id = it,
+                        name = column("created_by_name"),
+                        type = column("created_by_type"),
+                    )
+                },
+            confidential = true,
+            confidentiality = DocumentConfidentiality(durationYears = 25, basis = "JulkL 24.1 §"),
+            downloadPath =
+                if (isCitizen) "/citizen/voucher-value-decisions/$voucherValueDecisionId/download"
+                else "/employee/value-decisions/pdf/$voucherValueDecisionId",
+            receivedBy = null,
+            sfiDeliveries = jsonColumn("sfi_deliveries"),
+        )
+    }
+    .exactlyOne()

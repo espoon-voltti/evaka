@@ -49,10 +49,9 @@ class CalendarEventPushNotifications(
 
     private fun Database.Read.getNotification(
         job: AsyncJob.SendCalendarEventReservationPushNotification
-    ): CalendarEventReservationNotification? =
-        createQuery {
-                sql(
-                    """
+    ): CalendarEventReservationNotification? = createQuery {
+        sql(
+            """
 SELECT dg.id as group_id, dg.name as group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
 FROM mobile_device md
 JOIN mobile_device_push_group mdpg ON mdpg.device = md.id
@@ -63,20 +62,19 @@ WHERE md.id = ${bind(job.device)} AND md.employee_id IS NULL AND dg.id = ${bind(
 AND 'PUSH_NOTIFICATIONS' = ANY(d.enabled_pilot_features)
 AND 'CALENDAR_EVENT_RESERVATION' = ANY(md.push_notification_categories)
 """
-                )
-            }
-            .exactlyOneOrNull {
-                CalendarEventReservationNotification(
-                    groupId = column("group_id"),
-                    groupName = column("group_name"),
-                    WebPushEndpoint(
-                        uri = column("endpoint"),
-                        ecdhPublicKey =
-                            WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
-                        authSecret = column("auth_secret"),
-                    ),
-                )
-            }
+        )
+    }
+        .exactlyOneOrNull {
+            CalendarEventReservationNotification(
+                groupId = column("group_id"),
+                groupName = column("group_name"),
+                WebPushEndpoint(
+                    uri = column("endpoint"),
+                    ecdhPublicKey = WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
+                    authSecret = column("auth_secret"),
+                ),
+            )
+        }
 
     private fun sendCalendarEventPushNotification(
         dbc: Database.Connection,
@@ -158,10 +156,9 @@ data class GroupDevice(val groupId: GroupId, val device: MobileDeviceId)
 fun Database.Read.getCalendarEventReservationGroupDevices(
     calendarEventTimeId: CalendarEventTimeId,
     childId: ChildId,
-): Set<GroupDevice> =
-    createQuery {
-            sql(
-                """
+): Set<GroupDevice> = createQuery {
+    sql(
+        """
 SELECT cea.group_id, mdpg.device
 FROM calendar_event_time cet
 JOIN calendar_event_attendee cea ON cea.calendar_event_id = cet.calendar_event_id
@@ -183,6 +180,6 @@ AND EXISTS (
       AND daterange(dgp.start_date, dgp.end_date, '[]') @> cet.date
 )
         """
-            )
-        }
-        .toSet<GroupDevice>()
+    )
+}
+    .toSet<GroupDevice>()

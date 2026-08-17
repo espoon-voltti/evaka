@@ -264,7 +264,9 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
 
             assertEquals(
                 emptyList(),
-                db.transaction { tx -> tx.getAbsencesOfChildByRange(child.id, range.asDateRange()) },
+                db.transaction { tx ->
+                    tx.getAbsencesOfChildByRange(child.id, range.asDateRange())
+                },
             )
         }
 
@@ -562,7 +564,9 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31)),
                     FiniteDateRange(LocalDate.of(2023, 2, 1), LocalDate.of(2023, 2, 28)),
                 ),
-                db.transaction { tx -> tx.getAbsenceApplicationDateRanges(child.id, clock.today()) },
+                db.transaction { tx ->
+                    tx.getAbsenceApplicationDateRanges(child.id, clock.today())
+                },
             )
         }
 
@@ -592,7 +596,9 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
 
             assertEquals(
                 setOf(),
-                db.transaction { tx -> tx.getAbsenceApplicationDateRanges(child.id, clock.today()) },
+                db.transaction { tx ->
+                    tx.getAbsenceApplicationDateRanges(child.id, clock.today())
+                },
             )
         }
 
@@ -635,7 +641,9 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     FiniteDateRange(LocalDate.of(2022, 8, 1), LocalDate.of(2022, 8, 31)),
                     FiniteDateRange(LocalDate.of(2022, 9, 1), LocalDate.of(2022, 9, 30)),
                 ),
-                db.transaction { tx -> tx.getAbsenceApplicationDateRanges(child.id, clock.today()) },
+                db.transaction { tx ->
+                    tx.getAbsenceApplicationDateRanges(child.id, clock.today())
+                },
             )
         }
 

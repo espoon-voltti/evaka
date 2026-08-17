@@ -42,22 +42,21 @@ data class GroupInfo(
 
 data class StaffAttendanceUpdate(val groupId: GroupId, val date: LocalDate, val count: Double?)
 
-fun Database.Read.getGroupInfo(groupId: GroupId): GroupInfo? =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getGroupInfo(groupId: GroupId): GroupInfo? = createQuery {
+    sql(
+        """
 SELECT dg.id AS group_id, dg.name AS group_name, dg.start_date, dg.end_date
 FROM daycare_group AS dg
 WHERE id = ${bind(groupId)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+    )
+}
+    .exactlyOneOrNull()
 
 fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpdate): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT EXISTS (
     SELECT 1
     FROM daycare_group
@@ -65,9 +64,9 @@ SELECT EXISTS (
     AND daterange(start_date, end_date, '[]') @> ${bind(staffAttendance.date)}
 )
 """
-            )
-        }
-        .exactlyOne()
+        )
+    }
+    .exactlyOne()
 
 fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceUpdate) {
     execute {
@@ -85,36 +84,34 @@ ON CONFLICT (group_id, date) DO UPDATE SET
 fun Database.Read.getStaffAttendanceByRange(
     range: FiniteDateRange,
     groupId: GroupId,
-): List<GroupStaffAttendance> =
-    createQuery {
-            sql(
-                """
+): List<GroupStaffAttendance> = createQuery {
+    sql(
+        """
 SELECT group_id, date, count, updated_at
 FROM staff_attendance
 WHERE group_id = ${bind(groupId)}
 AND between_start_and_end(${bind(range)}, date)
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 fun Database.Read.getUnitStaffAttendanceForDate(
     unitId: DaycareId,
     date: LocalDate,
 ): UnitStaffAttendance {
-    val groupAttendances =
-        createQuery {
-                sql(
-                    """
+    val groupAttendances = createQuery {
+        sql(
+            """
 SELECT sa.group_id, sa.date, sa.count, sa.updated_at
 FROM staff_attendance sa
 JOIN daycare_group dg on sa.group_id = dg.id
 WHERE dg.daycare_id = ${bind(unitId)}
   AND sa.date = ${bind(date)}
 """
-                )
-            }
-            .toList<GroupStaffAttendance>()
+        )
+    }
+        .toList<GroupStaffAttendance>()
 
     val count = groupAttendances.sumOf { it.count }
     val updatedAt = groupAttendances.maxOfOrNull { it.updatedAt }
@@ -129,13 +126,13 @@ WHERE dg.daycare_id = ${bind(unitId)}
 
 fun Database.Transaction.deleteStaffAttendance(groupId: GroupId, date: LocalDate) {
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 DELETE FROM staff_attendance
 WHERE group_id = ${bind(groupId)}
 AND date = ${bind(date)}
 """
-            )
-        }
+        )
+    }
         .updateNoneOrOne()
 }

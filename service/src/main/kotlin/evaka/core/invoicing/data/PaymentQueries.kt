@@ -38,8 +38,8 @@ WHERE d.id = ${bind { it.unitId }}
 
 fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List<Payment> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT 
     p.id, p.created, p.updated, p.unit_id, 
     d.name AS unit_name, d.business_id AS unit_business_id, d.iban AS unit_iban, d.provider_id AS unit_provider_id, d.partner_code AS unit_partner_code, d.type as unit_care_type, d.cost_center as unit_cost_center,
@@ -48,15 +48,15 @@ FROM payment p
 JOIN daycare d ON d.id = p.unit_id
 WHERE p.id = ANY(${bind(ids)})
 """
-            )
-        }
+        )
+    }
         .toList<Payment>()
 }
 
 fun Database.Read.readPayments(): List<Payment> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     p.id, p.created, p.updated,
     p.unit_id, p.unit_name, p.unit_business_id, p.unit_iban, p.unit_provider_id, p.unit_partner_code,
@@ -66,26 +66,25 @@ FROM payment p
 JOIN daycare d ON d.id = p.unit_id
 ORDER BY period DESC, unit_name
 """
-            )
-        }
+        )
+    }
         .toList<Payment>()
 }
 
 fun Database.Read.readPaymentUnits(
     period: FiniteDateRange,
     status: List<PaymentStatus>,
-): List<DaycareId> =
-    createQuery {
-            sql(
-                """
+): List<DaycareId> = createQuery {
+    sql(
+        """
 SELECT DISTINCT unit_id
 FROM payment
 WHERE period = ${bind(period)}
   AND status = ANY (${bind(status)})
     """
-            )
-        }
-        .toList<DaycareId>()
+    )
+}
+    .toList<DaycareId>()
 
 data class PagedPayments(val data: List<Payment>, val total: Int, val pages: Int)
 
@@ -146,14 +145,14 @@ fun Database.Transaction.deleteDraftPayments(draftIds: List<PaymentId>) {
     if (draftIds.isEmpty()) return
 
     createUpdate {
-            sql(
-                """
+        sql(
+            """
                 DELETE FROM payment
                 WHERE status = ${bind(PaymentStatus.DRAFT)}::payment_status
                 AND id = ANY (${bind(draftIds)})
                 """
-            )
-        }
+        )
+    }
         .execute()
 }
 

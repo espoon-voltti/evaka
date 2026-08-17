@@ -192,8 +192,8 @@ data class DailyServiceTimeRow(
 
 fun Database.Read.getChildDailyServiceTimes(childId: ChildId): List<DailyServiceTimes> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     id,
     child_id,
@@ -211,17 +211,16 @@ FROM daily_service_time
 WHERE child_id = ${bind(childId)}
 ORDER BY lower(validity_period) DESC
 """
-            )
-        }
-        .mapTo<DailyServiceTimeRow>()
-        .useIterable { rows -> rows.map { toDailyServiceTimes(it) }.toList() }
+        )
+    }
+    .mapTo<DailyServiceTimeRow>()
+    .useIterable { rows -> rows.map { toDailyServiceTimes(it) }.toList() }
 
 fun Database.Read.getDailyServiceTimesForChildren(
     childIds: Set<ChildId>
-): Map<ChildId, List<DailyServiceTimesValue>> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, List<DailyServiceTimesValue>> = createQuery {
+    sql(
+        """
 SELECT
     id,
     child_id,
@@ -238,28 +237,27 @@ SELECT
 FROM daily_service_time
 WHERE child_id = ANY(${bind(childIds)})
 """
-            )
-        }
-        .mapTo<DailyServiceTimeRow>()
-        .useIterable { rows ->
-            rows.map { toDailyServiceTimes(it) }.groupBy({ it.childId }, { it.times })
-        }
+    )
+}
+    .mapTo<DailyServiceTimeRow>()
+    .useIterable { rows ->
+        rows.map { toDailyServiceTimes(it) }.groupBy({ it.childId }, { it.times })
+    }
 
 data class DailyServiceTimesValidity(val childId: ChildId, val validityPeriod: DateRange)
 
 fun Database.Read.getDailyServiceTimesValidity(
     id: DailyServiceTimesId
-): DailyServiceTimesValidity? =
-    createQuery {
-            sql(
-                """
+): DailyServiceTimesValidity? = createQuery {
+    sql(
+        """
 SELECT child_id, validity_period
 FROM daily_service_time
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+    )
+}
+    .exactlyOneOrNull()
 
 fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
     return when (row.type) {
@@ -353,11 +351,11 @@ SELECT recipient.id FROM recipient
 
 fun Database.Transaction.deleteOldDailyServiceTimeNotifications(now: HelsinkiDateTime): Int =
     createUpdate {
-            sql(
-                "DELETE FROM daily_service_time_notification WHERE created_at < ${bind(now.minusMonths(2))}"
-            )
-        }
-        .execute()
+        sql(
+            "DELETE FROM daily_service_time_notification WHERE created_at < ${bind(now.minusMonths(2))}"
+        )
+    }
+    .execute()
 
 fun Database.Transaction.deleteChildDailyServiceTimes(id: DailyServiceTimesId) {
     execute { sql("DELETE FROM daily_service_time WHERE id = ${bind(id)}") }
@@ -369,8 +367,8 @@ fun Database.Transaction.createChildDailyServiceTimes(
 ): DailyServiceTimesId {
     val u = times.asUpdateRow()
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         INSERT INTO daily_service_time (
             child_id, type, 
             regular_times, 
@@ -397,8 +395,8 @@ fun Database.Transaction.createChildDailyServiceTimes(
         )
         RETURNING id
     """
-            )
-        }
+        )
+    }
         .exactlyOne<DailyServiceTimesId>()
 }
 
@@ -410,18 +408,17 @@ data class DailyServiceTimesValidityWithId(
 fun Database.Read.getOverlappingChildDailyServiceTimes(
     childId: ChildId,
     range: DateRange,
-): List<DailyServiceTimesValidityWithId> =
-    createQuery {
-            sql(
-                """
+): List<DailyServiceTimesValidityWithId> = createQuery {
+    sql(
+        """
 SELECT id, validity_period
 FROM daily_service_time
 WHERE child_id = ${bind(childId)}
   AND ${bind(range)} && validity_period
 """
-            )
-        }
-        .toList<DailyServiceTimesValidityWithId>()
+    )
+}
+    .toList<DailyServiceTimesValidityWithId>()
 
 fun Database.Transaction.updateChildDailyServiceTimesValidity(
     id: DailyServiceTimesId,

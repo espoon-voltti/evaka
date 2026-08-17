@@ -24,25 +24,24 @@ fun Database.Read.employeeNumbersQuery(employeeNumbers: Collection<String>): Dat
 fun Database.Read.findStaffAttendancePlansBy(
     employeeIds: Collection<EmployeeId>? = null,
     period: FiniteDateRange? = null,
-): List<StaffAttendancePlan> =
-    createQuery {
-            val employeeIdFilter: Predicate =
-                if (employeeIds == null) Predicate.alwaysTrue()
-                else Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
-            val daterangeFilter: Predicate =
-                if (period == null) Predicate.alwaysTrue()
-                else Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
+): List<StaffAttendancePlan> = createQuery {
+    val employeeIdFilter: Predicate =
+        if (employeeIds == null) Predicate.alwaysTrue()
+        else Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
+    val daterangeFilter: Predicate =
+        if (period == null) Predicate.alwaysTrue()
+        else Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
 
-            sql(
-                """
+    sql(
+        """
             SELECT employee_id, type, start_time, end_time, description
             FROM staff_attendance_plan
             WHERE ${predicate(employeeIdFilter.forTable("staff_attendance_plan"))}
             AND ${predicate(daterangeFilter.forTable("staff_attendance_plan"))}
         """
-            )
-        }
-        .toList<StaffAttendancePlan>()
+    )
+}
+    .toList<StaffAttendancePlan>()
 
 fun Database.Transaction.insertStaffAttendancePlans(plans: List<StaffAttendancePlan>): IntArray {
     if (plans.isEmpty()) {
@@ -61,22 +60,21 @@ VALUES (${bind { it.employeeId }}, ${bind { it.type }}, ${bind { it.startTime }}
 fun Database.Transaction.deleteStaffAttendancePlansBy(
     employeeIds: Collection<EmployeeId>? = null,
     period: FiniteDateRange? = null,
-): List<StaffAttendancePlan> =
-    createQuery {
-            val employeeIdFilter: Predicate =
-                if (employeeIds == null) Predicate.alwaysTrue()
-                else Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
-            val daterangeFilter: Predicate =
-                if (period == null) Predicate.alwaysTrue()
-                else Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
+): List<StaffAttendancePlan> = createQuery {
+    val employeeIdFilter: Predicate =
+        if (employeeIds == null) Predicate.alwaysTrue()
+        else Predicate { where("employee_id = ANY (${bind(employeeIds)})") }
+    val daterangeFilter: Predicate =
+        if (period == null) Predicate.alwaysTrue()
+        else Predicate { where("${bind(period.asHelsinkiDateTimeRange())} @> start_time") }
 
-            sql(
-                """
+    sql(
+        """
             DELETE FROM staff_attendance_plan
             WHERE ${predicate(employeeIdFilter.forTable("staff_attendance_plan"))}
             AND ${predicate(daterangeFilter.forTable("staff_attendance_plan"))}
             RETURNING employee_id, type, start_time, end_time, description
         """
-            )
-        }
-        .toList<StaffAttendancePlan>()
+    )
+}
+    .toList<StaffAttendancePlan>()

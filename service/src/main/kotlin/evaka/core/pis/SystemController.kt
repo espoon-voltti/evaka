@@ -68,7 +68,9 @@ class SystemController(
                                 .getOrCreatePerson(
                                     tx,
                                     user,
-                                    ExternalIdentifier.SSN.getInstance(request.socialSecurityNumber),
+                                    ExternalIdentifier.SSN.getInstance(
+                                        request.socialSecurityNumber
+                                    ),
                                 )
                                 ?.let { CitizenUserIdentity(it.id) }
                             ?: error("No person found with ssn")

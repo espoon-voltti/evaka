@@ -87,18 +87,17 @@ data class ExceededServiceNeedReportUnit(val id: DaycareId, val name: String)
 
 private fun Database.Read.getExceededServiceNeedReportUnits(
     unitFilter: AccessControlFilter<DaycareId>
-): List<ExceededServiceNeedReportUnit> =
-    createQuery {
-            sql(
-                """
+): List<ExceededServiceNeedReportUnit> = createQuery {
+    sql(
+        """
                 SELECT id, name
                 FROM daycare
                 WHERE ${predicate(unitFilter.forTable("daycare"))}
                 ORDER BY name
                 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 data class ExceededServiceNeedReportRow(
     val childId: ChildId,
@@ -196,17 +195,16 @@ private fun exceededServiceNeedReport(
 
 private data class ReportChild(val id: ChildId, val firstName: String, val lastName: String)
 
-private fun Database.Read.getChildren(childIds: Set<ChildId>): List<ReportChild> =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getChildren(childIds: Set<ChildId>): List<ReportChild> = createQuery {
+    sql(
+        """
                 SELECT id, first_name, last_name
                 FROM person
                 WHERE id = ANY (${bind(childIds)})
                 """
-            )
-        }
-        .toList<ReportChild>()
+    )
+}
+    .toList<ReportChild>()
 
 private data class ReportServiceNeed(
     val childId: ChildId,
@@ -221,10 +219,9 @@ private data class ReportServiceNeed(
 private fun Database.Read.getServiceNeedsByRange(
     unitId: DaycareId,
     range: FiniteDateRange,
-): Map<ChildId, List<ReportServiceNeed>> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, List<ReportServiceNeed>> = createQuery {
+    sql(
+        """
                 SELECT 
                     pl.child_id,
                     daterange(sn.start_date, sn.end_date, '[]') AS period,
@@ -243,10 +240,10 @@ private fun Database.Read.getServiceNeedsByRange(
                     sno.daycare_hours_per_month IS NOT NULL
                 ORDER BY sn.start_date
                 """
-            )
-        }
-        .toList<ReportServiceNeed>()
-        .groupBy { it.childId }
+    )
+}
+    .toList<ReportServiceNeed>()
+    .groupBy { it.childId }
 
 private fun Database.Read.getAbsencesByRange(
     childIds: Set<ChildId>,

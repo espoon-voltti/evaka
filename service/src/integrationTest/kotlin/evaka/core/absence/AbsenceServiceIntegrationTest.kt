@@ -258,7 +258,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 DevDailyServiceTimes(
                     childId = child1.id,
                     regularTimes = TimeRange(LocalTime.of(10, 0), LocalTime.of(15, 0)),
-                    validityPeriod = DateRange(firstOfMonth, firstOfMonth.plusWeeks(1).minusDays(1)),
+                    validityPeriod =
+                        DateRange(firstOfMonth, firstOfMonth.plusWeeks(1).minusDays(1)),
                 )
             )
 

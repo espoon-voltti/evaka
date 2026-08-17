@@ -40,10 +40,9 @@ class IncompleteIncomeReport(private val accessControl: AccessControl) {
 }
 
 fun Database.Read.getIncompleteReport(today: LocalDate): List<IncompleteIncomeDbRow> {
-    val dbRows =
-        createQuery {
-                sql(
-                    """
+    val dbRows = createQuery {
+        sql(
+            """
                 SELECT DISTINCT pe.id as personId, pe.first_name as firstName, pe.last_name as lastName, ie.valid_from as validFrom, dg.name as daycareName, ca.name as careareaName
                 FROM income ie
                 JOIN guardian gu
@@ -62,10 +61,10 @@ fun Database.Read.getIncompleteReport(today: LocalDate): List<IncompleteIncomeDb
                 AND ie.modified_by = '00000000-0000-0000-0000-000000000000'
                 ORDER BY ie.valid_from;
             """
-                        .trimIndent()
-                )
-            }
-            .toList<IncompleteIncomeDbRow>()
+                .trimIndent()
+        )
+    }
+        .toList<IncompleteIncomeDbRow>()
 
     return dbRows
 }

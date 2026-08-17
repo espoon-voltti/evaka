@@ -1568,6 +1568,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 }
 
-private fun Database.Read.getEmployeeLastLogin(id: EmployeeId) =
-    createQuery { sql("SELECT last_login FROM employee WHERE id = ${bind(id)}") }
-        .exactlyOneOrNull<HelsinkiDateTime>()
+private fun Database.Read.getEmployeeLastLogin(id: EmployeeId) = createQuery {
+    sql("SELECT last_login FROM employee WHERE id = ${bind(id)}")
+}
+    .exactlyOneOrNull<HelsinkiDateTime>()

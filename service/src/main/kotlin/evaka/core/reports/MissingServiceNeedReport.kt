@@ -81,11 +81,10 @@ private fun Database.Read.getMissingServiceNeedRows(
     from: LocalDate,
     to: LocalDate?,
     unitFilter: AccessControlFilter<DaycareId>,
-): List<MissingServiceNeedReportRow> =
-    createQuery {
-            val dateRange = DateRange(from, to)
-            sql(
-                """
+): List<MissingServiceNeedReportRow> = createQuery {
+    val dateRange = DateRange(from, to)
+    sql(
+        """
         SELECT 
             (CASE
                 WHEN daycare.provider_type = 'PRIVATE_SERVICE_VOUCHER' THEN 'palvelusetelialue'
@@ -133,10 +132,10 @@ private fun Database.Read.getMissingServiceNeedRows(
         GROUP BY 1, daycare.name, unit_id, child_id, first_name, last_name, unit_id, results.placement_type
         ORDER BY 1, daycare.name, last_name, first_name
         """
-                    .trimIndent()
-            )
-        }
-        .toList<MissingServiceNeedReportRow>()
+            .trimIndent()
+    )
+}
+    .toList<MissingServiceNeedReportRow>()
 
 data class MissingServiceNeedReportRow(
     val careAreaName: String,

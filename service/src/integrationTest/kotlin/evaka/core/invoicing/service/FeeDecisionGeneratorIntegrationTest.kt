@@ -1341,7 +1341,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(DAYCARE)),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(DAYCARE_PART_TIME)),
+                Tuple(
+                    subPeriod2,
+                    setOf(FeeDecisionDifference.PLACEMENT),
+                    listOf(DAYCARE_PART_TIME),
+                ),
             )
     }
 

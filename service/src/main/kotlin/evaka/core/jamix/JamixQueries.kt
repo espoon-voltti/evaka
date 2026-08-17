@@ -25,10 +25,9 @@ data class JamixChildData(
     val absences: Set<AbsenceCategory>,
 )
 
-fun Database.Read.getJamixCustomerNumbers(range: FiniteDateRange): Set<Int> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getJamixCustomerNumbers(range: FiniteDateRange): Set<Int> = createQuery {
+    sql(
+        """
                     SELECT DISTINCT dg.jamix_customer_number 
                     FROM daycare_group dg 
                     JOIN daycare d ON d.id = dg.daycare_id
@@ -36,17 +35,16 @@ fun Database.Read.getJamixCustomerNumbers(range: FiniteDateRange): Set<Int> =
                       AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(range)}
                       AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
                 """
-            )
-        }
-        .toSet()
+    )
+}
+    .toSet()
 
 fun Database.Read.getJamixChildData(
     jamixCustomerNumber: Int,
     date: LocalDate,
-): List<JamixChildData> =
-    createQuery {
-            sql(
-                """
+): List<JamixChildData> = createQuery {
+    sql(
+        """
 SELECT
     rp.child_id,
     rp.unit_id,
@@ -75,6 +73,6 @@ JOIN person p ON p.id = rp.child_id
 LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 WHERE dg.jamix_customer_number = ${bind(jamixCustomerNumber)}
                     """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()

@@ -161,10 +161,9 @@ data class FamilyMember(val personId: PersonId, val firstName: String, val lastN
 data class FamilyMembers(val adults: List<FamilyMember>, val children: List<FamilyMember>)
 
 fun Database.Read.getFamilyMembersByAdult(adultId: PersonId, today: LocalDate): FamilyMembers {
-    val members =
-        createQuery {
-                sql(
-                    """
+    val members = createQuery {
+        sql(
+            """
 WITH adult_ids AS (
     SELECT ${bind(adultId)} AS id
 
@@ -191,18 +190,18 @@ WHERE daterange(fc.start_date, fc.end_date, '[]') @> ${bind(today)}
 
 ORDER BY date_of_birth, last_name, first_name
 """
-                )
-            }
-            .toList {
-                Pair(
-                    column<Boolean>("is_child"),
-                    FamilyMember(
-                        personId = column("id"),
-                        firstName = column("first_name"),
-                        lastName = column("last_name"),
-                    ),
-                )
-            }
+        )
+    }
+        .toList {
+            Pair(
+                column<Boolean>("is_child"),
+                FamilyMember(
+                    personId = column("id"),
+                    firstName = column("first_name"),
+                    lastName = column("last_name"),
+                ),
+            )
+        }
     val (children, adults) = members.partition { it.first }
     return FamilyMembers(adults = adults.map { it.second }, children = children.map { it.second })
 }

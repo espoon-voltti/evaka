@@ -198,16 +198,16 @@ data class TimelineValueDecision(
 
 private fun Database.Read.getValueDecisions(personId: PersonId, range: FiniteDateRange) =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, daterange(valid_from, valid_to, '[]') as range, status
 FROM voucher_value_decision
 WHERE head_of_family_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
 ORDER BY valid_from
 """
-            )
-        }
-        .toList<TimelineValueDecision>()
+        )
+    }
+    .toList<TimelineValueDecision>()
 
 data class TimelineIncome(
     val id: IncomeId,
@@ -215,18 +215,17 @@ data class TimelineIncome(
     val effect: IncomeEffect,
 ) : WithRange
 
-private fun Database.Read.getIncomes(personId: PersonId, range: FiniteDateRange) =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getIncomes(personId: PersonId, range: FiniteDateRange) = createQuery {
+    sql(
+        """
 SELECT id, daterange(valid_from, valid_to, '[]') as range, effect
 FROM income
 WHERE person_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
 ORDER BY valid_from
 """
-            )
-        }
-        .toList<TimelineIncome>()
+    )
+}
+    .toList<TimelineIncome>()
 
 data class TimelinePartner(
     val id: PartnershipId,
@@ -323,10 +322,9 @@ data class TimelinePlacement(
 
 data class TimelinePlacementUnit(val id: DaycareId, val name: String)
 
-private fun Database.Read.getPlacements(personId: PersonId, range: FiniteDateRange) =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getPlacements(personId: PersonId, range: FiniteDateRange) = createQuery {
+    sql(
+        """
 SELECT
     pl.id,
     daterange(pl.start_date, pl.end_date, '[]') as range, 
@@ -338,9 +336,9 @@ JOIN daycare d on d.id = pl.unit_id
 WHERE pl.child_id = ${bind(personId)} AND daterange(start_date, end_date, '[]') && ${bind(range)}
 ORDER BY pl.start_date
 """
-            )
-        }
-        .toList<TimelinePlacement>()
+    )
+}
+    .toList<TimelinePlacement>()
 
 data class TimelineServiceNeed(
     val id: ServiceNeedId,
@@ -350,8 +348,8 @@ data class TimelineServiceNeed(
 
 private fun Database.Read.getServiceNeeds(personId: PersonId, range: FiniteDateRange) =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     sn.id,
     daterange(sn.start_date, sn.end_date, '[]') as range, 
@@ -362,9 +360,9 @@ JOIN service_need_option sno on sn.option_id = sno.id
 WHERE pl.child_id = ${bind(personId)} AND daterange(sn.start_date, sn.end_date, '[]') && ${bind(range)}
 ORDER BY pl.start_date
 """
-            )
-        }
-        .toList<TimelineServiceNeed>()
+        )
+    }
+    .toList<TimelineServiceNeed>()
 
 data class TimelineFeeAlteration(
     val id: FeeAlterationId,
@@ -377,13 +375,13 @@ data class TimelineFeeAlteration(
 
 private fun Database.Read.getFeeAlterations(personId: PersonId, range: FiniteDateRange) =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, daterange(valid_from, valid_to, '[]') as range, type, amount, is_absolute as absolute, notes
 FROM fee_alteration
 WHERE person_id = ${bind(personId)} AND daterange(valid_from, valid_to, '[]') && ${bind(range)}
 ORDER BY valid_from
 """
-            )
-        }
-        .toList<TimelineFeeAlteration>()
+        )
+    }
+    .toList<TimelineFeeAlteration>()

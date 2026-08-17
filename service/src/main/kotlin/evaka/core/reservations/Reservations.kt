@@ -571,14 +571,14 @@ private fun Database.Transaction.deleteReservations(
     skip: List<AttendanceReservationId>,
 ): List<AttendanceReservationId> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         DELETE FROM attendance_reservation
         WHERE date = ${bind(date)} AND child_id = ${bind(childId)} AND NOT (id = ANY (${bind(skip)}))
         RETURNING id
     """
-            )
-        }
+        )
+    }
         .toList<AttendanceReservationId>()
 }
 
@@ -590,14 +590,14 @@ private fun Database.Transaction.insertReservation(
     reservation: Reservation,
 ): AttendanceReservationId {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
         INSERT INTO attendance_reservation (child_id, created_at, created_by, date, start_time, end_time) 
         VALUES (${bind(childId)}, ${bind(now)}, ${bind(userId)}, ${bind(date)}, ${bind(reservation.asTimeRange()?.start)}, ${bind(reservation.asTimeRange()?.end)})
         RETURNING id
     """
-            )
-        }
+        )
+    }
         .exactlyOne<AttendanceReservationId>()
 }
 

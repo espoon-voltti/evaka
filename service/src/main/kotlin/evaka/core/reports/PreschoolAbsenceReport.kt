@@ -239,7 +239,8 @@ class PreschoolAbsenceReport(private val accessControl: AccessControl) {
                     firstName = k.value[0].firstName,
                     lastName = k.value[0].lastName,
                     placementType = k.value[0].placementType,
-                    hourlyTypeResults = k.value.associateBy({ it.absenceType }, { it.absenceHours }),
+                    hourlyTypeResults =
+                        k.value.associateBy({ it.absenceType }, { it.absenceHours }),
                 )
             }
     }

@@ -61,10 +61,9 @@ class VardaErrorReport(private val accessControl: AccessControl) {
     }
 }
 
-private fun Database.Read.getVardaChildErrors(): List<VardaChildErrorReportRow> =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getVardaChildErrors(): List<VardaChildErrorReportRow> = createQuery {
+    sql(
+        """
 SELECT
     child_id,
     errored_at,
@@ -74,9 +73,9 @@ FROM varda_state
 WHERE errored_at IS NOT NULL
 ORDER BY errored_at DESC
     """
-            )
-        }
-        .toList<VardaChildErrorReportRow>()
+    )
+}
+    .toList<VardaChildErrorReportRow>()
 
 data class VardaChildErrorReportRow(
     val childId: ChildId,
@@ -85,10 +84,9 @@ data class VardaChildErrorReportRow(
     val error: String,
 )
 
-private fun Database.Read.getVardaUnitErrors(): List<VardaUnitErrorReportRow> =
-    createQuery {
-            sql(
-                """
+private fun Database.Read.getVardaUnitErrors(): List<VardaUnitErrorReportRow> = createQuery {
+    sql(
+        """
                 SELECT
                     vu.evaka_daycare_id AS unit_id,
                     u.name AS unit_name,
@@ -99,9 +97,9 @@ private fun Database.Read.getVardaUnitErrors(): List<VardaUnitErrorReportRow> =
                 JOIN daycare u ON u.id = vu.evaka_daycare_id
                 WHERE vu.errored_at IS NOT NULL
                 """
-            )
-        }
-        .toList<VardaUnitErrorReportRow>()
+    )
+}
+    .toList<VardaUnitErrorReportRow>()
 
 data class VardaUnitErrorReportRow(
     val unitId: DaycareId,

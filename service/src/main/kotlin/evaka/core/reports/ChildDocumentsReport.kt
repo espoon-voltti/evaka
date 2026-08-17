@@ -139,8 +139,8 @@ class ChildDocumentsReport(private val accessControl: AccessControl) {
         today: LocalDate,
     ): List<UnitRow> {
         return createQuery {
-                sql(
-                    """
+            sql(
+                """
 WITH valid_children AS (
     SELECT dt.id AS template_id, pl.child_id, pl.unit_id, dgp.daycare_group_id AS group_id
     FROM document_template dt
@@ -176,8 +176,8 @@ LEFT JOIN child_document cd ON vc.child_id = cd.child_id AND cd.template_id = AN
 WHERE d.id = ANY(${bind(unitIds)})
 GROUP BY d.id, d.name, dg.id, dg.name
         """
-                )
-            }
+            )
+        }
             .toList<DataRow>()
             .groupBy { it.unitId to it.unitName }
             .map { (unit, rows) ->

@@ -101,30 +101,28 @@ WHERE notification.absence_id = ANY(${bind(absenceIds)})
         today: LocalDate,
         absenceId: AbsenceId,
         device: MobileDeviceId,
-    ): AbsenceNotification? =
-        createQuery {
-                sql(
-                    """
+    ): AbsenceNotification? = createQuery {
+        sql(
+            """
 SELECT group_id, group_name, mdps.endpoint, mdps.auth_secret, mdps.ecdh_key
 FROM (${subquery(getPendingPushNotifications(today))}) notification
 JOIN mobile_device_push_subscription mdps ON mdps.device = notification.device
 WHERE notification.absence_id = ${bind(absenceId)}
 AND notification.device = ${bind(device)}
 """
-                )
-            }
-            .exactlyOneOrNull {
-                AbsenceNotification(
-                    groupId = column("group_id"),
-                    groupName = column("group_name"),
-                    WebPushEndpoint(
-                        uri = column("endpoint"),
-                        ecdhPublicKey =
-                            WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
-                        authSecret = column("auth_secret"),
-                    ),
-                )
-            }
+        )
+    }
+        .exactlyOneOrNull {
+            AbsenceNotification(
+                groupId = column("group_id"),
+                groupName = column("group_name"),
+                WebPushEndpoint(
+                    uri = column("endpoint"),
+                    ecdhPublicKey = WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
+                    authSecret = column("auth_secret"),
+                ),
+            )
+        }
 
     fun send(
         dbc: Database.Connection,

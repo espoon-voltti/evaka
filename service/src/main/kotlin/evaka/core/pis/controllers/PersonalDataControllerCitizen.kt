@@ -229,7 +229,8 @@ class PersonalDataControllerCitizen(
                     EmailVerificationStatusResponse(
                         email = emails.email,
                         verifiedEmail = emails.verifiedEmail,
-                        latestVerification = verification?.takeUnless { it.expiresAt < clock.now() },
+                        latestVerification =
+                            verification?.takeUnless { it.expiresAt < clock.now() },
                     )
                 }
             }
@@ -328,10 +329,11 @@ class PersonalDataControllerCitizen(
         }
     }
 
-    private fun generateConfirmationCode(): String =
-        generateSequence { "0123456789".random(secureRandom.asKotlinRandom()) }
-            .take(CONFIRMATION_CODE_LENGTH)
-            .joinToString(separator = "")
+    private fun generateConfirmationCode(): String = generateSequence {
+        "0123456789".random(secureRandom.asKotlinRandom())
+    }
+        .take(CONFIRMATION_CODE_LENGTH)
+        .joinToString(separator = "")
 
     @GetMapping("/password-constraints")
     fun getPasswordConstraints(user: AuthenticatedUser.Citizen): PasswordConstraints =

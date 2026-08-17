@@ -217,75 +217,75 @@ data class UnitApplyPeriods(
 
 fun Database.Read.getUnitApplyPeriods(ids: Collection<DaycareId>): List<UnitApplyPeriods> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, daycare_apply_period, preschool_apply_period, club_apply_period
 FROM daycare
 WHERE id = ANY(${bind(ids)})
 """
-            )
-        }
-        .toList()
+        )
+    }
+    .toList()
 
-fun Database.Read.getDaycare(id: DaycareId): Daycare? =
-    createQuery { daycaresQuery(Predicate { where("$it.id = ${bind(id)}") }) }
-        .exactlyOneOrNull<Daycare>()
+fun Database.Read.getDaycare(id: DaycareId): Daycare? = createQuery {
+    daycaresQuery(Predicate { where("$it.id = ${bind(id)}") })
+}
+    .exactlyOneOrNull<Daycare>()
 
-fun Database.Read.getDaycaresForArea(id: AreaId): List<Daycare> =
-    createQuery { daycaresQuery(Predicate { where("$it.care_area_id = ${bind(id)}") }) }.toList()
+fun Database.Read.getDaycaresForArea(id: AreaId): List<Daycare> = createQuery {
+    daycaresQuery(Predicate { where("$it.care_area_id = ${bind(id)}") })
+}
+    .toList()
 
-fun Database.Read.getOphUnitOIDs(): Map<DaycareId, String> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getOphUnitOIDs(): Map<DaycareId, String> = createQuery {
+    sql(
+        """
 SELECT id, oph_unit_oid AS oph_unit_oid
 FROM daycare
 WHERE oph_unit_oid IS NOT NULL
 """
-            )
-        }
-        .toMap { columnPair("id", "oph_unit_oid") }
+    )
+}
+    .toMap { columnPair("id", "oph_unit_oid") }
 
-fun Database.Read.getLastPlacementDate(daycareId: DaycareId): LocalDate? =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getLastPlacementDate(daycareId: DaycareId): LocalDate? = createQuery {
+    sql(
+        """
 SELECT GREATEST(
     (SELECT MAX(end_date) FROM placement WHERE unit_id = ${bind(daycareId)}),
     (SELECT MAX(end_date) FROM backup_care WHERE unit_id = ${bind(daycareId)})
 )
 """
-            )
-        }
-        .exactlyOneOrNull()
+    )
+}
+    .exactlyOneOrNull()
 
-fun Database.Read.isValidDaycareId(id: DaycareId): Boolean =
-    createQuery { sql("SELECT EXISTS (SELECT 1 FROM daycare WHERE id = ${bind(id)}) AS valid") }
-        .exactlyOne()
+fun Database.Read.isValidDaycareId(id: DaycareId): Boolean = createQuery {
+    sql("SELECT EXISTS (SELECT 1 FROM daycare WHERE id = ${bind(id)}) AS valid")
+}
+    .exactlyOne()
 
-fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? = createQuery {
+    sql(
+        """
 SELECT id, name, type as care_types, closing_date
 FROM daycare
 WHERE id = ${bind(daycareId)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+    )
+}
+    .exactlyOneOrNull()
 
-fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId = createUpdate {
+    sql(
+        """
 INSERT INTO daycare (name, care_area_id)
 SELECT ${bind(name)}, ${bind(areaId)}
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne()
 
 fun Database.Transaction.updateDaycare(id: DaycareId, fields: DaycareFields) = execute {
     sql(
@@ -359,19 +359,18 @@ WHERE id = ${bind(id)}
 
 fun Database.Transaction.updateUnitClosingDate(unitId: DaycareId, closingDate: LocalDate) =
     createUpdate {
-            sql("UPDATE daycare SET closing_date = ${bind(closingDate)} WHERE id = ${bind(unitId)}")
-        }
-        .updateExactlyOne()
+        sql("UPDATE daycare SET closing_date = ${bind(closingDate)} WHERE id = ${bind(unitId)}")
+    }
+    .updateExactlyOne()
 
 fun Database.Read.getApplicationUnits(
     type: ApplicationUnitType,
     date: LocalDate,
     shiftCare: Boolean?,
     onlyApplicable: Boolean,
-): List<PublicUnit> =
-    createQuery {
-            sql(
-                """
+): List<PublicUnit> = createQuery {
+    sql(
+        """
 SELECT
     id,
     name,
@@ -400,9 +399,9 @@ WHERE ${bind(date)} <= COALESCE(closing_date, 'infinity'::date)
     )
 ORDER BY name
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 fun Database.Read.getAllApplicableUnits(applicationType: ApplicationType): List<PublicUnit> {
     val applyPeriod =
@@ -414,8 +413,8 @@ fun Database.Read.getAllApplicableUnits(applicationType: ApplicationType): List<
 
     val today = HelsinkiDateTime.now().toLocalDate()
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     id,
     name,
@@ -441,35 +440,34 @@ WHERE daterange(null, closing_date, '[]') @> ${bind(today)} AND
     ($applyPeriod && daterange(${bind(today)}, null, '[]') OR provider_type = 'PRIVATE')
 ORDER BY name
     """
-            )
-        }
+        )
+    }
         .toList()
 }
 
 fun Database.Read.getDaycareGroupSummaries(daycareId: DaycareId): List<DaycareGroupSummary> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, name, end_date
 FROM daycare_group
 WHERE daycare_id = ${bind(daycareId)}
 """
-            )
-        }
-        .toList()
+        )
+    }
+    .toList()
 
-fun Database.Read.getUnitFeatures(today: LocalDate): List<UnitFeatures> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getUnitFeatures(today: LocalDate): List<UnitFeatures> = createQuery {
+    sql(
+        """
 SELECT id, name, enabled_pilot_features AS features, provider_type, type
 FROM daycare
 WHERE closing_date IS NULL OR closing_date >= ${bind(today)}
 ORDER BY name
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 fun Database.Transaction.addUnitFeatures(
     daycareIds: List<DaycareId>,
@@ -505,22 +503,21 @@ WHERE id = ANY(${bind(daycareIds)})
     }
 }
 
-fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? = createQuery {
+    sql(
+        """
 SELECT id, name, enabled_pilot_features AS features, provider_type, type
 FROM daycare
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+    )
+}
+    .exactlyOneOrNull()
 
 fun Database.Read.anyUnitHasFeature(ids: Collection<DaycareId>, feature: PilotFeature): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT EXISTS(
     SELECT 1
     FROM daycare
@@ -528,30 +525,29 @@ SELECT EXISTS(
     AND ${bind(feature)} = ANY(enabled_pilot_features)
 )
 """
-            )
-        }
-        .exactlyOne<Boolean>()
+        )
+    }
+    .exactlyOne<Boolean>()
 
 fun Database.Read.getUnitOperationPeriods(
     unitIds: List<DaycareId>?
-): Map<DaycareId, UnitOperationPeriod> =
-    createQuery {
-            sql(
-                """
+): Map<DaycareId, UnitOperationPeriod> = createQuery {
+    sql(
+        """
 SELECT id, opening_date, closing_date
 FROM daycare unit
 WHERE id = ANY(${bind(unitIds)})
 """
-            )
-        }
-        .toMap {
-            Pair(column("id"), UnitOperationPeriod(column("opening_date"), column("closing_date")))
-        }
+    )
+}
+    .toMap {
+        Pair(column("id"), UnitOperationPeriod(column("opening_date"), column("closing_date")))
+    }
 
 fun Database.Read.isDaycareOpenForPeriod(id: DaycareId, period: FiniteDateRange): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT EXISTS (
     SELECT 1
     FROM daycare
@@ -559,6 +555,6 @@ SELECT EXISTS (
     AND daterange(opening_date, closing_date, '[]') @> daterange(${bind(period.start)}, ${bind(period.end)}, '[]')
 )
 """
-            )
-        }
-        .exactlyOne<Boolean>()
+        )
+    }
+    .exactlyOne<Boolean>()

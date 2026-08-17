@@ -117,10 +117,9 @@ class ExportPreschoolChildDocumentsService(
 private fun Database.Read.getTemplateIdForExport(
     date: LocalDate,
     templateNamePattern: String,
-): DocumentTemplateId =
-    createQuery {
-            sql(
-                """
+): DocumentTemplateId = createQuery {
+    sql(
+        """
 SELECT id
 FROM document_template
 WHERE name ILIKE ${bind(templateNamePattern)}
@@ -129,15 +128,15 @@ WHERE name ILIKE ${bind(templateNamePattern)}
 ORDER BY validity DESC
 LIMIT 1
         """
-                    .trimIndent()
-            )
-        }
-        .exactlyOne<DocumentTemplateId>()
+            .trimIndent()
+    )
+}
+    .exactlyOne<DocumentTemplateId>()
 
 private fun Database.Read.getDocumentsJsonForExport(templateId: DocumentTemplateId): String =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH question AS (SELECT question
                   FROM document_template
                   CROSS JOIN jsonb_array_elements(document_template.content -> 'sections') section
@@ -187,7 +186,7 @@ WITH question AS (SELECT question
 SELECT coalesce(jsonb_agg(child_and_document.data), '[]') AS data
 FROM child_and_document
         """
-                    .trimIndent()
-            )
-        }
-        .exactlyOne<String>()
+                .trimIndent()
+        )
+    }
+    .exactlyOne<String>()

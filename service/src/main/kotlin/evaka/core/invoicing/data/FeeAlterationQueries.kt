@@ -62,8 +62,8 @@ fun Database.Transaction.upsertFeeAlteration(
 
 fun Database.Read.getFeeAlteration(id: FeeAlterationId): FeeAlteration? {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     fa.id,
     fa.person_id,
@@ -91,15 +91,15 @@ FROM fee_alteration fa
 LEFT JOIN evaka_user e ON fa.modified_by = e.id
 WHERE fa.id = ${bind(id)}
 """
-            )
-        }
+        )
+    }
         .exactlyOneOrNull<FeeAlteration>()
 }
 
 fun Database.Read.getFeeAlterationsForPerson(personId: PersonId): List<FeeAlteration> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     fa.id,
     fa.person_id,
@@ -128,8 +128,8 @@ LEFT JOIN evaka_user e ON fa.modified_by = e.id
 WHERE fa.person_id = ${bind(personId)}
 ORDER BY fa.valid_from DESC, fa.valid_to DESC
 """
-            )
-        }
+        )
+    }
         .toList<FeeAlteration>()
 }
 
@@ -140,8 +140,8 @@ fun Database.Read.getFeeAlterationsFrom(
     if (personIds.isEmpty()) return emptyList()
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     fa.id,
     fa.person_id,
@@ -162,8 +162,8 @@ WHERE
     fa.person_id = ANY(${bind(personIds)})
     AND (fa.valid_to IS NULL OR fa.valid_to >= ${bind(from)})
 """
-            )
-        }
+        )
+    }
         .toList<FeeAlteration>()
 }
 

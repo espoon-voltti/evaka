@@ -65,10 +65,9 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
         providerTypes: List<ProviderType>,
         placementTypes: List<PlacementType>,
     ): PlacementCountReportResult {
-        val resultRows =
-            createQuery {
-                    sql(
-                        """
+        val resultRows = createQuery {
+            sql(
+                """
 SELECT ca.id                                                             AS area_id,
        ca.name                                                           AS area_name,
        d.id                                                              AS daycare_id,
@@ -107,9 +106,9 @@ WHERE d.opening_date <= ${bind(examinationDate)}
 GROUP BY ROLLUP ((ca.id, ca.name), (d.id, d.name))
 ORDER BY ca.name, d.name ASC
             """
-                    )
-                }
-                .toList<PlacementCountReportRow>()
+            )
+        }
+            .toList<PlacementCountReportRow>()
 
         val daycaresByArea = mutableMapOf<String, MutableList<PlacementCountDaycareResult>>()
         val collectedAreaResults = mutableListOf<PlacementCountAreaResult>()

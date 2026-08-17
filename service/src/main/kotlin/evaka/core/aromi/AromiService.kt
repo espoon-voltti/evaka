@@ -192,8 +192,8 @@ private data class AromiReportingRow(
 
 private fun Database.Read.getAromiUnitsAndGroups(window: FiniteDateRange): List<AromiReportingRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     d.id AS daycare_id,
     d.name AS daycare_name,
@@ -212,8 +212,8 @@ AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(window)}
 AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(window)}
 ORDER BY d.name, dg.name
 """
-            )
-        }
+        )
+    }
         .toList<AromiReportingRow>()
 }
 
@@ -246,10 +246,9 @@ data class AromiDailyChildData(
     val eatsBreakfast: Boolean,
 )
 
-fun Database.Read.getAromiDailyChildData(date: LocalDate): List<AromiDailyChildData> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getAromiDailyChildData(date: LocalDate): List<AromiDailyChildData> = createQuery {
+    sql(
+        """
 SELECT
     rp.child_id,
     rp.unit_id,
@@ -287,9 +286,9 @@ WHERE dg.aromi_customer_id IS NOT NULL
 AND daterange(dg.start_date, dg.end_date, '[]') @> ${bind(date)}
 AND daterange(d.opening_date, d.closing_date, '[]') @> ${bind(date)}
                     """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 private fun Database.Read.getAromiChildInfos(
     date: LocalDate,

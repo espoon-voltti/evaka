@@ -26,33 +26,31 @@ fun Database.Read.getOperationalDatesForChildren(
         val unitId: DaycareId,
     )
 
-    val placements: Map<ChildId, DateMap<DaycareId>> =
-        createQuery {
-                sql(
-                    """
+    val placements: Map<ChildId, DateMap<DaycareId>> = createQuery {
+        sql(
+            """
         SELECT daterange(pl.start_date, pl.end_date, '[]') as range, pl.child_id, pl.unit_id
         FROM placement pl
         WHERE pl.child_id = ANY(${bind(children)}) AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
     """
-                )
-            }
-            .toList<PlacementRange>()
-            .groupBy { it.childId }
-            .mapValues { entry -> DateMap.of(entry.value.map { it.range to it.unitId }) }
+        )
+    }
+        .toList<PlacementRange>()
+        .groupBy { it.childId }
+        .mapValues { entry -> DateMap.of(entry.value.map { it.range to it.unitId }) }
 
-    val backupPlacements: Map<ChildId, DateMap<DaycareId>> =
-        createQuery {
-                sql(
-                    """
+    val backupPlacements: Map<ChildId, DateMap<DaycareId>> = createQuery {
+        sql(
+            """
         SELECT daterange(bc.start_date, bc.end_date, '[]') as range, bc.child_id, bc.unit_id
         FROM backup_care bc
         WHERE bc.child_id = ANY(${bind(children)}) AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(range)}
     """
-                )
-            }
-            .toList<PlacementRange>()
-            .groupBy { it.childId }
-            .mapValues { entry -> DateMap.of(entry.value.map { it.range to it.unitId }) }
+        )
+    }
+        .toList<PlacementRange>()
+        .groupBy { it.childId }
+        .mapValues { entry -> DateMap.of(entry.value.map { it.range to it.unitId }) }
 
     val realizedPlacements: Map<ChildId, DateMap<DaycareId>> =
         placements.mapValues { (childId, placementDateMap) ->
@@ -69,18 +67,17 @@ fun Database.Read.getOperationalDatesForChildren(
         val shiftCareOperationDays: Set<Int>?,
         val shiftCareOpenOnHolidays: Boolean,
     )
-    val operationDaysByDaycareId: Map<DaycareId, DaycareOperationDays> =
-        createQuery {
-                sql(
-                    """
+    val operationDaysByDaycareId: Map<DaycareId, DaycareOperationDays> = createQuery {
+        sql(
+            """
         SELECT id AS unit_id, operation_days, shift_care_operation_days, shift_care_open_on_holidays
         FROM daycare 
         WHERE id = ANY(${bind(daycareIds)})
     """
-                )
-            }
-            .toList<DaycareOperationDays>()
-            .associateBy { it.unitId }
+        )
+    }
+        .toList<DaycareOperationDays>()
+        .associateBy { it.unitId }
 
     val holidays = getHolidays(range)
 
@@ -89,19 +86,18 @@ fun Database.Read.getOperationalDatesForChildren(
         val range: FiniteDateRange,
         val shiftCare: ShiftCareType,
     )
-    val shiftCareRanges =
-        createQuery {
-                sql(
-                    """
+    val shiftCareRanges = createQuery {
+        sql(
+            """
         SELECT pl.child_id, daterange(sn.start_date, sn.end_date, '[]') AS range, sn.shift_care
         FROM placement pl
         JOIN service_need sn ON sn.placement_id = pl.id AND sn.shift_care = ANY('{FULL,INTERMITTENT}'::shift_care_type[])
         WHERE pl.child_id = ANY(${bind(children)}) AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(range)}
     """
-                )
-            }
-            .toList<ShiftCareRange>()
-            .groupBy { it.childId }
+        )
+    }
+        .toList<ShiftCareRange>()
+        .groupBy { it.childId }
 
     val fullShiftCareRanges: Map<ChildId, DateSet> = shiftCareRanges.mapValues { entry ->
         DateSet.of(entry.value.filter { it.shiftCare == ShiftCareType.FULL }.map { it.range })

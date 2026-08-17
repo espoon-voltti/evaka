@@ -9,36 +9,35 @@ import evaka.core.shared.db.Database
 
 fun Database.Read.isBlacklistSourceUpToDate(source: PasswordBlacklistSource): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT EXISTS (
     SELECT FROM password_blacklist_source
     WHERE name = ${bind(source.name)}
     AND imported_at = ${bind(source.updatedAt)}
 )
 """
-            )
-        }
-        .exactlyOne()
+        )
+    }
+    .exactlyOne()
 
 fun Database.Transaction.upsertPasswordBlacklist(
     source: PasswordBlacklistSource,
     passwords: Sequence<String>,
 ) {
-    val sourceId: Int =
-        createUpdate {
-                sql(
-                    """
+    val sourceId: Int = createUpdate {
+        sql(
+            """
 INSERT INTO password_blacklist_source (name, imported_at)
 VALUES (${bind(source.name)}, ${bind(source.updatedAt)})
 ON CONFLICT (name) DO UPDATE
     SET imported_at = excluded.imported_at
 RETURNING id
 """
-                )
-            }
-            .executeAndReturnGeneratedKeys()
-            .exactlyOne()
+        )
+    }
+        .executeAndReturnGeneratedKeys()
+        .exactlyOne()
     executeBatch(passwords) {
         sql(
             """
@@ -50,10 +49,7 @@ ON CONFLICT DO NOTHING
     }
 }
 
-fun Database.Read.isPasswordBlacklisted(password: Sensitive<String>): Boolean =
-    createQuery {
-            sql(
-                "SELECT EXISTS(SELECT FROM password_blacklist WHERE password = ${bind(password.value)})"
-            )
-        }
-        .exactlyOne()
+fun Database.Read.isPasswordBlacklisted(password: Sensitive<String>): Boolean = createQuery {
+    sql("SELECT EXISTS(SELECT FROM password_blacklist WHERE password = ${bind(password.value)})")
+}
+    .exactlyOne()

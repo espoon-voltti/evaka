@@ -81,18 +81,17 @@ fun Database.Transaction.resetNekkuCustomerNumbersNotContainedWithin(
     nekkuCustomerNumbers: List<NekkuCustomer>
 ): List<GroupId> {
     val newNekkuCustomerNumbers = nekkuCustomerNumbers.map { it.number }
-    val affectedGroups =
-        createQuery {
-                sql(
-                    """
+    val affectedGroups = createQuery {
+        sql(
+            """
 SELECT id
 FROM daycare_group
 WHERE nekku_customer_number != ALL (${bind(newNekkuCustomerNumbers)})
                     """
-                        .trimIndent()
-                )
-            }
-            .toList<GroupId>()
+                .trimIndent()
+        )
+    }
+        .toList<GroupId>()
     execute {
         sql(
             """
@@ -172,10 +171,9 @@ INSERT INTO nekku_customer_type (
 fun Database.Read.getNekkuGroupCustomerMapping(
     groupId: GroupId,
     weekday: NekkuCustomerWeekday,
-): NekkuDaycareCustomerMapping? =
-    createQuery {
-            sql(
-                """
+): NekkuDaycareCustomerMapping? = createQuery {
+    sql(
+        """
 SELECT
     dg.nekku_customer_number as customerNumber,
     dg.name as groupName,
@@ -186,14 +184,14 @@ FROM daycare_group dg
 WHERE dg.id = ${bind(groupId)}
     AND ${bind(weekday)} = ANY(nct.weekdays)
             """
-            )
-        }
-        .exactlyOneOrNull<NekkuDaycareCustomerMapping>()
+    )
+}
+    .exactlyOneOrNull<NekkuDaycareCustomerMapping>()
 
 fun Database.Transaction.getNekkuCustomers(): List<NekkuCustomer> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     nc.number,
     nc.name,
@@ -203,8 +201,8 @@ FROM nekku_customer nc
 LEFT JOIN nekku_customer_type nct ON nc.number = nct.customer_number
 GROUP BY nc.number, nc.name, nc.customer_group
                     """
-            )
-        }
+        )
+    }
         .toList<NekkuCustomer>()
 }
 
@@ -422,32 +420,30 @@ fun Database.Transaction.fetchChildrenWithRemovedDiets(
 ): List<NekkuSpecialDietChoicesWithChild> {
 
     // find child IDs with choices for which there is no longer a diet ID
-    val childrenWithRemovedDietIds =
-        createQuery {
-                sql(
-                    """
+    val childrenWithRemovedDietIds = createQuery {
+        sql(
+            """
 SELECT DISTINCT child_id
 FROM nekku_special_diet_choices
 WHERE diet_id != ALL(${bind(newDiets.map { it.id })})
                     """
-                        .trimIndent()
-                )
-            }
-            .toSet<ChildId>()
+                .trimIndent()
+        )
+    }
+        .toSet<ChildId>()
 
     // find child IDs with choices for which there is no longer a field
-    val childrenWithRemovedFieldIds =
-        createQuery {
-                sql(
-                    """
+    val childrenWithRemovedFieldIds = createQuery {
+        sql(
+            """
 SELECT DISTINCT child_id
 FROM nekku_special_diet_choices
 WHERE field_id != ALL(${bind(newDiets.flatMap { it.fields.map { it.id } }) })
                     """
-                        .trimIndent()
-                )
-            }
-            .toSet<ChildId>()
+                .trimIndent()
+        )
+    }
+        .toSet<ChildId>()
 
     // find child IDs with choices for which there is no longer an option
     val childrenWithRemovedOptions =
@@ -456,15 +452,15 @@ WHERE field_id != ALL(${bind(newDiets.flatMap { it.fields.map { it.id } }) })
             .filter { it.options != null }
             .map {
                 createQuery {
-                        sql(
-                            """
+                    sql(
+                        """
 SELECT DISTINCT child_id
 FROM nekku_special_diet_choices
 WHERE field_id = ${bind(it.id)} AND value != ALL(${bind(it.options?.map { it.value }) })
                         """
-                                .trimIndent()
-                        )
-                    }
+                            .trimIndent()
+                    )
+                }
                     .toSet<ChildId>()
             }
             .reduce { acc, it -> acc + it }
@@ -475,15 +471,15 @@ WHERE field_id = ${bind(it.id)} AND value != ALL(${bind(it.options?.map { it.val
         childrenWithRemovedDietIds + childrenWithRemovedFieldIds + childrenWithRemovedOptions
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT child_id, diet_id, field_id, value
 FROM nekku_special_diet_choices
 WHERE child_id = ANY (${bind(allChildren)})
                 """
-                    .trimIndent()
-            )
-        }
+                .trimIndent()
+        )
+    }
         .toList()
 }
 
@@ -509,10 +505,9 @@ fun Database.Transaction.groupByDaycareAndGroup(
 fun Database.Transaction.getUnitAndGroupForChildren(
     childIds: List<ChildId>,
     today: LocalDate,
-): Map<DaycareId, Map<String, List<ChildId>>> =
-    createQuery {
-            sql(
-                """
+): Map<DaycareId, Map<String, List<ChildId>>> = createQuery {
+    sql(
+        """
 SELECT p.child_id, p.unit_id, dg.name
 FROM placement p
     JOIN daycare_group_placement dgp on p.id = dgp.daycare_placement_id
@@ -523,18 +518,18 @@ WHERE p.child_id =ANY (${bind(childIds)})
     AND dgp.start_date >= ${bind(today)}
     AND dgp.end_date <= ${bind(today)}
         """
-                    .trimIndent()
-            )
-        }
-        .map {
-            Triple(
-                column<DaycareId>("unit_id"),
-                column<String>("name"),
-                column<ChildId>("child_id"),
-            )
-        }
-        .useSequence { rows -> rows.groupBy({ it.first }, { it.second to it.third }) }
-        .mapValues { (_, value) -> value.groupBy({ it.first }, { it.second }) }
+            .trimIndent()
+    )
+}
+    .map {
+        Triple(
+            column<DaycareId>("unit_id"),
+            column<String>("name"),
+            column<ChildId>("child_id"),
+        )
+    }
+    .useSequence { rows -> rows.groupBy({ it.first }, { it.second to it.third }) }
+    .mapValues { (_, value) -> value.groupBy({ it.first }, { it.second }) }
 
 /** Throws an IllegalStateException if Nekku returns an empty product list. */
 fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
@@ -591,17 +586,15 @@ WHERE
 
 fun Database.Read.getNekkuProducts(): List<NekkuProduct> {
     return createQuery {
-            sql(
-                "SELECT sku, name, options_id, customer_types, meal_time, meal_type FROM nekku_product"
-            )
-        }
+        sql("SELECT sku, name, options_id, customer_types, meal_time, meal_type FROM nekku_product")
+    }
         .toList<NekkuProduct>()
 }
 
 fun Database.Read.getNekkuChildData(nekkuGroupId: GroupId, date: LocalDate): List<NekkuChildData> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     rp.child_id,
     rp.unit_id,
@@ -632,9 +625,9 @@ FROM realized_placement_one(${bind(date)}) rp
     LEFT JOIN service_need sn ON sn.placement_id = rp.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(date)}
 WHERE dg.id = ${bind(nekkuGroupId)}
                     """
-            )
-        }
-        .toList()
+        )
+    }
+    .toList()
 
 data class NekkuChildData(
     val childId: ChildId,
@@ -658,29 +651,28 @@ data class GroupDates(val id: GroupId, val validFrom: LocalDate?, val validTo: L
 
 fun Database.Read.getNekkuCustomerWeekdaysByGroups(
     groupIds: List<GroupId>
-): Map<GroupId, Set<NekkuCustomerWeekday>> =
-    createQuery {
-            sql(
-                """
+): Map<GroupId, Set<NekkuCustomerWeekday>> = createQuery {
+    sql(
+        """
 SELECT dg.id AS group_id, unnest(nct.weekdays) AS weekday
 FROM daycare_group dg
     JOIN nekku_customer nc ON nc.number = dg.nekku_customer_number
     JOIN nekku_customer_type nct ON nc.number = nct.customer_number
 WHERE dg.id = ANY(${bind(groupIds)})
                 """
-            )
-        }
-        .toList { column<GroupId>("group_id") to column<NekkuCustomerWeekday>("weekday") }
-        .groupBy({ it.first }, { it.second })
-        .mapValues { it.value.toSet() }
+    )
+}
+    .toList { column<GroupId>("group_id") to column<NekkuCustomerWeekday>("weekday") }
+    .groupBy({ it.first }, { it.second })
+    .mapValues { it.value.toSet() }
 
 fun Database.Read.getNekkuOpenDaycareGroupDates(date: LocalDate): List<GroupDates> =
     getNekkuOpenDaycareGroupDates(FiniteDateRange(date, date))
 
 fun Database.Read.getNekkuOpenDaycareGroupDates(range: FiniteDateRange): List<GroupDates> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT 
     dg.id as id,
     GREATEST(d.opening_date, dg.start_date) as valid_from,
@@ -692,14 +684,14 @@ WHERE dg.nekku_customer_number IS NOT NULL
     AND daterange(d.opening_date, d.closing_date, '[]') && ${bind(range)}
     AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
                 """
-            )
-        }
-        .toList<GroupDates>()
+        )
+    }
+    .toList<GroupDates>()
 
 fun Database.Read.findNekkuGroupsOpeningInNextWeek(date: LocalDate): List<GroupDates> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     dg.id as id,
     GREATEST(d.opening_date, dg.start_date) as valid_from,
@@ -711,31 +703,29 @@ WHERE dg.nekku_customer_number IS NOT NULL
     AND GREATEST(d.opening_date, dg.start_date) > ${bind(date)}
     AND GREATEST(d.opening_date, dg.start_date) <= ${bind(date.plusDays(7))}
             """
-                    .trimIndent()
-            )
-        }
-        .toList<GroupDates>()
+                .trimIndent()
+        )
+    }
+    .toList<GroupDates>()
 
 fun Database.Read.mealTypesForChildren(
     childIds: Set<ChildId>
-): Map<ChildId, NekkuProductMealType?> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, NekkuProductMealType?> = createQuery {
+    sql(
+        """
 SELECT child.id as child_id, child.nekku_diet
 FROM child
 WHERE child.id = ANY (${bind(childIds)})
 """
-            )
-        }
-        .toMap { column<ChildId>("child_id") to column<NekkuProductMealType?>("nekku_diet") }
+    )
+}
+    .toMap { column<ChildId>("child_id") to column<NekkuProductMealType?>("nekku_diet") }
 
 fun Database.Read.specialDietChoicesForChildren(
     childIds: Set<ChildId>
-): Map<ChildId, List<NekkuSpecialDietChoices>> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, List<NekkuSpecialDietChoices>> = createQuery {
+    sql(
+        """
 SELECT
     c.id as child_id,
     jsonb_agg(jsonb_build_object('dietId', nsdc.diet_id, 'fieldId', nsdc.field_id, 'value', nsdc.value)) AS choices
@@ -744,58 +734,59 @@ FROM child c
 WHERE c.id = ANY (${bind(childIds)})
 GROUP BY c.id
         """
-                    .trimIndent()
-            )
-        }
-        .toMap {
-            column<ChildId>("child_id") to jsonColumn<List<NekkuSpecialDietChoices>>("choices")
-        }
+            .trimIndent()
+    )
+}
+    .toMap { column<ChildId>("child_id") to jsonColumn<List<NekkuSpecialDietChoices>>("choices") }
 
-fun Database.Read.getNekkuTextFields(): Map<String, String> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getNekkuTextFields(): Map<String, String> = createQuery {
+    sql(
+        """
 SELECT diet_id, id
 FROM nekku_special_diet_field
 WHERE type='TEXT'
         """
-            )
-        }
-        .toMap { column<String>("diet_id") to column<String>("id") }
+    )
+}
+    .toMap { column<String>("diet_id") to column<String>("id") }
 
-fun Database.Read.getNekkuSpecialDiets(): List<NekkuSpecialDietWithoutFields> =
-    createQuery { sql("SELECT id, name FROM nekku_special_diet") }
-        .toList<NekkuSpecialDietWithoutFields>()
+fun Database.Read.getNekkuSpecialDiets(): List<NekkuSpecialDietWithoutFields> = createQuery {
+    sql("SELECT id, name FROM nekku_special_diet")
+}
+    .toList<NekkuSpecialDietWithoutFields>()
 
 fun Database.Read.getNekkuSpecialDietFields(): List<NekkuSpecialDietsFieldWithoutOptions> =
-    createQuery { sql("SELECT id, name, type, diet_id FROM nekku_special_diet_field") }
-        .toList<NekkuSpecialDietsFieldWithoutOptions>()
+    createQuery {
+        sql("SELECT id, name, type, diet_id FROM nekku_special_diet_field")
+    }
+    .toList<NekkuSpecialDietsFieldWithoutOptions>()
 
 fun Database.Read.getNekkuSpecialDietOptions(): List<NekkuSpecialDietOptionWithFieldId> =
-    createQuery { sql("SELECT weight, key, value, field_id FROM nekku_special_diet_option") }
-        .toList<NekkuSpecialDietOptionWithFieldId>()
+    createQuery {
+        sql("SELECT weight, key, value, field_id FROM nekku_special_diet_option")
+    }
+    .toList<NekkuSpecialDietOptionWithFieldId>()
 
 fun Database.Read.getNekkuSpecialDietChoices(childId: ChildId): List<NekkuSpecialDietChoices> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT diet_id, field_id, value
 FROM nekku_special_diet_choices
 WHERE child_id = ${bind(childId)}
         """
-                    .trimIndent()
-            )
-        }
-        .toList<NekkuSpecialDietChoices>()
+                .trimIndent()
+        )
+    }
+    .toList<NekkuSpecialDietChoices>()
 
 fun Database.Read.getNekkuOrderReport(
     daycareId: DaycareId,
     groupId: GroupId,
     date: LocalDate,
-): List<NekkuOrdersReport> =
-    createQuery {
-            sql(
-                """
+): List<NekkuOrdersReport> = createQuery {
+    sql(
+        """
 SELECT 
     delivery_date,
     daycare_id,
@@ -813,10 +804,10 @@ WHERE daycare_id = ${bind(daycareId)}
     AND delivery_date = ${bind(date)}
 ORDER BY delivery_date, group_id, meal_sku
                 """
-                    .trimIndent()
-            )
-        }
-        .toList<NekkuOrdersReport>()
+            .trimIndent()
+    )
+}
+    .toList<NekkuOrdersReport>()
 
 fun Database.Transaction.setNekkuReportOrderReport(
     nekkuOrders: NekkuClient.NekkuOrders,
@@ -957,14 +948,15 @@ VALUES (
     }
 }
 
-fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> =
-    createQuery { sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}") }
-        .toList()
+fun Database.Read.getDaycareGroupIds(daycareId: DaycareId): List<GroupId> = createQuery {
+    sql("SELECT id FROM daycare_group WHERE daycare_id = ${bind(daycareId)}")
+}
+    .toList()
 
 fun Database.Read.getGroupOperationDays(groupId: GroupId): NekkuDaycareOperationInfo? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT ARRAY(
     SELECT DISTINCT unnest(
         COALESCE(d.operation_days, '{}')::int[] || 
@@ -977,9 +969,9 @@ FROM daycare_group dcg
     JOIN daycare d ON d.id = dcg.daycare_id
 WHERE dcg.id = ${bind(groupId)}
                 """
-            )
-        }
-        .exactlyOneOrNull<NekkuDaycareOperationInfo>()
+        )
+    }
+    .exactlyOneOrNull<NekkuDaycareOperationInfo>()
 
 data class NekkuDaycareOperationInfo(
     val combinedDays: List<Int>,
@@ -987,24 +979,23 @@ data class NekkuDaycareOperationInfo(
     val noWeekendMealOrders: Boolean,
 )
 
-fun Database.Read.getNekkuOrderReductionForDaycareByGroup(groupId: GroupId) =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getNekkuOrderReductionForDaycareByGroup(groupId: GroupId) = createQuery {
+    sql(
+        """
 SELECT nekku_order_reduction_percentage
 FROM daycare dc
     JOIN daycare_group dg ON dg.daycare_id = dc.id
 WHERE dg.id = ${bind(groupId)}
                 """
-                    .trimIndent()
-            )
-        }
-        .exactlyOne<Int>()
+            .trimIndent()
+    )
+}
+    .exactlyOne<Int>()
 
 fun Database.Read.groupHasShiftCareChildren(groupId: GroupId, date: LocalDate): Boolean =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT EXISTS (
     SELECT 1
     FROM realized_placement_one(${bind(date)}) rp
@@ -1012,10 +1003,10 @@ SELECT EXISTS (
     WHERE rp.group_id = ${bind(groupId)} AND sn.shift_care IS NOT NULL AND sn.shift_care != 'NONE'
 )
             """
-                    .trimIndent()
-            )
-        }
-        .exactlyOne()
+                .trimIndent()
+        )
+    }
+    .exactlyOne()
 
 fun Database.Read.getCalendarEventMealReductions(
     groupId: GroupId,
@@ -1030,10 +1021,9 @@ fun Database.Read.getCalendarEventMealReductions(
 fun Database.Read.getGroupWideEventOrderReductions(
     groupId: GroupId,
     date: LocalDate,
-): Set<NekkuProductMealTime> =
-    createQuery {
-            sql(
-                """
+): Set<NekkuProductMealTime> = createQuery {
+    sql(
+        """
 SELECT UNNEST(nekku_unordered_meals)
 FROM calendar_event ce
 JOIN calendar_event_attendee cea ON ce.id = cea.calendar_event_id
@@ -1043,18 +1033,17 @@ WHERE dg.id = ${bind(groupId)}
 AND (cea.group_id IS NULL OR (cea.group_id = ${bind(groupId)} AND cea.child_id IS NULL))
 AND ce.period @> ${bind(date)}                 
             """
-                    .trimIndent()
-            )
-        }
-        .toSet()
+            .trimIndent()
+    )
+}
+    .toSet()
 
 fun Database.Read.getChildSpecificEventOrderReductions(
     groupId: GroupId,
     date: LocalDate,
-): Map<ChildId, Set<NekkuProductMealTime>> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, Set<NekkuProductMealTime>> = createQuery {
+    sql(
+        """
 SELECT child_id, ARRAY_AGG(DISTINCT meal) AS reductions
 FROM (
     SELECT cea.child_id as child_id, UNNEST(ce.nekku_unordered_meals) AS meal
@@ -1066,18 +1055,17 @@ FROM (
 )
 GROUP BY child_id
         """
-            )
-        }
-        .toMap { columnPair("child_id", "reductions") }
+    )
+}
+    .toMap { columnPair("child_id", "reductions") }
 
-fun Database.Transaction.cleanNekkuOrderReportRows(cutOffDate: LocalDate) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.cleanNekkuOrderReportRows(cutOffDate: LocalDate) = createUpdate {
+    sql(
+        """
                 DELETE FROM nekku_orders_report
                 WHERE delivery_date < ${bind(cutOffDate)}
             """
-                    .trimIndent()
-            )
-        }
-        .execute()
+            .trimIndent()
+    )
+}
+    .execute()

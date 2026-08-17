@@ -10,17 +10,16 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.json.Json
 
-fun Database.Transaction.updateLastStrongLogin(now: HelsinkiDateTime, id: PersonId) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.updateLastStrongLogin(now: HelsinkiDateTime, id: PersonId) = createUpdate {
+    sql(
+        """
 INSERT INTO citizen_user (id, last_strong_login)
 VALUES (${bind(id)}, ${bind(now)})
 ON CONFLICT (id) DO UPDATE SET last_strong_login = excluded.last_strong_login
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
 data class CitizenWeakLoginDetails(
     val id: PersonId,
@@ -30,38 +29,37 @@ data class CitizenWeakLoginDetails(
 
 fun Database.Read.getCitizenWeakLoginDetails(username: String): CitizenWeakLoginDetails? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, username, password
 FROM citizen_user
 WHERE username = ${bind(username)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }
+    .exactlyOneOrNull()
 
-fun Database.Transaction.updateLastWeakLogin(now: HelsinkiDateTime, id: PersonId) =
-    createUpdate {
-            sql(
-                """
+fun Database.Transaction.updateLastWeakLogin(now: HelsinkiDateTime, id: PersonId) = createUpdate {
+    sql(
+        """
 UPDATE citizen_user SET last_weak_login = ${bind(now)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
 fun Database.Transaction.updatePasswordWithoutTimestamp(id: PersonId, password: EncodedPassword) =
     createUpdate {
-            sql(
-                """
+        sql(
+            """
 UPDATE citizen_user
 SET password = ${bindJson(password)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+        )
+    }
+    .updateExactlyOne()
 
 data class UpdateWeakLoginCredentialsResult(
     val usernameChanged: Boolean,
@@ -76,8 +74,8 @@ fun Database.Transaction.updateWeakLoginCredentials(
 ): UpdateWeakLoginCredentialsResult {
     val normalizedUsername = username?.lowercase()
     return createUpdate {
-            sql(
-                """
+        sql(
+            """
 WITH old AS (
     SELECT username AS old_username, password AS old_password
     FROM citizen_user
@@ -94,16 +92,15 @@ WHERE id = ${bind(id)}
 RETURNING (old_username IS NOT NULL AND old_username != username) AS username_changed,
           (old_password IS NOT NULL AND old_password != password) AS password_changed
 """
-            )
-        }
+        )
+    }
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 }
 
-fun Database.Transaction.hasWeakCredentials(person: PersonId): Boolean =
-    createQuery {
-            sql(
-                "SELECT EXISTS(SELECT FROM citizen_user WHERE id = ${bind(person)} AND username IS NOT NULL)"
-            )
-        }
-        .exactlyOne()
+fun Database.Transaction.hasWeakCredentials(person: PersonId): Boolean = createQuery {
+    sql(
+        "SELECT EXISTS(SELECT FROM citizen_user WHERE id = ${bind(person)} AND username IS NOT NULL)"
+    )
+}
+    .exactlyOne()

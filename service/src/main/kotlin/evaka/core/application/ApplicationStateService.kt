@@ -1314,8 +1314,8 @@ class ApplicationStateService(
 
     private fun Database.Read.sentWithinPreschoolApplicationPeriod(sentDate: LocalDate): Boolean {
         return createQuery {
-                sql("SELECT 1 FROM preschool_term WHERE application_period @> ${bind(sentDate)}")
-            }
+            sql("SELECT 1 FROM preschool_term WHERE application_period @> ${bind(sentDate)}")
+        }
             .toList<Boolean>()
             .firstOrNull() ?: false
     }

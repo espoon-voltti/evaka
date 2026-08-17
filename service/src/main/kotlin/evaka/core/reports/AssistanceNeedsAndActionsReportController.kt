@@ -190,10 +190,9 @@ private fun Database.Read.getReportRows(
     otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType>,
     placementPredicate: Predicate,
     includeDecisions: Boolean,
-) =
-    createQuery {
-            sql(
-                """
+) = createQuery {
+    sql(
+        """
 WITH action_counts AS (
     SELECT
         daycare_group_id,
@@ -353,10 +352,10 @@ LEFT JOIN document_decision_counts ddc ON g.id = ddc.daycare_group_id"""
 WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name
         """
-                    .trimIndent()
-            )
-        }
-        .toList<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()
+            .trimIndent()
+    )
+}
+    .toList<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()
 
 private fun Database.Read.getReportRowsByChild(
     date: LocalDate,
@@ -366,10 +365,9 @@ private fun Database.Read.getReportRowsByChild(
     otherAssistanceMeasureTypes: List<OtherAssistanceMeasureType>,
     placementPredicate: Predicate,
     includeDecisions: Boolean,
-) =
-    createQuery {
-            sql(
-                """
+) = createQuery {
+    sql(
+        """
 WITH actions AS (
     SELECT
         gpl.daycare_group_id,
@@ -540,9 +538,7 @@ WHERE ${predicate(unitFilter.forTable("u"))}
 AND ${predicate(placementPredicate.forTable("p"))}
 ORDER BY ca.name, u.name, g.name, child.last_name, child.first_name
         """
-                    .trimIndent()
-            )
-        }
-        .toList<
-            AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild
-        >()
+            .trimIndent()
+    )
+}
+    .toList<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRowByChild>()

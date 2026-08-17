@@ -77,15 +77,14 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
 
 fun Database.Read.getDailyServiceTimesNotifications(
     userId: PersonId
-): List<DailyServiceTimeNotificationId> =
-    createQuery {
-            sql(
-                """
+): List<DailyServiceTimeNotificationId> = createQuery {
+    sql(
+        """
 SELECT id FROM daily_service_time_notification WHERE guardian_id = ${bind(userId)}
     """
-            )
-        }
-        .toList<DailyServiceTimeNotificationId>()
+    )
+}
+    .toList<DailyServiceTimeNotificationId>()
 
 fun Database.Transaction.deleteDailyServiceTimesNotifications(
     notificationIds: List<DailyServiceTimeNotificationId>

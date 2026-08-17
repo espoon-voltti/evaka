@@ -13,8 +13,8 @@ fun Database.Read.getSettings(): Map<SettingType, String> {
 
 fun Database.Transaction.setSettings(settings: Map<SettingType, String>) {
     createUpdate {
-            sql("DELETE FROM setting WHERE key != ALL(${bind(settings.keys)}::setting_type[])")
-        }
+        sql("DELETE FROM setting WHERE key != ALL(${bind(settings.keys)}::setting_type[])")
+    }
         .execute()
 
     executeBatch(settings.entries) {

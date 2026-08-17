@@ -55,10 +55,9 @@ private fun Database.Read.getPreschoolApplicationReportRows(
     today: LocalDate,
     filter: AccessControlFilter<DaycareId>,
     preschoolTerm: PreschoolTerm,
-): List<PreschoolApplicationReportRow> =
-    createQuery {
-            sql(
-                """
+): List<PreschoolApplicationReportRow> = createQuery {
+    sql(
+        """
 SELECT
     application.id AS application_id,
     application_unit.id AS application_unit_id,
@@ -82,10 +81,10 @@ WHERE application.type = 'PRESCHOOL'
   AND ${predicate(filter.forTable("application_unit"))}
   AND ${bind(preschoolTerm.finnishPreschool)} @> (application.document ->> 'preferredStartDate')::date
     """
-                    .trimIndent()
-            )
-        }
-        .toList<PreschoolApplicationReportRow>()
+            .trimIndent()
+    )
+}
+    .toList<PreschoolApplicationReportRow>()
 
 data class PreschoolApplicationReportRow(
     val applicationId: ApplicationId,

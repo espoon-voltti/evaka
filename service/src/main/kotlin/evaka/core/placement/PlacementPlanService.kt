@@ -116,7 +116,8 @@ class PlacementPlanService(
                             FiniteDateRange(
                                 maxOf(
                                     minStartDate,
-                                    form.preferences.connectedDaycarePreferredStartDate ?: startDate,
+                                    form.preferences.connectedDaycarePreferredStartDate
+                                        ?: startDate,
                                 ),
                                 LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31),
                             )
@@ -126,7 +127,8 @@ class PlacementPlanService(
                             FiniteDateRange(
                                 maxOf(
                                     minStartDate,
-                                    form.preferences.connectedDaycarePreferredStartDate ?: startDate,
+                                    form.preferences.connectedDaycarePreferredStartDate
+                                        ?: startDate,
                                 ),
                                 exactTerm.end,
                             )

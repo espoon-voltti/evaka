@@ -161,8 +161,8 @@ private fun Database.Transaction.createDocument(
     body: PedagogicalDocumentPostBody,
 ): PedagogicalDocument {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH pd AS (
     INSERT INTO pedagogical_document(child_id, created_at, created_by, description, modified_at, modified_by)
     VALUES (${bind(body.childId)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(body.description)}, ${bind(now)}, ${bind(user.evakaUserId)})
@@ -181,8 +181,8 @@ WITH pd AS (
     e.type AS modified_by_type
 FROM pd LEFT JOIN evaka_user ce ON pd.created_by = ce.id LEFT JOIN evaka_user e ON pd.modified_by = e.id
 """
-            )
-        }
+        )
+    }
         .exactlyOne<PedagogicalDocument>()
 }
 
@@ -193,8 +193,8 @@ private fun Database.Transaction.updateDocument(
     documentId: PedagogicalDocumentId,
 ): PedagogicalDocument {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH pd AS (
     UPDATE pedagogical_document
     SET description = ${bind(body.description)}, 
@@ -216,8 +216,8 @@ WITH pd AS (
     e.type AS modified_by_type
 FROM pd LEFT JOIN evaka_user ce ON pd.created_by = ce.id LEFT JOIN evaka_user e ON pd.modified_by = e.id
 """
-            )
-        }
+        )
+    }
         .exactlyOne<PedagogicalDocument>()
 }
 
@@ -225,8 +225,8 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
     childId: ChildId
 ): List<PedagogicalDocument> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
                 SELECT
                     pd.id,
                     pd.child_id,
@@ -244,18 +244,18 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
                 LEFT JOIN evaka_user e ON pd.modified_by = e.id
                 WHERE child_id = ${bind(childId)}
                 """
-            )
-        }
+        )
+    }
         .toList<PedagogicalDocument>()
         .map { pd -> pd.copy(attachments = getPedagogicalDocumentAttachments(pd.id)) }
 }
 
 private fun Database.Transaction.deleteDocument(documentId: PedagogicalDocumentId) {
     createUpdate {
-            sql(
-                "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = ${bind(documentId)}"
-            )
-        }
+        sql(
+            "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = ${bind(documentId)}"
+        )
+    }
         .execute()
     createUpdate { sql("DELETE FROM pedagogical_document WHERE id = ${bind(documentId)}") }
         .execute()

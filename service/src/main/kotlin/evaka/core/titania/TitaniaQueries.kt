@@ -14,22 +14,21 @@ import evaka.core.shared.domain.HelsinkiDateTime
 fun Database.Read.findStaffAttendancesBy(
     employeeIds: Collection<EmployeeId>? = null,
     period: FiniteDateRange? = null,
-): List<RawAttendance> =
-    createQuery {
-            val employeeIdFilter: Predicate =
-                if (employeeIds == null) Predicate.alwaysTrue()
-                else Predicate { where("$it.employee_id = ANY (${bind(employeeIds)})") }
-            val daterangeFilter: Predicate =
-                if (period == null) Predicate.alwaysTrue()
-                else
-                    Predicate {
-                        where(
-                            "daterange((arrived at time zone 'Europe/Helsinki')::date, (departed at time zone 'Europe/Helsinki')::date, '[]') && daterange(${bind(period.start)}, ${bind(period.end)}, '[]')"
-                        )
-                    }
+): List<RawAttendance> = createQuery {
+    val employeeIdFilter: Predicate =
+        if (employeeIds == null) Predicate.alwaysTrue()
+        else Predicate { where("$it.employee_id = ANY (${bind(employeeIds)})") }
+    val daterangeFilter: Predicate =
+        if (period == null) Predicate.alwaysTrue()
+        else
+            Predicate {
+                where(
+                    "daterange((arrived at time zone 'Europe/Helsinki')::date, (departed at time zone 'Europe/Helsinki')::date, '[]') && daterange(${bind(period.start)}, ${bind(period.end)}, '[]')"
+                )
+            }
 
-            sql(
-                """
+    sql(
+        """
 SELECT
     sa.id,
     sa.employee_id,
@@ -69,9 +68,9 @@ LEFT JOIN evaka_user departed_modified_by ON departed_modified_by.id = sa.depart
 WHERE ${predicate(employeeIdFilter.forTable("sa"))}
 AND ${predicate(daterangeFilter.forTable("sa"))}
         """
-            )
-        }
-        .toList<RawAttendance>()
+    )
+}
+    .toList<RawAttendance>()
 
 fun Database.Transaction.insertReportRows(
     requestTime: HelsinkiDateTime,

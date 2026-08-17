@@ -68,8 +68,8 @@ fun Database.Read.getPlannedCaretakersForGroups(
         val amount: BigDecimal,
     )
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     dg.id AS group_id,
     daterange(dc.start_date, dc.end_date, '[]') * daterange(dg.start_date, dg.end_date, '[]') * ${bind(range)} AS range,
@@ -80,8 +80,8 @@ WHERE ${predicate(byGroup.toRawPredicate().forTable("dg"))}
 AND daterange(dg.start_date, dg.end_date, '[]') && ${bind(range)}
 AND daterange(dc.start_date, dc.end_date, '[]') && ${bind(range)}
 """
-            )
-        }
+        )
+    }
         .mapTo<RawCaretakers>()
         .useSequence { rows ->
             rows

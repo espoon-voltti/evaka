@@ -97,27 +97,27 @@ fun updateUnits(
     }
 }
 
-inline fun <reified T : Any> Database.Read.getVardaUnitStates(): Map<DaycareId, T?> =
-    createQuery { sql("SELECT evaka_daycare_id, state FROM varda_unit") }
-        .toMap {
-            val id = column<DaycareId>("evaka_daycare_id")
-            val state =
-                try {
-                    jsonColumn<T?>("state")
-                } catch (exc: UnableToProduceResultException) {
-                    if (exc.cause is DatabindException) {
-                        null
-                    } else {
-                        throw exc
-                    }
+inline fun <reified T : Any> Database.Read.getVardaUnitStates(): Map<DaycareId, T?> = createQuery {
+    sql("SELECT evaka_daycare_id, state FROM varda_unit")
+}
+    .toMap {
+        val id = column<DaycareId>("evaka_daycare_id")
+        val state =
+            try {
+                jsonColumn<T?>("state")
+            } catch (exc: UnableToProduceResultException) {
+                if (exc.cause is DatabindException) {
+                    null
+                } else {
+                    throw exc
                 }
-            id to state
-        }
+            }
+        id to state
+    }
 
-fun Database.Read.getVardaUnits(): List<VardaUnit> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getVardaUnits(): List<VardaUnit> = createQuery {
+    sql(
+        """
                 SELECT
                     daycare.id AS evaka_daycare_id,
                     daycare.oph_unit_oid,
@@ -139,9 +139,9 @@ fun Database.Read.getVardaUnits(): List<VardaUnit> =
                 FROM daycare
                 WHERE daycare.upload_to_varda IS TRUE AND daycare.provider_type = ANY(${bind(unitTypesToUpload)})
                 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
 fun setUnitUploaded(
     tx: Database.Transaction,

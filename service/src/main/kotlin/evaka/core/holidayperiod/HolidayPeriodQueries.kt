@@ -12,15 +12,15 @@ import java.time.LocalDate
 
 private fun Database.Read.getHolidayPeriods(where: Predicate): Database.Result<HolidayPeriod> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, period, reservations_open_on, reservation_deadline
 FROM holiday_period h
 WHERE ${predicate(where.forTable("h"))}
 """
-            )
-        }
-        .mapTo<HolidayPeriod>()
+        )
+    }
+    .mapTo<HolidayPeriod>()
 
 fun Database.Read.getHolidayPeriodsInRange(range: FiniteDateRange): List<HolidayPeriod> =
     getHolidayPeriods(Predicate { where("$it.period && ${bind(range)}") }).toList()
@@ -43,35 +43,35 @@ fun Database.Transaction.insertHolidayPeriod(
     period: FiniteDateRange,
     reservationsOpenOn: LocalDate,
     reservationDeadline: LocalDate,
-): HolidayPeriod =
-    createQuery {
-            sql(
-                """
+): HolidayPeriod = createQuery {
+    sql(
+        """
 INSERT INTO holiday_period (period, reservations_open_on, reservation_deadline)
 VALUES (${bind(period)}, ${bind(reservationsOpenOn)}, ${bind(reservationDeadline)})
 RETURNING *
         """
-            )
-        }
-        .exactlyOne<HolidayPeriod>()
+    )
+}
+    .exactlyOne<HolidayPeriod>()
 
 fun Database.Transaction.updateHolidayPeriod(
     id: HolidayPeriodId,
     reservationsOpenOn: LocalDate,
     reservationDeadline: LocalDate,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE holiday_period
 SET
     reservations_open_on = ${bind(reservationsOpenOn)},
     reservation_deadline = ${bind(reservationDeadline)}
 WHERE id = ${bind(id)}
         """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
-fun Database.Transaction.deleteHolidayPeriod(id: HolidayPeriodId) =
-    createUpdate { sql("DELETE FROM holiday_period WHERE id = ${bind(id)}") }.execute()
+fun Database.Transaction.deleteHolidayPeriod(id: HolidayPeriodId) = createUpdate {
+    sql("DELETE FROM holiday_period WHERE id = ${bind(id)}")
+}
+    .execute()

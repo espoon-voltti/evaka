@@ -190,28 +190,28 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     fun Database.Transaction.insertServiceNeedOptionVoucherValues() {
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
                 INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from)
                 VALUES (${bind(UUID.fromString("bc6a4550-fa74-11eb-9a2d-035acd5db9aa"))}, 'Esiopetus', 'Esiopetus', 'Esiopetus', 'PRESCHOOL', true, 1.0, 1.0, 1.0, 1.0, 1.0, 40, false, false, '', '', '', '', '2020-01-01')
                 ON CONFLICT DO NOTHING
                 """
-                        .trimIndent()
-                )
-            }
+                    .trimIndent()
+            )
+        }
             .execute()
         listOf("5c21d452-4f90-11ed-8be7-bf748cc343bf", "50358394-b961-11eb-b51f-67ac436e5636")
             .forEach { id ->
                 createUpdate {
-                        sql(
-                            """
+                    sql(
+                        """
                     INSERT INTO service_need_option (id, name_fi, name_sv, name_en, valid_placement_type, default_option, fee_coefficient, occupancy_coefficient, occupancy_coefficient_under_3y, realized_occupancy_coefficient, realized_occupancy_coefficient_under_3y, daycare_hours_per_week, part_day, part_week, fee_description_fi, fee_description_sv, voucher_value_description_fi, voucher_value_description_sv, valid_from)
                     VALUES (${bind(UUID.fromString(id))}, 'Test', 'Test', 'Test', 'DAYCARE', false, 1.0, 1.0, 1.0, 1.0, 1.0, 40, false, false, '', '', '', '', '2020-01-01')
                     ON CONFLICT DO NOTHING
                     """
-                                .trimIndent()
-                        )
-                    }
+                            .trimIndent()
+                    )
+                }
                     .execute()
             }
         insertServiceNeedOptionVoucherValue(
@@ -252,8 +252,8 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
     ): UUID {
         val uuid = UUID.randomUUID()
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
                     INSERT INTO service_need_option_voucher_value (
                         id, service_need_option_id, validity, base_value,
                         coefficient, "value", base_value_under_3y,
@@ -263,9 +263,9 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
                         ${bind(baseValue)}, 1, 0, 0, 0, 0
                     )
                     """
-                        .trimIndent()
-                )
-            }
+                    .trimIndent()
+            )
+        }
             .execute()
         return uuid
     }
@@ -273,14 +273,14 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun Database.Transaction.insertVoucherValueReportSnapshot(): UUID {
         val id = UUID.randomUUID()
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
                     INSERT INTO voucher_value_report_snapshot (id, "month", "year", taken_at)
                     VALUES (${bind(id)}, 4, 2022, '2022-04-30 23:30:00')
                     """
-                        .trimIndent()
-                )
-            }
+                    .trimIndent()
+            )
+        }
             .execute()
         return id
     }
@@ -290,8 +290,8 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
         decisionId: VoucherValueDecisionId,
     ) {
         createUpdate {
-                sql(
-                    """
+            sql(
+                """
                     INSERT INTO voucher_value_report_decision (
                         voucher_value_report_snapshot_id, realized_amount,
                         realized_period, type, decision_id)
@@ -301,9 +301,9 @@ class PreschoolValuesFetcherTest : PureJdbiTest(resetDbBeforeEach = true) {
                         'ORIGINAL', ${bind(decisionId)}
                     )
                     """
-                        .trimIndent()
-                )
-            }
+                    .trimIndent()
+            )
+        }
             .execute()
     }
 }

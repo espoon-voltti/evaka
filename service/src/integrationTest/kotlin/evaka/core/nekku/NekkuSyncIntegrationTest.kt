@@ -1482,7 +1482,9 @@ Lapsen tunniste: ${firstChildWithRemovedAllergy.id}, lapsen ruokavaliot: Laktoos
                 "supervisor1@city.fi" to expectedTestContent1,
                 "supervisor2@city.fi" to expectedTestContent2,
             ),
-            MockEmailClient.emails.sortedBy { it.toAddress }.map { it.toAddress to it.content.text },
+            MockEmailClient.emails
+                .sortedBy { it.toAddress }
+                .map { it.toAddress to it.content.text },
         )
     }
 

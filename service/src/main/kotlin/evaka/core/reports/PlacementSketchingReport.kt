@@ -100,8 +100,8 @@ private fun Database.Read.getPlacementSketchingReportRows(
     latestApplicationSentDate: LocalDate?,
 ): List<PlacementSketchingReportRow> {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 WITH active_placements AS (
 SELECT
     placement.child_id AS child_id,
@@ -171,8 +171,8 @@ WHERE
 ORDER BY
     area_name, requested_unit_name, application.childlastname, application.childfirstname
         """
-            )
-        }
+        )
+    }
         .toList<PlacementSketchingReportRow>()
 }
 

@@ -20,8 +20,8 @@ fun Database.Read.getDrafts(
         else Predicate.alwaysTrue()
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
 	id,
 	created_at,
@@ -50,8 +50,8 @@ WHERE draft.account_id = ${bind(accountId)} AND
     ${predicate(accountAccessPredicate.forTable("draft"))}
 ORDER BY draft.created_at DESC
 """
-            )
-        }
+        )
+    }
         .toList<DraftContent>()
 }
 
@@ -60,14 +60,14 @@ fun Database.Transaction.initDraft(
     now: HelsinkiDateTime = HelsinkiDateTime.now(),
 ): MessageDraftId {
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 INSERT INTO message_draft (account_id, modified_at)
 VALUES (${bind(accountId)}, ${bind(now)})
 RETURNING id
 """
-            )
-        }
+        )
+    }
         .exactlyOne<MessageDraftId>()
 }
 
@@ -76,10 +76,9 @@ fun Database.Transaction.updateDraft(
     id: MessageDraftId,
     draft: UpdatableDraftContent,
     now: HelsinkiDateTime,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE message_draft
 SET
     account_id = ${bind(accountId)},
@@ -93,15 +92,15 @@ SET
     modified_at = ${bind(now)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .updateExactlyOne()
+    )
+}
+    .updateExactlyOne()
 
 fun Database.Transaction.deleteDraft(accountId: MessageAccountId, draftId: MessageDraftId) {
     createUpdate {
-            sql(
-                "DELETE FROM message_draft WHERE id = ${bind(draftId)} AND account_id = ${bind(accountId)}"
-            )
-        }
+        sql(
+            "DELETE FROM message_draft WHERE id = ${bind(draftId)} AND account_id = ${bind(accountId)}"
+        )
+    }
         .execute()
 }

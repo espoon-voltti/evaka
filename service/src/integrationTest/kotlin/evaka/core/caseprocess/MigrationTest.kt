@@ -217,7 +217,10 @@ class MigrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             employee.user,
             clock,
             applicationId,
-            DaycarePlacementPlan(unit.id, FiniteDateRange(today.plusMonths(4), today.plusMonths(5))),
+            DaycarePlacementPlan(
+                unit.id,
+                FiniteDateRange(today.plusMonths(4), today.plusMonths(5)),
+            ),
         )
         applicationController.simpleApplicationAction(
             dbInstance(),

@@ -30,10 +30,9 @@ private data class ExistingActiveDecision(val unitId: DaycareId, val type: Decis
 private fun Database.Read.getLatestAcceptedPreschoolDecision(
     childId: ChildId,
     date: LocalDate,
-): ExistingActiveDecision? =
-    createQuery {
-            sql(
-                """
+): ExistingActiveDecision? = createQuery {
+    sql(
+        """
 SELECT d.unit_id, d.type
 FROM decision d
 JOIN application a ON d.application_id = a.id
@@ -44,9 +43,9 @@ WHERE a.child_id = ${bind(childId)}
 ORDER BY d.resolved DESC
 LIMIT 1
 """
-            )
-        }
-        .exactlyOneOrNull()
+    )
+}
+    .exactlyOneOrNull()
 
 fun createDecisionDrafts(
     tx: Database.Transaction,

@@ -101,9 +101,10 @@ private fun Database.Read.getReportRows(
     statuses: Set<ChildDocumentOrDecisionStatus>,
     includeEnded: Boolean,
 ): List<ChildDocumentSummary> {
-    val documentPredicate =
-        Predicate { where("$it.type = ${bind(ChildDocumentType.OTHER_DECISION)}") }
-            .and(aclFilter.toPredicate())
+    val documentPredicate = Predicate {
+        where("$it.type = ${bind(ChildDocumentType.OTHER_DECISION)}")
+    }
+        .and(aclFilter.toPredicate())
 
     val documentDecisionPredicate =
         if (includeEnded) {

@@ -528,7 +528,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
             mobileUser,
             mockClock,
             daycare.id,
-            ChildAttendanceController.ArrivalsRequest(children = setOf(child.id), arrived = arrived),
+            ChildAttendanceController.ArrivalsRequest(
+                children = setOf(child.id),
+                arrived = arrived,
+            ),
         )
     }
 

@@ -101,25 +101,23 @@ private fun Database.Transaction.markDocumentReadByGuardian(
     clock: EvakaClock,
     documentId: PedagogicalDocumentId,
     guardianId: PersonId,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
 VALUES (${bind(documentId)}, ${bind(guardianId)}, ${bind(clock.now())})
 ON CONFLICT (pedagogical_document_id, person_id) DO NOTHING
 """
-            )
-        }
-        .execute()
+    )
+}
+    .execute()
 
 private fun Database.Read.countUnreadDocumentsByUser(
     today: LocalDate,
     userId: PersonId,
-): Map<ChildId, Int> =
-    createQuery {
-            sql(
-                """
+): Map<ChildId, Int> = createQuery {
+    sql(
+        """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = ${bind(userId)}
     UNION
@@ -138,6 +136,6 @@ WHERE NOT EXISTS (
 )
 GROUP BY d.child_id
 """
-            )
-        }
-        .toMap { columnPair("child_id", "unread_count") }
+    )
+}
+    .toMap { columnPair("child_id", "unread_count") }

@@ -9,12 +9,12 @@ import evaka.core.shared.db.Database
 
 fun Database.Read.getCapacityFactorsByChild(childId: ChildId): List<AssistanceNeedCapacityFactor> =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT valid_during AS date_range, capacity_factor
 FROM assistance_factor
 WHERE child_id = ${bind(childId)}
 """
-            )
-        }
-        .toList<AssistanceNeedCapacityFactor>()
+        )
+    }
+    .toList<AssistanceNeedCapacityFactor>()

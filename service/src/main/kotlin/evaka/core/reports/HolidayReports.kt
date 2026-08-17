@@ -100,10 +100,9 @@ fun Database.Read.getServiceNeedOccupancyInfoOverRange(
     period: FiniteDateRange,
     placementPred: Predicate,
     groupsPred: Predicate,
-): List<ChildServiceNeedOccupancyInfo> =
-    createQuery {
-            sql(
-                """
+): List<ChildServiceNeedOccupancyInfo> = createQuery {
+    sql(
+        """
 SELECT p.id                                                          AS child_id,
        p.first_name                                                  AS child_first_name,
        p.last_name                                                   AS child_last_name,
@@ -149,9 +148,9 @@ WHERE ${predicate(placementPred.forTable("pl"))}
   AND ${predicate(groupsPred.forTable("dgp"))}
   AND daterange(pl.start_date, pl.end_date, '[]') && ${bind(period)}
         """
-            )
-        }
-        .toList<ChildServiceNeedOccupancyInfo>()
+    )
+}
+    .toList<ChildServiceNeedOccupancyInfo>()
 
 data class AssistanceRange(val childId: PersonId, val validDuring: FiniteDateRange)
 
@@ -168,8 +167,8 @@ fun Database.Read.getAssistanceRanges(
     if (childIds.isEmpty()) emptyList()
     else
         createQuery {
-                sql(
-                    """
+            sql(
+                """
 SELECT d.child_id, d.valid_during * ${bind(period)} as valid_during
 FROM daycare_assistance d
 WHERE child_id = ANY(${bind(childIds)}) AND d.valid_during && ${bind(period)}
@@ -180,8 +179,8 @@ SELECT p.child_id, p.valid_during * ${bind(period)} as valid_during
 FROM preschool_assistance p
 WHERE child_id = ANY(${bind(childIds)}) AND p.valid_during && ${bind(period)}
 """
-                )
-            }
+            )
+        }
             .toList<AssistanceRange>()
 
 fun Database.Read.getIncomingBackupCaresOverPeriodForGroupsInUnit(
@@ -194,8 +193,8 @@ fun Database.Read.getIncomingBackupCaresOverPeriodForGroupsInUnit(
         else Predicate { where("$it.group_id = ANY(${bind(groupIds)})") }
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT bc.child_id,
        daterange(bc.start_date, bc.end_date, '[]') * ${bind(period)} as valid_during,
        bc.group_id
@@ -204,7 +203,7 @@ WHERE ${predicate(where.forTable("bc"))}
 AND bc.unit_id = ${bind(unitId)}
 AND daterange(bc.start_date, bc.end_date, '[]') && ${bind(period)}
 """
-            )
-        }
+        )
+    }
         .toList<BackupPlacementRange>()
 }

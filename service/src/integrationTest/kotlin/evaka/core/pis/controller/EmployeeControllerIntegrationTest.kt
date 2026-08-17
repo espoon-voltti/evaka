@@ -189,7 +189,12 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     UserRole.SPECIAL_EDUCATION_TEACHER,
                     endDate,
                 ),
-                DaycareRole(daycare3.id, daycare3.name, UserRole.SPECIAL_EDUCATION_TEACHER, endDate),
+                DaycareRole(
+                    daycare3.id,
+                    daycare3.name,
+                    UserRole.SPECIAL_EDUCATION_TEACHER,
+                    endDate,
+                ),
             ),
             getEmployeeDetails(employee.id).daycareRoles.toSet(),
         )
@@ -453,13 +458,12 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             lastLogin = null,
         )
 
-    private fun Database.Read.hasActiveMessagingAccount(employeeId: EmployeeId) =
-        createQuery {
-                sql(
-                    """
+    private fun Database.Read.hasActiveMessagingAccount(employeeId: EmployeeId) = createQuery {
+        sql(
+            """
         SELECT EXISTS (SELECT 1 FROM message_account WHERE employee_id = ${bind(employeeId)} AND active)
     """
-                )
-            }
-            .exactlyOne<Boolean>()
+        )
+    }
+        .exactlyOne<Boolean>()
 }

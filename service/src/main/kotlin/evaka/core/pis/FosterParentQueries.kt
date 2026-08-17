@@ -27,8 +27,8 @@ private fun Database.Read.getFosterParentRelationships(
     if (parentId == null && childId == null) error("Either parentId or childId must be provided")
 
     return createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT
     fp.id AS relationship_id,
     fp.valid_during,
@@ -58,8 +58,8 @@ JOIN person p ON fp.parent_id = p.id
 JOIN evaka_user e ON e.id = fp.modified_by
 WHERE fp.parent_id = ${bind(parentId)} OR fp.child_id = ${bind(childId)}
 """
-            )
-        }
+        )
+    }
         .toList<FosterParentRelationship>()
 }
 
@@ -67,44 +67,42 @@ fun Database.Transaction.createFosterParentRelationship(
     data: CreateFosterParentRelationshipBody,
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
-): FosterParentId =
-    createUpdate {
-            sql(
-                """
+): FosterParentId = createUpdate {
+    sql(
+        """
 INSERT INTO foster_parent (child_id, parent_id, valid_during, created_by, created_at, modified_by, modified_at)
 VALUES
     (${bind(data.childId)}, ${bind(data.parentId)}, ${bind(data.validDuring)}, ${bind(user.evakaUserId)}, ${bind(now)}, ${bind(user.evakaUserId)}, ${bind(now)})
 RETURNING id
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne<FosterParentId>()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne<FosterParentId>()
 
 fun Database.Transaction.updateFosterParentRelationshipValidity(
     id: FosterParentId,
     validDuring: DateRange,
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
-) =
-    createUpdate {
-            sql(
-                """
+) = createUpdate {
+    sql(
+        """
 UPDATE foster_parent SET
     valid_during = ${bind(validDuring)},
     modified_by = ${bind(user.evakaUserId)},
     modified_at = ${bind(now)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .execute()
-        .also {
-            if (it != 1)
-                throw BadRequest("Could not update validity of foster_parent row with id $id")
-        }
+    )
+}
+    .execute()
+    .also {
+        if (it != 1) throw BadRequest("Could not update validity of foster_parent row with id $id")
+    }
 
-fun Database.Transaction.deleteFosterParentRelationship(id: FosterParentId) =
-    createUpdate { sql("DELETE FROM foster_parent WHERE id = ${bind(id)}") }
-        .execute()
-        .also { if (it != 1) throw BadRequest("Could not delete foster_parent row with id $id") }
+fun Database.Transaction.deleteFosterParentRelationship(id: FosterParentId) = createUpdate {
+    sql("DELETE FROM foster_parent WHERE id = ${bind(id)}")
+}
+    .execute()
+    .also { if (it != 1) throw BadRequest("Could not delete foster_parent row with id $id") }
