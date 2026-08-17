@@ -1916,8 +1916,8 @@ fun Database.Transaction.insert(row: DevSfiMessageEvent) {
     execute {
         sql(
             """
-INSERT INTO sfi_message_event (id, created_at, updated_at, message_id, event_type)
-VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.updatedAt)}, ${bind(row.messageId)}, ${bind(row.eventType)})
+INSERT INTO sfi_message_event (id, created_at, updated_at, message_id, event_type, event_time)
+VALUES (${bind(row.id)}, ${bind(row.createdAt)}, ${bind(row.updatedAt)}, ${bind(row.messageId)}, ${bind(row.eventType)}, ${bind(row.eventTime)})
 """
         )
     }

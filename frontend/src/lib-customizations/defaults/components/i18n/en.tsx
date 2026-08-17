@@ -222,6 +222,7 @@ const components: Translations = {
     },
     sfiDelivery: {
       label: 'Suomi.fi deliveries',
+      readAt: 'opened',
       method: {
         ELECTRONIC: 'Electronically',
         PAPER_MAIL: 'Paper mail',

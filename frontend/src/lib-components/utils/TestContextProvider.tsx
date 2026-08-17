@@ -202,6 +202,7 @@ export const testTranslations: Translations = {
     },
     sfiDelivery: {
       label: '',
+      readAt: '',
       method: {
         ELECTRONIC: '',
         PAPER_MAIL: '',

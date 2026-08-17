@@ -218,6 +218,7 @@ const components: Translations = {
     },
     sfiDelivery: {
       label: 'Suomi.fi -toimitukset',
+      readAt: 'avattu',
       method: {
         ELECTRONIC: 'Sähköisesti',
         PAPER_MAIL: 'Postitse',

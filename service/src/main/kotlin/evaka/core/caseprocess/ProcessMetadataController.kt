@@ -80,7 +80,12 @@ private fun childDocumentProcessNameAndType(type: ChildDocumentType): Pair<Strin
         ChildDocumentType.OTHER -> null to null
     }
 
-data class SfiDelivery(val time: HelsinkiDateTime, val method: SfiMethod, val recipientName: String)
+data class SfiDelivery(
+    val time: HelsinkiDateTime,
+    val method: SfiMethod,
+    val recipientName: String,
+    val readAt: HelsinkiDateTime?,
+)
 
 data class DocumentConfidentiality(val durationYears: Int, @PropagateNull val basis: String)
 

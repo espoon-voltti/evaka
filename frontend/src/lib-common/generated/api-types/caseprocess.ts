@@ -133,6 +133,7 @@ export type ProcessType =
 */
 export interface SfiDelivery {
   method: SfiMethod
+  readAt: HelsinkiDateTime | null
   recipientName: string
   time: HelsinkiDateTime
 }
@@ -202,6 +203,7 @@ export function deserializeJsonProcessMetadataResponse(json: JsonOf<ProcessMetad
 export function deserializeJsonSfiDelivery(json: JsonOf<SfiDelivery>): SfiDelivery {
   return {
     ...json,
+    readAt: (json.readAt != null) ? HelsinkiDateTime.parseIso(json.readAt) : null,
     time: HelsinkiDateTime.parseIso(json.time)
   }
 }
