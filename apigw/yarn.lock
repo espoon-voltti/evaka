@@ -1901,10 +1901,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"decode-uri-component@npm:^0.4.1":
-  version: 0.4.1
-  resolution: "decode-uri-component@npm:0.4.1"
-  checksum: 10/74eec26f7bec3767164e37d526ef19bc1214cb0bbeeeea1c4f0ceb79299e5c38d3ba734e7243d829842aa140f24e5d020f54cc25b17c7082461c8eead8a72ce3
+"decode-uri-component@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "decode-uri-component@npm:0.5.0"
+  checksum: 10/7bd7ed31824ea982a54c1e3ab6284a4541a09125ad6b419d3c5db976ceb700334f15bd5f82af5fe9925e2f9f78b750b6dd60fc80a8fc0498ae2b55da8177e49b
   languageName: node
   linkType: hard
 
@@ -2145,7 +2145,7 @@ __metadata:
     pino-http: "npm:11.0.0"
     pino-pretty: "npm:13.1.3"
     pump: "npm:3.0.4"
-    query-string: "npm:9.4.1"
+    query-string: "npm:9.5.0"
     redis: "npm:6.2.1"
     split2: "npm:4.2.0"
     tough-cookie: "npm:6.0.2"
@@ -3856,14 +3856,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"query-string@npm:9.4.1":
-  version: 9.4.1
-  resolution: "query-string@npm:9.4.1"
+"query-string@npm:9.5.0":
+  version: 9.5.0
+  resolution: "query-string@npm:9.5.0"
   dependencies:
-    decode-uri-component: "npm:^0.4.1"
+    decode-uri-component: "npm:^0.5.0"
     filter-obj: "npm:^5.1.0"
     split-on-first: "npm:^3.0.0"
-  checksum: 10/27615731efdb2ce2a9c3c2699829923e41fa74727d26e5a347a4c55db89263be3f2a89f09e8aa146033292e89964107d527596672a509ba76bd657ba3fda477d
+  checksum: 10/9df4123720a1c73e0938492938031964723038998983cb478d083ef263eff66372ab46e504e39ce5b6a7d72870c6e82ba42421b113f7f7f073c1408ba7fd0d1b
   languageName: node
   linkType: hard
 
