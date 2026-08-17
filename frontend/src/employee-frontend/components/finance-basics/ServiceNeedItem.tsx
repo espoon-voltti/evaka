@@ -269,10 +269,12 @@ type EditorState =
     }
 
 export type FormState = {
-  [k in keyof Omit<
-    ServiceNeedOptionVoucherValueRange,
-    'range' | 'serviceNeedOptionId'
-  >]: string
+  [
+    k in keyof Omit<
+      ServiceNeedOptionVoucherValueRange,
+      'range' | 'serviceNeedOptionId'
+    >
+  ]: string
 } & {
   serviceNeedOptionId: ServiceNeedOptionId
   validFrom: LocalDate | null
