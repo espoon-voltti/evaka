@@ -58,7 +58,7 @@ dependencies {
         api("org.apache.httpcomponents.client5:httpclient5:5.6.4")
         api("org.apache.httpcomponents.core5:httpcore5:5.4.3")
         api("org.apache.httpcomponents.core5:httpcore5-h2:5.4.3")
-        api("org.apache.logging.log4j:log4j-api:2.25.5")
+        api("org.apache.logging.log4j:log4j-api:2.26.1")
         api("org.apache.neethi:neethi:3.2.3")
         api("org.apache.tomcat.embed:tomcat-embed-core:11.0.24")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.24")
