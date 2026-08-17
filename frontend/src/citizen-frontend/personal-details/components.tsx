@@ -2,12 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import React from 'react'
 import styled from 'styled-components'
 
 import type { MutationDescription } from 'lib-common/query'
-import IconChip from 'lib-components/atoms/IconChip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { tabletMin } from 'lib-components/breakpoints'
@@ -127,33 +124,3 @@ export function EditableSectionHeader<Arg, Data>({
     </TitleAndEditRow>
   )
 }
-
-export const statusChipColors = {
-  success: { background: '#E9F5E6', foreground: '#397332' },
-  warning: { background: '#FFF0DB', foreground: '#74310C' }
-} as const
-
-export const StatusChip = React.memo(function StatusChip({
-  variant,
-  icon,
-  label,
-  'data-qa': dataQa
-}: {
-  variant: keyof typeof statusChipColors
-  icon: IconDefinition
-  label: string
-  'data-qa'?: string
-}) {
-  const { background, foreground } = statusChipColors[variant]
-  return (
-    <IconChip
-      icon={icon}
-      label={label}
-      iconColor={background}
-      backgroundColor={background}
-      textColor={foreground}
-      iconBackgroundColor={foreground}
-      data-qa={dataQa}
-    />
-  )
-})

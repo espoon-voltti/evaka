@@ -22,6 +22,7 @@ import type {
   EmailVerificationStatusResponse
 } from 'lib-common/generated/api-types/pis'
 import { NotificationsContext } from 'lib-components/Notifications'
+import { Chip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -32,6 +33,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { InformationText, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { colors } from 'lib-customizations/common'
 import { faCheck, faCheckCircle, faExclamation, faLockAlt } from 'lib-icons'
 
 import type { User } from '../auth/state'
@@ -42,9 +44,7 @@ import {
   DataRow,
   DataRowLabel,
   DataRowValue,
-  EditableSectionHeader,
-  StatusChip,
-  statusChipColors
+  EditableSectionHeader
 } from './components'
 import type { EmailVerificationProblem } from './emailVerification'
 import { getEmailVerificationProblem } from './emailVerification'
@@ -326,11 +326,13 @@ const EmailVerificationStatusView = React.memo(
     }
     if (!problem) {
       return (
-        <StatusChip
-          variant="success"
+        <Chip
+          colorPalette="green"
           icon={faCheck}
           label={t.personalDetails.detailsSection.emailVerified}
           data-qa="verified-email-status"
+          iconCircle
+          size="small"
         />
       )
     }
@@ -373,11 +375,13 @@ const VerificationActionButton = React.memo(function VerificationActionButton({
 const UnverifiedChip = React.memo(function UnverifiedChip() {
   const t = useTranslation()
   return (
-    <StatusChip
-      variant="warning"
-      icon={faExclamation}
+    <Chip
+      colorPalette="orange"
       label={t.personalDetails.detailsSection.emailUnverified}
       data-qa="unverified-email-status"
+      iconCircle
+      icon={faExclamation}
+      size="small"
     />
   )
 })
@@ -418,10 +422,7 @@ const EmailVerificationForm = React.memo(function EmailVerificationForm({
   return (
     <FixedSpaceColumn>
       <div>
-        <FontAwesomeIcon
-          icon={faCheckCircle}
-          color={statusChipColors.success.foreground}
-        />
+        <FontAwesomeIcon icon={faCheckCircle} color={colors.status.success} />
       </div>
       <div>
         {usernameMismatch

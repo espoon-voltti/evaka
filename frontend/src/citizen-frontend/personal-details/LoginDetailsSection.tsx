@@ -11,6 +11,7 @@ import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
 import type { PasswordConstraints } from 'lib-common/generated/api-types/shared'
 import { isPasswordStructureValid } from 'lib-common/password'
+import { Chip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
@@ -34,7 +35,6 @@ import {
   DataRowValue,
   RowActions,
   SectionTitle,
-  StatusChip,
   TitleAndEditRow
 } from './components'
 import { isEmailVerified } from './emailVerification'
@@ -92,10 +92,12 @@ export default React.memo(function LoginDetailsSection({
 
       {user.weakLoginUsername ? (
         <>
-          <StatusChip
-            variant="success"
+          <Chip
+            colorPalette="green"
             icon={faCheck}
             label={t.status.enabled}
+            iconCircle
+            size="small"
             data-qa="weak-login-enabled"
           />
           <Gap $size="xs" />
