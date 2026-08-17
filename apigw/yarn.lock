@@ -1829,9 +1829,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:6.8.0":
-  version: 6.8.0
-  resolution: "dd-trace@npm:6.8.0"
+"dd-trace@npm:6.10.0":
+  version: 6.10.0
+  resolution: "dd-trace@npm:6.10.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.9.4"
     "@datadog/native-appsec": "npm:11.0.1"
@@ -1867,7 +1867,7 @@ __metadata:
       optional: true
     oxc-parser:
       optional: true
-  checksum: 10/908a2148ff983b0017d0544abece1afae1c89e9564905340e2fe5b27c64c374573f150458247f8ead31a8a6232e94e514bc72aaa4ebdaa75f0561552ff0a4d4b
+  checksum: 10/d934503c68aae5b52dc15d8e26055d5093010addea7447232d414861b426531476e4b8749727635dce777743cecbd7a040c59876f23eab4ae5eaae4d8df4e31e
   languageName: node
   linkType: hard
 
@@ -2125,7 +2125,7 @@ __metadata:
     cookie-parser: "npm:1.4.7"
     cookie-signature: "npm:1.2.2"
     date-fns: "npm:4.4.0"
-    dd-trace: "npm:6.8.0"
+    dd-trace: "npm:6.10.0"
     express: "npm:5.2.1"
     express-basic-auth: "npm:1.2.1"
     express-http-proxy: "npm:2.1.2"
