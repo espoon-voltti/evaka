@@ -17,7 +17,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 <header th:replace="~{ shared/common :: header}"></header>
 <footer th:replace="~{ shared/common :: footer}"></footer>
 
-<div class="page first-page">
+<div class="page first-page last-page">
     <h1>
         <strong th:text="#{decision.title}"></strong>
     </h1>
@@ -28,10 +28,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <th:block th:if="${reasoning != null}">
         <div th:replace="~{ shared/common :: decision-reasoning(${reasoning}) }"></div>
     </th:block>
-</div>
-
-<div class="page last-page">
-    <div th:replace="~{shared/daycare-correction :: daycare-correction}"></div>
+    <div class="correction-section">
+        <div th:replace="~{shared/daycare-correction :: daycare-correction}"></div>
+    </div>
 </div>
 
 </body>

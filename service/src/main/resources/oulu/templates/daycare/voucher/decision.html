@@ -32,7 +32,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <th:block th:if="${reasoning != null}">
         <div th:replace="~{ shared/common :: decision-reasoning(${reasoning}) }"></div>
     </th:block>
-    <div th:replace="~{shared/daycare-correction :: daycare-voucher-correction}"></div>
+    <div class="correction-section">
+        <div th:replace="~{shared/daycare-correction :: daycare-voucher-correction}"></div>
+    </div>
 </div>
 
 </body>
