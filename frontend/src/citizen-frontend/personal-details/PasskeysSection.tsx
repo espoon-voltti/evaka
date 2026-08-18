@@ -20,13 +20,7 @@ import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import {
-  H2,
-  InformationText,
-  Label,
-  LabelLike,
-  P
-} from 'lib-components/typography'
+import { InformationText, Label, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faKey, faLockAlt, faPen, faPlus, faTrash } from 'lib-icons'
 
@@ -37,6 +31,7 @@ import type { User } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
 
+import { SectionTitle } from './components'
 import {
   deletePasskeyMutation,
   finishPasskeyRegistrationMutation,
@@ -95,7 +90,7 @@ export default React.memo(function PasskeysSection({ user }: { user: User }) {
 
   return (
     <div data-qa="passkeys-section">
-      <H2>{t.title}</H2>
+      <SectionTitle>{t.title}</SectionTitle>
       <P>{t.description}</P>
       {renderResult(passkeys, (passkeys) => (
         <FixedSpaceColumn $spacing="s">
