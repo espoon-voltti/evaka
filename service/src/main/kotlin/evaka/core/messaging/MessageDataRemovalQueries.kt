@@ -37,10 +37,9 @@ fun Database.Transaction.deleteExpiredBulletinThreads(
     //
     // Bulletins linked to an application exist only because of an earlier bug. Those bulletins are
     // deleted after the application is expired and deleted.
-    val threadIds =
-        createQuery {
-                sql(
-                    """
+    val threadIds = createQuery {
+        sql(
+            """
 SELECT mt.id
 FROM message_thread mt
 LEFT JOIN LATERAL (
@@ -79,19 +78,16 @@ WHERE
 LIMIT ${bind(limit)}
 FOR UPDATE OF mt
 """
-                )
-            }
-            .toList<MessageThreadId>()
+        )
+    }
+        .toList<MessageThreadId>()
 
     if (threadIds.isEmpty()) return DeletedBulletinThreadBatch(emptyList(), emptyList())
 
-    val contentIds =
-        createQuery {
-                sql(
-                    "SELECT DISTINCT content_id FROM message WHERE thread_id = ANY(${bind(threadIds)})"
-                )
-            }
-            .toList<MessageContentId>()
+    val contentIds = createQuery {
+        sql("SELECT DISTINCT content_id FROM message WHERE thread_id = ANY(${bind(threadIds)})")
+    }
+        .toList<MessageContentId>()
 
     execute { sql("DELETE FROM message_thread WHERE id = ANY(${bind(threadIds)})") }
 
@@ -110,32 +106,30 @@ private fun Database.Transaction.deleteUnreferencedMessageContents(
 ): List<DeletedBulletinContent> {
     if (contentIds.isEmpty()) return emptyList()
 
-    val deletableIds =
-        createQuery {
-                sql(
-                    """
+    val deletableIds = createQuery {
+        sql(
+            """
 SELECT mc.id
 FROM message_content mc
 WHERE
     mc.id = ANY(${bind(contentIds)}) AND
     NOT EXISTS (SELECT 1 FROM message m WHERE m.content_id = mc.id)
 """
-                )
-            }
-            .toList<MessageContentId>()
+        )
+    }
+        .toList<MessageContentId>()
 
     if (deletableIds.isEmpty()) return emptyList()
 
     // attachment.message_content_id is ON DELETE SET NULL, so the attachments must be read before
     // the contents are deleted
-    val attachmentsByContent =
-        createQuery {
-                sql(
-                    "SELECT message_content_id, id FROM attachment WHERE message_content_id = ANY(${bind(deletableIds)})"
-                )
-            }
-            .toList { columnPair<MessageContentId, AttachmentId>("message_content_id", "id") }
-            .groupBy({ it.first }, { it.second })
+    val attachmentsByContent = createQuery {
+        sql(
+            "SELECT message_content_id, id FROM attachment WHERE message_content_id = ANY(${bind(deletableIds)})"
+        )
+    }
+        .toList { columnPair<MessageContentId, AttachmentId>("message_content_id", "id") }
+        .groupBy({ it.first }, { it.second })
 
     execute { sql("DELETE FROM message_content WHERE id = ANY(${bind(deletableIds)})") }
 
@@ -146,32 +140,30 @@ fun Database.Transaction.deleteExpiredMessageDrafts(
     expiresBefore: HelsinkiDateTime,
     limit: Int,
 ): List<DeletedMessageDraft> {
-    val draftIds =
-        createQuery {
-                sql(
-                    """
+    val draftIds = createQuery {
+        sql(
+            """
 SELECT id
 FROM message_draft
 WHERE created_at < ${bind(expiresBefore)}
 LIMIT ${bind(limit)}
 FOR UPDATE
 """
-                )
-            }
-            .toList<MessageDraftId>()
+        )
+    }
+        .toList<MessageDraftId>()
 
     if (draftIds.isEmpty()) return emptyList()
 
     // attachment.message_draft_id is ON DELETE SET NULL, so the attachments must be read before the
     // drafts are deleted
-    val attachmentsByDraft =
-        createQuery {
-                sql(
-                    "SELECT message_draft_id, id FROM attachment WHERE message_draft_id = ANY(${bind(draftIds)})"
-                )
-            }
-            .toList { columnPair<MessageDraftId, AttachmentId>("message_draft_id", "id") }
-            .groupBy({ it.first }, { it.second })
+    val attachmentsByDraft = createQuery {
+        sql(
+            "SELECT message_draft_id, id FROM attachment WHERE message_draft_id = ANY(${bind(draftIds)})"
+        )
+    }
+        .toList { columnPair<MessageDraftId, AttachmentId>("message_draft_id", "id") }
+        .groupBy({ it.first }, { it.second })
 
     execute { sql("DELETE FROM message_draft WHERE id = ANY(${bind(draftIds)})") }
 
