@@ -292,7 +292,7 @@ export default React.memo(function ChildDocumentDecisionsReport() {
                   <Td>
                     {row.highlighted && <Highlight />}
                     <ExternalLink
-                      href={`/employee/child-documents/${row.id}`}
+                      href={`/employee/child-documents/${row.id}?from=report`}
                       text={row.templateName}
                       newTab={true}
                       data-qa="child-document-details"

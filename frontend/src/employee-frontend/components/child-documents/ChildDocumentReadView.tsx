@@ -180,11 +180,13 @@ const ChildDocumentReadViewInner = React.memo(
   function ChildDocumentReadViewInner({
     documentAndPermissions,
     childIdFromUrl,
+    openedFromReport,
     decisionMakerOptions,
     acceptedDecisions
   }: {
     documentAndPermissions: ChildDocumentWithPermittedActions
     childIdFromUrl: UUID | null
+    openedFromReport: boolean
     decisionMakerOptions: Employee[]
     acceptedDecisions: AcceptedChildDecisions[]
   }) {
@@ -452,11 +454,19 @@ const ChildDocumentReadViewInner = React.memo(
                   />
                 ) : (
                   <FixedSpaceRow $alignItems="flex-end">
-                    <Button
-                      text={i18n.common.leavePage}
-                      onClick={goToChildProfile}
-                      data-qa="return-button"
-                    />
+                    {openedFromReport ? (
+                      <Button
+                        text={i18n.common.close}
+                        onClick={() => window.close()}
+                        data-qa="close-button"
+                      />
+                    ) : (
+                      <Button
+                        text={i18n.common.leavePage}
+                        onClick={goToChildProfile}
+                        data-qa="return-button"
+                      />
+                    )}
                     {permittedActions.includes('DELETE') &&
                       document.status === 'DRAFT' && (
                         <ConfirmedMutation
@@ -1021,6 +1031,7 @@ export default React.memo(function ChildDocumentReadView() {
   const documentId = useIdRouteParam<ChildDocumentId>('documentId')
   const [searchParams] = useSearchParams()
   const childIdFromUrl = searchParams.get('childId') // duplicate child workaround
+  const openedFromReport = searchParams.get('from') === 'report'
 
   const documentResult = useQueryResult(childDocumentQuery({ documentId }))
 
@@ -1054,6 +1065,7 @@ export default React.memo(function ChildDocumentReadView() {
         <ChildDocumentReadViewInner
           documentAndPermissions={documentAndPermissions}
           childIdFromUrl={childIdFromUrl}
+          openedFromReport={openedFromReport}
           decisionMakerOptions={decisionMakers}
           acceptedDecisions={acceptedDecisions}
         />
