@@ -82,12 +82,14 @@ declare module 'Icons' {
   const faInfo: IconDefinition
   const faInfoCircle: IconDefinition
   const faKey: IconDefinition
+  const faLaptop: IconDefinition
   const faLink: IconDefinition
   const faList: IconDefinition
   const faLockAlt: IconDefinition
   const faLockOpenAlt: IconDefinition
   const faMapMarkerAlt: IconDefinition
   const faMeh: IconDefinition
+  const faMobileButton: IconDefinition
   const faMoneyBillWave: IconDefinition
   const faMoneyCheck: IconDefinition
   const faMoneyCheckEdit: IconDefinition
@@ -108,6 +110,7 @@ declare module 'Icons' {
   const faSignOut: IconDefinition
   const faStickyNote: IconDefinition
   const faSync: IconDefinition
+  const faTabletButton: IconDefinition
   const faThermometer: IconDefinition
   const faTimes: IconDefinition
   const faTrash: IconDefinition

@@ -15,6 +15,9 @@ data class CitizenPasskey(
     val name: String,
     val createdAt: HelsinkiDateTime,
     val lastUsedAt: HelsinkiDateTime?,
+    val deviceClass: DeviceClass,
+    val operatingSystemName: String,
+    val agentName: String,
 )
 
 data class PasskeyCredential(
@@ -32,13 +35,14 @@ data class NewPasskey(
     val aaguid: UUID,
     val transports: List<String>,
     val name: String,
+    val client: ParsedUserAgent,
 )
 
 fun Database.Read.getCitizenPasskeys(person: PersonId): List<CitizenPasskey> =
     createQuery {
             sql(
                 """
-SELECT id, name, created_at, last_used_at
+SELECT id, name, created_at, last_used_at, device_class, operating_system_name, agent_name
 FROM citizen_passkey
 WHERE citizen_user_id = ${bind(person)}
 ORDER BY created_at
@@ -82,7 +86,7 @@ fun Database.Transaction.insertCitizenPasskey(
     createUpdate {
             sql(
                 """
-INSERT INTO citizen_passkey (citizen_user_id, credential_id, public_key, signature_counter, aaguid, transports, name)
+INSERT INTO citizen_passkey (citizen_user_id, credential_id, public_key, signature_counter, aaguid, transports, name, device_class, operating_system_name, agent_name)
 VALUES (
     ${bind(person)},
     ${bind(passkey.credentialId)},
@@ -90,9 +94,12 @@ VALUES (
     ${bind(passkey.signatureCounter)},
     ${bind(passkey.aaguid)},
     ${bind(passkey.transports)},
-    ${bind(passkey.name)}
+    ${bind(passkey.name)},
+    ${bind(passkey.client.deviceClass)},
+    ${bind(passkey.client.operatingSystemName)},
+    ${bind(passkey.client.agentName)}
 )
-RETURNING id, name, created_at, last_used_at
+RETURNING id, name, created_at, last_used_at, device_class, operating_system_name, agent_name
 """
             )
         }
@@ -110,7 +117,7 @@ fun Database.Transaction.updateCitizenPasskeyName(
 UPDATE citizen_passkey
 SET name = ${bind(name)}
 WHERE id = ${bind(id)} AND citizen_user_id = ${bind(person)}
-RETURNING id, name, created_at, last_used_at
+RETURNING id, name, created_at, last_used_at, device_class, operating_system_name, agent_name
 """
             )
         }
@@ -126,7 +133,7 @@ fun Database.Transaction.deleteCitizenPasskey(
                 """
 DELETE FROM citizen_passkey
 WHERE id = ${bind(id)} AND citizen_user_id = ${bind(person)}
-RETURNING id, name, created_at, last_used_at
+RETURNING id, name, created_at, last_used_at, device_class, operating_system_name, agent_name
 """
             )
         }

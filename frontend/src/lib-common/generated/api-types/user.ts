@@ -13,11 +13,23 @@ import type { JsonOf } from '../../json'
 * Generated from evaka.core.user.CitizenPasskey
 */
 export interface CitizenPasskey {
+  agentName: string
   createdAt: HelsinkiDateTime
+  deviceClass: DeviceClass
   id: CitizenPasskeyId
   lastUsedAt: HelsinkiDateTime | null
   name: string
+  operatingSystemName: string
 }
+
+/**
+* Generated from evaka.core.user.DeviceClass
+*/
+export type DeviceClass =
+  | 'PHONE'
+  | 'TABLET'
+  | 'DESKTOP'
+  | 'UNKNOWN'
 
 /**
 * Generated from evaka.core.user.EvakaUser
