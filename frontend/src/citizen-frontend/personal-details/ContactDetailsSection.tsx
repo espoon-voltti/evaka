@@ -183,52 +183,55 @@ export default React.memo(function ContactDetailsSection({
               />
             </FixedSpaceColumn>
           ) : (
-            <EmailVerificationStatus>
-              <span data-qa="email" translate="no">
-                {user.email || '-'}
-              </span>
-              <Gap $size="xs" />
-              {!!user.email && (
-                <EmailVerificationStatusView
-                  emailVerificationStatus={emailVerificationStatus}
-                  problem={problem}
-                  canEdit={canEdit}
-                  navigateToLogin={navigateToLogin}
-                  reloadUser={reloadUser}
-                />
-              )}
-            </EmailVerificationStatus>
+            <>
+              <EmailVerificationStatus>
+                <span data-qa="email" translate="no">
+                  {user.email || '-'}
+                </span>
+                <Gap $size="xs" />
+                {!!user.email && (
+                  <EmailVerificationStatusView
+                    emailVerificationStatus={emailVerificationStatus}
+                    problem={problem}
+                    canEdit={canEdit}
+                    navigateToLogin={navigateToLogin}
+                    reloadUser={reloadUser}
+                  />
+                )}
+              </EmailVerificationStatus>
+              {problem?.type === 'mismatch' &&
+                !emailVerificationStatus.latestVerification && (
+                  <>
+                    <AlertBox
+                      noMargin
+                      message={
+                        <>
+                          {
+                            t.personalDetails.detailsSection.updateUsernameAlert
+                              .usernameMismatch
+                          }
+                          <br />
+                          {t.personalDetails.detailsSection.updateUsernameAlert.suggestedAction(
+                            problem.email
+                          )}
+                        </>
+                      }
+                    />
+                    <Gap $size="xs" />
+                    <VerificationActionButton
+                      text={t.personalDetails.detailsSection.updateUsername(
+                        problem.email
+                      )}
+                      dataQa="update-username"
+                      canEdit={canEdit}
+                      navigateToLogin={navigateToLogin}
+                    />
+                  </>
+                )}
+            </>
           )}
         </DataRowValue>
       </DataRow>
-      {!editMode &&
-        problem?.type === 'mismatch' &&
-        !emailVerificationStatus.latestVerification && (
-          <>
-            <AlertBox
-              message={
-                <>
-                  {
-                    t.personalDetails.detailsSection.updateUsernameAlert
-                      .usernameMismatch
-                  }
-                  <br />
-                  {t.personalDetails.detailsSection.updateUsernameAlert.suggestedAction(
-                    problem.email
-                  )}
-                </>
-              }
-            />
-            <VerificationActionButton
-              text={t.personalDetails.detailsSection.updateUsername(
-                problem.email
-              )}
-              dataQa="update-username"
-              canEdit={canEdit}
-              navigateToLogin={navigateToLogin}
-            />
-          </>
-        )}
       <DataRow>
         <DataRowLabel htmlFor="phone-input">
           {t.personalDetails.detailsSection.phone}
