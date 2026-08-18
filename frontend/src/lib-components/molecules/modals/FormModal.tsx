@@ -121,6 +121,7 @@ type MutateFormModalProps<Arg, Data> = ModalBaseProps & {
   resolveAction: () => Arg | typeof cancelMutation
   resolveLabel: string
   resolveDisabled?: boolean
+  resolveDanger?: boolean
   onSuccess: (value: Data) => void
   onFailure?: (value: Failure<unknown>) => void
   rejectAction: () => void
@@ -133,6 +134,7 @@ function MutateFormModal_<Arg, Data>({
   resolveAction,
   resolveLabel,
   resolveDisabled,
+  resolveDanger,
   onSuccess,
   onFailure,
   rejectAction,
@@ -144,7 +146,7 @@ function MutateFormModal_<Arg, Data>({
       {children}
       <ModalButtons $justifyContent="center">
         <MutateButton
-          primary
+          {...(resolveDanger ? { danger: true } : { primary: true })}
           mutation={resolveMutation}
           text={resolveLabel}
           disabled={resolveDisabled}
