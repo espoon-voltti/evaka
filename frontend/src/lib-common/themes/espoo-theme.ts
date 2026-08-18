@@ -8,7 +8,7 @@ const blueColors = {
   m1: '#00358a',
   m2: '#0047b6',
   m3: '#4d7fcc',
-  m4: '#d9e4f4'
+  m4: '#e5eef8'
 }
 
 const theme: Theme = {
