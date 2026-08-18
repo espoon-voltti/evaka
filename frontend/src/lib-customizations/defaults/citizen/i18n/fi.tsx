@@ -2289,6 +2289,8 @@ export default {
       deleteConfirmTitle: 'Poistetaanko pääsyavain?',
       deleteConfirmText: (name: string) =>
         `Pääsyavain "${name}" poistetaan, eikä sillä voi enää kirjautua eVakaan. Poistaminen kirjaa ulos muut istuntosi.`,
+      alreadyExistsError:
+        'Tällä laitteella tai sovelluksella on jo pääsyavain eVakaan. Voit kirjautua sillä tai luoda uuden pääsyavaimen toisella laitteella.',
       limitError:
         'Voit lisätä enintään 10 pääsyavainta. Poista jokin pääsyavain ennen uuden lisäämistä.',
       addError: 'Pääsyavaimen lisääminen ei onnistunut. Yritä uudelleen.'
