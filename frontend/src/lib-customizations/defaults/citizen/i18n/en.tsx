@@ -2021,6 +2021,8 @@ const en: Translations = {
       deleteConfirmTitle: 'Delete passkey?',
       deleteConfirmText: (name: string) =>
         `The passkey "${name}" will be deleted and can no longer be used to log in to eVaka. Deleting it will log out your other sessions.`,
+      alreadyExistsError:
+        'This device or app already has an eVaka passkey. You can log in with it, or create a new passkey on another device.',
       limitError:
         'You can add at most 10 passkeys. Delete a passkey before adding a new one.',
       addError: 'Adding the passkey failed. Please try again.'

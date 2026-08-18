@@ -55,7 +55,9 @@ export default React.memo(function PasskeysSection({ user }: { user: User }) {
   const [passkeyToDelete, setPasskeyToDelete] = useState<CitizenPasskey | null>(
     null
   )
-  const [addError, setAddError] = useState<'limit' | 'generic' | null>(null)
+  const [addError, setAddError] = useState<
+    'alreadyExists' | 'limit' | 'generic' | null
+  >(null)
 
   const navigateToLogin = useCallback(
     () => window.location.replace(getStrongLoginUri()),
@@ -69,11 +71,16 @@ export default React.memo(function PasskeysSection({ user }: { user: User }) {
   const addPasskey = useCallback(async () => {
     setAddError(null)
     const created = await createPasskeyCredential()
-    if (created.status === 'failure') {
-      setAddError(created.errorCode === 'PASSKEY_LIMIT' ? 'limit' : 'generic')
-      return
+    switch (created.status) {
+      case 'alreadyExists':
+        setAddError('alreadyExists')
+        return
+      case 'failure':
+        setAddError(created.errorCode === 'PASSKEY_LIMIT' ? 'limit' : 'generic')
+        return
+      case 'cancelled':
+        return
     }
-    if (created.status !== 'success') return
 
     const saved = await finishRegistration({
       body: {
@@ -103,8 +110,13 @@ export default React.memo(function PasskeysSection({ user }: { user: User }) {
           </div>
           {addError !== null && (
             <AlertBox
-              message={addError === 'limit' ? t.limitError : t.addError}
-              noMargin
+              message={
+                addError === 'alreadyExists'
+                  ? t.alreadyExistsError
+                  : addError === 'limit'
+                    ? t.limitError
+                    : t.addError
+              }
               data-qa="add-passkey-error"
             />
           )}

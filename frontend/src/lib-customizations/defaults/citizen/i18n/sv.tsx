@@ -2280,6 +2280,8 @@ const sv: Translations = {
       deleteConfirmTitle: 'Ta bort inloggningsnyckeln?',
       deleteConfirmText: (name: string) =>
         `Inloggningsnyckeln "${name}" tas bort och kan inte längre användas för att logga in i eVaka. Borttagningen loggar ut dina andra sessioner.`,
+      alreadyExistsError:
+        'Den här enheten eller appen har redan en inloggningsnyckel till eVaka. Du kan logga in med den eller skapa en ny inloggningsnyckel på en annan enhet.',
       limitError:
         'Du kan lägga till högst 10 inloggningsnycklar. Ta bort en inloggningsnyckel innan du lägger till en ny.',
       addError: 'Det gick inte att lägga till inloggningsnyckeln. Försök igen.'

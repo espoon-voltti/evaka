@@ -81,6 +81,7 @@ export type PasskeyCreationResult =
       providerName: string | undefined
     }
   | { status: 'cancelled' }
+  | { status: 'alreadyExists' }
   | { status: 'failure'; errorCode: string | undefined }
 
 /**
@@ -106,8 +107,17 @@ export async function createPasskeyCredential(): Promise<PasskeyCreationResult> 
     credential = await navigator.credentials.create({
       publicKey: creationOptions
     })
-  } catch {
-    return { status: 'cancelled' }
+  } catch (e) {
+    if (e instanceof DOMException) {
+      switch (e.name) {
+        case 'InvalidStateError':
+          return { status: 'alreadyExists' }
+        case 'AbortError':
+        case 'NotAllowedError':
+          return { status: 'cancelled' }
+      }
+    }
+    return { status: 'failure', errorCode: undefined }
   }
   if (
     !(credential instanceof PublicKeyCredential) ||
