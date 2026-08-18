@@ -232,6 +232,7 @@ export default React.memo(function ContactDetailsSection({
       <DataRow>
         <DataRowLabel htmlFor="phone-input">
           {t.personalDetails.detailsSection.phone}
+          {editMode && <span> *</span>}
         </DataRowLabel>
         <DataRowValue>
           {editMode ? (
