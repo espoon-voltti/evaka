@@ -26,6 +26,7 @@ import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.user.CitizenPasskey
+import evaka.core.user.DeviceClass
 import evaka.core.user.getCitizenPasskeys
 import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import java.nio.charset.StandardCharsets
@@ -45,6 +46,10 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val clock = MockEvakaClock(2024, 1, 1, 12, 0)
+
+    private val userAgent =
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 " +
+            "(KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
 
     private val email = "verified@example.com"
     private val person = DevPerson(email = email, verifiedEmail = email, ssn = "010107A995B")
@@ -76,6 +81,9 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(listOf(passkey.id), passkeys.map { it.id })
         assertEquals("My phone", passkeys.single().name)
         assertEquals(clock.now(), passkeys.single().lastUsedAt)
+        assertEquals(DeviceClass.PHONE, passkeys.single().deviceClass)
+        assertEquals("iOS", passkeys.single().operatingSystemName)
+        assertEquals("Safari", passkeys.single().agentName)
     }
 
     @Test
@@ -171,6 +179,7 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 dbInstance(),
                 strongUser,
                 clock,
+                userAgent,
                 PasskeyControllerCitizen.FinishPasskeyRegistrationRequest("Test", credential),
             )
         }
@@ -225,9 +234,15 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val credential = authenticator.create(options.credentialsCreate)
 
         val request = PasskeyControllerCitizen.FinishPasskeyRegistrationRequest("Test", credential)
-        controller.finishPasskeyRegistration(dbInstance(), strongUser, clock, request)
+        controller.finishPasskeyRegistration(dbInstance(), strongUser, clock, userAgent, request)
         assertThrows<NotFound> {
-            controller.finishPasskeyRegistration(dbInstance(), strongUser, clock, request)
+            controller.finishPasskeyRegistration(
+                dbInstance(),
+                strongUser,
+                clock,
+                userAgent,
+                request,
+            )
         }
     }
 
@@ -246,6 +261,7 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 dbInstance(),
                 strongUser,
                 clock2,
+                userAgent,
                 PasskeyControllerCitizen.FinishPasskeyRegistrationRequest("Test", credential),
             )
         }
@@ -263,6 +279,7 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 dbInstance(),
                 strongUser,
                 clock,
+                userAgent,
                 PasskeyControllerCitizen.FinishPasskeyRegistrationRequest("Test", credential),
             )
         }
@@ -327,6 +344,7 @@ class PasskeyIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             dbInstance(),
             strongUser,
             clock,
+            userAgent,
             PasskeyControllerCitizen.FinishPasskeyRegistrationRequest(name, credential),
         )
     }

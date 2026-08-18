@@ -9,6 +9,9 @@ CREATE TABLE citizen_passkey (
     aaguid uuid NOT NULL,
     transports text[] NOT NULL,
     name text NOT NULL,
+    device_class text NOT NULL,
+    operating_system_name text NOT NULL,
+    agent_name text NOT NULL,
     last_used_at timestamp with time zone
 );
 

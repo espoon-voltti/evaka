@@ -11,7 +11,10 @@ import { object, required, validated } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
 import type { CitizenPasskeyId } from 'lib-common/generated/api-types/shared'
-import type { CitizenPasskey } from 'lib-common/generated/api-types/user'
+import type {
+  CitizenPasskey,
+  DeviceClass
+} from 'lib-common/generated/api-types/user'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -22,7 +25,15 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { InformationText, Label, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { faKey, faLockAlt, faPen, faPlus, faTrash } from 'lib-icons'
+import {
+  faLaptop,
+  faLockAlt,
+  faMobileButton,
+  faPen,
+  faPlus,
+  faTabletButton,
+  faTrash
+} from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { renderResult } from '../async-rendering'
@@ -175,7 +186,7 @@ const PasskeyRow = React.memo(function PasskeyRow({
   const i18n = useTranslation()
   const t = i18n.personalDetails.passkeysSection
   return (
-    <PasskeyCard>
+    <PasskeyCard deviceClass={passkey.deviceClass}>
       <FixedSpaceColumn $spacing="xxs">
         <NameRow>
           <PasskeyName data-qa="passkey-name">{passkey.name}</PasskeyName>
@@ -233,7 +244,7 @@ const PasskeyNameEditor = React.memo(function PasskeyNameEditor({
   const inputId = `passkey-name-${passkey.id}`
 
   return (
-    <PasskeyCard>
+    <PasskeyCard deviceClass={passkey.deviceClass}>
       <FixedSpaceColumn $spacing="s">
         <FixedSpaceColumn $spacing="xs">
           <Label htmlFor={inputId}>{t.nameLabel}</Label>
@@ -278,10 +289,15 @@ const PasskeyDetails = React.memo(function PasskeyDetails({
   passkey: CitizenPasskey
 }) {
   const t = useTranslation().personalDetails.passkeysSection
+  const created = [
+    passkey.agentName,
+    passkey.operatingSystemName,
+    passkey.createdAt.toLocalDate().format()
+  ].filter((part) => part !== '')
   return (
     <DetailLines>
-      <InformationText>
-        {t.added}: {passkey.createdAt.toLocalDate().format()}
+      <InformationText data-qa="passkey-created">
+        {t.added}: {created.join(', ')}
       </InformationText>
       <InformationText data-qa="passkey-last-used">
         {t.lastUsed}: {passkey.lastUsedAt?.format() ?? t.neverUsed}
@@ -290,15 +306,29 @@ const PasskeyDetails = React.memo(function PasskeyDetails({
   )
 })
 
+const deviceIcon = (deviceClass: DeviceClass) => {
+  switch (deviceClass) {
+    case 'PHONE':
+      return faMobileButton
+    case 'TABLET':
+      return faTabletButton
+    case 'DESKTOP':
+    case 'UNKNOWN':
+      return faLaptop
+  }
+}
+
 const PasskeyCard = React.memo(function PasskeyCard({
+  deviceClass,
   children
 }: {
+  deviceClass: DeviceClass
   children: React.ReactNode
 }) {
   return (
     <CardFrame data-qa="passkey">
       <CardIcon>
-        <FontAwesomeIcon icon={faKey} />
+        <FontAwesomeIcon icon={deviceIcon(deviceClass)} />
       </CardIcon>
       <CardContent>{children}</CardContent>
     </CardFrame>

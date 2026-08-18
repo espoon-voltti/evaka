@@ -22,6 +22,7 @@ import evaka.core.shared.security.Action
 import evaka.core.user.CitizenPasskey
 import evaka.core.user.NewPasskey
 import evaka.core.user.PasskeyService
+import evaka.core.user.UserAgentParser
 import evaka.core.user.consumePasskeyRegistration
 import evaka.core.user.countCitizenPasskeys
 import evaka.core.user.deleteCitizenPasskey
@@ -32,12 +33,14 @@ import evaka.core.user.updateCitizenPasskeyName
 import evaka.core.user.upsertCitizenUserForPasskey
 import evaka.core.user.upsertPasskeyRegistration
 import java.time.Duration
+import org.springframework.http.HttpHeaders
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -50,6 +53,7 @@ private val REGISTRATION_CHALLENGE_TTL: Duration = Duration.ofMinutes(5)
 class PasskeyControllerCitizen(
     private val accessControl: AccessControl,
     private val passkeyService: PasskeyService,
+    private val userAgentParser: UserAgentParser,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     @GetMapping
@@ -132,6 +136,7 @@ class PasskeyControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
+        @RequestHeader(HttpHeaders.USER_AGENT, required = false) userAgent: String?,
         @RequestBody body: FinishPasskeyRegistrationRequest,
     ): CitizenPasskey =
         db.connect { dbc ->
@@ -167,6 +172,7 @@ class PasskeyControllerCitizen(
                                 aaguid = finished.aaguid,
                                 transports = finished.transports,
                                 name = body.name.trim(),
+                                client = userAgentParser.parse(userAgent),
                             ),
                         )
                     asyncJobRunner.plan(

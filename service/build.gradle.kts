@@ -174,6 +174,7 @@ dependencies {
     implementation("org.apache.commons:commons-csv")
     implementation("org.unbescape:unbescape:1.1.6.RELEASE")
     implementation("com.yubico:webauthn-server-core")
+    implementation("com.github.ua-parser:uap-java")
 
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")
