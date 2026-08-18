@@ -380,6 +380,20 @@ export class GroupCollapsibleChildRow extends Element {
     await expect(this.#dailyNoteTooltip).toContainText(expectedText)
   }
 
+  async assertDailyNoteDoesNotContainText(unexpectedText: string) {
+    await this.#dailyNoteIcon.hover()
+    await expect(this.#dailyNoteTooltip).not.toContainText(unexpectedText)
+  }
+
+  async assertDailyNoteIconActive(active: boolean) {
+    // RoundIcon marks a lit-up icon with the `active` class
+    if (active) {
+      await expect(this.#dailyNoteIcon).toHaveClass(/\bactive\b/)
+    } else {
+      await expect(this.#dailyNoteIcon).not.toHaveClass(/\bactive\b/)
+    }
+  }
+
   async openDailyNoteModal() {
     await this.#dailyNoteIcon.click()
     return new ChildDailyNoteModal(this.findByDataQa('modal'))
