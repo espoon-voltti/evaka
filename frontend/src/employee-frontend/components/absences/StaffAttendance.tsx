@@ -223,7 +223,6 @@ const StaffAttendanceCell = React.memo(function StaffAttendanceCell({
     <div data-qa="staff-attendance-cell" data-state={state}>
       <div>
         <StaffAttendanceInput
-          className="input"
           value={value}
           onChange={handleChange}
           onBlur={saveImmediately}
@@ -248,7 +247,8 @@ const StaffAttendanceInput = styled.input`
   font-size: 0.8rem;
   height: 20px;
   width: 20px;
-  border-color: ${colors.grayscale.g35};
+  border-style: solid;
+  border-color: ${colors.grayscale.g70};
   color: ${colors.grayscale.g100};
   display: block;
   box-shadow: none;
