@@ -58,7 +58,8 @@ test.describe('Citizen personal details', () => {
 
   test('Citizen sees indications of missing email and phone', async () => {
     await header.checkPersonalDetailsAttentionIndicatorsAreShown()
-    await expect(personalDetailsPage.verifyEmailTask).toBeVisible()
+    await expect(personalDetailsPage.addEmailTask).toBeVisible()
+    await expect(personalDetailsPage.verifyEmailTask).toBeHidden()
     await expect(personalDetailsPage.addPhoneTask).toBeVisible()
   })
 
@@ -103,6 +104,8 @@ test.describe('Citizen personal details', () => {
 
     await personSection.assertPreferredName(preferredName)
     await contactSection.checkContactDetails(contactData)
+    await expect(personalDetailsPage.addEmailTask).toBeHidden()
+    await expect(personalDetailsPage.verifyEmailTask).toBeVisible()
     await expect(personalDetailsPage.addPhoneTask).toBeHidden()
   })
 })

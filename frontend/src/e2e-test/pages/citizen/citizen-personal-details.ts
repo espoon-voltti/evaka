@@ -12,6 +12,7 @@ export default class CitizenPersonalDetails {
   loginDetailsSection: LoginDetailsSection
   notificationSettingsSection: CitizenNotificationSettingsSection
   familySizeSection: FamilySizeSection
+  addEmailTask: Element
   verifyEmailTask: Element
   addPhoneTask: Element
 
@@ -31,6 +32,7 @@ export default class CitizenPersonalDetails {
     this.familySizeSection = new FamilySizeSection(
       page.findByDataQa('family-size-section')
     )
+    this.addEmailTask = page.findByDataQa('task-add-email')
     this.verifyEmailTask = page.findByDataQa('task-verify-email')
     this.addPhoneTask = page.findByDataQa('task-add-phone')
   }

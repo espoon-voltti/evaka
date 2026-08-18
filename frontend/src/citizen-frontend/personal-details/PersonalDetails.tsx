@@ -123,16 +123,25 @@ export default React.memo(function PersonalDetails() {
     .map(([user, emailVerificationStatus]) => {
       if (!user) return []
       return [
-        ...(!isEmailVerified(emailVerificationStatus)
+        ...(!emailVerificationStatus.email
           ? [
               {
-                dataQa: 'task-verify-email',
-                title: t.personalDetails.tasks.verifyEmail.title,
-                description: t.personalDetails.tasks.verifyEmail.description,
+                dataQa: 'task-add-email',
+                title: t.personalDetails.tasks.addEmail.title,
+                description: t.personalDetails.tasks.addEmail.description,
                 onClick: () => scrollRefIntoView(contactDetailsSection)
               }
             ]
-          : []),
+          : !isEmailVerified(emailVerificationStatus)
+            ? [
+                {
+                  dataQa: 'task-verify-email',
+                  title: t.personalDetails.tasks.verifyEmail.title,
+                  description: t.personalDetails.tasks.verifyEmail.description,
+                  onClick: () => scrollRefIntoView(contactDetailsSection)
+                }
+              ]
+            : []),
         ...(!user.phone
           ? [
               {

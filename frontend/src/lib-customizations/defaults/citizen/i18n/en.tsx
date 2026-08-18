@@ -1919,6 +1919,10 @@ const en: Translations = {
     editInfo:
       'Your name and address are retrieved from the Population Information System. If they change, you will need to inform the Digital and Population Data Services Agency (DVV).',
     tasks: {
+      addEmail: {
+        title: 'Add an email address',
+        description: 'You can receive email notifications.'
+      },
       verifyEmail: {
         title: 'Verify your email address',
         description: 'You can receive email notifications.'
