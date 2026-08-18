@@ -10,6 +10,8 @@ import evaka.core.DataRemovalEnv
 import evaka.core.caseprocess.deleteCaseProcesses
 import evaka.core.childimages.deleteImageFile
 import evaka.core.document.childdocument.deleteExpiredChildDocuments
+import evaka.core.messaging.deleteExpiredBulletinThreads
+import evaka.core.messaging.deleteExpiredMessageDrafts
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService
 import evaka.core.shared.ApplicationId
@@ -39,6 +41,7 @@ import evaka.core.shared.db.QuerySql
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Duration
 import java.time.LocalDate
 import org.springframework.stereotype.Service
 
@@ -142,6 +145,16 @@ class DataRemovalService(
             expireDate = today.minusYears(10),
             limit = limit,
         )
+
+        deleteExpiredBulletinThreads(
+            dbc,
+            now,
+            recipientExpireDate = today.minusYears(5),
+            expiresBefore = now.minusYears(5),
+            limit = limit,
+        )
+
+        deleteExpiredMessageDrafts(dbc, now, expiresBefore = now.minusYears(1), limit = limit)
 
         unsetExpiredChildReferences(
             dbc,
@@ -330,6 +343,79 @@ class DataRemovalService(
                         "attachmentIds" to doc.attachmentIds,
                         "expireDate" to expireDate,
                     ),
+            )
+        }
+    }
+
+    fun deleteExpiredBulletinThreads(
+        dbc: Database.Connection,
+        now: HelsinkiDateTime,
+        recipientExpireDate: LocalDate,
+        expiresBefore: HelsinkiDateTime,
+        limit: Int,
+    ) {
+        logger.info { "Deleting at most $limit expired bulletin threads" }
+        val deleted = dbc.transaction { tx ->
+            tx.setStatementTimeout(Duration.ofMinutes(10))
+            val batch = tx.deleteExpiredBulletinThreads(recipientExpireDate, expiresBefore, limit)
+            asyncJobRunner.plan(
+                tx = tx,
+                payloads =
+                    batch.contents
+                        .flatMap { it.attachmentIds }
+                        .map { AsyncJob.DeleteAttachment(it) },
+                runAt = now,
+            )
+            batch
+        }
+        logger.info { "Deleted ${deleted.threadIds.size} expired bulletin thread(s)" }
+        val expireDate = expiresBefore.toLocalDate()
+        deleted.threadIds.forEach { threadId ->
+            auditExpiredDelete(
+                entity = "message_thread",
+                targetId = AuditId(threadId),
+                meta =
+                    mapOf("expireDate" to expireDate, "recipientExpireDate" to recipientExpireDate),
+            )
+        }
+        deleted.contents.forEach { content ->
+            auditExpiredDelete(
+                entity = "message_content",
+                targetId = AuditId(content.contentId),
+                meta =
+                    mapOf(
+                        "attachmentIds" to content.attachmentIds,
+                        "expireDate" to expireDate,
+                        "recipientExpireDate" to recipientExpireDate,
+                    ),
+            )
+        }
+    }
+
+    fun deleteExpiredMessageDrafts(
+        dbc: Database.Connection,
+        now: HelsinkiDateTime,
+        expiresBefore: HelsinkiDateTime,
+        limit: Int,
+    ) {
+        logger.info { "Deleting at most $limit expired message drafts" }
+        val deleted = dbc.transaction { tx ->
+            val drafts = tx.deleteExpiredMessageDrafts(expiresBefore, limit)
+            asyncJobRunner.plan(
+                tx = tx,
+                payloads =
+                    drafts.flatMap { it.attachmentIds }.map { AsyncJob.DeleteAttachment(it) },
+                runAt = now,
+            )
+            drafts
+        }
+        logger.info { "Deleted ${deleted.size} expired message draft(s)" }
+        val expireDate = expiresBefore.toLocalDate()
+        deleted.forEach { draft ->
+            auditExpiredDelete(
+                entity = "message_draft",
+                targetId = AuditId(draft.draftId),
+                meta = mapOf("attachmentIds" to draft.attachmentIds, "expireDate" to expireDate),
             )
         }
     }
