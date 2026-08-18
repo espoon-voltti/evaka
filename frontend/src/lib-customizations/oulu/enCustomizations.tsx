@@ -19,7 +19,7 @@ const customerContactText = function () {
   )
 }
 
-const fi: DeepPartial<Translations> = {
+const en: DeepPartial<Translations> = {
   personalDetails: {
     familySizeSection: {
       description: (
@@ -916,131 +916,125 @@ const fi: DeepPartial<Translations> = {
     <>
       <H1>Accessibility statement</H1>
       <P>
-        This accessibility statement is given on the eVaka web service provided
-        by the early childhood education and care services of the City of Oulu.
+        This accessibility statement applies to the City of Oulu’s early
+        childhood education eVaka online service at{' '}
         <a href="https://varhaiskasvatus.ouka.fi">varhaiskasvatus.ouka.fi</a>.
-        The City of Oulu seeks to guarantee the accessibility of this website,
-        to continuously improve the user experience it offers, and to comply
-        with the appropriate accessibility standards.
+        The City of Oulu strives to guarantee the accessibility of the online
+        service, continuously improve the user experience and apply appropriate
+        accessibility requirements.
       </P>
+      <H2>Compliance of the service</H2>
       <P>
-        The accessibility of this service was assessed by the service
-        development team. The accessibility statement was published on April 12,
-        2022.
+        The online service meets the accessibility requirements set by law (WCAG
+        2.1, Level AA) for the most part, but the service still has some parts
+        that do not meet the requirements.
       </P>
-      <H2>Service compliance</H2>
+      <H2>Measures to support accessibility</H2>
       <P>
-        This web service meets the critical accessibility requirements set forth
-        in the relevant legislation in accordance with level AA of WCAG 2.1. The
-        service does not yet completely comply with the requirements.
-      </P>
-      <H2>Accessibility support measures</H2>
-      <P>
-        We utilize the following measures to ensure the accessibility of this
-        service:
+        We ensure the accessibility of the online service with, among others,
+        the following measures:
       </P>
       <ul>
         <li>
-          Accessibility is taken into account from the start of the process when
-          selecting colors and font sizes in the design phase, for example.
+          Accessibility is taken into account already in the design phase of the
+          service, for example by choosing accessible colours and font sizes.
         </li>
         <li>
-          The elements of the service are defined in a semantically consistent
-          manner.
+          The elements of the service are defined to be semantically consistent.
+        </li>
+        <li>The service is tested with a screen reader during development.</li>
+        <li>
+          Various users test the service and give feedback on its accessibility.
         </li>
         <li>
-          The service is tested with a screen reader at regular intervals.
-        </li>
-        <li>
-          The service is tested by different users who provide feedback on
-          accessibility.
-        </li>
-        <li>
-          The accessibility of the site is reviewed every time the technology
-          used on the site or its contents change.
+          The accessibility of the service is maintained through continuous
+          monitoring when its content and/or technical implementation changes.
         </li>
       </ul>
       <P>
-        This brochure is updated with site changes and accessibility reviews.
+        This accessibility statement is updated in conjunction with changes to
+        the service and accessibility reviews.
       </P>
       <H2>Known accessibility issues</H2>
       <P>
-        Users may still experience some issues when using the site. The
-        following is a description of known accessibility issues. If you notice
-        an issue that is not on this list, please contact us.
+        Users may still encounter some issues in the online service. Known
+        accessibility issues are described below. If you notice an issue in the
+        service that is not listed, please contact us, the administrators.
       </P>
       <ul>
         <li>
-          Date pickers and multi-select dropdowns in the service are not
-          optimised to be used with a screen reader.
-        </li>
-        <li>
-          The service’s unit map cannot be navigated using the keyboard/screen
-          reader, but the units can be browsed on the list available in the same
-          view. The map used in the service is produced by a third party.
+          When using a touch screen, the touch areas of some functions may be
+          too small.
         </li>
       </ul>
       <H2>Third parties</H2>
       <P>
-        We cannot guarantee the accessibility of third-party services. This web
-        service utilizes the following third-party services:
+        The online service uses the following third-party services, the
+        accessibility of which we cannot guarantee.
       </P>
       <ul>
-        <li>Suomi.fi authorization</li>
-        <li>The map service Leaflet</li>
+        <li>Suomi.fi identification</li>
+        <li>Leaflet map service</li>
       </ul>
-      <H2>Alternative ways of using the service</H2>
+      <H2>Alternative ways of accessing the service</H2>
       <P>
+        You can get help with using the electronic services at{' '}
         <ExternalLink
           href="https://www.ouka.fi/oulu/asiointi-ja-neuvonta"
-          text="The service points of the City of Oulu"
-          newTab
-        />{' '}
-        offer guidance to using electronic services. The service point staff
-        also provide help to users for whom digital services are not accessible.
+          text="the City of Oulu’s service points"
+        />
+        . The service advisors at the service points help users for whom digital
+        services are not accessible.
+      </P>
+      <H2>Preparation of this accessibility statement</H2>
+      <P>
+        This statement was drawn up on 12 April 2022. The accessibility of the
+        service has been assessed by the development team of the service and an
+        external expert assessor. The latest external expert assessment was
+        carried out in spring 2024. The accessibility statement was last updated
+        on 30 June 2026.
       </P>
       <H2>Give feedback</H2>
       <P>
-        If you notice an accessibility-related issue on the service, please let
-        us know! You can send us feedback using this{' '}
+        If you notice an accessibility issue in the eVaka online service, please
+        let us, the administrators, know. You can report an accessibility issue
+        or give us feedback using the{' '}
         <ExternalLink
           href="https://e-kartta.ouka.fi/efeedback"
           text="online form"
-          newTab
         />{' '}
-        or by mail{' '}
+        or by emailing{' '}
         <a href="mailto:varhaiskasvatus@ouka.fi">varhaiskasvatus@ouka.fi</a>.
+        Receiving a reply may take 14 days.
       </P>
-      <H2>Supervisory authority</H2>
+      <H2>Enforcement procedure</H2>
       <P>
-        If you detect any accessibility problems on the website, please first
-        give feedback to the site administrators. It may take 14 days until you
-        get a reply. If you are not happy with the response or do not receive a
-        reply in two weeks, you can send your feedback to the Finnish Transport
-        and Communications Agency Traficom. Finnish Transport and Communications
-        Agency Traficom will tell you in detail how to file a complaint and how
-        the matter will be dealt with.
+        If you are not satisfied with the reply you have received from the
+        administrators, or if you do not receive a reply within 14 days, you can
+        submit a report to Traficom. Traficom’s website explains in detail how
+        you can submit a report and how the matter will be processed.
       </P>
+
       <P>
-        <strong>Control authority contact details</strong>
+        <strong>Contact information of the supervisory authority:</strong>
         <br />
-        Finnish Transport and Communications Agency Traficom <br />
-        Digital Accessibility Supervision Unit
+        Finnish Transport and Communications Agency Traficom
         <br />
-        <ExternalLink
-          href="https://www.saavutettavuusvaatimukset.fi/en"
-          text="Web accessibility"
-          newTab
-        />
+        Digital Accessibility Supervision
         <br />
         <a href="mailto:saavutettavuus@traficom.fi">
           saavutettavuus@traficom.fi
         </a>
         <br />
-        telephone switchboard 029 534 5000
+        Switchboard: 029 534 5000
+        <br />
+        <ExternalLink
+          href="https://www.webaccessibility.fi"
+          text="www.webaccessibility.fi"
+        />
       </P>
     </>
   )
 }
 
-export default fi
+export default en

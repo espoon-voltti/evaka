@@ -17,8 +17,7 @@ export const serviceApplicationsEnabled = featureFlags.serviceApplications
 const customerContactText = function () {
   return (
     <>
-      <a href="mailto:sari.koivisto@orivesi.fi">sari.koivisto@orivesi.fi</a>,
-      puh. 050 552 6246
+      <a href="mailto:varhaiskasvatus@orivesi.fi">varhaiskasvatus@orivesi.fi</a>
     </>
   )
 }
@@ -853,106 +852,113 @@ const fi: DeepPartial<Translations> = {
         <a href="https://evaka.orivesi.fi">evaka.orivesi.fi</a>. Oriveden
         kaupunki pyrkii takaamaan verkkopalvelun saavutettavuuden, parantamaan
         käyttäjäkokemusta jatkuvasti ja soveltamaan asianmukaisia
-        saavutettavuusstandardeja.
+        saavutettavuusvaatimuksia.
       </P>
-      <P>Seloste on laadittu 1.8.2024.</P>
       <H2>Palvelun vaatimustenmukaisuus</H2>
       <P>
-        Verkkopalvelu täyttää lain asettamat kriittiset
-        saavutettavuusvaatimukset WCAG v2.1 -tason AA mukaisesti. Palvelu ei ole
-        vielä kaikilta osin vaatimusten mukainen.
+        Verkkopalvelu täyttää lain asettamat saavutettavuusvaatimukset (WCAG
+        2.1, taso AA) suurimmalta osin, mutta palvelussa on vielä joitakin osia,
+        jotka eivät ole vaatimusten mukaisia.
       </P>
       <H2>Toimet saavutettavuuden tukemiseksi</H2>
       <P>
-        Verkkopalvelun saavutettavuus varmistetaan muun muassa seuraavilla
+        Varmistamme verkkopalvelun saavutettavuuden muun muassa seuraavilla
         toimenpiteillä:
       </P>
       <ul>
         <li>
-          Saavutettavuus huomioidaan alusta lähtien suunnitteluvaiheessa, mm.
-          valitsemalla palvelun värit ja kirjaisinten koot saavutettavasti.
+          Saavutettavuus huomioidaan jo palvelun suunnitteluvaiheessa, muun
+          muassa valitsemalla saavutettavat värit ja kirjasinten koot.
         </li>
         <li>
-          Palvelun elementit on määritelty semantiikaltaan johdonmukaisesti.
+          Palvelun elementit on määritelty semantiikaltaan johdonmukaisiksi.
         </li>
-        <li>Palvelua testataan jatkuvasti ruudunlukijalla.</li>
+        <li>Palvelua testataan ruudunlukijalla kehitystyön yhteydessä.</li>
         <li>
           Erilaiset käyttäjät testaavat palvelua ja antavat saavutettavuudesta
           palautetta.
         </li>
         <li>
-          Sivuston saavutettavuudesta huolehditaan jatkuvalla valvonnalla
-          tekniikan tai sisällön muuttuessa.
+          Palvelun saavutettavuudesta huolehditaan jatkuvalla valvonnalla
+          sisällön ja/tai teknisen toteutuksen muuttuessa.
         </li>
       </ul>
       <P>
-        Tätä selostetta päivitetään sivuston muutosten ja saavutettavuuden
-        tarkistusten yhteydessä.
+        Tätä saavutettavuusselostetta päivitetään palvelun muutosten ja
+        saavutettavuuden tarkistusten yhteydessä.
       </P>
       <H2>Tunnetut saavutettavuusongelmat</H2>
       <P>
-        Käyttäjät saattavat edelleen kohdata sivustolla joitakin ongelmia.
-        Seuraavassa on kuvaus tunnetuista saavutettavuusongelmista. Jos huomaat
-        sivustolla ongelman, joka ei ole luettelossa, otathan meihin yhteyttä.
+        Käyttäjät saattavat edelleen kohdata verkkopalvelussa joitakin ongelmia.
+        Tunnetut saavutettavuusongelmat on kuvattu alla. Jos huomaat palvelussa
+        ongelman, joka ei ole luettelossa, otathan yhteyttä meihin ylläpitäjiin.
       </P>
       <ul>
         <li>
-          Viestit-sivulla liikkuminen näppäimistöllä tai ruudunlukijalla vaatii
-          vielä korjauksia siirtymien ja kohdistettavien elementtien osalta.
-        </li>
-        <li>
-          Palvelun yksikkökartassa ei pysty liikkumaan
-          näppäimistöllä/ruudunlukijalla, mutta yksikköjä voi selata samassa
-          näkymässä olevalta listalta. Palvelussa käytetty kartta on kolmannen
-          osapuolen tuottama.
+          Kosketusnäyttöä käytettäessä joidenkin toimintojen kosketusalueet
+          saattavat olla liian pieniä.
         </li>
       </ul>
       <H2>Kolmannet osapuolet</H2>
       <P>
         Verkkopalvelussa käytetään seuraavia kolmannen osapuolen palveluita,
-        joiden saavutettavuudesta emme voi vastata.
+        joiden saavutettavuutta emme voi taata.
       </P>
       <ul>
-        <li>Keycloak käyttäjän tunnistautumispalvelu</li>
         <li>Suomi.fi-tunnistautuminen</li>
         <li>Leaflet-karttapalvelu</li>
       </ul>
       <H2>Vaihtoehtoiset asiointitavat</H2>
       <P>
-        <strong>Varhaiskasvatuspäällikkö Sari Koivisto</strong>
+        <strong>Varhaiskasvatuksen asiakaspalvelu</strong>
+        <br />
+        Sähköposti:{' '}
+        <a href="mailto:varhaiskasvatus@orivesi.fi">
+          varhaiskasvatus@orivesi.fi
+        </a>
       </P>
+      <H2>Selosteen laatiminen</H2>
       <P>
-        <a href="mailto:sari.koivisto@orivesi.fi">sari.koivisto@orivesi.fi</a>
+        Tämä seloste on laadittu 12.4.2022. Palvelun saavutettavuuden on
+        arvioinut palvelun kehitystiimi sekä ulkopuolinen asiantuntija-arvioija.
+        Viimeisin ulkopuolinen asiantuntija-arvio on tehty keväällä 2024.
+        Saavutettavuusseloste on päivitetty viimeksi 30.6.2026.
       </P>
-      <P>puhelin 050 522 6246</P>
-      <H2>Valvontaviranomainen</H2>
+      <H2>Anna palautetta</H2>
       <P>
-        Jos huomaat sivustolla saavutettavuusongelmia, anna ensin palautetta
-        meille sivuston ylläpitäjille. Vastauksessa voi mennä 14 päivää. Jos et
-        ole tyytyväinen saamaasi vastaukseen, tai et saa vastausta lainkaan
-        kahden viikon aikana, voit antaa palautteen Etelä-Suomen
-        aluehallintovirastoon. Etelä-Suomen aluehallintoviraston sivulla
-        kerrotaan tarkasti, miten valituksen voi tehdä, ja miten asia
-        käsitellään.
+        Jos huomaat saavutettavuusongelman eVaka-verkkopalvelussa, kerro siitä
+        meille ylläpitäjille. Voit kertoa saavutettavuusongelmasta tai antaa
+        meille palautetta sähköpostitse{' '}
+        <a href="mailto:varhaiskasvatus@orivesi.fi">
+          varhaiskasvatus@orivesi.fi
+        </a>
+        . Vastauksen saamisessa voi kestää 14 päivää.
       </P>
+      <H2>Täytäntöönpanomenettely</H2>
       <P>
-        <strong>Valvontaviranomaisen yhteystiedot</strong>
+        Jos et ole tyytyväinen ylläpitäjiltä saamaasi vastaukseen, tai et saa
+        vastausta 14 päivän aikana, voit tehdä ilmoituksen Traficomille.
+        Traficomin sivulla kerrotaan tarkasti, miten ilmoituksen voi tehdä ja
+        miten asia käsitellään.
+      </P>
+
+      <P>
+        <strong>Valvontaviranomaisen yhteystiedot:</strong>
         <br />
         Liikenne- ja viestintävirasto Traficom
         <br />
-        Digitaalisen esteettömyyden ja saavutettavuuden valvontayksikkö
-        <br />
-        <ExternalLink
-          href="https://www.saavutettavuusvaatimukset.fi/"
-          text="https://www.saavutettavuusvaatimukset.fi/"
-        />
+        Saavutettavuusvalvonta
         <br />
         <a href="mailto:saavutettavuus@traficom.fi">
           saavutettavuus@traficom.fi
         </a>
         <br />
-        puhelinnumero vaihde 029 534 5000
+        Vaihde: 029 534 5000
         <br />
+        <ExternalLink
+          href="https://www.saavutettavuusvaatimukset.fi"
+          text="www.saavutettavuusvaatimukset.fi"
+        />
       </P>
     </>
   )

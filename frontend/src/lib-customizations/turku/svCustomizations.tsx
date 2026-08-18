@@ -1175,126 +1175,120 @@ const sv: DeepPartial<Translations> = {
     <>
       <H1>Tillgänglighetsutlåtande</H1>
       <P>
-        Denna tillgänglighetsbeskrivning gäller Åbo stads eVaka-tjänst för
-        småbarnspedagogiken på adressen{' '}
+        Detta tillgänglighetsutlåtande gäller Åbo stads webbtjänst eVaka för
+        småbarnspedagogik på adressen{' '}
         <a href="https://evaka.turku.fi">evaka.turku.fi</a>. Åbo stad strävar
-        efter att säkerställa tjänstens tillgänglighet, kontinuerligt förbättra
-        användarupplevelsen samt tillämpa lämpliga tillgänglighetsstandarder.
+        efter att garantera webbtjänstens tillgänglighet, kontinuerligt
+        förbättra användarupplevelsen och tillämpa ändamålsenliga
+        tillgänglighetskrav.
       </P>
+      <H2>Tjänstens överensstämmelse med kraven</H2>
       <P>
-        Tillgängligheten av tjänsten har utvärderats av tjänstens
-        utvecklingsteam och detta utlåtande har upprättats den 12 april 2022.
+        Webbtjänsten uppfyller till största delen de lagstadgade
+        tillgänglighetskraven (WCAG 2.1, nivå AA), men tjänsten har ännu vissa
+        delar som inte uppfyller kraven.
       </P>
-      <H2>Tjänstens tillgänglighet</H2>
+      <H2>Åtgärder för att stödja tillgängligheten</H2>
       <P>
-        Tjänsten uppfyller tillgänglighetskriterierna på nivåerna AA som krävs
-        enligt lagen (WCAG v2.1). Alla delar av tjänsten uppfyller inte kraven.
-      </P>
-      <H2>Åtgärder för att förbättra tillgängligheten</H2>
-      <P>
-        Webbtjänstens tillgänglighet säkerställs genom bland annat följande
+        Vi säkerställer webbtjänstens tillgänglighet bland annat genom följande
         åtgärder:
       </P>
       <ul>
         <li>
-          Tillgänglighet beaktas redan i planeringsfasen, bl.a. genom att välja
-          tjänstens färger och teckenstorlekar från ett
-          tillgänglighetsperspektiv.
+          Tillgängligheten beaktas redan i tjänstens planeringsfas, bland annat
+          genom att välja tillgängliga färger och teckenstorlekar.
+        </li>
+        <li>Elementen i tjänsten har definierats semantiskt konsekventa.</li>
+        <li>Tjänsten testas med skärmläsare under utvecklingsarbetet.</li>
+        <li>
+          Olika användare testar tjänsten och ger respons på tillgängligheten.
         </li>
         <li>
-          Tjänstens beståndsdelar har definierats på ett semantiskt
-          sammanhängande sätt.
-        </li>
-        <li>Tjänsten testas kontinuerligt med hjälp av en skärmläsare.</li>
-        <li>
-          Olika användare testar tjänsten och ger feedback om tjänstens
-          tillgänglighet.
-        </li>
-        <li>
-          Tjänstens tillgänglighet övervakas ständigt vid tekniska eller
-          innehållsmässiga förändringar.
+          Tjänstens tillgänglighet säkerställs genom kontinuerlig övervakning
+          när innehållet och/eller det tekniska genomförandet ändras.
         </li>
       </ul>
       <P>
-        Detta utlåtande uppdateras i samband med att webbplatsen förändras och
-        tillgängligheten kontrolleras.
+        Detta tillgänglighetsutlåtande uppdateras i samband med ändringar i
+        tjänsten och granskningar av tillgängligheten.
       </P>
-      <H2>Kända problem med tillgängligheten</H2>
+      <H2>Kända tillgänglighetsproblem</H2>
       <P>
-        Användarna kan fortfarande stöta på vissa problem när de använder
-        webbplatsen. Dessa kända problem med tillgängligheten beskrivs nedan. Om
-        du stöter på ett problem som inte finns med på listan, vänligen kontakta
-        oss.
+        Användare kan fortfarande stöta på vissa problem i webbtjänsten. Kända
+        tillgänglighetsproblem beskrivs nedan. Om du upptäcker ett problem i
+        tjänsten som inte finns med på listan, vänligen kontakta oss
+        administratörer.
       </P>
       <ul>
         <li>
-          Tjänstens datum- och flervalsfält är inte optimerade för att användas
-          med skärmläsare
-        </li>
-        <li>
-          Det går inte att navigera på serviceenhetskartan med
-          tangentbordet/skärmläsaren, men man kan bläddra bland enheterna på
-          listan i samma vy. Kartan som används i tjänsten är framtagen av en
-          tredje part.
+          När pekskärm används kan beröringsytorna för vissa funktioner vara för
+          små.
         </li>
       </ul>
       <H2>Tredje parter</H2>
       <P>
-        Webbtjänsten utnyttjar följande tjänster från en tredje part vars
-        tillgänglighet vi inte ansvarar för.
+        Webbtjänsten använder följande tredjepartstjänster, vars tillgänglighet
+        vi inte kan garantera.
       </P>
       <ul>
         <li>Suomi.fi-identifikation</li>
-        <li>Leaflet-karttjänsten</li>
+        <li>Karttjänsten Leaflet</li>
       </ul>
-      <H2>Alternativa användningssätt</H2>
+      <H2>Alternativa sätt att sköta ärenden</H2>
       <P>
+        Du får hjälp med e-tjänsterna vid{' '}
         <ExternalLink
           href="https://www.turku.fi/varhaiskasvatus-ja-esiopetus"
           text="Åbo stads servicepunkter"
-        />{' '}
-        hjälper till med att använda e-tjänsterna. Kundrådgivarna vid
-        servicepunkterna hjälper användare för vilka de digitala tjänsterna inte
-        är tillgängliga.
+        />
+        . Rådgivarna vid servicepunkterna hjälper användare, för vilka de
+        digitala tjänsterna inte är tillgängliga.
       </P>
-      <H2>Ge feedback</H2>
+      <H2>Utarbetandet av utlåtandet</H2>
       <P>
-        Om du märker brister i webbtjänstens tillgänglighet, vänligen berätta om
-        det för oss. Du kan lämna feedback via{' '}
+        Detta utlåtande har utarbetats 12.4.2022. Tjänstens tillgänglighet har
+        bedömts av tjänstens utvecklingsteam samt en extern expertbedömare. Den
+        senaste externa expertbedömningen gjordes våren 2024.
+        Tillgänglighetsutlåtandet har senast uppdaterats 30.6.2026.
+      </P>
+      <H2>Ge respons</H2>
+      <P>
+        Om du upptäcker ett tillgänglighetsproblem i webbtjänsten eVaka, berätta
+        om det för oss administratörer. Du kan berätta om ett
+        tillgänglighetsproblem eller ge oss respons med{' '}
         <ExternalLink
           href="https://opaskartta.turku.fi/efeedback"
           text="webbformuläret"
         />{' '}
         eller per e-post{' '}
         <a href="mailto:varhaiskasvatus@turku.fi">varhaiskasvatus@turku.fi</a>.
+        Det kan ta 14 dagar att få ett svar.
       </P>
-      <H2>Tillsynsmyndighet</H2>
+      <H2>Verkställighetsförfarande</H2>
       <P>
-        Om du märker brister med webbplatsens tillgänglighet, vänligen kontakta
-        administratörerna först. Det kan ta upp till 14 dagar innan du får ett
-        svar. Om du inte är nöjd med svaret eller om du inte får ett svar inom
-        två veckor kan du skicka feedback till Transport- och
-        kommunikationsverket Traficom. På webbplatsen för Transport- och
-        kommunikationsverket Traficom förklaras hur man kan lämna in ett
-        klagomål och hur ärendet handläggs.
+        Om du inte är nöjd med det svar du fått av administratörerna, eller om
+        du inte får något svar inom 14 dagar, kan du göra en anmälan till
+        Traficom. På Traficoms webbplats finns detaljerad information om hur du
+        kan göra en anmälan och hur ärendet behandlas.
       </P>
 
       <P>
-        <strong>Kontaktuppgifter till tillsynsmyndigheten </strong>
+        <strong>Tillsynsmyndighetens kontaktuppgifter:</strong>
         <br />
-        Transport- och kommunikationsverket Traficom <br />
-        Enheten för tillsyn över digital tillgänglighet
+        Transport- och kommunikationsverket Traficom
         <br />
-        <ExternalLink
-          href="https://www.saavutettavuusvaatimukset.fi/sv"
-          text="Tillgänglighetskrav"
-        />
+        Tillgänglighetstillsyn
         <br />
         <a href="mailto:tillganglighet@traficom.fi">
           tillganglighet@traficom.fi
         </a>
         <br />
-        telefonnummer växeln 029 534 5000
+        Växel: 029 534 5000
+        <br />
+        <ExternalLink
+          href="https://www.tillganglighetskrav.fi"
+          text="www.tillganglighetskrav.fi"
+        />
       </P>
     </>
   )

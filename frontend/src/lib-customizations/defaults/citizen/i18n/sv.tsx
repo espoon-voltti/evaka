@@ -3038,121 +3038,119 @@ const sv: Translations = {
       <H1>Tillgänglighetsutlåtande</H1>
       <P>
         Detta tillgänglighetsutlåtande gäller Esbo stads webbtjänst eVaka för
-        småbarnspedagogiken på adressen{' '}
+        småbarnspedagogik på adressen{' '}
         <a href="https://espoonvarhaiskasvatus.fi">espoonvarhaiskasvatus.fi</a>.
-        Esbo stad strävar efter att säkerställa webbtjänstens tillgänglighet,
-        kontinuerligt förbättra användarupplevelsen och att tillämpa lämpliga
-        tillgänglighetsstandarder.
+        Esbo stad strävar efter att garantera webbtjänstens tillgänglighet,
+        kontinuerligt förbättra användarupplevelsen och tillämpa ändamålsenliga
+        tillgänglighetskrav.
       </P>
+      <H2>Tjänstens överensstämmelse med kraven</H2>
       <P>
-        Tjänstens tillgänglighet har bedömts av tjänsteutvecklingsteamet, och
-        utlåtandet har utarbetats den 12 april 2022.
-      </P>
-      <H2>Tjänstens överensstämmelse med krav</H2>
-      <P>
-        Webbtjänsten uppfyller de lagstadgade kritiska tillgänglighetskraven
-        enligt nivå AA i WCAG 2.1. Tjänsten uppfyller ännu inte alla krav.
+        Webbtjänsten uppfyller till största delen de lagstadgade
+        tillgänglighetskraven (WCAG 2.1, nivå AA), men tjänsten har ännu vissa
+        delar som inte uppfyller kraven.
       </P>
       <H2>Åtgärder för att stödja tillgängligheten</H2>
       <P>
-        Webbtjänstens tillgänglighet säkerställs bland annat genom följande
+        Vi säkerställer webbtjänstens tillgänglighet bland annat genom följande
         åtgärder:
       </P>
       <ul>
         <li>
-          Tillgängligheten beaktas redan från början i planeringsfasen till
-          exempel genom att välja färgerna och fontstorleken i tjänsten med
-          tillgängligheten i åtanke.
+          Tillgängligheten beaktas redan i tjänstens planeringsfas, bland annat
+          genom att välja tillgängliga färger och teckenstorlekar.
         </li>
-        <li>Elementen i tjänsten har definierats semantiskt konsekvent.</li>
-        <li>Tjänsten testas ständigt med en skärmläsare.</li>
+        <li>Elementen i tjänsten har definierats semantiskt konsekventa.</li>
+        <li>Tjänsten testas med skärmläsare under utvecklingsarbetet.</li>
         <li>
           Olika användare testar tjänsten och ger respons på tillgängligheten.
         </li>
         <li>
-          Webbplatsens tillgänglighet säkerställs genom kontinuerliga kontroller
-          vid tekniska eller innehållsmässiga förändringar.
+          Tjänstens tillgänglighet säkerställs genom kontinuerlig övervakning
+          när innehållet och/eller det tekniska genomförandet ändras.
         </li>
       </ul>
       <P>
-        Detta utlåtande uppdateras när webbplatsen ändras eller tillgängligheten
-        justeras.
+        Detta tillgänglighetsutlåtande uppdateras i samband med ändringar i
+        tjänsten och granskningar av tillgängligheten.
       </P>
       <H2>Kända tillgänglighetsproblem</H2>
       <P>
-        Användare kan fortfarande stöta på vissa problem på webbplatsen. Nedan
-        följer beskrivningar av kända tillgänglighetsproblem. Om du upptäcker
-        ett problem som inte finns med på listan, vänligen kontakta oss.
+        Användare kan fortfarande stöta på vissa problem i webbtjänsten. Kända
+        tillgänglighetsproblem beskrivs nedan. Om du upptäcker ett problem i
+        tjänsten som inte finns med på listan, vänligen kontakta oss
+        administratörer.
       </P>
       <ul>
         <li>
-          Tjänstens datum- och flervalsfält är inte optimerade för att användas
-          med skärmläsare
-        </li>
-        <li>
-          Det går inte att navigera på serviceenhetskartan med
-          tangentbordet/skärmläsaren, men man kan bläddra bland enheterna på
-          listan i samma vy. Kartan som används i tjänsten är framtagen av en
-          tredje part.
+          När pekskärm används kan beröringsytorna för vissa funktioner vara för
+          små.
         </li>
       </ul>
       <H2>Tredje parter</H2>
       <P>
         Webbtjänsten använder följande tredjepartstjänster, vars tillgänglighet
-        vi inte är ansvariga för.
+        vi inte kan garantera.
       </P>
       <ul>
-        <li>Tjänsten suomi.fi</li>
+        <li>Suomi.fi-identifikation</li>
         <li>Karttjänsten Leaflet</li>
       </ul>
       <H2>Alternativa sätt att sköta ärenden</H2>
       <P>
+        Du får hjälp med e-tjänsterna vid{' '}
         <ExternalLink
           href="https://www.espoo.fi/sv/esbo-stad/kundservice/servicepunkterna-och-esbo-info/servicepunkterna"
           text="Esbo stads servicepunkter"
-        />{' '}
-        hjälper till med användningen av e-tjänsterna. Rådgivarna vid
-        servicepunkterna hjälper de användare, för vilka de digitala tjänsterna
-        inte är tillgängliga.
+        />
+        . Rådgivarna vid servicepunkterna hjälper användare, för vilka de
+        digitala tjänsterna inte är tillgängliga.
+      </P>
+      <H2>Utarbetandet av utlåtandet</H2>
+      <P>
+        Detta utlåtande har utarbetats 12.4.2022. Tjänstens tillgänglighet har
+        bedömts av tjänstens utvecklingsteam samt en extern expertbedömare. Den
+        senaste externa expertbedömningen gjordes våren 2024.
+        Tillgänglighetsutlåtandet har senast uppdaterats 30.6.2026.
       </P>
       <H2>Ge respons</H2>
       <P>
-        er en tillgänglighetsbrist i vår webbtjänst, vänligen meddela oss. Du
-        kan ge respons med{' '}
+        Om du upptäcker ett tillgänglighetsproblem i webbtjänsten eVaka, berätta
+        om det för oss administratörer. Du kan berätta om ett
+        tillgänglighetsproblem eller ge oss respons med{' '}
         <ExternalLink
           href="https://easiointi.espoo.fi/eFeedback/sv/Feedback/20-S%C3%A4hk%C3%B6iset%20asiointipalvelut"
-          text="webformuläret"
+          text="webbformuläret"
         />{' '}
-        eller via e-post{' '}
-        <a href="mailto:evakatuki@espoo.fi">evakatuki@espoo.fi</a>.
+        eller per e-post{' '}
+        <a href="mailto:evakatuki@espoo.fi">evakatuki@espoo.fi</a>. Det kan ta
+        14 dagar att få ett svar.
       </P>
-      <H2>Tillsynsmyndighet</H2>
+      <H2>Verkställighetsförfarande</H2>
       <P>
-        Om du upptäcker tillgänglighetsproblem på webbplatsen, ge först respons
-        till oss, webbplatsens administratörer. Det kan ta upp till 14 dagar
-        tills du får ett svar från oss. Om du inte är nöjd med det svar du har
-        fått eller om du inte alls har fått något svar inom två veckor, kan du
-        ge respons till Regionförvaltningsverket i Södra Finland. På
-        regionförvaltningsverkets webbplats finns information om hur du kan
-        lämna in ett klagomål samt om hur ärendet handläggs.
+        Om du inte är nöjd med det svar du fått av administratörerna, eller om
+        du inte får något svar inom 14 dagar, kan du göra en anmälan till
+        Traficom. På Traficoms webbplats finns detaljerad information om hur du
+        kan göra en anmälan och hur ärendet behandlas.
       </P>
+
       <P>
-        <strong>Kontaktuppgifter till tillsynsmyndigheten</strong>
+        <strong>Tillsynsmyndighetens kontaktuppgifter:</strong>
         <br />
-        Regionförvaltningsverket i Södra Finland
+        Transport- och kommunikationsverket Traficom
         <br />
-        Enheten för tillgänglighetstillsyn
+        Tillgänglighetstillsyn
+        <br />
+        <a href="mailto:tillganglighet@traficom.fi">
+          tillganglighet@traficom.fi
+        </a>
+        <br />
+        Växel: 029 534 5000
         <br />
         <ExternalLink
           href="https://www.tillganglighetskrav.fi"
           text="www.tillganglighetskrav.fi"
         />
-        <br />
-        <a href="mailto:saavutettavuus@avi.fi">saavutettavuus@avi.fi</a>
-        <br />
-        telefonnummer till växeln 0295 016 000
-        <br />
-        Öppet mån.– fre. kl. 8.00–16.15
       </P>
     </>
   ),

@@ -621,127 +621,120 @@ const en: DeepPartial<Translations> = {
     <>
       <H1>Accessibility statement</H1>
       <P>
-        This accessibility statement applies to the municipality of Lempäälä’s
-        early childhood education online service eVaka at{' '}
+        This accessibility statement applies to the Municipality of Lempäälä’s
+        early childhood education eVaka online service at{' '}
         <a href="https://evaka.lempaala.fi">evaka.lempaala.fi</a>. The
-        municipality of Lempäälä endeavours to ensure the accessibility of the
+        Municipality of Lempäälä strives to guarantee the accessibility of the
         online service, continuously improve the user experience and apply
-        appropriate accessibility standards.
-      </P>
-      <P>
-        The accessibility of the service was assessed by the development team of
-        the service, and this statement was drawn up on 12 April 2024.
+        appropriate accessibility requirements.
       </P>
       <H2>Compliance of the service</H2>
       <P>
-        The online service complies with the statutory critical accessibility
-        requirements in accordance with Level AA of the Accessibility Guidelines
-        for the WCAG v2.1. The service is not yet fully compliant with the
-        requirements.
+        The online service meets the accessibility requirements set by law (WCAG
+        2.1, Level AA) for the most part, but the service still has some parts
+        that do not meet the requirements.
       </P>
       <H2>Measures to support accessibility</H2>
       <P>
-        The accessibility of the online service is ensured, among other things,
-        by the following measures:
+        We ensure the accessibility of the online service with, among others,
+        the following measures:
       </P>
       <ul>
         <li>
-          Accessibility has been taken into account from the beginning of the
-          design phase, for example, when choosing the colours and font sizes of
-          the service.
+          Accessibility is taken into account already in the design phase of the
+          service, for example by choosing accessible colours and font sizes.
         </li>
         <li>
-          The service elements have been defined in consistently in terms of
-          semantics.
+          The elements of the service are defined to be semantically consistent.
         </li>
-        <li>The service is continuously tested with a screen reader.</li>
+        <li>The service is tested with a screen reader during development.</li>
         <li>
           Various users test the service and give feedback on its accessibility.
         </li>
         <li>
-          When website technology or content changes, its accessibility is
-          ensured through constant monitoring.
+          The accessibility of the service is maintained through continuous
+          monitoring when its content and/or technical implementation changes.
         </li>
       </ul>
       <P>
-        This statement will be updated in conjunction with website changes and
-        accessibility evaluations.
+        This accessibility statement is updated in conjunction with changes to
+        the service and accessibility reviews.
       </P>
       <H2>Known accessibility issues</H2>
       <P>
-        Users may still encounter some issues on the website. The following
-        contains a description of known accessibility issues. If you notice an
-        issue on the site that is not listed, please contact us.
+        Users may still encounter some issues in the online service. Known
+        accessibility issues are described below. If you notice an issue in the
+        service that is not listed, please contact us, the administrators.
       </P>
       <ul>
         <li>
-          Navigating on the Messages page using the keyboard or screen reader
-          still requires revision for part of moving and targeted elements.
-        </li>
-        <li>
-          The service’s unit map cannot be navigated using the keyboard/screen
-          reader, but the units can be browsed on the list available in the same
-          view. The map used in the service is produced by a third party.
+          When using a touch screen, the touch areas of some functions may be
+          too small.
         </li>
       </ul>
       <H2>Third parties</H2>
       <P>
-        The online service uses the following third party services, the
-        accessibility of which we cannot be responsible for.
+        The online service uses the following third-party services, the
+        accessibility of which we cannot guarantee.
       </P>
       <ul>
-        <li>Keycloak user identification service</li>
         <li>Suomi.fi identification</li>
         <li>Leaflet map service</li>
       </ul>
       <H2>Alternative ways of accessing the service</H2>
       <P>
-        <strong>Early childhood education customer service</strong>
+        <strong>Early childhood education service guidance</strong>
+        <br />
+        Email:{' '}
+        <a href="mailto:palveluohjaus@lempaala.fi">palveluohjaus@lempaala.fi</a>
+        <br />
+        Telephone: <a href="tel:0444811095">044 481 1095</a>, calling hours: Mon
+        9.00–11.30 and Thu 9.00–11.30 and 14.15–15.15
       </P>
+      <H2>Preparation of this accessibility statement</H2>
       <P>
-        Email: palveluohjaus@lempaala.fi
-        <br />
-        Phone: 044 481 1095
-        <br />
-        Phone time: Mon 9.00–11.30 and Thu 9.00-11:30 or 14.15-15.15
+        This statement was drawn up on 12 April 2022. The accessibility of the
+        service has been assessed by the development team of the service and an
+        external expert assessor. The latest external expert assessment was
+        carried out in spring 2024. The accessibility statement was last updated
+        on 30 June 2026.
       </P>
       <H2>Give feedback</H2>
       <P>
-        If you notice an accessibility gap in our online service, please let us
-        know! You can give us feedback using the{' '}
+        If you notice an accessibility issue in the eVaka online service, please
+        let us, the administrators, know. You can report an accessibility issue
+        or give us feedback using{' '}
         <ExternalLink
           href="https://lempaala.trimblefeedback.com/eFeedback/fi/AccessibilityStatement"
-          text="Give accessibility feedback with this web form"
+          text="this online form"
         />
+        . Receiving a reply may take 14 days.
       </P>
-      <H2>Supervisory authority</H2>
+      <H2>Enforcement procedure</H2>
       <P>
-        If you notice any accessibility issues on the website, please send us,
-        the site administrator, feedback first. It may take us up to 14 days to
-        reply. If you are not satisfied with the reply or you do not receive a
-        reply within two weeks, you can give feedback to the Regional State
-        Administrative Agency for Southern Finland. The website of the Regional
-        State Administrative Agency for Southern Finland explains in detail how
-        a complaint can be submitted, and how the matter will be processed.
+        If you are not satisfied with the reply you have received from the
+        administrators, or if you do not receive a reply within 14 days, you can
+        submit a report to Traficom. Traficom’s website explains in detail how
+        you can submit a report and how the matter will be processed.
       </P>
 
       <P>
-        <strong>Contact information of the supervisory authority</strong>
+        <strong>Contact information of the supervisory authority:</strong>
         <br />
         Finnish Transport and Communications Agency Traficom
         <br />
-        Digital Accessibility Supervision Unit
-        <br />
-        <ExternalLink
-          href="https://www.webaccessibility.fi/"
-          text="https://www.webaccessibility.fi/"
-        />
+        Digital Accessibility Supervision
         <br />
         <a href="mailto:saavutettavuus@traficom.fi">
           saavutettavuus@traficom.fi
         </a>
         <br />
-        telephone switchboard 029 534 5000
+        Switchboard: 029 534 5000
+        <br />
+        <ExternalLink
+          href="https://www.webaccessibility.fi"
+          text="www.webaccessibility.fi"
+        />
       </P>
     </>
   )
