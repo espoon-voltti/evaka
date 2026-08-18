@@ -34,6 +34,7 @@ import PersonalDetailsSection from './PersonalDetailsSection'
 import { isEmailVerified } from './emailVerification'
 import {
   emailVerificationStatusQuery,
+  familyQuery,
   notificationSettingsQuery,
   passwordConstraintsQuery
 } from './queries'
@@ -118,6 +119,10 @@ export default React.memo(function PersonalDetails() {
   const contactDetailsSection = useRef<HTMLDivElement>(null)
   const emailVerificationStatus = useQueryResult(emailVerificationStatusQuery())
   const passwordConstraints = useQueryResult(passwordConstraintsQuery())
+  const family = useQueryResult(familyQuery())
+  const showFamilySizeSection = family
+    .map(({ children }) => children.length > 0)
+    .getOrElse(false)
 
   const tasks = combine(user, emailVerificationStatus)
     .map(([user, emailVerificationStatus]) => {
@@ -217,11 +222,20 @@ export default React.memo(function PersonalDetails() {
           )}
         </ContentArea>
 
-        <Gap $size="s" />
-
-        <ContentArea $opaque $paddingVertical="m">
-          <FamilySizeSection />
-        </ContentArea>
+        {showFamilySizeSection && (
+          <>
+            <Gap $size="s" />
+            <ContentArea $opaque $paddingVertical="m">
+              {renderResult(combine(user, family), ([user, family]) =>
+                user ? (
+                  <FamilySizeSection user={user} family={family} />
+                ) : (
+                  <Redirect replace to="/" />
+                )
+              )}
+            </ContentArea>
+          </>
+        )}
 
         <Gap $size="s" />
 

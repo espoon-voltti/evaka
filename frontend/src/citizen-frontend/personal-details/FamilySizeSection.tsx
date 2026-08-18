@@ -3,21 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
-import { combine } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
+import type { FamilyMembers } from 'lib-common/generated/api-types/pis'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
-import { useQueryResult } from 'lib-common/query'
 import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { PersonName } from 'lib-components/molecules/PersonNames'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import { renderResult } from '../async-rendering'
-import { AuthContext } from '../auth/state'
+import type { User } from '../auth/state'
 import { useTranslation } from '../localization'
 
 import {
@@ -27,7 +25,6 @@ import {
   SectionTitle,
   TitleAndEditRow
 } from './components'
-import { familyQuery } from './queries'
 
 const DesktopRows = styled.div`
   @media (max-width: ${tabletMin}) {
@@ -77,102 +74,101 @@ const MemberName = styled.div`
   font-weight: 600;
 `
 
-export default React.memo(function FamilySizeSection() {
+interface Props {
+  user: User
+  family: FamilyMembers
+}
+
+export default React.memo(function FamilySizeSection({ user, family }: Props) {
   const t = useTranslation()
   const i18n = t.personalDetails.familySizeSection
-  const { user } = useContext(AuthContext)
-  const family = useQueryResult(familyQuery())
 
   const [memberListOpen, { toggle: toggleMemberList }] = useBoolean(false)
 
-  return renderResult(combine(user, family), ([user, family]) => {
-    const groups = [
-      { dataQa: 'family-adults', label: i18n.adults, members: family.adults },
-      {
-        dataQa: 'family-children',
-        label: i18n.children,
-        members: family.children
-      }
-    ]
-    const isSelf = (personId: PersonId) => user?.id === personId
+  const groups = [
+    { dataQa: 'family-adults', label: i18n.adults, members: family.adults },
+    {
+      dataQa: 'family-children',
+      label: i18n.children,
+      members: family.children
+    }
+  ]
+  const isSelf = (personId: PersonId) => user.id === personId
 
-    return (
-      <div data-qa="family-size-section">
-        <TitleAndEditRow>
-          <SectionTitle $noMargin>{i18n.title}</SectionTitle>
-        </TitleAndEditRow>
-        {i18n.description}
+  return (
+    <div data-qa="family-size-section">
+      <TitleAndEditRow>
+        <SectionTitle $noMargin>{i18n.title}</SectionTitle>
+      </TitleAndEditRow>
+      {i18n.description}
 
-        <Gap $size="s" />
+      <Gap $size="s" />
 
-        <DesktopRows>
-          {groups.map(({ dataQa, label, members }) => (
-            <DataRow key={label} data-qa={dataQa}>
-              <DataRowLabel>
-                {label} {members.length}
-              </DataRowLabel>
-              <DataRowValue>
-                {members.map((member, index) => (
-                  <React.Fragment key={member.personId}>
-                    <span
-                      data-qa={`family-member-${member.personId}`}
-                      translate="no"
-                    >
-                      <PersonName person={member} format="First Last" />
-                      {isSelf(member.personId) ? ` ${i18n.self}` : ''}
-                    </span>
-                    {index < members.length - 1 ? ', ' : ''}
-                  </React.Fragment>
+      <DesktopRows>
+        {groups.map(({ dataQa, label, members }) => (
+          <DataRow key={label} data-qa={dataQa}>
+            <DataRowLabel>
+              {label} {members.length}
+            </DataRowLabel>
+            <DataRowValue>
+              {members.map((member, index) => (
+                <React.Fragment key={member.personId}>
+                  <span
+                    data-qa={`family-member-${member.personId}`}
+                    translate="no"
+                  >
+                    <PersonName person={member} format="First Last" />
+                    {isSelf(member.personId) ? ` ${i18n.self}` : ''}
+                  </span>
+                  {index < members.length - 1 ? ', ' : ''}
+                </React.Fragment>
+              ))}
+            </DataRowValue>
+          </DataRow>
+        ))}
+      </DesktopRows>
+
+      <MobileMemberList>
+        <MemberListToggle
+          type="button"
+          onClick={toggleMemberList}
+          aria-expanded={memberListOpen}
+          data-qa="family-member-list-toggle"
+        >
+          {memberListOpen ? (
+            <span>
+              {i18n.adults} {family.adults.length}
+            </span>
+          ) : (
+            <span>
+              {i18n.summary(family.adults.length, family.children.length)}
+            </span>
+          )}
+          <ToggleChevron icon={memberListOpen ? faChevronUp : faChevronDown} />
+        </MemberListToggle>
+        {memberListOpen &&
+          groups.map(({ label, members }, index) => (
+            <React.Fragment key={label}>
+              {index > 0 && (
+                <>
+                  <Gap $size="xs" />
+                  <MemberGroupLabel>
+                    {label} {members.length}
+                  </MemberGroupLabel>
+                </>
+              )}
+              <Gap $size="xs" />
+              <FixedSpaceColumn $spacing="xs">
+                {members.map((member) => (
+                  <MemberName key={member.personId} translate="no">
+                    <PersonName person={member} format="First Last" />
+                    {isSelf(member.personId) ? ` ${i18n.self}` : ''}
+                  </MemberName>
                 ))}
-              </DataRowValue>
-            </DataRow>
+              </FixedSpaceColumn>
+            </React.Fragment>
           ))}
-        </DesktopRows>
-
-        <MobileMemberList>
-          <MemberListToggle
-            type="button"
-            onClick={toggleMemberList}
-            aria-expanded={memberListOpen}
-            data-qa="family-member-list-toggle"
-          >
-            {memberListOpen ? (
-              <span>
-                {i18n.adults} {family.adults.length}
-              </span>
-            ) : (
-              <span>
-                {i18n.summary(family.adults.length, family.children.length)}
-              </span>
-            )}
-            <ToggleChevron
-              icon={memberListOpen ? faChevronUp : faChevronDown}
-            />
-          </MemberListToggle>
-          {memberListOpen &&
-            groups.map(({ label, members }, index) => (
-              <React.Fragment key={label}>
-                {index > 0 && (
-                  <>
-                    <Gap $size="xs" />
-                    <MemberGroupLabel>
-                      {label} {members.length}
-                    </MemberGroupLabel>
-                  </>
-                )}
-                <Gap $size="xs" />
-                <FixedSpaceColumn $spacing="xs">
-                  {members.map((member) => (
-                    <MemberName key={member.personId} translate="no">
-                      <PersonName person={member} format="First Last" />
-                      {isSelf(member.personId) ? ` ${i18n.self}` : ''}
-                    </MemberName>
-                  ))}
-                </FixedSpaceColumn>
-              </React.Fragment>
-            ))}
-        </MobileMemberList>
-      </div>
-    )
-  })
+      </MobileMemberList>
+    </div>
+  )
 })
