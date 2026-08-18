@@ -293,26 +293,15 @@ const customizations: CitizenCustomizations = {
                 'Lisää tähän molemmilta huoltajilta todistus vuorotyöstä tai todistus opiskelusta iltaisin/viikonloppuisin'
             },
             preparatory:
-              'Lapsi on syntynyt Suomen ulkopuolella ja tarvitsee tukea suomen kielen oppimiseen. Nykyinen päiväkoti on suositellut lapselle valmistavaa esiopetusta, ja haen hänelle paikkaa myös perusopetukseen valmistavaan opetukseen. Hakemus ei koske ruotsinkielistä esiopetusta.',
+              'Lapsi ja hänen vanhempansa tai ainoa tiedossa oleva vanhempi ovat syntyneet Suomen ulkopuolella. Lapsi tarvitsee tukea suomen kielen oppimiseen. Nykyinen päiväkoti suosittelee lapselle valmistavaa esiopetusta. Haen lapselle paikkaa perusopetukseen valmistavaan opetukseen. Hakemus ei koske ruotsinkielistä esiopetusta.',
             preparatoryInfo: null,
             preparatoryExtraInstructions: (
-              <>
-                <P>
-                  Perusopetukseen valmistavaan opetukseen voivat osallistua
-                  lapset, jotka ovat syntyneet Suomen ulkopuolella ja joilla ei
-                  vielä ole suomen kielen taitoa tai joiden suomen kielen taito
-                  on vasta kehittymässä. Esiopetusikäisten valmistavaa opetusta
-                  järjestetään ainoastaan kunnallisissa suomenkielisissä
-                  esiopetusryhmissä.
-                </P>
-                <P>
-                  Pidennetyn oppivelvollisuuden piirissä olevilla lapsilla ei
-                  ole oikeutta perusopetukseen valmistavaan opetukseen. Mikäli
-                  lapsella on tai hänelle myöhemmin myönnetään pidennetyn
-                  oppivelvollisuuden päätös, lapsen sijoitus muutetaan
-                  esiopetussijoitukseksi
-                </P>
-              </>
+              <P>
+                Perusopetukseen valmistava opetus on tarkoitettu lapsille,
+                joiden suomen kielen taito on vielä heikko tai kehittymässä.
+                Esiopetusikäisten valmistavaa opetusta järjestetään vain
+                kunnallisissa suomenkielisissä esiopetusryhmissä.
+              </P>
             ),
             assistanceNeeded: {
               DAYCARE:
@@ -894,26 +883,16 @@ const customizations: CitizenCustomizations = {
               )
             },
             preparatory:
-              'Barnet är fött utanför Finland och behöver stöd med att lära sig finska. Barnets nuvarande daghem har rekommenderat förberedande förskoleundervisning för barnet, och jag ansöker också om en plats för barnet i undervisning som förbereder för grundläggande utbildning. Gäller inte svenskspråkig förskoleundervisning.',
+              'Barnet och barnets föräldrar eller den enda kända föräldern är födda utanför Finland. Barnet behöver stöd i att lära sig finska. Barnets nuvarande daghem rekommenderar förberedande undervisning för barnet. Jag ansöker om en plats för barnet i undervisning som förbereder för den grundläggande utbildningen. OBS: Ansökan gäller inte svenskspråkig förskoleundervisning.',
             preparatoryInfo: null,
             preparatoryExtraInstructions: (
-              <>
-                <P>
-                  Barn som är födda utanför Finland och som ännu inte kan finska
-                  eller vars kunskaper i finska först håller på att utvecklas
-                  kan delta i undervisning som förbereder för grundläggande
-                  utbildning. Undervisning som förbereder för grundläggande
-                  utbildning för barn i förskoleåldern ordnas endast i
-                  kommunala, finskspråkiga förskolegrupper.
-                </P>
-                <P>
-                  Barn med förlängd läroplikt har inte rätt att delta i
-                  undervisning som förbereder för grundläggande utbildning. Om
-                  barnet har ett beslut om förlängd läroplikt eller får ett
-                  sådant beslut senare ändras barnets placering till en
-                  placering inom förskoleundervisning.
-                </P>
-              </>
+              <P>
+                Undervisning som förbereder för den grundläggande utbildningen
+                är avsedd för barn vars kunskaper i finska fortfarande är svaga
+                eller under utveckling. Förberedande undervisning för barn i
+                förskoleåldern ordnas endast i kommunala finskspråkiga
+                förskolegrupper.
+              </P>
             )
           },
           unitPreference: {
@@ -1493,26 +1472,16 @@ const customizations: CitizenCustomizations = {
               )
             },
             preparatory:
-              'My child was born outside Finland and needs support in learning Finnish. The child’s current day care centre has recommended preparatory pre-primary education for the child, and I am also applying for a place in preparatory education for the child. This application does not apply to Swedish pre-primary education.',
+              'The child and the child’s parents, or the child’s only known parent, were born outside Finland. The child needs support in learning Finnish. The child’s current early childhood education provider recommends preparatory instruction. I am applying for a place for the child in preparatory education for basic education. This application does not concern Swedish-language pre-primary education.',
             preparatoryInfo: null,
             preparatoryExtraInstructions: (
-              <>
-                <P>
-                  Preparatory education is open to children who were born
-                  outside Finland and who do not yet have Finnish language
-                  skills or whose Finnish language skills are still developing.
-                  Preparatory education is offered to children of pre-primary
-                  education age only in Finnish-speaking municipal pre-primary
-                  education groups.
-                </P>
-                <P>
-                  Children attending extended compulsory education are not
-                  entitled to preparatory education. If the child has received
-                  or later receives a decision on extended compulsory education,
-                  the child’s placement will be changed to a pre-primary
-                  education placement.
-                </P>
-              </>
+              <P>
+                Preparatory education for basic education is intended for
+                children whose Finnish language skills are limited or still
+                developing. For children of pre-primary education age,
+                preparatory education is provided only in municipal
+                Finnish-language pre-primary education groups.
+              </P>
             )
           },
           unitPreference: {
