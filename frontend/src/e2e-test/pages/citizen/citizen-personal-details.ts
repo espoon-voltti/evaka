@@ -63,7 +63,6 @@ export class ContactDetailsSection extends Element {
   #phone = this.findByDataQa('phone')
   #backupPhone = this.findByDataQa('backup-phone')
   #email = this.findByDataQa('email')
-  #noEmail = new Checkbox(this.findByDataQa('no-email'))
   #save = this.findByDataQa('save')
   verifiedEmailStatus = this.findByDataQa('verified-email-status')
   unverifiedEmailStatus = this.findByDataQa('unverified-email-status')
@@ -86,14 +85,7 @@ export class ContactDetailsSection extends Element {
     if (data.phone) await new TextInput(this.#phone).fill(data.phone)
     await new TextInput(this.#backupPhone).fill(data.backupPhone)
 
-    if (data.email === null) {
-      if (!(await this.#noEmail.checked)) {
-        await this.#noEmail.click()
-      }
-    } else {
-      await this.#noEmail.uncheck()
-      await new TextInput(this.#email).fill(data.email)
-    }
+    await new TextInput(this.#email).fill(data.email ?? '')
 
     if (expectValid) {
       await this.#save.click()

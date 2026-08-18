@@ -2228,7 +2228,6 @@ export default {
       email: 'Sähköpostiosoite',
       emailMissing: 'Sähköpostiosoite puuttuu',
       phoneMissing: 'Puhelinnumero puuttuu',
-      noEmail: 'Minulla ei ole sähköpostiosoitetta',
       emailInfo:
         'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.',
       contactEmailInfo: 'Tähän osoitteeseen saat kaikki ilmoitukset eVakasta.',

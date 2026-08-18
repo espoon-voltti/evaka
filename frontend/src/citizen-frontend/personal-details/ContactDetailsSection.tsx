@@ -7,14 +7,13 @@ import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import type { Failure } from 'lib-common/api'
-import { boolean, string } from 'lib-common/form/fields'
-import { chained, object, validated } from 'lib-common/form/form'
+import { string } from 'lib-common/form/fields'
+import { object, validated } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormField } from 'lib-common/form/hooks'
-import { ValidationSuccess } from 'lib-common/form/types'
 import {
+  optionalEmail,
   optionalPhoneNumber,
   regexp,
-  requiredEmail,
   requiredPhoneNumber
 } from 'lib-common/form/validators'
 import type {
@@ -26,7 +25,6 @@ import { Chip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
-import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -77,18 +75,7 @@ interface Props {
 }
 
 const contactDetailsForm = object({
-  email: chained(
-    object({
-      email: validated(string(), requiredEmail),
-      noEmail: boolean()
-    }),
-    (form, state) => {
-      if (state.noEmail) {
-        return ValidationSuccess.of('')
-      }
-      return form.shape().email.validate(state.email)
-    }
-  ),
+  email: validated(string(), optionalEmail),
   phone: validated(string(), requiredPhoneNumber),
   backupPhone: validated(string(), optionalPhoneNumber)
 })
@@ -111,10 +98,7 @@ export default React.memo(function ContactDetailsSection({
   const problem = getEmailVerificationProblem(user, emailVerificationStatus)
 
   const initialFormState = {
-    email: {
-      email: user.email ?? '',
-      noEmail: !user.email
-    },
+    email: user.email ?? '',
     phone: user.phone,
     backupPhone: user.backupPhone
   }
@@ -125,9 +109,7 @@ export default React.memo(function ContactDetailsSection({
     t.validationErrors
   )
 
-  const emailObjectState = useFormField(form, 'email')
-  const emailState = useFormField(emailObjectState, 'email')
-  const noEmailState = useFormField(emailObjectState, 'noEmail')
+  const emailState = useFormField(form, 'email')
   const phoneState = useFormField(form, 'phone')
   const backupPhoneState = useFormField(form, 'backupPhone')
 
@@ -162,26 +144,16 @@ export default React.memo(function ContactDetailsSection({
         </DataRowLabel>
         <DataRowValue>
           {editMode ? (
-            <FixedSpaceColumn $spacing="xs">
-              <InputFieldF
-                id="email-input"
-                type="email"
-                width="m"
-                bind={emailState}
-                info={emailObjectState.inputInfo()}
-                required={!noEmailState.state}
-                readonly={noEmailState.state}
-                hideErrorsBeforeTouched
-                placeholder={t.personalDetails.detailsSection.email}
-                autoFocus={true}
-                data-qa="email"
-              />
-              <CheckboxF
-                label={t.personalDetails.detailsSection.noEmail}
-                bind={noEmailState}
-                data-qa="no-email"
-              />
-            </FixedSpaceColumn>
+            <InputFieldF
+              id="email-input"
+              type="email"
+              width="m"
+              bind={emailState}
+              hideErrorsBeforeTouched
+              placeholder={t.personalDetails.detailsSection.email}
+              autoFocus={true}
+              data-qa="email"
+            />
           ) : (
             <>
               <EmailVerificationStatus>

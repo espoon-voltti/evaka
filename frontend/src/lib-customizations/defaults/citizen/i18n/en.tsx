@@ -1963,7 +1963,6 @@ const en: Translations = {
       email: 'Email',
       emailMissing: 'Email missing',
       phoneMissing: 'Phone number missing',
-      noEmail: 'I have no email address',
       emailInfo:
         'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.',
       contactEmailInfo:

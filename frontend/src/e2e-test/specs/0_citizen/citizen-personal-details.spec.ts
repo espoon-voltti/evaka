@@ -63,7 +63,7 @@ test.describe('Citizen personal details', () => {
     await expect(personalDetailsPage.addPhoneTask).toBeVisible()
   })
 
-  test('Citizen fills successfully personal data without email by selecting I have no email -option', async () => {
+  test('Citizen fills successfully personal data without email', async () => {
     const preferredName = citizenFixture.firstName.split(' ')[1]
     const contactData = {
       phone: '123123',

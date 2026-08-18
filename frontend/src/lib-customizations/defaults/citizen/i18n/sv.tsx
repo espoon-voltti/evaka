@@ -2213,7 +2213,6 @@ const sv: Translations = {
       email: 'E-postadress',
       emailMissing: 'E-postadress saknas',
       phoneMissing: 'Telefonnummer saknas',
-      noEmail: 'Jag har ingen e-postadress',
       emailInfo:
         'En epostadress behövs så att vi kan skicka notiser om nya meddelanden, bokningar av närvarotider samt andra angelägenheter angående ditt barns småbarnspedagogik.',
       contactEmailInfo:
