@@ -248,7 +248,7 @@ const sv: Translations = {
         'Autentisera dig i tjänsten Suomi.fi och tillåt inloggning med e-post på sidan Egna uppgifter.',
       passkeyLink: 'Logga in med inloggningsnyckel (passkey)',
       passkeyDescriptionDesktop: 'På den här enheten eller telefonen',
-      passkeyDescriptionMobile: 'Face ID, Touch ID eller PIN-kod',
+      passkeyDescriptionMobile: 'Fingeravtryck eller ansiktsigenkänning',
       passkeyError: (strongLoginUri: string): ReactNode => (
         <>
           Inloggningen med inloggningsnyckel avbröts. Försök igen, logga in med

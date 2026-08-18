@@ -249,7 +249,7 @@ const en: Translations = {
         'Authenticate in the Suomi.fi service and enable email login on the Personal information page.',
       passkeyLink: 'Log in with a passkey',
       passkeyDescriptionDesktop: 'On this device or your phone',
-      passkeyDescriptionMobile: 'Face ID, Touch ID or PIN code',
+      passkeyDescriptionMobile: 'Fingerprint or face recognition',
       passkeyError: (strongLoginUri: string): ReactNode => (
         <>
           Logging in with a passkey was interrupted. Try again, log in with your
