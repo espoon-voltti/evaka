@@ -88,6 +88,18 @@ SPDX-License-Identifier: LGPL-2.1-or-later
             page-break-after: avoid;
         }
 
+        .page .correction-section {
+            margin-top: 10mm;
+        }
+
+        .page .correction-section h2 {
+            page-break-after: avoid;
+        }
+
+        .page .correction-section .correction-content + .correction-content {
+            page-break-inside: avoid;
+        }
+
         .page .child {
             margin-bottom: 5mm;
         }
