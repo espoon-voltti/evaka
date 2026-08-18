@@ -102,6 +102,7 @@ export default React.memo(function LoginPage() {
                 message={i18n.loginPage.login.passkeyError(
                   getStrongLoginUri(unvalidatedNextPath ?? '/')
                 )}
+                darkBackground
                 wide
                 noMargin
                 data-qa="passkey-login-error"
