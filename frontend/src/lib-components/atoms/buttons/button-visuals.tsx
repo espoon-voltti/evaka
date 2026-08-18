@@ -4,6 +4,7 @@
 
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import classNames from 'classnames'
+import { shade } from 'polished'
 import React from 'react'
 import styled, { css } from 'styled-components'
 
@@ -31,10 +32,7 @@ export type ButtonAppearance = 'button' | 'inline' | 'link'
  */
 export type ButtonOrder = 'icon-text' | 'text-icon'
 
-/**
- * Visual/semantic props for a button
- */
-export type BaseButtonVisualProps = {
+type CommonButtonProps = {
   /**
    * Text to be displayed on the button
    */
@@ -60,10 +58,6 @@ export type BaseButtonVisualProps = {
    */
   type?: 'button' | 'submit'
   /**
-   * If true, the button is rendered using "primary colors"
-   */
-  primary?: boolean
-  /**
    * If true, the button is disabled and can't be clicked
    */
   disabled?: boolean
@@ -72,6 +66,52 @@ export type BaseButtonVisualProps = {
    */
   id?: string
 } & BaseProps
+
+/**
+ * Color emphasis of a button. At most one of these can be used at a time
+ */
+type ButtonEmphasis =
+  | {
+      /**
+       * If true, the button is rendered using "primary colors"
+       */
+      primary?: boolean
+      danger?: never
+    }
+  | {
+      primary?: never
+      /**
+       * If true, the button is rendered using the danger colors. Use instead of
+       * `primary` for an irreversible action, e.g. a delete confirmation
+       */
+      danger?: boolean
+    }
+
+/**
+ * Visual/semantic props for a button
+ */
+export type BaseButtonVisualProps = CommonButtonProps & ButtonEmphasis
+
+const filledStyle = (base: string, hover: string, active: string) => css`
+  background: ${base};
+  border-color: ${base};
+  color: ${(p) => p.theme.colors.grayscale.g0};
+
+  &:hover {
+    background: ${hover};
+    border-color: ${hover};
+  }
+
+  &:active {
+    background: ${active};
+    border-color: ${active};
+  }
+
+  &.disabled {
+    border-color: ${(p) => p.theme.colors.grayscale.g35};
+    background: ${(p) => p.theme.colors.grayscale.g35};
+  }
+`
 
 const StyledButton = styled.button<{
   $appearance: ButtonAppearance
@@ -160,21 +200,21 @@ const StyledButton = styled.button<{
           letter-spacing: 0.2px;
 
           &.primary {
-            background: ${(p) => p.theme.colors.main.m2};
-            color: ${(p) => p.theme.colors.grayscale.g0};
+            ${(p) =>
+              filledStyle(
+                p.theme.colors.main.m2,
+                p.theme.colors.main.m2Hover,
+                p.theme.colors.main.m2Active
+              )}
+          }
 
-            &:hover {
-              background: ${(p) => p.theme.colors.main.m2Hover};
-            }
-
-            &:active {
-              background: ${(p) => p.theme.colors.main.m2Active};
-            }
-
-            &.disabled {
-              border-color: ${(p) => p.theme.colors.grayscale.g35};
-              background: ${(p) => p.theme.colors.grayscale.g35};
-            }
+          &.danger {
+            ${(p) =>
+              filledStyle(
+                p.theme.colors.status.danger,
+                shade(0.1, p.theme.colors.status.danger),
+                shade(0.2, p.theme.colors.status.danger)
+              )}
           }
 
           @media screen and (max-width: ${zoomedMobileMax}) {
@@ -206,9 +246,15 @@ export const renderBaseButton = (
     type = 'button',
     disabled,
     primary,
+    danger,
     className,
     ...props
-  }: BaseButtonVisualProps & { 'data-status'?: string; 'aria-busy'?: boolean },
+  }: CommonButtonProps & {
+    primary?: boolean
+    danger?: boolean
+    'data-status'?: string
+    'aria-busy'?: boolean
+  },
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
   children: (props: {
     text: string
@@ -220,7 +266,7 @@ export const renderBaseButton = (
   <StyledButton
     type={type}
     disabled={disabled}
-    className={classNames(className, { disabled, primary })}
+    className={classNames(className, { disabled, primary, danger })}
     onClick={onClick}
     $appearance={appearance}
     $order={order}
