@@ -141,11 +141,12 @@ export default React.memo(function PasskeysSection({ user }: { user: User }) {
         {passkeyToDelete !== null && (
           <MutateFormModal
             data-qa="delete-passkey-modal"
-            type="warning"
+            type="danger"
             title={t.deleteConfirmTitle}
             text={t.deleteConfirmText(passkeyToDelete.name)}
             icon={faTrash}
             resolveLabel={t.deletePasskey}
+            resolveDanger
             rejectLabel={i18n.common.cancel}
             resolveMutation={deletePasskeyMutation}
             resolveAction={() => ({ id: passkeyToDelete.id })}
