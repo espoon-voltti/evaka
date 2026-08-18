@@ -247,7 +247,7 @@ export default {
         'Tunnistaudu Suomi.fi-palvelussa ja salli sähköpostikirjautuminen Omat tiedot -sivulla.',
       passkeyLink: 'Kirjaudu pääsyavaimella (passkey)',
       passkeyDescriptionDesktop: 'Tällä laitteella tai puhelimella',
-      passkeyDescriptionMobile: 'Face ID, Touch ID tai PIN-koodi',
+      passkeyDescriptionMobile: 'Sormenjälki tai kasvojentunnistus',
       passkeyError: (strongLoginUri: string): ReactNode => (
         <>
           Kirjautuminen pääsyavaimella keskeytyi. Yritä uudelleen, kirjaudu
