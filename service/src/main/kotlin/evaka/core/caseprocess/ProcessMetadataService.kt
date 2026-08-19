@@ -4,6 +4,7 @@
 
 package evaka.core.caseprocess
 
+import evaka.core.AuditContext
 import evaka.core.application.ApplicationType
 import evaka.core.application.fetchApplicationDetails
 import evaka.core.shared.*
@@ -26,14 +27,17 @@ class ProcessMetadataService(
         clock: EvakaClock,
         applicationId: ApplicationId,
         process: CaseProcess,
+        audit: AuditContext,
     ): ProcessMetadata {
         val isCitizen = user is AuthenticatedUser.Citizen
         val application = tx.fetchApplicationDetails(applicationId) ?: throw NotFound()
+        audit.add(application.childId).add(application.guardianId)
         val applicationDocument = tx.getApplicationDocumentMetadata(applicationId)
-        val decisionDocuments =
-            tx.getSentDecisionIdsByApplication(applicationId).map {
-                it to tx.getApplicationDecisionDocumentMetadata(it, isCitizen)
-            }
+        val decisionIds = tx.getSentDecisionIdsByApplication(applicationId)
+        audit.add(decisionIds)
+        val decisionDocuments = decisionIds.map {
+            it to tx.getApplicationDecisionDocumentMetadata(it, isCitizen)
+        }
 
         val (processName, processType) = applicationProcessNameAndType(application.type)
         return ProcessMetadata(
