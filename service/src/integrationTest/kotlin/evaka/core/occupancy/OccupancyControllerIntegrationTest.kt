@@ -1428,7 +1428,6 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                             preparatory = false,
                             urgent = false,
                         ),
-                    maxFeeAccepted = true,
                     otherInfo = "",
                     clubDetails = null,
                 ),

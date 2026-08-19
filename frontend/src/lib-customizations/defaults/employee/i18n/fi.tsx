@@ -600,6 +600,7 @@ export const fi = {
       secondGuardian: {
         title: 'Ilmoitetun toisen aikuisen tiedot',
         checkboxLabel: 'Hakija on ilmoittanut toisen huoltajan tiedot',
+        agreementStatusNotSet: 'Huoltajat asuvat samassa osoitteessa',
         exists: 'Lapsella on toinen huoltaja',
         sameAddress: 'Toinen huoltaja asuu samassa osoitteessa',
         separated: 'Toinen huoltaja asuu eri osoitteessa',
@@ -620,7 +621,6 @@ export const fi = {
       applicationInfo: 'Hakemuksen lisätiedot',
       allergies: 'Allergiat',
       diet: 'Erityisruokavalio',
-      maxFeeAccepted: 'Suostumus korkeimpaan maksuun',
       serviceWorkerAttachmentsTitle: 'Palveluohjauksen liitteet',
       noAttachments: 'Ei liitteitä'
     },
@@ -3116,8 +3116,7 @@ export const fi = {
         return: 'Palaa'
       },
       income: {
-        title: 'Perheen tulotiedot',
-        maxFeeAccepted: 'Huoltajan suostumus korkeimpaan maksuluokkaan.'
+        title: 'Perheen tulotiedot'
       },
       child: {
         ssn: 'Henkilötunnus',

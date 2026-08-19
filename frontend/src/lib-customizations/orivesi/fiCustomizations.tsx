@@ -333,40 +333,6 @@ const fi: DeepPartial<Translations> = {
         ),
         futureAddressInfo: `Oriveden varhaiskasvatuksessa ja esiopetuksessa virallisena osoitteena pidetään väestötiedoista saatavaa osoitetta. Osoite väestötiedoissa muuttuu hakijan tehdessä muuttoilmoituksen postiin tai maistraattiin.`
       },
-      fee: {
-        info: {
-          DAYCARE: (
-            <P>
-              Kunnallisen varhaiskasvatuksen asiakasmaksu perustuu
-              varhaiskasvatuksen asiakasmaksuista annettuun lakiin (Laki
-              varhaiskasvatuksen asiakasmaksuista (1503/2016)). Asiakasmaksu
-              määräytyy perheen koon, palveluntarpeen sekä bruttotulojen mukaan.
-              Uusien asiakkaiden tulee täyttää asiakasmaksulomake ja toimittaa
-              tarvittavat liitteet Varhaiskasvatuksen asiakasmaksuihin
-              viimeistään kuukauden kuluessa hoidon alkamisesta.
-            </P>
-          ),
-          PRESCHOOL: (
-            <P>
-              Esiopetus on maksutonta, mutta sitä täydentävä toiminta on
-              maksullista. Jos lapsi osallistuu esiopetusta täydentävään
-              toimintaan, perhe toimittaa tuloselvityksen bruttotuloistaan
-              tuloselvityslomakkeella viimeistään kahden viikon kuluessa siitä,
-              kun lapsi on aloittanut esiopetuksen.
-            </P>
-          )
-        },
-        links: (
-          <P>
-            Lisätietoa varhaiskasvatuksen asiakasmaksuista löydät{' '}
-            <ExternalLink
-              href="https://orivesi.fi/asukkaalle/kasvatus-ja-opetuspalvelut/varhaiskasvatus/varhaiskasvatuksen-lomakkeet/"
-              text="Oriveden kaupungin sivuilta"
-              newTab
-            />
-          </P>
-        )
-      },
       additionalDetails: {
         dietInfo: (
           <>

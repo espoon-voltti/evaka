@@ -8,7 +8,10 @@ import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import axios from 'axios'
 import { BaseError } from 'make-error-cause'
 
-import type { SimpleApplicationAction } from 'lib-common/generated/api-types/application'
+import type {
+  ApplicationAttachmentType,
+  SimpleApplicationAction
+} from 'lib-common/generated/api-types/application'
 import type {
   ApplicationId,
   EmployeeId,
@@ -18,6 +21,7 @@ import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../config'
 import {
+  createApplicationAttachment,
   createDefaultPlacementPlan,
   createPedagogicalDocumentAttachment,
   runJobs,
@@ -94,6 +98,22 @@ export async function runPendingAsyncJobs(
   } catch (e) {
     throw new DevApiError(e)
   }
+}
+
+export async function insertApplicationAttachment(
+  applicationId: ApplicationId,
+  employeeId: EmployeeId,
+  type: ApplicationAttachmentType,
+  fileName: string,
+  filePath: string
+): Promise<void> {
+  const file = await fs.readFile(filePath)
+  await createApplicationAttachment({
+    applicationId,
+    employeeId,
+    type,
+    file: new File([new Uint8Array(file)], fileName)
+  })
 }
 
 export async function insertPedagogicalDocumentAttachment(

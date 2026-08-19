@@ -528,47 +528,6 @@ const fi: DeepPartial<Translations> = {
         futureAddressInfo:
           'Turun varhaiskasvatuksen virallisena osoitteena pidetään väestötiedoista saatavaa osoitetta. Osoite väestötiedoissa muuttuu hakijan tehdessä muutosilmoituksen postiin tai Digi- ja väestötietovirastoon.'
       },
-      fee: {
-        info: {
-          DAYCARE: (
-            <P>
-              Kunnallisen varhaiskasvatuksen asiakasmaksut ja palvelusetelin
-              omavastuuosuus määräytyvät prosenttiosuutena perheen
-              bruttotuloista. Maksut vaihtelevat perheen koon ja tulojen sekä
-              varhaiskasvatusajan mukaan. Mikäli varhaiskasvatuspaikan hinta
-              yksityisellä on enemmän kuin palvelusetelin arvo, erotuksen maksaa
-              perhe. Perhe toimittaa tuloselvityksen bruttotuloistaan
-              tuloselvityslomakkeella mahdollisimman pian siitä, kun lapsi on
-              aloittanut varhaiskasvatuksessa.
-            </P>
-          ),
-          PRESCHOOL: (
-            <P>
-              Esiopetus on maksutonta, mutta täydentävä varhaiskasvatus on
-              maksullista. Jos lapsi osallistuu esiopetukseen täydentävään
-              varhaiskasvatukseen, perhe toimittaa tuloselvityksen
-              bruttotuloistaan tulonselvityslomakkeella mahdollisimman pian
-              siitä, kun lapsi on aloittanut varhaiskasvatuksessa.
-            </P>
-          )
-        },
-        links: (
-          <>
-            <P>
-              Tuloselvityslomake löytyy eVakassa Käyttäjä-valikosta kohdasta
-              Tulotiedot.
-            </P>
-            <P>
-              Lisätietoa asiakasmaksuista löydät Turun kaupungin nettisivuilta:{' '}
-              <ExternalLink
-                href="https://www.turku.fi/varhaiskasvatus-ja-esiopetus/maksut-tuet-ja-palveluseteli"
-                text="Varhaiskasvatuksen asiakasmaksut."
-                newTab
-              />
-            </P>
-          </>
-        )
-      },
       sentInfo: {
         title: 'Hakemus on lähetetty',
         text: 'Hakemukseen voi tehdä muutoksia siihen saakka, kunnes varhaiskasvatuksen palveluohjaus on ottanut sen käsittelyyn.',

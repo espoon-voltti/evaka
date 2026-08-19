@@ -521,52 +521,6 @@ const en: DeepPartial<Translations> = {
         futureAddressInfo:
           'Oulu’s early childhood education, preschool education and care services consider the address obtained from the population information system to be the official address. The address entered in the population information system changes when you submit a notification of change of address to the Digital and Population Data Services Agency.'
       },
-      fee: {
-        info: {
-          DAYCARE: (
-            <P>
-              The client fees and the share of the service voucher to be paid by
-              the family are determined as a percentage of the family’s combined
-              gross income. Family size and income and the duration of early
-              childhood education all affect the amount to be paid. If the cost
-              of early childhood education and care at a private unit is higher
-              than the value of the service voucher, the family is responsible
-              for paying the difference. The family must submit an income
-              declaration detailing their gross income using the income
-              declaration form as soon as possible after the child has started
-              attending early childhood education and care.
-            </P>
-          ),
-          PRESCHOOL: (
-            <P>
-              Preschool education is free of charge, but the related early
-              childhood education and care is subject to a fee. If the child
-              attends early childhood education and care in related to preschool
-              preschool education, the family must submit an income declaration
-              detailing their gross income using the income declaration form as
-              soon as possible after the child has started attending early
-              childhood education and care.
-            </P>
-          )
-        },
-        links: (
-          <>
-            <P>
-              You can find the income declaration form in the Income information
-              section of the User menu in the eVaka service.
-            </P>
-            <P>
-              For more information on client fees, visit the website of the City
-              of Oulu:
-              <ExternalLink
-                href="https://www.ouka.fi/oulu/paivahoito-ja-esiopetus/paivahoitomaksut"
-                text="Client fees in early childhood education"
-                newTab
-              />
-            </P>
-          </>
-        )
-      },
       additionalDetails: {
         dietPlaceholder: 'Indicate your child’s special diet here',
         dietInfo: <> Indicate your child&apos;s special diet here. </>,

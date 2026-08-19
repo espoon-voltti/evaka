@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 */
 }
 
-import type { FeatureFlags } from 'lib-customizations/types'
+import type { FeatureFlags } from 'lib-common/feature-flags'
 
 import { env } from './env'
 import type { Env } from './env'
@@ -52,7 +52,8 @@ const features: Features = {
     showCitizenApplicationPreschoolTerms: true,
     showMetadataToCitizen: true,
     placementDesktop: false,
-    employeeLanguageSelection: true
+    employeeLanguageSelection: true,
+    sharedApplicationEditor: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -90,7 +91,8 @@ const features: Features = {
     showCitizenApplicationPreschoolTerms: true,
     showMetadataToCitizen: true,
     placementDesktop: true,
-    employeeLanguageSelection: true
+    employeeLanguageSelection: true,
+    sharedApplicationEditor: true
   },
   prod: {
     environmentLabel: null,

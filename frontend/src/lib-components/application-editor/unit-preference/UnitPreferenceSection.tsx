@@ -1,0 +1,110 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import React, { useEffect } from 'react'
+
+import type { UnitPreferenceFormData } from 'lib-common/application/ApplicationFormData'
+import type { ApplicationFormDataErrors } from 'lib-common/application/validations'
+import { getErrorCount } from 'lib-common/form-validation'
+import type { ApplicationType } from 'lib-common/generated/api-types/application'
+import type LocalDate from 'lib-common/local-date'
+import { constantQuery, useQuery } from 'lib-common/query'
+import HorizontalLine from 'lib-components/atoms/HorizontalLine'
+import { faExclamation } from 'lib-icons'
+
+import EditorSection from '../EditorSection'
+import type { ApplicationEditorDeps } from '../types'
+
+import SiblingBasisSubSection from './SiblingBasisSubSection'
+import UnitsSubSection from './UnitsSubSection'
+
+export type UnitPreferenceSectionCommonProps = {
+  deps: ApplicationEditorDeps
+  formData: UnitPreferenceFormData
+  updateFormData: (
+    updater: (prev: UnitPreferenceFormData) => Partial<UnitPreferenceFormData>
+  ) => void
+  errors: ApplicationFormDataErrors['unitPreference']
+  verificationRequested: boolean
+  applicationType: ApplicationType
+  preparatory: boolean
+  preferredStartDate: LocalDate | null
+  shiftCare: boolean
+}
+
+export default React.memo(function UnitPreferenceSection(
+  props: UnitPreferenceSectionCommonProps
+) {
+  const { translations: t, applicationUnitsQuery, infoDialog } = props.deps
+
+  const {
+    updateFormData,
+    applicationType,
+    preparatory,
+    preferredStartDate,
+    shiftCare
+  } = props
+
+  const { data: units = null } = useQuery(
+    preferredStartDate
+      ? applicationUnitsQuery({
+          type:
+            applicationType === 'CLUB'
+              ? 'CLUB'
+              : applicationType === 'DAYCARE'
+                ? 'DAYCARE'
+                : preparatory
+                  ? 'PREPARATORY'
+                  : 'PRESCHOOL',
+          date: preferredStartDate,
+          shiftCare
+        })
+      : constantQuery(null)
+  )
+
+  useEffect(() => {
+    updateFormData((prev) => {
+      const preferredUnits = units
+        ? prev.preferredUnits.filter(({ id }) =>
+            units.some((unit) => unit.id === id)
+          )
+        : prev.preferredUnits
+
+      if (preferredUnits.length < prev.preferredUnits.length) {
+        infoDialog.show({
+          title: t.applications.editor.unitChangeWarning.title,
+          text: t.applications.editor.unitChangeWarning.text,
+          type: 'warning',
+          icon: faExclamation,
+          resolve: {
+            action: infoDialog.close,
+            label: t.applications.editor.unitChangeWarning.ok
+          }
+        })
+      }
+
+      return { preferredUnits }
+    })
+  }, [
+    units,
+    updateFormData,
+    infoDialog,
+    t.applications.editor.unitChangeWarning
+  ])
+
+  return (
+    <EditorSection
+      deps={props.deps}
+      title={t.applications.editor.unitPreference.title}
+      validationErrors={
+        props.verificationRequested ? getErrorCount(props.errors) : 0
+      }
+      data-qa="unitPreference-section"
+    >
+      <SiblingBasisSubSection {...props} />
+      <HorizontalLine />
+      <UnitsSubSection {...props} units={units} />
+    </EditorSection>
+  )
+})

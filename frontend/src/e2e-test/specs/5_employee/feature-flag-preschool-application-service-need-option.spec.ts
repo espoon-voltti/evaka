@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import type { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import {
@@ -25,18 +26,7 @@ import { employeeLogin } from '../../utils/user'
 
 const now = HelsinkiDateTime.of(2023, 3, 15, 12, 0)
 
-test.use({
-  evakaOptions: {
-    mockedTime: now,
-    employeeCustomizations: {
-      featureFlags: {
-        preschoolApplication: {
-          serviceNeedOption: true
-        }
-      }
-    }
-  }
-})
+let vakaServiceNeedOptionId: ServiceNeedOptionId
 
 test.beforeEach(async () => {
   await resetServiceState()
@@ -45,51 +35,73 @@ test.beforeEach(async () => {
   await testDaycare.save()
   await Fixture.family({ guardian: testAdult, children: [testChild] }).save()
   await createDaycareGroups({ body: [testDaycareGroup] })
-  await Fixture.serviceNeedOption({
+  const vakaServiceNeedOption = await Fixture.serviceNeedOption({
     validPlacementType: 'PRESCHOOL_DAYCARE',
     nameFi: 'vaka'
   }).save()
+  vakaServiceNeedOptionId = vakaServiceNeedOption.id
   await Fixture.serviceNeedOption({
     validPlacementType: 'PRESCHOOL_CLUB',
     nameFi: 'kerho'
   }).save()
 })
 
-test.describe('Employee - paper application', () => {
-  let page: Page
-  let childInformationPage: ChildInformationPage
-  let createApplicationModal: CreateApplicationModal
+// Covers the service need option and placement type selectors, which
+// paper-application.spec.ts does not reach, on both editors.
+for (const legacyEditor of [false, true]) {
+  test.describe(`Employee - paper application (${legacyEditor ? 'legacy' : 'shared'} editor)`, () => {
+    test.use({
+      evakaOptions: {
+        mockedTime: now,
+        employeeCustomizations: {
+          featureFlags: {
+            preschoolApplication: { serviceNeedOption: true },
+            sharedApplicationEditor: !legacyEditor
+          }
+        }
+      }
+    })
 
-  test.beforeEach(async ({ evaka }) => {
-    page = evaka
-    const admin = await Fixture.employee().admin().save()
-    await employeeLogin(page, admin)
+    let page: Page
+    let childInformationPage: ChildInformationPage
+    let createApplicationModal: CreateApplicationModal
 
-    childInformationPage = new ChildInformationPage(page)
-    await childInformationPage.navigateToChild(testChild.id)
+    test.beforeEach(async ({ evaka }) => {
+      page = evaka
+      const admin = await Fixture.employee().admin().save()
+      await employeeLogin(page, admin)
 
-    const applications =
-      await childInformationPage.openCollapsible('applications')
-    createApplicationModal = await applications.openCreateApplicationModal()
+      childInformationPage = new ChildInformationPage(page)
+      await childInformationPage.navigateToChild(testChild.id)
+
+      const applications =
+        await childInformationPage.openCollapsible('applications')
+      createApplicationModal = await applications.openCreateApplicationModal()
+    })
+
+    test('Service worker fills preschool application with service need option enabled', async () => {
+      await createApplicationModal.selectApplicationType('PRESCHOOL')
+      const applicationEditPage =
+        await createApplicationModal.submit(legacyEditor)
+
+      await applicationEditPage.fillStartDate(now.toLocalDate())
+      await applicationEditPage.checkConnectedDaycare()
+      await applicationEditPage.fillConnectedDaycarePreferredStartDate(
+        now.toLocalDate().format()
+      )
+      await applicationEditPage.selectPreschoolPlacementType(
+        'PRESCHOOL_DAYCARE'
+      )
+      await applicationEditPage.selectPreschoolServiceNeedOption(
+        vakaServiceNeedOptionId
+      )
+      await applicationEditPage.pickUnit(testDaycare.name)
+      await applicationEditPage.fillApplicantPhoneAndEmail(
+        '123456',
+        'email@evaka.test'
+      )
+      const applicationViewPage = await applicationEditPage.saveApplication()
+      await applicationViewPage.waitUntilLoaded()
+    })
   })
-
-  test('Service worker fills preschool application with service need option enabled', async () => {
-    await createApplicationModal.selectApplicationType('PRESCHOOL')
-    const applicationEditPage = await createApplicationModal.submit()
-
-    await applicationEditPage.fillStartDate(now.toLocalDate())
-    await applicationEditPage.checkConnectedDaycare()
-    await applicationEditPage.fillConnectedDaycarePreferredStartDate(
-      now.toLocalDate().format()
-    )
-    await applicationEditPage.selectPreschoolPlacementType('PRESCHOOL_DAYCARE')
-    await applicationEditPage.selectPreschoolServiceNeedOption('vaka')
-    await applicationEditPage.pickUnit(testDaycare.name)
-    await applicationEditPage.fillApplicantPhoneAndEmail(
-      '123456',
-      'email@evaka.test'
-    )
-    const applicationViewPage = await applicationEditPage.saveApplication()
-    await applicationViewPage.waitUntilLoaded()
-  })
-})
+}

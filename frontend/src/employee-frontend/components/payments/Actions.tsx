@@ -16,6 +16,7 @@ import {
   cancelMutation,
   MutateButton
 } from 'lib-components/atoms/buttons/MutateButton'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { fontWeights, Label } from 'lib-components/typography'
@@ -24,7 +25,6 @@ import colors from 'lib-customizations/common'
 import { getPaymentsDueDate } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
-import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 import StickyActionBar from '../common/StickyActionBar'
 
 import {

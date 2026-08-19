@@ -6,8 +6,10 @@
 
 import type { Absence } from 'lib-common/generated/api-types/absence'
 import type { AbsenceId } from './api-types'
+import type { ApplicationAttachmentType } from 'lib-common/generated/api-types/application'
 import type { ApplicationDetails } from 'lib-common/generated/api-types/application'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
+import type { AttachmentId } from 'lib-common/generated/api-types/shared'
 import type { Autocomplete } from './api-types'
 import type { CalendarEventAttendeeId } from './api-types'
 import type { CalendarEventId } from 'lib-common/generated/api-types/shared'
@@ -355,6 +357,47 @@ export async function cleanUpMessages(): Promise<void> {
     const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/messages/clean-up`.toString(),
       method: 'POST'
+    })
+    return json
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+
+/**
+* Generated from evaka.core.shared.dev.DevApi.createApplicationAttachment
+*/
+export async function createApplicationAttachment(
+  request: {
+    applicationId: ApplicationId,
+    employeeId: EmployeeId,
+    type: ApplicationAttachmentType,
+    file: File
+  },
+  options?: {
+    onUploadProgress?: (event: AxiosProgressEvent) => void,
+    mockedTime?: HelsinkiDateTime
+  }
+): Promise<AttachmentId> {
+  try {
+    const data = createFormData(
+      ['file', request.file]
+    )
+    const params = createUrlSearchParams(
+      ['employeeId', request.employeeId],
+      ['type', request.type.toString()]
+    )
+    const { data: json } = await devClient.request<JsonOf<AttachmentId>>({
+      url: uri`/application-attachment/${request.applicationId}`.toString(),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'EvakaMockedTime': options?.mockedTime?.formatIso()
+      },
+      onUploadProgress: options?.onUploadProgress,
+      params,
+      data
     })
     return json
   } catch (e) {

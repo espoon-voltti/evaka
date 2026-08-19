@@ -222,7 +222,6 @@ data class DaycareFormV0(
                         dietType = form.child.diet,
                         otherInfo = form.otherInfo,
                     ),
-                maxFeeAccepted = form.maxFeeAccepted,
             )
     }
 }

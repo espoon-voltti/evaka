@@ -500,46 +500,6 @@ const fi: DeepPartial<Translations> = {
         futureAddressInfo:
           'Oulun esiopetuksessa ja varhaiskasvatuksessa virallisena osoitteena pidetään väestötiedoista saatavaa osoitetta. Osoite väestötiedoissa muuttuu hakijan tehdessä muuttoilmoituksen Digi- ja väestötietovirastoon.'
       },
-      fee: {
-        info: {
-          DAYCARE: (
-            <P>
-              Kunnallisen varhaiskasvatuksen asiakasmaksut ja palvelusetelin
-              omavastuuosuus määräytyvät prosenttiosuutena perheen
-              bruttotuloista. Maksut vaihtelevat perheen koon ja tulojen sekä
-              varhaiskasvatusajan mukaan. Mikäli varhaiskasvatuspaikan hinta
-              yksityisellä on enemmän kuin palvelusetelin arvo, erotuksen maksaa
-              perhe. Perhe toimittaa tuloselvityksen bruttotuloistaan
-              tuloselvityslomakkeella mahdollisimman pian siitä, kun lapsi on
-              aloittanut varhaiskasvatuksessa.
-            </P>
-          ),
-          PRESCHOOL: (
-            <P>
-              Esiopetus on maksutonta, mutta siihen liittyvä varhaiskasvatus on
-              maksullista. Jos lapsi osallistuu esiopetukseen liittyvään
-              varhaiskasvatukseen, perhe toimittaa tuloselvityksen
-              bruttotuloistaan tulonselvityslomakkeella mahdollisimman pian
-              siitä, kun lapsi on aloittanut varhaiskasvatuksessa.
-            </P>
-          )
-        },
-        links: (
-          <>
-            <P>
-              Tuloselvityslomake löytyy eVakassa kohdasta Valikko - Tulotiedot.
-            </P>
-            <P>
-              Lisätietoa asiakasmaksuista löydät Oulun kaupungin nettisivuilta:{' '}
-              <ExternalLink
-                href="https://www.ouka.fi/oulu/paivahoito-ja-esiopetus/paivahoitomaksut"
-                text="Varhaiskasvatuksen asiakasmaksut"
-                newTab
-              />
-            </P>
-          </>
-        )
-      },
       additionalDetails: {
         otherInfoLabel: 'Hakemukseen liittyvät lisätiedot',
         otherInfoPlaceholder:
