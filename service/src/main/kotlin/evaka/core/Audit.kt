@@ -52,7 +52,6 @@ enum class Audit(
     private val securityEvent: Boolean = false,
     private val securityLevel: String = "low",
 ) {
-    ApplicationReadMetadata,
     ApplicationsReportRead,
     AssistanceActionOptionsRead,
     // AssistanceBasisOptionsRead,
@@ -572,6 +571,7 @@ enum class Audit(
     ApplicationRead,
     ApplicationReadActivePlacementsByType,
     ApplicationReadDuplicates,
+    ApplicationReadMetadata,
     ApplicationReadNotifications,
     ApplicationReturnToSent,
     ApplicationReturnToWaitingDecision,
