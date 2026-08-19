@@ -157,6 +157,7 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
             tx = tx,
             user = admin.user,
             clock = clock,
+            AuditContext(),
             applicationId = applicationId,
             placementPlan =
                 DaycarePlacementPlan(

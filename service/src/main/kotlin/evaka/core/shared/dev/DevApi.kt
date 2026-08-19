@@ -492,6 +492,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     tx,
                     AuthenticatedUser.Citizen(application.guardianId, CitizenAuthLevel.STRONG),
                     clock,
+                    AuditContext(),
                     application.id,
                     id,
                 )
@@ -869,21 +870,19 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: SimpleApplicationAction,
     ) {
-        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-                dbc.transaction { tx ->
-                    tx.ensureFakeAdminExists()
-                    applicationStateService.doSimpleAction(
-                        tx,
-                        fakeAdmin,
-                        clock,
-                        audit,
-                        action,
-                        applicationId,
-                    )
-                }
+            dbc.transaction { tx ->
+                tx.ensureFakeAdminExists()
+                applicationStateService.doSimpleAction(
+                    tx,
+                    fakeAdmin,
+                    clock,
+                    AuditContext(),
+                    action,
+                    applicationId,
+                )
             }
-            .also { audit.log(action.auditEvent, clock) }
+        }
         runAllAsyncJobs(clock)
     }
 
@@ -901,6 +900,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     tx,
                     fakeAdmin,
                     clock,
+                    AuditContext(),
                     applicationId,
                     body,
                 )
@@ -931,6 +931,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                             tx,
                             fakeAdmin,
                             clock,
+                            AuditContext(),
                             applicationId,
                             it,
                         )

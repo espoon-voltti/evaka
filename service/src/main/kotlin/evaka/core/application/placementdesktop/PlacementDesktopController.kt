@@ -5,7 +5,9 @@
 package evaka.core.application.placementdesktop
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
+import evaka.core.application.fetchApplicationDetails
+import evaka.core.application.getApplicationOtherGuardians
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.auth.AuthenticatedUser
@@ -40,6 +42,7 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: PlacementDraftUpdateRequest,
     ): PlacementDraftUpdateResponse {
+        val audit = AuditContext().add(applicationId).add(body.unitId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -50,6 +53,11 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                         applicationId,
                     )
 
+                    tx.fetchApplicationDetails(applicationId)?.also { application ->
+                        audit.add(application.childId).add(application.guardianId)
+                    }
+                    tx.getApplicationOtherGuardians(applicationId).also { audit.add(it) }
+
                     val startDate =
                         tx.upsertApplicationPlacementDraft(
                             applicationId = applicationId,
@@ -58,11 +66,12 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                             now = clock.now(),
                             userId = user.evakaUserId,
                         )
+                    audit.observeDate(startDate)
 
                     PlacementDraftUpdateResponse(startDate)
                 }
             }
-            .also { Audit.ApplicationPlacementDraftUpdate.log(targetId = AuditId(applicationId)) }
+            .also { audit.log(Audit.ApplicationPlacementDraftUpdate, clock) }
     }
 
     @DeleteMapping("/applications/{applicationId}/placement-draft")
@@ -72,19 +81,27 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         @PathVariable applicationId: ApplicationId,
     ) {
+        val audit = AuditContext().add(applicationId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Application.UPDATE_PLACEMENT_DRAFT,
-                    applicationId,
-                )
-                tx.deleteApplicationPlacementDraftIfExists(applicationId)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Application.UPDATE_PLACEMENT_DRAFT,
+                        applicationId,
+                    )
+                    tx.deleteApplicationPlacementDraftIfExists(applicationId)?.also { deletedDraft
+                        ->
+                        audit.add(deletedDraft.unitId).observeDate(deletedDraft.startDate)
+                    }
+                    tx.fetchApplicationDetails(applicationId)?.also { application ->
+                        audit.add(application.childId).add(application.guardianId)
+                    }
+                    tx.getApplicationOtherGuardians(applicationId).also { audit.add(it) }
+                }
             }
-        }
-        Audit.ApplicationPlacementDraftDelete.log(targetId = AuditId(applicationId))
+            .also { audit.log(Audit.ApplicationPlacementDraftDelete, clock) }
     }
 
     @GetMapping("/daycares/{unitId}")
@@ -95,6 +112,7 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
         @PathVariable unitId: DaycareId,
         @RequestParam occupancyStart: LocalDate? = null,
     ): PlacementDesktopDaycare {
+        val audit = AuditContext().add(unitId).observeDate(occupancyStart ?: clock.today())
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -113,7 +131,12 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { Audit.PlacementDesktopDaycaresRead.log(targetId = AuditId(unitId)) }
+            .also { daycare ->
+                audit
+                    .add(daycare.placementDrafts.map { it.applicationId })
+                    .add(daycare.placementDrafts.map { it.childId })
+                audit.log(Audit.PlacementDesktopDaycaresRead, clock)
+            }
     }
 
     @GetMapping("/daycares")
@@ -124,6 +147,7 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
         @RequestParam unitIds: Set<DaycareId> = emptySet(),
         @RequestParam occupancyStart: LocalDate? = null,
     ): List<PlacementDesktopDaycare> {
+        val audit = AuditContext().add(unitIds).observeDate(occupancyStart ?: clock.today())
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -142,6 +166,11 @@ class PlacementDesktopController(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { Audit.PlacementDesktopDaycaresRead.log(targetId = AuditId(unitIds)) }
+            .also { daycares ->
+                audit
+                    .add(daycares.flatMap { d -> d.placementDrafts.map { it.applicationId } })
+                    .add(daycares.flatMap { d -> d.placementDrafts.map { it.childId } })
+                audit.log(Audit.PlacementDesktopDaycaresRead, clock)
+            }
     }
 }

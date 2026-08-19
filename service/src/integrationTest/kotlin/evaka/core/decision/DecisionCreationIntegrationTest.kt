@@ -1432,6 +1432,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx,
             employee.user,
             clock,
+            AuditContext(),
             applicationId,
             DaycarePlacementPlan(
                 unitId = unitId,

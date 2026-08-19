@@ -113,6 +113,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         tx = tx,
                         user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
                         clock = clock,
+                        audit = AuditContext(),
                         applicationId = it,
                     )
                 }
@@ -145,6 +146,7 @@ class ApplicationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                         tx = tx,
                         user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.STRONG),
                         clock = clock,
+                        audit = AuditContext(),
                         applicationId = it,
                     )
                     stateService.moveToWaitingPlacement(

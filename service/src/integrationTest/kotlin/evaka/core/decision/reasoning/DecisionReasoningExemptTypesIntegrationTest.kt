@@ -155,6 +155,7 @@ class DecisionReasoningExemptTypesIntegrationTest : FullApplicationTest(resetDbB
                 tx = tx,
                 user = admin.user,
                 clock = clock,
+                audit = AuditContext(),
                 applicationId = applicationId,
                 placementPlan =
                     DaycarePlacementPlan(
@@ -202,6 +203,7 @@ class DecisionReasoningExemptTypesIntegrationTest : FullApplicationTest(resetDbB
             tx = tx,
             user = admin.user,
             clock = clock,
+            audit = AuditContext(),
             applicationId = applicationId,
             placementPlan =
                 DaycarePlacementPlan(
