@@ -168,7 +168,6 @@ dependencies {
     implementation("org.apache.commons:commons-text")
     implementation("org.glassfish.jaxb:jaxb-runtime")
     implementation("org.bouncycastle:bcprov-jdk18on")
-    implementation("org.bouncycastle:bcpkix-jdk18on")
     implementation("org.apache.tika:tika-core")
     implementation("org.apache.commons:commons-imaging")
     implementation("org.jsoup:jsoup")
@@ -179,6 +178,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
 
     testImplementation("io.kotest:kotest-property")
+    testImplementation("org.bouncycastle:bcpkix-jdk18on")
     testImplementation("net.logstash.logback:logstash-logback-encoder")
     testImplementation("org.mockito:mockito-core")
     testImplementation("org.mockito:mockito-junit-jupiter")

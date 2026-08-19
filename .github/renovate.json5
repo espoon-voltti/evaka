@@ -73,6 +73,12 @@
       allowedVersions: '< 8.0.0'
     },
     {
+      // Update all BouncyCastle artifacts in one PR, since bumping only some
+      // of them can leave an incompatible mix of versions
+      matchPackageNames: ['org.bouncycastle:*'],
+      groupName: 'bouncycastle',
+    },
+    {
       // Paid Font Awesome packages are not avilable in public npm
       matchPackageNames: [
         '@fortawesome/pro-light-svg-icons',

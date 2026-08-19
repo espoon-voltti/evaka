@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 [versions]
-bouncycastle = "1.85"
 dd-java-agent = "1.65.1"
 flyingsaucer = "10.4.0"
 flyway = "13.2.0"
@@ -17,8 +16,6 @@ spring-boot = "4.1.0"
 versions = "0.61.0"
 
 [libraries]
-bouncycastle-bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
-bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 dd-java-agent = { module = "com.datadoghq:dd-java-agent", version.ref = "dd-java-agent" }
 flyingsaucer-core = { module = "org.xhtmlrenderer:flying-saucer-core", version.ref = "flyingsaucer" }
 flyingsaucer-pdf = { module = "org.xhtmlrenderer:flying-saucer-pdf", version.ref = "flyingsaucer" }
