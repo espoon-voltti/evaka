@@ -265,9 +265,9 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         <p>Hei!</p>
 
         <p>Olemme vastaanottaneet lapsenne hakemuksen avoimeen varhaiskasvatukseen. 
-        Pyydämme teitä olemaan yhteydessä suoraan avoimen yksikön lähijohtajaan ja tiedustelemaan vapaata avoimen varhaiskasvatuksen paikkaa.</p>
+        Halutessasi voit olla yhteydessä avoimen yksikön lähijohtajaan ja tiedustelemaan vapaata avoimen varhaiskasvatuksen paikkaa.</p>
 
-        <p>Hakemuksia käsitellään pääsääntöisesti vastaanottopäivämäärän mukaan.</p>
+        <p>Hakemuksia käsitellään pääsääntöisesti aloituspäivämäärän mukaan.</p>
 
         <p>Tähän viestiin ei voi vastata.</p>
 
@@ -283,9 +283,9 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         <p>Hej!</p>
 
         <p>Vi har mottagit ditt barns ansökan till den öppna småbarnspedagogiken. 
-        Vänligen kontakta chefen vid enheten för öppen småbarnspedagogik direkt och fråga efter en plats.</p>
+        Ni kan kontakta chefen vid enheten för öppen småbarnspedagogik och fråga efter en plats.</p>
 
-        <p>Ansökningarna behandlas i ankomstordning.</p>
+        <p>Ansökningarna behandlas i första hand enligt startdatumet.</p>
 
         <p>Svara inte på detta meddelande.</p>
 
@@ -301,9 +301,9 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         <p>Hi!</p>
 
         <p>We have received your child’s application for open early childhood education and care. 
-        Please contact directly the open unit’s regional manager to enquire about a place in open early childhood education and care.</p>
+        You may contact the manager of open unit to enquire about a place in open early childhood education and care.</p>
 
-        <p>Applications are processed as a rule in the order they arrive.</p>
+        <p>Applications are usually processed according to the requested start date.</p>
 
         <p>This message cannot be replied to.</p>
 
@@ -321,9 +321,9 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         Hei! 
 
         Olemme vastaanottaneet lapsenne hakemuksen avoimeen varhaiskasvatukseen. 
-        Pyydämme teitä olemaan yhteydessä suoraan avoimen yksikön lähijohtajaan ja tiedustelemaan vapaata avoimen varhaiskasvatuksen paikkaa. 
+        Halutessasi voit olla yhteydessä avoimen yksikön lähijohtajaan ja tiedustelemaan vapaata avoimen varhaiskasvatuksen paikkaa.
 
-        Hakemuksia käsitellään pääsääntöisesti vastaanottopäivämäärän mukaan.
+        Hakemuksia käsitellään pääsääntöisesti aloituspäivämäärän mukaan.
 
         Tähän viestiin ei voi vastata.
          
@@ -337,9 +337,9 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         Hej!
 
         Vi har mottagit ditt barns ansökan till den öppna småbarnspedagogiken. 
-        Vänligen kontakta chefen vid enheten för öppen småbarnspedagogik direkt och fråga efter en plats.
+        Ni kan kontakta chefen vid enheten för öppen småbarnspedagogik och fråga efter en plats.
 
-        Ansökningarna behandlas i ankomstordning.
+        Ansökningarna behandlas i första hand enligt startdatumet.
 
         Svara inte på detta meddelande.
 
@@ -353,9 +353,9 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         Hi!
 
         We have received your child’s application for open early childhood education and care. 
-        Please contact directly the open unit’s regional manager to enquire about a place in open early childhood education and care.
+        You may contact the manager of open unit to enquire about a place in open early childhood education and care.
 
-        Applications are processed as a rule in the order they arrive.
+        Applications are usually processed according to the requested start date.
 
         This message cannot be replied to.
 
@@ -378,16 +378,16 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         <p>Hei!</p>
 
         <p>Lapsenne varhaiskasvatushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa evaka.turku.fi siihen saakka, kunnes varhaiskasvatuksen palveluohjaus ottaa sen käsittelyyn. 
-        Varhaiskasvatuspaikan hakuaika on neljä kuukautta. Mikäli kyseessä on vanhemman äkillinen työllistyminen tai opintojen alkaminen, järjestelyaika on kaksi viikkoa. 
-        Toimittakaa tällöin työ- tai opiskelutodistus hakemuksen liitteeksi. Kahden viikon järjestelyaika alkaa todistuksen saapumispäivämäärästä. Vuorohoidon palveluita järjestetään vanhempien vuorotyön perusteella, jolloin pyydämme työvuoroista todistuksen.</p>
+        Varhaiskasvatuspaikkaa tulee hakea vähintään 4kk ennen paikan tarvetta. Mikäli kyseessä on vanhemman äkillinen työllistyminen tai opintojen alkaminen, järjestelyaika on kaksi viikkoa. 
+        Toimittakaa tällöin todistus työstä tai opiskelusta hakemuksen liitteeksi kummankin lapsen kanssa asuvan huoltajan osalta. Kahden viikon järjestelyaika alkaa todistuksen saapumispäivämäärästä. Vuorohoidon palveluita järjestetään vanhempien vuorotyön perusteella, jolloin pyydämme työvuoroista todistuksen.</p>
 
         <p><b>Mikäli lapsellenne järjestyy varhaiskasvatuspaikka jostakin hakemuksessa toivomastanne kunnallisesta varhaiskasvatuspaikasta</b>, ilmoitamme teille paikan noin kuukautta ennen varhaiskasvatuksen toivottua aloitusajankohtaa. 
-        Huomioittehan, että paikka voi järjestyä muualta kuin ensisijaisista hakutoiveista.</p>
+        Huomioittehan, että paikka voi järjestyä muualta kuin hakutoiveista.</p>
 
         <p><b>Mikäli valitsitte ensimmäiseksi hakutoiveeksi yksityisen päiväkodin tai yksityisen perhepäivähoitajan</b>, olkaa suoraan yhteydessä kyseiseen palveluntuottajaan varmistaaksenne varhaiskasvatuspaikan saamisen. 
         Mikäli toivomanne palveluntuottaja ei pysty tarjoamaan hoitopaikkaa, pyydämme teitä olemaan yhteydessä varhaiskasvatuksen palveluohjaukseen.</p> 
 
-        <p><b>Siirtohakemukset</b> (lapsella on jo varhaiskasvatuspaikka Turun kaupungin varhaiskasvatusyksikössä) käsitellään pääsääntöisesti hakemuksen saapumispäivämäärän mukaan.</p>
+        <p><b>Siirtohakemuksia</b> (lapsella on jo varhaiskasvatuspaikka Turun kaupungin varhaiskasvatusyksikössä) pyritään käsittelemään huoltajan toivoman aloituspäivän mukaisesti, mutta todennäköisin ajankohta siirron toteuttamiselle on uuden toimintavuoden alku (elokuu).</p>
 
         <p><b>Mikäli ilmoititte hakemuksessa lapsenne tuen tarpeesta</b>, varhaiskasvatuksen erityisopettaja on teihin yhteydessä, jotta lapsen tuen tarpeet voidaan ottaa huomioon paikkaa osoitettaessa.</p>
 
@@ -408,8 +408,8 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
 
         <p>Vi har mottagit ditt barns ansökan till småbarnspedagogik. 
         Vårdnadshavaren som skickade in ansökan kan göra ändringar i ansökan på adressen evaka.turku.fi fram till det att den behandlas av servicehandledningen. 
-        Ansökningstiden för platser inom småbarnspedagogiken är fyra månader. Om ansökan har gjorts på grund av ny arbetsplats eller studieplats är handläggningstiden två veckor. 
-        Då ska vårdnadshavaren lämna in ett arbets- eller studieintyg. Handläggningstiden på två veckor börjar från och med dagen då intyget tas emot. 
+        Ansökan om plats inom småbarnspedagogiken ska lämnas in minst fyra månader innan platsen behövs. Om ansökan har gjorts på grund av ny arbetsplats eller studieplats är handläggningstiden två veckor. 
+        Bifoga ett intyg över arbete eller studier till ansökan för båda vårdnadshavarna som bor tillsammans med barnet. Handläggningstiden på två veckor börjar från och med dagen då intyget tas emot. 
         Om ansökan handlar om skiftvård ber vi att vårdnadshavarna skickar in ett intyg om skiftarbete.</p>
 
         <p><b>Om vi kan ordna en dagvårdsplats på något av de kommunala enheterna för småbarnspedagogik som ni valde i er ansökan</b>, kommer vi att meddela er om platsen ungefär en månad före önskat startdatum. 
@@ -418,7 +418,7 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         <p><b>Om ditt förstahandsval var ett privat daghem eller en privat familjedagvårdare</b>, vänligen kontakta dem direkt för att säkra barnets plats där. 
         Om det inte gick att erbjuda en plats på någon av era önskade platser, vänligen kontakta småbarnspedagogikens servicehandledning.</p>
 
-        <p><b>Överföringsansökning</b> (barnet har redan en plats på en enhet för småbarnspedagogik i Åbo) handläggs i huvudsak i ankomstordning.</p>
+        <p><b>Ansökningar om byte av plats</b> (barnet redan har en plats inom småbarnspedagogiken i en av Åbo stads enheter för småbarnspedagogik) behandlas önskat startdatum om möjligt. Den mest sannolika tidpunkten för att bytet kan genomföras är dock i början av den nya verksamhetsår (i augusti).</p>
 
         <p><b>Om du har angett att barnet behöver särskilt stöd</b> kommer en speciallärare inom småbarnspedagogiken att kontakta er för att säkerställa att barnets behov kan beaktas när barnet tilldelas en plats.</p>
 
@@ -439,8 +439,8 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
 
         <p>We have received your child’s early childhood education and care application. 
         The parent or guardian who sent the application can make changes to the application at evaka.turku.fi until the early childhood education and care service guidance begins to process it. 
-        The application period for early childhood education and care is four months. 
-        If the parent needs to start work or studies on short notice, the minimum period of processing is two weeks. If this is the case, please attach the relevant documentation for work or study. 
+        The application should be done at least four months before the need for early childhood education. 
+        If the parent needs to start work or studies on short notice, the minimum period of processing is two weeks. In this case, please attach a needed certificate of work or study for both of the guardians living with the child. 
         The two-week period begins from the date we have received such documentation. 
         Childcare for children with parents doing shift work are planned on the basis of work rosters, which we will need to obtain from you.</p>
 
@@ -450,7 +450,7 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         <p><b>If your first choice was a private daycare provider or private family daycarer</b>, please contact them directly. 
         If they are unable to care for your child, please contact the early childhood education and care service guidance.</p>
 
-        <p><b>As a rule, transfer applications</b> (meaning that the City of Turku’s early childhood education and care unit already provides early childhood education and care to the child) are processed in the order they arrive.</p>
+        <p><b>As a rule, transfer applications</b> (meaning that the City of Turku’s early childhood education and care unit already provides early childhood education and care to the child) are processed, whenever possible, according to the guardian's preferred start date. However, the most likely time for the transfer to take place is at the beginning of the pre-primary year (August).</p>
 
         <p><b>If you said in your application that your child requires support</b>, a special needs teacher in early childhood education and care will contact you to ensure that the child’s needs are taken into account when selecting a place.</p>
 
@@ -471,17 +471,17 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         """
         Hei! 
 
-        Lapsenne varhaiskasvatushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa evaka.turku.fi siihen saakka, kunnes varhaiskasvatuksen palveluohjaus ottaa sen käsittelyyn. Varhaiskasvatuspaikan hakuaika on neljä kuukautta. 
-        Mikäli kyseessä on vanhemman äkillinen työllistyminen tai opintojen alkaminen, järjestelyaika on kaksi viikkoa. 
-        Toimittakaa tällöin työ- tai opiskelutodistus hakemuksen liitteeksi. Kahden viikon järjestelyaika alkaa todistuksen saapumispäivämäärästä. Vuorohoidon palveluita järjestetään vanhempien vuorotyön perusteella, jolloin pyydämme työvuoroista todistuksen. 
+        Lapsenne varhaiskasvatushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa evaka.turku.fi siihen saakka, kunnes varhaiskasvatuksen palveluohjaus ottaa sen käsittelyyn. Varhaiskasvatuspaikkaa tulee hakea vähintään 4kk ennen paikan tarvetta.
+        Mikäli kyseessä on vanhemman äkillinen työllistyminen tai opintojen alkaminen, järjestelyaika on kaksi viikkoa.
+        Toimittakaa tällöin todistus työstä tai opiskelusta hakemuksen liitteeksi kummankin lapsen kanssa asuvan huoltajan osalta. Kahden viikon järjestelyaika alkaa todistuksen saapumispäivämäärästä. Vuorohoidon palveluita järjestetään vanhempien vuorotyön perusteella, jolloin pyydämme työvuoroista todistuksen. 
 
         Mikäli lapsellenne järjestyy varhaiskasvatuspaikka jostakin hakemuksessa toivomastanne kunnallisesta varhaiskasvatuspaikasta, ilmoitamme teille paikan noin kuukautta ennen varhaiskasvatuksen toivottua aloitusajankohtaa. 
-        Huomioittehan, että paikka voi järjestyä muualta kuin ensisijaisista hakutoiveista.  
+        Huomioittehan, että paikka voi järjestyä muualta kuin hakutoiveista.
 
         Mikäli valitsitte ensimmäiseksi hakutoiveeksi yksityisen päiväkodin tai yksityisen perhepäivähoitajan, olkaa suoraan yhteydessä kyseiseen palveluntuottajaan varmistaaksenne varhaiskasvatuspaikan saamisen. 
         Mikäli toivomanne palveluntuottaja ei pysty tarjoamaan hoitopaikkaa, pyydämme teitä olemaan yhteydessä varhaiskasvatuksen palveluohjaukseen. 
 
-        Siirtohakemukset (lapsella on jo varhaiskasvatuspaikka Turun kaupungin varhaiskasvatusyksikössä) käsitellään pääsääntöisesti hakemuksen saapumispäivämäärän mukaan.
+        Siirtohakemuksia (lapsella on jo varhaiskasvatuspaikka Turun kaupungin varhaiskasvatusyksikössä) pyritään käsittelemään huoltajan toivoman aloituspäivän mukaisesti, mutta todennäköisin ajankohta siirron toteuttamiselle on uuden toimintavuoden alku (elokuu).
 
         Mikäli ilmoititte hakemuksessa lapsenne tuen tarpeesta, varhaiskasvatuksen erityisopettaja on teihin yhteydessä, jotta lapsen tuen tarpeet voidaan ottaa huomioon paikkaa osoitettaessa. 
 
@@ -499,15 +499,15 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         Hej!
 
         Vi har mottagit ditt barns ansökan till småbarnspedagogik. Vårdnadshavaren som skickade in ansökan kan göra ändringar i ansökan på adressen evaka.turku.fi fram till det att den behandlas av servicehandledningen. 
-        Ansökningstiden för platser inom småbarnspedagogiken är fyra månader. Om ansökan har gjorts på grund av ny arbetsplats eller studieplats är handläggningstiden två veckor. 
-        Då ska vårdnadshavaren lämna in ett arbets- eller studieintyg. Handläggningstiden på två veckor börjar från och med dagen då intyget tas emot. Om ansökan handlar om skiftvård ber vi att vårdnadshavarna skickar in ett intyg om skiftarbete.
+        Ansökan om plats inom småbarnspedagogiken ska lämnas in minst fyra månader innan platsen behövs. Om ansökan har gjorts på grund av ny arbetsplats eller studieplats är handläggningstiden två veckor.
+        Bifoga ett intyg över arbete eller studier till ansökan för båda vårdnadshavarna som bor tillsammans med barnet. Handläggningstiden på två veckor börjar från och med dagen då intyget tas emot. Om ansökan handlar om skiftvård ber vi att vårdnadshavarna skickar in ett intyg om skiftarbete.
 
         Om vi kan ordna en dagvårdsplats på något av de kommunala enheterna för småbarnspedagogik som ni valde i er ansökan, kommer vi att meddela er om platsen ungefär en månad före önskat startdatum. 
         Vänligen observera att platsen ni tilldelas inte nödvändigtvis är på någon av de önskade enheterna.
 
         Om ditt förstahandsval var ett privat daghem eller en privat familjedagvårdare, vänligen kontakta dem direkt för att säkra barnets plats där. Om det inte gick att erbjuda en plats på någon av era önskade platser, vänligen kontakta småbarnspedagogikens servicehandledning.
 
-        Överföringsansökning (barnet har redan en plats på en enhet för småbarnspedagogik i Åbo) handläggs i huvudsak i ankomstordning.
+        Ansökningar om byte av plats (barnet redan har en plats inom småbarnspedagogiken i en av Åbo stads enheter för småbarnspedagogik) behandlas önskat startdatum om möjligt. Den mest sannolika tidpunkten för att bytet kan genomföras är dock i början av den nya verksamhetsår (i augusti).
 
         Om du har angett att barnet behöver särskilt stöd kommer en speciallärare inom småbarnspedagogiken att kontakta er för att säkerställa att barnets behov kan beaktas när barnet tilldelas en plats.
 
@@ -524,13 +524,13 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
 
         Hello!
 
-        We have received your child’s early childhood education and care application. The parent or guardian who sent the application can make changes to the application at evaka.turku.fi until the early childhood education and care service guidance begins to process it. The application period for early childhood education and care is four months. If the parent needs to start work or studies on short notice, the minimum period of processing is two weeks. If this is the case, please attach the relevant documentation for work or study. The two-week period begins from the date we have received such documentation. Childcare for children with parents doing shift work are planned on the basis of work rosters, which we will need to obtain from you.
+        We have received your child’s early childhood education and care application. The parent or guardian who sent the application can make changes to the application at evaka.turku.fi until the early childhood education and care service guidance begins to process it. The application should be done at least four months before the need for early childhood education. If the parent needs to start work or studies on short notice, the minimum period of processing is two weeks. In this case, please attach a needed certificate of work or study for both of the guardians living with the child. The two-week period begins from the date we have received such documentation. Childcare for children with parents doing shift work are planned on the basis of work rosters, which we will need to obtain from you.
 
         If early childhood education and care can be provided to your child in some other municipal provider than you applied for, we will inform you about this about two months before your desired starting date. Please note that we may find a place for your child somewhere else than your primary choices.
 
         If your first choice was a private daycare provider or private family daycarer, please contact them directly. If they are unable to care for your child, please contact the early childhood education and care service guidance.
 
-        As a rule, transfer applications (meaning that the City of Turku’s early childhood education and care unit already provides early childhood education and care to the child) are processed in the order they arrive.
+        As a rule, transfer applications (meaning that the City of Turku’s early childhood education and care unit already provides early childhood education and care to the child) are processed, whenever possible, according to the guardian's preferred start date. However, the most likely time for the transfer to take place is at the beginning of the pre-primary year (August).
 
         If you said in your application that your child requires support, a special needs teacher in early childhood education and care will contact you to ensure that the child’s needs are taken into account when selecting a place.
 
@@ -606,16 +606,7 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
 
         <p>Mikäli ilmoititte hakemuksessa lapsenne tuen tarpeesta, varhaiskasvatuksen erityisopettaja on teihin yhteydessä, jotta lapsen tuen tarpeet voidaan ottaa huomioon paikkaa osoitettaessa.</p>
 
-        <p>ESIOPETUKSEN TÄYDENTÄVÄ VARHAISKASVATUS</p>
-
-        <p>Mikäli hait esiopetukseen täydentävää varhaiskasvatusta, otathan huomioon:</p>
-
-        <p><ul>
-        <li>Vuorohoidon palveluita järjestetään vanhempien vuorotyön tai iltaisin ja/tai viikonloppuisin tapahtuvan opiskelun perusteella.</li>
-        <li>Mikäli lapsellenne järjestyy varhaiskasvatuspaikka jostakin hakemuksessa toivomastanne kunnallisesta varhaiskasvatuspaikasta, ilmoitamme teille paikan viimeistään kaksi viikkoa ennen varhaiskasvatuksen toivottua aloitusajankohtaa.</li>
-        <li>Mikäli valitsitte ensimmäiseksi hakutoiveeksi yksityisen päiväkodin, olkaa suoraan yhteydessä kyseiseen yksikköön varmistaaksenne varhaiskasvatuspaikan saamisen. Mikäli toivomanne palveluntuottaja ei pysty tarjoamaan hoitopaikkaa, pyydämme teitä olemaan yhteydessä varhaiskasvatuksen palveluohjaukseen.</li>
-        <li>Siirtohakemukset (lapsella on jo varhaiskasvatuspaikka Turun kaupungin varhaiskasvatusyksikössä) käsitellään pääsääntöisesti hakemuksen saapumispäivämäärän mukaan.</li>
-        </ul></p>
+        <p>ESIOPETUKSEN TÄYDENTÄVÄ VARHAISKASVATUS järjestetään samassa paikassa kuin lapsen esiopetus.</p>
 
         <p>Varhaiskasvatuspäätös on nähtävissä ja hyväksyttävissä/hylättävissä evaka.turku.fi</p>
 
@@ -634,16 +625,7 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
 
         <p>Om du har angett att barnet behöver särskilt stöd kommer en speciallärare inom småbarnspedagogiken att kontakta er för att säkerställa att barnets behov kan beaktas när barnet tilldelas en plats.</p>
 
-        <p>KOMPLETTERANDE SMÅBARNSPEDAGOGIK FÖR BARN I FÖRSKOLEÅLDERN</p>
-
-        <p>Om du har ansökt om kompletterande småbarnspedagogik för ett barn i förskoleåldern, vänligen ta hänsyn till följande:</p>
-
-        <p><ul>
-        <li>Skiftvården ordnas utifrån föräldrars skiftarbete eller studier på kvällar och/eller helger.</li>
-        <li>Om det ordnas en förskoleplats för ditt barn från någon av de kommunala förskoleplatser som du begärt i ansökan, meddelar vi dig platsen senast två veckor innan önskad starttid för förskoleutbildningen.</li>
-        <li>Om du valde ett privat daghem som din första ansökan, kontakta den aktuella enheten direkt för att säkerställa att du får en förskoleplats. Om den tjänsteleverantör du önskar inte kan erbjuda en vårdplats ber vi dig att kontakta förskoletjänstens vägledning.</li>
-        <li>Ansökningar om överlåtelse (barnet har redan en förskoleplats vid Åbo stads förskoleenhet) behandlas i allmänhet enligt ansökningsdagen.</li>
-        </ul></p>
+        <p>KOMPLETTERANDE SMÅBARNSPEDAGOGIK FÖR BARN I FÖRSKOLEÅLDERN ordnas på samma plats som barnets förskoleundervisning.</p>
 
         <p>Du kan läsa och godkänna/avvisa småbarnspedagogikbeslutet på adressen evaka.turku.fi</p>
 
@@ -662,16 +644,7 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
 
         <p>If you said in your application that your child requires support, a special needs teacher in early childhood education and care will contact you to ensure that the child’s needs are taken into account when selecting a place.</p>
 
-        <p>EARLY CHILDHOOD EDUCATION AND CARE COMPLEMENTING PRE-PRIMARY EDUCATION</p>
-
-        <p>If you applied for early childhood education and care to complement pre-primary education, please take note of the following:</p>
-
-        <p><ul>
-        <li>Shift care services are arranged based on parents' shift work or studying in the evenings and/or weekends.</li>
-        <li>If an early childhood education place is arranged for your child from one of the municipal early childhood education places you requested in the application, we will inform you of the place no later than two weeks before the desired start time of early childhood education.</li>
-        <li>If you chose a private daycare center as your first application, please contact the unit in question directly to ensure that you get an early childhood education place. If the service provider you want is not able to offer a place of care, we ask you to contact the early childhood education service guidance.</li>
-        <li>Transfer applications (the child already has an early childhood education place in the early childhood education unit of the city of Turku) are generally processed according to the date of arrival of the application.</li>
-        </ul></p>
+        <p>EARLY CHILDHOOD EDUCATION AND CARE COMPLEMENTING PRE-PRIMARY EDUCATION is provided at the same location as the child's pre-primary education.</p>
 
         <p>You can view and either accept or reject the early childhood education decision at evaka.turku.fi.</p>
 
@@ -688,19 +661,13 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
         """
         Hei! 
 
-        Olemme vastaanottaneet lapsenne hakemuksen esiopetukseen. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa evaka.turku.fi siihen saakka, kunnes varhaiskasvatuksen palveluohjaus ottaa sen käsittelyyn. Päätös on nähtävissä ja hyväksyttävissä/hylättävissä evaka.turku.fi.
+        Olemme vastaanottaneet lapsenne hakemuksen esiopetukseen. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa evaka.turku.fi siihen saakka, kunnes varhaiskasvatuksen palveluohjaus ottaa sen käsittelyyn. Esiopetuspäätös on nähtävissä evaka.turku.fi.
 
         Mikäli ilmoititte hakemuksessa lapsenne tuen tarpeesta, varhaiskasvatuksen erityisopettaja on teihin yhteydessä, jotta lapsen tuen tarpeet voidaan ottaa huomioon paikkaa osoitettaessa.
 
-        ESIOPETUKSEN TÄYDENTÄVÄ VARHAISKASVATUS 
+        ESIOPETUKSEN TÄYDENTÄVÄ VARHAISKASVATUS järjestetään samassa paikassa kuin lapsen esiopetus.
 
-        Mikäli hait esiopetukseen täydentävää varhaiskasvatusta, otathan huomioon: 
-        •	Vuorohoidon palveluita järjestetään vanhempien vuorotyön tai iltaisin ja/tai viikonloppuisin tapahtuvan opiskelun perusteella. 
-        •	Mikäli lapsellenne järjestyy varhaiskasvatuspaikka jostakin hakemuksessa toivomastanne kunnallisesta varhaiskasvatuspaikasta, ilmoitamme teille paikan viimeistään kaksi viikkoa ennen varhaiskasvatuksen toivottua aloitusajankohtaa.
-        •	Mikäli valitsitte ensimmäiseksi hakutoiveeksi yksityisen päiväkodin, olkaa suoraan yhteydessä kyseiseen yksikköön varmistaaksenne varhaiskasvatuspaikan saamisen. Mikäli toivomanne palveluntuottaja ei pysty tarjoamaan hoitopaikkaa, pyydämme teitä olemaan yhteydessä varhaiskasvatuksen palveluohjaukseen. 
-        •	Siirtohakemukset (lapsella on jo varhaiskasvatuspaikka Turun kaupungin varhaiskasvatusyksikössä) käsitellään pääsääntöisesti hakemuksen saapumispäivämäärän mukaan.
-         
-        Päätös on nähtävissä ja hyväksyttävissä/hylättävissä evaka.turku.fi
+        Varhaiskasvatuspäätös on nähtävissä ja hyväksyttävissä/hylättävissä evaka.turku.fi
          
         Hakemuksen liitteet voi lisätä suoraan sähköiselle hakemukselle tai toimittaa postitse osoitteeseen Varhaiskasvatuksen palveluohjaus, PL 355, 20101 Turku tai toimittamalla Kauppatorin Monitoriin, Varhaiskasvatuksen palveluohjaus, Aurakatu 8.
 
@@ -711,19 +678,13 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
 
         Hej!
 
-        Vi har mottagit ditt barns ansökan till förskoleundervisning. Vårdnadshavaren som skickade in ansökan kan göra ändringar i ansökan på adressen evaka.turku.fi fram till det att den behandlas av servicehandledningen. Du kan läsa och godkänna/avvisa beslutet på adressen evaka.turku.fi.
+        Vi har mottagit ditt barns ansökan till förskoleundervisning. Vårdnadshavaren som skickade in ansökan kan göra ändringar i ansökan på adressen evaka.turku.fi fram till det att den behandlas av servicehandledningen. Du kan läsa förskolebeslutet på adressen evaka.turku.fi.
 
         Om du har angett att barnet behöver särskilt stöd kommer en speciallärare inom småbarnspedagogiken att kontakta er för att säkerställa att barnets behov kan beaktas när barnet tilldelas en plats.
 
-        KOMPLETTERANDE SMÅBARNSPEDAGOGIK FÖR BARN I FÖRSKOLEÅLDERN
+        KOMPLETTERANDE SMÅBARNSPEDAGOGIK FÖR BARN I FÖRSKOLEÅLDERN ordnas på samma plats som barnets förskoleundervisning.
 
-        Om du har ansökt om kompletterande småbarnspedagogik för ett barn i förskoleåldern, vänligen ta hänsyn till följande:
-        •   Skiftvården ordnas utifrån föräldrars skiftarbete eller studier på kvällar och/eller helger.
-        •   Om det ordnas en förskoleplats för ditt barn från någon av de kommunala förskoleplatser som du begärt i ansökan, meddelar vi dig platsen senast två veckor innan önskad starttid för förskoleutbildningen.
-        •   Om du valde ett privat daghem som din första ansökan, kontakta den aktuella enheten direkt för att säkerställa att du får en förskoleplats. Om den tjänsteleverantör du önskar inte kan erbjuda en vårdplats ber vi dig att kontakta förskoletjänstens vägledning.
-        •   Ansökningar om överlåtelse (barnet har redan en förskoleplats vid Åbo stads förskoleenhet) behandlas i allmänhet enligt ansökningsdagen.
-
-        Du kan läsa och godkänna/avvisa beslutet på adressen evaka.turku.fi
+        Du kan läsa och godkänna/avvisa småbarnspedagogikbeslutet på adressen evaka.turku.fi
 
         Du kan bifoga bilagorna till den elektroniska ansökan, skicka dem per post till adressen Småbarnspedagogikens servicehandledning, PB 355, 20101 Åbo eller lämna in dem till Monitori vid Åbo salutorg, Småbarnspedagogikens servicehandledning, Auragatan 8.
 
@@ -734,19 +695,13 @@ class TurkuEmailMessageProvider : IEmailMessageProvider {
 
         Hello!
 
-        We have received your child’s application for pre-primary education. The parent or guardian who sent the application can make changes to the application at evaka.turku.fi until the early childhood education and care service guidance begins to process it. You can view and either accept or reject the decision at evaka.turku.fi.
+        We have received your child’s application for pre-primary education. The parent or guardian who sent the application can make changes to the application at evaka.turku.fi until the early childhood education and care service guidance begins to process it. You can view the preschool decision at evaka.turku.fi.
 
         If you said in your application that your child requires support, a special needs teacher in early childhood education and care will contact you to ensure that the child’s needs are taken into account when selecting a place.
 
-        EARLY CHILDHOOD EDUCATION AND CARE COMPLEMENTING PRE-PRIMARY EDUCATION
+        EARLY CHILDHOOD EDUCATION AND CARE COMPLEMENTING PRE-PRIMARY EDUCATION is provided at the same location as the child's pre-primary education.
 
-        If you applied for early childhood education and care to complement pre-primary education, please take note of the following:
-        •   Shift care services are arranged based on parents' shift work or studying in the evenings and/or weekends.
-        •   If an early childhood education place is arranged for your child from one of the municipal early childhood education places you requested in the application, we will inform you of the place no later than two weeks before the desired start time of early childhood education.
-        •   If you chose a private daycare center as your first application, please contact the unit in question directly to ensure that you get an early childhood education place. If the service provider you want is not able to offer a place of care, we ask you to contact the early childhood education service guidance.
-        •   Transfer applications (the child already has an early childhood education place in the early childhood education unit of the city of Turku) are generally processed according to the date of arrival of the application.
-
-        You can view and either accept or reject the decision at evaka.turku.fi.
+        You can view and either accept or reject the early childhood education decision at evaka.turku.fi.
 
         Application attachments can be added directly to your online application or posted to Varhaiskasvatuksen palveluohjaus, PL 355, 20101 Turku, or taking them in person to Kauppatori Monitori, Varhaiskasvatuksen palveluohjaus, Aurakatu 8.
 
