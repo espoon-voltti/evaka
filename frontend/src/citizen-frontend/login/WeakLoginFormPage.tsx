@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Redirect, useSearchParams } from 'wouter'
 
 import { string } from 'lib-common/form/fields'
-import { object, required, validated, value } from 'lib-common/form/form'
+import { object, validated, value } from 'lib-common/form/form'
 import { useForm, useFormFields } from 'lib-common/form/hooks'
 import { nonBlank } from 'lib-common/form/validators'
 import { useMutationResult } from 'lib-common/query'
@@ -96,9 +96,9 @@ export default React.memo(function WeakLoginFormPage() {
 })
 
 const weakLoginForm = object({
-  username: validated(required(string()), nonBlank),
-  // value<string> is used to avoid trimming
-  password: validated(required(value<string>()), nonBlank)
+  username: validated(string(), nonBlank),
+  // value<string>() is used to avoid trimming
+  password: validated(value<string>(), nonBlank)
 })
 
 const WeakLoginForm = React.memo(function WeakLogin({
@@ -109,6 +109,7 @@ const WeakLoginForm = React.memo(function WeakLogin({
   const i18n = useTranslation()
   const t = i18n.loginPage.login
   const [rateLimitError, setRateLimitError] = useState(false)
+  const [passkeyFailed, setPasskeyFailed] = useState(false)
   const { mutateAsync: authWeakLogin } = useMutationResult(
     authWeakLoginMutation
   )
@@ -144,6 +145,10 @@ const WeakLoginForm = React.memo(function WeakLogin({
       if (result === 'success') {
         rememberLastLoginMethod('passkey')
         window.location.replace(nextUrl ?? '/')
+      } else if (result === 'failure') {
+        // A 'cancelled' result must stay silent: it also happens when the citizen
+        // ignores the autofill suggestion, or when the effect aborts the ceremony
+        setPasskeyFailed(true)
       }
     })().catch(() => undefined)
 
@@ -158,6 +163,14 @@ const WeakLoginForm = React.memo(function WeakLogin({
     >
       <FixedSpaceColumn $spacing="m">
         {rateLimitError && <AlertBox message={t.rateLimitError} noMargin />}
+        {passkeyFailed && (
+          <AlertBox
+            message={t.passkeyError(
+              getStrongLoginUri(unvalidatedNextPath ?? '/')
+            )}
+            data-qa="passkey-login-error"
+          />
+        )}
         <FixedSpaceColumn $spacing="zero">
           <Label htmlFor="username">{t.username}</Label>
           <InputFieldF
@@ -165,6 +178,8 @@ const WeakLoginForm = React.memo(function WeakLogin({
             data-qa="username"
             autoComplete="username webauthn"
             bind={username}
+            // Avoid "required" warning when selecting passkey from autofill
+            info={username.state === '' ? undefined : username.inputInfo()}
             placeholder={t.usernamePlaceholder}
             width="full"
             hideErrorsBeforeTouched={true}
