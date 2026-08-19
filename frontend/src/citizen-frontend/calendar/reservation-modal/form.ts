@@ -47,7 +47,7 @@ export const MAX_TIME_RANGE = new TimeRange(
 export const limitedLocalTimeRange = () =>
   transformed(
     object({
-      value: localTimeRange(),
+      value: localTimeRange({ allowMidnightEnd: false }),
       validRange: value<TimeRange>()
     }),
     ({
