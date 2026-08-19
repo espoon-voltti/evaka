@@ -2,66 +2,125 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled from 'styled-components'
 
+import type { MutationDescription } from 'lib-common/query'
+import { Button } from 'lib-components/atoms/buttons/Button'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { tabletMin } from 'lib-components/breakpoints'
-import { Light } from 'lib-components/typography'
+import { H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { fasExclamationTriangle } from 'lib-icons'
+import { faLockAlt } from 'lib-icons'
 
-export const Grid = styled.div`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  row-gap: ${defaultMargins.s};
-  column-gap: ${defaultMargins.L};
+import { useTranslation } from '../localization'
 
-  @media (max-width: ${tabletMin}) {
-    grid-template-columns: auto;
-    row-gap: ${defaultMargins.xxs};
-
-    > *:nth-child(2n) {
-      margin-bottom: ${defaultMargins.s};
-    }
-  }
-`
-
-export const FullRow = styled.div`
-  grid-column: 1 / span 2;
-  @media (max-width: ${tabletMin}) {
-    grid-column: unset;
-  }
-`
-
-export const EditButtonRow = styled.div`
+export const DataRow = styled.div<{ $highlighted?: boolean }>`
   display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  margin-top: -20px;
-`
+  border: ${(p) => (p.$highlighted ? `1px solid ${p.theme.colors.grayscale.g15}` : 'none')};
+  border-radius: 4px;
+  padding: ${(p) => (p.$highlighted ? defaultMargins.s : '0.5rem 0')};
 
-export const MandatoryValueMissingWarning = styled(
-  React.memo(function MandatoryValueMissingWarning({
-    text,
-    className
-  }: {
-    text: string
-    className?: string
-  }) {
-    const { colors } = useTheme()
-    return (
-      <Light className={className}>
-        {text}
-        <FontAwesomeIcon
-          icon={fasExclamationTriangle}
-          color={colors.status.warning}
-        />
-      </Light>
-    )
-  })
-)`
-  svg {
-    margin-left: ${defaultMargins.xs};
+  @media (max-width: ${tabletMin}) {
+    flex-direction: column;
+    gap: ${defaultMargins.xxs};
   }
 `
+
+export const DataRowLabel = styled.label`
+  font-weight: 600;
+  width: 220px;
+
+  @media (max-width: ${tabletMin}) {
+    width: auto;
+  }
+`
+
+export const DataRowValue = styled.span`
+  flex: 1;
+`
+
+export const SectionTitle = styled(H2)`
+  @media (max-width: 600px) {
+    color: ${(p) => p.theme.colors.grayscale.g100};
+  }
+`
+
+export const TitleAndEditRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+`
+
+export const RowActions = styled.div`
+  display: flex;
+  align-items: center;
+  height: 0;
+`
+
+const EditModeButtons = styled.div`
+  display: flex;
+  gap: ${defaultMargins.m};
+`
+
+interface EditableSectionHeaderProps<Arg, Data> {
+  title: string
+  editing: boolean
+  onStartEditing: () => void
+  onCancel: () => void
+  mutation: MutationDescription<Arg, Data>
+  onSave: () => Arg
+  onSaveSuccess: () => void
+  saveDisabled?: boolean
+  canEdit?: boolean
+  navigateToLogin?: () => void
+}
+
+export function EditableSectionHeader<Arg, Data>({
+  title,
+  editing,
+  onStartEditing,
+  onCancel,
+  mutation,
+  onSave,
+  onSaveSuccess,
+  saveDisabled = false,
+  canEdit = true,
+  navigateToLogin
+}: EditableSectionHeaderProps<Arg, Data>) {
+  const t = useTranslation()
+  return (
+    <TitleAndEditRow>
+      <SectionTitle $noMargin>{title}</SectionTitle>
+      <RowActions>
+        {editing ? (
+          <EditModeButtons>
+            <Button
+              appearance="inline"
+              onClick={onCancel}
+              text={t.common.cancel}
+              data-qa="cancel"
+            />
+            <MutateButton
+              primary
+              text={t.common.save}
+              mutation={mutation}
+              onClick={onSave}
+              onSuccess={onSaveSuccess}
+              disabled={saveDisabled}
+              data-qa="save"
+            />
+          </EditModeButtons>
+        ) : (
+          <Button
+            appearance="inline"
+            icon={canEdit ? undefined : faLockAlt}
+            onClick={canEdit ? onStartEditing : navigateToLogin}
+            text={t.common.edit}
+            data-qa={canEdit ? 'start-editing' : 'start-editing-login'}
+          />
+        )}
+      </RowActions>
+    </TitleAndEditRow>
+  )
+}

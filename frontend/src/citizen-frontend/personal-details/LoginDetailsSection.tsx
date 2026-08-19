@@ -11,20 +11,16 @@ import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
 import type { PasswordConstraints } from 'lib-common/generated/api-types/shared'
 import { isPasswordStructureValid } from 'lib-common/password'
+import { Chip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import {
-  ExpandingInfoBox,
-  InfoButton,
-  InlineInfoButton
-} from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import PasswordInputF from 'lib-components/molecules/PasswordInputF'
 import BaseModal, {
   ModalButtons
 } from 'lib-components/molecules/modals/BaseModal'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H2, Label, LabelLike } from 'lib-components/typography'
+import { Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faCheck, faLockAlt } from 'lib-icons'
 
@@ -33,7 +29,15 @@ import type { User } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
 
-import { FullRow, Grid } from './components'
+import {
+  DataRow,
+  DataRowLabel,
+  DataRowValue,
+  RowActions,
+  SectionTitle,
+  TitleAndEditRow
+} from './components'
+import { isEmailVerified } from './emailVerification'
 import { updateWeakLoginCredentialsMutation } from './queries'
 
 export interface Props {
@@ -54,21 +58,13 @@ export default React.memo(function LoginDetailsSection({
 
   const canEdit = user.authLevel === 'STRONG'
 
-  const isEmailVerified = !!(
-    emailVerificationStatus.email &&
-    emailVerificationStatus.email === emailVerificationStatus.verifiedEmail
-  )
-
-  const [usernameInfo, { toggle: toggleUsernameInfo, off: closeUsernameInfo }] =
-    useBoolean(false)
+  const emailVerified = isEmailVerified(emailVerificationStatus)
 
   const [modalOpen, { off: closeModal, on: openModal }] = useBoolean(false)
   const [
     activationSuccessModalOpen,
     { off: closeActivationSuccessModal, on: openActivationSuccessModal }
   ] = useBoolean(false)
-
-  const [infoOpen, { off: closeInfo, toggle: toggleInfo }] = useBoolean(false)
 
   const navigateToLogin = useCallback(
     () => window.location.replace(getStrongLoginUri()),
@@ -77,76 +73,57 @@ export default React.memo(function LoginDetailsSection({
 
   return (
     <div data-qa="login-details-section">
-      <Grid>
-        <H2 $noMargin>{t.title}</H2>
-        <div />
-        {(!!user.email || !!user.weakLoginUsername) && (
-          <>
-            <Label>{t.weakLoginCredentials}</Label>
-            <div>
-              {user.weakLoginUsername ? (
-                <span data-qa="weak-login-enabled">{t.status.enabled}</span>
-              ) : (
-                <span data-qa="weak-login-disabled">{t.status.disabled}</span>
-              )}
-              <InlineInfoButton
-                onClick={toggleInfo}
-                aria-label={i18n.common.openExpandingInfo}
-              />
-            </div>
-            {infoOpen && (
-              <FullRow>
-                <ExpandingInfoBox info={t.status.info} close={closeInfo} />
-              </FullRow>
-            )}
-            {user.weakLoginUsername ? (
-              <>
-                <Label>{t.weakLoginUsername}</Label>
-                <div>
-                  <span data-qa="username">{user.weakLoginUsername}</span>
-                  <Gap $horizontal $size="xs" />
-                  <InfoButton
-                    onClick={toggleUsernameInfo}
-                    aria-label={i18n.common.openExpandingInfo}
-                  />
-                </div>
-                {usernameInfo && (
-                  <FullRow>
-                    <ExpandingInfoBox
-                      info={t.usernameInfo}
-                      close={closeUsernameInfo}
-                    />
-                  </FullRow>
-                )}
-                <Label>{t.password}</Label>
-                <div>
-                  <div>********</div>
-                  <Button
-                    data-qa="update-password"
-                    appearance="inline"
-                    text={t.updatePassword}
-                    icon={canEdit ? undefined : faLockAlt}
-                    onClick={canEdit ? openModal : navigateToLogin}
-                  />
-                </div>
-              </>
-            ) : (
-              <FullRow>
-                {!isEmailVerified && (
-                  <AlertBox message={t.unverifiedEmailWarning} />
-                )}
-                <Button
-                  data-qa="activate-credentials"
-                  disabled={!isEmailVerified}
-                  text={t.activateCredentials}
-                  icon={canEdit ? undefined : faLockAlt}
-                  onClick={canEdit ? openModal : navigateToLogin}
-                />
-              </FullRow>
-            )}
-          </>
+      <TitleAndEditRow>
+        <SectionTitle $noMargin>{t.title}</SectionTitle>
+        {!!user.weakLoginUsername && (
+          <RowActions>
+            <Button
+              appearance="inline"
+              data-qa="update-password"
+              text={t.updatePassword}
+              icon={canEdit ? undefined : faLockAlt}
+              onClick={canEdit ? openModal : navigateToLogin}
+            />
+          </RowActions>
         )}
-      </Grid>
+      </TitleAndEditRow>
+
+      <Gap $size="xs" />
+
+      {user.weakLoginUsername ? (
+        <>
+          <Chip
+            colorPalette="green"
+            icon={faCheck}
+            label={t.status.enabled}
+            iconCircle
+            size="small"
+            data-qa="weak-login-enabled"
+          />
+          <Gap $size="xs" />
+          <DataRow>
+            <DataRowLabel>{t.weakLoginUsername}</DataRowLabel>
+            <DataRowValue>
+              <span data-qa="username" translate="no">
+                {user.weakLoginUsername}
+              </span>
+            </DataRowValue>
+          </DataRow>
+          <DataRow>
+            <DataRowLabel>{t.password}</DataRowLabel>
+            <DataRowValue>********</DataRowValue>
+          </DataRow>
+        </>
+      ) : emailVerified ? (
+        <Button
+          data-qa="activate-credentials"
+          text={t.activateCredentials}
+          icon={canEdit ? undefined : faLockAlt}
+          onClick={canEdit ? openModal : navigateToLogin}
+        />
+      ) : (
+        <div data-qa="weak-login-disabled">{t.unverifiedEmailWarning}</div>
+      )}
       <ModalAccessibilityWrapper>
         {!!emailVerificationStatus.verifiedEmail && (
           <>

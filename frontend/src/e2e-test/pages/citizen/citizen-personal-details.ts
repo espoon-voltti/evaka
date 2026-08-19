@@ -7,86 +7,74 @@ import type { Page } from '../../utils/page'
 import { Checkbox, Element, Select, TextInput } from '../../utils/page'
 
 export default class CitizenPersonalDetails {
-  personalDetailsSection: CitizenPersonalDetailsSection
+  personDetailsSection: PersonDetailsSection
+  contactDetailsSection: ContactDetailsSection
   loginDetailsSection: LoginDetailsSection
-  notificationSettingsSectiong: CitizenNotificationSettingsSection
+  notificationSettingsSection: CitizenNotificationSettingsSection
   familySizeSection: FamilySizeSection
+  addEmailTask: Element
+  verifyEmailTask: Element
+  addPhoneTask: Element
+
   constructor(page: Page) {
-    this.personalDetailsSection = new CitizenPersonalDetailsSection(
-      page.findByDataQa('personal-details-section')
+    this.personDetailsSection = new PersonDetailsSection(
+      page.findByDataQa('person-details-section')
+    )
+    this.contactDetailsSection = new ContactDetailsSection(
+      page.findByDataQa('contact-details-section')
     )
     this.loginDetailsSection = new LoginDetailsSection(
       page.findByDataQa('login-details-section')
     )
-    this.notificationSettingsSectiong = new CitizenNotificationSettingsSection(
+    this.notificationSettingsSection = new CitizenNotificationSettingsSection(
       page.findByDataQa('notification-settings-section')
     )
     this.familySizeSection = new FamilySizeSection(
       page.findByDataQa('family-size-section')
     )
+    this.addEmailTask = page.findByDataQa('task-add-email')
+    this.verifyEmailTask = page.findByDataQa('task-verify-email')
+    this.addPhoneTask = page.findByDataQa('task-add-phone')
   }
 }
 
-export class CitizenPersonalDetailsSection extends Element {
-  #missingEmailOrPhoneBox: Element
-  #startEditing: Element
-  #preferredName: Element
-  #phone: Element
-  #backupPhone: Element
-  #email: Element
-  #noEmail: Checkbox
-  #save: Element
-  verifiedEmailStatus: Element
-  unverifiedEmailStatus: Element
-  sendVerificationCode: Element
-  verificationCodeField: TextInput
-  verifyEmail: Element
-  updateUsername: Element
+export class PersonDetailsSection extends Element {
+  #startEditing = this.findByDataQa('start-editing')
+  #preferredName = this.findByDataQa('preferred-name')
+  #save = this.findByDataQa('save')
 
-  constructor(element: Element) {
-    super(element)
-
-    this.#missingEmailOrPhoneBox = element.find(
-      '[data-qa="missing-email-or-phone-box"]'
-    )
-    this.#startEditing = element.find('[data-qa="start-editing"]')
-    this.#preferredName = element.find('[data-qa="preferred-name"]')
-    this.#phone = element.find('[data-qa="phone"]')
-    this.#backupPhone = element.find('[data-qa="backup-phone"]')
-    this.#email = element.find('[data-qa="email"]')
-    this.#noEmail = new Checkbox(element.find('[data-qa="no-email"]'))
-    this.#save = element.find('[data-qa="save"]')
-    this.verifiedEmailStatus = element.findByDataQa('verified-email-status')
-    this.unverifiedEmailStatus = element.findByDataQa('unverified-email-status')
-    this.sendVerificationCode = element.findByDataQa('send-verification-code')
-    this.verificationCodeField = new TextInput(
-      element.findByDataQa('verification-code-field')
-    )
-    this.verifyEmail = element.findByDataQa('verify-email')
-    this.updateUsername = element.findByDataQa('update-username')
+  async editPreferredName(preferredName: string) {
+    await this.#startEditing.click()
+    await new Select(this.#preferredName).selectOption({
+      label: preferredName
+    })
+    await this.#save.click()
+    await expect(this.#startEditing).toBeEnabled()
   }
 
-  async checkMissingEmailWarningIsShown() {
-    await expect(this.#missingEmailOrPhoneBox).toBeVisible()
-    await this.#missingEmailOrPhoneBox.assertText((text) =>
-      text.includes('Sähköpostiosoitteesi puuttuu')
-    )
+  async assertPreferredName(preferredName: string) {
+    await expect(this.#preferredName).toHaveText(preferredName)
   }
+}
 
-  async checkMissingPhoneWarningIsShown() {
-    await expect(this.#missingEmailOrPhoneBox).toBeVisible()
-    await expect(this.#missingEmailOrPhoneBox).toContainText(
-      'Puhelinnumerosi puuttuu'
-    )
-  }
+export class ContactDetailsSection extends Element {
+  #startEditing = this.findByDataQa('start-editing')
+  // in edit mode these resolve to the inputs, in view mode to the value texts
+  #phone = this.findByDataQa('phone')
+  #backupPhone = this.findByDataQa('backup-phone')
+  #email = this.findByDataQa('email')
+  #save = this.findByDataQa('save')
+  verifiedEmailStatus = this.findByDataQa('verified-email-status')
+  unverifiedEmailStatus = this.findByDataQa('unverified-email-status')
+  sendVerificationCode = this.findByDataQa('send-verification-code')
+  verificationCodeField = new TextInput(
+    this.findByDataQa('verification-code-field')
+  )
+  verifyEmail = this.findByDataQa('verify-email')
+  updateUsername = this.findByDataQa('update-username')
 
-  async assertAlertIsNotShown() {
-    await expect(this.#missingEmailOrPhoneBox).toBeHidden()
-  }
-
-  async editPersonalData(
+  async editContactDetails(
     data: {
-      preferredName: string
       phone: string | null
       backupPhone: string
       email: string | null
@@ -94,21 +82,10 @@ export class CitizenPersonalDetailsSection extends Element {
     expectValid: boolean
   ) {
     await this.#startEditing.click()
-    await new Select(this.#preferredName).selectOption({
-      label: data.preferredName
-    })
-    if (data.phone)
-      await new TextInput(this.#phone.find('input')).fill(data.phone)
-    await new TextInput(this.#backupPhone.find('input')).fill(data.backupPhone)
+    if (data.phone) await new TextInput(this.#phone).fill(data.phone)
+    await new TextInput(this.#backupPhone).fill(data.backupPhone)
 
-    if (data.email === null) {
-      if (!(await this.#noEmail.checked)) {
-        await this.#noEmail.click()
-      }
-    } else {
-      await new Checkbox(this.findByDataQa('no-email')).uncheck()
-      await new TextInput(this.#email.find('input')).fill(data.email)
-    }
+    await new TextInput(this.#email).fill(data.email ?? '')
 
     if (expectValid) {
       await this.#save.click()
@@ -120,20 +97,14 @@ export class CitizenPersonalDetailsSection extends Element {
     await expect(this.#save).toBeDisabled()
   }
 
-  async checkPersonalData(data: {
-    preferredName: string
+  async checkContactDetails(data: {
     phone: string | null
     backupPhone: string
     email: string | null
   }) {
-    await expect(this.#preferredName).toHaveText(data.preferredName)
-    await expect(this.#phone).toHaveText(
-      data.phone === null ? 'Puhelinnumerosi puuttuu' : data.phone
-    )
-    await expect(this.#backupPhone).toHaveText(data.backupPhone)
-    await expect(this.#email).toHaveText(
-      data.email === null ? 'Sähköpostiosoite puuttuu' : data.email
-    )
+    await expect(this.#phone).toHaveText(data.phone ?? '-')
+    await expect(this.#backupPhone).toHaveText(data.backupPhone || '-')
+    await expect(this.#email).toHaveText(data.email ?? '-')
   }
 }
 

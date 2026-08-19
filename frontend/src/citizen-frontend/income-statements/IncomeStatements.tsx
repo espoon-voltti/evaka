@@ -6,6 +6,7 @@ import React, { Fragment, useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 import { Link, useLocation } from 'wouter'
 
+import { combine } from 'lib-common/api'
 import type { IncomeStatement } from 'lib-common/generated/api-types/incomestatement'
 import type { IncomeStatementId } from 'lib-common/generated/api-types/shared'
 import { useMutation, useQueryResult } from 'lib-common/query'
@@ -33,9 +34,11 @@ import { faPen, faQuestion, faTrash, faFile } from 'lib-icons'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
+import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 import FamilySizeSection from '../personal-details/FamilySizeSection'
+import { familyQuery } from '../personal-details/queries'
 import useTitle from '../useTitle'
 
 import ChildrenIncomeStatements from './ChildrenIncomeStatements'
@@ -215,6 +218,8 @@ export default React.memo(function IncomeStatements() {
   useTitle(t, t.income.title)
   const [, navigate] = useLocation()
   const { setErrorMessage } = useContext(OverlayContext)
+  const { user } = useContext(AuthContext)
+  const family = useQueryResult(familyQuery())
 
   const [page, setPage] = useState(1)
   const incomeStatements = useQueryResult(incomeStatementsQuery({ page }))
@@ -265,7 +270,9 @@ export default React.memo(function IncomeStatements() {
                   )}
                 />
               )}
-            <FamilySizeSection />
+            {renderResult(combine(user, family), ([user, family]) =>
+              user ? <FamilySizeSection user={user} family={family} /> : null
+            )}
           </ContentArea>
           <Gap $size="s" />
           <ContentArea $opaque $paddingVertical="L">

@@ -1916,24 +1916,34 @@ const en: Translations = {
   },
   personalDetails: {
     title: 'Personal information',
-    description: (
-      <P>
-        Here you can check and update your personal and contact information.
-        Your name and address are retrieved from the Population Information
-        System. If they change, you will need to inform the Digital and
-        Population Data Services Agency (DVV).
-      </P>
-    ),
+    editInfo:
+      'Your name and address are retrieved from the Population Information System. If they change, you will need to inform the Digital and Population Data Services Agency (DVV).',
+    tasks: {
+      addEmail: {
+        title: 'Add an email address',
+        description: 'You can receive email notifications.'
+      },
+      verifyEmail: {
+        title: 'Verify your email address',
+        description: 'You can receive email notifications.'
+      },
+      addPhone: {
+        title: 'Add a phone number',
+        description: 'You can be reached in urgent matters.'
+      }
+    },
     familySizeSection: {
       title: 'Family size',
       description: (
-        <P>
+        <P $noMargin>
           The number of adults and children living in the same household affects
           the client fees. If your family details have changed, please contact
           the client fee unit, email{' '}
           <a href="mailto:vaka.maksut@espoo.fi">vaka.maksut@espoo.fi</a>.
         </P>
       ),
+      summary: (adults: number, children: number) =>
+        `${adults} ${adults === 1 ? 'adult' : 'adults'} and ${children} ${children === 1 ? 'child' : 'children'}`,
       adults: 'Adults',
       children: 'Children',
       self: '(you)'
@@ -1953,7 +1963,6 @@ const en: Translations = {
       email: 'Email',
       emailMissing: 'Email missing',
       phoneMissing: 'Phone number missing',
-      noEmail: 'I have no email address',
       emailInfo:
         'Email is required to receive notifications about new messages, attendance reservations and other matters concerning your child’s early childhood education.',
       contactEmailInfo:
@@ -1973,7 +1982,7 @@ const en: Translations = {
           `To change your username, enter the verification code sent to ${verification.email}. The code is valid until ${verification.expiresAt.toLocalTime().format()} asti.`,
         toast: 'Username changed'
       },
-      codeNotReceived: 'I have not received a code.',
+      codeNotReceived: 'Have you not received the code?',
       codeNotReceivedInfo:
         'Please check your spam folder and that the address is correct.',
       verificationForm: 'Enter the verification code you received',
@@ -1992,18 +2001,15 @@ const en: Translations = {
         `Change your username to ${newUsername}`
     },
     loginDetailsSection: {
-      title: 'Login information',
+      title: 'Email login',
       weakLoginCredentials: 'Login with email',
       status: {
-        enabled: 'Allowed',
-        disabled: 'Not allowed',
-        info: 'By logging in with email, you can read incoming messages in eVaka and mark attendances without strong authentication.'
+        enabled: 'Enabled'
       },
-      usernameInfo: 'You can log in to eVaka with this username.',
       weakLoginUsername: 'Username',
       password: 'Password',
       unverifiedEmailWarning:
-        'Email login can only be enabled if you have verified your email address',
+        'You can enable this once you have verified your email address.',
       updatePassword: 'Change password',
       activateCredentials: 'Enable email login',
       activationSuccess: 'Email login has been enabled',
@@ -2031,17 +2037,19 @@ const en: Translations = {
         `The username ${username} is already in use by another person`
     },
     notificationsSection: {
-      title: 'Email notifications',
-      info: 'You can choose to receive email notifications on the following topics. You can edit the settings by clicking on the Edit button',
-      subtitle: 'Email notifications',
-      message: 'messages sent to eVaka by staff',
-      bulletin: 'bulletins sent to eVaka',
-      income: 'Reminders about updating your income information',
+      title: 'Notifications',
+      subtitle: 'I want to be notified',
+      moreInfo: 'More information',
+      email: 'Email',
+      push: 'Push',
+      message: 'Messages sent by staff',
+      bulletin: 'General bulletins from the municipality',
+      income: 'The need to update income information',
       incomeInfo:
         'If your family pays less than the maximum fee for early childhood education, you must update your income information regularly. If your income information is missing or expires, you will be charged the maximum fee for early childhood education.',
       incomeWarning:
         'If your income information is missing or expires, you will be charged the maximum fee for early childhood education.',
-      calendarEvent: 'Reminders about new events marked in the calendar',
+      calendarEvent: 'New calendar events',
       decision: 'New decisions',
       document: 'New pedagogic documents',
       documentInfo:
@@ -2049,13 +2057,13 @@ const en: Translations = {
       informalDocument: "Other documents related to the child's everyday life",
       informalDocumentInfo:
         'These documents may include, for example, images of drawings made by the child.',
-      attendanceReservation: 'Reminders of missing attendance reservations',
+      attendanceReservation: 'Missing attendance reservations',
       attendanceReservationInfo:
         'A reminder will be sent before the deadline if you have not registered your child’s attendance/absence for the following two weeks.',
-      discussionTime: 'Notifications related to discussion appointments',
+      discussionTime: 'Matters related to discussion times',
       discussionTimeInfo: (
         <div>
-          <div>You will receive notifications of the following:</div>
+          <div>Notifications of the following:</div>
           <ul>
             <li>
               when you are asked about suitable times for a discussion, e.g.

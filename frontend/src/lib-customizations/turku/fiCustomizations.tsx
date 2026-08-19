@@ -958,13 +958,6 @@ const fi: DeepPartial<Translations> = {
     summary: 'Tälle sivulle saapuvat kaikki lapsen päätökset.'
   },
   personalDetails: {
-    description: (
-      <P>
-        Täällä voit tarkistaa ja täydentää omat henkilö- ja yhteystietosi.
-        Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne
-        muuttuvat, sinun tulee tehdä ilmoitus väestötietojärjestelmään.
-      </P>
-    ),
     familySizeSection: {
       description: (
         <P>

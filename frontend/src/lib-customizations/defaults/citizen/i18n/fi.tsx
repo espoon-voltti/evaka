@@ -2181,23 +2181,34 @@ export default {
   },
   personalDetails: {
     title: 'Omat tiedot',
-    description: (
-      <P>
-        Täällä voit tarkistaa ja täydentää omat henkilö- ja yhteystietosi.
-        Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne
-        muuttuvat, sinun tulee tehdä ilmoitus maistraattiin.
-      </P>
-    ),
+    editInfo:
+      'Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne muuttuvat, sinun tulee tehdä ilmoitus Digi- ja väestötietovirastoon.',
+    tasks: {
+      addEmail: {
+        title: 'Lisää sähköpostiosoite',
+        description: 'Voit vastaanottaa sähköposti-ilmoituksia.'
+      },
+      verifyEmail: {
+        title: 'Vahvista sähköpostiosoite',
+        description: 'Voit vastaanottaa sähköposti-ilmoituksia.'
+      },
+      addPhone: {
+        title: 'Lisää puhelinnumero',
+        description: 'Sinut tavoitetaan kiireellisissä asioissa.'
+      }
+    },
     familySizeSection: {
       title: 'Perhekoko',
       description: (
-        <P>
+        <P $noMargin>
           Samassa taloudessa asuvien aikuisten ja lasten määrä vaikuttaa
           asiakasmaksuihin. Jos perheen tiedoissa on tapahtunut muutos, ole
           yhteydessä asiakasmaksutiimiin, sähköposti{' '}
           <a href="mailto:vaka.maksut@espoo.fi">vaka.maksut@espoo.fi</a>.
         </P>
       ),
+      summary: (adults: number, children: number) =>
+        `${adults} ${adults === 1 ? 'aikuinen' : 'aikuista'} ja ${children} ${children === 1 ? 'lapsi' : 'lasta'}`,
       adults: 'Aikuiset',
       children: 'Lapset',
       self: '(sinä)'
@@ -2211,13 +2222,12 @@ export default {
       preferredName: 'Kutsumanimi',
       contactInfo: 'Yhteystiedot',
       address: 'Osoite',
-      phone: 'Puhelinnumero*',
+      phone: 'Puhelinnumero',
       backupPhone: 'Varapuhelinnumero',
       backupPhonePlaceholder: 'Esim. työpuhelin',
       email: 'Sähköpostiosoite',
       emailMissing: 'Sähköpostiosoite puuttuu',
       phoneMissing: 'Puhelinnumero puuttuu',
-      noEmail: 'Minulla ei ole sähköpostiosoitetta',
       emailInfo:
         'Sähköpostiosoite tarvitaan, jotta voimme lähettää sinulle ilmoitukset uusista viesteistä, läsnäoloaikojen varaamisesta sekä muista lapsen varhaiskasvatukseen liittyvistä asioista.',
       contactEmailInfo: 'Tähän osoitteeseen saat kaikki ilmoitukset eVakasta.',
@@ -2236,7 +2246,7 @@ export default {
           `Käyttäjätunnuksen vaihtaaksesi syötä vahvistuskoodi, joka on lähetetty osoitteeseen ${verification.email}. Koodi on voimassa ${verification.expiresAt.toLocalTime().format()} asti.`,
         toast: 'Käyttäjätunnus vaihdettu'
       },
-      codeNotReceived: 'En ole saanut koodia.',
+      codeNotReceived: 'Etkö ole saanut koodia?',
       codeNotReceivedInfo:
         'Tarkista roskapostikansio ja varmista, että sähköpostiosoite on kirjoitettu oikein.',
       verificationForm: 'Syötä saamasi vahvistuskoodi',
@@ -2255,18 +2265,15 @@ export default {
         `Vaihda käyttäjätunnukseksi ${newUsername}`
     },
     loginDetailsSection: {
-      title: 'Kirjautumistiedot',
+      title: 'Sähköpostikirjautuminen',
       weakLoginCredentials: 'Sähköpostilla kirjautuminen',
       status: {
-        enabled: 'Sallittu',
-        disabled: 'Ei sallittu',
-        info: 'Sähköpostilla kirjautumalla voit lukea eVakaan saapuvia viestejä ja tehdä läsnäoloilmoituksia ilman vahvaa tunnistautumista.'
+        enabled: 'Otettu käyttöön'
       },
-      usernameInfo: 'Tällä tunnuksella kirjaudut eVakaan',
       weakLoginUsername: 'Käyttäjätunnus',
       password: 'Salasana',
       unverifiedEmailWarning:
-        'Sähköpostikirjautumisen voi sallia vain, jos olet vahvistanut sähköpostiosoitteesi',
+        'Voit ottaa tämän käyttöön, kun olet ensin vahvistanut sähköpostiosoitteesi.',
       updatePassword: 'Vaihda salasana',
       activateCredentials: 'Salli sähköpostikirjautuminen',
       activationSuccess: 'Sähköpostilla kirjautuminen otettu käyttöön',
@@ -2295,18 +2302,19 @@ export default {
         `Käyttäjätunnus ${username} on jo käytössä toisella henkilöllä`
     },
     notificationsSection: {
-      title: 'Sähköposti-ilmoitukset',
-      info: 'Voit saada ilmoituksia sähköpostiin seuraavista aiheista. Asetuksia pystyy muokkaamaan muokkaa-nappia painamalla.',
-      subtitle: 'Sähköpostiin lähetettävät ilmoitukset',
-      message: 'eVakaan saapuneista henkilökunnan lähettämistä viesteistä',
-      bulletin: 'eVakaan saapuneista kunnan yleisistä tiedotteista',
-      income: 'Muistutukset tulotietojen päivittämisestä',
+      title: 'Ilmoitukset',
+      subtitle: 'Haluan ilmoituksen',
+      moreInfo: 'Lisätiedot',
+      email: 'Sähköposti',
+      push: 'Push',
+      message: 'Henkilökunnan lähettämistä viesteistä',
+      bulletin: 'Kunnan yleisistä tiedotteista',
+      income: 'Tulotietojen päivittämisen tarpeesta',
       incomeInfo:
         'Mikäli ette maksa korkeinta varhaiskasvatusmaksua, on tulotiedot päivitettävä säännöllisesti. Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
       incomeWarning:
         'Jos tulotiedot puuttuvat tai vanhenevat, merkitään varhaiskasvatuksesta maksettavaksi korkein maksu.',
-      calendarEvent:
-        'Muistutukset kalenteriin merkityistä uusista tapahtumista',
+      calendarEvent: 'Uusista kalenteritapahtumista',
       decision: 'Saapuneista päätöksistä',
       document: 'Saapuneista pedagogisista asiakirjoista',
       documentInfo:
@@ -2314,13 +2322,13 @@ export default {
       informalDocument: 'Muista lapsen arkeen liittyvistä dokumenteista',
       informalDocumentInfo:
         'Muut lapsen arkeen liittyvät dokumentit voivat olla esimerkiksi kuvia lapsen tekemistä piirustuksista.',
-      attendanceReservation: 'Muistutukset puuttuvista läsnäoloilmoituksista',
+      attendanceReservation: 'Puuttuvista läsnäoloilmoituksista',
       attendanceReservationInfo:
         'Muistutus lähetetään ennen läsnäoloilmoitusten määräaikaa, mikäli jollakin lapsistasi puuttuu läsnäoloilmoitus tai poissaolomerkintä seuraavalta kahdelta viikolta.',
-      discussionTime: 'Keskusteluaikoihin liittyvät ilmoitukset',
+      discussionTime: 'Keskusteluaikoihin liittyvistä asioista',
       discussionTimeInfo: (
         <div>
-          <div>Saat ilmoituksen seuraavista asioista:</div>
+          <div>Ilmoitukset seuraavista asioista:</div>
           <ul>
             <li>
               kun sinulta kysytään sopivia aikoja esimerkiksi lapsesi

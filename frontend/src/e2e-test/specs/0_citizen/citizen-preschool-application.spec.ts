@@ -131,10 +131,9 @@ test.describe('Citizen preschool applications', () => {
   test('If user has no email selected in settings the application assumes user has no email', async () => {
     await header.selectTab('personal-details')
     const personalDetailsPage = new CitizenPersonalDetailsPage(page)
-    const section = personalDetailsPage.personalDetailsSection
-    await section.editPersonalData(
+    const section = personalDetailsPage.contactDetailsSection
+    await section.editContactDetails(
       {
-        preferredName: testAdult.firstName.split(' ')[1],
         phone: '123123123',
         backupPhone: '456456',
         email: null // This sets the no email flag and email to ''

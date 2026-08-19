@@ -9,6 +9,7 @@ import evaka.core.emailclient.MockEmailClient
 import evaka.core.pis.EmailMessageType
 import evaka.core.pis.PersonalDataUpdate
 import evaka.core.pis.controllers.PersonalDataControllerCitizen
+import evaka.core.pis.getPersonById
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -19,6 +20,7 @@ import evaka.core.shared.dev.DevFridgePartnership
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.RealEvakaClock
@@ -27,6 +29,7 @@ import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -97,6 +100,105 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         assertEquals(1, MockEmailClient.emails.size)
+        val email =
+            MockEmailClient.emails.singleOrNull {
+                it.toAddress == oldEmail &&
+                    it.content.subject.startsWith("eVaka-sähköpostiosoitteesi on vaihdettu") &&
+                    it.content.text.contains(newEmail)
+            }
+        assertNotNull(email, "Email should be sent to old address after email update")
+    }
+
+    @Test
+    fun `null fields are left unchanged`() {
+        val person =
+            DevPerson(firstName = "Anna Maija", phone = "0501234567", email = "vanha@example.com")
+        db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
+
+        personalDataController.updatePersonalData(
+            dbInstance(),
+            AuthenticatedUser.Citizen(person.id, CitizenAuthLevel.STRONG),
+            RealEvakaClock(),
+            PersonalDataUpdate(preferredName = "Maija"),
+        )
+
+        val updated = db.read { tx -> tx.getPersonById(person.id) }
+        assertNotNull(updated)
+        assertEquals("Maija", updated.preferredName)
+        assertEquals(person.phone, updated.phone)
+        assertEquals(person.backupPhone, updated.backupPhone)
+        assertEquals(person.email, updated.email)
+    }
+
+    @Test
+    fun `preferred name that is not one of the person's first names is rejected`() {
+        val person = DevPerson(firstName = "Anna Maija")
+        db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
+
+        assertThrows<BadRequest> {
+            personalDataController.updatePersonalData(
+                dbInstance(),
+                AuthenticatedUser.Citizen(person.id, CitizenAuthLevel.STRONG),
+                RealEvakaClock(),
+                PersonalDataUpdate(preferredName = "Liisa"),
+            )
+        }
+    }
+
+    @Test
+    fun `contact details can be updated without touching the preferred name`() {
+        val person = DevPerson(firstName = "Anna", preferredName = "Anna")
+        db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
+
+        personalDataController.updatePersonalData(
+            dbInstance(),
+            AuthenticatedUser.Citizen(person.id, CitizenAuthLevel.STRONG),
+            RealEvakaClock(),
+            PersonalDataUpdate(
+                phone = "0501234567",
+                backupPhone = "0507654321",
+                email = "uusi@example.com",
+            ),
+        )
+
+        val updated = db.read { tx -> tx.getPersonById(person.id) }
+        assertNotNull(updated)
+        assertEquals("0501234567", updated.phone)
+        assertEquals("0507654321", updated.backupPhone)
+        assertEquals("uusi@example.com", updated.email)
+        assertEquals(person.preferredName, updated.preferredName)
+    }
+
+    @Test
+    fun `invalid present fields are rejected even when other fields are null`() {
+        val person = DevPerson()
+        db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
+
+        assertThrows<BadRequest> {
+            personalDataController.updatePersonalData(
+                dbInstance(),
+                AuthenticatedUser.Citizen(person.id, CitizenAuthLevel.STRONG),
+                RealEvakaClock(),
+                PersonalDataUpdate(phone = "", email = "not-an-email"),
+            )
+        }
+    }
+
+    @Test
+    fun `email is sent to old address after a partial update of the email`() {
+        val oldEmail = "vanha@example.com"
+        val newEmail = "uusi@example.com"
+        val person = DevPerson(email = oldEmail)
+        db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
+
+        personalDataController.updatePersonalData(
+            dbInstance(),
+            AuthenticatedUser.Citizen(person.id, CitizenAuthLevel.STRONG),
+            RealEvakaClock(),
+            PersonalDataUpdate(email = newEmail),
+        )
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         val email =
             MockEmailClient.emails.singleOrNull {
                 it.toAddress == oldEmail &&

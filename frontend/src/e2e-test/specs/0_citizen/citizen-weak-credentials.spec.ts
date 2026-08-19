@@ -49,11 +49,11 @@ test.describe('Citizen weak credentials', () => {
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
     await expect(
-      personalDetailsPage.personalDetailsSection.unverifiedEmailStatus
+      personalDetailsPage.contactDetailsSection.unverifiedEmailStatus
     ).toBeVisible()
     const section = personalDetailsPage.loginDetailsSection
     await expect(section.weakLoginDisabled).toBeVisible()
-    await section.activateCredentials.assertDisabled(true)
+    await expect(section.activateCredentials).toBeHidden()
   })
 
   test('a person with a verified email can activate weak credentials', async ({
@@ -70,10 +70,10 @@ test.describe('Citizen weak credentials', () => {
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
     await expect(
-      personalDetailsPage.personalDetailsSection.verifiedEmailStatus
+      personalDetailsPage.contactDetailsSection.verifiedEmailStatus
     ).toBeVisible()
     const section = personalDetailsPage.loginDetailsSection
-    await expect(section.weakLoginDisabled).toBeVisible()
+    await expect(section.activateCredentials).toBeVisible()
     await section.activateCredentials.click()
 
     const modal = new WeakCredentialsModal(evaka)
@@ -144,7 +144,7 @@ test.describe('Citizen weak credentials', () => {
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
     await expect(
-      personalDetailsPage.personalDetailsSection.verifiedEmailStatus
+      personalDetailsPage.contactDetailsSection.verifiedEmailStatus
     ).toBeVisible()
     const section = personalDetailsPage.loginDetailsSection
     await expect(section.weakLoginEnabled).toBeVisible()
@@ -176,11 +176,10 @@ test.describe('Citizen weak credentials', () => {
     })
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
-    const section = personalDetailsPage.personalDetailsSection
+    const section = personalDetailsPage.contactDetailsSection
 
-    await section.editPersonalData(
+    await section.editContactDetails(
       {
-        preferredName: citizen.firstName.split(' ')[1],
         email: newEmail,
         phone: citizen.phone,
         backupPhone: citizen.backupPhone
@@ -224,7 +223,7 @@ test.describe('Citizen weak credentials', () => {
     })
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
-    const section = personalDetailsPage.personalDetailsSection
+    const section = personalDetailsPage.contactDetailsSection
 
     await section.updateUsername.click()
     await expect(section.verificationCodeField).toBeVisible()
@@ -265,7 +264,7 @@ test.describe('Citizen weak credentials', () => {
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
     await expect(
-      personalDetailsPage.personalDetailsSection.verifiedEmailStatus
+      personalDetailsPage.contactDetailsSection.verifiedEmailStatus
     ).toBeVisible()
     const section = personalDetailsPage.loginDetailsSection
     await expect(section.weakLoginEnabled).toBeVisible()

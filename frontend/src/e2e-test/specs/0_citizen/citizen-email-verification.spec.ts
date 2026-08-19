@@ -40,7 +40,7 @@ test.describe('Citizen e-mail verification', () => {
     })
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
-    const section = personalDetailsPage.personalDetailsSection
+    const section = personalDetailsPage.contactDetailsSection
     await expect(section.unverifiedEmailStatus).toBeVisible()
 
     await section.sendVerificationCode.click()
@@ -66,12 +66,11 @@ test.describe('Citizen e-mail verification', () => {
     })
 
     const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
-    const section = personalDetailsPage.personalDetailsSection
+    const section = personalDetailsPage.contactDetailsSection
     await expect(section.verifiedEmailStatus).toBeVisible()
 
-    await section.editPersonalData(
+    await section.editContactDetails(
       {
-        preferredName: citizen.firstName.split(' ')[1],
         email: 'unverified@example.com',
         phone: citizen.phone,
         backupPhone: citizen.backupPhone
