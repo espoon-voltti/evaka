@@ -4,6 +4,7 @@
 
 package evaka.instance.oulu.dw
 
+import com.jcraft.jsch.JSchException
 import evaka.core.BucketEnv
 import evaka.core.FullApplicationTest
 import evaka.core.Sensitive
@@ -35,7 +36,9 @@ import java.time.LocalTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest
@@ -47,6 +50,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var bucketEnv: BucketEnv
     @Autowired private lateinit var s3Client: S3Client
 
+    private lateinit var ouluEnv: OuluEnv
     private lateinit var job: DwExportJob
 
     companion object {
@@ -56,7 +60,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeAll
     fun setup() {
-        val ouluEnv =
+        ouluEnv =
             OuluEnv(
                 intimeInvoices =
                     SftpProperties(
@@ -129,6 +133,40 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
                 sendAndAssertQueryCsv(it.queryName, it.query)
             }
         }
+
+    @Test
+    fun `a failed upload fails the job instead of being swallowed`() {
+        val badCredentials = ouluEnv.dwExport.sftp.toSftpEnv().copy(password = Sensitive("wrong"))
+        val failingJob =
+            DwExportJob(
+                FileDwExportClient(
+                    s3Client,
+                    SftpClient(badCredentials, ouluEnv.dwExport.sftp.path),
+                    ouluEnv,
+                )
+            )
+        val query = DwQuery.entries.first()
+
+        assertThrows<JSchException> {
+            failingJob.sendQuery(db, clock, query.queryName, query.query)
+        }
+    }
+
+    @Test
+    fun `a failed S3 upload does not fail the job when SFTP delivery succeeded`() {
+        val missingBucket = ouluEnv.copy(bucket = BucketProperties(export = "no-such-bucket"))
+        val tolerantJob =
+            DwExportJob(
+                FileDwExportClient(
+                    s3Client,
+                    SftpClient(ouluEnv.dwExport.sftp.toSftpEnv(), ouluEnv.dwExport.sftp.path),
+                    missingBucket,
+                )
+            )
+        val query = DwQuery.entries.first()
+
+        tolerantJob.sendQuery(db, clock, query.queryName, query.query)
+    }
 
     private fun sendAndAssertQueryCsv(name: String, query: CsvQuery) {
         job.sendQuery(db, clock, name, query)

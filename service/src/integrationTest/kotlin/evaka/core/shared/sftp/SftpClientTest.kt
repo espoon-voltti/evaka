@@ -7,8 +7,12 @@ package evaka.core.shared.sftp
 import com.jcraft.jsch.JSchException
 import evaka.core.Sensitive
 import evaka.core.SftpEnv
+import java.net.ServerSocket
+import java.net.SocketTimeoutException
+import java.time.Duration
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -82,6 +86,28 @@ class SftpClientTest {
             )
         "hello world".byteInputStream(Charsets.UTF_8).use { client.put(it, "upload/test.txt") }
         assertEquals("hello world", client.getAsString("upload/test.txt", Charsets.UTF_8))
+    }
+
+    @Test
+    fun `connecting to a server that accepts the connection but never responds times out`() {
+        ServerSocket(0).use { unresponsiveServer ->
+            val client =
+                SftpClient(
+                    env.copy(
+                        port = unresponsiveServer.localPort,
+                        password = Sensitive(password),
+                        privateKey = null,
+                    ),
+                    connectTimeout = Duration.ofSeconds(1),
+                )
+            val exception =
+                assertThrows<JSchException> {
+                    "hello".byteInputStream(Charsets.UTF_8).use {
+                        client.put(it, "upload/test.txt")
+                    }
+                }
+            assertIs<SocketTimeoutException>(exception.cause)
+        }
     }
 
     @Test

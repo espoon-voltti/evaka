@@ -15,6 +15,7 @@ import evaka.core.shared.job.ScheduledJobDefinition
 import evaka.core.shared.job.ScheduledJobSettings
 import evaka.instance.turku.dw.DwQuery
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Duration
 import java.time.LocalTime
 
 enum class TurkuScheduledJob(
@@ -51,7 +52,8 @@ class TurkuScheduledJobs(
                 tx,
                 queries.asSequence().map(TurkuAsyncJob::SendDWQuery),
                 runAt = clock.now(),
-                retryCount = 1,
+                retryCount = 5,
+                retryInterval = Duration.ofMinutes(15),
             )
         }
     }

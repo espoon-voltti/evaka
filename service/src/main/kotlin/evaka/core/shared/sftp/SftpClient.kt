@@ -15,11 +15,20 @@ import java.io.BufferedReader
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
+import java.time.Duration
 import java.util.*
 
 private val logger = KotlinLogging.logger {}
 
-class SftpClient(private val sftpEnv: SftpEnv, basePath: String = "") {
+private val DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(60)
+private val DEFAULT_READ_TIMEOUT = Duration.ofSeconds(60)
+
+class SftpClient(
+    private val sftpEnv: SftpEnv,
+    basePath: String = "",
+    private val connectTimeout: Duration = DEFAULT_CONNECT_TIMEOUT,
+    private val readTimeout: Duration = DEFAULT_READ_TIMEOUT,
+) {
     private val basePath = basePath.trim('/')
 
     fun put(inputStream: InputStream, filename: String) = session { it.put(inputStream, filename) }
@@ -66,11 +75,12 @@ class SftpClient(private val sftpEnv: SftpEnv, basePath: String = "") {
                 "Connecting to ${sftpEnv.host}:${sftpEnv.port} with host key verification disabled"
             }
         }
+        session.timeout = readTimeout.toMillis().toInt()
         try {
-            session.connect()
+            session.connect(connectTimeout.toMillis().toInt())
             val channel = session.openChannel("sftp") as ChannelSftp
             try {
-                channel.connect()
+                channel.connect(connectTimeout.toMillis().toInt())
                 return callback(channel)
             } finally {
                 channel.exit()

@@ -45,20 +45,27 @@ class FileDwExportClient(
 
             logger.info { "Sending DW content for '$queryName' to S3" }
 
-            val response =
-                s3Client
-                    .putObject({ r -> r.bucket(bucket).key(key).contentType("text/csv") }, tempFile)
-                    .sdkHttpResponse()
+            try {
+                val response =
+                    s3Client
+                        .putObject(
+                            { r -> r.bucket(bucket).key(key).contentType("text/csv") },
+                            tempFile,
+                        )
+                        .sdkHttpResponse()
 
-            if (response.isSuccessful) {
-                logger.info { "DW file '$key' successfully sent" }
-            } else {
-                logger.warn {
-                    "DW file '$key' sending failed: ${response.statusCode()} ${response.statusText()}"
+                if (response.isSuccessful) {
+                    logger.info { "DW file '$key' successfully sent" }
+                } else {
+                    logger.error {
+                        "DW file '$key' sending failed: ${response.statusCode()} ${response.statusText()}"
+                    }
+                }
+            } catch (e: Exception) {
+                logger.error(e) {
+                    "Failed to send DW file '$key' to S3, ignored because the SFTP upload is the primary delivery"
                 }
             }
-        } catch (e: Exception) {
-            logger.warn(e) { "Failed to send DW content for '$queryName'" }
         } finally {
             val wasDeleted = tempFile.deleteIfExists()
             if (!wasDeleted) {
