@@ -5,6 +5,7 @@
 package evaka.core.reports
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.shared.DaycareId
 import evaka.core.shared.auth.AuthenticatedUser
@@ -33,6 +34,7 @@ class ApplicationsReportController(private val accessControl: AccessControl) {
     ): List<ApplicationsReportRow> {
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
+        val audit = AuditContext().observeDate(from).addMeta("from", from).addMeta("to", to)
         return db.connect { dbc ->
                 dbc.read {
                     val filter =
@@ -43,14 +45,12 @@ class ApplicationsReportController(private val accessControl: AccessControl) {
                             Action.Unit.READ_APPLICATIONS_REPORT,
                         )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getApplicationsRows(from, to, filter)
+                    it.getApplicationsRows(from, to, filter).also { rows ->
+                        audit.addMeta("count", rows.size)
+                    }
                 }
             }
-            .also {
-                Audit.ApplicationsReportRead.log(
-                    meta = mapOf("from" to from, "to" to to, "count" to it.size)
-                )
-            }
+            .also { audit.log(Audit.ApplicationsReportRead, clock) }
     }
 }
 
