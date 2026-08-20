@@ -5,6 +5,7 @@
 package evaka.core.assistance
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.assistanceaction.AssistanceAction
 import evaka.core.assistanceaction.AssistanceActionOption
@@ -261,6 +262,7 @@ class AssistanceController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): List<AssistanceActionOption> {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -269,10 +271,12 @@ class AssistanceController(
                         clock,
                         Action.Global.READ_ASSISTANCE_ACTION_OPTIONS,
                     )
-                    tx.getAssistanceActionOptions()
+                    tx.getAssistanceActionOptions().also { options ->
+                        audit.addMeta("count", options.size)
+                    }
                 }
             }
-            .also { Audit.AssistanceActionOptionsRead.log() }
+            .also { audit.log(Audit.AssistanceActionOptionsRead, clock) }
     }
 
     @PostMapping("/employee/children/{child}/assistance-factors")

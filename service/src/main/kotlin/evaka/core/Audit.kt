@@ -52,7 +52,6 @@ enum class Audit(
     private val securityEvent: Boolean = false,
     private val securityLevel: String = "low",
 ) {
-    AssistanceActionOptionsRead,
     // AssistanceBasisOptionsRead,
     AssistanceFactorCreate,
     AssistanceFactorUpdate,
@@ -574,6 +573,7 @@ enum class Audit(
     ApplicationUpdate,
     ApplicationVerify,
     ApplicationsReportRead,
+    AssistanceActionOptionsRead,
     AttendanceReservationCitizenCreate,
     AttendanceReservationEmployeeCreate,
     ChildDatePresenceUpsert,
