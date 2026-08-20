@@ -117,10 +117,6 @@ export default React.memo(function AttendanceChildPage({
     )
   }
 
-  const NoGuardianInfoBoxContainer = styled.div`
-    margin: ${defaultMargins.xs};
-  `
-
   return (
     <>
       <TallContentAreaNoOverflow
@@ -397,6 +393,10 @@ export default React.memo(function AttendanceChildPage({
     </>
   )
 })
+
+const NoGuardianInfoBoxContainer = styled.div`
+  margin: ${defaultMargins.xs};
+`
 
 const ChildStatus = styled.div`
   color: ${colors.grayscale.g35};
