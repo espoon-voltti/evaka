@@ -4,6 +4,7 @@
 
 package evaka.instance.turku.dw
 
+import com.jcraft.jsch.JSchException
 import evaka.core.BucketEnv
 import evaka.core.FullApplicationTest
 import evaka.core.Sensitive
@@ -35,7 +36,9 @@ import java.time.LocalTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest
@@ -47,6 +50,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var bucketEnv: BucketEnv
     @Autowired private lateinit var s3Client: S3Client
 
+    private lateinit var turkuEnv: TurkuEnv
     private lateinit var job: DwExportJob
 
     companion object {
@@ -56,7 +60,7 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeAll
     fun setup() {
-        val turkuEnv =
+        turkuEnv =
             TurkuEnv(
                 sapInvoicing =
                     SftpProperties(
@@ -109,6 +113,18 @@ class DwExportJobTest : FullApplicationTest(resetDbBeforeEach = true) {
         DwQuery.entries.map {
             DynamicTest.dynamicTest("Test '${it.queryName}' export") { sendAndAssertDwQueryCsv(it) }
         }
+
+    @Test
+    fun `a failed upload fails the job instead of being swallowed`() {
+        val badCredentials = turkuEnv.dwExport.sftp.toSftpEnv().copy(password = Sensitive("wrong"))
+        val failingJob =
+            DwExportJob(FileDWExportClient(SftpClient(badCredentials, turkuEnv.dwExport.sftp.path)))
+        val query = DwQuery.entries.first()
+
+        assertThrows<JSchException> {
+            failingJob.sendDwQuery(db, clock, query.queryName, query.query)
+        }
+    }
 
     private fun sendAndAssertDwQueryCsv(query: DwQuery) {
         job.sendDwQuery(db, clock, query.queryName, query.query)

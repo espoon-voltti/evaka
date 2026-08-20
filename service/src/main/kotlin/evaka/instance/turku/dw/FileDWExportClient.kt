@@ -27,8 +27,6 @@ class FileDWExportClient(private val sftpClient: SftpClient) : DwExportClient {
                 BufferedOutputStream(fos).use { bos -> stream.transferTo(bos) }
             }
             tempFile.toFile().inputStream().use { input -> sftpClient.put(input, fileName) }
-        } catch (e: Exception) {
-            logger.warn(e) { "Failed to send DW content for '$queryName'" }
         } finally {
             val wasDeleted = tempFile.deleteIfExists()
             if (!wasDeleted) {
