@@ -10,7 +10,6 @@ import type { EmailVerification } from 'lib-common/generated/api-types/pis'
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
-import OrderedList from 'lib-components/atoms/OrderedList'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import type { Translations as ComponentTranslations } from 'lib-components/i18n'
@@ -210,51 +209,15 @@ const en: Translations = {
     )
   },
   loginPage: {
+    welcomeTitle: 'Welcome to eVaka',
     title: 'City of Espoo early childhood education',
     systemNotification: 'Important announcement',
-    addToHomeScreen: {
-      title: 'Would you like to find this page more easily?',
-      subTitle: 'Add eVaka to your phone’s home screen!',
-      ios: 'Add a shortcut on iOS (Safari)',
-      android: 'Add a shortcut on Android (Chrome)',
-      instructions: {
-        ios: (
-          <>
-            <OrderedList>
-              <li>
-                Tap the “share” icon at the bottom of the browser (a square with
-                an upward arrow)
-              </li>
-              <li>Scroll down and select “Add to Home Screen”</li>
-              <li>Optionally, enter a name for the shortcut</li>
-              <li>Tap “Add” at the top of the page</li>
-            </OrderedList>
-            <P>
-              Now you should see an icon on your home screen that opens this
-              page.
-            </P>
-          </>
-        ),
-        android: (
-          <>
-            <OrderedList>
-              <li>
-                Tap the “menu” icon (⋮) at the top right corner of the browser
-              </li>
-              <li>Select “Add to Home screen”</li>
-              <li>Optionally, enter a name for the shortcut</li>
-              <li>Tap “Create shortcut”</li>
-            </OrderedList>
-            <P>
-              Now you should see an icon on your home screen that opens this
-              page.
-            </P>
-          </>
-        )
-      }
-    },
+    helpLink: 'Instructions',
+    helpUrl: 'https://www.espoo.fi/fi/palvelut/evaka',
     login: {
-      title: 'Sign in with username',
+      title: 'Log in',
+      formTitle: 'Log in with email address',
+      emailLink: 'Log in with email address',
       paragraph:
         'Take care of your child’s daily early childhood education affairs in eVaka.',
       link: 'Log in',
@@ -274,28 +237,35 @@ const en: Translations = {
         </>
       ),
       username: 'Username',
+      usernamePlaceholder: 'Email address',
       password: 'Password',
       rateLimitError:
         'Your account has been temporarily locked due to a large number of login attempts. Please try again later.',
       forgotPassword: 'Forgot your password?',
       forgotPasswordInfo:
-        'You can change your password in your profile by logging in using strong authentication',
+        'Authenticate in the Suomi.fi service to change your password on the Personal information page.',
       noUsername: 'No username?',
       noUsernameInfo:
-        'You can create a username by logging in using strong authentication and enabling login via email on the "Personal information" page.'
+        'Authenticate in the Suomi.fi service and enable email login on the Personal information page.',
+      passkeyLink: 'Log in with a passkey',
+      passkeyDescriptionDesktop: 'On this device or your phone',
+      passkeyDescriptionMobile: 'Fingerprint or face recognition',
+      passkeyError: (strongLoginUri: string): ReactNode => (
+        <>
+          Logging in with a passkey was interrupted. Try again, log in with your
+          email address or{' '}
+          <a href={strongLoginUri}>authenticate in the Suomi.fi service</a>.
+        </>
+      ),
+      usedLast: 'Used last'
     },
     applying: {
-      title: 'Sign in using Suomi.fi',
-      paragraph: 'By using strong suomi.fi-authentication in eVaka, you can',
+      title: 'First time here?',
+      paragraph:
+        'Authenticate in the Suomi.fi service to apply, to create a passkey, or to enable email login.',
       infoBoxText:
-        'When using strong authentication the personal data and address information of the registrant, the second guardian and the dependants are retrieved from the population data service.',
-      infoBullets: [
-        'apply for an early childhood, pre-primary or club place for your child or view a previous application',
-        'view pictures and other documents related to your child’s early childhood or pre-primary education',
-        "report your or your child's income information",
-        'accept or reject a decision, if you made the application'
-      ],
-      link: 'Authenticate',
+        'During authentication, eVaka retrieves the personal and address information of the person logging in, the other guardian and any minor dependants from the population information system.',
+      link: 'Authenticate · Suomi.fi',
       mapText: 'Look up the units that you can apply to in eVaka on the map.',
       mapLink: 'Units on the map'
     }
@@ -2035,6 +2005,27 @@ const en: Translations = {
       unacceptablePassword: 'The password is too easy to guess',
       usernameConflict: (username: string): ReactNode =>
         `The username ${username} is already in use by another person`
+    },
+    passkeysSection: {
+      title: 'Passkey login',
+      description:
+        'Log in without a password with your fingerprint, face recognition or PIN code.',
+      added: 'Created',
+      lastUsed: 'Last used',
+      neverUsed: 'Never',
+      addPasskey: 'Create a new passkey',
+      defaultName: 'Passkey',
+      nameLabel: 'Passkey name',
+      editName: 'Edit passkey name',
+      deletePasskey: 'Delete passkey',
+      deleteConfirmTitle: 'Delete passkey?',
+      deleteConfirmText: (name: string) =>
+        `The passkey "${name}" will be deleted and can no longer be used to log in to eVaka. Deleting it will log out your other sessions.`,
+      alreadyExistsError:
+        'This device or app already has an eVaka passkey. You can log in with it, or create a new passkey on another device.',
+      limitError:
+        'You can add at most 10 passkeys. Delete a passkey before adding a new one.',
+      addError: 'Adding the passkey failed. Please try again.'
     },
     notificationsSection: {
       title: 'Notifications',

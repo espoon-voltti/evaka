@@ -3,44 +3,43 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { Fragment, useCallback, useState } from 'react'
+import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link, Redirect, useLocation, useSearchParams } from 'wouter'
 
 import { useQueryResult } from 'lib-common/query'
-import useLocalStorage from 'lib-common/utils/useLocalStorage'
+import { parseUrlWithOrigin } from 'lib-common/utils/parse-url-with-origin'
 import Main from 'lib-components/atoms/Main'
-import UnorderedList from 'lib-components/atoms/UnorderedList'
-import LinkButton from 'lib-components/atoms/buttons/LinkButton'
-import Container, {
-  CollapsibleContentArea,
-  ContentArea
-} from 'lib-components/layout/Container'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import {
-  MobileOnly,
-  TabletAndDesktop
-} from 'lib-components/layout/responsive-layout'
-import {
-  ExpandingInfoBox,
-  InfoButton
-} from 'lib-components/molecules/ExpandingInfo'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
-import { fontWeights, H1, H2, P } from 'lib-components/typography'
+import { desktopMin } from 'lib-components/breakpoints'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
+import { H1, H2, P, Title } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { farMap } from 'lib-icons'
 
 import Footer from '../Footer'
+import { authPasskeyLogin, passkeysSupported } from '../auth/passkeys'
 import { useUser } from '../auth/state'
 import { useLang, useTranslation } from '../localization'
 import { getStrongLoginUri, getWeakLoginUri } from '../navigation/const'
 import useTitle from '../useTitle'
 
+import {
+  rememberLastLoginMethod,
+  useLastLoginMethod
+} from './last-login-method'
+import {
+  HelpLink,
+  LinkRow,
+  LoginCard,
+  LoginColumns,
+  LoginContainer,
+  rowLinkStyles,
+  TopGap,
+  TwoLineButton,
+  UsedLastChip,
+  WideLinkButton
+} from './layout'
 import { systemNotificationsQuery } from './queries'
-
-const ParagraphInfoButton = styled(InfoButton)`
-  margin-left: ${defaultMargins.xs};
-`
 
 export default React.memo(function LoginPage() {
   const i18n = useTranslation()
@@ -50,12 +49,9 @@ export default React.memo(function LoginPage() {
 
   const [searchParams] = useSearchParams()
   const unvalidatedNextPath = searchParams.get('next')
-  const [, navigate] = useLocation()
-
-  const [showInfoBoxText1, setShowInfoBoxText1] = useState(false)
-  const [showInfoBoxText2, setShowInfoBoxText2] = useState(false)
 
   const systemNotifications = useQueryResult(systemNotificationsQuery())
+  const [passkeyFailed, setPasskeyFailed] = useState(false)
 
   if (user) {
     return <Redirect to="/" replace />
@@ -63,189 +59,211 @@ export default React.memo(function LoginPage() {
 
   return (
     <Main>
-      <TabletAndDesktop>
-        <Gap $size="L" />
-      </TabletAndDesktop>
-      <MobileOnly>
-        <Gap $size="xs" />
-      </MobileOnly>
-      <Container>
-        <FixedSpaceColumn $spacing="s">
-          <ContentArea $opaque>
-            <H1 $noMargin $hyphenate>
-              {i18n.loginPage.title}
-            </H1>
-            {systemNotifications.isSuccess &&
-              systemNotifications.value.notification && (
-                <>
-                  <Gap $size="m" />
-                  <AlertBox
-                    title={i18n.loginPage.systemNotification}
-                    message={
-                      <div>
-                        {(lang === 'sv'
-                          ? systemNotifications.value.notification.textSv
-                          : lang === 'en'
-                            ? systemNotifications.value.notification.textEn
-                            : systemNotifications.value.notification.text
-                        )
-                          .split('\n')
-                          .map((line, index) => (
-                            <Fragment key={index}>
-                              {line}
-                              <br />
-                            </Fragment>
-                          ))}
-                      </div>
-                    }
-                    wide
-                    noMargin
-                    data-qa="system-notification"
-                  />
-                </>
-              )}
-            <MobileOnly>
+      <TopGap />
+      <LoginContainer>
+        <LoginCard>
+          {systemNotifications.isSuccess &&
+            systemNotifications.value.notification && (
+              <>
+                <AlertBox
+                  title={i18n.loginPage.systemNotification}
+                  message={
+                    <div>
+                      {(lang === 'sv'
+                        ? systemNotifications.value.notification.textSv
+                        : lang === 'en'
+                          ? systemNotifications.value.notification.textEn
+                          : systemNotifications.value.notification.text
+                      )
+                        .split('\n')
+                        .map((line, index) => (
+                          <Fragment key={index}>
+                            {line}
+                            <br />
+                          </Fragment>
+                        ))}
+                    </div>
+                  }
+                  wide
+                  noMargin
+                  data-qa="system-notification"
+                />
+                <Gap $size="m" />
+              </>
+            )}
+          <H1 $noMargin $hyphenate>
+            {i18n.loginPage.welcomeTitle}
+          </H1>
+          <Subtitle>{i18n.loginPage.title}</Subtitle>
+          <Gap $size="XXL" />
+          {passkeyFailed && (
+            <>
+              <InfoBox
+                message={i18n.loginPage.login.passkeyError(
+                  getStrongLoginUri(unvalidatedNextPath ?? '/')
+                )}
+                darkBackground
+                wide
+                noMargin
+                data-qa="passkey-login-error"
+              />
+              <Gap $size="XXL" />
+            </>
+          )}
+          <LoginColumns>
+            <section>
+              <H2 $noMargin $hyphenate>
+                {i18n.loginPage.login.title}
+              </H2>
               <Gap $size="m" />
-              <AddToHomeScreenInstructions />
-            </MobileOnly>
-          </ContentArea>
-          <ContentArea $opaque>
-            <H2 $noMargin $hyphenate>
-              {i18n.loginPage.login.title}
-            </H2>
-            <Gap $size="m" />
-            <P $noMargin>
-              {i18n.loginPage.login.paragraph}
-              <ParagraphInfoButton
-                aria-label={i18n.common.openExpandingInfo}
-                onClick={() => setShowInfoBoxText1(!showInfoBoxText1)}
-                open={showInfoBoxText1}
+              <WeakLoginMethods
+                unvalidatedNextPath={unvalidatedNextPath}
+                setPasskeyFailed={setPasskeyFailed}
               />
-            </P>
-            {showInfoBoxText1 && (
-              <ExpandingInfoBox
-                info={i18n.loginPage.login.infoBoxText}
-                close={() => setShowInfoBoxText1(false)}
-              />
-            )}
-            <Gap $size="s" />
-            <LinkButton
-              href={getWeakLoginUri(unvalidatedNextPath ?? '/')}
-              onClick={(e) => {
-                e.preventDefault()
-                navigate(getWeakLoginUri(unvalidatedNextPath ?? '/'))
-              }}
-              data-qa="weak-login"
-            >
-              {i18n.loginPage.login.link}
-            </LinkButton>
-          </ContentArea>
-          <ContentArea $opaque>
-            <H2 $noMargin>{i18n.loginPage.applying.title}</H2>
-            <Gap $size="m" />
-            <P $noMargin>
-              {i18n.loginPage.applying.paragraph}
-              <ParagraphInfoButton
-                aria-label={i18n.common.openExpandingInfo}
-                onClick={() => setShowInfoBoxText2(!showInfoBoxText2)}
-                open={showInfoBoxText2}
-              />
-            </P>
-            {showInfoBoxText2 && (
-              <ExpandingInfoBox
-                info={i18n.loginPage.applying.infoBoxText}
-                close={() => setShowInfoBoxText2(false)}
-              />
-            )}
-            <UnorderedList>
-              {i18n.loginPage.applying.infoBullets.map((item, index) => (
-                <li key={`bullet-item-${index}`}>{item}</li>
-              ))}
-            </UnorderedList>
-            <Gap $size="s" />
-            <LinkButton
-              href={getStrongLoginUri(unvalidatedNextPath ?? '/')}
-              data-qa="strong-login"
-            >
-              {i18n.loginPage.applying.link}
-            </LinkButton>
-            <Gap $size="m" />
-            <P $noMargin>{i18n.loginPage.applying.mapText}</P>
-            <Gap $size="xs" />
-            <MapLink to="/map">
-              <FontAwesomeIcon icon={farMap} />
-              <Gap $size="xs" $horizontal />
-              {i18n.loginPage.applying.mapLink}
-            </MapLink>
-          </ContentArea>
-        </FixedSpaceColumn>
-      </Container>
-      <Footer />
+            </section>
+            <section>
+              <H2 $noMargin>{i18n.loginPage.applying.title}</H2>
+              <Gap $size="m" />
+              <Paragraphs>
+                <P $noMargin>{i18n.loginPage.applying.paragraph}</P>
+                <P $noMargin>{i18n.loginPage.applying.infoBoxText}</P>
+              </Paragraphs>
+              <Gap $size="m" />
+              <WideLinkButton
+                href={getStrongLoginUri(unvalidatedNextPath ?? '/')}
+                $style="secondary"
+                data-qa="strong-login"
+              >
+                {i18n.loginPage.applying.link}
+              </WideLinkButton>
+            </section>
+          </LoginColumns>
+        </LoginCard>
+        <LinkRow>
+          <MapLink to="/map">
+            <FontAwesomeIcon icon={farMap} />
+            <Gap $size="xs" $horizontal />
+            {i18n.loginPage.applying.mapLink}
+          </MapLink>
+          <HelpLink />
+        </LinkRow>
+      </LoginContainer>
+      <Footer narrow />
     </Main>
   )
 })
 
-const MapLink = styled(Link)`
-  text-decoration: none;
-  display: inline-block;
-  font-weight: ${fontWeights.semibold};
+const Subtitle = styled(Title)`
+  display: block;
+  margin-top: ${defaultMargins.xxs};
+  color: ${(p) => p.theme.colors.grayscale.g70};
+  font-size: 16px;
+  line-height: 24px;
+
+  @media (min-width: ${desktopMin}) {
+    font-size: 20px;
+  }
 `
 
-const AddToHomeScreenInstructions = React.memo(
-  function AddToHomeScreenInstructions() {
-    const i18n = useTranslation()
+const Paragraphs = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${defaultMargins.s};
+`
 
-    const [open, setOpen] = useLocalStorage(
-      'add-to-homescreen-instructions',
-      'open',
-      (value) => value === 'open' || value === 'closed'
-    )
-    const toggleOpen = useCallback(
-      () => setOpen((open) => (open === 'open' ? 'closed' : 'open')),
-      [setOpen]
-    )
+const MapLink = styled(Link)`
+  ${rowLinkStyles}
+`
 
-    const [instructions, setInstructions] = useState<'ios' | 'android' | null>(
-      null
-    )
-    const toggle = (which: 'ios' | 'android') => {
-      setInstructions((current) => (current === which ? null : which))
+const WeakLoginMethods = React.memo(function WeakLoginMethods({
+  unvalidatedNextPath,
+  setPasskeyFailed
+}: {
+  unvalidatedNextPath: string | null
+  setPasskeyFailed: (failed: boolean) => void
+}) {
+  const i18n = useTranslation()
+  const t = i18n.loginPage.login
+  const [, navigate] = useLocation()
+
+  const passkeysEnabled = passkeysSupported()
+  const lastLoginMethod = useLastLoginMethod()
+
+  const nextUrl = useMemo(
+    () =>
+      unvalidatedNextPath
+        ? parseUrlWithOrigin(window.location, unvalidatedNextPath)
+        : undefined,
+    [unvalidatedNextPath]
+  )
+
+  const loginWithPasskey = useCallback(async () => {
+    setPasskeyFailed(false)
+    const result = await authPasskeyLogin()
+    if (result === 'success') {
+      rememberLastLoginMethod('passkey')
+      window.location.replace(nextUrl ?? '/')
+    } else {
+      setPasskeyFailed(true)
     }
+  }, [nextUrl, setPasskeyFailed])
 
-    return (
-      <CollapsibleContentArea
-        open={open === 'open'}
-        toggleOpen={toggleOpen}
-        $opaque={false}
-        title={i18n.loginPage.addToHomeScreen.title}
-        $paddingHorizontal="0"
-        $paddingVertical="0"
+  const emailButton = (isPrimary: boolean) => (
+    <LoginMethod key="email">
+      {isPrimary && lastLoginMethod === 'email' && <UsedLastTag />}
+      <WideLinkButton
+        href={getWeakLoginUri(unvalidatedNextPath ?? '/')}
+        onClick={(e) => {
+          e.preventDefault()
+          navigate(getWeakLoginUri(unvalidatedNextPath ?? '/'))
+        }}
+        $style={isPrimary ? 'primary' : 'secondary'}
+        data-qa="weak-login"
       >
-        <P $noMargin>{i18n.loginPage.addToHomeScreen.subTitle}</P>
-        <Gap $size="s" />
-        <UnorderedList>
-          <li>
-            {i18n.loginPage.addToHomeScreen.ios}{' '}
-            <ParagraphInfoButton
-              onClick={() => toggle('ios')}
-              aria-label={i18n.common.openExpandingInfo}
-            />
-          </li>
-          <li>
-            {i18n.loginPage.addToHomeScreen.android}{' '}
-            <ParagraphInfoButton
-              onClick={() => toggle('android')}
-              aria-label={i18n.common.openExpandingInfo}
-            />
-          </li>
-        </UnorderedList>
-        {instructions && (
-          <ExpandingInfoBox
-            info={i18n.loginPage.addToHomeScreen.instructions[instructions]}
-            close={() => setInstructions(null)}
-          />
-        )}
-      </CollapsibleContentArea>
-    )
-  }
-)
+        {t.emailLink}
+      </WideLinkButton>
+    </LoginMethod>
+  )
+  const passkeyButton = (isPrimary: boolean) => (
+    <LoginMethod key="passkey">
+      {isPrimary && lastLoginMethod === 'passkey' && <UsedLastTag />}
+      <TwoLineButton
+        label={t.passkeyLink}
+        descriptionDesktop={t.passkeyDescriptionDesktop}
+        descriptionMobile={t.passkeyDescriptionMobile}
+        primary={isPrimary}
+        onClick={() => void loginWithPasskey()}
+        data-qa="passkey-login"
+      />
+    </LoginMethod>
+  )
+
+  const passkeyFirst = passkeysEnabled && lastLoginMethod === 'passkey'
+  return (
+    <LoginMethodList>
+      {passkeyFirst && passkeyButton(true)}
+      {emailButton(!passkeyFirst)}
+      {passkeysEnabled && !passkeyFirst && passkeyButton(false)}
+    </LoginMethodList>
+  )
+})
+
+const UsedLastTag = React.memo(function UsedLastTag() {
+  const i18n = useTranslation()
+  return (
+    <UsedLastChip data-qa="used-last-tag">
+      {i18n.loginPage.login.usedLast}
+    </UsedLastChip>
+  )
+})
+
+const LoginMethodList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${defaultMargins.s};
+`
+
+const LoginMethod = styled.div`
+  display: flex;
+  flex-direction: column;
+`

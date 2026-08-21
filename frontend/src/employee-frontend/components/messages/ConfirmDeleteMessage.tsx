@@ -12,7 +12,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import { invalidateDependencies } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { DangerMutateButton } from 'lib-components/atoms/buttons/MutateButton'
+import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import BaseModal, {
   ModalButtons
 } from 'lib-components/molecules/modals/BaseModal'
@@ -84,8 +84,8 @@ export const ConfirmDeleteMessage = React.memo(function ConfirmDeleteMessage({
       <P>{t.stepsBody1}</P>
       <P>{t.stepsBody2}</P>
       <ModalButtons $justifyContent="center">
-        <DangerMutateButton
-          primary
+        <MutateButton
+          danger
           mutation={deleteMessageContentMutation}
           text={t.confirm}
           onClick={() => ({ accountId, contentId })}

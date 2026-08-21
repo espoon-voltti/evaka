@@ -147,6 +147,10 @@ interface IEmailMessageProvider {
 
     fun newBrowserLoginNotification(): EmailContent
 
+    fun passkeyAdded(): EmailContent
+
+    fun passkeyRemoved(): EmailContent
+
     fun messageDeletionSenderEmail(
         supportEmail: String?,
         data: MessageDeletionEmailData,

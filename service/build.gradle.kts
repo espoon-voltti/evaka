@@ -173,6 +173,8 @@ dependencies {
     implementation("org.jsoup:jsoup")
     implementation("org.apache.commons:commons-csv")
     implementation("org.unbescape:unbescape:1.1.6.RELEASE")
+    implementation("com.yubico:webauthn-server-core")
+    implementation("com.github.ua-parser:uap-java")
 
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -190,6 +192,7 @@ dependencies {
     testImplementation("org.junit-pioneer:junit-pioneer:2.3.0")
     testImplementation("org.wiremock.integrations:wiremock-spring-boot:4.2.2")
 
+    integrationTestImplementation("com.upokecenter:cbor")
     integrationTestImplementation("org.apache.cxf:cxf-rt-frontend-jaxws")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http")
     integrationTestImplementation("org.apache.cxf:cxf-rt-transports-http-jetty")

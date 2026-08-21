@@ -41,6 +41,13 @@ export async function enduserLoginWeak(
   await expect(page.findByDataQa('header-city-logo')).toBeVisible()
 }
 
+export async function enduserLoginPasskey(page: Page) {
+  await page.goto(config.enduserLoginUrl)
+  await page.findByDataQa('passkey-login').click()
+  await expect(page.findByDataQa('passkey-login')).toBeHidden()
+  await expect(page.findByDataQa('header-city-logo')).toBeVisible()
+}
+
 export async function employeeLogin(
   page: Page,
   {

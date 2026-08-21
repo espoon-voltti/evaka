@@ -38,6 +38,7 @@ export type AsyncButtonProps<T> = BaseButtonVisualProps &
 const AsyncButton_ = function AsyncButton<T>({
   type,
   primary,
+  danger,
   preventDefault = type === 'submit',
   stopPropagation = false,
   onClick,
@@ -62,6 +63,9 @@ const AsyncButton_ = function AsyncButton<T>({
 
   const showIcon = state !== 'idle'
 
+  // The danger background is only applied to appearance="button"
+  const filled = danger === true && (props.appearance ?? 'button') === 'button'
+
   const container = useSpring<{ x: number }>({
     x: ((!hideSuccess || state !== 'success') && showIcon) || props.icon ? 1 : 0
   })
@@ -85,6 +89,7 @@ const AsyncButton_ = function AsyncButton<T>({
       'aria-busy': state === 'in-progress',
       type,
       primary: primary && !showIcon,
+      danger,
       ...props
     },
     handleClick,
@@ -106,14 +111,17 @@ const AsyncButton_ = function AsyncButton<T>({
               <FontAwesomeIcon icon={icon} />
             </IconWrapper>
           )}
-          <Spinner style={spinner} />
+          <Spinner style={spinner} $filled={filled} />
           <IconWrapper
             style={{
               opacity: checkmark.opacity,
               transform: checkmark.opacity.to((x) => `scale(${x ?? 0})`)
             }}
           >
-            <FontAwesomeIcon icon={faCheck} color={colors.main.m2} />
+            <FontAwesomeIcon
+              icon={faCheck}
+              color={filled ? colors.grayscale.g0 : colors.main.m2}
+            />
           </IconWrapper>
           <IconWrapper
             style={{
@@ -121,7 +129,10 @@ const AsyncButton_ = function AsyncButton<T>({
               transform: cross.opacity.to((x) => `scale(${x ?? 0})`)
             }}
           >
-            <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
+            <FontAwesomeIcon
+              icon={faTimes}
+              color={filled ? colors.grayscale.g0 : colors.status.danger}
+            />
           </IconWrapper>
         </IconContainer>
         <TextWrapper
@@ -152,7 +163,7 @@ const IconContainer = animated(styled.div`
   flex: 0 0 auto;
 `)
 
-const Spinner = animated(styled.div`
+const Spinner = animated(styled.div<{ $filled: boolean }>`
   position: absolute;
   top: 2px;
   left: 2px;
@@ -162,7 +173,8 @@ const Spinner = animated(styled.div`
   height: 20px;
 
   border: 2px solid ${(p) => p.theme.colors.grayscale.g15};
-  border-left-color: ${(p) => p.theme.colors.main.m2};
+  border-left-color: ${(p) =>
+    p.$filled ? p.theme.colors.grayscale.g0 : p.theme.colors.main.m2};
   animation: spin 1s infinite linear;
 
   @keyframes spin {
