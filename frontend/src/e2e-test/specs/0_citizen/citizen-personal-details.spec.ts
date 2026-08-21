@@ -107,6 +107,55 @@ test.describe('Citizen personal details', () => {
     await expect(personalDetailsPage.addEmailTask).toBeHidden()
     await expect(personalDetailsPage.verifyEmailTask).toBeVisible()
     await expect(personalDetailsPage.addPhoneTask).toBeHidden()
+    await header.checkPersonalDetailsAttentionIndicatorsAreShown()
+  })
+})
+
+test.describe('Citizen personal details tasks', () => {
+  const email = 'test@example.com'
+  const verifiedCitizen = Fixture.person({
+    email,
+    verifiedEmail: email,
+    phone: '123456789'
+  })
+
+  test.beforeEach(async ({ evaka }) => {
+    await resetServiceState()
+    page = evaka
+  })
+
+  test('Citizen with verified email but no weak login sees only the weak login task', async () => {
+    const citizen = await verifiedCitizen.saveAdult({
+      updateMockVtjWithDependants: []
+    })
+    await enduserLogin(page, citizen, '/personal-details')
+    header = new CitizenHeader(page)
+    personalDetailsPage = new CitizenPersonalDetailsPage(page)
+
+    await expect(personalDetailsPage.addWeakLoginTask).toBeVisible()
+    await expect(personalDetailsPage.addEmailTask).toBeHidden()
+    await expect(personalDetailsPage.verifyEmailTask).toBeHidden()
+    await expect(personalDetailsPage.addPhoneTask).toBeHidden()
+    await header.checkPersonalDetailsAttentionIndicatorsAreShown()
+  })
+
+  test('Citizen with all tasks done sees no tasks or attention indicators', async () => {
+    const citizen = await verifiedCitizen.saveAdult({
+      updateMockVtjWithDependants: [],
+      updateWeakCredentials: { username: email, password: 'aifiefaeC3io?dee' }
+    })
+    await enduserLogin(page, citizen, '/personal-details')
+    header = new CitizenHeader(page)
+    personalDetailsPage = new CitizenPersonalDetailsPage(page)
+
+    await expect(
+      personalDetailsPage.contactDetailsSection.verifiedEmailStatus
+    ).toBeVisible()
+    await expect(personalDetailsPage.addEmailTask).toBeHidden()
+    await expect(personalDetailsPage.verifyEmailTask).toBeHidden()
+    await expect(personalDetailsPage.addPhoneTask).toBeHidden()
+    await expect(personalDetailsPage.addWeakLoginTask).toBeHidden()
+    await header.checkPersonalDetailsAttentionIndicatorsAreHidden()
   })
 })
 

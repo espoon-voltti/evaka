@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import type { RefObject } from 'react'
 import React, { useContext, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { Redirect } from 'wouter'
@@ -33,13 +34,14 @@ import LoginDetailsSection from './LoginDetailsSection'
 import NotificationSettingsSection from './NotificationSettingsSection'
 import PasskeysSection from './PasskeysSection'
 import PersonalDetailsSection from './PersonalDetailsSection'
-import { isEmailVerified } from './emailVerification'
 import {
   emailVerificationStatusQuery,
   familyQuery,
   notificationSettingsQuery,
   passwordConstraintsQuery
 } from './queries'
+import type { PersonalDetailsTaskSection } from './tasks'
+import { personalDetailsTaskConfig, usePersonalDetailsTasks } from './tasks'
 
 const DesktopTopGap = styled.div`
   display: none;
@@ -119,6 +121,7 @@ export default React.memo(function PersonalDetails() {
   const notificationSettings = useQueryResult(notificationSettingsQuery())
   const notificationSettingsSection = useRef<HTMLDivElement>(null)
   const contactDetailsSection = useRef<HTMLDivElement>(null)
+  const loginDetailsSection = useRef<HTMLDivElement>(null)
   const emailVerificationStatus = useQueryResult(emailVerificationStatusQuery())
   const passwordConstraints = useQueryResult(passwordConstraintsQuery())
   const family = useQueryResult(familyQuery())
@@ -126,42 +129,15 @@ export default React.memo(function PersonalDetails() {
     .map(({ children }) => children.length > 0)
     .getOrElse(false)
 
-  const tasks = combine(user, emailVerificationStatus)
-    .map(([user, emailVerificationStatus]) => {
-      if (!user) return []
-      return [
-        ...(!emailVerificationStatus.email
-          ? [
-              {
-                dataQa: 'task-add-email',
-                title: t.personalDetails.tasks.addEmail.title,
-                description: t.personalDetails.tasks.addEmail.description,
-                onClick: () => scrollRefIntoView(contactDetailsSection)
-              }
-            ]
-          : !isEmailVerified(emailVerificationStatus)
-            ? [
-                {
-                  dataQa: 'task-verify-email',
-                  title: t.personalDetails.tasks.verifyEmail.title,
-                  description: t.personalDetails.tasks.verifyEmail.description,
-                  onClick: () => scrollRefIntoView(contactDetailsSection)
-                }
-              ]
-            : []),
-        ...(!user.phone
-          ? [
-              {
-                dataQa: 'task-add-phone',
-                title: t.personalDetails.tasks.addPhone.title,
-                description: t.personalDetails.tasks.addPhone.description,
-                onClick: () => scrollRefIntoView(contactDetailsSection)
-              }
-            ]
-          : [])
-      ]
-    })
-    .getOrElse([])
+  const tasks = usePersonalDetailsTasks()
+  const taskSectionRefs: Record<
+    PersonalDetailsTaskSection,
+    RefObject<HTMLDivElement | null>
+  > = {
+    contact: contactDetailsSection,
+    login: loginDetailsSection,
+    notifications: notificationSettingsSection
+  }
 
   useEffect(() => {
     if (
@@ -183,9 +159,20 @@ export default React.memo(function PersonalDetails() {
             <>
               <Gap $size="s" />
               <FixedSpaceColumn $spacing="xs">
-                {tasks.map((task) => (
-                  <Task key={task.dataQa} {...task} />
-                ))}
+                {tasks.map((task) => {
+                  const { dataQa, section } = personalDetailsTaskConfig[task]
+                  return (
+                    <Task
+                      key={task}
+                      dataQa={dataQa}
+                      title={t.personalDetails.tasks[task].title}
+                      description={t.personalDetails.tasks[task].description}
+                      onClick={() =>
+                        scrollRefIntoView(taskSectionRefs[section])
+                      }
+                    />
+                  )
+                })}
               </FixedSpaceColumn>
             </>
           )}
@@ -256,7 +243,7 @@ export default React.memo(function PersonalDetails() {
 
         <Gap $size="s" />
 
-        <ContentArea $opaque $paddingVertical="m">
+        <ContentArea $opaque $paddingVertical="m" ref={loginDetailsSection}>
           {renderResult(
             combine(user, emailVerificationStatus, passwordConstraints),
             ([user, emailVerificationStatus, passwordConstraints]) =>

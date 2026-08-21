@@ -2158,17 +2158,21 @@ export default {
     editInfo:
       'Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne muuttuvat, sinun tulee tehdä ilmoitus Digi- ja väestötietovirastoon.',
     tasks: {
-      addEmail: {
+      ADD_EMAIL: {
         title: 'Lisää sähköpostiosoite',
         description: 'Voit vastaanottaa sähköposti-ilmoituksia.'
       },
-      verifyEmail: {
+      VERIFY_EMAIL: {
         title: 'Vahvista sähköpostiosoite',
         description: 'Voit vastaanottaa sähköposti-ilmoituksia.'
       },
-      addPhone: {
+      ADD_PHONE: {
         title: 'Lisää puhelinnumero',
         description: 'Sinut tavoitetaan kiireellisissä asioissa.'
+      },
+      ADD_WEAK_LOGIN: {
+        title: 'Lisää kirjautumistapa',
+        description: 'Voit kirjautua sähköpostiosoitteella ja salasanalla.'
       }
     },
     familySizeSection: {
