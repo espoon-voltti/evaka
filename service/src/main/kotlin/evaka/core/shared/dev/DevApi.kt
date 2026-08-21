@@ -6,6 +6,7 @@ package evaka.core.shared.dev
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import evaka.core.AuditContext
+import evaka.core.CitizenCalendarEnv
 import evaka.core.EvakaEnv
 import evaka.core.ExcludeCodeGen
 import evaka.core.Sensitive
@@ -219,6 +220,7 @@ class DevApi(
     private val decisionService: DecisionService,
     private val documentClient: DocumentService,
     private val env: EvakaEnv,
+    private val citizenCalendarEnv: CitizenCalendarEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val invoiceGenerator: InvoiceGenerator,
     private val featureConfig: FeatureConfig,
@@ -1071,6 +1073,7 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                     AuditContext(),
                     body,
                     featureConfig.citizenReservationThresholdHours,
+                    citizenCalendarEnv.calendarOpenBeforePlacementDays,
                     plannedAbsenceEnabledForHourBasedServiceNeeds = true,
                 )
             }

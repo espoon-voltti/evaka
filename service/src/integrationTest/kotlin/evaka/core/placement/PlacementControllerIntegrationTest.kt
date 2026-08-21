@@ -115,6 +115,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     private val citizenReservationThresholdHours: Long = 150
+    private val calendarOpenBeforePlacementDays = 30
 
     @BeforeEach
     fun setUp() {
@@ -330,6 +331,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     DailyReservationRequest.Absent(childId = childId, date = fourthAbsence),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -442,6 +444,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -539,6 +542,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     DailyReservationRequest.Absent(childId = childId, date = fourthAbsence),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -632,6 +636,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -710,6 +715,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     DailyReservationRequest.Absent(childId = childId, date = fourthAbsence),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -790,6 +796,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -866,6 +873,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
