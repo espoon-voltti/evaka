@@ -33,7 +33,7 @@ class UserAgentParser {
         val client = parser.parse(userAgent)
         return ParsedUserAgent(
             deviceClass = deviceClassOf(client, userAgent),
-            operatingSystemName = client.os.family.known(),
+            operatingSystemName = currentOperatingSystemName(client.os.family.known()),
             agentName = simpleAgentName(client.userAgent.family.known()),
         )
     }
@@ -51,6 +51,14 @@ private fun deviceClassOf(client: Client, userAgent: String): DeviceClass =
         "Android" -> if (userAgent.contains("Mobile")) DeviceClass.PHONE else DeviceClass.TABLET
         in phoneOperatingSystems -> DeviceClass.PHONE
         else -> DeviceClass.DESKTOP
+    }
+
+/** uap-java reports the names these systems were released under, not their current ones */
+private fun currentOperatingSystemName(family: String): String =
+    when (family) {
+        "Mac OS X" -> "macOS"
+        "Chrome OS" -> "ChromeOS"
+        else -> family
     }
 
 /** uap-java names the mobile build of a browser separately, e.g. "Chrome Mobile iOS" */
