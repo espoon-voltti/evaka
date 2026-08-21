@@ -239,6 +239,21 @@ export default React.memo(function PersonalDetails() {
           </>
         )}
 
+        {passkeysSupported() && (
+          <>
+            <Gap $size="s" />
+            <ContentArea $opaque $paddingVertical="m">
+              {renderResult(user, (user) =>
+                user ? (
+                  <PasskeysSection user={user} />
+                ) : (
+                  <Redirect replace to="/" />
+                )
+              )}
+            </ContentArea>
+          </>
+        )}
+
         <Gap $size="s" />
 
         <ContentArea $opaque $paddingVertical="m">
@@ -257,21 +272,6 @@ export default React.memo(function PersonalDetails() {
               )
           )}
         </ContentArea>
-
-        {passkeysSupported() && (
-          <>
-            <Gap $size="s" />
-            <ContentArea $opaque $paddingVertical="m">
-              {renderResult(user, (user) =>
-                user ? (
-                  <PasskeysSection user={user} />
-                ) : (
-                  <Redirect replace to="/" />
-                )
-              )}
-            </ContentArea>
-          </>
-        )}
 
         <Gap $size="s" />
 
