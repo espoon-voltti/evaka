@@ -15,7 +15,7 @@ import Main from 'lib-components/atoms/Main'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { InputFieldF } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import PasswordInputF from 'lib-components/molecules/PasswordInputF'
 import { H1, H2, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -164,10 +164,12 @@ const WeakLoginForm = React.memo(function WeakLogin({
       <FixedSpaceColumn $spacing="m">
         {rateLimitError && <AlertBox message={t.rateLimitError} noMargin />}
         {passkeyFailed && (
-          <AlertBox
+          <InfoBox
             message={t.passkeyError(
               getStrongLoginUri(unvalidatedNextPath ?? '/')
             )}
+            darkBackground
+            wide
             data-qa="passkey-login-error"
           />
         )}
