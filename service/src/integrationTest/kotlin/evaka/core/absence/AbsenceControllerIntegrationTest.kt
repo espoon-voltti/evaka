@@ -294,6 +294,47 @@ class AbsenceControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
+    fun `deleting absences does not add holiday reservations when the placement type does not require them`() {
+        // PRESCHOOL is not in requiringAttendanceReservations, so it must never get a reservation
+        val preschoolChild = DevPerson()
+        val startDate = today
+        val endDate = today.plusDays(3)
+        db.transaction { tx ->
+            tx.insertHolidayPeriod(
+                period = FiniteDateRange(startDate, endDate),
+                reservationsOpenOn = today,
+                reservationDeadline = today,
+            )
+
+            tx.insert(preschoolChild, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL,
+                    childId = preschoolChild.id,
+                    unitId = daycare.id,
+                    startDate = today,
+                    endDate = today.plusYears(1),
+                )
+            )
+        }
+
+        addPresences(
+            FiniteDateRange(startDate, endDate)
+                .dates()
+                .map { date ->
+                    Presence(
+                        childId = preschoolChild.id,
+                        date = date,
+                        category = AbsenceCategory.NONBILLABLE,
+                    )
+                }
+                .toList()
+        )
+
+        assertEquals(emptyList<Reservation>(), getAllReservations())
+    }
+
+    @Test
     fun `deleting holiday reservations deletes reservations and absences`() {
         //                   0 1 2 3
         // holiday period:   - x x x
