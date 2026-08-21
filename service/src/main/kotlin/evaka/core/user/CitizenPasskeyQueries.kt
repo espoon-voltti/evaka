@@ -38,42 +38,39 @@ data class NewPasskey(
     val client: ParsedUserAgent,
 )
 
-fun Database.Read.getCitizenPasskeys(person: PersonId): List<CitizenPasskey> =
-    createQuery {
-            sql(
-                """
+fun Database.Read.getCitizenPasskeys(person: PersonId): List<CitizenPasskey> = createQuery {
+    sql(
+        """
 SELECT id, name, created_at, last_used_at, device_class, operating_system_name, agent_name
 FROM citizen_passkey
 WHERE citizen_user_id = ${bind(person)}
 ORDER BY created_at
 """
-            )
-        }
-        .toList()
+    )
+}
+    .toList()
 
-fun Database.Read.getCitizenPasskeyCredentialIds(person: PersonId): List<ByteArray> =
-    createQuery {
-            sql("SELECT credential_id FROM citizen_passkey WHERE citizen_user_id = ${bind(person)}")
-        }
-        .toList()
+fun Database.Read.getCitizenPasskeyCredentialIds(person: PersonId): List<ByteArray> = createQuery {
+    sql("SELECT credential_id FROM citizen_passkey WHERE citizen_user_id = ${bind(person)}")
+}
+    .toList()
 
 fun Database.Read.getPasskeyByCredentialId(credentialId: ByteArray): PasskeyCredential? =
     createQuery {
-            sql(
-                """
+        sql(
+            """
 SELECT id, citizen_user_id, credential_id, public_key, signature_counter
 FROM citizen_passkey
 WHERE credential_id = ${bind(credentialId)}
 """
-            )
-        }
-        .exactlyOneOrNull()
+        )
+    }
+    .exactlyOneOrNull()
 
-fun Database.Read.countCitizenPasskeys(person: PersonId): Int =
-    createQuery {
-            sql("SELECT count(*) FROM citizen_passkey WHERE citizen_user_id = ${bind(person)}")
-        }
-        .exactlyOne()
+fun Database.Read.countCitizenPasskeys(person: PersonId): Int = createQuery {
+    sql("SELECT count(*) FROM citizen_passkey WHERE citizen_user_id = ${bind(person)}")
+}
+    .exactlyOne()
 
 fun Database.Transaction.upsertCitizenUserForPasskey(person: PersonId) = execute {
     sql("INSERT INTO citizen_user (id) VALUES (${bind(person)}) ON CONFLICT (id) DO NOTHING")
@@ -82,10 +79,9 @@ fun Database.Transaction.upsertCitizenUserForPasskey(person: PersonId) = execute
 fun Database.Transaction.insertCitizenPasskey(
     person: PersonId,
     passkey: NewPasskey,
-): CitizenPasskey =
-    createUpdate {
-            sql(
-                """
+): CitizenPasskey = createUpdate {
+    sql(
+        """
 INSERT INTO citizen_passkey (citizen_user_id, credential_id, public_key, signature_counter, aaguid, transports, name, device_class, operating_system_name, agent_name)
 VALUES (
     ${bind(person)},
@@ -101,60 +97,57 @@ VALUES (
 )
 RETURNING id, name, created_at, last_used_at, device_class, operating_system_name, agent_name
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOne()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOne()
 
 fun Database.Transaction.updateCitizenPasskeyName(
     person: PersonId,
     id: CitizenPasskeyId,
     name: String,
-): CitizenPasskey? =
-    createUpdate {
-            sql(
-                """
+): CitizenPasskey? = createUpdate {
+    sql(
+        """
 UPDATE citizen_passkey
 SET name = ${bind(name)}
 WHERE id = ${bind(id)} AND citizen_user_id = ${bind(person)}
 RETURNING id, name, created_at, last_used_at, device_class, operating_system_name, agent_name
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOneOrNull()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull()
 
 fun Database.Transaction.deleteCitizenPasskey(
     person: PersonId,
     id: CitizenPasskeyId,
-): CitizenPasskey? =
-    createUpdate {
-            sql(
-                """
+): CitizenPasskey? = createUpdate {
+    sql(
+        """
 DELETE FROM citizen_passkey
 WHERE id = ${bind(id)} AND citizen_user_id = ${bind(person)}
 RETURNING id, name, created_at, last_used_at, device_class, operating_system_name, agent_name
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOneOrNull()
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull()
 
 fun Database.Transaction.updatePasskeyAfterLogin(
     id: CitizenPasskeyId,
     now: HelsinkiDateTime,
     signatureCounter: Long,
-): Int =
-    createUpdate {
-            sql(
-                """
+): Int = createUpdate {
+    sql(
+        """
 UPDATE citizen_passkey
 SET last_used_at = ${bind(now)}, signature_counter = ${bind(signatureCounter)}
 WHERE id = ${bind(id)}
 """
-            )
-        }
-        .execute()
+    )
+}
+    .execute()
 
 fun Database.Transaction.upsertPasskeyRegistration(
     person: PersonId,
@@ -178,17 +171,16 @@ private data class PasskeyRegistration(val options: String, val expiresAt: Helsi
 fun Database.Transaction.consumePasskeyRegistration(
     person: PersonId,
     now: HelsinkiDateTime,
-): String? =
-    createUpdate {
-            sql(
-                """
+): String? = createUpdate {
+    sql(
+        """
 DELETE FROM citizen_passkey_registration
 WHERE person_id = ${bind(person)}
 RETURNING options::text AS options, expires_at
 """
-            )
-        }
-        .executeAndReturnGeneratedKeys()
-        .exactlyOneOrNull<PasskeyRegistration>()
-        ?.takeIf { it.expiresAt > now }
-        ?.options
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull<PasskeyRegistration>()
+    ?.takeIf { it.expiresAt > now }
+    ?.options
