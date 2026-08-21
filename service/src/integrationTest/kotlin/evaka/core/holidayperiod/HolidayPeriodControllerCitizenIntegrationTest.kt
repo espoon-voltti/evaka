@@ -229,6 +229,63 @@ class HolidayPeriodControllerCitizenIntegrationTest :
     }
 
     @Test
+    fun `active questionnaire is eligible for a child with a future placement when the calendar is already open`() {
+        db.transaction { tx ->
+            tx.insertGuardian(parent.id, child2.id)
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    startDate =
+                        mockToday.plusDays(
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays.toLong()
+                        ),
+                    endDate = mockToday.plusYears(1),
+                )
+            )
+        }
+        createFixedPeriodQuestionnaire(freePeriodQuestionnaire)
+
+        val response = getActiveQuestionnaires(mockToday)
+
+        assertEquals(1, response.size)
+        assertThat(response[0].eligibleChildren)
+            .containsExactlyInAnyOrderEntriesOf(
+                mapOf(
+                    child1.id to freePeriodQuestionnaire.periodOptions,
+                    child2.id to freePeriodQuestionnaire.periodOptions,
+                )
+            )
+    }
+
+    @Test
+    fun `active questionnaire is not eligible for a child with a future placement when the calendar is not yet open`() {
+        db.transaction { tx ->
+            tx.insertGuardian(parent.id, child2.id)
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    startDate =
+                        mockToday.plusDays(
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays.toLong() + 1
+                        ),
+                    endDate = mockToday.plusYears(1),
+                )
+            )
+        }
+        createFixedPeriodQuestionnaire(freePeriodQuestionnaire)
+
+        val response = getActiveQuestionnaires(mockToday)
+
+        assertEquals(1, response.size)
+        assertThat(response[0].eligibleChildren)
+            .containsExactlyInAnyOrderEntriesOf(
+                mapOf(child1.id to freePeriodQuestionnaire.periodOptions)
+            )
+    }
+
+    @Test
     fun `questionnaire answer is saved and returned with active questionnaire`() {
         val id = createFixedPeriodQuestionnaire(freePeriodQuestionnaire.copy())
 
@@ -624,6 +681,35 @@ class HolidayPeriodControllerCitizenIntegrationTest :
 
         val absences = db.read { it.getAllAbsences() }
         assertThat(absences.map { it.childId }.toSet()).containsExactly(child1.id)
+    }
+
+    @Test
+    fun `open ranges submission is rejected for a child with a future placement when the calendar is not yet open`() {
+        db.transaction { tx ->
+            tx.insertGuardian(parent.id, child2.id)
+            tx.insert(
+                DevPlacement(
+                    childId = child2.id,
+                    unitId = daycare.id,
+                    startDate =
+                        mockToday.plusDays(
+                            citizenCalendarEnv.calendarOpenBeforePlacementDays.toLong() + 1
+                        ),
+                    endDate = mockToday.plusYears(1),
+                )
+            )
+        }
+
+        val id = createOpenRangesQuestionnaire(freeRangesQuestionnaire)
+        val range =
+            FiniteDateRange(
+                freeRangesQuestionnaire.period.start,
+                freeRangesQuestionnaire.period.start.plusDays(40),
+            )
+
+        assertThrows<BadRequest> {
+            reportFreeRanges(id, OpenRangesBody(mapOf(child2.id to listOf(range))))
+        }
     }
 
     @Test

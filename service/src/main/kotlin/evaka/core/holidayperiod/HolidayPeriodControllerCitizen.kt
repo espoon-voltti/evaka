@@ -381,6 +381,20 @@ class HolidayPeriodControllerCitizen(
                 } else {
                     tx.getUserChildIds(date, user.id)
                 }
+                .let { children ->
+                    // The questionnaire can only be answered for children whose citizen calendar
+                    // is already open (it opens calendarOpenBeforePlacementDays before the
+                    // placement starts)
+                    val childrenWithCalendarOpen =
+                        tx.getChildIdsWithPlacementInRange(
+                            children,
+                            FiniteDateRange(
+                                date,
+                                date.plusDays(calendarOpenBeforePlacementDays.toLong()),
+                            ),
+                        )
+                    children.filter { it in childrenWithCalendarOpen }
+                }
                 .filter { childId ->
                     tx.getPlacementsForChildDuring(childId, date, date).none { placement ->
                         tx.getDaycare(placement.unitId)?.providerType ==
@@ -417,19 +431,8 @@ class HolidayPeriodControllerCitizen(
                         PlacementType.invoiced,
                         questionnaire.period,
                     )
-                val childrenWithPlacementInWindow =
-                    tx.getChildIdsWithPlacementInRange(
-                        eligibleChildren,
-                        FiniteDateRange(
-                            date,
-                            date.plusDays(calendarOpenBeforePlacementDays.toLong()),
-                        ),
-                    )
                 eligibleChildren
-                    .filter { childId ->
-                        placementRangesByChild[childId]?.isNotEmpty() == true &&
-                            childId in childrenWithPlacementInWindow
-                    }
+                    .filter { childId -> placementRangesByChild[childId]?.isNotEmpty() == true }
                     .associateWith { listOf(questionnaire.period) }
             }
         }
