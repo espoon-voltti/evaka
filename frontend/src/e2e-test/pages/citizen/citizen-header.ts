@@ -147,6 +147,17 @@ export default class CitizenHeader {
     await this.#subNavMenu.click()
   }
 
+  async checkPersonalDetailsAttentionIndicatorsAreHidden() {
+    await expect(
+      this.page.findByDataQa(`attention-indicator-sub-menu-${this.type}`)
+    ).toBeHidden()
+    await this.#subNavMenu.click()
+    await expect(
+      this.page.findByDataQa('personal-details-notification')
+    ).toBeHidden()
+    await this.#subNavMenu.click()
+  }
+
   async assertUnreadMessagesCount(expectedCount: number) {
     await expect(this.#messagesNav).toBeVisible()
     if (expectedCount !== 0) {

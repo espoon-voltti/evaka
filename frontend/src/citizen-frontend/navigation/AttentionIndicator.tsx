@@ -9,6 +9,7 @@ interface Props {
   toggled: boolean
   position: 'top' | 'bottom'
   children: React.ReactNode
+  closerToText?: boolean
   'data-qa'?: string
 }
 
@@ -16,12 +17,19 @@ export default React.memo(function AttentionIndicator({
   toggled,
   position,
   children,
+  closerToText = false,
   'data-qa': dataQa
 }: Props) {
   return (
     <Wrapper>
       {children}
-      {toggled && <Indicator data-qa={dataQa} $position={position} />}
+      {toggled && (
+        <Indicator
+          data-qa={dataQa}
+          $position={position}
+          $closerToText={closerToText}
+        />
+      )}
     </Wrapper>
   )
 })
@@ -30,19 +38,22 @@ const Wrapper = styled.div`
   position: relative;
 `
 
-const Indicator = styled.div<{ $position: 'top' | 'bottom' }>`
+const Indicator = styled.div<{
+  $position: 'top' | 'bottom'
+  $closerToText: boolean
+}>`
   position: absolute;
   height: 12px;
   width: 12px;
-  ${({ $position }) =>
+  ${({ $position, $closerToText }) =>
     $position === 'top'
       ? css`
-          top: -2px;
+          top: ${$closerToText ? '6px' : '-2px'};
         `
       : css`
-          bottom: 2px;
+          bottom: ${$closerToText ? '10px' : '2px'};
         `}
-  right: -6px;
+  right: ${({ $closerToText }) => ($closerToText ? '4px' : '-6px')};
   border-radius: 6px;
   background: ${(p) => p.theme.colors.status.warning};
 `

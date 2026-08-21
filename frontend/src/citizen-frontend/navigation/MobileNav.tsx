@@ -47,7 +47,7 @@ import {
   DropDownLocalLink
 } from './shared-components'
 import {
-  isPersonalDetailsIncomplete,
+  useHasPersonalDetailsTasks,
   useChildrenWithOwnPage,
   useUnreadChildNotifications,
   useUnreadDecisions
@@ -64,6 +64,7 @@ export default React.memo(function MobileNav() {
     }
   )
   const unreadDecisions = useUnreadDecisions()
+  const hasPersonalDetailsTasks = useHasPersonalDetailsTasks()
 
   const [menuOpen, setMenuOpen] = useState<'children' | 'submenu'>()
   const toggleSubMenu = useCallback(
@@ -117,9 +118,7 @@ export default React.memo(function MobileNav() {
                 data-qa="sub-nav-menu-mobile"
               >
                 <AttentionIndicator
-                  toggled={
-                    isPersonalDetailsIncomplete(user) || unreadDecisions > 0
-                  }
+                  toggled={hasPersonalDetailsTasks || unreadDecisions > 0}
                   position="top"
                   data-qa="attention-indicator-sub-menu-mobile"
                 >
@@ -369,6 +368,7 @@ const Menu = React.memo(function Menu({
 }) {
   const t = useTranslation()
   const [lang, setLang] = useLang()
+  const hasPersonalDetailsTasks = useHasPersonalDetailsTasks()
   const lock = user.authLevel !== 'STRONG' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
@@ -393,21 +393,28 @@ const Menu = React.memo(function Menu({
         >
           {t.header.nav.applications} {lock}
         </DropDownLink>
-        <DropDownLink
-          data-qa="sub-nav-menu-decisions"
-          to="/decisions"
-          onClick={closeMenu}
+        <AttentionIndicator
+          toggled={unreadDecisions > 0}
+          position="top"
+          closerToText
+          data-qa="messages-notification"
         >
-          {t.header.nav.decisions} {lock}
-          {unreadDecisions ? (
-            <CircledChar
-              aria-label={`${unreadDecisions} ${t.header.notifications}`}
-              data-qa="sub-nav-menu-decisions-notification-count"
-            >
-              {unreadDecisions}
-            </CircledChar>
-          ) : null}
-        </DropDownLink>
+          <DropDownLink
+            data-qa="sub-nav-menu-decisions"
+            to="/decisions"
+            onClick={closeMenu}
+          >
+            {t.header.nav.decisions} {lock}
+            {unreadDecisions ? (
+              <CircledChar
+                aria-label={`${unreadDecisions} ${t.header.notifications}`}
+                data-qa="sub-nav-menu-decisions-notification-count"
+              >
+                {unreadDecisions}
+              </CircledChar>
+            ) : null}
+          </DropDownLink>
+        </AttentionIndicator>
         <DropDownLink
           data-qa="sub-nav-menu-income"
           to="/income"
@@ -417,21 +424,20 @@ const Menu = React.memo(function Menu({
           {t.header.nav.income} {lock}
         </DropDownLink>
         <Separator />
-        <DropDownLink
-          data-qa="sub-nav-menu-personal-details"
-          to="/personal-details"
-          onClick={closeMenu}
+        <AttentionIndicator
+          toggled={hasPersonalDetailsTasks}
+          position="top"
+          closerToText
+          data-qa="personal-details-notification"
         >
-          {t.header.nav.personalDetails}
-          {isPersonalDetailsIncomplete(user) && (
-            <CircledChar
-              aria-label={t.header.attention}
-              data-qa="personal-details-notification"
-            >
-              !
-            </CircledChar>
-          )}
-        </DropDownLink>
+          <DropDownLink
+            data-qa="sub-nav-menu-personal-details"
+            to="/personal-details"
+            onClick={closeMenu}
+          >
+            {t.header.nav.personalDetails}
+          </DropDownLink>
+        </AttentionIndicator>
         <DropDownLocalLink key="sub-nav-menu-logout" href={logoutUrl}>
           {t.header.logout}
           <FontAwesomeIcon icon={farSignOut} />

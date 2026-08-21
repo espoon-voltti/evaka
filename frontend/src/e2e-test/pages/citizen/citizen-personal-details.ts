@@ -15,6 +15,7 @@ export default class CitizenPersonalDetails {
   addEmailTask: Element
   verifyEmailTask: Element
   addPhoneTask: Element
+  addWeakLoginTask: Element
 
   constructor(page: Page) {
     this.personDetailsSection = new PersonDetailsSection(
@@ -35,6 +36,7 @@ export default class CitizenPersonalDetails {
     this.addEmailTask = page.findByDataQa('task-add-email')
     this.verifyEmailTask = page.findByDataQa('task-verify-email')
     this.addPhoneTask = page.findByDataQa('task-add-phone')
+    this.addWeakLoginTask = page.findByDataQa('task-add-weak-login')
   }
 }
 

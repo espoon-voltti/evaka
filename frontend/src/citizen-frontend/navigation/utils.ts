@@ -9,12 +9,12 @@ import { useCallback, useMemo } from 'react'
 import type { ChildId } from 'lib-common/generated/api-types/shared'
 import { useQuery } from 'lib-common/query'
 
-import type { User } from '../auth/state'
 import { useUser } from '../auth/state'
 import { unreadChildDocumentsCountQuery } from '../child-documents/queries'
 import { childrenQuery } from '../children/queries'
 import { unreadPedagogicalDocumentsCountQuery } from '../children/sections/pedagogical-documents/queries'
 import { applicationNotificationsQuery } from '../decisions/queries'
+import { usePersonalDetailsTasks } from '../personal-details/tasks'
 
 const empty = {}
 
@@ -68,7 +68,9 @@ export function useUnreadDecisions() {
   return decisionWaitingConfirmationCount
 }
 
-export const isPersonalDetailsIncomplete = (user: User) => !user.email
+export function useHasPersonalDetailsTasks() {
+  return usePersonalDetailsTasks().length > 0
+}
 
 export const useOnEscape = (action: () => void) =>
   useCallback(
