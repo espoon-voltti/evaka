@@ -47,7 +47,7 @@ import {
   DropDownLocalLink
 } from './shared-components'
 import {
-  isPersonalDetailsIncomplete,
+  useHasPersonalDetailsTasks,
   useChildrenWithOwnPage,
   useUnreadChildNotifications,
   useUnreadDecisions
@@ -64,6 +64,7 @@ export default React.memo(function MobileNav() {
     }
   )
   const unreadDecisions = useUnreadDecisions()
+  const hasPersonalDetailsTasks = useHasPersonalDetailsTasks()
 
   const [menuOpen, setMenuOpen] = useState<'children' | 'submenu'>()
   const toggleSubMenu = useCallback(
@@ -117,9 +118,7 @@ export default React.memo(function MobileNav() {
                 data-qa="sub-nav-menu-mobile"
               >
                 <AttentionIndicator
-                  toggled={
-                    isPersonalDetailsIncomplete(user) || unreadDecisions > 0
-                  }
+                  toggled={hasPersonalDetailsTasks || unreadDecisions > 0}
                   position="top"
                   data-qa="attention-indicator-sub-menu-mobile"
                 >
@@ -369,6 +368,7 @@ const Menu = React.memo(function Menu({
 }) {
   const t = useTranslation()
   const [lang, setLang] = useLang()
+  const hasPersonalDetailsTasks = useHasPersonalDetailsTasks()
   const lock = user.authLevel !== 'STRONG' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
@@ -425,7 +425,7 @@ const Menu = React.memo(function Menu({
         </DropDownLink>
         <Separator />
         <AttentionIndicator
-          toggled={isPersonalDetailsIncomplete(user)}
+          toggled={hasPersonalDetailsTasks}
           position="top"
           closerToText
           data-qa="personal-details-notification"

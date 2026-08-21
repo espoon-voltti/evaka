@@ -45,8 +45,8 @@ import {
   LanguageMenu
 } from './shared-components'
 import {
-  isPersonalDetailsIncomplete,
   useChildrenWithOwnPage,
+  useHasPersonalDetailsTasks,
   useUnreadChildNotifications,
   useDropdownMenuKeyboardNavigation,
   useMenubarKeyboardNavigation
@@ -388,7 +388,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
     close
   )
 
-  const showUserAttentionIndicator = isPersonalDetailsIncomplete(user)
+  const hasPersonalDetailsTasks = useHasPersonalDetailsTasks()
   const weakAuth = user.authLevel !== 'STRONG'
   const maybeLockElem = weakAuth && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
@@ -413,7 +413,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
       >
         {t.header.nav.subNavigationMenu}
         <AttentionIndicator
-          toggled={showUserAttentionIndicator || unreadDecisions > 0}
+          toggled={hasPersonalDetailsTasks || unreadDecisions > 0}
           position="bottom"
           data-qa="attention-indicator-sub-menu-desktop"
         >
@@ -489,7 +489,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
           <Separator role="separator" />
           <MenuBarItem role="none">
             <AttentionIndicator
-              toggled={showUserAttentionIndicator}
+              toggled={hasPersonalDetailsTasks}
               position="top"
               closerToText
               data-qa="personal-details-notification"
@@ -500,7 +500,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
                 onClick={close}
                 aria-label={
                   t.header.nav.personalDetails +
-                  (showUserAttentionIndicator ? ` (${t.header.attention})` : '')
+                  (hasPersonalDetailsTasks ? ` (${t.header.attention})` : '')
                 }
                 role="menuitem"
               >
