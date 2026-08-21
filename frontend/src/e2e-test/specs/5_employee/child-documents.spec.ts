@@ -451,7 +451,7 @@ test.describe('Employee - Child documents', () => {
     await expect(childDocument.status).toHaveText('Luonnos')
   })
 
-  test('Staff cannot see child documents section for child with placement starting in more than 30 days', async ({
+  test('Staff cannot see child documents section for child with placement starting in more than 60 days', async ({
     newEvakaPage
   }) => {
     const group1: DevDaycareGroup = await Fixture.daycareGroup({
@@ -473,11 +473,11 @@ test.describe('Employee - Child documents', () => {
 
     await Fixture.guardian(childFuture, testAdult).save()
 
-    // Create a placement that starts in 40 days (outside the 30-day window)
+    // Create a placement that starts in 70 days (outside the 60-day window)
     const futurePlacement = await Fixture.placement({
       childId: childFuture.id,
       unitId: testDaycare.id,
-      startDate: now.toLocalDate().addDays(40),
+      startDate: now.toLocalDate().addDays(70),
       endDate: now.toLocalDate().addYears(1),
       type: 'DAYCARE'
     }).save()
@@ -499,6 +499,7 @@ test.describe('Employee - Child documents', () => {
     await employeeLogin(page, staffEmployee)
     await page.goto(`${config.employeeUrl}/child-information/${childFuture.id}`)
     const childInformationPage = new ChildInformationPage(page)
+    await childInformationPage.waitUntilLoaded()
 
     await childInformationPage.assertSomeCollapsiblesVisible({
       childDocuments: false
