@@ -84,7 +84,7 @@
     "oxlint-tsgolint": "7.0.2001",
     "playwright": "1.62.1",
     "postcss": "8.5.26",
-    "postcss-preset-env": "11.3.2",
+    "postcss-preset-env": "11.4.0",
     "rollup": "4.62.4",
     "terser": "5.49.2",
     "ts-node": "10.9.2",
