@@ -443,26 +443,33 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             </DropDownLink>
           </MenuBarItem>
           <MenuBarItem role="none">
-            <DropDownLink
-              data-qa="sub-nav-menu-decisions"
-              to="/decisions"
-              onClick={close}
-              aria-label={
-                t.header.nav.decisions +
-                (weakAuth ? ` (${t.header.requiresStrongAuth})` : '') +
-                (unreadDecisions
-                  ? ` ${unreadDecisions} ${t.header.notifications}`
-                  : '')
-              }
-              role="menuitem"
+            <AttentionIndicator
+              toggled={unreadDecisions > 0}
+              position="top"
+              closerToText
+              data-qa="decisions-notification"
             >
-              {t.header.nav.decisions} {maybeLockElem}
-              {unreadDecisions ? (
-                <CircledChar data-qa="sub-nav-menu-decisions-notification-count">
-                  {unreadDecisions}
-                </CircledChar>
-              ) : null}
-            </DropDownLink>
+              <DropDownLink
+                data-qa="sub-nav-menu-decisions"
+                to="/decisions"
+                onClick={close}
+                aria-label={
+                  t.header.nav.decisions +
+                  (weakAuth ? ` (${t.header.requiresStrongAuth})` : '') +
+                  (unreadDecisions
+                    ? ` ${unreadDecisions} ${t.header.notifications}`
+                    : '')
+                }
+                role="menuitem"
+              >
+                {t.header.nav.decisions} {maybeLockElem}
+                {unreadDecisions ? (
+                  <CircledChar data-qa="sub-nav-menu-decisions-notification-count">
+                    {unreadDecisions}
+                  </CircledChar>
+                ) : null}
+              </DropDownLink>
+            </AttentionIndicator>
           </MenuBarItem>
           <MenuBarItem role="none">
             <DropDownLink
@@ -481,26 +488,25 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
           </MenuBarItem>
           <Separator role="separator" />
           <MenuBarItem role="none">
-            <DropDownLink
-              data-qa="sub-nav-menu-personal-details"
-              to="/personal-details"
-              onClick={close}
-              aria-label={
-                t.header.nav.personalDetails +
-                (showUserAttentionIndicator ? ` (${t.header.attention})` : '')
-              }
-              role="menuitem"
+            <AttentionIndicator
+              toggled={showUserAttentionIndicator}
+              position="top"
+              closerToText
+              data-qa="personal-details-notification"
             >
-              {t.header.nav.personalDetails}
-              {showUserAttentionIndicator && (
-                <CircledChar
-                  aria-label={t.header.attention}
-                  data-qa="personal-details-notification"
-                >
-                  !
-                </CircledChar>
-              )}
-            </DropDownLink>
+              <DropDownLink
+                data-qa="sub-nav-menu-personal-details"
+                to="/personal-details"
+                onClick={close}
+                aria-label={
+                  t.header.nav.personalDetails +
+                  (showUserAttentionIndicator ? ` (${t.header.attention})` : '')
+                }
+                role="menuitem"
+              >
+                {t.header.nav.personalDetails}
+              </DropDownLink>
+            </AttentionIndicator>
           </MenuBarItem>
           <MenuBarItem role="none">
             <DropDownLocalLink
