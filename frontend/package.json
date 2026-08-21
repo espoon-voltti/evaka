@@ -75,7 +75,7 @@
     "@types/stylis": "4.2.7",
     "@vitejs/plugin-legacy": "8.2.3",
     "@vitejs/plugin-react": "6.0.5",
-    "concurrently": "10.0.4",
+    "concurrently": "10.0.5",
     "eslint-plugin-lodash": "8.0.0",
     "jsdom": "30.0.1",
     "make-error-cause": "2.3.0",
