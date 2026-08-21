@@ -10,8 +10,10 @@ import evaka.core.DataRemovalEnv
 import evaka.core.caseprocess.deleteCaseProcesses
 import evaka.core.childimages.deleteImageFile
 import evaka.core.document.childdocument.deleteExpiredChildDocuments
+import evaka.core.messaging.DeletedMessageThreadBatch
 import evaka.core.messaging.deleteExpiredBulletinThreads
 import evaka.core.messaging.deleteExpiredMessageDrafts
+import evaka.core.messaging.deleteMessageThreadsOfExpiredChildren
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService
 import evaka.core.shared.ApplicationId
@@ -143,6 +145,13 @@ class DataRemovalService(
             dbc,
             now,
             expireDate = today.minusYears(10),
+            limit = limit,
+        )
+
+        deleteMessageThreadsOfExpiredChildren(
+            dbc,
+            now,
+            expiredChildIdsQuery = expiredChildIdsQuery(),
             limit = limit,
         )
 
@@ -355,9 +364,44 @@ class DataRemovalService(
         limit: Int,
     ) {
         logger.info { "Deleting at most $limit expired bulletin threads" }
+        val deletedCount =
+            deleteMessageThreads(
+                dbc,
+                now,
+                auditMeta =
+                    mapOf(
+                        "expireDate" to expiresBefore.toLocalDate(),
+                        "recipientExpireDate" to recipientExpireDate,
+                    ),
+            ) { tx ->
+                tx.deleteExpiredBulletinThreads(recipientExpireDate, expiresBefore, limit)
+            }
+        logger.info { "Deleted $deletedCount expired bulletin thread(s)" }
+    }
+
+    fun deleteMessageThreadsOfExpiredChildren(
+        dbc: Database.Connection,
+        now: HelsinkiDateTime,
+        expiredChildIdsQuery: QuerySql,
+        limit: Int,
+    ) {
+        logger.info { "Deleting at most $limit message threads of expired children" }
+        val deletedCount =
+            deleteMessageThreads(dbc, now) { tx ->
+                tx.deleteMessageThreadsOfExpiredChildren(expiredChildIdsQuery, limit)
+            }
+        logger.info { "Deleted $deletedCount message thread(s) of expired children" }
+    }
+
+    private fun deleteMessageThreads(
+        dbc: Database.Connection,
+        now: HelsinkiDateTime,
+        auditMeta: Map<String, Any?> = emptyMap(),
+        deleteBatch: (Database.Transaction) -> DeletedMessageThreadBatch,
+    ): Int {
         val deleted = dbc.transaction { tx ->
             tx.setStatementTimeout(Duration.ofMinutes(10))
-            val batch = tx.deleteExpiredBulletinThreads(recipientExpireDate, expiresBefore, limit)
+            val batch = deleteBatch(tx)
             asyncJobRunner.plan(
                 tx = tx,
                 payloads =
@@ -368,28 +412,21 @@ class DataRemovalService(
             )
             batch
         }
-        logger.info { "Deleted ${deleted.threadIds.size} expired bulletin thread(s)" }
-        val expireDate = expiresBefore.toLocalDate()
-        deleted.threadIds.forEach { threadId ->
+        deleted.threads.forEach { thread ->
             auditExpiredDelete(
                 entity = "message_thread",
-                targetId = AuditId(threadId),
-                meta =
-                    mapOf("expireDate" to expireDate, "recipientExpireDate" to recipientExpireDate),
+                targetId = AuditId(thread.threadId),
+                meta = auditMeta + ("childIds" to thread.childIds),
             )
         }
         deleted.contents.forEach { content ->
             auditExpiredDelete(
                 entity = "message_content",
                 targetId = AuditId(content.contentId),
-                meta =
-                    mapOf(
-                        "attachmentIds" to content.attachmentIds,
-                        "expireDate" to expireDate,
-                        "recipientExpireDate" to recipientExpireDate,
-                    ),
+                meta = auditMeta + ("attachmentIds" to content.attachmentIds),
             )
         }
+        return deleted.threads.size
     }
 
     fun deleteExpiredMessageDrafts(
@@ -1090,3 +1127,9 @@ HAVING max(p.end_date) < ${bind(date)}
 """
     )
 }
+
+/**
+ * Selects the ids of the children whose data can be removed altogether. The rule that decides this
+ * is not known yet, so no child expires.
+ */
+private fun expiredChildIdsQuery() = QuerySql { sql("SELECT id FROM child WHERE FALSE") }
