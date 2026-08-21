@@ -200,6 +200,12 @@ INSERT INTO attendance_reservation (child_id, date, start_time, end_time, create
 SELECT ${bind { it.childId }}, ${bind { it.date }}, NULL, NULL, ${bind(createdBy)}
 WHERE
     EXISTS (SELECT 1 FROM holiday_period WHERE period @> ${bind { it.date }}) AND
+    EXISTS (
+        SELECT 1 FROM placement pl
+        WHERE pl.child_id = ${bind { it.childId }}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind { it.date }}
+        AND pl.type = ANY(${bind(PlacementType.requiringAttendanceReservations)})
+    ) AND
     NOT EXISTS (SELECT 1 FROM attendance_reservation WHERE child_id = ${bind { it.childId }} AND date = ${bind { it.date }})
 RETURNING id
 """
