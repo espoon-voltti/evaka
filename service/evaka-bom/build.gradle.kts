@@ -12,7 +12,7 @@ dependencies {
         api("com.auth0:java-jwt:4.6.0")
         api("com.github.kagkarlsson:db-scheduler:16.12.0")
         api("com.github.mwiede:jsch:2.28.6")
-        api("com.google.guava:guava:33.6.0-jre")
+        api("com.google.guava:guava:33.7.0-jre")
         api("com.networknt:json-schema-validator:3.0.6")
         api("com.zaxxer:HikariCP:7.1.0")
         api("io.github.oshai:kotlin-logging-jvm:8.0.4")
