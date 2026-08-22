@@ -62,11 +62,11 @@ dependencies {
         api("org.apache.neethi:neethi:3.2.3")
         api("org.apache.tomcat.embed:tomcat-embed-core:11.0.24")
         api("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.25")
-        api("com.fasterxml.jackson.core:jackson-databind:2.22.1")
+        api("com.fasterxml.jackson.core:jackson-databind:2.22.2")
         api("org.postgresql:postgresql:42.7.13")
     }
 
-    api(platform("tools.jackson:jackson-bom:3.2.1"))
+    api(platform("tools.jackson:jackson-bom:3.2.2"))
     api(platform("com.squareup.okhttp3:okhttp-bom:5.4.0"))
     api(platform("io.opentelemetry:opentelemetry-bom:1.65.0"))
     api(platform("io.netty:netty-bom:4.2.17.Final"))
