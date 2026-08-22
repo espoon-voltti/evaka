@@ -5,19 +5,10 @@ __metadata:
   version: 10
   cacheKey: 10
 
-"@datadog/flagging-core@npm:2.0.2":
-  version: 2.0.2
-  resolution: "@datadog/flagging-core@npm:2.0.2"
-  dependencies:
-    spark-md5: "npm:^3.0.2"
-  checksum: 10/210a02fdd0d27df4a1739ec69ec88ec136531b55c69646a0961b928ebc760a4e1659328fe460333440a4e88ac0fe16a0cba516900fd5e69fecab5758e8212ed0
-  languageName: node
-  linkType: hard
-
-"@datadog/libdatadog@npm:0.9.4":
-  version: 0.9.4
-  resolution: "@datadog/libdatadog@npm:0.9.4"
-  checksum: 10/64df8feb444a0e7620e2fbe9ef58f460cefb3bed7bf18c5eb4bb4f596474a573a7cd82209955ed7fabde14af3888c07d391d8abf2c3d99945559afc853240a38
+"@datadog/libdatadog@npm:0.12.1":
+  version: 0.12.1
+  resolution: "@datadog/libdatadog@npm:0.12.1"
+  checksum: 10/0a671dcab96faf99d0b665288cb12e962827519089f0bf3f69121d03f0a6979a8641a4fb307f1f55263d0c5656e5038ecfa5c29802b66f8a0661d2ae27561275
   languageName: node
   linkType: hard
 
@@ -52,38 +43,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/openfeature-node-server@npm:2.0.2":
-  version: 2.0.2
-  resolution: "@datadog/openfeature-node-server@npm:2.0.2"
-  dependencies:
-    "@datadog/flagging-core": "npm:2.0.2"
-  peerDependencies:
-    "@openfeature/server-sdk": ">=1.15.1"
-  checksum: 10/719c551e8544f82935254bfe3122db24203ded76e855b8547308dbed4765f1342ebc68875e10e804c5ff78296de08efed18745a268c5dc5c2d75aa90d561ffcf
-  languageName: node
-  linkType: hard
-
-"@datadog/pprof@npm:5.17.0":
-  version: 5.17.0
-  resolution: "@datadog/pprof@npm:5.17.0"
+"@datadog/pprof@npm:5.18.0":
+  version: 5.18.0
+  resolution: "@datadog/pprof@npm:5.18.0"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^4.8.4"
-    pprof-format: "npm:^2.2.1"
+    pprof-format: "npm:^2.3.1"
     source-map: "npm:^0.8.0"
-  checksum: 10/b50d5cb7d77eca165bdc4a6d81d6d9c44c67aeaf4e86bc7702af3f601ace5d73c255849e5e4a00770f1ffa40fb4bb992b720fe29efd0f0d695da47c16680a83d
+  checksum: 10/1b137e71a78590c2018196b5eee71510eec5ddd3f65029b8375f373590f5ba1323236dc6a678970c621786f47d2f4190d9a0f9c703e22da9cf21af7f20b08bae
   languageName: node
   linkType: hard
 
-"@datadog/wasm-js-rewriter@npm:5.0.1":
-  version: 5.0.1
-  resolution: "@datadog/wasm-js-rewriter@npm:5.0.1"
+"@datadog/wasm-js-rewriter@npm:5.0.3":
+  version: 5.0.3
+  resolution: "@datadog/wasm-js-rewriter@npm:5.0.3"
   dependencies:
-    js-yaml: "npm:^4.1.0"
+    js-yaml: "npm:^4.3.1"
     lru-cache: "npm:^7.14.0"
-    module-details-from-path: "npm:^1.0.3"
-    node-gyp-build: "npm:^4.5.0"
-  checksum: 10/7f59c5e5731a3b671f4a91accab1e334ee3aeacb6a33b66a66179ab933b889a06265b37ee18c9dd44e99048f0ac0818d23d666fd1af82aeef63374b5f218f3be
+    module-details-from-path: "npm:^1.0.4"
+    node-gyp-build: "npm:^4.8.4"
+  checksum: 10/b99d91d146e55715fdbd528086da08536bdc4d87669bb489f2a864dc1963350276aa0c4914706df987ed9a6b44134f8642b3133a555a8835f78631f7f6945774
   languageName: node
   linkType: hard
 
@@ -1829,17 +1809,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:6.10.0":
-  version: 6.10.0
-  resolution: "dd-trace@npm:6.10.0"
+"dd-trace@npm:6.11.0":
+  version: 6.11.0
+  resolution: "dd-trace@npm:6.11.0"
   dependencies:
-    "@datadog/libdatadog": "npm:0.9.4"
+    "@datadog/libdatadog": "npm:0.12.1"
     "@datadog/native-appsec": "npm:11.0.1"
     "@datadog/native-iast-taint-tracking": "npm:4.2.0"
     "@datadog/native-metrics": "npm:3.1.2"
-    "@datadog/openfeature-node-server": "npm:2.0.2"
-    "@datadog/pprof": "npm:5.17.0"
-    "@datadog/wasm-js-rewriter": "npm:5.0.1"
+    "@datadog/pprof": "npm:5.18.0"
+    "@datadog/wasm-js-rewriter": "npm:5.0.3"
     "@opentelemetry/api": "npm:>=1.0.0 <1.10.0"
     "@opentelemetry/api-logs": "npm:<1.0.0"
     dc-polyfill: "npm:^0.1.11"
@@ -1855,8 +1834,6 @@ __metadata:
       optional: true
     "@datadog/native-metrics":
       optional: true
-    "@datadog/openfeature-node-server":
-      optional: true
     "@datadog/pprof":
       optional: true
     "@datadog/wasm-js-rewriter":
@@ -1867,7 +1844,7 @@ __metadata:
       optional: true
     oxc-parser:
       optional: true
-  checksum: 10/d934503c68aae5b52dc15d8e26055d5093010addea7447232d414861b426531476e4b8749727635dce777743cecbd7a040c59876f23eab4ae5eaae4d8df4e31e
+  checksum: 10/220de801d253efd3aa94dae4146890b3d01ee4e3b22607556537318e4ea3b964f58733538aed6b3174220ea1d6f7b9954648dfd31f107c59bad8c7a173fc8355
   languageName: node
   linkType: hard
 
@@ -2125,7 +2102,7 @@ __metadata:
     cookie-parser: "npm:1.4.7"
     cookie-signature: "npm:1.2.2"
     date-fns: "npm:4.4.0"
-    dd-trace: "npm:6.10.0"
+    dd-trace: "npm:6.11.0"
     express: "npm:5.2.1"
     express-basic-auth: "npm:1.2.1"
     express-http-proxy: "npm:2.1.2"
@@ -2723,7 +2700,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:^4.1.0":
+"js-yaml@npm:^4.3.1":
   version: 4.3.1
   resolution: "js-yaml@npm:4.3.1"
   dependencies:
@@ -3185,7 +3162,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"module-details-from-path@npm:^1.0.3, module-details-from-path@npm:^1.0.4":
+"module-details-from-path@npm:^1.0.4":
   version: 1.0.4
   resolution: "module-details-from-path@npm:1.0.4"
   checksum: 10/2ebfada5358492f6ab496b70f70a1042f2ee7a4c79d29467f59ed6704f741fb4461d7cecb5082144ed39a05fec4d19e9ff38b731c76228151be97227240a05b2
@@ -3274,7 +3251,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-gyp-build@npm:^4.5.0, node-gyp-build@npm:^4.8.4":
+"node-gyp-build@npm:^4.8.4":
   version: 4.8.4
   resolution: "node-gyp-build@npm:4.8.4"
   bin:
@@ -3781,10 +3758,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pprof-format@npm:^2.2.1":
-  version: 2.2.1
-  resolution: "pprof-format@npm:2.2.1"
-  checksum: 10/0be545b3b550dc4aa5c394ef00cab2c6da4f16fae3ecd32c09354fbde1311176f3a30d60a1246e640d734e47e05b20aad4961d8badbdba1d2e21ec07b967a150
+"pprof-format@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "pprof-format@npm:2.3.1"
+  checksum: 10/790a7e8dc62442ed47290ddd12518bcd6ab00598fdb043343f0576bc204635c3e229cb34354f3ab1a3082389e7b213b1039a510901c967b6ae85a2e4406e552c
   languageName: node
   linkType: hard
 
@@ -4261,13 +4238,6 @@ __metadata:
   version: 0.8.0
   resolution: "source-map@npm:0.8.0"
   checksum: 10/ad71b0c03715d970c2d114f0d403cc02c1e60e9ce997715f0a69bde2604b1d1ac287760f93d9763313a2a2b2c297df901f3378569f750a240e936ac5ddfd6b31
-  languageName: node
-  linkType: hard
-
-"spark-md5@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "spark-md5@npm:3.0.2"
-  checksum: 10/60981e181a296b2d16064ef86607f78d7eb1e08a5f39366239bb9cdd6bc3838fb2f667f2506e81c8d5c71965cdd6f18a17fb1c9a8368eeb407b9dd8188e95473
   languageName: node
   linkType: hard
 
