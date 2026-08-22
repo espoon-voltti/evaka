@@ -236,6 +236,8 @@ class ReservationControllerCitizen(
                                                                     today,
                                                                     reservationEnabledPlacementRangesByChild[
                                                                         child.id]!!,
+                                                                    citizenCalendarEnv
+                                                                        .calendarOpenBeforePlacementDays,
                                                                 ),
                                                         )
                                                     }
@@ -292,6 +294,7 @@ class ReservationControllerCitizen(
                         audit,
                         body,
                         featureConfig.citizenReservationThresholdHours,
+                        citizenCalendarEnv.calendarOpenBeforePlacementDays,
                         env.plannedAbsenceEnabledForHourBasedServiceNeeds,
                     )
                 }

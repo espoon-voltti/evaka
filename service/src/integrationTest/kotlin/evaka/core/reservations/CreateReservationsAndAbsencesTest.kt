@@ -74,6 +74,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
     private val queryRange = FiniteDateRange(monday.minusDays(10), monday.plusDays(10))
 
     private val citizenReservationThresholdHours = 150L
+    private val calendarOpenBeforePlacementDays = 30
     private val beforeThreshold = HelsinkiDateTime.of(monday.minusDays(7), LocalTime.of(12, 0))
     private val afterThreshold = HelsinkiDateTime.of(monday.minusDays(7), LocalTime.of(21, 0))
 
@@ -144,6 +145,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -203,6 +205,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -250,6 +253,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -293,6 +297,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -342,6 +347,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -407,6 +413,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     )
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -457,6 +464,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 AuditContext(),
                 listOf(DailyReservationRequest.Absent(childId = child.id, date = monday)),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -507,6 +515,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 AuditContext(),
                 listOf(DailyReservationRequest.Absent(childId = child.id, date = monday)),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -572,6 +581,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     )
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -630,6 +640,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Nothing(childId = child.id, date = tuesday),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -710,6 +721,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
                 true,
             )
         }
@@ -799,6 +811,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Nothing(childId = child.id, date = wednesday),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -872,6 +885,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Nothing(childId = child.id, date = wednesday),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -922,6 +936,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -940,6 +955,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     )
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -993,6 +1009,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 AuditContext(),
                 listOf(DailyReservationRequest.Present(childId = child.id, date = monday)),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -1054,6 +1071,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         ),
                     ),
                     citizenReservationThresholdHours,
+                    calendarOpenBeforePlacementDays,
                 )
             }
 
@@ -1097,6 +1115,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Present(childId = child.id, date = holidayPeriodStart)
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -1153,6 +1172,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -1213,6 +1233,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         )
                     ),
                     citizenReservationThresholdHours,
+                    calendarOpenBeforePlacementDays,
                 )
             }
         }
@@ -1232,6 +1253,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                         )
                     ),
                     citizenReservationThresholdHours,
+                    calendarOpenBeforePlacementDays,
                 )
             }
         }
@@ -1303,6 +1325,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -1359,6 +1382,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Present(childId = child.id, date = holidayPeriodStart)
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -1412,6 +1436,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Nothing(childId = child.id, date = holidayPeriodStart)
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -1477,6 +1502,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     )
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -1542,6 +1568,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     )
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -1608,6 +1635,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -1675,6 +1703,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -1771,6 +1800,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(child.id, date, timeRange)
                 },
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
                 plannedAbsenceEnabledForHourBasedServiceNeeds = true,
             )
         }
@@ -1836,6 +1866,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(child.id, date, timeRange)
                 },
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
                 plannedAbsenceEnabledForHourBasedServiceNeeds = true,
             )
         }
@@ -1922,6 +1953,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                 AuditContext(),
                 listOf(DailyReservationRequest.Reservations(child.id, monday, preschoolTime)),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -1985,6 +2017,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     DailyReservationRequest.Reservations(child.id, monday, veryShortReservation)
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -2066,6 +2099,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 
@@ -2136,6 +2170,7 @@ class CreateReservationsAndAbsencesTest : PureJdbiTest(resetDbBeforeEach = true)
                     ),
                 ),
                 citizenReservationThresholdHours,
+                calendarOpenBeforePlacementDays,
             )
         }
 

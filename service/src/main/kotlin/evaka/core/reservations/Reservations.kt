@@ -198,6 +198,7 @@ fun createReservationsAndAbsences(
     audit: AuditContext,
     requests: List<DailyReservationRequest>,
     citizenReservationThresholdHours: Long,
+    calendarOpenBeforePlacementDays: Int,
     plannedAbsenceEnabledForHourBasedServiceNeeds: Boolean = false,
 ) {
     if (requests.isEmpty()) return
@@ -246,7 +247,11 @@ fun createReservationsAndAbsences(
         val reservationEnabledPlacementRanges =
             reservationEnabledPlacementRangesByChild[req.childId]
         if (holidayPeriod != null && reservationEnabledPlacementRanges != null) {
-            holidayPeriod.effect(today, reservationEnabledPlacementRanges)
+            holidayPeriod.effect(
+                today,
+                reservationEnabledPlacementRanges,
+                calendarOpenBeforePlacementDays,
+            )
         } else {
             null
         }

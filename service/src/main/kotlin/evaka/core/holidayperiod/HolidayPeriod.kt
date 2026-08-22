@@ -44,11 +44,23 @@ data class HolidayPeriod(
     fun effect(
         today: LocalDate,
         reservationEnabledPlacementRanges: List<ReservationEnabledPlacementRange>,
-    ): HolidayPeriodEffect? =
-        when {
-            reservationEnabledPlacementRanges.none {
-                it.range.overlaps(FiniteDateRange(reservationsOpenOn, reservationDeadline))
-            } -> {
+        calendarOpenBeforePlacementDays: Int,
+    ): HolidayPeriodEffect? {
+        // No effect unless a placement was active during the reservation period. Before the
+        // deadline, placements starting in the near future also count if the citizen calendar
+        // is already open for them (it opens calendarOpenBeforePlacementDays before the
+        // placement starts). After the deadline they no longer count, so a child who could not
+        // answer in time is free to make normal reservations instead of being locked.
+        val relevantPeriod =
+            if (today <= reservationDeadline)
+                FiniteDateRange(
+                    reservationsOpenOn,
+                    reservationDeadline.plusDays(calendarOpenBeforePlacementDays.toLong()),
+                )
+            else FiniteDateRange(reservationsOpenOn, reservationDeadline)
+
+        return when {
+            reservationEnabledPlacementRanges.none { it.range.overlaps(relevantPeriod) } -> {
                 null
             }
 
@@ -80,6 +92,7 @@ data class HolidayPeriod(
                 }
             }
         }
+    }
 }
 
 data class HolidayPeriodCreate(
