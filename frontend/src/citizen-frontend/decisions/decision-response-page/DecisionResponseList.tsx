@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import React, { Fragment, useMemo, useState } from 'react'
 import { useLocation } from 'wouter'
 
 import type { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
@@ -31,42 +31,36 @@ export default React.memo(function DecisionResponseList() {
 
   const decisionsRequest = useQueryResult(pendingDecisionsQuery())
 
-  // Local state to keep decisions visible after handling them
+  // Handled decisions drop out of the pending decisions response, so the list is
+  // captured on first load and their new statuses are overlaid from local state.
+  const [initialDecisions, setInitialDecisions] = useState<
+    DecisionWithValidStartDatePeriod[] | null
+  >(null)
   const [localDecisionStatuses, setLocalDecisionStatuses] = useState<
     Map<DecisionId, DecisionStatus>
   >(new Map())
 
-  const initializedRef = useRef(false)
-  const initialDecisionsRef = useRef<DecisionWithValidStartDatePeriod[]>([])
+  if (initialDecisions === null && decisionsRequest.isSuccess) {
+    setInitialDecisions(sortDecisions(decisionsRequest.value))
+  }
 
-  useEffect(() => {
-    if (decisionsRequest.isSuccess && !initializedRef.current) {
-      initialDecisionsRef.current = sortDecisions(decisionsRequest.value)
-      initializedRef.current = true
-    }
-  }, [decisionsRequest])
-
-  const displayedDecisions = useMemo(() => {
-    if (!initializedRef.current) {
-      return decisionsRequest.isSuccess
-        ? sortDecisions(decisionsRequest.value)
-        : []
-    }
-
-    return initialDecisionsRef.current.map((item) => {
-      const localStatus = localDecisionStatuses.get(item.decision.id)
-      if (localStatus) {
-        return {
-          ...item,
-          decision: {
-            ...item.decision,
-            status: localStatus
+  const displayedDecisions = useMemo(
+    () =>
+      (initialDecisions ?? []).map((item) => {
+        const localStatus = localDecisionStatuses.get(item.decision.id)
+        if (localStatus) {
+          return {
+            ...item,
+            decision: {
+              ...item.decision,
+              status: localStatus
+            }
           }
         }
-      }
-      return item
-    })
-  }, [decisionsRequest, localDecisionStatuses])
+        return item
+      }),
+    [initialDecisions, localDecisionStatuses]
+  )
 
   const handleDecisionHandled = (
     decisionId: DecisionId,
