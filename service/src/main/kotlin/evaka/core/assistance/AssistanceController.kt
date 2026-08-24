@@ -575,8 +575,9 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable child: ChildId,
         @RequestBody body: OtherAssistanceMeasureUpdate,
-    ): OtherAssistanceMeasureId =
-        db.connect { dbc ->
+    ): OtherAssistanceMeasureId {
+        val audit = AuditContext().add(child).observeDate(body.validDuring.start)
+        return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -585,15 +586,13 @@ class AssistanceController(
                         Action.Child.CREATE_OTHER_ASSISTANCE_MEASURE,
                         child,
                     )
-                    tx.insertOtherAssistanceMeasure(user, clock.now(), child, body)
+                    tx.insertOtherAssistanceMeasure(user, clock.now(), child, body).also {
+                        audit.add(it)
+                    }
                 }
             }
-            .also { id ->
-                Audit.OtherAssistanceMeasureCreate.log(
-                    targetId = AuditId(child),
-                    objectId = AuditId(id),
-                )
-            }
+            .also { audit.log(Audit.OtherAssistanceMeasureCreate, clock) }
+    }
 
     @PostMapping("/employee/other-assistance-measures/{id}")
     fun updateOtherAssistanceMeasure(
