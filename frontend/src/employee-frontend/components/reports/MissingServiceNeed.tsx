@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
@@ -57,6 +57,13 @@ export default React.memo(function MissingServiceNeed() {
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
+  const changeFilters = useCallback(
+    (values: Partial<MissingServiceNeedReportFilters>) => {
+      setFilters((prev) => ({ ...prev, ...values }))
+      setDisplayFilters(emptyDisplayFilters)
+    },
+    []
+  )
   const displayFilter = useCallback(
     (row: MissingServiceNeedReportResultRow): boolean =>
       !(
@@ -64,10 +71,6 @@ export default React.memo(function MissingServiceNeed() {
       ),
     [displayFilters.careArea]
   )
-
-  useEffect(() => {
-    setDisplayFilters(emptyDisplayFilters)
-  }, [filters])
 
   const filteredRows = useMemo(
     () => rows.map((rs) => rs.filter(displayFilter)),
@@ -84,7 +87,7 @@ export default React.memo(function MissingServiceNeed() {
           <FilterLabel>{i18n.reports.common.startDate}</FilterLabel>
           <DatePicker
             date={filters.from}
-            onChange={(from) => setFilters({ ...filters, from })}
+            onChange={(from) => changeFilters({ from })}
             locale={lang}
           />
         </FilterRow>
@@ -92,7 +95,7 @@ export default React.memo(function MissingServiceNeed() {
           <FilterLabel>{i18n.reports.common.endDate}</FilterLabel>
           <DatePicker
             date={filters.to}
-            onChange={(to) => setFilters({ ...filters, to })}
+            onChange={(to) => changeFilters({ to })}
             locale={lang}
           />
         </FilterRow>
