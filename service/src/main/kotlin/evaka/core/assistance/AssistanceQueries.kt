@@ -170,6 +170,18 @@ WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("d"))}
 }
     .toList<DaycareAssistance>()
 
+fun Database.Read.getDaycareAssistance(id: DaycareAssistanceId): DaycareAssistance? = createQuery {
+    sql(
+        """
+SELECT d.id, d.child_id, d.valid_during, d.level, d.modified, e.id AS modified_by_id, e.name AS modified_by_name, e.type AS modified_by_type
+FROM daycare_assistance d
+LEFT JOIN evaka_user e ON d.modified_by = e.id
+WHERE d.id = ${bind(id)}
+"""
+    )
+}
+    .exactlyOneOrNull<DaycareAssistance>()
+
 fun Database.Transaction.insertDaycareAssistance(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
