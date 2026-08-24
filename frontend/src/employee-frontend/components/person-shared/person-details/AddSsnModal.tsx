@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import type { PersonId } from 'lib-common/generated/api-types/shared'
@@ -33,10 +33,6 @@ function AddSsnModal({ personId }: Props) {
   const [ssn, setSsn] = useState<string>('')
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [error, setError] = useState<'invalid' | 'conflict' | 'unknown'>()
-
-  useEffect(() => {
-    setError(undefined)
-  }, [ssn])
 
   const { mutateAsync: addSsn } = useMutationResult(addSsnMutation)
 
@@ -73,7 +69,10 @@ function AddSsnModal({ personId }: Props) {
     >
       <InputField
         value={ssn}
-        onChange={(value) => setSsn(value)}
+        onChange={(value) => {
+          setSsn(value)
+          setError(undefined)
+        }}
         data-qa="ssn-input"
       />
       <Error>
