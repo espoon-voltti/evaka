@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
@@ -40,7 +40,11 @@ export default React.memo(function UnitList({
   const t = useTranslation()
 
   const [showMoreUnits, setShowMoreUnits] = useState<boolean>(false)
-  useEffect(() => setShowMoreUnits(false), [selectedAddress])
+  const [previousAddress, setPreviousAddress] = useState(selectedAddress)
+  if (previousAddress !== selectedAddress) {
+    setPreviousAddress(selectedAddress)
+    setShowMoreUnits(false)
+  }
 
   const mappedUnitsWithDistances = useMemo(
     () =>
