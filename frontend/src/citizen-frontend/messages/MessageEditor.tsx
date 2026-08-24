@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import partition from 'lodash/partition'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
@@ -58,12 +58,13 @@ import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import { isPrimaryRecipient } from './utils'
 
-const emptyMessage: CitizenMessageBody = {
+type MessageDraft = Omit<CitizenMessageBody, 'attachmentIds'>
+
+const emptyMessage: MessageDraft = {
   title: '',
   content: '',
   recipients: [],
-  children: [],
-  attachmentIds: []
+  children: []
 }
 
 interface Props {
@@ -100,7 +101,7 @@ export default React.memo(function MessageEditor({
     [recipientOptions]
   )
 
-  const [message, setMessage] = useState<CitizenMessageBody>(
+  const [message, setMessage] = useState<MessageDraft>(
     childIds.length === 1
       ? {
           ...emptyMessage,
@@ -116,20 +117,14 @@ export default React.memo(function MessageEditor({
 
   const [isChildSelectionTouched, setChildSelectionTouched] = useBoolean(false)
 
-  useEffect(
-    () =>
-      setMessage((prev) => ({
-        ...prev,
-        attachmentIds: attachments.map((a) => a.id)
-      })),
-    [attachments]
-  )
-
   const { mutateAsync: deleteAttachment } = useMutationResult(
     deleteAttachmentMutation
   )
 
-  const send = useCallback(() => onSend(message), [message, onSend])
+  const send = useCallback(
+    () => onSend({ ...message, attachmentIds: attachments.map((a) => a.id) }),
+    [attachments, message, onSend]
+  )
 
   const selectedChildren = useMemo(
     () => children_.filter((c) => message.children.includes(c.id)),
