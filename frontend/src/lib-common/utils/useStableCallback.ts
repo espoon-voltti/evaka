@@ -8,6 +8,7 @@ export function useStableCallback<Args extends unknown[], Ret>(
   callback: (...args: Args) => Ret
 ): (...args: Args) => Ret {
   const callbackRef = useRef(callback)
+  // oxlint-disable-next-line react/refs
   callbackRef.current = callback
   return useCallback((...args: Args) => callbackRef.current(...args), [])
 }
