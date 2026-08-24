@@ -628,6 +628,7 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: OtherAssistanceMeasureId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl
@@ -640,7 +641,13 @@ class AssistanceController(
                         )
                         .let {
                             if (it.isPermitted()) {
-                                tx.deleteOtherAssistanceMeasure(id)
+                                tx.deleteOtherAssistanceMeasure(id)?.also { deleted ->
+                                    audit
+                                        .add(deleted.childId)
+                                        .observeDate(deleted.validDuring.start)
+                                        .addMeta("startDate", deleted.validDuring.start)
+                                        .addMeta("endDate", deleted.validDuring.end)
+                                }
                                 id
                             } else {
                                 null
@@ -649,7 +656,7 @@ class AssistanceController(
                 }
             }
             .also { deletedId ->
-                deletedId?.let { Audit.OtherAssistanceMeasureDelete.log(targetId = AuditId(it)) }
+                deletedId?.let { audit.log(Audit.OtherAssistanceMeasureDelete, clock) }
             }
     }
 

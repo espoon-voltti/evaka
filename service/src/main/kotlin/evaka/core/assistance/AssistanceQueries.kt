@@ -416,7 +416,18 @@ WHERE id = ${bind(id)}
 }
     .updateExactlyOne()
 
-fun Database.Transaction.deleteOtherAssistanceMeasure(id: OtherAssistanceMeasureId) = createUpdate {
-    sql("DELETE FROM other_assistance_measure WHERE id = ${bind(id)}")
+fun Database.Transaction.deleteOtherAssistanceMeasure(
+    id: OtherAssistanceMeasureId
+): OtherAssistanceMeasure? = createUpdate {
+    sql(
+        """
+WITH o AS (
+    DELETE FROM other_assistance_measure WHERE id = ${bind(id)}
+    RETURNING id, child_id, valid_during, type, modified, modified_by
+) SELECT $otherAssistanceSelectFields
+FROM o LEFT JOIN evaka_user e ON o.modified_by = e.id
+"""
+    )
 }
-    .execute()
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull<OtherAssistanceMeasure>()
