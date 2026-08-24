@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 
 import type { UpdateStateFn } from 'lib-common/form-state'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
@@ -58,17 +58,7 @@ export default React.memo(function GroupModal({ unitId }: Props) {
     aromiCustomerId: null
   }
   const [form, setForm] = useState<CreateGroupForm>(initialForm)
-  const [validationResult, setValidationResult] =
-    useState<FormValidationResult>({
-      valid: true,
-      fields: {
-        name: true,
-        startDate: true,
-        aromiCustomerId: true
-      }
-    })
-
-  useEffect(() => {
+  const validationResult = useMemo<FormValidationResult>(() => {
     const fields = {
       name: form.name.length > 0,
       startDate: form.startDate !== null,
@@ -77,10 +67,10 @@ export default React.memo(function GroupModal({ unitId }: Props) {
         form.aromiCustomerId === null ||
         form.aromiCustomerId.trim().length <= AROMI_CUSTOMER_ID_MAX_LENGTH
     }
-    setValidationResult({
+    return {
       valid: allPropertiesTrue(fields),
       fields
-    })
+    }
   }, [form])
 
   const assignForm: UpdateStateFn<CreateGroupForm> = (values) => {

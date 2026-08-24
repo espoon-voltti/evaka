@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { Failure } from 'lib-common/api'
@@ -80,7 +80,8 @@ export default React.memo(function DecisionResponse({
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [displayCascadeWarning, setDisplayCascadeWarning] =
     useState<boolean>(false)
-  const [dateErrorMessage, setDateErrorMessage] = useState<string>('')
+  const dateErrorMessage =
+    requestedStartDate === null ? t.validationErrors.validDate : ''
   const { setErrorMessage } = useContext(OverlayContext)
   const getUnitName = () => {
     switch (decision.type) {
@@ -146,14 +147,6 @@ export default React.memo(function DecisionResponse({
     })
     setSubmitting(false)
   }
-
-  useEffect(() => {
-    if (requestedStartDate === null) {
-      setDateErrorMessage(t.validationErrors.validDate)
-    } else {
-      setDateErrorMessage('')
-    }
-  }, [startDate, decisionType]) // oxlint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div data-qa={`decision-${decision.id}`}>

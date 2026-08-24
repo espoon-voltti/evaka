@@ -164,8 +164,6 @@ export default React.memo(function PlacementPlanDraft() {
   })
 
   const [additionalUnits, setAdditionalUnits] = useState<PublicUnit[]>([])
-  const [selectedUnitIsGhostUnit, setSelectedUnitIsGhostUnit] =
-    useState<boolean>(false)
 
   const preschoolTermsResult = useQueryResult(getPreschoolTermsQuery())
 
@@ -179,16 +177,16 @@ export default React.memo(function PlacementPlanDraft() {
       : pendingQuery<PublicUnit[]>()
   )
 
-  useEffect(() => {
-    if (units.isSuccess && formState.unitId) {
-      setSelectedUnitIsGhostUnit(
-        units.value
-          .filter((unit) => unit.id === formState.unitId)
-          .map((unit) => unit.ghostUnit)
-          .includes(true)
-      )
-    }
-  }, [formState, units])
+  const selectedUnitIsGhostUnit = useMemo(
+    () =>
+      units.isSuccess && formState.unitId !== null
+        ? units.value
+            .filter((unit) => unit.id === formState.unitId)
+            .map((unit) => unit.ghostUnit)
+            .includes(true)
+        : false,
+    [formState.unitId, units]
+  )
 
   function removeOldPlacements(
     placementPlanDraft: Result<PlacementPlanDraft>
