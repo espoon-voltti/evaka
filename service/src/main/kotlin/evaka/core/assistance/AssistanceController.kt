@@ -6,7 +6,6 @@ package evaka.core.assistance
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.assistanceaction.AssistanceAction
 import evaka.core.assistanceaction.AssistanceActionOption
 import evaka.core.assistanceaction.AssistanceActionRequest
@@ -245,19 +244,27 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: AssistanceActionId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.AssistanceAction.DELETE,
-                    id,
-                )
-                tx.deleteAssistanceAction(id)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceAction.DELETE,
+                        id,
+                    )
+                    tx.getAssistanceActionByIdOrNull(id)?.also { deleted ->
+                        audit
+                            .add(deleted.childId)
+                            .observeDate(deleted.startDate)
+                            .addMeta("startDate", deleted.startDate)
+                            .addMeta("endDate", deleted.endDate)
+                    }
+                    tx.deleteAssistanceAction(id)
+                }
             }
-        }
-        Audit.ChildAssistanceActionDelete.log(targetId = AuditId(id))
+            .also { audit.log(Audit.ChildAssistanceActionDelete, clock) }
     }
 
     @GetMapping("/employee/assistance-action-options")
