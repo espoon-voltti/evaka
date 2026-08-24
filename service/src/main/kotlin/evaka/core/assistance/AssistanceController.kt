@@ -544,13 +544,20 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: PreschoolAssistanceId,
     ) {
+        val audit = AuditContext().add(id)
         val deletedId = db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl
                     .checkPermissionFor(tx, user, clock, Action.PreschoolAssistance.DELETE, id)
                     .let {
                         if (it.isPermitted()) {
-                            tx.deletePreschoolAssistance(id)
+                            tx.deletePreschoolAssistance(id)?.also { deleted ->
+                                audit
+                                    .add(deleted.childId)
+                                    .observeDate(deleted.validDuring.start)
+                                    .addMeta("startDate", deleted.validDuring.start)
+                                    .addMeta("endDate", deleted.validDuring.end)
+                            }
                             id
                         } else {
                             null
@@ -558,7 +565,7 @@ class AssistanceController(
                     }
             }
         }
-        deletedId?.let { Audit.PreschoolAssistanceDelete.log(targetId = AuditId(it)) }
+        deletedId?.let { audit.log(Audit.PreschoolAssistanceDelete, clock) }
     }
 
     @PostMapping("/employee/children/{child}/other-assistance-measures")

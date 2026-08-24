@@ -323,10 +323,21 @@ WHERE id = ${bind(id)}
 }
     .updateExactlyOne()
 
-fun Database.Transaction.deletePreschoolAssistance(id: PreschoolAssistanceId) = createUpdate {
-    sql("DELETE FROM preschool_assistance WHERE id = ${bind(id)}")
+fun Database.Transaction.deletePreschoolAssistance(
+    id: PreschoolAssistanceId
+): PreschoolAssistance? = createUpdate {
+    sql(
+        """
+WITH p AS (
+    DELETE FROM preschool_assistance WHERE id = ${bind(id)}
+    RETURNING id, child_id, valid_during, level, modified, modified_by
+) SELECT $preschoolAssistanceSelectFields
+FROM p LEFT JOIN evaka_user e ON p.modified_by = e.id
+"""
+    )
 }
-    .execute()
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull<PreschoolAssistance>()
 
 private const val otherAssistanceSelectFields =
     """
