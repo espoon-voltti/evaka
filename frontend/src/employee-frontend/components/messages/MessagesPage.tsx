@@ -82,9 +82,10 @@ export default React.memo(function MessagesPage({
   )
   const { mutateAsync: deleteDraft } = useMutationResult(deleteDraftMutation)
   const [sending, setSending] = useState(false)
-  const [showEditor, setShowEditor] = useState<boolean>(
+  const [editorOpened, setEditorOpened] = useState<boolean>(
     initialShowEditor ?? false
   )
+  const showEditor = editorOpened || selectedDraft !== undefined
 
   // Select first account if no account is selected. This modifies MessageContextProvider state and so has
   // to be in useEffect. Calling setState() directly in the render function is only allowed if the state
@@ -95,17 +96,10 @@ export default React.memo(function MessagesPage({
     }
   }, [accounts, selectedAccount, selectDefaultAccount])
 
-  // open editor when draft is selected
-  useEffect(() => {
-    if (selectedDraft) {
-      setShowEditor(true)
-    }
-  }, [selectedDraft])
-
   const [recipients, setRecipients] = useState<SelectableRecipientsResponse[]>()
 
   const hideEditor = useCallback(() => {
-    setShowEditor(false)
+    setEditorOpened(false)
     setSelectedDraft(undefined)
   }, [setSelectedDraft])
 
@@ -221,7 +215,7 @@ export default React.memo(function MessagesPage({
     <Container>
       <PanelContainer>
         <Sidebar
-          showEditor={() => setShowEditor(true)}
+          showEditor={() => setEditorOpened(true)}
           setRecipients={setRecipients}
           enableNewMessage={accountAllowsNewMessage()}
         />
