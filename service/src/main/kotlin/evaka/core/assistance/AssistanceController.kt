@@ -322,7 +322,8 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: AssistanceFactorId,
         @RequestBody body: AssistanceFactorUpdate,
-    ) =
+    ) {
+        val audit = AuditContext().add(id).observeDate(body.validDuring.start)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -335,6 +336,7 @@ class AssistanceController(
                     val original = tx.getAssistanceFactor(id)
                     tx.updateAssistanceFactor(user, clock.now(), id, body)
                     if (original != null) {
+                        audit.add(original.childId).observeDate(original.validDuring.start)
                         val affectedRanges = DateSet.of(original.validDuring, body.validDuring)
                         affectedRanges.spanningRange()?.let {
                             asyncJobRunner.plan(
@@ -351,7 +353,8 @@ class AssistanceController(
                     }
                 }
             }
-            .also { Audit.AssistanceFactorUpdate.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.AssistanceFactorUpdate, clock) }
+    }
 
     @DeleteMapping("/employee/assistance-factors/{id}")
     fun deleteAssistanceFactor(
