@@ -366,6 +366,19 @@ WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("o"))}
 }
     .toList<OtherAssistanceMeasure>()
 
+fun Database.Read.getOtherAssistanceMeasure(id: OtherAssistanceMeasureId): OtherAssistanceMeasure? =
+    createQuery {
+        sql(
+            """
+SELECT $otherAssistanceSelectFields
+FROM other_assistance_measure o
+LEFT JOIN evaka_user e ON o.modified_by = e.id
+WHERE o.id = ${bind(id)}
+"""
+        )
+    }
+    .exactlyOneOrNull<OtherAssistanceMeasure>()
+
 fun Database.Transaction.insertOtherAssistanceMeasure(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
