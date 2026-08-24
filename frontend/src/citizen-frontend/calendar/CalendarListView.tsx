@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useRef } from 'react'
+import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
@@ -74,11 +74,13 @@ export default React.memo(function CalendarListView({
   const i18n = useTranslation()
   const months = useMemo(() => groupByMonth(calendarDays), [calendarDays])
   const childImages = useMemo(() => getChildImages(childData), [childData])
-  const scrollToDate = useRef<LocalDate>(LocalDate.todayInHelsinkiTz())
+  const [scrollToDate, setScrollToDate] = useState<LocalDate>(() =>
+    LocalDate.todayInHelsinkiTz()
+  )
 
   const fetchPreviousMonths = () => {
     const beforeDate = months[0].calendarDays[0].date
-    scrollToDate.current = beforeDate
+    setScrollToDate(beforeDate)
     fetchPrevious(beforeDate)
   }
 
@@ -101,7 +103,7 @@ export default React.memo(function CalendarListView({
             )}
             monthIndex={index}
             fetchPrevious={fetchPreviousMonths}
-            scrollToDate={scrollToDate.current}
+            scrollToDate={scrollToDate}
             loading={loading}
           />
         ))}
