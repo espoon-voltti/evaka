@@ -3,13 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 
 import type {
   AttendanceChild,
@@ -51,6 +45,11 @@ export default React.memo(function AttendanceList({
   const [multiselectChildren, setMultiselectChildren] = useState<UUID[] | null>(
     null
   )
+  const [previousStatus, setPreviousStatus] = useState(activeStatus)
+  if (previousStatus !== activeStatus) {
+    setPreviousStatus(activeStatus)
+    setMultiselectChildren(null)
+  }
 
   const groupChildren = useMemo(
     () =>
@@ -148,12 +147,6 @@ export default React.memo(function AttendanceList({
       ),
     [activeStatus, childrenWithStatus, sortType]
   )
-
-  // this resetting should be done as a tab change side effect but
-  // that would require changing tabs from NavLinks to buttons
-  useEffect(() => {
-    setMultiselectChildren(null)
-  }, [activeStatus])
 
   return (
     <>
