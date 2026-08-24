@@ -405,8 +405,9 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable child: ChildId,
         @RequestBody body: DaycareAssistanceUpdate,
-    ): DaycareAssistanceId =
-        db.connect { dbc ->
+    ): DaycareAssistanceId {
+        val audit = AuditContext().add(child).observeDate(body.validDuring.start)
+        return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -415,12 +416,13 @@ class AssistanceController(
                         Action.Child.CREATE_DAYCARE_ASSISTANCE,
                         child,
                     )
-                    tx.insertDaycareAssistance(user, clock.now(), child, body)
+                    tx.insertDaycareAssistance(user, clock.now(), child, body).also {
+                        audit.add(it)
+                    }
                 }
             }
-            .also { id ->
-                Audit.DaycareAssistanceCreate.log(targetId = AuditId(child), objectId = AuditId(id))
-            }
+            .also { audit.log(Audit.DaycareAssistanceCreate, clock) }
+    }
 
     @PostMapping("/employee/daycare-assistances/{id}")
     fun updateDaycareAssistance(
