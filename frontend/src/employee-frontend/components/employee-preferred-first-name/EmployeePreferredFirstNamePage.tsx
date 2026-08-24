@@ -37,6 +37,7 @@ export default React.memo(function EmployeePreferredFirstNamePage() {
       const initialPreferredFirstName =
         preferredFirstName.value.preferredFirstName ||
         preferredFirstName.value.preferredFirstNameOptions[0]
+      // oxlint-disable-next-line react/set-state-in-effect
       setSelectedPreferredFirstName(initialPreferredFirstName)
     }
   }, [preferredFirstName])

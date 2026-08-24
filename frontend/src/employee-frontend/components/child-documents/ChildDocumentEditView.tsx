@@ -229,6 +229,7 @@ const ChildDocumentEditViewInner = React.memo(
         !isEqual(lastSavedContent, debouncedValidContent) &&
         !submitting
       ) {
+        // oxlint-disable-next-line react/set-state-in-effect
         void save(debouncedValidContent)
       }
     }, [error, debouncedValidContent, lastSavedContent, save, submitting])

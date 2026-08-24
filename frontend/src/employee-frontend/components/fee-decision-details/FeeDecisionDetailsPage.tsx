@@ -56,6 +56,7 @@ export default React.memo(function FeeDecisionDetailsPage() {
   useEffect(() => {
     if (decisionResponse.isSuccess) {
       const decision = decisionResponse.value.data
+      // oxlint-disable-next-line react/set-state-in-effect
       setNewDecisionType(decision.decisionType)
     }
   }, [decisionResponse])

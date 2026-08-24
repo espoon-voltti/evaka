@@ -449,6 +449,7 @@ export default React.memo(function MessageEditor({
   useEffect(
     function updateTextualSaveStatusOnDraftStateChange() {
       if (draftState === 'saving') {
+        // oxlint-disable-next-line react/set-state-in-effect
         setSaveStatus(`${i18n.common.saving}...`)
       } else if (draftState === 'clean' && draftWasModified) {
         setSaveStatus(i18n.common.saved)
