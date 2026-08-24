@@ -141,17 +141,18 @@ fun Database.Transaction.shortenOverlappingAssistanceAction(
     now: HelsinkiDateTime,
     childId: ChildId,
     startDate: LocalDate,
-) {
-    execute {
+): List<Pair<AssistanceActionId, LocalDate>> {
+    return createQuery {
         sql(
             """
 UPDATE assistance_action 
 SET end_date = ${bind(startDate)} - interval '1 day', modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
 WHERE child_id = ${bind(childId)} AND daterange(start_date, end_date, '[]') @> ${bind(startDate)} AND start_date <> ${bind(startDate)}
-RETURNING *
+RETURNING id, start_date
 """
         )
     }
+        .toList { column<AssistanceActionId>("id") to column<LocalDate>("start_date") }
 }
 
 fun Database.Transaction.deleteAssistanceAction(id: AssistanceActionId) {

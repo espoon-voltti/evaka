@@ -175,6 +175,7 @@ class AssistanceController(
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceActionRequest,
     ): AssistanceAction {
+        val audit = AuditContext().add(childId).observeDate(body.startDate)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -187,23 +188,21 @@ class AssistanceController(
                     try {
                         validateActions(body, tx.getAssistanceActionOptions())
                         tx.shortenOverlappingAssistanceAction(
-                            user,
-                            clock.now(),
-                            childId,
-                            body.startDate,
-                        )
-                        tx.insertAssistanceAction(user, clock.now(), childId, body)
+                                user,
+                                clock.now(),
+                                childId,
+                                body.startDate,
+                            )
+                            .forEach { (id, start) -> audit.add(id).observeDate(start) }
+                        tx.insertAssistanceAction(user, clock.now(), childId, body).also {
+                            audit.add(it.id)
+                        }
                     } catch (e: JdbiException) {
                         throw mapPSQLException(e)
                     }
                 }
             }
-            .also { assistanceAction ->
-                Audit.ChildAssistanceActionCreate.log(
-                    targetId = AuditId(childId),
-                    objectId = AuditId(assistanceAction.id),
-                )
-            }
+            .also { audit.log(Audit.ChildAssistanceActionCreate, clock) }
     }
 
     @PutMapping("/employee/assistance-actions/{id}")
