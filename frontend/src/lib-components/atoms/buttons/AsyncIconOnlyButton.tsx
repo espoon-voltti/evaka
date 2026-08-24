@@ -16,7 +16,7 @@ import type { IconSize } from '../icon-size'
 import type { AsyncButtonBehaviorProps } from './async-button-behavior'
 import { useAsyncButtonBehavior } from './async-button-behavior'
 import type { BaseIconOnlyButtonVisualProps } from './icon-only-button-visuals'
-import { renderBaseIconOnlyButton } from './icon-only-button-visuals'
+import { BaseIconOnlyButton } from './icon-only-button-visuals'
 
 export type AsyncIconOnlyButtonProps<T> = BaseIconOnlyButtonVisualProps &
   AsyncButtonBehaviorProps<T> & {
@@ -57,65 +57,66 @@ const AsyncIconOnlyButton_ = function AsyncIconOnlyButton<T>({
     opacity: state === 'failure' ? 1 : 0
   })
 
-  return renderBaseIconOnlyButton(
-    {
-      'data-status': state === 'idle' ? '' : state,
-      'aria-busy': state === 'in-progress',
-      ...props
-    },
-    handleClick,
-    (icon, size) => (
-      <>
-        {state === 'in-progress' && (
-          <ScreenReaderOnly aria-live="polite" id="in-progress">
-            {i18n.asyncButton.inProgress}
-          </ScreenReaderOnly>
-        )}
-        {state === 'failure' && (
-          <ScreenReaderOnly aria-live="assertive" id="failure">
-            {i18n.asyncButton.failure}
-          </ScreenReaderOnly>
-        )}
-        {state === 'success' && (
-          <ScreenReaderOnly aria-live="assertive" id="success">
-            {i18n.asyncButton.success}
-          </ScreenReaderOnly>
-        )}
-        <RelativeContainer>
-          <IconContainer $size={size}>
-            <Spinner style={spinner} />
-          </IconContainer>
-          <IconContainer $size={size}>
+  return (
+    <BaseIconOnlyButton
+      data-status={state === 'idle' ? '' : state}
+      aria-busy={state === 'in-progress'}
+      {...props}
+      onClick={handleClick}
+    >
+      {(icon, size) => (
+        <>
+          {state === 'in-progress' && (
+            <ScreenReaderOnly aria-live="polite" id="in-progress">
+              {i18n.asyncButton.inProgress}
+            </ScreenReaderOnly>
+          )}
+          {state === 'failure' && (
+            <ScreenReaderOnly aria-live="assertive" id="failure">
+              {i18n.asyncButton.failure}
+            </ScreenReaderOnly>
+          )}
+          {state === 'success' && (
+            <ScreenReaderOnly aria-live="assertive" id="success">
+              {i18n.asyncButton.success}
+            </ScreenReaderOnly>
+          )}
+          <RelativeContainer>
+            <IconContainer $size={size}>
+              <Spinner style={spinner} />
+            </IconContainer>
+            <IconContainer $size={size}>
+              <animated.div
+                style={{
+                  opacity: checkmark.opacity,
+                  transform: checkmark.opacity.to((x) => `scale(${x ?? 0})`)
+                }}
+              >
+                <FontAwesomeIcon icon={faCheck} color={colors.main.m2} />
+              </animated.div>
+            </IconContainer>
+            <IconContainer $size={size}>
+              <animated.div
+                style={{
+                  opacity: cross.opacity,
+                  transform: cross.opacity.to((x) => `scale(${x ?? 0})`)
+                }}
+              >
+                <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
+              </animated.div>
+            </IconContainer>
             <animated.div
               style={{
-                opacity: checkmark.opacity,
-                transform: checkmark.opacity.to((x) => `scale(${x ?? 0})`)
+                opacity: iconSpring.opacity,
+                transform: iconSpring.opacity.to((x) => `scale(${x ?? 0})`)
               }}
             >
-              <FontAwesomeIcon icon={faCheck} color={colors.main.m2} />
+              <FontAwesomeIcon icon={icon} />
             </animated.div>
-          </IconContainer>
-          <IconContainer $size={size}>
-            <animated.div
-              style={{
-                opacity: cross.opacity,
-                transform: cross.opacity.to((x) => `scale(${x ?? 0})`)
-              }}
-            >
-              <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
-            </animated.div>
-          </IconContainer>
-          <animated.div
-            style={{
-              opacity: iconSpring.opacity,
-              transform: iconSpring.opacity.to((x) => `scale(${x ?? 0})`)
-            }}
-          >
-            <FontAwesomeIcon icon={icon} />
-          </animated.div>
-        </RelativeContainer>
-      </>
-    )
+          </RelativeContainer>
+        </>
+      )}
+    </BaseIconOnlyButton>
   )
 }
 
