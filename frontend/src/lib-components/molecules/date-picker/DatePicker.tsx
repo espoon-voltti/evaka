@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import type { LocalDateField } from 'lib-common/form/fields'
 import type { BoundForm } from 'lib-common/form/hooks'
@@ -36,9 +36,9 @@ const DatePicker = React.memo(function DatePicker({
   const [textValue, setTextValue] = useState(date?.format() ?? '')
   const [internalError, setInternalError] = useState<InputInfo>()
 
-  const prevDate = useRef<LocalDate | null>(date)
-  if (prevDate.current?.formatIso() !== date?.formatIso()) {
-    prevDate.current = date
+  const [prevDate, setPrevDate] = useState<LocalDate | null>(date)
+  if (prevDate?.formatIso() !== date?.formatIso()) {
+    setPrevDate(date)
     if (date !== null) {
       setTextValue(date.format())
     }

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import type { LocalDateRangeField } from 'lib-common/form/fields'
@@ -119,17 +119,17 @@ const DateRangePicker = React.memo(function DateRangePicker({
     if (isValid !== undefined) afterValidation(isValid)
   }, [afterValidation, isValid])
 
-  const prevStart = useRef(start)
-  const prevEnd = useRef(end)
+  const [prevStart, setPrevStart] = useState(start)
+  const [prevEnd, setPrevEnd] = useState(end)
   if (
-    prevStart.current?.formatIso() !== start?.formatIso() ||
-    prevEnd.current?.formatIso() !== end?.formatIso()
+    prevStart?.formatIso() !== start?.formatIso() ||
+    prevEnd?.formatIso() !== end?.formatIso()
   ) {
-    prevStart.current = start
+    setPrevStart(start)
     if (start !== null) {
       setInternalStart(start.format())
     }
-    prevEnd.current = end
+    setPrevEnd(end)
     if (end !== null) {
       setInternalEnd(end.format())
     }
