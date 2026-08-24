@@ -489,8 +489,9 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable child: ChildId,
         @RequestBody body: PreschoolAssistanceUpdate,
-    ): PreschoolAssistanceId =
-        db.connect { dbc ->
+    ): PreschoolAssistanceId {
+        val audit = AuditContext().add(child).observeDate(body.validDuring.start)
+        return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -500,15 +501,13 @@ class AssistanceController(
                         child,
                     )
                     body.validate()
-                    tx.insertPreschoolAssistance(user, clock.now(), child, body)
+                    tx.insertPreschoolAssistance(user, clock.now(), child, body).also {
+                        audit.add(it)
+                    }
                 }
             }
-            .also { id ->
-                Audit.PreschoolAssistanceCreate.log(
-                    targetId = AuditId(child),
-                    objectId = AuditId(id),
-                )
-            }
+            .also { audit.log(Audit.PreschoolAssistanceCreate, clock) }
+    }
 
     @PostMapping("/employee/preschool-assistances/{id}")
     fun updatePreschoolAssistance(
