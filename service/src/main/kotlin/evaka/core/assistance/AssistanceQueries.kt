@@ -273,6 +273,19 @@ WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("p"))}
 }
     .toList<PreschoolAssistance>()
 
+fun Database.Read.getPreschoolAssistance(id: PreschoolAssistanceId): PreschoolAssistance? =
+    createQuery {
+        sql(
+            """
+SELECT $preschoolAssistanceSelectFields
+FROM preschool_assistance p
+LEFT JOIN evaka_user e ON p.modified_by = e.id
+WHERE p.id = ${bind(id)}
+"""
+        )
+    }
+    .exactlyOneOrNull<PreschoolAssistance>()
+
 fun Database.Transaction.insertPreschoolAssistance(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,

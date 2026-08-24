@@ -516,7 +516,8 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable id: PreschoolAssistanceId,
         @RequestBody body: PreschoolAssistanceUpdate,
-    ) =
+    ) {
+        val audit = AuditContext().add(id).observeDate(body.validDuring.start)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -527,10 +528,14 @@ class AssistanceController(
                         id,
                     )
                     body.validate()
+                    tx.getPreschoolAssistance(id)?.also {
+                        audit.add(it.childId).observeDate(it.validDuring.start)
+                    }
                     tx.updatePreschoolAssistance(user, clock.now(), id, body)
                 }
             }
-            .also { Audit.PreschoolAssistanceUpdate.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.PreschoolAssistanceUpdate, clock) }
+    }
 
     @DeleteMapping("/employee/preschool-assistances/{id}")
     fun deletePreschoolAssistance(
