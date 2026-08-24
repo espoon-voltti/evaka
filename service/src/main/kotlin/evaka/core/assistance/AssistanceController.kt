@@ -286,8 +286,9 @@ class AssistanceController(
         clock: EvakaClock,
         @PathVariable child: ChildId,
         @RequestBody body: AssistanceFactorUpdate,
-    ): AssistanceFactorId =
-        db.connect { dbc ->
+    ): AssistanceFactorId {
+        val audit = AuditContext().add(child).observeDate(body.validDuring.start)
+        return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
@@ -296,7 +297,8 @@ class AssistanceController(
                         Action.Child.CREATE_ASSISTANCE_FACTOR,
                         child,
                     )
-                    tx.insertAssistanceFactor(user, clock.now(), child, body).also {
+                    tx.insertAssistanceFactor(user, clock.now(), child, body).also { id ->
+                        audit.add(id)
                         asyncJobRunner.plan(
                             tx,
                             listOf(
@@ -310,9 +312,8 @@ class AssistanceController(
                     }
                 }
             }
-            .also { id ->
-                Audit.AssistanceFactorCreate.log(targetId = AuditId(child), objectId = AuditId(id))
-            }
+            .also { audit.log(Audit.AssistanceFactorCreate, clock) }
+    }
 
     @PostMapping("/employee/assistance-factors/{id}")
     fun updateAssistanceFactor(
