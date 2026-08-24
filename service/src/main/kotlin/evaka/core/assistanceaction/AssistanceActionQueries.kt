@@ -66,9 +66,13 @@ ON CONFLICT DO NOTHING
         )
     }
 
-fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAction = createQuery {
-    sql(
-        """
+fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAction =
+    getAssistanceActionByIdOrNull(id) ?: throw NotFound("Assistance action $id not found")
+
+fun Database.Read.getAssistanceActionByIdOrNull(id: AssistanceActionId): AssistanceAction? =
+    createQuery {
+        sql(
+            """
 SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action,
     aa.modified_at,
     e.id AS modified_by_id,
@@ -81,9 +85,9 @@ LEFT JOIN evaka_user e ON aa.modified_by = e.id
 WHERE aa.id = ${bind(id)}
 GROUP BY aa.id, child_id, start_date, end_date, other_action, aa.modified_at, e.id, e.name, e.type
 """
-    )
-}
-    .exactlyOne()
+        )
+    }
+    .exactlyOneOrNull()
 
 fun Database.Read.getAssistanceActionsByChild(
     childId: ChildId,

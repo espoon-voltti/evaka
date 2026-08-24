@@ -12,6 +12,7 @@ import evaka.core.assistanceaction.AssistanceActionOption
 import evaka.core.assistanceaction.AssistanceActionRequest
 import evaka.core.assistanceaction.AssistanceActionResponse
 import evaka.core.assistanceaction.deleteAssistanceAction
+import evaka.core.assistanceaction.getAssistanceActionByIdOrNull
 import evaka.core.assistanceaction.getAssistanceActionOptions
 import evaka.core.assistanceaction.getAssistanceActionsByChild
 import evaka.core.assistanceaction.insertAssistanceAction
@@ -213,6 +214,7 @@ class AssistanceController(
         @PathVariable id: AssistanceActionId,
         @RequestBody body: AssistanceActionRequest,
     ): AssistanceAction {
+        val audit = AuditContext().add(id).observeDate(body.startDate)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -224,13 +226,16 @@ class AssistanceController(
                     )
                     try {
                         validateActions(body, tx.getAssistanceActionOptions())
+                        tx.getAssistanceActionByIdOrNull(id)?.also {
+                            audit.add(it.childId).observeDate(it.startDate)
+                        }
                         tx.updateAssistanceAction(user, clock.now(), id, body)
                     } catch (e: JdbiException) {
                         throw mapPSQLException(e)
                     }
                 }
             }
-            .also { Audit.ChildAssistanceActionUpdate.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.ChildAssistanceActionUpdate, clock) }
     }
 
     @DeleteMapping("/employee/assistance-actions/{id}")
