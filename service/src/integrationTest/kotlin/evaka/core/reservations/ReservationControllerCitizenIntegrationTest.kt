@@ -1510,7 +1510,8 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                     )
                 }
 
-            // Placement starts after reservation deadline => holiday period has no effect
+            // Placement starts after the reservation deadline, but the citizen calendar is
+            // already open for it => holiday period has an effect until the deadline has passed
             tx.insert(
                     DevPlacement(
                         type = PlacementType.DAYCARE,
@@ -1555,7 +1556,14 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                             reservationsOpenOn = tuesday,
                                         ),
                                 ),
-                                dayChild(child2.id, holidayPeriodEffect = null),
+                                dayChild(
+                                    child2.id,
+                                    holidayPeriodEffect =
+                                        HolidayPeriodEffect.NotYetReservable(
+                                            period = FiniteDateRange(thursday, thursday),
+                                            reservationsOpenOn = tuesday,
+                                        ),
+                                ),
                             )
                             .sortedBy { it.childId },
                 )
@@ -1580,7 +1588,10 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
                                     child1.id,
                                     holidayPeriodEffect = HolidayPeriodEffect.ReservationsOpen,
                                 ),
-                                dayChild(child2.id, holidayPeriodEffect = null),
+                                dayChild(
+                                    child2.id,
+                                    holidayPeriodEffect = HolidayPeriodEffect.ReservationsOpen,
+                                ),
                             )
                             .sortedBy { it.childId },
                 )
@@ -1612,6 +1623,67 @@ class ReservationControllerCitizenIntegrationTest : FullApplicationTest(resetDbB
             ),
             resOnThursday.days,
         )
+    }
+
+    @Test
+    fun `citizen can make a reservation without times for a child whose placement starts after the reservation deadline`() {
+        val area = DevCareArea()
+        val daycare =
+            DevDaycare(areaId = area.id, enabledPilotFeatures = setOf(PilotFeature.RESERVATIONS))
+
+        val adult = DevPerson()
+        val child = DevPerson(dateOfBirth = LocalDate.of(2017, 1, 1))
+
+        val placementStart = monday.plusWeeks(5)
+        // The citizen calendar opens for the placement exactly on the reservation deadline
+        val reservationDeadline =
+            placementStart.minusDays(citizenCalendarEnv.calendarOpenBeforePlacementDays.toLong())
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(daycare)
+
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, child.id)
+
+            tx.insert(
+                DevHolidayPeriod(
+                    period = FiniteDateRange(placementStart, placementStart),
+                    reservationsOpenOn = tuesday,
+                    reservationDeadline = reservationDeadline,
+                )
+            )
+
+            tx.insert(
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = placementStart,
+                    endDate = placementStart,
+                )
+            )
+        }
+
+        postReservations(
+            adult.user(CitizenAuthLevel.STRONG),
+            listOf(DailyReservationRequest.Present(childId = child.id, date = placementStart)),
+            mockNow = HelsinkiDateTime.of(reservationDeadline, LocalTime.of(12, 0)),
+        )
+
+        val reservations = db.read {
+            it.getReservationsCitizen(
+                reservationDeadline,
+                adult.id,
+                FiniteDateRange(placementStart, placementStart),
+            )
+        }
+        assertEquals(1, reservations.size)
+        reservations.first().let {
+            assertEquals(placementStart, it.date)
+            assertEquals(Reservation.NoTimes, it.reservation)
+        }
     }
 
     @Test

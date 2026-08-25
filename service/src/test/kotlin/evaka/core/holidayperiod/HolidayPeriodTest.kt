@@ -24,16 +24,30 @@ class HolidayPeriodTest {
             reservationDeadline,
         )
 
+    private val calendarOpenBeforePlacementDays = 30
+
     private val jan1 = LocalDate.of(2024, 1, 1)
     private val dec31 = LocalDate.of(2024, 12, 31)
     private val wholeYear =
         ReservationEnabledPlacementRange(created = jan1, range = FiniteDateRange(jan1, dec31))
 
+    // Placement starts after the reservation deadline, but the citizen calendar opens for it
+    // during the reservation period (start - calendarOpenBeforePlacementDays <= deadline)
+    private val futurePlacementWithCalendarOpenDuringReservationPeriod =
+        ReservationEnabledPlacementRange(
+            created = jan1,
+            range = FiniteDateRange(reservationDeadline.plusDays(10), dec31),
+        )
+
     @Test
     fun `not yet reservable`() {
         assertEquals(
             HolidayPeriodEffect.NotYetReservable(period, reservationsOpenOn),
-            holidayPeriod.effect(reservationsOpenOn.minusDays(1), listOf(wholeYear)),
+            holidayPeriod.effect(
+                reservationsOpenOn.minusDays(1),
+                listOf(wholeYear),
+                calendarOpenBeforePlacementDays,
+            ),
         )
     }
 
@@ -41,7 +55,11 @@ class HolidayPeriodTest {
     fun `reservations open`() {
         assertEquals(
             HolidayPeriodEffect.ReservationsOpen,
-            holidayPeriod.effect(reservationsOpenOn, listOf(wholeYear)),
+            holidayPeriod.effect(
+                reservationsOpenOn,
+                listOf(wholeYear),
+                calendarOpenBeforePlacementDays,
+            ),
         )
     }
 
@@ -49,13 +67,24 @@ class HolidayPeriodTest {
     fun `reservations closed`() {
         assertEquals(
             HolidayPeriodEffect.ReservationsClosed,
-            holidayPeriod.effect(reservationDeadline.plusDays(1), listOf(wholeYear)),
+            holidayPeriod.effect(
+                reservationDeadline.plusDays(1),
+                listOf(wholeYear),
+                calendarOpenBeforePlacementDays,
+            ),
         )
     }
 
     @Test
     fun `no placements - no effect`() {
-        assertEquals(null, holidayPeriod.effect(reservationDeadline.plusDays(1), emptyList()))
+        assertEquals(
+            null,
+            holidayPeriod.effect(
+                reservationDeadline.plusDays(1),
+                emptyList(),
+                calendarOpenBeforePlacementDays,
+            ),
+        )
     }
 
     @Test
@@ -74,6 +103,7 @@ class HolidayPeriodTest {
                         range = FiniteDateRange(reservationDeadline.plusDays(1), dec31),
                     ),
                 ),
+                calendarOpenBeforePlacementDays,
             ),
         )
     }
@@ -94,6 +124,7 @@ class HolidayPeriodTest {
                         range = FiniteDateRange(period.start.plusDays(3), period.end),
                     ),
                 ),
+                calendarOpenBeforePlacementDays,
             ),
         )
     }
@@ -115,6 +146,54 @@ class HolidayPeriodTest {
                         range = FiniteDateRange(period.start.plusDays(4), period.end),
                     ),
                 ),
+                calendarOpenBeforePlacementDays,
+            ),
+        )
+    }
+
+    @Test
+    fun `calendar open for future placement during reservation period - reservations open`() {
+        assertEquals(
+            HolidayPeriodEffect.ReservationsOpen,
+            holidayPeriod.effect(
+                reservationsOpenOn,
+                listOf(futurePlacementWithCalendarOpenDuringReservationPeriod),
+                calendarOpenBeforePlacementDays,
+            ),
+        )
+    }
+
+    @Test
+    fun `calendar not yet open for future placement during reservation period - no effect`() {
+        assertEquals(
+            null,
+            holidayPeriod.effect(
+                reservationsOpenOn,
+                listOf(
+                    ReservationEnabledPlacementRange(
+                        created = jan1,
+                        range =
+                            FiniteDateRange(
+                                reservationDeadline.plusDays(
+                                    calendarOpenBeforePlacementDays.toLong() + 1
+                                ),
+                                dec31,
+                            ),
+                    )
+                ),
+                calendarOpenBeforePlacementDays,
+            ),
+        )
+    }
+
+    @Test
+    fun `calendar open for future placement during reservation period - no effect after deadline`() {
+        assertEquals(
+            null,
+            holidayPeriod.effect(
+                reservationDeadline.plusDays(1),
+                listOf(futurePlacementWithCalendarOpenDuringReservationPeriod),
+                calendarOpenBeforePlacementDays,
             ),
         )
     }
