@@ -213,7 +213,10 @@ function StaffAttendanceDetailsModal<
       })),
     [defaultGroupId, staffOccupancyEffectDefault]
   )
-  const [requestBody, errors] = validate(editState)
+  const [requestBody, errors] = useMemo(
+    () => validate(editState),
+    [validate, editState]
+  )
   const save = useCallback(() => {
     if (!requestBody) return
     return onSave(requestBody)
