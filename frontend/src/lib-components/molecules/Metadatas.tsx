@@ -152,8 +152,11 @@ const DocumentMetadataSection = React.memo(function DocumentMetadataSection({
                         document.sfiDeliveries,
                         (d) => d.recipientName
                       ).map((delivery, i) => (
-                        <li key={i}>
-                          {`${delivery.recipientName} - ${i18n.metadata.sfiDelivery.method[delivery.method]} (${delivery.time.format()})`}
+                        <li key={i} data-qa="sfi-delivery">
+                          {`${delivery.recipientName} - ${i18n.metadata.sfiDelivery.method[delivery.method]} (${delivery.time.format()})` +
+                            (delivery.readAt
+                              ? `, ${i18n.metadata.sfiDelivery.readAt} ${delivery.readAt.format()}`
+                              : '')}
                         </li>
                       ))}
                     </UnorderedList>

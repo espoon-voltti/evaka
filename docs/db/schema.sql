@@ -3839,7 +3839,8 @@ CREATE TABLE public.sfi_message_event (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     message_id uuid NOT NULL,
-    event_type public.sfi_message_event_type NOT NULL
+    event_type public.sfi_message_event_type NOT NULL,
+    event_time timestamp with time zone NOT NULL
 );
 
 -- Name: special_diet; Type: TABLE; Schema: public

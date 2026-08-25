@@ -195,6 +195,7 @@ export interface Translations {
     }
     sfiDelivery: {
       label: string
+      readAt: string
       method: {
         ELECTRONIC: string
         PAPER_MAIL: string

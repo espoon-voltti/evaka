@@ -221,6 +221,7 @@ const components: Translations = {
     },
     sfiDelivery: {
       label: 'Suomi.fi-leveranser',
+      readAt: 'öppnat',
       method: {
         ELECTRONIC: 'Elektroniskt',
         PAPER_MAIL: 'Per post',
