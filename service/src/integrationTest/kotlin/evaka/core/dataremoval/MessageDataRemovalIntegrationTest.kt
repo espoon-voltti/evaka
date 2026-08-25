@@ -21,6 +21,7 @@ import evaka.core.messaging.ReplyToMessageBody
 import evaka.core.messaging.UpdatableDraftContent
 import evaka.core.messaging.createDaycareGroupMessageAccount
 import evaka.core.messaging.createMunicipalMessageAccount
+import evaka.core.messaging.deleteMessageThreadsOfExpiredChildren
 import evaka.core.messaging.getCitizenMessageAccount
 import evaka.core.messaging.upsertEmployeeMessageAccount
 import evaka.core.pis.service.insertGuardian
@@ -38,6 +39,7 @@ import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.auth.insertDaycareAclRow
+import evaka.core.shared.db.QuerySql
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDaycareGroup
@@ -151,6 +153,28 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             )
             placementId
         }
+
+    private fun insertSibling(period: FiniteDateRange): ChildId {
+        val sibling = DevPerson()
+        db.transaction { tx ->
+            tx.insert(sibling, DevPersonType.CHILD)
+            tx.insertGuardian(guardian.id, sibling.id)
+        }
+        insertGroupPlacement(sibling.id, period)
+        return sibling.id
+    }
+
+    private fun insertChildOfAnotherGuardian(period: FiniteDateRange): ChildId {
+        val otherChild = DevPerson()
+        val otherGuardian = DevPerson()
+        db.transaction { tx ->
+            tx.insert(otherChild, DevPersonType.CHILD)
+            tx.insert(otherGuardian, DevPersonType.ADULT)
+            tx.insertGuardian(otherGuardian.id, otherChild.id)
+        }
+        insertGroupPlacement(otherChild.id, period)
+        return otherChild.id
+    }
 
     private fun sendMessage(
         sentAt: HelsinkiDateTime,
@@ -341,6 +365,21 @@ RETURNING id
             expiresBefore = bulletinExpiresBefore,
             limit = limit,
         )
+
+    private fun deleteMessageThreadsOfExpiredChildren(
+        expiredChildIds: List<ChildId>,
+        limit: Int = 100,
+    ) =
+        dataRemovalService.deleteMessageThreadsOfExpiredChildren(
+            db,
+            now,
+            expiredChildIdsQuery = expiredChildIdsQuery(expiredChildIds),
+            limit = limit,
+        )
+
+    private fun expiredChildIdsQuery(childIds: List<ChildId>) = QuerySql {
+        sql("SELECT id FROM child WHERE id = ANY(${bind(childIds)})")
+    }
 
     private fun deleteExpiredMessageDrafts(limit: Int = 100) =
         dataRemovalService.deleteExpiredMessageDrafts(
@@ -676,6 +715,202 @@ RETURNING id
     }
 
     @Test
+    fun `deleteMessageThreadsOfExpiredChildren deletes a thread with its messages, recipients, participants, children and content`() {
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        val sent =
+            sendMessage(
+                sentAt = sendTimeOverFiveYearsAgo,
+                type = MessageType.MESSAGE,
+                attachmentCount = 1,
+            )
+        replyToThread(sent.threadIds.single(), sentAt = now.minusYears(1))
+
+        deleteMessageThreadsOfExpiredChildren(listOf(child.id))
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message"))
+        assertEquals(0, rowCount("message_recipients"))
+        assertEquals(0, rowCount("message_thread_participant"))
+        assertEquals(0, rowCount("message_thread_children"))
+        assertEquals(0, rowCount("message_content"))
+        assertEquals(
+            sent.attachmentIds.map { it.toString() }.toSet(),
+            scheduledAttachmentDeletionIds(),
+        )
+    }
+
+    @Test
+    fun `deleteMessageThreadsOfExpiredChildren keeps the threads of a child who has not expired`() {
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        val retained = sendMessage(sentAt = sendTimeOverFiveYearsAgo, type = MessageType.MESSAGE)
+        val otherChild = insertChildOfAnotherGuardian(expiredPlacementPeriod)
+        sendMessage(
+            sentAt = sendTimeOverFiveYearsAgo,
+            recipients = listOf(MessageRecipient.Child(otherChild)),
+            type = MessageType.MESSAGE,
+        )
+
+        deleteMessageThreadsOfExpiredChildren(listOf(otherChild))
+
+        assertEquals(retained.threadIds, survivingMessageThreadIds())
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteMessageThreadsOfExpiredChildren deletes nothing while no child has expired`() {
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        sendMessage(sentAt = sendTimeOverFiveYearsAgo, type = MessageType.MESSAGE)
+
+        deleteMessageThreadsOfExpiredChildren(emptyList())
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteMessageThreadsOfExpiredChildren keeps a thread until its last child has expired`() {
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        val sibling = insertSibling(expiredPlacementPeriod)
+        sendMessage(
+            sentAt = sendTimeOverFiveYearsAgo,
+            recipients = listOf(MessageRecipient.Child(child.id), MessageRecipient.Child(sibling)),
+            type = MessageType.MESSAGE,
+        )
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(2, rowCount("message_thread_children"), "both children are on one thread")
+
+        deleteMessageThreadsOfExpiredChildren(listOf(child.id))
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+
+        deleteMessageThreadsOfExpiredChildren(listOf(child.id, sibling))
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteMessageThreadsOfExpiredChildren returns the children of a deleted thread`() {
+        // The children of a thread must be read before the delete cascades them away, or the
+        // audit trail of the removal loses them
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        val sibling = insertSibling(expiredPlacementPeriod)
+        val sent =
+            sendMessage(
+                sentAt = sendTimeOverFiveYearsAgo,
+                recipients =
+                    listOf(MessageRecipient.Child(child.id), MessageRecipient.Child(sibling)),
+                type = MessageType.MESSAGE,
+            )
+
+        val batch = db.transaction { tx ->
+            tx.deleteMessageThreadsOfExpiredChildren(
+                expiredChildIdsQuery(listOf(child.id, sibling)),
+                limit = 100,
+            )
+        }
+
+        assertEquals(sent.threadIds, batch.threads.map { it.threadId })
+        assertEquals(setOf(child.id, sibling), batch.threads.single().childIds.toSet())
+    }
+
+    @Test
+    fun `deleteMessageThreadsOfExpiredChildren keeps a content shared by the thread of a child who has not expired`() {
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        val otherChild = insertChildOfAnotherGuardian(expiredPlacementPeriod)
+        val sent =
+            sendMessage(
+                sentAt = sendTimeOverFiveYearsAgo,
+                recipients =
+                    listOf(MessageRecipient.Child(child.id), MessageRecipient.Child(otherChild)),
+                type = MessageType.MESSAGE,
+                attachmentCount = 1,
+            )
+        assertEquals(2, sent.threadIds.size, "the children have guardians of their own")
+
+        deleteMessageThreadsOfExpiredChildren(listOf(child.id))
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+        assertTrue(scheduledAttachmentDeletionIds().isEmpty())
+    }
+
+    @Test
+    fun `deleteMessageThreadsOfExpiredChildren deletes a bulletin of an expired child however recent it is`() {
+        insertGroupPlacement(child.id, ongoingPlacementPeriod)
+        sendMessage(sentAt = now.minusDays(1))
+
+        deleteMessageThreadsOfExpiredChildren(listOf(child.id))
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteMessageThreadsOfExpiredChildren leaves a staff copy for the bulletin removal to delete`() {
+        // A copy records no children of its own, so it outlives the bulletin of an expired child
+        createGroupMessageAccount()
+        insertGroupPlacement(child.id, ongoingPlacementPeriod)
+        val sent =
+            sendMessage(
+                sentAt = sendTimeWithinFiveYears,
+                recipients = listOf(MessageRecipient.Group(daycareGroup.id)),
+                attachmentCount = 1,
+            )
+        val copyId = staffCopyThreadIds().single()
+
+        deleteMessageThreadsOfExpiredChildren(listOf(child.id))
+
+        assertEquals(listOf(copyId), survivingMessageThreadIds())
+        assertEquals(1, rowCount("message_content"))
+
+        deleteExpiredBulletinThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+        assertEquals(
+            sent.attachmentIds.map { it.toString() }.toSet(),
+            scheduledAttachmentDeletionIds(),
+        )
+    }
+
+    @Test
+    fun `deleteMessageThreadsOfExpiredChildren keeps a thread that is linked to an application`() {
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        val sent = sendMessage(sentAt = sendTimeOverFiveYearsAgo, type = MessageType.MESSAGE)
+        setThreadApplication(sent.threadIds.single(), insertApplication())
+
+        deleteMessageThreadsOfExpiredChildren(listOf(child.id))
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteMessageThreadsOfExpiredChildren keeps a thread whose content an application note references`() {
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        val sent = sendMessage(sentAt = sendTimeOverFiveYearsAgo, type = MessageType.MESSAGE)
+        insertApplicationNote(insertApplication(), sent.contentId)
+
+        deleteMessageThreadsOfExpiredChildren(listOf(child.id))
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteMessageThreadsOfExpiredChildren doesn't remove more threads than the limit`() {
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        repeat(3) { sendMessage(sentAt = sendTimeOverFiveYearsAgo, type = MessageType.MESSAGE) }
+
+        deleteMessageThreadsOfExpiredChildren(listOf(child.id), limit = 2)
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
     fun `deleteExpiredMessageDrafts deletes an expired draft and enqueues its attachment deletion`() {
         val draftId = createDraft(createdAt = draftExpiresBefore.minusDays(1))
         val attachmentId = insertDraftAttachment(draftId, now)
@@ -801,6 +1036,26 @@ RETURNING id
 
         assertEquals(1, rowCount("message_thread"))
         assertEquals(1, rowCount("message_draft"))
+    }
+
+    @Test
+    fun `deleteExpiredData keeps a regular message thread of a child who left care over ten years ago`() {
+        // Regular messages are retained as long as the data of their children, and the rule that
+        // expires a child is not in use yet
+        val leftCareTenYearsAgo = FiniteDateRange(today.minusYears(12), today.minusYears(11))
+        insertGroupPlacement(child.id, leftCareTenYearsAgo)
+        sendMessage(
+            sentAt =
+                HelsinkiDateTime.of(leftCareTenYearsAgo.start.plusDays(1), LocalTime.of(12, 0)),
+            type = MessageType.MESSAGE,
+        )
+
+        withLimit(1000) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
     }
 
     private fun insertApplication(childId: ChildId = child.id): ApplicationId =
