@@ -10,7 +10,7 @@ import { combine, isLoading } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import LocalDate from 'lib-common/local-date'
-import { useQuery, useQueryResult } from 'lib-common/query'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import Main from 'lib-components/atoms/Main'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Desktop, RenderOnlyOn } from 'lib-components/layout/responsive-layout'
@@ -19,7 +19,7 @@ import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
 import RequireAuth from '../RequireAuth'
-import { renderResult } from '../async-rendering'
+import { renderResult, UnwrapResult } from '../async-rendering'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
@@ -136,7 +136,11 @@ const CalendarPage = React.memo(function CalendarPage() {
     [holidayPeriods]
   )
 
-  const { data: questionnaire } = useQuery(activeQuestionnaireQuery())
+  const questionnaireResult = useQueryResult(
+    modalState?.type === 'holidays'
+      ? activeQuestionnaireQuery()
+      : constantQuery(null)
+  )
 
   const firstReservableDate = useMemo(() => {
     if (data.isSuccess) {
@@ -314,34 +318,41 @@ const CalendarPage = React.memo(function CalendarPage() {
                     )}
                   />
                 )}
-              {modalState?.type === 'holidays' && questionnaire && (
-                <RequireAuth
-                  strength={
-                    questionnaire.questionnaire.requiresStrongAuth
-                      ? 'STRONG'
-                      : 'WEAK'
+              {modalState?.type === 'holidays' && (
+                <UnwrapResult result={questionnaireResult}>
+                  {(questionnaire) =>
+                    questionnaire ? (
+                      <RequireAuth
+                        strength={
+                          questionnaire.questionnaire.requiresStrongAuth
+                            ? 'STRONG'
+                            : 'WEAK'
+                        }
+                      >
+                        {questionnaire.questionnaire.type === 'FIXED_PERIOD' ? (
+                          <FixedPeriodSelectionModal
+                            close={closeModal}
+                            questionnaire={questionnaire.questionnaire}
+                            availableChildren={response.children}
+                            eligibleChildren={questionnaire.eligibleChildren}
+                            previousAnswers={questionnaire.previousAnswers}
+                          />
+                        ) : questionnaire.questionnaire.type ===
+                          'OPEN_RANGES' ? (
+                          <OpenRangesSelectionModal
+                            close={closeModal}
+                            questionnaire={questionnaire.questionnaire}
+                            availableChildren={response.children}
+                            eligibleChildren={questionnaire.eligibleChildren}
+                            previousAnswers={questionnaire.previousAnswers}
+                          />
+                        ) : (
+                          <div>Not Yet Implemented</div>
+                        )}
+                      </RequireAuth>
+                    ) : null
                   }
-                >
-                  {questionnaire.questionnaire.type === 'FIXED_PERIOD' ? (
-                    <FixedPeriodSelectionModal
-                      close={closeModal}
-                      questionnaire={questionnaire.questionnaire}
-                      availableChildren={response.children}
-                      eligibleChildren={questionnaire.eligibleChildren}
-                      previousAnswers={questionnaire.previousAnswers}
-                    />
-                  ) : questionnaire.questionnaire.type === 'OPEN_RANGES' ? (
-                    <OpenRangesSelectionModal
-                      close={closeModal}
-                      questionnaire={questionnaire.questionnaire}
-                      availableChildren={response.children}
-                      eligibleChildren={questionnaire.eligibleChildren}
-                      previousAnswers={questionnaire.previousAnswers}
-                    />
-                  ) : (
-                    <div>Not Yet Implemented</div>
-                  )}
-                </RequireAuth>
+                </UnwrapResult>
               )}
             </div>
           )
