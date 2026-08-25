@@ -32,7 +32,7 @@
     "typescript": "7.0.2"
   },
   "overrides": {
-    "@xmldom/xmldom": "0.8.13"
+    "@xmldom/xmldom": "0.8.15"
   },
   "prettier": {
     "arrowParens": "always",

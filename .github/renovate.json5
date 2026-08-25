@@ -73,6 +73,12 @@
       allowedVersions: '< 8.0.0'
     },
     {
+      // xmldom 0.8 -> 0.9 breaks the SAML libraries used by dummy-idp and apigw.
+      // Drop this once dummy-idp no longer depends on samlp
+      matchPackageNames: ['@xmldom/xmldom'],
+      allowedVersions: '< 0.9.0',
+    },
+    {
       // Update all BouncyCastle artifacts in one PR, since bumping only some
       // of them can leave an incompatible mix of versions
       matchPackageNames: ['org.bouncycastle:*'],
