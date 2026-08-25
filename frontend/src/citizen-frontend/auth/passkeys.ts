@@ -53,7 +53,7 @@ export async function authPasskeyLogin(
   if (!(credential instanceof PublicKeyCredential)) return 'failure'
 
   // Some password managers (e.g. 1Password) don't include the required `clientExtensionResults`
-  // field in the credential, which causes the backend to reject the registration.
+  // field in the credential, which causes the backend to reject the login.
   const credentialJson = credential.toJSON()
   if (!credentialJson.clientExtensionResults) {
     credentialJson.clientExtensionResults = {}
