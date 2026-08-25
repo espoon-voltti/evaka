@@ -2,15 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { featureFlags } from 'lib-customizations/citizen'
-
 import { client } from '../api-client'
 import { startPasskeyRegistration } from '../generated/api-clients/pis'
 
 import { passkeyProviderName } from './passkey-providers'
 
 export function passkeysSupported(): boolean {
-  if (!featureFlags.passkeys) return false
   return (
     typeof window.PublicKeyCredential !== 'undefined' &&
     typeof window.PublicKeyCredential.parseCreationOptionsFromJSON ===

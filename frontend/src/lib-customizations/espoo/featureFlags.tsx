@@ -64,8 +64,7 @@ const features: Features = {
     nekkuIntegration: false,
     forceUnpublishDocumentTemplate: true,
     serviceApplications: true,
-    showCitizenApplicationPreschoolTerms: true,
-    passkeys: true
+    showCitizenApplicationPreschoolTerms: true
   },
   staging: {
     ...prod,
