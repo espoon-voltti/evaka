@@ -229,6 +229,43 @@ class HolidayPeriodControllerCitizenIntegrationTest :
     }
 
     @Test
+    fun `active questionnaire is eligible for a child whose placement in a private voucher value unit has ended`() {
+        db.transaction { tx ->
+            tx.insertGuardian(parent.id, child4.id)
+            tx.insert(voucherDaycare)
+            tx.insert(
+                DevPlacement(
+                    childId = child4.id,
+                    unitId = voucherDaycare.id,
+                    startDate = mockToday.minusYears(2),
+                    endDate = mockToday.minusDays(1),
+                )
+            )
+            tx.insert(
+                DevPlacement(
+                    childId = child4.id,
+                    unitId = daycare.id,
+                    startDate = mockToday,
+                    endDate = mockToday.plusYears(1),
+                )
+            )
+        }
+
+        createFixedPeriodQuestionnaire(freePeriodQuestionnaire)
+
+        val response = getActiveQuestionnaires(mockToday)
+
+        assertEquals(1, response.size)
+        assertThat(response[0].eligibleChildren)
+            .containsExactlyInAnyOrderEntriesOf(
+                mapOf(
+                    child1.id to freePeriodQuestionnaire.periodOptions,
+                    child4.id to freePeriodQuestionnaire.periodOptions,
+                )
+            )
+    }
+
+    @Test
     fun `active questionnaire is eligible for a child with a future placement when the calendar is already open`() {
         db.transaction { tx ->
             tx.insertGuardian(parent.id, child2.id)

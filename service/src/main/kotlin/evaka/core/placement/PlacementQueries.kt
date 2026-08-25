@@ -117,6 +117,23 @@ WHERE child_id = ANY(${bind(childIds)}) AND daterange(start_date, end_date, '[]'
 }
     .toSet<ChildId>()
 
+fun Database.Read.getChildIdsWithVoucherPlacementAt(
+    childIds: Collection<ChildId>,
+    date: LocalDate,
+): Set<ChildId> = createQuery {
+    sql(
+        """
+SELECT DISTINCT p.child_id
+FROM placement p
+JOIN daycare d ON d.id = p.unit_id
+WHERE p.child_id = ANY(${bind(childIds)})
+  AND daterange(p.start_date, p.end_date, '[]') @> ${bind(date)}
+  AND d.provider_type = 'PRIVATE_SERVICE_VOUCHER'
+"""
+    )
+}
+    .toSet<ChildId>()
+
 fun Database.Read.getPlacementsForChildrenAt(
     childIds: Set<ChildId>,
     date: LocalDate,
