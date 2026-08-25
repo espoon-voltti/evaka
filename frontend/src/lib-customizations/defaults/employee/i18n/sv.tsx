@@ -4044,7 +4044,7 @@ export const sv: typeof fi = {
     incompleteIncomes: {
       title: 'Saknade inkomstuppgifter',
       description:
-        'Rapport över föräldrar vars inkomstuppgifter har föråldrats, men barnet har fortfarande en aktiv placering.',
+        'Rapport över vuxna vars inkomstuppgifter har föråldrats och vars familj har ett barn med en gällande avgiftsbelagd placering. Vuxna vars make/maka eller sambo i samma hushåll har gett sitt samtycke till högsta avgiften visas inte i rapporten.',
       validFrom: 'Startdatum',
       fullName: 'Namn',
       daycareName: 'Daghem',
