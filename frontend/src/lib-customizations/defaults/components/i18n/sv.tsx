@@ -191,8 +191,8 @@ const components: Translations = {
     generic: 'Kolla'
   },
   metadata: {
-    title: 'Arkiverbar metadata',
-    notFound: 'Det finns ingen arkiverbar metadata för dokumentet',
+    title: 'Metadata för ärendehantering',
+    notFound: 'Det finns ingen metadata för ärendehantering för dokumentet',
     case: 'Ärende',
     caseIdentifier: 'Ärendekod',
     processName: 'Ärendeprocess',
