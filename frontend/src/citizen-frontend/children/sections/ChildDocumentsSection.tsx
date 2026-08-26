@@ -174,13 +174,6 @@ export default React.memo(function ChildDocumentsSection({
             />
             <ChildDocumentsList
               childId={childId}
-              title={i18n.children.childDocuments.hojksTitle}
-              dataQa="child-documents-hojks-title"
-              types={['HOJKS']}
-              hideWhenEmpty
-            />
-            <ChildDocumentsList
-              childId={childId}
               title={i18n.children.childDocuments.otherDocumentsTitle}
               dataQa="child-documents-other-title"
               types={childDocumentTypes.filter(
@@ -205,14 +198,12 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
   childId,
   title,
   dataQa,
-  types,
-  hideWhenEmpty = false
+  types
 }: {
   childId: ChildId
   title: string
   dataQa: string
   types: ChildDocumentType[]
-  hideWhenEmpty?: boolean
 }) {
   const i18n = useTranslation()
 
@@ -228,57 +219,51 @@ const ChildDocumentsList = React.memo(function ChildDocumentsList({
 
   return (
     <>
-      {renderResult(documentsResult, (documents) => {
-        if (documents.length === 0 && hideWhenEmpty) {
-          return null
-        }
-
-        return (
-          <>
-            <H3 data-qa={dataQa}>{title}</H3>
-            {documents.length === 0 ? (
-              <PaddingBox>
-                <Gap $size="s" />
-                <Dimmed>{i18n.children.childDocuments.noDocuments}</Dimmed>
-              </PaddingBox>
-            ) : (
-              <>
-                <MobileAndTablet>
-                  {documents.map((document) => (
-                    <MobileRowContainer
-                      key={document.id}
-                      $unread={document.unread}
-                    >
-                      <FixedSpaceRow $justifyContent="space-between">
-                        <span data-qa={`published-at-${document.id}`}>
-                          {document.publishedAt?.toLocalDate().format() ?? ''}
-                        </span>
-                        <Answered document={document} />
-                        <DecisionValidity document={document} />
-                      </FixedSpaceRow>
-                      <Gap $size="xs" />
-                      <FixedSpaceRow $justifyContent="space-between">
-                        <Link
-                          to={`/child-documents/${document.id}`}
-                          data-qa="child-document-link"
-                        >
-                          {document.templateName}
-                        </Link>
-                        <ChildDocumentStateChip
-                          status={document.decision?.status ?? document.status}
-                        />
-                      </FixedSpaceRow>
-                    </MobileRowContainer>
-                  ))}
-                </MobileAndTablet>
-                <Desktop>
-                  <ChildDocumentsTable summaries={documents} />
-                </Desktop>
-              </>
-            )}
-          </>
-        )
-      })}
+      {renderResult(documentsResult, (documents) => (
+        <>
+          <H3 data-qa={dataQa}>{title}</H3>
+          {documents.length === 0 ? (
+            <PaddingBox>
+              <Gap $size="s" />
+              <Dimmed>{i18n.children.childDocuments.noDocuments}</Dimmed>
+            </PaddingBox>
+          ) : (
+            <>
+              <MobileAndTablet>
+                {documents.map((document) => (
+                  <MobileRowContainer
+                    key={document.id}
+                    $unread={document.unread}
+                  >
+                    <FixedSpaceRow $justifyContent="space-between">
+                      <span data-qa={`published-at-${document.id}`}>
+                        {document.publishedAt?.toLocalDate().format() ?? ''}
+                      </span>
+                      <Answered document={document} />
+                      <DecisionValidity document={document} />
+                    </FixedSpaceRow>
+                    <Gap $size="xs" />
+                    <FixedSpaceRow $justifyContent="space-between">
+                      <Link
+                        to={`/child-documents/${document.id}`}
+                        data-qa="child-document-link"
+                      >
+                        {document.templateName}
+                      </Link>
+                      <ChildDocumentStateChip
+                        status={document.decision?.status ?? document.status}
+                      />
+                    </FixedSpaceRow>
+                  </MobileRowContainer>
+                ))}
+              </MobileAndTablet>
+              <Desktop>
+                <ChildDocumentsTable summaries={documents} />
+              </Desktop>
+            </>
+          )}
+        </>
+      ))}
     </>
   )
 })

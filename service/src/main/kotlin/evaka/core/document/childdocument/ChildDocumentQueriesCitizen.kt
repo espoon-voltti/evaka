@@ -4,6 +4,7 @@
 
 package evaka.core.document.childdocument
 
+import evaka.core.document.ChildDocumentType
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.PersonId
 import evaka.core.shared.auth.AuthenticatedUser
@@ -70,6 +71,7 @@ fun Database.Read.getChildDocumentCitizenSummaries(
                         "EXISTS(SELECT 1 FROM child_document_published_version v WHERE v.child_document_id = $it.id)"
                     )
                 },
+                Predicate { where("$it.type <> ${bind(ChildDocumentType.HOJKS)}") },
             ),
         )
         .toList<ChildDocumentCitizenSummary>()
@@ -83,6 +85,7 @@ fun Database.Read.getUnansweredChildDocuments(
             Predicate.all(
                 filter.toPredicate(),
                 Predicate { where("$it.answered_at IS NULL AND $it.answered_by IS NULL") },
+                Predicate { where("$it.type <> ${bind(ChildDocumentType.HOJKS)}") },
             ),
         )
         .toList<ChildDocumentCitizenSummary>()

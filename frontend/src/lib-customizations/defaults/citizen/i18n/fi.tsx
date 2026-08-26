@@ -3006,8 +3006,6 @@ export default {
       plansTitle:
         'Varhaiskasvatussuunnitelmat ja esiopetuksen oppimissuunnitelmat',
       noVasus: 'Ei suunnitelmia',
-      hojksTitle:
-        'Henkilökohtaisen opetuksen järjestämistä koskevat suunnitelmat',
       otherDocumentsTitle: 'Muut asiakirjat',
       noDocuments: 'Ei asiakirjoja',
       confidential: 'Salassapidettävä',

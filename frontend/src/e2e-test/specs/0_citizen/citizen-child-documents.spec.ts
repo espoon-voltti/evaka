@@ -17,9 +17,7 @@ import {
   testDaycareGroup,
   Fixture,
   testAdult,
-  testAdult2,
   testChild,
-  testChild2,
   testCareArea,
   testDaycare
 } from '../../dev-api/fixtures'
@@ -46,8 +44,6 @@ let child: DevPerson
 let decisionMaker: DevEmployee
 let templateIdVasu: DocumentTemplateId
 let documentIdVasu: UUID
-let templateIdHojks: DocumentTemplateId
-let documentIdHojks: UUID
 let templateIdPed: DocumentTemplateId
 let documentIdPed: UUID
 let templateIdDecision: DocumentTemplateId
@@ -95,36 +91,6 @@ test.beforeEach(async () => {
     await Fixture.childDocument({
       childId: child.id,
       templateId: templateIdVasu
-    })
-      .withPublishedVersion({
-        versionNumber: 1,
-        createdAt: mockedNow,
-        createdBy: evakaUserId(decisionMaker.id),
-        publishedContent: {
-          answers: [
-            {
-              questionId: 'q1',
-              type: 'TEXT',
-              answer: 'test'
-            }
-          ]
-        }
-      })
-      .save()
-  ).id
-
-  templateIdHojks = (
-    await Fixture.documentTemplate({
-      type: 'HOJKS',
-      name: 'HOJKS 2023-2024'
-    })
-      .withPublished(true)
-      .save()
-  ).id
-  documentIdHojks = (
-    await Fixture.childDocument({
-      childId: child.id,
-      templateId: templateIdHojks
     })
       .withPublishedVersion({
         versionNumber: 1,
@@ -235,48 +201,6 @@ test.describe('Citizen child documents listing page', () => {
       evaka.url.endsWith(`/child-documents/${documentIdVasu}`)
     ).toBeTruthy()
     await expect(evaka.find('h1')).toHaveText('VASU 2023-2024')
-  })
-
-  test('Published hojks is in the list', async ({ evaka }) => {
-    const header = new CitizenHeader(evaka, 'desktop')
-    await header.openChildPage(child.id)
-    const childPage = new CitizenChildPage(evaka)
-    await childPage.openCollapsible('child-documents')
-    await childPage.childDocumentLink(documentIdHojks).click()
-    expect(
-      evaka.url.endsWith(`/child-documents/${documentIdHojks}`)
-    ).toBeTruthy()
-    await expect(evaka.find('h1')).toHaveText('HOJKS 2023-2024')
-  })
-
-  test('Hojks category is hidden when there are no hojks documents', async ({
-    newEvakaPage
-  }) => {
-    // a separate guardian whose only child has no child documents at all
-    await Fixture.family({
-      guardian: testAdult2,
-      children: [testChild2]
-    }).save()
-    await insertGuardians({
-      body: [{ guardianId: testAdult2.id, childId: testChild2.id }]
-    })
-    await Fixture.placement({
-      childId: testChild2.id,
-      unitId: testDaycare.id,
-      startDate: LocalDate.of(2022, 5, 1),
-      endDate: LocalDate.of(2023, 8, 31)
-    }).save()
-
-    const page = await newEvakaPage({ mockedTime: mockedNow })
-    await enduserLogin(page, testAdult2, '/')
-
-    const header = new CitizenHeader(page, 'desktop')
-    await header.openChildPage(testChild2.id)
-    const childPage = new CitizenChildPage(page)
-    await childPage.openCollapsible('child-documents')
-
-    await expect(childPage.childDocumentsCategoryTitle('plans')).toBeVisible()
-    await expect(childPage.childDocumentsCategoryTitle('hojks')).toBeHidden()
   })
 
   test('Published pedagogical report is in the list', async ({ evaka }) => {
@@ -423,7 +347,7 @@ test.describe('Citizen child documents editor page', () => {
 
     await enduserLogin(evaka, testAdult, '/')
     const header = new CitizenHeader(evaka, 'desktop')
-    await header.assertUnreadChildrenCount(5)
+    await header.assertUnreadChildrenCount(4)
     await header.openChildPage(child.id)
     const childPage = new CitizenChildPage(evaka)
     await childPage.openCollapsible('child-documents')
@@ -433,7 +357,7 @@ test.describe('Citizen child documents editor page', () => {
       { useInnerText: true }
     )
     await childPage.childDocumentLink(document.id).click()
-    await header.assertUnreadChildrenCount(4)
+    await header.assertUnreadChildrenCount(3)
     const childDocumentPage = new ChildDocumentPage(evaka)
     await childDocumentPage.editButton.click()
     await expect(childDocumentPage.status).toHaveText(

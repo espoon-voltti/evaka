@@ -3022,7 +3022,6 @@ const sv: Translations = {
       plansTitle:
         'Planer för småbarnspedagogik och lärande inom förskoleundervisning',
       noVasus: 'Inga planer',
-      hojksTitle: 'Individuella planer för hur undervisningen ska ordnas',
       otherDocumentsTitle: 'Andra dokument',
       noDocuments: 'Inga dokument',
       confidential: 'Konfidentiellt',
