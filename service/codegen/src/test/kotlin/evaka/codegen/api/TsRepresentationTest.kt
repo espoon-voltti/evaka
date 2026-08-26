@@ -6,8 +6,8 @@ package evaka.codegen.api
 
 import com.fasterxml.jackson.annotation.JsonValue
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class TsRepresentationTest {
     enum class BasicEnum {
@@ -29,6 +29,6 @@ class TsRepresentationTest {
 
     @Test
     fun `TsStringEnum prohibits enums with JsonValue field`() {
-        assertThrows<IllegalStateException> { TsStringEnum(ComplexEnum::class) }
+        assertFailsWith<IllegalStateException> { TsStringEnum(ComplexEnum::class) }
     }
 }

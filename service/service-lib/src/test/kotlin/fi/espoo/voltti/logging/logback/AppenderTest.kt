@@ -35,7 +35,7 @@ class AppenderTest {
 
     @Test
     fun `audit appender`() {
-        listOf("test1", "test2").map { prefix ->
+        listOf("test1", "test2").forEach { prefix ->
             withTestLoggers {
                 MDC.put("userId", "$prefix.userId")
                 MDC.put("userIdHash", "$prefix.userIdHash")

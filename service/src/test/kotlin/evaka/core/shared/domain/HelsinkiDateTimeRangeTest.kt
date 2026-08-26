@@ -7,24 +7,24 @@ package evaka.core.shared.domain
 import evaka.core.shared.data.BoundedRange
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class HelsinkiDateTimeRangeTest {
     @Test
     fun `start is inclusive and end is exclusive, so a range containing just one date is invalid`() {
         // TODO: change constructor semantics
-        // assertThrows<IllegalArgumentException> { testRange(1, 1) }
+        // assertFailsWith<IllegalArgumentException> { testRange(1, 1) }
         assertNull(HelsinkiDateTimeRange.tryCreate(testDateTime(1), testDateTime(1)))
     }
 
     @Test
     fun `start cannot be after end`() {
         // TODO: change constructor to throw IllegalArgumentException instead
-        assertThrows<IllegalStateException> { testRange(2, 1) }
+        assertFailsWith<IllegalStateException> { testRange(2, 1) }
         assertNull(HelsinkiDateTimeRange.tryCreate(testDateTime(2), testDateTime(1)))
     }
 

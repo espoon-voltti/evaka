@@ -99,13 +99,13 @@ class DVVPersonDetailsServiceTest {
         assertThat(childResult.address).isEqualTo(expectedChildResult.address)
 
         argumentCaptor<VTJQuery>().apply {
-            verify(vtjService, times(2)).query(capture())
+            val _ = verify(vtjService, times(2)).query(capture())
             assertThat(firstValue).isEqualTo(expectedVtjQuery)
             assertThat(secondValue).isEqualTo(expectedChildVtjQuery)
         }
 
         argumentCaptor<Henkilo>().apply {
-            verify(henkiloMapper, times(2)).mapToVtjPerson(capture())
+            val _ = verify(henkiloMapper, times(2)).mapToVtjPerson(capture())
             assertThat(firstValue).isEqualTo(expectedVTJResponse)
             assertThat(secondValue).isEqualTo(expectedChildVtjResponse)
         }

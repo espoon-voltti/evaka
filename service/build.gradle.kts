@@ -227,9 +227,10 @@ allprojects {
                     // https://kotlinlang.org/docs/whatsnew2020.html#data-class-copy-function-to-have-the-same-visibility-as-constructor
                     "-Xconsistent-data-class-copy-visibility",
 
-                    if(name.lowercase().contains("test")) null else {
-                        // Warnings from discarded return values
-                        // https://kotlinlang.org/docs/unused-return-value-checker.html
+                    // Warnings from discarded return values
+                    // https://kotlinlang.org/docs/unused-return-value-checker.html
+                    if (name.lowercase().contains("integrationtest")) null
+                    else {
                         "-Xreturn-value-checker=full"
                     },
                     "-Xallow-returns-result-of",

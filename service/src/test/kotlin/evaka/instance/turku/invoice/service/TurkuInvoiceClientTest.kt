@@ -44,9 +44,9 @@ internal class TurkuInvoiceClientTest {
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
+        val _ = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
-        verify(invoiceGenerator).generateInvoice(invoiceList)
+        val _ = verify(invoiceGenerator).generateInvoice(invoiceList)
     }
 
     @Test
@@ -61,7 +61,7 @@ internal class TurkuInvoiceClientTest {
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
+        val _ = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         val captor = argumentCaptor<InputStream>()
         verify(sftpClient)
@@ -76,7 +76,7 @@ internal class TurkuInvoiceClientTest {
             StringInvoiceGenerator.InvoiceGeneratorResult(InvoiceIntegrationClient.SendResult(), "")
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
+        val _ = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         verify(sftpClient, never()).put(any<InputStream>(), any())
     }
@@ -189,7 +189,7 @@ internal class TurkuInvoiceClientTest {
                 )
             )
 
-        eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
+        val _ = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(output).contains("Successfully sent 1 invoices and created 1 manual invoice")
     }
@@ -215,7 +215,7 @@ internal class TurkuInvoiceClientTest {
                 )
             )
             .thenThrow(RuntimeException::class.java)
-        eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
+        val _ = eVakaTurkuInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(output).contains("Failed to send 2 invoices")
     }

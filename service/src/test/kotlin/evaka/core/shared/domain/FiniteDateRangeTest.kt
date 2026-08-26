@@ -8,11 +8,11 @@ import evaka.core.shared.data.BoundedRange
 import java.lang.IllegalArgumentException
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class FiniteDateRangeTest {
     @Test
@@ -24,7 +24,7 @@ class FiniteDateRangeTest {
 
     @Test
     fun `start cannot be after end`() {
-        assertThrows<IllegalArgumentException> { testRange(2, 1) }
+        assertFailsWith<IllegalArgumentException> { testRange(2, 1) }
         assertNull(FiniteDateRange.tryCreate(testDate(2), testDate(1)))
     }
 

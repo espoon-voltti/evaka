@@ -102,7 +102,7 @@ class VtjClientServiceTest {
         whenever(responseMapper.mapResponseToHenkilo(response))
             .thenReturn(createPersonResponse(forSsn = ssn))
 
-        service.query(query)
+        val _ = service.query(query)
 
         argumentCaptor<ILoggingEvent>().apply {
             verify(mockAppender, times(2)).doAppend(capture())
@@ -134,7 +134,7 @@ class VtjClientServiceTest {
             .thenReturn(response)
         whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(null)
 
-        service.query(query)
+        val _ = service.query(query)
 
         argumentCaptor<ILoggingEvent>().apply {
             verify(mockAppender, times(2)).doAppend(capture())
@@ -166,7 +166,7 @@ class VtjClientServiceTest {
             .thenThrow(expectedException)
 
         try {
-            service.query(query)
+            val _ = service.query(query)
             fail<Exception>("Exception not thrown")
         } catch (ex: ClassCastException) {
             assertThat(ex.message).isEqualTo(expectedException.message)
@@ -210,7 +210,7 @@ class VtjClientServiceTest {
         whenever(responseMapper.mapResponseToHenkilo(response))
             .thenReturn(createPersonResponse(forSsn = ssn))
 
-        service.query(query)
+        val _ = service.query(query)
 
         argumentCaptor<ILoggingEvent>().apply {
             verify(mockAppender, times(2)).doAppend(capture())
@@ -244,9 +244,9 @@ class VtjClientServiceTest {
             .thenReturn(response)
         whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(createPersonResponse())
 
-        service.query(query)
+        val _ = service.query(query)
 
-        verify(mockRequestAdapter).createCallback(query)
+        val _ = verify(mockRequestAdapter).createCallback(query)
     }
 
     @Test
@@ -270,7 +270,7 @@ class VtjClientServiceTest {
         val password = "*/89+74563876t5123v bg12"
         whenever(mockVtjProps.password).thenReturn(Sensitive(password))
 
-        service.query(query)
+        val _ = service.query(query)
 
         argumentCaptor<JAXBElement<HenkiloTunnusKyselyReqBody>>().apply {
             verify(mockWSTemplate).marshalSendAndReceive(capture(), eq(mockCallback))

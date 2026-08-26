@@ -7,16 +7,16 @@ package evaka.core.shared.domain
 import evaka.core.shared.data.BoundedRange
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class TimeRangeTest {
     @Test
     fun `start is inclusive and end is exclusive, so a range containing just one time is invalid`() {
-        assertThrows<IllegalArgumentException> { testRange(1, 1) }
+        assertFailsWith<IllegalArgumentException> { testRange(1, 1) }
     }
 
     @Test
@@ -26,7 +26,7 @@ class TimeRangeTest {
 
     @Test
     fun `start cannot be after end`() {
-        assertThrows<IllegalArgumentException> { testRange(2, 1) }
+        assertFailsWith<IllegalArgumentException> { testRange(2, 1) }
     }
 
     @Test

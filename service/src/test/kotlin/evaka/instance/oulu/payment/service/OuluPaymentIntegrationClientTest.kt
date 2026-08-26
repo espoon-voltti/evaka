@@ -46,9 +46,9 @@ internal class OuluPaymentIntegrationClientTest {
             ProEPaymentGenerator.Result(PaymentIntegrationClient.SendResult(), proEPayment1)
         whenever(paymentGenerator.generatePayments(paymentList)).thenReturn(paymentGeneratorResult)
 
-        paymentClient.send(paymentList, tx)
+        val _ = paymentClient.send(paymentList, tx)
 
-        verify(paymentGenerator).generatePayments(paymentList)
+        val _ = verify(paymentGenerator).generatePayments(paymentList)
     }
 
     @Test
@@ -63,7 +63,7 @@ internal class OuluPaymentIntegrationClientTest {
             )
         whenever(paymentGenerator.generatePayments(paymentList)).thenReturn(paymentGeneratorResult)
 
-        paymentClient.send(paymentList, tx)
+        val _ = paymentClient.send(paymentList, tx)
 
         val captor = argumentCaptor<InputStream>()
         verify(sftpClient).put(captor.capture(), eq(fileName))
@@ -78,7 +78,7 @@ internal class OuluPaymentIntegrationClientTest {
             ProEPaymentGenerator.Result(PaymentIntegrationClient.SendResult(), "")
         whenever(paymentGenerator.generatePayments(paymentList)).thenReturn(paymentGeneratorResult)
 
-        paymentClient.send(paymentList, tx)
+        val _ = paymentClient.send(paymentList, tx)
 
         verify(sftpClient, never()).put(any<InputStream>(), any())
     }
@@ -183,7 +183,7 @@ internal class OuluPaymentIntegrationClientTest {
                 )
             )
 
-        paymentClient.send(paymentList, tx)
+        val _ = paymentClient.send(paymentList, tx)
 
         Assertions.assertThat(output).contains("Successfully sent 1 payments")
     }
@@ -202,7 +202,7 @@ internal class OuluPaymentIntegrationClientTest {
             )
 
         doThrow(RuntimeException::class).whenever(sftpClient).put(any<InputStream>(), any<String>())
-        paymentClient.send(paymentList, tx)
+        val _ = paymentClient.send(paymentList, tx)
 
         Assertions.assertThat(output).contains("Failed to send 2 payments")
     }

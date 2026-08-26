@@ -21,6 +21,7 @@ import javax.net.ssl.SSLPeerUnverifiedException
 import javax.net.ssl.SSLSession
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import okhttp3.OkHttpClient
@@ -29,7 +30,6 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -179,7 +179,7 @@ class DvvModificationsServiceClientSslTest {
         val trustManager = client.x509TrustManager!!
         assertContains(1..Int.MAX_VALUE, trustManager.acceptedIssuers.size)
         val untrustedCert = generateSelfSignedCert()
-        assertThrows<CertificateException> {
+        assertFailsWith<CertificateException> {
             trustManager.checkServerTrusted(arrayOf(untrustedCert), "RSA")
         }
     }
