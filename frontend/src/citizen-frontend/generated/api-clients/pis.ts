@@ -17,6 +17,7 @@ import type { PasskeyRegistrationOptions } from 'lib-common/generated/api-types/
 import type { PasswordConstraints } from 'lib-common/generated/api-types/shared'
 import type { PersonalDataUpdate } from 'lib-common/generated/api-types/pis'
 import type { UpdatePasskeyNameRequest } from 'lib-common/generated/api-types/pis'
+import type { UpdatePreferredUiLanguageRequest } from 'lib-common/generated/api-types/pis'
 import type { UpdateWeakLoginCredentialsRequest } from 'lib-common/generated/api-types/pis'
 import { client } from '../../api-client'
 import { deserializeJsonCitizenPasskey } from 'lib-common/generated/api-types/user'
@@ -188,6 +189,23 @@ export async function updatePersonalData(
     url: uri`/citizen/personal-data`.toString(),
     method: 'PUT',
     data: request.body satisfies JsonCompatible<PersonalDataUpdate>
+  })
+  return json
+}
+
+
+/**
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.updatePreferredUiLanguage
+*/
+export async function updatePreferredUiLanguage(
+  request: {
+    body: UpdatePreferredUiLanguageRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/personal-data/preferred-ui-language`.toString(),
+    method: 'PUT',
+    data: request.body satisfies JsonCompatible<UpdatePreferredUiLanguageRequest>
   })
   return json
 }

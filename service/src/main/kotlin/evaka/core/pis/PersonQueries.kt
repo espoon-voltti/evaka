@@ -16,6 +16,7 @@ import evaka.core.shared.db.PredicateSql
 import evaka.core.shared.db.Row
 import evaka.core.shared.db.freeTextSearchPredicate
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.UiLanguage
 import java.time.LocalDate
 import java.util.UUID
 
@@ -69,12 +70,13 @@ data class CitizenUserDetails(
     val backupPhone: String,
     val email: String?,
     val weakLoginUsername: String?,
+    val preferredUiLanguage: UiLanguage?,
 )
 
 fun Database.Read.getCitizenUserDetails(id: PersonId): CitizenUserDetails? = createQuery {
     sql(
         """
-SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email, citizen_user.username AS weak_login_username
+SELECT id, first_name, last_name, preferred_name, street_address, postal_code, post_office, phone, backup_phone, email, citizen_user.username AS weak_login_username, citizen_user.preferred_ui_language
 FROM person
 LEFT JOIN citizen_user USING (id)
 WHERE id = ${bind(id)}

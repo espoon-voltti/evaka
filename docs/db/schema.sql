@@ -2495,6 +2495,7 @@ CREATE TABLE public.citizen_user (
     username_updated_at timestamp with time zone,
     password jsonb,
     password_updated_at timestamp with time zone,
+    preferred_ui_language public.ui_language,
     CONSTRAINT "check$username_format" CHECK ((lower(TRIM(BOTH FROM username)) = username)),
     CONSTRAINT "check$weak_credentials" CHECK (((username IS NULL) = (password IS NULL))),
     CONSTRAINT "check$weak_credentials_updated" CHECK ((((username IS NULL) OR (username_updated_at IS NOT NULL)) AND ((username_updated_at IS NULL) = (password_updated_at IS NULL))))
