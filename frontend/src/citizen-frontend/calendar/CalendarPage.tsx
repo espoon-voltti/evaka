@@ -14,10 +14,12 @@ import { constantQuery, useQueryResult } from 'lib-common/query'
 import Main from 'lib-components/atoms/Main'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Desktop, RenderOnlyOn } from 'lib-components/layout/responsive-layout'
+import BaseModal from 'lib-components/molecules/modals/BaseModal'
 import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
+import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import RequireAuth from '../RequireAuth'
 import { renderResult, UnwrapResult } from '../async-rendering'
 import { useUser } from '../auth/state'
@@ -163,6 +165,10 @@ const CalendarPage = React.memo(function CalendarPage() {
   }, [data])
 
   if (!user || !user.accessibleFeatures.reservations) return null
+
+  const holidayQuestionnairePlaceholder = () => (
+    <HolidayModalPlaceholder close={closeModal} result={questionnaireResult} />
+  )
 
   return (
     <>
@@ -319,7 +325,11 @@ const CalendarPage = React.memo(function CalendarPage() {
                   />
                 )}
               {modalState?.type === 'holidays' && (
-                <UnwrapResult result={questionnaireResult}>
+                <UnwrapResult
+                  result={questionnaireResult}
+                  loading={holidayQuestionnairePlaceholder}
+                  failure={holidayQuestionnairePlaceholder}
+                >
                   {(questionnaire) =>
                     questionnaire ? (
                       <RequireAuth
@@ -359,6 +369,28 @@ const CalendarPage = React.memo(function CalendarPage() {
         }
       )}
     </>
+  )
+})
+
+const HolidayModalPlaceholder = React.memo(function HolidayModalPlaceholder({
+  close,
+  result
+}: {
+  close: () => void
+  result: Result<unknown>
+}) {
+  const i18n = useTranslation()
+  return (
+    <ModalAccessibilityWrapper>
+      <BaseModal
+        title=""
+        close={close}
+        closeLabel={i18n.common.closeModal}
+        mobileFullScreen
+      >
+        <UnwrapResult result={result} />
+      </BaseModal>
+    </ModalAccessibilityWrapper>
   )
 })
 
