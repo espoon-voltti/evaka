@@ -57,7 +57,7 @@ fun Database.Read.getChildDocumentMetadata(documentId: ChildDocumentId): Documen
         sql(
             """
         SELECT 
-            dt.id,
+            cd.id,
             dt.name,
             cd.created_at,
             e.id AS created_by_id,

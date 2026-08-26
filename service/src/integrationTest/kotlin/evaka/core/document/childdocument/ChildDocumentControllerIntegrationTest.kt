@@ -420,6 +420,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
             assertEquals("1/123.456.789/2022", it.process.caseIdentifier)
             assertEquals("Espoon kaupungin esiopetus ja varhaiskasvatus", it.process.organization)
             assertEquals(120, it.process.archiveDurationMonths)
+            assertEquals(documentId.raw, it.primaryDocument.documentId)
             assertEquals("HOJKS", it.primaryDocument.name)
             assertEquals(ProcessType.CHILD_DOCUMENT_HOJKS, it.processType)
             assertEquals(
