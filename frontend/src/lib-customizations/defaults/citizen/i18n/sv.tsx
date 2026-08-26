@@ -2162,7 +2162,8 @@ const sv: Translations = {
       },
       ADD_WEAK_LOGIN: {
         title: 'Lägg till en inloggningsmetod',
-        description: 'Du kan logga in med din e-postadress och lösenord.'
+        description:
+          'Logga in enkelt med fingeravtryck, ansiktsigenkänning eller en PIN-kod.'
       }
     },
     familySizeSection: {

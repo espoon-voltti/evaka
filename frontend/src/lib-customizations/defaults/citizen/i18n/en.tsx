@@ -1903,7 +1903,8 @@ const en: Translations = {
       },
       ADD_WEAK_LOGIN: {
         title: 'Add a login method',
-        description: 'You can log in with your email address and password.'
+        description:
+          'Log in easily with fingerprint, face recognition or a PIN code.'
       }
     },
     familySizeSection: {

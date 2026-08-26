@@ -122,6 +122,7 @@ export default React.memo(function PersonalDetails() {
   const notificationSettingsSection = useRef<HTMLDivElement>(null)
   const contactDetailsSection = useRef<HTMLDivElement>(null)
   const loginDetailsSection = useRef<HTMLDivElement>(null)
+  const passkeysSection = useRef<HTMLDivElement>(null)
   const emailVerificationStatus = useQueryResult(emailVerificationStatusQuery())
   const passwordConstraints = useQueryResult(passwordConstraintsQuery())
   const family = useQueryResult(familyQuery())
@@ -136,6 +137,7 @@ export default React.memo(function PersonalDetails() {
   > = {
     contact: contactDetailsSection,
     login: loginDetailsSection,
+    passkeys: passkeysSection,
     notifications: notificationSettingsSection
   }
 
@@ -229,7 +231,7 @@ export default React.memo(function PersonalDetails() {
         {passkeysSupported() && (
           <>
             <Gap $size="s" />
-            <ContentArea $opaque $paddingVertical="m">
+            <ContentArea $opaque $paddingVertical="m" ref={passkeysSection}>
               {renderResult(user, (user) =>
                 user ? (
                   <PasskeysSection user={user} />

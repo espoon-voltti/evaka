@@ -5,13 +5,14 @@
 import { useMemo } from 'react'
 
 import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
-import { useQuery } from 'lib-common/query'
+import type { CitizenPasskey } from 'lib-common/generated/api-types/user'
+import { constantQuery, useQuery } from 'lib-common/query'
 
 import type { User } from '../auth/state'
 import { useUser } from '../auth/state'
 
 import { isEmailVerified } from './emailVerification'
-import { emailVerificationStatusQuery } from './queries'
+import { emailVerificationStatusQuery, passkeysQuery } from './queries'
 
 export const personalDetailsTasks = [
   'ADD_EMAIL',
@@ -22,11 +23,16 @@ export const personalDetailsTasks = [
 
 export type PersonalDetailsTask = (typeof personalDetailsTasks)[number]
 
-export type PersonalDetailsTaskSection = 'contact' | 'login' | 'notifications'
+export type PersonalDetailsTaskSection =
+  | 'contact'
+  | 'login'
+  | 'passkeys'
+  | 'notifications'
 
 interface PersonalDetailsTaskContext {
   user: User
   emailVerification: EmailVerificationStatusResponse
+  passkeys: CitizenPasskey[]
 }
 
 export const personalDetailsTaskConfig: Record<
@@ -55,9 +61,9 @@ export const personalDetailsTaskConfig: Record<
   },
   ADD_WEAK_LOGIN: {
     dataQa: 'task-add-weak-login',
-    section: 'login',
-    isPending: ({ user, emailVerification }) =>
-      isEmailVerified(emailVerification) && !user.weakLoginUsername
+    section: 'passkeys',
+    isPending: ({ user, passkeys }) =>
+      passkeys.length === 0 && !user.weakLoginUsername
   }
 }
 
@@ -65,14 +71,17 @@ const noTasks: PersonalDetailsTask[] = []
 
 export function usePersonalDetailsTasks(): PersonalDetailsTask[] {
   const user = useUser()
-  const { data: emailVerification } = useQuery(emailVerificationStatusQuery(), {
-    enabled: user !== undefined
-  })
+  const { data: emailVerification } = useQuery(
+    user !== undefined ? emailVerificationStatusQuery() : constantQuery(null)
+  )
+  const { data: passkeys } = useQuery(
+    user !== undefined ? passkeysQuery() : constantQuery(null)
+  )
   return useMemo(() => {
-    if (!user || !emailVerification) return noTasks
-    const ctx = { user, emailVerification }
+    if (!user || !emailVerification || !passkeys) return noTasks
+    const ctx = { user, emailVerification, passkeys }
     return personalDetailsTasks.filter((task) =>
       personalDetailsTaskConfig[task].isPending(ctx)
     )
-  }, [user, emailVerification])
+  }, [user, emailVerification, passkeys])
 }

@@ -2171,8 +2171,9 @@ export default {
         description: 'Sinut tavoitetaan kiireellisissä asioissa.'
       },
       ADD_WEAK_LOGIN: {
-        title: 'Lisää kirjautumistapa',
-        description: 'Voit kirjautua sähköpostiosoitteella ja salasanalla.'
+        title: 'Luo kirjautumistapa',
+        description:
+          'Kirjaudu helposti sormenjäljellä, kasvojentunnistuksella tai PIN-koodilla.'
       }
     },
     familySizeSection: {

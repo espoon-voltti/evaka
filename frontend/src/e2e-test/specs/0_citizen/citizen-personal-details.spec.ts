@@ -23,6 +23,7 @@ import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-det
 import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
+import { addVirtualAuthenticator } from '../../utils/virtual-authenticator'
 
 let header: CitizenHeader
 let personalDetailsPage: CitizenPersonalDetailsPage
@@ -154,6 +155,25 @@ test.describe('Citizen personal details tasks', () => {
     await expect(personalDetailsPage.addEmailTask).toBeHidden()
     await expect(personalDetailsPage.verifyEmailTask).toBeHidden()
     await expect(personalDetailsPage.addPhoneTask).toBeHidden()
+    await expect(personalDetailsPage.addWeakLoginTask).toBeHidden()
+    await header.checkPersonalDetailsAttentionIndicatorsAreHidden()
+  })
+
+  test('Registering a passkey hides the weak login task', async () => {
+    await addVirtualAuthenticator(page)
+    const citizen = await verifiedCitizen.saveAdult({
+      updateMockVtjWithDependants: []
+    })
+    await enduserLogin(page, citizen, '/personal-details')
+    header = new CitizenHeader(page)
+    personalDetailsPage = new CitizenPersonalDetailsPage(page)
+
+    await expect(personalDetailsPage.addWeakLoginTask).toBeVisible()
+    await header.checkPersonalDetailsAttentionIndicatorsAreShown()
+
+    await personalDetailsPage.passkeysSection.addPasskey.click()
+    await expect(personalDetailsPage.passkeysSection.passkeys).toHaveCount(1)
+
     await expect(personalDetailsPage.addWeakLoginTask).toBeHidden()
     await header.checkPersonalDetailsAttentionIndicatorsAreHidden()
   })
