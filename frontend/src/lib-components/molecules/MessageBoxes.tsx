@@ -15,6 +15,7 @@ import { defaultMargins, Gap } from '../white-space'
 
 interface MessageBoxContainerProps {
   $color: string
+  $darkBackground?: boolean
   $width: string
   $thin?: boolean
   $noMargin?: boolean
@@ -22,14 +23,22 @@ interface MessageBoxContainerProps {
 
 const MessageBoxContainer = styled.div<MessageBoxContainerProps>`
   width: ${(props) => props.$width};
+  ${(props) =>
+    props.$darkBackground
+      ? `background-color: ${props.theme.colors.main.m4};`
+      : ''}
   margin: ${(props) => (props.$thin || props.$noMargin ? '0' : '24px 0')};
   padding: ${(props) =>
     props.$thin
       ? `${defaultMargins.xs} ${defaultMargins.s}`
       : defaultMargins.s};
-  border-style: solid;
-  border-width: 1px;
-  border-color: ${(props) => props.$color};
+  ${(props) =>
+    !props.$darkBackground &&
+    `
+      border-style: solid;
+      border-width: 1px;
+      border-color: ${props.$color};
+  `}
   border-radius: 4px;
 
   .message-container {
@@ -68,6 +77,7 @@ export interface MessageBoxProps {
   message?: string | React.ReactNode
   icon: IconProp
   color: string
+  darkBackground?: boolean
   width?: string
   thin?: boolean
   noMargin?: boolean
@@ -82,6 +92,7 @@ export const MessageBox = React.memo(function MessageBox({
   message,
   icon,
   color,
+  darkBackground,
   width,
   thin,
   noMargin,
@@ -95,6 +106,7 @@ export const MessageBox = React.memo(function MessageBox({
   return (
     <MessageBoxContainer
       $color={color}
+      $darkBackground={darkBackground}
       $width={width ?? 'fit-content'}
       $thin={thin}
       $noMargin={noMargin}
@@ -119,6 +131,7 @@ interface InfoBoxProps {
   title?: string
   message?: string | React.ReactNode
   icon?: IconProp
+  darkBackground?: boolean
   wide?: boolean
   thin?: boolean
   noMargin?: boolean
@@ -132,6 +145,7 @@ export const InfoBox = React.memo(function InfoBox({
   wide,
   thin,
   noMargin,
+  darkBackground,
   ...props
 }: InfoBoxProps) {
   const theme = useTheme()
@@ -144,6 +158,7 @@ export const InfoBox = React.memo(function InfoBox({
       message={message}
       icon={notNullIcon}
       color={theme.colors.status.info}
+      darkBackground={darkBackground}
       width={wide ? '100%' : 'fit-content'}
       thin={thin}
       noMargin={noMargin}

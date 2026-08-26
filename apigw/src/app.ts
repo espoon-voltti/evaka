@@ -7,9 +7,14 @@ import express from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
 import mapRoutes from './enduser/mapRoutes.ts'
+import {
+  authPasskeyLoginFinish,
+  authPasskeyLoginOptions
+} from './enduser/routes/auth-passkey-login.ts'
 import { citizenAuthStatus } from './enduser/routes/auth-status.ts'
 import { authWeakLogin } from './enduser/routes/auth-weak-login.ts'
 import { authWeakUpdateCredentials } from './enduser/routes/auth-weak-update-credentials.ts'
+import { passkeyDelete } from './enduser/routes/passkey-delete.ts'
 import {
   createCitizenSuomiFiIntegration,
   createEmployeeSuomiFiIntegration
@@ -222,6 +227,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
             return citizenSfiIntegration.logout(req, res)
           break
         case 'citizen-weak':
+        case 'citizen-passkey':
         case 'dev':
         case undefined:
           // no need for special handling
@@ -252,6 +258,7 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
           // no need for special handling
           break
         case 'citizen-weak':
+        case 'citizen-passkey':
         case 'employee-mobile':
           // should not happen, but we'll still destroy the session normally
           break
@@ -279,11 +286,29 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
       config.citizen.cookieSecret
     )
   )
+  router.post(
+    '/citizen/auth/passkey-login/options',
+    authPasskeyLoginOptions(redisClient)
+  )
+  router.post(
+    '/citizen/auth/passkey-login/finish',
+    express.json(),
+    authPasskeyLoginFinish(
+      citizenSessions,
+      redisClient,
+      config.citizen.cookieSecret
+    )
+  )
   router.put(
     '/citizen/personal-data/weak-login-credentials',
     citizenSessions.requireAuthentication,
     express.json(),
     authWeakUpdateCredentials(redisClient)
+  )
+  router.delete(
+    '/citizen/passkeys/:id',
+    citizenSessions.requireAuthentication,
+    passkeyDelete(redisClient)
   )
   router.all('/citizen/auth/{*rest}', (_, res) => res.redirect('/'))
   router.use('/citizen/public/map-api', mapRoutes)

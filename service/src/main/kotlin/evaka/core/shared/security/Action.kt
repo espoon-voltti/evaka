@@ -564,7 +564,11 @@ sealed interface Action {
             UPDATE_NOTIFICATION_SETTINGS(IsCitizen(allowWeakLogin = true).self()),
             UPDATE_WEAK_LOGIN_CREDENTIALS(IsCitizen(allowWeakLogin = false).self()),
             READ_EMAIL_VERIFICATION_STATUS(IsCitizen(allowWeakLogin = true).self()),
-            VERIFY_EMAIL(IsCitizen(allowWeakLogin = false).self());
+            VERIFY_EMAIL(IsCitizen(allowWeakLogin = false).self()),
+            READ_PASSKEYS(IsCitizen(allowWeakLogin = true).self()),
+            ADD_PASSKEY(IsCitizen(allowWeakLogin = false).self()),
+            DELETE_PASSKEY(IsCitizen(allowWeakLogin = false).self()),
+            UPDATE_PASSKEY_NAME(IsCitizen(allowWeakLogin = false).self());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

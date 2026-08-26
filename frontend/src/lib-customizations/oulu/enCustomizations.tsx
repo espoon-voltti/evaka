@@ -632,9 +632,9 @@ const en: DeepPartial<Translations> = {
     )
   },
   loginPage: {
+    helpUrl: 'https://www.ouka.fi/oulu/english/evaka',
     title: 'Early childhood education and care in the City of Oulu',
     login: {
-      title: 'Sign in with username',
       paragraph:
         'Take care of your child’s daily early childhood education affairs in eVaka.',
       link: 'Log in',

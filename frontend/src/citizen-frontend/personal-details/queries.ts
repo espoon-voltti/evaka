@@ -5,12 +5,16 @@
 import { Queries } from 'lib-common/query'
 
 import {
+  deletePasskey,
+  finishPasskeyRegistration,
   getEmailVerificationStatus,
   getFamily,
   getNotificationSettings,
+  getPasskeys,
   getPasswordConstraints,
   sendEmailVerificationCode,
   updateNotificationSettings,
+  updatePasskeyName,
   updatePersonalData,
   updateWeakLoginCredentials,
   verifyEmail
@@ -47,3 +51,16 @@ export const verifyEmailMutation = q.mutation(verifyEmail, [
 ])
 
 export const passwordConstraintsQuery = q.query(getPasswordConstraints)
+
+export const passkeysQuery = q.query(getPasskeys)
+
+export const finishPasskeyRegistrationMutation = q.mutation(
+  finishPasskeyRegistration,
+  [passkeysQuery]
+)
+
+export const updatePasskeyNameMutation = q.mutation(updatePasskeyName, [
+  passkeysQuery
+])
+
+export const deletePasskeyMutation = q.mutation(deletePasskey, [passkeysQuery])

@@ -65,6 +65,8 @@ export interface CitizenFeatures {
   reservations: boolean
 }
 
+export type CitizenPasskeyId = Id<'CitizenPasskey'>
+
 export type ClubTermId = Id<'ClubTerm'>
 
 /**

@@ -77,6 +77,9 @@ evaka:
       metadata_policy_namespace: urn:example:records-schedule
       master_id: placeholder
       virtual_archive_id: PLACEHOLDER
+  webauthn:
+    rp_id: localhost
+    origin: http://localhost:9099
   not_for_prod:
     force_unpublish_document_template_enabled: true
   jwt:

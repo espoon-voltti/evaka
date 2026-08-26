@@ -21,3 +21,9 @@ fun createPersonFromVtj(tx: Database.Transaction, person: PersonDTO): PersonDTO 
     tx.createPersonMessageAccount(result.id)
     return result
 }
+
+private val whitespace = "\\s+".toRegex()
+
+/** Splits the first name field, which holds all of a person's first names */
+fun splitFirstNames(firstNames: String): List<String> =
+    firstNames.trim().split(whitespace).filter { it.isNotEmpty() }

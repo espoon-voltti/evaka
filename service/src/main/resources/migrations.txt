@@ -598,3 +598,4 @@ V599__decision_reasoning_collection_type_club.sql
 V600__drop_index_child_attendance_child_range.sql
 V601__add_other_income_type_general_social_security_benefit.sql
 V602__sfi_message_event_time.sql
+V603__citizen_passkey.sql

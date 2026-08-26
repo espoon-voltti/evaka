@@ -10,7 +10,6 @@ import type { EmailVerification } from 'lib-common/generated/api-types/pis'
 import type LocalDate from 'lib-common/local-date'
 import { formatPersonName } from 'lib-common/names'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
-import OrderedList from 'lib-components/atoms/OrderedList'
 import UnorderedList from 'lib-components/atoms/UnorderedList'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import type { Translations as ComponentTranslations } from 'lib-components/i18n'
@@ -208,43 +207,16 @@ const sv: Translations = {
     )
   },
   loginPage: {
+    welcomeTitle: 'Välkommen till eVaka',
     title: 'Esbo stads småbarnspedagogik',
     systemNotification: 'Viktigt meddelande',
-    addToHomeScreen: {
-      title: 'Vill du hitta till denna sida lättare?',
-      subTitle: 'Lägg till eVaka på din telefons hemskärm!',
-      ios: 'Lägg till genväg på iOS (Safari)',
-      android: 'Lägg till genväg på Android (Chrome)',
-      instructions: {
-        ios: (
-          <>
-            <OrderedList>
-              <li>
-                Tryck på “dela”-ikonen längst ner i webbläsaren (en fyrkant med
-                en uppåtpil)
-              </li>
-              <li>Scrolla ner och välj “Lägg till på hemskärmen”</li>
-              <li>Ge genvägen ett namn om du vill</li>
-              <li>Tryck på “Lägg till” högst upp på sidan</li>
-            </OrderedList>
-            <P>Nu borde du se en ikon på din hemskärm som öppnar denna sida.</P>
-          </>
-        ),
-        android: (
-          <>
-            <OrderedList>
-              <li>Tryck på “meny”-ikonen (⋮) uppe till höger i webbläsaren</li>
-              <li>Välj “Lägg till på startskärmen”</li>
-              <li>Ge genvägen ett namn om du vill</li>
-              <li>Tryck på “Skapa genväg”</li>
-            </OrderedList>
-            <P>Nu borde du se en ikon på din hemskärm som öppnar denna sida.</P>
-          </>
-        )
-      }
-    },
+    helpLink: 'Anvisningar',
+    helpUrl:
+      'https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/evaka',
     login: {
-      title: 'Logga in med användarnamn',
+      title: 'Logga in',
+      formTitle: 'Logga in med e-postadress',
+      emailLink: 'Logga in med e-postadress',
       paragraph:
         'Sköt ditt barns dagliga ärenden rörande småbarnspedagogiken i eVaka.',
       link: 'Logga in',
@@ -264,28 +236,35 @@ const sv: Translations = {
         </>
       ),
       username: 'Användarnamn',
+      usernamePlaceholder: 'E-postadress',
       password: 'Lösenord',
       rateLimitError:
         'Ditt användarnamn är tillfälligt låst på grund av antalet inloggningsförsök. Försök igen senare.',
       forgotPassword: 'Glömt lösenordet?',
       forgotPasswordInfo:
-        'Du kan byta lösenord i dina egna uppgifter genom stark autentisering.',
+        'Autentisera dig i tjänsten Suomi.fi för att byta lösenord på sidan Egna uppgifter.',
       noUsername: 'Inget användarnamn?',
       noUsernameInfo:
-        'Du kan skapa ett användarnamn genom att logga in med stark autentisering och tillåta inloggning ned e-post på sidan "Egna uppgifter"'
+        'Autentisera dig i tjänsten Suomi.fi och tillåt inloggning med e-post på sidan Egna uppgifter.',
+      passkeyLink: 'Logga in med inloggningsnyckel (passkey)',
+      passkeyDescriptionDesktop: 'På den här enheten eller telefonen',
+      passkeyDescriptionMobile: 'Fingeravtryck eller ansiktsigenkänning',
+      passkeyError: (strongLoginUri: string): ReactNode => (
+        <>
+          Inloggningen med inloggningsnyckel avbröts. Försök igen, logga in med
+          e-postadress eller{' '}
+          <a href={strongLoginUri}>autentisera dig i tjänsten Suomi.fi</a>.
+        </>
+      ),
+      usedLast: 'Senast använd'
     },
     applying: {
-      title: 'Logga in via Suomi.fi',
-      paragraph: 'Med stark autentisering via suomi.fi kan du',
+      title: 'Första gången här?',
+      paragraph:
+        'Autentisera dig i tjänsten Suomi.fi för att ansöka, skapa en inloggningsnyckel (passkey) eller ta i bruk inloggning med e-post.',
       infoBoxText:
-        'I samband med den starka autentiseringen hämtas den identifierades, andra förmyndares, samt minderåriga barns person- och addressuppgifter',
-      infoBullets: [
-        'ansöka om, eller kontrollera tidigare ansökan om, plats till småbarnspedagogiken, förskolan, eller klubbverksamheten för ditt barn',
-        'se bilder och dokument angående ditt barns småbarnspedagogik eller förskola',
-        'anmäla ditt eller ditt barns inkomstuppgifter',
-        'acceptera eller avslå ett beslut, om du gjort ansökan'
-      ],
-      link: 'Autentisera',
+        'I samband med autentiseringen hämtar eVaka person- och adressuppgifter för den som loggar in, den andra vårdnadshavaren samt minderåriga barn från befolkningsdatasystemet.',
+      link: 'Autentisera · Suomi.fi',
       mapText: 'Se en karta över alla eVaka enheter du kan ansöka till.',
       mapLink: 'Enheter på kartan'
     }
@@ -2285,6 +2264,27 @@ const sv: Translations = {
       unacceptablePassword: 'Lösenordet är för lätt att gissa',
       usernameConflict: (username: string): ReactNode =>
         `Användarnamnet ${username} används redan av en annan person`
+    },
+    passkeysSection: {
+      title: 'Inloggning med inloggningsnyckel',
+      description:
+        'Logga in utan lösenord med fingeravtryck, ansiktsigenkänning eller PIN-kod.',
+      added: 'Skapad',
+      lastUsed: 'Senast använd',
+      neverUsed: 'Aldrig',
+      addPasskey: 'Skapa en ny inloggningsnyckel (passkey)',
+      defaultName: 'Inloggningsnyckel',
+      nameLabel: 'Inloggningsnyckelns namn',
+      editName: 'Redigera inloggningsnyckelns namn',
+      deletePasskey: 'Ta bort inloggningsnyckeln',
+      deleteConfirmTitle: 'Ta bort inloggningsnyckeln?',
+      deleteConfirmText: (name: string) =>
+        `Inloggningsnyckeln "${name}" tas bort och kan inte längre användas för att logga in i eVaka. Borttagningen loggar ut dina andra sessioner.`,
+      alreadyExistsError:
+        'Den här enheten eller appen har redan en inloggningsnyckel till eVaka. Du kan logga in med den eller skapa en ny inloggningsnyckel på en annan enhet.',
+      limitError:
+        'Du kan lägga till högst 10 inloggningsnycklar. Ta bort en inloggningsnyckel innan du lägger till en ny.',
+      addError: 'Det gick inte att lägga till inloggningsnyckeln. Försök igen.'
     },
     notificationsSection: {
       title: 'Aviseringar',

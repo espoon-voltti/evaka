@@ -890,4 +890,36 @@ $unsubscribeEn
 """,
         )
     }
+
+    override fun passkeyAdded(): EmailContent =
+        EmailContent.fromHtml(
+            subject =
+                "eVaka-tilillesi on lisätty pääsyavain / En inloggningsnyckel har lagts till i ditt eVaka-konto / A passkey has been added to your eVaka account",
+            html =
+                """<p>eVaka-tilillesi on lisätty pääsyavain (passkey).</p>
+<p>Jos lisäsit pääsyavaimen itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella (Kirjaudu Suomi.fi:ssä) ja poista pääsyavain omista tiedoistasi.</p>
+<hr>
+<p>En inloggningsnyckel (passkey) har lagts till i ditt eVaka-konto.</p>
+<p>Om du själv lade till inloggningsnyckeln kan du ignorera det här meddelandet. Om inte, logga in i eVaka med stark identifiering (Logga in via Suomi.fi) och ta bort inloggningsnyckeln i dina uppgifter.</p>
+<hr>
+<p>A passkey has been added to your eVaka account.</p>
+<p>If you added the passkey yourself, you can ignore this message. If not, log in to eVaka with strong authentication (Sign in using Suomi.fi) and remove the passkey from your personal details.</p>
+""",
+        )
+
+    override fun passkeyRemoved(): EmailContent =
+        EmailContent.fromHtml(
+            subject =
+                "eVaka-tililtäsi on poistettu pääsyavain / En inloggningsnyckel har tagits bort från ditt eVaka-konto / A passkey has been removed from your eVaka account",
+            html =
+                """<p>eVaka-tililtäsi on poistettu pääsyavain (passkey).</p>
+<p>Jos poistit pääsyavaimen itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella (Kirjaudu Suomi.fi:ssä) ja tarkista omat tietosi.</p>
+<hr>
+<p>En inloggningsnyckel (passkey) har tagits bort från ditt eVaka-konto.</p>
+<p>Om du själv tog bort inloggningsnyckeln kan du ignorera det här meddelandet. Om inte, logga in i eVaka med stark identifiering (Logga in via Suomi.fi) och kontrollera dina uppgifter.</p>
+<hr>
+<p>A passkey has been removed from your eVaka account.</p>
+<p>If you removed the passkey yourself, you can ignore this message. If not, log in to eVaka with strong authentication (Sign in using Suomi.fi) and check your personal details.</p>
+""",
+        )
 }

@@ -28,6 +28,8 @@ class PersonEmailJobs(
         asyncJobRunner.registerHandler(::sendConfirmationCodeEmail)
         asyncJobRunner.registerHandler(::sendPasswordChangedEmail)
         asyncJobRunner.registerHandler(::sendEmailChangedEmail)
+        asyncJobRunner.registerHandler(::sendPasskeyAddedEmail)
+        asyncJobRunner.registerHandler(::sendPasskeyRemovedEmail)
     }
 
     private val logger = KotlinLogging.logger {}
@@ -80,6 +82,38 @@ AND expires_at > ${bind(clock.now())}
                 EmailMessageType.TRANSACTIONAL,
                 fromAddress = emailEnv.sender(Language.fi),
                 content = emailMessageProvider.passwordChanged(),
+                traceId = "${clock.today()}:${job.personId}",
+            )
+            ?.also { emailClient.send(it) }
+    }
+
+    fun sendPasskeyAddedEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendPasskeyAddedEmail,
+    ) {
+        Email.create(
+                dbc,
+                job.personId,
+                EmailMessageType.TRANSACTIONAL,
+                fromAddress = emailEnv.sender(Language.fi),
+                content = emailMessageProvider.passkeyAdded(),
+                traceId = "${clock.today()}:${job.personId}",
+            )
+            ?.also { emailClient.send(it) }
+    }
+
+    fun sendPasskeyRemovedEmail(
+        dbc: Database.Connection,
+        clock: EvakaClock,
+        job: AsyncJob.SendPasskeyRemovedEmail,
+    ) {
+        Email.create(
+                dbc,
+                job.personId,
+                EmailMessageType.TRANSACTIONAL,
+                fromAddress = emailEnv.sender(Language.fi),
+                content = emailMessageProvider.passkeyRemoved(),
                 traceId = "${clock.today()}:${job.personId}",
             )
             ?.also { emailClient.send(it) }

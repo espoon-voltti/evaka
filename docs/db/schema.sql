@@ -2455,6 +2455,34 @@ CREATE TABLE public.child_sticky_note (
     updated timestamp with time zone GENERATED ALWAYS AS (updated_at) STORED
 );
 
+-- Name: citizen_passkey; Type: TABLE; Schema: public
+
+CREATE TABLE public.citizen_passkey (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    citizen_user_id uuid NOT NULL,
+    credential_id bytea NOT NULL,
+    public_key bytea NOT NULL,
+    signature_counter bigint NOT NULL,
+    aaguid uuid NOT NULL,
+    transports text[] NOT NULL,
+    name text NOT NULL,
+    device_class text NOT NULL,
+    operating_system_name text NOT NULL,
+    agent_name text NOT NULL,
+    last_used_at timestamp with time zone
+);
+
+-- Name: citizen_passkey_registration; Type: TABLE; Schema: public
+
+CREATE TABLE public.citizen_passkey_registration (
+    person_id uuid NOT NULL,
+    options jsonb NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
 -- Name: citizen_user; Type: TABLE; Schema: public
 
 CREATE TABLE public.citizen_user (
@@ -4257,6 +4285,16 @@ ALTER TABLE ONLY public.child
 ALTER TABLE ONLY public.child_sticky_note
     ADD CONSTRAINT child_sticky_note_pkey PRIMARY KEY (id);
 
+-- Name: citizen_passkey citizen_passkey_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.citizen_passkey
+    ADD CONSTRAINT citizen_passkey_pkey PRIMARY KEY (id);
+
+-- Name: citizen_passkey_registration citizen_passkey_registration_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.citizen_passkey_registration
+    ADD CONSTRAINT citizen_passkey_registration_pkey PRIMARY KEY (person_id);
+
 -- Name: citizen_user citizen_user_pkey; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.citizen_user
@@ -4906,6 +4944,11 @@ ALTER TABLE ONLY public.absence
 
 ALTER TABLE ONLY public.care_area
     ADD CONSTRAINT "uniq$care_area_name" UNIQUE (name);
+
+-- Name: citizen_passkey uniq$citizen_passkey_credential_id; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.citizen_passkey
+    ADD CONSTRAINT "uniq$citizen_passkey_credential_id" UNIQUE (credential_id);
 
 -- Name: citizen_user uniq$citizen_user_username; Type: CONSTRAINT; Schema: public
 
@@ -5558,6 +5601,10 @@ CREATE INDEX "idx$child_sticky_note_child_id" ON public.child_sticky_note USING 
 -- Name: idx$child_sticky_note_expires; Type: INDEX; Schema: public
 
 CREATE INDEX "idx$child_sticky_note_expires" ON public.child_sticky_note USING btree (expires);
+
+-- Name: idx$citizen_passkey_citizen_user_id; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$citizen_passkey_citizen_user_id" ON public.citizen_passkey USING btree (citizen_user_id);
 
 -- Name: idx$daily_service_time_child_id; Type: INDEX; Schema: public
 
@@ -6395,6 +6442,10 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.child_images FOR EACH ROW E
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.child_sticky_note FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
+-- Name: citizen_passkey set_timestamp; Type: TRIGGER; Schema: public
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.citizen_passkey FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
+
 -- Name: citizen_user set_timestamp; Type: TRIGGER; Schema: public
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.citizen_user FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
@@ -7199,6 +7250,11 @@ ALTER TABLE ONLY public.child
 ALTER TABLE ONLY public.evaka_user
     ADD CONSTRAINT "fk$citizen" FOREIGN KEY (citizen_id) REFERENCES public.person(id) ON DELETE SET NULL;
 
+-- Name: citizen_passkey fk$citizen_user; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.citizen_passkey
+    ADD CONSTRAINT "fk$citizen_user" FOREIGN KEY (citizen_user_id) REFERENCES public.citizen_user(id) ON DELETE CASCADE;
+
 -- Name: service_need fk$confirmed_by; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.service_need
@@ -7468,6 +7524,11 @@ ALTER TABLE ONLY public.payment
 
 ALTER TABLE ONLY public.attachment
     ADD CONSTRAINT "fk$pedagogical_document" FOREIGN KEY (pedagogical_document_id) REFERENCES public.pedagogical_document(id) ON DELETE SET NULL;
+
+-- Name: citizen_passkey_registration fk$person; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.citizen_passkey_registration
+    ADD CONSTRAINT "fk$person" FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
 
 -- Name: citizen_user fk$person; Type: FK CONSTRAINT; Schema: public
 

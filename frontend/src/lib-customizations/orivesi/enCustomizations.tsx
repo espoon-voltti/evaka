@@ -9,10 +9,7 @@ import { Gap } from 'lib-components/white-space'
 import type { Translations } from 'lib-customizations/citizen'
 import type { DeepPartial } from 'lib-customizations/types'
 
-import {
-  preschoolEnabled,
-  serviceApplicationsEnabled
-} from './fiCustomizations'
+import { preschoolEnabled } from './fiCustomizations'
 
 const customerContactText = function () {
   return (
@@ -434,24 +431,8 @@ const en: DeepPartial<Translations> = {
     )
   },
   loginPage: {
-    applying: {
-      infoBullets: [
-        `apply for an early childhood${
-          preschoolEnabled ? ', pre-primary' : ''
-        } or club place for your child or view a previous application`,
-        `view pictures and other documents related to your child’s early childhood${
-          preschoolEnabled ? ' and pre-primary' : ''
-        }`,
-        'report your or your child’s income information',
-        `accept your child’s early childhood${
-          preschoolEnabled ? ', pre-primary' : ''
-        } or club place`,
-        serviceApplicationsEnabled
-          ? 'change your child’s need for services'
-          : '',
-        'terminate your child’s early childhood or club place.'
-      ].filter((s) => s.length > 0)
-    },
+    helpUrl:
+      'https://orivesi.fi/palvelut/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatuksen-jarjestaminen/',
     login: {
       infoBoxText: (
         <>

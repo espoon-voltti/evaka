@@ -69,6 +69,21 @@ export function sessionCookie(sessionType: SessionType) {
   return `${cookiePrefix(sessionType)}.session`
 }
 
+/**
+ * Destroys every session in the user's weak-session registry. Returns true if
+ * any sessions were destroyed.
+ */
+export async function revokeWeakSessions(
+  redisClient: RedisClient,
+  userIdHash: string
+): Promise<boolean> {
+  const sessionIds = await redisClient.sMembers(userSessionsKey(userIdHash))
+  if (sessionIds.length === 0) return false
+  await redisClient.del(sessionIds.map((sessionId) => sessionKey(sessionId)))
+  await redisClient.sRem(userSessionsKey(userIdHash), sessionIds)
+  return true
+}
+
 export interface Sessions<T extends SessionType> {
   sessionType: T
   cookieName: string
@@ -442,7 +457,10 @@ export function sessionSupport<T extends SessionType>(
     await save(req)
     req.user = user
 
-    if (req.session.id && user.authType === 'citizen-weak') {
+    if (
+      req.session.id &&
+      (user.authType === 'citizen-weak' || user.authType === 'citizen-passkey')
+    ) {
       const key = userSessionsKey(userIdHash)
       await redisClient
         .multi()

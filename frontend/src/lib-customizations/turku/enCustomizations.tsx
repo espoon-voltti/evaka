@@ -647,6 +647,7 @@ const en: DeepPartial<Translations> = {
     )
   },
   loginPage: {
+    helpUrl: null,
     title: 'City of Turku early childhood education and care',
     login: {
       title: 'Login with username',

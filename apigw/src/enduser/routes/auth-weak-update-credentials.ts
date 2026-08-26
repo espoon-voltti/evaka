@@ -8,6 +8,7 @@ import { toRequestHandler } from '../../shared/express.ts'
 import { logAuditEvent } from '../../shared/logging.ts'
 import type { RedisClient } from '../../shared/redis-client.ts'
 import { citizenWeakLoginCredentialsUpdate } from '../../shared/service-client.ts'
+import { revokeWeakSessions } from '../../shared/session.ts'
 
 const Request = z.object({
   password: z.string().min(1).max(128)
@@ -38,12 +39,7 @@ export const authWeakUpdateCredentials = (redisClient: RedisClient) =>
         'Weak login credentials updated'
       )
 
-      const sessionIds = await redisClient.sMembers(`usess:${userIdHash}`)
-      if (sessionIds.length > 0) {
-        await redisClient.del(
-          sessionIds.map((sessionId) => `sess:${sessionId}`)
-        )
-        await redisClient.sRem(`usess:${userIdHash}`, sessionIds)
+      if (await revokeWeakSessions(redisClient, userIdHash)) {
         logAuditEvent(
           'evaka.citizen_weak.logout_other_sessions',
           req,

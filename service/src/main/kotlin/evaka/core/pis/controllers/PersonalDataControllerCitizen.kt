@@ -70,7 +70,9 @@ class PersonalDataControllerCitizen(
                     listOfNotNull(
                         body.preferredName?.let { preferredName ->
                             "invalid preferredName"
-                                .takeUnless { person.firstName.split(" ").contains(preferredName) }
+                                .takeUnless {
+                                    splitFirstNames(person.firstName).contains(body.preferredName)
+                                }
                         },
                         body.phone?.let { phone ->
                             "invalid phone".takeUnless { PHONE_PATTERN.matches(phone) }

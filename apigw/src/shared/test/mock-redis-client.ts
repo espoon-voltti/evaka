@@ -38,6 +38,13 @@ export class MockRedisClient implements RedisClient {
     return Promise.resolve(record.value)
   }
 
+  getDel(key: string): Promise<string | null> {
+    const record = this.db[key]
+    if (!record) return Promise.resolve(null)
+    delete this.db[key]
+    return Promise.resolve(record.value)
+  }
+
   set(
     key: string,
     value: string,

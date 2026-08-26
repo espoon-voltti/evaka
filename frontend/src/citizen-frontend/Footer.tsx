@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { Link } from 'wouter'
 
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
@@ -12,6 +12,7 @@ import { fontWeights } from 'lib-components/typography'
 import { footerLogo } from 'lib-customizations/citizen'
 
 import { useTranslation } from './localization'
+import { loginPageWidth } from './page-widths'
 
 export const FooterContent = React.memo(function FooterContent() {
   const t = useTranslation()
@@ -27,9 +28,13 @@ export const FooterContent = React.memo(function FooterContent() {
   )
 })
 
-export default React.memo(function Footer() {
+export default React.memo(function Footer({
+  narrow = false
+}: {
+  narrow?: boolean
+}) {
   return (
-    <FooterContainer as="footer">
+    <FooterContainer as="footer" $narrow={narrow}>
       <FooterContent />
       {footerLogo ?? null}
     </FooterContainer>
@@ -47,7 +52,7 @@ const FooterItem = styled.div`
   }
 `
 
-const FooterContainer = styled(Container)`
+const FooterContainer = styled(Container)<{ $narrow: boolean }>`
   display: flex;
   flex-direction: column;
   height: auto;
@@ -76,6 +81,19 @@ const FooterContainer = styled(Container)`
     padding-right: 32px;
     justify-content: space-evenly;
   }
+
+  ${(p) =>
+    p.$narrow
+      ? css`
+          @media (min-width: ${desktopMin}) {
+            width: ${loginPageWidth};
+            max-width: ${loginPageWidth};
+            padding-left: 0;
+            padding-right: 0;
+            justify-content: space-between;
+          }
+        `
+      : ''}
 
   @media print {
     display: none;

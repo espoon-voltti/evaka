@@ -10,7 +10,7 @@ import { tabletMin } from '../../breakpoints'
 import type { ButtonProps } from './Button'
 import { Button } from './Button'
 
-interface ResponsiveInlineButtonProps extends ButtonProps {
+type ResponsiveInlineButtonProps = ButtonProps & {
   breakpoint?: string
 }
 

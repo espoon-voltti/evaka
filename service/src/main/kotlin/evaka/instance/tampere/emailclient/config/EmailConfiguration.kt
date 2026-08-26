@@ -683,4 +683,30 @@ $unsubscribeEn
 <p>Sign into eVaka using strong authentication (Sign in using Suomi.fi) and change your password.</p>
 """,
         )
+
+    override fun passkeyAdded(): EmailContent =
+        EmailContent.fromHtml(
+            subject =
+                "eVaka-tilillesi on lisätty pääsyavain / A passkey has been added to your eVaka account",
+            html =
+                """<p>eVaka-tilillesi on lisätty pääsyavain (passkey).</p>
+<p>Jos lisäsit pääsyavaimen itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella (Kirjaudu Suomi.fi:ssä) ja poista pääsyavain omista tiedoistasi.</p>
+<hr>
+<p>A passkey has been added to your eVaka account.</p>
+<p>If you added the passkey yourself, you can ignore this message. If not, log in to eVaka with strong authentication (Sign in using Suomi.fi) and remove the passkey from your personal details.</p>
+""",
+        )
+
+    override fun passkeyRemoved(): EmailContent =
+        EmailContent.fromHtml(
+            subject =
+                "eVaka-tililtäsi on poistettu pääsyavain / A passkey has been removed from your eVaka account",
+            html =
+                """<p>eVaka-tililtäsi on poistettu pääsyavain (passkey).</p>
+<p>Jos poistit pääsyavaimen itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan vahvalla tunnistautumisella (Kirjaudu Suomi.fi:ssä) ja tarkista omat tietosi.</p>
+<hr>
+<p>A passkey has been removed from your eVaka account.</p>
+<p>If you removed the passkey yourself, you can ignore this message. If not, log in to eVaka with strong authentication (Sign in using Suomi.fi) and check your personal details.</p>
+""",
+        )
 }

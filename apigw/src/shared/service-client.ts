@@ -190,6 +190,54 @@ export async function citizenWeakLogin(
   return data
 }
 
+export interface CitizenPasskeyLoginOptionsResponse {
+  assertionRequest: string
+  credentialsGet: string
+}
+
+export async function citizenPasskeyLoginOptions(
+  req: express.Request
+): Promise<CitizenPasskeyLoginOptionsResponse> {
+  const { data } = await client.post<CitizenPasskeyLoginOptionsResponse>(
+    `/system/passkey-login/options`,
+    undefined,
+    {
+      headers: createServiceRequestHeaders(req, systemUserHeader)
+    }
+  )
+  return data
+}
+
+interface CitizenPasskeyLoginRequest {
+  assertionRequest: string
+  credential: string
+  deviceAuthHistory: string[]
+}
+
+export async function citizenPasskeyLogin(
+  req: express.Request,
+  request: CitizenPasskeyLoginRequest
+): Promise<CitizenUser> {
+  const { data } = await client.post<CitizenUser>(
+    `/system/passkey-login/finish`,
+    request,
+    {
+      headers: createServiceRequestHeaders(req, systemUserHeader)
+    }
+  )
+  return data
+}
+
+export async function citizenDeletePasskey(
+  req: express.Request,
+  user: EvakaSessionUser,
+  passkeyId: string
+): Promise<void> {
+  await client.delete(`/citizen/passkeys/${encodeURIComponent(passkeyId)}`, {
+    headers: createServiceRequestHeaders(req, createUserHeader(user))
+  })
+}
+
 interface CitizenWeakLoginCredentialsUpdateRequest {
   password: string
 }
