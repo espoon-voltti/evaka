@@ -170,6 +170,18 @@ WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("d"))}
 }
     .toList<DaycareAssistance>()
 
+fun Database.Read.getDaycareAssistance(id: DaycareAssistanceId): DaycareAssistance? = createQuery {
+    sql(
+        """
+SELECT d.id, d.child_id, d.valid_during, d.level, d.modified, e.id AS modified_by_id, e.name AS modified_by_name, e.type AS modified_by_type
+FROM daycare_assistance d
+LEFT JOIN evaka_user e ON d.modified_by = e.id
+WHERE d.id = ${bind(id)}
+"""
+    )
+}
+    .exactlyOneOrNull<DaycareAssistance>()
+
 fun Database.Transaction.insertDaycareAssistance(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
@@ -207,10 +219,20 @@ WHERE id = ${bind(id)}
 }
     .updateExactlyOne()
 
-fun Database.Transaction.deleteDaycareAssistance(id: DaycareAssistanceId) = createUpdate {
-    sql("DELETE FROM daycare_assistance WHERE id = ${bind(id)}")
-}
-    .execute()
+fun Database.Transaction.deleteDaycareAssistance(id: DaycareAssistanceId): DaycareAssistance? =
+    createUpdate {
+        sql(
+            """
+WITH d AS (
+    DELETE FROM daycare_assistance WHERE id = ${bind(id)}
+    RETURNING id, child_id, valid_during, level, modified, modified_by
+) SELECT d.id, d.child_id, d.valid_during, d.level, d.modified, e.id AS modified_by_id, e.name AS modified_by_name, e.type AS modified_by_type
+FROM d LEFT JOIN evaka_user e ON d.modified_by = e.id
+"""
+        )
+    }
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull<DaycareAssistance>()
 
 private const val preschoolAssistanceSelectFields =
     """
@@ -251,6 +273,19 @@ WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("p"))}
 }
     .toList<PreschoolAssistance>()
 
+fun Database.Read.getPreschoolAssistance(id: PreschoolAssistanceId): PreschoolAssistance? =
+    createQuery {
+        sql(
+            """
+SELECT $preschoolAssistanceSelectFields
+FROM preschool_assistance p
+LEFT JOIN evaka_user e ON p.modified_by = e.id
+WHERE p.id = ${bind(id)}
+"""
+        )
+    }
+    .exactlyOneOrNull<PreschoolAssistance>()
+
 fun Database.Transaction.insertPreschoolAssistance(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
@@ -288,10 +323,21 @@ WHERE id = ${bind(id)}
 }
     .updateExactlyOne()
 
-fun Database.Transaction.deletePreschoolAssistance(id: PreschoolAssistanceId) = createUpdate {
-    sql("DELETE FROM preschool_assistance WHERE id = ${bind(id)}")
+fun Database.Transaction.deletePreschoolAssistance(
+    id: PreschoolAssistanceId
+): PreschoolAssistance? = createUpdate {
+    sql(
+        """
+WITH p AS (
+    DELETE FROM preschool_assistance WHERE id = ${bind(id)}
+    RETURNING id, child_id, valid_during, level, modified, modified_by
+) SELECT $preschoolAssistanceSelectFields
+FROM p LEFT JOIN evaka_user e ON p.modified_by = e.id
+"""
+    )
 }
-    .execute()
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull<PreschoolAssistance>()
 
 private const val otherAssistanceSelectFields =
     """
@@ -319,6 +365,19 @@ WHERE child_id = ${bind(child)} AND ${predicate(filter.forTable("o"))}
     )
 }
     .toList<OtherAssistanceMeasure>()
+
+fun Database.Read.getOtherAssistanceMeasure(id: OtherAssistanceMeasureId): OtherAssistanceMeasure? =
+    createQuery {
+        sql(
+            """
+SELECT $otherAssistanceSelectFields
+FROM other_assistance_measure o
+LEFT JOIN evaka_user e ON o.modified_by = e.id
+WHERE o.id = ${bind(id)}
+"""
+        )
+    }
+    .exactlyOneOrNull<OtherAssistanceMeasure>()
 
 fun Database.Transaction.insertOtherAssistanceMeasure(
     user: AuthenticatedUser,
@@ -357,7 +416,18 @@ WHERE id = ${bind(id)}
 }
     .updateExactlyOne()
 
-fun Database.Transaction.deleteOtherAssistanceMeasure(id: OtherAssistanceMeasureId) = createUpdate {
-    sql("DELETE FROM other_assistance_measure WHERE id = ${bind(id)}")
+fun Database.Transaction.deleteOtherAssistanceMeasure(
+    id: OtherAssistanceMeasureId
+): OtherAssistanceMeasure? = createUpdate {
+    sql(
+        """
+WITH o AS (
+    DELETE FROM other_assistance_measure WHERE id = ${bind(id)}
+    RETURNING id, child_id, valid_during, type, modified, modified_by
+) SELECT $otherAssistanceSelectFields
+FROM o LEFT JOIN evaka_user e ON o.modified_by = e.id
+"""
+    )
 }
-    .execute()
+    .executeAndReturnGeneratedKeys()
+    .exactlyOneOrNull<OtherAssistanceMeasure>()

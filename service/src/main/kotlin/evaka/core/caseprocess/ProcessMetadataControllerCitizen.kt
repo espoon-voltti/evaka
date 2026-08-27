@@ -5,6 +5,7 @@
 package evaka.core.caseprocess
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.FeatureConfig
@@ -34,6 +35,7 @@ class ProcessMetadataControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
     ): ProcessMetadataResponse {
+        val audit = AuditContext().add(applicationId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -46,6 +48,9 @@ class ProcessMetadataControllerCitizen(
                     val process =
                         tx.getCaseProcessByApplicationId(applicationId)
                             ?: return@read ProcessMetadataResponse(null)
+                    audit
+                        .add(process.id)
+                        .observeDate(process.history.minOfOrNull { it.enteredAt.toLocalDate() })
                     val processMetadata =
                         processMetadataService.getApplicationProcessMetadata(
                             tx,
@@ -53,16 +58,12 @@ class ProcessMetadataControllerCitizen(
                             clock,
                             applicationId,
                             process,
+                            audit,
                         )
                     ProcessMetadataResponse(processMetadata.redactForCitizen())
                 }
             }
-            .also { response ->
-                Audit.ApplicationReadMetadata.log(
-                    targetId = AuditId(applicationId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke),
-                )
-            }
+            .also { audit.log(Audit.ApplicationReadMetadata, clock) }
     }
 
     @GetMapping("/fee-decisions/{feeDecisionId}")

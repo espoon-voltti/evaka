@@ -67,9 +67,13 @@ ON CONFLICT DO NOTHING
         )
     }
 
-fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAction = createQuery {
-    sql(
-        """
+fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAction =
+    getAssistanceActionByIdOrNull(id) ?: throw NotFound("Assistance action $id not found")
+
+fun Database.Read.getAssistanceActionByIdOrNull(id: AssistanceActionId): AssistanceAction? =
+    createQuery {
+        sql(
+            """
 SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action,
     aa.modified_at,
     e.id AS modified_by_id,
@@ -82,9 +86,9 @@ LEFT JOIN evaka_user e ON aa.modified_by = e.id
 WHERE aa.id = ${bind(id)}
 GROUP BY aa.id, child_id, start_date, end_date, other_action, aa.modified_at, e.id, e.name, e.type
 """
-    )
-}
-    .exactlyOne()
+        )
+    }
+    .exactlyOneOrNull()
 
 fun Database.Read.getAssistanceActionsByChild(
     childId: ChildId,
@@ -144,17 +148,18 @@ fun Database.Transaction.shortenOverlappingAssistanceAction(
     now: HelsinkiDateTime,
     childId: ChildId,
     startDate: LocalDate,
-) {
-    execute {
+): List<Pair<AssistanceActionId, LocalDate>> {
+    return createQuery {
         sql(
             """
 UPDATE assistance_action 
 SET end_date = ${bind(startDate)} - interval '1 day', modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
 WHERE child_id = ${bind(childId)} AND daterange(start_date, end_date, '[]') @> ${bind(startDate)} AND start_date <> ${bind(startDate)}
-RETURNING *
+RETURNING id, start_date
 """
         )
     }
+        .toList { column<AssistanceActionId>("id") to column<LocalDate>("start_date") }
 }
 
 fun Database.Transaction.deleteAssistanceAction(id: AssistanceActionId) {
