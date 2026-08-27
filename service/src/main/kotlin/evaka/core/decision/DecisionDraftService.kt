@@ -290,25 +290,29 @@ private fun planPreschoolDecisionDrafts(
             planned = primaryPlanned,
         )
 
-    val connected =
-        DecisionDraft(
-            id = DecisionId(UUID.randomUUID()), // placeholder
-            unitId = plan.unitId,
-            type =
-                if (plan.type == PlacementType.PRESCHOOL_CLUB) DecisionType.PRESCHOOL_CLUB
-                else DecisionType.PRESCHOOL_DAYCARE,
-            startDate = plan.preschoolDaycarePeriod?.start ?: plan.period.start,
-            endDate = plan.preschoolDaycarePeriod?.end ?: plan.period.end,
-            planned =
-                plan.type in
-                    listOf(
-                        PlacementType.PRESCHOOL_DAYCARE,
-                        PlacementType.PRESCHOOL_CLUB,
-                        PlacementType.PREPARATORY_DAYCARE,
-                    ),
-        )
+    val appliedForConnectedCare =
+        plan.type in
+            listOf(
+                PlacementType.PRESCHOOL_DAYCARE,
+                PlacementType.PRESCHOOL_CLUB,
+                PlacementType.PREPARATORY_DAYCARE,
+            )
 
-    return listOf(primary, connected)
+    val connected =
+        if (appliedForConnectedCare)
+            DecisionDraft(
+                id = DecisionId(UUID.randomUUID()), // placeholder
+                unitId = plan.unitId,
+                type =
+                    if (plan.type == PlacementType.PRESCHOOL_CLUB) DecisionType.PRESCHOOL_CLUB
+                    else DecisionType.PRESCHOOL_DAYCARE,
+                startDate = plan.preschoolDaycarePeriod?.start ?: plan.period.start,
+                endDate = plan.preschoolDaycarePeriod?.end ?: plan.period.end,
+                planned = true,
+            )
+        else null
+
+    return listOfNotNull(primary, connected)
 }
 
 fun Database.Transaction.clearDecisionDrafts(applicationIds: List<ApplicationId>) {

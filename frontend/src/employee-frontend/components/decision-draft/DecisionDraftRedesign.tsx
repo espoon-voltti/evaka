@@ -216,9 +216,11 @@ const DecisionDraftRedesignInner = React.memo(
     const dataIncomplete = incompleteUnit !== null
 
     const noDecisionsPlanned =
-      connectedDecision !== null &&
-      !primaryDecision.planned &&
-      !connectedDecision.planned
+      !primaryDecision.planned && !connectedDecision?.planned
+    // A lone decision is always sent, so it needs no checkbox — unless it arrived
+    // unplanned, which would otherwise leave nothing that can be planned.
+    const showPrimaryPlannedCheckbox =
+      connectedDecision !== null || !primaryDecision.planned
     const childName = formatPersonName(child, 'First Last')
 
     return (
@@ -270,7 +272,7 @@ const DecisionDraftRedesignInner = React.memo(
               <DecisionCard
                 decision={primaryDecision}
                 primaryDecisionType={primaryDecision.type}
-                showPlannedCheckbox={connectedDecision !== null}
+                showPlannedCheckbox={showPrimaryPlannedCheckbox}
                 childName={childName}
                 language={decisionLanguage(primaryDecision.unitId)}
                 unitLanguageUnsupported={misconfigured(primaryDecision.unitId)}
