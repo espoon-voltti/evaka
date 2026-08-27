@@ -600,6 +600,20 @@ export default React.memo(function Reports() {
                   )
                 }
               : null,
+            reports.has('KOSKI_ERRORS')
+              ? {
+                  name: i18n.reports.koskiErrors.title,
+                  item: (
+                    <Report
+                      data-qa="report-koski-errors"
+                      path="/reports/koski-errors"
+                      color={colors.status.warning}
+                      icon={faDiagnoses}
+                      i18n={i18n.reports.koskiErrors}
+                    />
+                  )
+                }
+              : null,
             reports.has('VARDA_ERRORS')
               ? {
                   name: i18n.reports.vardaChildErrors.title,
