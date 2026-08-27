@@ -30,6 +30,7 @@ import type { PartnershipId } from './shared'
 import type { PersonEmailVerificationId } from './shared'
 import type { PersonId } from './shared'
 import type { ProviderType } from './daycare'
+import type { UiLanguage } from './shared'
 import type { UserRole } from './shared'
 
 /**
@@ -52,6 +53,7 @@ export interface CitizenUserDetails {
   postOffice: string
   postalCode: string
   preferredName: string
+  preferredUiLanguage: UiLanguage | null
   streetAddress: string
   weakLoginUsername: string | null
 }
@@ -804,6 +806,13 @@ export interface TemporaryEmployee {
 */
 export interface UpdatePasskeyNameRequest {
   name: string
+}
+
+/**
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.UpdatePreferredUiLanguageRequest
+*/
+export interface UpdatePreferredUiLanguageRequest {
+  preferredUiLanguage: UiLanguage
 }
 
 /**

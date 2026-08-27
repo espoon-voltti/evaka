@@ -8,6 +8,7 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.auth.EncodedPassword
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.UiLanguage
 import org.jdbi.v3.json.Json
 
 fun Database.Transaction.updateLastStrongLogin(now: HelsinkiDateTime, id: PersonId) = createUpdate {
@@ -97,6 +98,18 @@ RETURNING (old_username IS NOT NULL AND old_username != username) AS username_ch
         .executeAndReturnGeneratedKeys()
         .exactlyOne()
 }
+
+fun Database.Transaction.updatePreferredUiLanguage(id: PersonId, language: UiLanguage) =
+    createUpdate {
+        sql(
+            """
+UPDATE citizen_user
+SET preferred_ui_language = ${bind(language)}
+WHERE id = ${bind(id)}
+"""
+        )
+    }
+    .updateExactlyOne()
 
 fun Database.Transaction.hasWeakCredentials(person: PersonId): Boolean = createQuery {
     sql(

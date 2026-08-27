@@ -9,6 +9,7 @@ import evaka.core.emailclient.MockEmailClient
 import evaka.core.pis.EmailMessageType
 import evaka.core.pis.PersonalDataUpdate
 import evaka.core.pis.controllers.PersonalDataControllerCitizen
+import evaka.core.pis.getCitizenUserDetails
 import evaka.core.pis.getPersonById
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
@@ -24,10 +25,13 @@ import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.RealEvakaClock
+import evaka.core.shared.domain.UiLanguage
+import evaka.core.user.updateLastStrongLogin
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
@@ -206,6 +210,41 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
                     it.content.text.contains(newEmail)
             }
         assertNotNull(email, "Email should be sent to old address after email update")
+    }
+
+    /** A citizen_user row exists for everyone who has logged in, and only for them. */
+    private fun insertCitizenWhoHasLoggedIn(person: DevPerson, now: HelsinkiDateTime) =
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.RAW_ROW)
+            tx.updateLastStrongLogin(now, person.id)
+        }
+
+    private fun preferredUiLanguageOf(person: DevPerson) =
+        db.read { tx -> tx.getCitizenUserDetails(person.id) }?.preferredUiLanguage
+
+    @Test
+    fun `a weak login citizen can update their preferred UI language`() {
+        val clock = RealEvakaClock()
+        insertCitizenWhoHasLoggedIn(adult, clock.now())
+        val user = AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK)
+
+        assertNull(preferredUiLanguageOf(adult))
+
+        personalDataController.updatePreferredUiLanguage(
+            dbInstance(),
+            user,
+            clock,
+            PersonalDataControllerCitizen.UpdatePreferredUiLanguageRequest(UiLanguage.SV),
+        )
+        assertEquals(UiLanguage.SV, preferredUiLanguageOf(adult))
+
+        personalDataController.updatePreferredUiLanguage(
+            dbInstance(),
+            user,
+            clock,
+            PersonalDataControllerCitizen.UpdatePreferredUiLanguageRequest(UiLanguage.EN),
+        )
+        assertEquals(UiLanguage.EN, preferredUiLanguageOf(adult))
     }
 
     @Test

@@ -50,11 +50,11 @@ export function App({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <GlobalStyle />
-        <Localization>
-          <ErrorBoundary
-            fallback={() => <ErrorPage basePath="/" labels={i18n.errorPage} />}
-          >
-            <AuthContextProvider>
+        <ErrorBoundary
+          fallback={() => <ErrorPage basePath="/" labels={i18n.errorPage} />}
+        >
+          <AuthContextProvider>
+            <Localization>
               <OverlayContextProvider>
                 <NotificationsContextProvider>
                   <MessageContextProvider>
@@ -67,9 +67,9 @@ export function App({ children }: { children: React.ReactNode }) {
                   </MessageContextProvider>
                 </NotificationsContextProvider>
               </OverlayContextProvider>
-            </AuthContextProvider>
-          </ErrorBoundary>
-        </Localization>
+            </Localization>
+          </AuthContextProvider>
+        </ErrorBoundary>
       </ThemeProvider>
     </QueryClientProvider>
   )

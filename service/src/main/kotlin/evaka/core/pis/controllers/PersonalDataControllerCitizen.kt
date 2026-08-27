@@ -21,11 +21,13 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.db.mapPSQLException
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.UiLanguage
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.shared.utils.EMAIL_PATTERN
 import evaka.core.shared.utils.PHONE_PATTERN
 import evaka.core.user.hasWeakCredentials
+import evaka.core.user.updatePreferredUiLanguage
 import evaka.core.user.updateWeakLoginCredentials
 import java.security.SecureRandom
 import java.time.Duration
@@ -148,6 +150,30 @@ class PersonalDataControllerCitizen(
                     user.id,
                 )
                 tx.updateDisabledEmailTypes(user.id, body)
+            }
+        }
+        Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))
+    }
+
+    data class UpdatePreferredUiLanguageRequest(val preferredUiLanguage: UiLanguage)
+
+    @PutMapping("/preferred-ui-language")
+    fun updatePreferredUiLanguage(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestBody body: UpdatePreferredUiLanguageRequest,
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Person.UPDATE_PREFERRED_UI_LANGUAGE,
+                    user.id,
+                )
+                tx.updatePreferredUiLanguage(user.id, body.preferredUiLanguage)
             }
         }
         Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))
