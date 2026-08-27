@@ -188,8 +188,8 @@ const components: Translations = {
     generic: 'Tarkista'
   },
   metadata: {
-    title: 'Arkistoitava metadata',
-    notFound: 'Asiakirjalle ei ole arkistoitavaa metadataa',
+    title: 'Asianhallinnan metadata',
+    notFound: 'Asiakirjalle ei ole asianhallinnan metadataa',
     case: 'Asia',
     caseIdentifier: 'Asiatunnus',
     processName: 'Asiaprosessi',

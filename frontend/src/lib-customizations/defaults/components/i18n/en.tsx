@@ -191,8 +191,8 @@ const components: Translations = {
     generic: 'Check'
   },
   metadata: {
-    title: 'Archivable metadata',
-    notFound: 'No archivable metadata for the document',
+    title: 'Case management metadata',
+    notFound: 'No case management metadata for the document',
     case: 'Case',
     caseIdentifier: 'Case identifier',
     processName: 'Case process',
