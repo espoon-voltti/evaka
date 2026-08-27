@@ -219,10 +219,6 @@ allprojects {
             allWarningsAsErrors = true
             freeCompilerArgs =
                 listOfNotNull(
-                    // Workaround for a bug that will be fixed in the next Kotlin release
-                    // https://youtrack.jetbrains.com/issue/KT-78352
-                    "-Xwarning-level=IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE:disabled",
-
                     // This will become the default in the future
                     // https://kotlinlang.org/docs/whatsnew2020.html#data-class-copy-function-to-have-the-same-visibility-as-constructor
                     "-Xconsistent-data-class-copy-visibility",
