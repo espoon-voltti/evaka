@@ -61,10 +61,12 @@ export const deleteCalendarEventTimeReservationMutation = q.mutation(
 
 export const holidayPeriodsQuery = q.query(getHolidayPeriods)
 
-export const activeQuestionnaireQuery = q.query(() =>
-  getActiveQuestionnaires().then((questionnaires) =>
-    questionnaires.length > 0 ? questionnaires[0] : null
-  )
+export const activeQuestionnaireQuery = q.query(
+  () =>
+    getActiveQuestionnaires().then((questionnaires) =>
+      questionnaires.length > 0 ? questionnaires[0] : null
+    ),
+  { refetchOnWindowFocus: false, refetchOnReconnect: false }
 )
 
 export const answerFixedPeriodQuestionnaireMutation = q.mutation(

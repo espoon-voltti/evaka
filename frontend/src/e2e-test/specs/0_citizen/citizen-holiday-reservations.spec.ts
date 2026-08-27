@@ -314,7 +314,7 @@ test.describe('Holiday periods and questionnaires', () => {
       await assertFreeAbsences(false)
     })
 
-    test('Holidays can be marked an cleared for two children', async () => {
+    test('Holidays can be marked and cleared for two children', async () => {
       const calendar = new CitizenCalendarPage(page, 'desktop')
 
       const child2 = await setupAnotherChild()
