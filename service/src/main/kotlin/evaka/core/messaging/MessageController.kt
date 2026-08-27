@@ -31,6 +31,7 @@ import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
+import evaka.core.shared.utils.assertNotNull
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -1293,6 +1294,7 @@ class MessageController(
                     )
                 it.getEmployeeMessageAccountIds(filter)
             }
-            .find { it == accountId } ?: throw Forbidden("Message account not found for user")
+            .find { it == accountId }
+            .assertNotNull(::Forbidden, "Message account not found for user")
     }
 }

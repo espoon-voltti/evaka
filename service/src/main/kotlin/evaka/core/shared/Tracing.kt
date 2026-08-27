@@ -45,9 +45,11 @@ class ToStringAttributeKey<T>(key: String) {
 
 data class AttributeValue<T>(val key: AttributeKey<T>, val value: T)
 
+@IgnorableReturnValue
 fun <T> Span.setAttribute(attribute: ToStringAttributeKey<T>, value: T): Span =
     value?.let { setAttribute(attribute.key, it.toString()) } ?: this
 
+@IgnorableReturnValue
 fun <T> SpanBuilder.withAttribute(attribute: AttributeValue<T>): SpanBuilder =
     attribute.value?.let { setAttribute(attribute.key, it) } ?: this
 

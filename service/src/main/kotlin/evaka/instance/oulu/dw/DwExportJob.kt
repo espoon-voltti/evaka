@@ -21,7 +21,7 @@ class DwExportJob(private val client: DwExportClient) {
 
             query(tx) { records ->
                 val stream = CsvInputStream(CSV_CHARSET, records)
-                client.sendDwCsvFile(queryName, clock, stream)
+                val _ = client.sendDwCsvFile(queryName, clock, stream)
             }
         }
     }

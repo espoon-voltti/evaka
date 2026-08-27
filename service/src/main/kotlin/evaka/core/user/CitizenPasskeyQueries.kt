@@ -102,6 +102,7 @@ RETURNING id, name, created_at, last_used_at, device_class, operating_system_nam
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.updateCitizenPasskeyName(
     person: PersonId,
     id: CitizenPasskeyId,
@@ -134,6 +135,7 @@ RETURNING id, name, created_at, last_used_at, device_class, operating_system_nam
     .executeAndReturnGeneratedKeys()
     .exactlyOneOrNull()
 
+@IgnorableReturnValue
 fun Database.Transaction.updatePasskeyAfterLogin(
     id: CitizenPasskeyId,
     now: HelsinkiDateTime,
@@ -147,7 +149,7 @@ WHERE id = ${bind(id)}
 """
     )
 }
-    .execute()
+    .executeAndReturnCount()
 
 fun Database.Transaction.upsertPasskeyRegistration(
     person: PersonId,

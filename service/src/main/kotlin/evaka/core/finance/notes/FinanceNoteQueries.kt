@@ -32,6 +32,7 @@ ORDER BY n.created_at DESC
 }
     .toList()
 
+@IgnorableReturnValue
 fun Database.Transaction.createFinanceNote(
     personId: PersonId,
     content: String,

@@ -203,6 +203,7 @@ fun Database.Read.getAttachment(id: AttachmentId): Pair<Attachment, AttachmentPa
         )
     }
 
+@IgnorableReturnValue
 fun Database.Transaction.dissociateAttachmentsByApplicationAndType(
     applicationId: ApplicationId,
     type: ApplicationAttachmentType,
@@ -246,7 +247,7 @@ WHERE ${predicate(predicate.forTable("attachment"))}
 """
     )
 }
-    .execute()
+    .executeAndReturnCount()
 
 /**
  * Associates *orphan* attachments with a new parent.
@@ -276,6 +277,7 @@ fun Database.Transaction.associateOrphanAttachments(
 }
 
 /** Dissociates all attachments from the given parent, so that they become orphans. */
+@IgnorableReturnValue
 fun Database.Transaction.dissociateAttachmentsOfParent(
     uploadedBy: EvakaUserId,
     parent: AttachmentParent,

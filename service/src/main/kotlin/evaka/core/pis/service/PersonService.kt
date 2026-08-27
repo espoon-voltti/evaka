@@ -213,6 +213,7 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         }
     }
 
+    @IgnorableReturnValue
     fun patchUserDetails(tx: Database.Transaction, id: PersonId, data: PersonPatch): PersonDTO {
         val person = tx.getPersonById(id) ?: throw NotFound("Person $id not found")
 
@@ -730,6 +731,7 @@ private fun upsertVtjChildren(
     return guardian.toVtjPersonDTO().copy(children = children.map { it.toVtjPersonDTO() })
 }
 
+@IgnorableReturnValue
 private fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO): PersonDTO {
     val existingPerson = tx.lockPersonBySSN(inputPerson.socialSecurityNumber)
 

@@ -29,6 +29,7 @@ import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
+import evaka.core.shared.utils.assertNotNull
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -86,7 +87,7 @@ class TermsController(private val accessControl: AccessControl) {
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(tx, user, clock, Action.ClubTerm.UPDATE, id)
 
-                    tx.getClubTerm(id) ?: throw NotFound("Club term $id does not exist")
+                    tx.getClubTerm(id).assertNotNull(msg = "Club term $id does not exist")
 
                     validateClubTermRequest(tx, body, id)
 
@@ -168,7 +169,7 @@ class TermsController(private val accessControl: AccessControl) {
                         id,
                     )
 
-                    tx.getPreschoolTerm(id) ?: throw NotFound("Preschool term $id does not exist")
+                    tx.getPreschoolTerm(id).assertNotNull(msg = "Preschool term $id does not exist")
 
                     validatePreschoolTermRequest(tx, body, id)
 

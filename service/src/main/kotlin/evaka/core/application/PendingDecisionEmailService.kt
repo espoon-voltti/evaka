@@ -47,6 +47,7 @@ class PendingDecisionEmailService(
 
     data class GuardianDecisions(val guardianId: PersonId, val decisionIds: List<DecisionId>)
 
+    @IgnorableReturnValue
     fun scheduleSendPendingDecisionsEmails(db: Database.Connection, clock: EvakaClock): Int {
         val jobCount = db.transaction { tx ->
             tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SendPendingDecisionEmail::class)))

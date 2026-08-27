@@ -147,6 +147,7 @@ fun Database.Read.getPlacementsForChildrenAt(
         )
         .associateBy { it.childId }
 
+@IgnorableReturnValue
 fun Database.Transaction.insertPlacement(
     type: PlacementType,
     childId: ChildId,
@@ -203,6 +204,7 @@ RETURNING *
 }
 
 /** Derive a new placement from an existing one, allowing to change the type and dates */
+@IgnorableReturnValue
 fun Database.Transaction.insertDerivedPlacement(
     placement: Placement,
     newType: PlacementType,
@@ -344,6 +346,7 @@ data class CancelPlacementResult(
     val endDate: LocalDate,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.cancelPlacement(
     modifiedAt: HelsinkiDateTime,
     modifiedBy: EvakaUserId,
@@ -918,6 +921,7 @@ fun Database.Read.getGroupPlacementChildren(
         .toList<ChildId>()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.createGroupPlacement(
     placementId: PlacementId,
     groupId: GroupId,
@@ -936,6 +940,7 @@ RETURNING id
         .exactlyOne<GroupPlacementId>()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.updateGroupPlacementStartDate(
     id: GroupPlacementId,
     startDate: LocalDate,
@@ -948,6 +953,7 @@ fun Database.Transaction.updateGroupPlacementStartDate(
         .exactlyOneOrNull<GroupPlacementId>() != null
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.updateGroupPlacementEndDate(
     id: GroupPlacementId,
     endDate: LocalDate,
@@ -960,6 +966,7 @@ fun Database.Transaction.updateGroupPlacementEndDate(
         .exactlyOneOrNull<GroupPlacementId>() != null
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
     val dgPlacement = getDaycareGroupPlacement(id)
     if (dgPlacement != null) {

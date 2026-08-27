@@ -142,7 +142,7 @@ interface VardaWriteClient {
         val paos_organisaatio_oid: String?,
     )
 
-    fun createLapsi(body: CreateLapsiRequest): CreateResponse
+    @IgnorableReturnValue fun createLapsi(body: CreateLapsiRequest): CreateResponse
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class CreateVarhaiskasvatuspaatosRequest(
@@ -159,6 +159,7 @@ interface VardaWriteClient {
         val lahdejarjestelma: String,
     )
 
+    @IgnorableReturnValue
     fun createVarhaiskasvatuspaatos(body: CreateVarhaiskasvatuspaatosRequest): CreateResponse
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -170,6 +171,7 @@ interface VardaWriteClient {
         val paattymis_pvm: LocalDate?,
     )
 
+    @IgnorableReturnValue
     fun createVarhaiskasvatussuhde(body: CreateVarhaiskasvatussuhdeRequest): CreateResponse
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -185,7 +187,7 @@ interface VardaWriteClient {
         val perheen_koko: Int?,
     )
 
-    fun createMaksutieto(body: CreateMaksutietoRequest): CreateResponse
+    @IgnorableReturnValue fun createMaksutieto(body: CreateMaksutietoRequest): CreateResponse
 
     fun <T : VardaEntity> delete(data: T)
 

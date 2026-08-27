@@ -500,6 +500,7 @@ class VardaUpdater(
     }
 
     /** Returns true if the lapsi and associated data were deleted */
+    @IgnorableReturnValue
     private fun VardaWriteClient.deleteLapsiDeep(vardaLapsi: VardaLapsiNode): Boolean {
         val maksutiedotDeleted = vardaLapsi.maksutiedot.allSucceed { deleteMaksutieto(it) }
         val varhaiskasvatuspaatoksetDeleted =
@@ -513,6 +514,7 @@ class VardaUpdater(
     }
 
     /** Returns true if the varhaiskasvatuspaatos and associated data were deleted */
+    @IgnorableReturnValue
     private fun VardaWriteClient.deleteVarhaiskasvatuspaatosDeep(
         vardaVarhaiskasvatuspaatos: VardaVarhaiskasvatuspaatosNode
     ): Boolean {
@@ -539,6 +541,7 @@ class VardaUpdater(
     }
 
     /** Returns true if the varhaiskasvatussuhde was deleted */
+    @IgnorableReturnValue
     private fun VardaWriteClient.deleteVarhaiskasvatussuhde(
         vardaVarhaiskasvatussuhde: VardaReadClient.VarhaiskasvatussuhdeResponse
     ): Boolean =
@@ -558,6 +561,7 @@ class VardaUpdater(
         }
 
     /** Returns true if the maksutieto was deleted */
+    @IgnorableReturnValue
     private fun VardaWriteClient.deleteMaksutieto(
         vardaMaksutieto: VardaReadClient.MaksutietoResponse
     ): Boolean =

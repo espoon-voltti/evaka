@@ -30,6 +30,7 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
+import evaka.core.shared.utils.assertNotNull
 import org.springframework.stereotype.Component
 
 private const val DELETION_WINDOW_DAYS = 8L
@@ -112,6 +113,7 @@ class MessageService(
         return CitizenMessageSent(messageId, threadId, contentId)
     }
 
+    @IgnorableReturnValue
     fun sendMessageAsEmployee(
         tx: Database.Transaction,
         user: AuthenticatedUser,
@@ -127,8 +129,9 @@ class MessageService(
         initialFolder: MessageThreadFolderId? = null,
     ): Pair<MessageContentId?, Int> {
         if (initialFolder != null) {
-            tx.getFolder(initialFolder)?.takeIf { it.ownerId == sender }
-                ?: throw NotFound("Folder not found")
+            tx.getFolder(initialFolder)
+                ?.takeIf { it.ownerId == sender }
+                .assertNotNull(msg = "Folder not found")
         }
 
         val senderAccount = tx.getSenderAccount(sender)
@@ -406,7 +409,7 @@ class MessageService(
                     """
                     )
                 }
-                .execute()
+                .executeAndReturnCount()
 
         if (rows == 0) throw Conflict("Message already deleted")
 

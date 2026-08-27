@@ -47,6 +47,7 @@ fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(
         .execute()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.clearOldReservations(
     reservations: List<Pair<ChildId, LocalDate>>
 ): List<AttendanceReservationId> =
@@ -62,7 +63,7 @@ RETURNING id
         .executeAndReturn()
         .toList()
 
-fun Database.Transaction.deleteReservationsInRange(childId: ChildId, range: DateRange): Int {
+fun Database.Transaction.deleteReservationsInRange(childId: ChildId, range: DateRange) {
     return createUpdate {
         sql(
             """
@@ -103,6 +104,7 @@ RETURNING id
 
 data class ReservationInsert(val childId: ChildId, val date: LocalDate, val range: TimeRange?)
 
+@IgnorableReturnValue
 fun Database.Transaction.insertValidReservations(
     userId: EvakaUserId,
     createdAt: HelsinkiDateTime,
@@ -734,6 +736,7 @@ fun Database.Read.getReservationEnabledPlacementRangesByChild(
     }
     .useSequence { rows -> rows.groupBy({ it.first }, { it.second }) }
 
+@IgnorableReturnValue
 fun Database.Transaction.deleteInvalidatedShiftCareReservationsAfterDate(date: LocalDate): Int {
     val futureHolidays = getHolidays(FiniteDateRange(date, date.plusMonths(6)))
     return createUpdate {
@@ -758,5 +761,5 @@ fun Database.Transaction.deleteInvalidatedShiftCareReservationsAfterDate(date: L
                     """
         )
     }
-        .execute()
+        .executeAndReturnCount()
 }

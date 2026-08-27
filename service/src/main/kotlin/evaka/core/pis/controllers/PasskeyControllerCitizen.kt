@@ -19,6 +19,7 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
+import evaka.core.shared.utils.assertNotNull
 import evaka.core.user.CitizenPasskey
 import evaka.core.user.NewPasskey
 import evaka.core.user.PasskeyService
@@ -236,7 +237,7 @@ class PasskeyControllerCitizen(
                     Action.Citizen.Person.DELETE_PASSKEY,
                     user.id,
                 )
-                tx.deleteCitizenPasskey(user.id, id) ?: throw NotFound("Passkey not found")
+                tx.deleteCitizenPasskey(user.id, id).assertNotNull(msg = "Passkey not found")
                 asyncJobRunner.plan(
                     tx,
                     sequenceOf(AsyncJob.SendPasskeyRemovedEmail(user.id)),

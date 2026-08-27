@@ -349,13 +349,14 @@ SELECT recipient.id FROM recipient
     }
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.deleteOldDailyServiceTimeNotifications(now: HelsinkiDateTime): Int =
     createUpdate {
         sql(
             "DELETE FROM daily_service_time_notification WHERE created_at < ${bind(now.minusMonths(2))}"
         )
     }
-    .execute()
+    .executeAndReturnCount()
 
 fun Database.Transaction.deleteChildDailyServiceTimes(id: DailyServiceTimesId) {
     execute { sql("DELETE FROM daily_service_time WHERE id = ${bind(id)}") }

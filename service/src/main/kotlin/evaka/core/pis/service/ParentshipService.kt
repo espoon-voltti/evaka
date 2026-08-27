@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service
 class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     private val logger = KotlinLogging.logger {}
 
+    @IgnorableReturnValue
     fun createParentship(
         tx: Database.Transaction,
         clock: EvakaClock,
@@ -54,6 +55,7 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
+    @IgnorableReturnValue
     fun updateParentshipDuration(
         tx: Database.Transaction,
         clock: EvakaClock,

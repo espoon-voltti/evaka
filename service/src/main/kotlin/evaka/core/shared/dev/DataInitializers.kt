@@ -165,6 +165,7 @@ fun Database.Transaction.ensureDevData() {
     }
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: AbsenceApplication): AbsenceApplicationId = createUpdate {
     sql(
         """
@@ -203,6 +204,7 @@ INSERT INTO absence_application (
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevCareArea): AreaId = createUpdate {
     sql(
         """
@@ -215,6 +217,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(
     row: DevDailyServiceTimeNotification
 ): DailyServiceTimeNotificationId = createUpdate {
@@ -246,6 +249,7 @@ VALUES (
         .execute()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevDaycare): DaycareId = createUpdate {
     sql(
         """
@@ -335,6 +339,7 @@ INSERT INTO evaka_user (id, type, mobile_device_id, name) VALUES (${bind(id)}, '
         .execute()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevEmployee) = createUpdate {
     sql(
         """
@@ -348,6 +353,7 @@ RETURNING id
     .exactlyOne<EmployeeId>()
     .also { upsertEmployeeUser(it) }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(
     row: DevEmployee,
     unitRoles: Map<DaycareId, UserRole> = mapOf(),
@@ -375,6 +381,7 @@ RETURNING id
         }
     }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevMobileDevice) = createUpdate {
     sql(
         """
@@ -388,6 +395,7 @@ RETURNING id
     .exactlyOne<MobileDeviceId>()
     .also { upsertMobileDeviceUser(it) }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevPersonalMobileDevice) = createUpdate {
     sql(
         """
@@ -406,6 +414,7 @@ enum class DevPersonType {
     RAW_ROW,
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(person: DevPerson, type: DevPersonType): PersonId {
     val p = person.copy(updatedFromVtj = if (person.ssn != null) HelsinkiDateTime.now() else null)
     return createUpdate {
@@ -446,6 +455,7 @@ RETURNING id
         }
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevParentship): ParentshipId = createUpdate {
     sql(
         """
@@ -457,6 +467,7 @@ VALUES (${bind(row.id)}, ${bind(row.headOfChildId)}, ${bind(row.childId)}, ${bin
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insertTestPartnership(
     adult1: PersonId,
     adult2: PersonId,
@@ -491,6 +502,7 @@ fun Database.Transaction.insertTestPartnership(
     return id
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insertTestApplication(
     id: ApplicationId = ApplicationId(UUID.randomUUID()),
     type: ApplicationType,
@@ -535,6 +547,7 @@ VALUES (${bind(id)}, ${bind(otherGuardianId)})
     return id
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevChild): ChildId = createUpdate {
     sql(
         """
@@ -549,6 +562,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevPlacement): PlacementId = createUpdate {
     sql(
         """
@@ -601,6 +615,7 @@ data class DevIncome(
     val modifiedBy: EvakaUserId,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevIncome): IncomeId = createUpdate {
     sql(
         """
@@ -626,6 +641,7 @@ data class DevIncomeStatement(
     val handledAt: HelsinkiDateTime? = null,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevIncomeStatement): IncomeStatementId {
     // insertion has complex bind logic, so workaround for reusing that
     val databaseGeneratedId =
@@ -668,6 +684,7 @@ data class DevFeeAlteration(
     val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevFeeAlteration): FeeAlterationId = createUpdate {
     sql(
         """
@@ -679,6 +696,7 @@ VALUES (${bind(row.id)}, ${bind(row.personId)}, ${bind(row.type)}::fee_alteratio
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: FeeThresholds): FeeThresholdsId = createUpdate {
     sql(
         """
@@ -691,6 +709,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevDaycareGroup): GroupId = createUpdate {
     sql(
         """
@@ -702,6 +721,7 @@ VALUES (${bind(row.id)}, ${bind(row.daycareId)}, ${bind(row.name)}, ${bind(row.s
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevDaycareGroupPlacement): GroupPlacementId = createUpdate {
     sql(
         """
@@ -726,6 +746,7 @@ data class DevPlacementPlan(
     val deleted: Boolean? = false,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevPlacementPlan): PlacementPlanId = createUpdate {
     sql(
         """
@@ -778,6 +799,7 @@ data class TestDecision(
     val genericReasoningId: DecisionGenericReasoningId? = null,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insertTestDecision(decision: TestDecision): DecisionId = createUpdate {
     sql(
         """
@@ -790,6 +812,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevAssistanceAction): AssistanceActionId = createUpdate {
     sql(
         """
@@ -832,6 +855,7 @@ data class DevStaffAttendancePlan(
     val description: String? = null,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevStaffAttendancePlan): StaffAttendancePlanId = createUpdate {
     sql(
         """
@@ -843,6 +867,7 @@ VALUES (${bind(row.id)}, ${bind(row.employeeId)}, ${bind(row.type)}, ${bind(row.
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevStaffAttendance): StaffAttendanceRealtimeId = createUpdate {
     sql(
         """
@@ -908,6 +933,7 @@ VALUES (${bind(childId)}, ${bind(unitId)}, ${bind { (date, _, _) -> date }}, ${b
     }
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevBackupCare): BackupCareId = createUpdate {
     sql(
         """
@@ -920,6 +946,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insertApplication(application: DevApplicationWithForm): ApplicationId {
     if (application.type == ApplicationType.CLUB) {
             ClubFormV0.fromForm2(application.form, false, false)
@@ -986,6 +1013,7 @@ data class DevFamilyContact(
     val priority: Int,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevFamilyContact): FamilyContactId = createUpdate {
     sql(
         """
@@ -1005,6 +1033,7 @@ data class DevBackupPickup(
     val phone: String,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevBackupPickup): BackupPickupId = createUpdate {
     sql(
         """
@@ -1026,6 +1055,7 @@ data class DevFridgeChild(
     val conflict: Boolean = false,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevFridgeChild): ParentshipId = createUpdate {
     sql(
         """
@@ -1049,6 +1079,7 @@ data class DevFridgePartner(
     val conflict: Boolean = false,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevFridgePartner): PartnershipId = createUpdate {
     sql(
         """
@@ -1071,6 +1102,7 @@ data class DevFridgePartnership(
     val conflict: Boolean = false,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(partnership: DevFridgePartnership): PartnershipId =
     insert(
             DevFridgePartner(
@@ -1116,6 +1148,7 @@ data class DevFosterParent(
     val modifiedBy: EvakaUserId,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevFosterParent): FosterParentId = createUpdate {
     sql(
         """
@@ -1128,6 +1161,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevEmployeePin): EmployeePinId = createUpdate {
     sql(
         """
@@ -1167,6 +1201,7 @@ data class DevPedagogicalDocument(
     val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevPedagogicalDocument): PedagogicalDocumentId = createUpdate {
     sql(
         """
@@ -1189,6 +1224,7 @@ data class DevReservation(
     val createdBy: EvakaUserId,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevReservation): AttendanceReservationId = createUpdate {
     sql(
         """
@@ -1236,6 +1272,7 @@ data class DevInvoiceRow(
     val idx: Int? = null,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(invoice: DevInvoice): InvoiceId {
     execute {
         sql(
@@ -1258,6 +1295,7 @@ VALUES (${bind(row.id)}, ${bind(invoice.id)}, ${bind(row.childId)}, ${bind(row.a
     return invoice.id
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(invoices: List<DevInvoice>): List<InvoiceId> {
     invoices.forEach { insert(it) }
     return invoices.map { it.id }
@@ -1294,6 +1332,7 @@ data class DevInvoiceCorrection(
     val modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevInvoiceCorrection): InvoiceCorrectionId = createUpdate {
     sql(
         """
@@ -1306,6 +1345,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevPayment): PaymentId = createUpdate {
     sql(
         """
@@ -1318,6 +1358,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevCalendarEvent): CalendarEventId = createUpdate {
     sql(
         """
@@ -1330,6 +1371,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevCalendarEventAttendee): CalendarEventAttendeeId =
     createUpdate {
         sql(
@@ -1343,6 +1385,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevCalendarEventTime): CalendarEventTimeId = createUpdate {
     sql(
         """
@@ -1357,6 +1400,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevDailyServiceTimes): DailyServiceTimesId = createUpdate {
     sql(
         """
@@ -1382,6 +1426,7 @@ ON CONFLICT (guardian_id, child_id) DO NOTHING
         .execute()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevAbsence): AbsenceId = createUpdate {
     sql(
         """
@@ -1394,6 +1439,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevDaycareCaretaker): DaycareCaretakerId = createUpdate {
     sql(
         """
@@ -1405,6 +1451,7 @@ VALUES (${bind(row.id)}, ${bind(row.groupId)}, ${bind(row.amount)}, ${bind(row.s
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevDocumentTemplate): DocumentTemplateId = createUpdate {
     sql(
         """
@@ -1416,6 +1463,7 @@ VALUES (${bind(row.id)}, ${bind(row.name)}, ${bind(row.type)}, ${bind(row.placem
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevChildDocument): ChildDocumentId {
     val type = createQuery {
         sql("SELECT type FROM document_template WHERE id = ${bind(row.templateId)}")
@@ -1451,6 +1499,7 @@ VALUES (${bind(documentId)}, ${bind(version.versionNumber)}, ${bind(version.crea
     return documentId
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevChildDocumentDecision): ChildDocumentDecisionId {
     return createUpdate {
         sql(
@@ -1474,6 +1523,7 @@ fun Database.Transaction.updateDaycareOperationTimes(
 }
     .execute()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevAssistanceFactor): AssistanceFactorId = createUpdate {
     sql(
         """
@@ -1485,6 +1535,7 @@ VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevDaycareAssistance): DaycareAssistanceId = createUpdate {
     sql(
         """
@@ -1496,6 +1547,7 @@ VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevPreschoolAssistance): PreschoolAssistanceId = createUpdate {
     sql(
         """
@@ -1507,6 +1559,7 @@ VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevOtherAssistanceMeasure): OtherAssistanceMeasureId =
     createUpdate {
         sql(
@@ -1519,6 +1572,7 @@ VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validDuring)}, ${bind(
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevServiceNeed): ServiceNeedId = createUpdate {
     sql(
         """
@@ -1530,6 +1584,7 @@ VALUES (${bind(row.id)}, ${bind(row.optionId)}, ${bind(row.placementId)}, ${bind
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevServiceApplication): ServiceApplicationId = createUpdate {
     sql(
         """
@@ -1541,6 +1596,7 @@ VALUES (${bind(row.id)}, ${bind(row.sentAt)}, ${bind(row.personId)}, ${bind(row.
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevChildAttendance): ChildAttendanceId = createUpdate {
     sql(
         """
@@ -1552,6 +1608,7 @@ VALUES (${bind(row.childId)}, ${bind(row.unitId)}, ${bind(row.date)}, ${bind(row
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevPreschoolTerm): PreschoolTermId = createUpdate {
     sql(
         """
@@ -1563,6 +1620,7 @@ VALUES (${bind(row.id)}, ${bind(row.finnishPreschool)}, ${bind(row.swedishPresch
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevMessageThreadFolder): MessageThreadFolderId = createUpdate {
     sql(
         """
@@ -1583,6 +1641,7 @@ VALUES (${bind(row.id)}, ${bind(row.term)}, ${bind(row.applicationPeriod)}, ${bi
     )
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevClubTerm): ClubTermId = createUpdate {
     sql(
         """
@@ -1594,6 +1653,7 @@ VALUES (${bind(row.id)}, ${bind(row.term)}, ${bind(row.applicationPeriod)}, ${bi
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevAssistanceActionOption): AssistanceActionOptionId =
     createUpdate {
         sql(
@@ -1606,6 +1666,7 @@ VALUES (${bind(row.id)}, ${bind(row.value)}, ${bind(row.nameFi)}, ${bind(row.des
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(
     row: DevAssistanceNeedVoucherCoefficient
 ): AssistanceNeedVoucherCoefficientId = createUpdate {
@@ -1619,6 +1680,7 @@ VALUES (${bind(row.id)}, ${bind(row.childId)}, ${bind(row.validityPeriod)}, ${bi
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(decision: DevFeeDecision): FeeDecisionId {
     return createUpdate {
         sql(
@@ -1723,6 +1785,7 @@ INSERT INTO fee_decision_child (
         .execute()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(decision: DevVoucherValueDecision): VoucherValueDecisionId {
     return createUpdate {
         sql(
@@ -1896,6 +1959,7 @@ VALUES (${bind(hqa.id)}, ${bind(hqa.modifiedBy)}, ${bind(hqa.questionnaireId)}, 
     }
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(row: DevDecisionReasoningGeneric): DecisionGenericReasoningId =
     createUpdate {
         sql(
@@ -1937,6 +2001,7 @@ val defaultClubDecisionReasoningGeneric =
         modifiedAt = HelsinkiDateTime.of(LocalDate.of(2000, 1, 1), LocalTime.of(12, 0, 0)),
     )
 
+@IgnorableReturnValue
 fun Database.Transaction.insertDefaultDecisionGenericReasonings():
     Map<DecisionReasoningCollectionType, DecisionGenericReasoningId> {
     return mapOf(
@@ -1947,6 +2012,7 @@ fun Database.Transaction.insertDefaultDecisionGenericReasonings():
     )
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insert(
     row: DevDecisionReasoningIndividual
 ): DecisionIndividualReasoningId = createUpdate {

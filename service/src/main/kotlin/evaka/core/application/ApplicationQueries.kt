@@ -1307,6 +1307,7 @@ WHERE application_id = ${bind(id)}
 }
     .toSet()
 
+@IgnorableReturnValue
 fun Database.Transaction.syncApplicationOtherGuardians(
     id: ApplicationId,
     today: LocalDate,

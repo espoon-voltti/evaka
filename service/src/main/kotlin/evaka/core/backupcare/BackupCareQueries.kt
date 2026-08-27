@@ -110,6 +110,7 @@ WHERE id = ${bind(id)}
 }
     .exactlyOneOrNull<BackupCareInfo>()
 
+@IgnorableReturnValue
 fun Database.Transaction.createBackupCare(
     user: EvakaUserId,
     now: HelsinkiDateTime,

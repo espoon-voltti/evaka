@@ -185,15 +185,19 @@ WHERE acc.id = ${bind(accountId)}
         }
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.createMunicipalMessageAccount(): MessageAccountId =
     createSingletonMessageAccount(AccountType.MUNICIPAL)
 
+@IgnorableReturnValue
 fun Database.Transaction.createServiceWorkerMessageAccount(): MessageAccountId =
     createSingletonMessageAccount(AccountType.SERVICE_WORKER)
 
+@IgnorableReturnValue
 fun Database.Transaction.createFinanceMessageAccount(): MessageAccountId =
     createSingletonMessageAccount(AccountType.FINANCE)
 
+@IgnorableReturnValue
 private fun Database.Transaction.createSingletonMessageAccount(
     accountType: AccountType
 ): MessageAccountId {
@@ -202,6 +206,7 @@ private fun Database.Transaction.createSingletonMessageAccount(
         .exactlyOne()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.createDaycareGroupMessageAccount(
     daycareGroupId: GroupId
 ): MessageAccountId {
@@ -227,6 +232,7 @@ DELETE FROM message_account WHERE daycare_group_id = ${bind(daycareGroupId)}
         .execute()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.createPersonMessageAccount(personId: PersonId): MessageAccountId {
     return createQuery {
         sql(
@@ -239,6 +245,7 @@ RETURNING id
         .exactlyOne<MessageAccountId>()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): MessageAccountId {
     return createQuery {
         sql(

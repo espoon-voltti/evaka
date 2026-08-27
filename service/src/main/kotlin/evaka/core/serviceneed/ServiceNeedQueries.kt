@@ -123,6 +123,7 @@ WHERE sn.id = ${bind(id)}
         .exactlyOneOrNull<ServiceNeedChildRange>() ?: throw NotFound("Service need $id not found")
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insertServiceNeed(
     placementId: PlacementId,
     startDate: LocalDate,

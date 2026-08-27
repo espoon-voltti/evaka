@@ -43,11 +43,12 @@ fun Database.Read.findStaffAttendancePlansBy(
 }
     .toList<StaffAttendancePlan>()
 
+@IgnorableReturnValue
 fun Database.Transaction.insertStaffAttendancePlans(plans: List<StaffAttendancePlan>): IntArray {
     if (plans.isEmpty()) {
         return IntArray(0)
     }
-    return executeBatch(plans) {
+    return executeBatchAndReturnCounts(plans) {
         sql(
             """
 INSERT INTO staff_attendance_plan (employee_id, type, start_time, end_time, description)
@@ -57,6 +58,7 @@ VALUES (${bind { it.employeeId }}, ${bind { it.type }}, ${bind { it.startTime }}
     }
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.deleteStaffAttendancePlansBy(
     employeeIds: Collection<EmployeeId>? = null,
     period: FiniteDateRange? = null,

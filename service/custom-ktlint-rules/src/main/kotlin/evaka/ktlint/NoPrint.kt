@@ -24,7 +24,7 @@ class NoPrint : EvakaRule("no-println"), RuleAutocorrectApproveHandler {
                 e is KtReferenceExpression && printFunctions.contains(e.text)
             }
         if (isPrintCall) {
-            emit(node.startOffset, ERROR_MESSAGE, false)
+            val _ = emit(node.startOffset, ERROR_MESSAGE, false)
         }
     }
 

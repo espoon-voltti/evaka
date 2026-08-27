@@ -492,6 +492,7 @@ fun getFutureAbsencesOfChild(
  * Inserts/deletes absences to achieve the given state. Does not replace identical existing
  * absences. Returns ids of inserted and deleted absences.
  */
+@IgnorableReturnValue
 fun setChildDateAbsences(
     tx: Database.Transaction,
     now: HelsinkiDateTime,

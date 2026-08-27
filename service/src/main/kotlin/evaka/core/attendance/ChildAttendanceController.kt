@@ -231,7 +231,7 @@ class ChildAttendanceController(
                     // constraint
                     body.children.sorted().map { childId ->
                         // Validate that the child is placed in the unit
-                        tx.fetchChildPlacementBasics(childId, unitId, today)
+                        val _ = tx.fetchChildPlacementBasics(childId, unitId, today)
                         try {
                             tx.insertAttendance(
                                 childId = childId,
@@ -273,7 +273,8 @@ class ChildAttendanceController(
                     Action.Unit.UPDATE_CHILD_ATTENDANCES,
                     unitId,
                 )
-                tx.fetchChildPlacementBasics(childId, unitId, clock.today())
+                // Validate that the child is placed in the unit
+                val _ = tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
                 val attendance = tx.getOngoingAttendanceForChild(childId, unitId)
                 if (attendance != null) tx.deleteAttendance(attendance.id)
@@ -503,7 +504,8 @@ class ChildAttendanceController(
                 )
                 val now = clock.now()
 
-                tx.fetchChildPlacementBasics(childId, unitId, clock.today())
+                // Validate that the child is placed in the unit
+                val _ = tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
                 tx.getChildAttendanceId(childId, unitId, now)?.also {
                     tx.unsetAttendanceEndTime(it, now, user.evakaUserId)

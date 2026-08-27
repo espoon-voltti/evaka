@@ -135,6 +135,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
         return task.get()
     }
 
+    @IgnorableReturnValue
     private fun runWorker(clock: EvakaClock, maxCount: Int) =
         tracer.withDetachedSpan("asyncjob.worker $fullName") {
             Database(jdbi, tracer).connect { dbc ->

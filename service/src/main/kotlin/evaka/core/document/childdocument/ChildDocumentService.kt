@@ -320,6 +320,7 @@ class ChildDocumentService(
      * @param emailPolicy Controls when to schedule email notifications
      * @return The created version number, or null if content was already up to date
      */
+    @IgnorableReturnValue
     fun publishAndScheduleNotifications(
         tx: Database.Transaction,
         user: AuthenticatedUser,

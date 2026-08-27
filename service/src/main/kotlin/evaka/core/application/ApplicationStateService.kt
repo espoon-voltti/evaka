@@ -314,7 +314,7 @@ class ApplicationStateService(
             validateApplicationPeriod = true,
         )
 
-        personService.getGuardians(tx, user, now, application.childId)
+        val _ = personService.getGuardians(tx, user, now, application.childId)
 
         val applicationFlags = tx.applicationFlags(application, currentDate)
         tx.updateApplicationFlags(application.id, applicationFlags, now, user.evakaUserId)
@@ -665,6 +665,7 @@ class ApplicationStateService(
         tx.setApplicationVerified(applicationId, true, clock.now(), user.evakaUserId)
     }
 
+    @IgnorableReturnValue
     fun createPlacementPlan(
         tx: Database.Transaction,
         user: AuthenticatedUser,
@@ -694,7 +695,7 @@ class ApplicationStateService(
             .observeDate(placementPlan.period.start)
             .observeDate(placementPlan.preschoolDaycarePeriod?.start)
 
-        personService.getGuardians(tx, user, now, application.childId)
+        val _ = personService.getGuardians(tx, user, now, application.childId)
         tx.syncApplicationOtherGuardians(applicationId, today).also { audit.add(it) }
         tx.updateApplicationStatus(application.id, WAITING_DECISION, user.evakaUserId, clock.now())
         tx.deleteApplicationPlacementDraftIfExists(applicationId)?.also { audit.add(it.unitId) }

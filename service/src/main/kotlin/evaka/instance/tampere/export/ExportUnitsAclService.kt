@@ -40,6 +40,7 @@ class ExportUnitsAclService(
 
     private val mapper = CsvMapper()
 
+    @IgnorableReturnValue
     fun exportUnitsAcl(tx: Database.Read, timestamp: HelsinkiDateTime): Pair<String, String> {
         val unitsAcl = tx.getUnitAclRows()
 

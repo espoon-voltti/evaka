@@ -221,8 +221,9 @@ fun Database.Read.getVardaGuardians(childIds: List<ChildId>): Map<ChildId, List<
     .mapTo<VardaGuardian>()
     .useSequence { rows -> rows.groupBy { it.childId } }
 
+@IgnorableReturnValue
 fun Database.Transaction.addNewChildrenForVardaUpdate(): Int {
-    return execute {
+    return executeAndReturnCount {
         sql(
             """
                     INSERT INTO varda_state (child_id, state)

@@ -36,6 +36,7 @@ fun replaceImage(
     return imageId
 }
 
+@IgnorableReturnValue
 fun deleteImage(
     tx: Database.Transaction,
     documentClient: DocumentService,

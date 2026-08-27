@@ -92,7 +92,7 @@ fun updateCaretakers(
         throw BadRequest("End date cannot be before start")
 
     try {
-        tx.execute {
+        tx.executeAndReturnCount {
                 sql(
                     """
 UPDATE daycare_caretaker
@@ -108,7 +108,7 @@ WHERE id = ${bind(id)} AND group_id = ${bind(groupId)}
 }
 
 fun deleteCaretakers(tx: Database.Transaction, groupId: GroupId, id: DaycareCaretakerId) {
-    tx.execute {
+    tx.executeAndReturnCount {
             sql(
                 "DELETE FROM daycare_caretaker WHERE id = ${bind(id)} AND group_id = ${bind(groupId)}"
             )

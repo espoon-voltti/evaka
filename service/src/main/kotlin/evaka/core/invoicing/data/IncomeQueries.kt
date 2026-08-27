@@ -25,6 +25,7 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.user.EvakaUser
 import java.time.LocalDate
 
+@IgnorableReturnValue
 fun Database.Transaction.insertIncome(
     now: HelsinkiDateTime,
     income: IncomeRequest,

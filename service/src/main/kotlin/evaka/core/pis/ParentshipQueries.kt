@@ -73,6 +73,7 @@ AND (${bind(includeConflicts)} OR conflict = false)
         .toList(toParentshipDetailed("child", "head"))
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.createParentship(
     childId: ChildId,
     headOfChildId: PersonId,
@@ -108,6 +109,7 @@ JOIN person head ON fc.head_of_child = head.id
         .exactlyOne(toParentship("child", "head"))
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.updateParentshipDuration(
     id: ParentshipId,
     startDate: LocalDate,
@@ -135,7 +137,7 @@ fun Database.Transaction.updateParentshipDuration(
             """
         )
     }
-        .execute() > 0
+        .executeAndReturnCount() > 0
 }
 
 fun Database.Transaction.retryParentship(

@@ -117,7 +117,7 @@ WHERE
                 sql("CREATE DATABASE \"$templateDbName\" TEMPLATE \"$baseDbName\"")
             }
             // Reopen the connection pool (swap with same URL creates a fresh pool)
-            swappableDataSource.swap(env.url)
+            val _ = swappableDataSource.swap(env.url)
 
             // Reset the template database to a clean state
             val templatePool =

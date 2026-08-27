@@ -206,6 +206,7 @@ class PlacementPlanService(
         applicationId: ApplicationId,
     ) = tx.softDeletePlacementPlanIfUnused(applicationId)
 
+    @IgnorableReturnValue
     fun createPlacementPlan(
         tx: Database.Transaction,
         application: ApplicationDetails,

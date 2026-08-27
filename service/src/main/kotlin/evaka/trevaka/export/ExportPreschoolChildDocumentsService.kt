@@ -88,6 +88,7 @@ class ExportPreschoolChildDocumentsService(
     private val s3Client: S3Client,
     private val ophEnv: OphEnv,
 ) {
+    @IgnorableReturnValue
     fun exportPreschoolChildDocuments(
         tx: Database.Read,
         timestamp: HelsinkiDateTime,

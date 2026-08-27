@@ -13,6 +13,7 @@ import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
+@IgnorableReturnValue
 fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<PersonId> {
     val twoMonthsAgo = queryDate.minusMonths(2)
     tx.setStatementTimeout(Duration.ofMinutes(20))

@@ -42,6 +42,7 @@ AND NOT EXISTS (
         .execute()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.createPlacementPlan(
     applicationId: ApplicationId,
     type: PlacementType,

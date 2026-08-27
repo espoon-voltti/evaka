@@ -165,7 +165,7 @@ fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
         .toList<ChildId>()
 }
 
-fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: PersonId): Int {
+fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: PersonId) {
     return createUpdate {
         sql(
             """
@@ -177,7 +177,7 @@ fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: PersonId):
         .execute()
 }
 
-fun Database.Transaction.deleteChildGuardianRelationships(childId: ChildId): Int {
+fun Database.Transaction.deleteChildGuardianRelationships(childId: ChildId) {
     return createUpdate {
         sql(
             """

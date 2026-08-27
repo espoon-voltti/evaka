@@ -207,6 +207,7 @@ data class IncomeNotification(
     val created: HelsinkiDateTime,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.createIncomeNotification(
     receiverId: PersonId,
     notificationType: IncomeNotificationType,

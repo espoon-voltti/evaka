@@ -262,7 +262,7 @@ class DaycareController(private val accessControl: AccessControl) {
                         Action.Unit.SET_SERVICE_WORKER_NOTE,
                         daycareId,
                     )
-                    tx.execute {
+                    tx.executeAndReturnCount {
                             sql(
                                 """
                     UPDATE daycare
