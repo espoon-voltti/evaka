@@ -1889,17 +1889,22 @@ const en: Translations = {
     editInfo:
       'Your name and address are retrieved from the Population Information System. If they change, you will need to inform the Digital and Population Data Services Agency (DVV).',
     tasks: {
-      addEmail: {
+      ADD_EMAIL: {
         title: 'Add an email address',
         description: 'You can receive email notifications.'
       },
-      verifyEmail: {
+      VERIFY_EMAIL: {
         title: 'Verify your email address',
         description: 'You can receive email notifications.'
       },
-      addPhone: {
+      ADD_PHONE: {
         title: 'Add a phone number',
         description: 'You can be reached in urgent matters.'
+      },
+      ADD_WEAK_LOGIN: {
+        title: 'Add a login method',
+        description:
+          'Log in easily with fingerprint, face recognition or a PIN code.'
       }
     },
     familySizeSection: {

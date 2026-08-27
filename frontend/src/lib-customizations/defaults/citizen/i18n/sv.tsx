@@ -2148,17 +2148,22 @@ const sv: Translations = {
     editInfo:
       'Vi hämtar ditt namn och din adress i befolkningsdatasystemet. Om de ändras ska du göra en anmälan till myndigheten för digitalisering och befolkningsdata (DVV).',
     tasks: {
-      addEmail: {
+      ADD_EMAIL: {
         title: 'Lägg till en e-postadress',
         description: 'Du kan ta emot e-postmeddelanden.'
       },
-      verifyEmail: {
+      VERIFY_EMAIL: {
         title: 'Bekräfta din e-postadress',
         description: 'Du kan ta emot e-postmeddelanden.'
       },
-      addPhone: {
+      ADD_PHONE: {
         title: 'Lägg till ett telefonnummer',
         description: 'Du kan nås i brådskande ärenden.'
+      },
+      ADD_WEAK_LOGIN: {
+        title: 'Lägg till en inloggningsmetod',
+        description:
+          'Logga in enkelt med fingeravtryck, ansiktsigenkänning eller en PIN-kod.'
       }
     },
     familySizeSection: {
