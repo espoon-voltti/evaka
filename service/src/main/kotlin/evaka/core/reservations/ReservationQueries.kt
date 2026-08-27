@@ -642,7 +642,10 @@ from (SELECT d                                     AS date,
                  ELSE rp.group_id END              AS affected_group_id,
              CASE -- whether child in examination unit at given date
                  WHEN ( -- absence or backup care
-                             absence.categories @> absence_categories(rp.placement_type) OR
+                             -- temporary placements have no absence categories, and every array
+                             -- contains the empty array, so @> alone would always match
+                             (cardinality(absence_categories(rp.placement_type)) > 0 AND
+                              absence.categories @> absence_categories(rp.placement_type)) OR
                              (rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = ${bind(unitId)})) THEN false
                  WHEN (ct.id IS NOT NULL OR pt.id IS NOT NULL) -- term break
                      THEN false

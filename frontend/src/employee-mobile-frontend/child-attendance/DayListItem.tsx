@@ -37,12 +37,9 @@ export default React.memo(function DayListItem({
   const filteredStats = useMemo(() => {
     const relevantGroupStats = isUnitView(unitOrGroup)
       ? dayStats.groupStatistics
-      : dayStats.groupStatistics.map((day) => ({
-          ...day,
-          reservationInfos: dayStats.groupStatistics.filter(
-            (i) => i.groupId === unitOrGroup.id
-          )
-        }))
+      : dayStats.groupStatistics.filter(
+          (group) => group.groupId === unitOrGroup.id
+        )
 
     return relevantGroupStats.reduce(
       (prev, next) => ({

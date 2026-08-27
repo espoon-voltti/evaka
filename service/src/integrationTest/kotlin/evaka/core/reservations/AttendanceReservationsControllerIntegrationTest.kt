@@ -2258,6 +2258,83 @@ class AttendanceReservationsControllerIntegrationTest :
     }
 
     @Test
+    fun `children in temporary daycare are counted as present in confirmed day statistics`() {
+        val daycareId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea(name = "Temporary Daycare Area", shortName = "temp"))
+            val daycareId =
+                tx.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        operationTimes =
+                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                    )
+                )
+            tx.insertDaycareAclRow(daycareId, employee.id, UserRole.STAFF)
+            daycareId
+        }
+        val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = daycareId)) }
+        val mobileDeviceId = insertMobileDevice(daycareId)
+        val range = getConfirmedRange(clock.now(), featureConfig.citizenReservationThresholdHours)
+
+        listOf(PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY).forEach {
+            placementType ->
+            db.transaction { tx ->
+                // DOB chosen so child is 3+ in March 2021 -> occupancy factor 1.00 / 0.54
+                val childId =
+                    tx.insert(
+                        DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1)),
+                        DevPersonType.CHILD,
+                    )
+                val placementId =
+                    tx.insert(
+                        DevPlacement(
+                            type = placementType,
+                            childId = childId,
+                            unitId = daycareId,
+                            startDate = range.start,
+                            endDate = range.end,
+                        )
+                    )
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = groupId,
+                        startDate = range.start,
+                        endDate = range.end,
+                    )
+                )
+                range.dates().forEach { date ->
+                    tx.insert(
+                        DevReservation(
+                            childId = childId,
+                            date = date,
+                            startTime = LocalTime.of(8, 0),
+                            endTime = LocalTime.of(16, 0),
+                            createdAt = clock.now(),
+                            createdBy = employee.evakaUserId,
+                        )
+                    )
+                }
+            }
+        }
+
+        getConfirmedDailyReservationStats(daycareId, mobileDeviceId, clock).forEach { day ->
+            assertEquals(
+                listOf(
+                    AttendanceReservationController.GroupReservationStatisticResult(
+                        calculatedPresent = BigDecimal("1.5400"),
+                        presentCount = 2,
+                        absentCount = 0,
+                        groupId = groupId,
+                    )
+                ),
+                day.groupStatistics,
+                "Unexpected statistics on ${day.date}",
+            )
+        }
+    }
+
+    @Test
     fun `shift care filter on getChildReservationsForDay returns only shift care children`() {
         val range = FiniteDateRange(LocalDate.of(2024, 5, 20), LocalDate.of(2024, 5, 26))
         val daycareId = db.transaction { tx ->
