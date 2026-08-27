@@ -14,11 +14,14 @@ import evaka.core.assistance.PreschoolAssistanceLevel
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.defaultMunicipalOrganizerOid
 import evaka.core.placement.PlacementType
+import evaka.core.reports.KoskiErrorReport
+import evaka.core.reports.KoskiStudyRightType
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.PlacementId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevAbsence
 import evaka.core.shared.dev.DevCareArea
@@ -53,6 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var koskiEndpoint: MockKoskiEndpoint
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired private lateinit var koskiErrorReport: KoskiErrorReport
     private lateinit var koskiTester: KoskiTester
     private lateinit var koskiEnv: KoskiEnv
 
@@ -386,6 +390,34 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
         updateService.scheduleKoskiUploads(db, clock)
         assertEquals(emptySet(), errorKeys())
+    }
+
+    @Test
+    fun `recorded errors are returned by the Koski error report`() {
+        val day1 = preschoolTerm2019.end.plusDays(1)
+        val day2 = preschoolTerm2019.end.plusDays(2)
+        koskiEndpoint.simulateFailure(400, "Simulated bad request")
+        insertPlacement()
+        koskiTester.triggerUploads(day1)
+        koskiTester.triggerUploads(day2)
+
+        val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+        db.transaction { it.insert(admin) }
+        val row =
+            koskiErrorReport
+                .getKoskiErrorsReport(
+                    dbInstance(),
+                    admin.user,
+                    MockEvakaClock(HelsinkiDateTime.of(day2, LocalTime.of(12, 0))),
+                )
+                .single()
+        assertEquals(child1.id, row.childId)
+        assertEquals(daycare.id, row.unitId)
+        assertEquals(daycare.name, row.unitName)
+        assertEquals(KoskiStudyRightType.PRESCHOOL, row.type)
+        assertEquals("\"Simulated bad request\"", row.error)
+        assertEquals(koskiUploadTime(day2), row.erroredAt)
+        assertEquals(koskiUploadTime(day1), row.erroredSince)
     }
 
     @Test

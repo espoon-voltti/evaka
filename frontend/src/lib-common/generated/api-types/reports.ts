@@ -570,6 +570,26 @@ export interface InvoiceReportRow {
 }
 
 /**
+* Generated from evaka.core.reports.KoskiErrorReportRow
+*/
+export interface KoskiErrorReportRow {
+  childId: PersonId
+  error: string
+  erroredAt: HelsinkiDateTime
+  erroredSince: HelsinkiDateTime
+  type: KoskiStudyRightType
+  unitId: DaycareId
+  unitName: string
+}
+
+/**
+* Generated from evaka.core.reports.KoskiStudyRightType
+*/
+export type KoskiStudyRightType =
+  | 'PRESCHOOL'
+  | 'PREPARATORY'
+
+/**
 * Generated from evaka.core.reports.MealReportData
 */
 export interface MealReportData {
@@ -948,6 +968,7 @@ export type Report =
   | 'HOLIDAY_QUESTIONNAIRE'
   | 'INVOICE'
   | 'INCOMPLETE_INCOMES'
+  | 'KOSKI_ERRORS'
   | 'MISSING_HEAD_OF_FAMILY'
   | 'MISSING_SERVICE_NEED'
   | 'NON_SSN_CHILDREN'
@@ -1346,6 +1367,15 @@ export function deserializeJsonIncompleteIncomeDbRow(json: JsonOf<IncompleteInco
   return {
     ...json,
     validFrom: LocalDate.parseIso(json.validFrom)
+  }
+}
+
+
+export function deserializeJsonKoskiErrorReportRow(json: JsonOf<KoskiErrorReportRow>): KoskiErrorReportRow {
+  return {
+    ...json,
+    erroredAt: HelsinkiDateTime.parseIso(json.erroredAt),
+    erroredSince: HelsinkiDateTime.parseIso(json.erroredSince)
   }
 }
 

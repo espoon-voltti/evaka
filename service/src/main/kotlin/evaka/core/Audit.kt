@@ -320,6 +320,7 @@ enum class Audit(
     InvoicesSend,
     InvoicesSendByDate,
     // InvoicesUpdate,
+    KoskiReportRead,
     MealReportRead,
     MessagingMyAccountsRead,
     MessagingUnreadMessagesRead,
