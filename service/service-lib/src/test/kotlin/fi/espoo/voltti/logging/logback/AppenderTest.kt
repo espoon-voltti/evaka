@@ -39,6 +39,7 @@ class AppenderTest {
             withTestLoggers {
                 MDC.put("userId", "$prefix.userId")
                 MDC.put("userIdHash", "$prefix.userIdHash")
+                MDC.put("userRoles", "$prefix.userRoles")
 
                 logger.audit(
                     "$prefix.description",

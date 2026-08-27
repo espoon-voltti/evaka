@@ -113,6 +113,7 @@ fun TestLoggers.withLatestSanitized(block: (Map<String, Any>) -> Unit) =
 data class AuditEvent(
     val userId: String,
     val userIdHash: String,
+    val userRoles: String,
     val description: String,
     val eventCode: String,
     val targetId: Any,
@@ -127,6 +128,7 @@ data class AuditEvent(
             eventCode,
             targetId,
             userIdHash,
+            userRoles,
             appName,
             EnvFields.appBuild,
             EnvFields.appCommit,
@@ -141,6 +143,7 @@ data class AuditEvent(
             AuditEvent(
                 userId = "$prefix.userId",
                 userIdHash = "$prefix.userIdHash",
+                userRoles = "$prefix.userRoles",
                 description = "$prefix.description",
                 eventCode = "$prefix.someEvent",
                 targetId = "$prefix.id",
@@ -155,6 +158,7 @@ private val auditEventProps =
         "eventCode",
         "targetId",
         "userIdHash",
+        "userRoles",
         "appName",
         "appBuild",
         "appCommit",

@@ -16,6 +16,7 @@ enum class MdcKey(val key: String) {
     TRACE_ID("traceId"),
     USER_ID("userId"),
     USER_ID_HASH("userIdHash"),
+    USER_ROLES("userRoles"),
     HTTP_ROUTE("httpRoute"),
     HTTP_PATH_PARAM("httpPathParam");
 
