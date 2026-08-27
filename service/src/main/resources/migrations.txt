@@ -601,3 +601,4 @@ V602__sfi_message_event_time.sql
 V603__citizen_passkey.sql
 V604__citizen_user_preferred_ui_language.sql
 V605__absence_categories_temporary_daycare.sql
+V606__koski_upload_error.sql

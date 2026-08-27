@@ -12,6 +12,7 @@ import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.buildHttpClient
 import evaka.core.shared.config.defaultJsonMapperBuilder
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.utils.basicAuthInterceptor
 import evaka.core.shared.utils.headerInterceptor
 import evaka.core.shared.utils.post
@@ -53,31 +54,25 @@ class KoskiClient(
 
     init {
         asyncJobRunner?.registerHandler { db, clock, msg: AsyncJob.UploadToKoski ->
-            uploadToKoski(db, msg, clock.today())
+            uploadToKoski(db, msg, clock.now())
         }
     }
 
-    private class UploadException(val statusCode: Int, message: String) :
-        RuntimeException(message) {
-        val isClientError: Boolean
-            get() = statusCode in 400..499
-    }
+    private class UploadException(val statusCode: Int, message: String, val errorBody: String) :
+        RuntimeException(message)
 
     data class Error(val key: String, val message: String) {
         fun isNotFound() = key == "notFound.opiskeluoikeuttaEiLöydyTaiEiOikeuksia"
     }
 
-    fun uploadToKoski(db: Database.Connection, msg: AsyncJob.UploadToKoski, today: LocalDate) =
+    fun uploadToKoski(db: Database.Connection, msg: AsyncJob.UploadToKoski, now: HelsinkiDateTime) =
         try {
-            db.transaction { tx -> uploadToKoski(tx, msg, today) }
+            db.transaction { tx -> uploadToKoski(tx, msg, now.toLocalDate()) }
         } catch (error: UploadException) {
-            if (error.isClientError) {
-                // No need to trigger alerts since this error will be visible in the Koski UI, and
-                // we'll automatically retry again tomorrow.
-                // The transaction has been rolled back, and since we don't propagate the exception,
-                // the async job will be marked completed.
-            } else {
-                throw error
+            // The main transaction has been rolled back. The error is visible in the error
+            // report, and the upload is automatically retried tomorrow.
+            db.transaction { tx ->
+                tx.upsertKoskiUploadError(msg.key, now, error.statusCode, error.errorBody)
             }
         }
 
@@ -98,6 +93,7 @@ class KoskiClient(
             )
         if (data == null) {
             logger.info { "Koski upload ${msg.key}: no data -> skipping" }
+            tx.deleteKoskiUploadError(msg.key)
             return
         }
         val payload = jsonMapper.writeValueAsString(data.oppija)
@@ -152,6 +148,9 @@ class KoskiClient(
             }
             logger.info { "Koski upload ${msg.key} ${data.operation}: finished" }
         }
+        // Any earlier upload error is now obsolete: either the upload succeeded, or the payload
+        // was unchanged which means Koski already has the current data. Rolled back on failure.
+        tx.deleteKoskiUploadError(msg.key)
     }
 
     private fun handleUploadResponse(
@@ -188,6 +187,7 @@ class KoskiClient(
             UploadException(
                 statusCode,
                 "Koski upload $key ${data.operation}: failed, status $statusCode",
+                errorBody,
             )
         logger.error(uploadException, meta) {
             "Koski upload $key ${data.operation}: failed, status $statusCode"

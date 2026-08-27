@@ -9,7 +9,9 @@ import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 
 internal data class KoskiStudyRightRaw(
@@ -28,6 +30,23 @@ internal fun Database.Read.getStoredResults() = createQuery {
 }
     .toList<KoskiStudyRightRaw>()
 
+internal data class KoskiUploadErrorRaw(
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val type: OpiskeluoikeudenTyyppiKoodi,
+    val error: String,
+    val statusCode: Int,
+    val erroredAt: HelsinkiDateTime,
+    val erroredSince: HelsinkiDateTime,
+)
+
+internal fun Database.Read.getKoskiUploadErrors() = createQuery {
+    sql(
+        "SELECT child_id, unit_id, type, error, status_code, errored_at, errored_since FROM koski_upload_error"
+    )
+}
+    .toList<KoskiUploadErrorRaw>()
+
 internal fun Database.Transaction.setUnitOid(unit: DaycareId, oid: String) = execute {
     sql("UPDATE daycare SET oph_unit_oid = ${bind(oid)} WHERE daycare.id = ${bind(unit)}")
 }
@@ -37,9 +56,13 @@ internal fun Database.Transaction.setUnitOids(daycareId: DaycareId, daycare2Id: 
     setUnitOid(daycare2Id, "1.2.246.562.10.2222222222")
 }
 
+internal fun koskiUploadTime(today: LocalDate) = HelsinkiDateTime.of(today, LocalTime.of(3, 0))
+
 internal class KoskiTester(private val db: Database.Connection, private val client: KoskiClient) {
     fun triggerUploads(today: LocalDate, koskiEnv: KoskiEnv? = null) {
         db.read { it.getPendingStudyRights(today, koskiEnv?.syncRangeStart) }
-            .forEach { request -> client.uploadToKoski(db, AsyncJob.UploadToKoski(request), today) }
+            .forEach { request ->
+                client.uploadToKoski(db, AsyncJob.UploadToKoski(request), koskiUploadTime(today))
+            }
     }
 }

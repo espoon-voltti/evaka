@@ -38,10 +38,17 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
         Multimaps.newSetMultimap(HashMap()) { HashSet() }
     private var personOid = Random.nextInt(1_000_000)
     private var studyRightOid = Random.nextInt(1_000_000)
+    private var simulatedFailure: Pair<Int, String>? = null
 
     @RequestMapping("/oppija", method = [RequestMethod.PUT, RequestMethod.POST])
     fun oppija(method: HttpMethod, @RequestBody oppija: Oppija): ResponseEntity<Any> {
         logger.info { "Mock Koski received $method body: $oppija" }
+
+        lock
+            .withLock { simulatedFailure }
+            ?.let { (statusCode, body) ->
+                return ResponseEntity.status(statusCode).body(body)
+            }
 
         when (method) {
             HttpMethod.POST -> {
@@ -158,9 +165,18 @@ class MockKoskiEndpoint(private val jsonMapper: JsonMapper) {
         personStudyRights.get(oid)
     }
 
+    fun simulateFailure(statusCode: Int, body: String) {
+        lock.withLock { simulatedFailure = statusCode to body }
+    }
+
+    fun clearSimulatedFailure() {
+        lock.withLock { simulatedFailure = null }
+    }
+
     fun clearData() = lock.withLock {
         persons.clear()
         studyRights.clear()
+        simulatedFailure = null
     }
 
     companion object {
