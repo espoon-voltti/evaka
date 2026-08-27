@@ -867,8 +867,9 @@ class DaycareController(private val accessControl: AccessControl) {
     ): Map<DaycareId, UnitOperationPeriod> {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
-                    tx.getUnitOperationPeriods(unitIds)
+                    val filter =
+                        accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
+                    tx.getUnitOperationPeriods(unitIds, filter)
                 }
             }
             .also { response ->

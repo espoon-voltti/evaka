@@ -25,6 +25,7 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.security.PilotFeature
 import evaka.core.shared.security.actionrule.AccessControlFilter
+import evaka.core.shared.security.actionrule.forTable
 import evaka.core.shared.security.actionrule.toPredicate
 import java.time.LocalDate
 
@@ -530,13 +531,14 @@ SELECT EXISTS(
     .exactlyOne<Boolean>()
 
 fun Database.Read.getUnitOperationPeriods(
-    unitIds: List<DaycareId>?
+    unitIds: List<DaycareId>?,
+    filter: AccessControlFilter<DaycareId>,
 ): Map<DaycareId, UnitOperationPeriod> = createQuery {
     sql(
         """
 SELECT id, opening_date, closing_date
 FROM daycare unit
-WHERE id = ANY(${bind(unitIds)})
+WHERE id = ANY(${bind(unitIds)}) AND ${predicate(filter.forTable("unit"))}
 """
     )
 }
