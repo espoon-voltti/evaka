@@ -311,6 +311,7 @@ function useReloadNotification(
   }, [maybeShow])
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
     maybeShow()
     return () => (timer.current ? clearInterval(timer.current) : undefined)
   }, [maybeShow])
@@ -323,6 +324,7 @@ function useReloadNotification(
         children: <ReloadNotification title={title} buttonText={buttonText} />,
         onClose
       })
+      // oxlint-disable-next-line react/set-state-in-effect
       setShow(false)
     }
   }, [addNotification, buttonText, onClose, show, theme.colors.main.m1, title])

@@ -933,6 +933,7 @@ export default function UnitEditor(props: Props) {
 
   // recompute form state after when it has been fetched from API. e.g. on form submit
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
     if (!props.editable) setForm(initialData)
   }, [initialData, props.editable])
 

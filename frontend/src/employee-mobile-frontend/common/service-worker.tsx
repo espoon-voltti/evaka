@@ -46,18 +46,17 @@ export const ServiceWorkerContextProvider = React.memo(
       [registration]
     )
 
+    const applicationServerKey = user?.pushApplicationServerKey
+
     const pushNotifications = useMemo(() => {
       if (!pushManager) return undefined
       return new PushNotifications(
         pushManager,
-        user?.pushApplicationServerKey
-          ? {
-              userVisibleOnly: true,
-              applicationServerKey: user.pushApplicationServerKey
-            }
+        applicationServerKey
+          ? { userVisibleOnly: true, applicationServerKey }
           : undefined
       )
-    }, [user?.pushApplicationServerKey, pushManager])
+    }, [applicationServerKey, pushManager])
 
     useEffect(() => {
       registerServiceWorker()

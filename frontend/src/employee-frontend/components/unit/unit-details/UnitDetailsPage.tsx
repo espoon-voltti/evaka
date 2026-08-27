@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useMemo } from 'react'
 
 import type { Result } from 'lib-common/api'
-import { combine, Loading } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { useBoolean } from 'lib-common/form/hooks'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
@@ -33,16 +33,16 @@ export default React.memo(function UnitDetailsPage() {
   const { i18n } = useTranslation()
   const unit = useQueryResult(daycareQuery({ daycareId: id }))
   const areas = useQueryResult(areasQuery())
-  const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
-    useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
   const [editable, useEditable] = useBoolean(false)
 
   useTitle(unit.map((value) => value.daycare.name))
 
   const employeesResponse = useQueryResult(getEmployeesQuery())
 
-  useEffect(() => {
-    setFinanceDecisionHandlerOptions(
+  const financeDecisionHandlerOptions = useMemo<
+    Result<FinanceDecisionHandlerOption[]>
+  >(
+    () =>
       employeesResponse.map((employees) =>
         employees.map((employee) => ({
           value: employee.id,
@@ -50,9 +50,9 @@ export default React.memo(function UnitDetailsPage() {
             employee.email ? ` (${employee.email})` : ''
           }`
         }))
-      )
-    )
-  }, [id, employeesResponse])
+      ),
+    [employeesResponse]
+  )
 
   return (
     <Container>

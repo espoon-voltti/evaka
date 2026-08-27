@@ -44,12 +44,6 @@ function BackupPickup({ childId }: BackupPickupProps) {
   const { permittedActions } = useContext(ChildContext)
 
   const backupPickups = useQueryResult(getBackupPickupsQuery({ childId }))
-  const { mutateAsync: createBackupPickup } = useMutationResult(
-    createBackupPickupMutation
-  )
-  const { mutateAsync: updateBackupPickup } = useMutationResult(
-    updateBackupPickupMutation
-  )
   const { mutateAsync: deleteBackupPickup } = useMutationResult(
     deleteBackupPickupMutation
   )
@@ -68,122 +62,17 @@ function BackupPickup({ childId }: BackupPickupProps) {
     toggleUiMode(`remove-backup-pickup`)
   }
 
+  const closeModal = () => {
+    setBackupPickup(undefined)
+    clearUiMode()
+  }
+
   const confirmRemoveModal = async () => {
     if (backupPickups.isSuccess && backupPickup) {
       await deleteBackupPickup({ childId, id: backupPickup.id })
-      setBackupPickup(undefined)
-      clearUiMode()
+      closeModal()
     }
   }
-
-  const CreateBackupPickupModal = () => {
-    const [name, setName] = useState<string>('')
-    const [phone, setPhone] = useState<string>('')
-
-    async function saveBackupPickup() {
-      if (name !== '' && phone !== '') {
-        await createBackupPickup({ childId, body: { name, phone } })
-        setBackupPickup(undefined)
-        clearUiMode()
-      }
-    }
-
-    return (
-      <FormModal
-        title={i18n.childInformation.backupPickups.add}
-        resolveAction={saveBackupPickup}
-        resolveLabel={i18n.common.save}
-        rejectAction={clearUiMode}
-        rejectLabel={i18n.common.cancel}
-      >
-        <FixedSpaceColumn>
-          <FixedSpaceColumn $spacing="xxs">
-            <Label>{i18n.childInformation.backupPickups.name}</Label>
-            <InputField
-              value={name}
-              onChange={setName}
-              placeholder={i18n.childInformation.backupPickups.name}
-              width="full"
-              data-qa="backup-pickup-name-input"
-            />
-          </FixedSpaceColumn>
-          <FixedSpaceColumn $spacing="xxs">
-            <Label>{i18n.childInformation.backupPickups.phone}</Label>
-            <InputField
-              value={phone}
-              onChange={setPhone}
-              placeholder={i18n.childInformation.backupPickups.phone}
-              width="full"
-              data-qa="backup-pickup-phone-input"
-            />
-          </FixedSpaceColumn>
-        </FixedSpaceColumn>
-      </FormModal>
-    )
-  }
-
-  const EditBackupPickupModal = () => {
-    const [name, setName] = useState<string>(backupPickup?.name ?? '')
-    const [phone, setPhone] = useState<string>(backupPickup?.phone ?? '')
-
-    async function saveBackupPickup() {
-      if (backupPickup) {
-        await updateBackupPickup({
-          childId,
-          id: backupPickup.id,
-          body: {
-            name: name !== '' ? name : backupPickup.name,
-            phone: phone !== '' ? phone : backupPickup.phone
-          }
-        })
-        setBackupPickup(undefined)
-        clearUiMode()
-      }
-    }
-
-    return (
-      <FormModal
-        title={i18n.childInformation.backupPickups.edit}
-        resolveAction={saveBackupPickup}
-        resolveLabel={i18n.common.save}
-        rejectAction={clearUiMode}
-        rejectLabel={i18n.common.cancel}
-      >
-        <FixedSpaceColumn>
-          <FixedSpaceColumn $spacing="xxs">
-            <Label>{i18n.childInformation.backupPickups.name}</Label>
-            <InputField
-              value={name}
-              onChange={setName}
-              placeholder={i18n.childInformation.backupPickups.name}
-              width="full"
-              data-qa="backup-pickup-name-input"
-            />
-          </FixedSpaceColumn>
-          <FixedSpaceColumn $spacing="xxs">
-            <Label>{i18n.childInformation.backupPickups.phone}</Label>
-            <InputField
-              value={phone}
-              onChange={setPhone}
-              placeholder={i18n.childInformation.backupPickups.phone}
-              width="full"
-              data-qa="backup-pickup-phone-input"
-            />
-          </FixedSpaceColumn>
-        </FixedSpaceColumn>
-      </FormModal>
-    )
-  }
-
-  const DeleteBackupPickupModal = () => (
-    <InfoModal
-      type="warning"
-      title={i18n.childInformation.backupPickups.removeConfirmation}
-      icon={faQuestion}
-      reject={{ action: () => clearUiMode(), label: i18n.common.cancel }}
-      resolve={{ action: confirmRemoveModal, label: i18n.common.remove }}
-    />
-  )
 
   return (
     <>
@@ -254,10 +143,147 @@ function BackupPickup({ childId }: BackupPickupProps) {
           )}
         </>
       ))}
-      {uiMode === `create-backup-pickup` && <CreateBackupPickupModal />}
-      {uiMode === `remove-backup-pickup` && <DeleteBackupPickupModal />}
-      {uiMode === `edit-backup-pickup` && <EditBackupPickupModal />}
+      {uiMode === `create-backup-pickup` && (
+        <CreateBackupPickupModal childId={childId} onClose={closeModal} />
+      )}
+      {uiMode === `remove-backup-pickup` && (
+        <InfoModal
+          type="warning"
+          title={i18n.childInformation.backupPickups.removeConfirmation}
+          icon={faQuestion}
+          reject={{ action: closeModal, label: i18n.common.cancel }}
+          resolve={{ action: confirmRemoveModal, label: i18n.common.remove }}
+        />
+      )}
+      {uiMode === `edit-backup-pickup` && backupPickup && (
+        <EditBackupPickupModal
+          childId={childId}
+          backupPickup={backupPickup}
+          onClose={closeModal}
+        />
+      )}
     </>
+  )
+}
+
+interface CreateBackupPickupModalProps {
+  childId: ChildId
+  onClose: () => void
+}
+
+function CreateBackupPickupModal({
+  childId,
+  onClose
+}: CreateBackupPickupModalProps) {
+  const { i18n } = useTranslation()
+  const { mutateAsync: createBackupPickup } = useMutationResult(
+    createBackupPickupMutation
+  )
+  const [name, setName] = useState<string>('')
+  const [phone, setPhone] = useState<string>('')
+
+  async function saveBackupPickup() {
+    if (name !== '' && phone !== '') {
+      await createBackupPickup({ childId, body: { name, phone } })
+      onClose()
+    }
+  }
+
+  return (
+    <FormModal
+      title={i18n.childInformation.backupPickups.add}
+      resolveAction={saveBackupPickup}
+      resolveLabel={i18n.common.save}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
+    >
+      <FixedSpaceColumn>
+        <FixedSpaceColumn $spacing="xxs">
+          <Label>{i18n.childInformation.backupPickups.name}</Label>
+          <InputField
+            value={name}
+            onChange={setName}
+            placeholder={i18n.childInformation.backupPickups.name}
+            width="full"
+            data-qa="backup-pickup-name-input"
+          />
+        </FixedSpaceColumn>
+        <FixedSpaceColumn $spacing="xxs">
+          <Label>{i18n.childInformation.backupPickups.phone}</Label>
+          <InputField
+            value={phone}
+            onChange={setPhone}
+            placeholder={i18n.childInformation.backupPickups.phone}
+            width="full"
+            data-qa="backup-pickup-phone-input"
+          />
+        </FixedSpaceColumn>
+      </FixedSpaceColumn>
+    </FormModal>
+  )
+}
+
+interface EditBackupPickupModalProps {
+  childId: ChildId
+  backupPickup: ChildBackupPickup
+  onClose: () => void
+}
+
+function EditBackupPickupModal({
+  childId,
+  backupPickup,
+  onClose
+}: EditBackupPickupModalProps) {
+  const { i18n } = useTranslation()
+  const { mutateAsync: updateBackupPickup } = useMutationResult(
+    updateBackupPickupMutation
+  )
+  const [name, setName] = useState<string>(backupPickup.name)
+  const [phone, setPhone] = useState<string>(backupPickup.phone)
+
+  async function saveBackupPickup() {
+    await updateBackupPickup({
+      childId,
+      id: backupPickup.id,
+      body: {
+        name: name !== '' ? name : backupPickup.name,
+        phone: phone !== '' ? phone : backupPickup.phone
+      }
+    })
+    onClose()
+  }
+
+  return (
+    <FormModal
+      title={i18n.childInformation.backupPickups.edit}
+      resolveAction={saveBackupPickup}
+      resolveLabel={i18n.common.save}
+      rejectAction={onClose}
+      rejectLabel={i18n.common.cancel}
+    >
+      <FixedSpaceColumn>
+        <FixedSpaceColumn $spacing="xxs">
+          <Label>{i18n.childInformation.backupPickups.name}</Label>
+          <InputField
+            value={name}
+            onChange={setName}
+            placeholder={i18n.childInformation.backupPickups.name}
+            width="full"
+            data-qa="backup-pickup-name-input"
+          />
+        </FixedSpaceColumn>
+        <FixedSpaceColumn $spacing="xxs">
+          <Label>{i18n.childInformation.backupPickups.phone}</Label>
+          <InputField
+            value={phone}
+            onChange={setPhone}
+            placeholder={i18n.childInformation.backupPickups.phone}
+            width="full"
+            data-qa="backup-pickup-phone-input"
+          />
+        </FixedSpaceColumn>
+      </FixedSpaceColumn>
+    </FormModal>
   )
 }
 

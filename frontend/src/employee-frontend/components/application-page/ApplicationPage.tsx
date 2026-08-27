@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useSearchParams } from 'wouter'
 
@@ -104,9 +104,6 @@ export default React.memo(function ApplicationPage() {
   const [editing, setEditing] = useState(creatingNew)
   const [editedApplication, setEditedApplication] =
     useState<ApplicationDetails>()
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string>
-  >({})
 
   const application = useQueryResult(applicationDetailsQuery({ applicationId }))
 
@@ -114,6 +111,7 @@ export default React.memo(function ApplicationPage() {
   useEffect(() => {
     if (application.isSuccess) {
       if (!editedApplicationInitialized) {
+        // oxlint-disable-next-line react/set-state-in-effect
         setEditedApplication(application.value.application)
       }
     }
@@ -178,18 +176,18 @@ export default React.memo(function ApplicationPage() {
   // this is used because text inputs become too sluggish without it
   const debouncedEditedApplication = useDebounce(editedApplication, 50)
 
-  useEffect(() => {
-    if (debouncedEditedApplication && units.isSuccess) {
-      setValidationErrors(
-        validateApplication(
-          debouncedEditedApplication,
-          units.value,
-          terms,
-          i18n
-        )
-      )
-    }
-  }, [debouncedEditedApplication]) // oxlint-disable-line react-hooks/exhaustive-deps
+  const validationErrors = useMemo(
+    () =>
+      debouncedEditedApplication && units.isSuccess
+        ? validateApplication(
+            debouncedEditedApplication,
+            units.value,
+            terms,
+            i18n
+          )
+        : {},
+    [debouncedEditedApplication] // oxlint-disable-line react-hooks/exhaustive-deps
+  )
 
   const shouldLoadServiceNeedOptions =
     editedApplication !== undefined &&

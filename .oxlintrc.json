@@ -73,6 +73,8 @@
     {
       "files": ["*.ts", "*.tsx"],
       "rules": {
+        "eslint/no-redeclare": "off",
+
         "typescript/adjacent-overload-signatures": "error",
         "typescript/array-type": "error",
         "typescript/ban-ts-comment": "error",

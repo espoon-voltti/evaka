@@ -4,7 +4,7 @@
 
 import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -166,12 +166,10 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const [allowOtherGuardianAccess, setAllowOtherGuardianAccess] =
     useState<boolean>(application.allowOtherGuardianAccess)
 
-  const [errors, setErrors] = useState<ApplicationFormDataErrors>(
-    validateApplication(application, formData)
+  const errors = useMemo<ApplicationFormDataErrors>(
+    () => validateApplication(application, formData, terms),
+    [application, formData, terms]
   )
-  useEffect(() => {
-    setErrors(validateApplication(application, formData, terms))
-  }, [application, formData, terms])
 
   const originalPreferredStartDate =
     application.status !== 'CREATED'
@@ -216,7 +214,6 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const submitting = savingDraft || updatingApplication || sendingApplication
 
   const onVerify = () => {
-    setErrors(validateApplication(application, formData, terms))
     setVerificationRequested(true)
     setVerificationCount((prev) => prev + 1)
 

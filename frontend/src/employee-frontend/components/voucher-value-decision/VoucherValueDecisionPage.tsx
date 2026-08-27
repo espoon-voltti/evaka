@@ -58,6 +58,7 @@ export default React.memo(function VoucherValueDecisionPage() {
   useEffect(() => {
     if (decisionResponse.isSuccess) {
       const decision = decisionResponse.value.data
+      // oxlint-disable-next-line react/set-state-in-effect
       setNewDecisionType(decision.decisionType)
     }
   }, [decisionResponse])

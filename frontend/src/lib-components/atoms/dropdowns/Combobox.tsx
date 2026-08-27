@@ -257,6 +257,7 @@ function Combobox<T>(props: ComboboxProps<T>) {
 
   useEffect(() => {
     if (!isOpen) {
+      // oxlint-disable-next-line react/set-state-in-effect
       setInputValue(itemToString(selectedItem))
       setCurrentFilter('')
     }

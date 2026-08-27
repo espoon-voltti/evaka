@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import type { Result } from 'lib-common/api'
 import { Success } from 'lib-common/api'
@@ -80,30 +80,23 @@ export default React.memo(function FeeAlterationEditor({
     baseFeeAlteration || newFeeAlteration(personId)
   )
 
-  const [validationErrors, setValidationErrors] = useState<
-    Partial<Record<keyof FeeAlteration | 'dates', boolean>>
-  >({})
+  const [datesInvalid, setDatesInvalid] = useState(false)
 
-  useEffect(() => {
-    setValidationErrors((prev) => ({
-      ...prev,
-      validFrom: edited.validFrom === null,
-      validTo:
-        edited.validFrom !== null &&
-        edited.validTo !== null &&
-        !edited.validFrom.isEqualOrBefore(edited.validTo)
-    }))
-  }, [edited])
+  const hasValidationErrors =
+    datesInvalid ||
+    edited.validFrom === null ||
+    (edited.validTo !== null &&
+      !edited.validFrom.isEqualOrBefore(edited.validTo))
 
   const onSubmit = useCallback(() => {
-    if (!edited.validFrom || Object.values(validationErrors).some(Boolean)) {
+    if (!edited.validFrom || hasValidationErrors) {
       return
     }
     const valid = { ...edited, validFrom: edited.validFrom }
     return !baseFeeAlteration
       ? create(valid)
       : update({ ...baseFeeAlteration, ...valid })
-  }, [baseFeeAlteration, create, edited, update, validationErrors])
+  }, [baseFeeAlteration, create, edited, update, hasValidationErrors])
 
   return (
     <div>
@@ -146,7 +139,7 @@ export default React.memo(function FeeAlterationEditor({
                       }))
                     }
                     onValidationResult={(isValid) => {
-                      setValidationErrors({ dates: !isValid })
+                      setDatesInvalid(!isValid)
                     }}
                     locale={lang}
                   />
@@ -194,7 +187,7 @@ export default React.memo(function FeeAlterationEditor({
             onClick={onSubmit}
             onSuccess={onSuccess}
             onFailure={onFailure}
-            disabled={Object.values(validationErrors).some(Boolean)}
+            disabled={hasValidationErrors}
             text={i18n.childInformation.feeAlteration.editor.save}
           />
         </FixedSpaceRow>

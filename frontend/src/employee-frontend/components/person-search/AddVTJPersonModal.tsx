@@ -38,6 +38,7 @@ export default React.memo(function VTJModal({
 
   useEffect(() => {
     if (isSsnValid(ssn)) {
+      // oxlint-disable-next-line react/set-state-in-effect
       setPerson(Loading.of())
       void getOrCreatePersonBySsn({ body: { ssn, readonly: true } }).then(
         setPerson

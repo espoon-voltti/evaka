@@ -46,24 +46,27 @@ export type BaseIconOnlyButtonVisualProps = {
 } & BaseProps &
   ({ 'aria-label': string } | { 'aria-labelledby': string })
 
-export const renderBaseIconOnlyButton = (
-  {
-    id,
-    icon,
-    type = 'button',
-    disabled,
-    size = 's',
-    color = 'default',
-    className,
-    ...props
-  }: BaseIconOnlyButtonVisualProps & {
-    'data-status'?: string
-    'aria-busy'?: boolean
-  },
-  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void,
-  children: (icon: IconDefinition, size: IconSize) => React.ReactNode,
+export type BaseIconOnlyButtonProps = BaseIconOnlyButtonVisualProps & {
+  'data-status'?: string
+  'aria-busy'?: boolean
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+  children: (icon: IconDefinition, size: IconSize) => React.ReactNode
   ref?: React.Ref<HTMLButtonElement>
-) => (
+}
+
+export const BaseIconOnlyButton = ({
+  id,
+  icon,
+  type = 'button',
+  disabled,
+  size = 's',
+  color = 'default',
+  className,
+  onClick,
+  children,
+  ref,
+  ...props
+}: BaseIconOnlyButtonProps) => (
   <StyledButton
     id={id}
     type={type}

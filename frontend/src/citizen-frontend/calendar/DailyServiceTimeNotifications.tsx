@@ -30,6 +30,7 @@ export default React.memo(function DailyServiceTimeNotification() {
   useEffect(() => {
     if (notifications.length === 0) return
 
+    // oxlint-disable-next-line react/set-state-in-effect
     setNotificationIds(notifications)
   }, [notifications, i18n.calendar])
 

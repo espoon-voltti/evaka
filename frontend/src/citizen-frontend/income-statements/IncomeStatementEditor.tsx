@@ -82,7 +82,7 @@ export default React.memo(function IncomeStatementEditor() {
   }
 
   const [showFormErrors, setShowFormErrors] = useState<ErrorDisplayType>('NONE')
-  const [shouldScrollToError, setShouldScrollToError] = useState(false)
+  const [failedSaveCount, setFailedSaveCount] = useState(0)
 
   const navigateToList = useCallback(() => {
     navigate('/income')
@@ -114,7 +114,7 @@ export default React.memo(function IncomeStatementEditor() {
   )
 
   useEffect(() => {
-    if (shouldScrollToError) {
+    if (failedSaveCount > 0) {
       const firstInvalidElement = document.querySelector(
         '[aria-invalid="true"]'
       )
@@ -122,9 +122,8 @@ export default React.memo(function IncomeStatementEditor() {
         scrollToElement(firstInvalidElement, 0, 'center')
         firstInvalidElement.focus()
       }
-      setShouldScrollToError(false)
     }
-  }, [shouldScrollToError])
+  }, [failedSaveCount])
 
   if (
     (showFormErrors === 'SAVE' &&
@@ -153,7 +152,7 @@ export default React.memo(function IncomeStatementEditor() {
           }
         } else {
           setShowFormErrors(draft ? 'DRAFT' : 'SAVE')
-          setShouldScrollToError(true)
+          setFailedSaveCount((count) => count + 1)
           return
         }
       }

@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useMemo } from 'react'
 import { useLocation } from 'wouter'
 
 import type { Result } from 'lib-common/api'
-import { combine, Loading } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
@@ -28,13 +28,12 @@ export default React.memo(function CreateUnitPage() {
   const { i18n } = useTranslation()
   const [, navigate] = useLocation()
   const areas = useQueryResult(areasQuery())
-  const [financeDecisionHandlerOptions, setFinanceDecisionHandlerOptions] =
-    useState<Result<FinanceDecisionHandlerOption[]>>(Loading.of())
-
   const employeesResponse = useQueryResult(getEmployeesQuery())
 
-  useEffect(() => {
-    setFinanceDecisionHandlerOptions(
+  const financeDecisionHandlerOptions = useMemo<
+    Result<FinanceDecisionHandlerOption[]>
+  >(
+    () =>
       employeesResponse.map((employees) =>
         employees.map((employee) => ({
           value: employee.id,
@@ -42,9 +41,9 @@ export default React.memo(function CreateUnitPage() {
             employee.email ? ` (${employee.email})` : ''
           }`
         }))
-      )
-    )
-  }, [employeesResponse])
+      ),
+    [employeesResponse]
+  )
 
   return (
     <Container>

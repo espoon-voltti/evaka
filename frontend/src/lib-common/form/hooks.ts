@@ -64,6 +64,7 @@ export function useForm<F extends AnyForm>(
   } = {}
 ): BoundForm<F> {
   const onUpdateRef = useRef(options.onUpdate)
+  // oxlint-disable-next-line react/refs
   onUpdateRef.current = options.onUpdate
 
   const [state, setState] = useState(initialState)

@@ -52,6 +52,7 @@ export function useSummaryInfo(childSummaries: MonthlyTimeSummary[]) {
           reservedMinutes > serviceNeedMinutes
       )
     ) {
+      // oxlint-disable-next-line react/set-state-in-effect
       setSummaryInfoOpen(true)
     }
   }, [childSummaries, summaryExplicitlyClosed])
@@ -72,6 +73,7 @@ export function useMonthlySummaryInfo(
   const [displayAlert, setDisplayAlert] = useState(false)
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
     setDisplayAlert(
       childSummaries.some(
         ({ reservedMinutes, usedServiceMinutes, serviceNeedMinutes }) =>
@@ -121,6 +123,7 @@ export function useExtendedReservationsRange(dateRange: FiniteDateRange) {
   // removing duplicates and sorting by date
   useEffect(() => {
     if (fetchedReservations.isSuccess) {
+      // oxlint-disable-next-line react/set-state-in-effect
       setReservations((prevReservations) => {
         if (prevReservations.isSuccess) {
           const extendedReservations = {

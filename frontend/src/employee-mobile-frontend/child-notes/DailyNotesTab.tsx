@@ -166,60 +166,6 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
     unitId
   ])
 
-  function DeleteNoteModal() {
-    return (
-      <InfoModal
-        type="warning"
-        title={i18n.attendances.notes.clearTitle}
-        icon={faExclamation}
-        reject={{
-          action: () => {
-            setUiMode('default')
-          },
-          label: i18n.common.cancel
-        }}
-        resolve={{
-          action: () => {
-            if (dailyNoteId) {
-              void deleteDailyNote({ unitId, noteId: dailyNoteId }).then(() => {
-                history.go(-1)
-              })
-            }
-          },
-          label: i18n.common.clear
-        }}
-      />
-    )
-  }
-
-  function ConfirmExitModal() {
-    return (
-      <InfoModal
-        type="warning"
-        title={i18n.attendances.notes.confirmTitle}
-        icon={faExclamation}
-        close={() => setUiMode('default')}
-        reject={{
-          action: () => {
-            history.go(-1)
-          },
-          label: i18n.attendances.notes.closeWithoutSaving
-        }}
-        resolve={{
-          action: () => {
-            void saveChildDailyNote().then(() => {
-              history.go(-1)
-            })
-          },
-          label: i18n.common.save,
-          disabled:
-            childDailyNoteIsEmpty(dailyNote) ||
-            (dailyNote.sleepingMinutes || 0) > 59
-        }}
-      />
-    )
-  }
-
   const goBackWithConfirm = useCallback(() => {
     if (dirty) {
       setUiMode('confirmExit')
@@ -384,8 +330,56 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
           />
         </FixedSpaceRow>
       </StickyActionContainer>
-      {uiMode === 'confirmDelete' && <DeleteNoteModal />}
-      {uiMode === 'confirmExit' && <ConfirmExitModal />}
+      {uiMode === 'confirmDelete' && (
+        <InfoModal
+          type="warning"
+          title={i18n.attendances.notes.clearTitle}
+          icon={faExclamation}
+          reject={{
+            action: () => {
+              setUiMode('default')
+            },
+            label: i18n.common.cancel
+          }}
+          resolve={{
+            action: () => {
+              if (dailyNoteId) {
+                void deleteDailyNote({ unitId, noteId: dailyNoteId }).then(
+                  () => {
+                    history.go(-1)
+                  }
+                )
+              }
+            },
+            label: i18n.common.clear
+          }}
+        />
+      )}
+      {uiMode === 'confirmExit' && (
+        <InfoModal
+          type="warning"
+          title={i18n.attendances.notes.confirmTitle}
+          icon={faExclamation}
+          close={() => setUiMode('default')}
+          reject={{
+            action: () => {
+              history.go(-1)
+            },
+            label: i18n.attendances.notes.closeWithoutSaving
+          }}
+          resolve={{
+            action: () => {
+              void saveChildDailyNote().then(() => {
+                history.go(-1)
+              })
+            },
+            label: i18n.common.save,
+            disabled:
+              childDailyNoteIsEmpty(dailyNote) ||
+              (dailyNote.sleepingMinutes || 0) > 59
+          }}
+        />
+      )}
     </>
   )
 })

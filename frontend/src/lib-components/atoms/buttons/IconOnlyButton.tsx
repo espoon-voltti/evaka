@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { useThrottledEventHandler } from './button-commons'
 import type { BaseIconOnlyButtonVisualProps } from './icon-only-button-visuals'
-import { renderBaseIconOnlyButton } from './icon-only-button-visuals'
+import { BaseIconOnlyButton } from './icon-only-button-visuals'
 
 export type IconOnlyButtonProps = BaseIconOnlyButtonVisualProps & {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
@@ -31,12 +31,16 @@ export const IconOnlyButton = React.memo(function IconOnlyButton({
   ...props
 }: IconOnlyButtonProps) {
   const handleOnClick = useThrottledEventHandler(onClick)
-  return renderBaseIconOnlyButton(props, handleOnClick, (icon) => (
-    <IconWrapper>
-      <FontAwesomeIcon icon={icon} />
-      {bubble === 'warning' && <Bubble />}
-    </IconWrapper>
-  ))
+  return (
+    <BaseIconOnlyButton {...props} onClick={handleOnClick}>
+      {(icon) => (
+        <IconWrapper>
+          <FontAwesomeIcon icon={icon} />
+          {bubble === 'warning' && <Bubble />}
+        </IconWrapper>
+      )}
+    </BaseIconOnlyButton>
+  )
 })
 
 const IconWrapper = styled.div`
@@ -63,11 +67,10 @@ export const IconOnlyRefButton = React.memo(function IconOnlyRefButton({
 
   useFocusRefElementOnUnmount(returnFocusRef)
 
-  return renderBaseIconOnlyButton(
-    props,
-    handleOnClick,
-    (icon) => <FontAwesomeIcon icon={icon} />,
-    ref
+  return (
+    <BaseIconOnlyButton {...props} onClick={handleOnClick} ref={ref}>
+      {(icon) => <FontAwesomeIcon icon={icon} />}
+    </BaseIconOnlyButton>
   )
 })
 

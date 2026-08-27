@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Redirect, useLocation } from 'wouter'
 
@@ -84,10 +84,11 @@ export default function MessagesPage({
   )
   const [activeTab, setActiveTab] = useState<Tab>('received')
   const [uiState, setUiState] = useState<UiState>({ type: 'list' })
-
-  useEffect(() => {
+  const [previousUnitOrGroup, setPreviousUnitOrGroup] = useState(unitOrGroup)
+  if (previousUnitOrGroup !== unitOrGroup) {
+    setPreviousUnitOrGroup(unitOrGroup)
     setUiState({ type: 'list' })
-  }, [unitOrGroup])
+  }
 
   const onSelectThread = (threadId: UUID) => {
     navigate(routes.receivedThread(unitOrGroup, threadId).value)

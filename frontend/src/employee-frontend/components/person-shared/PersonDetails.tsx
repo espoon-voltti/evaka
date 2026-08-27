@@ -510,6 +510,7 @@ export default React.memo(function PersonDetails({
 
   useEffect(() => {
     if (editing && sensitiveDetails) {
+      // oxlint-disable-next-line react/set-state-in-effect
       setForm({
         firstName: person.firstName || '',
         lastName: person.lastName || '',

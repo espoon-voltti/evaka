@@ -6,7 +6,7 @@ import isEqual from 'lodash/isEqual'
 import orderBy from 'lodash/orderBy'
 import range from 'lodash/range'
 import uniqBy from 'lodash/uniqBy'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
@@ -139,9 +139,11 @@ const StartingPlacements = React.memo(function StartingPlacements({
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
   const result = useQueryResult(startingPlacementsReportQuery(filters))
-  useEffect(() => {
+  const [previousFilters, setPreviousFilters] = useState(filters)
+  if (previousFilters !== filters) {
+    setPreviousFilters(filters)
     setDisplayFilters(emptyDisplayFilters)
-  }, [filters])
+  }
   const areaFilter = (row: StartingPlacementsRow): boolean =>
     !(displayFilters.careArea && row.careAreaName !== displayFilters.careArea)
   const displayFilter = (row: StartingPlacementsRow): boolean =>
