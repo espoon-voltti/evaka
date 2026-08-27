@@ -890,14 +890,14 @@ class CalendarEventController(
                         tx.getDiscussionTimeDetailsByEventTimeId(body.calendarEventTimeId)
                             ?: throw BadRequest("Calendar event time not found")
 
-                    val count =
+                    val reserved =
                         tx.insertCalendarEventTimeReservation(
                             eventTimeId = body.calendarEventTimeId,
                             childId = body.childId,
                             modifiedAt = clock.now(),
                             modifiedBy = user.evakaUserId,
                         )
-                    if (count != 1) {
+                    if (!reserved) {
                         throw Conflict(
                             "Calendar event time already reserved",
                             errorCode = "TIME_ALREADY_RESERVED",

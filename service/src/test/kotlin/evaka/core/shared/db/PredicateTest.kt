@@ -5,15 +5,15 @@
 package evaka.core.shared.db
 
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class PredicateTest {
     @Test
     fun `predicate builder allows only one where call`() {
-        assertThrows<IllegalStateException> {
+        assertFailsWith<IllegalStateException> {
             Predicate {
-                    where("TRUE")
+                    val _ = where("TRUE")
                     where("FALSE -- this fails")
                 }
                 .forTable("some_table")

@@ -18,19 +18,21 @@ class NoJUnit4Imports : EvakaRule("no-old-junit-imports"), RuleAutocorrectApprov
         val importDirective = (node.psi as? KtImportDirective) ?: return
         val path = importDirective.importPath?.pathStr ?: return
         if (path.contains("org.junit") && !path.contains("jupiter")) {
-            emit(
-                node.startOffset,
-                "Importing from JUnit 4, use org.junit.jupiter.* for JUnit 5 instead.",
-                false,
-            )
+            val _ =
+                emit(
+                    node.startOffset,
+                    "Importing from JUnit 4, use org.junit.jupiter.* for JUnit 5 instead.",
+                    false,
+                )
         }
 
         if (path.contains("org.junit.jupiter.api.Assertions.")) {
-            emit(
-                node.startOffset,
-                "Use kotlin.test assertions instead of junit assertions for better type-safety",
-                false,
-            )
+            val _ =
+                emit(
+                    node.startOffset,
+                    "Use kotlin.test assertions instead of junit assertions for better type-safety",
+                    false,
+                )
         }
     }
 }

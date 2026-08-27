@@ -175,6 +175,7 @@ AND (child_id IS NULL OR child_id = ${bind(childId)})
 }
     .toList<CalendarEventTime>()
 
+@IgnorableReturnValue
 fun Database.Transaction.createCalendarEventTime(
     calendarEventId: CalendarEventId,
     time: CalendarEventTimeForm,
@@ -270,6 +271,7 @@ WHERE id = ${bind(eventId)}
 }
     .updateExactlyOne()
 
+@IgnorableReturnValue
 fun Database.Transaction.insertCalendarEventTimeReservation(
     eventTimeId: CalendarEventTimeId,
     childId: ChildId?,
@@ -320,18 +322,18 @@ fun Database.Transaction.freeCalendarEventTimeReservations(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
     calendarEventTimeIds: Set<CalendarEventTimeId>,
-) =
-    if (calendarEventTimeIds.isEmpty()) 0
-    else
-        execute {
-            sql(
-                """
+) {
+    if (calendarEventTimeIds.isEmpty()) return
+    execute {
+        sql(
+            """
 UPDATE calendar_event_time
 SET child_id = NULL::uuid, modified_at = ${bind(now)}, modified_by = ${bind(user.evakaUserId)}
 WHERE id = ANY(${bind(calendarEventTimeIds)})
 """
-            )
-        }
+        )
+    }
+}
 
 fun Database.Read.getCalendarEventTimesByChildAndEvent(
     childId: PersonId,

@@ -362,6 +362,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .exactlyOneOrNull<PersonId>()
 
+@IgnorableReturnValue
 fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
     val p = person.copy(updatedFromVtj = HelsinkiDateTime.now())
     return createQuery {

@@ -152,6 +152,31 @@ internal class TitaniaErrorsReportTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals("Yksikkö", supervisorResult.first().units.first().unitName)
     }
 
+    @Test
+    fun `supervisor should be able to clear an error of an employee in their unit`() {
+
+        insertTestData()
+        val clock = MockEvakaClock(2025, 12, 12, 12, 0, 0)
+        val conflictId =
+            titaniaErrorsReport
+                .getTitaniaErrorsReport(dbInstance(), supervisor.user, clock)
+                .first()
+                .units
+                .first()
+                .employees
+                .first()
+                .conflictingShifts
+                .first()
+                .id
+
+        titaniaErrorsReport.clearTitaniaErrors(dbInstance(), supervisor.user, clock, conflictId)
+
+        assertEquals(
+            emptyList(),
+            titaniaErrorsReport.getTitaniaErrorsReport(dbInstance(), supervisor.user, clock),
+        )
+    }
+
     fun insertTestData() {
         db.transaction { tx ->
             tx.insert(area)

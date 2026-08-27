@@ -206,6 +206,7 @@ GROUP BY ta.id, ta.daycare_group_id
         .toSet<UnreadCountByAccountAndGroup>()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.markThreadRead(
     now: HelsinkiDateTime,
     accountId: MessageAccountId,
@@ -224,13 +225,13 @@ WHERE rec.message_id = msg.id
 """
         )
     }
-        .execute()
+        .executeAndReturnCount()
 }
 
 fun Database.Transaction.markLastReceivedMessageUnread(
     accountId: MessageAccountId,
     threadId: MessageThreadId,
-) = execute {
+) = executeAndReturnCount {
     sql(
         """
     UPDATE message_recipients
@@ -538,10 +539,9 @@ fun Database.Transaction.insertThread(
 fun Database.Transaction.reAssociateMessageAttachments(
     attachmentIds: Set<AttachmentId>,
     messageContentId: MessageContentId,
-): Int {
-    return createUpdate {
-        sql(
-            """
+) = createUpdate {
+    sql(
+        """
 UPDATE attachment
 SET
     message_content_id = ${bind(messageContentId)},
@@ -549,10 +549,9 @@ SET
 WHERE
     id = ANY(${bind(attachmentIds)})
 """
-        )
-    }
-        .execute()
+    )
 }
+    .execute()
 
 private data class ReceivedThread(
     val id: MessageThreadId,
@@ -2225,7 +2224,9 @@ WHERE id = ${bind(id)}
     .exactlyOne<MessageThreadStub>()
 
 fun Database.Read.lockMessageContentForUpdate(id: MessageContentId) {
-    createQuery { sql("SELECT 1 FROM message_content WHERE id = ${bind(id)} FOR UPDATE ") }
+    val _ = createQuery {
+        sql("SELECT 1 FROM message_content WHERE id = ${bind(id)} FOR UPDATE ")
+    }
         .exactlyOneOrNull<Int>()
 }
 

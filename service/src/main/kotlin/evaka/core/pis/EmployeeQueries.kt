@@ -105,6 +105,7 @@ RETURNING id, first_name, last_name, email, external_id, created, updated, roles
     .executeAndReturnGeneratedKeys()
     .exactlyOne<Employee>()
 
+@IgnorableReturnValue
 fun Database.Transaction.updateExternalIdByEmployeeNumber(
     employeeNumber: String,
     externalId: ExternalId,
@@ -346,7 +347,7 @@ fun Database.Transaction.updateEmployeeGlobalRoles(id: EmployeeId, globalRoles: 
     """
         )
     }
-        .execute()
+        .executeAndReturnCount()
 
     if (updated != 1) throw NotFound("employee $id not found")
 }
@@ -480,7 +481,7 @@ ON CONFLICT (user_id) DO UPDATE SET
 """
                 )
             }
-            .execute()
+            .executeAndReturnCount()
 
     if (updated == 0) throw NotFound("Could not update pin code for $userId. User not found")
 }

@@ -853,9 +853,9 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val user = AuthenticatedUser.SystemInternalUser
-                personService.getUpToDatePersonFromVtj(tx, user, person)
-                personService.getGuardians(tx, user, now, person)
-                personService.getPersonWithChildren(tx, user, now, person)
+                val _ = personService.getUpToDatePersonFromVtj(tx, user, person)
+                val _ = personService.getGuardians(tx, user, now, person)
+                val _ = personService.getPersonWithChildren(tx, user, now, person)
             }
         }
     }
@@ -1719,7 +1719,7 @@ UPDATE person SET email=${bind(body.email)} WHERE id=${bind(body.personId)}
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.updateLastStrongLogin(clock.now(), id)
-                tx.updateWeakLoginCredentials(clock.now(), id, request.username, password)
+                val _ = tx.updateWeakLoginCredentials(clock.now(), id, request.username, password)
             }
         }
     }

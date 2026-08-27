@@ -8,13 +8,13 @@ import evaka.core.Sensitive
 import evaka.core.shared.config.defaultJsonMapperBuilder
 import evaka.instance.espoo.EspooPatuIntegrationEnv
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import okhttp3.Credentials
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class EspooPatuIntegrationClientTest {
 
@@ -66,6 +66,6 @@ class EspooPatuIntegrationClientTest {
             )
         val client = EspooPatuIntegrationClient(env, jsonMapper)
 
-        assertThrows<IllegalStateException> { client.send(emptyList()) }
+        assertFailsWith<IllegalStateException> { client.send(emptyList()) }
     }
 }

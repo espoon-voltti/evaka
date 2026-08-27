@@ -194,6 +194,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     fun disableAfterCommitHooks() = stateLock.write { afterCommitHooks = emptyMap() }
 
+    @IgnorableReturnValue
     fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000): Int {
         var totalCount = 0
         do {

@@ -54,6 +54,7 @@ WHERE soc.daycare_id = ${bind(unitId)}
 }
     .toList<StaffOccupancyCoefficient>()
 
+@IgnorableReturnValue
 fun Database.Transaction.upsertOccupancyCoefficient(
     params: OccupancyCoefficientUpsert
 ): StaffOccupancyCoefficientId = createUpdate {

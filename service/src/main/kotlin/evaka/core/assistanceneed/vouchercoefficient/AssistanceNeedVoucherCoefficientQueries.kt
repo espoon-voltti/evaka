@@ -71,6 +71,7 @@ WHERE a.child_id = ${bind(childId)}
 }
     .toList()
 
+@IgnorableReturnValue
 fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
     user: AuthenticatedUser,
     now: HelsinkiDateTime,
@@ -94,6 +95,7 @@ WITH a AS (
     }
         .exactlyOneOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
 
+@IgnorableReturnValue
 fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(
     id: AssistanceNeedVoucherCoefficientId
 ): AssistanceNeedVoucherCoefficient? = createQuery {

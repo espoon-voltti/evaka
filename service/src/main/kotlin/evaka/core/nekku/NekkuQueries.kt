@@ -105,9 +105,10 @@ WHERE nekku_customer_number != ALL (${bind(newNekkuCustomerNumbers)})
     return affectedGroups
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.setCustomerNumbers(customerNumbers: List<NekkuCustomer>): Int {
     val newCustomerNumbers = customerNumbers.map { it.number }
-    val deletedCustomerCount = execute {
+    val deletedCustomerCount = executeAndReturnCount {
         sql("DELETE FROM nekku_customer WHERE number != ALL (${bind(newCustomerNumbers)})")
     }
     executeBatch(customerNumbers) {
@@ -369,7 +370,7 @@ AND value != ALL(${bind { (_, option) -> option.map { it.value } }})
     }
 
     val deletedSpecialOptionsCount =
-        executeBatch(specialDietOptions) {
+        executeBatchAndReturnCounts(specialDietOptions) {
             sql(
                 """
 DELETE FROM nekku_special_diet_option 
@@ -547,7 +548,7 @@ fun fetchAndUpdateNekkuProducts(client: NekkuClient, db: Database.Connection) {
 
 fun Database.Transaction.setProductNumbers(productNumbers: List<NekkuProduct>): Int {
     val newProductNumbers = productNumbers.map { it.sku }
-    val deletedProductCount = execute {
+    val deletedProductCount = executeAndReturnCount {
         sql("DELETE FROM nekku_product WHERE sku != ALL (${bind(newProductNumbers)})")
     }
     executeBatch(productNumbers) {
@@ -836,7 +837,7 @@ fun Database.Transaction.setNekkuReportOrderReport(
             )
         }
 
-    val deletedNekkuOrders = execute {
+    val deletedNekkuOrders = executeAndReturnCount {
         sql(
             """
 DELETE FROM nekku_orders_report
@@ -899,7 +900,7 @@ fun Database.Transaction.setNekkuReportOrderErrorReport(
     val reportRow =
         NekkuOrdersReport(date, daycareId, groupId, "", 0, null, null, null, nekkuOrderError, now)
 
-    val deletedNekkuOrders = execute {
+    val deletedNekkuOrders = executeAndReturnCount {
         sql(
             """
 DELETE FROM nekku_orders_report

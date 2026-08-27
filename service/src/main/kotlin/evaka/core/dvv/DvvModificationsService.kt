@@ -37,8 +37,8 @@ class DvvModificationsService(
                 .let { modificationsForPersons ->
                     val ssnsToUpdateFromVtj: MutableSet<String> = emptySet<String>().toMutableSet()
 
-                    modificationsForPersons.dvvModifications.map { personModifications ->
-                        personModifications.tietoryhmat.map { infoGroup ->
+                    modificationsForPersons.dvvModifications.forEach { personModifications ->
+                        personModifications.tietoryhmat.forEach { infoGroup ->
                             try {
                                 when (infoGroup) {
                                     is DeathDvvInfoGroup -> {
@@ -225,28 +225,32 @@ class DvvModificationsService(
         db: Database.Connection,
         ssn: String,
         restrictedInfoDvvInfoGroup: RestrictedInfoDvvInfoGroup,
-    ) = db.transaction { tx ->
-        tx.getPersonBySSN(ssn)?.let {
-            logger.info {
-                "Dvv modification for ${it.id}: restricted ${restrictedInfoDvvInfoGroup.turvakieltoAktiivinen}"
-            }
-            tx.updatePersonFromVtj(
-                it.copy(
-                    restrictedDetailsEnabled = restrictedInfoDvvInfoGroup.turvakieltoAktiivinen,
-                    restrictedDetailsEndDate =
-                        restrictedInfoDvvInfoGroup.turvaLoppuPv?.asLocalDate(),
-                    streetAddress =
-                        if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
-                        else it.streetAddress,
-                    postalCode =
-                        if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) "" else it.postalCode,
-                    postOffice =
-                        if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) "" else it.postOffice,
-                    municipalityOfResidence =
-                        if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
-                        else it.municipalityOfResidence,
+    ) {
+        val _ = db.transaction { tx ->
+            tx.getPersonBySSN(ssn)?.let {
+                logger.info {
+                    "Dvv modification for ${it.id}: restricted ${restrictedInfoDvvInfoGroup.turvakieltoAktiivinen}"
+                }
+                tx.updatePersonFromVtj(
+                    it.copy(
+                        restrictedDetailsEnabled = restrictedInfoDvvInfoGroup.turvakieltoAktiivinen,
+                        restrictedDetailsEndDate =
+                            restrictedInfoDvvInfoGroup.turvaLoppuPv?.asLocalDate(),
+                        streetAddress =
+                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
+                            else it.streetAddress,
+                        postalCode =
+                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
+                            else it.postalCode,
+                        postOffice =
+                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
+                            else it.postOffice,
+                        municipalityOfResidence =
+                            if (restrictedInfoDvvInfoGroup.turvakieltoAktiivinen) ""
+                            else it.municipalityOfResidence,
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -254,14 +258,16 @@ class DvvModificationsService(
         db: Database.Connection,
         ssn: String,
         ssnDvvInfoGroup: SsnDvvInfoGroup,
-    ) = db.transaction { tx ->
-        tx.getPersonBySSN(ssn)?.let {
-            logger.info { "Dvv modification for ${it.id}: ssn change" }
+    ) {
+        val _ = db.transaction { tx ->
+            tx.getPersonBySSN(ssn)?.let {
+                logger.info { "Dvv modification for ${it.id}: ssn change" }
 
-            if (!ssnDvvInfoGroup.aktiivinenHenkilotunnus.isNullOrEmpty()) {
-                tx.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
-            } else {
-                logger.error { "Dvv modification for ${it.id}: ssn is set to null or empty" }
+                if (!ssnDvvInfoGroup.aktiivinenHenkilotunnus.isNullOrEmpty()) {
+                    tx.addSSNToPerson(it.id, ssnDvvInfoGroup.aktiivinenHenkilotunnus)
+                } else {
+                    logger.error { "Dvv modification for ${it.id}: ssn is set to null or empty" }
+                }
             }
         }
     }

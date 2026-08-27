@@ -596,7 +596,14 @@ class PersonController(
                     tx.blockGuardian(childId, body.guardianId)
                 } else {
                     tx.unblockGuardian(childId, body.guardianId)
-                    personService.getGuardians(tx, user, clock.now(), childId, forceRefresh = true)
+                    val _ =
+                        personService.getGuardians(
+                            tx,
+                            user,
+                            clock.now(),
+                            childId,
+                            forceRefresh = true,
+                        )
                 }
             }
         }

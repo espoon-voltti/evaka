@@ -56,11 +56,12 @@ class TitaniaErrorReport(private val accessControl: AccessControl) {
     ) {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
-                    accessControl.requireAuthorizationFilter(
+                    accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
-                        Action.Unit.READ_TITANIA_ERRORS,
+                        Action.TitaniaError.DELETE,
+                        conflictId,
                     )
                     tx.deleteTitaniaError(conflictId)
                 }

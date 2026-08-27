@@ -503,11 +503,12 @@ class DocumentMetadataUtilsTest {
 
     @Test
     fun `createCreation prefers case process initial date when available`() {
-        val documentMetadata = createTestDocumentMetadata()
-        documentMetadata.copy(
-            createdAtDate = LocalDate.of(2023, 2, 1),
-            createdAtTime = LocalTime.of(12, 10),
-        )
+        val documentMetadata =
+            createTestDocumentMetadata()
+                .copy(
+                    createdAtDate = LocalDate.of(2023, 2, 1),
+                    createdAtTime = LocalTime.of(12, 10),
+                )
 
         // Create case process with different initial date than document metadata
         val caseProcessInitialDate = LocalDateTime.parse("2019-01-15T10:30:00")

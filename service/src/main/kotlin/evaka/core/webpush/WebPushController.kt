@@ -30,7 +30,7 @@ data class WebPushSubscription(
         require(authSecret.size <= 1024) {
             "Expected auth secret to be at most 1024 bytes, got ${authSecret.size}"
         }
-        WebPushCrypto.decodePublicKey(ecdhKey.toByteArray())
+        val _ = WebPushCrypto.decodePublicKey(ecdhKey.toByteArray())
     }
 }
 

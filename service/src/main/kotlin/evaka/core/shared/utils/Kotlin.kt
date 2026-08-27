@@ -4,6 +4,7 @@
 
 package evaka.core.shared.utils
 
+import evaka.core.shared.domain.NotFound
 import java.util.EnumSet
 
 inline fun <T> T.applyIf(condition: Boolean, block: T.() -> Unit): T =
@@ -11,6 +12,13 @@ inline fun <T> T.applyIf(condition: Boolean, block: T.() -> Unit): T =
 
 inline fun <T> T.letIf(condition: Boolean, block: (T) -> T): T =
     if (condition) this.let(block) else this
+
+inline fun <T : Any> T?.assertNotNull(
+    error: (String) -> Exception = ::NotFound,
+    msg: String = "Not found",
+) {
+    if (this == null) throw error(msg)
+}
 
 inline fun <reified T : Enum<T>> Array<out T>.toEnumSet(): EnumSet<T> =
     emptyEnumSet<T>().also { it += this }

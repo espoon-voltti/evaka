@@ -79,7 +79,7 @@ class SystemController(
                     tx.updateLastStrongLogin(now, citizen.id)
                     tx.updateCitizenOnLogin(now, citizen.id)
                     tx.upsertCitizenUser(citizen.id)
-                    personService.getPersonWithChildren(tx, user, now, citizen.id)
+                    val _ = personService.getPersonWithChildren(tx, user, now, citizen.id)
                     citizen
                 }
             }
@@ -124,7 +124,7 @@ class SystemController(
                     val now = clock.now()
                     tx.updateLastWeakLogin(now, citizen.id)
                     tx.updateCitizenOnLogin(now, citizen.id)
-                    personService.getPersonWithChildren(tx, user, now, citizen.id)
+                    val _ = personService.getPersonWithChildren(tx, user, now, citizen.id)
                     CitizenUserIdentity(citizen.id)
                 }
                 .also {
@@ -200,7 +200,7 @@ class SystemController(
                     }
                     tx.updateLastWeakLogin(now, finished.person)
                     tx.updateCitizenOnLogin(now, finished.person)
-                    personService.getPersonWithChildren(tx, user, now, finished.person)
+                    val _ = personService.getPersonWithChildren(tx, user, now, finished.person)
                     finished.passkey.id to CitizenUserIdentity(finished.person)
                 }
                 .let { (passkeyId, identity) ->

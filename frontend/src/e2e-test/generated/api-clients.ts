@@ -2187,9 +2187,9 @@ export async function setPersonEmail(
   request: {
     body: DevPersonEmail
   }
-): Promise<number> {
+): Promise<void> {
   try {
-    const { data: json } = await devClient.request<JsonOf<number>>({
+    const { data: json } = await devClient.request<JsonOf<void>>({
       url: uri`/person-email`.toString(),
       method: 'POST',
       data: request.body satisfies JsonCompatible<DevPersonEmail>

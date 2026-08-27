@@ -373,7 +373,7 @@ fun Database.Transaction.tryTakeWriteLock(
     """
     )
 }
-    .execute()
+    .executeAndReturnCount()
     .let { it > 0 }
 
 fun Database.Transaction.updateChildDocumentContent(
@@ -742,6 +742,7 @@ WHERE new_document.id = ${bind(documentId)} AND cdd.status = 'ACCEPTED'
         .toList<AcceptedChildDecisions>()
 }
 
+@IgnorableReturnValue
 fun Database.Read.endChildDocumentDecisionsWithSubstitutiveDecision(
     childId: ChildId,
     endingDecisionIds: List<ChildDocumentDecisionId>,

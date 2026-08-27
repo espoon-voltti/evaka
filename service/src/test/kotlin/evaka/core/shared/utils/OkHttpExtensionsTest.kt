@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream
 import java.net.URI
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import okhttp3.Credentials
 import okhttp3.MediaType.Companion.toMediaType
@@ -22,7 +23,6 @@ import okio.Buffer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class OkHttpExtensionsTest {
 
@@ -252,7 +252,7 @@ class OkHttpExtensionsTest {
         val request = Request.Builder().url(mockWebServer.url("/test")).build()
 
         val exception =
-            assertThrows<IllegalStateException> {
+            assertFailsWith<IllegalStateException> {
                 client.executeWithRetries(
                     request,
                     remainingTries = 5,
@@ -270,7 +270,7 @@ class OkHttpExtensionsTest {
         val request = Request.Builder().url(mockWebServer.url("/test")).build()
 
         val exception =
-            assertThrows<IllegalStateException> {
+            assertFailsWith<IllegalStateException> {
                 client.executeWithRetries(request, remainingTries = 5)
             }
 
@@ -289,7 +289,7 @@ class OkHttpExtensionsTest {
 
         // With remainingTries=2, it can only retry twice, so it will fail
         val exception =
-            assertThrows<IllegalStateException> {
+            assertFailsWith<IllegalStateException> {
                 client.executeWithRetries(
                     request,
                     remainingTries = 2,
@@ -315,7 +315,7 @@ class OkHttpExtensionsTest {
         val request = Request.Builder().url(mockWebServer.url("/test")).put(body).build()
 
         val exception =
-            assertThrows<IllegalStateException> {
+            assertFailsWith<IllegalStateException> {
                 client.executeWithRetries(request, remainingTries = 5)
             }
 
@@ -388,7 +388,7 @@ class OkHttpExtensionsTest {
     @Test
     fun `buildUrl rejects absolute endpoint paths`() {
         val exception =
-            assertThrows<IllegalArgumentException> {
+            assertFailsWith<IllegalArgumentException> {
                 buildUrl(URI("https://example.com/v1/"), "/absolute/path")
             }
         assertTrue(exception.message?.contains("relative path") ?: false)
@@ -397,7 +397,7 @@ class OkHttpExtensionsTest {
     @Test
     fun `buildUrl rejects endpoints that resolve to a different host`() {
         val exception =
-            assertThrows<IllegalArgumentException> {
+            assertFailsWith<IllegalArgumentException> {
                 buildUrl(URI("https://example.com/v1/"), "https://evil.com/path")
             }
         assertTrue(exception.message?.contains("does not match root URL host") ?: false)
@@ -406,7 +406,7 @@ class OkHttpExtensionsTest {
     @Test
     fun `buildUrl rejects endpoints that escape root URL path via path traversal`() {
         val exception =
-            assertThrows<IllegalArgumentException> {
+            assertFailsWith<IllegalArgumentException> {
                 buildUrl(URI("https://example.com/v1/"), "../../admin/secret")
             }
         assertTrue(exception.message?.contains("escapes root URL path") ?: false)
@@ -477,7 +477,7 @@ class OkHttpExtensionsTest {
         val body = "data".toRequestBody("text/plain".toMediaType())
 
         val exception =
-            assertThrows<IllegalStateException> {
+            assertFailsWith<IllegalStateException> {
                 configuredClient.put<Unit>("upload", body = body)
             }
 
@@ -550,7 +550,7 @@ class OkHttpExtensionsTest {
 
         val configuredClient = configuredClient(jsonMapper)
 
-        configuredClient.get<TestItem>("endpoint", headers = mapOf("X-Custom" to "value"))
+        val _ = configuredClient.get<TestItem>("endpoint", headers = mapOf("X-Custom" to "value"))
 
         val recorded = mockWebServer.takeRequest()
         assertEquals("value", recorded.getHeader("X-Custom"))
@@ -591,7 +591,7 @@ class OkHttpExtensionsTest {
         val configuredClient = configuredClient(jsonMapper)
         val body = "data".toRequestBody("text/plain".toMediaType())
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             configuredClient.post<Unit>("endpoint", body = body, jsonBody = TestItem(1, "x"))
         }
     }
@@ -600,6 +600,6 @@ class OkHttpExtensionsTest {
     fun `post rejects neither body nor jsonBody`() {
         val configuredClient = configuredClient(jsonMapper)
 
-        assertThrows<IllegalArgumentException> { configuredClient.post<Unit>("endpoint") }
+        assertFailsWith<IllegalArgumentException> { configuredClient.post<Unit>("endpoint") }
     }
 }

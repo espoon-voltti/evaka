@@ -13,4 +13,4 @@ package evaka.core.application.utils
  * }.exhaust()
  * ```
  */
-fun <T> T.exhaust(): T = this
+@IgnorableReturnValue fun <T> T.exhaust(): T = this

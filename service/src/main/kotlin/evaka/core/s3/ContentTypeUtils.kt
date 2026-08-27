@@ -43,8 +43,9 @@ enum class ContentTypePattern(
 
 fun checkFileContentType(file: InputStream, allowedContentTypes: Set<ContentTypePattern>): String {
     val detectedContentType = tika.detect(file)
-    allowedContentTypes.find { it.matchesContentType(detectedContentType) }
-        ?: throw BadRequest("Invalid content type $detectedContentType", "INVALID_CONTENT_TYPE")
+    if (allowedContentTypes.none { it.matchesContentType(detectedContentType) }) {
+        throw BadRequest("Invalid content type $detectedContentType", "INVALID_CONTENT_TYPE")
+    }
     return detectedContentType
 }
 

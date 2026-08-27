@@ -148,6 +148,7 @@ WHERE id = ${bind(job.jobId)}
 }
     .execute()
 
+@IgnorableReturnValue
 fun Database.Transaction.removeCompletedJobs(completedBefore: HelsinkiDateTime): Int =
     createUpdate {
         sql(
@@ -157,21 +158,21 @@ WHERE completed_at < ${bind(completedBefore)}
 """
         )
     }
-    .execute()
+    .executeAndReturnCount()
 
-fun Database.Transaction.removeUnclaimedJobs(jobTypes: Collection<AsyncJobType<*>>): Int =
-    createUpdate {
-        sql(
-            """
+fun Database.Transaction.removeUnclaimedJobs(jobTypes: Collection<AsyncJobType<*>>) = createUpdate {
+    sql(
+        """
 DELETE FROM async_job
 WHERE completed_at IS NULL
 AND claimed_at IS NULL
 AND type = ANY(${bind(jobTypes.map { it.name })})
     """
-        )
-    }
+    )
+}
     .execute()
 
+@IgnorableReturnValue
 fun Database.Transaction.removeUncompletedJobs(runBefore: HelsinkiDateTime): Int = createUpdate {
     sql(
         """
@@ -181,7 +182,7 @@ AND run_at < ${bind(runBefore)}
 """
     )
 }
-    .execute()
+    .executeAndReturnCount()
 
 fun Database.Connection.removeOldAsyncJobs(now: HelsinkiDateTime) {
     val completedBefore = now.minusMonths(6)

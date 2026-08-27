@@ -52,11 +52,12 @@ RETURNING id
     return getAssistanceActionById(id)
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insertAssistanceActionOptionRefs(
     actionId: AssistanceActionId,
     options: Set<String>,
-): IntArray =
-    executeBatch(options) {
+) =
+    executeBatchAndReturnCounts(options) {
         sql(
             """
 INSERT INTO assistance_action_option_ref (action_id, option_id)
@@ -114,9 +115,10 @@ fun Database.Transaction.updateAssistanceAction(
     id: AssistanceActionId,
     data: AssistanceActionRequest,
 ): AssistanceAction {
-    createQuery {
-        sql(
-            """
+    val _ =
+        createQuery {
+            sql(
+                """
 UPDATE assistance_action SET 
     start_date = ${bind(data.startDate)},
     end_date = ${bind(data.endDate)},
@@ -126,9 +128,10 @@ UPDATE assistance_action SET
 WHERE id = ${bind(id)}
 RETURNING id
 """
-        )
-    }
-        .exactlyOneOrNull<AssistanceActionId>() ?: throw NotFound("Assistance action $id not found")
+            )
+        }
+            .exactlyOneOrNull<AssistanceActionId>()
+            ?: throw NotFound("Assistance action $id not found")
 
     deleteAssistanceActionOptionRefsByActionId(id, data.actions)
     insertAssistanceActionOptionRefs(id, data.actions)
@@ -155,14 +158,16 @@ RETURNING *
 }
 
 fun Database.Transaction.deleteAssistanceAction(id: AssistanceActionId) {
-    val deleted = execute { sql("DELETE FROM assistance_action WHERE id = ${bind(id)}") }
+    val deleted = executeAndReturnCount {
+        sql("DELETE FROM assistance_action WHERE id = ${bind(id)}")
+    }
     if (deleted == 0) throw NotFound("Assistance action $id not found")
 }
 
 fun Database.Transaction.deleteAssistanceActionOptionRefsByActionId(
     actionId: AssistanceActionId,
     excluded: Set<String>,
-): Int = execute {
+) = execute {
     sql(
         """
 DELETE FROM assistance_action_option_ref

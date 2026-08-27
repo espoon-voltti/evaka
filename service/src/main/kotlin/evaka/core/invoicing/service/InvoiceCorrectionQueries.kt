@@ -102,12 +102,14 @@ data class InvoiceCorrectionInsert(
     val note: String,
 )
 
+@IgnorableReturnValue
 fun Database.Transaction.insertInvoiceCorrection(
     correction: InvoiceCorrectionInsert,
     userId: EvakaUserId,
     now: HelsinkiDateTime,
 ): InvoiceCorrectionId = insertInvoiceCorrections(listOf(correction), userId, now).first()
 
+@IgnorableReturnValue
 fun Database.Transaction.insertInvoiceCorrections(
     corrections: Iterable<InvoiceCorrectionInsert>,
     userId: EvakaUserId,

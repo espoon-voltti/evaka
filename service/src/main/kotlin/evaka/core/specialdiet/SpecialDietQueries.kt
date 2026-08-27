@@ -26,6 +26,7 @@ data class NulledSpecialDiet(
  * in the new list. Returns a map from ChildId to SpecialDiet that was previously set for that
  * child.
  */
+@IgnorableReturnValue
 fun Database.Transaction.resetSpecialDietsNotContainedWithin(
     today: LocalDate,
     specialDietList: List<SpecialDiet>,
@@ -61,11 +62,12 @@ WHERE child.diet_id != ALL (${bind(newSpecialDietIds)})
     return previousDiets
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.resetMealTexturesNotContainedWithin(
     mealTextureList: List<MealTexture>
 ): Int {
     val newMealTextureIds = mealTextureList.map { it.id }
-    val affectedRows = execute {
+    val affectedRows = executeAndReturnCount {
         sql(
             "UPDATE child SET meal_texture_id = null WHERE meal_texture_id != ALL (${bind(newMealTextureIds)})"
         )
@@ -74,9 +76,10 @@ fun Database.Transaction.resetMealTexturesNotContainedWithin(
 }
 
 /** Replaces special_diet list with the given list. Returns count of removed diets */
+@IgnorableReturnValue
 fun Database.Transaction.setSpecialDiets(specialDietList: List<SpecialDiet>): Int {
     val newSpecialDietIds = specialDietList.map { it.id }
-    val deletedDietCount = execute {
+    val deletedDietCount = executeAndReturnCount {
         sql("DELETE FROM special_diet WHERE id != ALL (${bind(newSpecialDietIds)})")
     }
     executeBatch(specialDietList) {
@@ -95,9 +98,10 @@ ON CONFLICT (id) DO UPDATE SET
     return deletedDietCount
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.setMealTextures(mealTextures: List<MealTexture>): Int {
     val newTextureIds = mealTextures.map { it.id }
-    val deletedTextureCount = execute {
+    val deletedTextureCount = executeAndReturnCount {
         sql("DELETE FROM meal_texture WHERE id != ALL (${bind(newTextureIds)})")
     }
     executeBatch(mealTextures) {

@@ -71,6 +71,7 @@ ORDER BY n.created
 }
     .toList()
 
+@IgnorableReturnValue
 fun Database.Transaction.createApplicationNote(
     now: HelsinkiDateTime,
     applicationId: ApplicationId,

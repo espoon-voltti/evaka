@@ -11,8 +11,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import tools.jackson.databind.exc.InvalidFormatException
 
 class HelsinkiDateTimeTest {
@@ -62,7 +62,7 @@ class HelsinkiDateTimeTest {
 
     @Test
     fun `a JSON timestamp with no offset throws an error`() {
-        assertThrows<InvalidFormatException> {
+        assertFailsWith<InvalidFormatException> {
             jsonMapper.readValue("\"2021-04-14T13:02:00\"", HelsinkiDateTime::class.java)
         }
     }

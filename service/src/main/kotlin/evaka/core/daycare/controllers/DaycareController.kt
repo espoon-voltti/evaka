@@ -262,7 +262,7 @@ class DaycareController(private val accessControl: AccessControl) {
                         Action.Unit.SET_SERVICE_WORKER_NOTE,
                         daycareId,
                     )
-                    tx.execute {
+                    tx.executeAndReturnCount {
                             sql(
                                 """
                     UPDATE daycare
@@ -867,8 +867,9 @@ class DaycareController(private val accessControl: AccessControl) {
     ): Map<DaycareId, UnitOperationPeriod> {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
-                    tx.getUnitOperationPeriods(unitIds)
+                    val filter =
+                        accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
+                    tx.getUnitOperationPeriods(unitIds, filter)
                 }
             }
             .also { response ->

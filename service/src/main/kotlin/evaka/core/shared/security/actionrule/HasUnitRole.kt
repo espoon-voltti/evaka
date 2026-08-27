@@ -42,6 +42,7 @@ import evaka.core.shared.PlacementId
 import evaka.core.shared.PreschoolAssistanceId
 import evaka.core.shared.ServiceApplicationId
 import evaka.core.shared.ServiceNeedId
+import evaka.core.shared.TitaniaConflictId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.QuerySql
@@ -829,6 +830,19 @@ JOIN calendar_event ce ON ce.id = cea.calendar_event_id
 JOIN calendar_event_time cet ON cet.calendar_event_id = ce.id
 JOIN daycare_acl acl ON acl.daycare_id = cea.unit_id
 WHERE employee_id = ${bind(user.id)}
+            """
+            )
+        }
+
+    fun inUnitOfTitaniaErrorEmployee() =
+        rule<TitaniaConflictId> { user, _ ->
+            sql(
+                """
+SELECT te.id, acl.role, acl.daycare_id AS unit_id
+FROM titania_errors te
+JOIN daycare_acl employee_acl ON employee_acl.employee_id = te.employee_id
+JOIN daycare_acl acl ON acl.daycare_id = employee_acl.daycare_id
+WHERE acl.employee_id = ${bind(user.id)}
             """
             )
         }

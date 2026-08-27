@@ -39,6 +39,7 @@ data class AbsenceUpsert(
 )
 
 /** Fails if any of the absences already exists */
+@IgnorableReturnValue
 fun Database.Transaction.insertAbsences(
     now: HelsinkiDateTime,
     userId: EvakaUserId,
@@ -77,6 +78,7 @@ RETURNING id
         .toList()
 
 /** If the absence already exists, updates only if was generated */
+@IgnorableReturnValue
 fun Database.Transaction.upsertGeneratedAbsences(
     now: HelsinkiDateTime,
     absences: List<AbsenceUpsert>,
@@ -122,6 +124,7 @@ data class FullDayAbsenseUpsert(
  * Creates absences for all absences categories of the child's placement on the given date ("full
  * day absence"). Does nothing if an absence already exists on the given date.
  */
+@IgnorableReturnValue
 fun Database.Transaction.upsertFullDayAbsences(
     userId: EvakaUserId,
     now: HelsinkiDateTime,
@@ -230,6 +233,7 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .toList()
 
+@IgnorableReturnValue
 fun Database.Transaction.deleteOldGeneratedAbsencesInRange(
     now: HelsinkiDateTime,
     childId: ChildId,

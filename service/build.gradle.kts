@@ -218,14 +218,18 @@ allprojects {
             jvmTarget = JvmTarget.fromTarget(libs.versions.java.get())
             allWarningsAsErrors = true
             freeCompilerArgs =
-                listOf(
-                    // Workaround for a bug that will be fixed in the next Kotlin release
-                    // https://youtrack.jetbrains.com/issue/KT-78352
-                    "-Xwarning-level=IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE:disabled",
-
+                listOfNotNull(
                     // This will become the default in the future
                     // https://kotlinlang.org/docs/whatsnew2020.html#data-class-copy-function-to-have-the-same-visibility-as-constructor
                     "-Xconsistent-data-class-copy-visibility",
+
+                    // Warnings from discarded return values
+                    // https://kotlinlang.org/docs/unused-return-value-checker.html
+                    if (name.lowercase().contains("integrationtest")) null
+                    else {
+                        "-Xreturn-value-checker=full"
+                    },
+                    "-Xallow-returns-result-of",
                 )
         }
     }

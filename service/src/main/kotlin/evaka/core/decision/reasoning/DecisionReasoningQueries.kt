@@ -95,7 +95,7 @@ WHERE id = ${bind(id)} AND ready = false
 """
         )
     }
-        .execute()
+        .executeAndReturnCount()
     if (updated == 0) {
         throw NotFound("Generic reasoning $id not found in expected state (not ready)")
     }
@@ -211,7 +211,7 @@ WHERE id = ${bind(id)} AND removed_at IS NULL
 """
         )
     }
-        .execute()
+        .executeAndReturnCount()
     if (updated == 0) {
         throw NotFound("Individual reasoning $id not found")
     }

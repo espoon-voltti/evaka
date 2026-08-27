@@ -96,13 +96,13 @@ WHERE id = ${bind(id)}
 """
     )
 }
-    .execute()
-    .also {
+    .executeAndReturnCount()
+    .let {
         if (it != 1) throw BadRequest("Could not update validity of foster_parent row with id $id")
     }
 
 fun Database.Transaction.deleteFosterParentRelationship(id: FosterParentId) = createUpdate {
     sql("DELETE FROM foster_parent WHERE id = ${bind(id)}")
 }
-    .execute()
-    .also { if (it != 1) throw BadRequest("Could not delete foster_parent row with id $id") }
+    .executeAndReturnCount()
+    .let { if (it != 1) throw BadRequest("Could not delete foster_parent row with id $id") }

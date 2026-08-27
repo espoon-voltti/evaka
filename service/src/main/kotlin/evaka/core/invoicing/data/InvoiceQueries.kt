@@ -470,6 +470,7 @@ fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
     createUpdate { sql("SELECT id FROM invoice WHERE id = ANY(${bind(ids)}) FOR UPDATE") }.execute()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.insertDraftInvoices(
     invoices: List<DraftInvoice>,
     status: InvoiceStatus,

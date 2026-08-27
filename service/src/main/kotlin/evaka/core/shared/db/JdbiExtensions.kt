@@ -268,10 +268,15 @@ private class Parser(private var text: CharSequence) {
             }
         }
         val result = mutableListOf<T>()
-        while (true) {
-            when (peekChar()) {
-                ',' -> parseChar()
-                '}' -> break
+        while (peekChar() != '}') {
+            if (result.isNotEmpty()) {
+                when (val char = parseChar()) {
+                    ',' -> {}
+
+                    else -> {
+                        error("Expected comma, got $char")
+                    }
+                }
             }
             result.add(parseRange(this))
         }

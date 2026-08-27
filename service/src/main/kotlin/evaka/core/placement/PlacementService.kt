@@ -52,6 +52,7 @@ data class ApplicationServiceNeed(
     val placementType: PlacementType,
 )
 
+@IgnorableReturnValue
 fun createPlacements(
     tx: Database.Transaction,
     childId: ChildId,
@@ -107,6 +108,7 @@ fun createPlacements(
     }
 }
 
+@IgnorableReturnValue
 fun createPlacement(
     tx: Database.Transaction,
     childId: ChildId,
@@ -141,6 +143,7 @@ fun createPlacement(
     )
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.updatePlacement(
     id: PlacementId,
     startDate: LocalDate,
@@ -216,6 +219,7 @@ fun Database.Transaction.updatePlacement(
     return old
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.checkAndCreateGroupPlacement(
     daycarePlacementId: PlacementId,
     groupId: GroupId,

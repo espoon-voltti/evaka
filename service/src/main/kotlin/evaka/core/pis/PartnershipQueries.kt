@@ -116,6 +116,7 @@ AND (${bind(includeConflicts)} OR fp.conflict = false)
         .toList(toPartner("p"))
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.createPartnership(
     personId1: PersonId,
     personId2: PersonId,
@@ -173,6 +174,7 @@ fun Database.Transaction.createPartnership(
         .exactlyOne(toPartnership("p1", "p2"))
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.updatePartnershipDuration(
     id: PartnershipId,
     startDate: LocalDate,
@@ -210,6 +212,7 @@ fun Database.Transaction.retryPartnership(
         .execute()
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.deletePartnership(id: PartnershipId): Boolean {
     return createQuery {
         sql(

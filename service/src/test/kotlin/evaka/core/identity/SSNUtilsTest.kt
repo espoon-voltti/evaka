@@ -6,10 +6,10 @@ package evaka.core.identity
 
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class SSNUtilsTest {
     @Test
@@ -26,7 +26,7 @@ class SSNUtilsTest {
 
     @Test
     fun `Invalid ssn century marker throws exception`() {
-        assertThrows<IllegalArgumentException> { getDobFromSsn("150715J0101") }
+        assertFailsWith<IllegalArgumentException> { getDobFromSsn("150715J0101") }
     }
 
     @Test

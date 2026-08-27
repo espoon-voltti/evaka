@@ -121,8 +121,9 @@ fun Database.Transaction.markEmailVerificationSent(
     }
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.deleteExpiredEmailVerifications(now: HelsinkiDateTime): Int =
     createUpdate {
         sql("DELETE FROM person_email_verification WHERE expires_at <= ${bind(now)}")
     }
-    .execute()
+    .executeAndReturnCount()

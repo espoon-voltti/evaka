@@ -19,9 +19,13 @@ class MockEmailClient : EmailClient {
         val emails: List<Email>
             get() = lock.read { data.toList() }
 
-        fun clear() = lock.write { data.clear() }
+        fun clear() {
+            lock.write { data.clear() }
+        }
 
-        fun addEmail(email: Email) = lock.write { data.add(email) }
+        fun addEmail(email: Email) {
+            lock.write { data.add(email) }
+        }
 
         fun getEmail(toAddress: String): Email? = lock.read {
             emails.find { email -> email.toAddress == toAddress }

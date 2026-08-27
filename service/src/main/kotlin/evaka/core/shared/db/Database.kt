@@ -8,6 +8,9 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.shared.withSpan
 import io.opentelemetry.api.trace.Tracer
 import java.time.Duration
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
@@ -56,7 +59,11 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
      *
      * Throws `IllegalStateException` if a connection is already open
      */
-    fun <T> connect(f: (db: Connection) -> T): T = connectWithManualLifecycle().use(f)
+    @OptIn(ExperimentalContracts::class)
+    fun <T> connect(f: (db: Connection) -> T): T {
+        contract { returnsResultOf(f) }
+        return connectWithManualLifecycle().use(f)
+    }
 
     /**
      * Opens a new database connection and returns it. The connection *must be closed after use*.
@@ -125,7 +132,9 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
          * Throws `IllegalStateException` if this database connection is already in read mode or a
          * transaction.
          */
+        @OptIn(ExperimentalContracts::class)
         fun <T> transaction(f: (db: Transaction) -> T): T {
+            contract { returnsResultOf(f) }
             threadId.assertCurrentThread()
             val handle = this.getRawHandle()
             check(!handle.isInTransaction) { "Already in a transaction" }
@@ -137,17 +146,19 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
                 .also { hooks.afterCommit.forEach { it() } }
         }
 
-        fun executeOutsideTransaction(f: QuerySql.Builder.() -> QuerySql): Int {
+        @OptIn(ExperimentalContracts::class)
+        fun executeOutsideTransaction(f: QuerySql.Builder.() -> QuerySql) {
+            contract { callsInPlace(f, InvocationKind.EXACTLY_ONCE) }
             threadId.assertCurrentThread()
             val handle = this.getRawHandle()
             check(!handle.isInTransaction) { "Already in a transaction" }
-            return tracer.withSpan("db.executeOutsideTransaction read/write") {
-                val fragment = QuerySql.Builder().run { f(this) }
+            val fragment = QuerySql.Builder().run { f(this) }
+            tracer.withSpan("db.executeOutsideTransaction read/write") {
                 val raw = handle.createUpdate(fragment.sql.toString())
                 for ((idx, binding) in fragment.bindings.withIndex()) {
                     raw.bindByType(idx, binding.value, binding.type)
                 }
-                raw.execute()
+                val _ = raw.execute()
             }
         }
 
@@ -176,11 +187,13 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             return Query(raw)
         }
 
-        fun setLockTimeout(duration: Duration) =
+        fun setLockTimeout(duration: Duration) {
             handle.execute("SET LOCAL lock_timeout = '${duration.toMillis()}ms'")
+        }
 
-        fun setStatementTimeout(duration: Duration) =
+        fun setStatementTimeout(duration: Duration) {
             handle.execute("SET LOCAL statement_timeout = '${duration.toMillis()}ms'")
+        }
     }
 
     /**
@@ -206,8 +219,12 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             return Update(raw)
         }
 
-        fun execute(f: QuerySql.Builder.() -> QuerySql): Int =
-            createUpdate(QuerySql.Builder().run { f(this) }).execute()
+        fun execute(f: QuerySql.Builder.() -> QuerySql) {
+            val _ = executeAndReturnCount(f)
+        }
+
+        fun executeAndReturnCount(f: QuerySql.Builder.() -> QuerySql): Int =
+            createUpdate(QuerySql.Builder().run { f(this) }).executeAndReturnCount()
 
         fun <R> prepareBatch(f: BatchSql.Builder<R>.() -> BatchSql<R>): PreparedBatch<R> {
             val batch = BatchSql.Builder<R>().run { f(this) }
@@ -225,15 +242,29 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             f: BatchSql.Builder<R>.() -> BatchSql<R>,
         ): PreparedBatch<R> = prepareBatch(f).addAll(rows)
 
+        fun <R> executeBatchAndReturnCounts(
+            rows: Iterable<R>,
+            f: BatchSql.Builder<R>.() -> BatchSql<R>,
+        ): IntArray = prepareBatch(f).addAll(rows).executeAndReturnCounts()
+
+        fun <R> executeBatchAndReturnCounts(
+            rows: Sequence<R>,
+            f: BatchSql.Builder<R>.() -> BatchSql<R>,
+        ): IntArray = prepareBatch(f).addAll(rows).executeAndReturnCounts()
+
         fun <R> executeBatch(
             rows: Iterable<R>,
             f: BatchSql.Builder<R>.() -> BatchSql<R>,
-        ): IntArray = prepareBatch(f).addAll(rows).execute()
+        ) {
+            val _ = executeBatchAndReturnCounts(rows, f)
+        }
 
         fun <R> executeBatch(
             rows: Sequence<R>,
             f: BatchSql.Builder<R>.() -> BatchSql<R>,
-        ): IntArray = prepareBatch(f).addAll(rows).execute()
+        ) {
+            val _ = executeBatchAndReturnCounts(rows, f)
+        }
 
         /**
          * Registers a function to be called after this transaction has been committed successfully.
@@ -245,7 +276,9 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             hooks.afterCommit += f
         }
 
+        @OptIn(ExperimentalContracts::class)
         fun <T> subTransaction(f: () -> T): T {
+            contract { returnsResultOf(f) }
             val savepointName = nextSavepoint()
             handle.savepoint(savepointName)
             val result =
@@ -445,7 +478,11 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         SqlStatement<Update>() {
         override fun self(): Update = this
 
-        fun execute() = raw.execute()
+        fun execute() {
+            val _ = executeAndReturnCount()
+        }
+
+        fun executeAndReturnCount() = raw.execute()
 
         fun executeAndReturnGeneratedKeys(): UpdateResult =
             UpdateResult(raw.executeAndReturnGeneratedKeys())
@@ -454,15 +491,16 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
             notFoundMsg: String = "Not found",
             foundMultipleMsg: String = "Found multiple",
         ) {
-            val rows = this.execute()
+            val rows = this.executeAndReturnCount()
             if (rows == 0) throw NotFound(notFoundMsg)
             if (rows > 1) throw Error(foundMultipleMsg)
         }
 
-        fun updateNoneOrOne(foundMultipleMsg: String = "Found multiple"): Int {
-            val rows = this.execute()
+        @IgnorableReturnValue
+        fun updateNoneOrOne(foundMultipleMsg: String = "Found multiple"): Boolean {
+            val rows = this.executeAndReturnCount()
             if (rows > 1) throw Error(foundMultipleMsg)
-            return rows
+            return rows == 1
         }
     }
 
@@ -471,7 +509,11 @@ class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
         private val raw: org.jdbi.v3.core.statement.PreparedBatch,
         private val bindings: List<BatchBinding<R, *>>,
     ) {
-        fun execute(): IntArray = raw.execute()
+        fun execute() {
+            val _ = executeAndReturnCounts()
+        }
+
+        fun executeAndReturnCounts() = raw.execute()
 
         fun executeAndReturn(): UpdateResult = UpdateResult(raw.executePreparedBatch())
 

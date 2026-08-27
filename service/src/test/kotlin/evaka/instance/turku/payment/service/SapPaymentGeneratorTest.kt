@@ -43,9 +43,9 @@ class SapPaymentGeneratorTest {
         whenever(mockIdocGenerator.generate(any(), any(), any())).thenReturn(FIDCCP02.IDOC())
         whenever(mockMarshaller.marshal(any())).thenReturn("XML")
 
-        sapPaymentGenerator.generatePayments(listOf(payment), mockFetcher)
+        val _ = sapPaymentGenerator.generatePayments(listOf(payment), mockFetcher)
 
-        verify(mockIdocGenerator).generate(payment, 4510, "fi")
+        val _ = verify(mockIdocGenerator).generate(payment, 4510, "fi")
     }
 
     @Test

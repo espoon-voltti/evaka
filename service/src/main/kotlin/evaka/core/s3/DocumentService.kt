@@ -31,6 +31,7 @@ interface DocumentService {
     fun responseInline(location: DocumentLocation, fileName: String?) =
         response(location, ContentDisposition.inline().filename(fileName, Charsets.UTF_8).build())
 
+    @IgnorableReturnValue
     fun upload(key: DocumentKey, bytes: ByteArray, contentType: String): DocumentLocation =
         bytes.inputStream().use { stream ->
             val location = locate(key)

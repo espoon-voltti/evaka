@@ -48,9 +48,9 @@ internal class OuluInvoiceClientTest {
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        ouluInvoiceClient.send(mockNow, invoiceList)
+        val _ = ouluInvoiceClient.send(mockNow, invoiceList)
 
-        verify(invoiceGenerator).generateInvoice(invoiceList)
+        val _ = verify(invoiceGenerator).generateInvoice(invoiceList)
     }
 
     @Test
@@ -65,7 +65,7 @@ internal class OuluInvoiceClientTest {
             )
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        ouluInvoiceClient.send(mockNow, invoiceList)
+        val _ = ouluInvoiceClient.send(mockNow, invoiceList)
 
         val captor = argumentCaptor<InputStream>()
         verify(sftpClient).put(captor.capture(), eq(fileName))
@@ -80,7 +80,7 @@ internal class OuluInvoiceClientTest {
             StringInvoiceGenerator.InvoiceGeneratorResult(InvoiceIntegrationClient.SendResult(), "")
         whenever(invoiceGenerator.generateInvoice(invoiceList)).thenReturn(invoiceGeneratorResult)
 
-        ouluInvoiceClient.send(mockNow, invoiceList)
+        val _ = ouluInvoiceClient.send(mockNow, invoiceList)
 
         verify(sftpClient, never()).put(any<InputStream>(), any())
     }
@@ -187,7 +187,7 @@ internal class OuluInvoiceClientTest {
                 )
             )
 
-        ouluInvoiceClient.send(mockNow, invoiceList)
+        val _ = ouluInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(output).contains("Successfully sent 1 invoices and created 1 manual invoice")
     }
@@ -207,7 +207,7 @@ internal class OuluInvoiceClientTest {
             )
 
         doThrow(RuntimeException::class).whenever(sftpClient).put(any<InputStream>(), any<String>())
-        ouluInvoiceClient.send(mockNow, invoiceList)
+        val _ = ouluInvoiceClient.send(mockNow, invoiceList)
 
         assertThat(output).contains("Failed to send 2 invoices")
     }
@@ -216,7 +216,6 @@ internal class OuluInvoiceClientTest {
     fun `should format the sent file name correctly`() {
         val validInvoice = validInvoice()
         val invoiceList = listOf(validInvoice)
-        val proEInvoice1 = "xx"
         whenever(invoiceGenerator.generateInvoice(invoiceList))
             .thenReturn(
                 StringInvoiceGenerator.InvoiceGeneratorResult(
@@ -224,7 +223,7 @@ internal class OuluInvoiceClientTest {
                     "xx",
                 )
             )
-        val sendResult = ouluInvoiceClient.send(mockNow, invoiceList)
+        val _ = ouluInvoiceClient.send(mockNow, invoiceList)
 
         verify(sftpClient).put(any<InputStream>(), eq("proe-20221012-133456.txt"))
     }

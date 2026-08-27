@@ -22,12 +22,14 @@ class AuditContext {
     var minDate: LocalDate? = null
         private set
 
+    @IgnorableReturnValue
     inline fun <reified T : DatabaseTable> add(id: Id<T>): AuditContext {
         val key = T::class.simpleName!!.replaceFirstChar { it.lowercase() } + "Id"
         ids.getOrPut(key) { mutableSetOf() }.add(id)
         return this
     }
 
+    @IgnorableReturnValue
     inline fun <reified T : DatabaseTable> add(ids: Collection<Id<T>>): AuditContext {
         if (ids.isEmpty()) return this
         val key = T::class.simpleName!!.replaceFirstChar { it.lowercase() } + "Id"
@@ -42,6 +44,7 @@ class AuditContext {
      *
      * Never put sensitive data (free text, personal details, SSNs, notes) here.
      */
+    @IgnorableReturnValue
     fun addMeta(key: String, value: Any?): AuditContext {
         metaEntries[key] = value
         return this
@@ -53,6 +56,7 @@ class AuditContext {
      * earlier than the current one. `null` is ignored, so callers can pass nullable entity dates
      * directly.
      */
+    @IgnorableReturnValue
     fun observeDate(date: LocalDate?): AuditContext {
         if (date == null) return this
         val current = minDate

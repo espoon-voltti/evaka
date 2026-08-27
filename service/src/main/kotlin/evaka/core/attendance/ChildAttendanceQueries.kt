@@ -27,6 +27,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import org.jdbi.v3.core.mapper.Nested
 
+@IgnorableReturnValue
 fun Database.Transaction.insertAttendance(
     childId: ChildId,
     unitId: DaycareId,
@@ -456,6 +457,7 @@ fun Database.Transaction.deleteAttendance(id: ChildAttendanceId) {
     }
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate): List<AbsenceId> =
     createUpdate {
         sql(
@@ -469,6 +471,7 @@ fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate)
     .executeAndReturnGeneratedKeys()
     .toList()
 
+@IgnorableReturnValue
 fun Database.Transaction.deleteAttendancesByDate(
     childId: ChildId,
     date: LocalDate,
@@ -480,6 +483,7 @@ fun Database.Transaction.deleteAttendancesByDate(
     .executeAndReturnGeneratedKeys()
     .toList()
 
+@IgnorableReturnValue
 fun Database.Transaction.deleteAbsencesByFiniteDateRange(
     childId: ChildId,
     dateRange: FiniteDateRange,

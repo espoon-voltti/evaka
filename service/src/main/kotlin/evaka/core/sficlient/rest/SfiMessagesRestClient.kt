@@ -285,7 +285,7 @@ class SfiMessagesRestClient(
                 logger.info { "Pending password found -> testing if it's valid" }
                 val gotAccessToken =
                     try {
-                        getAccessToken(pending.password)
+                        val _ = getAccessToken(pending.password)
                         true
                     } catch (e: Exception) {
                         logger.error(e) { "Failed to get access token with pending password" }

@@ -105,9 +105,10 @@ class ServiceApplicationControllerCitizen(private val accessControl: AccessContr
                     val placement =
                         tx.getPlacementsForChildDuring(childId, date, date).firstOrNull()
                             ?: return@read emptyList()
-                    tx.getDaycare(placement.unitId)?.takeIf {
-                        it.enabledPilotFeatures.contains(PilotFeature.SERVICE_APPLICATIONS)
-                    } ?: return@read emptyList()
+                    val _ =
+                        tx.getDaycare(placement.unitId)?.takeIf {
+                            it.enabledPilotFeatures.contains(PilotFeature.SERVICE_APPLICATIONS)
+                        } ?: return@read emptyList()
 
                     tx.getServiceNeedOptions()
                         .filter {

@@ -58,7 +58,7 @@ fun isValidSSN(ssn: String?): Boolean {
 
 private fun containsValidDate(ssn: String): Boolean =
     try {
-        getDobFromSsn(ssn)
+        val _ = getDobFromSsn(ssn)
         true
     } catch (e: Exception) {
         false
