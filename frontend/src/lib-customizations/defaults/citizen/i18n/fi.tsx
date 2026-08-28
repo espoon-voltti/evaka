@@ -325,6 +325,9 @@ export default {
     },
     installSuggestion: {
       title: 'Tärkeät ilmoitukset laitteeseen'
+    },
+    homeScreenSection: {
+      title: 'Lisää eVaka kotinäytölle'
     }
   },
   errorPage: {
@@ -2151,6 +2154,10 @@ export default {
       ADD_PHONE: {
         title: 'Lisää puhelinnumero',
         description: 'Sinut tavoitetaan kiireellisissä asioissa.'
+      },
+      ADD_TO_HOME_SCREEN: {
+        title: 'Lisää eVaka kotinäytölle',
+        description: 'Saat muistutukset suoraan puhelimeesi.'
       },
       ADD_WEAK_LOGIN: {
         title: 'Luo kirjautumistapa',

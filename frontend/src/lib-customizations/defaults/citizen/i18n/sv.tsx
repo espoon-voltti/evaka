@@ -321,6 +321,9 @@ const sv: Translations = {
     },
     installSuggestion: {
       title: 'Viktiga aviseringar till telefonen'
+    },
+    homeScreenSection: {
+      title: 'Lägg till eVaka på hemskärmen'
     }
   },
   errorPage: {
@@ -2140,6 +2143,10 @@ const sv: Translations = {
       ADD_PHONE: {
         title: 'Lägg till ett telefonnummer',
         description: 'Du kan nås i brådskande ärenden.'
+      },
+      ADD_TO_HOME_SCREEN: {
+        title: 'Lägg till eVaka på hemskärmen',
+        description: 'Du får påminnelser direkt till din telefon.'
       },
       ADD_WEAK_LOGIN: {
         title: 'Lägg till en inloggningsmetod',

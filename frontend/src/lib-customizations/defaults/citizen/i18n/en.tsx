@@ -322,6 +322,9 @@ const en: Translations = {
     },
     installSuggestion: {
       title: 'Important notifications on your phone'
+    },
+    homeScreenSection: {
+      title: 'Add eVaka to the home screen'
     }
   },
   errorPage: {
@@ -1880,6 +1883,10 @@ const en: Translations = {
       ADD_PHONE: {
         title: 'Add a phone number',
         description: 'You can be reached in urgent matters.'
+      },
+      ADD_TO_HOME_SCREEN: {
+        title: 'Add eVaka to the home screen',
+        description: 'You get reminders straight to your phone.'
       },
       ADD_WEAK_LOGIN: {
         title: 'Add a login method',

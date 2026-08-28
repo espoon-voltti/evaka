@@ -211,3 +211,69 @@ test.describe('Citizen PWA install suggestion on the calendar', () => {
     await expect(page.findByDataQa('pwa-install-suggestion')).toBeInViewport()
   })
 })
+
+test.describe('Home screen section in personal details', () => {
+  test('shows the instructions after the email login section', async ({
+    newEvakaPage
+  }) => {
+    await setUpFamily(true)
+    const page = await newEvakaPage({
+      mockedTime,
+      userAgent: iosUserAgent,
+      hasTouch: true
+    })
+    await enduserLogin(page, testAdult, '/personal-details')
+
+    await expect(page.findByDataQa('home-screen-section')).toBeVisible()
+    await expect(page.findByDataQa('login-details-section')).toBeVisible()
+
+    const order = await page.page.evaluate(() => {
+      const login = document.querySelector('[data-qa="login-details-section"]')
+      const home = document.querySelector('[data-qa="home-screen-section"]')
+      if (!login || !home) return 'missing'
+      return login.compareDocumentPosition(home) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+        ? 'after'
+        : 'before'
+    })
+    expect(order).toBe('after')
+
+    await page.findByDataQa('home-screen-action').click()
+    await expect(page.findByDataQa('home-screen-section')).toContainText(
+      'Toimi näin'
+    )
+  })
+
+  test('is offered as a task pointing at the instructions', async ({
+    newEvakaPage
+  }) => {
+    await setUpFamily(true)
+    const page = await newEvakaPage({
+      mockedTime,
+      userAgent: iosUserAgent,
+      hasTouch: true
+    })
+    await enduserLogin(page, testAdult, '/personal-details')
+
+    const task = page.findByDataQa('task-add-to-home-screen')
+    await expect(task).toBeVisible()
+    await expect(task).toContainText('Saat muistutukset suoraan puhelimeesi.')
+
+    await task.click()
+    await expect(page.findByDataQa('home-screen-section')).toBeVisible()
+  })
+
+  test('offers no task and no section on desktop', async ({ evaka }) => {
+    await setUpFamily(true)
+    await enduserLogin(evaka, testAdult, '/personal-details')
+
+    await expect(evaka.findByDataQa('task-add-to-home-screen')).toBeHidden()
+  })
+
+  test('is not shown on desktop', async ({ evaka }) => {
+    await setUpFamily(true)
+    await enduserLogin(evaka, testAdult, '/personal-details')
+
+    await expect(evaka.findByDataQa('home-screen-section')).toBeHidden()
+  })
+})

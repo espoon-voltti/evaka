@@ -31,6 +31,7 @@ import useTitle from '../useTitle'
 
 import ContactDetailsSection from './ContactDetailsSection'
 import FamilySizeSection from './FamilySizeSection'
+import HomeScreenSection from './HomeScreenSection'
 import LoginDetailsSection from './LoginDetailsSection'
 import NotificationSettingsSection from './NotificationSettingsSection'
 import PasskeysSection from './PasskeysSection'
@@ -131,6 +132,7 @@ export default React.memo(function PersonalDetails() {
   const contactDetailsSection = useRef<HTMLDivElement>(null)
   const loginDetailsSection = useRef<HTMLDivElement>(null)
   const passkeysSection = useRef<HTMLDivElement>(null)
+  const homeScreenSection = useRef<HTMLDivElement>(null)
   const emailVerificationStatus = useQueryResult(emailVerificationStatusQuery())
   const passwordConstraints = useQueryResult(passwordConstraintsQuery())
   const family = useQueryResult(familyQuery())
@@ -146,6 +148,7 @@ export default React.memo(function PersonalDetails() {
     contact: contactDetailsSection,
     login: loginDetailsSection,
     passkeys: passkeysSection,
+    homeScreen: homeScreenSection,
     notifications: notificationSettingsSection
   }
 
@@ -281,6 +284,8 @@ export default React.memo(function PersonalDetails() {
               )
           )}
         </ScrollTargetArea>
+
+        <HomeScreenSection ref={homeScreenSection} />
 
         <Gap $size="s" />
 
