@@ -51,12 +51,6 @@ dependencies {
         api(libs.ktlint.rule.engine.core)
         api(libs.ktlint.test)
 
-        // Groovy 5.0.4 has a regression causing NPE in thymeleaf-layout-dialect.
-        // Pin to 5.0.3 until Groovy 5.0.5 is released with the fix.
-        // https://github.com/spring-projects/spring-boot/issues/49277
-        // Remove the below line altogether when Spring Boot with Groovy 5.0.5 is available
-        api("org.apache.groovy:groovy") { version { strictly("5.0.3") } }
-
         // These constraints are needed for CVE fixes
         api("org.apache.httpcomponents.client5:httpclient5:5.6.4")
         api("org.apache.httpcomponents.core5:httpcore5:5.4.3")
