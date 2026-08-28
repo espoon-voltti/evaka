@@ -75,6 +75,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.beans.factory.annotation.Autowired
 
 class AttendanceReservationsControllerIntegrationTest :
@@ -2257,6 +2259,70 @@ class AttendanceReservationsControllerIntegrationTest :
         }
     }
 
+    @ParameterizedTest
+    @EnumSource(names = ["TEMPORARY_DAYCARE", "TEMPORARY_DAYCARE_PART_DAY"])
+    fun `confirmed day statistics count temporary daycare children as present`(
+        placementType: PlacementType
+    ) {
+        val daycareId = db.transaction { tx ->
+            val areaId = tx.insert(DevCareArea(name = "Temporary Stats Area", shortName = "area"))
+            val daycareId =
+                tx.insert(
+                    DevDaycare(
+                        areaId = areaId,
+                        operationTimes =
+                            listOf(fullDay, fullDay, fullDay, fullDay, fullDay, null, null),
+                    )
+                )
+            tx.insertDaycareAclRow(daycareId, employee.id, UserRole.STAFF)
+            daycareId
+        }
+        val groupId = db.transaction { it.insert(DevDaycareGroup(daycareId = daycareId)) }
+        val mobileDeviceId = insertMobileDevice(daycareId)
+        val confirmedRangeStart =
+            getConfirmedRange(clock.now(), featureConfig.citizenReservationThresholdHours).start
+        val range = FiniteDateRange(confirmedRangeStart, confirmedRangeStart.plusDays(6))
+
+        db.transaction { insertChildData(it, range, daycareId, groupId, ShiftCareType.NONE) }
+        val temporaryChildId = db.transaction { tx ->
+            insertTemporaryChildData(tx, range, daycareId, groupId, placementType)
+        }
+
+        getConfirmedDailyReservationStats(daycareId, mobileDeviceId, clock).forEach { day ->
+            assertEquals(
+                2,
+                day.groupStatistics.sumOf { it.presentCount },
+                "Expected 2 present children on ${day.date}",
+            )
+            assertEquals(
+                0,
+                day.groupStatistics.sumOf { it.absentCount },
+                "Expected 0 absent children on ${day.date}",
+            )
+        }
+
+        // a billable absence is the only thing that makes a temporary child absent
+        db.transaction { tx ->
+            tx.insert(
+                DevAbsence(
+                    childId = temporaryChildId,
+                    date = range.start,
+                    absenceType = AbsenceType.OTHER_ABSENCE,
+                    modifiedAt = HelsinkiDateTime.atStartOfDay(range.start),
+                    modifiedBy = employee.evakaUserId,
+                    absenceCategory = AbsenceCategory.BILLABLE,
+                )
+            )
+        }
+
+        getConfirmedDailyReservationStats(daycareId, mobileDeviceId, clock)
+            .first { it.date == range.start }
+            .also { day ->
+                assertEquals(1, day.groupStatistics.sumOf { it.presentCount })
+                assertEquals(1, day.groupStatistics.sumOf { it.absentCount })
+            }
+    }
+
     @Test
     fun `shift care filter on getChildReservationsForDay returns only shift care children`() {
         val range = FiniteDateRange(LocalDate.of(2024, 5, 20), LocalDate.of(2024, 5, 26))
@@ -2668,6 +2734,36 @@ class AttendanceReservationsControllerIntegrationTest :
                         optionId = snDaycareFullDay35.id,
                         shiftCare = shiftCareType,
                         confirmedBy = AuthenticatedUser.SystemInternalUser.evakaUserId,
+                    )
+                )
+            }
+        return childId
+    }
+
+    private fun insertTemporaryChildData(
+        tx: Database.Transaction,
+        range: FiniteDateRange,
+        daycareId: DaycareId,
+        groupId: GroupId,
+        placementType: PlacementType,
+    ): ChildId {
+        val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+        tx.insert(
+                DevPlacement(
+                    type = placementType,
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = range.start,
+                    endDate = range.end,
+                )
+            )
+            .also { placementId ->
+                tx.insert(
+                    DevDaycareGroupPlacement(
+                        daycarePlacementId = placementId,
+                        daycareGroupId = groupId,
+                        startDate = range.start,
+                        endDate = range.end,
                     )
                 )
             }
