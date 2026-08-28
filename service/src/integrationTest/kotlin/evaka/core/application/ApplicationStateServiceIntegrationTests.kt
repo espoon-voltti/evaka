@@ -1049,7 +1049,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             )
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
-            assertEquals(2, decisionDrafts.size)
+            assertEquals(1, decisionDrafts.size)
 
             decisionDrafts
                 .find { it.type == DecisionType.PRESCHOOL }!!
@@ -1062,21 +1062,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                             endDate = mainPeriod.end,
                             unitId = daycare.id,
                             planned = true,
-                        ),
-                        it,
-                    )
-                }
-            decisionDrafts
-                .find { it.type == DecisionType.PRESCHOOL_DAYCARE }!!
-                .let {
-                    assertEquals(
-                        DecisionDraft(
-                            id = it.id,
-                            type = DecisionType.PRESCHOOL_DAYCARE,
-                            startDate = mainPeriod.start,
-                            endDate = mainPeriod.end,
-                            unitId = daycare.id,
-                            planned = false,
                         ),
                         it,
                     )

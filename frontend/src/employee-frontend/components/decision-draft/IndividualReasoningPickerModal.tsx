@@ -18,7 +18,7 @@ import BaseModal, {
   ModalButtons
 } from 'lib-components/molecules/modals/BaseModal'
 import { fontWeights } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
@@ -29,6 +29,16 @@ import { getIndividualReasoningsQuery } from './queries'
 
 const Subtitle = styled.div`
   color: ${colors.grayscale.g70};
+`
+
+const StickyButtons = styled(ModalButtons)`
+  position: sticky;
+  bottom: 0;
+  background: ${colors.grayscale.g0};
+  box-shadow: 0 -2px 4px 0 rgba(0, 0, 0, 0.1);
+  margin-top: ${defaultMargins.L};
+  margin-bottom: 0;
+  padding: ${defaultMargins.s} 0;
 `
 
 const RowList = styled.div`
@@ -153,14 +163,14 @@ export default React.memo(function IndividualReasoningPickerModal({
           </RowList>
         )
       })}
-      <ModalButtons $justifyContent="center">
+      <StickyButtons $justifyContent="center">
         <Button
           primary
           data-qa="modal-closeBtn"
           onClick={onClose}
           text={i18n.common.close}
         />
-      </ModalButtons>
+      </StickyButtons>
     </BaseModal>
   )
 })

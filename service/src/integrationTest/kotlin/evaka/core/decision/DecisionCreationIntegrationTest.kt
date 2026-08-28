@@ -270,16 +270,6 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     planned = true,
                     genericReasoning = defaultPreschoolDecisionReasoningGeneric.asResolved(),
                 ),
-            connectedDecision =
-                DecisionDraft(
-                    id = connectedDecisionId,
-                    unitId = testDaycare.id,
-                    type = DecisionType.PRESCHOOL_DAYCARE,
-                    startDate = period.start,
-                    endDate = period.end,
-                    planned = false,
-                    genericReasoning = defaultDaycareDecisionReasoningGeneric.asResolved(),
-                ),
             otherGuardian = otherGuardian,
         )
 
@@ -356,6 +346,54 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(testDaycare.id, decision2.unitId)
         assertEquals(preschoolDaycarePeriod.start, decision2.startDate)
         assertEquals(preschoolDaycarePeriod.end, decision2.endDate)
+    }
+
+    @Test
+    fun testPreparatoryOnly() {
+        val guardian = DevPerson(ssn = "070644-937X")
+        val otherGuardian = DevPerson(ssn = "311299-999E")
+        val child = DevPerson(ssn = "070714A9126")
+        db.transaction { tx ->
+            listOf(guardian, otherGuardian).forEach { tx.insert(it, DevPersonType.ADULT) }
+            tx.insert(child, DevPersonType.CHILD)
+        }
+        MockPersonDetailsService.addPersons(guardian, otherGuardian, child)
+        MockPersonDetailsService.addDependants(guardian, child)
+        MockPersonDetailsService.addDependants(otherGuardian, child)
+        val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.PREPARATORY,
+                adult = guardian,
+                child = child,
+                period = period,
+                preparatoryEducation = true,
+            )
+        checkDecisionDrafts(
+            applicationId,
+            adult = guardian,
+            child = child,
+            primaryDecision =
+                DecisionDraft(
+                    id = primaryDecisionId,
+                    unitId = testDaycare.id,
+                    type = DecisionType.PREPARATORY_EDUCATION,
+                    startDate = period.start,
+                    endDate = period.end,
+                    planned = true,
+                    genericReasoning = defaultPreschoolDecisionReasoningGeneric.asResolved(),
+                ),
+            otherGuardian = otherGuardian,
+        )
+
+        val decisions = createDecisions(applicationId)
+        assertEquals(1, decisions.size)
+
+        val decision = decisions[0]
+        assertEquals(testDaycare.id, decision.unitId)
+        assertEquals(DecisionType.PREPARATORY_EDUCATION, decision.type)
+        assertEquals(period.start, decision.startDate)
+        assertEquals(period.end, decision.endDate)
     }
 
     @Test
