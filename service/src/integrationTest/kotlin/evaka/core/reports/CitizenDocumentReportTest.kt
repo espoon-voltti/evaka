@@ -388,6 +388,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     contentLockedAt = mockClock.now(),
                     modifiedAt = mockClock.now(),
                     modifiedBy = admin.evakaUserId,
+                    statusModifiedAt = mockClock.now(),
                     answeredAt = mockClock.now(),
                     contentLockedBy = admin.id,
                     answeredBy = admin.evakaUserId,
@@ -404,7 +405,9 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             val aapoEarlierResponse =
                 aapoLatestResponse.copy(
                     id = ChildDocumentId(UUID.randomUUID()),
+                    createdAt = mockClock.now().minusDays(1),
                     contentLockedAt = mockClock.now().minusDays(1),
+                    statusModifiedAt = mockClock.now().minusDays(1),
                     answeredAt = mockClock.now().minusDays(1),
                     content = negativeDocumentContent,
                 )
@@ -643,6 +646,59 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     answeredBy = null,
                 )
 
+            // Test case Heidi:
+            // placed in group A1, an older unanswered document and a newer answered one
+            val testChildHeidi =
+                DevPerson(
+                    dateOfBirth = start.minusYears(4),
+                    firstName = "Heidi",
+                    lastName = "Hakala",
+                )
+            tx.insert(testChildHeidi, DevPersonType.CHILD)
+            val placementH =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChildHeidi.id,
+                    unitId = daycareData.first.id,
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            tx.insert(placementH)
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementH.id,
+                    daycareGroupId = daycareData.second.first().id,
+                    startDate = placementH.startDate,
+                    endDate = placementH.endDate,
+                )
+            )
+
+            val heidiUnansweredAt = mockClock.now().minusDays(30)
+            val heidiUnansweredResponse =
+                aapoLatestResponse.copy(
+                    id = ChildDocumentId(UUID.randomUUID()),
+                    childId = testChildHeidi.id,
+                    status = DocumentStatus.CITIZEN_DRAFT,
+                    content = negativeDocumentContent.copy(answers = emptyList()),
+                    createdAt = heidiUnansweredAt,
+                    statusModifiedAt = heidiUnansweredAt,
+                    contentLockedAt = heidiUnansweredAt,
+                    answeredAt = null,
+                    answeredBy = null,
+                )
+
+            val heidiAnsweredAt = mockClock.now().minusDays(5)
+            val heidiAnsweredResponse =
+                aapoLatestResponse.copy(
+                    id = ChildDocumentId(UUID.randomUUID()),
+                    childId = testChildHeidi.id,
+                    content = affirmativeDocumentContent,
+                    createdAt = heidiAnsweredAt,
+                    statusModifiedAt = heidiAnsweredAt,
+                    contentLockedAt = heidiAnsweredAt,
+                    answeredAt = heidiAnsweredAt,
+                )
+
             // Test case Demetrius
             // placed in group B1, backup placement to A1, no document sent
             val testChildDemetrius =
@@ -689,6 +745,8 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                     eemeliResponse,
                     fanniResponse,
                     gretaResponse,
+                    heidiUnansweredResponse,
+                    heidiAnsweredResponse,
                 )
                 .forEach { tx.insert(it) }
 
@@ -699,6 +757,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 Pair(testChildEemeli, eemeliResponse),
                 Pair(testChildFanni, null),
                 Pair(testChildGreta, gretaResponse),
+                Pair(testChildHeidi, heidiAnsweredResponse),
                 Pair(testChildDemetrius, null),
             )
         }

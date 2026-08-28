@@ -205,8 +205,8 @@ LEFT JOIN LATERAL (
     WHERE cd.child_id = pl.child_id
       AND cd.template_id = ${bind(documentTemplateId)}
       AND (cd.status = 'COMPLETED' OR cd.status = 'CITIZEN_DRAFT')
-      AND GREATEST(cd.created_at, cd.status_modified_at)::date >= pl.start_date - ${bind(CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT)}
-    ORDER BY cd.answered_at DESC, cd.created_at DESC
+      AND cd.status_modified_at::date >= pl.start_date - ${bind(CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT)}
+    ORDER BY cd.status_modified_at DESC, cd.created_at DESC, cd.id DESC
     LIMIT 1) latest_doc ON true
 WHERE rp.group_id = ANY (${bind(groupIds)})
         """
