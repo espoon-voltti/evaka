@@ -223,15 +223,17 @@ server {
 
   # STATIC FILE ROUTING
 
-  location ~ ^/employee/mobile/service-worker.js {
+  location ~ ^(/employee/mobile)?/service-worker\.js$ {
     expires        off;
     add_header     Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
-    proxy_no_cache 1
+    proxy_no_cache 1;
     auth_basic off;
   }
 
   location / {
-    location ~ /employee/mobile/manifest\.json$ {
+    # The browser requests the manifest without credentials, so it must stay
+    # reachable on basic auth protected environments.
+    location ~ ^(/employee/mobile)?/manifest\.json$ {
       auth_basic off;
     }
 
