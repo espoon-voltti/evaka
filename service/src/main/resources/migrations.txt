@@ -600,3 +600,4 @@ V601__add_other_income_type_general_social_security_benefit.sql
 V602__sfi_message_event_time.sql
 V603__citizen_passkey.sql
 V604__citizen_user_preferred_ui_language.sql
+V605__absence_categories_temporary_daycare.sql
