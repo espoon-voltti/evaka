@@ -297,6 +297,33 @@ const en: Translations = {
     unansweredChildDocumentWeakAuthInfo:
       'Filling in the document requires strong authentication.'
   },
+  pwa: {
+    install: {
+      text: 'You can use eVaka like an app when you add it to your home screen.',
+      action: 'Add eVaka to the home screen',
+      device: 'iPhone or iPad',
+      stepsHeading: 'Follow these steps',
+      steps: [
+        <>
+          Tap the <strong>Share</strong> icon in the browser.
+        </>,
+        <>
+          Scroll down the Share menu and select{' '}
+          <strong>Add to Home Screen</strong>.
+        </>,
+        <>
+          Tap <strong>Add</strong>.
+        </>,
+        <>
+          Find and open <strong>eVaka</strong> on the home screen, and enable{' '}
+          <strong>push notifications</strong>.
+        </>
+      ]
+    },
+    installSuggestion: {
+      title: 'Important notifications on your phone'
+    }
+  },
   errorPage: {
     reload: 'Reload page',
     text: 'We encountered an unexpected error. The developers have been notified with the error details.',

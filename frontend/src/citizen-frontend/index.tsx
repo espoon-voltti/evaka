@@ -14,6 +14,7 @@ import { appConfig } from 'lib-customizations/citizen'
 
 import 'leaflet/dist/leaflet.css'
 
+import { listenForInstallPrompt } from './pwa/installPrompt'
 import Root from './router'
 import './index.css'
 
@@ -30,6 +31,8 @@ Sentry.getGlobalScope().addEventProcessor(sentryEventFilter)
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo#browser_compatibility
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
 smoothScrollPolyfill()
+
+listenForInstallPrompt()
 
 const root = createRoot(document.getElementById('app')!)
 root.render(<Root />)

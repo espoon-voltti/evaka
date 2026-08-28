@@ -33,6 +33,7 @@ import MobileNav from './navigation/MobileNav'
 import { mobileBottomNavHeight } from './navigation/const'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
+import { InstallSuggestion } from './pwa/InstallSuggestion'
 import { queryClient, QueryClientProvider } from './query'
 
 const GlobalStyle = createGlobalStyle`
@@ -101,6 +102,7 @@ const Content = React.memo(function Content({
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
+      <InstallSuggestion />
       <Notifications apiVersion={apiVersion} sticky offsetTop />
       <MainContainer ariaHidden={modalOpen}>{children}</MainContainer>
       <MobileNav />

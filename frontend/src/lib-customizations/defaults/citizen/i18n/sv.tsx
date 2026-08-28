@@ -296,6 +296,33 @@ const sv: Translations = {
     unansweredChildDocumentWeakAuthInfo:
       'För att kunna fylla i dokumentet krävs stark autentisering.'
   },
+  pwa: {
+    install: {
+      text: 'Du kan använda eVaka som en app när du lägger till den på hemskärmen.',
+      action: 'Lägg till eVaka på hemskärmen',
+      device: 'iPhone eller iPad',
+      stepsHeading: 'Gör så här',
+      steps: [
+        <>
+          Tryck på webbläsarens <strong>Dela</strong>-ikon.
+        </>,
+        <>
+          Bläddra ner i Dela-menyn och välj{' '}
+          <strong>Lägg till på hemskärmen</strong>.
+        </>,
+        <>
+          Tryck på <strong>Lägg till</strong>.
+        </>,
+        <>
+          Hitta och öppna <strong>eVaka</strong> på hemskärmen och ta i bruk{' '}
+          <strong>push-aviseringar</strong>.
+        </>
+      ]
+    },
+    installSuggestion: {
+      title: 'Viktiga aviseringar till telefonen'
+    }
+  },
   errorPage: {
     reload: 'Ladda om sidan',
     text: 'Vi stötte på ett oväntat fel. Utvecklarna har meddelats.',

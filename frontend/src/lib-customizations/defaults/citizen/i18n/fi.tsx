@@ -300,6 +300,33 @@ export default {
     unansweredChildDocumentWeakAuthInfo:
       'Asiakirjan täyttäminen vaatii vahvan tunnistautumisen.'
   },
+  pwa: {
+    install: {
+      text: 'Voit käyttää eVakaa kuin sovellusta, kun lisäät sen kotinäytölle.',
+      action: 'Lisää eVaka kotinäytölle',
+      device: 'iPhone tai iPad',
+      stepsHeading: 'Toimi näin',
+      steps: [
+        <>
+          Napauta selaimen <strong>Jaa</strong>-kuvaketta.
+        </>,
+        <>
+          Vieritä Jaa-valikkoa alas ja valitse{' '}
+          <strong>Lisää Koti-valikkoon</strong>.
+        </>,
+        <>
+          Napauta <strong>Lisää</strong>.
+        </>,
+        <>
+          Etsi ja avaa <strong>eVaka</strong> kotinäytöltä, ja ota käyttöön{' '}
+          <strong>Push-ilmoitukset</strong>.
+        </>
+      ]
+    },
+    installSuggestion: {
+      title: 'Tärkeät ilmoitukset laitteeseen'
+    }
+  },
   errorPage: {
     reload: 'Lataa sivu uudelleen',
     text: 'Kohtasimme odottamattoman ongelman. Virheen tiedot on välitetty eteenpäin.',
