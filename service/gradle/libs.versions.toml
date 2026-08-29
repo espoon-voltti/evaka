@@ -12,7 +12,7 @@ ktfmt = "0.27.0"
 ktlint = "1.8.0"
 ktlint-gradle = "14.2.0"
 mockito = "5.23.0"
-spring-boot = "4.1.0"
+spring-boot = "4.1.1"
 versions = "0.61.0"
 
 [libraries]
