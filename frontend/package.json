@@ -71,7 +71,7 @@
     "@types/node": "24.13.3",
     "@types/punycode": "2.1.4",
     "@types/react": "19.2.18",
-    "@types/react-dom": "19.2.4",
+    "@types/react-dom": "19.2.5",
     "@types/stylis": "4.2.7",
     "@vitejs/plugin-legacy": "8.2.3",
     "@vitejs/plugin-react": "6.0.5",
