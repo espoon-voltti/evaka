@@ -4,6 +4,9 @@
 
 package evaka.core.daycare.controllers
 
+import evaka.core.Audit
+import evaka.core.AuditChange
+import evaka.core.AuditLogCapture
 import evaka.core.FullApplicationTest
 import evaka.core.attendance.getOccupancyCoefficientsByUnit
 import evaka.core.pairing.listPersonalDevices
@@ -34,6 +37,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -66,6 +70,8 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     val now = HelsinkiDateTime.of(LocalDate.of(2023, 3, 29), LocalTime.of(8, 37))
     val clock = MockEvakaClock(now)
 
+    private val auditLogCapture = AuditLogCapture()
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -76,6 +82,12 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insert(daycareGroup)
             tx.insert(devEmployee)
         }
+        auditLogCapture.attach()
+    }
+
+    @AfterEach
+    fun afterEach() {
+        auditLogCapture.detach()
     }
 
     @Test
@@ -103,6 +115,15 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             ),
             getAclRows(),
         )
+        auditLogCapture
+            .event(Audit.UnitAclCreate)
+            .assertContext { add(daycare.id).add(employee.id) }
+            .assertMeta(
+                "role" to UserRole.UNIT_SUPERVISOR,
+                "endDate" to null,
+                "replacedScheduled" to false,
+            )
+        auditLogCapture.clear()
 
         deleteSupervisor(daycare.id)
         assertTrue(getAclRows().isEmpty())
@@ -130,6 +151,14 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             ),
             getAclRows(),
         )
+        auditLogCapture
+            .event(Audit.UnitAclCreate)
+            .assertMeta(
+                "role" to UserRole.STAFF,
+                "endDate" to endDate,
+                "replacedScheduled" to false,
+            )
+        auditLogCapture.clear()
 
         deleteStaff()
         assertTrue(getAclRows().isEmpty())
@@ -273,6 +302,48 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val coefficientsAfterModification = getDaycareOccupancyCoefficients(daycare.id)
         assertEquals(BigDecimal("0.00"), coefficientsAfterModification[employee.id])
+
+        auditLogCapture
+            .event(Audit.UnitAclUpdate)
+            .assertContext { add(daycare.id).add(employee.id).add(daycareGroup.id) }
+            .assertMeta(
+                "role" to UserRole.UNIT_SUPERVISOR,
+                "endDate" to AuditChange(old = endDate1, new = endDate2),
+                "groupsUpdated" to true,
+            )
+            .assertMinDate(endDate1)
+    }
+
+    @Test
+    fun `end date change is audited when groups are not updated`() {
+        val staffMember = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(staffMember, unitRoles = mapOf(daycare.id to UserRole.STAFF))
+        }
+        auditLogCapture.clear()
+
+        val endDate = clock.today().plusDays(30)
+        unitAclController.updateGroupAcl(
+            dbInstance(),
+            admin,
+            clock,
+            daycare.id,
+            staffMember.id,
+            UnitAclController.AclUpdate(
+                role = UserRole.STAFF,
+                groupIds = null,
+                hasStaffOccupancyEffect = false,
+                endDate = endDate,
+            ),
+        )
+
+        auditLogCapture
+            .event(Audit.UnitAclUpdate)
+            .assertContext { add(daycare.id).add(staffMember.id) }
+            .assertMeta(
+                "role" to UserRole.STAFF,
+                "endDate" to AuditChange(old = null, new = endDate),
+            )
     }
 
     @Test
