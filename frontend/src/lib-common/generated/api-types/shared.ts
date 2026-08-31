@@ -224,6 +224,16 @@ export type MessageThreadId = Id<'MessageThread'>
 
 export type MobileDeviceId = Id<'MobileDevice'>
 
+/**
+* Generated from evaka.core.shared.domain.OfficialLanguage
+*/
+export const officialLanguages = [
+  'FI',
+  'SV'
+] as const
+
+export type OfficialLanguage = typeof officialLanguages[number]
+
 export type OtherAssistanceMeasureId = Id<'OtherAssistanceMeasure'>
 
 export type OutOfOfficeId = Id<'OutOfOffice'>

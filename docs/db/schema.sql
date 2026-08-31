@@ -2682,14 +2682,13 @@ CREATE TABLE public.decision_reasoning_generic (
 CREATE TABLE public.decision_reasoning_individual (
     id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
     collection_type public.decision_reasoning_collection_type NOT NULL,
-    title_fi text NOT NULL,
-    title_sv text NOT NULL,
-    text_fi text NOT NULL,
-    text_sv text NOT NULL,
     removed_at timestamp with time zone,
     created_at timestamp with time zone NOT NULL,
     modified_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    language public.official_language NOT NULL,
+    title text NOT NULL,
+    text text NOT NULL
 );
 
 -- Name: decision_reasoning_individual_selection; Type: TABLE; Schema: public

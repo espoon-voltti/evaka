@@ -89,17 +89,17 @@ test.describe('Employee - Decision reasonings', () => {
   })
 
   test('Individual reasoning can be created and removed', async () => {
+    const section = decisionReasoningsPage.individualFi
+
     // Create an individual reasoning
-    await decisionReasoningsPage.addIndividualButton.click()
-    await decisionReasoningsPage.individualTitleFi.fill('Otsikko FI')
-    await decisionReasoningsPage.individualTitleSv.fill('Titel SV')
-    await decisionReasoningsPage.individualTextFi.fill('Teksti FI')
-    await decisionReasoningsPage.individualTextSv.fill('Text SV')
-    await decisionReasoningsPage.individualSaveAndActivateButton.click()
+    await section.addButton.click()
+    await section.titleInput.fill('Otsikko FI')
+    await section.textInput.fill('Teksti FI')
+    await section.saveAndActivateButton.click()
     await decisionReasoningsPage.confirmModal()
 
     // Verify the card appears with active status
-    const card = decisionReasoningsPage.individualCard(0)
+    const card = section.card(0)
     await expect(card.status).toHaveText('Käytettävissä')
 
     // Remove it
@@ -107,11 +107,36 @@ test.describe('Employee - Decision reasonings', () => {
     await decisionReasoningsPage.confirmModal()
 
     // Card should no longer be in the active list
-    await expect(decisionReasoningsPage.individualCards).toHaveCount(0)
+    await expect(section.cards).toHaveCount(0)
 
     // It should appear in the removed section
-    await decisionReasoningsPage.toggleRemovedIndividual.click()
-    await expect(decisionReasoningsPage.individualCards).toHaveCount(1)
+    await section.toggleRemoved.click()
+    await expect(section.cards).toHaveCount(1)
+  })
+
+  test('Finnish and Swedish individual reasonings are separate collections', async () => {
+    const fi = decisionReasoningsPage.individualFi
+    const sv = decisionReasoningsPage.individualSv
+
+    await fi.addButton.click()
+    await fi.titleInput.fill('Otsikko FI')
+    await fi.textInput.fill('Teksti FI')
+    await fi.saveAndActivateButton.click()
+    await decisionReasoningsPage.confirmModal()
+
+    await expect(fi.cards).toHaveCount(1)
+    await expect(sv.cards).toHaveCount(0)
+
+    await sv.addButton.click()
+    await sv.titleInput.fill('Titel SV')
+    await sv.textInput.fill('Text SV')
+    await sv.saveAndActivateButton.click()
+    await decisionReasoningsPage.confirmModal()
+
+    await expect(fi.cards).toHaveCount(1)
+    await expect(sv.cards).toHaveCount(1)
+    await expect(fi.card(0)).toContainText('Otsikko FI')
+    await expect(sv.card(0)).toContainText('Titel SV')
   })
 
   test('Tab switching shows separate data per collection', async () => {

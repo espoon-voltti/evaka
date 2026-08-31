@@ -8,6 +8,7 @@ import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.db.DatabaseEnum
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.OfficialLanguage
 import java.time.LocalDate
 
 enum class DecisionReasoningCollectionType : DatabaseEnum {
@@ -41,19 +42,17 @@ data class DecisionGenericReasoning(
 
 data class DecisionIndividualReasoningRequest(
     val collectionType: DecisionReasoningCollectionType,
-    val titleFi: String,
-    val titleSv: String,
-    val textFi: String,
-    val textSv: String,
+    val language: OfficialLanguage,
+    val title: String,
+    val text: String,
 )
 
 data class DecisionIndividualReasoning(
     val id: DecisionIndividualReasoningId,
     val collectionType: DecisionReasoningCollectionType,
-    val titleFi: String,
-    val titleSv: String,
-    val textFi: String,
-    val textSv: String,
+    val language: OfficialLanguage,
+    val title: String,
+    val text: String,
     val removedAt: HelsinkiDateTime?,
     val createdAt: HelsinkiDateTime,
     val modifiedAt: HelsinkiDateTime,

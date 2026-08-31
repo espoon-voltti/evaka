@@ -5398,13 +5398,15 @@ export const sv: typeof fi = {
     },
     individual: {
       title: 'Individuella motiveringar',
+      sectionTitle: {
+        FI: 'Individuella motiveringar, finskspråkiga enheter',
+        SV: 'Individuella motiveringar, svenskspråkiga enheter'
+      },
       addNew: 'Lägg till individuell motivering',
       statusActive: 'Tillgänglig',
       statusRemoved: 'Borttagen från bruk',
-      titleFi: 'Internt namn',
-      titleSv: 'Internt namn',
-      textFi: 'Text för beslutet',
-      textSv: 'Text för beslutet',
+      titleField: 'Internt namn',
+      textField: 'Text för beslutet',
       removed: 'Borttagen från bruk',
       cancel: 'Avbryt',
       saveAndActivate: 'Ta i bruk',

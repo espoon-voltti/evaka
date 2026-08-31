@@ -9,7 +9,10 @@ import type {
   DecisionDraft,
   DecisionType
 } from 'lib-common/generated/api-types/decision'
-import type { DecisionIndividualReasoningId } from 'lib-common/generated/api-types/shared'
+import type {
+  DecisionIndividualReasoningId,
+  OfficialLanguage
+} from 'lib-common/generated/api-types/shared'
 import { constantQuery, useQueryResult } from 'lib-common/query'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import { Chip } from 'lib-components/atoms/Chip'
@@ -131,7 +134,7 @@ interface Props {
   childName: string
   showPlannedCheckbox: boolean
   primaryDecisionType: DecisionType
-  language: 'fi' | 'sv'
+  language: OfficialLanguage
   unitLanguageUnsupported: boolean
   onPlannedChange: (planned: boolean) => void
   onReasoningIdsChange: (
@@ -173,7 +176,8 @@ export default React.memo(function DecisionCard({
     reasoningsExempt
       ? constantQuery([])
       : getIndividualReasoningsQuery({
-          collectionType: decisionTypeToCollectionType(decision.type)
+          collectionType: decisionTypeToCollectionType(decision.type),
+          language
         })
   )
 
@@ -183,10 +187,8 @@ export default React.memo(function DecisionCard({
     ]
 
   const selectedIds = new Set(decision.individualReasoningIds)
-  const text = (s: { textFi: string; textSv: string }) =>
-    language === 'sv' ? s.textSv : s.textFi
-  const title = (s: { titleFi: string; titleSv: string }) =>
-    language === 'sv' ? s.titleSv : s.titleFi
+  const genericText = (s: { textFi: string; textSv: string }) =>
+    language === 'SV' ? s.textSv : s.textFi
 
   return (
     <Card
@@ -257,7 +259,7 @@ export default React.memo(function DecisionCard({
                           decision.genericReasoning.validFrom.format()
                         )}
                   </GenericTitle>
-                  <span>{text(decision.genericReasoning)}</span>
+                  <span>{genericText(decision.genericReasoning)}</span>
                 </GenericCard>
               ) : (
                 <AlertBox
@@ -292,8 +294,8 @@ export default React.memo(function DecisionCard({
                         key={ind.id}
                         data-qa={`individual-card-${ind.id}`}
                       >
-                        <IndividualTitle>{title(ind)}</IndividualTitle>
-                        <span>{text(ind)}</span>
+                        <IndividualTitle>{ind.title}</IndividualTitle>
+                        <span>{ind.text}</span>
                       </IndividualCard>
                     ))}
                   </FixedSpaceColumn>

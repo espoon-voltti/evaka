@@ -2018,8 +2018,8 @@ fun Database.Transaction.insert(
 ): DecisionIndividualReasoningId = createUpdate {
     sql(
         """
-INSERT INTO decision_reasoning_individual (id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at)
-VALUES (${bind(row.id)}, ${bind(row.collectionType)}, ${bind(row.titleFi)}, ${bind(row.titleSv)}, ${bind(row.textFi)}, ${bind(row.textSv)}, ${bind(row.removedAt)}, ${bind(row.createdAt)}, ${bind(row.modifiedAt)})
+INSERT INTO decision_reasoning_individual (id, collection_type, language, title, text, removed_at, created_at, modified_at)
+VALUES (${bind(row.id)}, ${bind(row.collectionType)}, ${bind(row.language)}, ${bind(row.title)}, ${bind(row.text)}, ${bind(row.removedAt)}, ${bind(row.createdAt)}, ${bind(row.modifiedAt)})
 RETURNING id
 """
     )

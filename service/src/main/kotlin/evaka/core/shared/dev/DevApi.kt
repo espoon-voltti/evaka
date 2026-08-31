@@ -162,6 +162,7 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
+import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.domain.Translatable
 import evaka.core.shared.domain.UiLanguage
@@ -2797,10 +2798,9 @@ data class DevDecisionReasoningGeneric(
 data class DevDecisionReasoningIndividual(
     val id: DecisionIndividualReasoningId = DecisionIndividualReasoningId(UUID.randomUUID()),
     val collectionType: DecisionReasoningCollectionType,
-    val titleFi: String,
-    val titleSv: String,
-    val textFi: String,
-    val textSv: String,
+    val language: OfficialLanguage,
+    val title: String,
+    val text: String,
     val removedAt: HelsinkiDateTime? = null,
     val createdAt: HelsinkiDateTime = HelsinkiDateTime.now(),
     val modifiedAt: HelsinkiDateTime = HelsinkiDateTime.now(),

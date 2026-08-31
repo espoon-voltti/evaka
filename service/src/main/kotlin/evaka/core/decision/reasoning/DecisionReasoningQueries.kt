@@ -8,8 +8,10 @@ import evaka.core.shared.DecisionGenericReasoningId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.DecisionIndividualReasoningId
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.PredicateSql
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
+import evaka.core.shared.domain.OfficialLanguage
 import java.time.LocalDate
 
 internal data class DecisionGenericReasoningRow(
@@ -139,25 +141,31 @@ WHERE id = ${bind(id)} AND removed_at IS NULL
 }
 
 fun Database.Read.getIndividualReasonings(
-    collectionType: DecisionReasoningCollectionType
-): List<DecisionIndividualReasoning> = createQuery {
-    sql(
-        """
-SELECT id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at
+    collectionType: DecisionReasoningCollectionType,
+    language: OfficialLanguage? = null,
+): List<DecisionIndividualReasoning> {
+    val languageFilter =
+        if (language == null) PredicateSql.alwaysTrue()
+        else PredicateSql { where("language = ${bind(language)}") }
+    return createQuery {
+        sql(
+            """
+SELECT id, collection_type, language, title, text, removed_at, created_at, modified_at
 FROM decision_reasoning_individual
-WHERE collection_type = ${bind(collectionType)}
+WHERE collection_type = ${bind(collectionType)} AND ${predicate(languageFilter)}
 ORDER BY created_at DESC
 """
-    )
+        )
+    }
+        .toList<DecisionIndividualReasoning>()
 }
-    .toList<DecisionIndividualReasoning>()
 
 fun Database.Read.getIndividualReasoningSelectionsForDecision(
     decisionId: DecisionId
 ): List<DecisionIndividualReasoning> = createQuery {
     sql(
         """
-SELECT id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at
+SELECT id, collection_type, language, title, text, removed_at, created_at, modified_at
 FROM decision_reasoning_individual
 WHERE EXISTS (
     SELECT 1
@@ -175,7 +183,7 @@ fun Database.Read.getIndividualReasoning(
 ): DecisionIndividualReasoning? = createQuery {
     sql(
         """
-SELECT id, collection_type, title_fi, title_sv, text_fi, text_sv, removed_at, created_at, modified_at
+SELECT id, collection_type, language, title, text, removed_at, created_at, modified_at
 FROM decision_reasoning_individual
 WHERE id = ${bind(id)}
 """
@@ -189,8 +197,8 @@ fun Database.Transaction.insertIndividualReasoning(
 ): DecisionIndividualReasoningId = createUpdate {
     sql(
         """
-INSERT INTO decision_reasoning_individual (collection_type, title_fi, title_sv, text_fi, text_sv, created_at, modified_at)
-VALUES (${bind(request.collectionType)}, ${bind(request.titleFi)}, ${bind(request.titleSv)}, ${bind(request.textFi)}, ${bind(request.textSv)}, ${bind(now)}, ${bind(now)})
+INSERT INTO decision_reasoning_individual (collection_type, language, title, text, created_at, modified_at)
+VALUES (${bind(request.collectionType)}, ${bind(request.language)}, ${bind(request.title)}, ${bind(request.text)}, ${bind(now)}, ${bind(now)})
 RETURNING id
 """
     )

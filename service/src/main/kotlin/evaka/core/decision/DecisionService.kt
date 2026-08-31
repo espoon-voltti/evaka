@@ -415,7 +415,7 @@ internal fun buildPdfReasoning(
             ?: error("Cannot render decision reasoning: generic reasoning text is missing or blank")
     val individual =
         source.individual.map { reasoning ->
-            (if (swedish) reasoning.textSv else reasoning.textFi).takeIf { it.isNotBlank() }
+            reasoning.text.takeIf { it.isNotBlank() }
                 ?: error(
                     "Cannot render decision reasoning: individual reasoning ${reasoning.id} has blank text"
                 )

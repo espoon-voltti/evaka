@@ -15,7 +15,8 @@ import type {
 } from 'lib-common/generated/api-types/decision'
 import type {
   ApplicationId,
-  DaycareId
+  DaycareId,
+  OfficialLanguage
 } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
@@ -192,10 +193,10 @@ const DecisionDraftRedesignInner = React.memo(
       }
     }
 
-    const decisionLanguage = (unitId: DaycareId): 'fi' | 'sv' =>
-      units.find((u) => u.id === unitId)?.language === 'sv' ? 'sv' : 'fi'
+    const decisionLanguage = (unitId: DaycareId): OfficialLanguage =>
+      units.find((u) => u.id === unitId)?.language === 'sv' ? 'SV' : 'FI'
     const misconfigured = (unitId: DaycareId) =>
-      decisionLanguage(unitId) === 'sv' && !svEnabled
+      decisionLanguage(unitId) === 'SV' && !svEnabled
 
     const isClubDecision = primaryDecision.type === 'CLUB'
     const incompleteUnit = useMemo(() => {

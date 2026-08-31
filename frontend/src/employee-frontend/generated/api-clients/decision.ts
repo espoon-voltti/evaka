@@ -16,6 +16,7 @@ import type { DecisionUnit } from 'lib-common/generated/api-types/decision'
 import type { DecisionWithPermittedActions } from 'lib-common/generated/api-types/decision'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
+import type { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import type { PersonId } from 'lib-common/generated/api-types/shared'
 import type { Uri } from 'lib-common/uri'
 import { client } from '../../api/client'
@@ -163,11 +164,13 @@ export async function getGenericReasonings(
 */
 export async function getIndividualReasonings(
   request: {
-    collectionType: DecisionReasoningCollectionType
+    collectionType: DecisionReasoningCollectionType,
+    language?: OfficialLanguage | null
   }
 ): Promise<DecisionIndividualReasoning[]> {
   const params = createUrlSearchParams(
-    ['collectionType', request.collectionType.toString()]
+    ['collectionType', request.collectionType.toString()],
+    ['language', request.language?.toString()]
   )
   const { data: json } = await client.request<JsonOf<DecisionIndividualReasoning[]>>({
     url: uri`/employee/decision-reasonings/individual`.toString(),

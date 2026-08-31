@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 import { useTheme } from 'styled-components'
 
@@ -16,6 +16,7 @@ import { H1 } from 'lib-components/typography'
 import { Gap, defaultMargins } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
+import { UserContext } from '../../state/user'
 import { renderResult } from '../async-rendering'
 
 import GenericReasoningsSection from './GenericReasoningsSection'
@@ -32,6 +33,9 @@ export default React.memo(function DecisionReasoningsPage() {
   const { i18n } = useTranslation()
   const t = i18n.decisionReasonings
   const theme = useTheme()
+  const { featureConfig } = useContext(UserContext)
+  const svEnabled =
+    featureConfig?.placementDecisionSwedishLanguageEnabled ?? false
 
   const [collectionType, setCollectionType] =
     useState<DecisionReasoningCollectionType>('DAYCARE')
@@ -101,10 +105,25 @@ export default React.memo(function DecisionReasoningsPage() {
           {renderResult(individualResult, (reasonings) => (
             <IndividualReasoningsSection
               collectionType={collectionType}
-              reasonings={reasonings}
+              language="FI"
+              showLanguageInTitle={svEnabled}
+              reasonings={reasonings.filter((r) => r.language === 'FI')}
             />
           ))}
         </ContentArea>
+
+        {svEnabled && (
+          <ContentArea $opaque>
+            {renderResult(individualResult, (reasonings) => (
+              <IndividualReasoningsSection
+                collectionType={collectionType}
+                language="SV"
+                showLanguageInTitle
+                reasonings={reasonings.filter((r) => r.language === 'SV')}
+              />
+            ))}
+          </ContentArea>
+        )}
       </FixedSpaceColumn>
     </Container>
   )

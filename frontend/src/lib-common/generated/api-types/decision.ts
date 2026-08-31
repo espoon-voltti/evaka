@@ -14,6 +14,7 @@ import HelsinkiDateTime from '../../helsinki-date-time'
 import type { JsonOf } from '../../json'
 import type { Language } from './daycare'
 import LocalDate from '../../local-date'
+import type { OfficialLanguage } from './shared'
 import type { PersonId } from './shared'
 import type { ProviderType } from './daycare'
 
@@ -101,12 +102,11 @@ export interface DecisionIndividualReasoning {
   collectionType: DecisionReasoningCollectionType
   createdAt: HelsinkiDateTime
   id: DecisionIndividualReasoningId
+  language: OfficialLanguage
   modifiedAt: HelsinkiDateTime
   removedAt: HelsinkiDateTime | null
-  textFi: string
-  textSv: string
-  titleFi: string
-  titleSv: string
+  text: string
+  title: string
 }
 
 /**
@@ -114,10 +114,9 @@ export interface DecisionIndividualReasoning {
 */
 export interface DecisionIndividualReasoningRequest {
   collectionType: DecisionReasoningCollectionType
-  textFi: string
-  textSv: string
-  titleFi: string
-  titleSv: string
+  language: OfficialLanguage
+  text: string
+  title: string
 }
 
 /**

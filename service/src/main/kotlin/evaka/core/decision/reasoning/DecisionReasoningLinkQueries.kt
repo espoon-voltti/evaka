@@ -109,21 +109,14 @@ fun validateResolvedGenericReasoning(
                 errorCode = DECISION_REASONING_NOT_FINALIZED,
             )
 
-    if (tx.getDecisionLanguage(decisionId) == OfficialLanguage.SV) {
-        if (genericReasoning.textSv.isBlank()) {
-            throw Conflict(
-                "Cannot use generic reasoning ${genericReasoning.id} for Swedish decision $decisionId: empty Swedish text",
-                errorCode = DECISION_REASONING_NOT_FINALIZED,
-            )
-        }
-        tx.getIndividualReasoningSelectionsForDecision(decisionId).forEach { individual ->
-            if (individual.textSv.isBlank()) {
-                throw Conflict(
-                    "Cannot use individual reasoning ${individual.id} for Swedish decision $decisionId: empty Swedish text",
-                    errorCode = DECISION_REASONING_NOT_FINALIZED,
-                )
-            }
-        }
+    if (
+        tx.getDecisionLanguage(decisionId) == OfficialLanguage.SV &&
+            genericReasoning.textSv.isBlank()
+    ) {
+        throw Conflict(
+            "Cannot use generic reasoning ${genericReasoning.id} for Swedish decision $decisionId: empty Swedish text",
+            errorCode = DECISION_REASONING_NOT_FINALIZED,
+        )
     }
     return genericReasoning
 }

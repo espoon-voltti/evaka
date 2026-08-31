@@ -64,8 +64,15 @@ Individual reasonings are a flat list of options within each collection. When a 
 
 Each entry contains:
 
-- A short descriptive title in Finnish and Swedish.
-- The reasoning text body in Finnish and Swedish.
+- A language: Finnish or Swedish.
+- A short descriptive title, used only internally in the management UI and the picker.
+- The reasoning text body that appears in the decision document.
+
+Unlike generic reasonings, individual reasonings are not translations of each other. The Finnish-
+and Swedish-speaking organisations maintain their own separate collections of options, so each
+entry belongs to exactly one language. The language of a decision is determined by the language of
+the unit it is made to, and a service worker can only pick options in that language. When Swedish
+placement decisions are not enabled for a municipality, only the Finnish collection exists.
 
 Individual reasoning entries are immutable — they cannot be edited after creation. If an entry needs to be corrected, the admin removes it from use and creates a new one. When a service worker selects an individual reasoning for a decision, the decision stores a reference to the entry. Since entries are immutable, the referenced text is guaranteed to remain unchanged.
 
@@ -93,19 +100,20 @@ Reasonings are stored in two tables, one per reasoning type. Both use an enum `d
 | Column | Description |
 |--------|-------------|
 | `collection_type` | Which collection this entry belongs to (daycare or preschool) |
-| `title_fi`, `title_sv` | Short descriptive title in Finnish and Swedish |
-| `text_fi`, `text_sv` | Reasoning text body in Finnish and Swedish |
+| `language` | The language this option belongs to (`FI` or `SV`) |
+| `title` | Short descriptive title, shown only to employees |
+| `text` | Reasoning text body |
 | `removed_at` | Timestamp when the option was removed from use (null if active) |
 
 ## Management UI
 
 The reasoning management page is accessible from the employee UI user context menu for admin users.
 
-The page has two primary tabs for selecting the collection type: daycare and preschool. Within each tab, there are two sections: one for generic reasonings and one for individual reasonings. Each section heading shows the number of entries in parentheses and has an "Add new" button.
+The page has two primary tabs for selecting the collection type: daycare and preschool. Within each tab, there is one section for generic reasonings and one section per language for individual reasonings. Each section heading shows the number of entries in parentheses and has an "Add new" button. The Swedish individual reasoning section is omitted when Swedish placement decisions are not enabled.
 
 For generic reasonings, each entry is displayed as a full-width card with a formatted label derived from the collection type and validity date range. Finnish and Swedish text are shown side by side. Not-ready entries have an edit button that transforms the card into an inline edit form with cancel and save buttons. Ready entries are read-only.
 
-For individual reasonings, each entry is displayed as a full-width card with Finnish and Swedish text side by side. Within each language block, the card shows a language label (FI / SV), the title, and the text body.
+For individual reasonings, each entry is displayed as a full-width card showing the title and the text body in the section's language.
 
 For individual reasonings, each active card has a "Remove from use" button. There is no edit functionality — entries are immutable after creation.
 

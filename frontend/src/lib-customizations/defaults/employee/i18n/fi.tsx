@@ -5368,13 +5368,15 @@ export const fi = {
     },
     individual: {
       title: 'Yksilölliset perustelut',
+      sectionTitle: {
+        FI: 'Yksilölliset perustelut, suomenkieliset yksiköt',
+        SV: 'Yksilölliset perustelut, ruotsinkieliset yksiköt'
+      },
       addNew: 'Lisää yksilöllinen perustelu',
       statusActive: 'Käytettävissä',
       statusRemoved: 'Poistettu käytöstä',
-      titleFi: 'Sisäinen nimi',
-      titleSv: 'Sisäinen nimi',
-      textFi: 'Päätökselle tuleva teksti',
-      textSv: 'Päätökselle tuleva teksti',
+      titleField: 'Sisäinen nimi',
+      textField: 'Päätökselle tuleva teksti',
       removed: 'Poistettu käytöstä',
       cancel: 'Peruuta',
       saveAndActivate: 'Ota käyttöön',
