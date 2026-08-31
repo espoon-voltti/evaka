@@ -31,4 +31,5 @@ This guide helps developers to discover and understand the custom frameworks, ut
 - **[Database Schema & Migrations](service/migrations.md)** - Schema conventions and Flyway migrations
 - **[ACL API](service/acl.md)** - Access control framework
 - **[Logging](service/logging.md)** - Application logging and audit logging for compliance
+- **[Security Events](service/security-events.md)** - When an audit event is a security event, and at what level
 - **[Async & Scheduled Jobs](service/async-jobs.md)** - Background task execution
