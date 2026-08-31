@@ -64,7 +64,8 @@ export const removeUnprocessableApplicationMutation = q.mutation(
 )
 
 export const sendApplicationMutation = q.mutation(sendApplication, [
-  (applicationId) => applicationQuery(applicationId)
+  (applicationId) => applicationQuery(applicationId),
+  guardianApplicationsQuery
 ])
 
 export const applicationMetadataQuery = q.query(getApplicationMetadata)

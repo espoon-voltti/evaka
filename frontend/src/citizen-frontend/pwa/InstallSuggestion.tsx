@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { constantQuery, useQueryResult } from 'lib-common/query'
@@ -14,10 +14,12 @@ import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faBell, faChevronDown, faChevronUp, faTimes } from 'lib-icons'
 
+import { guardianApplicationsQuery } from '../applications/queries'
 import { useUser } from '../auth/state'
 import { childrenQuery } from '../children/queries'
 import { useTranslation } from '../localization'
 import { headerHeightMobile } from '../navigation/const'
+import { OverlayContext } from '../overlay/state'
 
 import { InstallInstructions } from './InstallInstructions'
 import {
@@ -31,6 +33,7 @@ export const InstallSuggestion = React.memo(function InstallSuggestion() {
   const { colors } = useTheme()
   const user = useUser()
   const availability = useInstallAvailability()
+  const { modalOpen } = useContext(OverlayContext)
   const [expanded, setExpanded] = useState(false)
   const [dismissedNow, setDismissedNow] = useState(false)
 
@@ -41,9 +44,27 @@ export const InstallSuggestion = React.memo(function InstallSuggestion() {
     )
     .getOrElse(false)
 
-  if (!user || !hasPlacedChild) return null
+  const applications = useQueryResult(
+    user &&
+      availability.kind !== 'unavailable' &&
+      children.isSuccess &&
+      !hasPlacedChild
+      ? guardianApplicationsQuery()
+      : constantQuery([])
+  )
+  const hasSentApplication = applications
+    .map((cs) =>
+      cs.some((c) => c.applicationSummaries.some((a) => a.sentDate !== null))
+    )
+    .getOrElse(false)
+
+  if (!user || (!hasPlacedChild && !hasSentApplication)) return null
   if (dismissedNow || isInstallSuggestionDismissed(user.id)) return null
   if (availability.kind === 'unavailable') return null
+
+  // Hide until the "Application sent" modal is dismissed. This also hides
+  // the install suggestion when any modal is open.
+  if (modalOpen) return null
 
   const action =
     availability.kind === 'instructions'
