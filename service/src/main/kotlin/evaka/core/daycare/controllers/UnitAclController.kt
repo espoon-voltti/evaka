@@ -6,6 +6,7 @@ package evaka.core.daycare.controllers
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.absence.getDaycareIdByGroup
 import evaka.core.attendance.OccupancyCoefficientUpsert
@@ -61,56 +62,65 @@ class UnitAclController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
     ): List<DaycareAclRow> {
+        val audit = AuditContext().add(unitId)
         return db.connect { dbc ->
-            dbc.read { tx ->
-                accessControl.requirePermissionFor(tx, user, clock, Action.Unit.READ_ACL, unitId)
-                val hasOccupancyPermission =
-                    accessControl.hasPermissionFor(
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
-                        Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS,
+                        Action.Unit.READ_ACL,
                         unitId,
                     )
-                val hasStaffEmployeeNumberPermission =
-                    accessControl.hasPermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.READ_STAFF_EMPLOYEE_NUMBER,
-                        unitId,
-                    )
-
-                val aclRows =
-                    tx.getDaycareAclRows(
+                    val hasOccupancyPermission =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS,
                             unitId,
-                            hasOccupancyPermission,
-                            hasStaffEmployeeNumberPermission,
                         )
-                        .map {
-                            if (it.employee.active) it
-                            else
-                                it.copy(
-                                    employee =
-                                        it.employee.copy(
-                                            lastName = "${it.employee.lastName} (deaktivoitu)"
-                                        )
-                                )
-                        }
+                    val hasStaffEmployeeNumberPermission =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.READ_STAFF_EMPLOYEE_NUMBER,
+                            unitId,
+                        )
 
-                Audit.UnitAclRead.log(
-                    targetId = AuditId(unitId),
-                    meta = mapOf("count" to aclRows.size),
-                )
-                if (hasOccupancyPermission) {
-                    Audit.StaffOccupancyCoefficientRead.log(
-                        targetId = AuditId(unitId),
-                        meta = mapOf("count" to aclRows.size),
-                    )
+                    val aclRows =
+                        tx.getDaycareAclRows(
+                                unitId,
+                                hasOccupancyPermission,
+                                hasStaffEmployeeNumberPermission,
+                            )
+                            .map {
+                                if (it.employee.active) it
+                                else
+                                    it.copy(
+                                        employee =
+                                            it.employee.copy(
+                                                lastName = "${it.employee.lastName} (deaktivoitu)"
+                                            )
+                                    )
+                            }
+
+                    if (hasOccupancyPermission) {
+                        Audit.StaffOccupancyCoefficientRead.log(
+                            targetId = AuditId(unitId),
+                            meta = mapOf("count" to aclRows.size),
+                        )
+                    }
+                    aclRows
                 }
-                aclRows
             }
-        }
+            .also { aclRows ->
+                audit
+                    .add(aclRows.map { it.employee.id })
+                    .addMeta("count", aclRows.size)
+                    .log(Audit.UnitAclRead, clock)
+            }
     }
 
     @GetMapping("/employee/daycares/{unitId}/scheduled-acl")
