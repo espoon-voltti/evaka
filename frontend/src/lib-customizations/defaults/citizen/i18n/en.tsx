@@ -763,7 +763,11 @@ const en: Translations = {
                 You can find further information about early childhood education
                 fees, additional fees for service voucher users and how to
                 deliver the income statement form here:{' '}
-                <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees">
+                <a
+                  href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Early childhood education fees
                 </a>
                 .
@@ -1475,58 +1479,6 @@ const en: Translations = {
         ) => `Choice ${unitName} moved to position ${position}`,
         removePreferredUnitScreenReaderMessage: (unitName: string) =>
           `Choice ${unitName} removed`
-      },
-      fee: {
-        title: 'Early childhood education fee',
-        info: {
-          DAYCARE: (
-            <P>
-              The client fees for municipal early childhood education and the
-              client charges for service voucher users are calculated as a
-              percentage of the family’s gross income. Depending on the family’s
-              size and income and the hours of early childhood education, the
-              fees vary from free early childhood education to a maximum monthly
-              fee of EUR 288 per child. Service voucher units may, however,
-              charge an additional monthly fee of EUR 0–50 per child. Each
-              family must provide information about their gross income using the
-              income statement form, no later than two weeks after their child’s
-              early childhood education has started.
-            </P>
-          ),
-          PRESCHOOL: (
-            <P>
-              The client fees for municipal early childhood education are
-              calculated as a percentage of the family’s gross income. Each
-              family must provide information about their gross income using the
-              income statement form, no later than two weeks after their child’s
-              early childhood education has started.
-            </P>
-          ),
-          CLUB: <P />
-        },
-        emphasis: (
-          <strong>
-            The income statement is not needed if the family agrees to pay the
-            highest fee.
-          </strong>
-        ),
-        checkbox:
-          'I give consent to the highest fee. This consent will remain valid until I state otherwise.',
-        links: (
-          <P>
-            You can find further information about early childhood education
-            fees, additional fees for service voucher users and the income
-            statement form here:
-            <br />
-            <a
-              href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Early childhood education fees
-            </a>
-          </P>
-        )
       },
       additionalDetails: {
         title: 'Other additional information',

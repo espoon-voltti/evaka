@@ -545,50 +545,6 @@ const en: DeepPartial<Translations> = {
         futureAddressInfo:
           'Turku early childhood education and care considers the address obtained from the Population Information System to be the official address. Address information changes once the applicant submits are change notification in the Post Office or the Digital and Population Data Services Agency.'
       },
-      fee: {
-        info: {
-          DAYCARE: (
-            <P>
-              The customer fees for municipal early childhood education and care
-              and the deductible of the service voucher is a percentage of the
-              family’s gross income. The fees vary depending on the size and
-              income of the family and the period of early childhood education
-              and care. If the price of a private early childhood education and
-              care place is higher than the value of the service voucher, the
-              family pays the difference. The family submits their gross income
-              using a form as soon as the child has started in early childhood
-              education and care.
-            </P>
-          ),
-          PRESCHOOL: (
-            <P>
-              Pre-primary education is free, but complementary early childhood
-              education and care is charged for. If a child participates in
-              early childhood education and care complementing pre-primary
-              education, the family submits their gross income using a form as
-              soon as the child has started in early childhood education and
-              care.
-            </P>
-          )
-        },
-        links: (
-          <>
-            <P>
-              The income report form is in eVaka in the User menu, under Income
-              details.
-            </P>
-            <P>
-              For more information about customer fees, please see the City of
-              Turku website:{' '}
-              <ExternalLink
-                href="https://www.turku.fi/varhaiskasvatus-ja-esiopetus/maksut-tuet-ja-palveluseteli"
-                text="Early education customer fees."
-                newTab
-              />
-            </P>
-          </>
-        )
-      },
       sentInfo: {
         title: 'The application has been sent',
         text: 'The application can be changed until early childhood education and care service guidance has begun processing it.',

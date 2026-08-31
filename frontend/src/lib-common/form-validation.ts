@@ -148,7 +148,10 @@ export const httpUrl = (
   }
 }
 
-type StandardValidator<T> = (val: T, err?: ErrorKey) => ErrorKey | undefined
+export type StandardValidator<T> = (
+  val: T,
+  err?: ErrorKey
+) => ErrorKey | undefined
 
 export const validate = <T = string>(
   val: T,

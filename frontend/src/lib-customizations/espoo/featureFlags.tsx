@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { FeatureFlags } from 'lib-customizations/types'
+import type { FeatureFlags } from 'lib-common/feature-flags'
 
 import type { Env } from './env'
 import { env } from './env'
@@ -64,12 +64,14 @@ const features: Features = {
     nekkuIntegration: false,
     forceUnpublishDocumentTemplate: true,
     serviceApplications: true,
-    showCitizenApplicationPreschoolTerms: true
+    showCitizenApplicationPreschoolTerms: true,
+    sharedApplicationEditor: true
   },
   staging: {
     ...prod,
     environmentLabel: 'Staging',
-    forceUnpublishDocumentTemplate: true
+    forceUnpublishDocumentTemplate: true,
+    sharedApplicationEditor: true
   },
   prod
 }

@@ -604,6 +604,7 @@ export const sv: typeof fi = {
         title: 'Uppgifter om meddelad andra vuxen',
         checkboxLabel:
           'Sökande har meddelat den andra vårdnadshavarens uppgifter',
+        agreementStatusNotSet: 'Vårdnadshavare bor på samma adress',
         exists: 'Barnet har en annan vårdnadshavare',
         sameAddress: 'Andra vårdnadshavaren bor på samma adress',
         separated: 'Andra vårdnadshavaren bor på annan adress',
@@ -626,7 +627,6 @@ export const sv: typeof fi = {
       applicationInfo: 'Ansökans tilläggsuppgifter',
       allergies: 'Allergier',
       diet: 'Specialdiet',
-      maxFeeAccepted: 'Samtycke till högsta avgift',
       serviceWorkerAttachmentsTitle: 'Bilagor från servicerådgivningen',
       noAttachments: 'Inga bilagor'
     },
@@ -3141,8 +3141,7 @@ export const sv: typeof fi = {
         return: 'Tillbaka'
       },
       income: {
-        title: 'Familjens inkomstuppgifter',
-        maxFeeAccepted: 'Vårdnadshavarens samtycke till högsta avgiftsklass.'
+        title: 'Familjens inkomstuppgifter'
       },
       child: {
         ssn: 'Personbeteckning',

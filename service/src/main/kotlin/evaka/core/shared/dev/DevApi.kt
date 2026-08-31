@@ -13,6 +13,7 @@ import evaka.core.Sensitive
 import evaka.core.absence.AbsenceCategory
 import evaka.core.absence.AbsenceType
 import evaka.core.absence.getAbsencesOfChildByDate
+import evaka.core.application.ApplicationAttachmentType
 import evaka.core.application.ApplicationDetails
 import evaka.core.application.ApplicationForm
 import evaka.core.application.ApplicationOrigin
@@ -1232,6 +1233,39 @@ UPDATE placement SET end_date = ${bind(req.endDate)}, termination_requested_date
                 }
             }
             .key
+    }
+
+    @PostMapping(
+        "/application-attachment/{applicationId}",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+    )
+    fun createApplicationAttachment(
+        db: Database,
+        clock: EvakaClock,
+        @PathVariable applicationId: ApplicationId,
+        @RequestParam employeeId: EmployeeId,
+        @RequestParam type: ApplicationAttachmentType,
+        @RequestPart("file") file: MultipartFile,
+    ): AttachmentId {
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                val id =
+                    tx.insertAttachment(
+                        AuthenticatedUser.Employee(employeeId, emptySet()),
+                        clock.now(),
+                        file.originalFilename ?: file.name,
+                        file.contentType ?: "image/jpeg",
+                        AttachmentParent.Application(applicationId),
+                        type = type,
+                    )
+                documentClient.upload(
+                    DocumentKey.Attachment(id),
+                    file.bytes,
+                    file.contentType ?: "image/jpeg",
+                )
+                id
+            }
+        }
     }
 
     @PostMapping("/document-templates")

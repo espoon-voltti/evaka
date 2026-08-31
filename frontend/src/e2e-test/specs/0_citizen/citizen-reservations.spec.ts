@@ -4,6 +4,7 @@
 
 import zip from 'lodash/zip'
 
+import type { FeatureFlags } from 'lib-common/feature-flags'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { DaycareId } from 'lib-common/generated/api-types/shared'
@@ -12,7 +13,7 @@ import { evakaUserId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
 import TimeRange from 'lib-common/time-range'
-import type { DeepPartial, FeatureFlags } from 'lib-customizations/types'
+import type { DeepPartial } from 'lib-customizations/types'
 
 import {
   testCareArea2,

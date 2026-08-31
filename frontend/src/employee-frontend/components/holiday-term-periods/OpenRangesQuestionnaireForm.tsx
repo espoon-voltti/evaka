@@ -25,6 +25,7 @@ import { Button } from 'lib-components/atoms/buttons/Button'
 import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import ButtonContainer from 'lib-components/layout/ButtonContainer'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -33,7 +34,6 @@ import { H1, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
-import { errorToInputInfo } from '../../utils/validation/input-info-helper'
 
 import {
   createQuestionnaireMutation,

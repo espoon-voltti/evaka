@@ -30,6 +30,7 @@ import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { desktopMinPx, tabletMin } from 'lib-components/breakpoints'
+import { errorToInputInfo } from 'lib-components/input-info-helper'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import {
@@ -43,7 +44,6 @@ import { H1, H2, H3, H4, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
-import { errorToInputInfo } from '../input-info-helper'
 import { useLang, useTranslation } from '../localization'
 import useTitle from '../useTitle'
 

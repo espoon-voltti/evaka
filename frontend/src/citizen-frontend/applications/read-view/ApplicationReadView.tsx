@@ -5,7 +5,7 @@
 import React from 'react'
 
 import { combine } from 'lib-common/api'
-import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import { apiDataToFormData } from 'lib-common/application/ApplicationFormData'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { useIdRouteParam } from 'lib-common/useRouteParams'

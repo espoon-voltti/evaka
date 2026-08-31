@@ -10,7 +10,10 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 
 import config from '../../config'
-import { execSimpleApplicationActions } from '../../dev-api'
+import {
+  execSimpleApplicationActions,
+  insertApplicationAttachment
+} from '../../dev-api'
 import {
   applicationFixture,
   applicationFixtureId,
@@ -25,18 +28,20 @@ import {
   createApplications,
   resetServiceState
 } from '../../generated/api-clients'
+import type { DevEmployee } from '../../generated/api-types'
 import ApplicationListView from '../../pages/employee/applications/application-list-view'
 import ApplicationReadView from '../../pages/employee/applications/application-read-view'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { UnitPage } from '../../pages/employee/units/unit'
 import { test } from '../../playwright'
 import type { Page } from '../../utils/page'
-import { testFileName } from '../../utils/page'
+import { testFileName, testFilePath } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
 test.describe('Employee application attachments', () => {
   let page: Page
   let applicationListView: ApplicationListView
+  let serviceWorker: DevEmployee
 
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
@@ -50,7 +55,7 @@ test.describe('Employee application attachments', () => {
 
     const fixture = applicationFixture(testChild, testAdult)
     await createApplications({ body: [fixture] })
-    const serviceWorker = await Fixture.employee().serviceWorker().save()
+    serviceWorker = await Fixture.employee().serviceWorker().save()
 
     page = evaka
     applicationListView = new ApplicationListView(page)
@@ -96,6 +101,21 @@ test.describe('Employee application attachments', () => {
     )
   })
 
+  test('Attachment uploaded before cancelling is visible in the read view', async () => {
+    await applicationListView.searchButton.click()
+    const applicationView = await applicationListView
+      .applicationRow(applicationFixtureId)
+      .openApplication()
+    const applicationEditView = await applicationView.startEditing()
+
+    await applicationEditView.serviceWorkerAttachmentFileUpload.uploadTestFile()
+
+    // The upload attaches the file to the application server side, so cancelling
+    // does not undo it -- the read view must show it without a page reload.
+    const readView = await applicationEditView.cancelEditing()
+    await readView.assertServiceWorkerAttachmentExists(testFileName)
+  })
+
   test('Extended care attachment is visible to appropriate unit supervisor', async ({
     newEvakaPage
   }) => {
@@ -137,26 +157,43 @@ test.describe('Employee application attachments', () => {
       id: daycareId
     }).save()
 
+    // Shift care requested at a unit that does not provide it. The editor no
+    // longer offers such units once shift care is ticked, so this application
+    // is built through the dev API rather than the UI.
+    const application = applicationFixture(
+      testChild2,
+      testAdult,
+      undefined,
+      'DAYCARE',
+      null,
+      [daycareId]
+    )
     const applicationId = randomId<ApplicationId>()
     await createApplications({
       body: [
         {
-          ...applicationFixture(
-            testChild2,
-            testAdult,
-            undefined,
-            'DAYCARE',
-            null,
-            [daycareId]
-          ),
-          id: applicationId
+          ...application,
+          id: applicationId,
+          form: {
+            ...application.form,
+            preferences: {
+              ...application.form.preferences,
+              serviceNeed: {
+                ...application.form.preferences.serviceNeed!,
+                shiftCare: true
+              }
+            }
+          }
         }
       ]
     })
-
-    await page.reload()
-
-    await addAttachmentToApplication(applicationId)
+    await insertApplicationAttachment(
+      applicationId,
+      serviceWorker.id,
+      'EXTENDED_CARE',
+      testFileName,
+      testFilePath
+    )
 
     await execSimpleApplicationActions(
       applicationId,

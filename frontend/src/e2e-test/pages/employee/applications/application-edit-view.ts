@@ -4,6 +4,7 @@
 
 import type { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
 import type { PlacementType } from 'lib-common/generated/api-types/placement'
+import type { ServiceNeedOptionId } from 'lib-common/generated/api-types/shared'
 import type LocalDate from 'lib-common/local-date'
 
 import { expect } from '../../../playwright'
@@ -11,11 +12,12 @@ import type { Page, Element } from '../../../utils/page'
 import {
   Checkbox,
   Combobox,
-  Radio,
-  TextInput,
+  DatePicker,
   FileUpload,
-  DatePicker
+  Radio,
+  TextInput
 } from '../../../utils/page'
+import { ApplicationEditorSections } from '../../application-editor-sections'
 
 import ApplicationReadView from './application-read-view'
 
@@ -29,53 +31,73 @@ export default class ApplicationEditView {
   #connectedDaycare: Checkbox
   #connectedDaycarePreferredStartDate: DatePicker
   #connectedDaycarePreferredStartDateInputWarning: Element
-  #preferredUnit: Combobox
+  #preferredUnitsInput: TextInput
   #applicantPhone: TextInput
   #applicantEmail: TextInput
   #shiftCareCheckbox: Checkbox
   shiftCareAttachmentFileUpload: FileUpload
-  #guardianName: Element
+  serviceWorkerAttachmentFileUpload: FileUpload
+  #guardianFirstName: Element
+  #guardianLastName: Element
   #guardianSsn: Element
   #guardianAddress: Element
   #secondGuardianToggle: Checkbox
   #secondGuardianPhone: TextInput
   #secondGuardianEmail: TextInput
-  constructor(private readonly page: Page) {
+  #sections: ApplicationEditorSections
+  #legacyPreferredUnit: Combobox
+  /**
+   * The legacy employee-only editor, rendered when the sharedApplicationEditor
+   * feature flag is off. Its `data-qa` attributes were aligned with the shared
+   * editor's, so only genuinely different widgets need to branch on this.
+   */
+  constructor(
+    private readonly page: Page,
+    private readonly legacy = false
+  ) {
+    this.#sections = new ApplicationEditorSections(page)
+    this.#legacyPreferredUnit = new Combobox(
+      page.findByDataQa('select-preferred-unit')
+    )
     this.#saveButton = page.findByDataQa('save-application')
-    this.#urgentCheckbox = new Checkbox(page.findByDataQa('checkbox-urgent'))
+    this.#urgentCheckbox = new Checkbox(page.findByDataQa('urgent-input'))
     this.urgentAttachmentFileUpload = new FileUpload(
-      page.findByDataQa('file-upload-urgent')
+      page.findByDataQa('urgent-file-upload')
     )
     this.#preferredStartDate = new DatePicker(
-      page.findByDataQa('datepicker-start-date')
+      page.findByDataQa('preferredStartDate-input')
     )
-    this.#startTime = new TextInput(page.findByDataQa('start-time'))
-    this.#endTime = new TextInput(page.findByDataQa('end-time'))
+    this.#startTime = new TextInput(page.findByDataQa('startTime-input'))
+    this.#endTime = new TextInput(page.findByDataQa('endTime-input'))
     this.#connectedDaycare = new Checkbox(
-      page.findByDataQa('checkbox-service-need-connected')
+      page.findByDataQa('connectedDaycare-input')
     )
     this.#connectedDaycarePreferredStartDate = new DatePicker(
-      page.findByDataQa('datepicker-connected-daycare-preferred-start-date')
+      page.findByDataQa('connectedDaycarePreferredStartDate-input')
     )
     this.#connectedDaycarePreferredStartDateInputWarning = page.findByDataQa(
-      'input-warning-connected-daycare-preferred-start-date'
+      'connectedDaycarePreferredStartDate-input-info'
     )
-    this.#preferredUnit = new Combobox(page.findByDataQa('preferred-unit'))
+    this.#preferredUnitsInput = new TextInput(
+      page.find('[data-qa="preferredUnits-input"] input')
+    )
     this.#applicantPhone = new TextInput(
-      page.findByDataQa('application-person-phone')
+      page.findByDataQa('guardianPhone-input')
     )
     this.#applicantEmail = new TextInput(
-      page.findByDataQa('application-person-email')
+      page.findByDataQa('guardianEmail-input')
     )
-    this.#shiftCareCheckbox = new Checkbox(
-      page.findByDataQa('checkbox-service-need-shift-care')
-    )
+    this.#shiftCareCheckbox = new Checkbox(page.findByDataQa('shiftCare-input'))
     this.shiftCareAttachmentFileUpload = new FileUpload(
-      page.findByDataQa('file-upload-shift-care')
+      page.findByDataQa('shift-care-file-upload')
     )
-    this.#guardianName = page.findByDataQa('guardian-name')
+    this.serviceWorkerAttachmentFileUpload = new FileUpload(
+      page.findByDataQa('file-upload-service-worker')
+    )
+    this.#guardianFirstName = page.findByDataQa('guardian-first-name')
+    this.#guardianLastName = page.findByDataQa('guardian-last-name')
     this.#guardianSsn = page.findByDataQa('guardian-ssn')
-    this.#guardianAddress = page.findByDataQa('guardian-address')
+    this.#guardianAddress = page.findByDataQa('guardian-home-address')
     this.#secondGuardianToggle = new Checkbox(
       page.findByDataQa('application-second-guardian-toggle')
     )
@@ -89,6 +111,11 @@ export default class ApplicationEditView {
 
   async saveApplication() {
     await this.#saveButton.click()
+    return new ApplicationReadView(this.page)
+  }
+
+  async cancelEditing() {
+    await this.page.findByDataQa('cancel-editing').click()
     return new ApplicationReadView(this.page)
   }
 
@@ -121,17 +148,26 @@ export default class ApplicationEditView {
     ).check()
   }
 
-  async selectPreschoolServiceNeedOption(nameFi: string) {
+  async selectPreschoolServiceNeedOption(optionId: ServiceNeedOptionId) {
     await new Radio(
-      this.page.findByDataQa(`preschool-service-need-option-${nameFi}`)
+      this.page.findByDataQa(`service-need-option-${optionId}`)
     ).check()
   }
 
   async pickUnit(unitName: string) {
-    await this.#preferredUnit.fillAndSelectFirst(unitName)
+    await this.#sections.open('unitPreference')
+    if (this.legacy) {
+      // a single-select combobox that appends on selection, not the shared
+      // editor's multi-select text input
+      await this.#legacyPreferredUnit.fillAndSelectFirst(unitName)
+      return
+    }
+    await this.#preferredUnitsInput.type(unitName)
+    await this.page.keyboard.press('Enter')
   }
 
   async fillApplicantPhoneAndEmail(phone: string, email: string) {
+    await this.#sections.open('contactInfo')
     await this.#applicantPhone.fill(phone)
     await this.#applicantEmail.fill(email)
   }
@@ -155,16 +191,23 @@ export default class ApplicationEditView {
   }
 
   async assertGuardian(
-    expectedName: string,
+    expectedFirstName: string,
+    expectedLastName: string,
     expectedSsn: string,
     expectedAddress: string
   ) {
-    await expect(this.#guardianName.findText(expectedName)).toBeVisible()
-    await expect(this.#guardianSsn.findText(expectedSsn)).toBeVisible()
-    await expect(this.#guardianAddress.findText(expectedAddress)).toBeVisible()
+    await this.#sections.open('contactInfo')
+    // toHaveText (not findText().toBeVisible()) because an empty ssn/address
+    // renders as a zero-size <span>, which Playwright reports as hidden.
+    await expect(this.#guardianFirstName).toHaveText(expectedFirstName)
+    await expect(this.#guardianLastName).toHaveText(expectedLastName)
+    await expect(this.#guardianSsn).toHaveText(expectedSsn)
+    // toContainText, not toHaveText: the legacy editor renders the whole address
+    // ("street, postal postOffice") in one element, the shared one the street alone
+    await expect(this.#guardianAddress).toContainText(expectedAddress)
   }
 
-  #guardianAgreementStatus = (status: OtherGuardianAgreementStatus) =>
+  #guardianAgreementStatus = (status: OtherGuardianAgreementStatus | null) =>
     new Radio(
       this.page.findByDataQa(
         `radio-other-guardian-agreement-status-${status ?? 'null'}`
@@ -172,12 +215,16 @@ export default class ApplicationEditView {
     )
 
   async fillSecondGuardianContactInfo(phone: string, email: string) {
+    await this.#sections.open('contactInfo')
     await this.#secondGuardianToggle.check()
     await this.#secondGuardianPhone.fill(phone)
     await this.#secondGuardianEmail.fill(email)
   }
 
-  async setGuardianAgreementStatus(status: OtherGuardianAgreementStatus) {
+  async setGuardianAgreementStatus(
+    status: OtherGuardianAgreementStatus | null
+  ) {
+    await this.#sections.open('contactInfo')
     await this.#guardianAgreementStatus(status).check()
   }
 }

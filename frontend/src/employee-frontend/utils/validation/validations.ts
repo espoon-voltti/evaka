@@ -21,6 +21,8 @@ export const isPhoneValid = (value: string) => PHONE_REGEX.test(value)
 
 export const isSsnValid = (value: string) => SSN_REGEXP.test(value)
 
+// Only used by the legacy application editor. Deliberately not lib-common's
+// TIME_REGEXP: this one also accepts 24:00.
 export const timeRegex = /^(([0-1][0-9])|(2[0-4])):[0-5][0-9]$/
 
 export const isTimeValid = (value: string) => timeRegex.test(value)

@@ -111,8 +111,8 @@ class SeedApplicationsGeneratorTest {
         // at least one application is preparatory
         assertTrue(apps.any { it.form.preferences.preparatory })
 
-        // applicationFixture parity: maxFeeAccepted is false and clubDetails is always present
-        assertTrue(apps.all { it.form.maxFeeAccepted == false && it.form.clubDetails != null })
+        // applicationFixture parity: clubDetails is always present
+        assertTrue(apps.all { it.form.clubDetails != null })
 
         // two-guardian family: otherGuardians contains the other guardian's id
         val twoGuardianFamily = families.first { it.family.otherGuardian != null }

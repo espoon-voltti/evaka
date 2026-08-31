@@ -2627,7 +2627,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                                         preparatory = false,
                                         urgent = false,
                                     ),
-                                maxFeeAccepted = false,
                                 otherInfo = "",
                                 clubDetails = null,
                             ),
@@ -2735,7 +2734,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         diet: String = "",
         allergies: String = "",
         otherInfo: String = "",
-        maxFeeAccepted: Boolean = false,
         preferredStartDate: LocalDate? = LocalDate.now().plusMonths(4),
         applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
         guardianEmail: String = "abc@espoo.fi",
@@ -2809,7 +2807,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                             dietType = diet,
                             otherInfo = otherInfo,
                         ),
-                    maxFeeAccepted = maxFeeAccepted,
                 ),
         )
     }
@@ -2853,7 +2850,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             tx.insertApplication(
                 guardian = guardian,
-                maxFeeAccepted = true,
                 appliedType = appliedType,
                 applicationId = applicationId,
                 preferredStartDate = preferredStartDate,

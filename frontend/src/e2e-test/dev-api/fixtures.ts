@@ -2812,7 +2812,6 @@ const applicationForm = (
     },
     secondGuardian,
     otherPartner: null,
-    maxFeeAccepted: false,
     otherChildren: [],
     preferences: {
       preferredStartDate,

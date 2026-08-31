@@ -7,7 +7,7 @@ import { useCallback, useState, useEffect } from 'react'
 import type { Result } from 'lib-common/api'
 import { Success } from 'lib-common/api'
 import type FiniteDateRange from 'lib-common/finite-date-range'
-import { useBoolean, type BoundForm } from 'lib-common/form/hooks'
+import { type BoundForm } from 'lib-common/form/hooks'
 import type { Form } from 'lib-common/form/types'
 import type {
   ReservationChild,
@@ -154,36 +154,6 @@ export function useExtendedReservationsRange(dateRange: FiniteDateRange) {
   }, [fetchedReservations])
 
   return { reservations, loading: fetchedReservations.isLoading }
-}
-
-// Hook for announcing messages to screen reader users
-// Needs the ariaLiveBustingValue trick to make sure repeated messages are read out,
-// e.g. Mac VoiceOver seems to cache the content otherwise.
-// Needs the message to be cleared after timeout to prevent screen readers from reading it out again.
-// Works best with aria-live set to "polite"
-export const useScreenReaderMessage = (): [
-  string | null,
-  (message: string) => void
-] => {
-  const [screenReaderMessage, setScreenReaderMessage] = useState<string | null>(
-    null
-  )
-  const [isMessageTimerOn, setIsMessageTimerOn] = useState(false)
-  const [ariaLiveBustingValue, { toggle }] = useBoolean(false)
-  const showScreenReaderMessage = useCallback(
-    (message: string) => {
-      if (isMessageTimerOn) return
-      toggle()
-      setScreenReaderMessage(message + (ariaLiveBustingValue ? '\u200B' : ''))
-      setIsMessageTimerOn(true)
-      setTimeout(() => {
-        setScreenReaderMessage(null)
-        setIsMessageTimerOn(false)
-      }, 1000)
-    },
-    [ariaLiveBustingValue, isMessageTimerOn, toggle]
-  )
-  return [screenReaderMessage, showScreenReaderMessage]
 }
 
 export const useRemovePlacementPendingChildSelections = (
