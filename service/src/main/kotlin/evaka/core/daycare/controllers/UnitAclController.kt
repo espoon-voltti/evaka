@@ -6,6 +6,7 @@ package evaka.core.daycare.controllers
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import evaka.core.Audit
+import evaka.core.AuditChange
 import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.absence.getDaycareIdByGroup
@@ -357,6 +358,7 @@ class UnitAclController(
         if (update.groupIds == null && update.hasStaffOccupancyEffect == null) {
             throw BadRequest("Request is missing all update content")
         }
+        val audit = AuditContext().add(unitId).add(employeeId).addMeta("role", update.role)
         val occupancyCoefficientId = db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -389,10 +391,17 @@ class UnitAclController(
                     if (update.endDate?.isBefore(clock.today()) == true) {
                         throw BadRequest("End date cannot be in the past")
                     }
+                    audit
+                        .addMeta("endDate", AuditChange(old = currentEndDate, new = update.endDate))
+                        .observeDate(currentEndDate)
+                        .observeDate(update.endDate)
                     tx.updateAclRowEndDate(unitId, employeeId, update.endDate)
                 }
 
-                update.groupIds?.let { tx.syncDaycareGroupAcl(unitId, employeeId, it, clock.now()) }
+                update.groupIds?.let {
+                    audit.add(it).addMeta("groupsUpdated", true)
+                    tx.syncDaycareGroupAcl(unitId, employeeId, it, clock.now())
+                }
 
                 val occupancyCoefficientId =
                     update.hasStaffOccupancyEffect?.let {
@@ -414,9 +423,7 @@ class UnitAclController(
                 occupancyCoefficientId
             }
         }
-        if (update.groupIds != null) {
-            Audit.UnitGroupAclUpdate.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
-        }
+        audit.log(Audit.UnitAclUpdate, clock)
 
         if (update.hasStaffOccupancyEffect != null) {
             Audit.StaffOccupancyCoefficientUpsert.log(
@@ -436,11 +443,19 @@ class UnitAclController(
         @RequestBody update: AclUpdate,
     ) {
         if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
+        val audit =
+            AuditContext()
+                .add(unitId)
+                .add(employeeId)
+                .addMeta("role", update.role)
+                .addMeta("endDate", update.endDate)
         val occupancyCoefficientId = db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, update.roleAddAction, unitId)
                 validateIsPermanentEmployee(tx, employeeId)
-                tx.deleteScheduledDaycareAclRow(employeeId, unitId)
+                val replacedScheduled = tx.deleteScheduledDaycareAclRow(employeeId, unitId)
+                audit.addMeta("replacedScheduled", replacedScheduled != null)
+                replacedScheduled?.let { audit.addMeta("scheduledStartDate", it.startDate) }
                 tx.insertDaycareAclRow(unitId, employeeId, update.role, update.endDate)
                 tx.upsertEmployeeMessageAccount(employeeId)
                 update.groupIds?.let {
@@ -451,6 +466,7 @@ class UnitAclController(
                         Action.Unit.UPDATE_STAFF_GROUP_ACL,
                         unitId,
                     )
+                    audit.add(it)
                     tx.syncDaycareGroupAcl(unitId, employeeId, it, clock.now())
                 }
                 val occupancyCoefficientId =
@@ -473,10 +489,7 @@ class UnitAclController(
                 occupancyCoefficientId
             }
         }
-        Audit.UnitAclCreate.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
-        if (update.groupIds != null) {
-            Audit.UnitGroupAclUpdate.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
-        }
+        audit.log(Audit.UnitAclCreate, clock)
         if (update.hasStaffOccupancyEffect != null) {
             Audit.StaffOccupancyCoefficientUpsert.log(
                 targetId = AuditId(listOf(unitId, employeeId)),

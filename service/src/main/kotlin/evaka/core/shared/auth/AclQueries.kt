@@ -261,17 +261,28 @@ WHERE employee_id = ${bind(employeeId)}
     )
 }
 
+data class ScheduledAclRowSummary(
+    val daycareId: DaycareId,
+    val employeeId: EmployeeId,
+    val role: UserRole,
+    val startDate: LocalDate,
+    val endDate: LocalDate?,
+)
+
+@IgnorableReturnValue
 fun Database.Transaction.deleteScheduledDaycareAclRow(
     employeeId: EmployeeId,
     daycareId: DaycareId,
-) = execute {
+): ScheduledAclRowSummary? = createQuery {
     sql(
         """
 DELETE FROM daycare_acl_schedule
 WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
+RETURNING daycare_id, employee_id, role, start_date, end_date
     """
     )
 }
+    .exactlyOneOrNull<ScheduledAclRowSummary>()
 
 fun Database.Transaction.upsertAclRowsFromScheduled(today: LocalDate) = createQuery {
     sql(
