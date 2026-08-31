@@ -491,7 +491,6 @@ enum class Audit(
     UnitAclCreate(securityEvent = true, securityLevel = "medium"),
     UnitAclDelete(securityEvent = true, securityLevel = "medium"),
     UnitAclDeleteScheduled(securityEvent = true, securityLevel = "medium"),
-    UnitScheduledAclRead,
     UnitAttendanceReservationsRead,
     UnitCalendarEventsRead,
     UnitFeaturesRead,
@@ -624,6 +623,7 @@ enum class Audit(
     ServiceWorkerNoteUpdate,
     UnitAclRead,
     UnitApplicationsRead,
+    UnitScheduledAclRead,
     UnitServiceApplicationsRead,
     VoucherValueDecisionArchive;
 
