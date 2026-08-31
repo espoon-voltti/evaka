@@ -300,6 +300,32 @@ data class VardaEnv(
     }
 }
 
+/**
+ * POC-only configuration for querying DVV's REST `/perustiedot` endpoint.
+ *
+ * Deliberately separate from [DvvModificationsEnv] so that the POC can be pointed at the DVV
+ * sandbox without touching the production modifications integration.
+ */
+data class DvvPerustiedotPocEnv(
+    val url: String,
+    val userId: String,
+    val password: Sensitive<String>,
+) {
+    companion object {
+        fun fromEnvironment(env: Environment): DvvPerustiedotPocEnv? {
+            val url: String? = env.lookup("evaka.integration.dvv_perustiedot_poc.url")
+            return if (url.isNullOrBlank()) null
+            else
+                DvvPerustiedotPocEnv(
+                    url = url,
+                    userId = env.lookup("evaka.integration.dvv_perustiedot_poc.user_id"),
+                    password =
+                        Sensitive(env.lookup("evaka.integration.dvv_perustiedot_poc.password")),
+                )
+        }
+    }
+}
+
 data class DvvModificationsEnv(
     val url: String,
     val userId: String,
