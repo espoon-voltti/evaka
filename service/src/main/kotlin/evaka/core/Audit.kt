@@ -488,7 +488,6 @@ enum class Audit(
     UnitAclCreate,
     UnitAclDelete,
     UnitAclDeleteScheduled,
-    UnitAclRead,
     UnitScheduledAclRead,
     UnitAttendanceReservationsRead,
     UnitCalendarEventsRead,
@@ -620,6 +619,7 @@ enum class Audit(
     PreschoolAssistanceUpdate,
     PreschoolTermRead,
     ServiceWorkerNoteUpdate,
+    UnitAclRead,
     UnitApplicationsRead,
     UnitServiceApplicationsRead,
     VoucherValueDecisionArchive;
