@@ -100,7 +100,7 @@ export default React.memo(function LoginPage() {
             <>
               <InfoBox
                 message={i18n.loginPage.login.passkeyError(
-                  getStrongLoginUri(unvalidatedNextPath ?? '/')
+                  getStrongLoginUri('/personal-details')
                 )}
                 darkBackground
                 wide

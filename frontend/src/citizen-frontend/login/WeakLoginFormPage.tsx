@@ -165,9 +165,7 @@ const WeakLoginForm = React.memo(function WeakLogin({
         {rateLimitError && <AlertBox message={t.rateLimitError} noMargin />}
         {passkeyFailed && (
           <InfoBox
-            message={t.passkeyError(
-              getStrongLoginUri(unvalidatedNextPath ?? '/')
-            )}
+            message={t.passkeyError(getStrongLoginUri('/personal-details'))}
             darkBackground
             wide
             data-qa="passkey-login-error"
