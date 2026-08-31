@@ -321,7 +321,9 @@ const en: Translations = {
       ]
     },
     installSuggestion: {
-      title: 'Important notifications on your phone'
+      title: 'Important notifications on your phone',
+      dismissedNote:
+        'The instructions for Add eVaka to the home screen are also in the Personal information menu.'
     },
     homeScreenSection: {
       title: 'Add eVaka to the home screen'

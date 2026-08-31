@@ -320,7 +320,9 @@ const sv: Translations = {
       ]
     },
     installSuggestion: {
-      title: 'Viktiga aviseringar till telefonen'
+      title: 'Viktiga aviseringar till telefonen',
+      dismissedNote:
+        'Anvisningarna för Lägg till eVaka på hemskärmen finns också i menyn Personuppgifter.'
     },
     homeScreenSection: {
       title: 'Lägg till eVaka på hemskärmen'

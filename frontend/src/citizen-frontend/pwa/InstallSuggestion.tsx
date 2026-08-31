@@ -35,7 +35,9 @@ export const InstallSuggestion = React.memo(function InstallSuggestion() {
   const availability = useInstallAvailability()
   const { modalOpen } = useContext(OverlayContext)
   const [expanded, setExpanded] = useState(false)
-  const [dismissedNow, setDismissedNow] = useState(false)
+  const [stage, setStage] = useState<'suggestion' | 'note' | 'gone'>(
+    'suggestion'
+  )
 
   const children = useQueryResult(user ? childrenQuery() : constantQuery([]))
   const hasPlacedChild = children
@@ -59,12 +61,28 @@ export const InstallSuggestion = React.memo(function InstallSuggestion() {
     .getOrElse(false)
 
   if (!user || (!hasPlacedChild && !hasSentApplication)) return null
-  if (dismissedNow || isInstallSuggestionDismissed(user.id)) return null
+  if (stage === 'gone' || isInstallSuggestionDismissed(user.id)) return null
   if (availability.kind === 'unavailable') return null
 
   // Hide until the "Application sent" modal is dismissed. This also hides
   // the install suggestion when any modal is open.
   if (modalOpen) return null
+
+  if (stage === 'note') {
+    return (
+      <Banner data-qa="pwa-install-suggestion-note">
+        <Note
+          onClick={() => {
+            dismissInstallSuggestion(user.id)
+            setStage('gone')
+          }}
+          data-qa="pwa-install-suggestion-note-action"
+        >
+          {i18n.pwa.installSuggestion.dismissedNote}
+        </Note>
+      </Banner>
+    )
+  }
 
   const action =
     availability.kind === 'instructions'
@@ -93,10 +111,7 @@ export const InstallSuggestion = React.memo(function InstallSuggestion() {
         <IconOnlyButton
           icon={faTimes}
           aria-label={i18n.common.close}
-          onClick={() => {
-            dismissInstallSuggestion(user.id)
-            setDismissedNow(true)
-          }}
+          onClick={() => setStage('note')}
           data-qa="pwa-install-suggestion-close"
         />
       </Row>
@@ -119,6 +134,17 @@ const Banner = styled.div`
   @media (min-width: ${desktopMin}) {
     top: 0;
   }
+`
+
+const Note = styled.button`
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
 `
 
 const Row = styled.div`

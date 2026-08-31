@@ -324,7 +324,9 @@ export default {
       ]
     },
     installSuggestion: {
-      title: 'Tärkeät ilmoitukset laitteeseen'
+      title: 'Tärkeät ilmoitukset laitteeseen',
+      dismissedNote:
+        'Lisää eVaka kotinäytölle -ohjeet löytyvät myös Omat tiedot -valikosta.'
     },
     homeScreenSection: {
       title: 'Lisää eVaka kotinäytölle'
