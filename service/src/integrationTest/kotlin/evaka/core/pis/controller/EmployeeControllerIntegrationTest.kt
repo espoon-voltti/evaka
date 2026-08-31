@@ -4,6 +4,8 @@
 
 package evaka.core.pis.controller
 
+import evaka.core.Audit
+import evaka.core.AuditLogCapture
 import evaka.core.FullApplicationTest
 import evaka.core.Sensitive
 import evaka.core.identity.ExternalId
@@ -34,6 +36,8 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.whenever
@@ -44,6 +48,18 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Autowired lateinit var employeeController: EmployeeController
 
     private val clock = MockEvakaClock(2025, 1, 1, 12, 0)
+
+    private val auditLogCapture = AuditLogCapture()
+
+    @BeforeEach
+    fun attachAuditLogCapture() {
+        auditLogCapture.attach()
+    }
+
+    @AfterEach
+    fun detachAuditLogCapture() {
+        auditLogCapture.detach()
+    }
 
     @Test
     fun `no employees return empty list`() {
@@ -246,6 +262,17 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             getEmployeeDetails(employee.id).scheduledDaycareRoles,
         )
         db.read { assertFalse(it.hasActiveMessagingAccount(employee.id)) }
+
+        auditLogCapture
+            .event(Audit.EmployeeUpdateDaycareRoles)
+            .assertContext { add(employee.id).add(listOf(daycare1.id, daycare2.id)) }
+            .assertMeta(
+                "role" to UserRole.SPECIAL_EDUCATION_TEACHER,
+                "startDate" to startDate,
+                "endDate" to endDate,
+                "scheduled" to true,
+            )
+            .assertMinDate(startDate)
     }
 
     @Test

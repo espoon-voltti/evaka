@@ -5,6 +5,7 @@
 package evaka.core.pis.controllers
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.daycare.deactivatePersonalMessageAccountIfNeeded
@@ -175,6 +176,15 @@ class EmployeeController(private val accessControl: AccessControl, private val e
         }
         if (user.id == id) throw Forbidden("Cannot modify own roles")
 
+        val audit =
+            AuditContext()
+                .add(id)
+                .add(body.daycareIds)
+                .addMeta("role", body.role)
+                .addMeta("startDate", body.startDate)
+                .addMeta("endDate", body.endDate)
+                .addMeta("scheduled", body.startDate != clock.today())
+                .observeDate(body.startDate)
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -199,10 +209,7 @@ class EmployeeController(private val accessControl: AccessControl, private val e
                 }
             }
         }
-        Audit.EmployeeUpdateDaycareRoles.log(
-            targetId = AuditId(id),
-            meta = mapOf("daycareIds" to body.daycareIds, "role" to body.role),
-        )
+        audit.log(Audit.EmployeeUpdateDaycareRoles, clock)
     }
 
     @DeleteMapping("/{id}/daycare-roles")
