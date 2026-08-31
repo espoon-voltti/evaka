@@ -130,6 +130,7 @@ class UnitAclController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
     ): List<ScheduledDaycareAclRow> {
+        val audit = AuditContext().add(unitId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -151,11 +152,10 @@ class UnitAclController(
                     tx.getScheduledDaycareAclRows(unitId, hasReadStaffEmployeeNumberPermission)
                 }
             }
-            .also {
-                Audit.UnitScheduledAclRead.log(
-                    targetId = AuditId(unitId),
-                    meta = mapOf("count" to it.size),
-                )
+            .also { rows ->
+                audit.add(rows.map { it.id }).addMeta("count", rows.size)
+                rows.forEach { audit.observeDate(it.startDate) }
+                audit.log(Audit.UnitScheduledAclRead, clock)
             }
     }
 
