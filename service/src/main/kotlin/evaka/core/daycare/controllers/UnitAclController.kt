@@ -265,20 +265,27 @@ class UnitAclController(
         @PathVariable employeeId: EmployeeId,
     ) {
         if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
+        val audit = AuditContext().add(unitId).add(employeeId)
         db.connect { dbc ->
-            dbc.transaction {
+            dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
-                    it,
+                    tx,
                     user,
                     clock,
                     Action.Unit.UPDATE_ACL_SCHEDULED,
                     unitId,
                 )
-                validateIsPermanentEmployee(it, employeeId)
-                it.deleteScheduledDaycareAclRow(employeeId, unitId)
+                validateIsPermanentEmployee(tx, employeeId)
+                tx.deleteScheduledDaycareAclRow(employeeId, unitId)?.let { deleted ->
+                    audit
+                        .addMeta("role", deleted.role)
+                        .addMeta("startDate", deleted.startDate)
+                        .addMeta("endDate", deleted.endDate)
+                        .observeDate(deleted.startDate)
+                }
             }
         }
-        Audit.UnitAclDeleteScheduled.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
+        audit.log(Audit.UnitAclDeleteScheduled, clock)
     }
 
     data class AclUpdate(
