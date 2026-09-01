@@ -253,7 +253,7 @@ export default {
           Kirjautuminen pääsyavaimella keskeytyi. Yritä uudelleen, kirjaudu
           sähköpostiosoitteella tai{' '}
           <a href={strongLoginUri}>tunnistaudu Suomi.fi-palvelussa</a> ja luo
-          itsellesi uusi pääsyavain.
+          itsellesi uusi pääsyavain omissa tiedoissa.
         </>
       ),
       usedLast: 'Käytit viimeksi'

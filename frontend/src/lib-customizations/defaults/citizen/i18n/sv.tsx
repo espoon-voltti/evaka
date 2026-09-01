@@ -253,7 +253,8 @@ const sv: Translations = {
         <>
           Inloggningen med inloggningsnyckel avbröts. Försök igen, logga in med
           e-postadress eller{' '}
-          <a href={strongLoginUri}>autentisera dig i tjänsten Suomi.fi</a>.
+          <a href={strongLoginUri}>autentisera dig i tjänsten Suomi.fi</a> och
+          skapa en ny inloggningsnyckel i dina egna uppgifter.
         </>
       ),
       usedLast: 'Senast använd'

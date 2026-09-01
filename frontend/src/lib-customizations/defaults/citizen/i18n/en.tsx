@@ -254,7 +254,8 @@ const en: Translations = {
         <>
           Logging in with a passkey was interrupted. Try again, log in with your
           email address or{' '}
-          <a href={strongLoginUri}>authenticate in the Suomi.fi service</a>.
+          <a href={strongLoginUri}>authenticate in the Suomi.fi service</a> and
+          create a new passkey in your personal information.
         </>
       ),
       usedLast: 'Used last'
