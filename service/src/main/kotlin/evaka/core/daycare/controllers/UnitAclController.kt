@@ -167,30 +167,16 @@ class UnitAclController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
-    ) {
-        if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
-        db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Unit.UPDATE_ACL_UNIT_SUPERVISOR,
-                    unitId,
-                )
-                validateIsPermanentEmployee(it, employeeId)
-                removeDaycareAclForRole(
-                    it,
-                    asyncJobRunner,
-                    clock.now(),
-                    unitId,
-                    employeeId,
-                    UserRole.UNIT_SUPERVISOR,
-                )
-            }
-        }
-        Audit.UnitAclDelete.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
-    }
+    ) =
+        deleteDaycareAclForRole(
+            db,
+            user,
+            clock,
+            unitId,
+            employeeId,
+            UserRole.UNIT_SUPERVISOR,
+            Action.Unit.UPDATE_ACL_UNIT_SUPERVISOR,
+        )
 
     @DeleteMapping("/employee/daycares/{unitId}/specialeducationteacher/{employeeId}")
     fun deleteSpecialEducationTeacher(
@@ -199,30 +185,16 @@ class UnitAclController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
-    ) {
-        if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
-        db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Unit.UPDATE_ACL_SPECIAL_EDUCATION_TEACHER,
-                    unitId,
-                )
-                validateIsPermanentEmployee(it, employeeId)
-                removeDaycareAclForRole(
-                    it,
-                    asyncJobRunner,
-                    clock.now(),
-                    unitId,
-                    employeeId,
-                    UserRole.SPECIAL_EDUCATION_TEACHER,
-                )
-            }
-        }
-        Audit.UnitAclDelete.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
-    }
+    ) =
+        deleteDaycareAclForRole(
+            db,
+            user,
+            clock,
+            unitId,
+            employeeId,
+            UserRole.SPECIAL_EDUCATION_TEACHER,
+            Action.Unit.UPDATE_ACL_SPECIAL_EDUCATION_TEACHER,
+        )
 
     @DeleteMapping("/employee/daycares/{unitId}/earlychildhoodeducationsecretary/{employeeId}")
     fun deleteEarlyChildhoodEducationSecretary(
@@ -231,30 +203,16 @@ class UnitAclController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
-    ) {
-        if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
-        db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Unit.UPDATE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-                    unitId,
-                )
-                validateIsPermanentEmployee(it, employeeId)
-                removeDaycareAclForRole(
-                    it,
-                    asyncJobRunner,
-                    clock.now(),
-                    unitId,
-                    employeeId,
-                    UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
-                )
-            }
-        }
-        Audit.UnitAclDelete.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
-    }
+    ) =
+        deleteDaycareAclForRole(
+            db,
+            user,
+            clock,
+            unitId,
+            employeeId,
+            UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+            Action.Unit.UPDATE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+        )
 
     @DeleteMapping("/employee/daycares/{unitId}/staff/{employeeId}")
     fun deleteStaff(
@@ -263,29 +221,39 @@ class UnitAclController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
+    ) =
+        deleteDaycareAclForRole(
+            db,
+            user,
+            clock,
+            unitId,
+            employeeId,
+            UserRole.STAFF,
+            Action.Unit.UPDATE_ACL_STAFF,
+        )
+
+    private fun deleteDaycareAclForRole(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        unitId: DaycareId,
+        employeeId: EmployeeId,
+        role: UserRole,
+        action: Action.Unit,
     ) {
         if (user.id == employeeId) throw Forbidden("Cannot modify own roles")
+        val audit = AuditContext().add(unitId).add(employeeId).addMeta("role", role)
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.Unit.UPDATE_ACL_STAFF,
-                    unitId,
-                )
-                validateIsPermanentEmployee(it, employeeId)
-                removeDaycareAclForRole(
-                    it,
-                    asyncJobRunner,
-                    clock.now(),
-                    unitId,
-                    employeeId,
-                    UserRole.STAFF,
-                )
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, action, unitId)
+                validateIsPermanentEmployee(tx, employeeId)
+                tx.getDaycareAclEndDate(unitId, employeeId)?.let {
+                    audit.addMeta("endDate", it).observeDate(it)
+                }
+                removeDaycareAclForRole(tx, asyncJobRunner, clock.now(), unitId, employeeId, role)
             }
         }
-        Audit.UnitAclDelete.log(targetId = AuditId(unitId), objectId = AuditId(employeeId))
+        audit.log(Audit.UnitAclDelete, clock)
     }
 
     @DeleteMapping("/employee/daycares/{unitId}/scheduled/{employeeId}")
