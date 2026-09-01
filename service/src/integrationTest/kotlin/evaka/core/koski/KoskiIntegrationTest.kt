@@ -798,6 +798,61 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `extended compulsory education starting after the current placements is sent to Koski`() {
+        insertPlacement(child1, period = preschoolTerm2026)
+        val nextTermEce = preschoolTerm2027
+        db.transaction { tx ->
+            tx.insert(
+                DevPreschoolAssistance(
+                    modifiedBy = employee.evakaUser,
+                    childId = child1.id,
+                    validDuring = nextTermEce,
+                    level =
+                        PreschoolAssistanceLevel.CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION,
+                )
+            )
+        }
+
+        koskiTester.triggerUploads(today = preschoolTerm2026.start.plusDays(1))
+
+        val lisätiedot =
+            assertNotNull(koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.lisätiedot)
+        assertEquals(
+            listOf(Aikajakso.from(nextTermEce)),
+            lisätiedot.varhennetunOppivelvollisuudenJaksot,
+        )
+        // the support decision itself stays within the study right
+        assertNull(lisätiedot.tuenPäätöksenJaksot)
+    }
+
+    @Test
+    fun `only the support decision is trimmed when extended compulsory education spans two terms`() {
+        insertPlacement(child1, period = preschoolTerm2026)
+        val ece = FiniteDateRange(preschoolTerm2026.start, preschoolTerm2027.end)
+        db.transaction { tx ->
+            tx.insert(
+                DevPreschoolAssistance(
+                    modifiedBy = employee.evakaUser,
+                    childId = child1.id,
+                    validDuring = ece,
+                    level =
+                        PreschoolAssistanceLevel.CHILD_SUPPORT_AND_EXTENDED_COMPULSORY_EDUCATION,
+                )
+            )
+        }
+
+        koskiTester.triggerUploads(today = preschoolTerm2026.start.plusDays(1))
+
+        val lisätiedot =
+            assertNotNull(koskiEndpoint.getStudyRights().values.single().opiskeluoikeus.lisätiedot)
+        assertEquals(listOf(Aikajakso.from(ece)), lisätiedot.varhennetunOppivelvollisuudenJaksot)
+        assertEquals(
+            listOf(Tukijakso.from(preschoolTerm2026)),
+            lisätiedot.tuenPäätöksenJaksot,
+        )
+    }
+
+    @Test
     fun `adjacent transport benefit ranges are sent as one joined range`() {
         insertPlacement(child1)
         val otherAssistanceMeasures =
@@ -1457,6 +1512,7 @@ private fun Database.Transaction.clearKoskiInputCache() = execute {
 
 private val preschoolTerm2019 = FiniteDateRange(LocalDate.of(2019, 8, 8), LocalDate.of(2020, 5, 29))
 private val preschoolTerm2020 = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4))
+private val preschoolTerm2026 = FiniteDateRange(LocalDate.of(2026, 8, 10), LocalDate.of(2027, 6, 2))
 private val preschoolTerm2027 = FiniteDateRange(LocalDate.of(2027, 8, 9), LocalDate.of(2028, 6, 2))
 
 private fun testPeriod(offsets: Pair<Long, Long?>) =
