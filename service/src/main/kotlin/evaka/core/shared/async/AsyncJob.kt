@@ -486,6 +486,10 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendWeakCredentialsRemovedEmail(val personId: PersonId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendEmailChangedEmail(val personId: PersonId, val oldEmail: String) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -599,6 +603,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendPendingDecisionEmail::class,
                     SendServiceApplicationDecidedEmail::class,
                     SendSpecialDietNullificationWarningEmail::class,
+                    SendWeakCredentialsRemovedEmail::class,
                 ),
             )
         val urgent =

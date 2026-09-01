@@ -183,6 +183,7 @@ export class LoginDetailsSection extends Element {
   weakLoginEnabled: Element
   weakLoginDisabled: Element
   updatePassword: Element
+  disableCredentials: Element
 
   constructor(element: Element) {
     super(element)
@@ -191,6 +192,18 @@ export class LoginDetailsSection extends Element {
     this.weakLoginEnabled = element.findByDataQa('weak-login-enabled')
     this.weakLoginDisabled = element.findByDataQa('weak-login-disabled')
     this.updatePassword = element.findByDataQa('update-password')
+    this.disableCredentials = element.findByDataQa('disable-credentials')
+  }
+}
+
+export class DisableCredentialsModal extends Element {
+  noPasskeysWarning: Element
+  ok: Element
+
+  constructor(page: Page) {
+    super(page.findByDataQa('disable-credentials-modal'))
+    this.noPasskeysWarning = this.findByDataQa('no-passkeys-warning')
+    this.ok = this.findByDataQa('modal-okBtn')
   }
 }
 

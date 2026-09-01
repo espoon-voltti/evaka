@@ -6,6 +6,7 @@ import { Queries } from 'lib-common/query'
 
 import {
   deletePasskey,
+  deleteWeakLoginCredentials,
   finishPasskeyRegistration,
   getEmailVerificationStatus,
   getFamily,
@@ -32,6 +33,10 @@ export const updatePersonalDetailsMutation = q.mutation(updatePersonalData, [
 
 export const updateWeakLoginCredentialsMutation = q.mutation(
   updateWeakLoginCredentials
+)
+
+export const deleteWeakLoginCredentialsMutation = q.mutation(
+  deleteWeakLoginCredentials
 )
 
 export const notificationSettingsQuery = q.query(getNotificationSettings)

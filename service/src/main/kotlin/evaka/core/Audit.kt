@@ -176,6 +176,8 @@ enum class Audit(
     CitizenNotificationSettingsRead,
     // CitizenNotificationSettingsUpdate,
     CitizenLogin(securityEvent = true, securityLevel = "high"),
+    CitizenCredentialsDelete(securityEvent = true, securityLevel = "high"),
+    CitizenCredentialsDeleteAttempt(securityEvent = true, securityLevel = "high"),
     CitizenCredentialsUpdate(securityEvent = true, securityLevel = "high"),
     CitizenCredentialsUpdateAttempt(securityEvent = true, securityLevel = "high"),
     CitizenPasskeyDelete(securityEvent = true, securityLevel = "high"),

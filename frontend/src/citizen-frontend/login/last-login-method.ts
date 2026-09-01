@@ -16,6 +16,16 @@ export function rememberLastLoginMethod(method: LastLoginMethod): void {
   }
 }
 
+export function forgetLastLoginMethod(method: LastLoginMethod): void {
+  try {
+    if (window.localStorage?.getItem(key) === method) {
+      window.localStorage.removeItem(key)
+    }
+  } catch {
+    // ignore
+  }
+}
+
 export function useLastLoginMethod(): LastLoginMethod | undefined {
   const [value] = useLocalStorage(
     key,

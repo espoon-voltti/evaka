@@ -321,6 +321,74 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
         assertEquals(otherPerson.id, bIdentity.id)
     }
 
+    @Test
+    fun `a person can delete their weak credentials and can no longer log in with them`() {
+        val password = Sensitive("test123123")
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.insert(citizenUser(person.id, email, password))
+        }
+        MockPersonDetailsService.addPersons(person)
+
+        deleteWeakLoginCredentials()
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(1, MockEmailClient.emails.size)
+        assertContains(
+            MockEmailClient.emails.first().content.subject,
+            "Sähköpostikirjautuminen on poistettu käytöstä",
+        )
+
+        assertThrows<Forbidden> { citizenWeakLogin(username = email, password = password) }
+    }
+
+    @Test
+    fun `deleting weak credentials clears the username and password timestamps`() {
+        val password = Sensitive("test123123")
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.insert(citizenUser(person.id, email, password))
+        }
+
+        deleteWeakLoginCredentials()
+
+        val cleared = db.read { tx ->
+            tx.createQuery {
+                    sql(
+                        """
+SELECT username IS NULL AND password IS NULL
+    AND username_updated_at IS NULL AND password_updated_at IS NULL
+FROM citizen_user
+WHERE id = ${bind(person.id)}
+"""
+                    )
+                }
+                .exactlyOne<Boolean>()
+        }
+        assertEquals(true, cleared)
+    }
+
+    @Test
+    fun `deleting weak credentials does nothing when there are none`() {
+        db.transaction { tx -> tx.insert(person, DevPersonType.ADULT) }
+
+        deleteWeakLoginCredentials()
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        assertEquals(0, MockEmailClient.emails.size)
+    }
+
+    @Test
+    fun `deleting weak credentials is not allowed in a weak session`() {
+        val password = Sensitive("test123123")
+        db.transaction { tx ->
+            tx.insert(person, DevPersonType.ADULT)
+            tx.insert(citizenUser(person.id, email, password))
+        }
+
+        assertThrows<Forbidden> { deleteWeakLoginCredentials(person.user(CitizenAuthLevel.WEAK)) }
+    }
+
     private fun updateWeakLoginCredentials(password: Sensitive<String>) =
         controller.updateWeakLoginCredentials(
             dbInstance(),
@@ -328,6 +396,9 @@ class WeakCredentialsIntegrationTest : FullApplicationTest(resetDbBeforeEach = t
             clock,
             PersonalDataControllerCitizen.UpdateWeakLoginCredentialsRequest(password),
         )
+
+    private fun deleteWeakLoginCredentials(citizen: AuthenticatedUser.Citizen = user) =
+        controller.deleteWeakLoginCredentials(dbInstance(), citizen, clock)
 
     private fun citizenStrongLogin() =
         systemController.citizenLogin(

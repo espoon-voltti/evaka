@@ -27,7 +27,8 @@ export async function enduserLogin(
 
 export async function enduserLoginWeak(
   page: Page,
-  credentials: { username: string; password: string }
+  credentials: { username: string; password: string },
+  options?: { expectFailure?: boolean }
 ) {
   await page.goto(config.enduserLoginUrl)
   await page.findByDataQa('weak-login').click()
@@ -35,6 +36,16 @@ export async function enduserLoginWeak(
   const form = page.findByDataQa('weak-login-form')
   await new TextInput(form.find('[id="username"]')).fill(credentials.username)
   await new TextInput(form.find('[id="password"]')).fill(credentials.password)
+
+  if (options?.expectFailure) {
+    const response = page.page.waitForResponse((r) =>
+      r.url().includes('/api/citizen/auth/weak-login')
+    )
+    await form.findByDataQa('login').click()
+    expect((await response).status()).toBe(403)
+    return
+  }
+
   await form.findByDataQa('login').click()
   await expect(form.findByDataQa('login')).toBeHidden()
 

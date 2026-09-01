@@ -101,6 +101,18 @@ export async function updatePasskeyName(
 
 
 /**
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.deleteWeakLoginCredentials
+*/
+export async function deleteWeakLoginCredentials(): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/personal-data/weak-login-credentials`.toString(),
+    method: 'DELETE'
+  })
+  return json
+}
+
+
+/**
 * Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.getEmailVerificationStatus
 */
 export async function getEmailVerificationStatus(): Promise<EmailVerificationStatusResponse> {

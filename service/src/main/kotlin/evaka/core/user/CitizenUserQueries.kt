@@ -99,6 +99,17 @@ RETURNING (old_username IS NOT NULL AND old_username != username) AS username_ch
         .exactlyOne()
 }
 
+fun Database.Transaction.deleteWeakLoginCredentials(id: PersonId) = createUpdate {
+    sql(
+        """
+UPDATE citizen_user
+SET username = NULL, username_updated_at = NULL, password = NULL, password_updated_at = NULL
+WHERE id = ${bind(id)}
+"""
+    )
+}
+    .execute()
+
 fun Database.Transaction.updatePreferredUiLanguage(id: PersonId, language: UiLanguage) =
     createUpdate {
         sql(

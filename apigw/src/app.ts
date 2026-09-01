@@ -12,6 +12,7 @@ import {
   authPasskeyLoginOptions
 } from './enduser/routes/auth-passkey-login.ts'
 import { citizenAuthStatus } from './enduser/routes/auth-status.ts'
+import { authWeakDeleteCredentials } from './enduser/routes/auth-weak-delete-credentials.ts'
 import { authWeakLogin } from './enduser/routes/auth-weak-login.ts'
 import { authWeakUpdateCredentials } from './enduser/routes/auth-weak-update-credentials.ts'
 import { passkeyDelete } from './enduser/routes/passkey-delete.ts'
@@ -304,6 +305,11 @@ export function apiRouter(config: Config, redisClient: RedisClient) {
     citizenSessions.requireAuthentication,
     express.json(),
     authWeakUpdateCredentials(redisClient)
+  )
+  router.delete(
+    '/citizen/personal-data/weak-login-credentials',
+    citizenSessions.requireAuthentication,
+    authWeakDeleteCredentials(redisClient)
   )
   router.delete(
     '/citizen/passkeys/:id',

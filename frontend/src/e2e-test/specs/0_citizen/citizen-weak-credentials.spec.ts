@@ -13,6 +13,7 @@ import {
 import type { DevPerson } from '../../generated/api-types'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenPersonalDetailsPage, {
+  DisableCredentialsModal,
   WeakCredentialsModal
 } from '../../pages/citizen/citizen-personal-details'
 import { test, expect } from '../../playwright'
@@ -157,6 +158,42 @@ test.describe('Citizen weak credentials', () => {
     await modal.confirmPassword.fill(newPassword)
     await modal.ok.click()
     await expect(modal).toBeHidden()
+  })
+
+  test('a person with weak credentials can remove them', async ({ evaka }) => {
+    const email = 'test@example.com'
+    const password = 'aifiefaeC3io?dee'
+    const citizen = await Fixture.person({
+      email,
+      verifiedEmail: email
+    }).saveAdult({
+      updateMockVtjWithDependants: [],
+      updateWeakCredentials: { username: email, password }
+    })
+
+    const personalDetailsPage = await openPersonalDetailsPage(evaka, citizen)
+    const section = personalDetailsPage.loginDetailsSection
+    await expect(section.weakLoginEnabled).toBeVisible()
+    await section.disableCredentials.click()
+
+    const modal = new DisableCredentialsModal(evaka)
+    // the citizen has no passkey, so removing leaves only strong login
+    await expect(modal.noPasskeysWarning).toBeVisible()
+    await modal.ok.click()
+    await expect(modal).toBeHidden()
+
+    await expect(section.weakLoginEnabled).toBeHidden()
+    await expect(section.activateCredentials).toBeVisible()
+
+    await new CitizenHeader(evaka).logout()
+
+    await enduserLoginWeak(
+      evaka,
+      { username: email, password },
+      {
+        expectFailure: true
+      }
+    )
   })
 
   test('a person with a different email can change their username - email updated on the same page', async ({

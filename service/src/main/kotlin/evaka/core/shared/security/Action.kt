@@ -566,6 +566,7 @@ sealed interface Action {
             UPDATE_NOTIFICATION_SETTINGS(IsCitizen(allowWeakLogin = true).self()),
             UPDATE_PREFERRED_UI_LANGUAGE(IsCitizen(allowWeakLogin = true).self()),
             UPDATE_WEAK_LOGIN_CREDENTIALS(IsCitizen(allowWeakLogin = false).self()),
+            DELETE_WEAK_LOGIN_CREDENTIALS(IsCitizen(allowWeakLogin = false).self()),
             READ_EMAIL_VERIFICATION_STATUS(IsCitizen(allowWeakLogin = true).self()),
             VERIFY_EMAIL(IsCitizen(allowWeakLogin = false).self()),
             READ_PASSKEYS(IsCitizen(allowWeakLogin = true).self()),
