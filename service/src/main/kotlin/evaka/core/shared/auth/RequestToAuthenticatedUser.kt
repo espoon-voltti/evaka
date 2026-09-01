@@ -43,11 +43,22 @@ class RequestToAuthenticatedUser(private val tracer: Tracer) : HttpFilter() {
                 (user as? AuthenticatedUser.MobileDevice)?.employeeIdHash?.let { employeeIdHash ->
                     MdcKey.SECONDARY_USER_ID_HASH.set(employeeIdHash.toString())
                 }
+                (user as? AuthenticatedUser.Employee)
+                    ?.let { it.globalRoles + it.allScopedRoles }
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.let { roles ->
+                        // Make the roles easily queryable (pipes separate e.g. ADMIN from
+                        // FINANCE_ADMIN)
+                        MdcKey.USER_ROLES.set(
+                            roles.map { it.name }.sorted().joinToString("|", "|", "|")
+                        )
+                    }
             }
         }
         try {
             chain.doFilter(request, response)
         } finally {
+            MdcKey.USER_ROLES.unset()
             MdcKey.SECONDARY_USER_ID_HASH.unset()
             MdcKey.USER_ID_HASH.unset()
             MdcKey.USER_ID.unset()

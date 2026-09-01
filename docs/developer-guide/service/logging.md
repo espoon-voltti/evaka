@@ -50,13 +50,13 @@ fun deleteServiceNeed(tx: Database.Transaction, id: ServiceNeedId, audit: AuditC
 - **Add request-derived values at construction.** By convention, the values you log that are known directly from the request are added when constructing the context at the beginning of the controller method. Values discovered later by querying are added where they surface.
 - Emit after the `db.connect { ... }` call returns, so the event is produced only when the transaction committed. If the endpoint throws, `log` is never reached and no entry is produced.
 
-**The requester is logged automatically.** The acting user's ID and type are always recorded, so never add an ID to the context just because that person made the request.
+**The requester is logged automatically.** The acting user's `userId` and `userIdHash` are always recorded, so never add an ID to the context just because that person made the request. For an employee, `userRoles` records every role they hold — not the role that authorized this particular action — which is what makes "who with role X reached this data" answerable long after roles have changed. Roles are sorted and wrapped in `|` (`|ADMIN|SERVICE_WORKER|`) so that a role matches exactly in CloudWatch with `filter strcontains(userRoles, "|ADMIN|")`. The user's type is not a field of its own; it follows from the `path` prefix (`/employee/`, `/citizen/`, `/employee-mobile/`).
 
 ### Naming the event
 
 - **Pattern: `EntityAction`** — e.g. `PlacementCreate`, `ApplicationSearch`, `DecisionAccept`.
 - **One event per endpoint.** The event is the user's intent; side effects are captured via context IDs, not separate events.
-- **Citizen vs employee:** share the event when the action and data scope are the same (they're distinguished by the auto-logged user type). Use separate events when the semantics differ, and name them for the difference — e.g. `OwnChildrenRead` vs `ChildrenByGuardianRead`.
+- **Citizen vs employee:** share the event when the action and data scope are the same (they're distinguished by the `path` prefix). Use separate events when the semantics differ, and name them for the difference — e.g. `OwnChildrenRead` vs `ChildrenByGuardianRead`.
 - Each event sets `securityEvent` / `securityLevel` as enum properties when it's defined.
 
 ### Security-critical operations
