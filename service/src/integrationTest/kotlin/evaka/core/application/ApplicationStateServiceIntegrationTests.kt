@@ -9,6 +9,10 @@ import evaka.core.FullApplicationTest
 import evaka.core.application.notes.getApplicationNotes
 import evaka.core.application.notes.getServiceWorkerApplicationNote
 import evaka.core.application.notes.updateServiceWorkerApplicationNote
+import evaka.core.application.persistence.club.Adult as ClubAdult
+import evaka.core.application.persistence.club.Apply as ClubApply
+import evaka.core.application.persistence.club.Child as ClubChild
+import evaka.core.application.persistence.club.ClubFormV0
 import evaka.core.application.persistence.daycare.Address
 import evaka.core.application.persistence.daycare.Adult
 import evaka.core.application.persistence.daycare.Apply
@@ -22,6 +26,7 @@ import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.ProcessMetadataController
 import evaka.core.caseprocess.ProcessType
 import evaka.core.caseprocess.getCaseProcessByApplicationId
+import evaka.core.clubTerm2020
 import evaka.core.daycare.getChild
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionDraft
@@ -646,6 +651,104 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.transaction { tx ->
             assertThrows<BadRequest> {
                 service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
+            }
+        }
+    }
+
+    @Test
+    fun `sendApplication - citizen cannot send a preschool application before the term's application period has started`() {
+        db.transaction { tx ->
+            tx.insert(preschoolTerm2021)
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL,
+                applicationId = applicationId,
+                preferredStartDate = preschoolTerm2021.finnishPreschool.start,
+            )
+        }
+
+        db.transaction { tx ->
+            assertThrows<BadRequest> {
+                service.sendApplication(
+                    tx,
+                    adult5.user(CitizenAuthLevel.STRONG),
+                    clock,
+                    AuditContext(),
+                    applicationId,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `sendApplication - service worker can send a club application after the term's application period has ended`() {
+        db.transaction { tx ->
+            tx.insert(clubTerm2020)
+            tx.insertClubApplication(preferredStartDate = clubTerm2020.term.start)
+        }
+
+        db.transaction { tx ->
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
+        }
+
+        db.read {
+            assertEquals(ApplicationStatus.SENT, it.fetchApplicationDetails(applicationId)!!.status)
+        }
+    }
+
+    @Test
+    fun `sendApplication - citizen cannot send a club application after the term's application period has ended`() {
+        db.transaction { tx ->
+            tx.insert(clubTerm2020)
+            tx.insertClubApplication(preferredStartDate = clubTerm2020.term.start)
+        }
+
+        db.transaction { tx ->
+            assertThrows<BadRequest> {
+                service.sendApplication(
+                    tx,
+                    adult5.user(CitizenAuthLevel.STRONG),
+                    clock,
+                    AuditContext(),
+                    applicationId,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `updateApplicationContentsServiceWorker - club preferred start date can be updated after the term's application period has ended`() {
+        db.transaction { tx ->
+            tx.insert(clubTerm2020)
+            tx.insertClubApplication(preferredStartDate = clubTerm2020.term.start)
+        }
+
+        val newStartDate = clubTerm2020.term.start.plusMonths(1)
+        db.transaction { tx -> updateAsServiceWorker(tx, preferredStartDate = newStartDate) }
+
+        db.read {
+            assertEquals(
+                newStartDate,
+                it.fetchApplicationDetails(applicationId)!!.form.preferences.preferredStartDate,
+            )
+        }
+    }
+
+    @Test
+    fun `updateApplicationContentsServiceWorker - preferred start date must still be within a term`() {
+        db.transaction { tx ->
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL,
+                applicationId = applicationId,
+                preferredStartDate = preschoolTerm2020.finnishPreschool.start,
+            )
+        }
+
+        db.transaction { tx ->
+            assertThrows<BadRequest> {
+                updateAsServiceWorker(
+                    tx,
+                    preferredStartDate = preschoolTerm2020.extendedTerm.start.minusDays(1),
+                )
             }
         }
     }
@@ -2808,6 +2911,46 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                             otherInfo = otherInfo,
                         ),
                 ),
+        )
+    }
+
+    private fun Database.Transaction.insertClubApplication(preferredStartDate: LocalDate) {
+        insertTestApplication(
+            id = applicationId,
+            status = ApplicationStatus.CREATED,
+            guardianId = adult5.id,
+            childId = child6.id,
+            type = ApplicationType.CLUB,
+            document =
+                ClubFormV0(
+                    child = ClubChild(dateOfBirth = child6.dateOfBirth),
+                    guardian =
+                        ClubAdult(
+                            firstName = adult5.firstName,
+                            lastName = adult5.lastName,
+                            socialSecurityNumber = adult5.ssn!!,
+                        ),
+                    apply = ClubApply(preferredUnits = listOf(daycare.id)),
+                    preferredStartDate = preferredStartDate,
+                ),
+        )
+    }
+
+    private fun updateAsServiceWorker(tx: Database.Transaction, preferredStartDate: LocalDate) {
+        val form = ApplicationFormUpdate.from(tx.fetchApplicationDetails(applicationId)!!.form)
+        service.updateApplicationContentsServiceWorker(
+            tx,
+            serviceWorker,
+            now,
+            AuditContext(),
+            applicationId,
+            ApplicationUpdate(
+                form =
+                    form.copy(
+                        preferences = form.preferences.copy(preferredStartDate = preferredStartDate)
+                    )
+            ),
+            serviceWorker.evakaUserId,
         )
     }
 
