@@ -252,14 +252,18 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE
         )
     }
 
-fun Database.Transaction.deleteScheduledDaycareAclRows(employeeId: EmployeeId) = execute {
+fun Database.Transaction.deleteScheduledDaycareAclRows(
+    employeeId: EmployeeId
+): List<ScheduledAclRowSummary> = createQuery {
     sql(
         """
 DELETE FROM daycare_acl_schedule
 WHERE employee_id = ${bind(employeeId)}
+RETURNING daycare_id, employee_id, role, start_date, end_date
     """
     )
 }
+    .toList<ScheduledAclRowSummary>()
 
 data class ScheduledAclRowSummary(
     val daycareId: DaycareId,
