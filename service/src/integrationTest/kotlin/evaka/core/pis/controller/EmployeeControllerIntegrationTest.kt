@@ -349,6 +349,16 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(emptyList(), updated.daycareRoles)
         assertEquals(emptyList(), updated.daycareGroupRoles)
         db.read { assertFalse(it.hasActiveMessagingAccount(employee.id)) }
+
+        auditLogCapture
+            .event(Audit.EmployeeDeleteDaycareRoles)
+            .assertContext { add(employee.id).add(listOf(daycare1.id, daycare2.id)) }
+            .assertMeta(
+                "daycareId" to null,
+                "roles" to listOf(UserRole.STAFF),
+                "deletedAclCount" to 2,
+                "deletedScheduledCount" to 0,
+            )
     }
 
     @Test
