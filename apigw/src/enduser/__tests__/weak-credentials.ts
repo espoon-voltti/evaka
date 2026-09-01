@@ -38,16 +38,10 @@ describe('Weak login credentials', () => {
     expect(res.status).toBe(200)
   }
 
-  test('deleting credentials requires a session', async () => {
-    const res = await tester.client.delete(
-      '/api/citizen/personal-data/weak-login-credentials',
-      { validateStatus: () => true }
-    )
-    expect(res.status).toBe(401)
-  })
-
-  test('deleting credentials logs out other weak sessions', async () => {
-    // two weak sessions for the same user, sharing the same Redis
+  // runs the body with a second weak session for the same user, sharing the same Redis
+  async function withSecondWeakSession(
+    f: (otherTester: GatewayTester) => Promise<void>
+  ): Promise<void> {
     const otherTester = await GatewayTester.start(
       configFromEnv(),
       'citizen',
@@ -57,7 +51,31 @@ describe('Weak login credentials', () => {
     try {
       await weakLogin(tester)
       await weakLogin(otherTester)
+      await f(otherTester)
+    } finally {
+      await otherTester.afterEach()
+      await otherTester.stop()
+    }
+  }
 
+  async function assertLoggedOut(onTester: GatewayTester): Promise<void> {
+    const status = await onTester.client.get('/api/citizen/auth/status', {
+      validateStatus: () => true
+    })
+    expect(status.status).toBe(200)
+    expect((status.data as { loggedIn: boolean }).loggedIn).toBe(false)
+  }
+
+  test('deleting credentials requires a session', async () => {
+    const res = await tester.client.delete(
+      '/api/citizen/personal-data/weak-login-credentials',
+      { validateStatus: () => true }
+    )
+    expect(res.status).toBe(401)
+  })
+
+  test('deleting credentials logs out other weak sessions', async () => {
+    await withSecondWeakSession(async (otherTester) => {
       tester.nockScope
         .delete('/citizen/personal-data/weak-login-credentials')
         .reply(200)
@@ -68,14 +86,33 @@ describe('Weak login credentials', () => {
       tester.nockScope.done()
       expect(res.status).toBe(204)
 
-      const status = await otherTester.client.get('/api/citizen/auth/status', {
-        validateStatus: () => true
-      })
-      expect(status.status).toBe(200)
-      expect((status.data as { loggedIn: boolean }).loggedIn).toBe(false)
-    } finally {
-      await otherTester.afterEach()
-      await otherTester.stop()
-    }
+      await assertLoggedOut(otherTester)
+    })
+  })
+
+  test('updating credentials requires a session', async () => {
+    const res = await tester.client.put(
+      '/api/citizen/personal-data/weak-login-credentials',
+      { password: 'aifiefaeC3io?dee' },
+      { validateStatus: () => true }
+    )
+    expect(res.status).toBe(401)
+  })
+
+  test('updating credentials logs out other weak sessions', async () => {
+    await withSecondWeakSession(async (otherTester) => {
+      tester.nockScope
+        .put('/citizen/personal-data/weak-login-credentials')
+        .reply(200)
+      const res = await tester.client.put(
+        '/api/citizen/personal-data/weak-login-credentials',
+        { password: 'aifiefaeC3io?dee' },
+        { validateStatus: () => true }
+      )
+      tester.nockScope.done()
+      expect(res.status).toBe(204)
+
+      await assertLoggedOut(otherTester)
+    })
   })
 })
