@@ -31,7 +31,9 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.job.ScheduledJobs
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -46,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired lateinit var employeeController: EmployeeController
+    @Autowired lateinit var scheduledJobs: ScheduledJobs
 
     private val clock = MockEvakaClock(2025, 1, 1, 12, 0)
 
@@ -273,6 +276,48 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 "scheduled" to true,
             )
             .assertMinDate(startDate)
+    }
+
+    @Test
+    fun `scheduled role grant and its activation form an audit event chain by employee id`() {
+        val careArea = DevCareArea()
+        val daycare1 = DevDaycare(areaId = careArea.id)
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare1)
+            tx.insert(employee)
+        }
+
+        val startDate = clock.today().plusDays(7)
+        val endDate = clock.today().plusMonths(6)
+        upsertEmployeeDaycareRoles(
+            employee.id,
+            listOf(daycare1.id),
+            UserRole.STAFF,
+            startDate,
+            endDate,
+        )
+
+        auditLogCapture.event(Audit.EmployeeUpdateDaycareRoles).assertContext {
+            add(employee.id).add(daycare1.id)
+        }
+
+        // the nightly job activates the scheduled role once the start date has come
+        scheduledJobs.syncAclRows(
+            db,
+            MockEvakaClock(HelsinkiDateTime.of(startDate, LocalTime.of(0, 5))),
+        )
+
+        // both events in the chain carry the same employee id in their context
+        auditLogCapture
+            .event(Audit.UnitAclActivateScheduled)
+            .assertContext { add(employee.id).add(daycare1.id) }
+            .assertMeta(
+                "role" to UserRole.STAFF,
+                "startDate" to startDate,
+                "endDate" to endDate,
+            )
     }
 
     @Test
