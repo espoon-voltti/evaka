@@ -54,7 +54,8 @@ const features: Features = {
     showCitizenApplicationPreschoolTerms: true,
     showMetadataToCitizen: true,
     placementDesktop: true,
-    sharedApplicationEditor: true
+    sharedApplicationEditor: true,
+    citizenPwa: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -94,7 +95,8 @@ const features: Features = {
     showCitizenApplicationPreschoolTerms: true,
     showMetadataToCitizen: true,
     placementDesktop: true,
-    sharedApplicationEditor: true
+    sharedApplicationEditor: true,
+    citizenPwa: true
   },
   prod: {
     environmentLabel: null,

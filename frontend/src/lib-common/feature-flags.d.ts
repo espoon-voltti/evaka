@@ -243,6 +243,11 @@ interface BaseFeatureFlags {
    * been validated in production.
    */
   sharedApplicationEditor?: boolean
+
+  /**
+   * PWA manifest and service worker for citizen-frontend
+   */
+  citizenPwa?: boolean
 }
 
 export type FeatureFlags = DeepReadonly<BaseFeatureFlags>

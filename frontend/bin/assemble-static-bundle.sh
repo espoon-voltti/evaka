@@ -16,7 +16,6 @@ out="/out/static/$muni"
 mkdir -p "$out/employee/mobile"
 
 cp dist/bundle/favicon.ico "$out/"
-cp dist/bundle/manifest.json "$out/"
 cp dist/bundle/offline.html "$out/"
 cp dist/bundle/service-worker.js "$out/"
 cp -r dist/bundle/assets "$out/"

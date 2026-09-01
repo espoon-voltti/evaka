@@ -53,7 +53,8 @@ const features: Features = {
     showMetadataToCitizen: true,
     placementDesktop: false,
     employeeLanguageSelection: true,
-    sharedApplicationEditor: true
+    sharedApplicationEditor: true,
+    citizenPwa: true
   },
   staging: {
     environmentLabel: 'Staging',
@@ -92,7 +93,8 @@ const features: Features = {
     showMetadataToCitizen: true,
     placementDesktop: true,
     employeeLanguageSelection: true,
-    sharedApplicationEditor: true
+    sharedApplicationEditor: true,
+    citizenPwa: true
   },
   prod: {
     environmentLabel: null,

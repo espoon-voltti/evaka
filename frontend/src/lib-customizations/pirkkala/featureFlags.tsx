@@ -59,7 +59,8 @@ const features: Features = {
   default: {
     ...prod,
     environmentLabel: 'Test',
-    sharedApplicationEditor: true
+    sharedApplicationEditor: true,
+    citizenPwa: true
   },
   prod
 }

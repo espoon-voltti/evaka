@@ -10,11 +10,16 @@ import 'lib-common/assets/fonts/fonts.css'
 import { appVersion } from 'lib-common/globals'
 import { sentryEventFilter } from 'lib-common/sentry'
 import { getEnvironment } from 'lib-common/utils/helpers'
-import { appConfig } from 'lib-customizations/citizen'
+import { appConfig, featureFlags } from 'lib-customizations/citizen'
 
 import 'leaflet/dist/leaflet.css'
 
 import { listenForInstallPrompt } from './pwa/installPrompt'
+import { applyPwaMetadata } from './pwa/metadata'
+import {
+  registerServiceWorker,
+  unregisterServiceWorker
+} from './pwa/serviceWorker'
 import Root from './router'
 import './index.css'
 
@@ -32,16 +37,18 @@ Sentry.getGlobalScope().addEventProcessor(sentryEventFilter)
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
 smoothScrollPolyfill()
 
-listenForInstallPrompt()
+if (featureFlags.citizenPwa) {
+  applyPwaMetadata()
+  listenForInstallPrompt()
+}
 
 const root = createRoot(document.getElementById('app')!)
 root.render(<Root />)
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker
-    .register('/service-worker.js')
-    .catch((err) => Sentry.captureException(err))
-}
+const serviceWorker = featureFlags.citizenPwa
+  ? registerServiceWorker()
+  : unregisterServiceWorker()
+serviceWorker.catch((err) => Sentry.captureException(err))
 
 // Let the HTML template inline script know we have loaded successfully
 if (!window.evaka) {
