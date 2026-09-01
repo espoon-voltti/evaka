@@ -4,7 +4,9 @@
 
 package evaka.core.shared.job
 
+import evaka.core.Audit
 import evaka.core.AuditContext
+import evaka.core.AuditLogCapture
 import evaka.core.FullApplicationTest
 import evaka.core.application.ApplicationStateService
 import evaka.core.application.ApplicationStatus
@@ -69,6 +71,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -90,6 +93,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val child1 = DevPerson(dateOfBirth = LocalDate.of(2017, 6, 1), ssn = "010617A123U")
     private val child2 = DevPerson(dateOfBirth = LocalDate.of(2016, 3, 1))
 
+    private val auditLogCapture = AuditLogCapture()
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
@@ -101,6 +106,12 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             listOf(adult1, adult2).forEach { tx.insert(it, DevPersonType.ADULT) }
             listOf(child1, child2).forEach { tx.insert(it, DevPersonType.CHILD) }
         }
+        auditLogCapture.attach()
+    }
+
+    @AfterEach
+    fun afterEach() {
+        auditLogCapture.detach()
     }
 
     @Test
@@ -564,6 +575,19 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.getDaycareAclRows(daycare4.id, false, includeStaffEmployeeNumber = false).size,
             )
         }
+
+        val event =
+            auditLogCapture
+                .event(Audit.UnitAclDeleteExpired)
+                .assertContext { add(staff.id).add(daycare2.id) }
+                .assertMeta("role" to UserRole.STAFF, "endDate" to today.minusDays(1))
+                .assertMinDate(today.minusDays(1))
+        assertEquals(1, (event.fields["daysIntoHistory"] as Number).toInt())
+        assertEquals("medium", event.fields["securityLevel"])
+        assertEquals(true, event.fields["securityEvent"])
+        // scheduled jobs run without an acting user
+        assertNull(event.userId)
+        auditLogCapture.assertNoEvents(Audit.UnitAclActivateScheduled)
     }
 
     @Test
@@ -624,6 +648,25 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     .isEmpty()
             )
         }
+
+        assertEquals(2, auditLogCapture.events(Audit.UnitAclActivateScheduled).size)
+        auditLogCapture
+            .event(Audit.UnitAclActivateScheduled, daycare1.id)
+            .assertContext { add(employee.id).add(daycare1.id) }
+            .assertMeta(
+                "role" to UserRole.SPECIAL_EDUCATION_TEACHER,
+                "startDate" to today,
+                "endDate" to null,
+            )
+        auditLogCapture
+            .event(Audit.UnitAclActivateScheduled, daycare2.id)
+            .assertMeta(
+                "role" to UserRole.SPECIAL_EDUCATION_TEACHER,
+                "startDate" to today.minusDays(1),
+                "endDate" to null,
+            )
+            .assertMinDate(today.minusDays(1))
+        auditLogCapture.assertNoEvents(Audit.UnitAclDeleteExpired)
     }
 
     private fun createExpiredDailyNote(now: Instant) {
