@@ -57,7 +57,7 @@ fun deleteServiceNeed(tx: Database.Transaction, id: ServiceNeedId, audit: AuditC
 - **Pattern: `EntityAction`** — e.g. `PlacementCreate`, `ApplicationSearch`, `DecisionAccept`.
 - **One event per endpoint.** The event is the user's intent; side effects are captured via context IDs, not separate events.
 - **Citizen vs employee:** share the event when the action and data scope are the same (they're distinguished by the `path` prefix). Use separate events when the semantics differ, and name them for the difference — e.g. `OwnChildrenRead` vs `ChildrenByGuardianRead`.
-- Each event sets `securityEvent` / `securityLevel` as enum properties when it's defined.
+- Each event sets `securityEvent` / `securityLevel` as enum properties when it's defined — see [Security events](security-events.md) for when to set them.
 
 ### Security-critical operations
 
