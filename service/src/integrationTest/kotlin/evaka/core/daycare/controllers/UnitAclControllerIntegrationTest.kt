@@ -127,6 +127,11 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         deleteSupervisor(daycare.id)
         assertTrue(getAclRows().isEmpty())
+        auditLogCapture
+            .event(Audit.UnitAclDelete)
+            .assertContext { add(daycare.id).add(employee.id) }
+            .assertMeta("role" to UserRole.UNIT_SUPERVISOR)
+        auditLogCapture.clear()
 
         val endDate = now.toLocalDate().plusDays(7)
         insertEmployee(
@@ -162,6 +167,10 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         deleteStaff()
         assertTrue(getAclRows().isEmpty())
+        auditLogCapture
+            .event(Audit.UnitAclDelete)
+            .assertMeta("role" to UserRole.STAFF, "endDate" to endDate)
+            .assertMinDate(endDate)
     }
 
     @Test
