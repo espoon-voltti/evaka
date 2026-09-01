@@ -10,6 +10,7 @@ import evaka.core.shared.KoskiStudyRightId
 import evaka.core.shared.db.Database
 import evaka.core.shared.db.Predicate
 import evaka.core.shared.db.QuerySql
+import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
 data class KoskiStudyRightKey(
@@ -228,4 +229,49 @@ WHERE id = ${bind(response.id)}
 """
     )
 }
+    .execute()
+
+fun Database.Transaction.upsertKoskiUploadError(
+    key: KoskiStudyRightKey,
+    now: HelsinkiDateTime,
+    statusCode: Int,
+    error: String,
+) = createUpdate {
+    sql(
+        """
+INSERT INTO koski_upload_error (child_id, unit_id, type, error, status_code, errored_at, errored_since)
+VALUES (${bind(key.childId)}, ${bind(key.unitId)}, ${bind(key.type)}, ${bind(error)}, ${bind(statusCode)}, ${bind(now)}, ${bind(now)})
+ON CONFLICT (child_id, unit_id, type)
+DO UPDATE SET error = excluded.error, status_code = excluded.status_code, errored_at = excluded.errored_at
+"""
+    )
+}
+    .execute()
+
+fun Database.Transaction.deleteKoskiUploadError(key: KoskiStudyRightKey) = createUpdate {
+    sql(
+        """
+DELETE FROM koski_upload_error
+WHERE (child_id, unit_id, type) = (${bind(key.childId)}, ${bind(key.unitId)}, ${bind(key.type)})
+"""
+    )
+}
+    .execute()
+
+fun Database.Transaction.deleteObsoleteKoskiUploadErrors(pending: List<KoskiStudyRightKey>) =
+    createUpdate {
+        sql(
+            """
+DELETE FROM koski_upload_error e
+WHERE NOT EXISTS (
+    SELECT FROM unnest(
+        ${bind(pending.map { it.childId })},
+        ${bind(pending.map { it.unitId })},
+        ${bind(pending.map { it.type })}
+    ) AS p (child_id, unit_id, type)
+    WHERE (p.child_id, p.unit_id, p.type) = (e.child_id, e.unit_id, e.type)
+)
+"""
+        )
+    }
     .execute()

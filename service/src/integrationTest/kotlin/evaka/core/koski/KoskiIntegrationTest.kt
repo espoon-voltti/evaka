@@ -14,9 +14,14 @@ import evaka.core.assistance.PreschoolAssistanceLevel
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.defaultMunicipalOrganizerOid
 import evaka.core.placement.PlacementType
+import evaka.core.reports.KoskiErrorReport
+import evaka.core.reports.KoskiStudyRightType
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.PlacementId
+import evaka.core.shared.async.AsyncJob
+import evaka.core.shared.async.AsyncJobRunner
+import evaka.core.shared.auth.UserRole
 import evaka.core.shared.db.Database
 import evaka.core.shared.dev.DevAbsence
 import evaka.core.shared.dev.DevCareArea
@@ -29,8 +34,11 @@ import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevPreschoolAssistance
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.toFiniteDateRange
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
@@ -47,6 +55,8 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var koskiEndpoint: MockKoskiEndpoint
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired private lateinit var koskiErrorReport: KoskiErrorReport
     private lateinit var koskiTester: KoskiTester
     private lateinit var koskiEnv: KoskiEnv
 
@@ -193,6 +203,221 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { it.setUnitOids(daycare.id, daycare2.id) }
         koskiTester.triggerUploads(today)
         assertEquals(0, countPendingStudyRights())
+    }
+
+    @Test
+    fun `a 4xx upload failure records an error row`() {
+        val today = preschoolTerm2019.end.plusDays(1)
+        koskiEndpoint.simulateFailure(400, "Simulated bad request")
+        insertPlacement()
+
+        koskiTester.triggerUploads(today)
+
+        val error = db.read { it.getKoskiUploadErrors() }.single()
+        assertEquals(child1.id, error.childId)
+        assertEquals(daycare.id, error.unitId)
+        assertEquals(OpiskeluoikeudenTyyppiKoodi.PRESCHOOL, error.type)
+        assertEquals(400, error.statusCode)
+        assertEquals("\"Simulated bad request\"", error.error)
+        assertEquals(koskiUploadTime(today), error.erroredAt)
+        assertEquals(koskiUploadTime(today), error.erroredSince)
+    }
+
+    @Test
+    fun `repeated upload failures update errored_at but preserve errored_since`() {
+        val day1 = preschoolTerm2019.end.plusDays(1)
+        val day2 = preschoolTerm2019.end.plusDays(2)
+        koskiEndpoint.simulateFailure(400, "Simulated bad request")
+        insertPlacement()
+
+        koskiTester.triggerUploads(day1)
+        koskiEndpoint.simulateFailure(403, "Simulated forbidden")
+        koskiTester.triggerUploads(day2)
+
+        val error = db.read { it.getKoskiUploadErrors() }.single()
+        assertEquals(403, error.statusCode)
+        assertEquals("\"Simulated forbidden\"", error.error)
+        assertEquals(koskiUploadTime(day2), error.erroredAt)
+        assertEquals(koskiUploadTime(day1), error.erroredSince)
+    }
+
+    @Test
+    fun `a 5xx upload failure records an error row`() {
+        val today = preschoolTerm2019.end.plusDays(1)
+        koskiEndpoint.simulateFailure(500, "Simulated internal server error")
+        insertPlacement()
+
+        koskiTester.triggerUploads(today)
+
+        val error = db.read { it.getKoskiUploadErrors() }.single()
+        assertEquals(500, error.statusCode)
+        assertEquals("\"Simulated internal server error\"", error.error)
+    }
+
+    @Test
+    fun `the error row is removed when the upload succeeds`() {
+        val day1 = preschoolTerm2019.end.plusDays(1)
+        val day2 = preschoolTerm2019.end.plusDays(2)
+        koskiEndpoint.simulateFailure(400, "Simulated bad request")
+        insertPlacement()
+
+        koskiTester.triggerUploads(day1)
+        assertEquals(1, db.read { it.getKoskiUploadErrors() }.size)
+
+        koskiEndpoint.clearSimulatedFailure()
+        koskiTester.triggerUploads(day2)
+        assertEquals(emptyList(), db.read { it.getKoskiUploadErrors() })
+    }
+
+    @Test
+    fun `the error row is removed when the upload is skipped because the payload is unchanged`() {
+        val day1 = preschoolTerm2019.end.plusDays(1)
+        val day2 = preschoolTerm2019.end.plusDays(2)
+        val day3 = preschoolTerm2019.end.plusDays(3)
+        val placementId = insertPlacement()
+        koskiTester.triggerUploads(day1)
+
+        // a placement change fails to upload...
+        db.transaction {
+            it.execute {
+                sql(
+                    "UPDATE placement SET end_date = end_date - interval '7 days' WHERE id = ${bind(placementId)}"
+                )
+            }
+        }
+        koskiEndpoint.simulateFailure(400, "Simulated bad request")
+        koskiTester.triggerUploads(day2)
+        assertEquals(1, db.read { it.getKoskiUploadErrors() }.size)
+
+        // ...and is then reverted, so the next upload skips because Koski already has the data
+        db.transaction {
+            it.execute {
+                sql(
+                    "UPDATE placement SET end_date = ${bind(preschoolTerm2019.end)} WHERE id = ${bind(placementId)}"
+                )
+            }
+            it.clearKoskiInputCache()
+        }
+        koskiEndpoint.clearSimulatedFailure()
+        koskiTester.triggerUploads(day3)
+        assertEquals(emptyList(), db.read { it.getKoskiUploadErrors() })
+        // the day3 run skipped the upload instead of sending again
+        assertEquals(0, koskiEndpoint.getStudyRights().values.single().version)
+    }
+
+    @Test
+    fun `the error row is removed when voiding gets a 404 not found response`() {
+        val day1 = preschoolTerm2019.end.plusDays(1)
+        val day2 = preschoolTerm2019.end.plusDays(2)
+        val day3 = preschoolTerm2019.end.plusDays(3)
+        val placementId = insertPlacement()
+        koskiTester.triggerUploads(day1)
+
+        db.transaction {
+            it.execute { sql("DELETE FROM placement WHERE id = ${bind(placementId)}") }
+        }
+        koskiEndpoint.simulateFailure(400, "Simulated bad request")
+        koskiTester.triggerUploads(day2)
+        assertEquals(1, db.read { it.getKoskiUploadErrors() }.size)
+
+        koskiEndpoint.clearData()
+        koskiTester.triggerUploads(day3)
+        assertEquals(emptyList(), db.read { it.getKoskiUploadErrors() })
+    }
+
+    @Test
+    fun `scheduling uploads removes error rows whose study right is no longer pending`() {
+        val today = preschoolTerm2019.end.plusDays(1)
+        koskiEndpoint.simulateFailure(400, "Simulated bad request")
+        val child2 = DevPerson(ssn = "010113A901P", dateOfBirth = LocalDate.of(2013, 1, 1))
+        db.transaction { it.insert(child2, DevPersonType.CHILD) }
+
+        // child1 transfers between units and to preparatory education mid-year, and child2
+        // attends the same unit: each of the three obsolete keys differs from the still-failing
+        // (child1, daycare, PRESCHOOL) in exactly one column
+        val keptPlacementId =
+            insertPlacement(
+                period = FiniteDateRange(preschoolTerm2019.start, LocalDate.of(2019, 10, 31))
+            )
+        val obsoletePlacementIds =
+            listOf(
+                insertPlacement(
+                    daycareId = daycare2.id,
+                    period = FiniteDateRange(LocalDate.of(2019, 11, 1), LocalDate.of(2019, 12, 31)),
+                ),
+                insertPlacement(
+                    period = FiniteDateRange(LocalDate.of(2020, 1, 1), preschoolTerm2019.end),
+                    type = PlacementType.PREPARATORY,
+                ),
+                insertPlacement(child = child2),
+            )
+        koskiTester.triggerUploads(today)
+
+        fun errorKeys() =
+            db.read { it.getKoskiUploadErrors() }
+                .map { Triple(it.childId, it.unitId, it.type) }
+                .toSet()
+
+        val allKeys =
+            setOf(
+                Triple(child1.id, daycare.id, OpiskeluoikeudenTyyppiKoodi.PRESCHOOL),
+                Triple(child1.id, daycare2.id, OpiskeluoikeudenTyyppiKoodi.PRESCHOOL),
+                Triple(child1.id, daycare.id, OpiskeluoikeudenTyyppiKoodi.PREPARATORY),
+                Triple(child2.id, daycare.id, OpiskeluoikeudenTyyppiKoodi.PRESCHOOL),
+            )
+        assertEquals(allKeys, errorKeys())
+
+        val updateService = KoskiUpdateService(asyncJobRunner, koskiEnv)
+        val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(2, 0)))
+
+        updateService.scheduleKoskiUploads(db, clock)
+        assertEquals(allKeys, errorKeys())
+
+        db.transaction {
+            it.execute {
+                sql("DELETE FROM placement WHERE id = ANY(${bind(obsoletePlacementIds)})")
+            }
+        }
+        updateService.scheduleKoskiUploads(db, clock)
+        assertEquals(
+            setOf(Triple(child1.id, daycare.id, OpiskeluoikeudenTyyppiKoodi.PRESCHOOL)),
+            errorKeys(),
+        )
+
+        // with nothing pending at all, the sweep clears the remaining rows
+        db.transaction {
+            it.execute { sql("DELETE FROM placement WHERE id = ${bind(keptPlacementId)}") }
+        }
+        updateService.scheduleKoskiUploads(db, clock)
+        assertEquals(emptySet(), errorKeys())
+    }
+
+    @Test
+    fun `recorded errors are returned by the Koski error report`() {
+        val day1 = preschoolTerm2019.end.plusDays(1)
+        val day2 = preschoolTerm2019.end.plusDays(2)
+        koskiEndpoint.simulateFailure(400, "Simulated bad request")
+        insertPlacement()
+        koskiTester.triggerUploads(day1)
+        koskiTester.triggerUploads(day2)
+
+        val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
+        db.transaction { it.insert(admin) }
+        val row =
+            koskiErrorReport
+                .getKoskiErrorsReport(
+                    dbInstance(),
+                    admin.user,
+                    MockEvakaClock(HelsinkiDateTime.of(day2, LocalTime.of(12, 0))),
+                )
+                .single()
+        assertEquals(child1.id, row.childId)
+        assertEquals(daycare.id, row.unitId)
+        assertEquals(daycare.name, row.unitName)
+        assertEquals(KoskiStudyRightType.PRESCHOOL, row.type)
+        assertEquals("\"Simulated bad request\"", row.error)
+        assertEquals(koskiUploadTime(day2), row.erroredAt)
+        assertEquals(koskiUploadTime(day1), row.erroredSince)
     }
 
     @Test

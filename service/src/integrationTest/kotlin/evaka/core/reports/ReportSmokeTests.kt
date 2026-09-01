@@ -44,6 +44,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
     @Autowired private lateinit var familyConflictReportController: FamilyConflictReportController
     @Autowired private lateinit var familyContactReportController: FamilyContactReportController
     @Autowired private lateinit var invoiceReportController: InvoiceReportController
+    @Autowired private lateinit var koskiErrorReportController: KoskiErrorReport
 
     @Autowired
     private lateinit var missingHeadOfFamilyReportController: MissingHeadOfFamilyReportController
@@ -346,6 +347,11 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
             placementStartDate = LocalDate.of(2021, 1, 1),
             earliestPreferredStartDate = LocalDate.of(2021, 8, 13),
         )
+    }
+
+    @Test
+    fun `koski errors report returns http 200`() {
+        koskiErrorReportController.getKoskiErrorsReport(dbInstance(), employee.user, clock)
     }
 
     @Test

@@ -3243,6 +3243,21 @@ CREATE TABLE public.invoiced_fee_decision (
     fee_decision_id uuid NOT NULL
 );
 
+-- Name: koski_upload_error; Type: TABLE; Schema: public
+
+CREATE TABLE public.koski_upload_error (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    child_id uuid NOT NULL,
+    unit_id uuid NOT NULL,
+    type public.koski_study_right_type NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    error text NOT NULL,
+    status_code integer NOT NULL,
+    errored_at timestamp with time zone NOT NULL,
+    errored_since timestamp with time zone NOT NULL
+);
+
 -- Name: location_view; Type: VIEW; Schema: public
 
 CREATE VIEW public.location_view AS
@@ -4555,6 +4570,11 @@ ALTER TABLE ONLY public.invoice_correction
 
 ALTER TABLE ONLY public.invoiced_fee_decision
     ADD CONSTRAINT invoiced_fee_decision_pkey PRIMARY KEY (invoice_id, fee_decision_id);
+
+-- Name: koski_upload_error koski_upload_error_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.koski_upload_error
+    ADD CONSTRAINT koski_upload_error_pkey PRIMARY KEY (id);
 
 -- Name: meal_texture meal_texture_pkey; Type: CONSTRAINT; Schema: public
 
@@ -5883,6 +5903,10 @@ CREATE INDEX "idx$koski_study_right_study_right_oid" ON public.koski_study_right
 
 CREATE INDEX "idx$koski_study_right_unit" ON public.koski_study_right USING btree (unit_id);
 
+-- Name: idx$koski_upload_error_unit_id; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$koski_upload_error_unit_id" ON public.koski_upload_error USING btree (unit_id);
+
 -- Name: idx$message_content_author; Type: INDEX; Schema: public
 
 CREATE INDEX "idx$message_content_author" ON public.message_content USING btree (author_id);
@@ -6295,6 +6319,10 @@ CREATE UNIQUE INDEX "uniq$guardian_blocklist_guardian_child" ON public.guardian_
 
 CREATE UNIQUE INDEX "uniq$invoice_replaced_invoice_id" ON public.invoice USING btree (replaced_invoice_id) WHERE (replaced_invoice_id IS NOT NULL);
 
+-- Name: uniq$koski_upload_error_child_unit_type; Type: INDEX; Schema: public
+
+CREATE UNIQUE INDEX "uniq$koski_upload_error_child_unit_type" ON public.koski_upload_error USING btree (child_id, unit_id, type);
+
 -- Name: uniq$message_account_daycare_group; Type: INDEX; Schema: public
 
 CREATE UNIQUE INDEX "uniq$message_account_daycare_group" ON public.message_account USING btree (daycare_group_id) INCLUDE (active) WHERE (daycare_group_id IS NOT NULL);
@@ -6586,6 +6614,10 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.invoice_correction FOR EACH
 -- Name: koski_study_right set_timestamp; Type: TRIGGER; Schema: public
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.koski_study_right FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated();
+
+-- Name: koski_upload_error set_timestamp; Type: TRIGGER; Schema: public
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.koski_upload_error FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: message set_timestamp; Type: TRIGGER; Schema: public
 
@@ -7236,6 +7268,11 @@ ALTER TABLE ONLY public.invoice_row
 ALTER TABLE ONLY public.koski_study_right
     ADD CONSTRAINT "fk$child_id" FOREIGN KEY (child_id) REFERENCES public.child(id) ON DELETE CASCADE;
 
+-- Name: koski_upload_error fk$child_id; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.koski_upload_error
+    ADD CONSTRAINT "fk$child_id" FOREIGN KEY (child_id) REFERENCES public.child(id) ON DELETE CASCADE;
+
 -- Name: placement fk$child_id; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.placement
@@ -7619,6 +7656,11 @@ ALTER TABLE ONLY public.decision
 -- Name: koski_study_right fk$unit_id; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.koski_study_right
+    ADD CONSTRAINT "fk$unit_id" FOREIGN KEY (unit_id) REFERENCES public.daycare(id);
+
+-- Name: koski_upload_error fk$unit_id; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.koski_upload_error
     ADD CONSTRAINT "fk$unit_id" FOREIGN KEY (unit_id) REFERENCES public.daycare(id);
 
 -- Name: placement fk$unit_id; Type: FK CONSTRAINT; Schema: public

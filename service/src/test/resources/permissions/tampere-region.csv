@@ -19,6 +19,7 @@
 ;"Esiopetuksen poissaoloraportti alueittain";"READ_PRESCHOOL_ABSENCE_REPORT_FOR_AREA";x;;;;;;;;;;
 ;"Esiopetuksen sijoitusten hahmotteluraportti -raportti";"READ_PLACEMENT_SKETCHING_REPORT";x;;x;;;x;;x;;;x
 ;"Hetuttomat lapset -raportti";"READ_NON_SSN_CHILDREN_REPORT";x;;;x;;x;;;;;
+;"Koski-raportti";READ_KOSKI_REPORT;x;;;;;;;;;;
 ;Kuusikkovertailu;READ_SEXTET_REPORT;x;x;x;;;;;;;;
 ;"Laskujen täsmäytys -raportti";READ_INVOICE_REPORT;x;;x;x;x;;;;;;
 ;"Lasten poissaoloraportti alueittain";"READ_CHILD_ABSENCE_REPORT_FOR_AREA";x;;;x;;;;;;;

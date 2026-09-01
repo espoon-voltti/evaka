@@ -386,6 +386,7 @@ private fun translate(action: Global) =
                 "Varhaiskasvatuksessa lopettavat lapset -raportti"
             Global.READ_INCOMPLETE_INCOMES_REPORT -> "Puuttuvat tulotiedot -raportti"
             Global.READ_INVOICE_REPORT -> "Laskujen täsmäytys -raportti"
+            Global.READ_KOSKI_REPORT -> "Koski-raportti"
             Global.READ_MISSING_HEAD_OF_FAMILY_REPORT -> "Puuttuvat päämiehet -raportti"
             Global.READ_PLACEMENT_SKETCHING_REPORT ->
                 "Esiopetuksen sijoitusten hahmotteluraportti -raportti"

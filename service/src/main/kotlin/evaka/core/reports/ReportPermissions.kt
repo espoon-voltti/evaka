@@ -34,6 +34,7 @@ enum class Report {
     HOLIDAY_QUESTIONNAIRE,
     INVOICE,
     INCOMPLETE_INCOMES,
+    KOSKI_ERRORS,
     MISSING_HEAD_OF_FAMILY,
     MISSING_SERVICE_NEED,
     NON_SSN_CHILDREN,
@@ -145,6 +146,9 @@ class ReportPermissions(private val accessControl: AccessControl) {
                 },
                 Report.INVOICE.takeIf {
                     permittedGlobalActions.contains(Action.Global.READ_INVOICE_REPORT)
+                },
+                Report.KOSKI_ERRORS.takeIf {
+                    permittedGlobalActions.contains(Action.Global.READ_KOSKI_REPORT)
                 },
                 Report.MISSING_HEAD_OF_FAMILY.takeIf {
                     permittedGlobalActions.contains(

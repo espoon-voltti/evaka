@@ -25,6 +25,10 @@ class KoskiUpdateService(
             db.transaction { tx ->
                 tx.setStatementTimeout(Duration.ofMinutes(2))
                 val requests = tx.getPendingStudyRights(clock.today(), koskiEnv.syncRangeStart)
+                // A failing study right is always still pending, so an error row whose study
+                // right is no longer pending is stale (e.g. the input data change that failed
+                // to upload was reverted) and no upload job will ever come around to clear it
+                tx.deleteObsoleteKoskiUploadErrors(requests)
                 logger.info { "Scheduling ${requests.size} Koski upload requests" }
                 asyncJobRunner.plan(
                     tx,

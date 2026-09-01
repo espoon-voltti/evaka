@@ -4201,6 +4201,20 @@ export const sv: typeof fi = {
       childCorrectedCity: 'Barnets nya postanstalt',
       applicationSentDateRange: 'Ansökan skickad mellan'
     },
+    koskiErrors: {
+      title: 'Koski-fel',
+      description: 'Fel som inträffat vid Koski-dataöverföringar',
+      age: 'Felets ålder (dagar)',
+      child: 'Barn',
+      unit: 'Enhet',
+      type: 'Typ av studierätt',
+      studyRightType: {
+        PRESCHOOL: 'Förskoleundervisning',
+        PREPARATORY: 'Förberedande undervisning'
+      },
+      error: 'Fel',
+      updated: 'Senast uppdaterad'
+    },
     vardaChildErrors: {
       title: 'Varda-barnfel',
       ma003: {

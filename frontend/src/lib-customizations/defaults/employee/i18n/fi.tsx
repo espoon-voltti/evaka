@@ -4168,6 +4168,20 @@ export const fi = {
       childCorrectedCity: 'Lapsen uusi postitoimipaikka',
       applicationSentDateRange: 'Hakemus lähetetty välillä'
     },
+    koskiErrors: {
+      title: 'Koski-virheet',
+      description: 'Koski-tiedonsiirroissa tapahtuneet virheet',
+      age: 'Virheen ikä (päivää)',
+      child: 'Lapsi',
+      unit: 'Yksikkö',
+      type: 'Opiskeluoikeuden tyyppi',
+      studyRightType: {
+        PRESCHOOL: 'Esiopetus',
+        PREPARATORY: 'Valmistava opetus'
+      },
+      error: 'Virhe',
+      updated: 'Päivitetty viimeksi'
+    },
     vardaChildErrors: {
       title: 'Varda-lapsivirheet',
       ma003: {

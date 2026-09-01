@@ -1,0 +1,85 @@
+// SPDX-FileCopyrightText: 2017-2026 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import React from 'react'
+import styled from 'styled-components'
+import { Link } from 'wouter'
+
+import type { KoskiErrorReportRow } from 'lib-common/generated/api-types/reports'
+import type HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
+import Title from 'lib-components/atoms/Title'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import { Container, ContentArea } from 'lib-components/layout/Container'
+import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import { Gap } from 'lib-components/white-space'
+
+import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
+
+import { koskiErrorsQuery } from './queries'
+
+export default React.memo(function KoskiErrors() {
+  const { i18n } = useTranslation()
+  const koskiErrorsResult = useQueryResult(koskiErrorsQuery())
+
+  const ageInDays = (timestamp: HelsinkiDateTime): number =>
+    LocalDate.todayInHelsinkiTz().differenceInDays(timestamp.toLocalDate())
+
+  return (
+    <Container>
+      <ReturnButton label={i18n.common.goBack} />
+      <ContentArea $opaque>
+        <Title size={1}>{i18n.reports.koskiErrors.title}</Title>
+        <Gap $size="s" />
+        {renderResult(koskiErrorsResult, (rows) => (
+          <Table data-qa="koski-errors-table">
+            <Thead>
+              <Tr>
+                <Th>{i18n.reports.koskiErrors.age}</Th>
+                <Th>{i18n.reports.koskiErrors.child}</Th>
+                <Th>{i18n.reports.koskiErrors.unit}</Th>
+                <Th>{i18n.reports.koskiErrors.type}</Th>
+                <Th>{i18n.reports.koskiErrors.error}</Th>
+                <Th>{i18n.reports.koskiErrors.updated}</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {rows.map((row: KoskiErrorReportRow) => (
+                <Tr
+                  data-qa="koski-error-row"
+                  key={`${row.childId}-${row.unitId}-${row.type}`}
+                >
+                  <Td data-qa={`age-${row.childId}`}>
+                    {ageInDays(row.erroredSince)}
+                  </Td>
+                  <Td data-qa={`child-${row.childId}`}>
+                    <Link to={`/child-information/${row.childId}`}>
+                      {row.childId}
+                    </Link>
+                  </Td>
+                  <Td data-qa={`unit-${row.childId}`}>{row.unitName}</Td>
+                  <Td data-qa={`type-${row.childId}`}>
+                    {i18n.reports.koskiErrors.studyRightType[row.type]}
+                  </Td>
+                  <Td data-qa={`errors-${row.childId}`}>
+                    <BreakAll>{row.error}</BreakAll>
+                  </Td>
+                  <Td data-qa={`updated-${row.childId}`}>
+                    {row.erroredAt.format()}
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        ))}
+      </ContentArea>
+    </Container>
+  )
+})
+
+const BreakAll = styled.span`
+  word-break: break-all;
+`

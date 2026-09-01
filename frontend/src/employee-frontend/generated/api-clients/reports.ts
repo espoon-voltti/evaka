@@ -48,6 +48,7 @@ import type { IncompleteIncomeDbRow } from 'lib-common/generated/api-types/repor
 import type { InvoiceReport } from 'lib-common/generated/api-types/reports'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
+import type { KoskiErrorReportRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
 import type { MealReportData } from 'lib-common/generated/api-types/reports'
 import type { MissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
@@ -102,6 +103,7 @@ import { deserializeJsonEndedPlacementsReportRow } from 'lib-common/generated/ap
 import { deserializeJsonFuturePreschoolersReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonHolidayReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonIncompleteIncomeDbRow } from 'lib-common/generated/api-types/reports'
+import { deserializeJsonKoskiErrorReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMealReportData } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonMissingHeadOfFamilyReportRow } from 'lib-common/generated/api-types/reports'
 import { deserializeJsonNekkuOrderRow } from 'lib-common/generated/api-types/reports'
@@ -740,6 +742,18 @@ export async function getInvoiceReport(
     params
   })
   return json
+}
+
+
+/**
+* Generated from evaka.core.reports.KoskiErrorReport.getKoskiErrorsReport
+*/
+export async function getKoskiErrorsReport(): Promise<KoskiErrorReportRow[]> {
+  const { data: json } = await client.request<JsonOf<KoskiErrorReportRow[]>>({
+    url: uri`/employee/reports/koski-errors`.toString(),
+    method: 'GET'
+  })
+  return json.map(e => deserializeJsonKoskiErrorReportRow(e))
 }
 
 

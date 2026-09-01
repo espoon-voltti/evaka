@@ -40,6 +40,7 @@ import {
   getHolidayQuestionnaireReport,
   getIncompleteIncomeReport,
   getInvoiceReport,
+  getKoskiErrorsReport,
   getMealReportByUnit,
   getMissingHeadOfFamilyReport,
   getMissingServiceNeedReport,
@@ -143,6 +144,8 @@ export const placementSketchingQuery = q.query(getPlacementSketchingReport)
 export const voucherServiceProvidersReportQuery = q.query(
   getServiceVoucherReportForAllUnits
 )
+
+export const koskiErrorsQuery = q.query(getKoskiErrorsReport)
 
 export const vardaChildErrorsQuery = q.query(getVardaChildErrorsReport)
 
