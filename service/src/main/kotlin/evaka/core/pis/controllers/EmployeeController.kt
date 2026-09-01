@@ -264,6 +264,7 @@ class EmployeeController(private val accessControl: AccessControl, private val e
         @RequestParam daycareId: DaycareId,
     ) {
         if (user.id == id) throw Forbidden("Cannot modify own roles")
+        val audit = AuditContext().add(id).add(daycareId)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -274,13 +275,16 @@ class EmployeeController(private val accessControl: AccessControl, private val e
                     id,
                 )
 
-                tx.deleteScheduledDaycareAclRow(id, daycareId)
+                tx.deleteScheduledDaycareAclRow(id, daycareId)?.let { deleted ->
+                    audit
+                        .addMeta("role", deleted.role)
+                        .addMeta("startDate", deleted.startDate)
+                        .addMeta("endDate", deleted.endDate)
+                        .observeDate(deleted.startDate)
+                }
             }
         }
-        Audit.EmployeeDeleteScheduledDaycareRole.log(
-            targetId = AuditId(id),
-            meta = mapOf("daycareId" to daycareId),
-        )
+        audit.log(Audit.EmployeeDeleteScheduledDaycareRole, clock)
     }
 
     @PutMapping("/{id}/activate")
