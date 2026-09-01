@@ -10,6 +10,7 @@ import evaka.core.daycare.DaycareGroup
 import evaka.core.daycare.getDaycare
 import evaka.core.daycare.getDaycareGroups
 import evaka.core.daycare.isValidDaycareId
+import evaka.core.document.CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
 import evaka.core.document.DocumentTemplateContent
 import evaka.core.document.childdocument.DocumentContent
 import evaka.core.document.childdocument.DocumentStatus
@@ -204,8 +205,8 @@ LEFT JOIN LATERAL (
     WHERE cd.child_id = pl.child_id
       AND cd.template_id = ${bind(documentTemplateId)}
       AND (cd.status = 'COMPLETED' OR cd.status = 'CITIZEN_DRAFT')
-      AND daterange(pl.start_date, pl.end_date, '[]') @> cd.content_locked_at::date
-    ORDER BY cd.answered_at DESC, cd.created_at DESC
+      AND cd.status_modified_at::date >= pl.start_date - ${bind(CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT)}
+    ORDER BY cd.status_modified_at DESC, cd.created_at DESC, cd.id DESC
     LIMIT 1) latest_doc ON true
 WHERE rp.group_id = ANY (${bind(groupIds)})
         """

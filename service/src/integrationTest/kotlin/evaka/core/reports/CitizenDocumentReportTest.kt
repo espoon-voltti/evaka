@@ -6,6 +6,7 @@ package evaka.core.reports
 
 import evaka.core.FullApplicationTest
 import evaka.core.daycare.CareType
+import evaka.core.document.CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT
 import evaka.core.document.ChildDocumentType
 import evaka.core.document.DocumentTemplate
 import evaka.core.document.DocumentTemplateContent
@@ -380,12 +381,14 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             val aapoLatestResponse =
                 DevChildDocument(
                     templateId = template.id,
+                    createdAt = mockClock.now(),
                     childId = testChildAapo.id,
                     status = DocumentStatus.COMPLETED,
                     content = affirmativeDocumentContent,
                     contentLockedAt = mockClock.now(),
                     modifiedAt = mockClock.now(),
                     modifiedBy = admin.evakaUserId,
+                    statusModifiedAt = mockClock.now(),
                     answeredAt = mockClock.now(),
                     contentLockedBy = admin.id,
                     answeredBy = admin.evakaUserId,
@@ -402,7 +405,9 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             val aapoEarlierResponse =
                 aapoLatestResponse.copy(
                     id = ChildDocumentId(UUID.randomUUID()),
+                    createdAt = mockClock.now().minusDays(1),
                     contentLockedAt = mockClock.now().minusDays(1),
+                    statusModifiedAt = mockClock.now().minusDays(1),
                     answeredAt = mockClock.now().minusDays(1),
                     content = negativeDocumentContent,
                 )
@@ -445,7 +450,7 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
 
             // Test case Cecil:
-            // placed in group A1, 2 answers, latest (false, Radio 2)
+            // placed in group A1, split placement, answered during the earlier row
             val testChildCecil =
                 DevPerson(
                     dateOfBirth = start.minusYears(4),
@@ -489,15 +494,209 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
             )
 
-            val cecilOutdatedResponse =
+            val cecilEarlierPlacementResponse =
                 aapoLatestResponse.copy(
                     id = ChildDocumentId(UUID.randomUUID()),
                     childId = testChildCecil.id,
                     content = affirmativeDocumentContent,
+                    createdAt =
+                        HelsinkiDateTime.of(placementC1.startDate.plusDays(1).atStartOfDay()),
+                    statusModifiedAt =
+                        HelsinkiDateTime.of(placementC1.startDate.plusDays(1).atStartOfDay()),
                     contentLockedAt =
                         HelsinkiDateTime.of(placementC1.startDate.plusDays(1).atStartOfDay()),
                     answeredAt =
                         HelsinkiDateTime.of(placementC1.startDate.plusDays(1).atStartOfDay()),
+                )
+
+            // Test case Eemeli:
+            // placed in group A1, sent at the edge of the creation window, no answer
+            val testChildEemeli =
+                DevPerson(
+                    dateOfBirth = start.minusYears(4),
+                    firstName = "Eemeli",
+                    lastName = "Eskola",
+                )
+            tx.insert(testChildEemeli, DevPersonType.CHILD)
+            val placementE =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChildEemeli.id,
+                    unitId = daycareData.first.id,
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            tx.insert(placementE)
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementE.id,
+                    daycareGroupId = daycareData.second.first().id,
+                    startDate = placementE.startDate,
+                    endDate = placementE.endDate,
+                )
+            )
+
+            val eemeliCreatedAt =
+                HelsinkiDateTime.of(
+                    placementE.startDate
+                        .minusDays(CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT.toLong())
+                        .atStartOfDay()
+                )
+            val eemeliResponse =
+                aapoLatestResponse.copy(
+                    id = ChildDocumentId(UUID.randomUUID()),
+                    childId = testChildEemeli.id,
+                    status = DocumentStatus.CITIZEN_DRAFT,
+                    content = negativeDocumentContent.copy(answers = emptyList()),
+                    createdAt = eemeliCreatedAt,
+                    statusModifiedAt = eemeliCreatedAt,
+                    contentLockedAt = eemeliCreatedAt,
+                    answeredAt = null,
+                    answeredBy = null,
+                )
+
+            // Test case Fanni:
+            // placed in group A1, answered one day before the creation window opened
+            val testChildFanni =
+                DevPerson(
+                    dateOfBirth = start.minusYears(4),
+                    firstName = "Fanni",
+                    lastName = "Forsberg",
+                )
+            tx.insert(testChildFanni, DevPersonType.CHILD)
+            val placementF =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChildFanni.id,
+                    unitId = daycareData.first.id,
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            tx.insert(placementF)
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementF.id,
+                    daycareGroupId = daycareData.second.first().id,
+                    startDate = placementF.startDate,
+                    endDate = placementF.endDate,
+                )
+            )
+
+            val fanniCreatedAt =
+                HelsinkiDateTime.of(
+                    placementF.startDate
+                        .minusDays(CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT + 1L)
+                        .atStartOfDay()
+                )
+            val fanniResponse =
+                aapoLatestResponse.copy(
+                    id = ChildDocumentId(UUID.randomUUID()),
+                    childId = testChildFanni.id,
+                    content = affirmativeDocumentContent,
+                    createdAt = fanniCreatedAt,
+                    statusModifiedAt = fanniCreatedAt,
+                    contentLockedAt = fanniCreatedAt,
+                    answeredAt = fanniCreatedAt,
+                )
+
+            // Test case Greta:
+            // placed in group A1, created before the creation window but sent inside it
+            val testChildGreta =
+                DevPerson(
+                    dateOfBirth = start.minusYears(4),
+                    firstName = "Greta",
+                    lastName = "Grönlund",
+                )
+            tx.insert(testChildGreta, DevPersonType.CHILD)
+            val placementG =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChildGreta.id,
+                    unitId = daycareData.first.id,
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            tx.insert(placementG)
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementG.id,
+                    daycareGroupId = daycareData.second.first().id,
+                    startDate = placementG.startDate,
+                    endDate = placementG.endDate,
+                )
+            )
+
+            val gretaCreatedAt =
+                HelsinkiDateTime.of(
+                    placementG.startDate
+                        .minusDays(CITIZEN_DOCUMENT_CREATION_DAYS_BEFORE_PLACEMENT + 30L)
+                        .atStartOfDay()
+                )
+            val gretaSentAt = HelsinkiDateTime.of(placementG.startDate.minusDays(30).atStartOfDay())
+            val gretaResponse =
+                aapoLatestResponse.copy(
+                    id = ChildDocumentId(UUID.randomUUID()),
+                    childId = testChildGreta.id,
+                    status = DocumentStatus.CITIZEN_DRAFT,
+                    content = negativeDocumentContent.copy(answers = emptyList()),
+                    createdAt = gretaCreatedAt,
+                    statusModifiedAt = gretaSentAt,
+                    contentLockedAt = gretaCreatedAt,
+                    answeredAt = null,
+                    answeredBy = null,
+                )
+
+            // Test case Heidi:
+            // placed in group A1, an older unanswered document and a newer answered one
+            val testChildHeidi =
+                DevPerson(
+                    dateOfBirth = start.minusYears(4),
+                    firstName = "Heidi",
+                    lastName = "Hakala",
+                )
+            tx.insert(testChildHeidi, DevPersonType.CHILD)
+            val placementH =
+                DevPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChildHeidi.id,
+                    unitId = daycareData.first.id,
+                    startDate = defaultPlacementDuration.start,
+                    endDate = defaultPlacementDuration.end,
+                )
+            tx.insert(placementH)
+            tx.insert(
+                DevDaycareGroupPlacement(
+                    daycarePlacementId = placementH.id,
+                    daycareGroupId = daycareData.second.first().id,
+                    startDate = placementH.startDate,
+                    endDate = placementH.endDate,
+                )
+            )
+
+            val heidiUnansweredAt = mockClock.now().minusDays(30)
+            val heidiUnansweredResponse =
+                aapoLatestResponse.copy(
+                    id = ChildDocumentId(UUID.randomUUID()),
+                    childId = testChildHeidi.id,
+                    status = DocumentStatus.CITIZEN_DRAFT,
+                    content = negativeDocumentContent.copy(answers = emptyList()),
+                    createdAt = heidiUnansweredAt,
+                    statusModifiedAt = heidiUnansweredAt,
+                    contentLockedAt = heidiUnansweredAt,
+                    answeredAt = null,
+                    answeredBy = null,
+                )
+
+            val heidiAnsweredAt = mockClock.now().minusDays(5)
+            val heidiAnsweredResponse =
+                aapoLatestResponse.copy(
+                    id = ChildDocumentId(UUID.randomUUID()),
+                    childId = testChildHeidi.id,
+                    content = affirmativeDocumentContent,
+                    createdAt = heidiAnsweredAt,
+                    statusModifiedAt = heidiAnsweredAt,
+                    contentLockedAt = heidiAnsweredAt,
+                    answeredAt = heidiAnsweredAt,
                 )
 
             // Test case Demetrius
@@ -538,13 +737,27 @@ class CitizenDocumentReportTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
             )
 
-            listOf(aapoEarlierResponse, aapoLatestResponse, bertilResponse, cecilOutdatedResponse)
+            listOf(
+                    aapoEarlierResponse,
+                    aapoLatestResponse,
+                    bertilResponse,
+                    cecilEarlierPlacementResponse,
+                    eemeliResponse,
+                    fanniResponse,
+                    gretaResponse,
+                    heidiUnansweredResponse,
+                    heidiAnsweredResponse,
+                )
                 .forEach { tx.insert(it) }
 
             listOf(
                 Pair(testChildAapo, aapoLatestResponse),
                 Pair(testChildBertil, bertilResponse),
-                Pair(testChildCecil, null),
+                Pair(testChildCecil, cecilEarlierPlacementResponse),
+                Pair(testChildEemeli, eemeliResponse),
+                Pair(testChildFanni, null),
+                Pair(testChildGreta, gretaResponse),
+                Pair(testChildHeidi, heidiAnsweredResponse),
                 Pair(testChildDemetrius, null),
             )
         }
