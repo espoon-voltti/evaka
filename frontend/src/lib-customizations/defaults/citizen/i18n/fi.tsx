@@ -2232,8 +2232,18 @@ export default {
           `vähintään ${v} ${v > 1 ? 'erikoismerkkiä' : 'erikoismerkki'}`
       },
       unacceptablePassword: 'Salasana on liian helposti arvattava',
+      disableCredentials: 'Poista käytöstä',
+      disableConfirmTitle: 'Poistetaanko sähköpostikirjautuminen käytöstä?',
+      disableConfirmText:
+        'Et voi enää kirjautua sähköpostilla ja salasanalla. Sinut kirjataan ulos muilta laitteilta, joilla olet kirjautuneena.',
+      disableConfirmNoPasskeys:
+        'Jatkossa voit kirjautua Suomi.fi-tunnistautumisella. Sinulla ei ole pääsyavaimia, joten se on ainoa kirjautumistapasi.',
+      disableConfirmHasPasskeys:
+        'Jatkossa voit kirjautua pääsyavaimella tai Suomi.fi-tunnistautumisella.',
+      disableConfirmReactivate:
+        'Voit halutessasi ottaa sähköpostikirjautumisen käyttöön myöhemmin uudelleen.',
       usernameConflict: (username: string): ReactNode =>
-        `Käyttäjätunnus ${username} on jo käytössä toisella henkilöllä`
+        `Käyttäjätunnus ${username} on jo käytössä toisella henkilöllä. Voit ottaa sähköpostikirjautumisen käyttöön vaihtamalla sähköpostiosoitteesi omissa tiedoissasi ja vahvistamalla uuden osoitteen.`
     },
     passkeysSection: {
       title: 'Pääsyavainkirjautuminen',

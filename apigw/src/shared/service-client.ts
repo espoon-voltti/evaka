@@ -256,6 +256,15 @@ export async function citizenWeakLoginCredentialsUpdate(
   )
 }
 
+export async function citizenWeakLoginCredentialsDelete(
+  req: express.Request,
+  user: EvakaSessionUser
+): Promise<void> {
+  await client.delete(`/citizen/personal-data/weak-login-credentials`, {
+    headers: createServiceRequestHeaders(req, createUserHeader(user))
+  })
+}
+
 export async function getCitizenDetails(
   req: express.Request,
   personId: string

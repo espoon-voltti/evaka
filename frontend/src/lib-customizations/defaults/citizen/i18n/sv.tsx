@@ -2221,8 +2221,18 @@ const sv: Translations = {
           `${v} eller ${v > 1 ? 'flera specialtecken' : 'fler specialtecken'}`
       },
       unacceptablePassword: 'Lösenordet är för lätt att gissa',
+      disableCredentials: 'Ta bort',
+      disableConfirmTitle: 'Vill du ta bort e-postinloggningen?',
+      disableConfirmText:
+        'Du kan inte längre logga in med e-postadress och lösenord. Du loggas ut från andra enheter där du är inloggad.',
+      disableConfirmNoPasskeys:
+        'I fortsättningen kan du logga in med stark identifiering via Suomi.fi. Du har inga inloggningsnycklar, så det är ditt enda sätt att logga in.',
+      disableConfirmHasPasskeys:
+        'I fortsättningen kan du logga in med en inloggningsnyckel eller med stark identifiering via Suomi.fi.',
+      disableConfirmReactivate:
+        'Du kan vid behov ta e-postinloggningen i bruk igen senare.',
       usernameConflict: (username: string): ReactNode =>
-        `Användarnamnet ${username} används redan av en annan person`
+        `Användarnamnet ${username} används redan av en annan person. Du kan ta e-postinloggningen i bruk genom att byta din e-postadress i dina uppgifter och bekräfta den nya adressen.`
     },
     passkeysSection: {
       title: 'Inloggning med inloggningsnyckel',

@@ -26,12 +26,14 @@ import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.shared.utils.EMAIL_PATTERN
 import evaka.core.shared.utils.PHONE_PATTERN
+import evaka.core.user.deleteWeakLoginCredentials
 import evaka.core.user.hasWeakCredentials
 import evaka.core.user.updatePreferredUiLanguage
 import evaka.core.user.updateWeakLoginCredentials
 import java.security.SecureRandom
 import java.time.Duration
 import kotlin.random.asKotlinRandom
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -233,6 +235,35 @@ class PersonalDataControllerCitizen(
             }
         }
         Audit.CitizenCredentialsUpdate.log(targetId = AuditId(user.id))
+    }
+
+    @DeleteMapping("/weak-login-credentials")
+    fun deleteWeakLoginCredentials(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+    ) {
+        Audit.CitizenCredentialsDeleteAttempt.log(targetId = AuditId(user.id))
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Person.DELETE_WEAK_LOGIN_CREDENTIALS,
+                    user.id,
+                )
+                if (tx.hasWeakCredentials(user.id)) {
+                    tx.deleteWeakLoginCredentials(user.id)
+                    asyncJobRunner.plan(
+                        tx,
+                        sequenceOf(AsyncJob.SendWeakCredentialsRemovedEmail(user.id)),
+                        runAt = clock.now(),
+                    )
+                }
+            }
+        }
+        Audit.CitizenCredentialsDelete.log(targetId = AuditId(user.id))
     }
 
     data class EmailVerificationStatusResponse(

@@ -11,34 +11,42 @@ import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-types/pis'
 import type { PasswordConstraints } from 'lib-common/generated/api-types/shared'
 import { isPasswordStructureValid } from 'lib-common/password'
+import { useQueryResult } from 'lib-common/query'
 import { Chip } from 'lib-components/atoms/Chip'
 import { Button } from 'lib-components/atoms/buttons/Button'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  MobileFixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import PasswordInputF from 'lib-components/molecules/PasswordInputF'
 import BaseModal, {
   ModalButtons
 } from 'lib-components/molecules/modals/BaseModal'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
-import { Label, LabelLike } from 'lib-components/typography'
+import { Label, LabelLike, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faCheck, faLockAlt } from 'lib-icons'
+import { faCheck, faLockAlt, faTrash } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import type { User } from '../auth/state'
 import { useTranslation } from '../localization'
+import { forgetLastLoginMethod } from '../login/last-login-method'
 import { getStrongLoginUri } from '../navigation/const'
 
 import {
   DataRow,
   DataRowLabel,
   DataRowValue,
-  RowActions,
   SectionTitle,
   TitleAndEditRow
 } from './components'
 import { isEmailVerified } from './emailVerification'
-import { updateWeakLoginCredentialsMutation } from './queries'
+import {
+  deleteWeakLoginCredentialsMutation,
+  passkeysQuery,
+  updateWeakLoginCredentialsMutation
+} from './queries'
 
 export interface Props {
   user: User
@@ -60,7 +68,12 @@ export default React.memo(function LoginDetailsSection({
 
   const emailVerified = isEmailVerified(emailVerificationStatus)
 
+  const passkeys = useQueryResult(passkeysQuery())
+  const noPasskeys = passkeys.map((p) => p.length === 0).getOrElse(null)
+
   const [modalOpen, { off: closeModal, on: openModal }] = useBoolean(false)
+  const [disableModalOpen, { off: closeDisableModal, on: openDisableModal }] =
+    useBoolean(false)
   const [
     activationSuccessModalOpen,
     { off: closeActivationSuccessModal, on: openActivationSuccessModal }
@@ -75,17 +88,6 @@ export default React.memo(function LoginDetailsSection({
     <div data-qa="login-details-section">
       <TitleAndEditRow>
         <SectionTitle $noMargin>{t.title}</SectionTitle>
-        {!!user.weakLoginUsername && (
-          <RowActions>
-            <Button
-              appearance="inline"
-              data-qa="update-password"
-              text={t.updatePassword}
-              icon={canEdit ? undefined : faLockAlt}
-              onClick={canEdit ? openModal : navigateToLogin}
-            />
-          </RowActions>
-        )}
       </TitleAndEditRow>
 
       <Gap $size="xs" />
@@ -113,6 +115,23 @@ export default React.memo(function LoginDetailsSection({
             <DataRowLabel>{t.password}</DataRowLabel>
             <DataRowValue>********</DataRowValue>
           </DataRow>
+          <Gap $size="s" />
+          <MobileFixedSpaceRow $spacing="L">
+            <Button
+              appearance="inline"
+              data-qa="update-password"
+              text={t.updatePassword}
+              icon={canEdit ? undefined : faLockAlt}
+              onClick={canEdit ? openModal : navigateToLogin}
+            />
+            <Button
+              appearance="inline"
+              data-qa="disable-credentials"
+              text={t.disableCredentials}
+              icon={canEdit ? undefined : faLockAlt}
+              onClick={canEdit ? openDisableModal : navigateToLogin}
+            />
+          </MobileFixedSpaceRow>
         </>
       ) : emailVerified ? (
         <Button
@@ -125,6 +144,47 @@ export default React.memo(function LoginDetailsSection({
         <div data-qa="weak-login-disabled">{t.unverifiedEmailWarning}</div>
       )}
       <ModalAccessibilityWrapper>
+        {disableModalOpen && (
+          <MutateFormModal
+            data-qa="disable-credentials-modal"
+            type="danger"
+            title={t.disableConfirmTitle}
+            text={
+              <>
+                <P $noMargin>{t.disableConfirmText}</P>
+                {noPasskeys !== null && (
+                  <>
+                    <Gap $size="s" />
+                    <P
+                      $noMargin
+                      data-qa={
+                        noPasskeys ? 'no-passkeys-warning' : 'has-passkeys-info'
+                      }
+                    >
+                      {noPasskeys
+                        ? t.disableConfirmNoPasskeys
+                        : t.disableConfirmHasPasskeys}
+                    </P>
+                  </>
+                )}
+                <Gap $size="s" />
+                <P $noMargin>{t.disableConfirmReactivate}</P>
+              </>
+            }
+            icon={faTrash}
+            resolveLabel={t.disableCredentials}
+            resolveDanger
+            rejectLabel={i18n.common.cancel}
+            resolveMutation={deleteWeakLoginCredentialsMutation}
+            resolveAction={() => undefined}
+            rejectAction={closeDisableModal}
+            onSuccess={() => {
+              closeDisableModal()
+              forgetLastLoginMethod('email')
+              reloadUser()
+            }}
+          />
+        )}
         {!!emailVerificationStatus.verifiedEmail && (
           <>
             {modalOpen && (

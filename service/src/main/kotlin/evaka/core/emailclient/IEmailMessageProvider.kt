@@ -151,6 +151,8 @@ interface IEmailMessageProvider {
 
     fun passkeyRemoved(): EmailContent
 
+    fun weakCredentialsRemoved(): EmailContent
+
     fun messageDeletionSenderEmail(
         supportEmail: String?,
         data: MessageDeletionEmailData,

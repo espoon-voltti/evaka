@@ -1961,8 +1961,18 @@ const en: Translations = {
           `at least ${v} ${v > 1 ? 'special characters' : 'special character'}`
       },
       unacceptablePassword: 'The password is too easy to guess',
+      disableCredentials: 'Remove',
+      disableConfirmTitle: 'Remove email login?',
+      disableConfirmText:
+        'You can no longer sign in with your email address and password. You are signed out from other devices where you are signed in.',
+      disableConfirmNoPasskeys:
+        'From now on you can sign in using Suomi.fi. You have no passkeys, so it is your only way to sign in.',
+      disableConfirmHasPasskeys:
+        'From now on you can sign in with a passkey or using Suomi.fi.',
+      disableConfirmReactivate:
+        'You can take email login into use again later if you want.',
       usernameConflict: (username: string): ReactNode =>
-        `The username ${username} is already in use by another person`
+        `The username ${username} is already in use by another person. You can take email login into use by changing your email address in your personal details and verifying the new address.`
     },
     passkeysSection: {
       title: 'Passkey login',

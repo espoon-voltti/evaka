@@ -922,4 +922,20 @@ $unsubscribeEn
 <p>If you removed the passkey yourself, you can ignore this message. If not, log in to eVaka with strong authentication (Sign in using Suomi.fi) and check your personal details.</p>
 """,
         )
+
+    override fun weakCredentialsRemoved(): EmailContent =
+        EmailContent.fromHtml(
+            subject =
+                "Sähköpostikirjautuminen on poistettu käytöstä eVaka-tililtäsi / E-postinloggningen har tagits bort från ditt eVaka-konto / Email login has been removed from your eVaka account",
+            html =
+                """<p>eVaka-tilisi sähköpostikirjautuminen on poistettu käytöstä.</p>
+<p>Jos poistit sen itse, voit jättää tämän viestin huomiotta. Muussa tapauksessa kirjaudu eVakaan Suomi.fi-tunnistautumisella ja tarkista omat tietosi.</p>
+<hr>
+<p>E-postinloggningen har tagits bort från ditt eVaka-konto.</p>
+<p>Om du själv tog bort den kan du ignorera det här meddelandet. Om inte, logga in i eVaka med Suomi.fi-identifiering och kontrollera dina uppgifter.</p>
+<hr>
+<p>Email login has been removed from your eVaka account.</p>
+<p>If you removed it yourself, you can ignore this message. If not, log in to eVaka using Suomi.fi and check your personal details.</p>
+""",
+        )
 }
