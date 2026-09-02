@@ -418,7 +418,7 @@ enum class Audit(
     PersonSensitiveDetailsRead,
     PersonMerge,
     PersonUpdate,
-    PersonUpdateEvakaRights(securityEvent = true, securityLevel = "high"),
+    PersonUpdateEvakaRights(securityEvent = true, securityLevel = "medium"),
     PersonVtjFamilyUpdate,
     PinCodeLockedRead,
     PinCodeUpdate(securityEvent = true, securityLevel = "medium"),
