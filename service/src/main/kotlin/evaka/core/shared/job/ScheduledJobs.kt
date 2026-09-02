@@ -36,6 +36,7 @@ import evaka.core.note.child.daily.deleteExpiredNotes
 import evaka.core.pis.cleanUpInactivePeople
 import evaka.core.pis.deactivateInactiveEmployees
 import evaka.core.pis.deleteExpiredEmailVerifications
+import evaka.core.pis.deleteNeverLoggedInSsnEmployees
 import evaka.core.reports.freezeVoucherValueReportRows
 import evaka.core.reservations.MissingHolidayReservationsReminders
 import evaka.core.reservations.MissingReservationsReminders
@@ -214,6 +215,10 @@ enum class ScheduledJob(
     ),
     InactiveEmployeesRoleReset(
         ScheduledJobs::inactiveEmployeesRoleReset,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
+    ),
+    DeleteNeverLoggedInSsnEmployees(
+        ScheduledJobs::deleteNeverLoggedInSsnEmployees,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     SendMissingReservationReminders(
@@ -576,6 +581,13 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         db.transaction {
             val ids = it.deactivateInactiveEmployees(clock.now())
             logger.info { "Roles cleared for ${ids.size} inactive employees: $ids" }
+        }
+    }
+
+    fun deleteNeverLoggedInSsnEmployees(db: Database.Connection, clock: EvakaClock) {
+        db.transaction {
+            val ids = it.deleteNeverLoggedInSsnEmployees(clock.now())
+            logger.info { "Deleted ${ids.size} SSN employees who never logged in: $ids" }
         }
     }
 
