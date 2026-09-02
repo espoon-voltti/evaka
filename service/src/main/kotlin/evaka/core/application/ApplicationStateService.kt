@@ -310,8 +310,7 @@ class ApplicationStateService(
             application.type,
             application.form,
             currentDate,
-            strict = user is AuthenticatedUser.Citizen,
-            validateApplicationPeriod = true,
+            citizen = user is AuthenticatedUser.Citizen,
         )
 
         val _ = personService.getGuardians(tx, user, now, application.childId)
@@ -1268,8 +1267,7 @@ class ApplicationStateService(
                 original.type,
                 updatedForm,
                 now.toLocalDate(),
-                strict = true,
-                validateApplicationPeriod = true,
+                citizen = true,
             )
 
             if (listOf(SENT).contains(original.status)) {
@@ -1304,7 +1302,6 @@ class ApplicationStateService(
         applicationId: ApplicationId,
         update: ApplicationUpdate,
         userId: EvakaUserId,
-        validateApplicationPeriod: Boolean = true,
     ) {
         val original =
             tx.fetchApplicationDetails(applicationId)
@@ -1324,8 +1321,7 @@ class ApplicationStateService(
             original.type,
             updatedForm,
             now.toLocalDate(),
-            strict = false,
-            validateApplicationPeriod,
+            citizen = false,
         )
 
         if (!updatedForm.preferences.urgent) {
@@ -1529,15 +1525,14 @@ class ApplicationStateService(
         type: ApplicationType,
         application: ApplicationForm,
         currentDate: LocalDate,
-        strict: Boolean,
-        validateApplicationPeriod: Boolean,
+        citizen: Boolean,
     ) {
         val preferredStartDate = application.preferences.preferredStartDate
         if (type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
             val activePreschoolTerm = tx.getPreschoolTerm(preferredStartDate)
             val canApplyForPreferredDate =
                 activePreschoolTerm?.isApplicationAccepted(currentDate) == true ||
-                    (activePreschoolTerm != null && !validateApplicationPeriod)
+                    (activePreschoolTerm != null && !citizen)
             if (!canApplyForPreferredDate) {
                 throw BadRequest("Cannot apply to preschool on $preferredStartDate at the moment")
             }
@@ -1546,8 +1541,7 @@ class ApplicationStateService(
                 application.preferences.connectedDaycarePreferredStartDate
             if (
                 connectedDaycarePreferredStartDate != null &&
-                    connectedDaycarePreferredStartDate != preferredStartDate &&
-                    validateApplicationPeriod
+                    connectedDaycarePreferredStartDate != preferredStartDate
             ) {
                 val connectedPreschoolTerm = tx.getPreschoolTerm(connectedDaycarePreferredStartDate)
                 if (connectedPreschoolTerm != activePreschoolTerm) {
@@ -1576,7 +1570,8 @@ class ApplicationStateService(
         if (type == ApplicationType.CLUB && preferredStartDate != null) {
             val activeClubTerm = tx.getClubTerm(preferredStartDate)
             val canApplyForPreferredDate =
-                activeClubTerm?.applicationPeriod?.includes(currentDate) == true
+                activeClubTerm?.applicationPeriod?.includes(currentDate) == true ||
+                    (activeClubTerm != null && !citizen)
             if (!canApplyForPreferredDate) {
                 throw BadRequest("Cannot apply to club on $preferredStartDate")
             }
@@ -1634,7 +1629,7 @@ class ApplicationStateService(
             if (daycares.size < unitIds.toSet().size) {
                 throw BadRequest("Some unit was not found")
             }
-            if (strict) {
+            if (citizen) {
                 if (preferredStartDate != null) {
                     for (daycare in daycares) {
                         if (
