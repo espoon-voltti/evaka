@@ -157,17 +157,25 @@ export default React.memo(function ApplicationPageShared() {
   const terms = useMemo(
     () =>
       combine(application, preschoolTerms, clubTerms)
-        .map(([applicationData, preschoolTerms, clubTerms]) =>
-          // Employees record paper applications against any term, so no
-          // filtering by open application period here.
-          toApplicationTerms(
-            applicationData.application.type,
-            preschoolTerms,
-            clubTerms,
-            false
-          )
-        )
-        .getOrElse(undefined),
+        .map(([applicationData, preschoolTerms, clubTerms]) => {
+          const applicationTerms = (onlyOpenForApplications: boolean) =>
+            toApplicationTerms(
+              applicationData.application.type,
+              preschoolTerms,
+              clubTerms,
+              onlyOpenForApplications
+            )
+          return {
+            // Employees record paper applications against any term, so
+            // validation must accept them all.
+            validation: applicationTerms(false),
+            // The term list rendered in the form is guardian-facing guidance,
+            // so it lists the same terms open for applications as the citizen
+            // editor does.
+            display: applicationTerms(true)
+          }
+        })
+        .getOrElse({ validation: undefined, display: undefined }),
     [application, preschoolTerms, clubTerms]
   )
 
@@ -185,7 +193,7 @@ export default React.memo(function ApplicationPageShared() {
             formData,
             featureFlags,
             'employee',
-            terms
+            terms.validation
           )
         : undefined,
     [editing, applicationDetails, formData, terms]
@@ -241,7 +249,7 @@ export default React.memo(function ApplicationPageShared() {
                       formData={formData}
                       setFormData={updateFormData}
                       errors={errors}
-                      terms={terms}
+                      terms={terms.display}
                       guardians={applicationData.guardians}
                       dueDate={dueDate}
                       setDueDate={setDueDate}
