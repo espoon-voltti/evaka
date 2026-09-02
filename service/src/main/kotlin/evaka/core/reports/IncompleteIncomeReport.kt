@@ -44,21 +44,48 @@ fun Database.Read.getIncompleteReport(today: LocalDate): List<IncompleteIncomeDb
         sql(
             """
                 SELECT DISTINCT pe.id as personId, pe.first_name as firstName, pe.last_name as lastName, ie.valid_from as validFrom, dg.name as daycareName, ca.name as careareaName
-                FROM income ie
-                JOIN guardian gu
-                        ON ie.person_id = gu.guardian_id
-                JOIN placement pl
-                        ON gu.child_id = pl.child_id 
-                        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
-                JOIN person pe
-                        ON gu.guardian_id = pe.id
-                JOIN daycare dg
-                        ON pl.unit_id = dg.id
-                JOIN care_area ca
-                        ON dg.care_area_id = ca.id
+                FROM placement pl
+                LEFT JOIN service_need_option default_sno ON default_sno.valid_placement_type = pl.type AND default_sno.default_option
+                JOIN daycare dg ON dg.id = pl.unit_id
+                JOIN care_area ca ON ca.id = dg.care_area_id
+                JOIN fridge_child fc_head ON fc_head.child_id = pl.child_id
+                    AND daterange(fc_head.start_date, fc_head.end_date, '[]') @> ${bind(today)}
+                    AND fc_head.conflict = false
+                LEFT JOIN fridge_partner fp ON fp.person_id = fc_head.head_of_child
+                    AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)}
+                    AND fp.conflict = false
+                LEFT JOIN fridge_partner fp_partner ON fp_partner.partnership_id = fp.partnership_id
+                    AND fp_partner.person_id <> fp.person_id
+                    AND daterange(fp_partner.start_date, fp_partner.end_date, '[]') @> ${bind(today)}
+                    AND fp_partner.conflict = false
+                -- one row per adult (head and possible partner), each paired with the other adult
+                -- for the max-fee check below. With no partner the NULL row is dropped by the person join
+                CROSS JOIN LATERAL (VALUES (fc_head.head_of_child, fp_partner.person_id), (fp_partner.person_id, fc_head.head_of_child)) AS adult(id, other_id)
+                JOIN person pe ON pe.id = adult.id
+                JOIN income ie ON ie.person_id = pe.id
                 WHERE ie.effect = 'INCOMPLETE'
-                AND ie.valid_to is null
-                AND ie.modified_by = '00000000-0000-0000-0000-000000000000'
+                AND ie.valid_to IS NULL
+                AND ie.modified_by = ${bind(AuthenticatedUser.SystemInternalUser.evakaUserId)}
+                -- placement is paid if its current service need has a fee,
+                -- or it has no current service need and the placement type's default option is paid
+                AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(today)}
+                AND COALESCE(
+                    (
+                        SELECT bool_or(sno.fee_coefficient > 0)
+                        FROM service_need sn
+                        JOIN service_need_option sno ON sno.id = sn.option_id
+                        WHERE sn.placement_id = pl.id
+                        AND daterange(sn.start_date, sn.end_date, '[]') @> ${bind(today)}
+                    ),
+                    default_sno.fee_coefficient > 0
+                )
+                AND (dg.invoiced_by_municipality OR dg.provider_type = 'PRIVATE_SERVICE_VOUCHER')
+                AND NOT EXISTS (
+                    SELECT FROM income partner_income
+                    WHERE partner_income.person_id = adult.other_id
+                    AND partner_income.effect = 'MAX_FEE_ACCEPTED'
+                    AND daterange(partner_income.valid_from, partner_income.valid_to, '[]') @> ${bind(today)}
+                )
                 ORDER BY ie.valid_from;
             """
                 .trimIndent()

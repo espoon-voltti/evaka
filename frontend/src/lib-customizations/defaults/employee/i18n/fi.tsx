@@ -4009,7 +4009,7 @@ export const fi = {
     incompleteIncomes: {
       title: 'Puuttuvat tulotiedot',
       description:
-        'Raportti vanhemmista, joiden tulotiedot ovat vanhentuneet, mutta lapsella on vielä sijoitus aktiivinen.',
+        'Raportti aikuisista, joiden tulotiedot ovat vanhentuneet ja joiden perheessä lapsella on voimassa oleva maksullinen sijoitus. Raportilla ei näytetä aikuisia, joiden samassa taloudessa asuva puoliso on antanut suostumuksen korkeimpaan maksuun.',
       validFrom: 'Alkupäivämäärä',
       fullName: 'Nimi',
       daycareName: 'Päiväkoti',
