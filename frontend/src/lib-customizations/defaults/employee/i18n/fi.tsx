@@ -3536,7 +3536,13 @@ export const fi = {
       modalEntryTextLabel: 'Päätökselle tuleva teksti',
       removedFromUse: 'Poistettu käytöstä',
       unitLanguageUnsupported:
-        'Valittu yksikkö on ruotsinkielinen, mutta ruotsinkieliset päätökset eivät ole käytössä. Vaihda yksikkö tai ota yhteyttä pääkäyttäjään.'
+        'Valittu yksikkö on ruotsinkielinen, mutta ruotsinkieliset päätökset eivät ole käytössä. Vaihda yksikkö tai ota yhteyttä pääkäyttäjään.',
+      unitLanguageChangeModal: {
+        title: 'Yksilölliset perustelut poistetaan',
+        text: 'Valitsemasi yksikkö on erikielinen kuin nykyinen, joten päätökselle valitut yksilölliset perustelut poistetaan. Voit valita uudet perustelut yksikön vaihtamisen jälkeen.',
+        resolve: 'Vaihda yksikkö',
+        reject: 'Peruuta'
+      }
     }
   },
   reports: {

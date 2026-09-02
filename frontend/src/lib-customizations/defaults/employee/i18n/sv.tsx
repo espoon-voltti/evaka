@@ -3567,7 +3567,13 @@ export const sv: typeof fi = {
       modalEntryTextLabel: 'Text som visas i beslutet',
       removedFromUse: 'Tagen ur bruk',
       unitLanguageUnsupported:
-        'Den valda enheten är svenskspråkig, men svenskspråkiga beslut är inte i bruk. Byt enhet eller kontakta administratören.'
+        'Den valda enheten är svenskspråkig, men svenskspråkiga beslut är inte i bruk. Byt enhet eller kontakta administratören.',
+      unitLanguageChangeModal: {
+        title: 'De individuella motiveringarna tas bort',
+        text: 'Enheten du valde har ett annat språk än den nuvarande, så de individuella motiveringar som valts för beslutet tas bort. Du kan välja nya motiveringar efter att du bytt enhet.',
+        resolve: 'Byt enhet',
+        reject: 'Avbryt'
+      }
     }
   },
   reports: {

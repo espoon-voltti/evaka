@@ -38,6 +38,18 @@ export class DecisionDraftPage {
     return new IndividualReasoningPicker(this.page)
   }
 
+  get unitLanguageChangeModal(): Element {
+    return this.page.findByDataQa('reasonings-cleared-modal')
+  }
+
+  async confirmUnitChange() {
+    await this.page.findByDataQa('modal-okBtn').click()
+  }
+
+  async cancelUnitChange() {
+    await this.page.findByDataQa('modal-cancelBtn').click()
+  }
+
   async save() {
     await this.page.findByDataQa('save-decisions-button').click()
   }

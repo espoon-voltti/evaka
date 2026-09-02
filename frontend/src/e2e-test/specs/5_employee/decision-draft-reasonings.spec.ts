@@ -305,6 +305,54 @@ test.describe('Decision draft reasonings', () => {
     ).toContainText('Förskola individuell')
   })
 
+  test('Switching to a unit in another language clears the individual reasonings', async () => {
+    const finnishIndividual = await Fixture.decisionReasoningIndividual({
+      collectionType: 'PRESCHOOL',
+      language: 'FI',
+      title: 'Esiopetus yksilö',
+      text: 'Esiopetuksen yksilöperustelu'
+    }).save()
+    const svPreschool = await Fixture.daycare({
+      ...testPreschool,
+      id: fromUuid<DaycareId>('a2f5cc74-3e08-4a5e-9b1c-6d1d6e2a5f11'),
+      name: 'Alkuräjähdyksen eskari (SV)',
+      language: 'sv'
+    }).save()
+
+    let draftPage = await openDecisionDraft()
+    let preschoolCard = draftPage.decisionCard('PRESCHOOL')
+
+    const picker = await draftPage.openPicker('PRESCHOOL')
+    await picker.selectReasoning(finnishIndividual.id)
+    await picker.close()
+    await expect(
+      preschoolCard.individualReasoning(finnishIndividual.id)
+    ).toBeVisible()
+
+    // Cancelling the confirmation keeps both the unit and the selection
+    await draftPage.selectSharedUnit(svPreschool.id)
+    await expect(draftPage.unitLanguageChangeModal).toBeVisible()
+    await draftPage.cancelUnitChange()
+    await expect(draftPage.unitLanguageChangeModal).toBeHidden()
+    await expect(
+      preschoolCard.individualReasoning(finnishIndividual.id)
+    ).toBeVisible()
+
+    // Confirming drops the Finnish selection, so saving does not fail
+    await draftPage.selectSharedUnit(svPreschool.id)
+    await draftPage.confirmUnitChange()
+    await expect(draftPage.unitLanguageChangeModal).toBeHidden()
+    await expect(preschoolCard.individualReasonings()).toHaveCount(0)
+
+    await draftPage.save()
+    await expect(page.findByDataQa('save-decisions-button')).toBeHidden()
+
+    draftPage = await reopenDecisionDraft()
+    preschoolCard = draftPage.decisionCard('PRESCHOOL')
+    await expect(preschoolCard.pickerButton('PRESCHOOL')).toBeVisible()
+    await expect(preschoolCard.individualReasonings()).toHaveCount(0)
+  })
+
   async function openDecisionDraft() {
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
