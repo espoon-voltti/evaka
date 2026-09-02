@@ -2,7 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-const appName = 'eVaka'
+import { featureFlags } from 'lib-customizations/citizen'
+
+const appName = featureFlags.environmentLabel
+  ? `eVaka (${featureFlags.environmentLabel})`
+  : 'eVaka'
 const themeColor = '#3273c9'
 
 const appMeta: Record<string, string> = {
