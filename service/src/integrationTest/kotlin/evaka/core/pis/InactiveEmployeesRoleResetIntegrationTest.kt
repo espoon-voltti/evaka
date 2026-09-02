@@ -11,6 +11,7 @@ import evaka.core.shared.DaycareId
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.GroupId
 import evaka.core.shared.auth.UserRole
+import evaka.core.shared.auth.hasAnyDaycareAclRow
 import evaka.core.shared.auth.insertDaycareAclRow
 import evaka.core.shared.auth.syncDaycareGroupAcl
 import evaka.core.shared.db.Database
@@ -24,6 +25,8 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import org.junit.jupiter.api.Test
 
@@ -32,6 +35,9 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
         HelsinkiDateTime.of(LocalDate.of(2021, 8, 1), LocalTime.of(3, 15))
 
     private val daysToDeactivation: Long = 8 * 7 + 1
+    private val daysToDeletion: Long = 5 + 1
+
+    private val ssn = "010107A9917"
 
     @Test
     fun `global roles are not reset when last_login is now`() {
@@ -284,6 +290,107 @@ class InactiveEmployeesRoleResetIntegrationTest : PureJdbiTest(resetDbBeforeEach
 
         val deactivated = db.transaction { it.deactivateInactiveEmployees(firstOfAugust2021) }
         assertEquals(1, deactivated.size)
+    }
+
+    @Test
+    fun `ssn employee who has not logged in within 5 days of creation is deleted together with unit acl rows`() {
+        val employeeId = db.transaction {
+            val employeeId =
+                it.insert(
+                    DevEmployee(
+                        ssn = ssn,
+                        lastLogin = null,
+                        created = firstOfAugust2021.minusDays(daysToDeletion),
+                    )
+                )
+            val areaId = it.insert(DevCareArea())
+            val unitId = it.insert(DevDaycare(areaId = areaId))
+            it.insertDaycareAclRow(
+                daycareId = unitId,
+                employeeId = employeeId,
+                role = UserRole.STAFF,
+            )
+            employeeId
+        }
+
+        val deleted = db.transaction { it.deleteNeverLoggedInSsnEmployees(firstOfAugust2021) }
+
+        assertEquals(listOf(employeeId), deleted)
+        assertNull(db.read { it.getEmployee(employeeId) })
+        assertFalse(db.read { it.hasAnyDaycareAclRow(employeeId) })
+    }
+
+    @Test
+    fun `ssn employee created exactly 5 days ago is not deleted`() {
+        val employeeId = db.transaction {
+            it.insert(
+                DevEmployee(
+                    ssn = ssn,
+                    lastLogin = null,
+                    created = firstOfAugust2021.minusDays(daysToDeletion - 1),
+                )
+            )
+        }
+
+        val deleted = db.transaction { it.deleteNeverLoggedInSsnEmployees(firstOfAugust2021) }
+
+        assertEquals(listOf(), deleted)
+        assertNotNull(db.read { it.getEmployee(employeeId) })
+    }
+
+    @Test
+    fun `employee without ssn who has not logged in is not deleted`() {
+        val employeeId = db.transaction {
+            it.insert(
+                DevEmployee(
+                    ssn = null,
+                    lastLogin = null,
+                    created = firstOfAugust2021.minusDays(1000),
+                )
+            )
+        }
+
+        val deleted = db.transaction { it.deleteNeverLoggedInSsnEmployees(firstOfAugust2021) }
+
+        assertEquals(listOf(), deleted)
+        assertNotNull(db.read { it.getEmployee(employeeId) })
+    }
+
+    @Test
+    fun `ssn employee who has logged in is not deleted`() {
+        val employeeId = db.transaction {
+            it.insert(
+                DevEmployee(
+                    ssn = ssn,
+                    lastLogin = firstOfAugust2021.minusDays(1000),
+                    created = firstOfAugust2021.minusDays(1000),
+                )
+            )
+        }
+
+        val deleted = db.transaction { it.deleteNeverLoggedInSsnEmployees(firstOfAugust2021) }
+
+        assertEquals(listOf(), deleted)
+        assertNotNull(db.read { it.getEmployee(employeeId) })
+    }
+
+    @Test
+    fun `deactivated ssn employee who has not logged in is also deleted`() {
+        val employeeId = db.transaction {
+            it.insert(
+                DevEmployee(
+                    ssn = ssn,
+                    lastLogin = null,
+                    created = firstOfAugust2021.minusDays(1000),
+                    active = false,
+                )
+            )
+        }
+
+        val deleted = db.transaction { it.deleteNeverLoggedInSsnEmployees(firstOfAugust2021) }
+
+        assertEquals(listOf(employeeId), deleted)
+        assertNull(db.read { it.getEmployee(employeeId) })
     }
 
     private fun Database.Transaction.setDaycareAclUpdated(
