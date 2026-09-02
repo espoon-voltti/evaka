@@ -117,7 +117,9 @@ BEGIN ATOMIC
             ) AS child_support_2_and_old_extended_compulsory_education
         FROM preschool_assistance pa
         WHERE pa.child_id = p.child_id
-        AND pa.valid_during && range_merge(placements)
+        -- Ranges past the last placement are needed for varhennettu oppivelvollisuus, which is
+        -- reported to Koski even when it starts after the current placements end
+        AND pa.valid_during && daterange(lower(range_merge(placements)), NULL)
     ) pras ON TRUE
     WHERE p.type = 'PRESCHOOL'
     AND EXISTS (SELECT FROM koski_child WHERE koski_child.id = p.child_id);

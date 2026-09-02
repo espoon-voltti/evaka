@@ -1523,7 +1523,7 @@ CREATE FUNCTION public.koski_active_preschool_study_right(today date, sync_range
              range_agg(pa.valid_during) FILTER (WHERE (pa.level = 'CHILD_SUPPORT_AND_OLD_EXTENDED_COMPULSORY_EDUCATION'::public.preschool_assistance_level)) AS child_support_and_old_extended_compulsory_education,
              range_agg(pa.valid_during) FILTER (WHERE (pa.level = 'CHILD_SUPPORT_2_AND_OLD_EXTENDED_COMPULSORY_EDUCATION'::public.preschool_assistance_level)) AS child_support_2_and_old_extended_compulsory_education
             FROM public.preschool_assistance pa
-           WHERE ((pa.child_id = p.child_id) AND (pa.valid_during && range_merge(p.placements)))) pras ON (true))
+           WHERE ((pa.child_id = p.child_id) AND (pa.valid_during && daterange(lower(range_merge(p.placements)), NULL::date)))) pras ON (true))
    WHERE ((p.type = 'PRESCHOOL'::public.koski_study_right_type) AND (EXISTS ( SELECT
             FROM public.koski_child
            WHERE (koski_child.id = p.child_id))));

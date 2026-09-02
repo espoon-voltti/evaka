@@ -24,7 +24,7 @@ import org.jdbi.v3.json.Json
  * This number should be incremented to bust the Koski input data cache, for example after making
  * changes to data processing code in this file.
  */
-const val KOSKI_DATA_VERSION: Int = 3
+const val KOSKI_DATA_VERSION: Int = 4
 
 data class KoskiData(val oppija: Oppija, val operation: KoskiOperation, val organizationOid: String)
 
@@ -367,6 +367,13 @@ data class KoskiActivePreschoolDataRaw(
         val childSupportWithNewEce =
             childSupportAndExtendedCompulsoryEducation.intersection(listOf(placementSpan))
 
+        // Not trimmed at the end like the other ranges: a decision for a coming term must reach
+        // Koski before that term's placement starts
+        val newEceIncludingFuture =
+            childSupportAndExtendedCompulsoryEducation.intersection(
+                listOf(FiniteDateRange(placementSpan.start, LocalDate.MAX))
+            )
+
         val allChildSupport =
             childSupportWithoutEce
                 .addAll(childSupportWithNewEce)
@@ -397,7 +404,7 @@ data class KoskiActivePreschoolDataRaw(
                 // deprecated
                 pidennettyOppivelvollisuus = longestOldEce?.let { Aikajakso.from(it) },
                 varhennetunOppivelvollisuudenJaksot =
-                    childSupportWithNewEce
+                    newEceIncludingFuture
                         .ranges()
                         .toList()
                         .map { Aikajakso.from(it) }
