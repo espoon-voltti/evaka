@@ -150,12 +150,13 @@ data class EndedDaycareAclRow(
     val daycareId: DaycareId,
     val employeeId: EmployeeId,
     val role: UserRole,
+    val endDate: LocalDate,
 )
 
 fun Database.Read.getEndedDaycareAclRows(today: LocalDate) = createQuery {
     sql(
         """
-SELECT daycare_id, employee_id, role
+SELECT daycare_id, employee_id, role, end_date
 FROM daycare_acl
 WHERE end_date IS NOT NULL AND end_date < ${bind(today)}
     """
@@ -252,40 +253,58 @@ ON CONFLICT (daycare_id, employee_id) DO UPDATE
         )
     }
 
-fun Database.Transaction.deleteScheduledDaycareAclRows(employeeId: EmployeeId) = execute {
+fun Database.Transaction.deleteScheduledDaycareAclRows(
+    employeeId: EmployeeId
+): List<ScheduledAclRowSummary> = createQuery {
     sql(
         """
 DELETE FROM daycare_acl_schedule
 WHERE employee_id = ${bind(employeeId)}
+RETURNING daycare_id, employee_id, role, start_date, end_date
     """
     )
 }
+    .toList<ScheduledAclRowSummary>()
 
+data class ScheduledAclRowSummary(
+    val daycareId: DaycareId,
+    val employeeId: EmployeeId,
+    val role: UserRole,
+    val startDate: LocalDate,
+    val endDate: LocalDate?,
+)
+
+@IgnorableReturnValue
 fun Database.Transaction.deleteScheduledDaycareAclRow(
     employeeId: EmployeeId,
     daycareId: DaycareId,
-) = execute {
+): ScheduledAclRowSummary? = createQuery {
     sql(
         """
 DELETE FROM daycare_acl_schedule
 WHERE daycare_id = ${bind(daycareId)} AND employee_id = ${bind(employeeId)}
+RETURNING daycare_id, employee_id, role, start_date, end_date
     """
     )
 }
+    .exactlyOneOrNull<ScheduledAclRowSummary>()
 
-fun Database.Transaction.upsertAclRowsFromScheduled(today: LocalDate) = createQuery {
+fun Database.Transaction.upsertAclRowsFromScheduled(
+    today: LocalDate
+): List<ScheduledAclRowSummary> = createQuery {
     sql(
         """
 WITH rows_to_activate AS (
     DELETE FROM daycare_acl_schedule
     WHERE start_date <= ${bind(today)}
-    RETURNING daycare_id, employee_id, role, end_date
+    RETURNING daycare_id, employee_id, role, start_date, end_date
+), activated AS (
+    INSERT INTO daycare_acl (daycare_id, employee_id, role, end_date)
+    SELECT daycare_id, employee_id, role, end_date FROM rows_to_activate
+    ON CONFLICT (daycare_id, employee_id) DO UPDATE SET role = excluded.role, end_date = excluded.end_date
 )
-INSERT INTO daycare_acl (daycare_id, employee_id, role, end_date)
-SELECT daycare_id, employee_id, role, end_date FROM rows_to_activate
-ON CONFLICT (daycare_id, employee_id) DO UPDATE SET role = excluded.role, end_date = excluded.end_date
-RETURNING employee_id
+SELECT daycare_id, employee_id, role, start_date, end_date FROM rows_to_activate
     """
     )
 }
-    .toSet<EmployeeId>()
+    .toList<ScheduledAclRowSummary>()

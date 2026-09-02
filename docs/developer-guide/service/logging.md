@@ -63,6 +63,15 @@ fun deleteServiceNeed(tx: Database.Transaction, id: ServiceNeedId, audit: AuditC
 
 For security-critical operations (login, credential changes), log at **both the start and end** with separate events — one for the attempt (e.g. `CitizenWeakLoginAttempt`, logged before the transaction since it may fail) and one for success (e.g. `CitizenWeakLogin`).
 
+### Scheduled jobs
+
+Scheduled and async jobs that change audit-worthy data emit audit events too, with the same `AuditContext` mechanism. The differences to endpoints:
+
+- **One event per affected entity, not one per run.** A job has no single user intent; what matters is that each affected entity's event chain stays searchable (e.g. by `employeeId`).
+- **No `userId`.** Jobs run without an acting user, so the event carries no user fields. This is expected — the event code itself identifies the action as system-initiated.
+- **Use an event name distinct from the equivalent interactive endpoint** (e.g. `UnitAclDeleteExpired` vs `UnitAclDelete`), so job-driven and human-driven changes can be told apart.
+- Log after the transaction commits, same as in endpoints.
+
 ## What to log
 
 This is the part that takes judgment. The aim is to log enough to answer the [questions above](#purpose), while not burying real signal in noise, leaking sensitive data, or adding undue complexity and performance cost just to capture an extra ID. Finding that balance is the whole job.
@@ -124,6 +133,7 @@ Needed rarely — for descriptive, non-ID information that aids understanding.
 | Generate occupancy report    |                                                        | `daycareId` (if filter) | range start        | |
 | Send fee decisions (batch)   | `feeDecisionId`                                        | |                    | |
 | Delete service need          | `personId` (child), `serviceNeedId`, `placementId`     | | service need start | option name, date range |
+| Nightly removal of an expired unit ACL row | `employeeId`, `daycareId`                | | ACL end date       | role, end date |
 
 ## General application logging
 

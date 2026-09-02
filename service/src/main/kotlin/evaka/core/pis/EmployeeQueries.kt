@@ -352,18 +352,29 @@ fun Database.Transaction.updateEmployeeGlobalRoles(id: EmployeeId, globalRoles: 
     if (updated != 1) throw NotFound("employee $id not found")
 }
 
-fun Database.Transaction.deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: DaycareId?) {
-    createUpdate {
+data class DeletedDaycareAclRow(
+    val daycareId: DaycareId,
+    val role: UserRole,
+    val endDate: LocalDate?,
+)
+
+@IgnorableReturnValue
+fun Database.Transaction.deleteEmployeeDaycareRoles(
+    id: EmployeeId,
+    daycareId: DaycareId?,
+): List<DeletedDaycareAclRow> {
+    val deleted = createQuery {
         sql(
             """
         DELETE FROM daycare_acl
-        WHERE 
+        WHERE
             employee_id = ${bind(id)}
             ${if (daycareId != null) "AND daycare_id = ${bind(daycareId)}" else ""}
+        RETURNING daycare_id, role, end_date
     """
         )
     }
-        .execute()
+        .toList<DeletedDaycareAclRow>()
 
     createUpdate {
         sql(
@@ -380,6 +391,8 @@ fun Database.Transaction.deleteEmployeeDaycareRoles(id: EmployeeId, daycareId: D
         )
     }
         .execute()
+
+    return deleted
 }
 
 fun getEmployees(

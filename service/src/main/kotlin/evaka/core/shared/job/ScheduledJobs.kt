@@ -4,6 +4,8 @@
 
 package evaka.core.shared.job
 
+import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.ChildDocumentArchivalEnv
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
@@ -659,16 +661,54 @@ WHERE id IN (SELECT id FROM attendances_to_end)
             passwordBlacklist.importBlacklists(db, Path.of(directory))
         }
 
-    fun syncAclRows(db: Database.Connection, clock: EvakaClock) = db.transaction { tx ->
+    fun syncAclRows(db: Database.Connection, clock: EvakaClock) {
         val now = clock.now()
         val today = now.toLocalDate()
 
-        tx.getEndedDaycareAclRows(today).forEach {
-            removeDaycareAclForRole(tx, asyncJobRunner, now, it.daycareId, it.employeeId, it.role)
-        }
+        val (endedRows, activatedRows) =
+            db.transaction { tx ->
+                val ended = tx.getEndedDaycareAclRows(today)
+                ended.forEach {
+                    removeDaycareAclForRole(
+                        tx,
+                        asyncJobRunner,
+                        now,
+                        it.daycareId,
+                        it.employeeId,
+                        it.role,
+                    )
+                }
 
-        val employeeIds = tx.upsertAclRowsFromScheduled(today)
-        employeeIds.forEach { tx.upsertEmployeeMessageAccount(it) }
+                val activated = tx.upsertAclRowsFromScheduled(today)
+                activated
+                    .map { it.employeeId }
+                    .distinct()
+                    .forEach { tx.upsertEmployeeMessageAccount(it) }
+                ended to activated
+            }
+
+        endedRows.forEach { row ->
+            AuditContext()
+                .add(row.employeeId)
+                .add(row.daycareId)
+                .addMeta("role", row.role)
+                .addMeta("endDate", row.endDate)
+                .observeDate(row.endDate)
+                .log(Audit.UnitAclDeleteExpired, clock)
+        }
+        activatedRows.forEach { row ->
+            AuditContext()
+                .add(row.employeeId)
+                .add(row.daycareId)
+                .addMeta("role", row.role)
+                .addMeta("startDate", row.startDate)
+                .addMeta("endDate", row.endDate)
+                .observeDate(row.startDate)
+                .log(Audit.UnitAclActivateScheduled, clock)
+        }
+        logger.info {
+            "Removed ${endedRows.size} ended acl row(s), activated ${activatedRows.size} scheduled acl row(s)"
+        }
     }
 
     fun getSfiEvents(db: Database.Connection, clock: EvakaClock) {
