@@ -21,14 +21,16 @@ import org.junit.jupiter.api.Test
 class PdfReasoningTest {
     private val ts = HelsinkiDateTime.of(LocalDate.of(2026, 1, 1), LocalTime.of(0, 0))
 
-    private fun individual() =
+    private fun individual(
+        language: OfficialLanguage = OfficialLanguage.FI,
+        text: String = "teksti",
+    ) =
         DecisionIndividualReasoning(
             id = DecisionIndividualReasoningId(UUID.randomUUID()),
             collectionType = DecisionReasoningCollectionType.PRESCHOOL,
-            titleFi = "otsikko",
-            titleSv = "rubrik",
-            textFi = "teksti",
-            textSv = "text",
+            language = language,
+            title = "otsikko",
+            text = text,
             removedAt = null,
             createdAt = ts,
             modifiedAt = ts,
@@ -48,8 +50,12 @@ class PdfReasoningTest {
     }
 
     @Test
-    fun `picks Swedish text in Swedish`() {
-        val result = buildPdfReasoning(OfficialLanguage.SV, source())
+    fun `picks Swedish generic text in Swedish`() {
+        val result =
+            buildPdfReasoning(
+                OfficialLanguage.SV,
+                source(individual = listOf(individual(OfficialLanguage.SV, "text"))),
+            )
 
         assertEquals("yleinen sv", result.generic)
         assertEquals(listOf("text"), result.individual)
@@ -81,11 +87,11 @@ class PdfReasoningTest {
     }
 
     @Test
-    fun `throws when a selected individual reasoning has blank text in the chosen language`() {
+    fun `throws when a selected individual reasoning has blank text`() {
         assertFailsWith<IllegalStateException> {
             buildPdfReasoning(
                 OfficialLanguage.FI,
-                source(individual = listOf(individual().copy(textFi = "   "))),
+                source(individual = listOf(individual().copy(text = "   "))),
             )
         }
     }

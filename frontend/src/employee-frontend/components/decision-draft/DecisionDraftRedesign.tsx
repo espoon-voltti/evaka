@@ -15,7 +15,8 @@ import type {
 } from 'lib-common/generated/api-types/decision'
 import type {
   ApplicationId,
-  DaycareId
+  DaycareId,
+  OfficialLanguage
 } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
@@ -27,8 +28,9 @@ import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
+import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { faEnvelope } from 'lib-icons'
+import { faEnvelope, faQuestion } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { UserContext } from '../../state/user'
@@ -175,6 +177,8 @@ const DecisionDraftRedesignInner = React.memo(
     )
     const [connectedDecision, setConnectedDecision] =
       useState<DecisionDraft | null>(initialConnectedDecision)
+    const [pendingUnitChange, setPendingUnitChange] =
+      useState<DaycareId | null>(null)
 
     useTitle(
       `${formatPersonName(child, 'Last First')} | ${i18n.titles.decision}`
@@ -192,10 +196,38 @@ const DecisionDraftRedesignInner = React.memo(
       }
     }
 
-    const decisionLanguage = (unitId: DaycareId): 'fi' | 'sv' =>
-      units.find((u) => u.id === unitId)?.language === 'sv' ? 'sv' : 'fi'
+    const decisionLanguage = (unitId: DaycareId): OfficialLanguage =>
+      units.find((u) => u.id === unitId)?.language === 'sv' ? 'SV' : 'FI'
     const misconfigured = (unitId: DaycareId) =>
-      decisionLanguage(unitId) === 'sv' && !svEnabled
+      decisionLanguage(unitId) === 'SV' && !svEnabled
+
+    const applyUnit = (unitId: DaycareId) => {
+      const language = decisionLanguage(unitId)
+      // Individual reasonings exist separately per language, so the ones picked
+      // for the old language cannot be carried over to the new unit.
+      const withUnit = (decision: DecisionDraft): DecisionDraft =>
+        decisionLanguage(decision.unitId) === language
+          ? { ...decision, unitId }
+          : { ...decision, unitId, individualReasoningIds: [] }
+      setPrimaryDecision(withUnit)
+      setConnectedDecision((prev) => (prev ? withUnit(prev) : null))
+    }
+
+    const selectUnit = (unitId: DaycareId) => {
+      const clearsReasonings = [
+        primaryDecision,
+        ...(connectedDecision ? [connectedDecision] : [])
+      ].some(
+        (decision) =>
+          decision.individualReasoningIds.length > 0 &&
+          decisionLanguage(decision.unitId) !== decisionLanguage(unitId)
+      )
+      if (clearsReasonings) {
+        setPendingUnitChange(unitId)
+      } else {
+        applyUnit(unitId)
+      }
+    }
 
     const isClubDecision = primaryDecision.type === 'CLUB'
     const incompleteUnit = useMemo(() => {
@@ -240,7 +272,7 @@ const DecisionDraftRedesignInner = React.memo(
               placementUnitName={placementUnit.name}
               units={units}
               selectedUnitId={primaryDecision.unitId}
-              onSelectUnit={(unitId) => updateState('both', { unitId })}
+              onSelectUnit={selectUnit}
             />
 
             {!(guardian.ssn && child.ssn) && (
@@ -334,6 +366,28 @@ const DecisionDraftRedesignInner = React.memo(
             )}
           </ContentArea>
         </Container>
+        {pendingUnitChange !== null && (
+          <InfoModal
+            type="warning"
+            icon={faQuestion}
+            data-qa="reasonings-cleared-modal"
+            title={i18n.decisionDraft.reasonings.unitLanguageChangeModal.title}
+            text={i18n.decisionDraft.reasonings.unitLanguageChangeModal.text}
+            resolve={{
+              action: () => {
+                applyUnit(pendingUnitChange)
+                setPendingUnitChange(null)
+              },
+              label:
+                i18n.decisionDraft.reasonings.unitLanguageChangeModal.resolve
+            }}
+            reject={{
+              action: () => setPendingUnitChange(null),
+              label:
+                i18n.decisionDraft.reasonings.unitLanguageChangeModal.reject
+            }}
+          />
+        )}
         <StickyActionBar align="right">
           <Button
             onClick={() => redirectToMainPage(navigate)}

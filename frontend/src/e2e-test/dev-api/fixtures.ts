@@ -1790,7 +1790,7 @@ export class Fixture {
   static decisionReasoningIndividual(
     initial: SemiPartial<
       DevDecisionReasoningIndividual,
-      'collectionType' | 'titleFi' | 'titleSv' | 'textFi' | 'textSv'
+      'collectionType' | 'language' | 'title' | 'text'
     >
   ) {
     const value: DevDecisionReasoningIndividual = {

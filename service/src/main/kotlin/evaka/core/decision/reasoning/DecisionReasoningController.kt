@@ -15,6 +15,7 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.Forbidden
+import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import org.springframework.web.bind.annotation.*
@@ -169,9 +170,11 @@ class DecisionReasoningController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @RequestParam collectionType: DecisionReasoningCollectionType,
+        @RequestParam(required = false) language: OfficialLanguage?,
     ): List<DecisionIndividualReasoning> {
         val audit = AuditContext()
         audit.addMeta("collectionType", collectionType)
+        audit.addMeta("language", language)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -180,7 +183,7 @@ class DecisionReasoningController(
                         clock,
                         Action.Global.READ_DECISION_REASONINGS,
                     )
-                    tx.getIndividualReasonings(collectionType)
+                    tx.getIndividualReasonings(collectionType, language)
                 }
             }
             .also { reasonings ->
@@ -198,11 +201,15 @@ class DecisionReasoningController(
     ): DecisionIndividualReasoningId {
         val audit = AuditContext()
         audit.addMeta("collectionType", body.collectionType)
+        audit.addMeta("language", body.language)
+        if (body.title.isBlank() || body.text.isBlank()) {
+            throw BadRequest("Reasoning title and text are required")
+        }
         if (
-            featureConfig.placementDecisionSwedishLanguageEnabled &&
-                (body.titleSv.isBlank() || body.textSv.isBlank())
+            body.language == OfficialLanguage.SV &&
+                !featureConfig.placementDecisionSwedishLanguageEnabled
         ) {
-            throw BadRequest("Swedish reasoning title and text are required")
+            throw BadRequest("Swedish reasonings are not enabled")
         }
         return db.connect { dbc ->
                 dbc.transaction { tx ->

@@ -43,6 +43,7 @@ import evaka.core.shared.dev.DevPreschoolTerm
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertApplication
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.vtjclient.service.persondetails.MockVtjDataset
 import evaka.core.vtjclient.service.persondetails.MockVtjPerson
 import evaka.core.vtjclient.service.persondetails.Ssn
@@ -435,10 +436,17 @@ fun Database.Transaction.seedApplications(): List<SeededFamily> {
         insert(
             DevDecisionReasoningIndividual(
                 collectionType = r.collectionType,
-                titleFi = r.titleFi,
-                titleSv = r.titleSv,
-                textFi = r.textFi,
-                textSv = r.textSv,
+                language = OfficialLanguage.FI,
+                title = r.titleFi,
+                text = r.textFi,
+            )
+        )
+        insert(
+            DevDecisionReasoningIndividual(
+                collectionType = r.collectionType,
+                language = OfficialLanguage.SV,
+                title = r.titleSv,
+                text = r.textSv,
             )
         )
     }

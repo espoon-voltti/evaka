@@ -83,6 +83,7 @@ import type { MobileDeviceId } from 'lib-common/generated/api-types/shared'
 import type { NekkuProductMealTime } from 'lib-common/generated/api-types/nekku'
 import type { NekkuProductMealType } from 'lib-common/generated/api-types/nekku'
 import type { NekkuSpecialDietType } from 'lib-common/generated/api-types/nekku'
+import type { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import type { OtherAssistanceMeasureId } from 'lib-common/generated/api-types/shared'
 import type { OtherAssistanceMeasureType } from 'lib-common/generated/api-types/assistance'
 import type { ParentshipId } from 'lib-common/generated/api-types/shared'
@@ -585,12 +586,11 @@ export interface DevDecisionReasoningIndividual {
   collectionType: DecisionReasoningCollectionType
   createdAt: HelsinkiDateTime
   id: DecisionIndividualReasoningId
+  language: OfficialLanguage
   modifiedAt: HelsinkiDateTime
   removedAt: HelsinkiDateTime | null
-  textFi: string
-  textSv: string
-  titleFi: string
-  titleSv: string
+  text: string
+  title: string
 }
 
 /**

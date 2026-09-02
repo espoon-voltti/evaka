@@ -21,16 +21,9 @@ export class DecisionReasoningsPage {
   genericSaveAndActivateButton: Element
   toggleOutdatedGeneric: Element
 
-  // Individual section
-  addIndividualButton: Element
-  individualCards: ElementCollection
-  individualTitleFi: TextInput
-  individualTitleSv: TextInput
-  individualTextFi: TextInput
-  individualTextSv: TextInput
-  individualCancelButton: Element
-  individualSaveAndActivateButton: Element
-  toggleRemovedIndividual: Element
+  // Individual sections, one per language
+  individualFi: IndividualReasoningsSection
+  individualSv: IndividualReasoningsSection
 
   modalOkButton: Element
 
@@ -63,40 +56,17 @@ export class DecisionReasoningsPage {
       'save-and-activate-button'
     )
 
-    // Individual section
-    this.addIndividualButton = page.findByDataQa(
-      'add-individual-reasoning-button'
+    // Individual sections, one per language
+    this.individualFi = new IndividualReasoningsSection(
+      page.findByDataQa('individual-reasonings-FI')
     )
-    this.individualCards = page.findAllByDataQa('individual-reasoning-card')
-    this.toggleRemovedIndividual = page.findByDataQa(
-      'toggle-removed-reasonings'
-    )
-    this.individualTitleFi = new TextInput(
-      page.findByDataQa('individual-reasoning-title-fi')
-    )
-    this.individualTitleSv = new TextInput(
-      page.findByDataQa('individual-reasoning-title-sv')
-    )
-    this.individualTextFi = new TextInput(
-      page.findByDataQa('individual-reasoning-text-fi')
-    )
-    this.individualTextSv = new TextInput(
-      page.findByDataQa('individual-reasoning-text-sv')
-    )
-    this.individualCancelButton = page.findByDataQa(
-      'cancel-individual-reasoning-button'
-    )
-    this.individualSaveAndActivateButton = page.findByDataQa(
-      'save-and-activate-button'
+    this.individualSv = new IndividualReasoningsSection(
+      page.findByDataQa('individual-reasonings-SV')
     )
   }
 
   genericCard(index: number): GenericReasoningCard {
     return new GenericReasoningCard(this.genericCards.nth(index))
-  }
-
-  individualCard(index: number): IndividualReasoningCard {
-    return new IndividualReasoningCard(this.individualCards.nth(index))
   }
 
   async confirmModal() {
@@ -119,6 +89,40 @@ class GenericReasoningCard extends Element {
 
   get removeButton(): Element {
     return this.findByDataQa('remove-generic-reasoning-button')
+  }
+}
+
+export class IndividualReasoningsSection extends Element {
+  get addButton(): Element {
+    return this.findByDataQa('add-individual-reasoning-button')
+  }
+
+  get titleInput(): TextInput {
+    return new TextInput(this.findByDataQa('individual-reasoning-title'))
+  }
+
+  get textInput(): TextInput {
+    return new TextInput(this.findByDataQa('individual-reasoning-text'))
+  }
+
+  get cancelButton(): Element {
+    return this.findByDataQa('cancel-individual-reasoning-button')
+  }
+
+  get saveAndActivateButton(): Element {
+    return this.findByDataQa('save-and-activate-button')
+  }
+
+  get toggleRemoved(): Element {
+    return this.findByDataQa('toggle-removed-reasonings')
+  }
+
+  get cards(): ElementCollection {
+    return this.findAllByDataQa('individual-reasoning-card')
+  }
+
+  card(index: number): IndividualReasoningCard {
+    return new IndividualReasoningCard(this.cards.nth(index))
   }
 }
 

@@ -3536,7 +3536,13 @@ export const fi = {
       modalEntryTextLabel: 'Päätökselle tuleva teksti',
       removedFromUse: 'Poistettu käytöstä',
       unitLanguageUnsupported:
-        'Valittu yksikkö on ruotsinkielinen, mutta ruotsinkieliset päätökset eivät ole käytössä. Vaihda yksikkö tai ota yhteyttä pääkäyttäjään.'
+        'Valittu yksikkö on ruotsinkielinen, mutta ruotsinkieliset päätökset eivät ole käytössä. Vaihda yksikkö tai ota yhteyttä pääkäyttäjään.',
+      unitLanguageChangeModal: {
+        title: 'Yksilölliset perustelut poistetaan',
+        text: 'Valitsemasi yksikkö on erikielinen kuin nykyinen, joten päätökselle valitut yksilölliset perustelut poistetaan. Voit valita uudet perustelut yksikön vaihtamisen jälkeen.',
+        resolve: 'Vaihda yksikkö',
+        reject: 'Peruuta'
+      }
     }
   },
   reports: {
@@ -5368,13 +5374,15 @@ export const fi = {
     },
     individual: {
       title: 'Yksilölliset perustelut',
+      sectionTitle: {
+        FI: 'Yksilölliset perustelut, suomenkieliset yksiköt',
+        SV: 'Yksilölliset perustelut, ruotsinkieliset yksiköt'
+      },
       addNew: 'Lisää yksilöllinen perustelu',
       statusActive: 'Käytettävissä',
       statusRemoved: 'Poistettu käytöstä',
-      titleFi: 'Sisäinen nimi',
-      titleSv: 'Sisäinen nimi',
-      textFi: 'Päätökselle tuleva teksti',
-      textSv: 'Päätökselle tuleva teksti',
+      titleField: 'Sisäinen nimi',
+      textField: 'Päätökselle tuleva teksti',
       removed: 'Poistettu käytöstä',
       cancel: 'Peruuta',
       saveAndActivate: 'Ota käyttöön',

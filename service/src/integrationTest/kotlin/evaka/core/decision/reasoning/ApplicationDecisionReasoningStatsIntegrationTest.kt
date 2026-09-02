@@ -39,6 +39,7 @@ import evaka.core.shared.dev.insertTestApplication
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.time.LocalTime
@@ -86,10 +87,9 @@ class ApplicationDecisionReasoningStatsIntegrationTest :
         tx.insert(
             DevDecisionReasoningIndividual(
                 collectionType = DAYCARE_COLLECTION,
-                titleFi = "fi-title",
-                titleSv = "sv-title",
-                textFi = "fi-text",
-                textSv = "sv-text",
+                language = OfficialLanguage.FI,
+                title = "fi-title",
+                text = "fi-text",
                 createdAt = now,
                 modifiedAt = now,
             )

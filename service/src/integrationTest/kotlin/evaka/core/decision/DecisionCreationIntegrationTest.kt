@@ -1180,10 +1180,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insertIndividualReasoning(
                 DecisionIndividualReasoningRequest(
                     collectionType = DecisionReasoningCollectionType.DAYCARE,
-                    titleFi = "title-fi",
-                    titleSv = "title-sv",
-                    textFi = "text-fi",
-                    textSv = "text-sv",
+                    language = OfficialLanguage.FI,
+                    title = "title-fi",
+                    text = "text-fi",
                 ),
                 clock.now(),
             )
@@ -1227,10 +1226,9 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insertIndividualReasoning(
                 DecisionIndividualReasoningRequest(
                     collectionType = DecisionReasoningCollectionType.DAYCARE,
-                    titleFi = "title-fi",
-                    titleSv = "title-sv",
-                    textFi = "text-fi",
-                    textSv = "text-sv",
+                    language = OfficialLanguage.FI,
+                    title = "title-fi",
+                    text = "text-fi",
                 ),
                 clock.now(),
             )

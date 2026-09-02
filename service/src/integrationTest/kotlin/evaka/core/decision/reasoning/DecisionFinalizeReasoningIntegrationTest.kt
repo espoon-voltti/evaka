@@ -37,6 +37,7 @@ import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.time.LocalTime
@@ -85,17 +86,13 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
         )
     }
 
-    private fun insertIndividualReasoning(
-        titleSv: String = "sv-title",
-        textSv: String = "sv-text",
-    ) = db.transaction { tx ->
+    private fun insertIndividualReasoning(language: OfficialLanguage) = db.transaction { tx ->
         tx.insert(
             DevDecisionReasoningIndividual(
                 collectionType = DAYCARE_COLLECTION,
-                titleFi = "fi-title",
-                titleSv = titleSv,
-                textFi = "fi-text",
-                textSv = textSv,
+                language = language,
+                title = "title",
+                text = "text",
                 createdAt = now,
                 modifiedAt = now,
             )
@@ -200,29 +197,10 @@ class DecisionFinalizeReasoningIntegrationTest : FullApplicationTest(resetDbBefo
     }
 
     @Test
-    fun `finalizing a Swedish-unit decision with linked individual reasoning with empty textSv throws Conflict`() {
-        insertGenericReasoning(textSv = "non-empty swedish generic text")
-        val (decisionId, applicationId) = createPlannedDecision(Language.sv)
-        val badIndividualId = insertIndividualReasoning(titleSv = "ok-title", textSv = "")
-
-        db.transaction { tx ->
-            tx.setDecisionReasoningIndividualSelections(
-                decisionId = decisionId,
-                reasoningIds = setOf(badIndividualId),
-                createdAt = now,
-                createdBy = admin.evakaUserId,
-            )
-        }
-
-        val exception = assertThrows<Conflict> { finalizeViaService(applicationId) }
-        assertEquals(DECISION_REASONING_NOT_FINALIZED, exception.errorCode)
-    }
-
-    @Test
     fun `finalizing a Swedish-unit decision with all Swedish text present succeeds`() {
         insertGenericReasoning(textSv = "non-empty swedish generic text")
         val (decisionId, applicationId) = createPlannedDecision(Language.sv)
-        val goodIndividualId = insertIndividualReasoning(titleSv = "sv-title", textSv = "sv-text")
+        val goodIndividualId = insertIndividualReasoning(OfficialLanguage.SV)
 
         db.transaction { tx ->
             tx.setDecisionReasoningIndividualSelections(

@@ -5,11 +5,11 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import type { DecisionType } from 'lib-common/generated/api-types/decision'
 import type {
-  DecisionIndividualReasoning,
-  DecisionType
-} from 'lib-common/generated/api-types/decision'
-import type { DecisionIndividualReasoningId } from 'lib-common/generated/api-types/shared'
+  DecisionIndividualReasoningId,
+  OfficialLanguage
+} from 'lib-common/generated/api-types/shared'
 import { useQueryResult } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
@@ -82,7 +82,7 @@ interface Props {
   childName: string
   decisionTypeLabel: string
   selectedIds: ReadonlySet<DecisionIndividualReasoningId>
-  language: 'fi' | 'sv'
+  language: OfficialLanguage
   onChange: (ids: ReadonlySet<DecisionIndividualReasoningId>) => void
   onClose: () => void
 }
@@ -99,7 +99,7 @@ export default React.memo(function IndividualReasoningPickerModal({
   const { i18n } = useTranslation()
   const collectionType = decisionTypeToCollectionType(decisionType)
   const individualReasonings = useQueryResult(
-    getIndividualReasoningsQuery({ collectionType })
+    getIndividualReasoningsQuery({ collectionType, language })
   )
 
   return (
@@ -112,13 +112,11 @@ export default React.memo(function IndividualReasoningPickerModal({
       <Subtitle>{`${childName} · ${decisionTypeLabel}`}</Subtitle>
       <Gap />
       {renderResult(individualReasonings, (rows) => {
-        const text = (r: DecisionIndividualReasoning) =>
-          language === 'sv' ? r.textSv : r.textFi
-        const title = (r: DecisionIndividualReasoning) =>
-          language === 'sv' ? r.titleSv : r.titleFi
         const eligible = rows
           .filter((r) => r.removedAt === null || selectedIds.has(r.id))
-          .sort((a, b) => title(a).localeCompare(title(b), language))
+          .sort((a, b) =>
+            a.title.localeCompare(b.title, language.toLowerCase())
+          )
         return (
           <RowList>
             {eligible.map((r) => {
@@ -131,7 +129,7 @@ export default React.memo(function IndividualReasoningPickerModal({
                 >
                   <Checkbox
                     checked={selected}
-                    label={title(r)}
+                    label={r.title}
                     hiddenLabel
                     onChange={(checked: boolean) => {
                       const next = new Set(selectedIds)
@@ -144,11 +142,11 @@ export default React.memo(function IndividualReasoningPickerModal({
                     }}
                   />
                   <RowBody>
-                    <ItemTitle>{title(r)}</ItemTitle>
+                    <ItemTitle>{r.title}</ItemTitle>
                     <TextLabel>
                       {i18n.decisionDraft.reasonings.modalEntryTextLabel}
                     </TextLabel>
-                    <span>{text(r)}</span>
+                    <span>{r.text}</span>
                     {r.removedAt && (
                       <AlertBox
                         title={i18n.decisionDraft.reasonings.removedFromUse}

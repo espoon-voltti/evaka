@@ -144,17 +144,15 @@ test.describe('Decision draft reasonings', () => {
   test('Picker shows only individual reasonings eligible for the decision type', async () => {
     const preschoolReasoning = await Fixture.decisionReasoningIndividual({
       collectionType: 'PRESCHOOL',
-      titleFi: 'Esiopetus yksilö',
-      titleSv: 'Förskola individuell',
-      textFi: 'Esiopetuksen yksilöperustelu',
-      textSv: 'Förskolans individuella motivering'
+      language: 'FI',
+      title: 'Esiopetus yksilö',
+      text: 'Esiopetuksen yksilöperustelu'
     }).save()
     const daycareReasoning = await Fixture.decisionReasoningIndividual({
       collectionType: 'DAYCARE',
-      titleFi: 'Varhaiskasvatus yksilö',
-      titleSv: 'Småbarnspedagogik individuell',
-      textFi: 'Varhaiskasvatuksen yksilöperustelu',
-      textSv: 'Småbarnspedagogiks individuella motivering'
+      language: 'FI',
+      title: 'Varhaiskasvatus yksilö',
+      text: 'Varhaiskasvatuksen yksilöperustelu'
     }).save()
     const preschoolReasoningId = preschoolReasoning.id
     const daycareReasoningId = daycareReasoning.id
@@ -179,17 +177,15 @@ test.describe('Decision draft reasonings', () => {
   test('Individual reasonings persist on save and the selection can be changed', async () => {
     const reasoningA = await Fixture.decisionReasoningIndividual({
       collectionType: 'PRESCHOOL',
-      titleFi: 'Esiopetus yksilö A',
-      titleSv: 'Förskola individuell A',
-      textFi: 'Esiopetuksen yksilöperustelu A',
-      textSv: 'Förskolans individuella motivering A'
+      language: 'FI',
+      title: 'Esiopetus yksilö A',
+      text: 'Esiopetuksen yksilöperustelu A'
     }).save()
     const reasoningB = await Fixture.decisionReasoningIndividual({
       collectionType: 'PRESCHOOL',
-      titleFi: 'Esiopetus yksilö B',
-      titleSv: 'Förskola individuell B',
-      textFi: 'Esiopetuksen yksilöperustelu B',
-      textSv: 'Förskolans individuella motivering B'
+      language: 'FI',
+      title: 'Esiopetus yksilö B',
+      text: 'Esiopetuksen yksilöperustelu B'
     }).save()
 
     let draftPage = await openDecisionDraft()
@@ -235,12 +231,17 @@ test.describe('Decision draft reasonings', () => {
       textFi: 'Esiopetuksen perustelu',
       textSv: 'Förskolemotivering'
     }).save()
+    const finnishIndividual = await Fixture.decisionReasoningIndividual({
+      collectionType: 'PRESCHOOL',
+      language: 'FI',
+      title: 'Esiopetus yksilö',
+      text: 'Esiopetuksen yksilöperustelu'
+    }).save()
     const individual = await Fixture.decisionReasoningIndividual({
       collectionType: 'PRESCHOOL',
-      titleFi: 'Esiopetus yksilö',
-      titleSv: 'Förskola individuell',
-      textFi: 'Esiopetuksen yksilöperustelu',
-      textSv: 'Förskolans individuella motivering'
+      language: 'SV',
+      title: 'Förskola individuell',
+      text: 'Förskolans individuella motivering'
     }).save()
 
     const svPreschool = await Fixture.daycare({
@@ -295,11 +296,61 @@ test.describe('Decision draft reasonings', () => {
     )
 
     const picker = await draftPage.openPicker('PRESCHOOL')
+    await expect(picker.reasoningRow(finnishIndividual.id)).toBeHidden()
+    await expect(picker.reasoningRows()).toHaveCount(1)
     await picker.selectReasoning(individual.id)
     await picker.close()
     await expect(
       preschoolCard.individualReasoning(individual.id)
     ).toContainText('Förskola individuell')
+  })
+
+  test('Switching to a unit in another language clears the individual reasonings', async () => {
+    const finnishIndividual = await Fixture.decisionReasoningIndividual({
+      collectionType: 'PRESCHOOL',
+      language: 'FI',
+      title: 'Esiopetus yksilö',
+      text: 'Esiopetuksen yksilöperustelu'
+    }).save()
+    const svPreschool = await Fixture.daycare({
+      ...testPreschool,
+      id: fromUuid<DaycareId>('a2f5cc74-3e08-4a5e-9b1c-6d1d6e2a5f11'),
+      name: 'Alkuräjähdyksen eskari (SV)',
+      language: 'sv'
+    }).save()
+
+    let draftPage = await openDecisionDraft()
+    let preschoolCard = draftPage.decisionCard('PRESCHOOL')
+
+    const picker = await draftPage.openPicker('PRESCHOOL')
+    await picker.selectReasoning(finnishIndividual.id)
+    await picker.close()
+    await expect(
+      preschoolCard.individualReasoning(finnishIndividual.id)
+    ).toBeVisible()
+
+    // Cancelling the confirmation keeps both the unit and the selection
+    await draftPage.selectSharedUnit(svPreschool.id)
+    await expect(draftPage.unitLanguageChangeModal).toBeVisible()
+    await draftPage.cancelUnitChange()
+    await expect(draftPage.unitLanguageChangeModal).toBeHidden()
+    await expect(
+      preschoolCard.individualReasoning(finnishIndividual.id)
+    ).toBeVisible()
+
+    // Confirming drops the Finnish selection, so saving does not fail
+    await draftPage.selectSharedUnit(svPreschool.id)
+    await draftPage.confirmUnitChange()
+    await expect(draftPage.unitLanguageChangeModal).toBeHidden()
+    await expect(preschoolCard.individualReasonings()).toHaveCount(0)
+
+    await draftPage.save()
+    await expect(page.findByDataQa('save-decisions-button')).toBeHidden()
+
+    draftPage = await reopenDecisionDraft()
+    preschoolCard = draftPage.decisionCard('PRESCHOOL')
+    await expect(preschoolCard.pickerButton('PRESCHOOL')).toBeVisible()
+    await expect(preschoolCard.individualReasonings()).toHaveCount(0)
   })
 
   async function openDecisionDraft() {

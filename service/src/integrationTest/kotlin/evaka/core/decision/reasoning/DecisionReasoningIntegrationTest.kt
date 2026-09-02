@@ -16,6 +16,7 @@ import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
+import evaka.core.shared.domain.OfficialLanguage
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -86,9 +87,29 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun getIndividualReasonings(
         collectionType: DecisionReasoningCollectionType,
+        language: OfficialLanguage? = null,
         user: AuthenticatedUser.Employee = admin.user,
     ): List<DecisionIndividualReasoning> =
-        controller.getIndividualReasonings(dbInstance(), user, MockEvakaClock(now), collectionType)
+        controller.getIndividualReasonings(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            collectionType,
+            language,
+        )
+
+    private fun individualRequest(
+        language: OfficialLanguage = OfficialLanguage.FI,
+        collectionType: DecisionReasoningCollectionType = DecisionReasoningCollectionType.DAYCARE,
+        title: String = "Otsikko",
+        text: String = "Teksti",
+    ) =
+        DecisionIndividualReasoningRequest(
+            collectionType = collectionType,
+            language = language,
+            title = title,
+            text = text,
+        )
 
     private fun removeIndividualReasoning(
         id: DecisionIndividualReasoningId,
@@ -381,45 +402,22 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
-    fun `individual reasoning rejects blank Swedish title when Swedish is required`() {
-        val request =
-            DecisionIndividualReasoningRequest(
-                collectionType = DecisionReasoningCollectionType.DAYCARE,
-                titleFi = "Otsikko FI",
-                titleSv = "",
-                textFi = "Teksti FI",
-                textSv = "Text SV",
-            )
-        whenever(featureConfig.placementDecisionSwedishLanguageEnabled).thenReturn(true)
-        assertThrows<BadRequest> { createIndividualReasoning(request) }
+    fun `individual reasoning rejects blank title or text`() {
+        assertThrows<BadRequest> { createIndividualReasoning(individualRequest(title = " ")) }
+        assertThrows<BadRequest> { createIndividualReasoning(individualRequest(text = " ")) }
     }
 
     @Test
-    fun `individual reasoning rejects blank Swedish text when Swedish is required`() {
-        val request =
-            DecisionIndividualReasoningRequest(
-                collectionType = DecisionReasoningCollectionType.DAYCARE,
-                titleFi = "Otsikko FI",
-                titleSv = "Titel SV",
-                textFi = "Teksti FI",
-                textSv = "",
-            )
-        whenever(featureConfig.placementDecisionSwedishLanguageEnabled).thenReturn(true)
-        assertThrows<BadRequest> { createIndividualReasoning(request) }
+    fun `individual reasoning rejects Swedish language when Swedish is not enabled`() {
+        assertThrows<BadRequest> {
+            createIndividualReasoning(individualRequest(language = OfficialLanguage.SV))
+        }
     }
 
     @Test
-    fun `individual reasoning allows blank Swedish when not required`() {
-        val request =
-            DecisionIndividualReasoningRequest(
-                collectionType = DecisionReasoningCollectionType.DAYCARE,
-                titleFi = "Otsikko FI",
-                titleSv = "",
-                textFi = "Teksti FI",
-                textSv = "",
-            )
-        val id = createIndividualReasoning(request)
-        assertNotNull(id)
+    fun `individual reasoning allows Swedish language when Swedish is enabled`() {
+        whenever(featureConfig.placementDecisionSwedishLanguageEnabled).thenReturn(true)
+        assertNotNull(createIndividualReasoning(individualRequest(language = OfficialLanguage.SV)))
     }
 
     private fun genericRequest(
@@ -437,13 +435,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     @Test
     fun `admin can create and read individual reasonings`() {
         val request =
-            DecisionIndividualReasoningRequest(
-                collectionType = DecisionReasoningCollectionType.DAYCARE,
-                titleFi = "Yksilöllinen otsikko FI",
-                titleSv = "Individuell titel SV",
-                textFi = "Yksilöllinen teksti FI",
-                textSv = "Individuell text SV",
-            )
+            individualRequest(title = "Yksilöllinen otsikko", text = "Yksilöllinen teksti")
         val id = createIndividualReasoning(request)
 
         val result = getIndividualReasonings(DecisionReasoningCollectionType.DAYCARE)
@@ -451,10 +443,9 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         with(result.first()) {
             assertEquals(id, this.id)
             assertEquals(request.collectionType, this.collectionType)
-            assertEquals(request.titleFi, this.titleFi)
-            assertEquals(request.titleSv, this.titleSv)
-            assertEquals(request.textFi, this.textFi)
-            assertEquals(request.textSv, this.textSv)
+            assertEquals(request.language, this.language)
+            assertEquals(request.title, this.title)
+            assertEquals(request.text, this.text)
             assertNull(this.removedAt)
             assertEquals(now, this.createdAt)
             assertEquals(now, this.modifiedAt)
@@ -462,16 +453,30 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
+    fun `individual reasonings are filtered by language when one is given`() {
+        whenever(featureConfig.placementDecisionSwedishLanguageEnabled).thenReturn(true)
+        val fiId = createIndividualReasoning(individualRequest(language = OfficialLanguage.FI))
+        val svId = createIndividualReasoning(individualRequest(language = OfficialLanguage.SV))
+
+        assertEquals(
+            setOf(fiId, svId),
+            getIndividualReasonings(DecisionReasoningCollectionType.DAYCARE).map { it.id }.toSet(),
+        )
+        assertEquals(
+            listOf(fiId),
+            getIndividualReasonings(DecisionReasoningCollectionType.DAYCARE, OfficialLanguage.FI)
+                .map { it.id },
+        )
+        assertEquals(
+            listOf(svId),
+            getIndividualReasonings(DecisionReasoningCollectionType.DAYCARE, OfficialLanguage.SV)
+                .map { it.id },
+        )
+    }
+
+    @Test
     fun `admin can remove an individual reasoning`() {
-        val request =
-            DecisionIndividualReasoningRequest(
-                collectionType = DecisionReasoningCollectionType.DAYCARE,
-                titleFi = "Otsikko FI",
-                titleSv = "Titel SV",
-                textFi = "Teksti FI",
-                textSv = "Text SV",
-            )
-        val id = createIndividualReasoning(request)
+        val id = createIndividualReasoning(individualRequest())
         removeIndividualReasoning(id)
 
         val result = getIndividualReasonings(DecisionReasoningCollectionType.DAYCARE)
@@ -481,15 +486,7 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `cannot remove an already removed individual reasoning`() {
-        val request =
-            DecisionIndividualReasoningRequest(
-                collectionType = DecisionReasoningCollectionType.DAYCARE,
-                titleFi = "Otsikko FI",
-                titleSv = "Titel SV",
-                textFi = "Teksti FI",
-                textSv = "Text SV",
-            )
-        val id = createIndividualReasoning(request)
+        val id = createIndividualReasoning(individualRequest())
         removeIndividualReasoning(id)
 
         assertThrows<NotFound> { removeIndividualReasoning(id) }
@@ -521,15 +518,9 @@ class DecisionReasoningIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
         assertEquals(0, result.size)
 
-        val request =
-            DecisionIndividualReasoningRequest(
-                collectionType = DecisionReasoningCollectionType.DAYCARE,
-                titleFi = "Otsikko FI",
-                titleSv = "Titel SV",
-                textFi = "Teksti FI",
-                textSv = "Text SV",
-            )
-        assertThrows<Forbidden> { createIndividualReasoning(request, user = serviceWorker.user) }
+        assertThrows<Forbidden> {
+            createIndividualReasoning(individualRequest(), user = serviceWorker.user)
+        }
     }
 
     @Test

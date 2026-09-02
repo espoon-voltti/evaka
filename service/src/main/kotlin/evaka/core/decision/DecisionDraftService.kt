@@ -143,6 +143,8 @@ fun updateDecisionDrafts(
             return@forEach
         }
         val applicableCollectionType = type.applicableReasoningCollectionType()
+        val decisionLanguage =
+            if (update.individualReasoningIds.isEmpty()) null else tx.getDecisionLanguage(update.id)
         update.individualReasoningIds.forEach { reasoningId ->
             val reasoning =
                 tx.getIndividualReasoning(reasoningId)
@@ -154,6 +156,12 @@ fun updateDecisionDrafts(
                 throw BadRequest(
                     "Individual reasoning $reasoningId has collection_type ${reasoning.collectionType}, " +
                         "which does not apply to decision ${update.id} of type $type"
+                )
+            }
+            if (reasoning.language != decisionLanguage) {
+                throw BadRequest(
+                    "Individual reasoning $reasoningId is in language ${reasoning.language}, " +
+                        "which does not apply to decision ${update.id} made in $decisionLanguage"
                 )
             }
         }

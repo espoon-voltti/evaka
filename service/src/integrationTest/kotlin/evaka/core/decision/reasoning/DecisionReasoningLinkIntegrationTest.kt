@@ -51,6 +51,7 @@ import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.NotFound
+import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.security.actionrule.AccessControlFilter
 import evaka.core.vtjclient.service.persondetails.MockPersonDetailsService
 import java.time.LocalDate
@@ -233,19 +234,20 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertEquals(null, resolved?.endDate)
     }
 
-    private fun insertIndividualReasoning(key: String): DecisionIndividualReasoningId =
-        db.transaction { tx ->
-            tx.insertIndividualReasoning(
-                DecisionIndividualReasoningRequest(
-                    collectionType = DAYCARE_COLLECTION,
-                    titleFi = "title-fi-$key",
-                    titleSv = "title-sv-$key",
-                    textFi = "text-fi-$key",
-                    textSv = "text-sv-$key",
-                ),
-                now,
-            )
-        }
+    private fun insertIndividualReasoning(
+        key: String,
+        language: OfficialLanguage = OfficialLanguage.FI,
+    ): DecisionIndividualReasoningId = db.transaction { tx ->
+        tx.insertIndividualReasoning(
+            DecisionIndividualReasoningRequest(
+                collectionType = DAYCARE_COLLECTION,
+                language = language,
+                title = "title-$key",
+                text = "text-$key",
+            ),
+            now,
+        )
+    }
 
     @Test
     fun `setting individual reasoning selections replaces the previous set`() {
@@ -430,8 +432,8 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals("Yleinen perustelu", source.generic?.textFi)
         assertEquals("Generisk motivering", source.generic?.textSv)
-        assertEquals(listOf("title-fi-r1"), source.individual.map { it.titleFi })
-        assertEquals(listOf("text-fi-r1"), source.individual.map { it.textFi })
+        assertEquals(listOf("title-r1"), source.individual.map { it.title })
+        assertEquals(listOf("text-r1"), source.individual.map { it.text })
     }
 
     @Test
@@ -651,10 +653,9 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
             tx.insertIndividualReasoning(
                 DecisionIndividualReasoningRequest(
                     collectionType = PRESCHOOL_COLLECTION,
-                    titleFi = "wrong-type-fi",
-                    titleSv = "wrong-type-sv",
-                    textFi = "wrong-fi",
-                    textSv = "wrong-sv",
+                    language = OfficialLanguage.FI,
+                    title = "wrong-type",
+                    text = "wrong-type",
                 ),
                 now,
             )
@@ -674,6 +675,32 @@ class DecisionReasoningLinkIntegrationTest : FullApplicationTest(resetDbBeforeEa
                             decisionId,
                             unitId,
                             individualReasoningIds = setOf(preschoolReasoning),
+                        )
+                    ),
+                    now,
+                    admin.evakaUserId,
+                    decisionReasoningEnabled = true,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `updateDecisionDrafts rejects a reasoning whose language does not match the decision unit`() {
+        val (decisionId, applicationId) = insertDraftDecisionDirectly(DAYCARE)
+        val swedishReasoning = insertIndividualReasoning("sv", OfficialLanguage.SV)
+        val unitId = unitIdOf(decisionId)
+
+        assertThrows<BadRequest> {
+            db.transaction { tx ->
+                updateDecisionDrafts(
+                    tx,
+                    applicationId,
+                    listOf(
+                        draftUpdate(
+                            decisionId,
+                            unitId,
+                            individualReasoningIds = setOf(swedishReasoning),
                         )
                     ),
                     now,
