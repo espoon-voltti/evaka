@@ -71,6 +71,7 @@ class PersonController(
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): PersonResponse {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -88,7 +89,7 @@ class PersonController(
                     }
                 } ?: throw NotFound("Person $personId not found")
             }
-            .also { Audit.PersonRead.log(targetId = AuditId(personId)) }
+            .also { audit.log(Audit.PersonRead, clock) }
     }
 
     @GetMapping("/{personId}/sensitive-details")
