@@ -26,11 +26,19 @@ export function scrollToRef(
   ref: MutableRefObject<HTMLElement | null>,
   timeout = 0
 ) {
-  scrollWithTimeout(
-    () =>
-      ref.current ? { top: getDocumentOffsetPosition(ref.current) } : undefined,
-    timeout
-  )
+  scrollWithTimeout(() => {
+    const element = ref.current
+    if (!element) return undefined
+    const root = scrollRoot()
+    return root
+      ? {
+          top:
+            element.getBoundingClientRect().top -
+            root.getBoundingClientRect().top +
+            root.scrollTop
+        }
+      : { top: getDocumentOffsetPosition(element) }
+  }, timeout)
 }
 
 export function scrollToElement(
@@ -70,6 +78,12 @@ export function scrollIntoViewSoftKeyboard(
   }, 1000)
 }
 
+// An app that scrolls a container instead of the document marks the container
+// with this attribute, because the window level scroll methods have nothing to
+// scroll there.
+const scrollRoot = () =>
+  document.querySelector<HTMLElement>('[data-scroll-root]')
+
 function scrollWithTimeout(
   getOptions: () => ScrollToOptions | undefined,
   timeout = 0,
@@ -80,8 +94,9 @@ function scrollWithTimeout(
   withTimeout(() => {
     const opts = getOptions()
     if (opts) {
-      if (element) {
-        element.scrollTo({ behavior: 'smooth', ...opts })
+      const target = element ?? scrollRoot()
+      if (target) {
+        target.scrollTo({ behavior: 'smooth', ...opts })
       } else {
         window.scrollTo({ behavior: 'smooth', ...opts })
       }
