@@ -39,6 +39,7 @@ class UpdateFromVtjAsyncJobProcessor(
                     tx,
                     AuthenticatedUser.SystemInternalUser,
                     ExternalIdentifier.SSN.getInstance(msg.ssn),
+                    audit = null,
                 )
             }
             ?.let {

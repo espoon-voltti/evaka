@@ -607,6 +607,7 @@ enum class Audit(
     OtherAssistanceMeasureCreate,
     OtherAssistanceMeasureDelete,
     OtherAssistanceMeasureUpdate,
+    PersonGetOrCreateBySsn,
     PersonRead,
     PersonSensitiveDetailsRead,
     PlacementDesktopDaycaresRead,

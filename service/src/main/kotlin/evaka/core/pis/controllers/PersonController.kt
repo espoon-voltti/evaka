@@ -489,6 +489,7 @@ class PersonController(
     ): PersonJSON {
         if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
 
+        val audit = AuditContext().addMeta("readonly", body.readonly)
         return db.connect { dbc ->
                 dbc.transaction {
                     accessControl.requirePermissionFor(
@@ -503,11 +504,12 @@ class PersonController(
                         user,
                         ExternalIdentifier.SSN.getInstance(body.ssn),
                         body.readonly,
+                        audit,
                     )
                 } ?: throw NotFound()
             }
             .let { PersonJSON.from(it) }
-            .also { Audit.PersonDetailsRead.log(targetId = AuditId(it.id)) }
+            .also { audit.log(Audit.PersonGetOrCreateBySsn, clock) }
     }
 
     @PostMapping("/merge")
