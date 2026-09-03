@@ -4,6 +4,7 @@
 
 package evaka.core.webpush
 
+import evaka.core.pis.NotificationCategory
 import evaka.core.shared.CitizenPushSubscriptionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
@@ -116,3 +117,66 @@ RETURNING id
 }
     .executeAndReturnGeneratedKeys()
     .exactlyOneOrNull()
+
+data class CitizenPushTarget(
+    val endpoint: WebPushEndpoint,
+    val disabledCategories: Set<NotificationCategory>,
+)
+
+fun Database.Read.getCitizenPushTarget(
+    subscription: CitizenPushSubscriptionId
+): CitizenPushTarget? = createQuery {
+    sql(
+        """
+SELECT cps.endpoint, cps.auth_secret, cps.ecdh_key, p.disabled_push_types
+FROM citizen_push_subscription cps
+JOIN person p ON p.id = cps.person_id
+WHERE cps.id = ${bind(subscription)}
+"""
+    )
+}
+    .exactlyOneOrNull {
+        CitizenPushTarget(
+            endpoint =
+                WebPushEndpoint(
+                    uri = column("endpoint"),
+                    ecdhPublicKey = WebPushCrypto.decodePublicKey(column<ByteArray>("ecdh_key")),
+                    authSecret = column("auth_secret"),
+                ),
+            disabledCategories = column("disabled_push_types"),
+        )
+    }
+
+@IgnorableReturnValue
+fun Database.Transaction.markCitizenPushSent(
+    subscription: CitizenPushSubscriptionId,
+    now: HelsinkiDateTime,
+): Int = createUpdate {
+    sql(
+        "UPDATE citizen_push_subscription SET last_sent_at = ${bind(now)} WHERE id = ${bind(subscription)}"
+    )
+}
+    .executeAndReturnCount()
+
+@IgnorableReturnValue
+fun Database.Transaction.deleteCitizenPushSubscription(
+    subscription: CitizenPushSubscriptionId
+): Int = createUpdate {
+    sql("DELETE FROM citizen_push_subscription WHERE id = ${bind(subscription)}")
+}
+    .executeAndReturnCount()
+
+fun Database.Read.citizenOwnsPushDevice(
+    person: PersonId,
+    id: CitizenPushSubscriptionId,
+): Boolean = createQuery {
+    sql(
+        """
+SELECT EXISTS(
+    SELECT FROM citizen_push_subscription
+    WHERE id = ${bind(id)} AND person_id = ${bind(person)}
+)
+"""
+    )
+}
+    .exactlyOne()

@@ -10,11 +10,15 @@ import evaka.core.shared.CitizenPushSubscriptionId
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.NotFound
+import evaka.core.shared.domain.UiLanguage
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
 import evaka.core.shared.utils.assertNotNull
 import evaka.core.user.UserAgentParser
+import evaka.core.user.getPreferredUiLanguage
 import java.net.URI
+import java.time.Duration
 import org.springframework.http.HttpHeaders
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,11 +28,15 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RestController
 
+private val TEST_NOTIFICATION_TTL: Duration = Duration.ofMinutes(5)
+
 @RestController
 class CitizenWebPushController(
     private val accessControl: AccessControl,
     private val userAgentParser: UserAgentParser,
     private val webPush: WebPush?,
+    private val pushNotifications: CitizenPushNotifications,
+    private val messageProvider: PushNotificationMessageProvider,
 ) {
     data class CitizenPushSettings(
         /** Null when web push is not configured in this environment */
@@ -132,6 +140,45 @@ class CitizenWebPushController(
                 }
             }
             .also { audit.log(Audit.CitizenPushSubscriptionCheck, clock) }
+    }
+
+    data class PushTestRequest(val deviceId: CitizenPushSubscriptionId)
+
+    @PostMapping("/citizen/push-test")
+    fun sendTestPushNotification(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @RequestBody body: PushTestRequest,
+    ) {
+        val audit = AuditContext().add(body.deviceId)
+        db.connect { dbc ->
+            val language = dbc.read { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Person.SEND_TEST_PUSH_NOTIFICATION,
+                    user.id,
+                )
+                if (!tx.citizenOwnsPushDevice(user.id, body.deviceId))
+                    throw NotFound("Push device not found")
+                tx.getPreferredUiLanguage(user.id) ?: UiLanguage.FI
+            }
+            val content = messageProvider.testNotification(language)
+            pushNotifications.send(
+                dbc,
+                clock,
+                body.deviceId,
+                category = null,
+                language = language,
+                content = content,
+                path = "/",
+                tag = "test",
+                ttl = TEST_NOTIFICATION_TTL,
+            )
+        }
+        audit.log(Audit.CitizenPushTestSend, clock)
     }
 
     @DeleteMapping("/citizen/push-devices/{id}")
