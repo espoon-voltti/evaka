@@ -40,6 +40,7 @@ import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { InstallSuggestion } from './pwa/InstallSuggestion'
 import { useStandaloneAttribute } from './pwa/installed'
+import { useNotificationClickRouting } from './pwa/notificationRouting'
 import { queryClient, QueryClientProvider } from './query'
 
 const GlobalStyle = createGlobalStyle`
@@ -167,6 +168,7 @@ const Content = React.memo(function Content({
   useChildrenStartingNotification()
   useStandaloneAttribute()
   const { shellRef, scrollAreaRef } = useRegisterScrollContainer()
+  useNotificationClickRouting()
   return (
     <AppShell ref={shellRef}>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
