@@ -142,6 +142,7 @@ class PersonController(
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): PersonJSON {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -173,7 +174,7 @@ class PersonController(
                         .let { PersonJSON.from(it) }
                 }
             }
-            .also { Audit.PersonDetailsRead.log(targetId = AuditId(personId)) }
+            .also { audit.log(Audit.PersonDetailsRead, clock) }
     }
 
     @GetMapping("/dependants/{personId}")
