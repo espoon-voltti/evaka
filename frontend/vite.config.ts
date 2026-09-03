@@ -109,11 +109,9 @@ function serveIndexHtml(): Plugin {
   }
 }
 
-function serviceWorker(): Plugin {
-  const urlPath = '/employee/mobile/service-worker.js'
-  const sourcePath = 'src/employee-mobile-frontend/service-worker.js'
+function serviceWorker(urlPath: string, sourcePath: string): Plugin {
   return {
-    name: 'build-service-worker-prod',
+    name: `build-service-worker-prod:${urlPath}`,
     configureServer(server) {
       server.middlewares.use(urlPath, async (_req, res, next) => {
         try {
@@ -130,8 +128,12 @@ function serviceWorker(): Plugin {
       const fileName = path.basename(urlPath)
       await build({
         configFile: false,
+        // Without this the whole public directory is copied into the service
+        // worker's output directory, which for employee-mobile means overwriting
+        // its own manifest with the citizen one.
+        publicDir: false,
         build: {
-          outDir: `${outDir}/${dirName}`,
+          outDir: path.join(outDir, dirName),
           emptyOutDir: false,
           lib: {
             entry: path.resolve(__dirname, sourcePath),
@@ -173,7 +175,14 @@ export default defineConfig(async (): Promise<UserConfig> => {
         modernPolyfills: true,
         modernTargets: browserslist
       }),
-      serviceWorker(),
+      serviceWorker(
+        '/employee/mobile/service-worker.js',
+        'src/employee-mobile-frontend/service-worker.js'
+      ),
+      serviceWorker(
+        '/service-worker.js',
+        'src/citizen-frontend/service-worker.js'
+      ),
       sentryVitePlugin({
         disable: process.env.SENTRY_PUBLISH_ENABLED !== 'true',
         org: process.env.SENTRY_ORG,

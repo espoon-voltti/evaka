@@ -5,7 +5,7 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { isProduction, getEnvironment } from './helpers'
+import { getEnvironment } from './helpers'
 
 function withHost(host: string, fn: () => void) {
   const locationSpy = vi.spyOn(window, 'location', 'get')
@@ -24,20 +24,6 @@ function withHost(host: string, fn: () => void) {
 describe('helpers', () => {
   afterEach(() => {
     vi.restoreAllMocks()
-  })
-
-  describe('isProduction', () => {
-    it('returns true when hostname is espoonvarhaiskasvatus.fi', () => {
-      withHost('espoonvarhaiskasvatus.fi', () => {
-        expect(isProduction()).toBeTruthy()
-      })
-    })
-
-    it('returns false when hostname is staging.espoonvarhaiskasvatus.fi', () => {
-      withHost('staging.espoonvarhaiskasvatus.fi', () => {
-        expect(isProduction()).toBeFalsy()
-      })
-    })
   })
 
   describe('getEnvironment', () => {

@@ -10,6 +10,7 @@ import { constantQuery, useQuery } from 'lib-common/query'
 
 import type { User } from '../auth/state'
 import { useUser } from '../auth/state'
+import { useInstallAvailability } from '../pwa/installAvailability'
 
 import { isEmailVerified } from './emailVerification'
 import { emailVerificationStatusQuery, passkeysQuery } from './queries'
@@ -18,6 +19,7 @@ export const personalDetailsTasks = [
   'ADD_EMAIL',
   'VERIFY_EMAIL',
   'ADD_PHONE',
+  'ADD_TO_HOME_SCREEN',
   'ADD_WEAK_LOGIN'
 ] as const
 
@@ -27,12 +29,14 @@ export type PersonalDetailsTaskSection =
   | 'contact'
   | 'login'
   | 'passkeys'
+  | 'homeScreen'
   | 'notifications'
 
 interface PersonalDetailsTaskContext {
   user: User
   emailVerification: EmailVerificationStatusResponse
   passkeys: CitizenPasskey[]
+  canInstall: boolean
 }
 
 export const personalDetailsTaskConfig: Record<
@@ -59,6 +63,11 @@ export const personalDetailsTaskConfig: Record<
     section: 'contact',
     isPending: ({ user }) => !user.phone
   },
+  ADD_TO_HOME_SCREEN: {
+    dataQa: 'task-add-to-home-screen',
+    section: 'homeScreen',
+    isPending: ({ canInstall }) => canInstall
+  },
   ADD_WEAK_LOGIN: {
     dataQa: 'task-add-weak-login',
     section: 'passkeys',
@@ -77,11 +86,12 @@ export function usePersonalDetailsTasks(): PersonalDetailsTask[] {
   const { data: passkeys } = useQuery(
     user !== undefined ? passkeysQuery() : constantQuery(null)
   )
+  const canInstall = useInstallAvailability().kind !== 'unavailable'
   return useMemo(() => {
     if (!user || !emailVerification || !passkeys) return noTasks
-    const ctx = { user, emailVerification, passkeys }
+    const ctx = { user, emailVerification, passkeys, canInstall }
     return personalDetailsTasks.filter((task) =>
       personalDetailsTaskConfig[task].isPending(ctx)
     )
-  }, [user, emailVerification, passkeys])
+  }, [user, emailVerification, passkeys, canInstall])
 }

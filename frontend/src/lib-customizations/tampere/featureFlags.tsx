@@ -62,12 +62,14 @@ const features: Features = {
   default: {
     ...prod,
     environmentLabel: 'Test',
-    sharedApplicationEditor: true
+    sharedApplicationEditor: true,
+    citizenPwa: true
   },
   staging: {
     ...prod,
     environmentLabel: 'Staging',
-    sharedApplicationEditor: true
+    sharedApplicationEditor: true,
+    citizenPwa: true
   },
   prod
 }

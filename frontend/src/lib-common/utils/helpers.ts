@@ -25,8 +25,6 @@ export const getEnvironment = (): string => {
   return ''
 }
 
-export const isProduction = (): boolean => getEnvironment() === 'prod'
-
 export const isAutomatedTest =
   (typeof window !== 'undefined' ? window.evaka?.automatedTest : undefined) ??
   false

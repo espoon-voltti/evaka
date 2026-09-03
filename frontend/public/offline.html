@@ -1,0 +1,79 @@
+<!--
+SPDX-FileCopyrightText: 2017-2026 City of Espoo
+
+SPDX-License-Identifier: LGPL-2.1-or-later
+-->
+
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1"
+    />
+    <title>eVaka</title>
+    <meta name="theme-color" content="#3273c9" />
+    <style>
+      body {
+        margin: 0;
+        background-color: #ffffff;
+        color: #0f0f0f;
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        line-height: 1.5;
+      }
+      main {
+        max-width: 32rem;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+      }
+      h1 {
+        color: #3273c9;
+        font-size: 1.5rem;
+        margin: 0 0 2rem;
+      }
+      section + section {
+        margin-top: 2rem;
+        border-top: 1px solid #d8d8d8;
+        padding-top: 2rem;
+      }
+      p {
+        margin: 0 0 1rem;
+      }
+      a {
+        color: #3273c9;
+      }
+    </style>
+  </head>
+  <body>
+    <main data-qa="offline-page">
+      <h1>eVaka</h1>
+      <section lang="fi">
+        <p>
+          Ei verkkoyhteyttä. eVakan käyttäminen vaatii toimivan verkkoyhteyden.
+        </p>
+        <p><a href="/">Yritä uudelleen</a></p>
+      </section>
+      <section lang="sv">
+        <p>
+          Ingen nätverksanslutning. eVaka kräver en fungerande
+          nätverksanslutning.
+        </p>
+        <p><a href="/">Försök igen</a></p>
+      </section>
+      <section lang="en">
+        <p>
+          No network connection. eVaka requires a working network connection.
+        </p>
+        <p><a href="/">Try again</a></p>
+      </section>
+    </main>
+  </body>
+</html>
