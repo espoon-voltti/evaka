@@ -12,7 +12,7 @@ import type { FamilyMembers } from 'lib-common/generated/api-types/pis'
 import type { FinishPasskeyRegistrationRequest } from 'lib-common/generated/api-types/pis'
 import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
-import type { NotificationCategory } from 'lib-common/generated/api-types/pis'
+import type { NotificationSettings } from 'lib-common/generated/api-types/pis'
 import type { PasskeyRegistrationOptions } from 'lib-common/generated/api-types/pis'
 import type { PasswordConstraints } from 'lib-common/generated/api-types/shared'
 import type { PersonalDataUpdate } from 'lib-common/generated/api-types/pis'
@@ -139,8 +139,8 @@ export async function getFamily(): Promise<FamilyMembers> {
 /**
 * Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.getNotificationSettings
 */
-export async function getNotificationSettings(): Promise<NotificationCategory[]> {
-  const { data: json } = await client.request<JsonOf<NotificationCategory[]>>({
+export async function getNotificationSettings(): Promise<NotificationSettings> {
+  const { data: json } = await client.request<JsonOf<NotificationSettings>>({
     url: uri`/citizen/personal-data/notification-settings`.toString(),
     method: 'GET'
   })
@@ -177,13 +177,13 @@ export async function sendEmailVerificationCode(): Promise<void> {
 */
 export async function updateNotificationSettings(
   request: {
-    body: NotificationCategory[]
+    body: NotificationSettings
   }
 ): Promise<void> {
   const { data: json } = await client.request<JsonOf<void>>({
     url: uri`/citizen/personal-data/notification-settings`.toString(),
     method: 'PUT',
-    data: request.body satisfies JsonCompatible<NotificationCategory[]>
+    data: request.body satisfies JsonCompatible<NotificationSettings>
   })
   return json
 }

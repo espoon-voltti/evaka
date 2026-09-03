@@ -41,3 +41,22 @@ fun Database.Transaction.updateDisabledEmailTypes(
     }
         .updateExactlyOne()
 }
+
+fun Database.Read.getDisabledPushTypes(personId: PersonId): Set<NotificationCategory> {
+    return createQuery {
+        sql("SELECT disabled_push_types FROM person WHERE id = ${bind(personId)}")
+    }
+        .exactlyOne<Set<NotificationCategory>>()
+}
+
+fun Database.Transaction.updateDisabledPushTypes(
+    personId: PersonId,
+    categories: Set<NotificationCategory>,
+) {
+    createUpdate {
+        sql(
+            "UPDATE person SET disabled_push_types = ${bind(categories)} WHERE id = ${bind(personId)}"
+        )
+    }
+        .updateExactlyOne()
+}
