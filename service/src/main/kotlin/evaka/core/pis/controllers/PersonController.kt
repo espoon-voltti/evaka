@@ -262,25 +262,27 @@ class PersonController(
         clock: EvakaClock,
         @RequestBody body: SearchPersonBody,
     ): List<PersonSummary> {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(it, user, clock, Action.Global.SEARCH_PEOPLE)
                     it.searchPeople(
-                        user,
-                        body.searchTerm,
-                        body.orderBy,
-                        body.sortDirection,
-                        restricted =
-                            !accessControl.hasPermissionFor(
-                                it,
-                                user,
-                                clock,
-                                Action.Global.SEARCH_PEOPLE_UNRESTRICTED,
-                            ),
-                    )
+                            user,
+                            body.searchTerm,
+                            body.orderBy,
+                            body.sortDirection,
+                            restricted =
+                                !accessControl.hasPermissionFor(
+                                    it,
+                                    user,
+                                    clock,
+                                    Action.Global.SEARCH_PEOPLE_UNRESTRICTED,
+                                ),
+                        )
+                        .also { results -> audit.add(results.map { it.id }) }
                 }
             }
-            .also { Audit.PersonDetailsSearch.log(meta = mapOf("count" to it.size)) }
+            .also { audit.log(Audit.PersonDetailsSearch, clock) }
     }
 
     @PatchMapping("/{personId}")
