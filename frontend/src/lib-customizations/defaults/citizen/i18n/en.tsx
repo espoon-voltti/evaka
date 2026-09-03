@@ -327,6 +327,30 @@ const en: Translations = {
     },
     homeScreenSection: {
       title: 'Add eVaka to the home screen'
+    },
+    pushSection: {
+      title: 'Push notifications',
+      description:
+        'eVaka sends notifications to the devices where you have enabled them.',
+      enabled: 'Enabled',
+      blocked: 'Blocked',
+      thisDevice: 'This device',
+      notEnabledOnThisDevice: 'Notifications are not enabled on this device.',
+      enable: 'Enable',
+      blockedOnThisDevice: 'Notifications are blocked on this device',
+      blockedInstructions: {
+        ios: 'Allow notifications in the device settings: Settings > Notifications > eVaka.',
+        android:
+          'Allow notifications in the device settings: Settings > Apps > eVaka > Notifications.',
+        other: 'Allow notifications in the site settings of your browser.'
+      },
+      lastSent: (at: string) => `Last sent ${at}`,
+      neverSent: 'No notifications sent yet',
+      sendTest: 'Test',
+      installedApp: 'Home screen app',
+      browser: 'Browser',
+      inUseSince: 'In use since',
+      revoke: 'Disable notifications'
     }
   },
   errorPage: {
@@ -1889,6 +1913,10 @@ const en: Translations = {
       ADD_TO_HOME_SCREEN: {
         title: 'Add eVaka to the home screen',
         description: 'You get reminders straight to your phone.'
+      },
+      ENABLE_PUSH_NOTIFICATIONS: {
+        title: 'Enable push notifications',
+        description: 'You get the notifications straight to this device.'
       },
       ADD_WEAK_LOGIN: {
         title: 'Add a login method',
