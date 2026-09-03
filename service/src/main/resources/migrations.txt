@@ -606,3 +606,4 @@ V607__decision_reasoning_individual_language.sql
 V608__child_koski_data_removed.sql
 V609__child_varda_data_removed.sql
 V610__rename_email_message_type.sql
+V611__citizen_push_subscription.sql
