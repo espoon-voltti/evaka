@@ -51,7 +51,6 @@ import type { DocumentDeletionBasis } from 'lib-common/generated/api-types/docum
 import type { DocumentStatus } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateContent } from 'lib-common/generated/api-types/document'
 import type { DocumentTemplateId } from 'lib-common/generated/api-types/shared'
-import type { EmailMessageType } from 'lib-common/generated/api-types/pis'
 import type { EmployeeId } from 'lib-common/generated/api-types/shared'
 import type { EvakaUser } from 'lib-common/generated/api-types/user'
 import type { EvakaUserId } from 'lib-common/generated/api-types/shared'
@@ -83,6 +82,7 @@ import type { MobileDeviceId } from 'lib-common/generated/api-types/shared'
 import type { NekkuProductMealTime } from 'lib-common/generated/api-types/nekku'
 import type { NekkuProductMealType } from 'lib-common/generated/api-types/nekku'
 import type { NekkuSpecialDietType } from 'lib-common/generated/api-types/nekku'
+import type { NotificationCategory } from 'lib-common/generated/api-types/pis'
 import type { OfficialLanguage } from 'lib-common/generated/api-types/shared'
 import type { OtherAssistanceMeasureId } from 'lib-common/generated/api-types/shared'
 import type { OtherAssistanceMeasureType } from 'lib-common/generated/api-types/assistance'
@@ -856,7 +856,7 @@ export interface DevPerson {
   backupPhone: string
   dateOfBirth: LocalDate
   dateOfDeath: LocalDate | null
-  disabledEmailTypes: EmailMessageType[]
+  disabledEmailTypes: NotificationCategory[]
   duplicateOf: PersonId | null
   email: string | null
   firstName: string

@@ -11,8 +11,8 @@ import { object } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import type { BoundFormState } from 'lib-common/form/hooks'
 import type { StateOf } from 'lib-common/form/types'
-import type { EmailMessageType } from 'lib-common/generated/api-types/pis'
-import { emailMessageTypes } from 'lib-common/generated/api-types/pis'
+import type { NotificationCategory } from 'lib-common/generated/api-types/pis'
+import { notificationCategories } from 'lib-common/generated/api-types/pis'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -38,7 +38,7 @@ const notificationSettingsForm = object({
 
 function isEnabled(
   state: StateOf<typeof notificationSettingsForm>,
-  type: EmailMessageType
+  type: NotificationCategory
 ): boolean {
   switch (type) {
     case 'TRANSACTIONAL':
@@ -65,7 +65,7 @@ function isEnabled(
 }
 
 const getInitialState = (
-  disabledTypes: EmailMessageType[]
+  disabledTypes: NotificationCategory[]
 ): StateOf<typeof notificationSettingsForm> => ({
   message: !disabledTypes.includes('MESSAGE_NOTIFICATION'),
   bulletin: !disabledTypes.includes('BULLETIN_NOTIFICATION'),
@@ -133,7 +133,7 @@ interface NotificationRow {
 }
 
 export interface Props {
-  initialData: EmailMessageType[]
+  initialData: NotificationCategory[]
 }
 
 export default React.memo(
@@ -222,7 +222,7 @@ export default React.memo(
           }}
           mutation={updateNotificationSettingsMutation}
           onSave={() => ({
-            body: emailMessageTypes.filter(
+            body: notificationCategories.filter(
               (type) => !isEnabled(form.state, type)
             )
           })}

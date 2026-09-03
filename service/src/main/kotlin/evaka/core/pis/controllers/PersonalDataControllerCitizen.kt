@@ -119,7 +119,7 @@ class PersonalDataControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-    ): Set<EmailMessageType> {
+    ): Set<NotificationCategory> {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -140,7 +140,7 @@ class PersonalDataControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: Set<EmailMessageType>,
+        @RequestBody body: Set<NotificationCategory>,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
