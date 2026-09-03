@@ -12,6 +12,7 @@ import type { JsonOf } from 'lib-common/json'
 import type { NewCitizenPushSubscription } from 'lib-common/generated/api-types/webpush'
 import type { PushSubscriptionCheckRequest } from 'lib-common/generated/api-types/webpush'
 import type { PushSubscriptionCheckResponse } from 'lib-common/generated/api-types/webpush'
+import type { PushTestRequest } from 'lib-common/generated/api-types/webpush'
 import { client } from '../../api-client'
 import { deserializeJsonCitizenPushDevice } from 'lib-common/generated/api-types/webpush'
 import { deserializeJsonCitizenPushSettings } from 'lib-common/generated/api-types/webpush'
@@ -77,4 +78,21 @@ export async function getPushSettings(): Promise<CitizenPushSettings> {
     method: 'GET'
   })
   return deserializeJsonCitizenPushSettings(json)
+}
+
+
+/**
+* Generated from evaka.core.webpush.CitizenWebPushController.sendTestPushNotification
+*/
+export async function sendTestPushNotification(
+  request: {
+    body: PushTestRequest
+  }
+): Promise<void> {
+  const { data: json } = await client.request<JsonOf<void>>({
+    url: uri`/citizen/push-test`.toString(),
+    method: 'POST',
+    data: request.body satisfies JsonCompatible<PushTestRequest>
+  })
+  return json
 }

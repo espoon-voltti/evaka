@@ -20,6 +20,7 @@ import evaka.core.shared.security.Action
 import evaka.core.webpush.WebPush
 import evaka.core.webpush.WebPushCrypto
 import evaka.core.webpush.WebPushEndpoint
+import evaka.core.webpush.WebPushMessage
 import evaka.core.webpush.WebPushNotification
 import evaka.core.webpush.WebPushPayload
 import evaka.core.webpush.deletePushSubscription
@@ -124,11 +125,12 @@ AND 'CALENDAR_EVENT_RESERVATION' = ANY(md.push_notification_categories)
                 WebPushNotification(
                     notification.endpoint,
                     ttl = untilReservationEnd.coerceIn(Duration.ofMinutes(15), Duration.ofDays(5)),
-                    payloads =
-                        listOf(
-                            WebPushPayload.NotificationV1(
-                                title =
-                                    "${notification.groupName}: Huoltaja ${
+                    message =
+                        WebPushMessage.Versioned(
+                            listOf(
+                                WebPushPayload.NotificationV1(
+                                    title =
+                                        "${notification.groupName}: Huoltaja ${
                                         when (job.type) {
                                             CalendarEventReservationNotificationType.RESERVED -> "varannut"
                                             CalendarEventReservationNotificationType.CANCELLED -> "perunut"
@@ -138,6 +140,7 @@ AND 'CALENDAR_EVENT_RESERVATION' = ANY(md.push_notification_categories)
                                             timeFormat
                                         )
                                     } - ${job.endTime.format(timeFormat)}"
+                                )
                             )
                         ),
                 ),

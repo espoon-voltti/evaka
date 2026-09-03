@@ -575,7 +575,8 @@ sealed interface Action {
             UPDATE_PASSKEY_NAME(IsCitizen(allowWeakLogin = false).self()),
             READ_PUSH_SETTINGS(IsCitizen(allowWeakLogin = true).self()),
             UPDATE_PUSH_SUBSCRIPTION(IsCitizen(allowWeakLogin = true).self()),
-            DELETE_PUSH_DEVICE(IsCitizen(allowWeakLogin = true).self());
+            DELETE_PUSH_DEVICE(IsCitizen(allowWeakLogin = true).self()),
+            SEND_TEST_PUSH_NOTIFICATION(IsCitizen(allowWeakLogin = true).self());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

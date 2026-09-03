@@ -191,6 +191,7 @@ enum class Audit(
     CitizenPushSettingsRead,
     CitizenPushSubscriptionCheck,
     CitizenPushSubscriptionCreate,
+    CitizenPushTestSend,
     CitizenUserDetailsRead,
     CitizenWeakLogin(securityEvent = true, securityLevel = "low"),
     CitizenWeakLoginAttempt(securityEvent = true, securityLevel = "low"),

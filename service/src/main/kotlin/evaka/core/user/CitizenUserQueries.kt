@@ -110,6 +110,11 @@ WHERE id = ${bind(id)}
 }
     .execute()
 
+fun Database.Read.getPreferredUiLanguage(id: PersonId): UiLanguage? = createQuery {
+    sql("SELECT preferred_ui_language FROM citizen_user WHERE id = ${bind(id)}")
+}
+    .exactlyOneOrNull()
+
 fun Database.Transaction.updatePreferredUiLanguage(id: PersonId, language: UiLanguage) =
     createUpdate {
         sql(

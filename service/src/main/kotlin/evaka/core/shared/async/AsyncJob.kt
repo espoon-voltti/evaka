@@ -90,6 +90,13 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendCitizenMessagePushNotification(
+        val recipient: MessageRecipientId,
+        val subscription: CitizenPushSubscriptionId,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendMessageDeletionSenderEmail(val contentId: MessageContentId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -614,6 +621,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     MarkMessagesAsSent::class,
                     SendAbsencePushNotification::class,
                     SendCalendarEventReservationPushNotification::class,
+                    SendCitizenMessagePushNotification::class,
                     SendMessagePushNotification::class,
                     UpdateMessageThreadRecipients::class,
                 ),
