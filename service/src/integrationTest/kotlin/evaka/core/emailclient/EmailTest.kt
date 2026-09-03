@@ -5,7 +5,7 @@
 package evaka.core.emailclient
 
 import evaka.core.PureJdbiTest
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.pis.updateDisabledEmailTypes
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
@@ -32,25 +32,25 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `receiver's enabled email notification types are respected`() {
         // Not set -> all messages are sent
-        EmailMessageType.entries
-            .mapNotNull { type -> createEmail(emailType = type) }
-            .also { emails -> assertEquals(EmailMessageType.entries.size, emails.size) }
+        NotificationCategory.entries
+            .mapNotNull { type -> createEmail(category = type) }
+            .also { emails -> assertEquals(NotificationCategory.entries.size, emails.size) }
 
         // Only some notification types are enabled
         db.transaction { tx ->
             tx.updateDisabledEmailTypes(
                 adult.id,
                 // Disable all but three
-                EmailMessageType.entries.toSet() -
+                NotificationCategory.entries.toSet() -
                     setOf(
-                        EmailMessageType.TRANSACTIONAL,
-                        EmailMessageType.BULLETIN_NOTIFICATION,
-                        EmailMessageType.DOCUMENT_NOTIFICATION,
+                        NotificationCategory.TRANSACTIONAL,
+                        NotificationCategory.BULLETIN_NOTIFICATION,
+                        NotificationCategory.DOCUMENT_NOTIFICATION,
                     ),
             )
         }
-        EmailMessageType.entries
-            .mapNotNull { type -> createEmail(emailType = type, toAddress = "$type@example.com") }
+        NotificationCategory.entries
+            .mapNotNull { type -> createEmail(category = type, toAddress = "$type@example.com") }
             .also { emails ->
                 assertEquals(
                     listOf(
@@ -64,7 +64,7 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun createEmail(
-        emailType: EmailMessageType = EmailMessageType.TRANSACTIONAL,
+        category: NotificationCategory = NotificationCategory.TRANSACTIONAL,
         toAddress: String = "test@example.com",
     ): Email? {
         val fromAddress = FromAddress("Foo <foo@example.com>", null)
@@ -74,7 +74,7 @@ class EmailTest : PureJdbiTest(resetDbBeforeEach = true) {
                 }
                 .execute()
         }
-        return Email.create(db, adult.id, emailType, fromAddress, testContent, "traceid")
+        return Email.create(db, adult.id, category, fromAddress, testContent, "traceid")
     }
 }
 

@@ -14,8 +14,8 @@ data class PersonalDataUpdate(
     val email: String? = null,
 )
 
-@ConstList("emailMessageTypes")
-enum class EmailMessageType : DatabaseEnum {
+@ConstList("notificationCategories")
+enum class NotificationCategory : DatabaseEnum {
     /**
      * Messages sent in response to a user's action (e.g. "your application was received"). These
      * messages are always sent to the receiver.
@@ -58,9 +58,9 @@ enum class EmailMessageType : DatabaseEnum {
     /** Discussion time related notifications */
     DISCUSSION_TIME_NOTIFICATION;
 
-    override val sqlType: String = "email_message_type"
+    override val sqlType: String = "notification_category"
 
     companion object {
-        val alwaysEnabled: Set<EmailMessageType> = setOf(TRANSACTIONAL)
+        val alwaysEnabled: Set<NotificationCategory> = setOf(TRANSACTIONAL)
     }
 }

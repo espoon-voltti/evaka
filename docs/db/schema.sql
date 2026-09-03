@@ -246,21 +246,6 @@ CREATE TYPE public.document_template_type AS ENUM (
     'MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION'
 );
 
--- Name: email_message_type; Type: TYPE; Schema: public
-
-CREATE TYPE public.email_message_type AS ENUM (
-    'TRANSACTIONAL',
-    'MESSAGE_NOTIFICATION',
-    'BULLETIN_NOTIFICATION',
-    'INCOME_NOTIFICATION',
-    'CALENDAR_EVENT_NOTIFICATION',
-    'DECISION_NOTIFICATION',
-    'DOCUMENT_NOTIFICATION',
-    'INFORMAL_DOCUMENT_NOTIFICATION',
-    'ATTENDANCE_RESERVATION_NOTIFICATION',
-    'DISCUSSION_TIME_NOTIFICATION'
-);
-
 -- Name: evaka_user_type; Type: TYPE; Schema: public
 
 CREATE TYPE public.evaka_user_type AS ENUM (
@@ -477,6 +462,21 @@ CREATE TYPE public.nekku_special_diet_type AS ENUM (
     'RADIO',
     'TEXTAREA',
     'EMAIL'
+);
+
+-- Name: notification_category; Type: TYPE; Schema: public
+
+CREATE TYPE public.notification_category AS ENUM (
+    'TRANSACTIONAL',
+    'MESSAGE_NOTIFICATION',
+    'BULLETIN_NOTIFICATION',
+    'INCOME_NOTIFICATION',
+    'CALENDAR_EVENT_NOTIFICATION',
+    'DECISION_NOTIFICATION',
+    'DOCUMENT_NOTIFICATION',
+    'INFORMAL_DOCUMENT_NOTIFICATION',
+    'ATTENDANCE_RESERVATION_NOTIFICATION',
+    'DISCUSSION_TIME_NOTIFICATION'
 );
 
 -- Name: official_language; Type: TYPE; Schema: public
@@ -1211,7 +1211,7 @@ CREATE TABLE public.person (
     preferred_name text DEFAULT ''::text NOT NULL,
     duplicate_of uuid,
     keycloak_email text,
-    disabled_email_types public.email_message_type[] DEFAULT '{}'::public.email_message_type[] NOT NULL,
+    disabled_email_types public.notification_category[] DEFAULT '{}'::public.notification_category[] NOT NULL,
     municipality_of_residence text DEFAULT ''::text NOT NULL,
     verified_email text,
     CONSTRAINT person_disabled_ssn_no_ssn CHECK (((NOT ssn_adding_disabled) OR (social_security_number IS NULL))),

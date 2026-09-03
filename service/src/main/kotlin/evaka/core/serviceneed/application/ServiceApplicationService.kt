@@ -10,7 +10,7 @@ import evaka.core.daycare.getDaycare
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.placement.getPlacementsForChildDuring
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -71,7 +71,7 @@ class ServiceApplicationService(
         Email.create(
                 db,
                 application.personId,
-                EmailMessageType.DECISION_NOTIFICATION,
+                NotificationCategory.DECISION_NOTIFICATION,
                 fromAddress,
                 content,
                 "${msg.serviceApplicationId} - ${application.personId}",

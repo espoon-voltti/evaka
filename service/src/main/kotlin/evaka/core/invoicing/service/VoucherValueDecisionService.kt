@@ -26,7 +26,7 @@ import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionType
 import evaka.core.pdfgen.PdfGenerator
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService
 import evaka.core.setting.SettingType
@@ -287,7 +287,7 @@ class VoucherValueDecisionService(
         Email.create(
                 db,
                 decision.headOfFamily.id,
-                EmailMessageType.DECISION_NOTIFICATION,
+                NotificationCategory.DECISION_NOTIFICATION,
                 fromAddress,
                 content,
                 "$voucherValueDecisionId - ${decision.headOfFamily.id}",

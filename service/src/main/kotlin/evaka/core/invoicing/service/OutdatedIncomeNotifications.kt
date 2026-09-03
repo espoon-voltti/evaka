@@ -12,7 +12,7 @@ import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.invoicing.data.insertIncome
 import evaka.core.invoicing.domain.IncomeEffect
 import evaka.core.invoicing.domain.IncomeRequest
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.async.AsyncJobType
@@ -145,7 +145,7 @@ class OutdatedIncomeNotifications(
 
         Email.create(
                 dbc = db,
-                emailType = EmailMessageType.INCOME_NOTIFICATION,
+                category = NotificationCategory.INCOME_NOTIFICATION,
                 personId = msg.guardianId,
                 fromAddress = emailEnv.sender(language),
                 content = emailMessageProvider.incomeNotification(msg.type, language),

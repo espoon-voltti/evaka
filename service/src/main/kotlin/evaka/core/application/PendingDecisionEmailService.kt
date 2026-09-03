@@ -9,7 +9,7 @@ import evaka.core.daycare.domain.Language
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getPersonById
 import evaka.core.shared.DecisionId
 import evaka.core.shared.PersonId
@@ -138,7 +138,7 @@ GROUP BY application.guardian_id
         Email.create(
                 db,
                 pendingDecision.guardianId,
-                EmailMessageType.DECISION_NOTIFICATION,
+                NotificationCategory.DECISION_NOTIFICATION,
                 emailEnv.sender(lang),
                 emailMessageProvider.pendingDecisionNotification(lang),
                 "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",

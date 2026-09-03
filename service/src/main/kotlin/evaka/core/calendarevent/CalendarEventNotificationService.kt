@@ -12,7 +12,7 @@ import evaka.core.emailclient.DiscussionSurveyReservationNotificationData
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getPersonById
 import evaka.core.shared.HtmlSafe
 import evaka.core.shared.async.AsyncJob
@@ -113,7 +113,7 @@ class CalendarEventNotificationService(
         Email.create(
                 db,
                 msg.recipientId,
-                EmailMessageType.DISCUSSION_TIME_NOTIFICATION,
+                NotificationCategory.DISCUSSION_TIME_NOTIFICATION,
                 fromAddress,
                 content,
                 "${msg.recipientId}: ${msg.eventId}",
@@ -161,7 +161,7 @@ class CalendarEventNotificationService(
         Email.create(
                 dbc,
                 msg.parentId,
-                EmailMessageType.CALENDAR_EVENT_NOTIFICATION,
+                NotificationCategory.CALENDAR_EVENT_NOTIFICATION,
                 emailEnv.sender(msg.language),
                 emailMessageProvider.calendarEventNotification(msg.language, notificationData),
                 "${clock.today()}:${msg.parentId}",
@@ -196,7 +196,7 @@ class CalendarEventNotificationService(
         Email.create(
                 db,
                 msg.recipientId,
-                EmailMessageType.DISCUSSION_TIME_NOTIFICATION,
+                NotificationCategory.DISCUSSION_TIME_NOTIFICATION,
                 fromAddress,
                 content,
                 "${eventTime.id} - ${msg.recipientId}",
@@ -231,7 +231,7 @@ class CalendarEventNotificationService(
         Email.create(
                 db,
                 msg.recipientId,
-                EmailMessageType.DISCUSSION_TIME_NOTIFICATION,
+                NotificationCategory.DISCUSSION_TIME_NOTIFICATION,
                 fromAddress,
                 content,
                 "${eventTime.id} - ${msg.recipientId}",
@@ -262,7 +262,7 @@ class CalendarEventNotificationService(
         Email.create(
                 db,
                 msg.recipientId,
-                EmailMessageType.DISCUSSION_TIME_NOTIFICATION,
+                NotificationCategory.DISCUSSION_TIME_NOTIFICATION,
                 emailEnv.sender(msg.recipientLanguage),
                 emailMessageProvider.discussionTimeReservationReminder(
                     msg.recipientLanguage,
