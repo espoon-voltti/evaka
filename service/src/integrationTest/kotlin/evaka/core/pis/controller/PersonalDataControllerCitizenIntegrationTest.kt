@@ -46,13 +46,14 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
     fun `all notifications are enabled by default`() {
         db.transaction { tx -> tx.insert(adult, DevPersonType.RAW_ROW) }
 
-        val disabledTypes =
+        val settings =
             personalDataController.getNotificationSettings(
                 dbInstance(),
                 AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
                 RealEvakaClock(),
             )
-        assertEquals(emptySet(), disabledTypes)
+        assertEquals(emptySet(), settings.disabledEmailTypes)
+        assertEquals(emptySet(), settings.disabledPushTypes)
     }
 
     @Test
@@ -63,11 +64,17 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
             dbInstance(),
             AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
             RealEvakaClock(),
-            setOf(
-                NotificationCategory.BULLETIN_NOTIFICATION,
-                NotificationCategory.CALENDAR_EVENT_NOTIFICATION,
-                NotificationCategory.DOCUMENT_NOTIFICATION,
-                NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
+            PersonalDataControllerCitizen.NotificationSettings(
+                disabledEmailTypes =
+                    setOf(
+                        NotificationCategory.BULLETIN_NOTIFICATION,
+                        NotificationCategory.CALENDAR_EVENT_NOTIFICATION,
+                    ),
+                disabledPushTypes =
+                    setOf(
+                        NotificationCategory.DOCUMENT_NOTIFICATION,
+                        NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
+                    ),
             ),
         )
 
@@ -81,10 +88,15 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
             setOf(
                 NotificationCategory.BULLETIN_NOTIFICATION,
                 NotificationCategory.CALENDAR_EVENT_NOTIFICATION,
+            ),
+            settings.disabledEmailTypes,
+        )
+        assertEquals(
+            setOf(
                 NotificationCategory.DOCUMENT_NOTIFICATION,
                 NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
             ),
-            settings,
+            settings.disabledPushTypes,
         )
     }
 
