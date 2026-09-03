@@ -25,6 +25,11 @@ class TampereActionRuleMapping(private val commonRules: ActionRuleMapping) : Act
 
     override fun <T> rulesOf(action: Action.ScopedAction<in T>): Sequence<ScopedActionRule<in T>> =
         when (action) {
+            Action.Invoice.RESEND -> {
+                @Suppress("UNCHECKED_CAST")
+                sequenceOf(HasGlobalRole(UserRole.ADMIN) as ScopedActionRule<in T>)
+            }
+
             Action.Unit.READ_PRESCHOOL_APPLICATION_REPORT -> {
                 @Suppress("UNCHECKED_CAST")
                 action.defaultRules.asSequence() +

@@ -475,7 +475,7 @@ Lasku;Luku;READ;x;;x;x;x;;;;;;
 Lasku;"Liitteen lähetys";UPLOAD_ATTACHMENT;x;;;x;x;;;;;;
 Lasku;"Lähetetyksi merkitseminen";MARK_SENT;x;;;x;x;;;;;;
 Lasku;Lähetys;SEND;x;;;x;;;;;;;
-Lasku;Uudelleenlähetys;RESEND;;;;;;;;;;;
+Lasku;Uudelleenlähetys;RESEND;TRE;;;;;;;;;;
 Lasku;Poisto;DELETE;x;;;x;;;;;;;
 "Laskun korjausrivi";Poisto;DELETE;x;;;x;x;;;;;;
 "Laskun korjausrivi";"Muistiinpanon muokkaus";UPDATE_NOTE;x;;;x;x;;;;;;
