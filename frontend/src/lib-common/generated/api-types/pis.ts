@@ -460,6 +460,14 @@ export const notificationCategories = [
 export type NotificationCategory = typeof notificationCategories[number]
 
 /**
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.NotificationSettings
+*/
+export interface NotificationSettings {
+  disabledEmailTypes: NotificationCategory[]
+  disabledPushTypes: NotificationCategory[]
+}
+
+/**
 * Generated from evaka.core.pis.service.PersonAddressDTO.Origin
 */
 export type Origin =
