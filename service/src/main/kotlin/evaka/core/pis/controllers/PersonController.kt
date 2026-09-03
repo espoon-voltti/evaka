@@ -99,6 +99,7 @@ class PersonController(
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): PersonSensitiveDetails {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -131,7 +132,7 @@ class PersonController(
                     )
                 }
             }
-            .also { Audit.PersonSensitiveDetailsRead.log(targetId = AuditId(personId)) }
+            .also { audit.log(Audit.PersonSensitiveDetailsRead, clock) }
     }
 
     @GetMapping("/details/{personId}")
