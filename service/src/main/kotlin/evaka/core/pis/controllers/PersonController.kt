@@ -210,6 +210,7 @@ class PersonController(
         clock: EvakaClock,
         @PathVariable personId: ChildId,
     ): GuardiansResponse {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -228,29 +229,25 @@ class PersonController(
                             personId,
                         )
                     GuardiansResponse(
-                        guardians =
-                            personService
-                                .getGuardians(tx, user, clock.now(), personId)
-                                .map(PersonJSON::from),
-                        blockedGuardians =
-                            if (fetchBlockedGuardians)
-                                tx.getBlockedGuardians(personId)
-                                    .mapNotNull { tx.getPersonById(it) }
-                                    .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
-                            else null,
-                    )
+                            guardians =
+                                personService
+                                    .getGuardians(tx, user, clock.now(), personId)
+                                    .map(PersonJSON::from)
+                                    .also { guardians -> audit.add(guardians.map { it.id }) },
+                            blockedGuardians =
+                                if (fetchBlockedGuardians)
+                                    tx.getBlockedGuardians(personId)
+                                        .mapNotNull { tx.getPersonById(it) }
+                                        .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
+                                        .also { blocked -> audit.add(blocked.map { it.id }) }
+                                else null,
+                        )
+                        .also { response ->
+                            audit.addMeta("blockedCount", response.blockedGuardians?.size)
+                        }
                 }
             }
-            .also {
-                Audit.PersonGuardianRead.log(
-                    targetId = AuditId(personId),
-                    meta =
-                        mapOf(
-                            "count" to it.guardians.size,
-                            "blockedCount" to it.blockedGuardians?.size,
-                        ),
-                )
-            }
+            .also { audit.log(Audit.PersonGuardianRead, clock) }
     }
 
     data class GuardiansResponse(
