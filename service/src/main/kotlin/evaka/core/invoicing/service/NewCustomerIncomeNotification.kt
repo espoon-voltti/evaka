@@ -9,7 +9,7 @@ import evaka.core.daycare.domain.Language
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.async.AsyncJobType
@@ -90,7 +90,7 @@ class NewCustomerIncomeNotification(
 
             Email.create(
                     dbc = db,
-                    emailType = EmailMessageType.INCOME_NOTIFICATION,
+                    category = NotificationCategory.INCOME_NOTIFICATION,
                     personId = msg.guardianId,
                     fromAddress = emailEnv.sender(language),
                     content =

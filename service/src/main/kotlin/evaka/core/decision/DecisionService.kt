@@ -27,7 +27,7 @@ import evaka.core.identity.ExternalIdentifier
 import evaka.core.pdfgen.Page
 import evaka.core.pdfgen.PdfGenerator
 import evaka.core.pdfgen.Template
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getPersonById
 import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.service.PersonService
@@ -365,7 +365,7 @@ class DecisionService(
             Email.create(
                     db,
                     guardianId,
-                    EmailMessageType.DECISION_NOTIFICATION,
+                    NotificationCategory.DECISION_NOTIFICATION,
                     fromAddress,
                     content,
                     "$applicationId - $guardianId",

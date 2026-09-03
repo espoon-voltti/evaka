@@ -9,7 +9,7 @@ import evaka.core.daycare.domain.Language
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.placement.PlacementType
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.PersonId
@@ -92,7 +92,7 @@ LIMIT 1
         Email.create(
                 dbc = db,
                 personId = msg.guardian,
-                emailType = EmailMessageType.ATTENDANCE_RESERVATION_NOTIFICATION,
+                category = NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
                 fromAddress = emailEnv.sender(language),
                 content = emailMessageProvider.missingReservationsNotification(language, msg.range),
                 traceId = msg.guardian.toString(),

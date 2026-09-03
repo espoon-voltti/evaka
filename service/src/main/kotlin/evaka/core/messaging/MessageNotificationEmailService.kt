@@ -9,7 +9,7 @@ import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.emailclient.MessageThreadData
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.HtmlSafe
 import evaka.core.shared.MessageId
@@ -113,15 +113,15 @@ WHERE m.id = ANY(${bind(messageIds)})
         Email.create(
                 dbc = db,
                 personId = msg.personId,
-                emailType =
+                category =
                     when (thread.type) {
                         MessageType.MESSAGE -> {
-                            EmailMessageType.MESSAGE_NOTIFICATION
+                            NotificationCategory.MESSAGE_NOTIFICATION
                         }
 
                         MessageType.BULLETIN -> {
-                            if (isSenderMunicipalAccount) EmailMessageType.BULLETIN_NOTIFICATION
-                            else EmailMessageType.MESSAGE_NOTIFICATION
+                            if (isSenderMunicipalAccount) NotificationCategory.BULLETIN_NOTIFICATION
+                            else NotificationCategory.MESSAGE_NOTIFICATION
                         }
                     },
                 fromAddress = emailEnv.sender(msg.language),
