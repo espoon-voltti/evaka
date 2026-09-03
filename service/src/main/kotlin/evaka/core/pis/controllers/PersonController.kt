@@ -184,6 +184,7 @@ class PersonController(
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): List<PersonWithChildrenDTO> {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.transaction {
                         accessControl.requirePermissionFor(
@@ -193,16 +194,13 @@ class PersonController(
                             Action.Person.READ_DEPENDANTS,
                             personId,
                         )
-                        personService.getPersonWithChildren(it, user, clock.now(), personId)
+                        personService
+                            .getPersonWithChildren(it, user, clock.now(), personId)
+                            ?.also { dto -> audit.add(dto.children.map { child -> child.id }) }
                     }
                     ?.children ?: throw NotFound()
             }
-            .also {
-                Audit.PersonDependantRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.PersonDependantRead, clock) }
     }
 
     @GetMapping("/guardians/{personId}")
