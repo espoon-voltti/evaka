@@ -14,7 +14,6 @@ import {
 } from 'lib-components/Notifications'
 import { EnvironmentLabel } from 'lib-components/atoms/EnvironmentLabel'
 import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
-import { desktopMin, zoomedMobileMax } from 'lib-components/breakpoints'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import SessionExpiredModal from 'lib-components/molecules/modals/SessionExpiredModal'
@@ -30,16 +29,28 @@ import { Localization, useTranslation } from './localization'
 import { MessageContextProvider } from './messages/state'
 import Header from './navigation/Header'
 import MobileNav from './navigation/MobileNav'
-import { mobileBottomNavHeight } from './navigation/const'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { queryClient, QueryClientProvider } from './query'
 
 const GlobalStyle = createGlobalStyle`
-  @media screen and (max-width: ${zoomedMobileMax}) {
-    html {
-      overflow-x: auto;
-    }
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    overflow: hidden;
+  }
+
+  #app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* Anything with position: fixed resolves against this element instead of
+       the visual viewport, which iOS leaves stale in the installed app after
+       the software keyboard closes and the device is rotated. */
+    transform: translateZ(0);
   }
 `
 
@@ -78,7 +89,8 @@ export function App({ children }: { children: React.ReactNode }) {
 const FullPageContainer = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  flex: 1 1 auto;
+  min-height: 0;
 `
 
 const Content = React.memo(function Content({
@@ -124,7 +136,7 @@ const MainContainer = React.memo(function MainContainer({
   const { user } = useContext(AuthContext)
   const render = useCallback(() => <>{children}</>, [children])
   return (
-    <ScrollableMain aria-hidden={ariaHidden}>
+    <ScrollableMain aria-hidden={ariaHidden} data-scroll-root>
       <UnwrapResult result={user}>{render}</UnwrapResult>
     </ScrollableMain>
   )
@@ -147,10 +159,7 @@ export function HandleRedirection() {
 }
 
 const ScrollableMain = styled.div`
-  flex-grow: 1;
-
-  padding-bottom: ${mobileBottomNavHeight}px;
-  @media (min-width: ${desktopMin}) {
-    padding-bottom: 0;
-  }
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
 `

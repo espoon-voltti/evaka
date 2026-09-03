@@ -10,7 +10,7 @@ import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calend
 import type { ReservationResponseDay } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { capitalizeFirstLetter } from 'lib-common/string'
-import { scrollToPos } from 'lib-common/utils/scrolling'
+import { scrollToElement } from 'lib-common/utils/scrolling'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -18,7 +18,6 @@ import colors from 'lib-customizations/common'
 import { faCalendar } from 'lib-icons'
 
 import { useLang, useTranslation } from '../localization'
-import { headerHeightMobile } from '../navigation/const'
 
 import {
   CalendarEventCount,
@@ -78,16 +77,8 @@ export default React.memo(function DayElem({
   }, [selectDate, calendarDay.date])
 
   useEffect(() => {
-    const top = ref.current?.getBoundingClientRect().top
-
-    if (top) {
-      // Initial load scrolls smoothly to "today",
-      // subsequent loads to previous months use instant scroll to keep the list position
-      // at the place where "fetch previous" was clicked
-      scrollToPos({
-        top: top - headerHeightMobile - 54,
-        behavior: isToday ? 'smooth' : 'instant'
-      })
+    if (ref.current) {
+      scrollToElement(ref.current)
     }
   }, [isToday, scrollToDate])
 
@@ -147,6 +138,8 @@ export default React.memo(function DayElem({
 const ReservationsContainer = styled.div`
   flex: 1 0 0;
 `
+const monthHeadingHeight = 54
+
 const Day = styled.button<{
   $today: boolean
   $highlight?: 'nonEditableAbsence' | 'holidayPeriod' | undefined
@@ -155,6 +148,8 @@ const Day = styled.button<{
   flex-direction: row;
   width: 100%;
   position: relative;
+  // keeps a day scrolled into view from landing under the sticky month heading
+  scroll-margin-top: ${monthHeadingHeight}px;
   padding: calc(${defaultMargins.s} - 6px) ${defaultMargins.s};
   background: transparent;
   margin: 0;

@@ -173,7 +173,7 @@ const WeekTitle = styled(H3)`
 `
 const MonthSummaryContainer = styled.div`
   position: sticky;
-  top: 54px;
+  top: 0;
   z-index: 1;
 
   padding: ${defaultMargins.s};
