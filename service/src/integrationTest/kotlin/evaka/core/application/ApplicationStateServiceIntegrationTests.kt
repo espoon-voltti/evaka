@@ -1344,6 +1344,123 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
+    fun `createPlacementPlan - preschool with daycare fails without a connected period`() {
+        db.transaction { tx ->
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1),
+            )
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
+        }
+        db.transaction { tx ->
+            assertThrows<BadRequest> {
+                service.createPlacementPlan(
+                    tx,
+                    serviceWorker,
+                    clock,
+                    AuditContext(),
+                    applicationId,
+                    DaycarePlacementPlan(
+                        unitId = daycare.id,
+                        period = mainPeriod,
+                        preschoolDaycarePeriod = null,
+                    ),
+                )
+            }
+        }
+        db.read { tx ->
+            assertNull(tx.getPlacementPlan(applicationId))
+            assertEquals(
+                ApplicationStatus.WAITING_PLACEMENT,
+                tx.fetchApplicationDetails(applicationId)!!.status,
+            )
+        }
+    }
+
+    @Test
+    fun `createPlacementPlan - preparatory with daycare fails without a connected period`() {
+        db.transaction { tx ->
+            tx.insertApplication(
+                appliedType = PlacementType.PREPARATORY_DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1),
+            )
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
+        }
+        db.transaction { tx ->
+            assertThrows<BadRequest> {
+                service.createPlacementPlan(
+                    tx,
+                    serviceWorker,
+                    clock,
+                    AuditContext(),
+                    applicationId,
+                    DaycarePlacementPlan(
+                        unitId = daycare.id,
+                        period = mainPeriod,
+                        preschoolDaycarePeriod = null,
+                    ),
+                )
+            }
+        }
+        db.read { tx ->
+            assertNull(tx.getPlacementPlan(applicationId))
+            assertEquals(
+                ApplicationStatus.WAITING_PLACEMENT,
+                tx.fetchApplicationDetails(applicationId)!!.status,
+            )
+        }
+    }
+
+    @Test
+    fun `createPlacementPlan - preschool with club fails without a connected period`() {
+        db.transaction { tx ->
+            val serviceNeedOption =
+                ServiceNeedOption(
+                    id = snPreschoolClub45.id,
+                    nameFi = snPreschoolClub45.nameFi,
+                    nameSv = snPreschoolClub45.nameSv,
+                    nameEn = snPreschoolClub45.nameEn,
+                    validPlacementType = PlacementType.PRESCHOOL_CLUB,
+                )
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL_CLUB,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1),
+                serviceNeedOption = serviceNeedOption,
+            )
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
+        }
+        db.transaction { tx ->
+            assertThrows<BadRequest> {
+                service.createPlacementPlan(
+                    tx,
+                    serviceWorker,
+                    clock,
+                    AuditContext(),
+                    applicationId,
+                    DaycarePlacementPlan(
+                        unitId = daycare.id,
+                        period = mainPeriod,
+                        preschoolDaycarePeriod = null,
+                    ),
+                )
+            }
+        }
+        db.read { tx ->
+            assertNull(tx.getPlacementPlan(applicationId))
+            assertEquals(
+                ApplicationStatus.WAITING_PLACEMENT,
+                tx.fetchApplicationDetails(applicationId)!!.status,
+            )
+        }
+    }
+
+    @Test
     fun `cancelPlacementPlan - removes placement plan and decision drafts and changes status`() {
         db.transaction { tx ->
             // given
