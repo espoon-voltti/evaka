@@ -6,12 +6,16 @@ import { client } from '../api-client'
 import { startPasskeyRegistration } from '../generated/api-clients/pis'
 
 import { passkeyProviderName } from './passkey-providers'
+import {
+  credentialToJSON,
+  parseCreationOptions,
+  parseRequestOptions
+} from './webauthn-json'
 
 export function passkeysSupported(): boolean {
   return (
     typeof window.PublicKeyCredential !== 'undefined' &&
-    typeof window.PublicKeyCredential.parseCreationOptionsFromJSON ===
-      'function'
+    typeof window.navigator.credentials?.create === 'function'
   )
 }
 
@@ -39,9 +43,7 @@ export async function authPasskeyLogin(
   let credential: Credential | null
   try {
     credential = await navigator.credentials.get({
-      publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(
-        data.options.publicKey
-      ),
+      publicKey: parseRequestOptions(data.options.publicKey),
       mediation,
       signal
     })
@@ -52,12 +54,7 @@ export async function authPasskeyLogin(
   }
   if (!(credential instanceof PublicKeyCredential)) return 'failure'
 
-  // Some password managers (e.g. 1Password) don't include the required `clientExtensionResults`
-  // field in the credential, which causes the backend to reject the login.
-  const credentialJson = credential.toJSON()
-  if (!credentialJson.clientExtensionResults) {
-    credentialJson.clientExtensionResults = {}
-  }
+  const credentialJson = credentialToJSON(credential)
 
   try {
     await client.post('/citizen/auth/passkey-login/finish', {
@@ -93,9 +90,7 @@ export async function createPasskeyCredential(): Promise<PasskeyCreationResult> 
     const optionsJson = JSON.parse(options.credentialsCreate) as {
       publicKey: PublicKeyCredentialCreationOptionsJSON
     }
-    creationOptions = PublicKeyCredential.parseCreationOptionsFromJSON(
-      optionsJson.publicKey
-    )
+    creationOptions = parseCreationOptions(optionsJson.publicKey)
   } catch (e) {
     return { status: 'failure', errorCode: errorCodeOf(e) }
   }
@@ -123,12 +118,7 @@ export async function createPasskeyCredential(): Promise<PasskeyCreationResult> 
     return { status: 'failure', errorCode: undefined }
   }
 
-  // Some password managers (e.g. 1Password) don't include the required `clientExtensionResults`
-  // field in the credential, which causes the backend to reject the registration.
-  const credentialJson = credential.toJSON()
-  if (!credentialJson.clientExtensionResults) {
-    credentialJson.clientExtensionResults = {}
-  }
+  const credentialJson = credentialToJSON(credential)
 
   return {
     status: 'success',
