@@ -217,7 +217,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
             if (!isBusy) return
             TimeUnit.MILLISECONDS.sleep(100)
         } while (Duration.between(start, Instant.now()).abs() < timeout)
-        error { "Timed out while waiting for running jobs to finish" }
+        error("Timed out while waiting for running jobs to finish")
     }
 
     override fun close() {
