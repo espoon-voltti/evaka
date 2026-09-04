@@ -40,6 +40,7 @@ import {
   emailVerificationStatusQuery,
   familyQuery,
   notificationSettingsQuery,
+  passkeysQuery,
   passwordConstraintsQuery
 } from './queries'
 import type { PersonalDetailsTaskSection } from './tasks'
@@ -139,6 +140,10 @@ export default React.memo(function PersonalDetails() {
   const showFamilySizeSection = family
     .map(({ children }) => children.length > 0)
     .getOrElse(false)
+  const passkeys = useQueryResult(passkeysQuery())
+  const showPasskeysSection =
+    passkeysSupported() ||
+    passkeys.map((passkeys) => passkeys.length > 0).getOrElse(false)
 
   const tasks = usePersonalDetailsTasks()
   const taskSectionRefs: Record<
@@ -243,7 +248,7 @@ export default React.memo(function PersonalDetails() {
           </>
         )}
 
-        {passkeysSupported() && (
+        {showPasskeysSection && (
           <>
             <Gap $size="s" />
             <ScrollTargetArea
