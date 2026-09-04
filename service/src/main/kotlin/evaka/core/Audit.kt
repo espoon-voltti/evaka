@@ -54,7 +54,6 @@ enum class Audit(
 ) {
     // AssistanceBasisOptionsRead,
     AssistanceNeedsReportRead,
-    AssistanceNeedsReportByChildRead,
     AttachmentsDelete,
     AttachmentsRead,
     AttachmentsUploadForApplication,
@@ -566,6 +565,7 @@ enum class Audit(
     AssistanceFactorCreate,
     AssistanceFactorDelete,
     AssistanceFactorUpdate,
+    AssistanceNeedsReportByChildRead,
     AttendanceReservationCitizenCreate,
     AttendanceReservationEmployeeCreate,
     ChildAssistanceActionCreate,

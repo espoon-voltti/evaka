@@ -5,6 +5,7 @@
 package evaka.core.reports
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.assistance.DaycareAssistanceLevel
 import evaka.core.assistance.OtherAssistanceMeasureType
 import evaka.core.assistance.PreschoolAssistanceLevel
@@ -117,6 +118,14 @@ class AssistanceNeedsAndActionsReportController(
         @RequestParam placementTypes: List<PlacementType> = emptyList(),
         @RequestParam includeDecisions: Boolean = false,
     ): AssistanceNeedsAndActionsReportByChild {
+        val audit =
+            AuditContext()
+                .observeDate(date)
+                .addMeta("daycareAssistanceLevels", daycareAssistanceLevels)
+                .addMeta("preschoolAssistanceLevels", preschoolAssistanceLevels)
+                .addMeta("otherAssistanceMeasureTypes", otherAssistanceMeasureTypes)
+                .addMeta("placementTypes", placementTypes)
+                .addMeta("includeDecisions", includeDecisions)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     val filter =
@@ -133,24 +142,21 @@ class AssistanceNeedsAndActionsReportController(
                     AssistanceNeedsAndActionsReportByChild(
                         rows =
                             tx.getReportRowsByChild(
-                                date,
-                                filter,
-                                daycareAssistanceLevels,
-                                preschoolAssistanceLevels,
-                                otherAssistanceMeasureTypes,
-                                placementPredicate,
-                                includeDecisions,
-                            ),
+                                    date,
+                                    filter,
+                                    daycareAssistanceLevels,
+                                    preschoolAssistanceLevels,
+                                    otherAssistanceMeasureTypes,
+                                    placementPredicate,
+                                    includeDecisions,
+                                )
+                                .also { rows -> audit.addMeta("count", rows.size) },
                         showAssistanceNeedVoucherCoefficient =
                             !featureConfig.valueDecisionCapacityFactorEnabled,
                     )
                 }
             }
-            .also {
-                Audit.AssistanceNeedsReportByChildRead.log(
-                    meta = mapOf("date" to date, "count" to it.rows.size)
-                )
-            }
+            .also { audit.log(Audit.AssistanceNeedsReportByChildRead, clock) }
     }
 
     data class AssistanceNeedsAndActionsReportByChild(
