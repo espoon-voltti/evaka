@@ -4,6 +4,7 @@
 
 import { Queries } from 'lib-common/query'
 
+import { authStatusQuery } from '../auth/state'
 import {
   acceptDecision,
   getDecisionDetails,
@@ -36,7 +37,8 @@ export const applicationNotificationsQuery = q.query(
 export const acceptDecisionMutation = q.mutation(acceptDecision, [
   pendingDecisionsQuery,
   applicationNotificationsQuery,
-  receivedMessagesQuery
+  receivedMessagesQuery,
+  authStatusQuery
 ])
 
 export const rejectDecisionMutation = q.mutation(rejectDecision, [

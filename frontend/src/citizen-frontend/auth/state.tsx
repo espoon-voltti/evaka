@@ -37,7 +37,7 @@ const defaultState: AuthState = {
 export const AuthContext = createContext<AuthState>(defaultState)
 
 const q = new Queries()
-const authStatusQuery = q.query(getAuthStatus)
+export const authStatusQuery = q.query(getAuthStatus)
 
 export const AuthContextProvider = React.memo(function AuthContextProvider({
   children
