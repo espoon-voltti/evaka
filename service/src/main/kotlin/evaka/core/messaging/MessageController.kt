@@ -19,7 +19,6 @@ import evaka.core.shared.GroupId
 import evaka.core.shared.MessageAccountId
 import evaka.core.shared.MessageContentId
 import evaka.core.shared.MessageDraftId
-import evaka.core.shared.MessageId
 import evaka.core.shared.MessageThreadFolderId
 import evaka.core.shared.MessageThreadId
 import evaka.core.shared.PersonId
@@ -996,50 +995,6 @@ class MessageController(
                     objectId = AuditId(draftId),
                 )
             }
-    }
-
-    @PostMapping("/employee/messages/{accountId}/{messageId}/reply")
-    fun replyToMessage(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
-        @PathVariable messageId: MessageId,
-        @RequestBody body: ReplyToMessageBody,
-    ): MessageService.ThreadReply =
-        replyToMessage(db, user as AuthenticatedUser, clock, accountId, messageId, body)
-
-    @PostMapping("/employee-mobile/messages/{accountId}/{messageId}/reply")
-    fun replyToMessage(
-        db: Database,
-        user: AuthenticatedUser.MobileDevice,
-        clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
-        @PathVariable messageId: MessageId,
-        @RequestBody body: ReplyToMessageBody,
-    ): MessageService.ThreadReply =
-        replyToMessage(db, user as AuthenticatedUser, clock, accountId, messageId, body)
-
-    // TODO: This is for backwards compatibility. Remove this and the calling endpoints after a week
-    // of production use.
-    private fun replyToMessage(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
-        @PathVariable messageId: MessageId,
-        @RequestBody body: ReplyToMessageBody,
-    ): MessageService.ThreadReply {
-        val threadId = db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, clock, accountId)
-            dbc.read {
-                it.createQuery {
-                        sql("""SELECT thread_id FROM message WHERE id = ${bind(messageId)}""")
-                    }
-                    .exactlyOneOrNull<MessageThreadId>()
-            } ?: throw NotFound("Message not found in the specified account")
-        }
-        return replyToThread(db, user, clock, accountId, threadId, body)
     }
 
     @PostMapping("/employee/messages/{accountId}/reply-to/{threadId}")
