@@ -12,34 +12,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/native-appsec@npm:11.0.1":
-  version: 11.0.1
-  resolution: "@datadog/native-appsec@npm:11.0.1"
+"@datadog/native-appsec@npm:11.0.2":
+  version: 11.0.2
+  resolution: "@datadog/native-appsec@npm:11.0.2"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/e0a66ba5ba57a70aeb6c04fe4322d01467f5c111ae2be6b54a53c5170548e8064779f8f9335a48db3e4ebb9a23f4f5db7e655489af36845f9944286047e49b7c
+  checksum: 10/717bbd384d9717cb6f4ba94bbcdd63a7b38ed24d2524ae2c1eb316a70f64ecda7724be1c2e295783d032f53ca36b0b1989dda8c11723f6f2e7d57800475a174a
   languageName: node
   linkType: hard
 
-"@datadog/native-iast-taint-tracking@npm:4.2.0":
-  version: 4.2.0
-  resolution: "@datadog/native-iast-taint-tracking@npm:4.2.0"
+"@datadog/native-iast-taint-tracking@npm:4.2.1":
+  version: 4.2.1
+  resolution: "@datadog/native-iast-taint-tracking@npm:4.2.1"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/aaf56d34ef8cb71a7e55ceaa33bd3047a1810919d8f2731cb054facc3980b628e5b8d445f88bdd892735c7b138f5a29338ea1f7926d1c3b0703d0ee7140ed89d
+  checksum: 10/7b8a950bbba16cb7fc8d400657747b4a2a022211622276dbbb8bb965b69120976c28b044a40c5c6261755c92acc5b33cb4694e25b6bddc4884e8fa41c007019d
   languageName: node
   linkType: hard
 
-"@datadog/native-metrics@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@datadog/native-metrics@npm:3.1.2"
+"@datadog/native-metrics@npm:4.0.0":
+  version: 4.0.0
+  resolution: "@datadog/native-metrics@npm:4.0.0"
   dependencies:
     node-addon-api: "npm:^6.1.0"
     node-gyp: "npm:latest"
     node-gyp-build: "npm:^3.9.0"
-  checksum: 10/4ebfef93672f88a4acd16e2c3daaa5bce4d9baa64bae825dc0da00051ec5ef64021f4de752e4d2cd4282733d1c21504414b2bfc49fa4b115e7f505c94b71dce2
+  checksum: 10/8ce3ccfc242f62ab9a9f79a45745e06cc4b8a4740d2e787fb475d636fe5a93dfd2f15aa0e27188ddfa5a056a5ab362013bc2bbbbece6d3ff0e024988c3a24a62
   languageName: node
   linkType: hard
 
@@ -55,15 +55,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/wasm-js-rewriter@npm:5.0.3":
-  version: 5.0.3
-  resolution: "@datadog/wasm-js-rewriter@npm:5.0.3"
+"@datadog/wasm-js-rewriter@npm:5.0.4":
+  version: 5.0.4
+  resolution: "@datadog/wasm-js-rewriter@npm:5.0.4"
   dependencies:
     js-yaml: "npm:^4.3.1"
     lru-cache: "npm:^7.14.0"
     module-details-from-path: "npm:^1.0.4"
     node-gyp-build: "npm:^4.8.4"
-  checksum: 10/b99d91d146e55715fdbd528086da08536bdc4d87669bb489f2a864dc1963350276aa0c4914706df987ed9a6b44134f8642b3133a555a8835f78631f7f6945774
+  checksum: 10/fbd26e3686538b6c26196ba35cb2c4ce6d6f5e9324644b09b087e895f429a7a0f8e1e03dd1f3849fb7b312a88b5fae349369b95b28eeb9faf32df7f0e30b80c0
   languageName: node
   linkType: hard
 
@@ -1809,16 +1809,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:6.12.0":
-  version: 6.12.0
-  resolution: "dd-trace@npm:6.12.0"
+"dd-trace@npm:6.13.0":
+  version: 6.13.0
+  resolution: "dd-trace@npm:6.13.0"
   dependencies:
     "@datadog/libdatadog": "npm:0.12.1"
-    "@datadog/native-appsec": "npm:11.0.1"
-    "@datadog/native-iast-taint-tracking": "npm:4.2.0"
-    "@datadog/native-metrics": "npm:3.1.2"
+    "@datadog/native-appsec": "npm:11.0.2"
+    "@datadog/native-iast-taint-tracking": "npm:4.2.1"
+    "@datadog/native-metrics": "npm:4.0.0"
     "@datadog/pprof": "npm:5.18.1"
-    "@datadog/wasm-js-rewriter": "npm:5.0.3"
+    "@datadog/wasm-js-rewriter": "npm:5.0.4"
     "@opentelemetry/api": "npm:>=1.0.0 <1.10.0"
     "@opentelemetry/api-logs": "npm:<1.0.0"
     dc-polyfill: "npm:^0.1.11"
@@ -1844,7 +1844,7 @@ __metadata:
       optional: true
     oxc-parser:
       optional: true
-  checksum: 10/bf76ab03500d6cc6f46a5eafe5b374d4b598e92db1b6f498e6e1ca2ff38c9b1f51397353edca7fa25d50669bf24fd7c95000158ac369d51fee78e7d2d9303ec3
+  checksum: 10/7fac844fb81ce4940a85c4c78650c7cb781a841cb9b51c4aa26ee91c357494d4661ec829c8553af0ddaca586fb9c63c9d28313e7d8236d3a42523a89e823adc4
   languageName: node
   linkType: hard
 
@@ -2102,7 +2102,7 @@ __metadata:
     cookie-parser: "npm:1.4.7"
     cookie-signature: "npm:1.2.2"
     date-fns: "npm:4.4.0"
-    dd-trace: "npm:6.12.0"
+    dd-trace: "npm:6.13.0"
     express: "npm:5.2.1"
     express-basic-auth: "npm:1.2.1"
     express-http-proxy: "npm:2.1.2"
