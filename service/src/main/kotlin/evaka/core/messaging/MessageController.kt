@@ -5,6 +5,7 @@
 package evaka.core.messaging
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.application.personHasSentApplicationWithId
 import evaka.core.invoicing.controller.SortDirection
@@ -467,11 +468,13 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): List<MessageThread> {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 val accountId =
                     dbc.read { it.getFinanceAccountId() } ?: throw NotFound("No account found")
+                audit.add(accountId)
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                val threads = dbc.read {
+                dbc.read {
                     val personAccountId = it.getCitizenMessageAccount(personId)
                     val filter =
                         accessControl.requireAuthorizationFilter(
@@ -496,17 +499,18 @@ class MessageController(
                                 deletedMessageTitle = featureConfig.deletedMessagePlaceholderTitle,
                             )
                             .data
+                            .onEach { thread ->
+                                audit
+                                    .add(thread.id)
+                                    .add(thread.children.map { child -> child.childId })
+                                    .observeDate(
+                                        thread.messages.minOfOrNull { m -> m.sentAt }?.toLocalDate()
+                                    )
+                            }
                     }
                 }
-                accountId to threads
             }
-            .let { (accountId, threads) ->
-                Audit.MessagingMessagesInFolderRead.log(
-                    targetId = AuditId(accountId),
-                    meta = mapOf("total" to threads.size),
-                )
-                threads
-            }
+            .also { audit.log(Audit.MessagingFinanceMessagesRead, clock) }
     }
 
     @GetMapping("/employee/messages/unread")

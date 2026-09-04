@@ -596,6 +596,7 @@ enum class Audit(
     DecisionReject,
     DecisionUnitsRead,
     FeeDecisionArchive,
+    MessagingFinanceMessagesRead,
     NoteCreate,
     NoteDelete,
     NoteRead,
