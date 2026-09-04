@@ -248,6 +248,7 @@ export default React.memo(function PlacementPlanDraft() {
     placementType === 'PREPARATORY' ||
     placementType === 'PRESCHOOL_DAYCARE' ||
     placementType === 'PRESCHOOL_DAYCARE_ONLY' ||
+    placementType === 'PRESCHOOL_CLUB' ||
     placementType === 'PREPARATORY_DAYCARE'
 
   const preschoolDatesAreValid = useMemo(() => {
