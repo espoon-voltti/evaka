@@ -603,3 +603,4 @@ V604__citizen_user_preferred_ui_language.sql
 V605__absence_categories_temporary_daycare.sql
 V606__koski_upload_error.sql
 V607__decision_reasoning_individual_language.sql
+V608__child_koski_data_removed.sql

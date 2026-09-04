@@ -1046,6 +1046,16 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `nothing is sent for a child whose Koski data has been removed`() {
+        insertPlacement()
+        markKoskiDataRemoved(child1.id)
+
+        koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
+
+        assertTrue(koskiEndpoint.getStudyRights().isEmpty())
+    }
+
+    @Test
     fun `a daycare with purchased provider type is marked as such in study rights`() {
         val daycareId = db.transaction {
             it.insert(
@@ -1484,6 +1494,14 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 type = type,
             )
         )
+    }
+
+    private fun markKoskiDataRemoved(childId: ChildId) = db.transaction { tx ->
+        tx.execute {
+            sql(
+                "UPDATE child SET koski_data_first_removed_at = ${bind(koskiUploadTime(preschoolTerm2019.end))} WHERE id = ${bind(childId)}"
+            )
+        }
     }
 
     private fun insertAbsences(

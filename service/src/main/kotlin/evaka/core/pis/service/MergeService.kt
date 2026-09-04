@@ -67,15 +67,21 @@ SELECT min(min_date) AS min_date, max(max_date) AS max_date FROM dates HAVING mi
             tx.createUpdate {
                     sql(
                         """
-INSERT INTO child (id, allergies, diet, additionalinfo) VALUES (
+INSERT INTO child (id, allergies, diet, additionalinfo, koski_data_first_removed_at) VALUES (
     ${bind(master)},
     coalesce((SELECT allergies FROM child WHERE id = ${bind(master)}), ''),
     coalesce((SELECT diet FROM child WHERE id = ${bind(master)}), ''),
-    coalesce((SELECT additionalinfo FROM child WHERE id = ${bind(master)}), '')
+    coalesce((SELECT additionalinfo FROM child WHERE id = ${bind(master)}), ''),
+    -- least() ignores nulls, so the merged child stays frozen if either side was
+    least(
+        (SELECT koski_data_first_removed_at FROM child WHERE id = ${bind(master)}),
+        (SELECT koski_data_first_removed_at FROM child WHERE id = ${bind(duplicate)})
+    )
 ) ON CONFLICT(id) DO UPDATE SET
     allergies = concat((SELECT allergies FROM child WHERE id = ${bind(master)}), ' ', coalesce((SELECT allergies FROM child WHERE id = ${bind(duplicate)}), '')),
     diet = concat( (SELECT diet FROM child WHERE id = ${bind(master)}), ' ', coalesce((SELECT diet FROM child WHERE id = ${bind(duplicate)}), '')),
-    additionalinfo = concat((SELECT additionalinfo FROM child WHERE id = ${bind(master)}), ' ', coalesce((SELECT additionalinfo FROM child WHERE id = ${bind(duplicate)}), ''));
+    additionalinfo = concat((SELECT additionalinfo FROM child WHERE id = ${bind(master)}), ' ', coalesce((SELECT additionalinfo FROM child WHERE id = ${bind(duplicate)}), '')),
+    koski_data_first_removed_at = excluded.koski_data_first_removed_at;
     
 UPDATE child SET allergies = '', diet = '', additionalinfo = '' WHERE id = ${bind(duplicate)};
 
