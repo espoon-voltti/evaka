@@ -203,15 +203,18 @@ export default React.memo(function PlacementPlanDraft() {
     () => navigate('/applications'),
     [navigate]
   )
-  const initialized = useRef(false)
+  const initializedWithType = useRef<PlacementType | null>(null)
   useEffect(() => {
-    initialized.current = false
+    initializedWithType.current = null
   }, [applicationId])
 
   useEffect(() => {
     const withoutOldPlacements = removeOldPlacements(rawDraft)
-    if (withoutOldPlacements.isSuccess && !initialized.current) {
-      initialized.current = true
+    if (
+      withoutOldPlacements.isSuccess &&
+      initializedWithType.current !== withoutOldPlacements.value.type
+    ) {
+      initializedWithType.current = withoutOldPlacements.value.type
       setPlacementPlanDraft(Success.of(withoutOldPlacements.value))
       const preselectedUnit =
         withoutOldPlacements.value.placementDraft?.unit?.id ?? null
