@@ -1081,6 +1081,41 @@ test.describe('Sending and receiving messages', () => {
       expect(finalExpiry).toBeGreaterThan(initialExpiry + 0.3)
       expect(authStatusRequests.length).toBeGreaterThanOrEqual(3)
     })
+
+    test('Citizen stays on the page and keeps typed text when the session has expired', async () => {
+      citizenPage = await newPage({
+        mockedTime: mockedDateAt10
+      })
+      await enduserLoginWeak(citizenPage, credentials)
+      await citizenPage.goto(config.enduserMessagesUrl)
+      await citizenPage.page.evaluate(() => {
+        if (window.evaka) window.evaka.keepSessionAliveThrottleTime = 300
+      })
+      const citizenMessagesPage = new CitizenMessagesPage(
+        citizenPage,
+        'desktop'
+      )
+      const editor = await citizenMessagesPage.createNewMessage()
+      await editor.title.fill('Asiaa lapsista')
+      await editor.content.fill('Tämä teksti ei saa kadota')
+
+      // Dropping the session cookie makes the next keepalive request report
+      // an expired session, like an idle timeout on the server would
+      await citizenPage.page.context().clearCookies()
+      await editor.content.locator.press('End')
+      await editor.content.locator.pressSequentially(' istunnon jälkeen')
+
+      const modal = citizenPage.findByDataQa('session-expired-modal')
+      await expect(modal).toBeVisible()
+      expect(citizenPage.url).toContain('/messages')
+
+      await modal.findTextExact('Peruuta').click()
+      await expect(modal).toBeHidden()
+      expect(citizenPage.url).toContain('/messages')
+      await expect(editor.content).toHaveValue(
+        'Tämä teksti ei saa kadota istunnon jälkeen'
+      )
+    })
   })
 
   test.describe('Drafts', () => {
