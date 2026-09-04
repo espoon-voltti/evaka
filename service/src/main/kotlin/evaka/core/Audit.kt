@@ -571,6 +571,7 @@ enum class Audit(
     ChildAssistanceActionCreate,
     ChildAssistanceActionDelete,
     ChildAssistanceActionUpdate,
+    ChildAssistanceRead,
     ChildDatePresenceUpsert,
     ChildServiceApplicationAccept,
     ChildServiceApplicationReject,
