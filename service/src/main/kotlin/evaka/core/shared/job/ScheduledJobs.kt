@@ -4,6 +4,8 @@
 
 package evaka.core.shared.job
 
+import evaka.core.Audit
+import evaka.core.AuditId
 import evaka.core.ChildDocumentArchivalEnv
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
@@ -36,6 +38,7 @@ import evaka.core.note.child.daily.deleteExpiredNotes
 import evaka.core.pis.cleanUpInactivePeople
 import evaka.core.pis.deactivateInactiveEmployees
 import evaka.core.pis.deleteExpiredEmailVerifications
+import evaka.core.pis.deleteNeverLoggedInSsnEmployees
 import evaka.core.reports.freezeVoucherValueReportRows
 import evaka.core.reservations.MissingHolidayReservationsReminders
 import evaka.core.reservations.MissingReservationsReminders
@@ -214,6 +217,10 @@ enum class ScheduledJob(
     ),
     InactiveEmployeesRoleReset(
         ScheduledJobs::inactiveEmployeesRoleReset,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
+    ),
+    DeleteNeverLoggedInSsnEmployees(
+        ScheduledJobs::deleteNeverLoggedInSsnEmployees,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     SendMissingReservationReminders(
@@ -573,10 +580,15 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun inactiveEmployeesRoleReset(db: Database.Connection, clock: EvakaClock) {
-        db.transaction {
-            val ids = it.deactivateInactiveEmployees(clock.now())
-            logger.info { "Roles cleared for ${ids.size} inactive employees: $ids" }
-        }
+        val ids = db.transaction { it.deactivateInactiveEmployees(clock.now()) }
+        logger.info { "Roles cleared for ${ids.size} inactive employees: $ids" }
+        ids.forEach { Audit.EmployeeDeactivate.log(targetId = AuditId(it)) }
+    }
+
+    fun deleteNeverLoggedInSsnEmployees(db: Database.Connection, clock: EvakaClock) {
+        val ids = db.transaction { it.deleteNeverLoggedInSsnEmployees(clock.now()) }
+        logger.info { "Deleted ${ids.size} SSN employees who never logged in: $ids" }
+        ids.forEach { Audit.EmployeeDelete.log(targetId = AuditId(it)) }
     }
 
     fun sendMissingReservationReminders(db: Database.Connection, clock: EvakaClock) {

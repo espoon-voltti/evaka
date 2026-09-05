@@ -576,6 +576,23 @@ fun Database.Transaction.deactivateEmployeeRemoveRolesAndPin(id: EmployeeId) {
     listPersonalDevices(id).forEach { deleteDevice(it.id) }
 }
 
+fun Database.Transaction.deleteNeverLoggedInSsnEmployees(now: HelsinkiDateTime): List<EmployeeId> {
+    val employeeIds = createQuery {
+        sql(
+            """
+    SELECT id
+    FROM employee
+    WHERE social_security_number IS NOT NULL
+    AND last_login IS NULL
+    AND created < ${bind(now)} - interval '5 days'
+"""
+        )
+    }
+        .toList<EmployeeId>()
+    employeeIds.forEach { employeeId -> deleteEmployee(employeeId) }
+    return employeeIds
+}
+
 fun Database.Transaction.setEmployeePreferredFirstName(
     employeeId: EmployeeId,
     preferredFirstName: String?,
