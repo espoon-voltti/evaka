@@ -19,10 +19,12 @@ import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EvakaUserId
 import evaka.core.shared.FeatureConfig
+import evaka.core.shared.PlacementPlanId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.data.DateSet
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
@@ -211,7 +213,20 @@ class PlacementPlanService(
         tx: Database.Transaction,
         application: ApplicationDetails,
         placementPlan: DaycarePlacementPlan,
-    ) = tx.createPlacementPlan(application.id, application.derivePlacementType(), placementPlan)
+    ): PlacementPlanId {
+        val type = application.derivePlacementType()
+        if (
+            type in
+                listOf(
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    PlacementType.PRESCHOOL_CLUB,
+                    PlacementType.PREPARATORY_DAYCARE,
+                ) && placementPlan.preschoolDaycarePeriod == null
+        ) {
+            throw BadRequest("Placement plan of type $type requires a preschool daycare period")
+        }
+        return tx.createPlacementPlan(application.id, type, placementPlan)
+    }
 
     fun getPlacementTypePeriods(
         tx: Database.Read,
@@ -357,7 +372,13 @@ class PlacementPlanService(
                     PlacementType.PRESCHOOL_DAYCARE,
                     PlacementType.PRESCHOOL_CLUB,
                     PlacementType.PREPARATORY_DAYCARE -> {
-                        PlacementPlanExtent.FullDouble(period, preschoolDaycarePeriod!!)
+                        PlacementPlanExtent.FullDouble(
+                            period,
+                            preschoolDaycarePeriod
+                                ?: throw BadRequest(
+                                    "Placement type $placementType requires a preschool daycare period"
+                                ),
+                        )
                     }
 
                     else -> {
