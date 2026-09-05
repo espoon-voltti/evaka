@@ -39,7 +39,7 @@
     "query-string": "9.5.0",
     "redis": "6.2.1",
     "split2": "4.2.0",
-    "zod": "4.4.3"
+    "zod": "4.5.4"
   },
   "devDependencies": {
     "@types/cookie-parser": "1.4.10",
