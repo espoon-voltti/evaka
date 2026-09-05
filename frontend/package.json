@@ -86,7 +86,7 @@
     "postcss": "8.5.26",
     "postcss-preset-env": "11.5.0",
     "rollup": "4.63.1",
-    "terser": "5.50.0",
+    "terser": "5.51.2",
     "ts-node": "10.9.2",
     "tsx": "4.23.13",
     "typescript": "7.0.2",

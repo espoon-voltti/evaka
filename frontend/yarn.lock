@@ -4872,7 +4872,7 @@ __metadata:
     rollup: "npm:4.63.1"
     seamless-scroll-polyfill: "npm:2.3.4"
     styled-components: "npm:6.5.3"
-    terser: "npm:5.50.0"
+    terser: "npm:5.51.2"
     ts-node: "npm:10.9.2"
     tsx: "npm:4.23.13"
     typescript: "npm:7.0.2"
@@ -7603,9 +7603,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"terser@npm:5.50.0":
-  version: 5.50.0
-  resolution: "terser@npm:5.50.0"
+"terser@npm:5.51.2":
+  version: 5.51.2
+  resolution: "terser@npm:5.51.2"
   dependencies:
     "@jridgewell/source-map": "npm:^0.3.3"
     acorn: "npm:^8.15.0"
@@ -7613,7 +7613,7 @@ __metadata:
     source-map-support: "npm:~0.5.20"
   bin:
     terser: bin/terser
-  checksum: 10/d94ccee6ab8cd73dfe041c9f34729026e3b00e26ed1544497e7b54bb90b0d162a44621d830c0dd26684dc1a0e3ac91a75a6aab2f233ee6b82df9c21c7bab3354
+  checksum: 10/1cb6f4189eba6406ef3aad5356ce1441bfe5ab419b5e66a1054db254fd92ce881d6c4718097621044c777922282640397104fb22e651974245bbabd5e138f3d9
   languageName: node
   linkType: hard
 
