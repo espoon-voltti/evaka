@@ -160,6 +160,11 @@ const BottomBar = styled.nav`
   left: 0;
   box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.15);
 
+  html[data-standalone] & {
+    position: static;
+    flex: 0 0 auto;
+  }
+
   @media (min-width: ${desktopMin}) {
     display: none;
   }

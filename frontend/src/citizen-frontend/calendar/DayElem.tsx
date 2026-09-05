@@ -10,7 +10,7 @@ import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calend
 import type { ReservationResponseDay } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { capitalizeFirstLetter } from 'lib-common/string'
-import { scrollToPos } from 'lib-common/utils/scrolling'
+import { scrollToElement, scrollToPos } from 'lib-common/utils/scrolling'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -19,6 +19,7 @@ import { faCalendar } from 'lib-icons'
 
 import { useLang, useTranslation } from '../localization'
 import { headerHeightMobile } from '../navigation/const'
+import { useIsRunningInstalled } from '../pwa/installed'
 
 import {
   CalendarEventCount,
@@ -53,6 +54,7 @@ export default React.memo(function DayElem({
 
   const isToday = calendarDay.date.isToday()
   const isScrollToDate = calendarDay.date.isEqual(scrollToDate)
+  const runningInstalled = useIsRunningInstalled()
 
   const setRef = useCallback(
     (e: HTMLButtonElement) => {
@@ -78,6 +80,10 @@ export default React.memo(function DayElem({
   }, [selectDate, calendarDay.date])
 
   useEffect(() => {
+    if (runningInstalled) {
+      if (ref.current) scrollToElement(ref.current)
+      return
+    }
     const top = ref.current?.getBoundingClientRect().top
 
     if (top) {
@@ -89,7 +95,7 @@ export default React.memo(function DayElem({
         behavior: isToday ? 'smooth' : 'instant'
       })
     }
-  }, [isToday, scrollToDate])
+  }, [isToday, runningInstalled, scrollToDate])
 
   const eventCount = useMemo(
     () => countEventsForDay(events, calendarDay.date),
@@ -155,6 +161,11 @@ const Day = styled.button<{
   flex-direction: row;
   width: 100%;
   position: relative;
+
+  html[data-standalone] & {
+    // keeps a day scrolled into view clear of the sticky month heading
+    scroll-margin-top: 54px;
+  }
   padding: calc(${defaultMargins.s} - 6px) ${defaultMargins.s};
   background: transparent;
   margin: 0;
