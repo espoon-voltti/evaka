@@ -10,6 +10,7 @@ import evaka.core.DataRemovalEnv
 import evaka.core.caseprocess.deleteCaseProcesses
 import evaka.core.childimages.deleteImageFile
 import evaka.core.document.childdocument.deleteExpiredChildDocuments
+import evaka.core.koski.KOSKI_INPUT_TABLES
 import evaka.core.messaging.DeletedMessageThreadBatch
 import evaka.core.messaging.deleteExpiredBulletinThreads
 import evaka.core.messaging.deleteExpiredMessageDrafts
@@ -24,7 +25,6 @@ import evaka.core.shared.ChildImageId
 import evaka.core.shared.DecisionId
 import evaka.core.shared.FinanceNoteId
 import evaka.core.shared.FosterParentId
-import evaka.core.shared.Id
 import evaka.core.shared.IncomeId
 import evaka.core.shared.MessageThreadId
 import evaka.core.shared.ParentshipId
@@ -39,15 +39,40 @@ import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.async.AsyncJobType
 import evaka.core.shared.async.removeUnclaimedJobs
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.Predicate
 import evaka.core.shared.db.QuerySql
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.LocalDate
+import java.util.UUID
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
+
+/**
+ * Removing the rows an external data sync reads freezes that sync for the child permanently, so we
+ * hold the data until starting or returning to preschool is no longer realistic.
+ *
+ * This currently never excludes anything on its own: the Koski input tables are removed only after
+ * ten years without a placement, which already implies this age. It is here so that moving one of
+ * them to a shorter retention period cannot quietly freeze children who could still start
+ * preschool.
+ */
+const val SAFE_DATA_REMOVAL_AGE: Long = 10
+
+private fun childPastSafeDataRemovalAge(today: LocalDate) = Predicate {
+    where(
+        """
+EXISTS (
+    SELECT FROM person p
+    WHERE p.id = $it.child_id
+    AND p.date_of_birth <= ${bind(today.minusYears(SAFE_DATA_REMOVAL_AGE))}
+)
+"""
+    )
+}
 
 private fun auditExpiredDelete(
     entity: String,
@@ -107,6 +132,7 @@ class DataRemovalService(
         deleteExpiredChildLeafRows(
             dbc,
             expireDate = today.minusYears(1),
+            now,
             limit,
             leafTables =
                 listOf(
@@ -121,6 +147,7 @@ class DataRemovalService(
         deleteExpiredChildLeafRows(
             dbc,
             expireDate = today.minusYears(10),
+            now,
             limit,
             leafTables =
                 listOf(
@@ -303,8 +330,10 @@ class DataRemovalService(
         limit: Int,
     ) {
         val ids = dbc.transaction { tx ->
-            val childImageIds: List<ChildImageId> =
-                tx.deleteExpiredChildLeafRowsFromTable(expireDate, limit, table = "child_images")
+            val childImageIds =
+                tx.deleteExpiredChildLeafRowsFromTable(expireDate, now, limit, "child_images").map {
+                    ChildImageId(it.id)
+                }
             asyncJobRunner.plan(
                 tx,
                 childImageIds.map { AsyncJob.DeleteChildImage(it) },
@@ -469,43 +498,84 @@ class DataRemovalService(
 fun deleteExpiredChildLeafRows(
     dbc: Database.Connection,
     expireDate: LocalDate,
+    now: HelsinkiDateTime,
     limit: Int,
     leafTables: List<String>,
 ) {
     leafTables.forEach { table ->
         logger.info { "Deleting at most $limit expired rows in table $table" }
-        val deleted = dbc.transaction { tx ->
-            tx.deleteExpiredChildLeafRowsFromTable<Id<*>>(expireDate, limit, table)
-        }
-        deleted.forEach { id ->
+        val koskiInput = table in KOSKI_INPUT_TABLES
+        val (deleted, frozen) =
+            dbc.transaction { tx ->
+                val deleted = tx.deleteExpiredChildLeafRowsFromTable(expireDate, now, limit, table)
+                val frozen =
+                    if (koskiInput && deleted.isNotEmpty())
+                        tx.freezeKoskiSync(deleted.map { it.childId }.distinct(), now)
+                    else emptyList()
+                deleted to frozen
+            }
+        deleted.forEach { row ->
             auditExpiredDelete(
                 entity = table,
-                targetId = AuditId(id),
+                targetId = AuditId(row.id),
                 meta = mapOf("expireDate" to expireDate),
             )
+        }
+        frozen.forEach { childId ->
+            Audit.DataRemovalKoskiSyncFrozen.log(targetId = AuditId(childId))
         }
     }
 }
 
-private inline fun <reified T : Id<*>> Database.Transaction.deleteExpiredChildLeafRowsFromTable(
+private data class ExpiredLeafRow(val id: UUID, val childId: ChildId)
+
+private fun Database.Transaction.deleteExpiredChildLeafRowsFromTable(
     expireDate: LocalDate,
+    now: HelsinkiDateTime,
     limit: Int,
     table: String,
-): List<T> = createUpdate {
-    sql(
-        """
+): List<ExpiredLeafRow> {
+    val removalAllowed =
+        if (table in KOSKI_INPUT_TABLES) childPastSafeDataRemovalAge(now.toLocalDate())
+        else Predicate.alwaysTrue()
+    return createUpdate {
+        sql(
+            """
 WITH del_batch AS (
-    SELECT id
+    SELECT id, child_id
     FROM $table
     WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
+    AND ${predicate(removalAllowed.forTable(table))}
     FOR UPDATE
     LIMIT ${bind(limit)}
 )
 DELETE FROM $table
 USING del_batch
 WHERE $table.id = del_batch.id
-RETURNING $table.id
+RETURNING $table.id, $table.child_id
         """
+        )
+    }
+        .executeAndReturnGeneratedKeys()
+        .toList()
+}
+
+/**
+ * Removing rows the Koski payload is built from permanently freezes the child's sync. Returns the
+ * children frozen by this call, i.e. those that were not already frozen.
+ */
+private fun Database.Transaction.freezeKoskiSync(
+    childIds: Collection<ChildId>,
+    now: HelsinkiDateTime,
+): List<ChildId> = createUpdate {
+    sql(
+        """
+UPDATE child
+SET koski_data_first_removed_at = ${bind(now)}
+WHERE id = ANY(${bind(childIds)})
+AND koski_data_first_removed_at IS NULL
+RETURNING id
+"""
     )
 }
     .executeAndReturnGeneratedKeys()

@@ -15,6 +15,7 @@ import evaka.core.application.persistence.daycare.Apply
 import evaka.core.application.persistence.daycare.Child as ApplicationFormChild
 import evaka.core.application.persistence.daycare.DaycareFormV0
 import evaka.core.assistance.OtherAssistanceMeasureType
+import evaka.core.assistance.PreschoolAssistanceLevel
 import evaka.core.attachment.AttachmentParent
 import evaka.core.attachment.insertAttachment
 import evaka.core.calendarevent.CalendarEventType
@@ -113,6 +114,7 @@ import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -260,6 +262,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         deleteExpiredChildLeafRows(
             db,
             expireDate = leafExpireDate,
+            now,
             limit = 100,
             leafTables = allLeafTables,
         )
@@ -276,6 +279,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         deleteExpiredChildLeafRows(
             db,
             expireDate = leafExpireDate,
+            now,
             limit = 100,
             leafTables = allLeafTables,
         )
@@ -292,11 +296,111 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         deleteExpiredChildLeafRows(
             db,
             expireDate = leafExpireDate,
+            now,
             limit = 2,
             leafTables = listOf("child_sticky_note"),
         )
 
         assertEquals(3, rowCount("child_sticky_note"))
+    }
+
+    @Test
+    fun `deleteExpiredChildLeafRows keeps Koski input rows while the child could still return`() {
+        val youngChild =
+            DevPerson(dateOfBirth = today.minusYears(SAFE_DATA_REMOVAL_AGE).plusDays(1))
+        db.transaction { it.insert(youngChild, DevPersonType.CHILD) }
+        insertExpiredPlacement(youngChild.id)
+        insertPreschoolAssistance(youngChild.id)
+        insertChildStickyNote(youngChild.id)
+
+        deleteExpiredChildLeafRows(
+            db,
+            expireDate = leafExpireDate,
+            now,
+            limit = 100,
+            leafTables = listOf("preschool_assistance", "child_sticky_note"),
+        )
+
+        assertEquals(1, rowCount("preschool_assistance"))
+        // not a Koski input table, so the age gate does not apply
+        assertEquals(0, rowCount("child_sticky_note"))
+    }
+
+    @Test
+    fun `deleteExpiredChildLeafRows deletes Koski input rows once the child reaches the removal age`() {
+        val oldEnoughChild = DevPerson(dateOfBirth = today.minusYears(SAFE_DATA_REMOVAL_AGE))
+        db.transaction { it.insert(oldEnoughChild, DevPersonType.CHILD) }
+        insertExpiredPlacement(oldEnoughChild.id)
+        insertPreschoolAssistance(oldEnoughChild.id)
+
+        deleteExpiredChildLeafRows(
+            db,
+            expireDate = leafExpireDate,
+            now,
+            limit = 100,
+            leafTables = listOf("preschool_assistance"),
+        )
+
+        assertEquals(0, rowCount("preschool_assistance"))
+    }
+
+    @Test
+    fun `deleteExpiredChildLeafRows records when Koski input data was first removed`() {
+        insertExpiredPlacement(child.id)
+        insertPreschoolAssistance(child.id)
+
+        deleteExpiredChildLeafRows(
+            db,
+            expireDate = leafExpireDate,
+            now,
+            limit = 100,
+            leafTables = listOf("preschool_assistance"),
+        )
+
+        assertEquals(0, rowCount("preschool_assistance"))
+        assertEquals(now, koskiDataFirstRemovedAt(child.id))
+    }
+
+    @Test
+    fun `deleteExpiredChildLeafRows of an unrelated table does not freeze Koski`() {
+        insertExpiredPlacement(child.id)
+        insertChildStickyNote(child.id)
+
+        deleteExpiredChildLeafRows(
+            db,
+            expireDate = leafExpireDate,
+            now,
+            limit = 100,
+            leafTables = listOf("child_sticky_note"),
+        )
+
+        assertEquals(0, rowCount("child_sticky_note"))
+        assertNull(koskiDataFirstRemovedAt(child.id))
+    }
+
+    @Test
+    fun `a later removal does not overwrite when Koski input data was first removed`() {
+        insertExpiredPlacement(child.id)
+        insertPreschoolAssistance(child.id)
+        insertOtherAssistanceMeasure(child.id)
+
+        deleteExpiredChildLeafRows(
+            db,
+            expireDate = leafExpireDate,
+            now,
+            limit = 100,
+            leafTables = listOf("preschool_assistance"),
+        )
+        deleteExpiredChildLeafRows(
+            db,
+            expireDate = leafExpireDate,
+            now.plusDays(1),
+            limit = 100,
+            leafTables = listOf("other_assistance_measure"),
+        )
+
+        assertEquals(0, rowCount("other_assistance_measure"))
+        assertEquals(now, koskiDataFirstRemovedAt(child.id))
     }
 
     @Test
@@ -307,6 +411,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         deleteExpiredChildLeafRows(
             db,
             expireDate = leafExpireDate,
+            now,
             limit = 100,
             leafTables = emptyList(),
         )
@@ -479,6 +584,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         allLeafTables.forEach { assertEquals(0, rowCount(it), "table $it should be empty") }
         assertEquals(0, rowCount("child_images"))
+        assertNull(koskiDataFirstRemovedAt(child.id), "no Koski input table expires in one year")
         assertEquals(
             ChildDietColumns(dietId = null, mealTextureId = null, nekkuDiet = null),
             readChildDietColumns(child.id),
@@ -501,6 +607,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             rowCount("assistance_action_option_ref"),
             "assistance_action_option_ref should be emptied via cascade",
         )
+        assertEquals(now, koskiDataFirstRemovedAt(child.id))
     }
 
     @Test
@@ -1755,6 +1862,30 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         block()
     }
 
+    private fun insertPreschoolAssistance(childId: ChildId) = db.transaction { tx ->
+        tx.insert(
+            DevPreschoolAssistance(
+                childId = childId,
+                validDuring =
+                    FiniteDateRange(leafExpireDate.minusYears(1), leafExpireDate.minusDays(1)),
+                level = PreschoolAssistanceLevel.SPECIAL_SUPPORT,
+                modifiedBy = admin.evakaUser,
+            )
+        )
+    }
+
+    private fun insertOtherAssistanceMeasure(childId: ChildId) = db.transaction { tx ->
+        tx.insert(
+            DevOtherAssistanceMeasure(
+                childId = childId,
+                validDuring =
+                    FiniteDateRange(leafExpireDate.minusYears(1), leafExpireDate.minusDays(1)),
+                type = OtherAssistanceMeasureType.TRANSPORT_BENEFIT,
+                modifiedBy = admin.evakaUser,
+            )
+        )
+    }
+
     private fun insertExpiredPlacement(childId: ChildId) =
         insertPlacementEnding(childId, leafExpireDate.minusDays(1))
 
@@ -1936,6 +2067,13 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
 
     private fun rowCount(table: String): Int = db.read { tx ->
         tx.createQuery { sql("SELECT count(*) FROM $table") }.exactlyOne<Int>()
+    }
+
+    private fun koskiDataFirstRemovedAt(childId: ChildId): HelsinkiDateTime? = db.read { tx ->
+        tx.createQuery {
+                sql("SELECT koski_data_first_removed_at FROM child WHERE id = ${bind(childId)}")
+            }
+            .exactlyOne<HelsinkiDateTime?>()
     }
 
     private fun countChildrenWithNull(column: String): Int = db.read { tx ->
