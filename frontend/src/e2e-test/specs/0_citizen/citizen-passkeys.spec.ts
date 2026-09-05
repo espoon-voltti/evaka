@@ -87,6 +87,29 @@ test.describe('Citizen passkeys', () => {
     await expect(evaka.findByDataQa('passkey-login-error')).toBeVisible()
   })
 
+  test('a citizen can delete a passkey on a device without passkey support', async ({
+    evaka,
+    newEvakaPage
+  }) => {
+    await addVirtualAuthenticator(evaka)
+    await registerPasskey(evaka)
+
+    const otherDevice = await newEvakaPage({ mockedTime })
+    await otherDevice.page.addInitScript(() => {
+      // simulate a browser with no WebAuthn support
+      delete (window as { PublicKeyCredential?: unknown }).PublicKeyCredential
+    })
+    await enduserLogin(otherDevice, citizen, '/personal-details')
+
+    const passkeys = new CitizenPersonalDetailsPage(otherDevice).passkeysSection
+    await expect(passkeys.passkeys).toHaveCount(1)
+    await expect(passkeys.addPasskey).toBeHidden()
+
+    await passkeys.deletePasskey(0).click()
+    await new DeletePasskeyModal(otherDevice).ok.click()
+    await expect(passkeys.passkeys).toHaveCount(0)
+  })
+
   test('the login page presents the last used method first with a tag', async ({
     evaka
   }) => {
