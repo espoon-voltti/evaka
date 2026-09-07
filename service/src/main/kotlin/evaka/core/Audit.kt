@@ -219,7 +219,7 @@ enum class Audit(
     DocumentTemplateUpdateValidity,
     EmployeeActivate(securityEvent = true, securityLevel = "high"),
     EmployeeCreate(securityEvent = true, securityLevel = "high"),
-    EmployeeDeactivate(securityEvent = true),
+    EmployeeDeactivate(securityEvent = true, securityLevel = "high"),
     EmployeeDelete(securityEvent = true, securityLevel = "high"),
     EmployeeDeleteDaycareRoles(securityEvent = true, securityLevel = "high"),
     EmployeeDeleteScheduledDaycareRole(securityEvent = true, securityLevel = "high"),
