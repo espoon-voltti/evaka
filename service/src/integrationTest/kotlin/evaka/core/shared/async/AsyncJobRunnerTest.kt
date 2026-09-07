@@ -7,6 +7,7 @@ package evaka.core.shared.async
 import evaka.core.PureJdbiTest
 import evaka.core.shared.auth.AuthenticatedUser
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.domain.RealEvakaClock
 import fi.espoo.voltti.logging.MdcKey
 import java.time.Duration
@@ -203,6 +204,37 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertThrows<ExecutionException> { failingFuture.get(10, TimeUnit.SECONDS) }
 
         assertEquals(0, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
+    }
+
+    @Test
+    fun `a throttled worker does not sleep when the permit was written with a later clock`() {
+        val runner =
+            AsyncJobRunner(
+                TestJob::class,
+                listOf(
+                    AsyncJobRunner.Pool(
+                        AsyncJobPool.Id(TestJob::class, "throttled"),
+                        AsyncJobPool.Config(throttleInterval = Duration.ofMillis(100)),
+                        setOf(TestJob::class),
+                    )
+                ),
+                jdbi,
+                noopTracer,
+            )
+        runner.registerHandler { _, _, _: TestJob -> }
+        runner.use {
+            val now = HelsinkiDateTime.now()
+            val later = now.plusHours(1)
+
+            // Leaves the permit holding `later`
+            db.transaction { tx -> runner.plan(tx, listOf(TestJob()), runAt = later) }
+            runner.runPendingJobsSync(MockEvakaClock(later))
+
+            db.transaction { tx -> runner.plan(tx, listOf(TestJob()), runAt = now) }
+            val run = CompletableFuture.runAsync { runner.runPendingJobsSync(MockEvakaClock(now)) }
+            run.get(10, TimeUnit.SECONDS)
+            runner.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(5))
+        }
     }
 
     private fun <R> setAsyncJobCallback(f: (msg: TestJob) -> R): Future<R> {
