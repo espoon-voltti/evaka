@@ -79,6 +79,93 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     @Test
+    fun `merging children combines child details from both`() {
+        val master = DevPerson()
+        val duplicate = DevPerson()
+        db.transaction { tx ->
+            tx.insert(master, DevPersonType.CHILD)
+            tx.insert(duplicate, DevPersonType.CHILD)
+        }
+        setChildDetails(master.id, "pollen", "vegan", "from master")
+        setChildDetails(duplicate.id, "peanuts", "lactose free", "from duplicate")
+
+        db.transaction { mergeService.mergePeople(it, clock, master.id, duplicate.id) }
+
+        assertEquals(
+            ChildDetails("pollen peanuts", "vegan lactose free", "from master from duplicate"),
+            childDetails(master.id),
+        )
+    }
+
+    @Test
+    fun `merging children keeps the duplicate's child details when the master has no child row`() {
+        val master = DevPerson()
+        val duplicate = DevPerson()
+        db.transaction { tx ->
+            tx.insert(master, DevPersonType.RAW_ROW)
+            tx.insert(duplicate, DevPersonType.CHILD)
+        }
+        setChildDetails(duplicate.id, "peanuts", "vegan", "from duplicate")
+
+        db.transaction { mergeService.mergePeople(it, clock, master.id, duplicate.id) }
+
+        assertEquals(
+            ChildDetails("peanuts", "vegan", "from duplicate"),
+            childDetails(master.id),
+        )
+    }
+
+    @Test
+    fun `merging children does not add a separator when the master has no child details`() {
+        val master = DevPerson()
+        val duplicate = DevPerson()
+        db.transaction { tx ->
+            tx.insert(master, DevPersonType.CHILD)
+            tx.insert(duplicate, DevPersonType.CHILD)
+        }
+        setChildDetails(duplicate.id, "peanuts", "vegan", "from duplicate")
+
+        db.transaction { mergeService.mergePeople(it, clock, master.id, duplicate.id) }
+
+        assertEquals(
+            ChildDetails("peanuts", "vegan", "from duplicate"),
+            childDetails(master.id),
+        )
+    }
+
+    private data class ChildDetails(
+        val allergies: String,
+        val diet: String,
+        val additionalInfo: String,
+    )
+
+    private fun setChildDetails(
+        childId: PersonId,
+        allergies: String,
+        diet: String,
+        additionalInfo: String,
+    ) = db.transaction { tx ->
+        tx.execute {
+            sql(
+                """
+UPDATE child
+SET allergies = ${bind(allergies)}, diet = ${bind(diet)}, additionalinfo = ${bind(additionalInfo)}
+WHERE id = ${bind(childId)}
+"""
+            )
+        }
+    }
+
+    private fun childDetails(childId: PersonId): ChildDetails = db.read { tx ->
+        tx.createQuery {
+                sql(
+                    "SELECT allergies, diet, additionalinfo AS additional_info FROM child WHERE id = ${bind(childId)}"
+                )
+            }
+            .exactlyOne<ChildDetails>()
+    }
+
+    @Test
     fun `empty person can be deleted`() {
         val id = ChildId(UUID.randomUUID())
         db.transaction { it.insert(DevPerson(id = id), DevPersonType.CHILD) }
