@@ -75,8 +75,7 @@ export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: React.ReactNode }) {
     const isLoggedIn = useUser() !== undefined
     const messageAccount = useQueryResult(messageAccountQuery(), {
-      enabled: isLoggedIn,
-      staleTime: 24 * 60 * 60 * 1000
+      enabled: isLoggedIn
     })
 
     const {
