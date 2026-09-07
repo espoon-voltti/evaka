@@ -24,9 +24,8 @@ data class KoskiStudyRightKey(
 )
 
 /**
- * Koski is the system of record for the education history, so once retention has removed rows the
- * payload is built from, we must stop reconciling: rebuilding it from what is left would amend the
- * loss into the national register. Nothing lifts this again.
+ * Once any of the child's data that affects Koski has been deleted due to retention policies, the
+ * data synchronization to Koski must be stopped, so that the data is not deleted from there too.
  */
 private val koskiSyncActive = Predicate { where("$it.koski_data_first_removed_at IS NULL") }
 

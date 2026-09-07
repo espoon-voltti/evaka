@@ -54,11 +54,6 @@ private val logger = KotlinLogging.logger {}
 /**
  * Removing the rows an external data sync reads freezes that sync for the child permanently, so we
  * hold the data until starting or returning to preschool is no longer realistic.
- *
- * This currently never excludes anything on its own: the Koski input tables are removed only after
- * ten years without a placement, which already implies this age. It is here so that moving one of
- * them to a shorter retention period cannot quietly freeze children who could still start
- * preschool.
  */
 const val SAFE_DATA_REMOVAL_AGE: Long = 10
 
@@ -505,29 +500,34 @@ fun deleteExpiredChildLeafRows(
     leafTables.forEach { table ->
         logger.info { "Deleting at most $limit expired rows in table $table" }
         val koskiInput = table in KOSKI_INPUT_TABLES
-        val (deleted, frozen) =
+        val (deletedIds, frozenChildIds) =
             dbc.transaction { tx ->
                 val deleted = tx.deleteExpiredChildLeafRowsFromTable(expireDate, now, limit, table)
                 val frozen =
                     if (koskiInput && deleted.isNotEmpty())
                         tx.freezeKoskiSync(deleted.map { it.childId }.distinct(), now)
                     else emptyList()
-                deleted to frozen
+                ExpiredLeafRemoval(deleted.map { it.id }, frozen)
             }
-        deleted.forEach { row ->
+        deletedIds.forEach { id ->
             auditExpiredDelete(
                 entity = table,
-                targetId = AuditId(row.id),
+                targetId = AuditId(id),
                 meta = mapOf("expireDate" to expireDate),
             )
         }
-        frozen.forEach { childId ->
+        frozenChildIds.forEach { childId ->
             Audit.DataRemovalKoskiSyncFrozen.log(targetId = AuditId(childId))
         }
     }
 }
 
 private data class ExpiredLeafRow(val id: UUID, val childId: ChildId)
+
+private data class ExpiredLeafRemoval(
+    val deletedIds: List<UUID>,
+    val frozenChildIds: List<ChildId>,
+)
 
 private fun Database.Transaction.deleteExpiredChildLeafRowsFromTable(
     expireDate: LocalDate,
@@ -560,10 +560,6 @@ RETURNING $table.id, $table.child_id
         .toList()
 }
 
-/**
- * Removing rows the Koski payload is built from permanently freezes the child's sync. Returns the
- * children frozen by this call, i.e. those that were not already frozen.
- */
 private fun Database.Transaction.freezeKoskiSync(
     childIds: Collection<ChildId>,
     now: HelsinkiDateTime,
