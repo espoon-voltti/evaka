@@ -427,6 +427,36 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `RemoveGuardiansFromAdults freezes Varda sync for the children it removes guardians from`() {
+        val today = LocalDate.of(2024, 8, 15)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(2, 0))
+        val clock = MockEvakaClock(now)
+
+        val adult = DevPerson()
+        val adultChild = DevPerson(dateOfBirth = today.minusYears(18))
+        val minorChild = DevPerson(dateOfBirth = today.minusYears(18).plusDays(1))
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(adultChild, DevPersonType.CHILD)
+            tx.insert(minorChild, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, adultChild.id)
+            tx.insertGuardian(adult.id, minorChild.id)
+        }
+
+        scheduledJobs.removeGuardiansFromAdults(db, clock)
+
+        assertEquals(now, vardaDataFirstRemovedAt(adultChild.id))
+        assertNull(vardaDataFirstRemovedAt(minorChild.id))
+    }
+
+    private fun vardaDataFirstRemovedAt(childId: ChildId): HelsinkiDateTime? = db.read { tx ->
+        tx.createQuery {
+                sql("SELECT varda_data_first_removed_at FROM child WHERE id = ${bind(childId)}")
+            }
+            .exactlyOne<HelsinkiDateTime?>()
+    }
+
+    @Test
     fun removeExpiredStickyNotes() {
         // expired note
         db.transaction { tx ->

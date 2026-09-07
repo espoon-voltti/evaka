@@ -45,6 +45,7 @@ import evaka.core.reservations.MissingReservationsReminders
 import evaka.core.reservations.deleteInvalidatedShiftCareReservationsAfterDate
 import evaka.core.sficlient.SfiAsyncJobs
 import evaka.core.sficlient.SfiMessagesClient
+import evaka.core.shared.ChildId
 import evaka.core.shared.FeatureConfig
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -58,6 +59,7 @@ import evaka.core.shared.db.runSanityChecks
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.titania.cleanTitaniaErrors
 import evaka.core.varda.VardaUpdateService
+import evaka.core.varda.freezeVardaSync
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.opentelemetry.api.trace.Tracer
 import java.nio.file.Path
@@ -560,18 +562,26 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun removeGuardiansFromAdults(db: Database.Connection, clock: EvakaClock) {
-        db.transaction { tx ->
-            tx.execute {
-                sql(
-                    """
+        val frozen = db.transaction { tx ->
+            val childIds =
+                tx.createUpdate {
+                        sql(
+                            """
                 DELETE FROM guardian g
                 WHERE EXISTS(
                     SELECT FROM person ch 
                     WHERE g.child_id = ch.id AND ch.date_of_birth <= ${bind(clock.today().minusYears(18))}
                 )
+                RETURNING g.child_id
             """
-                )
-            }
+                        )
+                    }
+                    .executeAndReturnGeneratedKeys()
+                    .toList<ChildId>()
+            tx.freezeVardaSync(childIds, clock.now())
+        }
+        frozen.forEach { childId ->
+            Audit.DataRemovalVardaSyncFrozen.log(targetId = AuditId(childId))
         }
     }
 

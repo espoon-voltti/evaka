@@ -159,6 +159,63 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(emptySet(), getPlannedChildIds())
     }
 
+    @Test
+    fun `a child whose Varda data has been removed is not added to varda_state`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val child = DevPerson(ssn = "030320A904N")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = LocalDate.of(2021, 1, 1),
+                    endDate = LocalDate.of(2021, 2, 28),
+                )
+            )
+            tx.freezeVardaSync(listOf(child.id), now)
+        }
+
+        vardaUpdateService.planChildrenUpdate(db, clock)
+
+        assertEquals(emptySet(), getVardaStateChildIds())
+        assertEquals(emptySet(), getPlannedChildIds())
+    }
+
+    @Test
+    fun `no update is planned for a child whose Varda data has been removed`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val child = DevPerson(ssn = "030320A904N")
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = LocalDate.of(2021, 1, 1),
+                    endDate = LocalDate.of(2021, 2, 28),
+                )
+            )
+            tx.execute {
+                sql("INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)")
+            }
+            tx.freezeVardaSync(listOf(child.id), now)
+        }
+
+        vardaUpdateService.planChildrenUpdate(db, clock)
+
+        assertEquals(setOf(child.id), getVardaStateChildIds())
+        assertEquals(emptySet(), getPlannedChildIds())
+    }
+
     private fun getVardaStateChildIds(): Set<ChildId> =
         db.read { tx -> tx.getVardaUpdateChildIds() }.toSet()
 

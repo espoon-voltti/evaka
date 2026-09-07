@@ -2246,7 +2246,8 @@ CREATE TABLE public.child (
     meal_texture_id integer,
     nekku_diet public.nekku_product_meal_type,
     participates_in_breakfast boolean DEFAULT true CONSTRAINT child_nekku_eats_breakfast_not_null NOT NULL,
-    koski_data_first_removed_at timestamp with time zone
+    koski_data_first_removed_at timestamp with time zone,
+    varda_data_first_removed_at timestamp with time zone
 );
 
 -- Name: child_attendance; Type: TABLE; Schema: public

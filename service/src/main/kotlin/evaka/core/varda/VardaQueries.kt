@@ -9,12 +9,50 @@ import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.Predicate
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 import org.jdbi.v3.core.result.UnableToProduceResultException
 import tools.jackson.databind.DatabindException
+
+/** Child-scoped tables feeding the Varda payload. Keep in sync by hand. */
+val VARDA_INPUT_TABLES =
+    setOf(
+        "placement",
+        "service_need",
+        "person",
+        "guardian",
+        "application",
+        "decision",
+        "fee_decision",
+        "fee_decision_child",
+        "voucher_value_decision",
+    )
+
+/**
+ * Once any of the child's data that affects Varda has been deleted due to retention policies, the
+ * data synchronization to Varda must be stopped, so that the data is not deleted from there too.
+ */
+val vardaSyncActive = Predicate { where("$it.varda_data_first_removed_at IS NULL") }
+
+fun Database.Transaction.freezeVardaSync(
+    childIds: Collection<ChildId>,
+    now: HelsinkiDateTime,
+): List<ChildId> = createUpdate {
+    sql(
+        """
+UPDATE child
+SET varda_data_first_removed_at = ${bind(now)}
+WHERE id = ANY(${bind(childIds)})
+AND varda_data_first_removed_at IS NULL
+RETURNING id
+"""
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .toList()
 
 private val vardaPlacementTypes =
     listOf(
@@ -179,13 +217,15 @@ fun Database.Read.getVardaChildren(childIds: List<ChildId>): Map<ChildId, VardaC
         sql(
             """
                 SELECT
-                    id,
-                    first_name,
-                    last_name,
-                    social_security_number,
-                    oph_person_oid
-                FROM person
-                WHERE id = ANY(${bind(childIds)})
+                    p.id,
+                    p.first_name,
+                    p.last_name,
+                    p.social_security_number,
+                    p.oph_person_oid
+                FROM person p
+                LEFT JOIN child c ON c.id = p.id
+                WHERE p.id = ANY(${bind(childIds)})
+                AND ${predicate(vardaSyncActive.forTable("c"))}
                 """
         )
     }
@@ -230,9 +270,11 @@ fun Database.Transaction.addNewChildrenForVardaUpdate(): Int {
                     SELECT pl.child_id, null
                     FROM placement pl
                     JOIN person p ON p.id = pl.child_id
+                    JOIN child ch ON ch.id = pl.child_id
                     WHERE
                         pl.type = ANY(${bind(vardaPlacementTypes)}) AND
                         (p.social_security_number IS NOT NULL OR (p.oph_person_oid IS NOT NULL AND p.oph_person_oid != '')) AND
+                        ${predicate(vardaSyncActive.forTable("ch"))} AND
                         NOT EXISTS (SELECT FROM varda_state vs WHERE vs.child_id = pl.child_id)
                     ON CONFLICT (child_id) DO NOTHING
                     """

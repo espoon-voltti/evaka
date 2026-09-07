@@ -362,7 +362,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
-    fun `deleteExpiredChildLeafRows of an unrelated table does not freeze Koski`() {
+    fun `deleteExpiredChildLeafRows of an unrelated table does not freeze Koski or Varda`() {
         insertExpiredPlacement(child.id)
         insertChildStickyNote(child.id)
 
@@ -376,6 +376,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         assertEquals(0, rowCount("child_sticky_note"))
         assertNull(koskiDataFirstRemovedAt(child.id))
+        assertNull(vardaDataFirstRemovedAt(child.id))
     }
 
     @Test
@@ -585,6 +586,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         allLeafTables.forEach { assertEquals(0, rowCount(it), "table $it should be empty") }
         assertEquals(0, rowCount("child_images"))
         assertNull(koskiDataFirstRemovedAt(child.id), "no Koski input table expires in one year")
+        assertNull(vardaDataFirstRemovedAt(child.id), "no Varda input table expires in one year")
         assertEquals(
             ChildDietColumns(dietId = null, mealTextureId = null, nekkuDiet = null),
             readChildDietColumns(child.id),
@@ -1135,6 +1137,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         deleteExpiredGuardians(
             db,
+            now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
             financeNoteExpireDate = financeExpireDate,
@@ -1152,6 +1155,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         deleteExpiredGuardians(
             db,
+            now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
             financeNoteExpireDate = financeExpireDate,
@@ -1162,12 +1166,54 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `deleteExpiredGuardians records when Varda input data was first removed`() {
+        val guardian = insertAdult()
+        insertGuardianship(guardian, child.id)
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+
+        deleteExpiredGuardians(
+            db,
+            now,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(0, rowCount("guardian"))
+        assertEquals(now, vardaDataFirstRemovedAt(child.id))
+    }
+
+    @Test
+    fun `deleteExpiredGuardians keeps guardianship while the child could still attend`() {
+        val youngChild =
+            DevPerson(dateOfBirth = today.minusYears(SAFE_DATA_REMOVAL_AGE).plusDays(1))
+        db.transaction { it.insert(youngChild, DevPersonType.CHILD) }
+        val guardian = insertAdult()
+        insertGuardianship(guardian, youngChild.id)
+        insertPlacementEnding(youngChild.id, tenYearExpireDate.minusDays(1))
+
+        deleteExpiredGuardians(
+            db,
+            now,
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(1, rowCount("guardian"))
+        assertNull(vardaDataFirstRemovedAt(youngChild.id))
+    }
+
+    @Test
     fun `deleteExpiredGuardians keeps guardianship of a child with no placements`() {
         val guardian = insertAdult()
         insertGuardianship(guardian, child.id)
 
         deleteExpiredGuardians(
             db,
+            now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
             financeNoteExpireDate = financeExpireDate,
@@ -1185,6 +1231,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         deleteExpiredGuardians(
             db,
+            now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
             financeNoteExpireDate = financeExpireDate,
@@ -1196,6 +1243,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         deleteExpiredCitizenUsers(db, expireDate = leafExpireDate, limit = 100)
         deleteExpiredGuardians(
             db,
+            now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
             financeNoteExpireDate = financeExpireDate,
@@ -1217,6 +1265,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         deleteExpiredGuardians(
             db,
+            now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
             financeNoteExpireDate = financeExpireDate,
@@ -1236,6 +1285,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         deleteExpiredGuardians(
             db,
+            now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
             financeNoteExpireDate = financeExpireDate,
@@ -1247,6 +1297,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         deleteExpiredFinanceNotes(db, expireDate = financeExpireDate, limit = 100)
         deleteExpiredGuardians(
             db,
+            now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
             financeNoteExpireDate = financeExpireDate,
@@ -1268,6 +1319,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         deleteExpiredGuardians(
             db,
+            now,
             expireDate = tenYearExpireDate,
             citizenUserExpireDate = leafExpireDate,
             financeNoteExpireDate = financeExpireDate,
@@ -2069,6 +2121,13 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
         tx.createQuery { sql("SELECT count(*) FROM $table") }.exactlyOne<Int>()
     }
 
+    private fun vardaDataFirstRemovedAt(childId: ChildId): HelsinkiDateTime? = db.read { tx ->
+        tx.createQuery {
+                sql("SELECT varda_data_first_removed_at FROM child WHERE id = ${bind(childId)}")
+            }
+            .exactlyOne<HelsinkiDateTime?>()
+    }
+
     private fun koskiDataFirstRemovedAt(childId: ChildId): HelsinkiDateTime? = db.read { tx ->
         tx.createQuery {
                 sql("SELECT koski_data_first_removed_at FROM child WHERE id = ${bind(childId)}")
@@ -2188,6 +2247,62 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
 
         assertEquals(setOf(tree.attachmentId.toString()), scheduledAttachmentDeletionIds())
         assertEquals(1, rowCount("attachment"))
+    }
+
+    @Test
+    fun `deleteExpiredApplications records when Varda input data was first removed`() {
+        val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
+
+        dataRemovalService.deleteExpiredApplications(db, now, applicationExpireDate, limit = 100)
+
+        assertEquals(0, rowCount("application"))
+        assertEquals(now, vardaDataFirstRemovedAt(tree.childId))
+    }
+
+    @Test
+    fun `deleteExpiredApplications keeps applications while the child could still attend`() {
+        val tree =
+            insertApplicationTree(
+                placementEnd = applicationExpireDate.minusDays(1),
+                applicationChild =
+                    DevPerson(dateOfBirth = today.minusYears(SAFE_DATA_REMOVAL_AGE).plusDays(1)),
+            )
+
+        dataRemovalService.deleteExpiredApplications(db, now, applicationExpireDate, limit = 100)
+
+        assertEquals(1, rowCount("application"))
+        assertNull(vardaDataFirstRemovedAt(tree.childId))
+    }
+
+    @Test
+    fun `a later removal does not overwrite when Varda input data was first removed`() {
+        val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
+
+        dataRemovalService.deleteExpiredApplications(db, now, applicationExpireDate, limit = 100)
+        deleteExpiredGuardians(
+            db,
+            now.plusDays(1),
+            expireDate = tenYearExpireDate,
+            citizenUserExpireDate = leafExpireDate,
+            financeNoteExpireDate = financeExpireDate,
+            limit = 100,
+        )
+
+        assertEquals(0, rowCount("guardian"))
+        assertEquals(now, vardaDataFirstRemovedAt(tree.childId))
+    }
+
+    @Test
+    fun `deleteExpiredData freezes Varda sync when it removes applications and guardianships`() {
+        val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
+
+        withLimit(100) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(0, rowCount("application"))
+        assertEquals(0, rowCount("guardian"))
+        assertEquals(now, vardaDataFirstRemovedAt(tree.childId))
     }
 
     @Test
@@ -2344,16 +2459,17 @@ VALUES ('MESSAGE'::message_type, 'title', false, false, ${bind(applicationId)})
         val applicationId: ApplicationId,
         val decisionId: DecisionId,
         val attachmentId: AttachmentId,
+        val childId: ChildId,
     )
 
     private fun insertApplicationTree(
         placementEnd: LocalDate,
         decisionKey: String? = "decision-key",
         otherGuardianKey: String? = "other-guardian-key",
+        applicationChild: DevPerson = DevPerson(),
     ): ApplicationTree = db.transaction { tx ->
         val guardian = DevPerson()
         val otherGuardian = DevPerson()
-        val applicationChild = DevPerson()
         tx.insert(guardian, DevPersonType.ADULT)
         tx.insert(otherGuardian, DevPersonType.ADULT)
         tx.insert(applicationChild, DevPersonType.CHILD)
@@ -2457,7 +2573,7 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
                 AttachmentParent.Application(applicationId),
                 type = ApplicationAttachmentType.URGENCY,
             )
-        ApplicationTree(applicationId, decisionId, attachmentId)
+        ApplicationTree(applicationId, decisionId, attachmentId, applicationChild.id)
     }
 
     private fun scheduledDecisionPdfDeletionKeys(): Set<String> =

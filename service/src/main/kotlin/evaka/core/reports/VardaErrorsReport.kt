@@ -13,6 +13,7 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
+import evaka.core.varda.vardaSyncActive
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -65,13 +66,15 @@ private fun Database.Read.getVardaChildErrors(): List<VardaChildErrorReportRow> 
     sql(
         """
 SELECT
-    child_id,
-    errored_at,
-    errored_since,
-    error
-FROM varda_state
-WHERE errored_at IS NOT NULL
-ORDER BY errored_at DESC
+    vs.child_id,
+    vs.errored_at,
+    vs.errored_since,
+    vs.error
+FROM varda_state vs
+LEFT JOIN child c ON c.id = vs.child_id
+WHERE vs.errored_at IS NOT NULL
+AND ${predicate(vardaSyncActive.forTable("c"))}
+ORDER BY vs.errored_at DESC
     """
     )
 }
