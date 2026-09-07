@@ -17,7 +17,7 @@ import evaka.core.shared.utils.basicAuthInterceptor
 import evaka.core.shared.utils.headerInterceptor
 import evaka.core.shared.utils.post
 import evaka.core.shared.utils.put
-import fi.espoo.voltti.logging.loggers.error
+import fi.espoo.voltti.logging.loggers.warn
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.time.LocalDate
@@ -189,9 +189,9 @@ class KoskiClient(
                 "Koski upload $key ${data.operation}: failed, status $statusCode",
                 errorBody,
             )
-        logger.error(uploadException, meta) {
-            "Koski upload $key ${data.operation}: failed, status $statusCode"
-        }
+        // Warn instead of error on purpose: error level alerts the dev team, but these failures
+        // are shown to admins in the Koski error report and retried automatically tomorrow
+        logger.warn(meta) { "Koski upload $key ${data.operation}: failed, status $statusCode" }
         throw uploadException
     }
 }
