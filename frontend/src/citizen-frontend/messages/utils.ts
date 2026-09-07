@@ -6,6 +6,8 @@ import type {
   AccountType,
   CitizenMessageThread
 } from 'lib-common/generated/api-types/messaging'
+import type { MessageThreadId } from 'lib-common/generated/api-types/shared'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 export const isPrimaryRecipient = ({ type }: { type: AccountType }) =>
   type !== 'CITIZEN'
@@ -17,3 +19,17 @@ export const isRedactedThread = (
 export const isRegularThread = (
   thread: CitizenMessageThread
 ): thread is CitizenMessageThread.Regular => thread.type === 'Regular'
+
+export const markMessagesReadByThreadId = (
+  thread: CitizenMessageThread,
+  threadId: MessageThreadId
+): CitizenMessageThread =>
+  isRegularThread(thread) && thread.id === threadId
+    ? {
+        ...thread,
+        messages: thread.messages.map((m) => ({
+          ...m,
+          readAt: m.readAt ?? HelsinkiDateTime.now()
+        }))
+      }
+    : thread

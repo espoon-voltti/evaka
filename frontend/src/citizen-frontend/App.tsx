@@ -31,7 +31,7 @@ import {
   useUser
 } from './auth/state'
 import { Localization, useTranslation } from './localization'
-import { MessageContextProvider } from './messages/state'
+import { MessageDraftsProvider } from './messages/drafts'
 import Header from './navigation/Header'
 import MobileNav from './navigation/MobileNav'
 import { mobileBottomNavHeight } from './navigation/const'
@@ -62,14 +62,14 @@ export function App({ children }: { children: React.ReactNode }) {
             <Localization>
               <OverlayContextProvider>
                 <NotificationsContextProvider>
-                  <MessageContextProvider>
+                  <MessageDraftsProvider>
                     <Content>{children}</Content>
                     <GlobalDialog />
                     <LoginErrorModal />
                     <div id="modal-container" />
                     <div id="datepicker-container" />
                     <div id="tooltip-container" />
-                  </MessageContextProvider>
+                  </MessageDraftsProvider>
                 </NotificationsContextProvider>
               </OverlayContextProvider>
             </Localization>

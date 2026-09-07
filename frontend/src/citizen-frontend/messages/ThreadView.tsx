@@ -61,11 +61,11 @@ import type { Translations } from '../localization'
 import { useTranslation } from '../localization'
 
 import { ConfirmDeleteThread } from './ConfirmDeleteThread'
+import { MessageDraftsContext } from './drafts'
 import {
   markLastReceivedMessageInThreadUnreadMutation,
   replyToThreadMutation
 } from './queries'
-import { MessageContext } from './state'
 import { isPrimaryRecipient } from './utils'
 
 const TitleRow = styled.div`
@@ -254,7 +254,8 @@ export default React.memo(
   ) {
     const i18n = useTranslation()
     const [, navigate] = useLocation()
-    const { setReplyContent, getReplyContent } = useContext(MessageContext)
+    const { setReplyContent, getReplyContent } =
+      useContext(MessageDraftsContext)
     const { addTimedNotification } = useContext(NotificationsContext)
 
     const { onToggleRecipient, recipients } = useRecipients(
