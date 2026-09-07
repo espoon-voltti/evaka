@@ -37,7 +37,7 @@ import {
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { renderResult } from '../async-rendering'
-import { createPasskeyCredential } from '../auth/passkeys'
+import { createPasskeyCredential, passkeysSupported } from '../auth/passkeys'
 import type { User } from '../auth/state'
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
@@ -54,6 +54,7 @@ export default React.memo(function PasskeysSection({ user }: { user: User }) {
   const i18n = useTranslation()
   const t = i18n.personalDetails.passkeysSection
 
+  const canAdd = passkeysSupported()
   const canEdit = user.authLevel === 'STRONG'
   const passkeys = useQueryResult(passkeysQuery())
 
@@ -105,15 +106,17 @@ export default React.memo(function PasskeysSection({ user }: { user: User }) {
       <P>{t.description}</P>
       {renderResult(passkeys, (passkeys) => (
         <FixedSpaceColumn $spacing="s">
-          <div>
-            <Button
-              appearance="inline"
-              icon={canEdit ? faPlus : faLockAlt}
-              text={t.addPasskey}
-              onClick={canEdit ? () => void addPasskey() : navigateToLogin}
-              data-qa="add-passkey"
-            />
-          </div>
+          {canAdd && (
+            <div>
+              <Button
+                appearance="inline"
+                icon={canEdit ? faPlus : faLockAlt}
+                text={t.addPasskey}
+                onClick={canEdit ? () => void addPasskey() : navigateToLogin}
+                data-qa="add-passkey"
+              />
+            </div>
+          )}
           {addError !== null && (
             <AlertBox
               message={
