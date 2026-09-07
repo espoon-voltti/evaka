@@ -143,24 +143,6 @@ export async function newMessage(
 
 
 /**
-* Generated from evaka.core.messaging.MessageControllerCitizen.replyToMessage
-*/
-export async function replyToMessage(
-  request: {
-    messageId: MessageThreadId,
-    body: ReplyToMessageBody
-  }
-): Promise<ThreadReply> {
-  const { data: json } = await client.request<JsonOf<ThreadReply>>({
-    url: uri`/citizen/messages/${request.messageId}/reply`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ReplyToMessageBody>
-  })
-  return deserializeJsonThreadReply(json)
-}
-
-
-/**
 * Generated from evaka.core.messaging.MessageControllerCitizen.replyToThread
 */
 export async function replyToThread(

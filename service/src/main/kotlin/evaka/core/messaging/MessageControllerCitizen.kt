@@ -252,27 +252,6 @@ class MessageControllerCitizen(
             }
     }
 
-    // TODO: This is for backwards compatibility. Remove after a week of production use.
-    @PostMapping("/{messageId}/reply")
-    fun replyToMessage(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
-        @PathVariable messageId: MessageThreadId,
-        @RequestBody body: ReplyToMessageBody,
-    ): MessageService.ThreadReply {
-        val threadId =
-            db.connect { dbc ->
-                dbc.read {
-                    it.createQuery {
-                            sql("SELECT thread_id FROM message WHERE id = ${bind(messageId)}")
-                        }
-                        .exactlyOneOrNull<MessageThreadId>()
-                }
-            } ?: throw NotFound("Message thread not found")
-        return replyToThread(db, user, clock, threadId, body)
-    }
-
     @PostMapping("/reply-to/{threadId}")
     fun replyToThread(
         db: Database,

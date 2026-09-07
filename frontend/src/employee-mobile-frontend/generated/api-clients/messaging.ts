@@ -12,7 +12,6 @@ import type { JsonCompatible } from 'lib-common/json'
 import type { JsonOf } from 'lib-common/json'
 import type { MessageAccountId } from 'lib-common/generated/api-types/shared'
 import type { MessageDraftId } from 'lib-common/generated/api-types/shared'
-import type { MessageId } from 'lib-common/generated/api-types/shared'
 import type { MessageThread } from 'lib-common/generated/api-types/messaging'
 import type { MessageThreadId } from 'lib-common/generated/api-types/shared'
 import type { PagedMessageThreads } from 'lib-common/generated/api-types/messaging'
@@ -241,25 +240,6 @@ export async function markThreadRead(
     method: 'PUT'
   })
   return json
-}
-
-
-/**
-* Generated from evaka.core.messaging.MessageController.replyToMessage
-*/
-export async function replyToMessage(
-  request: {
-    accountId: MessageAccountId,
-    messageId: MessageId,
-    body: ReplyToMessageBody
-  }
-): Promise<ThreadReply> {
-  const { data: json } = await client.request<JsonOf<ThreadReply>>({
-    url: uri`/employee-mobile/messages/${request.accountId}/${request.messageId}/reply`.toString(),
-    method: 'POST',
-    data: request.body satisfies JsonCompatible<ReplyToMessageBody>
-  })
-  return deserializeJsonThreadReply(json)
 }
 
 
