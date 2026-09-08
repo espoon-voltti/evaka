@@ -626,6 +626,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ) {
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -635,6 +636,11 @@ class ChildDocumentController(
                         Action.ChildDocument.DELETE,
                         documentId,
                     )
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id).addMeta("templateName", document.template.name)
+
                     deleteProcessByDocumentId(tx, documentId)
 
                     val publishedVersions = tx.getChildDocumentPublishedVersions(documentId)
@@ -652,7 +658,7 @@ class ChildDocumentController(
                     tx.deleteChildDocumentDraft(documentId)
                 }
             }
-            .also { Audit.ChildDocumentDelete.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentDelete, clock) }
     }
 
     @PostMapping("/{documentId}/archive")
