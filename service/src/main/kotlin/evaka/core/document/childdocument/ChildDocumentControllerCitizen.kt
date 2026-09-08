@@ -6,7 +6,6 @@ package evaka.core.document.childdocument
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.caseprocess.updateDocumentCaseProcessHistory
 import evaka.core.children.getCitizenChildIds
 import evaka.core.shared.ChildDocumentId
@@ -114,6 +113,7 @@ class ChildDocumentControllerCitizen(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ) {
+        val audit = AuditContext().add(documentId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -123,11 +123,12 @@ class ChildDocumentControllerCitizen(
                         Action.Citizen.ChildDocument.READ,
                         documentId,
                     )
+                    tx.getChildDocumentChildId(documentId)?.let { audit.add(it) }
 
                     tx.markChildDocumentAsRead(user, documentId, clock.now())
                 }
             }
-            .also { Audit.ChildDocumentMarkRead.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentMarkRead, clock) }
     }
 
     @GetMapping("/unread-count")
@@ -136,6 +137,7 @@ class ChildDocumentControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): Map<ChildId, Int> {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -145,14 +147,15 @@ class ChildDocumentControllerCitizen(
                         Action.Citizen.Person.READ_CHILD_DOCUMENTS_UNREAD_COUNT,
                         user.id,
                     )
-                    val children = tx.getCitizenChildIds(clock.today(), user.id)
+                    val children =
+                        tx.getCitizenChildIds(clock.today(), user.id).also { audit.add(it) }
 
                     children.associateWith { childId ->
                         tx.getChildDocumentCitizenSummaries(user, childId).count { it.unread }
                     }
                 }
             }
-            .also { Audit.ChildDocumentUnreadCount.log(targetId = AuditId(user.id)) }
+            .also { audit.log(Audit.ChildDocumentUnreadCount, clock) }
     }
 
     @GetMapping("/unanswered")
