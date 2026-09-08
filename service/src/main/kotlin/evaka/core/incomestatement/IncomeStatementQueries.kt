@@ -681,7 +681,7 @@ private fun awaitingHandlerQuery(
 
     sql(
         """
-SELECT DISTINCT ON (sent_at, start_date, income_end_date, type, handler_note, last_name, first_name, id)
+SELECT
     i.id,
     i.type,
     i.sent_at,
@@ -691,7 +691,7 @@ SELECT DISTINCT ON (sent_at, start_date, income_end_date, type, handler_note, la
     person.id AS personId,
     person.last_name AS person_last_name,
     person.first_name AS person_first_name,
-    ca.name AS primaryCareArea,
+    string_agg(DISTINCT ca.name, ', ' ORDER BY ca.name) AS primaryCareArea,
     (
         SELECT valid_to FROM income
         WHERE person_id = i.person_id AND effect <> 'INCOMPLETE'
@@ -741,6 +741,7 @@ LEFT JOIN care_area ca ON ca.id = d.care_area_id
 WHERE
     between_start_and_end(tstzrange(${bind(sentStart)}, ${bind(sentEnd)}, '[)'), i.sent_at) AND
     ${predicate(filters)}
+GROUP BY i.id, person.id
 """
     )
 }

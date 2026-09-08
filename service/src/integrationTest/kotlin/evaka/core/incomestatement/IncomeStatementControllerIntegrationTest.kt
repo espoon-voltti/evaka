@@ -77,6 +77,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     private val child3 = DevPerson(firstName = "Hillary", lastName = "Foo")
     private val child4 = DevPerson(firstName = "Maisa", lastName = "Farang")
     private val child5 = DevPerson(firstName = "Visa", lastName = "Virén")
+    private val child6 = DevPerson(firstName = "Aatos", lastName = "Doe")
 
     private val employee = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
 
@@ -94,7 +95,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             listOf(adult1, adult2, adult3, adult4, adult5, adult6).forEach {
                 tx.insert(it, DevPersonType.ADULT)
             }
-            listOf(child1, child2, child3, child4, child5).forEach {
+            listOf(child1, child2, child3, child4, child5, child6).forEach {
                 tx.insert(it, DevPersonType.CHILD)
             }
             tx.insert(employee)
@@ -486,7 +487,17 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 DevPlacement(
                     type = PlacementType.PRESCHOOL_DAYCARE,
                     childId = child3.id,
-                    unitId = daycare2.id,
+                    unitId = daycare1.id,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                )
+            )
+
+            // adult1 also heads a child with no placement, which has no care area of its own
+            tx.insert(
+                DevParentship(
+                    childId = child6.id,
+                    headOfChildId = adult1.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                 )
@@ -580,7 +591,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = area2.name,
+                        primaryCareArea = "${area1.name}, ${area2.name}",
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement3.id,
@@ -593,7 +604,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult3.id,
                         personLastName = "Foo",
                         personFirstName = "Mark",
-                        primaryCareArea = area2.name,
+                        primaryCareArea = "${area1.name}, ${area2.name}",
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement4.id,
