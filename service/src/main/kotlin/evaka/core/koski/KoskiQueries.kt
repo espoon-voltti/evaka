@@ -13,11 +13,32 @@ import evaka.core.shared.db.QuerySql
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
+/** Child-keyed tables feeding the payload in `R__koski_views.sql`. Keep in sync by hand. */
+val KOSKI_INPUT_TABLES =
+    setOf("placement", "person", "preschool_assistance", "other_assistance_measure", "absence")
+
 data class KoskiStudyRightKey(
     val childId: ChildId,
     val unitId: DaycareId,
     val type: OpiskeluoikeudenTyyppiKoodi,
 )
+
+/**
+ * Once any of the child's data that affects Koski has been deleted due to retention policies, the
+ * data synchronization to Koski must be stopped, so that the data is not deleted from there too.
+ */
+private val koskiSyncActive = Predicate { where("$it.koski_data_first_removed_at IS NULL") }
+
+private fun Database.Read.isKoskiSyncActive(childId: ChildId): Boolean = createQuery {
+    sql(
+        """
+SELECT ${predicate(koskiSyncActive.forTable("child"))}
+FROM child
+WHERE id = ${bind(childId)}
+"""
+    )
+}
+    .exactlyOne()
 
 fun Database.Read.getPendingStudyRights(
     today: LocalDate,
@@ -32,29 +53,35 @@ fun Database.Read.getPendingStudyRights(
             """
 SELECT kasr.child_id, kasr.unit_id, 'PRESCHOOL'::koski_study_right_type AS type
 FROM koski_active_preschool_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
+JOIN child ch ON ch.id = kasr.child_id
 LEFT JOIN koski_study_right ksr
 ON (kasr.child_id, kasr.unit_id, 'PRESCHOOL') = (ksr.child_id, ksr.unit_id, ksr.type)
 WHERE (
     ksr.preschool_input_data IS DISTINCT FROM kasr.input_data OR
     ${predicate(dataVersionCheck.forTable("ksr"))}
 )
+AND ${predicate(koskiSyncActive.forTable("ch"))}
 
 UNION
 
 SELECT kasr.child_id, kasr.unit_id, 'PREPARATORY'::koski_study_right_type AS type
 FROM koski_active_preparatory_study_right(${bind(today)}, ${bind(syncRangeStart)}) kasr
+JOIN child ch ON ch.id = kasr.child_id
 LEFT JOIN koski_study_right ksr
 ON (kasr.child_id, kasr.unit_id, 'PREPARATORY') = (ksr.child_id, ksr.unit_id, ksr.type)
 WHERE (
     ksr.preparatory_input_data IS DISTINCT FROM kasr.input_data OR
     ${predicate(dataVersionCheck.forTable("ksr"))}
 )
+AND ${predicate(koskiSyncActive.forTable("ch"))}
 
 UNION
 
 SELECT kvsr.child_id, kvsr.unit_id, kvsr.type
 FROM koski_voided_study_right(${bind(today)}) kvsr
+JOIN child ch ON ch.id = kvsr.child_id
 WHERE kvsr.void_date IS NULL
+AND ${predicate(koskiSyncActive.forTable("ch"))}
 """
         )
     }
@@ -128,6 +155,7 @@ fun Database.Transaction.beginKoskiUpload(
     today: LocalDate,
     syncRangeStart: LocalDate?,
 ): KoskiData? {
+    if (!isKoskiSyncActive(key.childId)) return null
     val (id, voided) = refreshStudyRight(key, today, syncRangeStart)
     return if (voided) {
         createQuery {
