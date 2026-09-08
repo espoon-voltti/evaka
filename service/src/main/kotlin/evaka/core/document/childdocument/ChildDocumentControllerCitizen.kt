@@ -91,6 +91,7 @@ class ChildDocumentControllerCitizen(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(documentId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -100,10 +101,11 @@ class ChildDocumentControllerCitizen(
                         Action.Citizen.ChildDocument.DOWNLOAD,
                         documentId,
                     )
+                    tx.getChildDocumentChildId(documentId)?.let { audit.add(it) }
                     childDocumentService.getPdfResponse(tx, documentId)
                 }
             }
-            .also { Audit.ChildDocumentDownload.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentDownload, clock) }
     }
 
     @PutMapping("/{documentId}/read")

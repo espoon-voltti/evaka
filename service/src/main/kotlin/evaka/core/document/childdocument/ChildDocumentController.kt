@@ -757,6 +757,8 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestParam(required = false) version: Int?,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(documentId)
+        version?.let { audit.addMeta("version", it) }
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -767,15 +769,11 @@ class ChildDocumentController(
                         else Action.ChildDocument.DOWNLOAD,
                         documentId,
                     )
+                    tx.getChildDocumentChildId(documentId)?.let { audit.add(it) }
                     childDocumentService.getPdfResponse(tx, documentId, version)
                 }
             }
-            .also {
-                Audit.ChildDocumentDownload.log(
-                    targetId = AuditId(documentId),
-                    meta = version?.let { mapOf("version" to it) } ?: emptyMap(),
-                )
-            }
+            .also { audit.log(Audit.ChildDocumentDownload, clock) }
     }
 
     data class ProposeChildDocumentDecisionRequest(val decisionMaker: EmployeeId)
