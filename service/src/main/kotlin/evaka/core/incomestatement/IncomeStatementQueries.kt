@@ -641,7 +641,7 @@ data class IncomeStatementAwaitingHandler(
     val personLastName: String,
     val personFirstName: String,
     val personName: String = "$personLastName $personFirstName",
-    val primaryCareArea: String?,
+    val careAreas: List<String>,
 )
 
 private fun awaitingHandlerQuery(
@@ -691,7 +691,10 @@ SELECT
     person.id AS personId,
     person.last_name AS person_last_name,
     person.first_name AS person_first_name,
-    string_agg(DISTINCT ca.name, ', ' ORDER BY ca.name) AS primaryCareArea,
+    coalesce(
+        array_agg(DISTINCT ca.name ORDER BY ca.name) FILTER (WHERE ca.name IS NOT NULL),
+        '{}'
+    ) AS care_areas,
     (
         SELECT valid_to FROM income
         WHERE person_id = i.person_id AND effect <> 'INCOMPLETE'

@@ -578,7 +578,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult1.id,
                         personLastName = "Doe",
                         personFirstName = "John",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -591,7 +591,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = "${area1.name}, ${area2.name}",
+                        careAreas = listOf(area1.name, area2.name),
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement3.id,
@@ -604,7 +604,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult3.id,
                         personLastName = "Foo",
                         personFirstName = "Mark",
-                        primaryCareArea = "${area1.name}, ${area2.name}",
+                        careAreas = listOf(area1.name, area2.name),
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement4.id,
@@ -617,7 +617,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult4.id,
                         personLastName = "Aman",
                         personFirstName = "Dork",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement5.id,
@@ -630,7 +630,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult5.id,
                         personLastName = "Karhula",
                         personFirstName = "Johannes Olavi Antero Tapio",
-                        primaryCareArea = null,
+                        careAreas = emptyList(),
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement6.id,
@@ -643,7 +643,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult6.id,
                         personLastName = "Vilkas",
                         personFirstName = "Ville",
-                        primaryCareArea = null,
+                        careAreas = emptyList(),
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement7.id,
@@ -656,7 +656,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = child1.id,
                         personLastName = "Doe",
                         personFirstName = "Ricky",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     ),
                 ),
                 7,
@@ -725,7 +725,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = area2.name,
+                        careAreas = listOf(area2.name),
                     )
                 ),
                 1,
@@ -799,7 +799,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = area2.name,
+                        careAreas = listOf(area2.name),
                     )
                 ),
                 1,
@@ -889,7 +889,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = area2.name,
+                        careAreas = listOf(area2.name),
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement1.id,
@@ -902,7 +902,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult1.id,
                         personLastName = "Doe",
                         personFirstName = "John",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     ),
                 ),
                 2,
@@ -1026,7 +1026,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     )
                 ),
                 1,
@@ -1107,7 +1107,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult1.id,
                         personLastName = "Doe",
                         personFirstName = "John",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     )
                 ),
                 1,
@@ -1135,7 +1135,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     )
                 ),
                 1,
@@ -1230,7 +1230,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult1.id,
                         personLastName = "Doe",
                         personFirstName = "John",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -1243,7 +1243,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement3.id,
@@ -1256,7 +1256,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult3.id,
                         personLastName = "Foo",
                         personFirstName = "Mark",
-                        primaryCareArea = null,
+                        careAreas = emptyList(),
                     ),
                 ),
                 3,
@@ -1281,7 +1281,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     )
                 ),
                 1,
@@ -1307,7 +1307,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult1.id,
                         personLastName = "Doe",
                         personFirstName = "John",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -1320,7 +1320,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     ),
                 ),
                 2,
@@ -1427,7 +1427,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement3.id,
@@ -1440,7 +1440,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult3.id,
                         personLastName = "Foo",
                         personFirstName = "Mark",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     ),
                 ),
                 2,
@@ -1463,7 +1463,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult3.id,
                         personLastName = "Foo",
                         personFirstName = "Mark",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     )
                 ),
                 1,
@@ -1488,7 +1488,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         personId = adult2.id,
                         personLastName = "Doe",
                         personFirstName = "Joan",
-                        primaryCareArea = area1.name,
+                        careAreas = listOf(area1.name),
                     )
                 ),
                 1,
@@ -1597,7 +1597,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = adult1.id,
                 personLastName = "Doe",
                 personFirstName = "John",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
         val expected2 =
             IncomeStatementAwaitingHandler(
@@ -1611,7 +1611,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = adult2.id,
                 personLastName = "Doe",
                 personFirstName = "Joan",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(listOf(expected1, expected2), 2, 1),
@@ -1710,7 +1710,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = adult1.id,
                 personLastName = "Doe",
                 personFirstName = "John",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
         val expected2 =
             IncomeStatementAwaitingHandler(
@@ -1724,7 +1724,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = adult2.id,
                 personLastName = "Doe",
                 personFirstName = "Joan",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(listOf(expected1, expected2), 2, 1),
@@ -1805,7 +1805,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = adult1.id,
                 personLastName = "Doe",
                 personFirstName = "John",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
         val expected2 =
             IncomeStatementAwaitingHandler(
@@ -1819,7 +1819,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = child2.id,
                 personLastName = "Doe",
                 personFirstName = "Micky",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(listOf(expected1, expected2), 2, 1),
@@ -1914,7 +1914,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = adult1.id,
                 personLastName = "Doe",
                 personFirstName = "John",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
         val expected2 =
             IncomeStatementAwaitingHandler(
@@ -1928,7 +1928,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = adult2.id,
                 personLastName = "Doe",
                 personFirstName = "Joan",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(listOf(expected1, expected2), 2, 1),
@@ -2009,7 +2009,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = adult1.id,
                 personLastName = "Doe",
                 personFirstName = "John",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
         val expected2 =
             IncomeStatementAwaitingHandler(
@@ -2023,7 +2023,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = adult2.id,
                 personLastName = "Doe",
                 personFirstName = "Joan",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
         assertEquals(
             PagedIncomeStatementsAwaitingHandler(listOf(expected2, expected1), 2, 1),
@@ -2121,7 +2121,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = adult1.id,
                 personLastName = "Doe",
                 personFirstName = "John",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
         val expected2 =
             IncomeStatementAwaitingHandler(
@@ -2135,7 +2135,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId = adult2.id,
                 personLastName = "Doe",
                 personFirstName = "Joan",
-                primaryCareArea = area1.name,
+                careAreas = listOf(area1.name),
             )
 
         val result =
