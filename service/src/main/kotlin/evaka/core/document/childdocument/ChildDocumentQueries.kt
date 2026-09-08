@@ -747,12 +747,16 @@ WHERE new_document.id = ${bind(documentId)} AND cdd.status = 'ACCEPTED'
         .toList<AcceptedChildDecisions>()
 }
 
-@IgnorableReturnValue
+data class EndedChildDocumentDecision(
+    val id: ChildDocumentDecisionId,
+    val validFrom: LocalDate,
+)
+
 fun Database.Read.endChildDocumentDecisionsWithSubstitutiveDecision(
     childId: ChildId,
     endingDecisionIds: List<ChildDocumentDecisionId>,
     endDate: LocalDate,
-): List<ChildDocumentDecisionId> {
+): List<EndedChildDocumentDecision> {
     return createQuery {
         sql(
             """
@@ -764,11 +768,11 @@ WHERE cdd.id = ANY(${bind(endingDecisionIds)})
     AND (cdd.valid_to IS NULL OR cdd.valid_to > ${bind(endDate)})
     AND cd.decision_id = cdd.id
     AND cd.child_id = ${bind(childId)}
-RETURNING cdd.id
+RETURNING cdd.id, cdd.valid_from
 """
         )
     }
-        .toList<ChildDocumentDecisionId>()
+        .toList<EndedChildDocumentDecision>()
 }
 
 fun Database.Transaction.setChildDocumentDecisionValidity(
