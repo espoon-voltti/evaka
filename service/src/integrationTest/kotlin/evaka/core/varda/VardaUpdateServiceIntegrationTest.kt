@@ -177,7 +177,11 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     endDate = LocalDate.of(2021, 2, 28),
                 )
             )
-            tx.freezeVardaSync(listOf(child.id), now)
+            tx.execute {
+                sql(
+                    "UPDATE child SET varda_data_first_removed_at = ${bind(now)} WHERE id = ${bind(child.id)}"
+                )
+            }
         }
 
         vardaUpdateService.planChildrenUpdate(db, clock)
@@ -205,7 +209,9 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 )
             )
             tx.execute {
-                sql("INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)")
+                sql(
+                    "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(child.id)}, NULL, ${bind(now)})"
+                )
             }
             tx.freezeVardaSync(listOf(child.id), now)
         }

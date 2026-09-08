@@ -44,6 +44,10 @@ UPDATE child
 SET varda_data_first_removed_at = ${bind(now)}
 WHERE id = ANY(${bind(childIds)})
 AND varda_data_first_removed_at IS NULL
+AND EXISTS (
+    SELECT FROM varda_state vs
+    WHERE vs.child_id = child.id AND vs.last_success_at IS NOT NULL
+)
 RETURNING id
 """
     )

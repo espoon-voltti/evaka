@@ -2895,7 +2895,9 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.insert(child, DevPersonType.CHILD)
             tx.execute {
-                sql("INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)")
+                sql(
+                    "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(child.id)}, NULL, ${bind(now)})"
+                )
             }
             tx.freezeVardaSync(listOf(child.id), now)
         }

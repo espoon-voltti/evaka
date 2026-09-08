@@ -37,6 +37,7 @@ UPDATE child
 SET koski_data_first_removed_at = ${bind(now)}
 WHERE id = ANY(${bind(childIds)})
 AND koski_data_first_removed_at IS NULL
+AND EXISTS (SELECT FROM koski_study_right ksr WHERE ksr.child_id = child.id)
 RETURNING id
 """
     )

@@ -49,6 +49,7 @@ import evaka.core.varda.freezeVardaSync
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.LocalDate
+import java.time.Period
 import java.util.UUID
 import org.springframework.stereotype.Service
 
@@ -127,42 +128,7 @@ class DataRemovalService(
 
         deleteExpiredApplications(dbc, now, expireDate = today.minusYears(10), limit)
 
-        deleteExpiredChildLeafRows(
-            dbc,
-            expireDate = today.minusYears(1),
-            now,
-            limit,
-            leafTables =
-                listOf(
-                    "calendar_event_attendee",
-                    "calendar_event_time",
-                    "child_sticky_note",
-                    "family_contact",
-                    "nekku_special_diet_choices",
-                ),
-        )
-
-        deleteExpiredChildLeafRows(
-            dbc,
-            expireDate = today.minusYears(10),
-            now,
-            limit,
-            leafTables =
-                listOf(
-                    "assistance_factor",
-                    "assistance_action",
-                    "daycare_assistance",
-                    "preschool_assistance",
-                    "other_assistance_measure",
-                    "daily_service_time",
-                    "attendance_reservation",
-                    "backup_care",
-                    "child_attendance",
-                    "absence_application",
-                    "backup_pickup",
-                    "holiday_questionnaire_answer",
-                ),
-        )
+        deleteExpiredChildLeafRows(dbc, now, limit, tables = CHILD_LEAF_TABLES)
 
         deleteExpiredServiceApplications(dbc, expireDate = today.minusYears(10), limit)
 
@@ -336,9 +302,14 @@ class DataRemovalService(
     ) {
         val ids = dbc.transaction { tx ->
             val childImageIds =
-                tx.deleteExpiredChildLeafRowsFromTable(expireDate, now, limit, "child_images").map {
-                    ChildImageId(it.id)
-                }
+                tx.deleteExpiredChildLeafRowsFromTable(
+                        expireDate,
+                        now,
+                        limit,
+                        "child_images",
+                        RetentionFallback.Column("created"),
+                    )
+                    .map { ChildImageId(it.id) }
             asyncJobRunner.plan(
                 tx,
                 childImageIds.map { AsyncJob.DeleteChildImage(it) },
@@ -502,31 +473,38 @@ class DataRemovalService(
 
 fun deleteExpiredChildLeafRows(
     dbc: Database.Connection,
-    expireDate: LocalDate,
     now: HelsinkiDateTime,
     limit: Int,
-    leafTables: List<String>,
+    tables: List<ChildLeafTable>,
 ) {
-    leafTables.forEach { table ->
-        logger.info { "Deleting at most $limit expired rows in table $table" }
+    tables.forEach { table ->
+        val expireDate = now.toLocalDate().minus(table.retention)
+        logger.info { "Deleting at most $limit expired rows in table ${table.name}" }
         val removal = dbc.transaction { tx ->
-            val deleted = tx.deleteExpiredChildLeafRowsFromTable(expireDate, now, limit, table)
+            val deleted =
+                tx.deleteExpiredChildLeafRowsFromTable(
+                    expireDate,
+                    now,
+                    limit,
+                    table.name,
+                    table.fallback,
+                )
             val childIds = deleted.map { it.childId }.distinct()
             ExpiredLeafRemoval(
                 deletedIds = deleted.map { it.id },
                 frozenKoskiChildIds =
-                    if (table in KOSKI_INPUT_TABLES && childIds.isNotEmpty())
+                    if (table.name in KOSKI_INPUT_TABLES && childIds.isNotEmpty())
                         tx.freezeKoskiSync(childIds, now)
                     else emptyList(),
                 frozenVardaChildIds =
-                    if (table in VARDA_INPUT_TABLES && childIds.isNotEmpty())
+                    if (table.name in VARDA_INPUT_TABLES && childIds.isNotEmpty())
                         tx.freezeVardaSync(childIds, now)
                     else emptyList(),
             )
         }
         removal.deletedIds.forEach { id ->
             auditExpiredDelete(
-                entity = table,
+                entity = table.name,
                 targetId = AuditId(id),
                 meta = mapOf("expireDate" to expireDate),
             )
@@ -553,6 +531,7 @@ private fun Database.Transaction.deleteExpiredChildLeafRowsFromTable(
     now: HelsinkiDateTime,
     limit: Int,
     table: String,
+    fallback: RetentionFallback,
 ): List<ExpiredLeafRow> {
     val removalAllowed =
         if (table in KOSKI_INPUT_TABLES || table in VARDA_INPUT_TABLES)
@@ -564,7 +543,7 @@ private fun Database.Transaction.deleteExpiredChildLeafRowsFromTable(
 WITH del_batch AS (
     SELECT id, child_id
     FROM $table
-    WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
+    WHERE ${predicate(childDataExpired(expireDate, fallback).forTable(table))}
     AND ${predicate(removalAllowed.forTable(table))}
     FOR UPDATE
     LIMIT ${bind(limit)}
@@ -641,6 +620,147 @@ HAVING max(end_date) < ${bind(date)}
     )
 }
 
+/** The date a row's retention counts from when the child has no placements. */
+sealed interface RetentionFallback {
+    data class Column(val name: String) : RetentionFallback
+
+    data object CalendarEventEnd : RetentionFallback
+
+    data object DeleteImmediately : RetentionFallback
+}
+
+data class ChildLeafTable(
+    val name: String,
+    val retention: Period,
+    val fallback: RetentionFallback,
+)
+
+private val CHILD_LEAF_TABLES =
+    listOf(
+        ChildLeafTable(
+            name = "backup_pickup",
+            retention = Period.ofYears(1),
+            fallback = RetentionFallback.DeleteImmediately,
+        ),
+        ChildLeafTable(
+            name = "calendar_event_attendee",
+            retention = Period.ofYears(1),
+            fallback = RetentionFallback.CalendarEventEnd,
+        ),
+        ChildLeafTable(
+            name = "calendar_event_time",
+            retention = Period.ofYears(1),
+            fallback = RetentionFallback.Column("date"),
+        ),
+        ChildLeafTable(
+            name = "child_sticky_note",
+            retention = Period.ofYears(1),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+        ChildLeafTable(
+            name = "family_contact",
+            retention = Period.ofYears(1),
+            fallback = RetentionFallback.DeleteImmediately,
+        ),
+        ChildLeafTable(
+            name = "nekku_special_diet_choices",
+            retention = Period.ofYears(1),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+        ChildLeafTable(
+            name = "absence_application",
+            retention = Period.ofYears(10),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+        ChildLeafTable(
+            name = "assistance_action",
+            retention = Period.ofYears(10),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+        ChildLeafTable(
+            name = "assistance_factor",
+            retention = Period.ofYears(10),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+        ChildLeafTable(
+            name = "attendance_reservation",
+            retention = Period.ofYears(10),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+        ChildLeafTable(
+            name = "backup_care",
+            retention = Period.ofYears(10),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+        ChildLeafTable(
+            name = "child_attendance",
+            retention = Period.ofYears(10),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+        ChildLeafTable(
+            name = "daily_service_time",
+            retention = Period.ofYears(10),
+            fallback = RetentionFallback.Column("created"),
+        ),
+        ChildLeafTable(
+            name = "daycare_assistance",
+            retention = Period.ofYears(10),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+        ChildLeafTable(
+            name = "holiday_questionnaire_answer",
+            retention = Period.ofYears(10),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+        ChildLeafTable(
+            name = "other_assistance_measure",
+            retention = Period.ofYears(10),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+        ChildLeafTable(
+            name = "preschool_assistance",
+            retention = Period.ofYears(10),
+            fallback = RetentionFallback.Column("created_at"),
+        ),
+    )
+
+private val childIdNotNull = Predicate { where("$it.child_id IS NOT NULL") }
+
+private val childHasNoPlacement = Predicate {
+    where("NOT EXISTS (SELECT FROM placement p WHERE p.child_id = $it.child_id)")
+}
+
+private fun lastPlacementEndedBefore(date: LocalDate) = Predicate {
+    where("$it.child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(date))})")
+}
+
+private fun fallbackDateBefore(date: LocalDate, fallback: RetentionFallback): Predicate =
+    when (fallback) {
+        is RetentionFallback.Column -> Predicate { where("$it.${fallback.name} < ${bind(date)}") }
+
+        RetentionFallback.CalendarEventEnd ->
+            Predicate {
+                where(
+                    "(SELECT upper(ce.period) FROM calendar_event ce WHERE ce.id = $it.calendar_event_id) < ${bind(date)}"
+                )
+            }
+
+        RetentionFallback.DeleteImmediately -> Predicate.alwaysTrue()
+    }
+
+/**
+ * A child's data expires once their last placement ended long enough ago. Without placements there
+ * is no such date, so the row's own fallback decides.
+ */
+private fun childDataExpired(expireDate: LocalDate, fallback: RetentionFallback): Predicate =
+    Predicate.all(
+        childIdNotNull,
+        Predicate.any(
+            lastPlacementEndedBefore(expireDate),
+            Predicate.all(fallbackDateBefore(expireDate, fallback), childHasNoPlacement),
+        ),
+    )
+
 data class DeletedApplication(
     val applicationId: ApplicationId,
     val childId: ChildId,
@@ -668,13 +788,14 @@ private fun Database.Transaction.deleteExpiredApplicationsBatch(
     now: HelsinkiDateTime,
     limit: Int,
 ): Pair<List<DeletedApplication>, List<UnsetReference>> {
+    val expired = childDataExpired(expireDate, RetentionFallback.Column("created_at"))
     val deletableRows = createQuery {
         sql(
             """
 WITH del_batch AS (
     SELECT id
     FROM application
-    WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
+    WHERE ${predicate(expired.forTable("application"))}
     AND ${predicate(childPastSafeDataRemovalAge(now.toLocalDate()).forTable("application"))}
     FOR UPDATE
     LIMIT ${bind(limit)}
@@ -858,12 +979,13 @@ private fun Database.Transaction.deleteExpiredServiceApplicationsBatch(
     expireDate: LocalDate,
     limit: Int,
 ): Pair<List<ServiceApplicationId>, List<PlacementId>> {
+    val expired = childDataExpired(expireDate, RetentionFallback.Column("created_at"))
     val batch = createQuery {
         sql(
             """
 SELECT id
 FROM service_application
-WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
+WHERE ${predicate(expired.forTable("service_application"))}
 FOR UPDATE
 LIMIT ${bind(limit)}
 """
@@ -906,12 +1028,13 @@ private fun Database.Transaction.deleteExpiredPedagogicalDocumentsBatch(
     expireDate: LocalDate,
     limit: Int,
 ): List<DeletedPedagogicalDocument> {
+    val expired = childDataExpired(expireDate, RetentionFallback.Column("created_at"))
     val documents = createQuery {
         sql(
             """
 SELECT id, child_id
 FROM pedagogical_document
-WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
+WHERE ${predicate(expired.forTable("pedagogical_document"))}
 ORDER BY created_at
 LIMIT ${bind(limit)}
 FOR UPDATE

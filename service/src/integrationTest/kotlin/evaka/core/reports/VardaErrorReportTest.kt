@@ -39,7 +39,7 @@ class VardaErrorReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insert(child, DevPersonType.CHILD)
                 tx.execute {
                     sql(
-                        "INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)"
+                        "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(child.id)}, NULL, ${bind(now)})"
                     )
                 }
                 tx.setVardaUpdateError(child.id, now, "boom")

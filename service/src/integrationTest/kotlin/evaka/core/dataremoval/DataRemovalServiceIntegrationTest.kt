@@ -111,6 +111,7 @@ import evaka.core.specialdiet.setSpecialDiets
 import evaka.core.user.updateLastStrongLogin
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Period
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -259,15 +260,11 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertFamilyContact(child.id)
         insertNekkuSpecialDietChoice(child.id)
 
-        deleteExpiredChildLeafRows(
-            db,
-            expireDate = leafExpireDate,
-            now,
-            limit = 100,
-            leafTables = allLeafTables,
-        )
+        deleteExpiredChildLeafRows(db, now, limit = 100, tables = allLeafTables)
 
-        allLeafTables.forEach { assertEquals(0, rowCount(it), "table $it should be empty") }
+        allLeafTables.forEach {
+            assertEquals(0, rowCount(it.name), "table ${it.name} should be empty")
+        }
     }
 
     @Test
@@ -276,13 +273,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertChildStickyNote(child.id)
         insertCalendarEventAttendee(child.id)
 
-        deleteExpiredChildLeafRows(
-            db,
-            expireDate = leafExpireDate,
-            now,
-            limit = 100,
-            leafTables = allLeafTables,
-        )
+        deleteExpiredChildLeafRows(db, now, limit = 100, tables = allLeafTables)
 
         assertEquals(1, rowCount("child_sticky_note"))
         assertEquals(1, rowCount("calendar_event_attendee"))
@@ -293,13 +284,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertExpiredPlacement(child.id)
         repeat(5) { insertChildStickyNote(child.id) }
 
-        deleteExpiredChildLeafRows(
-            db,
-            expireDate = leafExpireDate,
-            now,
-            limit = 2,
-            leafTables = listOf("child_sticky_note"),
-        )
+        deleteExpiredChildLeafRows(db, now, limit = 2, tables = listOf(stickyNoteTable))
 
         assertEquals(3, rowCount("child_sticky_note"))
     }
@@ -315,10 +300,9 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         deleteExpiredChildLeafRows(
             db,
-            expireDate = leafExpireDate,
             now,
             limit = 100,
-            leafTables = listOf("preschool_assistance", "child_sticky_note"),
+            tables = listOf(leafTable("preschool_assistance"), stickyNoteTable),
         )
 
         assertEquals(1, rowCount("preschool_assistance"))
@@ -335,10 +319,9 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
         deleteExpiredChildLeafRows(
             db,
-            expireDate = leafExpireDate,
             now,
             limit = 100,
-            leafTables = listOf("preschool_assistance"),
+            tables = listOf(leafTable("preschool_assistance")),
         )
 
         assertEquals(0, rowCount("preschool_assistance"))
@@ -347,14 +330,14 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Test
     fun `deleteExpiredChildLeafRows records when Koski input data was first removed`() {
         insertExpiredPlacement(child.id)
+        insertKoskiStudyRight(child.id)
         insertPreschoolAssistance(child.id)
 
         deleteExpiredChildLeafRows(
             db,
-            expireDate = leafExpireDate,
             now,
             limit = 100,
-            leafTables = listOf("preschool_assistance"),
+            tables = listOf(leafTable("preschool_assistance")),
         )
 
         assertEquals(0, rowCount("preschool_assistance"))
@@ -366,13 +349,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertExpiredPlacement(child.id)
         insertChildStickyNote(child.id)
 
-        deleteExpiredChildLeafRows(
-            db,
-            expireDate = leafExpireDate,
-            now,
-            limit = 100,
-            leafTables = listOf("child_sticky_note"),
-        )
+        deleteExpiredChildLeafRows(db, now, limit = 100, tables = listOf(stickyNoteTable))
 
         assertEquals(0, rowCount("child_sticky_note"))
         assertNull(koskiDataFirstRemovedAt(child.id))
@@ -382,22 +359,21 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Test
     fun `a later removal does not overwrite when Koski input data was first removed`() {
         insertExpiredPlacement(child.id)
+        insertKoskiStudyRight(child.id)
         insertPreschoolAssistance(child.id)
         insertOtherAssistanceMeasure(child.id)
 
         deleteExpiredChildLeafRows(
             db,
-            expireDate = leafExpireDate,
             now,
             limit = 100,
-            leafTables = listOf("preschool_assistance"),
+            tables = listOf(leafTable("preschool_assistance")),
         )
         deleteExpiredChildLeafRows(
             db,
-            expireDate = leafExpireDate,
             now.plusDays(1),
             limit = 100,
-            leafTables = listOf("other_assistance_measure"),
+            tables = listOf(leafTable("other_assistance_measure")),
         )
 
         assertEquals(0, rowCount("other_assistance_measure"))
@@ -409,15 +385,145 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertExpiredPlacement(child.id)
         insertChildStickyNote(child.id)
 
-        deleteExpiredChildLeafRows(
-            db,
-            expireDate = leafExpireDate,
-            now,
-            limit = 100,
-            leafTables = emptyList(),
-        )
+        deleteExpiredChildLeafRows(db, now, limit = 100, tables = emptyList())
 
         assertEquals(1, rowCount("child_sticky_note"))
+    }
+
+    private val tenYearAssistanceAction =
+        leafTable("assistance_action", retention = Period.ofYears(10))
+
+    @Test
+    fun `a never placed child's rows are removed once their own date expires`() {
+        insertAssistanceAction(child.id, createdAt = now.minusYears(11))
+
+        deleteExpiredChildLeafRows(
+            db,
+            now,
+            limit = 100,
+            tables = listOf(tenYearAssistanceAction),
+        )
+
+        assertEquals(0, rowCount("assistance_action"))
+    }
+
+    @Test
+    fun `a never placed child's rows are kept until their own date expires`() {
+        insertAssistanceAction(child.id, createdAt = now.minusYears(9))
+
+        deleteExpiredChildLeafRows(
+            db,
+            now,
+            limit = 100,
+            tables = listOf(tenYearAssistanceAction),
+        )
+
+        assertEquals(1, rowCount("assistance_action"))
+    }
+
+    @Test
+    fun `a never placed child's dateless rows are removed however recently they were added`() {
+        insertFamilyContact(child.id)
+
+        deleteExpiredChildLeafRows(
+            db,
+            now,
+            limit = 100,
+            tables = listOf(leafTable("family_contact", RetentionFallback.DeleteImmediately)),
+        )
+
+        assertEquals(0, rowCount("family_contact"))
+    }
+
+    @Test
+    fun `a never placed child's calendar attendance expires with the event`() {
+        insertCalendarEventAttendee(child.id, eventDate = today.minusYears(2))
+
+        deleteExpiredChildLeafRows(
+            db,
+            now,
+            limit = 100,
+            tables =
+                listOf(leafTable("calendar_event_attendee", RetentionFallback.CalendarEventEnd)),
+        )
+
+        assertEquals(0, rowCount("calendar_event_attendee"))
+    }
+
+    @Test
+    fun `a never placed child's calendar attendance is kept while the event is recent`() {
+        insertCalendarEventAttendee(child.id, eventDate = today)
+
+        deleteExpiredChildLeafRows(
+            db,
+            now,
+            limit = 100,
+            tables =
+                listOf(leafTable("calendar_event_attendee", RetentionFallback.CalendarEventEnd)),
+        )
+
+        assertEquals(1, rowCount("calendar_event_attendee"))
+    }
+
+    @Test
+    fun `calendar attendance that is not about a single child is left alone`() {
+        insertCalendarEventAttendee(childId = null, eventDate = today.minusYears(2))
+
+        deleteExpiredChildLeafRows(
+            db,
+            now,
+            limit = 100,
+            tables =
+                listOf(leafTable("calendar_event_attendee", RetentionFallback.CalendarEventEnd)),
+        )
+
+        assertEquals(1, rowCount("calendar_event_attendee"))
+    }
+
+    @Test
+    fun `retention counts from the last placement even for a row created since it ended`() {
+        insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        insertAssistanceAction(child.id, createdAt = now.minusDays(1))
+
+        deleteExpiredChildLeafRows(
+            db,
+            now,
+            limit = 100,
+            tables = listOf(tenYearAssistanceAction),
+        )
+
+        assertEquals(0, rowCount("assistance_action"))
+    }
+
+    @Test
+    fun `rows of a child whose placement has not ended are kept however old they are`() {
+        insertActivePlacement(child.id)
+        insertAssistanceAction(child.id, createdAt = now.minusYears(11))
+
+        deleteExpiredChildLeafRows(
+            db,
+            now,
+            limit = 100,
+            tables = listOf(tenYearAssistanceAction),
+        )
+
+        assertEquals(1, rowCount("assistance_action"))
+    }
+
+    @Test
+    fun `Koski sync is not frozen for a child who was never synced to Koski`() {
+        insertExpiredPlacement(child.id)
+        insertPreschoolAssistance(child.id)
+
+        deleteExpiredChildLeafRows(
+            db,
+            now,
+            limit = 100,
+            tables = listOf(leafTable("preschool_assistance")),
+        )
+
+        assertEquals(0, rowCount("preschool_assistance"))
+        assertNull(koskiDataFirstRemovedAt(child.id))
     }
 
     @Test
@@ -572,6 +678,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     fun `deleteExpiredData cleans up leaf rows, child references, and images in one pass`() {
         insertExpiredPlacement(child.id)
         setUpChildDietReferences(child.id)
+        insertBackupPickup(child.id)
         insertCalendarEventAttendee(child.id)
         insertCalendarEventTime(child.id)
         insertChildStickyNote(child.id)
@@ -583,7 +690,9 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
         }
 
-        allLeafTables.forEach { assertEquals(0, rowCount(it), "table $it should be empty") }
+        allLeafTables.forEach {
+            assertEquals(0, rowCount(it.name), "table ${it.name} should be empty")
+        }
         assertEquals(0, rowCount("child_images"))
         assertNull(koskiDataFirstRemovedAt(child.id), "no Koski input table expires in one year")
         assertNull(vardaDataFirstRemovedAt(child.id), "no Varda input table expires in one year")
@@ -595,8 +704,23 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `deleteExpiredData keeps child diet references for a child who was never placed`() {
+        setUpChildDietReferences(child.id)
+
+        withLimit(100) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(
+            ChildDietColumns(dietId = 1, mealTextureId = 2, nekkuDiet = "VEGAN"),
+            readChildDietColumns(child.id),
+        )
+    }
+
+    @Test
     fun `deleteExpiredData removes ten-year leaf rows for a child whose last placement ended over ten years ago`() {
         insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        insertKoskiStudyRight(child.id)
         insertTenYearLeafData(child.id)
 
         withLimit(100) {
@@ -1170,6 +1294,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val guardian = insertAdult()
         insertGuardianship(guardian, child.id)
         insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        insertSyncedVardaState(child.id)
 
         deleteExpiredGuardians(
             db,
@@ -1771,13 +1896,22 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             .toSet()
     }
 
+    private fun leafTable(
+        name: String,
+        fallback: RetentionFallback = RetentionFallback.Column("created_at"),
+        retention: Period = Period.ofYears(1),
+    ) = ChildLeafTable(name, retention, fallback)
+
+    private val stickyNoteTable = leafTable("child_sticky_note")
+
     private val allLeafTables =
         listOf(
-            "calendar_event_attendee",
-            "calendar_event_time",
-            "child_sticky_note",
-            "family_contact",
-            "nekku_special_diet_choices",
+            leafTable("backup_pickup", RetentionFallback.DeleteImmediately),
+            leafTable("calendar_event_attendee", RetentionFallback.CalendarEventEnd),
+            leafTable("calendar_event_time", RetentionFallback.Column("date")),
+            stickyNoteTable,
+            leafTable("family_contact", RetentionFallback.DeleteImmediately),
+            leafTable("nekku_special_diet_choices"),
         )
 
     private val allAssistanceTables =
@@ -1814,7 +1948,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             "backup_care",
             "child_attendance",
             "absence_application",
-            "backup_pickup",
             "holiday_questionnaire_answer",
         )
 
@@ -1870,14 +2003,6 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     rejectedReason = null,
                 )
             )
-            tx.insert(
-                DevBackupPickup(
-                    id = BackupPickupId(UUID.randomUUID()),
-                    childId = childId,
-                    name = "Pickup Person",
-                    phone = "0401234567",
-                )
-            )
             val questionnaire =
                 DevHolidayQuestionnaire(
                     type = QuestionnaireType.FIXED_PERIOD,
@@ -1913,6 +2038,11 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         )
         block()
     }
+
+    private fun insertAssistanceAction(childId: ChildId, createdAt: HelsinkiDateTime) =
+        db.transaction { tx ->
+            tx.insert(DevAssistanceAction(childId = childId, createdAt = createdAt))
+        }
 
     private fun insertPreschoolAssistance(childId: ChildId) = db.transaction { tx ->
         tx.insert(
@@ -2003,12 +2133,12 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
         }
     }
 
-    private fun insertCalendarEvent(): DevCalendarEvent {
+    private fun insertCalendarEvent(eventDate: LocalDate = today): DevCalendarEvent {
         val event =
             DevCalendarEvent(
                 title = "title",
                 description = "desc",
-                period = FiniteDateRange(today, today),
+                period = FiniteDateRange(eventDate, eventDate),
                 modifiedAt = now,
                 modifiedBy = admin.evakaUserId,
                 eventType = CalendarEventType.DAYCARE_EVENT,
@@ -2017,8 +2147,8 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
         return event
     }
 
-    private fun insertCalendarEventAttendee(childId: ChildId) {
-        val event = insertCalendarEvent()
+    private fun insertCalendarEventAttendee(childId: ChildId?, eventDate: LocalDate = today) {
+        val event = insertCalendarEvent(eventDate)
         db.transaction { tx ->
             tx.insert(
                 DevCalendarEventAttendee(
@@ -2053,6 +2183,19 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
             tx.createChildStickyNote(
                 childId = childId,
                 note = ChildStickyNoteBody(note = "note", expires = today.plusDays(1)),
+            )
+        }
+    }
+
+    private fun insertBackupPickup(childId: ChildId) {
+        db.transaction { tx ->
+            tx.insert(
+                DevBackupPickup(
+                    id = BackupPickupId(UUID.randomUUID()),
+                    childId = childId,
+                    name = "Pickup Person",
+                    phone = "0401234567",
+                )
             )
         }
     }
@@ -2126,6 +2269,28 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
                 sql("SELECT varda_data_first_removed_at FROM child WHERE id = ${bind(childId)}")
             }
             .exactlyOne<HelsinkiDateTime?>()
+    }
+
+    private fun insertSyncedVardaState(childId: ChildId) = db.transaction { tx ->
+        tx.execute {
+            sql(
+                """
+INSERT INTO varda_state (child_id, state, last_success_at)
+VALUES (${bind(childId)}, NULL, ${bind(now)})
+"""
+            )
+        }
+    }
+
+    private fun insertKoskiStudyRight(childId: ChildId) = db.transaction { tx ->
+        tx.execute {
+            sql(
+                """
+INSERT INTO koski_study_right (child_id, unit_id, type, payload, version, data_version)
+VALUES (${bind(childId)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
+"""
+            )
+        }
     }
 
     private fun koskiDataFirstRemovedAt(childId: ChildId): HelsinkiDateTime? = db.read { tx ->
@@ -2252,6 +2417,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
     @Test
     fun `deleteExpiredApplications records when Varda input data was first removed`() {
         val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
+        insertSyncedVardaState(tree.childId)
 
         dataRemovalService.deleteExpiredApplications(db, now, applicationExpireDate, limit = 100)
 
@@ -2277,6 +2443,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
     @Test
     fun `a later removal does not overwrite when Varda input data was first removed`() {
         val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
+        insertSyncedVardaState(tree.childId)
 
         dataRemovalService.deleteExpiredApplications(db, now, applicationExpireDate, limit = 100)
         deleteExpiredGuardians(
@@ -2293,8 +2460,19 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
     }
 
     @Test
+    fun `Varda sync is not frozen for a child who was never synced to Varda`() {
+        val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
+
+        dataRemovalService.deleteExpiredApplications(db, now, applicationExpireDate, limit = 100)
+
+        assertEquals(0, rowCount("application"))
+        assertNull(vardaDataFirstRemovedAt(tree.childId))
+    }
+
+    @Test
     fun `deleteExpiredData freezes Varda sync when it removes applications and guardianships`() {
         val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
+        insertSyncedVardaState(tree.childId)
 
         withLimit(100) {
             dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
@@ -2313,6 +2491,24 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
 
         assertEquals(1, rowCount("application"))
         assertTrue(scheduledDecisionPdfDeletionKeys().isEmpty())
+    }
+
+    @Test
+    fun `deleteExpiredApplications removes an old application of a child who was never placed`() {
+        insertApplication(createdAt = now.minusYears(11))
+
+        dataRemovalService.deleteExpiredApplications(db, now, applicationExpireDate, limit = 100)
+
+        assertEquals(0, rowCount("application"))
+    }
+
+    @Test
+    fun `deleteExpiredApplications retains a recent application of a child who was never placed`() {
+        insertApplication(createdAt = now.minusYears(9))
+
+        dataRemovalService.deleteExpiredApplications(db, now, applicationExpireDate, limit = 100)
+
+        assertEquals(1, rowCount("application"))
     }
 
     @Test
@@ -2461,6 +2657,24 @@ VALUES ('MESSAGE'::message_type, 'title', false, false, ${bind(applicationId)})
         val attachmentId: AttachmentId,
         val childId: ChildId,
     )
+
+    private fun insertApplication(createdAt: HelsinkiDateTime) = db.transaction { tx ->
+        val guardian = DevPerson()
+        tx.insert(guardian, DevPersonType.ADULT)
+        tx.insertTestApplication(
+            type = ApplicationType.DAYCARE,
+            guardianId = guardian.id,
+            childId = child.id,
+            document =
+                DaycareFormV0(
+                    type = ApplicationType.DAYCARE,
+                    child = ApplicationFormChild(dateOfBirth = null),
+                    guardian = Adult(),
+                    apply = Apply(preferredUnits = listOf(daycare.id)),
+                ),
+            modifiedAt = createdAt,
+        )
+    }
 
     private fun insertApplicationTree(
         placementEnd: LocalDate,
