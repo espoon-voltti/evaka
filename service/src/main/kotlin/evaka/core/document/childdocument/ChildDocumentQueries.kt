@@ -291,6 +291,11 @@ fun Database.Read.getChildDocumentPublishedVersions(
 }
     .toList()
 
+fun Database.Read.getChildDocumentChildId(documentId: ChildDocumentId): ChildId? = createQuery {
+    sql("SELECT child_id FROM child_document WHERE id = ${bind(documentId)}")
+}
+    .exactlyOneOrNull<ChildId>()
+
 fun Database.Read.getChildDocumentPublishedVersion(
     documentId: ChildDocumentId,
     versionNumber: Int? = null,

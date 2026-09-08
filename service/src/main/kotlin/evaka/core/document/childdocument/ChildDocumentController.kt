@@ -344,8 +344,9 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: DocumentContent,
     ) {
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -356,6 +357,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
 
                     if (!document.status.employeeEditable)
                         throw BadRequest("Cannot update contents of document in this status")
@@ -379,8 +381,8 @@ class ChildDocumentController(
                         user.evakaUserId,
                     )
                 }
-                .also { Audit.ChildDocumentUpdateContent.log(targetId = AuditId(documentId)) }
-        }
+            }
+            .also { audit.log(Audit.ChildDocumentUpdateContent, clock) }
     }
 
     data class DocumentLockResponse(
@@ -395,6 +397,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ): DocumentLockResponse {
+        val audit = AuditContext().add(documentId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -404,6 +407,7 @@ class ChildDocumentController(
                         Action.ChildDocument.UPDATE,
                         documentId,
                     )
+                    tx.getChildDocumentChildId(documentId)?.let { audit.add(it) }
                     val success = tx.tryTakeWriteLock(documentId, clock.now(), user.evakaUserId)
                     val currentLock =
                         tx.getCurrentWriteLock(documentId, clock.now())
@@ -414,7 +418,11 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentTryTakeLockOnContent.log(targetId = AuditId(documentId)) }
+            .also {
+                audit
+                    .addMeta("lockTaken", it.lockTakenSuccessfully)
+                    .log(Audit.ChildDocumentTryTakeLockOnContent, clock)
+            }
     }
 
     @PutMapping("/{documentId}/publish")
