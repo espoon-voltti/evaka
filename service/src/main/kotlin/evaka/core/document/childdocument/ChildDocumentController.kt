@@ -841,6 +841,7 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: AcceptChildDocumentDecisionRequest,
     ) {
+        val audit = AuditContext().add(documentId).observeDate(body.validity.start)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -854,6 +855,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
                     if (!document.template.type.decision)
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DECISION_PROPOSAL)
@@ -870,11 +872,12 @@ class ChildDocumentController(
 
                     val decisionId =
                         tx.insertChildDocumentDecision(
-                            status = ChildDocumentDecisionStatus.ACCEPTED,
-                            userId = user.evakaUserId,
-                            validity = body.validity,
-                            daycareId = placementDaycareId,
-                        )
+                                status = ChildDocumentDecisionStatus.ACCEPTED,
+                                userId = user.evakaUserId,
+                                validity = body.validity,
+                                daycareId = placementDaycareId,
+                            )
+                            .also { audit.add(it) }
 
                     tx.setChildDocumentDecisionAndComplete(
                         documentId,
@@ -901,11 +904,17 @@ class ChildDocumentController(
 
                     if (!body.endingDecisionIds.isNullOrEmpty()) {
                         try {
-                            tx.endChildDocumentDecisionsWithSubstitutiveDecision(
-                                childId = document.child.id,
-                                endingDecisionIds = body.endingDecisionIds,
-                                endDate = body.validity.start.minusDays(1),
-                            )
+                            val ended =
+                                tx.endChildDocumentDecisionsWithSubstitutiveDecision(
+                                        childId = document.child.id,
+                                        endingDecisionIds = body.endingDecisionIds,
+                                        endDate = body.validity.start.minusDays(1),
+                                    )
+                                    .onEach { audit.add(it.id).observeDate(it.validFrom) }
+                            val notEnded = body.endingDecisionIds - ended.map { it.id }.toSet()
+                            if (notEnded.isNotEmpty()) {
+                                audit.addMeta("notEndedDecisionIds", notEnded)
+                            }
                         } catch (e: JdbiException) {
                             when (e.psqlCause()?.sqlState) {
                                 PSQLState.CHECK_VIOLATION.state -> {
@@ -925,7 +934,7 @@ class ChildDocumentController(
                     }
                 }
             }
-            .also { Audit.ChildDocumentAcceptDecision.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentAcceptDecision, clock) }
     }
 
     @PostMapping("/{documentId}/reject")
