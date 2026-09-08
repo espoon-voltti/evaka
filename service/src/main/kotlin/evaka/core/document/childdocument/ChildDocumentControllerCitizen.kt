@@ -5,6 +5,7 @@
 package evaka.core.document.childdocument
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.caseprocess.updateDocumentCaseProcessHistory
 import evaka.core.children.getCitizenChildIds
@@ -38,6 +39,7 @@ class ChildDocumentControllerCitizen(
         clock: EvakaClock,
         @RequestParam childId: ChildId,
     ): List<ChildDocumentCitizenSummary> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -47,10 +49,13 @@ class ChildDocumentControllerCitizen(
                         Action.Citizen.Child.READ_CHILD_DOCUMENTS,
                         childId,
                     )
-                    tx.getChildDocumentCitizenSummaries(user, childId)
+                    tx.getChildDocumentCitizenSummaries(user, childId).also { summaries ->
+                        audit.add(summaries.map { it.id })
+                        summaries.forEach { audit.observeDate(it.publishedAt.toLocalDate()) }
+                    }
                 }
             }
-            .also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
+            .also { audit.log(Audit.ChildDocumentRead, clock) }
     }
 
     @GetMapping("/{documentId}")
@@ -60,6 +65,7 @@ class ChildDocumentControllerCitizen(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ): ChildDocumentCitizenDetails {
+        val audit = AuditContext().add(documentId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -70,11 +76,12 @@ class ChildDocumentControllerCitizen(
                         documentId,
                     )
 
-                    tx.getCitizenChildDocument(documentId)
-                        ?: throw NotFound("Document $documentId not found")
+                    (tx.getCitizenChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found"))
+                        .also { audit.add(it.child.id).observeDate(it.decision?.validity?.start) }
                 }
             }
-            .also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentRead, clock) }
     }
 
     @GetMapping("/{documentId}/pdf")

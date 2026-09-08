@@ -225,6 +225,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @RequestParam childId: PersonId,
     ): List<ChildDocumentSummaryWithPermittedActions> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -234,11 +235,13 @@ class ChildDocumentController(
                         Action.Child.READ_CHILD_DOCUMENT,
                         childId,
                     )
+                    val duplicates =
+                        tx.listPersonByDuplicateOf(childId).also { duplicates ->
+                            audit.add(duplicates.map { it.id })
+                        }
                     val documents =
                         tx.getChildDocuments(childId) +
-                            tx.listPersonByDuplicateOf(childId).flatMap { duplicate ->
-                                tx.getChildDocuments(duplicate.id)
-                            }
+                            duplicates.flatMap { duplicate -> tx.getChildDocuments(duplicate.id) }
 
                     val permittedActions =
                         accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
@@ -247,14 +250,21 @@ class ChildDocumentController(
                             clock,
                             documents.map { it.id },
                         )
-                    documents.mapNotNull { document ->
-                        permittedActions[document.id]
-                            ?.takeIf { it.contains(Action.ChildDocument.READ) }
-                            ?.let { ChildDocumentSummaryWithPermittedActions(document, it) }
-                    }
+                    documents
+                        .mapNotNull { document ->
+                            permittedActions[document.id]
+                                ?.takeIf { it.contains(Action.ChildDocument.READ) }
+                                ?.let { ChildDocumentSummaryWithPermittedActions(document, it) }
+                        }
+                        .also { summaries ->
+                            audit.add(summaries.map { it.data.id })
+                            summaries.forEach {
+                                audit.observeDate(it.data.modifiedAt.toLocalDate())
+                            }
+                        }
                 }
             }
-            .also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
+            .also { audit.log(Audit.ChildDocumentRead, clock) }
     }
 
     data class ChildDocumentSummaryWithPermittedActions(
@@ -269,6 +279,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ): ChildDocumentWithPermittedActions {
+        val audit = AuditContext().add(documentId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -282,6 +293,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id).observeDate(document.decision?.validity?.start)
 
                     val permittedActions =
                         accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
@@ -297,7 +309,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentRead, clock) }
     }
 
     @GetMapping("/{documentId}/decision-makers")
