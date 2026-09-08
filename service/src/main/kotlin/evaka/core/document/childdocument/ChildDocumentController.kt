@@ -786,6 +786,7 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: ProposeChildDocumentDecisionRequest,
     ) {
+        val audit = AuditContext().add(documentId).add(body.decisionMaker)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -799,6 +800,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
                     if (!document.template.type.decision)
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DRAFT)
@@ -829,7 +831,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentProposeDecision.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentProposeDecision, clock) }
     }
 
     data class AcceptChildDocumentDecisionRequest(
@@ -939,6 +941,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ) {
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -952,6 +955,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
                     if (!document.template.type.decision)
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DECISION_PROPOSAL)
@@ -959,11 +963,12 @@ class ChildDocumentController(
 
                     val decisionId =
                         tx.insertChildDocumentDecision(
-                            status = ChildDocumentDecisionStatus.REJECTED,
-                            userId = user.evakaUserId,
-                            validity = null,
-                            daycareId = null,
-                        )
+                                status = ChildDocumentDecisionStatus.REJECTED,
+                                userId = user.evakaUserId,
+                                validity = null,
+                                daycareId = null,
+                            )
+                            .also { audit.add(it) }
 
                     tx.setChildDocumentDecisionAndComplete(
                         documentId,
@@ -989,7 +994,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentRejectDecision.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentRejectDecision, clock) }
     }
 
     data class AnnulChildDocumentDecisionRequest(val reason: String)
