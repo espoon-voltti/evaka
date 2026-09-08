@@ -1016,6 +1016,7 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: AnnulChildDocumentDecisionRequest,
     ) {
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -1038,6 +1039,11 @@ class ChildDocumentController(
                     )
                         throw BadRequest("Only accepted decision can be annulled")
 
+                    audit
+                        .add(document.child.id)
+                        .add(document.decision.id)
+                        .observeDate(document.decision.validity?.start)
+
                     tx.annulChildDocumentDecision(
                         decisionId = document.decision.id,
                         userId = user.evakaUserId,
@@ -1046,7 +1052,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentAnnulDecision.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentAnnulDecision, clock) }
     }
 
     data class UpdateChildDocumentDecisionValidityRequest(val newValidity: DateRange)
