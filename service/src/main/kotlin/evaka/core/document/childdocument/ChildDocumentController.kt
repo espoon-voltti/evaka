@@ -667,6 +667,7 @@ class ChildDocumentController(
             throw BadRequest("Document archival is not enabled")
         }
 
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -680,6 +681,8 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+
+                    audit.add(document.child.id)
 
                     if (!document.template.archiveExternally) {
                         throw BadRequest("Document template is not marked for external archiving")
@@ -696,7 +699,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentArchive.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentArchive, clock) }
     }
 
     @GetMapping("/non-completed")
