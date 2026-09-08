@@ -715,11 +715,14 @@ class ChildDocumentController(
         @RequestParam templateId: DocumentTemplateId,
         @RequestParam groupId: GroupId,
     ): Set<ChildId> {
+        val audit = AuditContext().add(templateId).add(groupId)
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.getNonCompletedChildDocumentChildIds(templateId, groupId, clock.today())
+                dbc.read { tx ->
+                    tx.getNonCompletedChildDocumentChildIds(templateId, groupId, clock.today())
+                        .also { audit.add(it) }
+                }
             }
-        }
+            .also { audit.log(Audit.ChildDocumentsNonCompletedRead, clock) }
     }
 
     @GetMapping("/accepted-decisions")
