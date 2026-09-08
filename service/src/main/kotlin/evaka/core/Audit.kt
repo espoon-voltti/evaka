@@ -580,6 +580,7 @@ enum class Audit(
     ChildDocumentsNonCompletedRead,
     ChildDocumentsReportRead,
     ChildDocumentsReportTemplatesRead,
+    ChildDocumentsUnansweredRead,
     ChildServiceApplicationAccept,
     ChildServiceApplicationReject,
     ChildServiceApplicationsRead,

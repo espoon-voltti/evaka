@@ -165,18 +165,24 @@ class ChildDocumentControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): List<ChildDocumentCitizenSummary> {
+        val audit = AuditContext()
         return db.connect { dbc ->
-            dbc.read { tx ->
-                val filter =
-                    accessControl.getAuthorizationFilter(
-                        tx,
-                        user,
-                        clock,
-                        Action.Citizen.ChildDocument.NOTIFY_UPDATE,
-                    )
-                filter?.let { tx.getUnansweredChildDocuments(user, it) } ?: emptyList()
+                dbc.read { tx ->
+                    val filter =
+                        accessControl.getAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Citizen.ChildDocument.NOTIFY_UPDATE,
+                        )
+                    (filter?.let { tx.getUnansweredChildDocuments(user, it) } ?: emptyList())
+                        .also { summaries ->
+                            audit.add(summaries.map { it.id }).add(summaries.map { it.child.id })
+                            summaries.forEach { audit.observeDate(it.publishedAt.toLocalDate()) }
+                        }
+                }
             }
-        }
+            .also { audit.log(Audit.ChildDocumentsUnansweredRead, clock) }
     }
 
     data class UpdateChildDocumentRequest(val status: DocumentStatus, val content: DocumentContent)
