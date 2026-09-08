@@ -153,6 +153,7 @@ class ProcessMetadataController(
         clock: EvakaClock,
         @PathVariable childDocumentId: ChildDocumentId,
     ): ProcessMetadataResponse {
+        val audit = AuditContext().add(childDocumentId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -165,9 +166,13 @@ class ProcessMetadataController(
                     val process =
                         tx.getCaseProcessByChildDocumentId(childDocumentId)
                             ?: return@read ProcessMetadataResponse(null)
-                    val type =
-                        tx.getChildDocument(childDocumentId)?.template?.type ?: throw NotFound()
-                    val (processName, processType) = childDocumentProcessNameAndType(type)
+                    audit
+                        .add(process.id)
+                        .observeDate(process.history.minOfOrNull { it.enteredAt.toLocalDate() })
+                    val childDocument = tx.getChildDocument(childDocumentId) ?: throw NotFound()
+                    audit.add(childDocument.child.id)
+                    val (processName, processType) =
+                        childDocumentProcessNameAndType(childDocument.template.type)
                     val document = tx.getChildDocumentMetadata(childDocumentId)
                     ProcessMetadataResponse(
                         ProcessMetadata(
@@ -203,12 +208,7 @@ class ProcessMetadataController(
                     )
                 }
             }
-            .also { response ->
-                Audit.ChildDocumentReadMetadata.log(
-                    targetId = AuditId(childDocumentId),
-                    objectId = response.data?.process?.id?.let(AuditId::invoke),
-                )
-            }
+            .also { audit.log(Audit.ChildDocumentReadMetadata, clock) }
     }
 
     @GetMapping("/applications/{applicationId}")
