@@ -5,6 +5,7 @@
 package evaka.core.reports
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.document.ChildDocumentType
 import evaka.core.document.childdocument.ChildDocumentOrDecisionStatus
 import evaka.core.document.childdocument.ChildDocumentSummary
@@ -34,6 +35,8 @@ class ChildDocumentDecisionsReportController(private val accessControl: AccessCo
         @RequestParam statuses: Set<ChildDocumentOrDecisionStatus> = emptySet(),
         @RequestParam includeEnded: Boolean,
     ): List<ChildDocumentSummary> {
+        val audit =
+            AuditContext().addMeta("statuses", statuses).addMeta("includeEnded", includeEnded)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -53,14 +56,15 @@ class ChildDocumentDecisionsReportController(private val accessControl: AccessCo
                         )
 
                     it.getReportRows(
-                        today = clock.today(),
-                        aclFilter = aclFilter,
-                        statuses = statuses,
-                        includeEnded = includeEnded,
-                    )
+                            today = clock.today(),
+                            aclFilter = aclFilter,
+                            statuses = statuses,
+                            includeEnded = includeEnded,
+                        )
+                        .also { rows -> audit.addMeta("count", rows.size) }
                 }
             }
-            .also { Audit.ChildDocumentDecisionsReportRead.log() }
+            .also { audit.log(Audit.ChildDocumentDecisionsReportRead, clock) }
     }
 
     @GetMapping("/employee/reports/child-document-decisions/notification-count")
@@ -69,6 +73,7 @@ class ChildDocumentDecisionsReportController(private val accessControl: AccessCo
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): Int {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -89,9 +94,10 @@ class ChildDocumentDecisionsReportController(private val accessControl: AccessCo
                             )
                         }
                         .exactlyOne<Int>()
+                        .also { audit.addMeta("count", it) }
                 }
             }
-            .also { Audit.ChildDocumentDecisionsReportNotificationsRead.log() }
+            .also { audit.log(Audit.ChildDocumentDecisionsReportNotificationsRead, clock) }
     }
 }
 
