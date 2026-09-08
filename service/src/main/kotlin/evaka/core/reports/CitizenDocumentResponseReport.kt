@@ -5,6 +5,7 @@
 package evaka.core.reports
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.daycare.DaycareGroup
 import evaka.core.daycare.getDaycare
@@ -90,8 +91,9 @@ class CitizenDocumentResponseReport(private val accessControl: AccessControl) {
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
     ): List<CitizenDocumentResponseReportTemplate> {
+        val audit = AuditContext()
         return db.connect { dbc ->
-            dbc.read { tx ->
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -113,9 +115,10 @@ class CitizenDocumentResponseReport(private val accessControl: AccessControl) {
                             )
                         }
                         .toList<CitizenDocumentResponseReportTemplate>()
+                        .also { audit.addMeta("count", it.size) }
                 }
-                .also { Audit.ChildDocumentsReportTemplatesRead.log() }
-        }
+            }
+            .also { audit.log(Audit.ChildDocumentsReportTemplatesRead, clock) }
     }
 
     @GetMapping("/employee/reports/citizen-document-response-report/group-options")
