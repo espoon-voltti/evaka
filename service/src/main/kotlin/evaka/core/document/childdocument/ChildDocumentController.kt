@@ -6,7 +6,6 @@ package evaka.core.document.childdocument
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.deleteProcessByDocumentId
@@ -1065,6 +1064,7 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: UpdateChildDocumentDecisionValidityRequest,
     ) {
+        val audit = AuditContext().add(documentId).observeDate(body.newValidity.start)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -1086,13 +1086,18 @@ class ChildDocumentController(
                     )
                         throw BadRequest("Only accepted decision can have validity updated")
 
+                    audit
+                        .add(document.child.id)
+                        .add(document.decision.id)
+                        .observeDate(document.decision.validity?.start)
+
                     tx.setChildDocumentDecisionValidity(
                         decisionId = document.decision.id,
                         validity = body.newValidity,
                     )
                 }
             }
-            .also { Audit.ChildDocumentUpdateDecisionValidity.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentUpdateDecisionValidity, clock) }
     }
 }
 
