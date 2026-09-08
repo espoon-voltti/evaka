@@ -186,8 +186,9 @@ class ChildDocumentControllerCitizen(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: UpdateChildDocumentRequest,
     ) {
+        val audit = AuditContext().add(documentId).addMeta("newStatus", body.status)
         db.connect { dbc ->
-            dbc.transaction { tx ->
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -198,6 +199,7 @@ class ChildDocumentControllerCitizen(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
 
                     val statusTransition =
                         validateStatusTransition(
@@ -232,7 +234,7 @@ class ChildDocumentControllerCitizen(
                         userId = user.evakaUserId,
                     )
                 }
-                .also { Audit.ChildDocumentUpdate.log(targetId = AuditId(documentId)) }
-        }
+            }
+            .also { audit.log(Audit.ChildDocumentUpdate, clock) }
     }
 }
