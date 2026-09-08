@@ -215,6 +215,7 @@ data class ChildBasics(
 data class ChildDocumentDetails(
     val id: ChildDocumentId,
     val status: DocumentStatus,
+    val modifiedAt: HelsinkiDateTime,
     val publishedAt: HelsinkiDateTime?,
     val archivedAt: HelsinkiDateTime?,
     val pdfAvailable: Boolean,

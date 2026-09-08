@@ -183,6 +183,7 @@ fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
 SELECT 
     cd.id,
     cd.status,
+    cd.modified_at,
     latest_version.published_at,
     cd.archived_at,
     latest_version.document_key IS NOT NULL as pdf_available,

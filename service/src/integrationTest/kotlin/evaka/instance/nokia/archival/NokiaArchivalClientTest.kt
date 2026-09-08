@@ -880,6 +880,7 @@ private val testVasuDetails =
     ChildDocumentDetails(
         id = ChildDocumentId(UUID.fromString("8554e2a5-29bb-4e3c-9aca-59c4995c1d86")),
         status = DocumentStatus.COMPLETED,
+        modifiedAt = HelsinkiDateTime.of(LocalDate.of(2025, 5, 12), LocalTime.of(8, 45)),
         publishedAt = HelsinkiDateTime.of(LocalDate.of(2025, 5, 12), LocalTime.of(8, 45)),
         archivedAt = null,
         pdfAvailable = true,
@@ -917,6 +918,7 @@ private val testChildDocumentDecisionDetails =
     ChildDocumentDetails(
         id = ChildDocumentId(UUID.fromString("8554e2a5-29bb-4e3c-9aca-59c4995c1d86")),
         status = DocumentStatus.COMPLETED,
+        modifiedAt = HelsinkiDateTime.of(LocalDate.of(2025, 5, 12), LocalTime.of(8, 45)),
         publishedAt = HelsinkiDateTime.of(LocalDate.of(2025, 5, 12), LocalTime.of(8, 45)),
         archivedAt = null,
         pdfAvailable = true,

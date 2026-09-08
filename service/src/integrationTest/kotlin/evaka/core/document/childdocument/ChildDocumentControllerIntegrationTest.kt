@@ -292,6 +292,7 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
                     ChildDocumentDetails(
                         id = documentId,
                         status = DocumentStatus.DRAFT,
+                        modifiedAt = clock.now(),
                         publishedAt = null,
                         pdfAvailable = false,
                         content = DocumentContent(answers = emptyList()),
