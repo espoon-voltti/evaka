@@ -298,16 +298,8 @@ private fun planPreschoolDecisionDrafts(
             planned = primaryPlanned,
         )
 
-    val appliedForConnectedCare =
-        plan.type in
-            listOf(
-                PlacementType.PRESCHOOL_DAYCARE,
-                PlacementType.PRESCHOOL_CLUB,
-                PlacementType.PREPARATORY_DAYCARE,
-            )
-
     val connected =
-        if (appliedForConnectedCare)
+        if (plan.type.hasConnectedDaycare())
             DecisionDraft(
                 id = DecisionId(UUID.randomUUID()), // placeholder
                 unitId = plan.unitId,

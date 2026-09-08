@@ -215,14 +215,7 @@ class PlacementPlanService(
         placementPlan: DaycarePlacementPlan,
     ): PlacementPlanId {
         val type = application.derivePlacementType()
-        if (
-            type in
-                listOf(
-                    PlacementType.PRESCHOOL_DAYCARE,
-                    PlacementType.PRESCHOOL_CLUB,
-                    PlacementType.PREPARATORY_DAYCARE,
-                ) && placementPlan.preschoolDaycarePeriod == null
-        ) {
+        if (type.hasConnectedDaycare() && placementPlan.preschoolDaycarePeriod == null) {
             throw BadRequest("Placement plan of type $type requires a preschool daycare period")
         }
         return tx.createPlacementPlan(application.id, type, placementPlan)
@@ -368,22 +361,16 @@ class PlacementPlanService(
                 application.childId,
                 unit.id,
                 placementType,
-                when (placementType) {
-                    PlacementType.PRESCHOOL_DAYCARE,
-                    PlacementType.PRESCHOOL_CLUB,
-                    PlacementType.PREPARATORY_DAYCARE -> {
-                        PlacementPlanExtent.FullDouble(
-                            period,
-                            preschoolDaycarePeriod
-                                ?: throw BadRequest(
-                                    "Placement type $placementType requires a preschool daycare period"
-                                ),
-                        )
-                    }
-
-                    else -> {
-                        PlacementPlanExtent.FullSingle(period)
-                    }
+                if (placementType.hasConnectedDaycare()) {
+                    PlacementPlanExtent.FullDouble(
+                        period,
+                        preschoolDaycarePeriod
+                            ?: throw BadRequest(
+                                "Placement type $placementType requires a preschool daycare period"
+                            ),
+                    )
+                } else {
+                    PlacementPlanExtent.FullSingle(period)
                 },
             )
 

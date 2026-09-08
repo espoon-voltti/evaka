@@ -1344,6 +1344,87 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
+    fun `createPlacementPlan - preparatory with daycare`() {
+        db.transaction { tx ->
+            // given
+            tx.insertApplication(
+                appliedType = PlacementType.PREPARATORY_DAYCARE,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1),
+            )
+            service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                clock,
+                AuditContext(),
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = daycare.id,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = tx.fetchApplicationDetails(applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
+
+            val placementPlan = tx.getPlacementPlan(applicationId)!!
+            assertEquals(
+                PlacementPlan(
+                    id = placementPlan.id,
+                    unitId = daycare.id,
+                    applicationId = applicationId,
+                    type = PlacementType.PREPARATORY_DAYCARE,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod,
+                ),
+                placementPlan,
+            )
+
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
+            assertEquals(2, decisionDrafts.size)
+
+            decisionDrafts
+                .find { it.type == DecisionType.PREPARATORY_EDUCATION }!!
+                .let {
+                    assertEquals(
+                        DecisionDraft(
+                            id = it.id,
+                            type = DecisionType.PREPARATORY_EDUCATION,
+                            startDate = mainPeriod.start,
+                            endDate = mainPeriod.end,
+                            unitId = daycare.id,
+                            planned = true,
+                        ),
+                        it,
+                    )
+                }
+            decisionDrafts
+                .find { it.type == DecisionType.PRESCHOOL_DAYCARE }!!
+                .let {
+                    assertEquals(
+                        DecisionDraft(
+                            id = it.id,
+                            type = DecisionType.PRESCHOOL_DAYCARE,
+                            startDate = connectedPeriod.start,
+                            endDate = connectedPeriod.end,
+                            unitId = daycare.id,
+                            planned = true,
+                        ),
+                        it,
+                    )
+                }
+        }
+    }
+
+    @Test
     fun `createPlacementPlan - preschool with daycare fails without a connected period`() {
         db.transaction { tx ->
             tx.insertApplication(

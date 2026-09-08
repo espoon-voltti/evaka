@@ -49,6 +49,26 @@ enum class PlacementType : DatabaseEnum {
             PREPARATORY_DAYCARE -> true
         }
 
+    fun hasConnectedDaycare(): Boolean =
+        when (this) {
+            PRESCHOOL_DAYCARE,
+            PRESCHOOL_CLUB,
+            PREPARATORY_DAYCARE -> true
+
+            CLUB,
+            DAYCARE,
+            DAYCARE_PART_TIME,
+            DAYCARE_FIVE_YEAR_OLDS,
+            DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            PRESCHOOL,
+            PRESCHOOL_DAYCARE_ONLY,
+            PREPARATORY,
+            PREPARATORY_DAYCARE_ONLY,
+            TEMPORARY_DAYCARE,
+            TEMPORARY_DAYCARE_PART_DAY,
+            SCHOOL_SHIFT_CARE -> false
+        }
+
     fun isInvoiced(): Boolean =
         when (this) {
             CLUB -> false
