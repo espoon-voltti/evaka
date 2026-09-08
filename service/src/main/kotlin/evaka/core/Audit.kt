@@ -577,6 +577,7 @@ enum class Audit(
     ChildDocumentUpdateContent,
     ChildDocumentUpdateDecisionValidity,
     ChildDocumentsCreate,
+    ChildDocumentsNonCompletedRead,
     ChildDocumentsReportRead,
     ChildDocumentsReportTemplatesRead,
     ChildServiceApplicationAccept,
