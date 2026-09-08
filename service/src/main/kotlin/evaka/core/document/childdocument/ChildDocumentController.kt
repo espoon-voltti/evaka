@@ -209,6 +209,7 @@ class ChildDocumentController(
                                 clock,
                                 it,
                                 DocumentStatus.CITIZEN_DRAFT,
+                                audit,
                             )
                             audit.add(it)
                         }
@@ -432,6 +433,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ) {
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -445,6 +447,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
                     if (!document.template.type.manuallyPublishable)
                         throw BadRequest("Document type is not publishable")
 
@@ -457,7 +460,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentPublish.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentPublish, clock) }
     }
 
     data class StatusChangeRequest(
@@ -473,6 +476,8 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: StatusChangeRequest,
     ) {
+        val audit = AuditContext().add(documentId).addMeta("newStatus", body.newStatus)
+        val publishAudit = AuditContext()
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -483,15 +488,22 @@ class ChildDocumentController(
                         documentId,
                     )
 
-                    updateChildDocumentStatusForward(tx, user, clock, documentId, body.newStatus)
+                    updateChildDocumentStatusForward(
+                        tx,
+                        user,
+                        clock,
+                        documentId,
+                        body.newStatus,
+                        audit,
+                        publishAudit,
+                    )
                 }
             }
             .also {
-                Audit.ChildDocumentNextStatus.log(
-                    targetId = AuditId(documentId),
-                    meta = mapOf("newStatus" to body.newStatus),
-                )
-                Audit.ChildDocumentPublish.log(targetId = AuditId(documentId))
+                audit.log(Audit.ChildDocumentNextStatus, clock)
+                if (publishAudit.context.isNotEmpty()) {
+                    publishAudit.log(Audit.ChildDocumentPublish, clock)
+                }
             }
     }
 
@@ -501,8 +513,11 @@ class ChildDocumentController(
         clock: EvakaClock,
         documentId: ChildDocumentId,
         newStatus: DocumentStatus,
+        audit: AuditContext,
+        publishAudit: AuditContext? = null,
     ) {
         val document = tx.getChildDocument(documentId) ?: throw NotFound()
+        audit.add(document.child.id)
         val statusTransition =
             validateStatusTransition(
                 document = document,
@@ -524,6 +539,7 @@ class ChildDocumentController(
 
         // decisions are published when accepted/rejected, not on status change
         if (!document.template.type.decision) {
+            publishAudit?.add(documentId)?.add(document.child.id)
             childDocumentService.publishAndScheduleNotifications(
                 tx,
                 user,
@@ -555,6 +571,7 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: StatusChangeRequest,
     ) {
+        val audit = AuditContext().add(documentId).addMeta("newStatus", body.newStatus)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -568,6 +585,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
 
                     if (document.template.validity.end?.isBefore(clock.today()) == true) {
                         throw BadRequest(
@@ -598,12 +616,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also {
-                Audit.ChildDocumentPrevStatus.log(
-                    targetId = AuditId(documentId),
-                    meta = mapOf("newStatus" to body.newStatus),
-                )
-            }
+            .also { audit.log(Audit.ChildDocumentPrevStatus, clock) }
     }
 
     @DeleteMapping("/{documentId}")
