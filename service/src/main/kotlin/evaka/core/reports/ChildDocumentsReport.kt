@@ -5,6 +5,7 @@
 package evaka.core.reports
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.document.ChildDocumentType
 import evaka.core.shared.DaycareId
 import evaka.core.shared.DocumentTemplateId
@@ -54,8 +55,9 @@ class ChildDocumentsReport(private val accessControl: AccessControl) {
         if (templateIds.isEmpty() || unitIds.isEmpty())
             throw BadRequest("Both templateIds and unitIds must be provided")
 
+        val audit = AuditContext().add(templateIds).add(unitIds)
         return db.connect { dbc ->
-            dbc.read { tx ->
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -69,12 +71,8 @@ class ChildDocumentsReport(private val accessControl: AccessControl) {
                         today = clock.today(),
                     )
                 }
-                .also {
-                    Audit.ChildDocumentsReportRead.log(
-                        meta = mapOf("templateIds" to templateIds, "unitIds" to unitIds)
-                    )
-                }
-        }
+            }
+            .also { audit.log(Audit.ChildDocumentsReportRead, clock) }
     }
 
     data class ChildDocumentsReportTemplate(
@@ -89,8 +87,9 @@ class ChildDocumentsReport(private val accessControl: AccessControl) {
         clock: EvakaClock,
         user: AuthenticatedUser.Employee,
     ): List<ChildDocumentsReportTemplate> {
+        val audit = AuditContext()
         return db.connect { dbc ->
-            dbc.read { tx ->
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -116,9 +115,10 @@ class ChildDocumentsReport(private val accessControl: AccessControl) {
                             )
                         }
                         .toList<ChildDocumentsReportTemplate>()
+                        .also { audit.addMeta("count", it.size) }
                 }
-                .also { Audit.ChildDocumentsReportTemplatesRead.log() }
-        }
+            }
+            .also { audit.log(Audit.ChildDocumentsReportTemplatesRead, clock) }
     }
 
     private data class DataRow(
