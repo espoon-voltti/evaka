@@ -14,6 +14,7 @@ import evaka.core.koski.KOSKI_INPUT_TABLES
 import evaka.core.messaging.DeletedMessageThreadBatch
 import evaka.core.messaging.deleteExpiredBulletinThreads
 import evaka.core.messaging.deleteExpiredMessageDrafts
+import evaka.core.messaging.deleteExpiredServiceWorkerThreads
 import evaka.core.messaging.deleteMessageThreadsOfExpiredChildren
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService
@@ -185,6 +186,10 @@ class DataRemovalService(
             expiresBefore = now.minusYears(5),
             limit = limit,
         )
+
+        // A service worker thread becomes deletable only once its application is gone, so this
+        // must run after the applications expired above
+        deleteExpiredServiceWorkerThreads(dbc, now, limit = limit)
 
         deleteExpiredMessageDrafts(dbc, now, expiresBefore = now.minusYears(1), limit = limit)
 
@@ -418,6 +423,20 @@ class DataRemovalService(
                 tx.deleteMessageThreadsOfExpiredChildren(expiredChildIdsQuery, limit)
             }
         logger.info { "Deleted $deletedCount message thread(s) of expired children" }
+    }
+
+    fun deleteExpiredServiceWorkerThreads(
+        dbc: Database.Connection,
+        now: HelsinkiDateTime,
+        limit: Int,
+    ) {
+        logger.info { "Deleting at most $limit expired service worker threads" }
+        val deletedCount =
+            deleteMessageThreads(dbc, now, auditMeta = mapOf("reason" to "APPLICATION_REMOVED")) {
+                tx ->
+                tx.deleteExpiredServiceWorkerThreads(limit)
+            }
+        logger.info { "Deleted $deletedCount expired service worker thread(s)" }
     }
 
     private fun deleteMessageThreads(
