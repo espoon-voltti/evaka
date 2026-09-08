@@ -319,6 +319,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ): List<Employee> {
+        val audit = AuditContext().add(documentId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -332,7 +333,7 @@ class ChildDocumentController(
                     tx.getChildDocumentDecisionMakers(documentId)
                 }
             }
-            .also { Audit.ChildDocumentReadDecisionMakers.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentReadDecisionMakers, clock) }
     }
 
     @PutMapping("/{documentId}/content")
@@ -699,6 +700,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @RequestParam documentId: ChildDocumentId,
     ): List<AcceptedChildDecisions> {
+        val audit = AuditContext().add(documentId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -708,10 +710,13 @@ class ChildDocumentController(
                         Action.ChildDocument.READ_ACCEPTED_DECISIONS,
                         documentId,
                     )
-                    tx.getAcceptedChildDocumentDecisions(documentId)
+                    tx.getAcceptedChildDocumentDecisions(documentId).also { decisions ->
+                        audit.add(decisions.map { it.id })
+                        decisions.forEach { audit.observeDate(it.validity.start) }
+                    }
                 }
             }
-            .also { Audit.ChildDocumentReadAcceptedDecisions.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentReadAcceptedDecisions, clock) }
     }
 
     @GetMapping("/{documentId}/pdf")
