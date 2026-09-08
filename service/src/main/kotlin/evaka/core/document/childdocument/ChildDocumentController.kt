@@ -5,6 +5,7 @@
 package evaka.core.document.childdocument
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.caseprocess.CaseProcessState
@@ -71,6 +72,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @RequestBody body: ChildDocumentCreateRequest,
     ): ChildDocumentId {
+        val audit = AuditContext().add(body.childId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -87,10 +89,12 @@ class ChildDocumentController(
                             "Cannot create document. Template ${body.templateId} is for decision"
                         )
                     }
-                    createChildDocument(tx, user, clock, body.childId, template)
+                    createChildDocument(tx, user, clock, body.childId, template).also {
+                        audit.add(it)
+                    }
                 }
             }
-            .also { Audit.ChildDocumentCreate.log(targetId = AuditId(it)) }
+            .also { audit.log(Audit.ChildDocumentCreate, clock) }
     }
 
     @PostMapping("/decision")
@@ -100,6 +104,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @RequestBody body: ChildDocumentCreateRequest,
     ): ChildDocumentId {
+        val audit = AuditContext().add(body.childId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -116,10 +121,12 @@ class ChildDocumentController(
                             "Cannot create decision. Template ${body.templateId} is not for decision"
                         )
                     }
-                    createChildDocument(tx, user, clock, body.childId, template)
+                    createChildDocument(tx, user, clock, body.childId, template).also {
+                        audit.add(it)
+                    }
                 }
             }
-            .also { Audit.ChildDocumentCreate.log(targetId = AuditId(it)) }
+            .also { audit.log(Audit.ChildDocumentCreate, clock) }
     }
 
     private fun createChildDocument(
@@ -168,6 +175,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @RequestBody body: ChildDocumentsCreateRequest,
     ) {
+        val audit = AuditContext().add(body.childIds)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -202,11 +210,12 @@ class ChildDocumentController(
                                 it,
                                 DocumentStatus.CITIZEN_DRAFT,
                             )
+                            audit.add(it)
                         }
                     }
                 }
             }
-            .also { Audit.ChildDocumentsCreate.log(targetId = AuditId(it)) }
+            .also { audit.log(Audit.ChildDocumentsCreate, clock) }
     }
 
     @GetMapping
