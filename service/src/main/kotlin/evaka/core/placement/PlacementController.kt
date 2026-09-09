@@ -148,58 +148,60 @@ class PlacementController(
         if (body.startDate > body.endDate)
             throw BadRequest("Placement start date cannot be after the end date")
         val now = clock.now()
+        val audit = AuditContext().add(body.childId).add(body.unitId).observeDate(body.startDate)
 
-        val placements = db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Unit.CREATE_PLACEMENT,
-                    body.unitId,
-                )
-                if (tx.getChild(body.childId) == null) {
-                    tx.createChild(
-                        Child(id = body.childId, additionalInformation = AdditionalInformation()),
-                        clock.now(),
-                    )
-                }
-
-                createPlacement(
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
                         tx,
-                        childId = body.childId,
-                        unitId = body.unitId,
-                        period = FiniteDateRange(body.startDate, body.endDate),
-                        type = body.type,
-                        useFiveYearsOldDaycare = useFiveYearsOldDaycare,
-                        placeGuarantee = body.placeGuarantee,
-                        now = now,
-                        userId = user.evakaUserId,
-                        source = PlacementSource.MANUAL,
+                        user,
+                        clock,
+                        Action.Unit.CREATE_PLACEMENT,
+                        body.unitId,
                     )
-                    .also {
-                        tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
-                            body.childId,
-                            now.toLocalDate(),
-                        )
-                        generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
-                        asyncJobRunner.plan(
-                            tx,
-                            listOf(
-                                AsyncJob.GenerateFinanceDecisions.forChild(
-                                    body.childId,
-                                    DateRange(body.startDate, body.endDate),
-                                )
+                    if (tx.getChild(body.childId) == null) {
+                        tx.createChild(
+                            Child(
+                                id = body.childId,
+                                additionalInformation = AdditionalInformation(),
                             ),
-                            runAt = now,
+                            clock.now(),
                         )
                     }
+
+                    createPlacement(
+                            tx,
+                            childId = body.childId,
+                            unitId = body.unitId,
+                            period = FiniteDateRange(body.startDate, body.endDate),
+                            type = body.type,
+                            useFiveYearsOldDaycare = useFiveYearsOldDaycare,
+                            placeGuarantee = body.placeGuarantee,
+                            now = now,
+                            userId = user.evakaUserId,
+                            source = PlacementSource.MANUAL,
+                        )
+                        .also { placements ->
+                            audit.add(placements.map { it.id })
+                            tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
+                                body.childId,
+                                now.toLocalDate(),
+                            )
+                            generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
+                            asyncJobRunner.plan(
+                                tx,
+                                listOf(
+                                    AsyncJob.GenerateFinanceDecisions.forChild(
+                                        body.childId,
+                                        DateRange(body.startDate, body.endDate),
+                                    )
+                                ),
+                                runAt = now,
+                            )
+                        }
+                }
             }
-        }
-        Audit.PlacementCreate.log(
-            targetId = AuditId(listOf(body.childId, body.unitId)),
-            objectId = AuditId(placements.map { it.id }),
-        )
+            .also { audit.log(Audit.PlacementCreate, clock) }
     }
 
     @PutMapping("/employee/placements/{placementId}")
