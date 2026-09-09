@@ -4,6 +4,7 @@
 
 package evaka.core.placement
 
+import evaka.core.AuditContext
 import evaka.core.application.ApplicationOrigin
 import evaka.core.backupcare.recreateBackupCares
 import evaka.core.shared.ApplicationId
@@ -969,12 +970,19 @@ fun Database.Transaction.updateGroupPlacementEndDate(
 }
 
 @IgnorableReturnValue
-fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
+fun Database.Transaction.deleteGroupPlacement(
+    id: GroupPlacementId,
+    audit: AuditContext,
+): Boolean {
     val dgPlacement = getDaycareGroupPlacement(id)
     if (dgPlacement != null) {
+        audit.add(id).add(dgPlacement.daycarePlacementId).observeDate(dgPlacement.startDate)
+        dgPlacement.groupId?.let { audit.add(it) }
+
         val placement = getPlacement(dgPlacement.daycarePlacementId)
 
         if (placement != null) {
+            audit.add(placement.childId).add(placement.unitId)
             clearCalendarEventAttendees(placement.childId, placement.unitId, null)
         }
     }

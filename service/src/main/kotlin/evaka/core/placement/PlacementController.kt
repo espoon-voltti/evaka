@@ -6,7 +6,6 @@ package evaka.core.placement
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.absence.generateAbsencesFromIrregularDailyServiceTimes
 import evaka.core.daycare.controllers.AdditionalInformation
 import evaka.core.daycare.controllers.Child
@@ -334,6 +333,7 @@ class PlacementController(
         @PathVariable placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody,
     ): GroupPlacementId {
+        val audit = AuditContext().add(placementId).add(body.groupId).observeDate(body.startDate)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -344,20 +344,16 @@ class PlacementController(
                         placementId,
                     )
                     tx.checkAndCreateGroupPlacement(
-                        daycarePlacementId = placementId,
-                        groupId = body.groupId,
-                        startDate = body.startDate,
-                        endDate = body.endDate,
-                    )
+                            daycarePlacementId = placementId,
+                            groupId = body.groupId,
+                            startDate = body.startDate,
+                            endDate = body.endDate,
+                            audit = audit,
+                        )
+                        .also { audit.add(it) }
                 }
             }
-            .also { groupPlacementId ->
-                Audit.DaycareGroupPlacementCreate.log(
-                    targetId = AuditId(placementId),
-                    objectId = AuditId(groupPlacementId),
-                    meta = mapOf("groupId" to body.groupId),
-                )
-            }
+            .also { audit.log(Audit.DaycareGroupPlacementCreate, clock) }
     }
 
     @DeleteMapping("/employee/group-placements/{groupPlacementId}")
@@ -367,19 +363,20 @@ class PlacementController(
         clock: EvakaClock,
         @PathVariable groupPlacementId: GroupPlacementId,
     ) {
+        val audit = AuditContext().add(groupPlacementId)
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.GroupPlacement.DELETE,
-                    groupPlacementId,
-                )
-                it.deleteGroupPlacement(groupPlacementId)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.GroupPlacement.DELETE,
+                        groupPlacementId,
+                    )
+                    tx.deleteGroupPlacement(groupPlacementId, audit)
+                }
             }
-        }
-        Audit.DaycareGroupPlacementDelete.log(targetId = AuditId(groupPlacementId))
+            .also { audit.log(Audit.DaycareGroupPlacementDelete, clock) }
     }
 
     @PostMapping("/employee/group-placements/{groupPlacementId}/transfer")
@@ -390,22 +387,21 @@ class PlacementController(
         @PathVariable groupPlacementId: GroupPlacementId,
         @RequestBody body: GroupTransferRequestBody,
     ) {
+        val audit =
+            AuditContext().add(groupPlacementId).add(body.groupId).observeDate(body.startDate)
         db.connect { dbc ->
-            dbc.transaction {
-                accessControl.requirePermissionFor(
-                    it,
-                    user,
-                    clock,
-                    Action.GroupPlacement.UPDATE,
-                    groupPlacementId,
-                )
-                it.transferGroup(groupPlacementId, body.groupId, body.startDate)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.GroupPlacement.UPDATE,
+                        groupPlacementId,
+                    )
+                    tx.transferGroup(groupPlacementId, body.groupId, body.startDate, audit)
+                }
             }
-        }
-        Audit.DaycareGroupPlacementTransfer.log(
-            targetId = AuditId(groupPlacementId),
-            objectId = AuditId(body.groupId),
-        )
+            .also { audit.log(Audit.DaycareGroupPlacementTransfer, clock) }
     }
 
     @GetMapping("/employee/placements/child-placement-periods/{adultId}")
