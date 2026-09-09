@@ -371,7 +371,6 @@ enum class Audit(
     PinLogin(securityEvent = true, securityLevel = "low"),
     PlacementCountReportRead,
     PlacementSketchingReportRead,
-    // PlacementPlanSearch,
     PreschoolAbsenceReport,
     PreschoolTermCreate,
     PreschoolTermUpdate,
