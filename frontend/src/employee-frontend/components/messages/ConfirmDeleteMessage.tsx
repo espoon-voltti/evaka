@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { useQueryClient } from '@tanstack/react-query'
-import React, { useContext, useState } from 'react'
-import styled from 'styled-components'
+import React, { useState } from 'react'
 
 import type {
   MessageAccountId,
@@ -13,26 +12,18 @@ import type {
 import { invalidateDependencies } from 'lib-common/query'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
+import Checkbox from 'lib-components/atoms/form/Checkbox'
 import BaseModal, {
   ModalButtons
 } from 'lib-components/molecules/modals/BaseModal'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { H3, P } from 'lib-components/typography'
-import { defaultMargins, Gap } from 'lib-components/white-space'
+import { P } from 'lib-components/typography'
+import { Gap } from 'lib-components/white-space'
 import { faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { UserContext } from '../../state/user'
 
 import { deleteMessageContentMutation } from './queries'
-
-const Blockquote = styled.blockquote`
-  margin: ${defaultMargins.s} 0;
-  padding-left: ${defaultMargins.s};
-  border-left: 4px solid ${(p) => p.theme.colors.grayscale.g35};
-  color: ${(p) => p.theme.colors.grayscale.g70};
-  white-space: pre-line;
-`
 
 export interface Props {
   accountId: MessageAccountId
@@ -49,9 +40,9 @@ export const ConfirmDeleteMessage = React.memo(function ConfirmDeleteMessage({
 }: Props) {
   const { i18n } = useTranslation()
   const t = i18n.messages.deletion.modal
-  const { featureConfig } = useContext(UserContext)
   const queryClient = useQueryClient()
   const [alreadyDeleted, setAlreadyDeleted] = useState(false)
+  const [confirmed, setConfirmed] = useState(false)
 
   if (alreadyDeleted) {
     // Shown when a concurrent delete was detected on confirm (see onFailure below).
@@ -76,16 +67,18 @@ export const ConfirmDeleteMessage = React.memo(function ConfirmDeleteMessage({
       close={onClose}
       closeLabel={t.cancel}
     >
-      <P>{t.intro}</P>
-      <Blockquote data-qa="placeholder-quote">
-        {featureConfig?.deletedMessagePlaceholderBody}
-      </Blockquote>
-      <H3>{t.stepsHeader}</H3>
-      <P>{t.stepsBody1}</P>
-      <P>{t.stepsBody2}</P>
+      <P>{t.body1}</P>
+      <P>{t.body2}</P>
+      <Checkbox
+        label={t.confirmCheckbox}
+        checked={confirmed}
+        onChange={setConfirmed}
+        data-qa="delete-message-confirmation"
+      />
       <ModalButtons $justifyContent="center">
         <MutateButton
           danger
+          disabled={!confirmed}
           mutation={deleteMessageContentMutation}
           text={t.confirm}
           onClick={() => ({ accountId, contentId })}

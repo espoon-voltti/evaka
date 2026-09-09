@@ -4687,19 +4687,25 @@ export const fi = {
     archiveThread: 'Arkistoi viestiketju',
     markUnread: 'Merkitse lukemattomaksi',
     deletion: {
-      deleteButton: 'Viestin poistaminen',
+      deleteButton: 'Tietosuojapoisto',
       alreadyDeleted: 'Viesti oli jo poistettu',
       modal: {
-        title: 'Viestin poistaminen',
-        intro:
-          'Toiminto on tarkoitettu vain tilanteeseen, jossa viesti on lähetetty vahingossa väärälle vastaanottajalle. Poistetun viestin sisältö korvataan jokaisen vastaanottajan eVakassa seuraavalla tekstillä:',
-        stepsHeader: 'Toimenpiteet välittömästi poiston jälkeen',
-        stepsBody1:
-          'Väärälle vastaanottajalle lähetetystä viestistä tulee aina tehdä tietosuojailmoitus. Ota poiston jälkeen yhteyttä kunnan eVaka-tukeen jatkotoimenpiteitä varten.',
-        stepsBody2:
-          'Tieto poistosta välitetään varhaiskasvatusyksikön johtajille ja eVaka-tukeen.',
+        title:
+          'Poista väärille vastaanottajille lähetetty arkaluontoinen viesti',
+        body1: (
+          <>
+            <strong>Käytä tätä vain</strong>, jos arkaluontoista tietoa
+            sisältävä viesti on lähetetty vahingossa väärälle vastaanottajalle.
+            Jos viestissä on jokin muu virhe, korjaa se lähettämällä uusi
+            viesti.
+          </>
+        ),
+        body2:
+          'Ilmoitus menee automaattisesti varhaiskasvatusyksikön johtajille ja eVaka-tukeen. Ota yhteyttä kunnan eVaka-tukeen tietosuojailmoituksen tekemiseksi.',
+        confirmCheckbox:
+          'Vahvistan, että arkaluontoinen viesti lähetettiin vahingossa väärille vastaanottajille.',
         cancel: 'Peruuta',
-        confirm: 'Poista viesti'
+        confirm: 'Ilmoita tietosuojaloukkauksesta ja poista viesti'
       },
       afterDeletion: {
         banner: (supportEmail: string | null): ReactNode =>

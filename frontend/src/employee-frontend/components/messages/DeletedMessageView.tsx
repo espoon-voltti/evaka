@@ -35,6 +35,7 @@ const OriginalBody = styled.div`
 interface Props {
   accountId: MessageAccountId
   contentId: MessageContentId
+  placeholder: string
   isJustDeleted: boolean
   revealed: boolean
   onSetRevealed: (revealed: boolean) => void
@@ -43,6 +44,7 @@ interface Props {
 export const DeletedMessageView = React.memo(function DeletedMessageView({
   accountId,
   contentId,
+  placeholder,
   isJustDeleted,
   revealed,
   onSetRevealed
@@ -98,9 +100,16 @@ export const DeletedMessageView = React.memo(function DeletedMessageView({
     </FixedSpaceColumn>
   )
 
-  return isJustDeleted ? (
-    prompt
-  ) : (
-    <AlertBox noMargin message={prompt} data-qa="deleted-message-alert" />
+  return (
+    <FixedSpaceColumn $spacing="s">
+      <div data-qa="deleted-message-placeholder">
+        <Linkify text={placeholder} />
+      </div>
+      {isJustDeleted ? (
+        prompt
+      ) : (
+        <AlertBox noMargin message={prompt} data-qa="deleted-message-alert" />
+      )}
+    </FixedSpaceColumn>
   )
 })

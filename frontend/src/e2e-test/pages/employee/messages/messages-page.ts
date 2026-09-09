@@ -231,6 +231,7 @@ export class SentMessagePage {
   deleteMessageButton: Element
   messageDeletedBanner: Element
   deletedMessageAlert: Element
+  deletedMessagePlaceholder: Element
   viewDeletedMessageButton: Element
   hideDeletedMessageButton: Element
   deletedMessageOriginal: Element
@@ -240,6 +241,9 @@ export class SentMessagePage {
     this.deleteMessageButton = page.findByDataQa('delete-message-btn')
     this.messageDeletedBanner = page.findByDataQa('message-deleted-banner')
     this.deletedMessageAlert = page.findByDataQa('deleted-message-alert')
+    this.deletedMessagePlaceholder = page.findByDataQa(
+      'deleted-message-placeholder'
+    )
     this.viewDeletedMessageButton = page.findByDataQa(
       'view-deleted-message-btn'
     )
@@ -259,10 +263,17 @@ export class SentMessagePage {
     )
   }
 
-  async deleteMessage() {
+  async openDeleteMessageModal() {
     await this.deleteMessageButton.click()
-    const modal = this.page.findByDataQa('delete-message-modal')
-    await modal.findByDataQa('modal-okBtn').click()
+    return new DeleteMessageModal(
+      this.page.findByDataQa('delete-message-modal')
+    )
+  }
+
+  async deleteMessage() {
+    const modal = await this.openDeleteMessageModal()
+    await modal.confirmation.check()
+    await modal.confirmButton.click()
     await expect(modal).toBeHidden()
   }
 
@@ -278,6 +289,12 @@ export class SentMessagePage {
     await this.alreadyDeletedModal.findByDataQa('modal-okBtn').click()
     await expect(this.alreadyDeletedModal).toBeHidden()
   }
+}
+
+export class DeleteMessageModal extends Element {
+  confirmation = new Checkbox(this.findByDataQa('delete-message-confirmation'))
+  confirmButton = this.findByDataQa('modal-okBtn')
+  title = this.findByDataQa('title')
 }
 
 export class MessageCopyPage {
