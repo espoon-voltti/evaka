@@ -6,7 +6,6 @@ package evaka.core.serviceneed
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.absence.ChildServiceNeedInfo
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
@@ -153,16 +152,31 @@ class ServiceNeedController(
         clock: EvakaClock,
         @PathVariable id: ServiceNeedId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(tx, user, clock, Action.ServiceNeed.DELETE, id)
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.ServiceNeed.DELETE,
+                        id,
+                    )
 
-                val childRange = tx.getServiceNeedChildRange(id)
-                tx.deleteServiceNeed(id)
-                notifyServiceNeedUpdated(tx, clock, asyncJobRunner, childRange)
+                    val childRange = tx.getServiceNeedChildRange(id)
+                    val deleted = tx.getServiceNeed(id)
+                    audit
+                        .add(childRange.childId)
+                        .add(deleted.placementId)
+                        .add(deleted.option.id)
+                        .observeDate(deleted.startDate)
+                        .addMeta("startDate", deleted.startDate)
+                        .addMeta("endDate", deleted.endDate)
+                    tx.deleteServiceNeed(id)
+                    notifyServiceNeedUpdated(tx, clock, asyncJobRunner, childRange)
+                }
             }
-        }
-        Audit.PlacementServiceNeedDelete.log(targetId = AuditId(id))
+            .also { audit.log(Audit.PlacementServiceNeedDelete, clock) }
     }
 
     @GetMapping("/employee/service-needs/options")
