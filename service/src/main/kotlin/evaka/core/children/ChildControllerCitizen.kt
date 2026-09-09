@@ -100,6 +100,7 @@ class ChildControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): List<ServiceNeedSummary> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -111,10 +112,14 @@ class ChildControllerCitizen(
                     )
                     val serviceNeeds = tx.getServiceNeedSummary(childId)
                     val missingServiceNeeds = getMissingServiceNeeds(tx, childId, serviceNeeds)
-                    serviceNeeds + missingServiceNeeds
+                    (serviceNeeds + missingServiceNeeds).also { all ->
+                        audit
+                            .observeDate(all.minOfOrNull { it.startDate })
+                            .addMeta("count", all.size)
+                    }
                 }
             }
-            .also { Audit.CitizenChildServiceNeedRead.log(targetId = AuditId(childId)) }
+            .also { audit.log(Audit.CitizenChildServiceNeedRead, clock) }
     }
 
     private fun getMissingServiceNeeds(
