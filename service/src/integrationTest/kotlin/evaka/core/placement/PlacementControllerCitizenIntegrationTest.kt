@@ -1308,11 +1308,13 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             ),
         )
 
-        assertTrue(capturedOutput.out.contains("\"targetId\":[\"${daycare.id}\",\"${child.id}"))
-        assertTrue(capturedOutput.out.contains("\"objectId\":[\"$terminatedPlacementId\"]"))
+        assertTrue(capturedOutput.out.contains("\"personId\":[\"${child.id}\"]"))
+        assertTrue(capturedOutput.out.contains("\"daycareId\":[\"${daycare.id}\"]"))
+        assertTrue(capturedOutput.out.contains("\"placementId\":[\"$terminatedPlacementId\"]"))
+        assertTrue(capturedOutput.out.contains("\"minDate\":\"$placementTerminationDate\""))
         assertTrue(
             capturedOutput.out.contains(
-                "\"meta\":{\"type\":\"DAYCARE\",\"placementIds\":[\"$terminatedPlacementId\"],\"transferApplicationIds\":[]}"
+                "\"meta\":{\"type\":\"DAYCARE\",\"terminateDaycareOnly\":false}"
             )
         )
     }

@@ -6,7 +6,6 @@ package evaka.core.placement
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.application.cancelActiveTransferApplications
 import evaka.core.daycare.getUnitFeatures
 import evaka.core.shared.ChildId
@@ -87,6 +86,13 @@ class PlacementControllerCitizen(
             body.terminationDate.also {
                 if (it.isBefore(clock.today())) throw BadRequest("Invalid terminationDate")
             }
+        val audit =
+            AuditContext()
+                .add(childId)
+                .add(body.unitId)
+                .observeDate(terminationDate)
+                .addMeta("type", body.type)
+                .addMeta("terminateDaycareOnly", body.terminateDaycareOnly)
 
         db.connect { dbc ->
                 dbc.transaction { tx ->
@@ -146,6 +152,7 @@ class PlacementControllerCitizen(
                     val allPlacements =
                         terminatablePlacementGroup.placements +
                             terminatablePlacementGroup.additionalPlacements
+                    audit.add(allPlacements.map { it.id })
                     if (allPlacements.any { it.startDate > terminationDate }) {
                         val endingPlacement = allPlacements.find { it.endDate == terminationDate }
                         if (endingPlacement != null) {
@@ -160,13 +167,13 @@ class PlacementControllerCitizen(
                     val dismissedType =
                         if (body.terminateDaycareOnly == true) TerminatablePlacementType.DAYCARE
                         else body.type
-                    val cancelableTransferApplicationIds =
-                        tx.cancelActiveTransferApplications(
+                    tx.cancelActiveTransferApplications(
                             childId,
                             dismissedType.cancelableTransferApplicationType(),
                             clock,
                             user.evakaUserId,
                         )
+                        .also { audit.add(it) }
 
                     tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                         childId,
@@ -182,24 +189,8 @@ class PlacementControllerCitizen(
                         ),
                         runAt = clock.now(),
                     )
-
-                    val placements =
-                        terminatablePlacementGroup.placements +
-                            terminatablePlacementGroup.additionalPlacements
-                    Pair(placements.map { it.id }, cancelableTransferApplicationIds)
                 }
             }
-            .also { (placementIds, cancelableTransferApplicationIds) ->
-                Audit.PlacementTerminate.log(
-                    targetId = AuditId(listOf(body.unitId, childId)),
-                    objectId = AuditId(placementIds + cancelableTransferApplicationIds),
-                    meta =
-                        mapOf(
-                            "type" to body.type,
-                            "placementIds" to placementIds,
-                            "transferApplicationIds" to cancelableTransferApplicationIds,
-                        ),
-                )
-            }
+            .also { audit.log(Audit.PlacementTerminate, clock) }
     }
 }
