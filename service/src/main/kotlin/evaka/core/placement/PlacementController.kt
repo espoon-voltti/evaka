@@ -409,6 +409,7 @@ class PlacementController(
         clock: EvakaClock,
         @PathVariable adultId: PersonId,
     ): List<FiniteDateRange> {
+        val audit = AuditContext().add(adultId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -432,23 +433,27 @@ WITH all_fridge_children AS (
     JOIN fridge_partner fp2 ON fp2.partnership_id = fp1.partnership_id AND fp2.indx != fp1.indx AND fp1.person_id = ${bind(adultId)}
     JOIN fridge_child fc ON fc.head_of_child = fp2.person_id AND daterange(fc.start_date, fc.end_date, '[]') && daterange(fp2.start_date, fp2.end_date, '[]')
 )
-SELECT greatest(p.start_date, fc.start_date) AS start, least(p.end_date, fc.end_date) AS end
+SELECT fc.child_id, daterange(greatest(p.start_date, fc.start_date), least(p.end_date, fc.end_date), '[]') AS range
 FROM placement p
 JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') && daterange(fc.start_date, fc.end_date, '[]')
 """
                             )
                         }
-                        .toList { FiniteDateRange(column("start"), column("end")) }
+                        .toList<ChildPlacementPeriod>()
+                        .also { rows ->
+                            audit
+                                .add(rows.map { it.childId })
+                                .observeDate(rows.minOfOrNull { it.range.start })
+                                .addMeta("count", rows.size)
+                        }
+                        .map { it.range }
                 }
             }
-            .also {
-                Audit.PlacementChildPlacementPeriodsRead.log(
-                    targetId = AuditId(adultId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.PlacementChildPlacementPeriodsRead, clock) }
     }
 }
+
+private data class ChildPlacementPeriod(val childId: ChildId, val range: FiniteDateRange)
 
 data class PlacementCreateRequestBody(
     val type: PlacementType,

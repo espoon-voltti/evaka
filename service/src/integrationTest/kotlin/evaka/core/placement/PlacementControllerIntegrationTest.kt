@@ -26,6 +26,7 @@ import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
 import evaka.core.shared.dev.DevDaycareGroup
 import evaka.core.shared.dev.DevEmployee
+import evaka.core.shared.dev.DevFridgeChild
 import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
@@ -1270,5 +1271,33 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     private fun getAbsencesOfChildByRange(range: DateRange) = db.read { tx ->
         tx.getAbsencesOfChildByRange(childId, range)
             .sortedWith(compareBy({ it.date }, { it.category }))
+    }
+
+    @Test
+    fun `child placement periods are clamped to the fridge child period`() {
+        val headOfChild = DevPerson()
+        val fridgeChildStart = placementStart.plusDays(10)
+        val fridgeChildEnd = placementEnd.minusDays(10)
+        db.transaction { tx ->
+            tx.insert(headOfChild, DevPersonType.ADULT)
+            tx.insert(
+                DevFridgeChild(
+                    childId = child.id,
+                    headOfChild = headOfChild.id,
+                    startDate = fridgeChildStart,
+                    endDate = fridgeChildEnd,
+                )
+            )
+        }
+
+        val periods =
+            placementController.getChildPlacementPeriods(
+                dbInstance(),
+                admin,
+                mockClock,
+                headOfChild.id,
+            )
+
+        assertEquals(listOf(FiniteDateRange(fridgeChildStart, fridgeChildEnd)), periods)
     }
 }
