@@ -286,6 +286,7 @@ class PlacementController(
         @PathVariable placementId: PlacementId,
     ) {
         val now = clock.now()
+        val audit = AuditContext().add(placementId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -297,6 +298,13 @@ class PlacementController(
                     )
 
                     tx.cancelPlacement(now, user.evakaUserId, placementId).also {
+                        audit
+                            .add(it.childId)
+                            .add(it.unitId)
+                            .observeDate(it.startDate)
+                            .addMeta("type", it.type)
+                            .addMeta("startDate", it.startDate)
+                            .addMeta("endDate", it.endDate)
                         tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
                             it.childId,
                             now.toLocalDate(),
@@ -315,12 +323,7 @@ class PlacementController(
                     }
                 }
             }
-            .also {
-                Audit.PlacementCancel.log(
-                    targetId = AuditId(placementId),
-                    objectId = AuditId(listOf(it.childId, it.unitId)),
-                )
-            }
+            .also { audit.log(Audit.PlacementCancel, clock) }
     }
 
     @PostMapping("/employee/placements/{placementId}/group-placements")

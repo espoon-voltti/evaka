@@ -342,6 +342,7 @@ fun Database.Transaction.deleteServiceNeedsFromPlacement(placementId: PlacementI
 data class CancelPlacementResult(
     val childId: ChildId,
     val unitId: DaycareId,
+    val type: PlacementType,
     val startDate: LocalDate,
     val endDate: LocalDate,
 )
@@ -371,10 +372,11 @@ fun Database.Transaction.cancelPlacement(
     recreateBackupCares(modifiedBy, modifiedAt, placement.childId)
 
     return CancelPlacementResult(
-        placement.childId,
-        placement.unitId,
-        placement.startDate,
-        placement.endDate,
+        childId = placement.childId,
+        unitId = placement.unitId,
+        type = placement.type,
+        startDate = placement.startDate,
+        endDate = placement.endDate,
     )
 }
 
