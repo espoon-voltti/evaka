@@ -4,6 +4,7 @@
 
 package evaka.core.placement
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
@@ -256,6 +257,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -710,6 +712,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -775,6 +778,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -919,6 +923,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -962,6 +967,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     useFiveYearsOldDaycare = true,
                     now = now,
                     userId = employee.evakaUserId,
+                    audit = AuditContext(),
                 )
             }
         }

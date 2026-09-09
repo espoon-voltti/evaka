@@ -4,6 +4,7 @@
 
 package evaka.core.placement
 
+import evaka.core.AuditContext
 import evaka.core.application.utils.exhaust
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
@@ -152,10 +153,17 @@ fun Database.Transaction.updatePlacement(
     useFiveYearsOldDaycare: Boolean,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
+    audit: AuditContext,
 ): Placement {
     if (endDate.isBefore(startDate)) throw BadRequest("Inverted time range")
 
     val old = getPlacement(id) ?: throw NotFound("Placement $id not found")
+    audit
+        .add(old.id)
+        .add(old.childId)
+        .add(old.unitId)
+        .observeDate(old.startDate)
+        .observeDate(startDate)
     if (startDate.isAfter(old.startDate)) {
         clearGroupPlacementsBefore(id, startDate)
         clearServiceNeedsFromPeriod(
@@ -204,13 +212,14 @@ fun Database.Transaction.updatePlacement(
 
         newPeriods.forEach { (period, type) ->
             insertDerivedPlacement(
-                old,
-                type,
-                period.start,
-                period.end,
-                modifiedAt = now,
-                modifiedBy = userId,
-            )
+                    old,
+                    type,
+                    period.start,
+                    period.end,
+                    modifiedAt = now,
+                    modifiedBy = userId,
+                )
+                .also { audit.add(it.id) }
         }
     } catch (e: Exception) {
         throw mapPSQLException(e)
