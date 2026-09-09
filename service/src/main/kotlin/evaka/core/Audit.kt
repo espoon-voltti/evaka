@@ -422,7 +422,6 @@ enum class Audit(
     PisFamilyRead,
     PlacementCountReportRead,
     PlacementSketchingReportRead,
-    // PlacementPlanSearch,
     PreschoolAbsenceReport,
     PreschoolTermCreate,
     PreschoolTermUpdate,
