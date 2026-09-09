@@ -5,6 +5,7 @@
 package evaka.core.serviceneed
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.absence.ChildServiceNeedInfo
 import evaka.core.placement.PlacementType
@@ -193,6 +194,7 @@ class ServiceNeedController(
         @PathVariable childId: ChildId,
         @RequestParam from: LocalDate,
     ): List<ChildServiceNeedInfo> {
+        val audit = AuditContext().add(childId).observeDate(from)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -205,6 +207,6 @@ class ServiceNeedController(
                     tx.getChildServiceNeedInfos(childId, from)
                 }
             }
-            .also { Audit.ChildServiceNeedsRead.log(targetId = AuditId(childId)) }
+            .also { audit.log(Audit.ChildServiceNeedsRead, clock) }
     }
 }
