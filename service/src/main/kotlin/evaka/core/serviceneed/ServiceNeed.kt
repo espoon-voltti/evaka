@@ -4,6 +4,7 @@
 
 package evaka.core.serviceneed
 
+import evaka.core.AuditContext
 import evaka.core.ConstList
 import evaka.core.invoicing.domain.SiblingDiscount
 import evaka.core.placement.PlacementType
@@ -243,8 +244,10 @@ fun updateServiceNeed(
     shiftCare: ShiftCareType,
     partWeek: Boolean,
     confirmedAt: HelsinkiDateTime,
+    audit: AuditContext,
 ) {
     val old = tx.getServiceNeed(id)
+    audit.add(old.placementId).observeDate(old.startDate)
     validateServiceNeed(tx, old.placementId, startDate, endDate, optionId, partWeek)
     if (startDate.isBefore(old.startDate)) {
         clearServiceNeedsFromPeriod(
