@@ -162,18 +162,19 @@ class ServiceNeedController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): List<ServiceNeedOption> {
+        val audit = AuditContext()
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Global.READ_SERVICE_NEED_OPTIONS,
                     )
-                    it.getServiceNeedOptions()
+                    tx.getServiceNeedOptions().also { audit.addMeta("count", it.size) }
                 }
             }
-            .also { Audit.ServiceNeedOptionsRead.log(meta = mapOf("count" to it.size)) }
+            .also { audit.log(Audit.ServiceNeedOptionsRead, clock) }
     }
 
     @GetMapping(
