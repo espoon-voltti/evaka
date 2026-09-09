@@ -269,6 +269,62 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("testCases")
+    fun testPreschoolClubFull(test: DecisionResolutionTestCase) {
+        val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 6, 4))
+        val preschoolDaycarePeriod =
+            FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 6, 4))
+        val ids =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_CONFIRMATION,
+                type = PlacementType.PRESCHOOL_CLUB,
+                period = period,
+                preschoolDaycarePeriod = preschoolDaycarePeriod,
+            )
+        val user = if (test.isServiceWorker) serviceWorker else endUser
+        if (test.isAccept) {
+            acceptDecisionAndAssert(user, applicationId, ids.primaryId!!, period.start)
+            db.read { r ->
+                assertEquals(
+                    ApplicationStatus.WAITING_CONFIRMATION,
+                    r.getApplicationStatus(ids.applicationId),
+                )
+                r.getPlacementRowsByChild(child.id).exactlyOne().also {
+                    assertEquals(PlacementType.PRESCHOOL, it.type)
+                    assertEquals(daycare.id, it.unitId)
+                    assertEquals(period, it.period())
+                }
+            }
+            acceptDecisionAndAssert(
+                user,
+                applicationId,
+                ids.preschoolDaycareId!!,
+                preschoolDaycarePeriod.start,
+            )
+            db.read { r ->
+                assertEquals(ApplicationStatus.ACTIVE, r.getApplicationStatus(ids.applicationId))
+                r.getPlacementRowsByChild(child.id).exactlyOne().also {
+                    assertEquals(PlacementType.PRESCHOOL_CLUB, it.type)
+                    assertEquals(daycare.id, it.unitId)
+                    assertEquals(preschoolDaycarePeriod, it.period())
+                }
+                assertTrue(r.getPlacementPlanRowByApplication(ids.applicationId).deleted)
+            }
+        } else {
+            rejectDecisionAndAssert(user, applicationId, ids.primaryId!!)
+            db.read { r ->
+                assertEquals(ApplicationStatus.REJECTED, r.getApplicationStatus(ids.applicationId))
+                assertTrue(r.getPlacementRowsByChild(child.id).toList().isEmpty())
+                assertTrue(
+                    r.getDecisionRowsByApplication(ids.applicationId).toList().all {
+                        it.status == DecisionStatus.REJECTED
+                    }
+                )
+            }
+        }
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("testCases")
     fun testPreparatoryFull(test: DecisionResolutionTestCase) {
         val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 6, 4))
         val preschoolDaycarePeriod =
@@ -465,8 +521,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         preschoolDaycarePeriod: FiniteDateRange? = null,
         preschoolDaycareWithoutPreschool: Boolean = false,
     ): DataIdentifiers = db.transaction { tx ->
-        val preschoolDaycare =
-            type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
+        val preschoolDaycare = type.hasConnectedDaycare()
         tx.insertTestApplication(
             id = applicationId,
             status = status,
@@ -572,7 +627,9 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     createdBy = employee.evakaUserId,
                     unitId = unit.id,
                     applicationId = applicationId,
-                    type = DecisionType.PRESCHOOL_DAYCARE,
+                    type =
+                        if (type == PlacementType.PRESCHOOL_CLUB) DecisionType.PRESCHOOL_CLUB
+                        else DecisionType.PRESCHOOL_DAYCARE,
                     startDate = it.start,
                     endDate = it.end,
                 )

@@ -1045,36 +1045,30 @@ class ApplicationStateService(
                 ?: throw IllegalStateException("Application $applicationId has no placement plan")
 
         val extent =
-            when (plan.type) {
-                PlacementType.PRESCHOOL_DAYCARE,
-                PlacementType.PRESCHOOL_CLUB,
-                PlacementType.PREPARATORY_DAYCARE -> {
-                    when (decision.type) {
-                        DecisionType.PRESCHOOL,
-                        DecisionType.PREPARATORY_EDUCATION -> {
-                            PlacementPlanExtent.OnlyPreschool(
-                                plan.period.copy(start = requestedStartDate)
-                            )
-                        }
+            if (plan.type.hasConnectedDaycare()) {
+                when (decision.type) {
+                    DecisionType.PRESCHOOL,
+                    DecisionType.PREPARATORY_EDUCATION -> {
+                        PlacementPlanExtent.OnlyPreschool(
+                            plan.period.copy(start = requestedStartDate)
+                        )
+                    }
 
-                        DecisionType.PRESCHOOL_DAYCARE,
-                        DecisionType.PRESCHOOL_CLUB -> {
-                            PlacementPlanExtent.OnlyPreschoolDaycare(
-                                plan.preschoolDaycarePeriod!!.copy(start = requestedStartDate)
-                            )
-                        }
+                    DecisionType.PRESCHOOL_DAYCARE,
+                    DecisionType.PRESCHOOL_CLUB -> {
+                        PlacementPlanExtent.OnlyPreschoolDaycare(
+                            plan.preschoolDaycarePeriod!!.copy(start = requestedStartDate)
+                        )
+                    }
 
-                        else -> {
-                            throw IllegalStateException(
-                                "Placement plan ${plan.id} has type ${plan.type} but decision ${decision.id} has type ${decision.type}"
-                            )
-                        }
+                    else -> {
+                        throw IllegalStateException(
+                            "Placement plan ${plan.id} has type ${plan.type} but decision ${decision.id} has type ${decision.type}"
+                        )
                     }
                 }
-
-                else -> {
-                    PlacementPlanExtent.FullSingle(plan.period.copy(start = requestedStartDate))
-                }
+            } else {
+                PlacementPlanExtent.FullSingle(plan.period.copy(start = requestedStartDate))
             }
 
         // everything validated now!

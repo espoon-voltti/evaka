@@ -49,6 +49,7 @@ import evaka.core.shared.dev.DevStaffAttendance
 import evaka.core.shared.dev.insert
 import evaka.core.shared.dev.insertApplication
 import evaka.core.shared.dev.insertTestApplication
+import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
@@ -59,6 +60,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -1258,6 +1260,21 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             ),
             occupanciesForGroup1,
         )
+    }
+
+    @Test
+    fun `Connected daycare application without a preschool daycare period is rejected`() {
+        val applicationId =
+            createApplication(child1.id, ApplicationType.PRESCHOOL, connectedDaycare = true)
+
+        assertThrows<BadRequest> {
+            getSpeculatedOccupancies(
+                daycare.id,
+                applicationId,
+                period = FiniteDateRange(startDate, endDate),
+                preschoolDaycarePeriod = null,
+            )
+        }
     }
 
     private fun createApplication(

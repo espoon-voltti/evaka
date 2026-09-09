@@ -94,6 +94,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 import java.util.UUID
+import java.util.stream.Stream
 import kotlin.enums.enumEntries
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -105,7 +106,19 @@ import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
+
+data class ConnectedPlacementPlanTestCase(
+    val appliedType: PlacementType,
+    val primaryDecision: DecisionType,
+    val connectedDecision: DecisionType,
+    val serviceNeedOption: ServiceNeedOption? = null,
+) {
+    override fun toString() = appliedType.name
+}
 
 class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var attachmentsController: AttachmentsController
@@ -1172,14 +1185,51 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         }
     }
 
-    @Test
-    fun `createPlacementPlan - preschool with daycare`() {
+    @Suppress("unused")
+    fun connectedPlacementPlanCases(): Stream<Arguments> =
+        listOf(
+                Arguments.of(
+                    ConnectedPlacementPlanTestCase(
+                        appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                        primaryDecision = DecisionType.PRESCHOOL,
+                        connectedDecision = DecisionType.PRESCHOOL_DAYCARE,
+                    )
+                ),
+                Arguments.of(
+                    ConnectedPlacementPlanTestCase(
+                        appliedType = PlacementType.PRESCHOOL_CLUB,
+                        primaryDecision = DecisionType.PRESCHOOL,
+                        connectedDecision = DecisionType.PRESCHOOL_CLUB,
+                        serviceNeedOption =
+                            ServiceNeedOption(
+                                id = snPreschoolClub45.id,
+                                nameFi = snPreschoolClub45.nameFi,
+                                nameSv = snPreschoolClub45.nameSv,
+                                nameEn = snPreschoolClub45.nameEn,
+                                validPlacementType = PlacementType.PRESCHOOL_CLUB,
+                            ),
+                    )
+                ),
+                Arguments.of(
+                    ConnectedPlacementPlanTestCase(
+                        appliedType = PlacementType.PREPARATORY_DAYCARE,
+                        primaryDecision = DecisionType.PREPARATORY_EDUCATION,
+                        connectedDecision = DecisionType.PRESCHOOL_DAYCARE,
+                    )
+                ),
+            )
+            .stream()
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("connectedPlacementPlanCases")
+    fun `createPlacementPlan - connected placement type`(test: ConnectedPlacementPlanTestCase) {
         db.transaction { tx ->
             // given
             tx.insertApplication(
-                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                appliedType = test.appliedType,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
+                serviceNeedOption = test.serviceNeedOption,
             )
             service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
@@ -1210,7 +1260,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     id = placementPlan.id,
                     unitId = daycare.id,
                     applicationId = applicationId,
-                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    type = test.appliedType,
                     period = mainPeriod,
                     preschoolDaycarePeriod = connectedPeriod,
                 ),
@@ -1219,128 +1269,68 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
-
-            decisionDrafts
-                .find { it.type == DecisionType.PRESCHOOL }!!
-                .let {
-                    assertEquals(
-                        DecisionDraft(
-                            id = it.id,
-                            type = DecisionType.PRESCHOOL,
-                            startDate = mainPeriod.start,
-                            endDate = mainPeriod.end,
-                            unitId = daycare.id,
-                            planned = true,
-                        ),
-                        it,
-                    )
-                }
-            decisionDrafts
-                .find { it.type == DecisionType.PRESCHOOL_DAYCARE }!!
-                .let {
-                    assertEquals(
-                        DecisionDraft(
-                            id = it.id,
-                            type = DecisionType.PRESCHOOL_DAYCARE,
-                            startDate = connectedPeriod.start,
-                            endDate = connectedPeriod.end,
-                            unitId = daycare.id,
-                            planned = true,
-                        ),
-                        it,
-                    )
-                }
+            assertDecisionDraft(decisionDrafts, test.primaryDecision, mainPeriod)
+            assertDecisionDraft(decisionDrafts, test.connectedDecision, connectedPeriod)
         }
     }
 
-    @Test
-    fun `createPlacementPlan - preschool with club`() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("connectedPlacementPlanCases")
+    fun `createPlacementPlan - connected placement type fails without a connected period`(
+        test: ConnectedPlacementPlanTestCase
+    ) {
         db.transaction { tx ->
-            // given
-            val serviceNeedOption =
-                ServiceNeedOption(
-                    id = snPreschoolClub45.id,
-                    nameFi = snPreschoolClub45.nameFi,
-                    nameSv = snPreschoolClub45.nameSv,
-                    nameEn = snPreschoolClub45.nameEn,
-                    validPlacementType = PlacementType.PRESCHOOL_CLUB,
-                )
             tx.insertApplication(
-                appliedType = PlacementType.PRESCHOOL_CLUB,
+                appliedType = test.appliedType,
                 applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1),
-                serviceNeedOption = serviceNeedOption,
+                serviceNeedOption = test.serviceNeedOption,
             )
             service.sendApplication(tx, serviceWorker, clock, AuditContext(), applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, AuditContext(), applicationId)
         }
         db.transaction { tx ->
-            // when
-            service.createPlacementPlan(
-                tx,
-                serviceWorker,
-                clock,
-                AuditContext(),
-                applicationId,
-                DaycarePlacementPlan(
-                    unitId = daycare.id,
-                    period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod,
-                ),
-            )
+            assertThrows<BadRequest> {
+                service.createPlacementPlan(
+                    tx,
+                    serviceWorker,
+                    clock,
+                    AuditContext(),
+                    applicationId,
+                    DaycarePlacementPlan(
+                        unitId = daycare.id,
+                        period = mainPeriod,
+                        preschoolDaycarePeriod = null,
+                    ),
+                )
+            }
         }
         db.read { tx ->
-            // then
-            val application = tx.fetchApplicationDetails(applicationId)!!
-            assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
-
-            val placementPlan = tx.getPlacementPlan(applicationId)!!
+            assertNull(tx.getPlacementPlan(applicationId))
             assertEquals(
-                PlacementPlan(
-                    id = placementPlan.id,
-                    unitId = daycare.id,
-                    applicationId = applicationId,
-                    type = PlacementType.PRESCHOOL_CLUB,
-                    period = mainPeriod,
-                    preschoolDaycarePeriod = connectedPeriod,
-                ),
-                placementPlan,
+                ApplicationStatus.WAITING_PLACEMENT,
+                tx.fetchApplicationDetails(applicationId)!!.status,
             )
-
-            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
-            assertEquals(2, decisionDrafts.size)
-
-            decisionDrafts
-                .find { it.type == DecisionType.PRESCHOOL }!!
-                .let {
-                    assertEquals(
-                        DecisionDraft(
-                            id = it.id,
-                            type = DecisionType.PRESCHOOL,
-                            startDate = mainPeriod.start,
-                            endDate = mainPeriod.end,
-                            unitId = daycare.id,
-                            planned = true,
-                        ),
-                        it,
-                    )
-                }
-            decisionDrafts
-                .find { it.type == DecisionType.PRESCHOOL_CLUB }!!
-                .let {
-                    assertEquals(
-                        DecisionDraft(
-                            id = it.id,
-                            type = DecisionType.PRESCHOOL_CLUB,
-                            startDate = connectedPeriod.start,
-                            endDate = connectedPeriod.end,
-                            unitId = daycare.id,
-                            planned = true,
-                        ),
-                        it,
-                    )
-                }
         }
+    }
+
+    private fun assertDecisionDraft(
+        drafts: List<DecisionDraft>,
+        type: DecisionType,
+        period: FiniteDateRange,
+    ) {
+        val draft = drafts.find { it.type == type }!!
+        assertEquals(
+            DecisionDraft(
+                id = draft.id,
+                type = type,
+                startDate = period.start,
+                endDate = period.end,
+                unitId = daycare.id,
+                planned = true,
+            ),
+            draft,
+        )
     }
 
     @Test
