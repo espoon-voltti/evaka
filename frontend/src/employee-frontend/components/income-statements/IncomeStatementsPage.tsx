@@ -128,7 +128,9 @@ function IncomeStatementsList({
                 {row.personName}
               </Link>
             </Td>
-            <Td>{row.primaryCareArea}</Td>
+            <Td data-qa="care-areas">
+              {row.careAreas.length > 0 ? row.careAreas.join(', ') : '-'}
+            </Td>
             <Td>{row.sentAt.toLocalDate().format()}</Td>
             <Td>{row.citizenModifiedAt.toLocalDate().format()}</Td>
             <Td>{row.startDate.format()}</Td>

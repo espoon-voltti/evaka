@@ -231,6 +231,7 @@ export type IncomeStatementAttachmentType = typeof incomeStatementAttachmentType
 * Generated from evaka.core.incomestatement.IncomeStatementAwaitingHandler
 */
 export interface IncomeStatementAwaitingHandler {
+  careAreas: string[]
   citizenModifiedAt: HelsinkiDateTime
   handlerNote: string
   id: IncomeStatementId
@@ -239,7 +240,6 @@ export interface IncomeStatementAwaitingHandler {
   personId: PersonId
   personLastName: string
   personName: string
-  primaryCareArea: string | null
   sentAt: HelsinkiDateTime
   startDate: LocalDate
   type: IncomeStatementType
