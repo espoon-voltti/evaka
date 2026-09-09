@@ -213,6 +213,12 @@ class PlacementController(
         @RequestBody body: PlacementUpdateRequestBody,
     ) {
         val now = clock.now()
+        val audit =
+            AuditContext()
+                .add(placementId)
+                .observeDate(body.startDate)
+                .addMeta("startDate", body.startDate)
+                .addMeta("endDate", body.endDate)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -245,6 +251,7 @@ class PlacementController(
                             useFiveYearsOldDaycare,
                             clock.now(),
                             user.evakaUserId,
+                            audit,
                         )
 
                     tx.deleteFutureReservationsAndAbsencesOutsideValidPlacements(
@@ -268,13 +275,7 @@ class PlacementController(
                     oldPlacement
                 }
             }
-            .also {
-                Audit.PlacementUpdate.log(
-                    targetId = AuditId(placementId),
-                    objectId = AuditId(listOf(it.childId, it.unitId)),
-                    meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate),
-                )
-            }
+            .also { audit.log(Audit.PlacementUpdate, clock) }
     }
 
     @DeleteMapping("/employee/placements/{placementId}")
