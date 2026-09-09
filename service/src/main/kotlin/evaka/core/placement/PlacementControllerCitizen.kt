@@ -5,6 +5,7 @@
 package evaka.core.placement
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.application.cancelActiveTransferApplications
 import evaka.core.daycare.getUnitFeatures
@@ -44,30 +45,27 @@ class PlacementControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): ChildPlacementResponse {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Child.READ_PLACEMENT,
                         childId,
                     )
+                    val childPlacements = tx.getCitizenChildPlacements(clock.today(), childId)
+                    audit
+                        .add(childPlacements.map { it.id })
+                        .add(childPlacements.map { it.unitId })
+                        .observeDate(childPlacements.minOfOrNull { it.startDate })
                     ChildPlacementResponse(
-                        placements =
-                            mapToTerminatablePlacements(
-                                it.getCitizenChildPlacements(clock.today(), childId),
-                                clock.today(),
-                            )
+                        placements = mapToTerminatablePlacements(childPlacements, clock.today())
                     )
                 }
             }
-            .also {
-                Audit.PlacementSearch.log(
-                    targetId = AuditId(childId),
-                    meta = mapOf("count" to it.placements.size),
-                )
-            }
+            .also { audit.log(Audit.PlacementSearch, clock) }
     }
 
     data class PlacementTerminationRequestBody(

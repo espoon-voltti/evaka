@@ -5,6 +5,7 @@
 package evaka.core.placement
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.absence.generateAbsencesFromIrregularDailyServiceTimes
 import evaka.core.daycare.controllers.AdditionalInformation
@@ -54,6 +55,7 @@ class PlacementController(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): PlacementResponse {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -105,6 +107,11 @@ class PlacementController(
                                     serviceNeed.id
                                 }
                             }
+                            audit
+                                .add(placementIds)
+                                .add(serviceNeedIds)
+                                .add(placements.map { it.daycare.id })
+                                .observeDate(placements.minOfOrNull { it.startDate })
                             val responsePlacements =
                                 if (canReadServiceNeeds) placements
                                 else placements.map { it.copy(serviceNeedDetail = null) }.toSet()
@@ -128,12 +135,7 @@ class PlacementController(
                         }
                 }
             }
-            .also {
-                Audit.PlacementSearch.log(
-                    targetId = AuditId(childId),
-                    meta = mapOf("count" to it.placements.size),
-                )
-            }
+            .also { audit.log(Audit.PlacementSearch, clock) }
     }
 
     @PostMapping("/employee/placements")
