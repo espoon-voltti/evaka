@@ -9,7 +9,6 @@ import { constantQuery, useQueryResult } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
-import { desktopMin } from 'lib-components/breakpoints'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { faBell, faChevronDown, faChevronUp, faTimes } from 'lib-icons'
@@ -18,7 +17,6 @@ import { guardianApplicationsQuery } from '../applications/queries'
 import { useUser } from '../auth/state'
 import { childrenQuery } from '../children/queries'
 import { useTranslation } from '../localization'
-import { headerHeightMobile } from '../navigation/const'
 import { OverlayContext } from '../overlay/state'
 
 import { InstallInstructions } from './InstallInstructions'
@@ -126,14 +124,10 @@ export const InstallSuggestion = React.memo(function InstallSuggestion() {
 
 const Banner = styled.div`
   position: sticky;
-  top: ${headerHeightMobile}px;
+  top: 0;
   z-index: 10;
   background-color: ${(p) => p.theme.colors.main.m4};
   padding: ${defaultMargins.s};
-
-  @media (min-width: ${desktopMin}) {
-    top: 0;
-  }
 `
 
 const Note = styled.button`

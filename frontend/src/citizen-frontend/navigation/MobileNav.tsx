@@ -154,10 +154,8 @@ const BottomBar = styled.nav`
   align-items: center;
   height: ${mobileBottomNavHeight}px;
   width: 100%;
+  flex: none;
   padding: ${defaultMargins.xs};
-  position: fixed;
-  bottom: 0;
-  left: 0;
   box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.15);
 
   @media (min-width: ${desktopMin}) {
@@ -449,15 +447,14 @@ const Menu = React.memo(function Menu({
 
 const MenuContainer = styled.div`
   z-index: 24;
-  position: fixed;
-  overflow-y: scroll;
+  position: absolute;
+  overflow-y: auto;
   top: ${headerHeightMobile}px;
   bottom: ${mobileBottomNavHeight}px;
+  left: 0;
   right: 0;
   background: ${colors.grayscale.g0};
   box-sizing: border-box;
-  width: 100vw;
-  height: calc(100% - ${headerHeightMobile}px - ${mobileBottomNavHeight}px);
   padding: ${defaultMargins.s};
   display: flex;
   flex-direction: column;

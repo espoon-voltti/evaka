@@ -212,7 +212,11 @@ test.describe('Citizen PWA install suggestion on the calendar', () => {
     // calendar scrolls on a requestAnimationFrame once its data renders, so
     // this has to be polled rather than read once.
     await expect
-      .poll(() => page.page.evaluate(() => window.scrollY))
+      .poll(() =>
+        page.page.evaluate(
+          () => document.querySelector('[data-qa="scroll-area"]')?.scrollTop
+        )
+      )
       .toBeGreaterThan(0)
 
     await expect(page.findByDataQa('pwa-install-suggestion')).toBeInViewport()

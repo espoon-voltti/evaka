@@ -5,9 +5,10 @@
 import { ErrorBoundary } from '@sentry/react'
 import type { ReactNode } from 'react'
 import React, { useCallback, useContext } from 'react'
-import styled, { createGlobalStyle, ThemeProvider } from 'styled-components'
+import styled, { ThemeProvider } from 'styled-components'
 import { Redirect } from 'wouter'
 
+import { useRegisterScrollContainer } from 'lib-common/utils/scrolling'
 import {
   Notifications,
   NotificationsContextProvider
@@ -30,19 +31,10 @@ import { Localization, useTranslation } from './localization'
 import { MessageContextProvider } from './messages/state'
 import Header from './navigation/Header'
 import MobileNav from './navigation/MobileNav'
-import { mobileBottomNavHeight } from './navigation/const'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { InstallSuggestion } from './pwa/InstallSuggestion'
 import { queryClient, QueryClientProvider } from './query'
-
-const GlobalStyle = createGlobalStyle`
-  @media screen and (max-width: ${zoomedMobileMax}) {
-    html {
-      overflow-x: auto;
-    }
-  }
-`
 
 export function App({ children }: { children: React.ReactNode }) {
   const i18n = useTranslation()
@@ -50,7 +42,6 @@ export function App({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
-        <GlobalStyle />
         <ErrorBoundary
           fallback={() => <ErrorPage basePath="/" labels={i18n.errorPage} />}
         >
@@ -76,10 +67,66 @@ export function App({ children }: { children: React.ReactNode }) {
   )
 }
 
+// The app shell is a flexbox with the following structure:
+//
+// <Header />
+// (...other fixed elements, e.g. notifications...)
+// <ScrollArea (flex-grow)>
+//   (...content...)
+// </ScrollArea>
+// <MobileNav />
+//
+// This avoids anchoring topbar or navi with `position: fixed` or `position sticky`, because
+// those cause subtle layout bugs in iOS PWA.
+const AppShell = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+
+  // A scrollbar that is always there stops the content from shifting when it
+  // grows past the window, as the document scrollbar used to
+  @media (min-width: ${desktopMin}) {
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
+
+  @media print {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+`
+
+const ScrollArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+
+  @media screen and (max-width: ${zoomedMobileMax}) {
+    overflow-x: auto;
+  }
+
+  @media (min-width: ${desktopMin}) {
+    flex-shrink: 0;
+    min-height: auto;
+    overflow: visible;
+  }
+
+  @media print {
+    overflow: visible;
+  }
+`
+
 const FullPageContainer = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  flex: 1 0 auto;
 `
 
 const Content = React.memo(function Content({
@@ -98,13 +145,18 @@ const Content = React.memo(function Content({
       user.map((usr) => !!usr).getOrElse(false)
     )
   useChildrenStartingNotification()
+  const { shellRef, scrollAreaRef } = useRegisterScrollContainer()
   return (
-    <FullPageContainer>
+    <AppShell ref={shellRef}>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
       <InstallSuggestion />
       <Notifications apiVersion={apiVersion} sticky offsetTop />
-      <MainContainer ariaHidden={modalOpen}>{children}</MainContainer>
+      <ScrollArea ref={scrollAreaRef} data-qa="scroll-area">
+        <FullPageContainer>
+          <MainContainer ariaHidden={modalOpen}>{children}</MainContainer>
+        </FullPageContainer>
+      </ScrollArea>
       <MobileNav />
       {sessionExpirationDetected && (
         <SessionExpiredModal onClose={() => dismissSessionExpiredDetection()} />
@@ -112,7 +164,7 @@ const Content = React.memo(function Content({
       {!!featureFlags.environmentLabel && (
         <EnvironmentLabel>{featureFlags.environmentLabel}</EnvironmentLabel>
       )}
-    </FullPageContainer>
+    </AppShell>
   )
 })
 
@@ -150,9 +202,4 @@ export function HandleRedirection() {
 
 const ScrollableMain = styled.div`
   flex-grow: 1;
-
-  padding-bottom: ${mobileBottomNavHeight}px;
-  @media (min-width: ${desktopMin}) {
-    padding-bottom: 0;
-  }
 `

@@ -12,12 +12,12 @@ const subscribe = (onChange: () => void) => {
   return () => query.removeEventListener('change', onChange)
 }
 
-const getIsRunningInstalled = () =>
+const isRunningInstalled = () =>
   standaloneQuery().matches ||
   // iOS Safari does not implement the display-mode media feature, so the home
   // screen app is only recognisable through this non-standard property.
   ('standalone' in navigator && navigator.standalone === true)
 
 export function useIsRunningInstalled(): boolean {
-  return useSyncExternalStore(subscribe, getIsRunningInstalled)
+  return useSyncExternalStore(subscribe, isRunningInstalled)
 }

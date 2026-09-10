@@ -84,8 +84,6 @@ const HeaderContainer = styled.header<{ $narrow: boolean }>`
   height: ${headerHeightMobile}px;
   width: 100%;
   margin: 0 auto;
-  position: sticky;
-  top: 0;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
 
   @media (max-width: ${zoomedMobileMax}) {
@@ -93,7 +91,6 @@ const HeaderContainer = styled.header<{ $narrow: boolean }>`
   }
 
   @media (min-width: ${desktopMin}) {
-    position: static;
     grid: minmax(${headerHeightDesktop}px, min-content) / max-content max-content auto;
     height: ${headerHeightDesktop}px;
     background-color: transparent;

@@ -173,7 +173,8 @@ const WeekTitle = styled(H3)`
 `
 const MonthSummaryContainer = styled.div`
   position: sticky;
-  top: 54px;
+  // Keeps the top border out of view while stuck, as it was under the header
+  top: -6px;
   z-index: 1;
 
   padding: ${defaultMargins.s};

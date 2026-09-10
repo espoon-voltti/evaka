@@ -2,9 +2,40 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import type { MutableRefObject } from 'react'
+import { useEffect, useRef } from 'react'
+import type { RefObject } from 'react'
 
 import { isAutomatedTest } from './helpers'
+
+type ScrollContainerResolver = () => HTMLElement | null
+
+/**
+ * Registers how to find the element that scrolls the page in place of the
+ * window. The page-level scroll helpers below ask the resolver on every call,
+ * because which element scrolls can depend on the viewport width. Without a
+ * resolver, or when it returns null, they scroll the window.
+ */
+let resolveScrollContainer: ScrollContainerResolver = () => null
+
+const scrollsItsContent = (el: HTMLElement) =>
+  /auto|scroll/.test(getComputedStyle(el).overflowY)
+
+// Which of the two scrolls depends on the viewport width, so the choice is
+// made on every call rather than once
+export function useRegisterScrollContainer() {
+  const shellRef = useRef<HTMLDivElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    resolveScrollContainer = () =>
+      [scrollAreaRef.current, shellRef.current].find(
+        (el): el is HTMLDivElement => !!el && scrollsItsContent(el)
+      ) ?? null
+    return () => {
+      resolveScrollContainer = () => null
+    }
+  }, [])
+  return { shellRef, scrollAreaRef }
+}
 
 export function scrollToPos(options: ScrollToOptions, timeout = 0) {
   scrollWithTimeout(() => options, timeout)
@@ -22,13 +53,23 @@ export function scrollToTop(timeout = 0) {
   scrollWithTimeout(() => ({ top: 0, left: 0 }), timeout)
 }
 
-export function scrollToRef(
-  ref: MutableRefObject<HTMLElement | null>,
+export function scrollToRef(ref: RefObject<HTMLElement | null>, timeout = 0) {
+  scrollWithTimeout(
+    () =>
+      ref.current ? { top: getScrollOffsetPosition(ref.current) } : undefined,
+    timeout
+  )
+}
+
+/** Scrolls the page so that the element's top edge lands `offset` px below the top of the scrolling area */
+export function scrollToElementTop(
+  element: HTMLElement,
+  offset: number,
+  behavior: ScrollBehavior,
   timeout = 0
 ) {
   scrollWithTimeout(
-    () =>
-      ref.current ? { top: getDocumentOffsetPosition(ref.current) } : undefined,
+    () => ({ top: getScrollOffsetPosition(element) - offset, behavior }),
     timeout
   )
 }
@@ -42,7 +83,7 @@ export function scrollToElement(
 }
 
 export function scrollRefIntoView(
-  ref: MutableRefObject<HTMLElement | null>,
+  ref: RefObject<HTMLElement | null>,
   timeout = 0,
   blockPosition: ScrollLogicalPosition = 'start'
 ) {
@@ -80,8 +121,9 @@ function scrollWithTimeout(
   withTimeout(() => {
     const opts = getOptions()
     if (opts) {
-      if (element) {
-        element.scrollTo({ behavior: 'smooth', ...opts })
+      const target = element ?? resolveScrollContainer()
+      if (target) {
+        target.scrollTo({ behavior: 'smooth', ...opts })
       } else {
         window.scrollTo({ behavior: 'smooth', ...opts })
       }
@@ -110,13 +152,10 @@ function withTimeout(callback: () => void, timeout = 0) {
   }
 }
 
-function getDocumentOffsetPosition(elem: HTMLElement): number {
-  let elemTop = elem.offsetTop
-  if (elem.offsetParent) {
-    const parentOffsetTop = getDocumentOffsetPosition(
-      elem.offsetParent as HTMLElement
-    )
-    elemTop = elemTop + parentOffsetTop
-  }
-  return elemTop
+function getScrollOffsetPosition(elem: HTMLElement): number {
+  const top = elem.getBoundingClientRect().top
+  const container = resolveScrollContainer()
+  return container
+    ? top - container.getBoundingClientRect().top + container.scrollTop
+    : top + window.scrollY
 }
