@@ -33,6 +33,8 @@ import evaka.core.document.childdocument.DocumentStatus
 import evaka.core.finance.notes.createFinanceNote
 import evaka.core.holidayperiod.QuestionnaireType
 import evaka.core.insertServiceNeedOptions
+import evaka.core.invoicing.service.IncomeNotificationType
+import evaka.core.invoicing.service.createIncomeNotification
 import evaka.core.nekku.NekkuProductMealType
 import evaka.core.note.child.sticky.ChildStickyNoteBody
 import evaka.core.note.child.sticky.createChildStickyNote
@@ -51,6 +53,7 @@ import evaka.core.shared.BackupPickupId
 import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DecisionId
+import evaka.core.shared.IncomeNotificationId
 import evaka.core.shared.PedagogicalDocumentId
 import evaka.core.shared.PersonId
 import evaka.core.shared.PlacementId
@@ -135,6 +138,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val financeExpireDate = today.minusYears(5)
     private val tenYearExpireDate = today.minusYears(10)
     private val applicationExpireDate = today.minusYears(10)
+    private val incomeNotificationExpireDate = today.minusYears(10)
 
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     private val careArea = DevCareArea()
@@ -1951,6 +1955,19 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
         }
     }
 
+    private fun insertIncomeNotification(
+        receiverId: PersonId,
+        createdAt: HelsinkiDateTime,
+    ): IncomeNotificationId = db.transaction { tx ->
+        val id = tx.createIncomeNotification(receiverId, IncomeNotificationType.INITIAL_EMAIL)
+        tx.execute {
+            sql(
+                "UPDATE income_notification SET created = ${bind(createdAt)} WHERE id = ${bind(id)}"
+            )
+        }
+        id
+    }
+
     private fun insertCalendarEvent(): DevCalendarEvent {
         val event =
             DevCalendarEvent(
@@ -2486,6 +2503,13 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
         tx.createQuery { sql("SELECT id FROM application") }.toList<ApplicationId>()
     }
 
+    private fun survivingIncomeNotificationIds(): Set<IncomeNotificationId> =
+        db.read { tx ->
+                tx.createQuery { sql("SELECT id FROM income_notification") }
+                    .toList<IncomeNotificationId>()
+            }
+            .toSet()
+
     private fun survivingDecisionIds(): List<DecisionId> = db.read { tx ->
         tx.createQuery { sql("SELECT id FROM decision") }.toList<DecisionId>()
     }
@@ -2583,5 +2607,59 @@ VALUES (${bind(process.id)}, 1, ${bind(CaseProcessState.INITIAL)}, ${bind(now)},
         assertEquals(1, rowCount("pedagogical_document"))
         assertEquals(1, rowCount("attachment"))
         assertTrue(scheduledAttachmentDeletionIds().isEmpty())
+    }
+
+    @Test
+    fun `deleteExpiredIncomeNotifications deletes notifications created over ten years ago and preserves newer ones`() {
+        val adultId = insertAdult()
+        insertIncomeNotification(
+            adultId,
+            HelsinkiDateTime.of(incomeNotificationExpireDate.minusDays(1), LocalTime.of(2, 0)),
+        )
+        val boundaryId =
+            insertIncomeNotification(
+                adultId,
+                HelsinkiDateTime.of(incomeNotificationExpireDate, LocalTime.MIDNIGHT),
+            )
+        val recentId = insertIncomeNotification(adultId, now)
+
+        deleteExpiredIncomeNotifications(db, expireDate = incomeNotificationExpireDate, limit = 100)
+
+        assertEquals(setOf(boundaryId, recentId), survivingIncomeNotificationIds())
+    }
+
+    @Test
+    fun `deleteExpiredIncomeNotifications doesn't remove more than the limit`() {
+        val adultId = insertAdult()
+        repeat(3) {
+            insertIncomeNotification(
+                adultId,
+                HelsinkiDateTime.of(incomeNotificationExpireDate.minusDays(1), LocalTime.of(2, 0)),
+            )
+        }
+
+        deleteExpiredIncomeNotifications(db, expireDate = incomeNotificationExpireDate, limit = 2)
+
+        assertEquals(1, rowCount("income_notification"))
+    }
+
+    @Test
+    fun `deleteExpiredData removes income notifications after ten years`() {
+        val adultId = insertAdult()
+        insertIncomeNotification(
+            adultId,
+            HelsinkiDateTime.of(incomeNotificationExpireDate.minusDays(1), LocalTime.of(2, 0)),
+        )
+        val retainedId =
+            insertIncomeNotification(
+                adultId,
+                HelsinkiDateTime.of(incomeNotificationExpireDate.plusDays(2), LocalTime.of(2, 0)),
+            )
+
+        withLimit(1000) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(setOf(retainedId), survivingIncomeNotificationIds())
     }
 }

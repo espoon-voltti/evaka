@@ -26,6 +26,7 @@ import evaka.core.shared.DecisionId
 import evaka.core.shared.FinanceNoteId
 import evaka.core.shared.FosterParentId
 import evaka.core.shared.IncomeId
+import evaka.core.shared.IncomeNotificationId
 import evaka.core.shared.MessageThreadId
 import evaka.core.shared.ParentshipId
 import evaka.core.shared.PartnershipId
@@ -224,6 +225,8 @@ class DataRemovalService(
         )
 
         deleteExpiredGuardianBlocklistRows(dbc, expireDate = today.minusYears(10), limit)
+
+        deleteExpiredIncomeNotifications(dbc, expireDate = today.minusYears(10), limit)
     }
 
     fun deleteExpiredChildDocuments(db: Database.Connection, now: HelsinkiDateTime, limit: Int) {
@@ -937,6 +940,45 @@ FOR UPDATE
         )
     }
 }
+
+fun deleteExpiredIncomeNotifications(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
+    logger.info { "Deleting at most $limit expired income notifications" }
+    val deleted = dbc.transaction { tx ->
+        tx.deleteExpiredIncomeNotificationsBatch(expireDate, limit)
+    }
+    deleted.forEach { notification ->
+        auditExpiredDelete(
+            entity = "income_notification",
+            targetId = AuditId(notification.id),
+            meta = mapOf("receiverId" to notification.receiverId, "expireDate" to expireDate),
+        )
+    }
+}
+
+data class DeletedIncomeNotification(val id: IncomeNotificationId, val receiverId: PersonId)
+
+private fun Database.Transaction.deleteExpiredIncomeNotificationsBatch(
+    expireDate: LocalDate,
+    limit: Int,
+): List<DeletedIncomeNotification> = createUpdate {
+    sql(
+        """
+WITH del_batch AS (
+    SELECT id
+    FROM income_notification
+    WHERE created < ${bind(HelsinkiDateTime.atStartOfDay(expireDate))}
+    FOR UPDATE
+    LIMIT ${bind(limit)}
+)
+DELETE FROM income_notification
+USING del_batch
+WHERE income_notification.id = del_batch.id
+RETURNING income_notification.id, income_notification.receiver_id
+"""
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .toList<DeletedIncomeNotification>()
 
 fun deleteExpiredCitizenUsers(dbc: Database.Connection, expireDate: LocalDate, limit: Int) {
     logger.info { "Deleting at most $limit expired citizen users" }
