@@ -1215,16 +1215,23 @@ test.describe('Sending and receiving messages', () => {
         defaultMessage.title
       )
 
+      // The sender sees the text that replaced the message for the recipients
+      for (const line of deletedPlaceholderLines) {
+        await expect(sentMessage.deletedMessagePlaceholder).toContainText(line)
+      }
+
       await expect(sentMessage.deletedMessageOriginal).toBeHidden()
       await sentMessage.viewDeletedContent()
       await expect(sentMessage.deletedMessageOriginal).toContainText(
         defaultMessage.content
       )
+      await expect(sentMessage.deletedMessagePlaceholder).toBeHidden()
       await expect(sentMessage.threadTitle).toContainText(
         `Viesti poistettu [${defaultMessage.title}]`
       )
       await sentMessage.hideDeletedContent()
       await expect(sentMessage.deletedMessageOriginal).toBeHidden()
+      await expect(sentMessage.deletedMessagePlaceholder).toBeVisible()
       await expect(sentMessage.viewDeletedMessageButton).toBeVisible()
 
       await expect(sentMessage.threadTitle).toContainText(
@@ -1259,6 +1266,39 @@ test.describe('Sending and receiving messages', () => {
       await expect(sentMessage.deletedMessageOriginal).toContainText(
         defaultMessage.content
       )
+    })
+
+    test('Deletion requires ticking the confirmation checkbox', async () => {
+      await openSupervisorPage(mockedDateAt10)
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      const messageEditor = await messagesPage.openMessageEditor()
+      await messageEditor.sendNewMessage(defaultMessage)
+      await runPendingAsyncJobs(mockedDateAt10.addMinutes(1))
+
+      const sentMessage = await (
+        await messagesPage.openSentMessages()
+      ).openMessage(0)
+      await expect(sentMessage.deleteMessageButton).toHaveText(
+        'Tietosuojapoisto'
+      )
+      const modal = await sentMessage.openDeleteMessageModal()
+
+      await expect(modal.title).toHaveText(
+        'Poista väärille vastaanottajille lähetetty arkaluontoinen viesti'
+      )
+      await modal.confirmButton.assertDisabled(true)
+
+      await modal.confirmation.check()
+      await modal.confirmButton.assertDisabled(false)
+
+      await modal.confirmation.uncheck()
+      await modal.confirmButton.assertDisabled(true)
+
+      await modal.confirmation.check()
+      await modal.confirmButton.click()
+      await expect(modal).toBeHidden()
+      await expect(sentMessage.messageDeletedBanner).toBeVisible()
     })
 
     test('A still-visible reply shows the thread-title-removed wording when the first message is deleted', async () => {

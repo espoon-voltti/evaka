@@ -201,6 +201,7 @@ function SingleMessage({
           <DeletedMessageView
             accountId={account.id}
             contentId={message.contentId}
+            placeholder={message.content}
             isJustDeleted={isJustDeleted}
             revealed={revealed}
             onSetRevealed={onSetRevealed}

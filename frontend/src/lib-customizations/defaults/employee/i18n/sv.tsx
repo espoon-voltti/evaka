@@ -4722,19 +4722,24 @@ export const sv: typeof fi = {
     archiveThread: 'Arkivera meddelandetråd',
     markUnread: 'Markera som oläst',
     deletion: {
-      deleteButton: 'Radera meddelandet',
+      deleteButton: 'Radering av dataskyddsskäl',
       alreadyDeleted: 'Meddelandet hade redan raderats',
       modal: {
-        title: 'Radera meddelandet',
-        intro:
-          'Funktionen är endast avsedd för situationer där ett meddelande av misstag har skickats till fel mottagare. Det raderade meddelandets innehåll ersätts hos varje mottagare i eVaka med följande text:',
-        stepsHeader: 'Åtgärder omedelbart efter raderingen',
-        stepsBody1:
-          'För ett meddelande som skickats till fel mottagare ska alltid en dataskyddsanmälan göras. Kontakta kommunens eVaka-stöd efter raderingen för fortsatta åtgärder.',
-        stepsBody2:
-          'Information om raderingen förmedlas till enhetsledarna och till eVaka-stödet.',
+        title: 'Radera ett känsligt meddelande som skickats till fel mottagare',
+        body1: (
+          <>
+            <strong>Använd detta endast</strong> om ett meddelande som
+            innehåller känsliga uppgifter av misstag har skickats till fel
+            mottagare. Om meddelandet innehåller något annat fel, korrigera det
+            genom att skicka ett nytt meddelande.
+          </>
+        ),
+        body2:
+          'Anmälan går automatiskt till enhetsledarna och till eVaka-stödet. Kontakta kommunens eVaka-stöd för att göra en dataskyddsanmälan.',
+        confirmCheckbox:
+          'Jag bekräftar att det känsliga meddelandet av misstag skickades till fel mottagare.',
         cancel: 'Avbryt',
-        confirm: 'Radera meddelandet'
+        confirm: 'Anmäl dataskyddsincidenten och radera meddelandet'
       },
       afterDeletion: {
         banner: (supportEmail: string | null): ReactNode =>

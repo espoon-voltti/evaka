@@ -127,7 +127,6 @@ export interface EmployeeFeatureConfig {
   decisionReasoningGenericRemoval: boolean
   decisionReasoningsEnabled: boolean
   decisionsWithoutReasonings: DecisionType[]
-  deletedMessagePlaceholderBody: string
   messageSupportEmail: string | null
   openRangesHolidayQuestionnaire: boolean
   placementDecisionSwedishLanguageEnabled: boolean
