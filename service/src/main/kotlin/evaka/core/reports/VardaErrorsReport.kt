@@ -65,13 +65,15 @@ private fun Database.Read.getVardaChildErrors(): List<VardaChildErrorReportRow> 
     sql(
         """
 SELECT
-    child_id,
-    errored_at,
-    errored_since,
-    error
-FROM varda_state
-WHERE errored_at IS NOT NULL
-ORDER BY errored_at DESC
+    vs.child_id,
+    vs.errored_at,
+    vs.errored_since,
+    vs.error
+FROM varda_state vs
+LEFT JOIN child c ON c.id = vs.child_id
+WHERE vs.errored_at IS NOT NULL
+AND c.varda_data_first_removed_at IS NULL
+ORDER BY vs.errored_at DESC
     """
     )
 }

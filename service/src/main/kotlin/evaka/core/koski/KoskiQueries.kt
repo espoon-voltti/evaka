@@ -27,12 +27,27 @@ data class KoskiStudyRightKey(
  * Once any of the child's data that affects Koski has been deleted due to retention policies, the
  * data synchronization to Koski must be stopped, so that the data is not deleted from there too.
  */
-private val koskiSyncActive = Predicate { where("$it.koski_data_first_removed_at IS NULL") }
+fun Database.Transaction.freezeKoskiSync(
+    childIds: Collection<ChildId>,
+    now: HelsinkiDateTime,
+): List<ChildId> = createUpdate {
+    sql(
+        """
+UPDATE child
+SET koski_data_first_removed_at = ${bind(now)}
+WHERE id = ANY(${bind(childIds)})
+AND koski_data_first_removed_at IS NULL
+RETURNING id
+"""
+    )
+}
+    .executeAndReturnGeneratedKeys()
+    .toList()
 
 private fun Database.Read.isKoskiSyncActive(childId: ChildId): Boolean = createQuery {
     sql(
         """
-SELECT ${predicate(koskiSyncActive.forTable("child"))}
+SELECT child.koski_data_first_removed_at IS NULL
 FROM child
 WHERE id = ${bind(childId)}
 """
@@ -60,7 +75,7 @@ WHERE (
     ksr.preschool_input_data IS DISTINCT FROM kasr.input_data OR
     ${predicate(dataVersionCheck.forTable("ksr"))}
 )
-AND ${predicate(koskiSyncActive.forTable("ch"))}
+AND ch.koski_data_first_removed_at IS NULL
 
 UNION
 
@@ -73,7 +88,7 @@ WHERE (
     ksr.preparatory_input_data IS DISTINCT FROM kasr.input_data OR
     ${predicate(dataVersionCheck.forTable("ksr"))}
 )
-AND ${predicate(koskiSyncActive.forTable("ch"))}
+AND ch.koski_data_first_removed_at IS NULL
 
 UNION
 
@@ -81,7 +96,7 @@ SELECT kvsr.child_id, kvsr.unit_id, kvsr.type
 FROM koski_voided_study_right(${bind(today)}) kvsr
 JOIN child ch ON ch.id = kvsr.child_id
 WHERE kvsr.void_date IS NULL
-AND ${predicate(koskiSyncActive.forTable("ch"))}
+AND ch.koski_data_first_removed_at IS NULL
 """
         )
     }

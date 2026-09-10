@@ -11,6 +11,7 @@ import evaka.core.caseprocess.deleteCaseProcesses
 import evaka.core.childimages.deleteImageFile
 import evaka.core.document.childdocument.deleteExpiredChildDocuments
 import evaka.core.koski.KOSKI_INPUT_TABLES
+import evaka.core.koski.freezeKoskiSync
 import evaka.core.messaging.DeletedMessageThreadBatch
 import evaka.core.messaging.deleteExpiredBulletinThreads
 import evaka.core.messaging.deleteExpiredMessageDrafts
@@ -44,6 +45,8 @@ import evaka.core.shared.db.Predicate
 import evaka.core.shared.db.QuerySql
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.varda.VARDA_INPUT_TABLES
+import evaka.core.varda.freezeVardaSync
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.LocalDate
@@ -54,7 +57,7 @@ private val logger = KotlinLogging.logger {}
 
 /**
  * Removing the rows an external data sync reads freezes that sync for the child permanently, so we
- * hold the data until starting or returning to preschool is no longer realistic.
+ * hold the data until returning to early childhood education or preschool is no longer realistic.
  */
 const val SAFE_DATA_REMOVAL_AGE: Long = 10
 
@@ -210,6 +213,7 @@ class DataRemovalService(
         // user or finance note removal is still pending
         deleteExpiredGuardians(
             dbc,
+            now,
             expireDate = today.minusYears(10),
             citizenUserExpireDate = citizenUserExpireDate,
             financeNoteExpireDate = financeNoteExpireDate,
@@ -266,36 +270,39 @@ class DataRemovalService(
         limit: Int,
     ) {
         logger.info { "Deleting at most $limit expired applications" }
-        val (deleted, unsetReferences) =
-            db.transaction { tx ->
-                val (results, unset) = tx.deleteExpiredApplicationsBatch(expireDate, limit)
-                val decisionKeys = results.flatMap { it.decisionDocumentKeys }
-                if (decisionKeys.isNotEmpty()) {
-                    asyncJobRunner.plan(
-                        tx = tx,
-                        payloads = decisionKeys.map { AsyncJob.DeleteDecisionPdf(it) },
-                        runAt = now,
-                    )
-                }
-                val attachmentIds = results.flatMap { it.attachmentIds }
-                if (attachmentIds.isNotEmpty()) {
-                    asyncJobRunner.plan(
-                        tx = tx,
-                        payloads = attachmentIds.map { AsyncJob.DeleteAttachment(it) },
-                        runAt = now,
-                    )
-                }
-                results to unset
+        val removal = db.transaction { tx ->
+            val (results, unset) = tx.deleteExpiredApplicationsBatch(expireDate, now, limit)
+            val decisionKeys = results.flatMap { it.decisionDocumentKeys }
+            if (decisionKeys.isNotEmpty()) {
+                asyncJobRunner.plan(
+                    tx = tx,
+                    payloads = decisionKeys.map { AsyncJob.DeleteDecisionPdf(it) },
+                    runAt = now,
+                )
             }
-        unsetReferences.forEach { ref ->
+            val attachmentIds = results.flatMap { it.attachmentIds }
+            if (attachmentIds.isNotEmpty()) {
+                asyncJobRunner.plan(
+                    tx = tx,
+                    payloads = attachmentIds.map { AsyncJob.DeleteAttachment(it) },
+                    runAt = now,
+                )
+            }
+            ExpiredApplicationRemoval(
+                deleted = results,
+                unsetReferences = unset,
+                frozenChildIds = tx.freezeVardaSync(results.map { it.childId }, now),
+            )
+        }
+        removal.unsetReferences.forEach { ref ->
             auditExpiredUnset(
                 entity = ref.entity,
                 targetId = ref.targetId,
                 meta = mapOf("clearedColumns" to ref.clearedColumns, "expireDate" to expireDate),
             )
         }
-        logger.info { "Deleted ${deleted.size} expired application(s)" }
-        deleted.forEach { app ->
+        logger.info { "Deleted ${removal.deleted.size} expired application(s)" }
+        removal.deleted.forEach { app ->
             auditExpiredDelete(
                 entity = "application",
                 targetId = AuditId(app.applicationId),
@@ -310,6 +317,9 @@ class DataRemovalService(
                         "expireDate" to expireDate,
                     ),
             )
+        }
+        removal.frozenChildIds.forEach { childId ->
+            Audit.DataRemovalVardaSyncFrozen.log(targetId = AuditId(childId))
         }
     }
 
@@ -502,25 +512,33 @@ fun deleteExpiredChildLeafRows(
 ) {
     leafTables.forEach { table ->
         logger.info { "Deleting at most $limit expired rows in table $table" }
-        val koskiInput = table in KOSKI_INPUT_TABLES
-        val (deletedIds, frozenChildIds) =
-            dbc.transaction { tx ->
-                val deleted = tx.deleteExpiredChildLeafRowsFromTable(expireDate, now, limit, table)
-                val frozen =
-                    if (koskiInput && deleted.isNotEmpty())
-                        tx.freezeKoskiSync(deleted.map { it.childId }.distinct(), now)
-                    else emptyList()
-                ExpiredLeafRemoval(deleted.map { it.id }, frozen)
-            }
-        deletedIds.forEach { id ->
+        val removal = dbc.transaction { tx ->
+            val deleted = tx.deleteExpiredChildLeafRowsFromTable(expireDate, now, limit, table)
+            val childIds = deleted.map { it.childId }.distinct()
+            ExpiredLeafRemoval(
+                deletedIds = deleted.map { it.id },
+                frozenKoskiChildIds =
+                    if (table in KOSKI_INPUT_TABLES && childIds.isNotEmpty())
+                        tx.freezeKoskiSync(childIds, now)
+                    else emptyList(),
+                frozenVardaChildIds =
+                    if (table in VARDA_INPUT_TABLES && childIds.isNotEmpty())
+                        tx.freezeVardaSync(childIds, now)
+                    else emptyList(),
+            )
+        }
+        removal.deletedIds.forEach { id ->
             auditExpiredDelete(
                 entity = table,
                 targetId = AuditId(id),
                 meta = mapOf("expireDate" to expireDate),
             )
         }
-        frozenChildIds.forEach { childId ->
+        removal.frozenKoskiChildIds.forEach { childId ->
             Audit.DataRemovalKoskiSyncFrozen.log(targetId = AuditId(childId))
+        }
+        removal.frozenVardaChildIds.forEach { childId ->
+            Audit.DataRemovalVardaSyncFrozen.log(targetId = AuditId(childId))
         }
     }
 }
@@ -529,7 +547,8 @@ private data class ExpiredLeafRow(val id: UUID, val childId: ChildId)
 
 private data class ExpiredLeafRemoval(
     val deletedIds: List<UUID>,
-    val frozenChildIds: List<ChildId>,
+    val frozenKoskiChildIds: List<ChildId>,
+    val frozenVardaChildIds: List<ChildId>,
 )
 
 private fun Database.Transaction.deleteExpiredChildLeafRowsFromTable(
@@ -539,7 +558,8 @@ private fun Database.Transaction.deleteExpiredChildLeafRowsFromTable(
     table: String,
 ): List<ExpiredLeafRow> {
     val removalAllowed =
-        if (table in KOSKI_INPUT_TABLES) childPastSafeDataRemovalAge(now.toLocalDate())
+        if (table in KOSKI_INPUT_TABLES || table in VARDA_INPUT_TABLES)
+            childPastSafeDataRemovalAge(now.toLocalDate())
         else Predicate.alwaysTrue()
     return createUpdate {
         sql(
@@ -562,23 +582,6 @@ RETURNING $table.id, $table.child_id
         .executeAndReturnGeneratedKeys()
         .toList()
 }
-
-private fun Database.Transaction.freezeKoskiSync(
-    childIds: Collection<ChildId>,
-    now: HelsinkiDateTime,
-): List<ChildId> = createUpdate {
-    sql(
-        """
-UPDATE child
-SET koski_data_first_removed_at = ${bind(now)}
-WHERE id = ANY(${bind(childIds)})
-AND koski_data_first_removed_at IS NULL
-RETURNING id
-"""
-    )
-}
-    .executeAndReturnGeneratedKeys()
-    .toList()
 
 fun unsetExpiredChildReferences(
     dbc: Database.Connection,
@@ -651,6 +654,12 @@ data class DeletedApplication(
     val attachmentIds: List<AttachmentId>,
 )
 
+private data class ExpiredApplicationRemoval(
+    val deleted: List<DeletedApplication>,
+    val unsetReferences: List<UnsetReference>,
+    val frozenChildIds: List<ChildId>,
+)
+
 private data class UnsetReference(
     val entity: String,
     val targetId: AuditId,
@@ -659,6 +668,7 @@ private data class UnsetReference(
 
 private fun Database.Transaction.deleteExpiredApplicationsBatch(
     expireDate: LocalDate,
+    now: HelsinkiDateTime,
     limit: Int,
 ): Pair<List<DeletedApplication>, List<UnsetReference>> {
     val deletableRows = createQuery {
@@ -668,6 +678,7 @@ WITH del_batch AS (
     SELECT id
     FROM application
     WHERE child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))})
+    AND ${predicate(childPastSafeDataRemovalAge(now.toLocalDate()).forTable("application"))}
     FOR UPDATE
     LIMIT ${bind(limit)}
 )
@@ -1017,33 +1028,49 @@ RETURNING citizen_user.id
 
 fun deleteExpiredGuardians(
     dbc: Database.Connection,
+    now: HelsinkiDateTime,
     expireDate: LocalDate,
     citizenUserExpireDate: LocalDate,
     financeNoteExpireDate: LocalDate,
     limit: Int,
 ) {
     logger.info { "Deleting at most $limit expired guardian relationships" }
-    val deleted = dbc.transaction { tx ->
-        tx.deleteExpiredGuardiansBatch(
-            expireDate,
-            citizenUserExpireDate,
-            financeNoteExpireDate,
-            limit,
+    val removal = dbc.transaction { tx ->
+        val deleted =
+            tx.deleteExpiredGuardiansBatch(
+                expireDate,
+                now,
+                citizenUserExpireDate,
+                financeNoteExpireDate,
+                limit,
+            )
+        ExpiredGuardianRemoval(
+            deleted = deleted,
+            frozenChildIds = tx.freezeVardaSync(deleted.map { it.childId }, now),
         )
     }
-    deleted.forEach { row ->
+    removal.deleted.forEach { row ->
         auditExpiredDelete(
             entity = "guardian",
             targetId = AuditId(row.guardianId),
             meta = mapOf("childId" to row.childId, "expireDate" to expireDate),
         )
     }
+    removal.frozenChildIds.forEach { childId ->
+        Audit.DataRemovalVardaSyncFrozen.log(targetId = AuditId(childId))
+    }
 }
 
 private data class DeletedGuardian(val guardianId: PersonId, val childId: ChildId)
 
+private data class ExpiredGuardianRemoval(
+    val deleted: List<DeletedGuardian>,
+    val frozenChildIds: List<ChildId>,
+)
+
 private fun Database.Transaction.deleteExpiredGuardiansBatch(
     expireDate: LocalDate,
+    now: HelsinkiDateTime,
     citizenUserExpireDate: LocalDate,
     financeNoteExpireDate: LocalDate,
     limit: Int,
@@ -1055,6 +1082,7 @@ WITH del_batch AS (
     FROM guardian
     WHERE
         child_id = ANY(${subquery(childIdsWithPlacementsEndingBefore(expireDate))}) AND
+        ${predicate(childPastSafeDataRemovalAge(now.toLocalDate()).forTable("guardian"))} AND
         NOT guardian_id = ANY(${subquery(citizenUserIdsWithPlacementsEndingBefore(citizenUserExpireDate))}) AND
         NOT guardian_id = ANY(${subquery(personIdsWithPendingFinanceNoteRemoval(financeNoteExpireDate))})
     FOR UPDATE

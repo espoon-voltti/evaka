@@ -221,7 +221,9 @@ class VardaUpdater(
         try {
             val evakaState = dbc.read { tx -> getEvakaState(tx, now.toLocalDate(), childId) }
             if (evakaState == null) {
-                logger.info { "Cannot compute Varda state for $childId" }
+                logger.info {
+                    "No Varda state to send for $childId (no identifiers, or sync frozen)"
+                }
                 return
             }
 

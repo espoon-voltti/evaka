@@ -202,6 +202,7 @@ enum class Audit(
     DataRemovalExpiredDelete,
     DataRemovalExpiredUnset,
     DataRemovalKoskiSyncFrozen,
+    DataRemovalVardaSyncFrozen,
     DaycareGroupPlacementCreate,
     DaycareGroupPlacementDelete,
     DaycareGroupPlacementTransfer,

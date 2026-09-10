@@ -2888,6 +2888,40 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `nothing is sent for a child whose Varda data has been removed`() {
+        val child = DevPerson(ssn = "030320A904N")
+        val now = HelsinkiDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(12, 0))
+
+        db.transaction { tx ->
+            tx.insert(child, DevPersonType.CHILD)
+            tx.execute {
+                sql("INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)")
+            }
+            tx.freezeVardaSync(listOf(child.id), now)
+        }
+
+        val updater =
+            VardaUpdater(DateRange(LocalDate.of(2019, 1, 1), null), "organizerOid", "sourceSystem")
+
+        updater.updateChild(
+            dbc = db,
+            readClient = FailEveryOperation(),
+            writeClient = DryRunClient(),
+            now = now,
+            childId = child.id,
+            saveState = true,
+        )
+
+        val error = db.read { tx ->
+            tx.createQuery {
+                    sql("SELECT error FROM varda_state WHERE child_id = ${bind(child.id)}")
+                }
+                .exactlyOne<String?>()
+        }
+        assertNull(error)
+    }
+
+    @Test
     fun `state is saved after update`() {
         val child = DevPerson(ssn = "030320A904N")
 
