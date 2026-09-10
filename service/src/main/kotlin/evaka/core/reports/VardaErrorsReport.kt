@@ -13,7 +13,6 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.security.AccessControl
 import evaka.core.shared.security.Action
-import evaka.core.varda.vardaSyncActive
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -73,7 +72,7 @@ SELECT
 FROM varda_state vs
 LEFT JOIN child c ON c.id = vs.child_id
 WHERE vs.errored_at IS NOT NULL
-AND ${predicate(vardaSyncActive.forTable("c"))}
+AND c.varda_data_first_removed_at IS NULL
 ORDER BY vs.errored_at DESC
     """
     )

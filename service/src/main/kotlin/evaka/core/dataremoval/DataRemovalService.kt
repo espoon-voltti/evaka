@@ -11,6 +11,7 @@ import evaka.core.caseprocess.deleteCaseProcesses
 import evaka.core.childimages.deleteImageFile
 import evaka.core.document.childdocument.deleteExpiredChildDocuments
 import evaka.core.koski.KOSKI_INPUT_TABLES
+import evaka.core.koski.freezeKoskiSync
 import evaka.core.messaging.DeletedMessageThreadBatch
 import evaka.core.messaging.deleteExpiredBulletinThreads
 import evaka.core.messaging.deleteExpiredMessageDrafts
@@ -578,23 +579,6 @@ RETURNING $table.id, $table.child_id
         .executeAndReturnGeneratedKeys()
         .toList()
 }
-
-private fun Database.Transaction.freezeKoskiSync(
-    childIds: Collection<ChildId>,
-    now: HelsinkiDateTime,
-): List<ChildId> = createUpdate {
-    sql(
-        """
-UPDATE child
-SET koski_data_first_removed_at = ${bind(now)}
-WHERE id = ANY(${bind(childIds)})
-AND koski_data_first_removed_at IS NULL
-RETURNING id
-"""
-    )
-}
-    .executeAndReturnGeneratedKeys()
-    .toList()
 
 fun unsetExpiredChildReferences(
     dbc: Database.Connection,

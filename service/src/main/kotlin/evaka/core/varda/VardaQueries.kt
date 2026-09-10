@@ -9,7 +9,6 @@ import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
-import evaka.core.shared.db.Predicate
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -35,8 +34,6 @@ val VARDA_INPUT_TABLES =
  * Once any of the child's data that affects Varda has been deleted due to retention policies, the
  * data synchronization to Varda must be stopped, so that the data is not deleted from there too.
  */
-val vardaSyncActive = Predicate { where("$it.varda_data_first_removed_at IS NULL") }
-
 fun Database.Transaction.freezeVardaSync(
     childIds: Collection<ChildId>,
     now: HelsinkiDateTime,
@@ -225,7 +222,7 @@ fun Database.Read.getVardaChildren(childIds: List<ChildId>): Map<ChildId, VardaC
                 FROM person p
                 LEFT JOIN child c ON c.id = p.id
                 WHERE p.id = ANY(${bind(childIds)})
-                AND ${predicate(vardaSyncActive.forTable("c"))}
+                AND c.varda_data_first_removed_at IS NULL
                 """
         )
     }
@@ -274,7 +271,7 @@ fun Database.Transaction.addNewChildrenForVardaUpdate(): Int {
                     WHERE
                         pl.type = ANY(${bind(vardaPlacementTypes)}) AND
                         (p.social_security_number IS NOT NULL OR (p.oph_person_oid IS NOT NULL AND p.oph_person_oid != '')) AND
-                        ${predicate(vardaSyncActive.forTable("ch"))} AND
+                        ch.varda_data_first_removed_at IS NULL AND
                         NOT EXISTS (SELECT FROM varda_state vs WHERE vs.child_id = pl.child_id)
                     ON CONFLICT (child_id) DO NOTHING
                     """
