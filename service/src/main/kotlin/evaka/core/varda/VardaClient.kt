@@ -419,7 +419,7 @@ class VardaClient(
         val newToken =
             httpClient.newCall(req).execute().use { response ->
                 if (!response.isSuccessful) {
-                    error { "Failed to get Varda API token: status=${response.code}" }
+                    error("Failed to get Varda API token: status=${response.code}")
                 }
                 val body = response.body.string()
                 jsonMapper.readTree(body).get("token").asString()
