@@ -821,13 +821,24 @@ WITH del_batch AS (
     SELECT cd.id
     FROM child_document cd
     JOIN document_template dt ON dt.id = cd.template_id
+    LEFT JOIN LATERAL (
+        SELECT max(p.end_date) AS last_placement_end
+        FROM placement p
+        WHERE p.child_id = cd.child_id
+    ) placement ON true
     WHERE (NOT dt.archive_externally OR cd.archived_at IS NOT NULL)
       AND CASE dt.deletion_retention_basis
         WHEN 'STATUS_TRANSITION' THEN
             cd.status_modified_at + make_interval(days => dt.deletion_retention_days) <= ${bind(now)}
         WHEN 'PLACEMENT_END' THEN
-            (SELECT MAX(p.end_date) FROM placement p WHERE p.child_id = cd.child_id)
-                + make_interval(days => dt.deletion_retention_days) <= ${bind(today)}
+            CASE WHEN placement.last_placement_end IS NOT NULL THEN
+                placement.last_placement_end
+                    + make_interval(days => dt.deletion_retention_days) <= ${bind(today)}
+            ELSE
+                -- if all the child's placements have been deleted, count from the last status
+                -- transition instead
+                cd.status_modified_at + make_interval(days => dt.deletion_retention_days) <= ${bind(now)}
+            END
       END
     FOR UPDATE OF cd
     ${if (limit != null) "LIMIT ${bind(limit)}" else ""}

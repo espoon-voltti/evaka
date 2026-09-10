@@ -441,12 +441,41 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(minorChild, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, adultChild.id)
             tx.insertGuardian(adult.id, minorChild.id)
+            listOf(adultChild, minorChild).forEach {
+                tx.execute {
+                    sql(
+                        """
+INSERT INTO varda_state (child_id, state, last_success_at)
+VALUES (${bind(it.id)}, NULL, ${bind(now)})
+"""
+                    )
+                }
+            }
         }
 
         scheduledJobs.removeGuardiansFromAdults(db, clock)
 
         assertEquals(now, vardaDataFirstRemovedAt(adultChild.id))
         assertNull(vardaDataFirstRemovedAt(minorChild.id))
+    }
+
+    @Test
+    fun `RemoveGuardiansFromAdults does not freeze Varda sync for a child who was never synced`() {
+        val today = LocalDate.of(2024, 8, 15)
+        val now = HelsinkiDateTime.of(today, LocalTime.of(2, 0))
+        val clock = MockEvakaClock(now)
+
+        val adult = DevPerson()
+        val adultChild = DevPerson(dateOfBirth = today.minusYears(18))
+        db.transaction { tx ->
+            tx.insert(adult, DevPersonType.ADULT)
+            tx.insert(adultChild, DevPersonType.CHILD)
+            tx.insertGuardian(adult.id, adultChild.id)
+        }
+
+        scheduledJobs.removeGuardiansFromAdults(db, clock)
+
+        assertNull(vardaDataFirstRemovedAt(adultChild.id))
     }
 
     private fun vardaDataFirstRemovedAt(childId: ChildId): HelsinkiDateTime? = db.read { tx ->

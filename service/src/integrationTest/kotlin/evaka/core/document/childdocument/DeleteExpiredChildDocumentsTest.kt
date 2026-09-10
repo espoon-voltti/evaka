@@ -165,10 +165,21 @@ class DeleteExpiredChildDocumentsTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `PLACEMENT_END - never deleted when child has no placements`() {
+    fun `PLACEMENT_END - counts from the status transition when the child has no placements`() {
         val template =
-            insertTemplate(retentionDays = 1, basis = DocumentDeletionBasis.PLACEMENT_END)
-        val docId = insertDocument(template)
+            insertTemplate(retentionDays = 365, basis = DocumentDeletionBasis.PLACEMENT_END)
+        val docId = insertDocument(template, statusModifiedAt = now.minusDays(365))
+
+        val result = db.transaction { tx -> tx.deleteExpiredChildDocuments(now) }
+        assertEquals(1, result.size)
+        assertDocumentDoesNotExist(docId)
+    }
+
+    @Test
+    fun `PLACEMENT_END - not deleted before the status transition fallback has elapsed`() {
+        val template =
+            insertTemplate(retentionDays = 365, basis = DocumentDeletionBasis.PLACEMENT_END)
+        val docId = insertDocument(template, statusModifiedAt = now.minusDays(364))
 
         val result = db.transaction { tx -> tx.deleteExpiredChildDocuments(now) }
         assertEquals(0, result.size)
