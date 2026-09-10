@@ -10,6 +10,7 @@ import evaka.core.DataRemovalEnv
 import evaka.core.caseprocess.deleteCaseProcesses
 import evaka.core.childimages.deleteImageFile
 import evaka.core.document.childdocument.deleteExpiredChildDocuments
+import evaka.core.incomestatement.IncomeStatementStatus
 import evaka.core.koski.KOSKI_INPUT_TABLES
 import evaka.core.messaging.DeletedMessageThreadBatch
 import evaka.core.messaging.deleteExpiredBulletinThreads
@@ -26,6 +27,7 @@ import evaka.core.shared.DecisionId
 import evaka.core.shared.FinanceNoteId
 import evaka.core.shared.FosterParentId
 import evaka.core.shared.IncomeId
+import evaka.core.shared.IncomeStatementId
 import evaka.core.shared.MessageThreadId
 import evaka.core.shared.ParentshipId
 import evaka.core.shared.PartnershipId
@@ -224,6 +226,14 @@ class DataRemovalService(
         )
 
         deleteExpiredGuardianBlocklistRows(dbc, expireDate = today.minusYears(10), limit)
+
+        deleteExpiredIncomeStatements(
+            dbc,
+            now,
+            voucherExpireDate = today.minusYears(1),
+            defaultExpireDate = today.minusYears(10),
+            limit = limit,
+        )
     }
 
     fun deleteExpiredChildDocuments(db: Database.Connection, now: HelsinkiDateTime, limit: Int) {
@@ -477,6 +487,46 @@ class DataRemovalService(
                 entity = "message_draft",
                 targetId = AuditId(draft.draftId),
                 meta = mapOf("attachmentIds" to draft.attachmentIds, "expireDate" to expireDate),
+            )
+        }
+    }
+
+    fun deleteExpiredIncomeStatements(
+        dbc: Database.Connection,
+        now: HelsinkiDateTime,
+        voucherExpireDate: LocalDate,
+        defaultExpireDate: LocalDate,
+        limit: Int,
+    ) {
+        logger.info { "Deleting at most $limit expired income statements" }
+        val deleted = dbc.transaction { tx ->
+            val results =
+                tx.deleteExpiredIncomeStatementsBatch(voucherExpireDate, defaultExpireDate, limit)
+            val attachmentIds = results.flatMap { it.attachmentIds }
+            if (attachmentIds.isNotEmpty()) {
+                asyncJobRunner.plan(
+                    tx,
+                    attachmentIds.map { AsyncJob.DeleteAttachment(it) },
+                    runAt = now,
+                )
+            }
+            results
+        }
+        logger.info { "Deleted ${deleted.size} expired income statement(s)" }
+        deleted.forEach { statement ->
+            auditExpiredDelete(
+                entity = "income_statement",
+                targetId = AuditId(statement.incomeStatementId),
+                meta =
+                    mapOf(
+                        "personId" to statement.personId,
+                        "status" to statement.status,
+                        "attachmentIds" to statement.attachmentIds,
+                        "exclusivelyVoucherPlacements" to statement.exclusivelyVoucherPlacements,
+                        "expireDate" to
+                            if (statement.exclusivelyVoucherPlacements) voucherExpireDate
+                            else defaultExpireDate,
+                    ),
             )
         }
     }
@@ -934,6 +984,103 @@ FOR UPDATE
             documentId = documentId,
             childId = childId,
             attachmentIds = attachmentsByDocument[documentId] ?: emptyList(),
+        )
+    }
+}
+
+data class DeletedIncomeStatement(
+    val incomeStatementId: IncomeStatementId,
+    val personId: PersonId,
+    val status: IncomeStatementStatus,
+    val exclusivelyVoucherPlacements: Boolean,
+    val attachmentIds: List<AttachmentId>,
+)
+
+private data class ExpiredIncomeStatement(
+    val id: IncomeStatementId,
+    val personId: PersonId,
+    val status: IncomeStatementStatus,
+    val exclusivelyVoucherPlacements: Boolean,
+)
+
+private fun Database.Transaction.deleteExpiredIncomeStatementsBatch(
+    voucherExpireDate: LocalDate,
+    defaultExpireDate: LocalDate,
+    limit: Int,
+): List<DeletedIncomeStatement> {
+    require(voucherExpireDate >= defaultExpireDate) {
+        "Voucher retention must not be longer than the default retention"
+    }
+    val voucherExpireAt = HelsinkiDateTime.atStartOfDay(voucherExpireDate)
+    val defaultExpireAt = HelsinkiDateTime.atStartOfDay(defaultExpireDate)
+    val statements = createQuery {
+        sql(
+            """
+SELECT i.id, i.person_id, i.status, family.exclusively_voucher_placements
+FROM income_statement i
+CROSS JOIN LATERAL (
+    WITH family_adults AS (
+        SELECT i.person_id AS id
+        UNION
+        SELECT fp2.person_id
+        FROM fridge_partner fp1
+        JOIN fridge_partner fp2
+            ON fp2.partnership_id = fp1.partnership_id AND fp2.person_id <> fp1.person_id
+        WHERE fp1.person_id = i.person_id
+            AND fp1.conflict = false AND fp2.conflict = false
+            AND daterange(fp1.start_date, fp1.end_date, '[]') && daterange(i.start_date, i.end_date, '[]')
+    ), family_placements AS (
+        SELECT p.unit_id
+        FROM fridge_child fc
+        JOIN placement p ON p.child_id = fc.child_id
+            AND daterange(p.start_date, p.end_date, '[]') && daterange(i.start_date, i.end_date, '[]')
+        WHERE fc.head_of_child IN (SELECT id FROM family_adults)
+            AND fc.conflict = false
+            AND daterange(fc.start_date, fc.end_date, '[]') && daterange(i.start_date, i.end_date, '[]')
+        UNION ALL
+        SELECT p.unit_id
+        FROM placement p
+        WHERE p.child_id = i.person_id
+            AND daterange(p.start_date, p.end_date, '[]') && daterange(i.start_date, i.end_date, '[]')
+    )
+    SELECT
+        EXISTS (SELECT FROM family_placements)
+        AND NOT EXISTS (
+            SELECT FROM family_placements
+            JOIN daycare d ON d.id = family_placements.unit_id
+            WHERE d.provider_type <> 'PRIVATE_SERVICE_VOUCHER'
+        ) AS exclusively_voucher_placements
+) family
+WHERE i.sent_at < ${bind(voucherExpireAt)}
+AND (i.sent_at < ${bind(defaultExpireAt)} OR family.exclusively_voucher_placements)
+ORDER BY i.sent_at
+LIMIT ${bind(limit)}
+FOR UPDATE OF i
+"""
+        )
+    }
+        .toList<ExpiredIncomeStatement>()
+
+    val statementIds = statements.map { it.id }
+    if (statementIds.isEmpty()) return emptyList()
+
+    val attachmentsByStatement = createQuery {
+        sql(
+            "SELECT id, income_statement_id FROM attachment WHERE income_statement_id = ANY(${bind(statementIds)})"
+        )
+    }
+        .toList { column<IncomeStatementId>("income_statement_id") to column<AttachmentId>("id") }
+        .groupBy({ it.first }, { it.second })
+
+    execute { sql("DELETE FROM income_statement WHERE id = ANY(${bind(statementIds)})") }
+
+    return statements.map { statement ->
+        DeletedIncomeStatement(
+            incomeStatementId = statement.id,
+            personId = statement.personId,
+            status = statement.status,
+            exclusivelyVoucherPlacements = statement.exclusivelyVoucherPlacements,
+            attachmentIds = attachmentsByStatement[statement.id] ?: emptyList(),
         )
     }
 }
