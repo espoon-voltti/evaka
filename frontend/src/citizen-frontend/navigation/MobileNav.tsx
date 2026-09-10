@@ -160,6 +160,11 @@ const BottomBar = styled.nav`
   left: 0;
   box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.15);
 
+  html[data-standalone] & {
+    position: static;
+    flex: none;
+  }
+
   @media (min-width: ${desktopMin}) {
     display: none;
   }
@@ -463,6 +468,14 @@ const MenuContainer = styled.div`
   flex-direction: column;
   align-items: flex-end;
   text-align: right;
+
+  html[data-standalone] & {
+    position: absolute;
+    overflow-y: auto;
+    left: 0;
+    width: auto;
+    height: auto;
+  }
 
   @media (min-width: ${desktopMin}) {
     display: none;

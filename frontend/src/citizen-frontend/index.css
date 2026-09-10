@@ -51,3 +51,21 @@ a {
 #app {
   height: 100%;
 }
+
+/* When the app runs installed, all scrolling happens inside the app shell (see App.tsx) */
+html[data-standalone],
+html[data-standalone] body,
+html[data-standalone] #app {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+@media print {
+  html[data-standalone],
+  html[data-standalone] body,
+  html[data-standalone] #app {
+    height: auto;
+    overflow: visible;
+  }
+}

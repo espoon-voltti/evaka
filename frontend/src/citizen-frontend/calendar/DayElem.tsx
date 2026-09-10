@@ -10,7 +10,7 @@ import type { CitizenCalendarEvent } from 'lib-common/generated/api-types/calend
 import type { ReservationResponseDay } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { capitalizeFirstLetter } from 'lib-common/string'
-import { scrollToPos } from 'lib-common/utils/scrolling'
+import { scrollToElementTop } from 'lib-common/utils/scrolling'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -19,6 +19,7 @@ import { faCalendar } from 'lib-icons'
 
 import { useLang, useTranslation } from '../localization'
 import { headerHeightMobile } from '../navigation/const'
+import { useIsRunningInstalled } from '../pwa/installed'
 
 import {
   CalendarEventCount,
@@ -38,6 +39,9 @@ interface DayProps {
   events: CitizenCalendarEvent[]
   scrollToDate: LocalDate
 }
+
+// Space left above the day for the month summary that sticks to the top of the list
+const stickyMonthSummaryHeight = 54
 
 export default React.memo(function DayElem({
   calendarDay,
@@ -77,19 +81,25 @@ export default React.memo(function DayElem({
     selectDate(calendarDay.date)
   }, [selectDate, calendarDay.date])
 
-  useEffect(() => {
-    const top = ref.current?.getBoundingClientRect().top
+  // In a browser the sticky header is inside the scrolling document, so it
+  // takes space above the day as well
+  const runningInstalled = useIsRunningInstalled()
+  const spaceAboveDay = runningInstalled
+    ? stickyMonthSummaryHeight
+    : headerHeightMobile + stickyMonthSummaryHeight
 
-    if (top) {
+  useEffect(() => {
+    if (ref.current) {
       // Initial load scrolls smoothly to "today",
       // subsequent loads to previous months use instant scroll to keep the list position
       // at the place where "fetch previous" was clicked
-      scrollToPos({
-        top: top - headerHeightMobile - 54,
-        behavior: isToday ? 'smooth' : 'instant'
-      })
+      scrollToElementTop(
+        ref.current,
+        spaceAboveDay,
+        isToday ? 'smooth' : 'instant'
+      )
     }
-  }, [isToday, scrollToDate])
+  }, [isToday, scrollToDate, spaceAboveDay])
 
   const eventCount = useMemo(
     () => countEventsForDay(events, calendarDay.date),
