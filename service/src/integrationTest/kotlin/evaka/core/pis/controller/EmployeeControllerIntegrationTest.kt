@@ -4,6 +4,8 @@
 
 package evaka.core.pis.controller
 
+import evaka.core.Audit
+import evaka.core.AuditLogCapture
 import evaka.core.FullApplicationTest
 import evaka.core.Sensitive
 import evaka.core.identity.ExternalId
@@ -29,11 +31,15 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.job.ScheduledJobs
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.whenever
@@ -42,8 +48,21 @@ import org.springframework.beans.factory.annotation.Autowired
 class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Autowired lateinit var employeeController: EmployeeController
+    @Autowired lateinit var scheduledJobs: ScheduledJobs
 
     private val clock = MockEvakaClock(2025, 1, 1, 12, 0)
+
+    private val auditLogCapture = AuditLogCapture()
+
+    @BeforeEach
+    fun attachAuditLogCapture() {
+        auditLogCapture.attach()
+    }
+
+    @AfterEach
+    fun detachAuditLogCapture() {
+        auditLogCapture.detach()
+    }
 
     @Test
     fun `no employees return empty list`() {
@@ -246,6 +265,59 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             getEmployeeDetails(employee.id).scheduledDaycareRoles,
         )
         db.read { assertFalse(it.hasActiveMessagingAccount(employee.id)) }
+
+        auditLogCapture
+            .event(Audit.EmployeeUpdateDaycareRoles)
+            .assertContext { add(employee.id).add(listOf(daycare1.id, daycare2.id)) }
+            .assertMeta(
+                "role" to UserRole.SPECIAL_EDUCATION_TEACHER,
+                "startDate" to startDate,
+                "endDate" to endDate,
+                "scheduled" to true,
+            )
+            .assertMinDate(startDate)
+    }
+
+    @Test
+    fun `scheduled role grant and its activation form an audit event chain by employee id`() {
+        val careArea = DevCareArea()
+        val daycare1 = DevDaycare(areaId = careArea.id)
+        val employee = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(careArea)
+            tx.insert(daycare1)
+            tx.insert(employee)
+        }
+
+        val startDate = clock.today().plusDays(7)
+        val endDate = clock.today().plusMonths(6)
+        upsertEmployeeDaycareRoles(
+            employee.id,
+            listOf(daycare1.id),
+            UserRole.STAFF,
+            startDate,
+            endDate,
+        )
+
+        auditLogCapture.event(Audit.EmployeeUpdateDaycareRoles).assertContext {
+            add(employee.id).add(daycare1.id)
+        }
+
+        // the nightly job activates the scheduled role once the start date has come
+        scheduledJobs.syncAclRows(
+            db,
+            MockEvakaClock(HelsinkiDateTime.of(startDate, LocalTime.of(0, 5))),
+        )
+
+        // both events in the chain carry the same employee id in their context
+        auditLogCapture
+            .event(Audit.UnitAclActivateScheduled)
+            .assertContext { add(employee.id).add(daycare1.id) }
+            .assertMeta(
+                "role" to UserRole.STAFF,
+                "startDate" to startDate,
+                "endDate" to endDate,
+            )
     }
 
     @Test
@@ -322,6 +394,16 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         assertEquals(emptyList(), updated.daycareRoles)
         assertEquals(emptyList(), updated.daycareGroupRoles)
         db.read { assertFalse(it.hasActiveMessagingAccount(employee.id)) }
+
+        auditLogCapture
+            .event(Audit.EmployeeDeleteDaycareRoles)
+            .assertContext { add(employee.id).add(listOf(daycare1.id, daycare2.id)) }
+            .assertMeta(
+                "daycareId" to null,
+                "roles" to listOf(UserRole.STAFF),
+                "deletedAclCount" to 2,
+                "deletedScheduledCount" to 0,
+            )
     }
 
     @Test
