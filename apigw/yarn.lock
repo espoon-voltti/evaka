@@ -5,10 +5,26 @@ __metadata:
   version: 10
   cacheKey: 10
 
-"@datadog/libdatadog@npm:0.12.1":
-  version: 0.12.1
-  resolution: "@datadog/libdatadog@npm:0.12.1"
-  checksum: 10/0a671dcab96faf99d0b665288cb12e962827519089f0bf3f69121d03f0a6979a8641a4fb307f1f55263d0c5656e5038ecfa5c29802b66f8a0661d2ae27561275
+"@datadog/libdatadog-extras@npm:^0.20.0":
+  version: 0.20.0
+  resolution: "@datadog/libdatadog-extras@npm:0.20.0"
+  checksum: 10/a18acf46fd120932bd54f34accd420e03e8b2bb57a0527bd45cde0c74cb0cb11771cf52d9ed73ac6ad976f7a69068f4d2915182c4a0c1c918ad2dde596f43bfe
+  languageName: node
+  linkType: hard
+
+"@datadog/libdatadog-wasm@npm:0.20.0":
+  version: 0.20.0
+  resolution: "@datadog/libdatadog-wasm@npm:0.20.0"
+  checksum: 10/cfb731f295fe2622459e7e2606374b1028c2d0bcb10d577bb33861f312286e2370c5887e15c0c316d430706325a10901b7e221c1c555ec8c0a7fc850060bac7d
+  languageName: node
+  linkType: hard
+
+"@datadog/libdatadog@npm:^0.20.0":
+  version: 0.20.0
+  resolution: "@datadog/libdatadog@npm:0.20.0"
+  dependencies:
+    "@datadog/libdatadog-wasm": "npm:0.20.0"
+  checksum: 10/7f97ffd3cf47cc326d9f4d31a732e8d174cff6a73db80c21fbebcfd5e6eea225b3a706aa633714c5f40b33d663359d4f23253d14fdc0fecf18d4439aba2dab4c
   languageName: node
   linkType: hard
 
@@ -1809,11 +1825,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dd-trace@npm:6.13.0":
-  version: 6.13.0
-  resolution: "dd-trace@npm:6.13.0"
+"dd-trace@npm:6.14.0":
+  version: 6.14.0
+  resolution: "dd-trace@npm:6.14.0"
   dependencies:
-    "@datadog/libdatadog": "npm:0.12.1"
+    "@datadog/libdatadog": "npm:^0.20.0"
+    "@datadog/libdatadog-extras": "npm:^0.20.0"
     "@datadog/native-appsec": "npm:11.0.2"
     "@datadog/native-iast-taint-tracking": "npm:4.2.1"
     "@datadog/native-metrics": "npm:4.0.0"
@@ -1827,6 +1844,8 @@ __metadata:
     oxc-parser: "npm:^0.132.0"
   dependenciesMeta:
     "@datadog/libdatadog":
+      optional: true
+    "@datadog/libdatadog-extras":
       optional: true
     "@datadog/native-appsec":
       optional: true
@@ -1844,7 +1863,7 @@ __metadata:
       optional: true
     oxc-parser:
       optional: true
-  checksum: 10/7fac844fb81ce4940a85c4c78650c7cb781a841cb9b51c4aa26ee91c357494d4661ec829c8553af0ddaca586fb9c63c9d28313e7d8236d3a42523a89e823adc4
+  checksum: 10/6759b8083bef208d18cc6badcecc12e39e6b1bfef0331f5896b93dd7f0e54d02e9a363f3c9144687cdeded8208dd831fba1a74e1c2c6f7feed734a8661f1d08c
   languageName: node
   linkType: hard
 
@@ -2102,7 +2121,7 @@ __metadata:
     cookie-parser: "npm:1.4.7"
     cookie-signature: "npm:1.2.2"
     date-fns: "npm:4.4.0"
-    dd-trace: "npm:6.13.0"
+    dd-trace: "npm:6.14.0"
     express: "npm:5.2.1"
     express-basic-auth: "npm:1.2.1"
     express-http-proxy: "npm:2.1.2"
