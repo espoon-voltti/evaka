@@ -8,6 +8,7 @@ import evaka.core.application.utils.exhaust
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.invoicing.controller.SortDirection
 import evaka.core.placement.PlacementType
+import evaka.core.shared.AttachmentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EvakaUserId
@@ -620,13 +621,22 @@ WHERE id = ${bind(incomeStatementId)}
     }
 }
 
-fun Database.Transaction.removeIncomeStatement(id: IncomeStatementId) {
-    execute {
+/** Returns the ids of the attachments that were orphaned, including employee-uploaded ones. */
+@IgnorableReturnValue
+fun Database.Transaction.removeIncomeStatement(id: IncomeStatementId): List<AttachmentId> {
+    val orphanedAttachmentIds = createQuery {
         sql(
-            "UPDATE attachment SET income_statement_id = NULL WHERE income_statement_id = ${bind(id)}"
+            """
+UPDATE attachment
+SET income_statement_id = NULL
+WHERE income_statement_id = ${bind(id)}
+RETURNING id
+"""
         )
     }
+        .toList<AttachmentId>()
     execute { sql("DELETE FROM income_statement WHERE id = ${bind(id)}") }
+    return orphanedAttachmentIds
 }
 
 data class IncomeStatementAwaitingHandler(
