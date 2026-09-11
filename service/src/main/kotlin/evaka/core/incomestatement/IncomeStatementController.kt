@@ -104,6 +104,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: SetIncomeStatementHandledBody,
     ) {
+        val audit = AuditContext().add(incomeStatementId).addMeta("status", body.status)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -119,15 +120,16 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                 }
 
                 tx.updateIncomeStatementHandled(
-                    user,
-                    clock.now(),
-                    incomeStatementId,
-                    body.handlerNote,
-                    body.status,
-                )
+                        user,
+                        clock.now(),
+                        incomeStatementId,
+                        body.handlerNote,
+                        body.status,
+                    )
+                    ?.also { (personId, startDate) -> audit.add(personId).observeDate(startDate) }
             }
         }
-        Audit.IncomeStatementUpdateHandled.log(targetId = AuditId(incomeStatementId))
+        audit.log(Audit.IncomeStatementUpdateHandled, clock)
     }
 
     @PostMapping("/awaiting-handler")
@@ -137,6 +139,14 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: SearchIncomeStatementsRequest,
     ): PagedIncomeStatementsAwaitingHandler {
+        val audit =
+            AuditContext()
+                .add(body.unitIds.orEmpty())
+                .observeDate(body.sentStartDate)
+                .observeDate(body.placementValidDate)
+        body.areas?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("areas", it) }
+        body.providerTypes?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("providerTypes", it) }
+        body.status?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("status", it) }
         return db.connect { dbc ->
                 dbc.read { it ->
                     accessControl.requirePermissionFor(
@@ -155,22 +165,23 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                     }
 
                     it.fetchIncomeStatementsAwaitingHandler(
-                        clock.now().toLocalDate(),
-                        body.areas ?: emptyList(),
-                        body.unitIds ?: emptyList(),
-                        body.providerTypes ?: emptyList(),
-                        body.sentStartDate,
-                        body.sentEndDate,
-                        body.placementValidDate,
-                        body.status ?: emptyList(),
-                        body.page,
-                        pageSize = 50,
-                        body.sortBy ?: IncomeStatementSortParam.SENT_AT,
-                        body.sortDirection ?: SortDirection.ASC,
-                    )
+                            clock.now().toLocalDate(),
+                            body.areas ?: emptyList(),
+                            body.unitIds ?: emptyList(),
+                            body.providerTypes ?: emptyList(),
+                            body.sentStartDate,
+                            body.sentEndDate,
+                            body.placementValidDate,
+                            body.status ?: emptyList(),
+                            body.page,
+                            pageSize = 50,
+                            body.sortBy ?: IncomeStatementSortParam.SENT_AT,
+                            body.sortDirection ?: SortDirection.ASC,
+                        )
+                        .also { statements -> audit.addMeta("count", statements.total) }
                 }
             }
-            .also { Audit.IncomeStatementsAwaitingHandler.log(meta = mapOf("total" to it.total)) }
+            .also { audit.log(Audit.IncomeStatementsAwaitingHandler, clock) }
     }
 
     @GetMapping("/guardian/{guardianId}/children")

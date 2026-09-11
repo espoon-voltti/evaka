@@ -598,17 +598,17 @@ WHERE id = ${bind(incomeStatementId)}
     }
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.updateIncomeStatementHandled(
     user: AuthenticatedUser.Employee,
     now: HelsinkiDateTime,
     incomeStatementId: IncomeStatementId,
     note: String,
     status: IncomeStatementStatus,
-) {
-    execute {
-        sql(
-            """
-UPDATE income_statement 
+): Pair<PersonId, LocalDate>? = createQuery {
+    sql(
+        """
+UPDATE income_statement
 SET modified_at = ${bind(now)},
     modified_by = ${bind(user.evakaUserId)},
     handler_note = ${bind(note)},
@@ -616,10 +616,11 @@ SET modified_at = ${bind(now)},
     handled_at = ${bind(now.takeIf { status == IncomeStatementStatus.HANDLED })},
     status = ${bind(status)}
 WHERE id = ${bind(incomeStatementId)}
+RETURNING person_id, start_date
 """
-        )
-    }
+    )
 }
+    .exactlyOneOrNull { column<PersonId>("person_id") to column<LocalDate>("start_date") }
 
 /** Returns the ids of the attachments that were orphaned, including employee-uploaded ones. */
 @IgnorableReturnValue
