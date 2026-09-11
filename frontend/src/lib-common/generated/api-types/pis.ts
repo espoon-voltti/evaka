@@ -150,24 +150,6 @@ export interface DisableSsnRequest {
 }
 
 /**
-* Generated from evaka.core.pis.EmailMessageType
-*/
-export const emailMessageTypes = [
-  'TRANSACTIONAL',
-  'MESSAGE_NOTIFICATION',
-  'BULLETIN_NOTIFICATION',
-  'INCOME_NOTIFICATION',
-  'CALENDAR_EVENT_NOTIFICATION',
-  'DECISION_NOTIFICATION',
-  'DOCUMENT_NOTIFICATION',
-  'INFORMAL_DOCUMENT_NOTIFICATION',
-  'ATTENDANCE_RESERVATION_NOTIFICATION',
-  'DISCUSSION_TIME_NOTIFICATION'
-] as const
-
-export type EmailMessageType = typeof emailMessageTypes[number]
-
-/**
 * Generated from evaka.core.pis.EmailVerification
 */
 export interface EmailVerification {
@@ -457,6 +439,32 @@ export interface NewSsnEmployee {
   firstName: string
   lastName: string
   ssn: string
+}
+
+/**
+* Generated from evaka.core.pis.NotificationCategory
+*/
+export const notificationCategories = [
+  'TRANSACTIONAL',
+  'MESSAGE_NOTIFICATION',
+  'BULLETIN_NOTIFICATION',
+  'INCOME_NOTIFICATION',
+  'CALENDAR_EVENT_NOTIFICATION',
+  'DECISION_NOTIFICATION',
+  'DOCUMENT_NOTIFICATION',
+  'INFORMAL_DOCUMENT_NOTIFICATION',
+  'ATTENDANCE_RESERVATION_NOTIFICATION',
+  'DISCUSSION_TIME_NOTIFICATION'
+] as const
+
+export type NotificationCategory = typeof notificationCategories[number]
+
+/**
+* Generated from evaka.core.pis.controllers.PersonalDataControllerCitizen.NotificationSettings
+*/
+export interface NotificationSettings {
+  disabledEmailTypes: NotificationCategory[]
+  disabledPushTypes: NotificationCategory[]
 }
 
 /**

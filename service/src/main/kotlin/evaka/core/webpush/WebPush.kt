@@ -4,22 +4,21 @@
 
 package evaka.core.webpush
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonValue
 import evaka.core.WebPushEnv
 import evaka.core.shared.config.SealedSubclassSimpleName
 import evaka.core.shared.config.defaultJsonMapperBuilder
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
-import evaka.core.shared.utils.writerFor
 import fi.espoo.voltti.logging.loggers.error
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
 import java.time.Duration
-import kotlin.code
 import kotlin.collections.toTypedArray
-import kotlin.toString
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -29,7 +28,7 @@ import tools.jackson.databind.annotation.JsonTypeIdResolver
 data class WebPushNotification(
     val endpoint: WebPushEndpoint,
     val ttl: Duration,
-    val payloads: List<WebPushPayload>,
+    val message: WebPushMessage,
 )
 
 enum class Urgency {
@@ -39,11 +38,37 @@ enum class Urgency {
     High,
 }
 
+sealed interface WebPushMessage {
+    /** A recipient picks the first payload it understands, so the newest comes first */
+    data class Versioned(@get:JsonValue val payloads: List<WebPushPayload>) : WebPushMessage
+
+    /**
+     * A message the browser understands by itself, so it shows the notification and handles the
+     * click without running the service worker.
+     *
+     * Reference: https://w3c.github.io/push-api/
+     */
+    data class Declarative(
+        val notification: DeclarativeNotification,
+
+        // 8030 is a required magic value
+        @get:JsonProperty("web_push") val webPush: Int = 8030,
+    ) : WebPushMessage
+}
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @JsonTypeIdResolver(SealedSubclassSimpleName::class)
 sealed interface WebPushPayload {
     data class NotificationV1(val title: String) : WebPushPayload
 }
+
+data class DeclarativeNotification(
+    val title: String,
+    val navigate: String,
+    val body: String?,
+    /** Older notifications with the same tag are replaced */
+    val tag: String,
+)
 
 class WebPushEndpoint(val uri: URI, val ecdhPublicKey: ECPublicKey, val authSecret: ByteArray)
 
@@ -126,7 +151,7 @@ private val VAPID_JWT_MIN_VALID_DURATION = Duration.ofHours(1)
 class WebPush(env: WebPushEnv) {
     private val httpClient = OkHttpClient()
     private val secureRandom = SecureRandom()
-    private val jsonWriter = defaultJsonMapperBuilder().build().writerFor<List<WebPushPayload>>()
+    private val jsonMapper = defaultJsonMapperBuilder().build()
     private val vapidKeyPair: WebPushKeyPair =
         WebPushKeyPair.fromPrivateKey(WebPushCrypto.decodePrivateKey(env.vapidPrivateKey.value))
     val applicationServerKey: String
@@ -158,7 +183,7 @@ class WebPush(env: WebPushEnv) {
                     endpoint = notification.endpoint,
                     messageKeyPair = WebPushCrypto.generateKeyPair(secureRandom),
                     salt = secureRandom.generateSeed(16),
-                    data = jsonWriter.writeValueAsBytes(notification.payloads),
+                    data = jsonMapper.writeValueAsBytes(notification.message),
                     urgency = Urgency.Normal,
                 )
                 .withVapid(vapidJwt)

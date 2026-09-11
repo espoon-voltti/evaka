@@ -9,7 +9,7 @@ import evaka.core.daycare.domain.Language
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.shared.PedagogicalDocumentId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -133,7 +133,7 @@ SELECT EXISTS(
         Email.create(
                 dbc = db,
                 personId = msg.recipientId,
-                emailType = EmailMessageType.INFORMAL_DOCUMENT_NOTIFICATION,
+                category = NotificationCategory.INFORMAL_DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
                 content =
                     emailMessageProvider.pedagogicalDocumentNotification(msg.language, childId),

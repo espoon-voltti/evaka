@@ -11,6 +11,7 @@ import { constantQuery, useQuery } from 'lib-common/query'
 import type { User } from '../auth/state'
 import { useUser } from '../auth/state'
 import { useInstallAvailability } from '../pwa/installAvailability'
+import { usePushAvailability } from '../pwa/pushNotifications'
 
 import { isEmailVerified } from './emailVerification'
 import { emailVerificationStatusQuery, passkeysQuery } from './queries'
@@ -20,6 +21,7 @@ export const personalDetailsTasks = [
   'VERIFY_EMAIL',
   'ADD_PHONE',
   'ADD_TO_HOME_SCREEN',
+  'ENABLE_PUSH_NOTIFICATIONS',
   'ADD_WEAK_LOGIN'
 ] as const
 
@@ -30,6 +32,7 @@ export type PersonalDetailsTaskSection =
   | 'login'
   | 'passkeys'
   | 'homeScreen'
+  | 'push'
   | 'notifications'
 
 interface PersonalDetailsTaskContext {
@@ -37,6 +40,7 @@ interface PersonalDetailsTaskContext {
   emailVerification: EmailVerificationStatusResponse
   passkeys: CitizenPasskey[]
   canInstall: boolean
+  canSubscribeToPush: boolean
 }
 
 export const personalDetailsTaskConfig: Record<
@@ -68,6 +72,11 @@ export const personalDetailsTaskConfig: Record<
     section: 'homeScreen',
     isPending: ({ canInstall }) => canInstall
   },
+  ENABLE_PUSH_NOTIFICATIONS: {
+    dataQa: 'task-enable-push-notifications',
+    section: 'push',
+    isPending: ({ canSubscribeToPush }) => canSubscribeToPush
+  },
   ADD_WEAK_LOGIN: {
     dataQa: 'task-add-weak-login',
     section: 'passkeys',
@@ -87,11 +96,18 @@ export function usePersonalDetailsTasks(): PersonalDetailsTask[] {
     user !== undefined ? passkeysQuery() : constantQuery(null)
   )
   const canInstall = useInstallAvailability().kind !== 'unavailable'
+  const canSubscribeToPush = usePushAvailability().kind === 'subscribable'
   return useMemo(() => {
     if (!user || !emailVerification || !passkeys) return noTasks
-    const ctx = { user, emailVerification, passkeys, canInstall }
+    const ctx = {
+      user,
+      emailVerification,
+      passkeys,
+      canInstall,
+      canSubscribeToPush
+    }
     return personalDetailsTasks.filter((task) =>
       personalDetailsTaskConfig[task].isPending(ctx)
     )
-  }, [user, emailVerification, passkeys, canInstall])
+  }, [user, emailVerification, passkeys, canInstall, canSubscribeToPush])
 }

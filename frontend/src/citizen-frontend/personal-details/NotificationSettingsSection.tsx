@@ -11,8 +11,11 @@ import { object } from 'lib-common/form/form'
 import { useBoolean, useForm, useFormFields } from 'lib-common/form/hooks'
 import type { BoundFormState } from 'lib-common/form/hooks'
 import type { StateOf } from 'lib-common/form/types'
-import type { EmailMessageType } from 'lib-common/generated/api-types/pis'
-import { emailMessageTypes } from 'lib-common/generated/api-types/pis'
+import type {
+  NotificationCategory,
+  NotificationSettings
+} from 'lib-common/generated/api-types/pis'
+import { notificationCategories } from 'lib-common/generated/api-types/pis'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -38,7 +41,7 @@ const notificationSettingsForm = object({
 
 function isEnabled(
   state: StateOf<typeof notificationSettingsForm>,
-  type: EmailMessageType
+  type: NotificationCategory
 ): boolean {
   switch (type) {
     case 'TRANSACTIONAL':
@@ -64,20 +67,22 @@ function isEnabled(
   }
 }
 
-const getInitialState = (
-  disabledTypes: EmailMessageType[]
-): StateOf<typeof notificationSettingsForm> => ({
-  message: !disabledTypes.includes('MESSAGE_NOTIFICATION'),
-  bulletin: !disabledTypes.includes('BULLETIN_NOTIFICATION'),
-  income: !disabledTypes.includes('INCOME_NOTIFICATION'),
-  calendarEvent: !disabledTypes.includes('CALENDAR_EVENT_NOTIFICATION'),
-  decision: !disabledTypes.includes('DECISION_NOTIFICATION'),
-  document: !disabledTypes.includes('DOCUMENT_NOTIFICATION'),
-  informalDocument: !disabledTypes.includes('INFORMAL_DOCUMENT_NOTIFICATION'),
-  attendanceReservation: !disabledTypes.includes(
+const getInitialState = ({
+  disabledEmailTypes
+}: NotificationSettings): StateOf<typeof notificationSettingsForm> => ({
+  message: !disabledEmailTypes.includes('MESSAGE_NOTIFICATION'),
+  bulletin: !disabledEmailTypes.includes('BULLETIN_NOTIFICATION'),
+  income: !disabledEmailTypes.includes('INCOME_NOTIFICATION'),
+  calendarEvent: !disabledEmailTypes.includes('CALENDAR_EVENT_NOTIFICATION'),
+  decision: !disabledEmailTypes.includes('DECISION_NOTIFICATION'),
+  document: !disabledEmailTypes.includes('DOCUMENT_NOTIFICATION'),
+  informalDocument: !disabledEmailTypes.includes(
+    'INFORMAL_DOCUMENT_NOTIFICATION'
+  ),
+  attendanceReservation: !disabledEmailTypes.includes(
     'ATTENDANCE_RESERVATION_NOTIFICATION'
   ),
-  discussionTime: !disabledTypes.includes('DISCUSSION_TIME_NOTIFICATION')
+  discussionTime: !disabledEmailTypes.includes('DISCUSSION_TIME_NOTIFICATION')
 })
 
 const channelColumns = '60px'
@@ -133,7 +138,7 @@ interface NotificationRow {
 }
 
 export interface Props {
-  initialData: EmailMessageType[]
+  initialData: NotificationSettings
 }
 
 export default React.memo(
@@ -222,9 +227,12 @@ export default React.memo(
           }}
           mutation={updateNotificationSettingsMutation}
           onSave={() => ({
-            body: emailMessageTypes.filter(
-              (type) => !isEnabled(form.state, type)
-            )
+            body: {
+              ...initialData,
+              disabledEmailTypes: notificationCategories.filter(
+                (type) => !isEnabled(form.state, type)
+              )
+            }
           })}
           onSaveSuccess={useEditing.off}
         />

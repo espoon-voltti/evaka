@@ -61,3 +61,84 @@ serviceWorker.addEventListener('fetch', (event) => {
     })()
   )
 })
+
+// Backend sends the push payload in the Declarative Web Push format,
+// which is a JSON object with a `web_push` field set to 8030 and a
+// `notification` field containing the notification data. Browsers that
+// understand this format show the notification and handle the click
+// themselves, and never run the `push` or `notificationclick` event
+// handlers. Browsers that do not understand this format run the event
+// handlers, which show the notification and handle the click themselves.
+//
+// As of Sep 2026: iOS handles declarative web push notifications itself, Android does not
+//
+// Reference: https://w3c.github.io/push-api/
+
+async function showDeclarativeNotification(/** @type{object} */ notification) {
+  return await serviceWorker.registration.showNotification(notification.title, {
+    body: notification.body ?? undefined,
+    icon: '/icons/evaka-192px.png',
+    tag: notification.tag,
+    data: { navigate: notification.navigate }
+  })
+}
+
+serviceWorker.addEventListener('push', (event) => {
+  const json = event.data?.json()
+  if (json?.web_push === 8030) {
+    event.waitUntil(showDeclarativeNotification(json.notification))
+  }
+})
+
+const notificationAckTimeoutMs = 500
+
+// Tell the app to route to the path without reloading. Resolves to `true` if the app
+// received the message.
+function requestRouting(
+  /** @type{WindowClient} */ client,
+  /** @type{string} */ path
+) {
+  return new Promise((resolve) => {
+    const channel = new MessageChannel()
+    const timeout = setTimeout(() => resolve(false), notificationAckTimeoutMs)
+
+    // Client responds when it has received the message
+    channel.port1.onmessage = () => {
+      clearTimeout(timeout)
+      resolve(true)
+    }
+
+    client.postMessage({ type: 'notification-click', path }, [channel.port2])
+  })
+}
+
+async function openNotificationTarget(/** @type{URL} */ url) {
+  const clients = await serviceWorker.clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true
+  })
+  const citizenClients = clients.filter(
+    (client) => !new URL(client.url).pathname.startsWith('/employee')
+  )
+  const client =
+    citizenClients.find((c) => c.visibilityState === 'visible') ??
+    citizenClients[0]
+  if (!client) {
+    await serviceWorker.clients.openWindow(url.href)
+    return
+  }
+  await client.focus()
+  if (!(await requestRouting(client, url.pathname + url.search + url.hash))) {
+    await client.navigate(url.href)
+  }
+}
+
+serviceWorker.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const navigate = event.notification.data?.navigate
+  event.waitUntil(
+    openNotificationTarget(
+      new URL(navigate ?? '/', serviceWorker.location.origin)
+    )
+  )
+})

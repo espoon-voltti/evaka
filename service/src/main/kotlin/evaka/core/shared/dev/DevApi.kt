@@ -130,8 +130,8 @@ import evaka.core.pairing.challengePairing
 import evaka.core.pairing.incrementAttempts
 import evaka.core.pairing.initPairing
 import evaka.core.pairing.respondPairingChallengeCreateDevice
-import evaka.core.pis.EmailMessageType
 import evaka.core.pis.Employee
+import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getEmployees
 import evaka.core.pis.service.PersonDTO
 import evaka.core.pis.service.PersonService
@@ -2183,7 +2183,7 @@ data class DevPerson(
     val updatedFromVtj: HelsinkiDateTime? = null,
     val ophPersonOid: String? = null,
     val duplicateOf: PersonId? = null,
-    val disabledEmailTypes: Set<EmailMessageType> = emptySet(),
+    val disabledEmailTypes: Set<NotificationCategory> = emptySet(),
 ) {
     fun toPersonDTO() =
         PersonDTO(

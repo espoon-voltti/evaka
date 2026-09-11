@@ -9,7 +9,7 @@ import evaka.core.daycare.domain.Language
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -52,7 +52,7 @@ class ApplicationReceivedEmailService(
         Email.create(
                 dbc = dbc,
                 personId = personId,
-                emailType = EmailMessageType.TRANSACTIONAL,
+                category = NotificationCategory.TRANSACTIONAL,
                 fromAddress = fromAddress,
                 content = content,
                 traceId = personId.toString(),

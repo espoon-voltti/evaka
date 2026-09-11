@@ -38,6 +38,7 @@ import { mobileBottomNavHeight } from './navigation/const'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { InstallSuggestion } from './pwa/InstallSuggestion'
+import { useNotificationClickRouting } from './pwa/notificationRouting'
 import { queryClient, QueryClientProvider } from './query'
 
 const GlobalStyle = createGlobalStyle`
@@ -103,6 +104,7 @@ const Content = React.memo(function Content({
       user.map((usr) => !!usr).getOrElse(false)
     )
   useChildrenStartingNotification()
+  useNotificationClickRouting()
   return (
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>

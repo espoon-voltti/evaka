@@ -44,7 +44,7 @@ import evaka.core.invoicing.domain.isRetroactive
 import evaka.core.invoicing.domain.updateEndDatesOrAnnulConflictingDecisions
 import evaka.core.invoicing.validateFinanceDecisionHandler
 import evaka.core.pdfgen.PdfGenerator
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.s3.DocumentKey
 import evaka.core.s3.DocumentService
 import evaka.core.setting.getSettings
@@ -432,7 +432,7 @@ class FeeDecisionService(
         Email.create(
                 db,
                 decision.headOfFamily.id,
-                EmailMessageType.DECISION_NOTIFICATION,
+                NotificationCategory.DECISION_NOTIFICATION,
                 fromAddress,
                 content,
                 "$feeDecisionId - ${decision.headOfFamily.id}",

@@ -67,6 +67,8 @@ export interface CitizenFeatures {
 
 export type CitizenPasskeyId = Id<'CitizenPasskey'>
 
+export type CitizenPushSubscriptionId = Id<'CitizenPushSubscription'>
+
 export type ClubTermId = Id<'ClubTerm'>
 
 /**

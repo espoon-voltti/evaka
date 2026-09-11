@@ -34,7 +34,7 @@ import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.invoicing.domain.PersonBasic
 import evaka.core.invoicing.domain.PersonDetailed
 import evaka.core.invoicing.domain.UnitData
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.pis.service.insertGuardian
 import evaka.core.placement.PlacementType
 import evaka.core.sficlient.MockSfiMessagesClient
@@ -2826,7 +2826,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 ssn = "291090-9986",
                 email = "optout@test.com",
                 forceManualFeeDecisions = false,
-                disabledEmailTypes = setOf(EmailMessageType.DECISION_NOTIFICATION),
+                disabledEmailTypes = setOf(NotificationCategory.DECISION_NOTIFICATION),
             )
         db.transaction {
             it.insert(optOutAdult, DevPersonType.RAW_ROW)

@@ -326,6 +326,31 @@ const sv: Translations = {
     },
     homeScreenSection: {
       title: 'Lägg till eVaka på hemskärmen'
+    },
+    pushSection: {
+      title: 'Push-aviseringar',
+      description:
+        'eVaka skickar aviseringar till de enheter där du har tagit dem i bruk.',
+      enabled: 'I bruk',
+      blocked: 'Blockerad',
+      thisDevice: 'Den här enheten',
+      notEnabledOnThisDevice:
+        'Aviseringarna är inte i bruk på den här enheten.',
+      enable: 'Ta i bruk',
+      blockedOnThisDevice: 'Aviseringarna är blockerade på den här enheten',
+      blockedInstructions: {
+        ios: 'Tillåt aviseringar i enhetens inställningar: Inställningar > Notiser > eVaka.',
+        android:
+          'Tillåt aviseringar i enhetens inställningar: Inställningar > Appar > eVaka > Notiser.',
+        other: 'Tillåt aviseringar i webbläsarens webbplatsinställningar.'
+      },
+      lastSent: (at: string) => `Senast skickad ${at}`,
+      neverSent: 'Inga skickade aviseringar ännu',
+      sendTest: 'Testa',
+      installedApp: 'Appen på hemskärmen',
+      browser: 'Webbläsare',
+      inUseSince: 'I bruk sedan',
+      revoke: 'Ta aviseringarna ur bruk'
     }
   },
   errorPage: {
@@ -2149,6 +2174,10 @@ const sv: Translations = {
       ADD_TO_HOME_SCREEN: {
         title: 'Lägg till eVaka på hemskärmen',
         description: 'Du får påminnelser direkt till din telefon.'
+      },
+      ENABLE_PUSH_NOTIFICATIONS: {
+        title: 'Ta push-aviseringar i bruk',
+        description: 'Du får aviseringarna direkt till den här enheten.'
       },
       ADD_WEAK_LOGIN: {
         title: 'Lägg till en inloggningsmetod',
