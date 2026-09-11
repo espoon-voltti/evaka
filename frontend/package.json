@@ -56,7 +56,7 @@
     "react-select": "5.10.2",
     "seamless-scroll-polyfill": "2.3.4",
     "styled-components": "6.5.3",
-    "wouter": "3.10.0"
+    "wouter": "3.11.0"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",
