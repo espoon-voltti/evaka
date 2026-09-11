@@ -5,6 +5,7 @@
 package evaka.core.invoicing.controller
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.attachment.AttachmentParent
 import evaka.core.attachment.associateOrphanAttachments
@@ -61,6 +62,7 @@ class IncomeController(
         clock: EvakaClock,
         @RequestParam personId: PersonId,
     ): List<IncomeWithPermittedActions> {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -73,10 +75,11 @@ class IncomeController(
 
                     val incomes =
                         tx.getIncomesForPerson(
-                            incomeTypesProvider,
-                            coefficientMultiplierProvider,
-                            personId,
-                        )
+                                incomeTypesProvider,
+                                coefficientMultiplierProvider,
+                                personId,
+                            )
+                            .onEach { audit.add(it.id).observeDate(it.validFrom) }
                     val permittedActions =
                         accessControl.getPermittedActions<IncomeId, Action.Income>(
                             tx,
@@ -89,12 +92,7 @@ class IncomeController(
                     }
                 }
             }
-            .also { incomes ->
-                Audit.PersonIncomeRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to incomes.size),
-                )
-            }
+            .also { audit.log(Audit.PersonIncomeRead, clock) }
     }
 
     data class IncomeWithPermittedActions(
