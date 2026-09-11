@@ -66,6 +66,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
     private val metrics: AtomicReference<Metrics> = AtomicReference()
 
     private val throttleInterval = config.throttleInterval ?: Duration.ZERO
+    private val isThrottled = !throttleInterval.isZero
     private val executor = config.let {
         val corePoolSize = 1
         val maximumPoolSize = it.concurrency
@@ -139,28 +140,40 @@ class AsyncJobPool<T : AsyncJobPayload>(
     private fun runWorker(clock: EvakaClock, maxCount: Int) =
         tracer.withDetachedSpan("asyncjob.worker $fullName") {
             Database(jdbi, tracer).connect { dbc ->
-                dbc.transaction { it.upsertPermit(this.id) }
+                if (isThrottled) {
+                    dbc.transaction { it.upsertPermit(this.id) }
+                }
                 var executed = 0
                 while (maxCount - executed > 0 && !executor.isTerminating) {
                     val job =
                         dbc.transaction { tx ->
                             tx.setStatementTimeout(Duration.ofSeconds(120))
-                            // In the worst case we need to wait for the duration of (N service
-                            // instances) * (M workers per pool) * (throttle interval) if every
-                            // worker in the cluster is queuing and every one sleeps.
-                            //
-                            // The value here is just a guess that should be long enough in all
-                            // valid cases, and we get a loud exception if this assumption is broken
-                            tx.setLockTimeout(Duration.ofSeconds(60))
-                            val permit = tx.claimPermit(this.id)
-                            Thread.sleep(
-                                Duration.between(
-                                    clock.now().toInstant(),
-                                    permit.availableAt.toInstant(),
+                            if (isThrottled) {
+                                // In the worst case we need to wait for the duration of (N service
+                                // instances) * (M workers per pool) * (throttle interval) if every
+                                // worker in the cluster is queuing and every one sleeps.
+                                //
+                                // The value here is just a guess that should be long enough in all
+                                // valid cases, and we get a loud exception if this assumption is
+                                // broken
+                                tx.setLockTimeout(Duration.ofSeconds(60))
+                                val permit = tx.claimPermit(this.id)
+
+                                // availableAt was written from clock.now(), which is mocked in
+                                // tests, so the difference can be any value. A real throttle wait
+                                // never exceeds the throttle interval.
+                                Thread.sleep(
+                                    Duration.between(
+                                            clock.now().toInstant(),
+                                            permit.availableAt.toInstant(),
+                                        )
+                                        .coerceIn(Duration.ZERO, throttleInterval)
                                 )
-                            )
+                            }
                             tx.claimJob(clock.now(), registration.jobTypes())?.also {
-                                tx.updatePermit(this.id, clock.now().plus(throttleInterval))
+                                if (isThrottled) {
+                                    tx.updatePermit(this.id, clock.now().plus(throttleInterval))
+                                }
                             }
                         } ?: break
                     tracer.withDetachedSpan(
