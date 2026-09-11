@@ -39,29 +39,30 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @PathVariable personId: PersonId,
         @RequestParam page: Int,
     ): PagedIncomeStatements {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Person.READ_INCOME_STATEMENTS,
                         personId,
                     )
-                    it.readIncomeStatementsForPerson(
-                        user = user,
-                        personId = personId,
-                        page = page,
-                        pageSize = 10,
-                    )
+                    tx.readIncomeStatementsForPerson(
+                            user = user,
+                            personId = personId,
+                            page = page,
+                            pageSize = 10,
+                        )
+                        .also { statements ->
+                            statements.data.forEach {
+                                audit.add(it.id).add(it.attachmentIds).observeDate(it.startDate)
+                            }
+                        }
                 }
             }
-            .also {
-                Audit.IncomeStatementsOfPerson.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("total" to it.total),
-                )
-            }
+            .also { audit.log(Audit.IncomeStatementsOfPerson, clock) }
     }
 
     @GetMapping("/{incomeStatementId}")

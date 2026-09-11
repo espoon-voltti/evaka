@@ -42,6 +42,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @RequestParam page: Int,
     ): PagedIncomeStatements {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -52,19 +53,19 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user.id,
                     )
                     tx.readIncomeStatementsForPerson(
-                        user = user,
-                        personId = user.id,
-                        page = page,
-                        pageSize = 10,
-                    )
+                            user = user,
+                            personId = user.id,
+                            page = page,
+                            pageSize = 10,
+                        )
+                        .also { statements ->
+                            statements.data.forEach {
+                                audit.add(it.id).add(it.attachmentIds).observeDate(it.startDate)
+                            }
+                        }
                 }
             }
-            .also {
-                Audit.IncomeStatementsOfPerson.log(
-                    targetId = AuditId(user.id),
-                    meta = mapOf("total" to it.total),
-                )
-            }
+            .also { audit.log(Audit.IncomeStatementsOfPerson, clock) }
     }
 
     @GetMapping("/child/{childId}")
