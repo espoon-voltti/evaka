@@ -137,24 +137,23 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): List<LocalDate> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Child.READ_INCOME_STATEMENTS,
                         childId,
                     )
-                    it.readIncomeStatementStartDates(childId)
+                    tx.readIncomeStatementStartDates(childId).also { dates ->
+                        dates.forEach { audit.observeDate(it) }
+                        audit.addMeta("count", dates.size)
+                    }
                 }
             }
-            .also {
-                Audit.IncomeStatementStartDatesOfChild.log(
-                    targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.IncomeStatementStartDatesOfChild, clock) }
     }
 
     @GetMapping("/start-dates/")
@@ -163,24 +162,23 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): List<LocalDate> {
+        val audit = AuditContext()
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Person.READ_INCOME_STATEMENTS,
                         user.id,
                     )
-                    it.readIncomeStatementStartDates(user.id)
+                    tx.readIncomeStatementStartDates(user.id).also { dates ->
+                        dates.forEach { audit.observeDate(it) }
+                        audit.addMeta("count", dates.size)
+                    }
                 }
             }
-            .also {
-                Audit.IncomeStatementStartDates.log(
-                    targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.IncomeStatementStartDates, clock) }
     }
 
     @GetMapping("/{incomeStatementId}")
