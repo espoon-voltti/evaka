@@ -15,6 +15,7 @@ import { appConfig, featureFlags } from 'lib-customizations/citizen'
 import 'leaflet/dist/leaflet.css'
 
 import { listenForInstallPrompt } from './pwa/installPrompt'
+import { trackRunningInstalled } from './pwa/installed'
 import { applyPwaMetadata } from './pwa/metadata'
 import {
   registerServiceWorker,
@@ -40,6 +41,7 @@ smoothScrollPolyfill()
 if (featureFlags.citizenPwa) {
   applyPwaMetadata()
   listenForInstallPrompt()
+  trackRunningInstalled()
 }
 
 const root = createRoot(document.getElementById('app')!)

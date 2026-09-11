@@ -34,6 +34,7 @@ import { mobileBottomNavHeight } from './navigation/const'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { InstallSuggestion } from './pwa/InstallSuggestion'
+import { useIsRunningInstalled } from './pwa/installed'
 import { queryClient, QueryClientProvider } from './query'
 
 const GlobalStyle = createGlobalStyle`
@@ -41,6 +42,25 @@ const GlobalStyle = createGlobalStyle`
     html {
       overflow-x: auto;
     }
+  }
+
+  html[data-standalone],
+  html[data-standalone] body {
+    height: 100%;
+  }
+
+  html[data-standalone] body {
+    overflow: hidden;
+  }
+
+  html[data-standalone] #app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* Anything left with position: fixed resolves against this element rather
+       than the viewport iOS misreports, including the modals rendered through
+       the portal containers. */
+    transform: translateZ(0);
   }
 `
 
@@ -80,6 +100,11 @@ const FullPageContainer = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+
+  html[data-standalone] & {
+    min-height: 0;
+    flex: 1 1 auto;
+  }
 `
 
 const Content = React.memo(function Content({
@@ -124,9 +149,13 @@ const MainContainer = React.memo(function MainContainer({
   children: ReactNode
 }) {
   const { user } = useContext(AuthContext)
+  const runningInstalled = useIsRunningInstalled()
   const render = useCallback(() => <>{children}</>, [children])
   return (
-    <ScrollableMain aria-hidden={ariaHidden}>
+    <ScrollableMain
+      aria-hidden={ariaHidden}
+      data-scroll-root={runningInstalled ? '' : undefined}
+    >
       <UnwrapResult result={user}>{render}</UnwrapResult>
     </ScrollableMain>
   )
@@ -153,6 +182,15 @@ const ScrollableMain = styled.div`
 
   padding-bottom: ${mobileBottomNavHeight}px;
   @media (min-width: ${desktopMin}) {
+    padding-bottom: 0;
+  }
+
+  /* The installed app scrolls here instead of scrolling the document, and its
+     navigation is in the layout rather than fixed on top of it. */
+  html[data-standalone] & {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
     padding-bottom: 0;
   }
 `

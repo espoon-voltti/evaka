@@ -21,3 +21,20 @@ const getIsRunningInstalled = () =>
 export function useIsRunningInstalled(): boolean {
   return useSyncExternalStore(subscribe, getIsRunningInstalled)
 }
+
+/**
+ * Marks the document while the app runs from the home screen, so the layout can
+ * be styled for it. iOS misplaces viewport positioned elements there, which the
+ * installed app avoids by scrolling a container instead of the document. A
+ * browser keeps scrolling the document, because that is what makes it collapse
+ * its own toolbar.
+ */
+export function trackRunningInstalled(): void {
+  const update = () =>
+    document.documentElement.toggleAttribute(
+      'data-standalone',
+      getIsRunningInstalled()
+    )
+  subscribe(update)
+  update()
+}
