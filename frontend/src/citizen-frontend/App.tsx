@@ -92,10 +92,10 @@ export function App({ children }: { children: React.ReactNode }) {
 // Normally the document scrolls, header and other fixed elements stick to the
 // top and the mobile navi is fixed to the bottom.
 //
-// In mobile and tablet PWA (standalone), AppShell is a flex column that fills
-// the screen, and ScrollArea is the only scrollable element. This avoids
-// anchoring topbar or navi with `position: fixed` or `position sticky`,
-// because those cause subtle layout bugs in iOS PWA.
+// In PWA (standalone), AppShell is a flex column that fills the screen, and
+// ScrollArea is the only scrollable element. This avoids anchoring topbar or
+// navi with `position: fixed` or `position sticky`, because those cause subtle
+// layout bugs in iOS PWA.
 //
 const AppShell = styled.div`
   display: flex;
@@ -107,13 +107,6 @@ const AppShell = styled.div`
     min-height: auto;
     position: relative;
     overflow: hidden;
-
-    // A scrollbar that is always there stops the content from shifting when it
-    // grows past the window, as the document scrollbar does
-    @media (min-width: ${desktopMin}) {
-      overflow-x: hidden;
-      overflow-y: scroll;
-    }
 
     @media print {
       display: block;
@@ -137,12 +130,6 @@ const ScrollArea = styled.div`
 
     @media screen and (max-width: ${zoomedMobileMax}) {
       overflow-x: auto;
-    }
-
-    @media (min-width: ${desktopMin}) {
-      flex-shrink: 0;
-      min-height: auto;
-      overflow: visible;
     }
 
     @media print {
