@@ -4,6 +4,7 @@
 
 package evaka.core.placement
 
+import evaka.core.AuditContext
 import evaka.core.application.ApplicationOrigin
 import evaka.core.backupcare.recreateBackupCares
 import evaka.core.shared.ApplicationId
@@ -342,6 +343,7 @@ fun Database.Transaction.deleteServiceNeedsFromPlacement(placementId: PlacementI
 data class CancelPlacementResult(
     val childId: ChildId,
     val unitId: DaycareId,
+    val type: PlacementType,
     val startDate: LocalDate,
     val endDate: LocalDate,
 )
@@ -371,10 +373,11 @@ fun Database.Transaction.cancelPlacement(
     recreateBackupCares(modifiedBy, modifiedAt, placement.childId)
 
     return CancelPlacementResult(
-        placement.childId,
-        placement.unitId,
-        placement.startDate,
-        placement.endDate,
+        childId = placement.childId,
+        unitId = placement.unitId,
+        type = placement.type,
+        startDate = placement.startDate,
+        endDate = placement.endDate,
     )
 }
 
@@ -967,12 +970,19 @@ fun Database.Transaction.updateGroupPlacementEndDate(
 }
 
 @IgnorableReturnValue
-fun Database.Transaction.deleteGroupPlacement(id: GroupPlacementId): Boolean {
+fun Database.Transaction.deleteGroupPlacement(
+    id: GroupPlacementId,
+    audit: AuditContext,
+): Boolean {
     val dgPlacement = getDaycareGroupPlacement(id)
     if (dgPlacement != null) {
+        audit.add(id).add(dgPlacement.daycarePlacementId).observeDate(dgPlacement.startDate)
+        dgPlacement.groupId?.let { audit.add(it) }
+
         val placement = getPlacement(dgPlacement.daycarePlacementId)
 
         if (placement != null) {
+            audit.add(placement.childId).add(placement.unitId)
             clearCalendarEventAttendees(placement.childId, placement.unitId, null)
         }
     }

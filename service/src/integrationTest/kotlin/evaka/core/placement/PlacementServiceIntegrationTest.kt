@@ -4,6 +4,7 @@
 
 package evaka.core.placement
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
@@ -256,6 +257,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -710,6 +712,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -775,6 +778,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -919,6 +923,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 useFiveYearsOldDaycare = true,
                 now = now,
                 userId = employee.evakaUserId,
+                audit = AuditContext(),
             )
         }
 
@@ -962,6 +967,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     useFiveYearsOldDaycare = true,
                     now = now,
                     userId = employee.evakaUserId,
+                    audit = AuditContext(),
                 )
             }
         }
@@ -970,7 +976,9 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `transferring splits the group placement`() {
         val transferDate = placementStart.plusDays(5)
-        db.transaction { it.transferGroup(groupPlacementId, groupId2, transferDate) }
+        db.transaction {
+            it.transferGroup(groupPlacementId, groupId2, transferDate, AuditContext())
+        }
 
         val groupPlacements =
             db.read {
@@ -996,7 +1004,9 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `transferring deletes old group placement if start dates match`() {
         val transferDate = placementStart
-        db.transaction { it.transferGroup(groupPlacementId, groupId2, transferDate) }
+        db.transaction {
+            it.transferGroup(groupPlacementId, groupId2, transferDate, AuditContext())
+        }
 
         val groupPlacements =
             db.read {

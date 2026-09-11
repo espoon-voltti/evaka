@@ -4,6 +4,7 @@
 
 package evaka.core.placement
 
+import evaka.core.AuditContext
 import evaka.core.application.utils.exhaust
 import evaka.core.daycare.domain.Language
 import evaka.core.daycare.domain.ProviderType
@@ -152,10 +153,17 @@ fun Database.Transaction.updatePlacement(
     useFiveYearsOldDaycare: Boolean,
     now: HelsinkiDateTime,
     userId: EvakaUserId,
+    audit: AuditContext,
 ): Placement {
     if (endDate.isBefore(startDate)) throw BadRequest("Inverted time range")
 
     val old = getPlacement(id) ?: throw NotFound("Placement $id not found")
+    audit
+        .add(old.id)
+        .add(old.childId)
+        .add(old.unitId)
+        .observeDate(old.startDate)
+        .observeDate(startDate)
     if (startDate.isAfter(old.startDate)) {
         clearGroupPlacementsBefore(id, startDate)
         clearServiceNeedsFromPeriod(
@@ -204,13 +212,14 @@ fun Database.Transaction.updatePlacement(
 
         newPeriods.forEach { (period, type) ->
             insertDerivedPlacement(
-                old,
-                type,
-                period.start,
-                period.end,
-                modifiedAt = now,
-                modifiedBy = userId,
-            )
+                    old,
+                    type,
+                    period.start,
+                    period.end,
+                    modifiedAt = now,
+                    modifiedBy = userId,
+                )
+                .also { audit.add(it.id) }
         }
     } catch (e: Exception) {
         throw mapPSQLException(e)
@@ -225,6 +234,7 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     groupId: GroupId,
     startDate: LocalDate,
     endDate: LocalDate,
+    audit: AuditContext,
 ): GroupPlacementId {
     if (endDate.isBefore(startDate)) {
         throw BadRequest("Must not end before even starting")
@@ -233,6 +243,7 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     val daycarePlacement =
         getDaycarePlacement(daycarePlacementId)
             ?: throw NotFound("Placement $daycarePlacementId does not exist")
+    audit.add(daycarePlacement.child.id).add(daycarePlacement.daycare.id)
 
     if (
         startDate.isBefore(daycarePlacement.startDate) || endDate.isAfter(daycarePlacement.endDate)
@@ -258,7 +269,7 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     try {
         return if (identicalBefore != null && identicalAfter != null) {
             // fills the gap between two existing ones -> merge them
-            deleteGroupPlacement(identicalAfter.id!!)
+            deleteGroupPlacement(identicalAfter.id!!, audit)
             updateGroupPlacementEndDate(identicalBefore.id!!, identicalAfter.endDate)
             identicalBefore.id
         } else if (identicalBefore != null) {
@@ -282,9 +293,12 @@ fun Database.Transaction.transferGroup(
     groupPlacementId: GroupPlacementId,
     groupId: GroupId,
     startDate: LocalDate,
+    audit: AuditContext,
 ) {
     val groupPlacement =
         getDaycareGroupPlacement(groupPlacementId) ?: throw NotFound("Group placement not found")
+    audit.add(groupPlacementId).add(groupPlacement.daycarePlacementId)
+    groupPlacement.groupId?.let { audit.add(it) }
 
     if (
         getDaycareGroup(groupPlacement.groupId!!)?.daycareId != getDaycareGroup(groupId)?.daycareId
@@ -293,6 +307,9 @@ fun Database.Transaction.transferGroup(
     }
 
     val placement = getPlacement(groupPlacement.daycarePlacementId)
+    if (placement != null) {
+        audit.add(placement.childId).add(placement.unitId)
+    }
 
     when {
         startDate.isBefore(groupPlacement.startDate) -> {
@@ -306,7 +323,7 @@ fun Database.Transaction.transferGroup(
                 return // no changes requested
             }
 
-            deleteGroupPlacement(groupPlacementId)
+            deleteGroupPlacement(groupPlacementId, audit)
             if (placement != null) {
                 clearCalendarEventAttendees(
                     placement.childId,
@@ -335,11 +352,12 @@ fun Database.Transaction.transferGroup(
     }
 
     createGroupPlacement(
-        groupPlacement.daycarePlacementId,
-        groupId,
-        startDate,
-        groupPlacement.endDate,
-    )
+            groupPlacement.daycarePlacementId,
+            groupId,
+            startDate,
+            groupPlacement.endDate,
+        )
+        .also { audit.add(it) }
 }
 
 private fun Database.Transaction.clearOldPlacements(
