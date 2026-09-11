@@ -6,7 +6,6 @@ package evaka.core.incomestatement
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.invoicing.controller.SortDirection
 import evaka.core.shared.DaycareId
@@ -191,24 +190,22 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable guardianId: PersonId,
     ): List<ChildBasicInfo> {
+        val audit = AuditContext().add(guardianId)
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Person.READ_INCOME_STATEMENTS,
                         guardianId,
                     )
-                    it.getIncomeStatementChildrenByGuardian(guardianId, clock.today())
+                    tx.getIncomeStatementChildrenByGuardian(guardianId, clock.today()).also {
+                        audit.add(it.map { child -> child.id })
+                    }
                 }
             }
-            .also {
-                Audit.GuardianChildrenRead.log(
-                    targetId = AuditId(guardianId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.GuardianChildrenRead, clock) }
     }
 }
 
