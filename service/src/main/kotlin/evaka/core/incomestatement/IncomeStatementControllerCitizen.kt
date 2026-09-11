@@ -110,6 +110,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): PartnerIncomeStatementStatusResponse {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -121,10 +122,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     )
                     PartnerIncomeStatementStatusResponse(
                         tx.getPartnerIncomeStatementStatus(user.id, clock.today())
+                            ?.also { audit.add(it.partnerId) }
+                            ?.status
                     )
                 }
             }
-            .also { Audit.IncomeStatementStatusOfPartner.log() }
+            .also { audit.log(Audit.IncomeStatementStatusOfPartner, clock) }
     }
 
     @GetMapping("/child/start-dates/{childId}")

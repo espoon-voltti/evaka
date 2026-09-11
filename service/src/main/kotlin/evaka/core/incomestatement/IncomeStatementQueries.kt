@@ -880,13 +880,19 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
 
 data class PartnerIncomeStatementStatus(val name: String, val hasIncomeStatement: Boolean)
 
+data class PartnerIncomeStatementStatusRow(
+    val partnerId: PersonId,
+    val status: PartnerIncomeStatementStatus,
+)
+
 fun Database.Read.getPartnerIncomeStatementStatus(
     personId: PersonId,
     today: LocalDate,
-): PartnerIncomeStatementStatus? = createQuery {
+): PartnerIncomeStatementStatusRow? = createQuery {
     sql(
         """
-    SELECT 
+    SELECT
+        fp.partner_person_id AS partner_id,
         partner_first_name || ' ' || partner_last_name AS name,
         (
             EXISTS (
@@ -901,8 +907,17 @@ fun Database.Read.getPartnerIncomeStatementStatus(
     FROM fridge_partner_view fp
     WHERE fp.person_id = ${bind(personId)} 
         AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)}
-        AND NOT fp.conflict 
+        AND NOT fp.conflict
 """
     )
 }
-    .exactlyOneOrNull()
+    .exactlyOneOrNull {
+        PartnerIncomeStatementStatusRow(
+            partnerId = column("partner_id"),
+            status =
+                PartnerIncomeStatementStatus(
+                    name = column("name"),
+                    hasIncomeStatement = column("has_income_statement"),
+                ),
+        )
+    }
