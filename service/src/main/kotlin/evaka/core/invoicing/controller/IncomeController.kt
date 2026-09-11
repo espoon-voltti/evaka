@@ -6,7 +6,6 @@ package evaka.core.invoicing.controller
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.attachment.AttachmentParent
 import evaka.core.attachment.associateOrphanAttachments
 import evaka.core.invoicing.data.deleteIncome
@@ -326,6 +325,7 @@ class IncomeController(
         clock: EvakaClock,
         @RequestParam personId: PersonId,
     ): List<IncomeNotification> {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -335,15 +335,13 @@ class IncomeController(
                         Action.Person.READ_INCOME_NOTIFICATIONS,
                         personId,
                     )
-                    tx.getIncomeNotifications(personId)
+                    tx.getIncomeNotifications(personId).also { notifications ->
+                        notifications.forEach { audit.observeDate(it.created.toLocalDate()) }
+                        audit.addMeta("count", notifications.size)
+                    }
                 }
             }
-            .also { incomeNotifications ->
-                Audit.PersonIncomeNotificationRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to incomeNotifications.size),
-                )
-            }
+            .also { audit.log(Audit.PersonIncomeNotificationRead, clock) }
     }
 }
 
