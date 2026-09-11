@@ -215,7 +215,8 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @RequestBody body: IncomeStatementBody,
         @RequestParam draft: Boolean,
     ) {
-        val id = db.connect { dbc ->
+        val audit = AuditContext().observeDate(body.startDate).addMeta("draft", draft)
+        db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
                     tx,
@@ -231,10 +232,11 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     personId = user.id,
                     body = body,
                     draft = draft,
+                    audit = audit,
                 )
             }
         }
-        Audit.IncomeStatementCreate.log(targetId = AuditId(user.id), objectId = AuditId(id))
+        audit.log(Audit.IncomeStatementCreate, clock)
     }
 
     @PostMapping("/child/{childId}")
@@ -246,7 +248,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @RequestBody body: IncomeStatementBody,
         @RequestParam draft: Boolean?,
     ) {
-        val id = db.connect { dbc ->
+        val audit =
+            AuditContext().add(childId).observeDate(body.startDate).addMeta("draft", draft ?: false)
+        db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
                     tx,
@@ -262,10 +266,11 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     personId = childId,
                     body = body,
                     draft = draft ?: false,
+                    audit = audit,
                 )
             }
         }
-        Audit.IncomeStatementCreateForChild.log(targetId = AuditId(user.id), objectId = AuditId(id))
+        audit.log(Audit.IncomeStatementCreateForChild, clock)
     }
 
     @PutMapping("/{incomeStatementId}")
