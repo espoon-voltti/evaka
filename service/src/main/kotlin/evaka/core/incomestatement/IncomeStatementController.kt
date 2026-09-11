@@ -5,6 +5,7 @@
 package evaka.core.incomestatement
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.invoicing.controller.SortDirection
@@ -70,6 +71,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
+        val audit = AuditContext().add(incomeStatementId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -80,9 +82,12 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         incomeStatementId,
                     )
                     tx.readIncomeStatement(user = user, incomeStatementId = incomeStatementId)
+                        ?.also {
+                            audit.add(it.personId).add(it.attachmentIds).observeDate(it.startDate)
+                        }
                 } ?: throw NotFound("No such income statement")
             }
-            .also { Audit.IncomeStatementRead.log(targetId = AuditId(incomeStatementId)) }
+            .also { audit.log(Audit.IncomeStatementRead, clock) }
     }
 
     data class SetIncomeStatementHandledBody(

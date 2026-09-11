@@ -343,3 +343,11 @@ sealed class IncomeStatement(val type: IncomeStatementType) {
         val attachments: List<IncomeStatementAttachment>,
     ) : IncomeStatement(IncomeStatementType.CHILD_INCOME)
 }
+
+val IncomeStatement.attachmentIds: List<AttachmentId>
+    get() =
+        when (this) {
+            is IncomeStatement.HighestFee -> emptyList()
+            is IncomeStatement.Income -> attachments.map { it.id }
+            is IncomeStatement.ChildIncome -> attachments.map { it.id }
+        }
