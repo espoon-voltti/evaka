@@ -76,6 +76,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable childId: ChildId,
         @RequestParam page: Int,
     ): PagedIncomeStatements {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -86,19 +87,19 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         childId,
                     )
                     tx.readIncomeStatementsForPerson(
-                        user = user,
-                        personId = childId,
-                        page = page,
-                        pageSize = 10,
-                    )
+                            user = user,
+                            personId = childId,
+                            page = page,
+                            pageSize = 10,
+                        )
+                        .also { statements ->
+                            statements.data.forEach {
+                                audit.add(it.id).add(it.attachmentIds).observeDate(it.startDate)
+                            }
+                        }
                 }
             }
-            .also {
-                Audit.IncomeStatementsOfChild.log(
-                    targetId = AuditId(childId),
-                    meta = mapOf("total" to it.total),
-                )
-            }
+            .also { audit.log(Audit.IncomeStatementsOfChild, clock) }
     }
 
     data class PartnerIncomeStatementStatusResponse(val partner: PartnerIncomeStatementStatus?)
