@@ -37,7 +37,7 @@ const defaultState: AuthState = {
 export const AuthContext = createContext<AuthState>(defaultState)
 
 const q = new Queries()
-const authStatusQuery = q.query(getAuthStatus)
+export const authStatusQuery = q.query(getAuthStatus)
 
 export const AuthContextProvider = React.memo(function AuthContextProvider({
   children
@@ -78,6 +78,17 @@ export const AuthContextProvider = React.memo(function AuthContextProvider({
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 })
+
+export function useSessionKeepalive(): () => Promise<boolean> {
+  const queryClient = useQueryClient()
+  return useCallback(async () => {
+    const status = await getAuthStatus()
+    if (status.loggedIn) {
+      queryClient.setQueryData(authStatusQuery().queryKey, status)
+    }
+    return status.loggedIn
+  }, [queryClient])
+}
 
 export const useUser = (): User | undefined => {
   const authContext = useContext(AuthContext)

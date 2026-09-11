@@ -69,8 +69,7 @@ const routes: CitizenRoute[] = [
     path: '/decisions/pending',
     component: DecisionResponseList
   },
-  { path: '/messages/:threadId', component: MessagesPage, auth: 'WEAK' },
-  { path: '/messages', component: MessagesPage, auth: 'WEAK' },
+  { path: '/messages/:threadId?', component: MessagesPage, auth: 'WEAK' },
   { path: '/calendar', component: CalendarPage, auth: 'WEAK' },
   {
     path: '/children/:childId/service-application',

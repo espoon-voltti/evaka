@@ -228,9 +228,7 @@ export default React.memo(function IncomeStatements() {
     deleteIncomeStatementMutation
   )
 
-  const children = useQueryResult(guardianIncomeStatementChildrenQuery(), {
-    staleTime: 1000 * 60 * 60 * 24 // children change rarely
-  })
+  const children = useQueryResult(guardianIncomeStatementChildrenQuery())
 
   const [deletionState, setDeletionState] = useState<DeletionState>({
     status: 'row-not-selected'

@@ -4,9 +4,11 @@
 
 import { faInbox } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
+import type { Result } from 'lib-common/api'
+import type { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
 import { tabletMin } from 'lib-components/breakpoints'
 import { H2 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
@@ -14,11 +16,12 @@ import colors from 'lib-customizations/common'
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 
-import { MessageContext } from './state'
-
-export default React.memo(function EmptyThreadView() {
+export default React.memo(function EmptyThreadView({
+  threads
+}: {
+  threads: Result<CitizenMessageThread[]>
+}) {
   const i18n = useTranslation()
-  const { threads } = useContext(MessageContext)
   return (
     <EmptyThreadViewContainer>
       {renderResult(threads, (threads, isReloading) =>
