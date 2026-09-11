@@ -226,13 +226,21 @@ class IncomeController(
         clock: EvakaClock,
         @PathVariable incomeId: IncomeId,
     ) {
+        val audit = AuditContext().add(incomeId)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, Action.Income.DELETE, incomeId)
 
                 val existing =
                     tx.getIncome(incomeTypesProvider, coefficientMultiplierProvider, incomeId)
-                        ?: throw BadRequest("Income not found")
+                        ?.also {
+                            audit
+                                .add(it.personId)
+                                .add(it.attachments.map { attachment -> attachment.id })
+                                .observeDate(it.validFrom)
+                                .addMeta("effect", it.effect)
+                                .addMeta("validTo", it.validTo)
+                        } ?: throw BadRequest("Income not found")
                 val period = DateRange(existing.validFrom, existing.validTo)
                 tx.deleteIncome(incomeId)
 
@@ -248,7 +256,7 @@ class IncomeController(
                 )
             }
         }
-        Audit.PersonIncomeDelete.log(targetId = AuditId(incomeId))
+        audit.log(Audit.PersonIncomeDelete, clock)
     }
 
     data class IncomeOption(
