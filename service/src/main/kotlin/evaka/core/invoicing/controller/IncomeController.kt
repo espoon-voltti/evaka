@@ -107,6 +107,11 @@ class IncomeController(
         clock: EvakaClock,
         @RequestBody income: IncomeRequest,
     ): IncomeId {
+        val audit =
+            AuditContext()
+                .add(income.personId)
+                .add(income.attachments.map { it.id })
+                .observeDate(income.validFrom)
         val period =
             try {
                 DateRange(income.validFrom, income.validTo)
@@ -128,12 +133,14 @@ class IncomeController(
                     val incomeTypes = incomeTypesProvider.get()
                     val validIncome = validateIncome(income, incomeTypes)
                     tx.endEarlierOverlappingIncome(
-                        now,
-                        validIncome.personId,
-                        period,
-                        user.evakaUserId,
-                    )
-                    val id = tx.insertIncome(now, validIncome, user.evakaUserId)
+                            now,
+                            validIncome.personId,
+                            period,
+                            user.evakaUserId,
+                        )
+                        .forEach { (id, validFrom) -> audit.add(id).observeDate(validFrom) }
+                    val id =
+                        tx.insertIncome(now, validIncome, user.evakaUserId).also { audit.add(it) }
                     tx.associateOrphanAttachments(
                         user.evakaUserId,
                         AttachmentParent.Income(id),
@@ -156,12 +163,7 @@ class IncomeController(
                     id
                 }
             }
-            .also { incomeId ->
-                Audit.PersonIncomeCreate.log(
-                    targetId = AuditId(income.personId),
-                    objectId = AuditId(incomeId),
-                )
-            }
+            .also { audit.log(Audit.PersonIncomeCreate, clock) }
     }
 
     @PutMapping("/{incomeId}")
@@ -172,12 +174,14 @@ class IncomeController(
         @PathVariable incomeId: IncomeId,
         @RequestBody income: IncomeRequest,
     ) {
+        val audit = AuditContext().add(incomeId).add(income.personId).observeDate(income.validFrom)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, Action.Income.UPDATE, incomeId)
 
                 val existing =
                     tx.getIncome(incomeTypesProvider, coefficientMultiplierProvider, incomeId)
+                        ?.also { audit.add(it.personId).observeDate(it.validFrom) }
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome = validateIncome(income, incomeTypes)
                 tx.updateIncome(clock, incomeId, validIncome, user.evakaUserId)
@@ -212,7 +216,7 @@ class IncomeController(
                 )
             }
         }
-        Audit.PersonIncomeUpdate.log(targetId = AuditId(incomeId))
+        audit.log(Audit.PersonIncomeUpdate, clock)
     }
 
     @DeleteMapping("/{incomeId}")
