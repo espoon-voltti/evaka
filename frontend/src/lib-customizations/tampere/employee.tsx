@@ -110,7 +110,7 @@ const customizations: EmployeeCustomizations = {
             info: () => (
               <ol style={{ margin: '0', padding: '0 1em' }}>
                 <li>
-                  Kaupungin päiväkodeissa kerroin merkitään aina integroidussa
+                  Kaupungin päiväkodeissa kerroin merkitään aina pienennetyssä
                   varhaiskasvatusryhmässä oleville tehostettua tai erityistä
                   tukea saaville lapsille ja missä tahansa ryhmässä kotoutumisen
                   tukea saaville lapsille. Lisäksi kerroin voidaan merkitä missä
@@ -155,7 +155,7 @@ const customizations: EmployeeCustomizations = {
             capacityFactorInfo: (
               <ol style={{ margin: '0', padding: '0 1em' }}>
                 <li>
-                  Kaupungin päiväkodeissa kerroin merkitään aina integroidussa
+                  Kaupungin päiväkodeissa kerroin merkitään aina pienennetyssä
                   varhaiskasvatusryhmässä oleville tehostettua tai erityistä
                   tukea saaville lapsille ja missä tahansa ryhmässä kotoutumisen
                   tukea saaville lapsille. Lisäksi kerroin voidaan merkitä missä
