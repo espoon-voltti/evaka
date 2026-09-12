@@ -134,6 +134,10 @@ const Banner = styled.div`
   @media (min-width: ${desktopMin}) {
     top: 0;
   }
+
+  html[data-standalone] & {
+    top: 0;
+  }
 `
 
 const Note = styled.button`

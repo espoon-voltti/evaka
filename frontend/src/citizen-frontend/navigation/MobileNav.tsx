@@ -31,7 +31,6 @@ import {
 } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
-import { UnwrapResult } from '../async-rendering'
 import type { User } from '../auth/state'
 import { AuthContext } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
@@ -77,71 +76,63 @@ export default React.memo(function MobileNav() {
   )
   const closeMenu = useCallback(() => setMenuOpen(undefined), [])
 
-  if (!user.getOrElse(undefined)) {
+  const currentUser = user.getOrElse(undefined)
+  if (!currentUser) {
     return null
   }
 
   return (
-    <UnwrapResult result={user} loading={() => null}>
-      {(user) =>
-        user ? (
-          <>
-            <BottomBar>
-              {user.accessibleFeatures.reservations && (
-                <BottomBarLink
-                  to="/calendar"
-                  data-qa="nav-calendar-mobile"
-                  text={t.header.nav.calendar}
-                  icon={faCalendar}
-                  activeIcon={fasCalendar}
-                  showNotification={false}
-                  onClick={closeMenu}
-                />
-              )}
-              {user.accessibleFeatures.messages && (
-                <BottomBarLink
-                  to="/messages"
-                  data-qa="nav-messages-mobile"
-                  text={t.header.nav.messages}
-                  icon={faEnvelope}
-                  activeIcon={fasEnvelope}
-                  showNotification={(unreadMessagesCount ?? 0) > 0}
-                  onClick={closeMenu}
-                />
-              )}
-              <ChildrenLink
-                toggleChildrenMenu={toggleChildrenMenu}
-                closeMenu={closeMenu}
-              />
-              <StyledButton
-                onClick={toggleSubMenu}
-                data-qa="sub-nav-menu-mobile"
-              >
-                <AttentionIndicator
-                  toggled={hasPersonalDetailsTasks || unreadDecisions > 0}
-                  position="top"
-                  data-qa="attention-indicator-sub-menu-mobile"
-                >
-                  <FontAwesomeIcon
-                    icon={menuOpen === 'submenu' ? farXmark : faBars}
-                  />
-                </AttentionIndicator>
-                {t.header.nav.subNavigationMenu}
-              </StyledButton>
-            </BottomBar>
-            {menuOpen === 'submenu' ? (
-              <Menu
-                user={user}
-                closeMenu={closeMenu}
-                unreadDecisions={unreadDecisions}
-              />
-            ) : menuOpen === 'children' ? (
-              <ChildrenMenu closeMenu={closeMenu} />
-            ) : null}
-          </>
-        ) : null
-      }
-    </UnwrapResult>
+    <>
+      <BottomBar>
+        {currentUser.accessibleFeatures.reservations && (
+          <BottomBarLink
+            to="/calendar"
+            data-qa="nav-calendar-mobile"
+            text={t.header.nav.calendar}
+            icon={faCalendar}
+            activeIcon={fasCalendar}
+            showNotification={false}
+            onClick={closeMenu}
+          />
+        )}
+        {currentUser.accessibleFeatures.messages && (
+          <BottomBarLink
+            to="/messages"
+            data-qa="nav-messages-mobile"
+            text={t.header.nav.messages}
+            icon={faEnvelope}
+            activeIcon={fasEnvelope}
+            showNotification={(unreadMessagesCount ?? 0) > 0}
+            onClick={closeMenu}
+          />
+        )}
+        <ChildrenLink
+          toggleChildrenMenu={toggleChildrenMenu}
+          closeMenu={closeMenu}
+        />
+        <StyledButton onClick={toggleSubMenu} data-qa="sub-nav-menu-mobile">
+          <AttentionIndicator
+            toggled={hasPersonalDetailsTasks || unreadDecisions > 0}
+            position="top"
+            data-qa="attention-indicator-sub-menu-mobile"
+          >
+            <FontAwesomeIcon
+              icon={menuOpen === 'submenu' ? farXmark : faBars}
+            />
+          </AttentionIndicator>
+          {t.header.nav.subNavigationMenu}
+        </StyledButton>
+      </BottomBar>
+      {menuOpen === 'submenu' ? (
+        <Menu
+          user={currentUser}
+          closeMenu={closeMenu}
+          unreadDecisions={unreadDecisions}
+        />
+      ) : menuOpen === 'children' ? (
+        <ChildrenMenu closeMenu={closeMenu} />
+      ) : null}
+    </>
   )
 })
 
@@ -159,6 +150,11 @@ const BottomBar = styled.nav`
   bottom: 0;
   left: 0;
   box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.15);
+
+  html[data-standalone] & {
+    position: static;
+    flex: none;
+  }
 
   @media (min-width: ${desktopMin}) {
     display: none;
@@ -463,6 +459,14 @@ const MenuContainer = styled.div`
   flex-direction: column;
   align-items: flex-end;
   text-align: right;
+
+  html[data-standalone] & {
+    position: absolute;
+    overflow-y: auto;
+    left: 0;
+    width: auto;
+    height: auto;
+  }
 
   @media (min-width: ${desktopMin}) {
     display: none;

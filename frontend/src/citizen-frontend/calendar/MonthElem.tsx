@@ -176,6 +176,11 @@ const MonthSummaryContainer = styled.div`
   top: 54px;
   z-index: 1;
 
+  html[data-standalone] & {
+    // Keeps the top border out of view while stuck, as it is under the header in a browser
+    top: -6px;
+  }
+
   padding: ${defaultMargins.s};
   background-color: ${(p) => p.theme.colors.main.m4};
   border-top: 6px solid ${colors.main.m3};

@@ -102,6 +102,10 @@ const HeaderContainer = styled.header<{ $narrow: boolean }>`
 
   ${(p) => (p.$narrow ? narrowWidthStyles : wideWidthStyles)}
 
+  html[data-standalone] & {
+    position: static;
+  }
+
   @media print {
     display: none;
   }

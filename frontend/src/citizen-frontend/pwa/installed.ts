@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { useSyncExternalStore } from 'react'
+import { useLayoutEffect, useSyncExternalStore } from 'react'
 
 const standaloneQuery = () => window.matchMedia('(display-mode: standalone)')
 
@@ -12,12 +12,26 @@ const subscribe = (onChange: () => void) => {
   return () => query.removeEventListener('change', onChange)
 }
 
-const getIsRunningInstalled = () =>
+const isRunningInstalled = () =>
   standaloneQuery().matches ||
   // iOS Safari does not implement the display-mode media feature, so the home
   // screen app is only recognisable through this non-standard property.
   ('standalone' in navigator && navigator.standalone === true)
 
 export function useIsRunningInstalled(): boolean {
-  return useSyncExternalStore(subscribe, getIsRunningInstalled)
+  return useSyncExternalStore(subscribe, isRunningInstalled)
+}
+
+/**
+ * Marks the document while the app runs installed. Styles target the app
+ * shell layout (see App.tsx) with `html[data-standalone] &`.
+ */
+export function useStandaloneAttribute() {
+  const runningInstalled = useIsRunningInstalled()
+  useLayoutEffect(() => {
+    document.documentElement.toggleAttribute(
+      'data-standalone',
+      runningInstalled
+    )
+  }, [runningInstalled])
 }
