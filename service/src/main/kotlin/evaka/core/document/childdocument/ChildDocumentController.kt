@@ -5,7 +5,7 @@
 package evaka.core.document.childdocument
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.EvakaEnv
 import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.deleteProcessByDocumentId
@@ -71,6 +71,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @RequestBody body: ChildDocumentCreateRequest,
     ): ChildDocumentId {
+        val audit = AuditContext().add(body.childId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -87,10 +88,12 @@ class ChildDocumentController(
                             "Cannot create document. Template ${body.templateId} is for decision"
                         )
                     }
-                    createChildDocument(tx, user, clock, body.childId, template)
+                    createChildDocument(tx, user, clock, body.childId, template).also {
+                        audit.add(it)
+                    }
                 }
             }
-            .also { Audit.ChildDocumentCreate.log(targetId = AuditId(it)) }
+            .also { audit.log(Audit.ChildDocumentCreate, clock) }
     }
 
     @PostMapping("/decision")
@@ -100,6 +103,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @RequestBody body: ChildDocumentCreateRequest,
     ): ChildDocumentId {
+        val audit = AuditContext().add(body.childId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -116,10 +120,12 @@ class ChildDocumentController(
                             "Cannot create decision. Template ${body.templateId} is not for decision"
                         )
                     }
-                    createChildDocument(tx, user, clock, body.childId, template)
+                    createChildDocument(tx, user, clock, body.childId, template).also {
+                        audit.add(it)
+                    }
                 }
             }
-            .also { Audit.ChildDocumentCreate.log(targetId = AuditId(it)) }
+            .also { audit.log(Audit.ChildDocumentCreate, clock) }
     }
 
     private fun createChildDocument(
@@ -168,6 +174,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @RequestBody body: ChildDocumentsCreateRequest,
     ) {
+        val audit = AuditContext().add(body.childIds)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -201,12 +208,14 @@ class ChildDocumentController(
                                 clock,
                                 it,
                                 DocumentStatus.CITIZEN_DRAFT,
+                                audit,
                             )
+                            audit.add(it)
                         }
                     }
                 }
             }
-            .also { Audit.ChildDocumentsCreate.log(targetId = AuditId(it)) }
+            .also { audit.log(Audit.ChildDocumentsCreate, clock) }
     }
 
     @GetMapping
@@ -216,6 +225,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @RequestParam childId: PersonId,
     ): List<ChildDocumentSummaryWithPermittedActions> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -225,11 +235,13 @@ class ChildDocumentController(
                         Action.Child.READ_CHILD_DOCUMENT,
                         childId,
                     )
+                    val duplicates =
+                        tx.listPersonByDuplicateOf(childId).also { duplicates ->
+                            audit.add(duplicates.map { it.id })
+                        }
                     val documents =
                         tx.getChildDocuments(childId) +
-                            tx.listPersonByDuplicateOf(childId).flatMap { duplicate ->
-                                tx.getChildDocuments(duplicate.id)
-                            }
+                            duplicates.flatMap { duplicate -> tx.getChildDocuments(duplicate.id) }
 
                     val permittedActions =
                         accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
@@ -238,14 +250,21 @@ class ChildDocumentController(
                             clock,
                             documents.map { it.id },
                         )
-                    documents.mapNotNull { document ->
-                        permittedActions[document.id]
-                            ?.takeIf { it.contains(Action.ChildDocument.READ) }
-                            ?.let { ChildDocumentSummaryWithPermittedActions(document, it) }
-                    }
+                    documents
+                        .mapNotNull { document ->
+                            permittedActions[document.id]
+                                ?.takeIf { it.contains(Action.ChildDocument.READ) }
+                                ?.let { ChildDocumentSummaryWithPermittedActions(document, it) }
+                        }
+                        .also { summaries ->
+                            audit.add(summaries.map { it.data.id })
+                            summaries.forEach {
+                                audit.observeDate(it.data.modifiedAt.toLocalDate())
+                            }
+                        }
                 }
             }
-            .also { Audit.ChildDocumentRead.log(targetId = AuditId(childId)) }
+            .also { audit.log(Audit.ChildDocumentRead, clock) }
     }
 
     data class ChildDocumentSummaryWithPermittedActions(
@@ -260,6 +279,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ): ChildDocumentWithPermittedActions {
+        val audit = AuditContext().add(documentId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -273,6 +293,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id).observeDate(document.decision?.validity?.start)
 
                     val permittedActions =
                         accessControl.getPermittedActions<ChildDocumentId, Action.ChildDocument>(
@@ -288,7 +309,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentRead.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentRead, clock) }
     }
 
     @GetMapping("/{documentId}/decision-makers")
@@ -298,6 +319,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ): List<Employee> {
+        val audit = AuditContext().add(documentId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -311,7 +333,7 @@ class ChildDocumentController(
                     tx.getChildDocumentDecisionMakers(documentId)
                 }
             }
-            .also { Audit.ChildDocumentReadDecisionMakers.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentReadDecisionMakers, clock) }
     }
 
     @PutMapping("/{documentId}/content")
@@ -322,8 +344,9 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: DocumentContent,
     ) {
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
-            dbc.transaction { tx ->
+                dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
@@ -334,6 +357,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
 
                     if (!document.status.employeeEditable)
                         throw BadRequest("Cannot update contents of document in this status")
@@ -357,8 +381,8 @@ class ChildDocumentController(
                         user.evakaUserId,
                     )
                 }
-                .also { Audit.ChildDocumentUpdateContent.log(targetId = AuditId(documentId)) }
-        }
+            }
+            .also { audit.log(Audit.ChildDocumentUpdateContent, clock) }
     }
 
     data class DocumentLockResponse(
@@ -373,6 +397,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ): DocumentLockResponse {
+        val audit = AuditContext().add(documentId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -382,6 +407,7 @@ class ChildDocumentController(
                         Action.ChildDocument.UPDATE,
                         documentId,
                     )
+                    tx.getChildDocumentChildId(documentId)?.let { audit.add(it) }
                     val success = tx.tryTakeWriteLock(documentId, clock.now(), user.evakaUserId)
                     val currentLock =
                         tx.getCurrentWriteLock(documentId, clock.now())
@@ -392,7 +418,11 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentTryTakeLockOnContent.log(targetId = AuditId(documentId)) }
+            .also {
+                audit
+                    .addMeta("lockTaken", it.lockTakenSuccessfully)
+                    .log(Audit.ChildDocumentTryTakeLockOnContent, clock)
+            }
     }
 
     @PutMapping("/{documentId}/publish")
@@ -402,6 +432,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ) {
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -415,6 +446,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
                     if (!document.template.type.manuallyPublishable)
                         throw BadRequest("Document type is not publishable")
 
@@ -427,7 +459,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentPublish.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentPublish, clock) }
     }
 
     data class StatusChangeRequest(
@@ -443,6 +475,8 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: StatusChangeRequest,
     ) {
+        val audit = AuditContext().add(documentId).addMeta("newStatus", body.newStatus)
+        val publishAudit = AuditContext()
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -453,15 +487,22 @@ class ChildDocumentController(
                         documentId,
                     )
 
-                    updateChildDocumentStatusForward(tx, user, clock, documentId, body.newStatus)
+                    updateChildDocumentStatusForward(
+                        tx,
+                        user,
+                        clock,
+                        documentId,
+                        body.newStatus,
+                        audit,
+                        publishAudit,
+                    )
                 }
             }
             .also {
-                Audit.ChildDocumentNextStatus.log(
-                    targetId = AuditId(documentId),
-                    meta = mapOf("newStatus" to body.newStatus),
-                )
-                Audit.ChildDocumentPublish.log(targetId = AuditId(documentId))
+                audit.log(Audit.ChildDocumentNextStatus, clock)
+                if (publishAudit.context.isNotEmpty()) {
+                    publishAudit.log(Audit.ChildDocumentPublish, clock)
+                }
             }
     }
 
@@ -471,8 +512,11 @@ class ChildDocumentController(
         clock: EvakaClock,
         documentId: ChildDocumentId,
         newStatus: DocumentStatus,
+        audit: AuditContext,
+        publishAudit: AuditContext? = null,
     ) {
         val document = tx.getChildDocument(documentId) ?: throw NotFound()
+        audit.add(document.child.id)
         val statusTransition =
             validateStatusTransition(
                 document = document,
@@ -494,6 +538,7 @@ class ChildDocumentController(
 
         // decisions are published when accepted/rejected, not on status change
         if (!document.template.type.decision) {
+            publishAudit?.add(documentId)?.add(document.child.id)
             childDocumentService.publishAndScheduleNotifications(
                 tx,
                 user,
@@ -525,6 +570,7 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: StatusChangeRequest,
     ) {
+        val audit = AuditContext().add(documentId).addMeta("newStatus", body.newStatus)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -538,6 +584,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
 
                     if (document.template.validity.end?.isBefore(clock.today()) == true) {
                         throw BadRequest(
@@ -568,12 +615,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also {
-                Audit.ChildDocumentPrevStatus.log(
-                    targetId = AuditId(documentId),
-                    meta = mapOf("newStatus" to body.newStatus),
-                )
-            }
+            .also { audit.log(Audit.ChildDocumentPrevStatus, clock) }
     }
 
     @DeleteMapping("/{documentId}")
@@ -583,6 +625,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ) {
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -592,6 +635,11 @@ class ChildDocumentController(
                         Action.ChildDocument.DELETE,
                         documentId,
                     )
+                    val document =
+                        tx.getChildDocument(documentId)
+                            ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id).addMeta("templateName", document.template.name)
+
                     deleteProcessByDocumentId(tx, documentId)
 
                     val publishedVersions = tx.getChildDocumentPublishedVersions(documentId)
@@ -609,7 +657,7 @@ class ChildDocumentController(
                     tx.deleteChildDocumentDraft(documentId)
                 }
             }
-            .also { Audit.ChildDocumentDelete.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentDelete, clock) }
     }
 
     @PostMapping("/{documentId}/archive")
@@ -624,6 +672,7 @@ class ChildDocumentController(
             throw BadRequest("Document archival is not enabled")
         }
 
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -637,6 +686,8 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+
+                    audit.add(document.child.id)
 
                     if (!document.template.archiveExternally) {
                         throw BadRequest("Document template is not marked for external archiving")
@@ -653,7 +704,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentArchive.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentArchive, clock) }
     }
 
     @GetMapping("/non-completed")
@@ -664,11 +715,14 @@ class ChildDocumentController(
         @RequestParam templateId: DocumentTemplateId,
         @RequestParam groupId: GroupId,
     ): Set<ChildId> {
+        val audit = AuditContext().add(templateId).add(groupId)
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.getNonCompletedChildDocumentChildIds(templateId, groupId, clock.today())
+                dbc.read { tx ->
+                    tx.getNonCompletedChildDocumentChildIds(templateId, groupId, clock.today())
+                        .also { audit.add(it) }
+                }
             }
-        }
+            .also { audit.log(Audit.ChildDocumentsNonCompletedRead, clock) }
     }
 
     @GetMapping("/accepted-decisions")
@@ -678,6 +732,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @RequestParam documentId: ChildDocumentId,
     ): List<AcceptedChildDecisions> {
+        val audit = AuditContext().add(documentId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -687,10 +742,13 @@ class ChildDocumentController(
                         Action.ChildDocument.READ_ACCEPTED_DECISIONS,
                         documentId,
                     )
-                    tx.getAcceptedChildDocumentDecisions(documentId)
+                    tx.getAcceptedChildDocumentDecisions(documentId).also { decisions ->
+                        audit.add(decisions.map { it.id })
+                        decisions.forEach { audit.observeDate(it.validity.start) }
+                    }
                 }
             }
-            .also { Audit.ChildDocumentReadAcceptedDecisions.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentReadAcceptedDecisions, clock) }
     }
 
     @GetMapping("/{documentId}/pdf")
@@ -701,6 +759,8 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestParam(required = false) version: Int?,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(documentId)
+        version?.let { audit.addMeta("version", it) }
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -711,15 +771,11 @@ class ChildDocumentController(
                         else Action.ChildDocument.DOWNLOAD,
                         documentId,
                     )
+                    tx.getChildDocumentChildId(documentId)?.let { audit.add(it) }
                     childDocumentService.getPdfResponse(tx, documentId, version)
                 }
             }
-            .also {
-                Audit.ChildDocumentDownload.log(
-                    targetId = AuditId(documentId),
-                    meta = version?.let { mapOf("version" to it) } ?: emptyMap(),
-                )
-            }
+            .also { audit.log(Audit.ChildDocumentDownload, clock) }
     }
 
     data class ProposeChildDocumentDecisionRequest(val decisionMaker: EmployeeId)
@@ -732,6 +788,7 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: ProposeChildDocumentDecisionRequest,
     ) {
+        val audit = AuditContext().add(documentId).add(body.decisionMaker)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -745,6 +802,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
                     if (!document.template.type.decision)
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DRAFT)
@@ -775,7 +833,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentProposeDecision.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentProposeDecision, clock) }
     }
 
     data class AcceptChildDocumentDecisionRequest(
@@ -791,6 +849,7 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: AcceptChildDocumentDecisionRequest,
     ) {
+        val audit = AuditContext().add(documentId).observeDate(body.validity.start)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -804,6 +863,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
                     if (!document.template.type.decision)
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DECISION_PROPOSAL)
@@ -820,11 +880,12 @@ class ChildDocumentController(
 
                     val decisionId =
                         tx.insertChildDocumentDecision(
-                            status = ChildDocumentDecisionStatus.ACCEPTED,
-                            userId = user.evakaUserId,
-                            validity = body.validity,
-                            daycareId = placementDaycareId,
-                        )
+                                status = ChildDocumentDecisionStatus.ACCEPTED,
+                                userId = user.evakaUserId,
+                                validity = body.validity,
+                                daycareId = placementDaycareId,
+                            )
+                            .also { audit.add(it) }
 
                     tx.setChildDocumentDecisionAndComplete(
                         documentId,
@@ -851,11 +912,17 @@ class ChildDocumentController(
 
                     if (!body.endingDecisionIds.isNullOrEmpty()) {
                         try {
-                            tx.endChildDocumentDecisionsWithSubstitutiveDecision(
-                                childId = document.child.id,
-                                endingDecisionIds = body.endingDecisionIds,
-                                endDate = body.validity.start.minusDays(1),
-                            )
+                            val ended =
+                                tx.endChildDocumentDecisionsWithSubstitutiveDecision(
+                                    childId = document.child.id,
+                                    endingDecisionIds = body.endingDecisionIds,
+                                    endDate = body.validity.start.minusDays(1),
+                                )
+                            ended.forEach { audit.add(it.id).observeDate(it.validFrom) }
+                            val notEnded = body.endingDecisionIds - ended.map { it.id }.toSet()
+                            if (notEnded.isNotEmpty()) {
+                                audit.addMeta("notEndedDecisionIds", notEnded)
+                            }
                         } catch (e: JdbiException) {
                             when (e.psqlCause()?.sqlState) {
                                 PSQLState.CHECK_VIOLATION.state -> {
@@ -875,7 +942,7 @@ class ChildDocumentController(
                     }
                 }
             }
-            .also { Audit.ChildDocumentAcceptDecision.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentAcceptDecision, clock) }
     }
 
     @PostMapping("/{documentId}/reject")
@@ -885,6 +952,7 @@ class ChildDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: ChildDocumentId,
     ) {
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -898,6 +966,7 @@ class ChildDocumentController(
                     val document =
                         tx.getChildDocument(documentId)
                             ?: throw NotFound("Document $documentId not found")
+                    audit.add(document.child.id)
                     if (!document.template.type.decision)
                         throw BadRequest("Document is not a decision")
                     if (document.status != DocumentStatus.DECISION_PROPOSAL)
@@ -905,11 +974,12 @@ class ChildDocumentController(
 
                     val decisionId =
                         tx.insertChildDocumentDecision(
-                            status = ChildDocumentDecisionStatus.REJECTED,
-                            userId = user.evakaUserId,
-                            validity = null,
-                            daycareId = null,
-                        )
+                                status = ChildDocumentDecisionStatus.REJECTED,
+                                userId = user.evakaUserId,
+                                validity = null,
+                                daycareId = null,
+                            )
+                            .also { audit.add(it) }
 
                     tx.setChildDocumentDecisionAndComplete(
                         documentId,
@@ -935,7 +1005,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentRejectDecision.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentRejectDecision, clock) }
     }
 
     data class AnnulChildDocumentDecisionRequest(val reason: String)
@@ -948,6 +1018,7 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: AnnulChildDocumentDecisionRequest,
     ) {
+        val audit = AuditContext().add(documentId)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -970,6 +1041,11 @@ class ChildDocumentController(
                     )
                         throw BadRequest("Only accepted decision can be annulled")
 
+                    audit
+                        .add(document.child.id)
+                        .add(document.decision.id)
+                        .observeDate(document.decision.validity?.start)
+
                     tx.annulChildDocumentDecision(
                         decisionId = document.decision.id,
                         userId = user.evakaUserId,
@@ -978,7 +1054,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also { Audit.ChildDocumentAnnulDecision.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentAnnulDecision, clock) }
     }
 
     data class UpdateChildDocumentDecisionValidityRequest(val newValidity: DateRange)
@@ -991,6 +1067,7 @@ class ChildDocumentController(
         @PathVariable documentId: ChildDocumentId,
         @RequestBody body: UpdateChildDocumentDecisionValidityRequest,
     ) {
+        val audit = AuditContext().add(documentId).observeDate(body.newValidity.start)
         db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -1012,13 +1089,18 @@ class ChildDocumentController(
                     )
                         throw BadRequest("Only accepted decision can have validity updated")
 
+                    audit
+                        .add(document.child.id)
+                        .add(document.decision.id)
+                        .observeDate(document.decision.validity?.start)
+
                     tx.setChildDocumentDecisionValidity(
                         decisionId = document.decision.id,
                         validity = body.newValidity,
                     )
                 }
             }
-            .also { Audit.ChildDocumentUpdateDecisionValidity.log(targetId = AuditId(documentId)) }
+            .also { audit.log(Audit.ChildDocumentUpdateDecisionValidity, clock) }
     }
 }
 
