@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test
  */
 class BiCsvFormatTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val config =
-        BiExportConfig(includePII = true, includeLegacyColumns = true, deltaWindowDays = 60)
+        BiExportConfig(includePII = true, includeLegacyColumns = true, windowDays = 60)
 
     @Test
     fun `LocalDate field matches text-cast date column in CSV`() {

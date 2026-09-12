@@ -6,6 +6,7 @@ package evaka.instance.espoo
 
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
+import evaka.core.bi.BiExportJob
 import evaka.core.linkity.LinkityHttpClient
 import evaka.core.linkity.generateDateRangesForStaffAttendancePlanRequests
 import evaka.core.linkity.sendStaffAttendancesToLinkity
@@ -21,6 +22,7 @@ import evaka.core.shared.job.JobSchedule
 import evaka.core.shared.job.ScheduledJobDefinition
 import evaka.core.shared.job.ScheduledJobSettings
 import evaka.instance.espoo.bi.EspooBiJob
+import evaka.instance.espoo.bi.EspooBiS3Table
 import evaka.instance.espoo.bi.EspooBiTable
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalTime
@@ -36,6 +38,10 @@ enum class EspooScheduledJob(
     ),
     PlanBiJobs(
         EspooScheduledJobs::planBiJobs,
+        ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
+    ),
+    PlanS3BiJobs(
+        EspooScheduledJobs::planS3BiJobs,
         ScheduledJobSettings(enabled = true, schedule = JobSchedule.nightly()),
     ),
     PlanStaffAttendancePlanJobs(
@@ -55,6 +61,7 @@ class EspooScheduledJobs(
     private val linkityEnv: LinkityEnv?,
     private val jsonMapper: JsonMapper,
     private val espooBiJob: EspooBiJob?,
+    private val espooBiS3Job: BiExportJob?,
     private val evakaEnv: EvakaEnv,
 ) : JobSchedule {
     override val jobs: List<ScheduledJobDefinition> =
@@ -81,6 +88,24 @@ class EspooScheduledJobs(
             espooAsyncJobRunner.plan(
                 tx,
                 tables.asSequence().map(EspooAsyncJob::SendBiTable),
+                runAt = clock.now(),
+                retryCount = 1,
+            )
+        }
+    }
+
+    fun planS3BiJobs(db: Database.Connection, clock: EvakaClock) {
+        if (espooBiS3Job == null) {
+            logger.info { "BI S3 export not configured, skipping" }
+            return
+        }
+        val tables = EspooBiS3Table.entries
+        logger.info { "Planning BI S3 export jobs for ${tables.size} tables" }
+        db.transaction { tx ->
+            tx.removeUnclaimedJobs(setOf(AsyncJobType(EspooAsyncJob.SendS3BiTable::class)))
+            espooAsyncJobRunner.plan(
+                tx,
+                tables.asSequence().map(EspooAsyncJob::SendS3BiTable),
                 runAt = clock.now(),
                 retryCount = 1,
             )
