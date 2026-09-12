@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 [tools]
-java = "zulu-25"
+java = "zulu-25.0.4+7.0.LTS"
 lefthook = "2.1.12"
 node = "24.20.0"
 "npm:pm2" = "7.0.4"
