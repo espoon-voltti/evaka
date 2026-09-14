@@ -53,6 +53,9 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.message.IMessageProvider
 import evaka.core.shared.template.ITemplateProvider
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.DecisionPushNotificationKind
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -70,6 +73,7 @@ class DecisionService(
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val evakaEnv: EvakaEnv,
     private val featureConfig: FeatureConfig,
@@ -371,6 +375,14 @@ class DecisionService(
                     "$applicationId - $guardianId",
                 )
                 ?.also { emailClient.send(it) }
+            db.transaction { tx ->
+                citizenPushNotifications.plan(
+                    tx,
+                    now,
+                    guardianId,
+                    CitizenPushNotification.Decision(DecisionPushNotificationKind.APPLICATION),
+                )
+            }
         } else {
             logger.warn {
                 "Skipping sending decision for application $applicationId guardian - not a current guardian or foster parent"

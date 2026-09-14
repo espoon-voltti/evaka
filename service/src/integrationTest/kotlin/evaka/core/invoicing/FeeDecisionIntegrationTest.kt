@@ -72,6 +72,11 @@ import evaka.core.snDaycareFullDay35
 import evaka.core.snDaycarePartDay25
 import evaka.core.snDefaultDaycare
 import evaka.core.toFeeDecisionServiceNeed
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.DecisionPushNotificationKind
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -2728,7 +2733,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     }
 
     @Test
-    fun `Email notification is sent to hof when decision in WAITING_FOR_SENDING is set to SENT`() {
+    fun `Email and push notifications are sent to hof when decision in WAITING_FOR_SENDING is set to SENT`() {
         // optInAdult has an email address, and does not require manual sending of PDF decision
         val optInAdult =
             adult6.copy(
@@ -2750,6 +2755,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 )
             )
             it.insertTestPartnership(adult1 = optInAdult.id, adult2 = adult7.id)
+            it.insertTestCitizenPushSubscription(optInAdult.id, mockWebPushEndpoint(httpPort))
         }
         createAndConfirmFeeDecisionsForFamily(optInAdult, adult7, listOf(child2))
 
@@ -2767,6 +2773,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertEquals(
             "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
             getEmailFor(optInAdult).fromAddress.address,
+        )
+        assertEquals(
+            listOf(CitizenPushNotification.Decision(DecisionPushNotificationKind.FEE)),
+            db.read { it.getPlannedCitizenPushNotifications() },
         )
     }
 
