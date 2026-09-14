@@ -20,8 +20,6 @@ import { InformationText, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   faBell,
-  faCheckCircle,
-  faExclamation,
   faLaptop,
   faMobileButton,
   faTabletButton,
@@ -30,6 +28,7 @@ import {
 
 import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
+import { PushStatusChip } from '../pwa/PushStatusChip'
 import { platform } from '../pwa/platform'
 import {
   usePushAvailability,
@@ -93,13 +92,8 @@ export default React.memo(
               <TitleRow>
                 <SectionTitle $noMargin>{t.title}</SectionTitle>
                 {devices.length > 0 && (
-                  <IconChip
-                    label={t.enabled}
-                    icon={faCheckCircle}
-                    textColor={colors.accents.a1greenDark}
-                    backgroundColor={colors.accents.a7mint}
-                    iconColor={colors.status.success}
-                    iconBackgroundColor="transparent"
+                  <PushStatusChip
+                    status="enabled"
                     data-qa="push-account-status"
                   />
                 )}
@@ -186,14 +180,7 @@ export default React.memo(
                         )}
                         {device.id === currentDevice?.id &&
                           availability.kind === 'blocked' && (
-                            <IconChip
-                              label={t.blocked}
-                              icon={faExclamation}
-                              textColor={colors.accents.a2orangeDark}
-                              backgroundColor={colors.status.warningBackground}
-                              iconColor={colors.grayscale.g0}
-                              iconBackgroundColor={colors.status.warning}
-                            />
+                            <PushStatusChip status="blocked" />
                           )}
                       </Chips>
                       <InformationText>
