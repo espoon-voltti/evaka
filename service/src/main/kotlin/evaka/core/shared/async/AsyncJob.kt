@@ -363,12 +363,14 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    /** [cancelledByCitizen] is false when staff cancelled the reservation */
     data class SendDiscussionSurveyReservationCancellationEmail(
         val recipientId: PersonId,
         val childId: ChildId,
         val language: Language,
         val calendarEventTime: CalendarEventTime,
         val eventTitle: String,
+        val cancelledByCitizen: Boolean = false,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }

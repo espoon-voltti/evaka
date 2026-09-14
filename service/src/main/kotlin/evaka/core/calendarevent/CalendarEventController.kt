@@ -986,6 +986,7 @@ class CalendarEventController(
                                 language = Language.fi,
                                 calendarEventTime = eventTimeDetails.eventTime,
                                 recipientId = it.id,
+                                cancelledByCitizen = true,
                             )
                         } +
                             groupDevices.map {
