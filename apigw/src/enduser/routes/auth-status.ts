@@ -30,17 +30,22 @@ const getAuthLevel = (user: EvakaSessionUser): 'STRONG' | 'WEAK' => {
 export const citizenAuthStatus = (sessions: Sessions<'citizen'>) =>
   toRequestHandler(async (req, res) => {
     const user = sessions.getUser(req)
-    let status: AuthStatus
-    if (user && user.id) {
-      const data = await getCitizenDetails(req, user.id)
-      status = {
+    const data = user?.id ? await getCitizenDetails(req, user.id) : undefined
+    if (user && data) {
+      res.status(200).send({
         loggedIn: true,
         user: data,
         apiVersion: appCommit,
         authLevel: getAuthLevel(user)
-      }
-    } else {
-      status = { loggedIn: false, apiVersion: appCommit }
+      } satisfies AuthStatus)
+      return
     }
-    res.status(200).send(status)
+    if (user && !data) {
+      // Citizen no longer exists, log them out. This can happen e.g. in dev
+      // environment if the database is reset
+      await sessions.destroy(req, res)
+    }
+    res
+      .status(200)
+      .send({ loggedIn: false, apiVersion: appCommit } satisfies AuthStatus)
   })

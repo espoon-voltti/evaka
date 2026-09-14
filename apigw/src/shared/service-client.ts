@@ -268,14 +268,22 @@ export async function citizenWeakLoginCredentialsDelete(
 export async function getCitizenDetails(
   req: express.Request,
   personId: string
-) {
-  const { data } = await client.get<CitizenUserResponse>(
-    `/system/citizen/${encodeURIComponent(personId)}`,
-    {
-      headers: createServiceRequestHeaders(req, systemUserHeader)
+): Promise<CitizenUserResponse | undefined> {
+  try {
+    const { data } = await client.get<CitizenUserResponse>(
+      `/system/citizen/${encodeURIComponent(personId)}`,
+      {
+        headers: createServiceRequestHeaders(req, systemUserHeader)
+      }
+    )
+    return data
+  } catch (e: unknown) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) {
+      return undefined
+    } else {
+      throw e
     }
-  )
-  return data
+  }
 }
 
 export interface ValidatePairingRequest {
