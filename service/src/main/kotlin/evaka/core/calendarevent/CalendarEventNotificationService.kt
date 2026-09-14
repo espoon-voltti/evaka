@@ -14,13 +14,20 @@ import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getPersonById
+import evaka.core.shared.CalendarEventTimeId
 import evaka.core.shared.HtmlSafe
+import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
+import evaka.core.webpush.CalendarEventSummary
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.DiscussionTimePushNotificationEvent
+import evaka.core.webpush.getPushChildNames
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -29,6 +36,7 @@ private val logger = KotlinLogging.logger {}
 @Service
 class CalendarEventNotificationService(
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
@@ -119,6 +127,18 @@ class CalendarEventNotificationService(
                 "${msg.recipientId}: ${msg.eventId}",
             )
             ?.also { emailClient.send(it) }
+        db.transaction { tx ->
+            citizenPushNotifications.plan(
+                tx,
+                clock.now(),
+                msg.recipientId,
+                CitizenPushNotification.DiscussionSurvey(
+                    msg.eventId,
+                    eventData.title,
+                    eventData.description,
+                ),
+            )
+        }
 
         logger.info {
             "Successfully processed discussion survey creation email (recipientId: ${msg.recipientId}, eventId: ${msg.eventId})."
@@ -144,8 +164,9 @@ class CalendarEventNotificationService(
         clock: EvakaClock,
         msg: AsyncJob.SendCalendarEventDigestEmail,
     ) {
+        val events = dbc.read { tx -> tx.getCalendarEventsById(msg.events.toSet()) }
         val notificationData =
-            dbc.read { tx -> tx.getCalendarEventsById(msg.events.toSet()) }
+            events
                 .map {
                     CalendarEventNotificationData(
                         HtmlSafe(it.title),
@@ -167,6 +188,23 @@ class CalendarEventNotificationService(
                 "${clock.today()}:${msg.parentId}",
             )
             ?.also { emailClient.send(it) }
+        dbc.transaction { tx ->
+            citizenPushNotifications.plan(
+                tx,
+                clock.now(),
+                msg.parentId,
+                CitizenPushNotification.CalendarEvents(
+                    events.sortedWith(compareBy({ it.period.start }, { it.title })).map { event ->
+                        CalendarEventSummary(
+                            title = event.title,
+                            description = event.description,
+                            period = event.period,
+                            groupNames = event.groups.map { it.name },
+                        )
+                    }
+                ),
+            )
+        }
         logger.info {
             "Successfully sent calendar event digest email (personId: ${msg.parentId}, event count: ${notificationData.size})."
         }
@@ -237,6 +275,24 @@ class CalendarEventNotificationService(
                 "${eventTime.id} - ${msg.recipientId}",
             )
             ?.also { emailClient.send(it) }
+        if (!msg.cancelledByCitizen) {
+            db.transaction { tx ->
+                citizenPushNotifications.plan(
+                    tx,
+                    clock.now(),
+                    msg.recipientId,
+                    CitizenPushNotification.DiscussionTime(
+                        eventTime.id,
+                        DiscussionTimePushNotificationEvent.CANCELLED,
+                        eventTime.date,
+                        eventTime.startTime,
+                        eventTime.endTime,
+                        childName = tx.getPushChildNames(listOf(child.id)).getValue(child.id),
+                        surveyTitle = msg.eventTitle,
+                    ),
+                )
+            }
+        }
 
         logger.info {
             "Successfully sent discussion time reservation cancellation email (recipientId: ${msg.recipientId}, eventTimeId: ${eventTime.id})."
@@ -271,5 +327,37 @@ class CalendarEventNotificationService(
                 "${msg.recipientId}: ${msg.eventTimeId}",
             )
             ?.also { content -> emailClient.send(content) }
+        db.transaction { tx ->
+            citizenPushNotifications.plan(
+                tx,
+                clock.now(),
+                msg.recipientId,
+                tx.getDiscussionTimeChildAndSurvey(msg.eventTimeId).let { (childId, surveyTitle) ->
+                    CitizenPushNotification.DiscussionTime(
+                        msg.eventTimeId,
+                        DiscussionTimePushNotificationEvent.REMINDER,
+                        messageDetails.date,
+                        messageDetails.startTime,
+                        messageDetails.endTime,
+                        childName = tx.getPushChildNames(listOf(childId)).getValue(childId),
+                        surveyTitle = surveyTitle,
+                    )
+                },
+            )
+        }
     }
 }
+
+private fun Database.Read.getDiscussionTimeChildAndSurvey(
+    eventTimeId: CalendarEventTimeId
+): Pair<PersonId, String> = createQuery {
+    sql(
+        """
+SELECT cet.child_id, ce.title
+FROM calendar_event_time cet
+JOIN calendar_event ce ON cet.calendar_event_id = ce.id
+WHERE cet.id = ${bind(eventTimeId)}
+"""
+    )
+}
+    .exactlyOne { column<PersonId>("child_id") to column<String>("title") }
