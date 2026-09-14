@@ -119,8 +119,7 @@ function serviceWorker(urlPath: string, sourcePath: string): Plugin {
         try {
           const code = await server.transformRequest(sourcePath)
           res.setHeader('Content-Type', 'text/javascript')
-          // The dev server installs defines as page globals, which a worker
-          // scope never sees, so they are substituted into the source instead
+          // In dev defines are page globals, which a worker scope never sees
           res.end((code?.code ?? '').replaceAll('__APP_COMMIT__', appCommit))
         } catch (err) {
           next(err)

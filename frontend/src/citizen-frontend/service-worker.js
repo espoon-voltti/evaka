@@ -9,9 +9,7 @@
 const serviceWorker = self
 
 const cachePrefix = 'citizen-offline-'
-// The install handler that precaches offline.html runs again only when this
-// script's own bytes differ, so the build version is embedded here to make
-// every release refetch the page.
+// Changes this script's bytes every release, which is what re-runs install
 const cacheName = `${cachePrefix}${__APP_COMMIT__}`
 const offlinePage = '/offline.html'
 
