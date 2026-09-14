@@ -35,10 +35,10 @@ import { colors } from 'lib-customizations/common'
 import { faCheckCircle, faCircleExclamation, faLockAlt } from 'lib-icons'
 
 import type { User } from '../auth/state'
+import * as chipColors from '../chipColors'
 import { useTranslation } from '../localization'
 import { getStrongLoginUri } from '../navigation/const'
 
-import * as chipColors from './chipColors'
 import {
   DataRow,
   DataRowLabel,

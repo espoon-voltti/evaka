@@ -297,11 +297,11 @@ const sv: Translations = {
       'För att kunna fylla i dokumentet krävs stark autentisering.'
   },
   pwa: {
+    stepsHeading: 'Gör så här',
     install: {
       text: 'Du kan använda eVaka som en app när du lägger till den på hemskärmen.',
       action: 'Lägg till eVaka på hemskärmen',
       device: 'iPhone eller iPad',
-      stepsHeading: 'Gör så här',
       steps: [
         <>
           Tryck på webbläsarens <strong>Dela</strong>-ikon.
@@ -319,6 +319,19 @@ const sv: Translations = {
         </>
       ]
     },
+    pushSuggestion: {
+      title: 'Push-aviseringar',
+      text: 'Ge eVaka tillåtelse att skicka aviseringar till dig, så att du får viktiga aviseringar till din enhet.',
+      settingsHint:
+        'Du kan hantera aviseringsinställningarna på sidan Personuppgifter.',
+      enable: 'Ta i bruk',
+      later: 'Senare',
+      enabledText: 'eVaka skickar push-aviseringar till din enhet.',
+      sendTest: 'Skicka en testavisering',
+      close: 'Stäng',
+      dismissedNote:
+        'Anvisningarna för push-aviseringar finns på sidan Personuppgifter.'
+    },
     installSuggestion: {
       title: 'Viktiga aviseringar till telefonen',
       dismissedNote:
@@ -327,12 +340,15 @@ const sv: Translations = {
     homeScreenSection: {
       title: 'Lägg till eVaka på hemskärmen'
     },
+    pushStatus: {
+      enabled: 'I bruk',
+      disabled: 'Inte i bruk',
+      blocked: 'Blockerad'
+    },
     pushSection: {
       title: 'Push-aviseringar',
       description:
         'eVaka skickar aviseringar till de enheter där du har tagit dem i bruk.',
-      enabled: 'I bruk',
-      blocked: 'Blockerad',
       thisDevice: 'Den här enheten',
       notEnabledOnThisDevice:
         'Aviseringarna är inte i bruk på den här enheten.',
@@ -341,9 +357,9 @@ const sv: Translations = {
         'Du har redan det högsta antalet enheter. Ta bort en enhet för att ta aviseringarna i bruk på den här enheten.',
       blockedOnThisDevice: 'Aviseringarna är blockerade på den här enheten',
       blockedInstructions: {
-        ios: 'Tillåt aviseringar i enhetens inställningar: Inställningar > Notiser > eVaka.',
+        ios: 'Tillåt aviseringar i enhetens inställningar: Inställningar → Notiser → eVaka → Tillåt notiser',
         android:
-          'Tillåt aviseringar i enhetens inställningar: Inställningar > Appar > eVaka > Notiser.',
+          'Tillåt aviseringar i enhetens inställningar: Inställningar → Appar → eVaka → Notiser',
         other: 'Tillåt aviseringar i webbläsarens webbplatsinställningar.'
       },
       lastSent: (at: string) => `Senast skickad ${at}`,

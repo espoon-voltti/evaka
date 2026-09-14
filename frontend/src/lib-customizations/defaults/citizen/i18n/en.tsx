@@ -298,11 +298,11 @@ const en: Translations = {
       'Filling in the document requires strong authentication.'
   },
   pwa: {
+    stepsHeading: 'Follow these steps',
     install: {
       text: 'You can use eVaka like an app when you add it to your home screen.',
       action: 'Add eVaka to the home screen',
       device: 'iPhone or iPad',
-      stepsHeading: 'Follow these steps',
       steps: [
         <>
           Tap the <strong>Share</strong> icon in the browser.
@@ -320,6 +320,19 @@ const en: Translations = {
         </>
       ]
     },
+    pushSuggestion: {
+      title: 'Push notifications',
+      text: 'Allow eVaka to send you notifications, so that you get important notifications on your device.',
+      settingsHint:
+        'You can manage the notification settings on the Personal information page.',
+      enable: 'Enable',
+      later: 'Later',
+      enabledText: 'eVaka sends push notifications to your device.',
+      sendTest: 'Send a test notification',
+      close: 'Close',
+      dismissedNote:
+        'The push notification instructions are on the Personal information page.'
+    },
     installSuggestion: {
       title: 'Important notifications on your phone',
       dismissedNote:
@@ -328,12 +341,15 @@ const en: Translations = {
     homeScreenSection: {
       title: 'Add eVaka to the home screen'
     },
+    pushStatus: {
+      enabled: 'Enabled',
+      disabled: 'Not enabled',
+      blocked: 'Blocked'
+    },
     pushSection: {
       title: 'Push notifications',
       description:
         'eVaka sends notifications to the devices where you have enabled them.',
-      enabled: 'Enabled',
-      blocked: 'Blocked',
       thisDevice: 'This device',
       notEnabledOnThisDevice: 'Notifications are not enabled on this device.',
       enable: 'Enable',
@@ -341,9 +357,9 @@ const en: Translations = {
         'You already have the maximum number of devices. Remove a device to enable notifications on this device.',
       blockedOnThisDevice: 'Notifications are blocked on this device',
       blockedInstructions: {
-        ios: 'Allow notifications in the device settings: Settings > Notifications > eVaka.',
+        ios: 'Allow notifications in the device settings: Settings → Notifications → eVaka → Allow Notifications',
         android:
-          'Allow notifications in the device settings: Settings > Apps > eVaka > Notifications.',
+          'Allow notifications in the device settings: Settings → Apps → eVaka → Notifications',
         other: 'Allow notifications in the site settings of your browser.'
       },
       lastSent: (at: string) => `Last sent ${at}`,
