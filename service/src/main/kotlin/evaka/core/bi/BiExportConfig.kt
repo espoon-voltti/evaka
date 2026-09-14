@@ -21,5 +21,9 @@ annotation class LegacyColumn
 data class BiExportConfig(
     val includePII: Boolean,
     val includeLegacyColumns: Boolean,
-    val deltaWindowDays: Int,
+    /**
+     * How many days back from the export date the delta tables (rows changed in the window) and the
+     * snapshot tables (rows dated in the window) reach.
+     */
+    val windowDays: Int,
 )

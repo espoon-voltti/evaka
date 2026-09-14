@@ -71,14 +71,12 @@ class BiTableExportTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @TestFactory
     fun `each BiTable exports a non-empty CSV with full export config`() =
-        exportTests(
-            BiExportConfig(includePII = true, includeLegacyColumns = true, deltaWindowDays = 60)
-        )
+        exportTests(BiExportConfig(includePII = true, includeLegacyColumns = true, windowDays = 60))
 
     @TestFactory
     fun `each BiTable exports a non-empty CSV with PII and legacy columns stripped`() =
         exportTests(
-            BiExportConfig(includePII = false, includeLegacyColumns = false, deltaWindowDays = 60)
+            BiExportConfig(includePII = false, includeLegacyColumns = false, windowDays = 60)
         )
 
     private fun exportTests(config: BiExportConfig) =
