@@ -63,7 +63,13 @@ run = """
 #!/usr/bin/env bash
 set -euo pipefail
 SERVICES="${usage_services:-all}"
-pm2 restart $SERVICES --update-env
+if [ "$SERVICES" = "all" ]; then
+  pm2 kill
+  pm2 start
+else
+  pm2 delete $SERVICES
+  pm2 start --only "$(echo $SERVICES | tr ' ' ',')"
+fi
 """
 
 [tasks.stop]
