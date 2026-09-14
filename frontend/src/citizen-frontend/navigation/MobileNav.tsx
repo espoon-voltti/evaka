@@ -449,11 +449,10 @@ const MenuContainer = styled.div`
   overflow-y: scroll;
   top: ${headerHeightMobile}px;
   bottom: ${mobileBottomNavHeight}px;
+  left: 0;
   right: 0;
   background: ${colors.grayscale.g0};
   box-sizing: border-box;
-  width: 100vw;
-  height: calc(100% - ${headerHeightMobile}px - ${mobileBottomNavHeight}px);
   padding: ${defaultMargins.s};
   display: flex;
   flex-direction: column;
@@ -463,9 +462,6 @@ const MenuContainer = styled.div`
   html[data-standalone] & {
     position: absolute;
     overflow-y: auto;
-    left: 0;
-    width: auto;
-    height: auto;
   }
 
   @media (min-width: ${desktopMin}) {
