@@ -4,8 +4,7 @@
 
 const scriptUrl = '/service-worker.js'
 
-// Duplicated from service-worker.js, which is registered as a classic worker
-// and therefore cannot import shared modules
+// Duplicated: service-worker.js is a classic worker and cannot import modules
 const cachePrefix = 'citizen-offline-'
 
 export async function registerServiceWorker(): Promise<void> {
@@ -24,10 +23,7 @@ export async function unregisterServiceWorker(): Promise<void> {
         .map((registration) => registration.unregister())
     )
   }
-  // The worker that would normally evict these during activation is gone, so
-  // they are deleted here. An unregistered worker still controls open pages
-  // until they navigate and can recreate a cache, so this runs on every load
-  // while the feature flag is off.
+  // Unconditional: a worker still controlling open pages can recreate them
   await deleteOfflineCaches()
 }
 
