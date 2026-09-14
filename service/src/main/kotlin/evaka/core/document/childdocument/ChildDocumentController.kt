@@ -711,6 +711,13 @@ class ChildDocumentController(
         val audit = AuditContext().add(templateId).add(groupId)
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Group.CREATE_CHILD_DOCUMENTS,
+                        groupId,
+                    )
                     tx.getNonCompletedChildDocumentChildIds(templateId, groupId, clock.today())
                         .also { audit.add(it) }
                 }
