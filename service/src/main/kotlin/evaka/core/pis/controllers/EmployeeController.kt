@@ -5,6 +5,7 @@
 package evaka.core.pis.controllers
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.EvakaEnv
 import evaka.core.daycare.deactivatePersonalMessageAccountIfNeeded
@@ -175,6 +176,15 @@ class EmployeeController(private val accessControl: AccessControl, private val e
         }
         if (user.id == id) throw Forbidden("Cannot modify own roles")
 
+        val audit =
+            AuditContext()
+                .add(id)
+                .add(body.daycareIds)
+                .addMeta("role", body.role)
+                .addMeta("startDate", body.startDate)
+                .addMeta("endDate", body.endDate)
+                .addMeta("scheduled", body.startDate != clock.today())
+                .observeDate(body.startDate)
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -199,10 +209,7 @@ class EmployeeController(private val accessControl: AccessControl, private val e
                 }
             }
         }
-        Audit.EmployeeUpdateDaycareRoles.log(
-            targetId = AuditId(id),
-            meta = mapOf("daycareIds" to body.daycareIds, "role" to body.role),
-        )
+        audit.log(Audit.EmployeeUpdateDaycareRoles, clock)
     }
 
     @DeleteMapping("/{id}/daycare-roles")
@@ -214,6 +221,7 @@ class EmployeeController(private val accessControl: AccessControl, private val e
         @RequestParam daycareId: DaycareId?,
     ) {
         if (user.id == id) throw Forbidden("Cannot modify own roles")
+        val audit = AuditContext().add(id).addMeta("daycareId", daycareId)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -224,18 +232,27 @@ class EmployeeController(private val accessControl: AccessControl, private val e
                     id,
                 )
 
-                tx.deleteEmployeeDaycareRoles(id, daycareId)
-                if (daycareId == null) {
-                    tx.deleteScheduledDaycareAclRows(id)
-                }
+                val deletedAclRows = tx.deleteEmployeeDaycareRoles(id, daycareId)
+                val deletedScheduledRows =
+                    if (daycareId == null) tx.deleteScheduledDaycareAclRows(id) else emptyList()
+
+                audit
+                    .add(deletedAclRows.map { it.daycareId })
+                    .add(deletedScheduledRows.map { it.daycareId })
+                    .addMeta(
+                        "roles",
+                        (deletedAclRows.map { it.role } + deletedScheduledRows.map { it.role })
+                            .distinct(),
+                    )
+                    .addMeta("deletedAclCount", deletedAclRows.size)
+                    .addMeta("deletedScheduledCount", deletedScheduledRows.size)
+                deletedAclRows.forEach { audit.observeDate(it.endDate) }
+                deletedScheduledRows.forEach { audit.observeDate(it.startDate) }
 
                 deactivatePersonalMessageAccountIfNeeded(tx, id)
             }
         }
-        Audit.EmployeeDeleteDaycareRoles.log(
-            targetId = AuditId(id),
-            meta = mapOf("daycareId" to daycareId),
-        )
+        audit.log(Audit.EmployeeDeleteDaycareRoles, clock)
     }
 
     @DeleteMapping("/{id}/scheduled-daycare-role")
@@ -247,6 +264,7 @@ class EmployeeController(private val accessControl: AccessControl, private val e
         @RequestParam daycareId: DaycareId,
     ) {
         if (user.id == id) throw Forbidden("Cannot modify own roles")
+        val audit = AuditContext().add(id).add(daycareId)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -257,13 +275,16 @@ class EmployeeController(private val accessControl: AccessControl, private val e
                     id,
                 )
 
-                tx.deleteScheduledDaycareAclRow(id, daycareId)
+                tx.deleteScheduledDaycareAclRow(id, daycareId)?.let { deleted ->
+                    audit
+                        .addMeta("role", deleted.role)
+                        .addMeta("startDate", deleted.startDate)
+                        .addMeta("endDate", deleted.endDate)
+                        .observeDate(deleted.startDate)
+                }
             }
         }
-        Audit.EmployeeDeleteScheduledDaycareRole.log(
-            targetId = AuditId(id),
-            meta = mapOf("daycareId" to daycareId),
-        )
+        audit.log(Audit.EmployeeDeleteScheduledDaycareRole, clock)
     }
 
     @PutMapping("/{id}/activate")
