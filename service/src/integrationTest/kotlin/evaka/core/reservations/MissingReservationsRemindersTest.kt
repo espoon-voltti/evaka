@@ -30,6 +30,10 @@ import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.job.ScheduledJobs
 import evaka.core.shared.security.PilotFeature
 import evaka.core.snDefaultDaycare
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -101,6 +105,28 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
     @Test
     fun `reminder is sent when a placement exists but there are no reservations`() {
         assertEquals(listOf(guardianEmail), getReminderRecipients())
+    }
+
+    @Test
+    fun `reminder is pushed to a guardian who has only a push device`() {
+        db.transaction { tx ->
+            tx.execute { sql("UPDATE person SET email = NULL WHERE id = ${bind(guardian.id)}") }
+            tx.insertTestCitizenPushSubscription(guardian.id, mockWebPushEndpoint(httpPort))
+        }
+
+        assertEquals(emptyList(), getReminderRecipients())
+        assertEquals(
+            listOf(
+                CitizenPushNotification.MissingReservations(
+                    range = checkedRange,
+                    // The threshold is 150 hours, and the autumn daylight saving time change
+                    // falls between the deadline and the start of the week
+                    deadline = HelsinkiDateTime.of(LocalDate.of(2022, 10, 24), LocalTime.of(18, 0)),
+                    childNames = listOf(child.firstName),
+                )
+            ),
+            db.read { it.getPlannedCitizenPushNotifications() },
+        )
     }
 
     @Test

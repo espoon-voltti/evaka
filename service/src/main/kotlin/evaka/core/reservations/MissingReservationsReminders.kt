@@ -22,6 +22,9 @@ import evaka.core.shared.db.QuerySql
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.getHolidays
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.getPushChildNames
 import org.springframework.stereotype.Service
 
 @Service
@@ -29,12 +32,13 @@ class MissingReservationsReminders(
     private val featureConfig: FeatureConfig,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
 ) {
     init {
-        asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendMissingReservationsReminder ->
-            sendReminder(db, msg)
+        asyncJobRunner.registerHandler { db, clock, msg: AsyncJob.SendMissingReservationsReminder ->
+            sendReminder(db, clock, msg)
         }
     }
 
@@ -52,7 +56,7 @@ class MissingReservationsReminders(
 SELECT DISTINCT missing.guardian_id
 FROM (${subquery(missingReservationsQuery(range, guardian = null))}) missing
 JOIN person p ON missing.guardian_id = p.id
-WHERE p.email IS NOT NULL
+WHERE p.email IS NOT NULL OR EXISTS (SELECT FROM citizen_push_subscription cps WHERE cps.person_id = p.id)
     """
                             .trimIndent()
                     )
@@ -67,37 +71,63 @@ WHERE p.email IS NOT NULL
         return guardians.size
     }
 
-    fun sendReminder(db: Database.Connection, msg: AsyncJob.SendMissingReservationsReminder) {
-        val language =
+    fun sendReminder(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendMissingReservationsReminder,
+    ) {
+        val recipient =
             db.read { tx ->
                 tx.createQuery {
                         sql(
                             """
-SELECT language
+SELECT p.language, p.email IS NOT NULL AS has_email
 FROM (${subquery(missingReservationsQuery(msg.range, msg.guardian))}) missing
 JOIN person p ON missing.guardian_id = p.id
 WHERE missing.guardian_id = ${bind(msg.guardian)}
-AND email IS NOT NULL
 LIMIT 1
-        """
-                                .trimIndent()
+"""
                         )
                     }
                     .exactlyOneOrNull {
-                        column<String?>("language")?.lowercase()?.let(Language::tryValueOf)
-                            ?: Language.fi
+                        Pair(
+                            column<String?>("language")?.lowercase()?.let(Language::tryValueOf)
+                                ?: Language.fi,
+                            column<Boolean>("has_email"),
+                        )
                     }
             } ?: return
+        val (language, hasEmail) = recipient
 
-        Email.create(
-                dbc = db,
-                personId = msg.guardian,
-                category = NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
-                fromAddress = emailEnv.sender(language),
-                content = emailMessageProvider.missingReservationsNotification(language, msg.range),
-                traceId = msg.guardian.toString(),
+        if (hasEmail) {
+            Email.create(
+                    dbc = db,
+                    personId = msg.guardian,
+                    category = NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
+                    fromAddress = emailEnv.sender(language),
+                    content =
+                        emailMessageProvider.missingReservationsNotification(language, msg.range),
+                    traceId = msg.guardian.toString(),
+                )
+                ?.also { emailClient.send(it) }
+        }
+
+        db.transaction { tx ->
+            citizenPushNotifications.plan(
+                tx,
+                clock.now(),
+                msg.guardian,
+                CitizenPushNotification.MissingReservations(
+                    range = msg.range,
+                    deadline =
+                        getReservationDeadline(
+                            msg.range.start,
+                            featureConfig.citizenReservationThresholdHours,
+                        ),
+                    childNames = tx.getChildNamesWithMissingReservations(msg.range, msg.guardian),
+                ),
             )
-            ?.also { emailClient.send(it) }
+        }
     }
 }
 
@@ -105,7 +135,7 @@ private fun missingReservationsQuery(range: FiniteDateRange, guardian: PersonId?
     val holidays = getHolidays(range)
     sql(
         """
-SELECT guardian_id
+SELECT guardian_id, missing.child_id
 FROM (
     SELECT p.child_id, t::date AS date
     FROM unnest(${bind(range.dates().toList())}) t
@@ -153,4 +183,20 @@ ON missing.child_id = guardian.child_id
 AND (valid_during IS NULL OR valid_during @> missing.date)
 """
     )
+}
+
+private fun Database.Read.getChildNamesWithMissingReservations(
+    range: FiniteDateRange,
+    guardian: PersonId,
+): List<String> {
+    val children = createQuery {
+        sql(
+            """
+SELECT DISTINCT missing.child_id
+FROM (${subquery(missingReservationsQuery(range, guardian))}) missing
+"""
+        )
+    }
+        .toList<PersonId>()
+    return getPushChildNames(children).values.sorted()
 }
