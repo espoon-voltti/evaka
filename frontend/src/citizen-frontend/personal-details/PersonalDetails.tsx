@@ -27,6 +27,7 @@ import { passkeysSupported } from '../auth/passkeys'
 import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
 import { headerHeightMobile } from '../navigation/const'
+import { pwaEnabled } from '../pwa/enabled'
 import useTitle from '../useTitle'
 
 import ContactDetailsSection from './ContactDetailsSection'
@@ -295,7 +296,7 @@ export default React.memo(function PersonalDetails() {
 
         <HomeScreenSection ref={homeScreenSection} />
 
-        <PushNotificationsSection ref={pushSection} />
+        {pwaEnabled && <PushNotificationsSection ref={pushSection} />}
 
         <Gap $size="s" />
 
