@@ -18,7 +18,6 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { InformationText, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
 import {
   faBell,
   faCheckCircle,
@@ -61,8 +60,6 @@ export default React.memo(
     const { mutateAsync: deleteDevice } = useMutationResult(
       deletePushDeviceMutation
     )
-
-    if (!featureFlags.citizenPwa) return null
 
     return renderResult(settings, ({ applicationServerKey, devices }) => {
       // Web push is not configured in this environment

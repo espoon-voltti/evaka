@@ -245,7 +245,8 @@ interface BaseFeatureFlags {
   sharedApplicationEditor?: boolean
 
   /**
-   * PWA manifest and service worker for citizen-frontend
+   * PWA manifest, service worker and push notifications for every citizen.
+   * When off, a browser can still opt in with the `?pwa=1` query parameter.
    */
   citizenPwa?: boolean
 }

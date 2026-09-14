@@ -4,6 +4,8 @@
 
 import { featureFlags } from 'lib-customizations/citizen'
 
+import { optIn } from './enabled'
+
 const appName = featureFlags.environmentLabel
   ? `eVaka (${featureFlags.environmentLabel})`
   : 'eVaka'
@@ -22,7 +24,7 @@ const buildManifest = (origin: string) => ({
   short_name: appName,
   display: 'standalone',
   scope: `${origin}/`,
-  start_url: `${origin}/`,
+  start_url: `${origin}/${optIn}`,
   background_color: '#ffffff',
   theme_color: themeColor,
   icons: [512, 192, 180].map((size) => ({

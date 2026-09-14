@@ -14,10 +14,10 @@ import {
   useMutationResult,
   useQueryResult
 } from 'lib-common/query'
-import { featureFlags } from 'lib-customizations/citizen'
 
 import { useUser } from '../auth/state'
 
+import { pwaEnabled } from './enabled'
 import { useIsRunningInstalled } from './installed'
 import {
   addPushSubscriptionMutation,
@@ -66,7 +66,7 @@ function useBrowserPushState(): BrowserPushState | undefined {
     if (
       browserState === undefined &&
       !reading &&
-      featureFlags.citizenPwa &&
+      pwaEnabled &&
       pushSupported()
     ) {
       reading = true
@@ -84,7 +84,7 @@ function useBrowserPushState(): BrowserPushState | undefined {
 function useApplicationServerKey(): string | null | undefined {
   const user = useUser()
   const settings = useQueryResult(
-    user && featureFlags.citizenPwa && pushSupported()
+    user && pwaEnabled && pushSupported()
       ? pushSettingsQuery()
       : constantQuery(null)
   )
@@ -132,7 +132,7 @@ export function usePushAvailability(): PushAvailability {
   const browser = useBrowserPushState()
   const device = useThisPushDevice()
 
-  if (!featureFlags.citizenPwa || !runningInstalled || !pushSupported())
+  if (!pwaEnabled || !runningInstalled || !pushSupported())
     return { kind: 'unavailable' }
   if (
     applicationServerKey === undefined ||

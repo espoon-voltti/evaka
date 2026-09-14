@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { isIOS } from 'lib-common/utils/helpers'
-import { featureFlags } from 'lib-customizations/citizen'
 
+import { pwaEnabled } from './enabled'
 import { useIsHandheld } from './handheld'
 import { useInstallPrompt } from './installPrompt'
 import { useIsRunningInstalled } from './installed'
@@ -19,7 +19,7 @@ export function useInstallAvailability(): InstallAvailability {
   const runningInstalled = useIsRunningInstalled()
   const prompt = useInstallPrompt()
 
-  if (!featureFlags.citizenPwa || !handheld || runningInstalled)
+  if (!pwaEnabled || !handheld || runningInstalled)
     return { kind: 'unavailable' }
   if (prompt.available) return { kind: 'prompt', show: prompt.show }
   return isIOS() ? { kind: 'instructions' } : { kind: 'unavailable' }
