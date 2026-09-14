@@ -16,18 +16,27 @@ import type {
   NotificationSettings
 } from 'lib-common/generated/api-types/pis'
 import { notificationCategories } from 'lib-common/generated/api-types/pis'
+import { constantQuery, useQueryResult } from 'lib-common/query'
 import { CheckboxF } from 'lib-components/atoms/form/Checkbox'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
-import { faChevronDown, faChevronUp, faEnvelope } from 'lib-icons'
+import {
+  faBell,
+  faBellSlash,
+  faChevronDown,
+  faChevronUp,
+  faEnvelope
+} from 'lib-icons'
 
 import { useTranslation } from '../localization'
+import { pwaEnabled } from '../pwa/enabled'
+import { pushSettingsQuery } from '../pwa/queries'
 
 import { EditableSectionHeader } from './components'
 import { updateNotificationSettingsMutation } from './queries'
 
-const notificationSettingsForm = object({
+const channelForm = object({
   message: boolean(),
   bulletin: boolean(),
   income: boolean(),
@@ -39,10 +48,14 @@ const notificationSettingsForm = object({
   discussionTime: boolean()
 })
 
-function isEnabled(
-  state: StateOf<typeof notificationSettingsForm>,
-  type: NotificationCategory
-): boolean {
+const notificationSettingsForm = object({
+  email: channelForm,
+  push: channelForm
+})
+
+type ChannelState = StateOf<typeof channelForm>
+
+function isEnabled(state: ChannelState, type: NotificationCategory): boolean {
   switch (type) {
     case 'TRANSACTIONAL':
       return true // always enabled
@@ -67,25 +80,32 @@ function isEnabled(
   }
 }
 
-const getInitialState = ({
-  disabledEmailTypes
-}: NotificationSettings): StateOf<typeof notificationSettingsForm> => ({
-  message: !disabledEmailTypes.includes('MESSAGE_NOTIFICATION'),
-  bulletin: !disabledEmailTypes.includes('BULLETIN_NOTIFICATION'),
-  income: !disabledEmailTypes.includes('INCOME_NOTIFICATION'),
-  calendarEvent: !disabledEmailTypes.includes('CALENDAR_EVENT_NOTIFICATION'),
-  decision: !disabledEmailTypes.includes('DECISION_NOTIFICATION'),
-  document: !disabledEmailTypes.includes('DOCUMENT_NOTIFICATION'),
-  informalDocument: !disabledEmailTypes.includes(
-    'INFORMAL_DOCUMENT_NOTIFICATION'
-  ),
-  attendanceReservation: !disabledEmailTypes.includes(
+const disabledTypes = (state: ChannelState): NotificationCategory[] =>
+  notificationCategories.filter((type) => !isEnabled(state, type))
+
+const channelState = (disabled: NotificationCategory[]): ChannelState => ({
+  message: !disabled.includes('MESSAGE_NOTIFICATION'),
+  bulletin: !disabled.includes('BULLETIN_NOTIFICATION'),
+  income: !disabled.includes('INCOME_NOTIFICATION'),
+  calendarEvent: !disabled.includes('CALENDAR_EVENT_NOTIFICATION'),
+  decision: !disabled.includes('DECISION_NOTIFICATION'),
+  document: !disabled.includes('DOCUMENT_NOTIFICATION'),
+  informalDocument: !disabled.includes('INFORMAL_DOCUMENT_NOTIFICATION'),
+  attendanceReservation: !disabled.includes(
     'ATTENDANCE_RESERVATION_NOTIFICATION'
   ),
-  discussionTime: !disabledEmailTypes.includes('DISCUSSION_TIME_NOTIFICATION')
+  discussionTime: !disabled.includes('DISCUSSION_TIME_NOTIFICATION')
 })
 
-const channelColumns = '60px'
+const getInitialState = ({
+  disabledEmailTypes,
+  disabledPushTypes
+}: NotificationSettings): StateOf<typeof notificationSettingsForm> => ({
+  email: channelState(disabledEmailTypes),
+  push: channelState(disabledPushTypes)
+})
+
+const channelColumns = pwaEnabled ? '60px 60px' : '60px'
 
 const TableHeaderRow = styled.div`
   display: grid;
@@ -134,7 +154,8 @@ interface NotificationRow {
   dataQa: string
   label: string
   info?: React.ReactNode
-  bind: BoundFormState<boolean>
+  email: BoundFormState<boolean>
+  push: BoundFormState<boolean>
 }
 
 export interface Props {
@@ -148,23 +169,20 @@ export default React.memo(function NotificationSettingsSection({
   const tn = t.personalDetails.notificationsSection
   const [editing, useEditing] = useBoolean(false)
   const firstCheckboxRef = useRef<HTMLDivElement>(null)
+  const hasPushDevices = useQueryResult(
+    pwaEnabled ? pushSettingsQuery() : constantQuery(null)
+  )
+    .map((settings) => !!settings && settings.devices.length > 0)
+    .getOrElse(false)
 
   const form = useForm(
     notificationSettingsForm,
     () => getInitialState(initialData),
     t.validationErrors
   )
-  const {
-    message,
-    bulletin,
-    income,
-    calendarEvent,
-    decision,
-    document,
-    informalDocument,
-    attendanceReservation,
-    discussionTime
-  } = useFormFields(form)
+  const { email, push } = useFormFields(form)
+  const emailFields = useFormFields(email)
+  const pushFields = useFormFields(push)
 
   useEffect(() => {
     if (editing) {
@@ -173,42 +191,46 @@ export default React.memo(function NotificationSettingsSection({
     }
   }, [editing])
 
+  const row = (
+    dataQa: string,
+    field: keyof ChannelState,
+    label: string,
+    info?: React.ReactNode
+  ): NotificationRow => ({
+    dataQa,
+    label,
+    info,
+    email: emailFields[field],
+    push: pushFields[field]
+  })
+
   const rows: NotificationRow[] = [
-    { dataQa: 'message', bind: message, label: tn.message },
-    { dataQa: 'bulletin', bind: bulletin, label: tn.bulletin },
-    { dataQa: 'income', bind: income, label: tn.income, info: tn.incomeInfo },
-    {
-      dataQa: 'calendar-event',
-      bind: calendarEvent,
-      label: tn.calendarEvent
-    },
-    { dataQa: 'decision', bind: decision, label: tn.decision },
-    {
-      dataQa: 'document',
-      bind: document,
-      label: tn.document,
-      info: tn.documentInfo
-    },
-    {
-      dataQa: 'informal-document',
-      bind: informalDocument,
-      label: tn.informalDocument,
-      info: tn.informalDocumentInfo
-    },
-    {
-      dataQa: 'attendance-reservation',
-      bind: attendanceReservation,
-      label: tn.attendanceReservation,
-      info: tn.attendanceReservationInfo
-    },
+    row('message', 'message', tn.message),
+    row('bulletin', 'bulletin', tn.bulletin),
+    row('income', 'income', tn.income, tn.incomeInfo),
+    row('calendar-event', 'calendarEvent', tn.calendarEvent),
+    row('decision', 'decision', tn.decision),
+    row('document', 'document', tn.document, tn.documentInfo),
+    row(
+      'informal-document',
+      'informalDocument',
+      tn.informalDocument,
+      tn.informalDocumentInfo
+    ),
+    row(
+      'attendance-reservation',
+      'attendanceReservation',
+      tn.attendanceReservation,
+      tn.attendanceReservationInfo
+    ),
     ...(featureFlags.discussionReservations
       ? [
-          {
-            dataQa: 'discussion-time',
-            bind: discussionTime,
-            label: tn.discussionTime,
-            info: tn.discussionTimeInfo
-          }
+          row(
+            'discussion-time',
+            'discussionTime',
+            tn.discussionTime,
+            tn.discussionTimeInfo
+          )
         ]
       : [])
   ]
@@ -226,10 +248,8 @@ export default React.memo(function NotificationSettingsSection({
         mutation={updateNotificationSettingsMutation}
         onSave={() => ({
           body: {
-            ...initialData,
-            disabledEmailTypes: notificationCategories.filter(
-              (type) => !isEnabled(form.state, type)
-            )
+            disabledEmailTypes: disabledTypes(form.state.email),
+            disabledPushTypes: disabledTypes(form.state.push)
           }
         })}
         onSaveSuccess={useEditing.off}
@@ -243,6 +263,15 @@ export default React.memo(function NotificationSettingsSection({
           <FontAwesomeIcon size="lg" icon={faEnvelope} />
           {tn.email}
         </ChannelHeader>
+        {pwaEnabled && (
+          <ChannelHeader>
+            <FontAwesomeIcon
+              size="lg"
+              icon={hasPushDevices ? faBell : faBellSlash}
+            />
+            {tn.push}
+          </ChannelHeader>
+        )}
       </TableHeaderRow>
       <div ref={firstCheckboxRef}>
         {rows.map((row) => (
@@ -251,23 +280,40 @@ export default React.memo(function NotificationSettingsSection({
               <div>{row.label}</div>
               <ChannelCell>
                 <CheckboxF
-                  bind={row.bind}
-                  label={row.label}
+                  bind={row.email}
+                  label={`${row.label} (${tn.email})`}
                   hiddenLabel
                   disabled={!editing}
-                  data-qa={row.dataQa}
+                  data-qa={`${row.dataQa}-email`}
                 />
               </ChannelCell>
+              {pwaEnabled && (
+                <ChannelCell>
+                  <CheckboxF
+                    bind={row.push}
+                    label={`${row.label} (${tn.push})`}
+                    hiddenLabel
+                    disabled={!editing}
+                    data-qa={`${row.dataQa}-push`}
+                  />
+                </ChannelCell>
+              )}
               {row.info !== undefined && (
                 <RowInfoCell>
                   <RowInfo info={row.info} />
                 </RowInfoCell>
               )}
             </SettingRow>
-            {row.dataQa === 'income' && income.state === false ? (
+            {row.dataQa === 'income' &&
+            (!emailFields.income.state ||
+              (pwaEnabled && !pushFields.income.state)) ? (
               <>
                 <Gap $size="s" />
-                <AlertBox noMargin message={tn.incomeWarning} />
+                <AlertBox
+                  noMargin
+                  message={tn.incomeWarning}
+                  data-qa="income-warning"
+                />
                 <Gap $size="s" />
               </>
             ) : null}
