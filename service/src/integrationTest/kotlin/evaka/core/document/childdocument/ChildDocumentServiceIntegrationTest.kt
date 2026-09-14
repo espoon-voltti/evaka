@@ -34,6 +34,10 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.security.PilotFeature
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
@@ -478,6 +482,65 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         assertEquals(0, getCitizenBasicNotificationEmails().size)
         assertEquals(1, getChildDocumentNotificationEmails().size)
+    }
+
+    @Test
+    fun `child document notification is pushed to a guardian who has only a push device`() {
+        val testAdult = DevPerson()
+        val testChild = DevPerson()
+        val employeeUser = DevEmployee(roles = setOf(UserRole.ADMIN))
+        db.transaction { tx ->
+            tx.insert(
+                DevDocumentTemplate(
+                    id = templateIdPed,
+                    type = ChildDocumentType.PEDAGOGICAL_ASSESSMENT,
+                    name = "Pedagoginen arvio",
+                    content = templateContent,
+                    validity = DateRange(clock.today(), clock.today().plusDays(1)),
+                )
+            )
+            tx.insert(employeeUser)
+            tx.insert(testAdult, DevPersonType.ADULT)
+            tx.insert(testChild, DevPersonType.CHILD)
+            tx.insertGuardian(testAdult.id, testChild.id)
+            tx.insertTestCitizenPushSubscription(testAdult.id, mockWebPushEndpoint(httpPort))
+            tx.insert(
+                DevPlacement(
+                    childId = testChild.id,
+                    unitId = daycare.id,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5),
+                )
+            )
+        }
+
+        val documentId =
+            controller.createDocument(
+                dbInstance(),
+                employeeUser.user,
+                clock,
+                ChildDocumentCreateRequest(testChild.id, templateIdPed),
+            )
+        controller.nextDocumentStatus(
+            dbInstance(),
+            employeeUser.user,
+            clock,
+            documentId,
+            ChildDocumentController.StatusChangeRequest(DocumentStatus.COMPLETED),
+        )
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(0, MockEmailClient.emails.size)
+        assertEquals(
+            listOf(
+                CitizenPushNotification.Document(
+                    testChild.id,
+                    ChildDocumentNotificationType.BASIC_DOCUMENT,
+                    childName = testChild.firstName,
+                )
+            ),
+            db.read { it.getPlannedCitizenPushNotifications() },
+        )
     }
 
     private fun getCitizenBasicNotificationEmails(): List<Email> {
