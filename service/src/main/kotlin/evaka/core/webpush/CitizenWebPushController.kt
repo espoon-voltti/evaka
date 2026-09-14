@@ -172,11 +172,13 @@ class CitizenWebPushController(
                 dbc,
                 clock,
                 body.deviceId,
-                category = null,
-                content = content,
-                path = "/",
-                tag = "test",
-                ttl = TEST_NOTIFICATION_TTL,
+                Delivery(
+                    category = null,
+                    content = content,
+                    path = "/",
+                    tag = "test",
+                    ttl = TEST_NOTIFICATION_TTL,
+                ),
             )
         }
         audit.log(Audit.CitizenPushTestSend, clock)

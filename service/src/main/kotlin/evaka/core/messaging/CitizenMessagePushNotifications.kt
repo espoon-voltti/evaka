@@ -17,23 +17,18 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.UiLanguage
 import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.Delivery
 import evaka.core.webpush.MessagePushNotificationData
 import evaka.core.webpush.PushNotificationMessageProvider
-import evaka.core.webpush.WebPush
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import org.springframework.stereotype.Service
-
-private val MAX_THROTTLE_WAIT: Duration = Duration.ofHours(1)
-
-private val logger = KotlinLogging.logger {}
 
 @Service
 class CitizenMessagePushNotifications(
     private val pushNotifications: CitizenPushNotifications,
     private val messageProvider: PushNotificationMessageProvider,
     private val featureConfig: FeatureConfig,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
 ) {
     init {
         asyncJobRunner.registerHandler {
@@ -41,20 +36,8 @@ class CitizenMessagePushNotifications(
             clock,
             job: AsyncJob.SendCitizenMessagePushNotification,
             remainingAttempts ->
-            try {
+            pushNotifications.rescheduleIfThrottled(db, clock, job, remainingAttempts) {
                 send(db, clock, job.recipient, job.subscription)
-            } catch (e: WebPush.Throttled) {
-                if (e.retryAfter == null || remainingAttempts == 0) throw e
-                val retryAfter = minOf(e.retryAfter, MAX_THROTTLE_WAIT)
-                logger.warn(e) { "Push service asked to wait $retryAfter -> rescheduling" }
-                db.transaction { tx ->
-                    asyncJobRunner.plan(
-                        tx,
-                        listOf(job),
-                        retryCount = remainingAttempts,
-                        runAt = clock.now().plus(retryAfter),
-                    )
-                }
             }
         }
     }
@@ -155,17 +138,19 @@ AND m.content_deleted_at IS NULL
             dbc,
             clock,
             subscription,
-            category =
-                when (notification.type) {
-                    MessageType.MESSAGE -> NotificationCategory.MESSAGE_NOTIFICATION
-                    MessageType.BULLETIN ->
-                        if (isSenderMunicipalAccount) NotificationCategory.BULLETIN_NOTIFICATION
-                        else NotificationCategory.MESSAGE_NOTIFICATION
-                },
-            content = content,
-            path = "/messages/${notification.threadId}",
-            tag = "message-${notification.threadId}",
-            ttl = Duration.ofDays(1),
+            Delivery(
+                category =
+                    when (notification.type) {
+                        MessageType.MESSAGE -> NotificationCategory.MESSAGE_NOTIFICATION
+                        MessageType.BULLETIN ->
+                            if (isSenderMunicipalAccount) NotificationCategory.BULLETIN_NOTIFICATION
+                            else NotificationCategory.MESSAGE_NOTIFICATION
+                    },
+                content = content,
+                path = "/messages/${notification.threadId}",
+                tag = "message-${notification.threadId}",
+                ttl = Duration.ofDays(1),
+            ),
         )
     }
 }
