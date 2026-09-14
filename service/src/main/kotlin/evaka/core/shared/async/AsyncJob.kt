@@ -318,6 +318,7 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendOutdatedIncomeNotificationEmail(
         val guardianId: PersonId,
         val type: IncomeNotificationType,
+        val incomeExpirationDate: LocalDate? = null,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }

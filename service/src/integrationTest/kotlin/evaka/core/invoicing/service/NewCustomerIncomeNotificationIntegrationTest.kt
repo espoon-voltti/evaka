@@ -39,9 +39,14 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.job.ScheduledJobs
 import evaka.core.snDaycareContractDays15
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -152,6 +157,30 @@ class NewCustomerIncomeNotificationIntegrationTest : FullApplicationTest(resetDb
         assertEquals(
             IncomeNotificationType.NEW_CUSTOMER,
             getIncomeNotifications(fridgeHeadOfChild.id)[0].notificationType,
+        )
+    }
+
+    @Test
+    fun `new customer notification is pushed to the guardian's devices`() {
+        val placementId = insertPlacement(child, placementStart, placementEnd)
+        insertServiceNeed(placementId, placementStart, placementEnd)
+        db.transaction { tx ->
+            tx.insertTestCitizenPushSubscription(
+                fridgeHeadOfChild.id,
+                mockWebPushEndpoint(httpPort),
+            )
+        }
+
+        assertEquals(1, getEmails().size)
+        assertEquals(
+            listOf(
+                CitizenPushNotification.Income(
+                    IncomeNotificationType.NEW_CUSTOMER,
+                    expirationDate = null,
+                    deadline = clock.today().with(TemporalAdjusters.lastDayOfMonth()),
+                )
+            ),
+            db.read { it.getPlannedCitizenPushNotifications() },
         )
     }
 
