@@ -18,7 +18,11 @@ import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.NotFound
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.getPushChildNames
 import org.springframework.stereotype.Service
 
 @Service
@@ -27,6 +31,7 @@ class AbsenceApplicationService(
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
 ) {
     init {
         asyncJobRunner.registerHandler(::sendDecidedEmail)
@@ -81,6 +86,20 @@ class AbsenceApplicationService(
                     "${msg.absenceApplicationId}",
                 )
                 ?.also { emailClient.send(it) }
+            db.transaction { tx ->
+                citizenPushNotifications.plan(
+                    tx,
+                    clock.now(),
+                    guardian.id,
+                    CitizenPushNotification.AbsenceApplicationDecision(
+                        childName =
+                            tx.getPushChildNames(listOf(application.childId))
+                                .getValue(application.childId),
+                        range = FiniteDateRange(application.startDate, application.endDate),
+                        rejected = application.status == AbsenceApplicationStatus.REJECTED,
+                    ),
+                )
+            }
         }
     }
 }

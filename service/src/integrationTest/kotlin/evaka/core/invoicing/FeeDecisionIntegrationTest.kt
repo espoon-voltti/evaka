@@ -72,6 +72,10 @@ import evaka.core.snDaycareFullDay35
 import evaka.core.snDaycarePartDay25
 import evaka.core.snDefaultDaycare
 import evaka.core.toFeeDecisionServiceNeed
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -2725,6 +2729,40 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
 
         getPdf(decision.id, adminUser)
+    }
+
+    @Test
+    fun `head of family gets a push notification about a sent fee decision`() {
+        val headOfFamily =
+            adult6.copy(
+                id = PersonId(UUID.randomUUID()),
+                email = "optin@test.com",
+                forceManualFeeDecisions = false,
+                ssn = "291090-9986",
+            )
+        db.transaction {
+            it.insert(headOfFamily, DevPersonType.RAW_ROW)
+            it.insert(
+                DevParentship(
+                    ParentshipId(UUID.randomUUID()),
+                    child2.id,
+                    headOfFamily.id,
+                    child2.dateOfBirth,
+                    child2.dateOfBirth.plusYears(18).minusDays(1),
+                    HelsinkiDateTime.now(),
+                )
+            )
+            it.insertTestPartnership(adult1 = headOfFamily.id, adult2 = adult7.id)
+            it.insertTestCitizenPushSubscription(headOfFamily.id, mockWebPushEndpoint(httpPort))
+        }
+        val decision = createAndConfirmFeeDecisionsForFamily(headOfFamily, adult7, listOf(child2))
+
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(
+            listOf(CitizenPushNotification.FeeDecision(childNames = listOf(child2.firstName))),
+            db.read { it.getPlannedCitizenPushNotifications() },
+        )
     }
 
     @Test

@@ -69,6 +69,9 @@ import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.message.IMessageProvider
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.getPushChildNames
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
@@ -87,6 +90,7 @@ class FeeDecisionService(
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     featureConfig: FeatureConfig,
 ) {
     private val metadata = CaseProcessMetadataService(featureConfig)
@@ -474,6 +478,17 @@ class FeeDecisionService(
                 "$feeDecisionId - ${decision.headOfFamily.id}",
             )
             ?.also { emailClient.send(it) }
+        db.transaction { tx ->
+            val childNames = tx.getPushChildNames(decision.children.map { it.child.id })
+            citizenPushNotifications.plan(
+                tx,
+                clock.now(),
+                decision.headOfFamily.id,
+                CitizenPushNotification.FeeDecision(
+                    childNames = decision.children.map { childNames.getValue(it.child.id) }
+                ),
+            )
+        }
 
         logger.info { "Successfully sent fee decision email (id: $feeDecisionId)." }
     }

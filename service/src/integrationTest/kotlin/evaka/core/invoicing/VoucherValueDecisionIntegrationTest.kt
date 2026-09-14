@@ -22,6 +22,7 @@ import evaka.core.invoicing.controller.VoucherValueDecisionController
 import evaka.core.invoicing.controller.VoucherValueDecisionDistinctiveParams
 import evaka.core.invoicing.data.PagedVoucherValueDecisionSummaries
 import evaka.core.invoicing.data.approveValueDecisionDraftsForSending
+import evaka.core.invoicing.data.getVoucherValueDecision
 import evaka.core.invoicing.domain.FinanceDecisionType
 import evaka.core.invoicing.domain.VoucherValueDecision
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
@@ -57,6 +58,10 @@ import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -345,6 +350,48 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `value decision handler is set to the daycare handler when forced when decision is not normal`() {
         val approvedDecision = createReliefDecision(true)
         assertEquals(decisionMaker2.id.raw, approvedDecision.decisionHandler)
+    }
+
+    @Test
+    fun `head of family gets a push notification about a sent voucher value decision`() {
+        val headOfFamily =
+            DevPerson(
+                ssn = "291090-9986",
+                email = "optin@test.com",
+                forceManualFeeDecisions = false,
+                streetAddress = "Toistie 33",
+                postalCode = "02230",
+                postOffice = "Espoo",
+            )
+        db.transaction {
+            it.insert(headOfFamily, DevPersonType.RAW_ROW)
+            it.insert(
+                DevParentship(
+                    childId = child2.id,
+                    headOfChildId = headOfFamily.id,
+                    startDate = child2.dateOfBirth,
+                    endDate = child2.dateOfBirth.plusYears(18).minusDays(1),
+                )
+            )
+            it.insertTestPartnership(adult1 = headOfFamily.id, adult2 = adult7.id)
+            it.insertTestCitizenPushSubscription(headOfFamily.id, mockWebPushEndpoint(httpPort))
+        }
+        createPlacement(startDate, endDate, childId = child2.id)
+        val decisionId = sendAllValueDecisions().first()
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        val decision = db.read { it.getVoucherValueDecision(decisionId)!! }
+        assertEquals(
+            listOf(
+                CitizenPushNotification.VoucherValueDecision(
+                    decisionId = decisionId,
+                    childName = child2.firstName,
+                    unitName = voucherDaycare.name,
+                )
+            ),
+            db.read { it.getPlannedCitizenPushNotifications() },
+        )
     }
 
     @Test

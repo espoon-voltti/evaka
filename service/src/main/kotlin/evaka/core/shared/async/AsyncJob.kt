@@ -62,7 +62,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendPendingDecisionEmail(
+    data class SendPendingDecisionNotification(
         val guardianId: PersonId,
         val language: String?,
         val decisionIds: List<DecisionId>,
@@ -615,7 +615,7 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendPasskeyRemovedEmail::class,
                     SendPasswordChangedEmail::class,
                     SendPedagogicalDocumentNotificationEmail::class,
-                    SendPendingDecisionEmail::class,
+                    SendPendingDecisionNotification::class,
                     SendServiceApplicationDecidedEmail::class,
                     SendSpecialDietNullificationWarningEmail::class,
                     SendWeakCredentialsRemovedEmail::class,

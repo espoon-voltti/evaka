@@ -53,7 +53,11 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.message.IMessageProvider
 import evaka.core.shared.template.ITemplateProvider
+import evaka.core.webpush.ApplicationDecision
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.LocalDate
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.thymeleaf.context.Context
@@ -70,6 +74,7 @@ class DecisionService(
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val evakaEnv: EvakaEnv,
     private val featureConfig: FeatureConfig,
@@ -371,6 +376,14 @@ class DecisionService(
                     "$applicationId - $guardianId",
                 )
                 ?.also { emailClient.send(it) }
+            db.transaction { tx ->
+                citizenPushNotifications.plan(
+                    tx,
+                    now,
+                    guardianId,
+                    tx.getApplicationDecisionsForPush(applicationId),
+                )
+            }
         } else {
             logger.warn {
                 "Skipping sending decision for application $applicationId guardian - not a current guardian or foster parent"
@@ -557,4 +570,41 @@ private fun createTemplate(
             templateProvider.getPreparatoryDecisionPath()
         }
     }
+}
+
+private fun Database.Read.getApplicationDecisionsForPush(
+    applicationId: ApplicationId
+): CitizenPushNotification.ApplicationDecisions {
+    data class Row(
+        val childName: String,
+        val type: DecisionType,
+        val unitName: String,
+        val startDate: LocalDate,
+        val status: DecisionStatus,
+    )
+    val rows = createQuery {
+        sql(
+            """
+SELECT
+    coalesce(nullif(p.preferred_name, ''), p.first_name) AS child_name,
+    d.type,
+    u.name AS unit_name,
+    d.start_date,
+    d.status
+FROM decision d
+JOIN application a ON d.application_id = a.id
+JOIN person p ON a.child_id = p.id
+JOIN daycare u ON d.unit_id = u.id
+WHERE d.application_id = ${bind(applicationId)} AND d.sent_date IS NOT NULL
+ORDER BY d.start_date, d.type
+"""
+        )
+    }
+        .toList<Row>()
+    return CitizenPushNotification.ApplicationDecisions(
+        applicationId = applicationId,
+        childName = rows.first().childName,
+        decisions = rows.map { ApplicationDecision(it.type, it.unitName, it.startDate) },
+        answerRequired = rows.any { it.status == DecisionStatus.PENDING },
+    )
 }

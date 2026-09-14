@@ -10,7 +10,7 @@ import evaka.core.AuditId
 import evaka.core.ChildDocumentArchivalEnv
 import evaka.core.EvakaEnv
 import evaka.core.ScheduledJobsEnv
-import evaka.core.application.PendingDecisionEmailService
+import evaka.core.application.PendingDecisionNotificationService
 import evaka.core.application.cancelOutdatedSentTransferApplications
 import evaka.core.application.removeOldDrafts
 import evaka.core.aromi.AromiService
@@ -340,7 +340,7 @@ class ScheduledJobs(
     private val evakaEnv: EvakaEnv,
     private val featureConfig: FeatureConfig,
     private val dvvModificationsBatchRefreshService: DvvModificationsBatchRefreshService,
-    private val pendingDecisionEmailService: PendingDecisionEmailService,
+    private val pendingDecisionNotificationService: PendingDecisionNotificationService,
     private val invoiceGenerator: InvoiceGenerator,
     private val koskiUpdateService: KoskiUpdateService,
     private val missingReservationsReminders: MissingReservationsReminders,
@@ -528,7 +528,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun sendPendingDecisionReminderEmails(db: Database.Connection, clock: EvakaClock) {
-        pendingDecisionEmailService.scheduleSendPendingDecisionsEmails(db, clock)
+        pendingDecisionNotificationService.schedulePendingDecisionNotifications(db, clock)
     }
 
     fun freezeVoucherValueReports(db: Database.Connection, clock: EvakaClock) {
