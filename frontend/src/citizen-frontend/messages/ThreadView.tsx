@@ -24,7 +24,10 @@ import type {
   MessageAccountWithPresence
 } from 'lib-common/generated/api-types/messaging'
 import type { TypedMessageAccount } from 'lib-common/messaging'
-import { scrollRefIntoView } from 'lib-common/utils/scrolling'
+import {
+  scrollRefEndIntoView,
+  scrollRefIntoView
+} from 'lib-common/utils/scrolling'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -289,6 +292,9 @@ export default React.memo(
     }))
 
     const lastMessageRef = useRef<HTMLLIElement>(null)
+    useEffect(() => {
+      scrollRefEndIntoView(lastMessageRef)
+    }, [threadId])
 
     const onUpdateContent = useCallback(
       (content: string) => setReplyContent(threadId, content),
