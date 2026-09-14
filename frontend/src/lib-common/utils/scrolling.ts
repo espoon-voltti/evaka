@@ -21,6 +21,13 @@ let resolveScrollContainer: ScrollContainerResolver = () => null
 const scrollsItsContent = (el: HTMLElement) =>
   /auto|scroll/.test(getComputedStyle(el).overflowY)
 
+const scrollportHeight = (elem: HTMLElement) => {
+  for (let el = elem.parentElement; el !== null; el = el.parentElement) {
+    if (scrollsItsContent(el)) return el.clientHeight
+  }
+  return window.innerHeight
+}
+
 // Which of the two scrolls, if either, depends on the viewport width and on
 // the app layout, so the choice is made on every call rather than once
 export function useRegisterScrollContainer() {
@@ -95,6 +102,21 @@ export function scrollRefIntoView(
   )
 }
 
+/** Shows the end of the element, or its start when the element does not fit in view */
+export function scrollRefEndIntoView(
+  ref: RefObject<HTMLElement | null>,
+  timeout = 0
+) {
+  scrollIntoViewWithTimeout(
+    () => ref.current ?? undefined,
+    timeout,
+    (elem) =>
+      elem.getBoundingClientRect().height > scrollportHeight(elem)
+        ? 'start'
+        : 'end'
+  )
+}
+
 export function scrollIntoViewSoftKeyboard(
   target: Element,
   blockPosition: ScrollLogicalPosition = 'center'
@@ -135,13 +157,22 @@ function scrollWithTimeout(
 function scrollIntoViewWithTimeout(
   getElement: () => HTMLElement | undefined,
   timeout = 0,
-  blockPosition: ScrollLogicalPosition
+  blockPosition:
+    | ScrollLogicalPosition
+    | ((elem: HTMLElement) => ScrollLogicalPosition)
 ) {
   if (isAutomatedTest) return
 
   withTimeout(() => {
     const elem = getElement()
-    if (elem) elem.scrollIntoView({ behavior: 'smooth', block: blockPosition })
+    if (elem)
+      elem.scrollIntoView({
+        behavior: 'smooth',
+        block:
+          typeof blockPosition === 'function'
+            ? blockPosition(elem)
+            : blockPosition
+      })
   }, timeout)
 }
 
