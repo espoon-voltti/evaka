@@ -9,10 +9,10 @@
 const serviceWorker = self
 
 const cachePrefix = 'citizen-offline-'
-// Bump whenever offline.html changes: the install handler that precaches it
-// runs again only when this script's own bytes differ, so an unchanged name
-// leaves the stale copy in place.
-const cacheName = `${cachePrefix}v1`
+// The install handler that precaches offline.html runs again only when this
+// script's own bytes differ, so the build version is embedded here to make
+// every release refetch the page.
+const cacheName = `${cachePrefix}${__APP_COMMIT__}`
 const offlinePage = '/offline.html'
 
 serviceWorker.addEventListener('install', (event) => {
