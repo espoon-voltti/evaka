@@ -71,6 +71,7 @@ class PersonController(
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): PersonResponse {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -88,7 +89,7 @@ class PersonController(
                     }
                 } ?: throw NotFound("Person $personId not found")
             }
-            .also { Audit.PersonRead.log(targetId = AuditId(personId)) }
+            .also { audit.log(Audit.PersonRead, clock) }
     }
 
     @GetMapping("/{personId}/sensitive-details")
@@ -98,6 +99,7 @@ class PersonController(
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): PersonSensitiveDetails {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -130,7 +132,7 @@ class PersonController(
                     )
                 }
             }
-            .also { Audit.PersonSensitiveDetailsRead.log(targetId = AuditId(personId)) }
+            .also { audit.log(Audit.PersonSensitiveDetailsRead, clock) }
     }
 
     @GetMapping("/details/{personId}")
@@ -140,6 +142,7 @@ class PersonController(
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): PersonJSON {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -171,7 +174,7 @@ class PersonController(
                         .let { PersonJSON.from(it) }
                 }
             }
-            .also { Audit.PersonDetailsRead.log(targetId = AuditId(personId)) }
+            .also { audit.log(Audit.PersonDetailsRead, clock) }
     }
 
     @GetMapping("/dependants/{personId}")
@@ -181,6 +184,7 @@ class PersonController(
         clock: EvakaClock,
         @PathVariable personId: PersonId,
     ): List<PersonWithChildrenDTO> {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.transaction {
                         accessControl.requirePermissionFor(
@@ -190,16 +194,13 @@ class PersonController(
                             Action.Person.READ_DEPENDANTS,
                             personId,
                         )
-                        personService.getPersonWithChildren(it, user, clock.now(), personId)
+                        personService
+                            .getPersonWithChildren(it, user, clock.now(), personId)
+                            ?.also { dto -> audit.add(dto.children.map { child -> child.id }) }
                     }
                     ?.children ?: throw NotFound()
             }
-            .also {
-                Audit.PersonDependantRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.PersonDependantRead, clock) }
     }
 
     @GetMapping("/guardians/{personId}")
@@ -209,6 +210,7 @@ class PersonController(
         clock: EvakaClock,
         @PathVariable personId: ChildId,
     ): GuardiansResponse {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -227,29 +229,25 @@ class PersonController(
                             personId,
                         )
                     GuardiansResponse(
-                        guardians =
-                            personService
-                                .getGuardians(tx, user, clock.now(), personId)
-                                .map(PersonJSON::from),
-                        blockedGuardians =
-                            if (fetchBlockedGuardians)
-                                tx.getBlockedGuardians(personId)
-                                    .mapNotNull { tx.getPersonById(it) }
-                                    .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
-                            else null,
-                    )
+                            guardians =
+                                personService
+                                    .getGuardians(tx, user, clock.now(), personId)
+                                    .map(PersonJSON::from)
+                                    .also { guardians -> audit.add(guardians.map { it.id }) },
+                            blockedGuardians =
+                                if (fetchBlockedGuardians)
+                                    tx.getBlockedGuardians(personId)
+                                        .mapNotNull { tx.getPersonById(it) }
+                                        .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
+                                        .also { blocked -> audit.add(blocked.map { it.id }) }
+                                else null,
+                        )
+                        .also { response ->
+                            audit.addMeta("blockedCount", response.blockedGuardians?.size)
+                        }
                 }
             }
-            .also {
-                Audit.PersonGuardianRead.log(
-                    targetId = AuditId(personId),
-                    meta =
-                        mapOf(
-                            "count" to it.guardians.size,
-                            "blockedCount" to it.blockedGuardians?.size,
-                        ),
-                )
-            }
+            .also { audit.log(Audit.PersonGuardianRead, clock) }
     }
 
     data class GuardiansResponse(
@@ -264,25 +262,27 @@ class PersonController(
         clock: EvakaClock,
         @RequestBody body: SearchPersonBody,
     ): List<PersonSummary> {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(it, user, clock, Action.Global.SEARCH_PEOPLE)
                     it.searchPeople(
-                        user,
-                        body.searchTerm,
-                        body.orderBy,
-                        body.sortDirection,
-                        restricted =
-                            !accessControl.hasPermissionFor(
-                                it,
-                                user,
-                                clock,
-                                Action.Global.SEARCH_PEOPLE_UNRESTRICTED,
-                            ),
-                    )
+                            user,
+                            body.searchTerm,
+                            body.orderBy,
+                            body.sortDirection,
+                            restricted =
+                                !accessControl.hasPermissionFor(
+                                    it,
+                                    user,
+                                    clock,
+                                    Action.Global.SEARCH_PEOPLE_UNRESTRICTED,
+                                ),
+                        )
+                        .also { results -> audit.add(results.map { it.id }) }
                 }
             }
-            .also { Audit.PersonDetailsSearch.log(meta = mapOf("count" to it.size)) }
+            .also { audit.log(Audit.PersonDetailsSearch, clock) }
     }
 
     @PatchMapping("/{personId}")
@@ -487,6 +487,7 @@ class PersonController(
     ): PersonJSON {
         if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
 
+        val audit = AuditContext().addMeta("readonly", body.readonly)
         return db.connect { dbc ->
                 dbc.transaction {
                     accessControl.requirePermissionFor(
@@ -501,11 +502,12 @@ class PersonController(
                         user,
                         ExternalIdentifier.SSN.getInstance(body.ssn),
                         body.readonly,
+                        audit,
                     )
                 } ?: throw NotFound()
             }
             .let { PersonJSON.from(it) }
-            .also { Audit.PersonDetailsRead.log(targetId = AuditId(it.id)) }
+            .also { audit.log(Audit.PersonGetOrCreateBySsn, clock) }
     }
 
     @PostMapping("/merge")

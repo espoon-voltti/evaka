@@ -5,6 +5,7 @@
 package evaka.core.pis.controllers
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.pis.FamilyContact
 import evaka.core.pis.FamilyContactRole.LOCAL_FOSTER_PARENT
@@ -47,6 +48,7 @@ class FamilyController(
         clock: EvakaClock,
         @PathVariable id: PersonId,
     ): FamilyOverview {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -65,7 +67,15 @@ class FamilyController(
                             id,
                         )
 
-                    val overview = familyOverviewService.getFamilyByAdult(it, clock, id)
+                    val overview =
+                        familyOverviewService.getFamilyByAdult(it, clock, id)?.also { family ->
+                            audit.add(
+                                listOfNotNull(
+                                    family.headOfFamily.personId,
+                                    family.partner?.personId,
+                                ) + family.children.map { child -> child.personId }
+                            )
+                        }
                     if (includeIncome) {
                         overview
                     } else {
@@ -77,7 +87,7 @@ class FamilyController(
                     }
                 } ?: throw NotFound("No family overview found for person $id")
             }
-            .also { Audit.PisFamilyRead.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.PisFamilyRead, clock) }
     }
 
     @GetMapping("/contacts")

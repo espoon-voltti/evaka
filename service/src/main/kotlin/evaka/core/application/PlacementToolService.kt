@@ -194,7 +194,12 @@ WHERE application.type = 'PRESCHOOL'
         ssn: String,
     ): PersonId {
         val child = db.transaction { tx ->
-            personService.getOrCreatePerson(tx, user, ExternalIdentifier.SSN.getInstance(ssn))
+            personService.getOrCreatePerson(
+                tx,
+                user,
+                ExternalIdentifier.SSN.getInstance(ssn),
+                audit = null,
+            )
         }
         fridgeFamilyService.updateChildAndFamilyFromVtj(db, user, clock, child!!.id)
         return child.id

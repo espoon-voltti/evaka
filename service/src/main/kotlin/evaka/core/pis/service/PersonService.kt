@@ -4,6 +4,7 @@
 
 package evaka.core.pis.service
 
+import evaka.core.AuditContext
 import evaka.core.application.utils.exhaust
 import evaka.core.daycare.controllers.AdditionalInformation
 import evaka.core.daycare.controllers.Child
@@ -197,8 +198,10 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
         user: AuthenticatedUser,
         ssn: ExternalIdentifier.SSN,
         readonly: Boolean = false,
+        audit: AuditContext?,
     ): PersonDTO? {
         val person = tx.getPersonBySSN(ssn.ssn)
+        audit?.add(listOfNotNull(person?.id))
         return if (person?.updatedFromVtj == null) {
             val personDetails =
                 personDetailsService.getBasicDetailsFor(
@@ -207,7 +210,9 @@ class PersonService(private val personDetailsService: IPersonDetailsService) {
             if (readonly) return toPersonDTO(personDetails.mapToDto())
 
             upsertVtjPerson(tx, personDetails.mapToDto())
-            tx.getPersonBySSN(ssn.ssn)
+            tx.getPersonBySSN(ssn.ssn).also {
+                audit?.add(listOfNotNull(it?.id))?.addMeta("created", person == null)
+            }
         } else {
             person
         }

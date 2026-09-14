@@ -287,6 +287,7 @@ fun savePaperApplication(
                         tx,
                         user,
                         ExternalIdentifier.SSN.getInstance(body.guardianSsn),
+                        audit = null,
                     )
                     ?.id
                     ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")

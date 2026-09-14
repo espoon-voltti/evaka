@@ -5,6 +5,7 @@
 package evaka.core.daycare.controllers
 
 import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.AuditId
 import evaka.core.daycare.createChild
 import evaka.core.daycare.getChild
@@ -48,6 +49,7 @@ class ChildController(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): ChildResponse {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(tx, user, clock, Action.Child.READ, childId)
@@ -78,7 +80,7 @@ class ChildController(
                     )
                 }
             }
-            .also { Audit.PersonRead.log(targetId = AuditId(childId)) }
+            .also { audit.log(Audit.PersonRead, clock) }
     }
 
     @GetMapping("/employee/children/{childId}/additional-information")
