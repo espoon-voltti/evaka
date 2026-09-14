@@ -7,6 +7,7 @@ package evaka.core.reservations
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
+import java.time.LocalTime
 
 private fun getNextMonday(now: LocalDate): LocalDate = now.plusDays(7 - now.dayOfWeek.value + 1L)
 
@@ -24,6 +25,12 @@ fun getNextReservableMonday(
     } else {
         getNextReservableMonday(now, thresholdHours, nextMonday.plusWeeks(1))
     }
+
+/** The moment when [getNextReservableMonday] moves past [monday] */
+fun getReservationDeadline(monday: LocalDate, thresholdHours: Long): HelsinkiDateTime =
+    HelsinkiDateTime.of(monday, LocalTime.MIDNIGHT)
+        .minusHours(thresholdHours % 24)
+        .minusDays(thresholdHours / 24)
 
 fun getReservableRange(now: HelsinkiDateTime, thresholdHours: Long): FiniteDateRange {
     val today = now.toLocalDate()
