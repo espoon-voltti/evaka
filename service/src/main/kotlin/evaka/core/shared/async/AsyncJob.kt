@@ -21,6 +21,7 @@ import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.specialdiet.SpecialDiet
+import evaka.core.webpush.CitizenPushNotification
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -93,6 +94,13 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendCitizenMessagePushNotification(
         val recipient: MessageRecipientId,
         val subscription: CitizenPushSubscriptionId,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendCitizenPushNotification(
+        val subscription: CitizenPushSubscriptionId,
+        val notification: CitizenPushNotification,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -629,7 +637,10 @@ sealed interface AsyncJob : AsyncJobPayload {
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(AsyncJob::class, "citizenPush"),
                 AsyncJobPool.Config(concurrency = 4),
-                setOf(SendCitizenMessagePushNotification::class),
+                setOf(
+                    SendCitizenMessagePushNotification::class,
+                    SendCitizenPushNotification::class,
+                ),
             )
         val suomiFi =
             AsyncJobRunner.Pool(

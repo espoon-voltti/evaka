@@ -167,11 +167,13 @@ class CitizenWebPushController(
                     dbc,
                     clock,
                     device,
-                    category = null,
-                    content = content,
-                    path = "/",
-                    tag = "test",
-                    ttl = TEST_NOTIFICATION_TTL,
+                    Delivery(
+                        category = null,
+                        content = content,
+                        path = "/",
+                        tag = "test",
+                        ttl = TEST_NOTIFICATION_TTL,
+                    ),
                 )
             }
         }
