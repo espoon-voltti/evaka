@@ -10,12 +10,16 @@ import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.pis.NotificationCategory
+import evaka.core.placement.getPlacementsForChild
 import evaka.core.shared.PedagogicalDocumentId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.getPushChildNames
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -25,6 +29,7 @@ private val logger = KotlinLogging.logger {}
 class PedagogicalDocumentNotificationService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
 ) {
@@ -46,7 +51,8 @@ SELECT DISTINCT
 FROM pedagogical_document doc 
 JOIN guardian g ON doc.child_id = g.child_id
 JOIN person p on g.guardian_id = p.id
-WHERE doc.id = ${bind(id)} AND p.email IS NOT NULL
+WHERE doc.id = ${bind(id)}
+AND (p.email IS NOT NULL OR EXISTS (SELECT FROM citizen_push_subscription cps WHERE cps.person_id = p.id))
 """
                 )
             }
@@ -145,6 +151,21 @@ SELECT EXISTS(
                     tx.markPedagogicalDocumentNotificationSent(msg.pedagogicalDocumentId)
                 }
             }
+        db.transaction { tx ->
+            val guardianCanReadDocuments =
+                tx.getPlacementsForChild(childId).any { it.endDate >= clock.today() }
+            if (guardianCanReadDocuments) {
+                citizenPushNotifications.plan(
+                    tx,
+                    clock.now(),
+                    msg.recipientId,
+                    CitizenPushNotification.InformalDocument(
+                        childId = childId,
+                        childName = tx.getPushChildNames(listOf(childId)).getValue(childId),
+                    ),
+                )
+            }
+        }
     }
 }
 
