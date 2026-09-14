@@ -13,6 +13,7 @@ import evaka.core.invoicing.data.insertIncome
 import evaka.core.invoicing.domain.IncomeEffect
 import evaka.core.invoicing.domain.IncomeRequest
 import evaka.core.pis.NotificationCategory
+import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.async.AsyncJobType
@@ -22,6 +23,9 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.FiniteDateRange
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.hasCitizenPushSubscriptions
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import tools.jackson.databind.json.JsonMapper
@@ -32,6 +36,7 @@ private val logger = KotlinLogging.logger {}
 class OutdatedIncomeNotifications(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
     private val mapper: JsonMapper,
@@ -120,39 +125,35 @@ class OutdatedIncomeNotifications(
         clock: EvakaClock,
         msg: AsyncJob.SendOutdatedIncomeNotificationEmail,
     ) {
-        val language =
-            db.read { tx ->
-                tx.createQuery {
-                        sql(
-                            """
-                            SELECT language
-                            FROM person p
-                            WHERE p.id = ${bind(msg.guardianId)}
-                            AND email IS NOT NULL
-                            """
-                        )
-                    }
-                    .bind("guardianId", msg.guardianId)
-                    .exactlyOneOrNull {
-                        column<String?>("language")?.lowercase()?.let(Language::tryValueOf)
-                            ?: Language.fi
-                    }
-            } ?: return
+        val recipient =
+            db.read { tx -> tx.getIncomeNotificationRecipient(msg.guardianId) } ?: return
+        val hasPush = db.read { tx -> tx.hasCitizenPushSubscriptions(msg.guardianId) }
+        if (!recipient.hasEmail && !hasPush) return
 
         logger.info {
-            "OutdatedIncomeNotifications: sending ${msg.type} email to ${msg.guardianId}"
+            "OutdatedIncomeNotifications: sending ${msg.type} notification to ${msg.guardianId}"
         }
 
-        Email.create(
-                dbc = db,
-                category = NotificationCategory.INCOME_NOTIFICATION,
-                personId = msg.guardianId,
-                fromAddress = emailEnv.sender(language),
-                content = emailMessageProvider.incomeNotification(msg.type, language),
-                traceId = msg.guardianId.toString(),
+        if (recipient.hasEmail) {
+            Email.create(
+                    dbc = db,
+                    category = NotificationCategory.INCOME_NOTIFICATION,
+                    personId = msg.guardianId,
+                    fromAddress = emailEnv.sender(recipient.language),
+                    content = emailMessageProvider.incomeNotification(msg.type, recipient.language),
+                    traceId = msg.guardianId.toString(),
+                )
+                ?.also { emailClient.send(it) }
+        }
+        db.transaction { tx ->
+            citizenPushNotifications.plan(
+                tx,
+                clock.now(),
+                msg.guardianId,
+                CitizenPushNotification.Income(msg.type),
             )
-            ?.also { emailClient.send(it) }
-            .also { db.transaction { it.createIncomeNotification(msg.guardianId, msg.type) } }
+            tx.createIncomeNotification(msg.guardianId, msg.type)
+        }
     }
 
     fun createExpiredIncome(
@@ -191,3 +192,19 @@ class OutdatedIncomeNotifications(
         }
     }
 }
+
+internal data class IncomeNotificationRecipient(val language: Language, val hasEmail: Boolean)
+
+/** Null when the person does not exist */
+internal fun Database.Read.getIncomeNotificationRecipient(
+    id: PersonId
+): IncomeNotificationRecipient? = createQuery {
+    sql("SELECT language, email IS NOT NULL AS has_email FROM person WHERE id = ${bind(id)}")
+}
+    .exactlyOneOrNull {
+        IncomeNotificationRecipient(
+            language =
+                column<String?>("language")?.lowercase()?.let(Language::tryValueOf) ?: Language.fi,
+            hasEmail = column("has_email"),
+        )
+    }
