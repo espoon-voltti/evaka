@@ -41,6 +41,8 @@ import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.domain.UiLanguage
 import evaka.core.shared.domain.toFiniteDateRange
 import evaka.core.shared.message.IMessageProvider
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.http.ResponseEntity
@@ -60,6 +62,7 @@ class ChildDocumentService(
     private val documentClient: DocumentService,
     private val messageProvider: IMessageProvider,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
     private val pdfGenerator: PdfGenerator,
@@ -387,7 +390,8 @@ WITH child_document AS (
 SELECT parents.child_id, parents.type AS document_type, parents.status AS document_status, person.id AS recipient_id, person.language
 FROM parents 
 JOIN person ON person.id = parents.parent_id
-WHERE person.email IS NOT NULL AND person.email != ''
+WHERE (person.email IS NOT NULL AND person.email != '')
+   OR EXISTS (SELECT FROM citizen_push_subscription cps WHERE cps.person_id = person.id)
 """
                 )
             }
@@ -453,5 +457,13 @@ WHERE person.email IS NOT NULL AND person.email != ''
                 traceId = msg.documentId.toString(),
             )
             ?.also { emailClient.send(it) }
+        db.transaction { tx ->
+            citizenPushNotifications.plan(
+                tx,
+                clock.now(),
+                msg.recipientId,
+                CitizenPushNotification.Document(msg.childId, msg.notificationType),
+            )
+        }
     }
 }
