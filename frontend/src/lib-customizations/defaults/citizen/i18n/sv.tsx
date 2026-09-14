@@ -297,11 +297,11 @@ const sv: Translations = {
       'För att kunna fylla i dokumentet krävs stark autentisering.'
   },
   pwa: {
+    stepsHeading: 'Gör så här',
     install: {
       text: 'Du kan använda eVaka som en app när du lägger till den på hemskärmen.',
       action: 'Lägg till eVaka på hemskärmen',
       device: 'iPhone eller iPad',
-      stepsHeading: 'Gör så här',
       steps: [
         <>
           Tryck på webbläsarens <strong>Dela</strong>-ikon.
@@ -319,6 +319,69 @@ const sv: Translations = {
         </>
       ]
     },
+    pushSuggestion: {
+      title: 'Push-aviseringar',
+      text: 'Ge eVaka tillåtelse att skicka aviseringar till dig, så att du får viktiga aviseringar till din enhet.',
+      settingsHint:
+        'Du kan hantera aviseringsinställningarna på sidan Personuppgifter.',
+      enable: 'Ta i bruk',
+      later: 'Senare',
+      enabledText: 'eVaka skickar push-aviseringar till din enhet.',
+      sendTest: 'Skicka en testavisering',
+      close: 'Stäng',
+      dismissedNote:
+        'Anvisningarna för push-aviseringar finns på sidan Personuppgifter.',
+      device: {
+        ios: 'iPhone eller iPad',
+        android: 'Android-enhet',
+        other: 'Dator'
+      },
+      blockedSteps: {
+        ios: [
+          <>
+            Stäng den här appen och öppna enhetens{' '}
+            <strong>Inställningar</strong>.
+          </>,
+          <>
+            Välj <strong>Notiser</strong>.
+          </>,
+          <>
+            Leta upp <strong>eVaka</strong> i listan och välj den.
+          </>,
+          <>
+            Slå på <strong>Tillåt notiser</strong>.
+          </>
+        ],
+        android: [
+          <>
+            Stäng den här appen och öppna enhetens{' '}
+            <strong>Inställningar</strong>.
+          </>,
+          <>
+            Välj <strong>Appar</strong> och leta upp <strong>eVaka</strong> i
+            listan.
+          </>,
+          <>
+            Välj <strong>Notiser</strong>.
+          </>,
+          <>
+            Slå på <strong>Tillåt notiser</strong>.
+          </>
+        ],
+        other: [
+          <>
+            Klicka på ikonen för webbplatsinställningar i webbläsarens
+            adressfält.
+          </>,
+          <>
+            Välj <strong>Notiser</strong>.
+          </>,
+          <>
+            Ändra inställningen till <strong>Tillåt</strong> och ladda om sidan.
+          </>
+        ]
+      }
+    },
     installSuggestion: {
       title: 'Viktiga aviseringar till telefonen',
       dismissedNote:
@@ -327,12 +390,15 @@ const sv: Translations = {
     homeScreenSection: {
       title: 'Lägg till eVaka på hemskärmen'
     },
+    pushStatus: {
+      enabled: 'I bruk',
+      disabled: 'Inte i bruk',
+      blocked: 'Blockerad'
+    },
     pushSection: {
       title: 'Push-aviseringar',
       description:
         'eVaka skickar aviseringar till de enheter där du har tagit dem i bruk.',
-      enabled: 'I bruk',
-      blocked: 'Blockerad',
       thisDevice: 'Den här enheten',
       notEnabledOnThisDevice:
         'Aviseringarna är inte i bruk på den här enheten.',

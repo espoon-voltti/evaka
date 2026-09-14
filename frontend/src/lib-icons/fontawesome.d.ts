@@ -24,7 +24,6 @@ declare module 'Icons' {
   const faBars: IconDefinition
   const faBarsSort: IconDefinition
   const faBabyCarriage: IconDefinition
-  const faBan: IconDefinition
   const faBell: IconDefinition
   const faBellSlash: IconDefinition
   const faBoxArchive: IconDefinition
@@ -126,7 +125,10 @@ declare module 'Icons' {
   const faUserMinus: IconDefinition
   const faUserUnlock: IconDefinition
   const faUsers: IconDefinition
+  const farBan: IconDefinition
   const farBars: IconDefinition
+  const farBellSlash: IconDefinition
+  const farCheckCircle: IconDefinition
   const farFileAlt: IconDefinition
   const farGavel: IconDefinition
   const farMap: IconDefinition
