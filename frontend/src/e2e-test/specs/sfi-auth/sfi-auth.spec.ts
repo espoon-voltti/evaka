@@ -113,10 +113,10 @@ test.describe('SFI authentication', () => {
     // Wait until the citizen page's startup requests have finished, so that
     // none of them are in flight when the session is invalidated below. A 401
     // response to any request would cause a reload to the login page instead
-    // of showing the session expired modal. Some of the requests (e.g.
-    // received messages, fetched globally by MessageContextProvider) have no
-    // visible effect on this page, so there's no element whose state could be
-    // waited on instead of network idleness.
+    // of showing the session expired modal. Some of the requests (e.g. the
+    // unread counts fetched by the navigation) have no visible effect on this
+    // page, so there's no element whose state could be waited on instead of
+    // network idleness.
     await citizenTab.page.waitForLoadState('networkidle')
 
     await employeeTab.findByDataQa('username').click()

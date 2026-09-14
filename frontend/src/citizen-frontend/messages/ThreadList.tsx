@@ -5,6 +5,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
+import type { Result } from 'lib-common/api'
 import type { CitizenMessageThread } from 'lib-common/generated/api-types/messaging'
 import type {
   MessageAccountId,
@@ -29,7 +30,6 @@ import { mobileBottomNavHeight } from '../navigation/const'
 
 import { ConfirmDeleteThread } from './ConfirmDeleteThread'
 import ThreadListItem from './ThreadListItem'
-import { MessageContext } from './state'
 import { isRedactedThread } from './utils'
 
 const hasUnreadMessages = (
@@ -42,6 +42,10 @@ const hasUnreadMessages = (
 
 interface Props {
   accountId: MessageAccountId
+  threads: Result<CitizenMessageThread[]>
+  selectedThread: CitizenMessageThread | undefined
+  hasMoreThreads: boolean
+  loadMoreThreads: () => void
   selectThread: (threadId: MessageThreadId) => void
   closeThread: () => void
   setEditorVisible: (value: boolean) => void
@@ -50,14 +54,16 @@ interface Props {
 
 export default React.memo(function ThreadList({
   accountId,
+  threads,
+  selectedThread,
+  hasMoreThreads,
+  loadMoreThreads,
   selectThread,
   closeThread,
   setEditorVisible,
   newMessageButtonEnabled
 }: Props) {
   const t = useTranslation()
-  const { selectedThread, threads, loadMoreThreads, hasMoreThreads } =
-    useContext(MessageContext)
   const { addTimedNotification } = useContext(NotificationsContext)
   const [confirmDelete, setConfirmDelete] = useState<MessageThreadId>()
 

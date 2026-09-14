@@ -43,9 +43,11 @@ export const sendMessageMutation = q.mutation(newMessage, [
 ])
 
 export const replyToThreadMutation = q.mutation(replyToThread, [
-  receivedMessagesQuery
+  receivedMessagesQuery,
+  unreadMessagesCountQuery
 ])
 
 export const archiveThreadMutation = q.mutation(archiveThread, [
-  receivedMessagesQuery
+  receivedMessagesQuery,
+  unreadMessagesCountQuery
 ])

@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -14,7 +15,12 @@ import { useLocation, useParams, useSearchParams } from 'wouter'
 
 import { combine } from 'lib-common/api'
 import type { MessageThreadId } from 'lib-common/generated/api-types/shared'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
+import {
+  useMutation,
+  useMutationResult,
+  usePagedInfiniteQueryResult,
+  useQueryResult
+} from 'lib-common/query'
 import {
   focusElementAfterDelay,
   focusElementOnNextFrame
@@ -41,9 +47,14 @@ import ThreadList from './ThreadList'
 import { messageThreadIdAttr } from './ThreadListItem'
 import type { ThreadViewApi } from './ThreadView'
 import ThreadView from './ThreadView'
-import { recipientsQuery, sendMessageMutation } from './queries'
-import { MessageContext } from './state'
-import { isRegularThread } from './utils'
+import {
+  markThreadReadMutation,
+  messageAccountQuery,
+  receivedMessagesQuery,
+  recipientsQuery,
+  sendMessageMutation
+} from './queries'
+import { isRegularThread, markMessagesReadByThreadId } from './utils'
 
 const StyledFlex = styled(AdaptiveFlex)`
   align-items: stretch;
@@ -63,14 +74,62 @@ export default React.memo(function MessagesPage() {
   useTitle(i18n, i18n.messages.inboxTitle)
   const [, navigate] = useLocation()
   const [searchParams] = useSearchParams()
-  const { messageAccount, selectedThread, setSelectedThread } =
-    useContext(MessageContext)
+  const params = useParams<{ threadId: MessageThreadId | undefined }>()
+  const selectedThreadId = params.threadId
   const { addTimedNotification } = useContext(NotificationsContext)
   const editorVisible = searchParams.get('editorVisible') === 'true'
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
 
+  const messageAccount = useQueryResult(messageAccountQuery())
   const children = useQueryResult(childrenQuery())
   const recipients = useQueryResult(recipientsQuery())
+
+  const {
+    data: threads,
+    fetchNextPage,
+    hasNextPage,
+    transform
+  } = usePagedInfiniteQueryResult(receivedMessagesQuery(), {
+    enabled: messageAccount.isSuccess
+  })
+  const hasMoreThreads = hasNextPage !== undefined && hasNextPage
+  const loadMoreThreads = useCallback(() => {
+    if (hasNextPage) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, hasNextPage])
+
+  const selectedThread = useMemo(
+    () =>
+      selectedThreadId !== undefined
+        ? threads
+            .map((threads) => threads.find((t) => t.id === selectedThreadId))
+            .getOrElse(undefined)
+        : undefined,
+    [selectedThreadId, threads]
+  )
+
+  const { mutate: markThreadRead } = useMutation(markThreadReadMutation)
+  useEffect(() => {
+    if (!messageAccount.isSuccess) return
+    if (!selectedThreadId || !selectedThread) return
+
+    if (isRegularThread(selectedThread)) {
+      const hasUnreadMessages = selectedThread.messages.some(
+        (m) => !m.readAt && m.sender.id !== messageAccount.value.accountId
+      )
+      if (hasUnreadMessages) {
+        markThreadRead({ threadId: selectedThread.id })
+        transform((t) => markMessagesReadByThreadId(t, selectedThreadId))
+      }
+    }
+  }, [
+    messageAccount,
+    markThreadRead,
+    selectedThread,
+    selectedThreadId,
+    transform
+  ])
 
   const user = useUser()
 
@@ -85,11 +144,6 @@ export default React.memo(function MessagesPage() {
     [navigate]
   )
 
-  const params = useParams<{ threadId: MessageThreadId | undefined }>()
-  useEffect(() => {
-    setSelectedThread(params.threadId)
-  }, [setSelectedThread, params.threadId])
-
   const threadView = useRef<ThreadViewApi>(null)
 
   const selectThread = useCallback(
@@ -97,14 +151,14 @@ export default React.memo(function MessagesPage() {
       if (!threadId) {
         navigate('/messages')
       } else {
-        if (params.threadId !== threadId) {
+        if (selectedThreadId !== threadId) {
           navigate(`/messages/${threadId}`)
         } else {
           threadView.current?.focusThreadTitle()
         }
       }
     },
-    [navigate, params.threadId]
+    [navigate, selectedThreadId]
   )
 
   const onSelectedThreadDeleted = useCallback(() => {
@@ -135,6 +189,10 @@ export default React.memo(function MessagesPage() {
             <StyledFlex $breakpoint={tabletMin} $horizontalSpacing="L">
               <ThreadList
                 accountId={messageAccount.accountId}
+                threads={threads}
+                selectedThread={selectedThread}
+                hasMoreThreads={hasMoreThreads}
+                loadMoreThreads={loadMoreThreads}
                 selectThread={selectThread}
                 closeThread={closeThread}
                 setEditorVisible={changeEditorVisibility}
@@ -172,7 +230,7 @@ export default React.memo(function MessagesPage() {
                   />
                 )
               ) : (
-                <EmptyThreadView />
+                <EmptyThreadView threads={threads} />
               )}
             </StyledFlex>
             {editorVisible &&
