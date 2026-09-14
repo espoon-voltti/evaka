@@ -184,6 +184,8 @@ test.describe('Employee - Guardian Information', () => {
     const noteModal = await row.editNote()
     await noteModal.note.fill('Muokattu muistiinpano')
     await noteModal.submit()
+    await expect(noteModal.note).toBeHidden()
+    await expect(invoiceCorrectionsSection.findByDataQa('spinner')).toBeHidden()
 
     await row.noteIcon.hover()
     await expect(row.noteTooltip).toHaveText('Muokattu muistiinpano')
