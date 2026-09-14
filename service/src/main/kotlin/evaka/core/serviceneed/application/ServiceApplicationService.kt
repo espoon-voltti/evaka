@@ -17,6 +17,9 @@ import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.NotFound
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.getPushChildNames
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -25,6 +28,7 @@ private val logger = KotlinLogging.logger {}
 @Service
 class ServiceApplicationService(
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
     asyncJobRunner: AsyncJobRunner<AsyncJob>,
@@ -77,6 +81,23 @@ class ServiceApplicationService(
                 "${msg.serviceApplicationId} - ${application.personId}",
             )
             ?.also { emailClient.send(it) }
+        db.transaction { tx ->
+            citizenPushNotifications.plan(
+                tx,
+                clock.now(),
+                application.personId,
+                CitizenPushNotification.ServiceApplicationDecision(
+                    childName =
+                        tx.getPushChildNames(listOf(application.childId))
+                            .getValue(application.childId),
+                    serviceNeedNameFi = application.serviceNeedOption.nameFi,
+                    serviceNeedNameSv = application.serviceNeedOption.nameSv,
+                    serviceNeedNameEn = application.serviceNeedOption.nameEn,
+                    startDate = application.startDate,
+                    rejected = !accepted,
+                ),
+            )
+        }
 
         logger.info { "Successfully sent service application decided email (${application.id})." }
     }

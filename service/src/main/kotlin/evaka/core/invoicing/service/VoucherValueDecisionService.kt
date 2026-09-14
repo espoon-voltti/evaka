@@ -47,6 +47,9 @@ import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.OfficialLanguage
 import evaka.core.shared.message.IMessageProvider
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.getPushChildNames
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDate
 import org.springframework.http.ResponseEntity
@@ -63,6 +66,7 @@ class VoucherValueDecisionService(
     private val emailEnv: EmailEnv,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
 ) {
     init {
         asyncJobRunner.registerHandler(::runSendNewVoucherValueDecisionEmail)
@@ -315,6 +319,19 @@ class VoucherValueDecisionService(
                 "$voucherValueDecisionId - ${decision.headOfFamily.id}",
             )
             ?.also { emailClient.send(it) }
+        db.transaction { tx ->
+            citizenPushNotifications.plan(
+                tx,
+                clock.now(),
+                decision.headOfFamily.id,
+                CitizenPushNotification.VoucherValueDecision(
+                    decisionId = voucherValueDecisionId,
+                    childName =
+                        tx.getPushChildNames(listOf(decision.child.id)).getValue(decision.child.id),
+                    unitName = decision.placement.unit.name,
+                ),
+            )
+        }
 
         logger.info {
             "Successfully sent voucher value decision email (id: $voucherValueDecisionId)."
