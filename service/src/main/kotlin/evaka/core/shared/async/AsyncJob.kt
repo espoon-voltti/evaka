@@ -288,6 +288,8 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class SendMissingHolidayReservationsReminder(
         val guardian: PersonId,
         val holidayRange: FiniteDateRange,
+        /** Null only in jobs queued before the field existed; such jobs send no push */
+        val reservationDeadline: LocalDate? = null,
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
