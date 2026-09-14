@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 [versions]
-dd-java-agent = "1.65.1"
+dd-java-agent = "1.66.0"
 flyingsaucer = "10.5.0"
 flyway = "13.5.0"
 java = "25"
