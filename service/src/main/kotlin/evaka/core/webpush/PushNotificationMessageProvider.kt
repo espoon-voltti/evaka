@@ -25,4 +25,74 @@ interface PushNotificationMessageProvider {
     ): PushNotificationContent
 
     fun testNotification(language: UiLanguage): PushNotificationContent
+
+    fun feeDecisionNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.FeeDecision,
+    ): PushNotificationContent
+
+    fun voucherValueDecisionNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.VoucherValueDecision,
+    ): PushNotificationContent
+
+    fun applicationDecisionsNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.ApplicationDecisions,
+    ): PushNotificationContent
+
+    fun pendingDecisionsNotification(
+        language: UiLanguage,
+        decisions: List<PendingDecision>,
+    ): PushNotificationContent
+
+    fun absenceApplicationDecisionNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.AbsenceApplicationDecision,
+    ): PushNotificationContent
+
+    fun serviceApplicationDecisionNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.ServiceApplicationDecision,
+    ): PushNotificationContent
+
+    fun incomeNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.Income,
+    ): PushNotificationContent
+
+    fun calendarEventNotification(
+        language: UiLanguage,
+        events: List<CalendarEventSummary>,
+    ): PushNotificationContent
+
+    fun childDocumentNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.Document,
+    ): PushNotificationContent
+
+    fun pedagogicalDocumentNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.InformalDocument,
+    ): PushNotificationContent
+
+    fun missingReservationsNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.MissingReservations,
+    ): PushNotificationContent
+
+    fun missingHolidayReservationsNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.MissingHolidayReservations,
+    ): PushNotificationContent
+
+    fun discussionSurveyNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.DiscussionSurvey,
+    ): PushNotificationContent
+
+    fun discussionTimeNotification(
+        language: UiLanguage,
+        notification: CitizenPushNotification.DiscussionTime,
+    ): PushNotificationContent
 }

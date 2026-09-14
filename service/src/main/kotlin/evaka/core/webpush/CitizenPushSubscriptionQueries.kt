@@ -10,6 +10,7 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.UiLanguage
 import evaka.core.user.DeviceClass
 import evaka.core.user.ParsedUserAgent
 import java.net.URI
@@ -177,3 +178,41 @@ fun Database.Transaction.deleteCitizenPushSubscription(
     sql("DELETE FROM citizen_push_subscription WHERE id = ${bind(subscription)}")
 }
     .executeAndReturnCount()
+
+fun Database.Read.getCitizenPushSubscriptionIds(person: PersonId): List<CitizenPushSubscriptionId> =
+    createQuery {
+        sql("SELECT id FROM citizen_push_subscription WHERE person_id = ${bind(person)}")
+    }
+    .toList()
+
+/** Null when the subscription no longer exists */
+fun Database.Read.getCitizenPushLanguage(subscription: CitizenPushSubscriptionId): UiLanguage? =
+    createQuery {
+        sql(
+            """
+SELECT coalesce(cu.preferred_ui_language, 'FI') AS language
+FROM citizen_push_subscription cps
+LEFT JOIN citizen_user cu ON cu.id = cps.person_id
+WHERE cps.id = ${bind(subscription)}
+"""
+        )
+    }
+    .exactlyOneOrNull()
+
+fun Database.Read.hasCitizenPushSubscriptions(person: PersonId): Boolean = createQuery {
+    sql("SELECT EXISTS(SELECT FROM citizen_push_subscription WHERE person_id = ${bind(person)})")
+}
+    .exactlyOne()
+
+/** The name a push notification uses for a child: the preferred name if set, else first names */
+fun Database.Read.getPushChildNames(children: Collection<PersonId>): Map<PersonId, String> =
+    createQuery {
+        sql(
+            """
+SELECT id, coalesce(nullif(preferred_name, ''), first_name) AS name
+FROM person
+WHERE id = ANY(${bind(children)})
+"""
+        )
+    }
+    .toMap { column<PersonId>("id") to column<String>("name") }
