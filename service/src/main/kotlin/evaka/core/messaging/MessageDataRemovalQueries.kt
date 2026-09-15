@@ -150,6 +150,37 @@ FOR UPDATE OF mt
     return deleteMessageThreads(threadIds)
 }
 
+/**
+ * Deletes the threads of the service worker account whose application is gone.
+ *
+ * Every service worker thread has an application, and each of its messages is also copied into a
+ * note of that application. Only removing the application clears both the link and the notes, so
+ * the thread cannot be deleted before that.
+ */
+fun Database.Transaction.deleteExpiredServiceWorkerThreads(limit: Int): DeletedMessageThreadBatch {
+    val threadIds = createQuery {
+        sql(
+            """
+WITH service_worker_thread AS (
+    SELECT DISTINCT m.thread_id
+    FROM message_account acc
+    JOIN message m ON m.sender_id = acc.id
+    WHERE acc.type = 'SERVICE_WORKER'
+)
+SELECT mt.id
+FROM service_worker_thread swt
+JOIN message_thread mt ON mt.id = swt.thread_id
+WHERE ${predicate(unreferencedByApplication.forTable("mt"))}
+LIMIT ${bind(limit)}
+FOR UPDATE OF mt
+"""
+        )
+    }
+        .toList<MessageThreadId>()
+
+    return deleteMessageThreads(threadIds)
+}
+
 private fun Database.Transaction.deleteMessageThreads(
     threadIds: List<MessageThreadId>
 ): DeletedMessageThreadBatch {

@@ -20,7 +20,9 @@ import evaka.core.messaging.MessageType
 import evaka.core.messaging.ReplyToMessageBody
 import evaka.core.messaging.UpdatableDraftContent
 import evaka.core.messaging.createDaycareGroupMessageAccount
+import evaka.core.messaging.createFinanceMessageAccount
 import evaka.core.messaging.createMunicipalMessageAccount
+import evaka.core.messaging.createServiceWorkerMessageAccount
 import evaka.core.messaging.deleteMessageThreadsOfExpiredChildren
 import evaka.core.messaging.getCitizenMessageAccount
 import evaka.core.messaging.upsertEmployeeMessageAccount
@@ -100,6 +102,10 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val admin = DevEmployee(roles = setOf(UserRole.ADMIN))
     // Sends the bulletins of their own unit
     private val unitStaff = DevEmployee()
+    // Owns the service worker message account
+    private val serviceWorker = DevEmployee(roles = setOf(UserRole.SERVICE_WORKER))
+    // Owns the finance message account
+    private val financeAdmin = DevEmployee(roles = setOf(UserRole.FINANCE_ADMIN))
     private val careArea = DevCareArea()
     private val daycare =
         DevDaycare(areaId = careArea.id, enabledPilotFeatures = setOf(PilotFeature.MESSAGING))
@@ -109,6 +115,8 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     private lateinit var staffSender: Sender
     private lateinit var municipalSender: Sender
+    private lateinit var serviceWorkerSender: Sender
+    private lateinit var financeSender: Sender
     private lateinit var guardianAccount: MessageAccountId
 
     @BeforeEach
@@ -116,6 +124,8 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         db.transaction { tx ->
             tx.insert(admin)
             tx.insert(unitStaff)
+            tx.insert(serviceWorker)
+            tx.insert(financeAdmin)
             tx.insert(careArea)
             tx.insert(daycare)
             tx.insert(daycareGroup)
@@ -128,6 +138,8 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.insertDaycareAclRow(daycare.id, unitStaff.id, UserRole.STAFF)
             staffSender = Sender(unitStaff.user, tx.upsertEmployeeMessageAccount(unitStaff.id))
             municipalSender = Sender(admin.user, tx.createMunicipalMessageAccount())
+            serviceWorkerSender = Sender(serviceWorker.user, tx.createServiceWorkerMessageAccount())
+            financeSender = Sender(financeAdmin.user, tx.createFinanceMessageAccount())
             guardianAccount = tx.getCitizenMessageAccount(guardian.id)
         }
     }
@@ -182,6 +194,7 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         sender: Sender = staffSender,
         type: MessageType = MessageType.BULLETIN,
         attachmentCount: Int = 0,
+        relatedApplicationId: ApplicationId? = null,
     ): SentMessage {
         val sendClock = MockEvakaClock(sentAt)
         val draftId =
@@ -211,6 +224,7 @@ class MessageDataRemovalIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                         recipientNames = listOf("Recipient"),
                         attachmentIds = attachmentIds,
                         draftId = draftId,
+                        relatedApplicationId = relatedApplicationId,
                     ),
                 )
                 .createdId ?: error("Message had no recipients")
@@ -356,6 +370,31 @@ RETURNING id
         setThreadApplication(threadId, applicationId)
         insertApplicationNote(applicationId, contentId)
     }
+
+    private fun sendServiceWorkerMessage(
+        applicationId: ApplicationId,
+        sentAt: HelsinkiDateTime = now,
+        attachmentCount: Int = 0,
+    ): SentMessage =
+        sendMessage(
+            sentAt = sentAt,
+            recipients = listOf(MessageRecipient.Citizen(guardian.id)),
+            sender = serviceWorkerSender,
+            type = MessageType.MESSAGE,
+            attachmentCount = attachmentCount,
+            relatedApplicationId = applicationId,
+        )
+
+    private fun deleteExpiredApplications(limit: Int = 100) =
+        dataRemovalService.deleteExpiredApplications(
+            db,
+            now,
+            expireDate = applicationExpireDate,
+            limit = limit,
+        )
+
+    private fun deleteExpiredServiceWorkerThreads(limit: Int = 100) =
+        dataRemovalService.deleteExpiredServiceWorkerThreads(db, now, limit = limit)
 
     private fun deleteExpiredBulletinThreads(limit: Int = 100) =
         dataRemovalService.deleteExpiredBulletinThreads(
@@ -911,6 +950,87 @@ RETURNING id
     }
 
     @Test
+    fun `deleteExpiredServiceWorkerThreads deletes a thread with its messages, recipients, participants and content once its application is gone`() {
+        sendServiceWorkerMessage(insertExpiredApplication())
+        deleteExpiredApplications()
+
+        deleteExpiredServiceWorkerThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message"))
+        assertEquals(0, rowCount("message_recipients"))
+        assertEquals(0, rowCount("message_thread_participant"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredServiceWorkerThreads keeps a thread whose application still exists`() {
+        sendServiceWorkerMessage(insertApplication())
+
+        deleteExpiredServiceWorkerThreads()
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredServiceWorkerThreads deletes every content of a thread that has been replied to`() {
+        val sent = sendServiceWorkerMessage(insertExpiredApplication())
+        replyToThread(sent.threadIds.single(), now, sender = serviceWorkerSender)
+        deleteExpiredApplications()
+
+        deleteExpiredServiceWorkerThreads()
+
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredServiceWorkerThreads enqueues DeleteAttachment for each attachment of a deleted thread`() {
+        val sent = sendServiceWorkerMessage(insertExpiredApplication(), attachmentCount = 2)
+        deleteExpiredApplications()
+
+        deleteExpiredServiceWorkerThreads()
+
+        assertEquals(
+            sent.attachmentIds.map { it.toString() }.toSet(),
+            scheduledAttachmentDeletionIds(),
+        )
+    }
+
+    @Test
+    fun `deleteExpiredServiceWorkerThreads keeps the threads of the other message accounts`() {
+        insertGroupPlacement(child.id, expiredPlacementPeriod)
+        sendMessage(sentAt = sendTimeOverFiveYearsAgo, type = MessageType.MESSAGE)
+        sendMessage(sentAt = sendTimeOverFiveYearsAgo)
+        // A finance thread is a message to a citizen without an application link or notes, which
+        // makes the account type the only thing that separates it from a service worker thread
+        sendMessage(
+            sentAt = sendTimeOverFiveYearsAgo,
+            recipients = listOf(MessageRecipient.Citizen(guardian.id)),
+            sender = financeSender,
+            type = MessageType.MESSAGE,
+        )
+
+        deleteExpiredServiceWorkerThreads()
+
+        assertEquals(3, rowCount("message_thread"))
+        assertEquals(3, rowCount("message_content"))
+    }
+
+    @Test
+    fun `deleteExpiredServiceWorkerThreads doesn't remove more threads than the limit`() {
+        val applicationId = insertExpiredApplication()
+        repeat(3) { sendServiceWorkerMessage(applicationId) }
+        deleteExpiredApplications()
+
+        deleteExpiredServiceWorkerThreads(limit = 2)
+
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
     fun `deleteExpiredMessageDrafts deletes an expired draft and enqueues its attachment deletion`() {
         val draftId = createDraft(createdAt = draftExpiresBefore.minusDays(1))
         val attachmentId = insertDraftAttachment(draftId, now)
@@ -1039,6 +1159,38 @@ RETURNING id
     }
 
     @Test
+    fun `deleteExpiredData removes a service worker thread once its application has been removed`() {
+        val sent = sendServiceWorkerMessage(insertExpiredApplication(), attachmentCount = 1)
+
+        withLimit(1000) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(0, rowCount("application"))
+        assertEquals(0, rowCount("application_note"))
+        assertEquals(0, rowCount("message_thread"))
+        assertEquals(0, rowCount("message"))
+        assertEquals(0, rowCount("message_content"))
+        assertTrue(
+            scheduledAttachmentDeletionIds().containsAll(sent.attachmentIds.map { it.toString() })
+        )
+    }
+
+    @Test
+    fun `deleteExpiredData keeps a service worker thread while its application is retained`() {
+        insertGroupPlacement(child.id, ongoingPlacementPeriod)
+        sendServiceWorkerMessage(insertApplication())
+
+        withLimit(1000) {
+            dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
+        }
+
+        assertEquals(1, rowCount("application"))
+        assertEquals(1, rowCount("message_thread"))
+        assertEquals(1, rowCount("message_content"))
+    }
+
+    @Test
     fun `deleteExpiredData keeps a regular message thread of a child who left care over ten years ago`() {
         // Regular messages are retained as long as the data of their children, and the rule that
         // expires a child is not in use yet
@@ -1074,7 +1226,8 @@ RETURNING id
             )
         }
 
-    // An application of a child who left care over ten years ago, which deleteExpiredData removes
+    // An application of a child who left care over ten years ago, which the application removal
+    // deletes
     private fun insertExpiredApplication(): ApplicationId {
         val applicationChild = DevPerson()
         db.transaction { tx ->
