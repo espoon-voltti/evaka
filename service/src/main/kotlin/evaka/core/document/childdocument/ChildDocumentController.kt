@@ -456,6 +456,7 @@ class ChildDocumentController(
                         documentId,
                         clock.now(),
                         emailPolicy = EmailNotificationPolicy.ON_NEW_VERSION,
+                        audit,
                     )
                 }
             }
@@ -496,10 +497,7 @@ class ChildDocumentController(
                     )
                 }
             }
-            .also {
-                audit.log(Audit.ChildDocumentNextStatus, clock)
-                audit.log(Audit.ChildDocumentPublish, clock)
-            }
+            .also { audit.log(Audit.ChildDocumentNextStatus, clock) }
     }
 
     private fun updateChildDocumentStatusForward(
@@ -544,6 +542,7 @@ class ChildDocumentController(
                     } else {
                         EmailNotificationPolicy.ON_NEW_VERSION
                     },
+                audit,
             )
         }
 
@@ -894,6 +893,7 @@ class ChildDocumentController(
                         documentId,
                         clock.now(),
                         emailPolicy = EmailNotificationPolicy.ALWAYS,
+                        audit,
                     )
 
                     updateDocumentCaseProcessHistory(
@@ -988,6 +988,7 @@ class ChildDocumentController(
                         documentId,
                         clock.now(),
                         emailPolicy = EmailNotificationPolicy.ALWAYS,
+                        audit,
                     )
 
                     updateDocumentCaseProcessHistory(

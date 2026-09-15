@@ -4,6 +4,7 @@
 
 package evaka.core.document.childdocument
 
+import evaka.core.AuditContext
 import evaka.core.EmailEnv
 import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.autoCompleteDocumentCaseProcessHistory
@@ -318,6 +319,8 @@ class ChildDocumentService(
      * notification.
      *
      * @param emailPolicy Controls when to schedule email notifications
+     * @param audit Receives the created version number as `newPublishedVersion` meta (null when no
+     *   new version was created)
      * @return The created version number, or null if content was already up to date
      */
     @IgnorableReturnValue
@@ -327,8 +330,10 @@ class ChildDocumentService(
         documentId: ChildDocumentId,
         now: HelsinkiDateTime,
         emailPolicy: EmailNotificationPolicy,
+        audit: AuditContext,
     ): Int? {
         val versionNumber = tx.createPublishedVersionIfNeeded(documentId, now, user.evakaUserId)
+        audit.addMeta("newPublishedVersion", versionNumber)
 
         if (versionNumber != null) {
             schedulePdfGeneration(tx, user, mapOf(documentId to versionNumber), now)

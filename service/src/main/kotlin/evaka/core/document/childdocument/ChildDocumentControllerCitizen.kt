@@ -234,6 +234,7 @@ class ChildDocumentControllerCitizen(
                         documentId,
                         clock.now(),
                         emailPolicy = EmailNotificationPolicy.NEVER,
+                        audit,
                     )
 
                     updateDocumentCaseProcessHistory(
