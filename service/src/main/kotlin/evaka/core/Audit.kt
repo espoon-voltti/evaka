@@ -475,7 +475,6 @@ enum class Audit(
     VardaReportRead,
     VardaReportOperations,
     VardaUnitReportRead,
-    VoucherValueDecisionHeadOfFamilyCreateRetroactive,
     VoucherValueDecisionReadMetadata,
 
     // Everything above still uses the legacy `Audit.<Event>.log(targetId = ...)` signature.
@@ -625,6 +624,7 @@ enum class Audit(
     UnitScheduledAclRead,
     UnitServiceApplicationsRead,
     VoucherValueDecisionArchive,
+    VoucherValueDecisionHeadOfFamilyCreateRetroactive,
     VoucherValueDecisionHeadOfFamilyRead,
     VoucherValueDecisionIgnore,
     VoucherValueDecisionMarkSent,

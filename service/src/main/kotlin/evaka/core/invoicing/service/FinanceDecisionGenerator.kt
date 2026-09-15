@@ -99,19 +99,28 @@ FROM ids
         tx: Database.Transaction,
         headOfFamily: PersonId,
         from: LocalDate,
+        audit: AuditContext,
     ) {
-        tx.getChildrenOfHeadOfFamily(headOfFamily, DateRange(from, null)).forEach { childId ->
-            generateAndInsertVoucherValueDecisionsV2(
-                tx = tx,
-                incomeTypesProvider = incomeTypesProvider,
-                coefficientMultiplierProvider = coefficientMultiplierProvider,
-                financeMinDate = feeDecisionMinDate,
-                valueDecisionCapacityFactorEnabled =
-                    featureConfig.valueDecisionCapacityFactorEnabled,
-                childId = childId,
-                retroactiveOverride = from,
-            )
-        }
+        val removed =
+            tx.getChildrenOfHeadOfFamily(headOfFamily, DateRange(from, null)).flatMap { childId ->
+                val generated =
+                    generateAndInsertVoucherValueDecisionsV2(
+                        tx = tx,
+                        incomeTypesProvider = incomeTypesProvider,
+                        coefficientMultiplierProvider = coefficientMultiplierProvider,
+                        financeMinDate = feeDecisionMinDate,
+                        valueDecisionCapacityFactorEnabled =
+                            featureConfig.valueDecisionCapacityFactorEnabled,
+                        childId = childId,
+                        retroactiveOverride = from,
+                    )
+                audit.add(generated.written.map { it.id })
+                generated.written.forEach { audit.addDecision(it) }
+                generated.removed
+            }
+        // one entry for the whole run: addMeta overwrites, so it cannot go inside the loop
+        audit.add(removed.map { it.id }).addMeta("removedDraftCount", removed.size)
+        removed.forEach { audit.addDecision(it) }
     }
 
     fun generateNewDecisionsForAdult(
