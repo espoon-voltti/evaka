@@ -417,6 +417,7 @@ class VoucherValueDecisionController(
         @PathVariable id: VoucherValueDecisionId,
         @RequestBody request: VoucherValueDecisionTypeRequest,
     ) {
+        val audit = AuditContext().add(id).addMeta("type", request.type)
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -426,10 +427,10 @@ class VoucherValueDecisionController(
                     Action.VoucherValueDecision.UPDATE,
                     id,
                 )
-                valueDecisionService.setType(it, id, request.type)
+                valueDecisionService.setType(it, id, request.type, audit)
             }
         }
-        Audit.VoucherValueDecisionSetType.log(targetId = AuditId(id))
+        audit.log(Audit.VoucherValueDecisionSetType, clock)
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")

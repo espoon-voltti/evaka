@@ -477,7 +477,6 @@ enum class Audit(
     VardaUnitReportRead,
     VoucherValueDecisionHeadOfFamilyCreateRetroactive,
     VoucherValueDecisionReadMetadata,
-    VoucherValueDecisionSetType,
 
     // Everything above still uses the legacy `Audit.<Event>.log(targetId = ...)` signature.
     // Events below have been migrated to `audit.log(Audit.<Event>, clock)` via AuditContext.
@@ -633,6 +632,7 @@ enum class Audit(
     VoucherValueDecisionRead,
     VoucherValueDecisionSearch,
     VoucherValueDecisionSend,
+    VoucherValueDecisionSetType,
     VoucherValueDecisionUnignore;
 
     private val eventCode = name

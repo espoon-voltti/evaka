@@ -262,10 +262,16 @@ class VoucherValueDecisionService(
         tx: Database.Transaction,
         decisionId: VoucherValueDecisionId,
         type: VoucherValueDecisionType,
+        audit: AuditContext,
     ) {
         val decision =
             tx.getVoucherValueDecision(decisionId)
                 ?: throw BadRequest("Decision not found with id $decisionId")
+        audit
+            .add(decision.headOfFamily.id)
+            .add(listOfNotNull(decision.partner?.id))
+            .add(decision.child.id)
+            .observeDate(decision.validFrom)
         if (decision.status != VoucherValueDecisionStatus.DRAFT) {
             throw BadRequest("Can't change type for decision $decisionId")
         }
