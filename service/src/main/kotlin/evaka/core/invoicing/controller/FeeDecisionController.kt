@@ -265,6 +265,7 @@ class FeeDecisionController(
         clock: EvakaClock,
         @PathVariable decisionId: FeeDecisionId,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(decisionId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -282,6 +283,7 @@ class FeeDecisionController(
                     val personIds =
                         listOfNotNull(decision.headOfFamily.id, decision.partner?.id) +
                             decision.children.map { part -> part.child.id }
+                    audit.add(personIds).observeDate(decision.validDuring.start)
 
                     val restrictedDetails = personIds.any { personId ->
                         tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
@@ -296,7 +298,7 @@ class FeeDecisionController(
                 }
                 service.getFeeDecisionPdfResponse(dbc, decisionId)
             }
-            .also { Audit.FeeDecisionPdfRead.log(targetId = AuditId(decisionId)) }
+            .also { audit.log(Audit.FeeDecisionPdfRead, clock) }
     }
 
     data class FeeDecisionResponse(
@@ -311,19 +313,26 @@ class FeeDecisionController(
         clock: EvakaClock,
         @PathVariable id: FeeDecisionId,
     ): FeeDecisionResponse {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(tx, user, clock, Action.FeeDecision.READ, id)
                     val decision =
                         tx.getFeeDecision(id)
                             ?: throw NotFound("No fee decision found with given ID ($id)")
+                    audit
+                        .add(decision.headOfFamily.id)
+                        .add(listOfNotNull(decision.partner?.id))
+                        .add(decision.children.map { it.child.id })
+                        .add(decision.children.map { it.placementUnit.id })
+                        .observeDate(decision.validDuring.start)
                     FeeDecisionResponse(
                         data = decision,
                         permittedActions = accessControl.getPermittedActions(tx, user, clock, id),
                     )
                 }
             }
-            .also { Audit.FeeDecisionRead.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.FeeDecisionRead, clock) }
     }
 
     data class FeeDecisionWithPermittedActions(
