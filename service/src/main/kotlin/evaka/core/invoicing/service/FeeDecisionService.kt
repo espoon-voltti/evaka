@@ -493,7 +493,7 @@ class FeeDecisionService(
 }
 
 @IgnorableReturnValue
-private fun AuditContext.addDecision(decision: FeeDecision): AuditContext =
+internal fun AuditContext.addDecision(decision: FeeDecision): AuditContext =
     add(decision.headOfFamilyId)
         .add(listOfNotNull(decision.partnerId))
         .add(decision.children.map { it.child.id })

@@ -4,6 +4,7 @@
 
 package evaka.core.invoicing.service
 
+import evaka.core.AuditContext
 import evaka.core.EvakaEnv
 import evaka.core.invoicing.service.generator.generateAndInsertFeeDecisionsV2
 import evaka.core.invoicing.service.generator.generateAndInsertVoucherValueDecisionsV2
@@ -76,15 +77,22 @@ FROM ids
         tx: Database.Transaction,
         headOfFamily: PersonId,
         from: LocalDate,
+        audit: AuditContext,
     ) {
-        generateAndInsertFeeDecisionsV2(
-            tx = tx,
-            incomeTypesProvider = incomeTypesProvider,
-            coefficientMultiplierProvider = coefficientMultiplierProvider,
-            financeMinDate = feeDecisionMinDate,
-            headOfFamilyId = headOfFamily,
-            retroactiveOverride = from,
-        )
+        val generated =
+            generateAndInsertFeeDecisionsV2(
+                tx = tx,
+                incomeTypesProvider = incomeTypesProvider,
+                coefficientMultiplierProvider = coefficientMultiplierProvider,
+                financeMinDate = feeDecisionMinDate,
+                headOfFamilyId = headOfFamily,
+                retroactiveOverride = from,
+            )
+        audit
+            .add(generated.written.map { it.id })
+            .add(generated.removed.map { it.id })
+            .addMeta("removedDraftCount", generated.removed.size)
+        (generated.written + generated.removed).forEach { audit.addDecision(it) }
     }
 
     fun createRetroactiveValueDecisions(

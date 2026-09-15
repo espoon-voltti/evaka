@@ -6,7 +6,6 @@ package evaka.core.invoicing.controller
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.ConstList
 import evaka.core.EvakaEnv
 import evaka.core.document.archival.validateArchivability
@@ -397,6 +396,7 @@ class FeeDecisionController(
         @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody,
     ) {
+        val audit = AuditContext().add(id).observeDate(body.from)
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -406,10 +406,10 @@ class FeeDecisionController(
                     Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS,
                     id,
                 )
-                generator.createRetroactiveFeeDecisions(it, id, body.from)
+                generator.createRetroactiveFeeDecisions(it, id, body.from, audit)
             }
         }
-        Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = AuditId(id))
+        audit.log(Audit.FeeDecisionHeadOfFamilyCreateRetroactive, clock)
     }
 
     @PostMapping("/set-type/{id}")
