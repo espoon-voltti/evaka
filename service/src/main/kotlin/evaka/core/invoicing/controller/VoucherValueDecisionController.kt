@@ -187,6 +187,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @PathVariable headOfFamilyId: PersonId,
     ): List<VoucherValueDecisionSummaryWithPermittedActions> {
+        val audit = AuditContext().add(headOfFamilyId)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -196,7 +197,13 @@ class VoucherValueDecisionController(
                         Action.Person.READ_VOUCHER_VALUE_DECISIONS,
                         headOfFamilyId,
                     )
-                    val decisions = it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId)
+                    val decisions =
+                        it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId).onEach { decision ->
+                            audit
+                                .add(decision.id)
+                                .add(decision.child.id)
+                                .observeDate(decision.validFrom)
+                        }
                     val permittedActions =
                         accessControl.getPermittedActions<
                             VoucherValueDecisionId,
@@ -215,9 +222,7 @@ class VoucherValueDecisionController(
                     }
                 }
             }
-            .also {
-                Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = AuditId(headOfFamilyId))
-            }
+            .also { audit.log(Audit.VoucherValueDecisionHeadOfFamilyRead, clock) }
     }
 
     @PostMapping("/send")

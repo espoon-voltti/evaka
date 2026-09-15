@@ -476,7 +476,6 @@ enum class Audit(
     VardaReportOperations,
     VardaUnitReportRead,
     VoucherValueDecisionHeadOfFamilyCreateRetroactive,
-    VoucherValueDecisionHeadOfFamilyRead,
     VoucherValueDecisionIgnore,
     VoucherValueDecisionMarkSent,
     VoucherValueDecisionReadMetadata,
@@ -631,6 +630,7 @@ enum class Audit(
     UnitScheduledAclRead,
     UnitServiceApplicationsRead,
     VoucherValueDecisionArchive,
+    VoucherValueDecisionHeadOfFamilyRead,
     VoucherValueDecisionPdfRead,
     VoucherValueDecisionRead,
     VoucherValueDecisionSearch;
