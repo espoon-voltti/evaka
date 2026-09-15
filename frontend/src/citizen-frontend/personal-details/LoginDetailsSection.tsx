@@ -28,7 +28,6 @@ import { Label, LabelLike, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faCheck, faLockAlt, faTrash } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import type { User } from '../auth/state'
 import { useTranslation } from '../localization'
 import { forgetLastLoginMethod } from '../login/last-login-method'
@@ -143,90 +142,87 @@ export default React.memo(function LoginDetailsSection({
       ) : (
         <div data-qa="weak-login-disabled">{t.unverifiedEmailWarning}</div>
       )}
-      <ModalAccessibilityWrapper>
-        {disableModalOpen && (
-          <MutateFormModal
-            data-qa="disable-credentials-modal"
-            type="danger"
-            title={t.disableConfirmTitle}
-            text={
-              <>
-                <P $noMargin>{t.disableConfirmText}</P>
-                {noPasskeys !== null && (
-                  <>
-                    <Gap $size="s" />
-                    <P
-                      $noMargin
-                      data-qa={
-                        noPasskeys ? 'no-passkeys-warning' : 'has-passkeys-info'
-                      }
-                    >
-                      {noPasskeys
-                        ? t.disableConfirmNoPasskeys
-                        : t.disableConfirmHasPasskeys}
-                    </P>
-                  </>
-                )}
-                <Gap $size="s" />
-                <P $noMargin>{t.disableConfirmReactivate}</P>
-              </>
-            }
-            icon={faTrash}
-            resolveLabel={t.disableCredentials}
-            resolveDanger
-            rejectLabel={i18n.common.cancel}
-            resolveMutation={deleteWeakLoginCredentialsMutation}
-            resolveAction={() => undefined}
-            rejectAction={closeDisableModal}
-            onSuccess={() => {
-              closeDisableModal()
-              forgetLastLoginMethod('email')
-              reloadUser()
-            }}
-          />
-        )}
-        {!!emailVerificationStatus.verifiedEmail && (
-          <>
-            {modalOpen && (
-              <WeakCredentialsFormModal
-                passwordConstraints={passwordConstraints}
-                hasCredentials={!!user.weakLoginUsername}
-                username={
-                  user.weakLoginUsername ??
-                  emailVerificationStatus.verifiedEmail
+      {disableModalOpen && (
+        <MutateFormModal
+          data-qa="disable-credentials-modal"
+          type="danger"
+          title={t.disableConfirmTitle}
+          text={
+            <>
+              <P $noMargin>{t.disableConfirmText}</P>
+              {noPasskeys !== null && (
+                <>
+                  <Gap $size="s" />
+                  <P
+                    $noMargin
+                    data-qa={
+                      noPasskeys ? 'no-passkeys-warning' : 'has-passkeys-info'
+                    }
+                  >
+                    {noPasskeys
+                      ? t.disableConfirmNoPasskeys
+                      : t.disableConfirmHasPasskeys}
+                  </P>
+                </>
+              )}
+              <Gap $size="s" />
+              <P $noMargin>{t.disableConfirmReactivate}</P>
+            </>
+          }
+          icon={faTrash}
+          resolveLabel={t.disableCredentials}
+          resolveDanger
+          rejectLabel={i18n.common.cancel}
+          resolveMutation={deleteWeakLoginCredentialsMutation}
+          resolveAction={() => undefined}
+          rejectAction={closeDisableModal}
+          onSuccess={() => {
+            closeDisableModal()
+            forgetLastLoginMethod('email')
+            reloadUser()
+          }}
+        />
+      )}
+      {!!emailVerificationStatus.verifiedEmail && (
+        <>
+          {modalOpen && (
+            <WeakCredentialsFormModal
+              passwordConstraints={passwordConstraints}
+              hasCredentials={!!user.weakLoginUsername}
+              username={
+                user.weakLoginUsername ?? emailVerificationStatus.verifiedEmail
+              }
+              onSuccess={() => {
+                closeModal()
+                reloadUser()
+                if (!user.weakLoginUsername) {
+                  openActivationSuccessModal()
                 }
-                onSuccess={() => {
-                  closeModal()
-                  reloadUser()
-                  if (!user.weakLoginUsername) {
-                    openActivationSuccessModal()
-                  }
-                }}
-                onCancel={closeModal}
-              />
-            )}
-            {activationSuccessModalOpen && (
-              <BaseModal
-                data-qa="weak-credentials-modal"
-                type="success"
-                title={t.activationSuccess}
-                icon={faCheck}
-                close={closeActivationSuccessModal}
-                closeLabel={i18n.common.close}
-              >
-                <ModalButtons $justifyContent="center">
-                  <Button
-                    data-qa="modal-okBtn"
-                    primary
-                    text={t.activationSuccessOk}
-                    onClick={closeActivationSuccessModal}
-                  />
-                </ModalButtons>
-              </BaseModal>
-            )}
-          </>
-        )}
-      </ModalAccessibilityWrapper>
+              }}
+              onCancel={closeModal}
+            />
+          )}
+          {activationSuccessModalOpen && (
+            <BaseModal
+              data-qa="weak-credentials-modal"
+              type="success"
+              title={t.activationSuccess}
+              icon={faCheck}
+              close={closeActivationSuccessModal}
+              closeLabel={i18n.common.close}
+            >
+              <ModalButtons $justifyContent="center">
+                <Button
+                  data-qa="modal-okBtn"
+                  primary
+                  text={t.activationSuccessOk}
+                  onClick={closeActivationSuccessModal}
+                />
+              </ModalButtons>
+            </BaseModal>
+          )}
+        </>
+      )}
     </div>
   )
 })
