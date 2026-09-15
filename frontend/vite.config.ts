@@ -109,6 +109,8 @@ function serveIndexHtml(): Plugin {
   }
 }
 
+const appCommit = JSON.stringify(process.env.APP_COMMIT || 'UNDEFINED')
+
 function serviceWorker(urlPath: string, sourcePath: string): Plugin {
   return {
     name: `build-service-worker-prod:${urlPath}`,
@@ -117,7 +119,8 @@ function serviceWorker(urlPath: string, sourcePath: string): Plugin {
         try {
           const code = await server.transformRequest(sourcePath)
           res.setHeader('Content-Type', 'text/javascript')
-          res.end(code?.code ?? '')
+          // In dev defines are page globals, which a worker scope never sees
+          res.end((code?.code ?? '').replaceAll('__APP_COMMIT__', appCommit))
         } catch (err) {
           next(err)
         }
@@ -132,6 +135,10 @@ function serviceWorker(urlPath: string, sourcePath: string): Plugin {
         // worker's output directory, which for employee-mobile means overwriting
         // its own manifest with the citizen one.
         publicDir: false,
+        // This nested build does not inherit the main config
+        define: {
+          __APP_COMMIT__: appCommit
+        },
         build: {
           outDir: path.join(outDir, dirName),
           emptyOutDir: false,
@@ -240,7 +247,7 @@ export default defineConfig(async (): Promise<UserConfig> => {
       }
     },
     define: {
-      __APP_COMMIT__: JSON.stringify(process.env.APP_COMMIT || 'UNDEFINED')
+      __APP_COMMIT__: appCommit
     }
   }
 })
