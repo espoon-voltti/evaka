@@ -18,6 +18,7 @@ import evaka.core.shared.security.Action
 import evaka.core.webpush.WebPush
 import evaka.core.webpush.WebPushCrypto
 import evaka.core.webpush.WebPushEndpoint
+import evaka.core.webpush.WebPushMessage
 import evaka.core.webpush.WebPushNotification
 import evaka.core.webpush.WebPushPayload
 import evaka.core.webpush.deletePushSubscription
@@ -157,10 +158,12 @@ AND notification.device = ${bind(device)}
                 WebPushNotification(
                     notification.endpoint,
                     ttl = Duration.ofDays(1),
-                    payloads =
-                        listOf(
-                            WebPushPayload.NotificationV1(
-                                title = "${notification.groupName}: Uusi poissaolomerkintä"
+                    message =
+                        WebPushMessage.Versioned(
+                            listOf(
+                                WebPushPayload.NotificationV1(
+                                    title = "${notification.groupName}: Uusi poissaolomerkintä"
+                                )
                             )
                         ),
                 ),

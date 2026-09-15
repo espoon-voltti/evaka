@@ -27,6 +27,7 @@ import { passkeysSupported } from '../auth/passkeys'
 import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
 import { headerHeightMobile } from '../navigation/const'
+import { pwaEnabled } from '../pwa/enabled'
 import useTitle from '../useTitle'
 
 import ContactDetailsSection from './ContactDetailsSection'
@@ -36,6 +37,7 @@ import LoginDetailsSection from './LoginDetailsSection'
 import NotificationSettingsSection from './NotificationSettingsSection'
 import PasskeysSection from './PasskeysSection'
 import PersonalDetailsSection from './PersonalDetailsSection'
+import PushNotificationsSection from './PushNotificationsSection'
 import {
   emailVerificationStatusQuery,
   familyQuery,
@@ -134,6 +136,7 @@ export default React.memo(function PersonalDetails() {
   const loginDetailsSection = useRef<HTMLDivElement>(null)
   const passkeysSection = useRef<HTMLDivElement>(null)
   const homeScreenSection = useRef<HTMLDivElement>(null)
+  const pushSection = useRef<HTMLDivElement>(null)
   const emailVerificationStatus = useQueryResult(emailVerificationStatusQuery())
   const passwordConstraints = useQueryResult(passwordConstraintsQuery())
   const family = useQueryResult(familyQuery())
@@ -154,6 +157,7 @@ export default React.memo(function PersonalDetails() {
     login: loginDetailsSection,
     passkeys: passkeysSection,
     homeScreen: homeScreenSection,
+    push: pushSection,
     notifications: notificationSettingsSection
   }
 
@@ -291,6 +295,8 @@ export default React.memo(function PersonalDetails() {
         </ScrollTargetArea>
 
         <HomeScreenSection ref={homeScreenSection} />
+
+        {pwaEnabled && <PushNotificationsSection ref={pushSection} />}
 
         <Gap $size="s" />
 

@@ -17,7 +17,7 @@ import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.identity.ExternalIdentifier
 import evaka.core.pdfgen.PdfGenerator
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getPersonById
 import evaka.core.pis.service.getChildGuardiansAndFosterParents
 import evaka.core.placement.getPlacementsForChild
@@ -437,7 +437,7 @@ WHERE person.email IS NOT NULL AND person.email != ''
         Email.create(
                 dbc = db,
                 personId = msg.recipientId,
-                emailType = EmailMessageType.DOCUMENT_NOTIFICATION,
+                category = NotificationCategory.DOCUMENT_NOTIFICATION,
                 fromAddress = emailEnv.sender(msg.language),
                 content =
                     emailMessageProvider.childDocumentNotification(

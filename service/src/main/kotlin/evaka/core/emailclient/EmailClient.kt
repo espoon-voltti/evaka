@@ -4,7 +4,7 @@
 
 package evaka.core.emailclient
 
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getEmployee
 import evaka.core.shared.EmployeeId
 import evaka.core.shared.PersonId
@@ -28,7 +28,7 @@ private constructor(
         fun create(
             dbc: Database.Connection,
             personId: PersonId,
-            emailType: EmailMessageType,
+            category: NotificationCategory,
             fromAddress: FromAddress,
             content: EmailContent,
             traceId: String,
@@ -50,9 +50,9 @@ private constructor(
                 return null
             }
 
-            if (emailType !in EmailMessageType.alwaysEnabled && emailType in disabledEmailTypes) {
+            if (category !in NotificationCategory.alwaysEnabled && category in disabledEmailTypes) {
                 logger.info {
-                    "Not sending email (traceId: $traceId): $emailType disabled for person $personId"
+                    "Not sending email (traceId: $traceId): $category disabled for person $personId"
                 }
                 return null
             }
@@ -103,7 +103,7 @@ interface EmailClient {
 
 private data class EmailAndEnabledEmailTypes(
     val email: String?,
-    val disabledEmailTypes: Set<EmailMessageType>,
+    val disabledEmailTypes: Set<NotificationCategory>,
 )
 
 private fun Database.Read.getEmailAddressAndDisabledTypes(

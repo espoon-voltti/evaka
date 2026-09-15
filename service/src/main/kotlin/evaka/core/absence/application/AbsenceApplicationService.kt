@@ -10,7 +10,7 @@ import evaka.core.daycare.getDaycare
 import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getPersonById
 import evaka.core.placement.getPlacementsForChildDuring
 import evaka.core.shared.PersonId
@@ -57,7 +57,7 @@ class AbsenceApplicationService(
             Email.create(
                     db,
                     guardian.id,
-                    EmailMessageType.DECISION_NOTIFICATION,
+                    NotificationCategory.DECISION_NOTIFICATION,
                     emailEnv.sender(language),
                     emailMessageProvider.absenceApplicationDecidedNotification(
                         when (application.status) {
