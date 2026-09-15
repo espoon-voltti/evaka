@@ -347,6 +347,7 @@ class FeeDecisionController(
         clock: EvakaClock,
         @PathVariable id: PersonId,
     ): List<FeeDecisionWithPermittedActions> {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -356,7 +357,15 @@ class FeeDecisionController(
                         Action.Person.READ_FEE_DECISIONS,
                         id,
                     )
-                    val decisions = it.findFeeDecisionsForHeadOfFamily(id, null, null)
+                    val decisions =
+                        it.findFeeDecisionsForHeadOfFamily(id, null, null).onEach { decision ->
+                            audit
+                                .add(decision.id)
+                                .add(listOfNotNull(decision.partnerId))
+                                .add(decision.children.map { child -> child.child.id })
+                                .add(decision.children.map { child -> child.placement.unitId })
+                                .observeDate(decision.validDuring.start)
+                        }
                     val permittedActions =
                         accessControl.getPermittedActions<FeeDecisionId, Action.FeeDecision>(
                             it,
@@ -372,12 +381,7 @@ class FeeDecisionController(
                     }
                 }
             }
-            .also {
-                Audit.FeeDecisionHeadOfFamilyRead.log(
-                    targetId = AuditId(id),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.FeeDecisionHeadOfFamilyRead, clock) }
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
