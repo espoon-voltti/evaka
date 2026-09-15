@@ -238,7 +238,6 @@ enum class Audit(
     FamilyContactsUpdate,
     FamilyDaycareMealReport,
     // FeeDecisionLiableCitizenRead,
-    FeeDecisionReadMetadata,
     FinanceBasicsFeeThresholdsRead,
     FinanceBasicsFeeThresholdsCreate,
     FinanceBasicsFeeThresholdsUpdate,
@@ -475,7 +474,6 @@ enum class Audit(
     VardaReportRead,
     VardaReportOperations,
     VardaUnitReportRead,
-    VoucherValueDecisionReadMetadata,
 
     // Everything above still uses the legacy `Audit.<Event>.log(targetId = ...)` signature.
     // Events below have been migrated to `audit.log(Audit.<Event>, clock)` via AuditContext.
@@ -560,6 +558,7 @@ enum class Audit(
     FeeDecisionMarkSent,
     FeeDecisionPdfRead,
     FeeDecisionRead,
+    FeeDecisionReadMetadata,
     FeeDecisionSearch,
     FeeDecisionSetType,
     FeeDecisionUnignore,
@@ -630,6 +629,7 @@ enum class Audit(
     VoucherValueDecisionMarkSent,
     VoucherValueDecisionPdfRead,
     VoucherValueDecisionRead,
+    VoucherValueDecisionReadMetadata,
     VoucherValueDecisionSearch,
     VoucherValueDecisionSend,
     VoucherValueDecisionSetType,
