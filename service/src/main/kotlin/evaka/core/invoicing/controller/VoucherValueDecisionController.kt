@@ -233,6 +233,7 @@ class VoucherValueDecisionController(
         @RequestBody decisionIds: List<VoucherValueDecisionId>,
         @RequestParam decisionHandlerId: EmployeeId?,
     ) {
+        val audit = AuditContext().add(decisionIds).add(listOfNotNull(decisionHandlerId))
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -252,10 +253,11 @@ class VoucherValueDecisionController(
                     ids = decisionIds,
                     decisionHandlerId = decisionHandlerId,
                     featureConfig.alwaysUseDaycareFinanceDecisionHandler,
+                    audit,
                 )
             }
         }
-        Audit.VoucherValueDecisionSend.log(targetId = AuditId(decisionIds))
+        audit.log(Audit.VoucherValueDecisionSend, clock)
     }
 
     @PostMapping("/mark-sent")
@@ -265,6 +267,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody ids: List<VoucherValueDecisionId>,
     ) {
+        val audit = AuditContext().add(ids)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -274,7 +277,8 @@ class VoucherValueDecisionController(
                     Action.VoucherValueDecision.UPDATE,
                     ids,
                 )
-                val decisions = tx.getValueDecisionsByIds(ids)
+                val decisions =
+                    tx.getValueDecisionsByIds(ids).onEach { audit.observeDate(it.validFrom) }
                 if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
                     throw BadRequest("Voucher value decision cannot be marked sent")
                 }
@@ -300,7 +304,7 @@ class VoucherValueDecisionController(
                 )
             }
         }
-        Audit.VoucherValueDecisionMarkSent.log(targetId = AuditId(ids))
+        audit.log(Audit.VoucherValueDecisionMarkSent, clock)
     }
 
     @GetMapping("/pdf/{decisionId}")
@@ -506,9 +510,10 @@ fun sendVoucherValueDecisions(
     ids: List<VoucherValueDecisionId>,
     decisionHandlerId: EmployeeId?,
     alwaysUseDaycareFinanceDecisionHandler: Boolean,
+    audit: AuditContext,
 ) {
     tx.lockValueDecisions(ids)
-    val decisions = tx.getValueDecisionsByIds(ids)
+    val decisions = tx.getValueDecisionsByIds(ids).onEach { audit.observeDate(it.validFrom) }
     if (decisions.isEmpty()) return
 
     if (decisions.any { it.status != DRAFT }) {
@@ -551,9 +556,9 @@ fun sendVoucherValueDecisions(
         error("Some children have overlapping value decisions still waiting for sending")
 
     val (annulled, updatedDates) =
-        updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts).partition {
-            it.status == ANNULLED
-        }
+        updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
+            .onEach { audit.add(it.id).observeDate(it.validFrom) }
+            .partition { it.status == ANNULLED }
     tx.annulVoucherValueDecisions(annulled.map { it.id }, now)
     tx.updateVoucherValueDecisionEndDates(updatedDates, now)
 

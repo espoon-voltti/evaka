@@ -4,6 +4,7 @@
 
 package evaka.core.invoicing.service
 
+import evaka.core.AuditContext
 import evaka.core.EmailEnv
 import evaka.core.caseprocess.CaseProcessState
 import evaka.core.caseprocess.getCaseProcessByVoucherValueDecisionId
@@ -22,6 +23,7 @@ import evaka.core.invoicing.data.setVoucherValueDecisionType
 import evaka.core.invoicing.data.updateVoucherValueDecisionDocumentKey
 import evaka.core.invoicing.data.updateVoucherValueDecisionStatus
 import evaka.core.invoicing.domain.FinanceDecisionType
+import evaka.core.invoicing.domain.VoucherValueDecision
 import evaka.core.invoicing.domain.VoucherValueDecisionDetailed
 import evaka.core.invoicing.domain.VoucherValueDecisionStatus
 import evaka.core.invoicing.domain.VoucherValueDecisionType

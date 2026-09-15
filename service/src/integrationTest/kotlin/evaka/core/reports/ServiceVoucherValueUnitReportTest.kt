@@ -4,6 +4,7 @@
 
 package evaka.core.reports
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.caseprocess.CaseProcessMetadataService
 import evaka.core.invoicing.controller.sendVoucherValueDecisions
@@ -1529,6 +1530,7 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
                 ids = listOf(decision.id),
                 decisionHandlerId = null,
                 alwaysUseDaycareFinanceDecisionHandler,
+                AuditContext(),
             )
             decision.id
         }

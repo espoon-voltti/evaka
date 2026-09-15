@@ -477,9 +477,7 @@ enum class Audit(
     VardaUnitReportRead,
     VoucherValueDecisionHeadOfFamilyCreateRetroactive,
     VoucherValueDecisionIgnore,
-    VoucherValueDecisionMarkSent,
     VoucherValueDecisionReadMetadata,
-    VoucherValueDecisionSend,
     VoucherValueDecisionSetType,
     VoucherValueDecisionUnignore,
 
@@ -631,9 +629,11 @@ enum class Audit(
     UnitServiceApplicationsRead,
     VoucherValueDecisionArchive,
     VoucherValueDecisionHeadOfFamilyRead,
+    VoucherValueDecisionMarkSent,
     VoucherValueDecisionPdfRead,
     VoucherValueDecisionRead,
-    VoucherValueDecisionSearch;
+    VoucherValueDecisionSearch,
+    VoucherValueDecisionSend;
 
     private val eventCode = name
 
