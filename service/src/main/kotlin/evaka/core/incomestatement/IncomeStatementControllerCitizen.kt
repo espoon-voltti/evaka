@@ -6,7 +6,6 @@ package evaka.core.incomestatement
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.attachment.AttachmentParent
 import evaka.core.attachment.associateOrphanAttachments
 import evaka.core.attachment.dissociateAttachmentsOfParent
@@ -427,24 +426,22 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
     ): List<ChildBasicInfo> {
         val personId = user.id
+        val audit = AuditContext()
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Person.READ_CHILDREN,
                         personId,
                     )
-                    it.getIncomeStatementChildrenByGuardian(personId, clock.today())
+                    tx.getIncomeStatementChildrenByGuardian(personId, clock.today()).also {
+                        audit.add(it.map { child -> child.id })
+                    }
                 }
             }
-            .also {
-                Audit.CitizenChildrenRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.CitizenChildrenRead, clock) }
     }
 
     private fun verifyIncomeStatementDeletionAllowed(
