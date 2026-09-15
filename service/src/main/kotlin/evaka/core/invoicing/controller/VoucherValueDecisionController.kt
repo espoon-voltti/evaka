@@ -147,6 +147,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @PathVariable id: VoucherValueDecisionId,
     ): VoucherValueDecisionResponse {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -159,13 +160,19 @@ class VoucherValueDecisionController(
                     val decision =
                         it.getVoucherValueDecision(id)
                             ?: throw NotFound("No voucher value decision found with given ID ($id)")
+                    audit
+                        .add(decision.headOfFamily.id)
+                        .add(listOfNotNull(decision.partner?.id))
+                        .add(decision.child.id)
+                        .add(decision.placement.unit.id)
+                        .observeDate(decision.validFrom)
                     VoucherValueDecisionResponse(
                         data = decision,
                         permittedActions = accessControl.getPermittedActions(it, user, clock, id),
                     )
                 }
             }
-            .also { Audit.VoucherValueDecisionRead.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.VoucherValueDecisionRead, clock) }
     }
 
     data class VoucherValueDecisionSummaryWithPermittedActions(
@@ -298,6 +305,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @PathVariable decisionId: VoucherValueDecisionId,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(decisionId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -317,6 +325,7 @@ class VoucherValueDecisionController(
                             decision.partner?.id,
                             decision.child.id,
                         )
+                    audit.add(personIds).observeDate(decision.validFrom)
                     val restrictedDetails = personIds.any { personId ->
                         tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
                     }
@@ -331,7 +340,7 @@ class VoucherValueDecisionController(
 
                 valueDecisionService.getDecisionPdfResponse(dbc, decisionId)
             }
-            .also { Audit.VoucherValueDecisionPdfRead.log(targetId = AuditId(decisionId)) }
+            .also { audit.log(Audit.VoucherValueDecisionPdfRead, clock) }
     }
 
     @PostMapping("/ignore")

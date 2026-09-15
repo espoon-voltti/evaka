@@ -479,8 +479,6 @@ enum class Audit(
     VoucherValueDecisionHeadOfFamilyRead,
     VoucherValueDecisionIgnore,
     VoucherValueDecisionMarkSent,
-    VoucherValueDecisionPdfRead,
-    VoucherValueDecisionRead,
     VoucherValueDecisionReadMetadata,
     VoucherValueDecisionSend,
     VoucherValueDecisionSetType,
@@ -633,6 +631,8 @@ enum class Audit(
     UnitScheduledAclRead,
     UnitServiceApplicationsRead,
     VoucherValueDecisionArchive,
+    VoucherValueDecisionPdfRead,
+    VoucherValueDecisionRead,
     VoucherValueDecisionSearch;
 
     private val eventCode = name
