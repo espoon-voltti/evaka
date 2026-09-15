@@ -748,6 +748,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): List<FinanceDecisionCitizenInfo> {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -758,8 +759,13 @@ class ApplicationControllerCitizen(
                         user.id,
                     )
                     val voucherValueDecisionRows =
-                        tx.getVoucherValueDecisionByLiableCitizen(user.id)
-                    val feeDecisionRows = tx.getFeeDecisionByLiableCitizen(user.id)
+                        tx.getVoucherValueDecisionByLiableCitizen(user.id).onEach {
+                            audit.add(it.id).observeDate(it.validFrom)
+                        }
+                    val feeDecisionRows =
+                        tx.getFeeDecisionByLiableCitizen(user.id).onEach {
+                            audit.add(it.id).observeDate(it.validDuring.start)
+                        }
 
                     val citizenIds =
                         feeDecisionRows
@@ -772,6 +778,7 @@ class ApplicationControllerCitizen(
                                 .toSet()
 
                     val childIds = voucherValueDecisionRows.map { it.childId }.toSet()
+                    audit.add(citizenIds).add(childIds)
                     val personMap =
                         tx.getPersonNameDetailsById(citizenIds + childIds).associateBy { it.id }
                     val voucherValueDecisionInfos = voucherValueDecisionRows.map { row ->
@@ -831,16 +838,7 @@ class ApplicationControllerCitizen(
                     voucherValueDecisionInfos + feeDecisionInfos
                 }
             }
-            .also { financeDecisionCitizenInfoList ->
-                val childIds = financeDecisionCitizenInfoList.flatMap { decision ->
-                    decision.decisionChildren.map { child -> child.id }
-                }
-                Audit.FinanceDecisionCitizenRead.log(
-                    targetId = AuditId(user.id),
-                    objectId = AuditId(childIds),
-                    meta = mapOf("count" to financeDecisionCitizenInfoList.size),
-                )
-            }
+            .also { audit.log(Audit.FinanceDecisionCitizenRead, clock) }
     }
 
     @GetMapping("/fee-decisions/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
