@@ -184,6 +184,7 @@ class FeeDecisionController(
         clock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>,
     ) {
+        val audit = AuditContext().add(feeDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -193,10 +194,10 @@ class FeeDecisionController(
                     Action.FeeDecision.IGNORE,
                     feeDecisionIds,
                 )
-                service.ignoreDrafts(tx, feeDecisionIds, clock.today())
+                service.ignoreDrafts(tx, feeDecisionIds, clock.today(), audit)
             }
         }
-        Audit.FeeDecisionIgnore.log(targetId = AuditId(feeDecisionIds))
+        audit.log(Audit.FeeDecisionIgnore, clock)
     }
 
     @PostMapping("/unignore")
@@ -206,6 +207,7 @@ class FeeDecisionController(
         clock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>,
     ) {
+        val audit = AuditContext().add(feeDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -215,7 +217,7 @@ class FeeDecisionController(
                     Action.FeeDecision.UNIGNORE,
                     feeDecisionIds,
                 )
-                val headsOfFamilies = service.unignoreDrafts(tx, feeDecisionIds)
+                val headsOfFamilies = service.unignoreDrafts(tx, feeDecisionIds, audit)
                 asyncJobRunner.plan(
                     tx,
                     headsOfFamilies.map { personId ->
@@ -228,7 +230,7 @@ class FeeDecisionController(
                 )
             }
         }
-        Audit.FeeDecisionUnignore.log(targetId = AuditId(feeDecisionIds))
+        audit.log(Audit.FeeDecisionUnignore, clock)
     }
 
     @PostMapping("/mark-sent")

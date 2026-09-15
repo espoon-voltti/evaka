@@ -220,8 +220,14 @@ class FeeDecisionService(
         return validDecisions.map { it.id }
     }
 
-    fun ignoreDrafts(tx: Database.Transaction, ids: List<FeeDecisionId>, today: LocalDate) {
+    fun ignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<FeeDecisionId>,
+        today: LocalDate,
+        audit: AuditContext,
+    ) {
         tx.getFeeDecisionsByIds(ids)
+            .onEach { audit.observeDate(it.validFrom) }
             .map { decision ->
                 if (decision.status != DRAFT) {
                     throw BadRequest(
@@ -238,8 +244,13 @@ class FeeDecisionService(
             .forEach { tx.setFeeDecisionToIgnored(it.id) }
     }
 
-    fun unignoreDrafts(tx: Database.Transaction, ids: List<FeeDecisionId>): Set<PersonId> {
+    fun unignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<FeeDecisionId>,
+        audit: AuditContext,
+    ): Set<PersonId> {
         return tx.getFeeDecisionsByIds(ids)
+            .onEach { audit.addDecision(it) }
             .map { decision ->
                 if (decision.status != IGNORED) {
                     throw BadRequest("Error with decision ${decision.id}: not ignored")
@@ -470,3 +481,10 @@ class FeeDecisionService(
         }
     }
 }
+
+@IgnorableReturnValue
+private fun AuditContext.addDecision(decision: FeeDecision): AuditContext =
+    add(decision.headOfFamilyId)
+        .add(listOfNotNull(decision.partnerId))
+        .add(decision.children.map { it.child.id })
+        .observeDate(decision.validFrom)
