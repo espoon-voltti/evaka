@@ -90,6 +90,16 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody body: SearchVoucherValueDecisionRequest,
     ): PagedVoucherValueDecisionSummaries {
+        val audit =
+            AuditContext()
+                .add(listOfNotNull(body.unit))
+                .add(listOfNotNull(body.financeDecisionHandlerId))
+                .observeDate(body.startDate)
+        body.statuses.takeIf { it.isNotEmpty() }?.let { audit.addMeta("statuses", it) }
+        body.area?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("areas", it) }
+        body.distinctions?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("distinctions", it) }
+        body.difference?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("difference", it) }
+        if (body.searchByStartDate) audit.addMeta("searchByStartDate", true)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -99,26 +109,30 @@ class VoucherValueDecisionController(
                         Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS,
                     )
                     tx.searchValueDecisions(
-                        clock,
-                        featureConfig.postOffice,
-                        body.page,
-                        pageSize = 200,
-                        body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
-                        body.sortDirection ?: SortDirection.DESC,
-                        body.statuses,
-                        body.area ?: emptyList(),
-                        body.unit,
-                        body.searchTerms ?: "",
-                        body.startDate,
-                        body.endDate,
-                        body.searchByStartDate,
-                        body.financeDecisionHandlerId,
-                        body.difference ?: emptySet(),
-                        body.distinctions ?: emptyList(),
-                    )
+                            clock,
+                            featureConfig.postOffice,
+                            body.page,
+                            pageSize = 200,
+                            body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
+                            body.sortDirection ?: SortDirection.DESC,
+                            body.statuses,
+                            body.area ?: emptyList(),
+                            body.unit,
+                            body.searchTerms ?: "",
+                            body.startDate,
+                            body.endDate,
+                            body.searchByStartDate,
+                            body.financeDecisionHandlerId,
+                            body.difference ?: emptySet(),
+                            body.distinctions ?: emptyList(),
+                        )
+                        .also { page ->
+                            audit.addMeta("count", page.data.size)
+                            audit.add(page.data.map { it.headOfFamily.id })
+                        }
                 }
             }
-            .also { Audit.VoucherValueDecisionSearch.log(meta = mapOf("total" to it.total)) }
+            .also { audit.log(Audit.VoucherValueDecisionSearch, clock) }
     }
 
     data class VoucherValueDecisionResponse(
