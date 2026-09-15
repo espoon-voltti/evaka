@@ -94,6 +94,16 @@ class FeeDecisionController(
         if (body.startDate != null && body.endDate != null && body.endDate < body.startDate) {
             throw BadRequest("End date cannot be before start date")
         }
+        val audit =
+            AuditContext()
+                .add(listOfNotNull(body.unit))
+                .add(listOfNotNull(body.financeDecisionHandlerId))
+                .observeDate(body.startDate)
+        body.statuses?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("statuses", it) }
+        body.area?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("areas", it) }
+        body.distinctions?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("distinctions", it) }
+        body.difference?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("difference", it) }
+        if (body.searchByStartDate) audit.addMeta("searchByStartDate", true)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -103,26 +113,30 @@ class FeeDecisionController(
                         Action.Global.SEARCH_FEE_DECISIONS,
                     )
                     tx.searchFeeDecisions(
-                        clock,
-                        featureConfig.postOffice,
-                        body.page,
-                        pageSize = 200,
-                        body.sortBy ?: FeeDecisionSortParam.STATUS,
-                        body.sortDirection ?: SortDirection.DESC,
-                        body.statuses ?: emptyList(),
-                        body.area ?: emptyList(),
-                        body.unit,
-                        body.distinctions ?: emptyList(),
-                        body.searchTerms ?: "",
-                        body.startDate,
-                        body.endDate,
-                        body.searchByStartDate,
-                        body.financeDecisionHandlerId,
-                        body.difference ?: emptySet(),
-                    )
+                            clock,
+                            featureConfig.postOffice,
+                            body.page,
+                            pageSize = 200,
+                            body.sortBy ?: FeeDecisionSortParam.STATUS,
+                            body.sortDirection ?: SortDirection.DESC,
+                            body.statuses ?: emptyList(),
+                            body.area ?: emptyList(),
+                            body.unit,
+                            body.distinctions ?: emptyList(),
+                            body.searchTerms ?: "",
+                            body.startDate,
+                            body.endDate,
+                            body.searchByStartDate,
+                            body.financeDecisionHandlerId,
+                            body.difference ?: emptySet(),
+                        )
+                        .also { page ->
+                            audit.addMeta("count", page.data.size)
+                            audit.add(page.data.map { it.headOfFamily.id })
+                        }
                 }
             }
-            .also { Audit.FeeDecisionSearch.log(meta = mapOf("total" to it.total)) }
+            .also { audit.log(Audit.FeeDecisionSearch, clock) }
     }
 
     @PostMapping("/confirm")
