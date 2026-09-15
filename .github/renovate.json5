@@ -85,6 +85,13 @@
       groupName: 'bouncycastle',
     },
     {
+      // Renovate looks up zulu-* versions from the Temurin release list, so
+      // pinning produces a version that does not exist for Zulu
+      matchManagers: ['mise'],
+      matchDepNames: ['java'],
+      rangeStrategy: 'replace',
+    },
+    {
       // Paid Font Awesome packages are not avilable in public npm
       matchPackageNames: [
         '@fortawesome/pro-light-svg-icons',
