@@ -421,10 +421,20 @@ class FeeDecisionService(
         return documentClient.responseAttachment(documentLocation, fileName)
     }
 
-    fun setType(tx: Database.Transaction, decisionId: FeeDecisionId, type: FeeDecisionType) {
+    fun setType(
+        tx: Database.Transaction,
+        decisionId: FeeDecisionId,
+        type: FeeDecisionType,
+        audit: AuditContext,
+    ) {
         val decision =
             tx.getFeeDecision(decisionId)
                 ?: throw BadRequest("Decision not found with id $decisionId")
+        audit
+            .add(decision.headOfFamily.id)
+            .add(listOfNotNull(decision.partner?.id))
+            .add(decision.children.map { it.child.id })
+            .observeDate(decision.validDuring.start)
         if (decision.status != DRAFT) {
             throw BadRequest("Can't change type for decision $decisionId")
         }

@@ -420,13 +420,14 @@ class FeeDecisionController(
         @PathVariable id: FeeDecisionId,
         @RequestBody request: FeeDecisionTypeRequest,
     ) {
+        val audit = AuditContext().add(id).addMeta("type", request.type)
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(it, user, clock, Action.FeeDecision.UPDATE, id)
-                service.setType(it, id, request.type)
+                service.setType(it, id, request.type, audit)
             }
         }
-        Audit.FeeDecisionSetType.log(targetId = AuditId(id), meta = mapOf("type" to request.type))
+        audit.log(Audit.FeeDecisionSetType, clock)
     }
 
     @PostMapping("/{id}/archive")
