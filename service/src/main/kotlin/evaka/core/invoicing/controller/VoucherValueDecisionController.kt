@@ -359,6 +359,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody voucherValueDecisionIds: List<VoucherValueDecisionId>,
     ) {
+        val audit = AuditContext().add(voucherValueDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -368,10 +369,10 @@ class VoucherValueDecisionController(
                     Action.VoucherValueDecision.IGNORE,
                     voucherValueDecisionIds,
                 )
-                valueDecisionService.ignoreDrafts(tx, voucherValueDecisionIds, clock.today())
+                valueDecisionService.ignoreDrafts(tx, voucherValueDecisionIds, clock.today(), audit)
             }
         }
-        Audit.VoucherValueDecisionIgnore.log(targetId = AuditId(voucherValueDecisionIds))
+        audit.log(Audit.VoucherValueDecisionIgnore, clock)
     }
 
     @PostMapping("/unignore")
@@ -381,6 +382,7 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody voucherValueDecisionIds: List<VoucherValueDecisionId>,
     ) {
+        val audit = AuditContext().add(voucherValueDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -391,7 +393,7 @@ class VoucherValueDecisionController(
                     voucherValueDecisionIds,
                 )
                 val headsOfFamilies =
-                    valueDecisionService.unignoreDrafts(tx, voucherValueDecisionIds)
+                    valueDecisionService.unignoreDrafts(tx, voucherValueDecisionIds, audit)
                 asyncJobRunner.plan(
                     tx,
                     headsOfFamilies.map { personId ->
@@ -404,7 +406,7 @@ class VoucherValueDecisionController(
                 )
             }
         }
-        Audit.VoucherValueDecisionUnignore.log(targetId = AuditId(voucherValueDecisionIds))
+        audit.log(Audit.VoucherValueDecisionUnignore, clock)
     }
 
     @PostMapping("/set-type/{id}")

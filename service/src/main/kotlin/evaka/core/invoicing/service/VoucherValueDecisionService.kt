@@ -198,8 +198,10 @@ class VoucherValueDecisionService(
         tx: Database.Transaction,
         ids: List<VoucherValueDecisionId>,
         today: LocalDate,
+        audit: AuditContext,
     ) {
         tx.getValueDecisionsByIds(ids)
+            .onEach { audit.observeDate(it.validFrom) }
             .map { decision ->
                 if (decision.status != VoucherValueDecisionStatus.DRAFT) {
                     throw BadRequest(
@@ -216,8 +218,13 @@ class VoucherValueDecisionService(
             .forEach { tx.setVoucherValueDecisionToIgnored(it.id) }
     }
 
-    fun unignoreDrafts(tx: Database.Transaction, ids: List<VoucherValueDecisionId>): Set<PersonId> {
+    fun unignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<VoucherValueDecisionId>,
+        audit: AuditContext,
+    ): Set<PersonId> {
         return tx.getValueDecisionsByIds(ids)
+            .onEach { audit.addDecision(it) }
             .map { decision ->
                 if (decision.status != VoucherValueDecisionStatus.IGNORED) {
                     throw BadRequest("Error with decision ${decision.id}: not ignored")
@@ -321,3 +328,10 @@ class VoucherValueDecisionService(
         }
     }
 }
+
+@IgnorableReturnValue
+internal fun AuditContext.addDecision(decision: VoucherValueDecision): AuditContext =
+    add(decision.headOfFamilyId)
+        .add(listOfNotNull(decision.partnerId))
+        .add(decision.child.id)
+        .observeDate(decision.validFrom)
