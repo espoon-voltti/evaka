@@ -277,6 +277,7 @@ class IncomeController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): IncomeTypeOptions {
+        val audit = AuditContext()
         db.connect { dbc ->
             dbc.read {
                 accessControl.requirePermissionFor(it, user, clock, Action.Global.READ_INCOME_TYPES)
@@ -295,6 +296,7 @@ class IncomeController(
             }
             .partition { it.multiplier > 0 }
             .let { IncomeTypeOptions(incomeTypes = it.first, expenseTypes = it.second) }
+            .also { audit.log(Audit.IncomeTypeOptionsRead, clock) }
     }
 
     @GetMapping("/multipliers")
@@ -303,6 +305,7 @@ class IncomeController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): Map<IncomeCoefficient, BigDecimal> {
+        val audit = AuditContext()
         db.connect { dbc ->
             dbc.read {
                 accessControl.requirePermissionFor(
@@ -313,9 +316,9 @@ class IncomeController(
                 )
             }
         }
-        return IncomeCoefficient.entries.associateWith {
-            coefficientMultiplierProvider.multiplier(it)
-        }
+        return IncomeCoefficient.entries
+            .associateWith { coefficientMultiplierProvider.multiplier(it) }
+            .also { audit.log(Audit.IncomeCoefficientMultipliersRead, clock) }
     }
 
     @GetMapping("/notifications")
