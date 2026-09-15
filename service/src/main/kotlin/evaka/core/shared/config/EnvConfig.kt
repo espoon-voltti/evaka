@@ -12,6 +12,7 @@ import evaka.core.CitizenCalendarEnv
 import evaka.core.DataRemovalEnv
 import evaka.core.DatabaseEnv
 import evaka.core.DvvModificationsEnv
+import evaka.core.DvvPerustiedotPocEnv
 import evaka.core.EmailEnv
 import evaka.core.EvakaEnv
 import evaka.core.JamixEnv
@@ -54,6 +55,10 @@ class EnvConfig {
     @Bean
     fun dvvModificationsEnv(env: Environment): DvvModificationsEnv =
         DvvModificationsEnv.fromEnvironment(env)
+
+    @Bean
+    fun dvvPerustiedotPocEnv(env: Environment): DvvPerustiedotPocEnv? =
+        DvvPerustiedotPocEnv.fromEnvironment(env)
 
     @Bean fun jwtEnv(env: Environment): JwtEnv = JwtEnv.fromEnvironment(env)
 

@@ -271,12 +271,26 @@ tasks.register<KtfmtFormatTask>("ktfmtPrecommit") {
 
 tasks.getByName<Jar>("jar") { archiveClassifier.set("") }
 
-tasks.getByName<BootJar>("bootJar") { archiveClassifier.set("boot") }
+tasks.getByName<BootJar>("bootJar") {
+    archiveClassifier.set("boot")
+    // The DVV POC truststore is only reachable from bootRun, which serves the main source set
+    // directly; nothing outside the POC reads it, so it has no reason to be in the shipped artifact
+    exclude("certs/**")
+}
 
 tasks {
     test {
         systemProperty("spring.profiles.active", "test")
-        useJUnitPlatform { excludeTags("schemaValidation") }
+        useJUnitPlatform { excludeTags("schemaValidation", "dvvSandbox") }
+    }
+
+    register<Test>("dvvSandboxTest") {
+        description = "Runs live queries against DVV's public sandbox (requires network access)"
+        group = "verification"
+        testClassesDirs = sourceSets["test"].output.classesDirs
+        classpath = sourceSets["test"].runtimeClasspath
+        useJUnitPlatform { includeTags("dvvSandbox") }
+        outputs.upToDateWhen { false }
     }
 
     register<Test>("validateArchiveMetadata") {
