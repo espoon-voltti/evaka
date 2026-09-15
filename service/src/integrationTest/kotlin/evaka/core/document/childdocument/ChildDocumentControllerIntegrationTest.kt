@@ -26,6 +26,7 @@ import evaka.core.sficlient.MockSfiMessagesClient
 import evaka.core.sficlient.rest.EventType
 import evaka.core.shared.ChildDocumentDecisionId
 import evaka.core.shared.ChildDocumentId
+import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.DocumentTemplateId
 import evaka.core.shared.EmployeeId
@@ -1985,6 +1986,51 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         assertNotNull(documentId)
     }
 
+    @Test
+    fun `non-completed documents of a group contain only children with an incomplete document`() {
+        val groupId = createPlacementWithGroup()
+        val childWithCompletedDocument = insertChildToGroup(groupId)
+        insertDocument(child.id, templateIdCitizenBasic)
+        insertDocument(
+            childWithCompletedDocument,
+            templateIdCitizenBasic,
+            status = DocumentStatus.COMPLETED,
+        )
+
+        assertEquals(
+            setOf(child.id),
+            getNonCompletedChildDocumentChildIds(
+                templateIdCitizenBasic,
+                groupId,
+                user = unitSupervisorUser,
+            ),
+        )
+    }
+
+    @Test
+    fun `non-completed documents of a group cannot be fetched by a supervisor of another unit`() {
+        val groupId = createPlacementWithGroup()
+        insertDocument(child.id, templateIdCitizenBasic)
+
+        val otherDaycare = DevDaycare(areaId = area.id)
+        val otherUnitSupervisor = DevEmployee()
+        db.transaction { tx ->
+            tx.insert(otherDaycare)
+            tx.insert(
+                otherUnitSupervisor,
+                unitRoles = mapOf(otherDaycare.id to UserRole.UNIT_SUPERVISOR),
+            )
+        }
+
+        assertThrows<Forbidden> {
+            getNonCompletedChildDocumentChildIds(
+                templateIdCitizenBasic,
+                groupId,
+                user = otherUnitSupervisor.user,
+            )
+        }
+    }
+
     private fun createChildWithUpcomingPlacement(): PersonId = db.transaction { tx ->
         val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
         tx.insert(
@@ -2093,6 +2139,42 @@ class ChildDocumentControllerIntegrationTest : FullApplicationTest(resetDbBefore
         user: AuthenticatedUser.Employee = employeeUser.user,
         clockOverride: MockEvakaClock = clock,
     ) = controller.planArchiveChildDocument(dbInstance(), user, clockOverride, id, archivalEnabled)
+
+    private fun insertChildToGroup(groupId: GroupId): ChildId = db.transaction { tx ->
+        val childId = tx.insert(DevPerson(), DevPersonType.CHILD)
+        val placementId =
+            tx.insert(
+                DevPlacement(
+                    childId = childId,
+                    unitId = daycare.id,
+                    startDate = clock.today(),
+                    endDate = clock.today().plusDays(5),
+                )
+            )
+        tx.insert(
+            DevDaycareGroupPlacement(
+                daycarePlacementId = placementId,
+                daycareGroupId = groupId,
+                startDate = clock.today(),
+                endDate = clock.today().plusDays(5),
+            )
+        )
+        childId
+    }
+
+    private fun getNonCompletedChildDocumentChildIds(
+        templateId: DocumentTemplateId,
+        groupId: GroupId,
+        user: AuthenticatedUser.Employee = employeeUser.user,
+        clockOverride: MockEvakaClock = clock,
+    ) =
+        controller.getNonCompletedChildDocumentChildIds(
+            dbInstance(),
+            user,
+            clockOverride,
+            templateId,
+            groupId,
+        )
 
     private fun getAcceptedChildDocumentDecisions(
         id: ChildDocumentId,
