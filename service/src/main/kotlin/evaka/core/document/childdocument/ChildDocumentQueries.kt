@@ -183,6 +183,7 @@ fun Database.Read.getChildDocument(id: ChildDocumentId): ChildDocumentDetails? {
 SELECT 
     cd.id,
     cd.status,
+    cd.modified_at,
     latest_version.published_at,
     cd.archived_at,
     latest_version.document_key IS NOT NULL as pdf_available,
@@ -290,6 +291,11 @@ fun Database.Read.getChildDocumentPublishedVersions(
     )
 }
     .toList()
+
+fun Database.Read.getChildDocumentChildId(documentId: ChildDocumentId): ChildId? = createQuery {
+    sql("SELECT child_id FROM child_document WHERE id = ${bind(documentId)}")
+}
+    .exactlyOneOrNull<ChildId>()
 
 fun Database.Read.getChildDocumentPublishedVersion(
     documentId: ChildDocumentId,
@@ -742,12 +748,16 @@ WHERE new_document.id = ${bind(documentId)} AND cdd.status = 'ACCEPTED'
         .toList<AcceptedChildDecisions>()
 }
 
-@IgnorableReturnValue
+data class EndedChildDocumentDecision(
+    val id: ChildDocumentDecisionId,
+    val validFrom: LocalDate,
+)
+
 fun Database.Read.endChildDocumentDecisionsWithSubstitutiveDecision(
     childId: ChildId,
     endingDecisionIds: List<ChildDocumentDecisionId>,
     endDate: LocalDate,
-): List<ChildDocumentDecisionId> {
+): List<EndedChildDocumentDecision> {
     return createQuery {
         sql(
             """
@@ -759,11 +769,11 @@ WHERE cdd.id = ANY(${bind(endingDecisionIds)})
     AND (cdd.valid_to IS NULL OR cdd.valid_to > ${bind(endDate)})
     AND cd.decision_id = cdd.id
     AND cd.child_id = ${bind(childId)}
-RETURNING cdd.id
+RETURNING cdd.id, cdd.valid_from
 """
         )
     }
-        .toList<ChildDocumentDecisionId>()
+        .toList<EndedChildDocumentDecision>()
 }
 
 fun Database.Transaction.setChildDocumentDecisionValidity(

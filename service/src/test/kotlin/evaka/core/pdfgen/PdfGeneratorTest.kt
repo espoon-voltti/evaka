@@ -149,6 +149,7 @@ class PdfGeneratorTest {
             ChildDocumentDetails(
                 id = ChildDocumentId(UUID.randomUUID()),
                 status = DocumentStatus.COMPLETED,
+                modifiedAt = HelsinkiDateTime.now(),
                 publishedAt = HelsinkiDateTime.now(),
                 pdfAvailable = false,
                 child =

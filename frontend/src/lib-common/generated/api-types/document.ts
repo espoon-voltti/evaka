@@ -213,6 +213,7 @@ export interface ChildDocumentDetails {
   decision: ChildDocumentDecision | null
   decisionMaker: EmployeeId | null
   id: ChildDocumentId
+  modifiedAt: HelsinkiDateTime
   pdfAvailable: boolean
   publishedAt: HelsinkiDateTime | null
   publishedContent: DocumentContent | null
@@ -680,6 +681,7 @@ export function deserializeJsonChildDocumentDetails(json: JsonOf<ChildDocumentDe
     child: deserializeJsonChildBasics(json.child),
     content: deserializeJsonDocumentContent(json.content),
     decision: (json.decision != null) ? deserializeJsonChildDocumentDecision(json.decision) : null,
+    modifiedAt: HelsinkiDateTime.parseIso(json.modifiedAt),
     publishedAt: (json.publishedAt != null) ? HelsinkiDateTime.parseIso(json.publishedAt) : null,
     publishedContent: (json.publishedContent != null) ? deserializeJsonDocumentContent(json.publishedContent) : null,
     template: deserializeJsonDocumentTemplate(json.template)
