@@ -333,7 +333,6 @@ class VoucherValueDecisionController(
                             decision.partner?.id,
                             decision.child.id,
                         )
-                    audit.add(personIds).observeDate(decision.validFrom)
                     val restrictedDetails = personIds.any { personId ->
                         tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
                     }
@@ -346,7 +345,7 @@ class VoucherValueDecisionController(
                     }
                 }
 
-                valueDecisionService.getDecisionPdfResponse(dbc, decisionId)
+                valueDecisionService.getDecisionPdfResponse(dbc, decisionId, audit)
             }
             .also { audit.log(Audit.VoucherValueDecisionPdfRead, clock) }
     }

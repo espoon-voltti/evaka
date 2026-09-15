@@ -407,10 +407,17 @@ class FeeDecisionService(
     fun getFeeDecisionPdfResponse(
         dbc: Database.Connection,
         decisionId: FeeDecisionId,
+        audit: AuditContext,
     ): ResponseEntity<Any> {
         val (documentKey, fileName) =
             dbc.read { tx ->
                 val decision = tx.getFeeDecision(decisionId) ?: throw NotFound("Decision not found")
+                audit
+                    .add(decision.headOfFamily.id)
+                    .add(listOfNotNull(decision.partner?.id))
+                    .add(decision.children.map { it.child.id })
+                    .add(decision.children.map { it.placementUnit.id })
+                    .observeDate(decision.validDuring.start)
                 if (decision.documentKey == null)
                     throw NotFound("Document key not found for decision $decisionId")
                 val lang = getDecisionLanguage(decision)

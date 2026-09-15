@@ -90,11 +90,18 @@ class VoucherValueDecisionService(
     fun getDecisionPdfResponse(
         dbc: Database.Connection,
         decisionId: VoucherValueDecisionId,
+        audit: AuditContext,
     ): ResponseEntity<Any> {
         val (documentKey, fileName) =
             dbc.read { tx ->
                 val decision =
                     tx.getVoucherValueDecision(decisionId) ?: throw NotFound("Decision not found")
+                audit
+                    .add(decision.headOfFamily.id)
+                    .add(listOfNotNull(decision.partner?.id))
+                    .add(decision.child.id)
+                    .add(decision.placement.unit.id)
+                    .observeDate(decision.validFrom)
                 if (decision.documentKey == null)
                     throw NotFound("Document key not found for decision $decisionId")
                 val lang = getDecisionLanguage(decision)

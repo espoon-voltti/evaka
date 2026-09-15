@@ -6,7 +6,6 @@ package evaka.core.application
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.children.getCitizenChildIds
 import evaka.core.decision.Decision
 import evaka.core.decision.DecisionService
@@ -848,6 +847,7 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable id: FeeDecisionId,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -858,9 +858,9 @@ class ApplicationControllerCitizen(
                         id,
                     )
                 }
-                feeDecisionService.getFeeDecisionPdfResponse(dbc, id)
+                feeDecisionService.getFeeDecisionPdfResponse(dbc, id, audit)
             }
-            .also { Audit.CitizenFeeDecisionDownloadPdf.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.CitizenFeeDecisionDownloadPdf, clock) }
     }
 
     @GetMapping(
@@ -873,6 +873,7 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable id: VoucherValueDecisionId,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -883,9 +884,9 @@ class ApplicationControllerCitizen(
                         id,
                     )
                 }
-                voucherValueDecisionService.getDecisionPdfResponse(dbc, id)
+                voucherValueDecisionService.getDecisionPdfResponse(dbc, id, audit)
             }
-            .also { Audit.CitizenVoucherValueDecisionDownloadPdf.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.CitizenVoucherValueDecisionDownloadPdf, clock) }
     }
 
     private fun getDecidableApplications(

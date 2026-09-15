@@ -287,7 +287,6 @@ class FeeDecisionController(
                     val personIds =
                         listOfNotNull(decision.headOfFamily.id, decision.partner?.id) +
                             decision.children.map { part -> part.child.id }
-                    audit.add(personIds).observeDate(decision.validDuring.start)
 
                     val restrictedDetails = personIds.any { personId ->
                         tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
@@ -300,7 +299,7 @@ class FeeDecisionController(
                         )
                     }
                 }
-                service.getFeeDecisionPdfResponse(dbc, decisionId)
+                service.getFeeDecisionPdfResponse(dbc, decisionId, audit)
             }
             .also { audit.log(Audit.FeeDecisionPdfRead, clock) }
     }
