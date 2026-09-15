@@ -147,6 +147,7 @@ class FeeDecisionController(
         @RequestBody feeDecisionIds: List<FeeDecisionId>,
         @RequestParam decisionHandlerId: EmployeeId?,
     ) {
+        val audit = AuditContext().add(feeDecisionIds).add(listOfNotNull(decisionHandlerId))
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -164,6 +165,7 @@ class FeeDecisionController(
                         clock.now(),
                         decisionHandlerId,
                         featureConfig.alwaysUseDaycareFinanceDecisionHandler,
+                        audit,
                     )
                 asyncJobRunner.plan(
                     tx,
@@ -172,7 +174,7 @@ class FeeDecisionController(
                 )
             }
         }
-        Audit.FeeDecisionConfirm.log(targetId = AuditId(feeDecisionIds))
+        audit.log(Audit.FeeDecisionConfirm, clock)
     }
 
     @PostMapping("/ignore")
@@ -236,6 +238,7 @@ class FeeDecisionController(
         clock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>,
     ) {
+        val audit = AuditContext().add(feeDecisionIds)
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -245,7 +248,7 @@ class FeeDecisionController(
                     Action.FeeDecision.UPDATE,
                     feeDecisionIds,
                 )
-                service.setManuallySent(it, clock, user, feeDecisionIds)
+                service.setManuallySent(it, clock, user, feeDecisionIds, audit)
                 // emails should be sent only after decisions are actually visible to citizens in
                 // eVaka
                 asyncJobRunner.plan(
@@ -255,7 +258,7 @@ class FeeDecisionController(
                 )
             }
         }
-        Audit.FeeDecisionMarkSent.log(targetId = AuditId(feeDecisionIds))
+        audit.log(Audit.FeeDecisionMarkSent, clock)
     }
 
     @GetMapping("/pdf/{decisionId}")

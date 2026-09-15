@@ -4,6 +4,7 @@
 
 package evaka.core.invoicing.service
 
+import evaka.core.AuditContext
 import evaka.core.EmailEnv
 import evaka.core.EvakaEnv
 import evaka.core.caseprocess.CaseProcessMetadataService
@@ -32,6 +33,7 @@ import evaka.core.invoicing.data.setFeeDecisionType
 import evaka.core.invoicing.data.setFeeDecisionWaitingForManualSending
 import evaka.core.invoicing.data.updateFeeDecisionDocumentKey
 import evaka.core.invoicing.data.updateFeeDecisionStatusAndDates
+import evaka.core.invoicing.domain.FeeDecision
 import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.FeeDecisionStatus.DRAFT
 import evaka.core.invoicing.domain.FeeDecisionStatus.IGNORED
@@ -100,9 +102,10 @@ class FeeDecisionService(
         confirmDateTime: HelsinkiDateTime,
         decisionHandlerId: EmployeeId?,
         alwaysUseDaycareFinanceDecisionHandler: Boolean,
+        audit: AuditContext,
     ): List<FeeDecisionId> {
         tx.lockFeeDecisions(ids)
-        val decisions = tx.getFeeDecisionsByIds(ids)
+        val decisions = tx.getFeeDecisionsByIds(ids).onEach { audit.observeDate(it.validFrom) }
         if (decisions.isEmpty()) return listOf()
         val notDrafts = decisions.filterNot { it.status == DRAFT }
         if (notDrafts.isNotEmpty()) {
@@ -166,6 +169,7 @@ class FeeDecisionService(
 
         val updatedConflicts =
             updateEndDatesOrAnnulConflictingDecisions(remainingDecisions, remainingConflicts)
+                .onEach { audit.add(it.id).observeDate(it.validFrom) }
         tx.updateFeeDecisionStatusAndDates(updatedConflicts)
 
         val (emptyDecisions, validDecisions) =
@@ -356,8 +360,12 @@ class FeeDecisionService(
         clock: EvakaClock,
         user: AuthenticatedUser,
         ids: List<FeeDecisionId>,
+        audit: AuditContext,
     ) {
-        val decisions = tx.getDetailedFeeDecisionsByIds(ids)
+        val decisions =
+            tx.getDetailedFeeDecisionsByIds(ids).onEach { decision ->
+                audit.observeDate(decision.validDuring.start)
+            }
         if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
             throw BadRequest("Some decisions were not supposed to be sent manually")
         }
