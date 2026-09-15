@@ -203,6 +203,18 @@ enum class ApplicationStatus : DatabaseEnum {
     CANCELLED;
 
     override val sqlType: String = "application_status_type"
+
+    companion object {
+        val pending =
+            listOf(
+                SENT,
+                WAITING_PLACEMENT,
+                WAITING_UNIT_CONFIRMATION,
+                WAITING_DECISION,
+                WAITING_MAILING,
+                WAITING_CONFIRMATION,
+            )
+    }
 }
 
 enum class ApplicationOrigin : DatabaseEnum {
