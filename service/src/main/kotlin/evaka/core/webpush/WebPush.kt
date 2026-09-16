@@ -14,11 +14,15 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import fi.espoo.voltti.logging.loggers.error
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.net.Inet6Address
+import java.net.InetAddress
 import java.net.URI
+import java.net.UnknownHostException
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
 import java.time.Duration
 import kotlin.collections.toTypedArray
+import okhttp3.Dns
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -148,8 +152,37 @@ data class WebPushRequestHeaders(
 private val VAPID_JWT_NEW_VALID_DURATION = Duration.ofHours(12)
 private val VAPID_JWT_MIN_VALID_DURATION = Duration.ofHours(1)
 
+/**
+ * Refuses hostnames that resolve to an address inside the service's own networks, so that a
+ * subscription cannot make the service send requests to internal hosts.
+ */
+private class PublicHostDns(private val system: Dns = Dns.SYSTEM) : Dns {
+    override fun lookup(hostname: String): List<InetAddress> {
+        val addresses = system.lookup(hostname)
+        if (addresses.any { it.isInternal() }) {
+            throw UnknownHostException("$hostname resolves to an internal address")
+        }
+        return addresses
+    }
+
+    private fun InetAddress.isInternal(): Boolean =
+        isAnyLocalAddress ||
+            isLoopbackAddress ||
+            isLinkLocalAddress ||
+            isSiteLocalAddress ||
+            isMulticastAddress ||
+            // unique local addresses fc00::/7, which Java does not recognize
+            (this is Inet6Address && (address[0].toInt() and 0xfe) == 0xfc)
+}
+
 class WebPush(env: WebPushEnv) {
-    private val httpClient = OkHttpClient()
+    private val allowInsecureEndpoints = env.allowInsecureEndpoints
+    private val httpClient =
+        OkHttpClient.Builder()
+            .followRedirects(false)
+            .followSslRedirects(false)
+            .apply { if (!allowInsecureEndpoints) dns(PublicHostDns()) }
+            .build()
     private val secureRandom = SecureRandom()
     private val jsonMapper = defaultJsonMapperBuilder().build()
     private val vapidKeyPair: WebPushKeyPair =
@@ -177,6 +210,11 @@ class WebPush(env: WebPushEnv) {
         )
 
     fun send(vapidJwt: VapidJwt, notification: WebPushNotification) {
+        if (!allowInsecureEndpoints) {
+            require(notification.endpoint.uri.scheme == "https") {
+                "Web push endpoint must use https"
+            }
+        }
         val webPushRequest =
             WebPushRequest.createEncryptedPushMessage(
                     ttl = notification.ttl,

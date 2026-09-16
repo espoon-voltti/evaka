@@ -21,7 +21,10 @@ class WebPushTest : PureJdbiTest(resetDbBeforeEach = true) {
     private lateinit var clock: MockEvakaClock
     private val webPush =
         WebPush(
-            WebPushEnv(vapidPrivateKey = Sensitive("eCCqlmasgp3hG9TB1W-mbDp_kEyXCxzxv6vwyRXK7y4"))
+            WebPushEnv(
+                vapidPrivateKey = Sensitive("eCCqlmasgp3hG9TB1W-mbDp_kEyXCxzxv6vwyRXK7y4"),
+                allowInsecureEndpoints = true,
+            )
         )
 
     @BeforeEach
