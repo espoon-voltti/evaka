@@ -152,6 +152,8 @@ data class WebPushRequestHeaders(
 private val VAPID_JWT_NEW_VALID_DURATION = Duration.ofHours(12)
 private val VAPID_JWT_MIN_VALID_DURATION = Duration.ofHours(1)
 
+private const val MAX_ERROR_BODY_SIZE = 4096L
+
 /**
  * Refuses hostnames that resolve to an address inside the service's own networks, so that a
  * subscription cannot make the service send requests to internal hosts.
@@ -253,7 +255,8 @@ class WebPush(env: WebPushEnv) {
                 )
             }
             val meta = mapOf("method" to "POST", "url" to webPushRequest.uri.toString())
-            val body = response.body.string()
+            // Endpoint is user-supplied. Avoid reading the whole body to avoid out of memory DoS
+            val body = response.peekBody(MAX_ERROR_BODY_SIZE).string()
             val error = IllegalStateException("Web push failed with status $statusCode: $body")
             logger.error(error, meta) { "Web push failed, status $statusCode" }
             throw error
