@@ -8,10 +8,13 @@ import evaka.core.pis.NotificationCategory
 import evaka.core.shared.CitizenPushSubscriptionId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
+import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.user.DeviceClass
 import evaka.core.user.ParsedUserAgent
 import java.net.URI
+
+const val MAX_SUBSCRIPTIONS_PER_PERSON = 10
 
 data class CitizenPushDevice(
     val id: CitizenPushSubscriptionId,
@@ -39,6 +42,8 @@ ORDER BY created_at
  * Replaces whatever subscription the browser had, because an endpoint identifies one browser. If
  * another user subscribed earlier with the same browser, their notifications will not be delivered
  * anymore.
+ *
+ * Throws [Conflict] if the person already has [MAX_SUBSCRIPTIONS_PER_PERSON] subscriptions.
  */
 fun Database.Transaction.insertCitizenPushSubscription(
     person: PersonId,
@@ -50,6 +55,13 @@ fun Database.Transaction.insertCitizenPushSubscription(
         sql(
             "DELETE FROM citizen_push_subscription WHERE endpoint = ${bind(subscription.endpoint.toString())}"
         )
+    }
+    val subscriptionCount = createQuery {
+        sql("SELECT count(*) FROM citizen_push_subscription WHERE person_id = ${bind(person)}")
+    }
+        .exactlyOne<Int>()
+    if (subscriptionCount >= MAX_SUBSCRIPTIONS_PER_PERSON) {
+        throw Conflict("Too many push subscriptions")
     }
     return createUpdate {
         sql(

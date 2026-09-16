@@ -42,6 +42,7 @@ class CitizenWebPushController(
         /** Null when web push is not configured in this environment */
         val applicationServerKey: String?,
         val devices: List<CitizenPushDevice>,
+        val maxDevices: Int,
     )
 
     @GetMapping("/citizen/push-settings")
@@ -63,6 +64,7 @@ class CitizenWebPushController(
                     CitizenPushSettings(
                         applicationServerKey = webPush?.applicationServerKey,
                         devices = tx.getCitizenPushDevices(user.id),
+                        maxDevices = MAX_SUBSCRIPTIONS_PER_PERSON,
                     )
                 }
             }

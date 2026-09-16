@@ -29,6 +29,7 @@ export interface CitizenPushDevice {
 export interface CitizenPushSettings {
   applicationServerKey: string | null
   devices: CitizenPushDevice[]
+  maxDevices: number
 }
 
 /**
