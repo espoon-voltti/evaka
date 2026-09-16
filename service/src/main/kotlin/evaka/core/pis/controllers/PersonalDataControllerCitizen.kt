@@ -114,12 +114,17 @@ class PersonalDataControllerCitizen(
         Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))
     }
 
+    data class NotificationSettings(
+        val disabledEmailTypes: Set<NotificationCategory>,
+        val disabledPushTypes: Set<NotificationCategory>,
+    )
+
     @GetMapping("/notification-settings")
     fun getNotificationSettings(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-    ): Set<EmailMessageType> {
+    ): NotificationSettings {
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -129,7 +134,10 @@ class PersonalDataControllerCitizen(
                         Action.Citizen.Person.READ_NOTIFICATION_SETTINGS,
                         user.id,
                     )
-                    tx.getDisabledEmailTypes(user.id)
+                    NotificationSettings(
+                        disabledEmailTypes = tx.getDisabledEmailTypes(user.id),
+                        disabledPushTypes = tx.getDisabledPushTypes(user.id),
+                    )
                 }
             }
             .also { Audit.CitizenNotificationSettingsRead.log(targetId = AuditId(user.id)) }
@@ -140,7 +148,7 @@ class PersonalDataControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: Set<EmailMessageType>,
+        @RequestBody body: NotificationSettings,
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -151,7 +159,8 @@ class PersonalDataControllerCitizen(
                     Action.Citizen.Person.UPDATE_NOTIFICATION_SETTINGS,
                     user.id,
                 )
-                tx.updateDisabledEmailTypes(user.id, body)
+                tx.updateDisabledEmailTypes(user.id, body.disabledEmailTypes)
+                tx.updateDisabledPushTypes(user.id, body.disabledPushTypes)
             }
         }
         Audit.PersonalDataUpdate.log(targetId = AuditId(user.id))

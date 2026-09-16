@@ -141,10 +141,18 @@ data class JwtEnv(val publicKeysUrl: URI) {
     }
 }
 
-data class WebPushEnv(val vapidPrivateKey: Sensitive<String>) {
+data class WebPushEnv(
+    val vapidPrivateKey: Sensitive<String>,
+    /** Allows plain http endpoints and endpoints in internal networks, for tests only */
+    val allowInsecureEndpoints: Boolean,
+) {
     companion object {
         fun fromEnvironment(env: Environment) =
-            WebPushEnv(vapidPrivateKey = Sensitive(env.lookup("evaka.web_push.vapid_private_key")))
+            WebPushEnv(
+                vapidPrivateKey = Sensitive(env.lookup("evaka.web_push.vapid_private_key")),
+                allowInsecureEndpoints =
+                    env.lookup("evaka.web_push.allow_insecure_endpoints") ?: false,
+            )
     }
 }
 

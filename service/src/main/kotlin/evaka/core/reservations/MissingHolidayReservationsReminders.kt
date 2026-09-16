@@ -10,7 +10,7 @@ import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.holidayperiod.getHolidayPeriodsWithReservationDeadline
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getPersonById
 import evaka.core.placement.PlacementType
 import evaka.core.shared.PersonId
@@ -162,7 +162,7 @@ WHERE p.id = ANY(${bind(childIds)})
         Email.create(
                 dbc = db,
                 personId = msg.guardian,
-                emailType = EmailMessageType.ATTENDANCE_RESERVATION_NOTIFICATION,
+                category = NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
                 fromAddress = emailEnv.sender(language),
                 content = emailMessageProvider.missingHolidayReservationsNotification(language),
                 traceId = msg.guardian.toString(),

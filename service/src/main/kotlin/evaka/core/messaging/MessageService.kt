@@ -35,11 +35,14 @@ import org.springframework.stereotype.Component
 
 private const val DELETION_WINDOW_DAYS = 8L
 
+private const val CITIZEN_PUSH_RETRY_COUNT = 3
+
 @Component
 class MessageService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val notificationEmailService: MessageNotificationEmailService,
     private val messagePushNotifications: MessagePushNotifications,
+    private val citizenMessagePushNotifications: CitizenMessagePushNotifications,
     private val messageDeletionEmailService: MessageDeletionEmailService,
     private val featureConfig: FeatureConfig,
     private val citizenCalendarEnv: CitizenCalendarEnv,
@@ -61,6 +64,13 @@ class MessageService(
             asyncJobRunner.plan(
                 tx,
                 messagePushNotifications.getAsyncJobs(tx, messages),
+                runAt = clock.now(),
+            )
+            asyncJobRunner.plan(
+                tx,
+                citizenMessagePushNotifications.getAsyncJobs(tx, messages),
+                // a notification that is a day old has no value, so few retries are enough
+                retryCount = CITIZEN_PUSH_RETRY_COUNT,
                 runAt = clock.now(),
             )
         }

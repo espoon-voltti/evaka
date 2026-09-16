@@ -6,7 +6,7 @@ package evaka.core.pis.controller
 
 import evaka.core.FullApplicationTest
 import evaka.core.emailclient.MockEmailClient
-import evaka.core.pis.EmailMessageType
+import evaka.core.pis.NotificationCategory
 import evaka.core.pis.PersonalDataUpdate
 import evaka.core.pis.controllers.PersonalDataControllerCitizen
 import evaka.core.pis.getCitizenUserDetails
@@ -46,13 +46,14 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
     fun `all notifications are enabled by default`() {
         db.transaction { tx -> tx.insert(adult, DevPersonType.RAW_ROW) }
 
-        val disabledTypes =
+        val settings =
             personalDataController.getNotificationSettings(
                 dbInstance(),
                 AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
                 RealEvakaClock(),
             )
-        assertEquals(emptySet(), disabledTypes)
+        assertEquals(emptySet(), settings.disabledEmailTypes)
+        assertEquals(emptySet(), settings.disabledPushTypes)
     }
 
     @Test
@@ -63,11 +64,17 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
             dbInstance(),
             AuthenticatedUser.Citizen(adult.id, CitizenAuthLevel.WEAK),
             RealEvakaClock(),
-            setOf(
-                EmailMessageType.BULLETIN_NOTIFICATION,
-                EmailMessageType.CALENDAR_EVENT_NOTIFICATION,
-                EmailMessageType.DOCUMENT_NOTIFICATION,
-                EmailMessageType.ATTENDANCE_RESERVATION_NOTIFICATION,
+            PersonalDataControllerCitizen.NotificationSettings(
+                disabledEmailTypes =
+                    setOf(
+                        NotificationCategory.BULLETIN_NOTIFICATION,
+                        NotificationCategory.CALENDAR_EVENT_NOTIFICATION,
+                    ),
+                disabledPushTypes =
+                    setOf(
+                        NotificationCategory.DOCUMENT_NOTIFICATION,
+                        NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
+                    ),
             ),
         )
 
@@ -79,12 +86,17 @@ class PersonalDataControllerCitizenIntegrationTest : FullApplicationTest(resetDb
             )
         assertEquals(
             setOf(
-                EmailMessageType.BULLETIN_NOTIFICATION,
-                EmailMessageType.CALENDAR_EVENT_NOTIFICATION,
-                EmailMessageType.DOCUMENT_NOTIFICATION,
-                EmailMessageType.ATTENDANCE_RESERVATION_NOTIFICATION,
+                NotificationCategory.BULLETIN_NOTIFICATION,
+                NotificationCategory.CALENDAR_EVENT_NOTIFICATION,
             ),
-            settings,
+            settings.disabledEmailTypes,
+        )
+        assertEquals(
+            setOf(
+                NotificationCategory.DOCUMENT_NOTIFICATION,
+                NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
+            ),
+            settings.disabledPushTypes,
         )
     }
 

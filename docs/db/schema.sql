@@ -246,21 +246,6 @@ CREATE TYPE public.document_template_type AS ENUM (
     'MIGRATED_PRESCHOOL_ASSISTANCE_NEED_DECISION'
 );
 
--- Name: email_message_type; Type: TYPE; Schema: public
-
-CREATE TYPE public.email_message_type AS ENUM (
-    'TRANSACTIONAL',
-    'MESSAGE_NOTIFICATION',
-    'BULLETIN_NOTIFICATION',
-    'INCOME_NOTIFICATION',
-    'CALENDAR_EVENT_NOTIFICATION',
-    'DECISION_NOTIFICATION',
-    'DOCUMENT_NOTIFICATION',
-    'INFORMAL_DOCUMENT_NOTIFICATION',
-    'ATTENDANCE_RESERVATION_NOTIFICATION',
-    'DISCUSSION_TIME_NOTIFICATION'
-);
-
 -- Name: evaka_user_type; Type: TYPE; Schema: public
 
 CREATE TYPE public.evaka_user_type AS ENUM (
@@ -477,6 +462,21 @@ CREATE TYPE public.nekku_special_diet_type AS ENUM (
     'RADIO',
     'TEXTAREA',
     'EMAIL'
+);
+
+-- Name: notification_category; Type: TYPE; Schema: public
+
+CREATE TYPE public.notification_category AS ENUM (
+    'TRANSACTIONAL',
+    'MESSAGE_NOTIFICATION',
+    'BULLETIN_NOTIFICATION',
+    'INCOME_NOTIFICATION',
+    'CALENDAR_EVENT_NOTIFICATION',
+    'DECISION_NOTIFICATION',
+    'DOCUMENT_NOTIFICATION',
+    'INFORMAL_DOCUMENT_NOTIFICATION',
+    'ATTENDANCE_RESERVATION_NOTIFICATION',
+    'DISCUSSION_TIME_NOTIFICATION'
 );
 
 -- Name: official_language; Type: TYPE; Schema: public
@@ -1211,9 +1211,10 @@ CREATE TABLE public.person (
     preferred_name text DEFAULT ''::text NOT NULL,
     duplicate_of uuid,
     keycloak_email text,
-    disabled_email_types public.email_message_type[] DEFAULT '{}'::public.email_message_type[] NOT NULL,
+    disabled_email_types public.notification_category[] DEFAULT '{}'::public.notification_category[] NOT NULL,
     municipality_of_residence text DEFAULT ''::text NOT NULL,
     verified_email text,
+    disabled_push_types public.notification_category[] DEFAULT '{}'::public.notification_category[] NOT NULL,
     CONSTRAINT person_disabled_ssn_no_ssn CHECK (((NOT ssn_adding_disabled) OR (social_security_number IS NULL))),
     CONSTRAINT ssn_require_vtj_update CHECK (((social_security_number IS NULL) OR (updated_from_vtj IS NOT NULL)))
 );
@@ -2483,6 +2484,24 @@ CREATE TABLE public.citizen_passkey_registration (
     options jsonb NOT NULL,
     expires_at timestamp with time zone NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+-- Name: citizen_push_subscription; Type: TABLE; Schema: public
+
+CREATE TABLE public.citizen_push_subscription (
+    id uuid DEFAULT ext.uuid_generate_v1mc() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    person_id uuid NOT NULL,
+    endpoint text NOT NULL,
+    auth_secret bytea NOT NULL,
+    ecdh_key bytea NOT NULL,
+    expires_at timestamp with time zone,
+    installed boolean NOT NULL,
+    device_class text NOT NULL,
+    operating_system_name text NOT NULL,
+    agent_name text NOT NULL,
+    last_sent_at timestamp with time zone
 );
 
 -- Name: citizen_user; Type: TABLE; Schema: public
@@ -4312,6 +4331,11 @@ ALTER TABLE ONLY public.citizen_passkey
 ALTER TABLE ONLY public.citizen_passkey_registration
     ADD CONSTRAINT citizen_passkey_registration_pkey PRIMARY KEY (person_id);
 
+-- Name: citizen_push_subscription citizen_push_subscription_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.citizen_push_subscription
+    ADD CONSTRAINT citizen_push_subscription_pkey PRIMARY KEY (id);
+
 -- Name: citizen_user citizen_user_pkey; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.citizen_user
@@ -4972,6 +4996,11 @@ ALTER TABLE ONLY public.care_area
 ALTER TABLE ONLY public.citizen_passkey
     ADD CONSTRAINT "uniq$citizen_passkey_credential_id" UNIQUE (credential_id);
 
+-- Name: citizen_push_subscription uniq$citizen_push_subscription_endpoint; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.citizen_push_subscription
+    ADD CONSTRAINT "uniq$citizen_push_subscription_endpoint" UNIQUE (endpoint);
+
 -- Name: citizen_user uniq$citizen_user_username; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.citizen_user
@@ -5627,6 +5656,10 @@ CREATE INDEX "idx$child_sticky_note_expires" ON public.child_sticky_note USING b
 -- Name: idx$citizen_passkey_citizen_user_id; Type: INDEX; Schema: public
 
 CREATE INDEX "idx$citizen_passkey_citizen_user_id" ON public.citizen_passkey USING btree (citizen_user_id);
+
+-- Name: idx$citizen_push_subscription_person_id; Type: INDEX; Schema: public
+
+CREATE INDEX "idx$citizen_push_subscription_person_id" ON public.citizen_push_subscription USING btree (person_id);
 
 -- Name: idx$daily_service_time_child_id; Type: INDEX; Schema: public
 
@@ -6475,6 +6508,10 @@ CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.child_sticky_note FOR EACH 
 -- Name: citizen_passkey set_timestamp; Type: TRIGGER; Schema: public
 
 CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.citizen_passkey FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
+
+-- Name: citizen_push_subscription set_timestamp; Type: TRIGGER; Schema: public
+
+CREATE TRIGGER set_timestamp BEFORE UPDATE ON public.citizen_push_subscription FOR EACH ROW EXECUTE FUNCTION public.trigger_refresh_updated_at();
 
 -- Name: citizen_user set_timestamp; Type: TRIGGER; Schema: public
 
@@ -7567,6 +7604,11 @@ ALTER TABLE ONLY public.attachment
 -- Name: citizen_passkey_registration fk$person; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.citizen_passkey_registration
+    ADD CONSTRAINT "fk$person" FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
+
+-- Name: citizen_push_subscription fk$person; Type: FK CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.citizen_push_subscription
     ADD CONSTRAINT "fk$person" FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
 
 -- Name: citizen_user fk$person; Type: FK CONSTRAINT; Schema: public

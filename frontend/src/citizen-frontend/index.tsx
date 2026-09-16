@@ -10,10 +10,11 @@ import 'lib-common/assets/fonts/fonts.css'
 import { appVersion } from 'lib-common/globals'
 import { sentryEventFilter } from 'lib-common/sentry'
 import { getEnvironment } from 'lib-common/utils/helpers'
-import { appConfig, featureFlags } from 'lib-customizations/citizen'
+import { appConfig } from 'lib-customizations/citizen'
 
 import 'leaflet/dist/leaflet.css'
 
+import { pwaEnabled } from './pwa/enabled'
 import { listenForInstallPrompt } from './pwa/installPrompt'
 import { applyPwaMetadata } from './pwa/metadata'
 import {
@@ -37,7 +38,7 @@ Sentry.getGlobalScope().addEventProcessor(sentryEventFilter)
 // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
 smoothScrollPolyfill()
 
-if (featureFlags.citizenPwa) {
+if (pwaEnabled) {
   applyPwaMetadata()
   listenForInstallPrompt()
 }
@@ -45,7 +46,7 @@ if (featureFlags.citizenPwa) {
 const root = createRoot(document.getElementById('app')!)
 root.render(<Root />)
 
-const serviceWorker = featureFlags.citizenPwa
+const serviceWorker = pwaEnabled
   ? registerServiceWorker()
   : unregisterServiceWorker()
 serviceWorker.catch((err) => Sentry.captureException(err))

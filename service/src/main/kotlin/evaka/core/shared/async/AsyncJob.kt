@@ -90,6 +90,13 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class SendCitizenMessagePushNotification(
+        val recipient: MessageRecipientId,
+        val subscription: CitizenPushSubscriptionId,
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendMessageDeletionSenderEmail(val contentId: MessageContentId) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -617,6 +624,12 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendMessagePushNotification::class,
                     UpdateMessageThreadRecipients::class,
                 ),
+            )
+        val citizenPush =
+            AsyncJobRunner.Pool(
+                AsyncJobPool.Id(AsyncJob::class, "citizenPush"),
+                AsyncJobPool.Config(concurrency = 4),
+                setOf(SendCitizenMessagePushNotification::class),
             )
         val suomiFi =
             AsyncJobRunner.Pool(

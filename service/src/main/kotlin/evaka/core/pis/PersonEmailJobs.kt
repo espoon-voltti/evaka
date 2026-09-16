@@ -80,7 +80,7 @@ AND expires_at > ${bind(clock.now())}
         Email.create(
                 dbc,
                 job.personId,
-                EmailMessageType.TRANSACTIONAL,
+                NotificationCategory.TRANSACTIONAL,
                 fromAddress = emailEnv.sender(Language.fi),
                 content = emailMessageProvider.passwordChanged(),
                 traceId = "${clock.today()}:${job.personId}",
@@ -96,7 +96,7 @@ AND expires_at > ${bind(clock.now())}
         Email.create(
                 dbc,
                 job.personId,
-                EmailMessageType.TRANSACTIONAL,
+                NotificationCategory.TRANSACTIONAL,
                 fromAddress = emailEnv.sender(Language.fi),
                 content = emailMessageProvider.passkeyAdded(),
                 traceId = "${clock.today()}:${job.personId}",
@@ -112,7 +112,7 @@ AND expires_at > ${bind(clock.now())}
         Email.create(
                 dbc,
                 job.personId,
-                EmailMessageType.TRANSACTIONAL,
+                NotificationCategory.TRANSACTIONAL,
                 fromAddress = emailEnv.sender(Language.fi),
                 content = emailMessageProvider.passkeyRemoved(),
                 traceId = "${clock.today()}:${job.personId}",
@@ -128,7 +128,7 @@ AND expires_at > ${bind(clock.now())}
         Email.create(
                 dbc,
                 job.personId,
-                EmailMessageType.TRANSACTIONAL,
+                NotificationCategory.TRANSACTIONAL,
                 fromAddress = emailEnv.sender(Language.fi),
                 content = emailMessageProvider.weakCredentialsRemoved(),
                 traceId = "${clock.today()}:${job.personId}",

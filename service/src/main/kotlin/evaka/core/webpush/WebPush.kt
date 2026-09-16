@@ -4,32 +4,36 @@
 
 package evaka.core.webpush
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonValue
 import evaka.core.WebPushEnv
 import evaka.core.shared.config.SealedSubclassSimpleName
 import evaka.core.shared.config.defaultJsonMapperBuilder
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
-import evaka.core.shared.utils.writerFor
 import fi.espoo.voltti.logging.loggers.error
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.net.Inet6Address
+import java.net.InetAddress
 import java.net.URI
+import java.net.UnknownHostException
 import java.security.SecureRandom
 import java.security.interfaces.ECPublicKey
 import java.time.Duration
-import kotlin.code
 import kotlin.collections.toTypedArray
-import kotlin.toString
+import okhttp3.Dns
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import org.springframework.http.HttpStatus
 import tools.jackson.databind.annotation.JsonTypeIdResolver
 
 data class WebPushNotification(
     val endpoint: WebPushEndpoint,
     val ttl: Duration,
-    val payloads: List<WebPushPayload>,
+    val message: WebPushMessage,
 )
 
 enum class Urgency {
@@ -39,11 +43,37 @@ enum class Urgency {
     High,
 }
 
+sealed interface WebPushMessage {
+    /** A recipient picks the first payload it understands, so the newest comes first */
+    data class Versioned(@get:JsonValue val payloads: List<WebPushPayload>) : WebPushMessage
+
+    /**
+     * A message the browser understands by itself, so it shows the notification and handles the
+     * click without running the service worker.
+     *
+     * Reference: https://w3c.github.io/push-api/
+     */
+    data class Declarative(
+        val notification: DeclarativeNotification,
+
+        // 8030 is a required magic value
+        @get:JsonProperty("web_push") val webPush: Int = 8030,
+    ) : WebPushMessage
+}
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @JsonTypeIdResolver(SealedSubclassSimpleName::class)
 sealed interface WebPushPayload {
     data class NotificationV1(val title: String) : WebPushPayload
 }
+
+data class DeclarativeNotification(
+    val title: String,
+    val navigate: String,
+    val body: String?,
+    /** Older notifications with the same tag are replaced */
+    val tag: String,
+)
 
 class WebPushEndpoint(val uri: URI, val ecdhPublicKey: ECPublicKey, val authSecret: ByteArray)
 
@@ -123,10 +153,53 @@ data class WebPushRequestHeaders(
 private val VAPID_JWT_NEW_VALID_DURATION = Duration.ofHours(12)
 private val VAPID_JWT_MIN_VALID_DURATION = Duration.ofHours(1)
 
+private const val MAX_ERROR_BODY_SIZE = 4096L
+
+private fun Response.retryAfter(): Duration? =
+    header("Retry-After")?.toLongOrNull()?.takeIf { it > 0 }?.let { Duration.ofSeconds(it) }
+
+private val CONNECT_TIMEOUT = Duration.ofSeconds(5)
+private val READ_TIMEOUT = Duration.ofSeconds(5)
+private val WRITE_TIMEOUT = Duration.ofSeconds(5)
+private val CALL_TIMEOUT = Duration.ofSeconds(10)
+
+/**
+ * Refuses hostnames that resolve to an address inside the service's own networks, so that a
+ * subscription cannot make the service send requests to internal hosts.
+ */
+private class PublicHostDns(private val system: Dns = Dns.SYSTEM) : Dns {
+    override fun lookup(hostname: String): List<InetAddress> {
+        val addresses = system.lookup(hostname)
+        if (addresses.any { it.isInternal() }) {
+            throw UnknownHostException("$hostname resolves to an internal address")
+        }
+        return addresses
+    }
+
+    private fun InetAddress.isInternal(): Boolean =
+        isAnyLocalAddress ||
+            isLoopbackAddress ||
+            isLinkLocalAddress ||
+            isSiteLocalAddress ||
+            isMulticastAddress ||
+            // unique local addresses fc00::/7, which Java does not recognize
+            (this is Inet6Address && (address[0].toInt() and 0xfe) == 0xfc)
+}
+
 class WebPush(env: WebPushEnv) {
-    private val httpClient = OkHttpClient()
+    private val allowInsecureEndpoints = env.allowInsecureEndpoints
+    private val httpClient =
+        OkHttpClient.Builder()
+            .followRedirects(false)
+            .followSslRedirects(false)
+            .connectTimeout(CONNECT_TIMEOUT)
+            .readTimeout(READ_TIMEOUT)
+            .writeTimeout(WRITE_TIMEOUT)
+            .callTimeout(CALL_TIMEOUT)
+            .apply { if (!allowInsecureEndpoints) dns(PublicHostDns()) }
+            .build()
     private val secureRandom = SecureRandom()
-    private val jsonWriter = defaultJsonMapperBuilder().build().writerFor<List<WebPushPayload>>()
+    private val jsonMapper = defaultJsonMapperBuilder().build()
     private val vapidKeyPair: WebPushKeyPair =
         WebPushKeyPair.fromPrivateKey(WebPushCrypto.decodePrivateKey(env.vapidPrivateKey.value))
     val applicationServerKey: String
@@ -136,6 +209,10 @@ class WebPush(env: WebPushEnv) {
 
     class SubscriptionExpired(val status: HttpStatus, cause: Throwable) :
         RuntimeException("Subscription expired (HTTP $status)", cause)
+
+    class Throttled(val retryAfter: Duration?, message: String) : RuntimeException(message)
+
+    class PermanentFailure(message: String) : RuntimeException(message)
 
     fun getValidToken(tx: Database.Transaction, clock: EvakaClock, endpoint: URI): VapidJwt =
         tx.getOrRefreshToken(
@@ -152,13 +229,18 @@ class WebPush(env: WebPushEnv) {
         )
 
     fun send(vapidJwt: VapidJwt, notification: WebPushNotification) {
+        if (!allowInsecureEndpoints) {
+            require(notification.endpoint.uri.scheme == "https") {
+                "Web push endpoint must use https"
+            }
+        }
         val webPushRequest =
             WebPushRequest.createEncryptedPushMessage(
                     ttl = notification.ttl,
                     endpoint = notification.endpoint,
                     messageKeyPair = WebPushCrypto.generateKeyPair(secureRandom),
                     salt = secureRandom.generateSeed(16),
-                    data = jsonWriter.writeValueAsBytes(notification.payloads),
+                    data = jsonMapper.writeValueAsBytes(notification.message),
                     urgency = Urgency.Normal,
                 )
                 .withVapid(vapidJwt)
@@ -190,8 +272,16 @@ class WebPush(env: WebPushEnv) {
                 )
             }
             val meta = mapOf("method" to "POST", "url" to webPushRequest.uri.toString())
-            val body = response.body.string()
-            val error = IllegalStateException("Web push failed with status $statusCode: $body")
+            // Endpoint is user-supplied. Avoid reading the whole body to avoid out of memory DoS
+            val body = response.peekBody(MAX_ERROR_BODY_SIZE).string()
+            val message = "Web push failed with status $statusCode: $body"
+            val error =
+                when {
+                    statusCode == 429 || statusCode == 503 ->
+                        Throttled(response.retryAfter(), message)
+                    statusCode in 400..499 -> PermanentFailure(message)
+                    else -> IllegalStateException(message)
+                }
             logger.error(error, meta) { "Web push failed, status $statusCode" }
             throw error
         }

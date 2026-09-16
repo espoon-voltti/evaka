@@ -330,6 +330,33 @@ export default {
     },
     homeScreenSection: {
       title: 'Lisää eVaka kotinäytölle'
+    },
+    pushSection: {
+      title: 'Push-ilmoitukset',
+      description:
+        'eVaka lähettää ilmoitukset niihin laitteisiin, joissa olet ottanut ne käyttöön.',
+      enabled: 'Käytössä',
+      blocked: 'Estetty',
+      thisDevice: 'Tämä laite',
+      notEnabledOnThisDevice:
+        'Ilmoitukset eivät ole käytössä tällä laitteella.',
+      enable: 'Ota käyttöön',
+      deviceLimitReached:
+        'Laitteita on jo enimmäismäärä. Poista jokin laite, jotta voit ottaa ilmoitukset käyttöön tällä laitteella.',
+      blockedOnThisDevice: 'Ilmoitukset on estetty tällä laitteella',
+      blockedInstructions: {
+        ios: 'Salli ilmoitukset laitteen asetuksista: Asetukset > Ilmoitukset > eVaka.',
+        android:
+          'Salli ilmoitukset laitteen asetuksista: Asetukset > Sovellukset > eVaka > Ilmoitukset.',
+        other: 'Salli ilmoitukset selaimen sivustoasetuksista.'
+      },
+      lastSent: (at: string) => `Viim. lähetetty ${at}`,
+      neverSent: 'Ei vielä lähetettyjä ilmoituksia',
+      sendTest: 'Testaa',
+      installedApp: 'Kotinäytön sovellus',
+      browser: 'Selain',
+      inUseSince: 'Käytössä alkaen',
+      revoke: 'Poista ilmoitukset käytöstä'
     }
   },
   errorPage: {
@@ -2160,6 +2187,10 @@ export default {
       ADD_TO_HOME_SCREEN: {
         title: 'Lisää eVaka kotinäytölle',
         description: 'Saat muistutukset suoraan puhelimeesi.'
+      },
+      ENABLE_PUSH_NOTIFICATIONS: {
+        title: 'Ota push-ilmoitukset käyttöön',
+        description: 'Saat ilmoitukset suoraan tähän laitteeseen.'
       },
       ADD_WEAK_LOGIN: {
         title: 'Luo kirjautumistapa',

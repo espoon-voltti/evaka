@@ -34,7 +34,7 @@ class NewBrowserLoginEmail(
         Email.create(
                 dbc,
                 job.personId,
-                EmailMessageType.TRANSACTIONAL,
+                NotificationCategory.TRANSACTIONAL,
                 fromAddress = emailEnv.sender(Language.fi),
                 content = emailMessageProvider.newBrowserLoginNotification(),
                 traceId = "${clock.today()}:${job.personId}",
