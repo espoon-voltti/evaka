@@ -139,7 +139,6 @@ AND m.content_deleted_at IS NULL
                         if (isSenderMunicipalAccount) NotificationCategory.BULLETIN_NOTIFICATION
                         else NotificationCategory.MESSAGE_NOTIFICATION
                 },
-            language = notification.language,
             content = content,
             path = "/messages/${notification.threadId}",
             tag = "message-${notification.threadId}",

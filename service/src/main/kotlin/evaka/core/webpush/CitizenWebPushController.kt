@@ -171,7 +171,6 @@ class CitizenWebPushController(
                 clock,
                 body.deviceId,
                 category = null,
-                language = language,
                 content = content,
                 path = "/",
                 tag = "test",

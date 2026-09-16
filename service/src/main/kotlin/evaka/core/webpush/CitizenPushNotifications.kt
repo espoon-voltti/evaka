@@ -9,7 +9,6 @@ import evaka.core.pis.NotificationCategory
 import evaka.core.shared.CitizenPushSubscriptionId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
-import evaka.core.shared.domain.UiLanguage
 import fi.espoo.voltti.logging.loggers.info
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
@@ -30,7 +29,6 @@ class CitizenPushNotifications(private val webPush: WebPush?, private val env: E
         clock: EvakaClock,
         subscription: CitizenPushSubscriptionId,
         category: NotificationCategory?,
-        language: UiLanguage,
         content: PushNotificationContent,
         path: String,
         tag: String,
@@ -53,7 +51,8 @@ class CitizenPushNotifications(private val webPush: WebPush?, private val env: E
             WebPushMessage.Declarative(
                 DeclarativeNotification(
                     title = content.title,
-                    navigate = frontendBaseUrl(language) + path,
+                    // URL is not visible to the citizens, so we can always use the Finnish URL
+                    navigate = env.frontendBaseUrlFi + path,
                     body = content.body,
                     tag = tag,
                 )
@@ -68,10 +67,4 @@ class CitizenPushNotifications(private val webPush: WebPush?, private val env: E
             dbc.transaction { it.deleteCitizenPushSubscription(subscription) }
         }
     }
-
-    private fun frontendBaseUrl(language: UiLanguage) =
-        when (language) {
-            UiLanguage.SV -> env.frontendBaseUrlSv
-            else -> env.frontendBaseUrlFi
-        }
 }
