@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class CitizenMessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var messageController: MessageController
+    @Autowired private lateinit var messageService: MessageService
     @Autowired private lateinit var mockEndpoint: MockWebPushEndpoint
 
     private val keyPair = WebPushCrypto.generateKeyPair(SecureRandom())
@@ -58,6 +59,7 @@ class CitizenMessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEac
     private val employee = DevEmployee()
 
     private lateinit var employeeAccount: MessageAccountId
+    private lateinit var municipalAccount: MessageAccountId
 
     @BeforeEach
     fun beforeEach() {
@@ -88,6 +90,7 @@ class CitizenMessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEac
             tx.insert(employee)
             employeeAccount = tx.upsertEmployeeMessageAccount(employee.id)
             tx.insertDaycareAclRow(daycare.id, employee.id, UserRole.STAFF)
+            municipalAccount = tx.createMunicipalMessageAccount()
         }
     }
 
@@ -116,6 +119,51 @@ class CitizenMessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEac
 
         assertEquals(emptyList(), mockEndpoint.getCapturedRequests("1234"))
         assertNull(db.read { it.getCitizenPushDevices(citizen.id) }.single().lastSentAt)
+    }
+
+    @Test
+    fun `a bulletin from the municipal account uses the bulletin category`() {
+        subscribe(URI("http://localhost:$httpPort/public/mock-web-push/subscription/1234"))
+        db.transaction { tx ->
+            tx.updateDisabledPushTypes(
+                citizen.id,
+                setOf(NotificationCategory.MESSAGE_NOTIFICATION),
+            )
+        }
+
+        sendBulletin(municipalAccount)
+
+        assertEquals(1, mockEndpoint.getCapturedRequests("1234").size)
+    }
+
+    @Test
+    fun `a bulletin is not sent when the citizen has disabled bulletins`() {
+        subscribe(URI("http://localhost:$httpPort/public/mock-web-push/subscription/1234"))
+        db.transaction { tx ->
+            tx.updateDisabledPushTypes(
+                citizen.id,
+                setOf(NotificationCategory.BULLETIN_NOTIFICATION),
+            )
+        }
+
+        sendBulletin(municipalAccount)
+
+        assertEquals(emptyList(), mockEndpoint.getCapturedRequests("1234"))
+    }
+
+    @Test
+    fun `a bulletin from a unit account uses the message category`() {
+        subscribe(URI("http://localhost:$httpPort/public/mock-web-push/subscription/1234"))
+        db.transaction { tx ->
+            tx.updateDisabledPushTypes(
+                citizen.id,
+                setOf(NotificationCategory.MESSAGE_NOTIFICATION),
+            )
+        }
+
+        sendBulletin(employeeAccount)
+
+        assertEquals(emptyList(), mockEndpoint.getCapturedRequests("1234"))
     }
 
     @Test
@@ -159,6 +207,31 @@ class CitizenMessagePushNotificationsTest : FullApplicationTest(resetDbBeforeEac
                 relatedApplicationId = null,
             ),
         )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
+    }
+
+    private fun sendBulletin(sender: MessageAccountId) {
+        db.transaction { tx ->
+            messageService.sendMessageAsEmployee(
+                tx,
+                AuthenticatedUser.SystemInternalUser,
+                clock.now(),
+                sender = sender,
+                type = MessageType.BULLETIN,
+                msg =
+                    NewMessageStub(
+                        title = "Juhannus",
+                        content = "Juhannus tulee pian",
+                        urgent = false,
+                        sensitive = false,
+                    ),
+                recipients = setOf(MessageRecipient.Child(child.id)),
+                recipientNames = listOf(),
+                attachments = emptySet(),
+                relatedApplication = null,
+                filters = null,
+            )
+        }
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(5)))
     }
 }

@@ -11,16 +11,19 @@ import evaka.core.shared.dev.DevPerson
 import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.shared.domain.NotFound
 import java.net.URI
 import java.security.SecureRandom
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var controller: CitizenWebPushController
+    @Autowired private lateinit var mockWebPushEndpoint: MockWebPushEndpoint
 
     private val keyPair = WebPushCrypto.generateKeyPair(SecureRandom())
     private val clock = MockEvakaClock(2026, 1, 1, 12, 0)
@@ -29,11 +32,15 @@ class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBefor
     private val otherAdult = DevPerson()
 
     private val endpoint = URI("https://push.example.com/subscription/1234")
+    private val mockEndpoint by lazy {
+        URI("http://localhost:$httpPort/public/mock-web-push/subscription/1234")
+    }
     private val userAgent =
         "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1"
 
     @BeforeEach
     fun beforeEach() {
+        mockWebPushEndpoint.clearData()
         db.transaction { tx ->
             tx.insert(adult, DevPersonType.ADULT)
             tx.insert(otherAdult, DevPersonType.ADULT)
@@ -117,10 +124,62 @@ class CitizenWebPushControllerIntegrationTest : FullApplicationTest(resetDbBefor
         )
     }
 
+    @Test
+    fun `another person cannot revoke a device`() {
+        val device = subscribe(adult)
+
+        assertThrows<NotFound> {
+            controller.deletePushDevice(dbInstance(), user(otherAdult), clock, device.id)
+        }
+
+        assertEquals(
+            listOf(device),
+            controller.getPushSettings(dbInstance(), user(adult), clock).devices,
+        )
+    }
+
+    @Test
+    fun `a test notification is sent to the owner's device`() {
+        val device = subscribe(adult, mockEndpoint)
+
+        controller.sendTestPushNotification(
+            dbInstance(),
+            user(adult),
+            clock,
+            CitizenWebPushController.PushTestRequest(device.id),
+        )
+
+        assertEquals(1, mockWebPushEndpoint.getCapturedRequests("1234").size)
+        assertEquals(
+            clock.now(),
+            controller
+                .getPushSettings(dbInstance(), user(adult), clock)
+                .devices
+                .single()
+                .lastSentAt,
+        )
+    }
+
+    @Test
+    fun `another person cannot send a test notification to a device`() {
+        val device = subscribe(adult, mockEndpoint)
+
+        assertThrows<NotFound> {
+            controller.sendTestPushNotification(
+                dbInstance(),
+                user(otherAdult),
+                clock,
+                CitizenWebPushController.PushTestRequest(device.id),
+            )
+        }
+
+        assertEquals(emptyList(), mockWebPushEndpoint.getCapturedRequests("1234"))
+    }
+
     private fun user(person: DevPerson) =
         AuthenticatedUser.Citizen(person.id, CitizenAuthLevel.WEAK)
 
-    private fun subscribe(person: DevPerson): CitizenPushDevice =
+    private fun subscribe(person: DevPerson, endpoint: URI = this.endpoint): CitizenPushDevice =
         controller.addPushSubscription(
             dbInstance(),
             user(person),
