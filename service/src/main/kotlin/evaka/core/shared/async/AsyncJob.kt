@@ -621,10 +621,15 @@ sealed interface AsyncJob : AsyncJobPayload {
                     MarkMessagesAsSent::class,
                     SendAbsencePushNotification::class,
                     SendCalendarEventReservationPushNotification::class,
-                    SendCitizenMessagePushNotification::class,
                     SendMessagePushNotification::class,
                     UpdateMessageThreadRecipients::class,
                 ),
+            )
+        val citizenPush =
+            AsyncJobRunner.Pool(
+                AsyncJobPool.Id(AsyncJob::class, "citizenPush"),
+                AsyncJobPool.Config(concurrency = 4),
+                setOf(SendCitizenMessagePushNotification::class),
             )
         val suomiFi =
             AsyncJobRunner.Pool(

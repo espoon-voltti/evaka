@@ -65,6 +65,8 @@ class CitizenPushNotifications(private val webPush: WebPush?, private val env: E
                 "Subscription $subscription expired (HTTP status ${e.status}) -> deleting"
             }
             dbc.transaction { it.deleteCitizenPushSubscription(subscription) }
+        } catch (e: WebPush.PermanentFailure) {
+            logger.warn(e) { "Push notification to subscription $subscription refused -> dropping" }
         }
     }
 }

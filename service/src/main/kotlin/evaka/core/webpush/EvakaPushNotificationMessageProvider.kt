@@ -7,6 +7,8 @@ package evaka.core.webpush
 import evaka.core.messaging.MessageType
 import evaka.core.shared.domain.UiLanguage
 
+private const val MAX_BODY_LENGTH = 200
+
 class EvakaPushNotificationMessageProvider : PushNotificationMessageProvider {
     override fun messageNotification(
         language: UiLanguage,
@@ -38,7 +40,9 @@ class EvakaPushNotificationMessageProvider : PushNotificationMessageProvider {
             title = kind,
             body =
                 when {
-                    showTitle -> data.title
+                    // push services refuse a payload above 4096 bytes, and a message title has no
+                    // length limit of its own
+                    showTitle -> data.title.take(MAX_BODY_LENGTH)
                     data.sensitive -> null
                     else -> data.senderName
                 },

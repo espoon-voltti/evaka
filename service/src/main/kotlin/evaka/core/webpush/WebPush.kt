@@ -26,6 +26,7 @@ import okhttp3.Dns
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import org.springframework.http.HttpStatus
 import tools.jackson.databind.annotation.JsonTypeIdResolver
 
@@ -154,6 +155,14 @@ private val VAPID_JWT_MIN_VALID_DURATION = Duration.ofHours(1)
 
 private const val MAX_ERROR_BODY_SIZE = 4096L
 
+private fun Response.retryAfter(): Duration? =
+    header("Retry-After")?.toLongOrNull()?.takeIf { it > 0 }?.let { Duration.ofSeconds(it) }
+
+private val CONNECT_TIMEOUT = Duration.ofSeconds(5)
+private val READ_TIMEOUT = Duration.ofSeconds(5)
+private val WRITE_TIMEOUT = Duration.ofSeconds(5)
+private val CALL_TIMEOUT = Duration.ofSeconds(10)
+
 /**
  * Refuses hostnames that resolve to an address inside the service's own networks, so that a
  * subscription cannot make the service send requests to internal hosts.
@@ -183,6 +192,10 @@ class WebPush(env: WebPushEnv) {
         OkHttpClient.Builder()
             .followRedirects(false)
             .followSslRedirects(false)
+            .connectTimeout(CONNECT_TIMEOUT)
+            .readTimeout(READ_TIMEOUT)
+            .writeTimeout(WRITE_TIMEOUT)
+            .callTimeout(CALL_TIMEOUT)
             .apply { if (!allowInsecureEndpoints) dns(PublicHostDns()) }
             .build()
     private val secureRandom = SecureRandom()
@@ -196,6 +209,10 @@ class WebPush(env: WebPushEnv) {
 
     class SubscriptionExpired(val status: HttpStatus, cause: Throwable) :
         RuntimeException("Subscription expired (HTTP $status)", cause)
+
+    class Throttled(val retryAfter: Duration?, message: String) : RuntimeException(message)
+
+    class PermanentFailure(message: String) : RuntimeException(message)
 
     fun getValidToken(tx: Database.Transaction, clock: EvakaClock, endpoint: URI): VapidJwt =
         tx.getOrRefreshToken(
@@ -257,7 +274,14 @@ class WebPush(env: WebPushEnv) {
             val meta = mapOf("method" to "POST", "url" to webPushRequest.uri.toString())
             // Endpoint is user-supplied. Avoid reading the whole body to avoid out of memory DoS
             val body = response.peekBody(MAX_ERROR_BODY_SIZE).string()
-            val error = IllegalStateException("Web push failed with status $statusCode: $body")
+            val message = "Web push failed with status $statusCode: $body"
+            val error =
+                when {
+                    statusCode == 429 || statusCode == 503 ->
+                        Throttled(response.retryAfter(), message)
+                    statusCode in 400..499 -> PermanentFailure(message)
+                    else -> IllegalStateException(message)
+                }
             logger.error(error, meta) { "Web push failed, status $statusCode" }
             throw error
         }
