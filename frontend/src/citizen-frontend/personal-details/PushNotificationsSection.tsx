@@ -61,151 +61,159 @@ export default React.memo(
       deletePushDeviceMutation
     )
 
-    return renderResult(settings, ({ applicationServerKey, devices }) => {
-      // Web push is not configured in this environment
-      if (applicationServerKey === null) return null
+    return renderResult(
+      settings,
+      ({ applicationServerKey, devices, maxDevices }) => {
+        // Web push is not configured in this environment
+        if (applicationServerKey === null) return null
 
-      // Even if browser doesn't support push notifications, we still show the section if there
-      // are devices, so that the user can revoke them.
-      if (availability.kind === 'unavailable' && devices.length === 0)
-        return null
+        // Even if browser doesn't support push notifications, we still show the section if there
+        // are devices, so that the user can revoke them.
+        if (availability.kind === 'unavailable' && devices.length === 0)
+          return null
 
-      const currentDevice = devices.find((d) => d.id === thisDevice) ?? null
+        const currentDevice = devices.find((d) => d.id === thisDevice) ?? null
 
-      const revoke = async (device: CitizenPushDevice) => {
-        const deleted = await deleteDevice({ id: device.id })
-        if (deleted.isSuccess && device.id === currentDevice?.id) {
-          await unsubscribeLocally()
+        const revoke = async (device: CitizenPushDevice) => {
+          const deleted = await deleteDevice({ id: device.id })
+          if (deleted.isSuccess && device.id === currentDevice?.id) {
+            await unsubscribeLocally()
+          }
         }
-      }
 
-      return (
-        <>
-          <Gap $size="s" />
-          <ContentArea
-            $opaque
-            $paddingVertical="m"
-            data-qa="push-notifications-section"
-            ref={ref}
-          >
-            <TitleRow>
-              <SectionTitle $noMargin>{t.title}</SectionTitle>
-              {devices.length > 0 && (
-                <IconChip
-                  label={t.enabled}
-                  icon={faCheckCircle}
-                  textColor={colors.accents.a1greenDark}
-                  backgroundColor={colors.accents.a7mint}
-                  iconColor={colors.status.success}
-                  iconBackgroundColor="transparent"
-                  data-qa="push-account-status"
+        return (
+          <>
+            <Gap $size="s" />
+            <ContentArea
+              $opaque
+              $paddingVertical="m"
+              data-qa="push-notifications-section"
+              ref={ref}
+            >
+              <TitleRow>
+                <SectionTitle $noMargin>{t.title}</SectionTitle>
+                {devices.length > 0 && (
+                  <IconChip
+                    label={t.enabled}
+                    icon={faCheckCircle}
+                    textColor={colors.accents.a1greenDark}
+                    backgroundColor={colors.accents.a7mint}
+                    iconColor={colors.status.success}
+                    iconBackgroundColor="transparent"
+                    data-qa="push-account-status"
+                  />
+                )}
+              </TitleRow>
+              <P>{t.description}</P>
+
+              {currentDevice ? (
+                <ThisDeviceStrip data-qa="push-this-device-state">
+                  <InformationText>
+                    {currentDevice.lastSentAt
+                      ? t.lastSent(currentDevice.lastSentAt.format())
+                      : t.neverSent}
+                  </InformationText>
+                  <MutateButton
+                    appearance="inline"
+                    text={t.sendTest}
+                    mutation={sendTestPushNotificationMutation}
+                    onClick={() => ({ body: { deviceId: currentDevice.id } })}
+                    data-qa="send-test-push-notification"
+                  />
+                </ThisDeviceStrip>
+              ) : availability.kind === 'blocked' ? (
+                <AlertBox
+                  noMargin
+                  title={t.blockedOnThisDevice}
+                  message={t.blockedInstructions[platform()]}
+                  data-qa="push-this-device-state"
+                />
+              ) : (
+                <InfoBox
+                  noMargin
+                  darkBackground
+                  message={
+                    <FixedSpaceColumn $spacing="s" $alignItems="flex-start">
+                      <span>{t.notEnabledOnThisDevice}</span>
+                      {availability.kind === 'subscribable' &&
+                        (devices.length >= maxDevices ? (
+                          <span data-qa="push-device-limit-reached">
+                            {t.deviceLimitReached}
+                          </span>
+                        ) : (
+                          <Button
+                            appearance="inline"
+                            text={t.enable}
+                            onClick={() => void subscribe()}
+                            data-qa="enable-push-notifications"
+                          />
+                        ))}
+                    </FixedSpaceColumn>
+                  }
+                  data-qa="push-this-device-state"
                 />
               )}
-            </TitleRow>
-            <P>{t.description}</P>
 
-            {currentDevice ? (
-              <ThisDeviceStrip data-qa="push-this-device-state">
-                <InformationText>
-                  {currentDevice.lastSentAt
-                    ? t.lastSent(currentDevice.lastSentAt.format())
-                    : t.neverSent}
-                </InformationText>
-                <MutateButton
-                  appearance="inline"
-                  text={t.sendTest}
-                  mutation={sendTestPushNotificationMutation}
-                  onClick={() => ({ body: { deviceId: currentDevice.id } })}
-                  data-qa="send-test-push-notification"
-                />
-              </ThisDeviceStrip>
-            ) : availability.kind === 'blocked' ? (
-              <AlertBox
-                noMargin
-                title={t.blockedOnThisDevice}
-                message={t.blockedInstructions[platform()]}
-                data-qa="push-this-device-state"
-              />
-            ) : (
-              <InfoBox
-                noMargin
-                darkBackground
-                message={
-                  <FixedSpaceColumn $spacing="s" $alignItems="flex-start">
-                    <span>{t.notEnabledOnThisDevice}</span>
-                    {availability.kind === 'subscribable' && (
-                      <Button
-                        appearance="inline"
-                        text={t.enable}
-                        onClick={() => void subscribe()}
-                        data-qa="enable-push-notifications"
-                      />
-                    )}
-                  </FixedSpaceColumn>
-                }
-                data-qa="push-this-device-state"
-              />
-            )}
-
-            <Gap $size="s" />
-            <FixedSpaceColumn $spacing="xs">
-              {devices.map((device) => (
-                <DeviceCard
-                  key={device.id}
-                  $current={device.id === currentDevice?.id}
-                  data-qa="push-device"
-                >
-                  <CardIcon>
-                    <FontAwesomeIcon icon={deviceIcon(device.deviceClass)} />
-                  </CardIcon>
-                  <CardContent>
-                    <LabelLike data-qa="push-device-name">
-                      {deviceName(
-                        device.installed ? t.installedApp : t.browser,
-                        device.operatingSystemName
-                      )}
-                    </LabelLike>
-                    <Chips>
-                      {device.id === currentDevice?.id && (
-                        <IconChip
-                          label={t.thisDevice}
-                          icon={faBell}
-                          textColor={colors.grayscale.g100}
-                          backgroundColor={colors.main.m4}
-                          iconColor={colors.grayscale.g0}
-                          iconBackgroundColor={colors.main.m2}
-                          data-qa="push-device-current"
-                        />
-                      )}
-                      {device.id === currentDevice?.id &&
-                        availability.kind === 'blocked' && (
+              <Gap $size="s" />
+              <FixedSpaceColumn $spacing="xs">
+                {devices.map((device) => (
+                  <DeviceCard
+                    key={device.id}
+                    $current={device.id === currentDevice?.id}
+                    data-qa="push-device"
+                  >
+                    <CardIcon>
+                      <FontAwesomeIcon icon={deviceIcon(device.deviceClass)} />
+                    </CardIcon>
+                    <CardContent>
+                      <LabelLike data-qa="push-device-name">
+                        {deviceName(
+                          device.installed ? t.installedApp : t.browser,
+                          device.operatingSystemName
+                        )}
+                      </LabelLike>
+                      <Chips>
+                        {device.id === currentDevice?.id && (
                           <IconChip
-                            label={t.blocked}
-                            icon={faExclamation}
-                            textColor={colors.accents.a2orangeDark}
-                            backgroundColor={colors.status.warningBackground}
+                            label={t.thisDevice}
+                            icon={faBell}
+                            textColor={colors.grayscale.g100}
+                            backgroundColor={colors.main.m4}
                             iconColor={colors.grayscale.g0}
-                            iconBackgroundColor={colors.status.warning}
+                            iconBackgroundColor={colors.main.m2}
+                            data-qa="push-device-current"
                           />
                         )}
-                    </Chips>
-                    <InformationText>
-                      {t.inUseSince} {device.createdAt.toLocalDate().format()}
-                    </InformationText>
-                  </CardContent>
-                  <IconOnlyButton
-                    icon={faTrash}
-                    aria-label={t.revoke}
-                    onClick={() => void revoke(device)}
-                    data-qa="revoke-push-device"
-                  />
-                </DeviceCard>
-              ))}
-            </FixedSpaceColumn>
-          </ContentArea>
-        </>
-      )
-    })
+                        {device.id === currentDevice?.id &&
+                          availability.kind === 'blocked' && (
+                            <IconChip
+                              label={t.blocked}
+                              icon={faExclamation}
+                              textColor={colors.accents.a2orangeDark}
+                              backgroundColor={colors.status.warningBackground}
+                              iconColor={colors.grayscale.g0}
+                              iconBackgroundColor={colors.status.warning}
+                            />
+                          )}
+                      </Chips>
+                      <InformationText>
+                        {t.inUseSince} {device.createdAt.toLocalDate().format()}
+                      </InformationText>
+                    </CardContent>
+                    <IconOnlyButton
+                      icon={faTrash}
+                      aria-label={t.revoke}
+                      onClick={() => void revoke(device)}
+                      data-qa="revoke-push-device"
+                    />
+                  </DeviceCard>
+                ))}
+              </FixedSpaceColumn>
+            </ContentArea>
+          </>
+        )
+      }
+    )
   })
 )
 

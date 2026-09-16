@@ -337,6 +337,8 @@ const sv: Translations = {
       notEnabledOnThisDevice:
         'Aviseringarna är inte i bruk på den här enheten.',
       enable: 'Ta i bruk',
+      deviceLimitReached:
+        'Du har redan det högsta antalet enheter. Ta bort en enhet för att ta aviseringarna i bruk på den här enheten.',
       blockedOnThisDevice: 'Aviseringarna är blockerade på den här enheten',
       blockedInstructions: {
         ios: 'Tillåt aviseringar i enhetens inställningar: Inställningar > Notiser > eVaka.',

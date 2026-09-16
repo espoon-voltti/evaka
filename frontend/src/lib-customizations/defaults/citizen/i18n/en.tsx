@@ -337,6 +337,8 @@ const en: Translations = {
       thisDevice: 'This device',
       notEnabledOnThisDevice: 'Notifications are not enabled on this device.',
       enable: 'Enable',
+      deviceLimitReached:
+        'You already have the maximum number of devices. Remove a device to enable notifications on this device.',
       blockedOnThisDevice: 'Notifications are blocked on this device',
       blockedInstructions: {
         ios: 'Allow notifications in the device settings: Settings > Notifications > eVaka.',

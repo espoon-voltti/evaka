@@ -341,6 +341,8 @@ export default {
       notEnabledOnThisDevice:
         'Ilmoitukset eivät ole käytössä tällä laitteella.',
       enable: 'Ota käyttöön',
+      deviceLimitReached:
+        'Laitteita on jo enimmäismäärä. Poista jokin laite, jotta voit ottaa ilmoitukset käyttöön tällä laitteella.',
       blockedOnThisDevice: 'Ilmoitukset on estetty tällä laitteella',
       blockedInstructions: {
         ios: 'Salli ilmoitukset laitteen asetuksista: Asetukset > Ilmoitukset > eVaka.',
