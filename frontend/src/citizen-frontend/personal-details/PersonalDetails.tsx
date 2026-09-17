@@ -286,10 +286,7 @@ export default React.memo(function PersonalDetails() {
           ref={notificationSettingsSection}
         >
           {renderResult(notificationSettings, (notificationSettings) => (
-            <NotificationSettingsSection
-              initialData={notificationSettings}
-              ref={notificationSettingsSection}
-            />
+            <NotificationSettingsSection initialData={notificationSettings} />
           ))}
         </ContentArea>
       </NarrowContainer>
