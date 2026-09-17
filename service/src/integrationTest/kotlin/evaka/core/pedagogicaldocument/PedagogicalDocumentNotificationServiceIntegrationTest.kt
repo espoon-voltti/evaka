@@ -31,6 +31,10 @@ import evaka.core.shared.dev.insert
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.shared.security.PilotFeature
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.Duration
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -125,6 +129,25 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
         assertEquals(
             "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
             getEmailFor(testGuardianSv).fromAddress.address,
+        )
+    }
+
+    @Test
+    fun `notification is pushed to a guardian who has only a push device`() {
+        db.transaction { tx ->
+            tx.insertGuardian(testGuardianNoEmail.id, child.id)
+            tx.insertTestCitizenPushSubscription(
+                testGuardianNoEmail.id,
+                mockWebPushEndpoint(httpPort),
+            )
+        }
+        postNewDocument(user = staffUser, PedagogicalDocumentPostBody(child.id, "foobar"))
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+        assertEquals(
+            listOf(CitizenPushNotification.InformalDocument(child.id)),
+            db.read { it.getPlannedCitizenPushNotifications() },
         )
     }
 

@@ -19,6 +19,10 @@ import evaka.core.shared.async.AsyncJobType
 import evaka.core.shared.async.removeUnclaimedJobs
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.CitizenPushNotifications
+import evaka.core.webpush.DecisionPushNotificationKind
+import evaka.core.webpush.hasCitizenPushSubscriptions
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import org.springframework.stereotype.Service
@@ -29,6 +33,7 @@ private val logger = KotlinLogging.logger {}
 class PendingDecisionEmailService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: EmailClient,
+    private val citizenPushNotifications: CitizenPushNotifications,
     private val emailMessageProvider: IEmailMessageProvider,
     private val emailEnv: EmailEnv,
 ) {
@@ -90,7 +95,8 @@ GROUP BY application.guardian_id
                                 count
                             }
 
-                            guardian.email.isNullOrBlank() -> {
+                            guardian.email.isNullOrBlank() &&
+                                !tx.hasCitizenPushSubscriptions(guardian.id) -> {
                                 logger.warn {
                                     "Could not send pending decision email to guardian ${guardian.id}: invalid email"
                                 }
@@ -144,6 +150,14 @@ GROUP BY application.guardian_id
                 "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
             )
             ?.also { emailClient.send(it) }
+        db.transaction { tx ->
+            citizenPushNotifications.plan(
+                tx,
+                clock.now(),
+                pendingDecision.guardianId,
+                CitizenPushNotification.Decision(DecisionPushNotificationKind.PENDING_APPROVAL),
+            )
+        }
 
         val now = clock.now()
         db.transaction { tx ->

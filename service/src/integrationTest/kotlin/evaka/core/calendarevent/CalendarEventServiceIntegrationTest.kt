@@ -63,6 +63,12 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.RealEvakaClock
 import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.security.PilotFeature
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.DiscussionTimePushNotificationEvent
+import evaka.core.webpush.SingleCalendarEvent
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -1714,6 +1720,90 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 email.content.subject,
             )
         }
+    }
+
+    @Test
+    fun `calendar event digest is pushed to a guardian who has only a push device`() {
+        db.transaction { tx ->
+            tx.insertTestCitizenPushSubscription(adult1.id, mockWebPushEndpoint(httpPort))
+        }
+        val form =
+            CalendarEventForm(
+                unitId = daycare.id,
+                tree = null,
+                title = "Unit-wide event",
+                description = "uwe",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                eventType = CalendarEventType.DAYCARE_EVENT,
+            )
+        calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
+
+        calendarEventNotificationService.scheduleCalendarEventDigestEmails(db, now)
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        assertEquals(0, MockEmailClient.emails.size)
+        assertEquals(
+            listOf(
+                CitizenPushNotification.CalendarEvents(
+                    count = 1,
+                    single = SingleCalendarEvent("Unit-wide event", today.plusDays(3)),
+                )
+            ),
+            db.read { it.getPlannedCitizenPushNotifications() },
+        )
+    }
+
+    @Test
+    fun `discussion time reservation and reminder are pushed`() {
+        db.transaction { tx ->
+            tx.insertTestCitizenPushSubscription(adult1.id, mockWebPushEndpoint(httpPort))
+        }
+        val eventTimeForm =
+            CalendarEventTimeForm(
+                date = today.plusDays(2),
+                timeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(9, 0)),
+            )
+        val form =
+            CalendarEventForm(
+                unitId = daycare.id,
+                tree = mapOf(group1.id to null),
+                title = "Group survey",
+                description = "gsu",
+                period = FiniteDateRange(today.plusDays(3), today.plusDays(3)),
+                eventType = CalendarEventType.DISCUSSION_SURVEY,
+                times = listOf(eventTimeForm),
+            )
+        val event = createCalendarEvent(form)
+
+        calendarEventController.setCalendarEventTimeReservation(
+            dbInstance(),
+            admin,
+            clock,
+            CalendarEventTimeEmployeeReservationForm(event.times.first().id, child1.id),
+        )
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+        calendarEventNotificationService.scheduleDiscussionTimeReminders(db, now)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
+
+        assertEquals(
+            listOf(
+                CitizenPushNotification.DiscussionTime(
+                    event.times.first().id,
+                    DiscussionTimePushNotificationEvent.RESERVED,
+                    today.plusDays(2),
+                    LocalTime.of(8, 0),
+                    LocalTime.of(9, 0),
+                ),
+                CitizenPushNotification.DiscussionTime(
+                    event.times.first().id,
+                    DiscussionTimePushNotificationEvent.REMINDER,
+                    today.plusDays(2),
+                    LocalTime.of(8, 0),
+                    LocalTime.of(9, 0),
+                ),
+            ),
+            db.read { it.getPlannedCitizenPushNotifications() },
+        )
     }
 
     @Test

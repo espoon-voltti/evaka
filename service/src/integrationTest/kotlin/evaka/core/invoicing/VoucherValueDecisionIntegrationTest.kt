@@ -57,6 +57,11 @@ import evaka.core.shared.domain.BadRequest
 import evaka.core.shared.domain.Forbidden
 import evaka.core.shared.domain.HelsinkiDateTime
 import evaka.core.shared.domain.MockEvakaClock
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.DecisionPushNotificationKind
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -348,7 +353,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `Email notification is sent to hof when decision in WAITING_FOR_SENDING is set to SENT`() {
+    fun `Email and push notifications are sent to hof when decision in WAITING_FOR_SENDING is set to SENT`() {
         val optInAdult =
             DevPerson(
                 ssn = "291090-9986",
@@ -369,6 +374,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
             )
             it.insertTestPartnership(adult1 = optInAdult.id, adult2 = adult7.id)
+            it.insertTestCitizenPushSubscription(optInAdult.id, mockWebPushEndpoint(httpPort))
         }
         createPlacement(startDate, endDate, childId = child2.id)
         val decisionId = sendAllValueDecisions().first()
@@ -389,6 +395,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(
             "${emailEnv.senderNameFi} <${emailEnv.senderAddress}>",
             getEmailFor(optInAdult).fromAddress.address,
+        )
+        assertEquals(
+            listOf(CitizenPushNotification.Decision(DecisionPushNotificationKind.VOUCHER_VALUE)),
+            db.read { it.getPlannedCitizenPushNotifications() },
         )
     }
 

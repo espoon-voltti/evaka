@@ -10,6 +10,7 @@ import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.Conflict
 import evaka.core.shared.domain.HelsinkiDateTime
+import evaka.core.shared.domain.UiLanguage
 import evaka.core.user.DeviceClass
 import evaka.core.user.ParsedUserAgent
 import java.net.URI
@@ -190,5 +191,30 @@ SELECT EXISTS(
 )
 """
     )
+}
+    .exactlyOne()
+
+fun Database.Read.getCitizenPushSubscriptionIds(person: PersonId): List<CitizenPushSubscriptionId> =
+    createQuery {
+        sql("SELECT id FROM citizen_push_subscription WHERE person_id = ${bind(person)}")
+    }
+    .toList()
+
+/** Null when the subscription no longer exists */
+fun Database.Read.getCitizenPushLanguage(subscription: CitizenPushSubscriptionId): UiLanguage? =
+    createQuery {
+        sql(
+            """
+SELECT coalesce(cu.preferred_ui_language, 'FI') AS language
+FROM citizen_push_subscription cps
+LEFT JOIN citizen_user cu ON cu.id = cps.person_id
+WHERE cps.id = ${bind(subscription)}
+"""
+        )
+    }
+    .exactlyOneOrNull()
+
+fun Database.Read.hasCitizenPushSubscriptions(person: PersonId): Boolean = createQuery {
+    sql("SELECT EXISTS(SELECT FROM citizen_push_subscription WHERE person_id = ${bind(person)})")
 }
     .exactlyOne()

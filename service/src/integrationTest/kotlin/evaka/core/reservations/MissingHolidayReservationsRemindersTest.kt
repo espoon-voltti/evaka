@@ -34,6 +34,10 @@ import evaka.core.shared.domain.MockEvakaClock
 import evaka.core.shared.job.ScheduledJobs
 import evaka.core.shared.security.PilotFeature
 import evaka.core.snDefaultDaycare
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
@@ -121,6 +125,31 @@ class MissingHolidayReservationsRemindersTest : FullApplicationTest(resetDbBefor
 
         // 2/2 holiday days has a reservation / absence so a reminder is not sent
         assertEquals(emptyList(), getHolidayReminderRecipients())
+    }
+
+    @Test
+    fun `Missing holiday reminder is pushed to a guardian who has only a push device`() {
+        db.transaction { tx ->
+            tx.execute { sql("UPDATE person SET email = NULL WHERE id = ${bind(guardian.id)}") }
+            tx.insertTestCitizenPushSubscription(guardian.id, mockWebPushEndpoint(httpPort))
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = daycare.id,
+                    startDate = holidayPeriod.start,
+                    endDate = holidayPeriod.end,
+                    type = PlacementType.DAYCARE,
+                )
+            )
+        }
+
+        assertEquals(emptyList(), getHolidayReminderRecipients())
+        assertEquals(
+            listOf(
+                CitizenPushNotification.MissingHolidayReservations(clockToday.today().plusDays(2))
+            ),
+            db.read { it.getPlannedCitizenPushNotifications() },
+        )
     }
 
     @Test
