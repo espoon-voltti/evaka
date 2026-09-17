@@ -4223,11 +4223,8 @@ export const sv: typeof fi = {
     },
     vardaChildErrors: {
       title: 'Varda-barnfel',
-      ma003: {
-        include: 'Inkludera MA003-fel',
-        exclude: 'Dölj MA003-fel',
-        only: 'Visa endast MA003-fel'
-      },
+      showMA003Errors: 'Visa MA003-fel',
+      include8yAndOlder: 'Visa barn som är 8 år eller äldre',
       description: 'Fel som inträffat vid uppdatering av Varda-barn',
       updated: 'Senast uppdaterad',
       age: 'Ålder (dagar)',
