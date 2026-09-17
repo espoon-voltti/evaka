@@ -13,7 +13,7 @@ import { useQueryResult } from 'lib-common/query'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import Main from 'lib-components/atoms/Main'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
-import { desktopMin, desktopMinPx } from 'lib-components/breakpoints'
+import { desktopMin } from 'lib-components/breakpoints'
 import { ContentArea, NarrowContainer } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { H1 } from 'lib-components/typography'
@@ -26,7 +26,6 @@ import { renderResult } from '../async-rendering'
 import { passkeysSupported } from '../auth/passkeys'
 import { AuthContext } from '../auth/state'
 import { useTranslation } from '../localization'
-import { headerHeightMobile } from '../navigation/const'
 import { pwaEnabled } from '../pwa/enabled'
 import useTitle from '../useTitle'
 
@@ -47,13 +46,6 @@ import {
 } from './queries'
 import type { PersonalDetailsTaskSection } from './tasks'
 import { personalDetailsTaskConfig, usePersonalDetailsTasks } from './tasks'
-
-// the header is sticky on mobile, so scroll targets must stop below it
-const ScrollTargetArea = styled(ContentArea)`
-  @media (max-width: ${desktopMinPx - 1}px) {
-    scroll-margin-top: ${headerHeightMobile}px;
-  }
-`
 
 const DesktopTopGap = styled.div`
   display: none;
@@ -217,11 +209,7 @@ export default React.memo(function PersonalDetails() {
 
         <Gap $size="s" />
 
-        <ScrollTargetArea
-          $opaque
-          $paddingVertical="m"
-          ref={contactDetailsSection}
-        >
+        <ContentArea $opaque $paddingVertical="m" ref={contactDetailsSection}>
           {renderResult(
             combine(user, emailVerificationStatus),
             ([user, emailVerificationStatus]) =>
@@ -235,7 +223,7 @@ export default React.memo(function PersonalDetails() {
                 <Redirect replace to="/" />
               )
           )}
-        </ScrollTargetArea>
+        </ContentArea>
 
         {showFamilySizeSection && (
           <>
@@ -255,11 +243,7 @@ export default React.memo(function PersonalDetails() {
         {showPasskeysSection && (
           <>
             <Gap $size="s" />
-            <ScrollTargetArea
-              $opaque
-              $paddingVertical="m"
-              ref={passkeysSection}
-            >
+            <ContentArea $opaque $paddingVertical="m" ref={passkeysSection}>
               {renderResult(user, (user) =>
                 user ? (
                   <PasskeysSection user={user} />
@@ -267,17 +251,13 @@ export default React.memo(function PersonalDetails() {
                   <Redirect replace to="/" />
                 )
               )}
-            </ScrollTargetArea>
+            </ContentArea>
           </>
         )}
 
         <Gap $size="s" />
 
-        <ScrollTargetArea
-          $opaque
-          $paddingVertical="m"
-          ref={loginDetailsSection}
-        >
+        <ContentArea $opaque $paddingVertical="m" ref={loginDetailsSection}>
           {renderResult(
             combine(user, emailVerificationStatus, passwordConstraints),
             ([user, emailVerificationStatus, passwordConstraints]) =>
@@ -292,7 +272,7 @@ export default React.memo(function PersonalDetails() {
                 <Redirect replace to="/" />
               )
           )}
-        </ScrollTargetArea>
+        </ContentArea>
 
         <HomeScreenSection ref={homeScreenSection} />
 
@@ -300,7 +280,7 @@ export default React.memo(function PersonalDetails() {
 
         <Gap $size="s" />
 
-        <ScrollTargetArea
+        <ContentArea
           $opaque
           $paddingVertical="m"
           ref={notificationSettingsSection}
@@ -311,7 +291,7 @@ export default React.memo(function PersonalDetails() {
               ref={notificationSettingsSection}
             />
           ))}
-        </ScrollTargetArea>
+        </ContentArea>
       </NarrowContainer>
       <Footer />
     </Main>
