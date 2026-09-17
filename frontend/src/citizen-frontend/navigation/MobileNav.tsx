@@ -38,6 +38,7 @@ import { unreadMessagesCountQuery } from '../messages/queries'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import AttentionIndicator from './AttentionIndicator'
+import { hasSubMenuAttention } from './attention'
 import { headerHeightMobile, logoutUrl, mobileBottomNavHeight } from './const'
 import {
   CircledChar,
@@ -112,7 +113,10 @@ export default React.memo(function MobileNav() {
         />
         <StyledButton onClick={toggleSubMenu} data-qa="sub-nav-menu-mobile">
           <AttentionIndicator
-            toggled={hasPersonalDetailsTasks || unreadDecisions > 0}
+            toggled={hasSubMenuAttention({
+              hasPersonalDetailsTasks,
+              unreadDecisions
+            })}
             position="top"
             data-qa="attention-indicator-sub-menu-mobile"
           >
