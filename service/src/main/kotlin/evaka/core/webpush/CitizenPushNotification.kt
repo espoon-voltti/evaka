@@ -12,6 +12,7 @@ import evaka.core.invoicing.service.IncomeNotificationType
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.CalendarEventId
 import evaka.core.shared.CalendarEventTimeId
+import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.domain.FiniteDateRange
@@ -66,6 +67,7 @@ sealed interface CitizenPushNotification {
 
     @JsonTypeName("ABSENCE_APPLICATION_DECISION")
     data class AbsenceApplicationDecision(
+        val childId: ChildId,
         val childName: String,
         val range: FiniteDateRange,
         val rejected: Boolean,
@@ -73,6 +75,7 @@ sealed interface CitizenPushNotification {
 
     @JsonTypeName("SERVICE_APPLICATION_DECISION")
     data class ServiceApplicationDecision(
+        val childId: ChildId,
         val childName: String,
         val serviceNeedNameFi: String,
         val serviceNeedNameSv: String,
@@ -98,7 +101,7 @@ sealed interface CitizenPushNotification {
 
     @JsonTypeName("DOCUMENT")
     data class Document(
-        val childId: ChildId,
+        val documentId: ChildDocumentId,
         val notificationType: ChildDocumentNotificationType,
         val childName: String,
     ) : CitizenPushNotification

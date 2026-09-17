@@ -12,6 +12,7 @@ import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.pis.NotificationCategory
 import evaka.core.pis.getPersonById
+import evaka.core.pis.service.getChildGuardiansAndFosterParents
 import evaka.core.placement.getPlacementsForChildDuring
 import evaka.core.shared.PersonId
 import evaka.core.shared.async.AsyncJob
@@ -87,18 +88,24 @@ class AbsenceApplicationService(
                 )
                 ?.also { emailClient.send(it) }
             db.transaction { tx ->
-                citizenPushNotifications.plan(
-                    tx,
-                    clock.now(),
-                    guardian.id,
-                    CitizenPushNotification.AbsenceApplicationDecision(
-                        childName =
-                            tx.getPushChildNames(listOf(application.childId))
-                                .getValue(application.childId),
-                        range = FiniteDateRange(application.startDate, application.endDate),
-                        rejected = application.status == AbsenceApplicationStatus.REJECTED,
-                    ),
-                )
+                if (
+                    tx.getChildGuardiansAndFosterParents(application.childId, clock.today())
+                        .contains(guardian.id)
+                ) {
+                    citizenPushNotifications.plan(
+                        tx,
+                        clock.now(),
+                        guardian.id,
+                        CitizenPushNotification.AbsenceApplicationDecision(
+                            childId = application.childId,
+                            childName =
+                                tx.getPushChildNames(listOf(application.childId))
+                                    .getValue(application.childId),
+                            range = FiniteDateRange(application.startDate, application.endDate),
+                            rejected = application.status == AbsenceApplicationStatus.REJECTED,
+                        ),
+                    )
+                }
             }
         }
     }
