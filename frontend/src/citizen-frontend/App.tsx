@@ -44,6 +44,14 @@ import { useNotificationClickRouting } from './pwa/notificationRouting'
 import { queryClient, QueryClientProvider } from './query'
 
 const GlobalStyle = createGlobalStyle`
+  html {
+    scroll-padding-bottom: ${mobileBottomNavHeight}px;
+
+    @media (min-width: ${desktopMin}) {
+      scroll-padding-bottom: 0;
+    }
+  }
+
   @media screen and (max-width: ${zoomedMobileMax}) {
     html {
       overflow-x: auto;
