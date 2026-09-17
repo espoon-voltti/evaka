@@ -24,6 +24,7 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.webpush.CitizenPushNotification
 import evaka.core.webpush.CitizenPushNotifications
 import evaka.core.webpush.DiscussionTimePushNotificationEvent
+import evaka.core.webpush.SingleCalendarEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -187,7 +188,10 @@ class CalendarEventNotificationService(
                 msg.parentId,
                 CitizenPushNotification.CalendarEvents(
                     count = events.size,
-                    title = events.singleOrNull()?.title,
+                    single =
+                        events.singleOrNull()?.let {
+                            SingleCalendarEvent(it.title, it.period.start)
+                        },
                 ),
             )
         }
@@ -232,6 +236,7 @@ class CalendarEventNotificationService(
                 clock.now(),
                 msg.recipientId,
                 CitizenPushNotification.DiscussionTime(
+                    eventTime.id,
                     DiscussionTimePushNotificationEvent.RESERVED,
                     eventTime.date,
                     eventTime.startTime,
@@ -280,6 +285,7 @@ class CalendarEventNotificationService(
                 clock.now(),
                 msg.recipientId,
                 CitizenPushNotification.DiscussionTime(
+                    eventTime.id,
                     DiscussionTimePushNotificationEvent.CANCELLED,
                     eventTime.date,
                     eventTime.startTime,
@@ -327,6 +333,7 @@ class CalendarEventNotificationService(
                 clock.now(),
                 msg.recipientId,
                 CitizenPushNotification.DiscussionTime(
+                    msg.eventTimeId,
                     DiscussionTimePushNotificationEvent.REMINDER,
                     messageDetails.date,
                     messageDetails.startTime,

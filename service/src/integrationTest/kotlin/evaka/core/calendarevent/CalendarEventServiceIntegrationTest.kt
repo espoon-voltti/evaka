@@ -65,6 +65,7 @@ import evaka.core.shared.domain.TimeRange
 import evaka.core.shared.security.PilotFeature
 import evaka.core.webpush.CitizenPushNotification
 import evaka.core.webpush.DiscussionTimePushNotificationEvent
+import evaka.core.webpush.SingleCalendarEvent
 import evaka.core.webpush.getPlannedCitizenPushNotifications
 import evaka.core.webpush.insertTestCitizenPushSubscription
 import evaka.core.webpush.mockWebPushEndpoint
@@ -1742,7 +1743,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         assertEquals(0, MockEmailClient.emails.size)
         assertEquals(
-            listOf(CitizenPushNotification.CalendarEvents(count = 1, title = "Unit-wide event")),
+            listOf(
+                CitizenPushNotification.CalendarEvents(
+                    count = 1,
+                    single = SingleCalendarEvent("Unit-wide event", today.plusDays(3)),
+                )
+            ),
             db.read { it.getPlannedCitizenPushNotifications() },
         )
     }
@@ -1782,12 +1788,14 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(
             listOf(
                 CitizenPushNotification.DiscussionTime(
+                    event.times.first().id,
                     DiscussionTimePushNotificationEvent.RESERVED,
                     today.plusDays(2),
                     LocalTime.of(8, 0),
                     LocalTime.of(9, 0),
                 ),
                 CitizenPushNotification.DiscussionTime(
+                    event.times.first().id,
                     DiscussionTimePushNotificationEvent.REMINDER,
                     today.plusDays(2),
                     LocalTime.of(8, 0),

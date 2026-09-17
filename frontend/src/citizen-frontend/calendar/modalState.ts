@@ -130,6 +130,8 @@ export function useCalendarModalState(): UseModalStateResult {
   }
 }
 
+// Push notification links use this URL format too. If you change the format, also change the paths
+// in service/src/main/kotlin/evaka/core/webpush/CitizenPushNotifications.kt
 function parseQueryString(
   searchParams: URLSearchParams
 ): URLModalState | undefined {

@@ -9,6 +9,8 @@ import evaka.core.document.childdocument.ChildDocumentNotificationType
 import evaka.core.invoicing.service.IncomeNotificationType
 import evaka.core.pis.NotificationCategory
 import evaka.core.pis.updateDisabledPushTypes
+import evaka.core.shared.CalendarEventTimeId
+import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.dev.DevPerson
@@ -19,6 +21,7 @@ import evaka.core.shared.domain.MockEvakaClock
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -185,10 +188,17 @@ class CitizenPushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
             listOf(
                 decision,
                 CitizenPushNotification.Income(IncomeNotificationType.REMINDER_EMAIL),
-                CitizenPushNotification.CalendarEvents(count = 1, title = "Retki"),
-                CitizenPushNotification.CalendarEvents(count = 3, title = null),
-                CitizenPushNotification.Document(
+                CitizenPushNotification.ChildApplicationDecision(
+                    ChildApplicationDecisionKind.SERVICE_APPLICATION,
                     child.id,
+                ),
+                CitizenPushNotification.CalendarEvents(
+                    count = 1,
+                    single = SingleCalendarEvent("Retki", clock.today().plusDays(3)),
+                ),
+                CitizenPushNotification.CalendarEvents(count = 3, single = null),
+                CitizenPushNotification.Document(
+                    ChildDocumentId(UUID.randomUUID()),
                     ChildDocumentNotificationType.EDITABLE_DOCUMENT,
                 ),
                 CitizenPushNotification.InformalDocument(child.id),
@@ -199,6 +209,7 @@ class CitizenPushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                 CitizenPushNotification.MissingHolidayReservations(clock.today().plusDays(2)),
                 CitizenPushNotification.DiscussionSurvey("Vasukeskustelut"),
                 CitizenPushNotification.DiscussionTime(
+                    CalendarEventTimeId(UUID.randomUUID()),
                     DiscussionTimePushNotificationEvent.REMINDER,
                     LocalDate.of(2026, 1, 8),
                     LocalTime.of(10, 0),

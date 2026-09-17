@@ -36,6 +36,11 @@ interface PushNotificationMessageProvider {
         kind: DecisionPushNotificationKind,
     ): PushNotificationContent
 
+    fun childApplicationDecisionNotification(
+        language: UiLanguage,
+        kind: ChildApplicationDecisionKind,
+    ): PushNotificationContent
+
     fun incomeNotification(
         language: UiLanguage,
         notificationType: IncomeNotificationType,

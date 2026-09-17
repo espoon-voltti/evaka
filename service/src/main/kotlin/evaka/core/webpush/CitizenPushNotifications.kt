@@ -117,8 +117,27 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.decisionNotification(language, notification.kind),
-                    path = "/",
-                    tag = "decision",
+                    path =
+                        when (notification.kind) {
+                            DecisionPushNotificationKind.PENDING_APPROVAL -> "/decisions/pending"
+                            else -> "/decisions"
+                        },
+                    tag =
+                        when (notification.kind) {
+                            DecisionPushNotificationKind.PENDING_APPROVAL -> "decision-pending"
+                            else -> "decision"
+                        },
+                )
+
+            is CitizenPushNotification.ChildApplicationDecision ->
+                Delivery(
+                    NotificationCategory.DECISION_NOTIFICATION,
+                    messageProvider.childApplicationDecisionNotification(
+                        language,
+                        notification.kind,
+                    ),
+                    path = "/children/${notification.childId}",
+                    tag = "child-application-${notification.childId}",
                 )
 
             is CitizenPushNotification.Income ->
@@ -135,9 +154,9 @@ class CitizenPushNotifications(
                     messageProvider.calendarEventNotification(
                         language,
                         notification.count,
-                        notification.title,
+                        notification.single?.title,
                     ),
-                    path = "/calendar",
+                    path = notification.single?.let { "/calendar?day=${it.date}" } ?: "/calendar",
                     tag = "calendar-events",
                 )
 
@@ -148,8 +167,8 @@ class CitizenPushNotifications(
                         language,
                         notification.notificationType,
                     ),
-                    path = "/children/${notification.childId}",
-                    tag = "document-${notification.childId}",
+                    path = "/child-documents/${notification.documentId}",
+                    tag = "document-${notification.documentId}",
                 )
 
             is CitizenPushNotification.InformalDocument ->
@@ -164,7 +183,8 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
                     messageProvider.missingReservationsNotification(language, notification.range),
-                    path = "/calendar",
+                    path =
+                        "/calendar?modal=reservations&startDate=${notification.range.start}&endDate=${notification.range.end}",
                     tag = "missing-reservations",
                     ttl = ttlUntil(now, notification.deadline) ?: return null,
                 )
@@ -176,7 +196,7 @@ class CitizenPushNotifications(
                         language,
                         notification.deadline,
                     ),
-                    path = "/calendar",
+                    path = "/calendar?modal=holidays",
                     tag = "missing-holiday-reservations",
                     ttl =
                         ttlUntil(now, HelsinkiDateTime.of(notification.deadline, LocalTime.MAX))
@@ -187,7 +207,7 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DISCUSSION_TIME_NOTIFICATION,
                     messageProvider.discussionSurveyNotification(language, notification.title),
-                    path = "/calendar",
+                    path = "/calendar?modal=discussions",
                     tag = "discussion-survey",
                 )
 
@@ -201,8 +221,8 @@ class CitizenPushNotifications(
                         notification.startTime,
                         notification.endTime,
                     ),
-                    path = "/calendar",
-                    tag = "discussion-time",
+                    path = "/calendar?day=${notification.date}",
+                    tag = "discussion-time-${notification.eventTimeId}",
                     ttl =
                         when (notification.event) {
                             DiscussionTimePushNotificationEvent.REMINDER ->

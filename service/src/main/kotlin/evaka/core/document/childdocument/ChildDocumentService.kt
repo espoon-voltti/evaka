@@ -462,7 +462,7 @@ WHERE (person.email IS NOT NULL AND person.email != '')
                 tx,
                 clock.now(),
                 msg.recipientId,
-                CitizenPushNotification.Document(msg.childId, msg.notificationType),
+                CitizenPushNotification.Document(msg.documentId, msg.notificationType),
             )
         }
     }

@@ -19,9 +19,9 @@ import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.NotFound
+import evaka.core.webpush.ChildApplicationDecisionKind
 import evaka.core.webpush.CitizenPushNotification
 import evaka.core.webpush.CitizenPushNotifications
-import evaka.core.webpush.DecisionPushNotificationKind
 import org.springframework.stereotype.Service
 
 @Service
@@ -90,8 +90,9 @@ class AbsenceApplicationService(
                     tx,
                     clock.now(),
                     guardian.id,
-                    CitizenPushNotification.Decision(
-                        DecisionPushNotificationKind.ABSENCE_APPLICATION
+                    CitizenPushNotification.ChildApplicationDecision(
+                        ChildApplicationDecisionKind.ABSENCE_APPLICATION,
+                        application.childId,
                     ),
                 )
             }

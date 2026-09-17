@@ -17,9 +17,9 @@ import evaka.core.shared.async.AsyncJobRunner
 import evaka.core.shared.db.Database
 import evaka.core.shared.domain.EvakaClock
 import evaka.core.shared.domain.NotFound
+import evaka.core.webpush.ChildApplicationDecisionKind
 import evaka.core.webpush.CitizenPushNotification
 import evaka.core.webpush.CitizenPushNotifications
-import evaka.core.webpush.DecisionPushNotificationKind
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -86,7 +86,10 @@ class ServiceApplicationService(
                 tx,
                 clock.now(),
                 application.personId,
-                CitizenPushNotification.Decision(DecisionPushNotificationKind.SERVICE_APPLICATION),
+                CitizenPushNotification.ChildApplicationDecision(
+                    ChildApplicationDecisionKind.SERVICE_APPLICATION,
+                    application.childId,
+                ),
             )
         }
 

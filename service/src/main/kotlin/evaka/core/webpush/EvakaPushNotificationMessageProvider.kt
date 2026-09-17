@@ -93,12 +93,7 @@ class EvakaPushNotificationMessageProvider : PushNotificationMessageProvider {
 
             else ->
                 PushNotificationContent(
-                    title =
-                        when (language) {
-                            UiLanguage.FI -> "Uusi päätös eVakassa"
-                            UiLanguage.SV -> "Nytt beslut i eVaka"
-                            UiLanguage.EN -> "New decision in eVaka"
-                        },
+                    title = newDecisionTitle(language),
                     body =
                         when (kind) {
                             DecisionPushNotificationKind.APPLICATION ->
@@ -119,23 +114,39 @@ class EvakaPushNotificationMessageProvider : PushNotificationMessageProvider {
                                     UiLanguage.SV -> "Beslut om servicesedelns värde"
                                     UiLanguage.EN -> "Voucher value decision"
                                 }
-                            DecisionPushNotificationKind.ABSENCE_APPLICATION ->
-                                when (language) {
-                                    UiLanguage.FI -> "Esiopetuksen poissaolohakemus käsitelty"
-                                    UiLanguage.SV ->
-                                        "Ansökan om frånvaro från förskolan har behandlats"
-                                    UiLanguage.EN -> "Preschool absence application processed"
-                                }
-                            DecisionPushNotificationKind.SERVICE_APPLICATION ->
-                                when (language) {
-                                    UiLanguage.FI -> "Palveluntarpeen muutoshakemus käsitelty"
-                                    UiLanguage.SV ->
-                                        "Ansökan om ändring av servicebehov har behandlats"
-                                    UiLanguage.EN -> "Service need change application processed"
-                                }
                             DecisionPushNotificationKind.PENDING_APPROVAL -> null
                         },
                 )
+        }
+
+    override fun childApplicationDecisionNotification(
+        language: UiLanguage,
+        kind: ChildApplicationDecisionKind,
+    ): PushNotificationContent =
+        PushNotificationContent(
+            title = newDecisionTitle(language),
+            body =
+                when (kind) {
+                    ChildApplicationDecisionKind.ABSENCE_APPLICATION ->
+                        when (language) {
+                            UiLanguage.FI -> "Esiopetuksen poissaolohakemus käsitelty"
+                            UiLanguage.SV -> "Ansökan om frånvaro från förskolan har behandlats"
+                            UiLanguage.EN -> "Preschool absence application processed"
+                        }
+                    ChildApplicationDecisionKind.SERVICE_APPLICATION ->
+                        when (language) {
+                            UiLanguage.FI -> "Palveluntarpeen muutoshakemus käsitelty"
+                            UiLanguage.SV -> "Ansökan om ändring av servicebehov har behandlats"
+                            UiLanguage.EN -> "Service need change application processed"
+                        }
+                },
+        )
+
+    private fun newDecisionTitle(language: UiLanguage): String =
+        when (language) {
+            UiLanguage.FI -> "Uusi päätös eVakassa"
+            UiLanguage.SV -> "Nytt beslut i eVaka"
+            UiLanguage.EN -> "New decision in eVaka"
         }
 
     override fun incomeNotification(

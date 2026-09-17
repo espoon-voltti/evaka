@@ -534,7 +534,7 @@ class ChildDocumentServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(
             listOf(
                 CitizenPushNotification.Document(
-                    testChild.id,
+                    documentId,
                     ChildDocumentNotificationType.BASIC_DOCUMENT,
                 )
             ),
