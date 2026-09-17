@@ -733,6 +733,35 @@ VALUES (${bind(row.id)}, ${bind(row.daycarePlacementId)}, ${bind(row.daycareGrou
     .executeAndReturnGeneratedKeys()
     .exactlyOne()
 
+fun Database.Transaction.insertPlacementWithGroup(
+    childId: ChildId,
+    unitId: DaycareId,
+    groupId: GroupId,
+    period: FiniteDateRange,
+    type: PlacementType = PlacementType.DAYCARE,
+    groupPeriod: FiniteDateRange = period,
+): PlacementId {
+    val placementId =
+        insert(
+            DevPlacement(
+                type = type,
+                childId = childId,
+                unitId = unitId,
+                startDate = period.start,
+                endDate = period.end,
+            )
+        )
+    insert(
+        DevDaycareGroupPlacement(
+            daycarePlacementId = placementId,
+            daycareGroupId = groupId,
+            startDate = groupPeriod.start,
+            endDate = groupPeriod.end,
+        )
+    )
+    return placementId
+}
+
 data class DevPlacementPlan(
     val id: PlacementPlanId = PlacementPlanId(UUID.randomUUID()),
     val applicationId: ApplicationId,
