@@ -11,6 +11,7 @@ import evaka.core.emailclient.Email
 import evaka.core.emailclient.EmailClient
 import evaka.core.emailclient.IEmailMessageProvider
 import evaka.core.pis.NotificationCategory
+import evaka.core.pis.service.getChildGuardiansAndFosterParents
 import evaka.core.placement.getPlacementsForChildDuring
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -82,21 +83,27 @@ class ServiceApplicationService(
             )
             ?.also { emailClient.send(it) }
         db.transaction { tx ->
-            citizenPushNotifications.plan(
-                tx,
-                clock.now(),
-                application.personId,
-                CitizenPushNotification.ServiceApplicationDecision(
-                    childName =
-                        tx.getPushChildNames(listOf(application.childId))
-                            .getValue(application.childId),
-                    serviceNeedNameFi = application.serviceNeedOption.nameFi,
-                    serviceNeedNameSv = application.serviceNeedOption.nameSv,
-                    serviceNeedNameEn = application.serviceNeedOption.nameEn,
-                    startDate = application.startDate,
-                    rejected = !accepted,
-                ),
-            )
+            if (
+                tx.getChildGuardiansAndFosterParents(application.childId, clock.today())
+                    .contains(application.personId)
+            ) {
+                citizenPushNotifications.plan(
+                    tx,
+                    clock.now(),
+                    application.personId,
+                    CitizenPushNotification.ServiceApplicationDecision(
+                        childId = application.childId,
+                        childName =
+                            tx.getPushChildNames(listOf(application.childId))
+                                .getValue(application.childId),
+                        serviceNeedNameFi = application.serviceNeedOption.nameFi,
+                        serviceNeedNameSv = application.serviceNeedOption.nameSv,
+                        serviceNeedNameEn = application.serviceNeedOption.nameEn,
+                        startDate = application.startDate,
+                        rejected = !accepted,
+                    ),
+                )
+            }
         }
 
         logger.info { "Successfully sent service application decided email (${application.id})." }

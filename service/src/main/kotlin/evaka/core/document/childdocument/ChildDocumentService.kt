@@ -464,7 +464,7 @@ WHERE (person.email IS NOT NULL AND person.email != '')
                 clock.now(),
                 msg.recipientId,
                 CitizenPushNotification.Document(
-                    childId = msg.childId,
+                    documentId = msg.documentId,
                     notificationType = msg.notificationType,
                     childName = tx.getPushChildNames(listOf(msg.childId)).getValue(msg.childId),
                 ),

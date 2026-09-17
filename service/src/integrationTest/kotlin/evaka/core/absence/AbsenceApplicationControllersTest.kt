@@ -48,6 +48,10 @@ import evaka.core.shared.domain.NotFound
 import evaka.core.shared.domain.toFiniteDateRange
 import evaka.core.shared.security.Action
 import evaka.core.snPreschoolDaycareContractDays13
+import evaka.core.webpush.CitizenPushNotification
+import evaka.core.webpush.getPlannedCitizenPushNotifications
+import evaka.core.webpush.insertTestCitizenPushSubscription
+import evaka.core.webpush.mockWebPushEndpoint
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -533,6 +537,75 @@ class AbsenceApplicationControllersTest : FullApplicationTest(resetDbBeforeEach 
                     id,
                 )
             }
+        }
+
+        @Test
+        fun `decision is pushed to the guardian who applied`() {
+            val id = createApplicationWithPushSubscription()
+
+            rejectApplication(id)
+
+            assertEquals(
+                listOf(
+                    CitizenPushNotification.AbsenceApplicationDecision(
+                        childId = child.id,
+                        childName = child.firstName,
+                        range =
+                            FiniteDateRange(LocalDate.of(2022, 8, 10), LocalDate.of(2022, 8, 10)),
+                        rejected = true,
+                    )
+                ),
+                db.read { it.getPlannedCitizenPushNotifications() },
+            )
+        }
+
+        @Test
+        fun `decision is not pushed to a person who is no longer a guardian`() {
+            val id = createApplicationWithPushSubscription()
+            db.transaction { tx ->
+                tx.execute { sql("DELETE FROM guardian WHERE guardian_id = ${bind(adult.id)}") }
+            }
+
+            rejectApplication(id)
+
+            assertEquals(emptyList(), db.read { it.getPlannedCitizenPushNotifications() })
+        }
+
+        private fun createApplicationWithPushSubscription(): AbsenceApplicationId {
+            db.transaction { tx ->
+                tx.insert(
+                    DevPlacement(
+                        type = PlacementType.PRESCHOOL,
+                        childId = child.id,
+                        unitId = unit.id,
+                        startDate = LocalDate.of(2022, 1, 1),
+                        endDate = LocalDate.of(2022, 12, 31),
+                    )
+                )
+                tx.insertTestCitizenPushSubscription(adult.id, mockWebPushEndpoint(httpPort))
+            }
+            return absenceApplicationControllerCitizen.postAbsenceApplication(
+                dbInstance(),
+                citizenUser,
+                clock,
+                AbsenceApplicationCreateRequest(
+                    childId = child.id,
+                    startDate = LocalDate.of(2022, 8, 10),
+                    endDate = LocalDate.of(2022, 8, 10),
+                    description = "Lapinreissu",
+                ),
+            )
+        }
+
+        private fun rejectApplication(id: AbsenceApplicationId) {
+            absenceApplicationControllerEmployee.rejectAbsenceApplication(
+                dbInstance(),
+                employeeUser,
+                clock,
+                id,
+                AbsenceApplicationRejectRequest("ei käy"),
+            )
+            asyncJobRunner.runPendingJobsSync(clock)
         }
 
         @Test

@@ -13,6 +13,7 @@ import evaka.core.pis.updateDisabledPushTypes
 import evaka.core.shared.ApplicationId
 import evaka.core.shared.CalendarEventId
 import evaka.core.shared.CalendarEventTimeId
+import evaka.core.shared.ChildDocumentId
 import evaka.core.shared.VoucherValueDecisionId
 import evaka.core.shared.async.AsyncJob
 import evaka.core.shared.async.AsyncJobRunner
@@ -177,11 +178,13 @@ class CitizenPushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     unitName = "Test Daycare",
                 ),
                 CitizenPushNotification.AbsenceApplicationDecision(
+                    childId = child.id,
                     childName = "Test",
                     range = FiniteDateRange(clock.today(), clock.today().plusDays(3)),
                     rejected = true,
                 ),
                 CitizenPushNotification.ServiceApplicationDecision(
+                    childId = child.id,
                     childName = "Test",
                     serviceNeedNameFi = "Kokopäiväinen",
                     serviceNeedNameSv = "Heldag",
@@ -204,7 +207,7 @@ class CitizenPushNotificationsTest : FullApplicationTest(resetDbBeforeEach = tru
                     )
                 ),
                 CitizenPushNotification.Document(
-                    child.id,
+                    ChildDocumentId(UUID.randomUUID()),
                     ChildDocumentNotificationType.EDITABLE_DOCUMENT,
                     childName = "Test",
                 ),

@@ -117,7 +117,7 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.feeDecisionNotification(language, notification),
-                    path = "/",
+                    path = "/decisions",
                     tag = "fee-decision",
                 )
 
@@ -125,7 +125,7 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.voucherValueDecisionNotification(language, notification),
-                    path = "/",
+                    path = "/decisions",
                     tag = "voucher-value-decision-${notification.decisionId}",
                 )
 
@@ -133,7 +133,7 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.applicationDecisionsNotification(language, notification),
-                    path = "/",
+                    path = if (notification.answerRequired) "/decisions/pending" else "/decisions",
                     tag = "decision-${notification.applicationId}",
                 )
 
@@ -141,24 +141,24 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.pendingDecisionsNotification(language, notification.decisions),
-                    path = "/",
-                    tag = "decision",
+                    path = "/decisions/pending",
+                    tag = "decision-pending",
                 )
 
             is CitizenPushNotification.AbsenceApplicationDecision ->
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.absenceApplicationDecisionNotification(language, notification),
-                    path = "/",
-                    tag = "decision",
+                    path = "/children/${notification.childId}",
+                    tag = "child-application-${notification.childId}",
                 )
 
             is CitizenPushNotification.ServiceApplicationDecision ->
                 Delivery(
                     NotificationCategory.DECISION_NOTIFICATION,
                     messageProvider.serviceApplicationDecisionNotification(language, notification),
-                    path = "/",
-                    tag = "decision",
+                    path = "/children/${notification.childId}",
+                    tag = "child-application-${notification.childId}",
                 )
 
             is CitizenPushNotification.Income ->
@@ -173,7 +173,10 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.CALENDAR_EVENT_NOTIFICATION,
                     messageProvider.calendarEventNotification(language, notification.events),
-                    path = "/calendar",
+                    path =
+                        notification.events.singleOrNull()?.let {
+                            "/calendar?day=${it.period.start}"
+                        } ?: "/calendar",
                     tag = "calendar-events",
                 )
 
@@ -181,8 +184,8 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DOCUMENT_NOTIFICATION,
                     messageProvider.childDocumentNotification(language, notification),
-                    path = "/children/${notification.childId}",
-                    tag = "document-${notification.childId}",
+                    path = "/child-documents/${notification.documentId}",
+                    tag = "document-${notification.documentId}",
                 )
 
             is CitizenPushNotification.InformalDocument ->
@@ -197,7 +200,8 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
                     messageProvider.missingReservationsNotification(language, notification),
-                    path = "/calendar",
+                    path =
+                        "/calendar?modal=reservations&startDate=${notification.range.start}&endDate=${notification.range.end}",
                     tag = "missing-reservations",
                     ttl = ttlUntil(now, notification.deadline),
                 )
@@ -206,7 +210,7 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.ATTENDANCE_RESERVATION_NOTIFICATION,
                     messageProvider.missingHolidayReservationsNotification(language, notification),
-                    path = "/calendar",
+                    path = "/calendar?modal=holidays",
                     tag = "missing-holiday-reservations",
                     ttl = ttlUntil(now, HelsinkiDateTime.of(notification.deadline, LocalTime.MAX)),
                 )
@@ -215,7 +219,7 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DISCUSSION_TIME_NOTIFICATION,
                     messageProvider.discussionSurveyNotification(language, notification),
-                    path = "/calendar",
+                    path = "/calendar?modal=discussions",
                     tag = "discussion-survey-${notification.eventId}",
                 )
 
@@ -223,7 +227,7 @@ class CitizenPushNotifications(
                 Delivery(
                     NotificationCategory.DISCUSSION_TIME_NOTIFICATION,
                     messageProvider.discussionTimeNotification(language, notification),
-                    path = "/calendar",
+                    path = "/calendar?day=${notification.date}",
                     tag = "discussion-time-${notification.eventTimeId}",
                     ttl =
                         when (notification.event) {
