@@ -575,6 +575,12 @@ function identity<T>(value: T): T {
   return value
 }
 
+const discontinuedOtherIncomes = new Set<OtherIncome>([
+  'ADULT_EDUCATION_ALLOWANCE',
+  'UNEMPLOYMENT_ALLOWANCE',
+  'LABOUR_MARKET_SUBSIDY'
+])
+
 const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
   formData,
   showFormErrors,
@@ -603,6 +609,19 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
   )
   const onOtherIncomeChange = useFieldDispatch(onChange, 'otherIncome')
   const onOtherIncomeInfoChange = useFieldDispatch(onChange, 'otherIncomeInfo')
+
+  // These are no longer selectable, but statements that already have one keep
+  // it: without this the existing selection would not be among the options and
+  // would be lost on the next change.
+  const selectableOtherIncomes = useMemo(
+    () =>
+      otherIncomes.filter(
+        (option) =>
+          !discontinuedOtherIncomes.has(option) ||
+          formData.otherIncome.includes(option)
+      ),
+    [formData.otherIncome]
+  )
 
   const entrepreneurYes = useCallback(
     () => onSelectEntrepreneur(true),
@@ -734,7 +753,7 @@ const GrossIncomeSelection = React.memo(function GrossIncomeSelection({
               <MultiSelect
                 inputId="other-income-input"
                 value={formData.otherIncome}
-                options={otherIncomes}
+                options={selectableOtherIncomes}
                 getOptionId={identity}
                 getOptionLabel={(option: OtherIncome) =>
                   t.income.grossIncome.otherIncomeTypes[option]
