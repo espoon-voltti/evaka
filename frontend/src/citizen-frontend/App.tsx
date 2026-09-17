@@ -175,10 +175,10 @@ const Content = React.memo(function Content({
     )
   useChildrenStartingNotification()
   useStandaloneAttribute()
-  const { shellRef, scrollAreaRef } = useRegisterScrollContainer()
+  const scrollAreaRef = useRegisterScrollContainer()
   useNotificationClickRouting()
   return (
-    <AppShell ref={shellRef}>
+    <AppShell>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
       <InstallSuggestion />
