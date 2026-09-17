@@ -18,7 +18,10 @@ export default class CitizenPersonalDetails {
   verifyEmailTask: Element
   addPhoneTask: Element
   addWeakLoginTask: Element
+  addEmailAndPhoneTask: Element
+  addToHomeScreenTask: Element
   enablePushNotificationsTask: Element
+  #taskList: Element
 
   constructor(page: Page) {
     this.personDetailsSection = new PersonDetailsSection(
@@ -46,9 +49,28 @@ export default class CitizenPersonalDetails {
     this.verifyEmailTask = page.findByDataQa('task-verify-email')
     this.addPhoneTask = page.findByDataQa('task-add-phone')
     this.addWeakLoginTask = page.findByDataQa('task-add-weak-login')
+    this.addEmailAndPhoneTask = page.findByDataQa('task-add-email-and-phone')
+    this.addToHomeScreenTask = page.findByDataQa('task-add-to-home-screen')
     this.enablePushNotificationsTask = page.findByDataQa(
       'task-enable-push-notifications'
     )
+    this.#taskList = page.findByDataQa('personal-details-tasks')
+  }
+
+  async assertTasks(expectedDataQas: string[]) {
+    if (expectedDataQas.length === 0) {
+      await expect(this.#taskList).toBeHidden()
+      return
+    }
+    await expect
+      .poll(() =>
+        this.#taskList
+          .findAll('[data-qa^="task-"]')
+          .evaluateAll((tasks) =>
+            tasks.map((task) => task.getAttribute('data-qa'))
+          )
+      )
+      .toEqual(expectedDataQas)
   }
 }
 

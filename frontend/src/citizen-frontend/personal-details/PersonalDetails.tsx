@@ -172,7 +172,7 @@ export default React.memo(function PersonalDetails() {
           {tasks.length > 0 && (
             <>
               <Gap $size="s" />
-              <FixedSpaceColumn $spacing="xs">
+              <FixedSpaceColumn $spacing="xs" data-qa="personal-details-tasks">
                 {tasks.map((task) => {
                   const { dataQa, section } = personalDetailsTaskConfig[task]
                   return (

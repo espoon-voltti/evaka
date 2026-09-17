@@ -2186,6 +2186,11 @@ export default {
     editInfo:
       'Nimesi ja osoitteesi haetaan väestötietojärjestelmästä, ja mikäli ne muuttuvat, sinun tulee tehdä ilmoitus Digi- ja väestötietovirastoon.',
     tasks: {
+      ADD_EMAIL_AND_PHONE: {
+        title: 'Lisää sähköpostiosoite ja puhelinnumero',
+        description:
+          'Voit vastaanottaa sähköposti-ilmoituksia, ja sinut tavoitetaan kiireellisissä asioissa.'
+      },
       ADD_EMAIL: {
         title: 'Lisää sähköpostiosoite',
         description: 'Voit vastaanottaa sähköposti-ilmoituksia.'

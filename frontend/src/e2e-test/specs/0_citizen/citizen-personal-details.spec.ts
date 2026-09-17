@@ -7,6 +7,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { randomId } from 'lib-common/id-type'
 import LocalDate from 'lib-common/local-date'
 
+import { mobileViewport } from '../../browser'
 import { Fixture } from '../../dev-api/fixtures'
 import {
   createFridgePartner,
@@ -22,6 +23,7 @@ import type {
 import CitizenPersonalDetailsPage from '../../pages/citizen/citizen-personal-details'
 import { expect, test } from '../../playwright'
 import type { Page } from '../../utils/page'
+import { envs } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 import { addVirtualAuthenticator } from '../../utils/virtual-authenticator'
 
@@ -57,11 +59,9 @@ test.describe('Citizen personal details', () => {
     contactSection = personalDetailsPage.contactDetailsSection
   })
 
-  test('Citizen sees indications of missing email and phone', async () => {
+  test('Citizen missing both email and phone sees one combined task', async () => {
+    await personalDetailsPage.assertTasks(['task-add-email-and-phone'])
     await header.checkPersonalDetailsAttentionIndicatorsAreShown()
-    await expect(personalDetailsPage.addEmailTask).toBeVisible()
-    await expect(personalDetailsPage.verifyEmailTask).toBeHidden()
-    await expect(personalDetailsPage.addPhoneTask).toBeVisible()
   })
 
   test('Citizen fills successfully personal data without email', async () => {
@@ -77,7 +77,7 @@ test.describe('Citizen personal details', () => {
 
     await personSection.assertPreferredName(preferredName)
     await contactSection.checkContactDetails(contactData)
-    await expect(personalDetailsPage.addPhoneTask).toBeHidden()
+    await personalDetailsPage.assertTasks(['task-add-email'])
   })
 
   test('Citizen fills in contact details but cannot save without phone', async () => {
@@ -105,58 +105,63 @@ test.describe('Citizen personal details', () => {
 
     await personSection.assertPreferredName(preferredName)
     await contactSection.checkContactDetails(contactData)
-    await expect(personalDetailsPage.addEmailTask).toBeHidden()
-    await expect(personalDetailsPage.verifyEmailTask).toBeVisible()
-    await expect(personalDetailsPage.addPhoneTask).toBeHidden()
+    await personalDetailsPage.assertTasks(['task-verify-email'])
     await header.checkPersonalDetailsAttentionIndicatorsAreShown()
   })
 })
 
-test.describe('Citizen personal details tasks', () => {
-  const email = 'test@example.com'
-  const verifiedCitizen = Fixture.person({
-    email,
-    verifiedEmail: email,
-    phone: '123456789'
-  })
+const email = 'test@example.com'
+const verifiedCitizen = Fixture.person({
+  email,
+  verifiedEmail: email,
+  phone: '123456789'
+})
 
+for (const env of envs) {
+  test.describe(`Citizen personal details tasks (${env})`, () => {
+    test.use({
+      viewport: env === 'mobile' ? mobileViewport : { width: 1280, height: 720 }
+    })
+
+    test.beforeEach(async ({ evaka }) => {
+      await resetServiceState()
+      page = evaka
+    })
+
+    test('Citizen with verified email but no weak login sees only the weak login task', async () => {
+      const citizen = await verifiedCitizen.saveAdult({
+        updateMockVtjWithDependants: []
+      })
+      await enduserLogin(page, citizen, '/personal-details')
+      header = new CitizenHeader(page, env)
+      personalDetailsPage = new CitizenPersonalDetailsPage(page)
+
+      await personalDetailsPage.assertTasks(['task-add-weak-login'])
+      await header.checkPersonalDetailsAttentionIndicatorsAreShown()
+    })
+
+    test('Citizen with all tasks done sees no tasks or attention indicators', async () => {
+      const citizen = await verifiedCitizen.saveAdult({
+        updateMockVtjWithDependants: [],
+        updateWeakCredentials: { username: email, password: 'aifiefaeC3io?dee' }
+      })
+      await enduserLogin(page, citizen, '/personal-details')
+      header = new CitizenHeader(page, env)
+      personalDetailsPage = new CitizenPersonalDetailsPage(page)
+
+      await expect(
+        personalDetailsPage.contactDetailsSection.verifiedEmailStatus
+      ).toBeVisible()
+      await personalDetailsPage.assertTasks([])
+      await header.checkPersonalDetailsAttentionIndicatorsAreHidden()
+    })
+  })
+}
+
+test.describe('Citizen personal details tasks', () => {
   test.beforeEach(async ({ evaka }) => {
     await resetServiceState()
     page = evaka
-  })
-
-  test('Citizen with verified email but no weak login sees only the weak login task', async () => {
-    const citizen = await verifiedCitizen.saveAdult({
-      updateMockVtjWithDependants: []
-    })
-    await enduserLogin(page, citizen, '/personal-details')
-    header = new CitizenHeader(page)
-    personalDetailsPage = new CitizenPersonalDetailsPage(page)
-
-    await expect(personalDetailsPage.addWeakLoginTask).toBeVisible()
-    await expect(personalDetailsPage.addEmailTask).toBeHidden()
-    await expect(personalDetailsPage.verifyEmailTask).toBeHidden()
-    await expect(personalDetailsPage.addPhoneTask).toBeHidden()
-    await header.checkPersonalDetailsAttentionIndicatorsAreShown()
-  })
-
-  test('Citizen with all tasks done sees no tasks or attention indicators', async () => {
-    const citizen = await verifiedCitizen.saveAdult({
-      updateMockVtjWithDependants: [],
-      updateWeakCredentials: { username: email, password: 'aifiefaeC3io?dee' }
-    })
-    await enduserLogin(page, citizen, '/personal-details')
-    header = new CitizenHeader(page)
-    personalDetailsPage = new CitizenPersonalDetailsPage(page)
-
-    await expect(
-      personalDetailsPage.contactDetailsSection.verifiedEmailStatus
-    ).toBeVisible()
-    await expect(personalDetailsPage.addEmailTask).toBeHidden()
-    await expect(personalDetailsPage.verifyEmailTask).toBeHidden()
-    await expect(personalDetailsPage.addPhoneTask).toBeHidden()
-    await expect(personalDetailsPage.addWeakLoginTask).toBeHidden()
-    await header.checkPersonalDetailsAttentionIndicatorsAreHidden()
   })
 
   test('Registering a passkey hides the weak login task', async () => {
