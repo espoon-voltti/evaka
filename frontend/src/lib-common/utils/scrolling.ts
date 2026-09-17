@@ -12,9 +12,8 @@ type ScrollContainerResolver = () => HTMLElement | null
 /**
  * Registers how to find the element that scrolls the page in place of the
  * window. The page-level scroll helpers below ask the resolver on every call,
- * because which element scrolls, if any, can depend on the viewport width and
- * on the app layout. Without a resolver, or when it returns null, they scroll
- * the window.
+ * because whether the registered element scrolls depends on the app layout.
+ * Without a resolver, or when it returns null, they scroll the window.
  */
 let resolveScrollContainer: ScrollContainerResolver = () => null
 
@@ -28,21 +27,18 @@ const scrollportHeight = (elem: HTMLElement) => {
   return window.innerHeight
 }
 
-// Which of the two scrolls, if either, depends on the viewport width and on
-// the app layout, so the choice is made on every call rather than once
 export function useRegisterScrollContainer() {
-  const shellRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    resolveScrollContainer = () =>
-      [scrollAreaRef.current, shellRef.current].find(
-        (el): el is HTMLDivElement => !!el && scrollsItsContent(el)
-      ) ?? null
+    resolveScrollContainer = () => {
+      const el = scrollAreaRef.current
+      return el && scrollsItsContent(el) ? el : null
+    }
     return () => {
       resolveScrollContainer = () => null
     }
   }, [])
-  return { shellRef, scrollAreaRef }
+  return scrollAreaRef
 }
 
 export function scrollToPos(options: ScrollToOptions, timeout = 0) {
