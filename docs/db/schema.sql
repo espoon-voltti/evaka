@@ -7234,7 +7234,7 @@ ALTER TABLE ONLY public.placement_plan
 -- Name: voucher_value_decision fk$approved_by; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.voucher_value_decision
-    ADD CONSTRAINT "fk$approved_by" FOREIGN KEY (approved_by) REFERENCES public.employee(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT "fk$approved_by" FOREIGN KEY (approved_by) REFERENCES public.employee(id);
 
 -- Name: invoice fk$area; Type: FK CONSTRAINT; Schema: public
 
@@ -7539,12 +7539,12 @@ ALTER TABLE ONLY public.absence
 -- Name: assistance_factor fk$modified_by; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.assistance_factor
-    ADD CONSTRAINT "fk$modified_by" FOREIGN KEY (modified_by) REFERENCES public.evaka_user(id) ON DELETE CASCADE;
+    ADD CONSTRAINT "fk$modified_by" FOREIGN KEY (modified_by) REFERENCES public.evaka_user(id);
 
 -- Name: daycare_assistance fk$modified_by; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.daycare_assistance
-    ADD CONSTRAINT "fk$modified_by" FOREIGN KEY (modified_by) REFERENCES public.evaka_user(id) ON DELETE CASCADE;
+    ADD CONSTRAINT "fk$modified_by" FOREIGN KEY (modified_by) REFERENCES public.evaka_user(id);
 
 -- Name: fee_alteration fk$modified_by; Type: FK CONSTRAINT; Schema: public
 
@@ -7559,7 +7559,7 @@ ALTER TABLE ONLY public.income
 -- Name: other_assistance_measure fk$modified_by; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.other_assistance_measure
-    ADD CONSTRAINT "fk$modified_by" FOREIGN KEY (modified_by) REFERENCES public.evaka_user(id) ON DELETE CASCADE;
+    ADD CONSTRAINT "fk$modified_by" FOREIGN KEY (modified_by) REFERENCES public.evaka_user(id);
 
 -- Name: pedagogical_document fk$modified_by; Type: FK CONSTRAINT; Schema: public
 
@@ -7569,7 +7569,7 @@ ALTER TABLE ONLY public.pedagogical_document
 -- Name: preschool_assistance fk$modified_by; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.preschool_assistance
-    ADD CONSTRAINT "fk$modified_by" FOREIGN KEY (modified_by) REFERENCES public.evaka_user(id) ON DELETE CASCADE;
+    ADD CONSTRAINT "fk$modified_by" FOREIGN KEY (modified_by) REFERENCES public.evaka_user(id);
 
 -- Name: daycare_group fk$nekku_customer_number; Type: FK CONSTRAINT; Schema: public
 
