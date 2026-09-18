@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import isEqual from 'lodash/isEqual'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useId, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import type { Failure } from 'lib-common/api'
@@ -70,6 +70,7 @@ export default React.memo(function ReservationModal({
   holidayPeriods
 }: Props) {
   const i18n = useTranslation()
+  const titleId = useId()
   const [lang] = useLang()
 
   const {
@@ -239,6 +240,7 @@ export default React.memo(function ReservationModal({
       margin="auto"
       data-qa="reservation-modal"
       onEscapeKey={onClose}
+      aria-labelledby={titleId}
     >
       <CalendarModalBackground>
         <BottomFooterContainer>
@@ -246,6 +248,7 @@ export default React.memo(function ReservationModal({
             <CalendarModalSection>
               <Gap $size="L" $sizeOnMobile="zero" />
               <ModalHeader
+                id={titleId}
                 headingComponent={(props) => (
                   <H1 $noMargin data-qa="title" {...props}>
                     {props.children}

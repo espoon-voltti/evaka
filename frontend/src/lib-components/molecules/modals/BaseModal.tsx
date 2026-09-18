@@ -246,8 +246,11 @@ type PlainModalProps = Pick<
   'className' | 'zIndex' | 'data-qa' | 'mobileFullScreen' | 'children' | 'width'
 > & {
   margin: string
-  onEscapeKey?: () => void
-}
+  onEscapeKey: () => void
+} & (
+    | { 'aria-labelledby': string; 'aria-label'?: never }
+    | { 'aria-labelledby'?: never; 'aria-label': string }
+  )
 
 export const PlainModal = React.memo(function PlainModal(
   props: PlainModalProps
@@ -260,6 +263,10 @@ export const PlainModal = React.memo(function PlainModal(
         data-qa={props['data-qa']}
       >
         <ModalContainer
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={props['aria-labelledby']}
+          aria-label={props['aria-label']}
           $noPadding
           $mobileFullScreen={props.mobileFullScreen}
           $margin={props.margin}
@@ -280,8 +287,10 @@ export const ModalHeader = React.memo(function ModalHeader({
   ...props
 }: {
   children: React.ReactNode
+  id?: string
   headingComponent: React.ComponentType<{
     children: React.ReactNode
+    id?: string
     tabIndex?: number
     onBlur?: FocusEventHandler<HTMLElement>
   }>

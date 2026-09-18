@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useId, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
@@ -112,6 +112,7 @@ export default React.memo(function AbsenceModal({
   holidayPeriods
 }: Props) {
   const i18n = useTranslation()
+  const titleId = useId()
   const [lang] = useLang()
 
   const showShiftCareAbsenceType = useMemo(
@@ -193,13 +194,19 @@ export default React.memo(function AbsenceModal({
   }, [absenceType, preschoolOperationalDatesResult, selectedChildren])
 
   return (
-    <PlainModal mobileFullScreen margin="auto" onEscapeKey={close}>
+    <PlainModal
+      mobileFullScreen
+      margin="auto"
+      onEscapeKey={close}
+      aria-labelledby={titleId}
+    >
       <CalendarModalBackground>
         <BottomFooterContainer>
           <div>
             <CalendarModalSection>
               <Gap $size="L" $sizeOnMobile="zero" />
               <ModalHeader
+                id={titleId}
                 headingComponent={(props) => (
                   <H1 $noMargin data-qa="title" {...props}>
                     {props.children}

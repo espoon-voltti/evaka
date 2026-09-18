@@ -5,7 +5,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import groupBy from 'lodash/groupBy'
 import orderBy from 'lodash/orderBy'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useId, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useLocation } from 'wouter'
 
@@ -105,6 +105,7 @@ export default React.memo(function DiscussionReservationModal({
 }: Props) {
   const i18n = useTranslation()
   const t = i18n.calendar.discussionTimeReservation
+  const titleId = useId()
 
   const [infoOpen, setInfoOpen] = useState(false)
   const onInfoClick = useCallback(() => setInfoOpen((prev) => !prev), [])
@@ -159,6 +160,7 @@ export default React.memo(function DiscussionReservationModal({
       margin="auto"
       data-qa="discussion-reservations-modal"
       onEscapeKey={close}
+      aria-labelledby={titleId}
     >
       <CalendarModalBackground>
         <BottomFooterContainer>
@@ -169,7 +171,9 @@ export default React.memo(function DiscussionReservationModal({
                 aria-label={i18n.common.closeModal}
                 icon={faTimes}
               />
-              <H1 $noMargin>{t.surveyModalTitle}</H1>
+              <H1 $noMargin id={titleId}>
+                {t.surveyModalTitle}
+              </H1>
             </DiscussionHeader>
             <div>
               <BackButtonInline
