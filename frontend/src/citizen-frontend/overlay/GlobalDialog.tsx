@@ -7,8 +7,6 @@ import React, { useContext } from 'react'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { faExclamation } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
-
 import { OverlayContext } from './state'
 
 export default React.memo(function GlobalDialog() {
@@ -40,5 +38,5 @@ export default React.memo(function GlobalDialog() {
     />
   ) : null
 
-  return modal && <ModalAccessibilityWrapper>{modal}</ModalAccessibilityWrapper>
+  return modal
 })

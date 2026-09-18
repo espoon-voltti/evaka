@@ -18,15 +18,14 @@ import { dismissSuggestion, isSuggestionDismissed } from './dismissal'
 
 export function useSuggestionStage(suggestion: Suggestion) {
   const user = useUser()
-  const { modalOpen } = useContext(OverlayContext)
+  const { globalDialogOpen } = useContext(OverlayContext)
   const [stage, setStage] = useState<'suggestion' | 'note' | 'hidden'>(
     'suggestion'
   )
 
-  // Hide while any modal is open, for example until the "Application sent"
-  // modal is dismissed
+  // Hide until the "Application sent" dialog is dismissed
   const hidden =
-    modalOpen ||
+    globalDialogOpen ||
     !user ||
     (stage === 'suggestion' && isSuggestionDismissed(suggestion, user.id))
 
