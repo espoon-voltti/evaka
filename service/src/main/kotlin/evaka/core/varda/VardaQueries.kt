@@ -4,11 +4,13 @@
 
 package evaka.core.varda
 
+import evaka.core.dataremoval.SAFE_DATA_REMOVAL_AGE
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.placement.PlacementType
 import evaka.core.shared.ChildId
 import evaka.core.shared.PersonId
 import evaka.core.shared.db.Database
+import evaka.core.shared.db.Predicate
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
@@ -30,9 +32,21 @@ val VARDA_INPUT_TABLES =
         "voucher_value_decision",
     )
 
+val childSentToVarda = Predicate {
+    where(
+        """
+EXISTS (
+    SELECT FROM varda_state vs
+    WHERE vs.child_id = $it.id AND vs.last_success_at IS NOT NULL
+)
+"""
+    )
+}
+
 /**
  * Once any of the child's data that affects Varda has been deleted due to retention policies, the
- * data synchronization to Varda must be stopped, so that the data is not deleted from there too.
+ * data synchronization to Varda must be stopped, so that the data is not deleted from there too. A
+ * child never sent has nothing in Varda to protect, so the child does not have to be frozen.
  */
 fun Database.Transaction.freezeVardaSync(
     childIds: Collection<ChildId>,
@@ -44,6 +58,7 @@ UPDATE child
 SET varda_data_first_removed_at = ${bind(now)}
 WHERE id = ANY(${bind(childIds)})
 AND varda_data_first_removed_at IS NULL
+AND ${predicate(childSentToVarda.forTable("child"))}
 RETURNING id
 """
     )
@@ -259,7 +274,7 @@ fun Database.Read.getVardaGuardians(childIds: List<ChildId>): Map<ChildId, List<
     .useSequence { rows -> rows.groupBy { it.childId } }
 
 @IgnorableReturnValue
-fun Database.Transaction.addNewChildrenForVardaUpdate(): Int {
+fun Database.Transaction.addNewChildrenForVardaUpdate(today: LocalDate): Int {
     return executeAndReturnCount {
         sql(
             """
@@ -272,6 +287,9 @@ fun Database.Transaction.addNewChildrenForVardaUpdate(): Int {
                         pl.type = ANY(${bind(vardaPlacementTypes)}) AND
                         (p.social_security_number IS NOT NULL OR (p.oph_person_oid IS NOT NULL AND p.oph_person_oid != '')) AND
                         ch.varda_data_first_removed_at IS NULL AND
+                        -- Safety guard: First Varda update happening after age 10 points to an error:
+                        -- child row may have been recreated and varda_data_first_removed_at lost.
+                        p.date_of_birth > ${bind(today.minusYears(SAFE_DATA_REMOVAL_AGE))} AND
                         NOT EXISTS (SELECT FROM varda_state vs WHERE vs.child_id = pl.child_id)
                     ON CONFLICT (child_id) DO NOTHING
                     """

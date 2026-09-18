@@ -8151,32 +8151,32 @@ ALTER TABLE ONLY public.service_need_option_voucher_value
 -- Name: sfi_message sfi_message_decision_id_fkey; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.sfi_message
-    ADD CONSTRAINT sfi_message_decision_id_fkey FOREIGN KEY (decision_id) REFERENCES public.decision(id);
+    ADD CONSTRAINT sfi_message_decision_id_fkey FOREIGN KEY (decision_id) REFERENCES public.decision(id) ON DELETE CASCADE;
 
 -- Name: sfi_message sfi_message_document_id_fkey; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.sfi_message
-    ADD CONSTRAINT sfi_message_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.child_document(id);
+    ADD CONSTRAINT sfi_message_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.child_document(id) ON DELETE CASCADE;
 
 -- Name: sfi_message_event sfi_message_event_message_id_fkey; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.sfi_message_event
-    ADD CONSTRAINT sfi_message_event_message_id_fkey FOREIGN KEY (message_id) REFERENCES public.sfi_message(id);
+    ADD CONSTRAINT sfi_message_event_message_id_fkey FOREIGN KEY (message_id) REFERENCES public.sfi_message(id) ON DELETE CASCADE;
 
 -- Name: sfi_message sfi_message_fee_decision_id_fkey; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.sfi_message
-    ADD CONSTRAINT sfi_message_fee_decision_id_fkey FOREIGN KEY (fee_decision_id) REFERENCES public.fee_decision(id);
+    ADD CONSTRAINT sfi_message_fee_decision_id_fkey FOREIGN KEY (fee_decision_id) REFERENCES public.fee_decision(id) ON DELETE CASCADE;
 
 -- Name: sfi_message sfi_message_guardian_id_fkey; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.sfi_message
-    ADD CONSTRAINT sfi_message_guardian_id_fkey FOREIGN KEY (guardian_id) REFERENCES public.person(id);
+    ADD CONSTRAINT sfi_message_guardian_id_fkey FOREIGN KEY (guardian_id) REFERENCES public.person(id) ON DELETE CASCADE;
 
 -- Name: sfi_message sfi_message_voucher_value_decision_id_fkey; Type: FK CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.sfi_message
-    ADD CONSTRAINT sfi_message_voucher_value_decision_id_fkey FOREIGN KEY (voucher_value_decision_id) REFERENCES public.voucher_value_decision(id);
+    ADD CONSTRAINT sfi_message_voucher_value_decision_id_fkey FOREIGN KEY (voucher_value_decision_id) REFERENCES public.voucher_value_decision(id) ON DELETE CASCADE;
 
 -- Name: staff_attendance_external staff_attendance_external_group_id_fkey; Type: FK CONSTRAINT; Schema: public
 

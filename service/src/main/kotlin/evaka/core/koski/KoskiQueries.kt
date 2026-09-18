@@ -4,6 +4,7 @@
 
 package evaka.core.koski
 
+import evaka.core.dataremoval.SAFE_DATA_REMOVAL_AGE
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.KoskiStudyRightId
@@ -23,9 +24,14 @@ data class KoskiStudyRightKey(
     val type: OpiskeluoikeudenTyyppiKoodi,
 )
 
+val childSentToKoski = Predicate {
+    where("EXISTS (SELECT FROM koski_study_right ksr WHERE ksr.child_id = $it.id)")
+}
+
 /**
  * Once any of the child's data that affects Koski has been deleted due to retention policies, the
- * data synchronization to Koski must be stopped, so that the data is not deleted from there too.
+ * data synchronization to Koski must be stopped, so that the data is not deleted from there too. A
+ * child never sent has nothing in Koski to protect, so the child does not have to be frozen.
  */
 fun Database.Transaction.freezeKoskiSync(
     childIds: Collection<ChildId>,
@@ -37,6 +43,7 @@ UPDATE child
 SET koski_data_first_removed_at = ${bind(now)}
 WHERE id = ANY(${bind(childIds)})
 AND koski_data_first_removed_at IS NULL
+AND ${predicate(childSentToKoski.forTable("child"))}
 RETURNING id
 """
     )
@@ -44,15 +51,33 @@ RETURNING id
     .executeAndReturnGeneratedKeys()
     .toList()
 
-private fun Database.Read.isKoskiSyncActive(childId: ChildId): Boolean = createQuery {
-    sql(
+private fun syncActive(today: LocalDate) = Predicate {
+    where(
         """
-SELECT child.koski_data_first_removed_at IS NULL
-FROM child
-WHERE id = ${bind(childId)}
+$it.koski_data_first_removed_at IS NULL
+AND (
+    -- Safety guard: First Koski update happening after age 10 points to an error:
+    -- child row may have been recreated and koski_data_first_removed_at lost.
+    ${predicate(childSentToKoski.forTable(it))} OR
+    EXISTS (
+        SELECT FROM person p
+        WHERE p.id = $it.id AND p.date_of_birth > ${bind(today.minusYears(SAFE_DATA_REMOVAL_AGE))}
+    )
+)
 """
     )
 }
+
+private fun Database.Read.isKoskiSyncActive(childId: ChildId, today: LocalDate): Boolean =
+    createQuery {
+        sql(
+            """
+SELECT ${predicate(syncActive(today).forTable("child"))}
+FROM child
+WHERE id = ${bind(childId)}
+"""
+        )
+    }
     .exactlyOne()
 
 fun Database.Read.getPendingStudyRights(
@@ -75,7 +100,7 @@ WHERE (
     ksr.preschool_input_data IS DISTINCT FROM kasr.input_data OR
     ${predicate(dataVersionCheck.forTable("ksr"))}
 )
-AND ch.koski_data_first_removed_at IS NULL
+AND ${predicate(syncActive(today).forTable("ch"))}
 
 UNION
 
@@ -88,7 +113,7 @@ WHERE (
     ksr.preparatory_input_data IS DISTINCT FROM kasr.input_data OR
     ${predicate(dataVersionCheck.forTable("ksr"))}
 )
-AND ch.koski_data_first_removed_at IS NULL
+AND ${predicate(syncActive(today).forTable("ch"))}
 
 UNION
 
@@ -96,7 +121,7 @@ SELECT kvsr.child_id, kvsr.unit_id, kvsr.type
 FROM koski_voided_study_right(${bind(today)}) kvsr
 JOIN child ch ON ch.id = kvsr.child_id
 WHERE kvsr.void_date IS NULL
-AND ch.koski_data_first_removed_at IS NULL
+AND ${predicate(syncActive(today).forTable("ch"))}
 """
         )
     }
@@ -170,7 +195,7 @@ fun Database.Transaction.beginKoskiUpload(
     today: LocalDate,
     syncRangeStart: LocalDate?,
 ): KoskiData? {
-    if (!isKoskiSyncActive(key.childId)) return null
+    if (!isKoskiSyncActive(key.childId, today)) return null
     val (id, voided) = refreshStudyRight(key, today, syncRangeStart)
     return if (voided) {
         createQuery {
