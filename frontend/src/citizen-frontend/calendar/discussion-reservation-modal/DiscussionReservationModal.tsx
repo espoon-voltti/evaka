@@ -50,7 +50,6 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
 import { faTimes } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../../localization'
 import { BottomFooterContainer } from '../BottomFooterContainer'
 import {
@@ -155,159 +154,157 @@ export default React.memo(function DiscussionReservationModal({
   }, [navigate, close])
 
   return (
-    <ModalAccessibilityWrapper>
-      <PlainModal
-        mobileFullScreen
-        margin="auto"
-        data-qa="discussion-reservations-modal"
-        onEscapeKey={close}
-      >
-        <CalendarModalBackground>
-          <BottomFooterContainer>
+    <PlainModal
+      mobileFullScreen
+      margin="auto"
+      data-qa="discussion-reservations-modal"
+      onEscapeKey={close}
+    >
+      <CalendarModalBackground>
+        <BottomFooterContainer>
+          <div>
+            <DiscussionHeader>
+              <CalendarModalCloseButton
+                onClick={close}
+                aria-label={i18n.common.closeModal}
+                icon={faTimes}
+              />
+              <H1 $noMargin>{t.surveyModalTitle}</H1>
+            </DiscussionHeader>
             <div>
-              <DiscussionHeader>
-                <CalendarModalCloseButton
-                  onClick={close}
-                  aria-label={i18n.common.closeModal}
-                  icon={faTimes}
-                />
-                <H1 $noMargin>{t.surveyModalTitle}</H1>
-              </DiscussionHeader>
-              <div>
-                <BackButtonInline
-                  onClick={returnToSurveyModal}
-                  icon={faArrowLeft}
-                  text={t.backButtonText}
-                  aria-label={t.backButtonText}
-                  appearance="inline"
-                />
-              </div>
-              <CalendarModalSection>
-                <WordBreakContainer>
-                  <H2>{eventData?.title}</H2>
-                  <p>{eventData?.description}</p>
-                  <H3>{t.reservationChildTitle}</H3>
-                  <StaticChip $color={colors.main.m1}>
-                    {childData ? (
-                      <PersonName person={childData} format="FirstFirst" />
-                    ) : (
-                      ''
-                    )}
-                  </StaticChip>
-                </WordBreakContainer>
-              </CalendarModalSection>
-              <Gap $size="zero" $sizeOnMobile="s" />
-              <CalendarModalSection>
-                <FixedSpaceColumn $spacing="m">
-                  <FixedSpaceRow $justifyContent="space-between">
-                    <div />
-                    <FixedSpaceRow $justifyContent="space-between" />
-                  </FixedSpaceRow>
-                  {eventTimeDays.length > 0 && !hasReservations ? (
-                    <>
-                      <div>
-                        <FixedSpaceRow $gap="m" $alignItems="center">
-                          <div>
-                            <H2
-                              $noMargin
-                            >{`${i18n.calendar.discussionTimeReservation.freeTimesInfoButtonText}`}</H2>
-                          </div>
-                          <InfoButton
-                            aria-label={i18n.common.openExpandingInfo}
-                            margin="zero"
-                            data-qa="free-times-info-button"
-                            open={infoOpen}
-                            onClick={onInfoClick}
-                          />
-                        </FixedSpaceRow>
-
-                        {infoOpen && (
-                          <ExpandingInfoBox
-                            data-qa="free-times-info-box"
-                            aria-label={
-                              i18n.calendar.discussionTimeReservation
-                                .freeTimesInfoText
-                            }
-                            info={
-                              i18n.calendar.discussionTimeReservation
-                                .freeTimesInfoText
-                            }
-                            width="full"
-                            close={onInfoClick}
-                          />
-                        )}
-                      </div>
-                      <ReservationGrid>
-                        <Label />
-                        <Label>{t.reservationTime}</Label>
-                        <Label>{t.reservationSelect}</Label>
-                        {eventTimeDays.map((etd) => (
-                          <React.Fragment key={etd.date}>
-                            {etd.times.map((t, i) => (
-                              <ReservationGridItem
-                                itemData={t}
-                                showDate={i === 0}
-                                bind={eventTimeId}
-                                key={t.id}
-                              />
-                            ))}
-                          </React.Fragment>
-                        ))}
-                      </ReservationGrid>
-                    </>
-                  ) : !hasReservations ? (
-                    <P>{t.noReservationsText}</P>
-                  ) : null}
-                </FixedSpaceColumn>
-              </CalendarModalSection>
-              <Gap $size="zero" $sizeOnMobile="s" />
-
-              {timeAlreadyReserved && (
-                <AlertBoxWrapper>
-                  <AlertBox
-                    title={t.reservationError}
-                    message={t.reservationErrorInstruction}
-                  />
-                </AlertBoxWrapper>
-              )}
-            </div>
-            <CalendarModalButtons>
-              <Button
+              <BackButtonInline
                 onClick={returnToSurveyModal}
-                data-qa="modal-cancelBtn"
-                text={i18n.common.cancel}
+                icon={faArrowLeft}
+                text={t.backButtonText}
+                aria-label={t.backButtonText}
+                appearance="inline"
               />
-              <MutateButton
-                primary
-                text={i18n.common.confirm}
-                disabled={eventTimeId.state === undefined}
-                mutation={addCalendarEventTimeReservationMutation}
-                onClick={() => {
-                  if (!form.isValid()) {
-                    return cancelMutation
-                  }
-                  return { body: form.value() }
-                }}
-                onSuccess={returnToSurveyModal}
-                data-qa="modal-okBtn"
-                onFailure={(failure: Failure<unknown>) => {
-                  setTimeAlreadyReserved(
-                    failure.errorCode === 'TIME_ALREADY_RESERVED'
-                  )
-                  eventTimeId.set(undefined)
-                  invalidateEvents()
-                }}
-              />
-            </CalendarModalButtons>
-          </BottomFooterContainer>
-        </CalendarModalBackground>
-        <CalendarModalCloseButton
-          onClick={close}
-          aria-label={i18n.common.closeModal}
-          icon={faTimes}
-        />
-      </PlainModal>
-    </ModalAccessibilityWrapper>
+            </div>
+            <CalendarModalSection>
+              <WordBreakContainer>
+                <H2>{eventData?.title}</H2>
+                <p>{eventData?.description}</p>
+                <H3>{t.reservationChildTitle}</H3>
+                <StaticChip $color={colors.main.m1}>
+                  {childData ? (
+                    <PersonName person={childData} format="FirstFirst" />
+                  ) : (
+                    ''
+                  )}
+                </StaticChip>
+              </WordBreakContainer>
+            </CalendarModalSection>
+            <Gap $size="zero" $sizeOnMobile="s" />
+            <CalendarModalSection>
+              <FixedSpaceColumn $spacing="m">
+                <FixedSpaceRow $justifyContent="space-between">
+                  <div />
+                  <FixedSpaceRow $justifyContent="space-between" />
+                </FixedSpaceRow>
+                {eventTimeDays.length > 0 && !hasReservations ? (
+                  <>
+                    <div>
+                      <FixedSpaceRow $gap="m" $alignItems="center">
+                        <div>
+                          <H2
+                            $noMargin
+                          >{`${i18n.calendar.discussionTimeReservation.freeTimesInfoButtonText}`}</H2>
+                        </div>
+                        <InfoButton
+                          aria-label={i18n.common.openExpandingInfo}
+                          margin="zero"
+                          data-qa="free-times-info-button"
+                          open={infoOpen}
+                          onClick={onInfoClick}
+                        />
+                      </FixedSpaceRow>
+
+                      {infoOpen && (
+                        <ExpandingInfoBox
+                          data-qa="free-times-info-box"
+                          aria-label={
+                            i18n.calendar.discussionTimeReservation
+                              .freeTimesInfoText
+                          }
+                          info={
+                            i18n.calendar.discussionTimeReservation
+                              .freeTimesInfoText
+                          }
+                          width="full"
+                          close={onInfoClick}
+                        />
+                      )}
+                    </div>
+                    <ReservationGrid>
+                      <Label />
+                      <Label>{t.reservationTime}</Label>
+                      <Label>{t.reservationSelect}</Label>
+                      {eventTimeDays.map((etd) => (
+                        <React.Fragment key={etd.date}>
+                          {etd.times.map((t, i) => (
+                            <ReservationGridItem
+                              itemData={t}
+                              showDate={i === 0}
+                              bind={eventTimeId}
+                              key={t.id}
+                            />
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </ReservationGrid>
+                  </>
+                ) : !hasReservations ? (
+                  <P>{t.noReservationsText}</P>
+                ) : null}
+              </FixedSpaceColumn>
+            </CalendarModalSection>
+            <Gap $size="zero" $sizeOnMobile="s" />
+
+            {timeAlreadyReserved && (
+              <AlertBoxWrapper>
+                <AlertBox
+                  title={t.reservationError}
+                  message={t.reservationErrorInstruction}
+                />
+              </AlertBoxWrapper>
+            )}
+          </div>
+          <CalendarModalButtons>
+            <Button
+              onClick={returnToSurveyModal}
+              data-qa="modal-cancelBtn"
+              text={i18n.common.cancel}
+            />
+            <MutateButton
+              primary
+              text={i18n.common.confirm}
+              disabled={eventTimeId.state === undefined}
+              mutation={addCalendarEventTimeReservationMutation}
+              onClick={() => {
+                if (!form.isValid()) {
+                  return cancelMutation
+                }
+                return { body: form.value() }
+              }}
+              onSuccess={returnToSurveyModal}
+              data-qa="modal-okBtn"
+              onFailure={(failure: Failure<unknown>) => {
+                setTimeAlreadyReserved(
+                  failure.errorCode === 'TIME_ALREADY_RESERVED'
+                )
+                eventTimeId.set(undefined)
+                invalidateEvents()
+              }}
+            />
+          </CalendarModalButtons>
+        </BottomFooterContainer>
+      </CalendarModalBackground>
+      <CalendarModalCloseButton
+        onClick={close}
+        aria-label={i18n.common.closeModal}
+        icon={faTimes}
+      />
+    </PlainModal>
   )
 })
 

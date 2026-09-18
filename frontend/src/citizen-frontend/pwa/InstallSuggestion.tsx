@@ -33,7 +33,7 @@ export const InstallSuggestion = React.memo(function InstallSuggestion() {
   const { colors } = useTheme()
   const user = useUser()
   const availability = useInstallAvailability()
-  const { modalOpen } = useContext(OverlayContext)
+  const { globalDialogOpen } = useContext(OverlayContext)
   const [expanded, setExpanded] = useState(false)
   const [stage, setStage] = useState<'suggestion' | 'note' | 'gone'>(
     'suggestion'
@@ -64,9 +64,8 @@ export const InstallSuggestion = React.memo(function InstallSuggestion() {
   if (stage === 'gone' || isInstallSuggestionDismissed(user.id)) return null
   if (availability.kind === 'unavailable') return null
 
-  // Hide until the "Application sent" modal is dismissed. This also hides
-  // the install suggestion when any modal is open.
-  if (modalOpen) return null
+  // Hide until the "Application sent" dialog is dismissed
+  if (globalDialogOpen) return null
 
   if (stage === 'note') {
     return (
