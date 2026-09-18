@@ -58,8 +58,16 @@ export default React.memo(function ActionPickerModal({
   )
 
   return (
-    <ModalBackground onClick={close}>
-      <Container>
+    <ModalBackground onClick={close} onEscapeKey={close}>
+      <Container
+        role="dialog"
+        aria-modal="true"
+        aria-label={
+          featureFlags.discussionReservations && isDiscussionActionVisible
+            ? i18n.calendar.newReservationOrAbsenceOrDiscussion
+            : i18n.calendar.newReservationOrAbsence
+        }
+      >
         {questionnaireAvailable && (
           <Action onClick={openHolidays} data-qa="calendar-action-holidays">
             {questionnaireAvailable === 'with-strong-auth' ? (
