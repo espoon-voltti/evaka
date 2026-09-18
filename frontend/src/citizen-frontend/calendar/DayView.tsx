@@ -445,6 +445,7 @@ const DayModal = React.memo(function DayModal({
         data-qa="calendar-dayview"
         zIndex={100}
         onEscapeKey={onClose}
+        aria-label={date.formatExotic('cccc do MMMM', lang)}
       >
         <CalendarModalBackground>
           <BottomFooterContainer>
