@@ -19,7 +19,6 @@ import { PersonName } from 'lib-components/molecules/PersonNames'
 import { MutateFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 
-import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../../localization'
 import { getDuplicateChildInfo } from '../../utils/duplicated-child-utils'
 import { answerOpenRangesQuestionnaireMutation } from '../queries'
@@ -75,67 +74,65 @@ export default React.memo(function OpenRangesSelectionModal({
   const duplicateChildInfo = getDuplicateChildInfo(availableChildren, i18n)
 
   return (
-    <ModalAccessibilityWrapper>
-      <MutateFormModal
-        mobileFullScreen
-        width="wide"
-        title={questionnaire.title[lang]}
-        resolveMutation={answerOpenRangesQuestionnaireMutation}
-        resolveAction={() => ({
-          id: questionnaire.id,
-          body: { openRanges }
-        })}
-        resolveLabel={i18n.common.confirm}
-        onSuccess={close}
-        rejectAction={close}
-        rejectLabel={i18n.common.cancel}
-        data-qa="open-ranges-selection-modal"
-      >
-        <FixedSpaceColumn>
-          <HolidaySection>
-            <div>{questionnaire.description[lang]}</div>
-            <div>{questionnaire.period.format()}</div>
-            <ExternalLink
-              text={i18n.calendar.holidayModal.additionalInformation}
-              href={questionnaire.descriptionLink[lang]}
-              newTab
-            />
-          </HolidaySection>
-          {availableChildren
-            .filter(
-              (child) =>
-                eligibleChildren[child.id] !== undefined ||
-                questionnaire.conditions.continuousPlacement != null
-            )
-            .map((child) => (
-              <HolidaySection
-                key={child.id}
-                data-qa={`holiday-section-${child.id}`}
-              >
-                <H2 translate="no">
-                  <PersonName person={child} format="FirstFirst" />
-                  {duplicateChildInfo[child.id] !== undefined
-                    ? ` ${duplicateChildInfo[child.id]}`
-                    : ''}
-                </H2>
-                {eligibleChildren[child.id] !== undefined ? (
-                  <RangeSelector
-                    period={questionnaire.period}
-                    value={openRanges[child.id] ?? []}
-                    onSelectRanges={selectRanges(child.id)}
-                  />
-                ) : (
-                  <div data-qa="not-eligible">
-                    {i18n.calendar.holidayModal.notEligible(
-                      questionnaire.conditions.continuousPlacement!
-                    )}
-                  </div>
-                )}
-              </HolidaySection>
-            ))}
-        </FixedSpaceColumn>
-      </MutateFormModal>
-    </ModalAccessibilityWrapper>
+    <MutateFormModal
+      mobileFullScreen
+      width="wide"
+      title={questionnaire.title[lang]}
+      resolveMutation={answerOpenRangesQuestionnaireMutation}
+      resolveAction={() => ({
+        id: questionnaire.id,
+        body: { openRanges }
+      })}
+      resolveLabel={i18n.common.confirm}
+      onSuccess={close}
+      rejectAction={close}
+      rejectLabel={i18n.common.cancel}
+      data-qa="open-ranges-selection-modal"
+    >
+      <FixedSpaceColumn>
+        <HolidaySection>
+          <div>{questionnaire.description[lang]}</div>
+          <div>{questionnaire.period.format()}</div>
+          <ExternalLink
+            text={i18n.calendar.holidayModal.additionalInformation}
+            href={questionnaire.descriptionLink[lang]}
+            newTab
+          />
+        </HolidaySection>
+        {availableChildren
+          .filter(
+            (child) =>
+              eligibleChildren[child.id] !== undefined ||
+              questionnaire.conditions.continuousPlacement != null
+          )
+          .map((child) => (
+            <HolidaySection
+              key={child.id}
+              data-qa={`holiday-section-${child.id}`}
+            >
+              <H2 translate="no">
+                <PersonName person={child} format="FirstFirst" />
+                {duplicateChildInfo[child.id] !== undefined
+                  ? ` ${duplicateChildInfo[child.id]}`
+                  : ''}
+              </H2>
+              {eligibleChildren[child.id] !== undefined ? (
+                <RangeSelector
+                  period={questionnaire.period}
+                  value={openRanges[child.id] ?? []}
+                  onSelectRanges={selectRanges(child.id)}
+                />
+              ) : (
+                <div data-qa="not-eligible">
+                  {i18n.calendar.holidayModal.notEligible(
+                    questionnaire.conditions.continuousPlacement!
+                  )}
+                </div>
+              )}
+            </HolidaySection>
+          ))}
+      </FixedSpaceColumn>
+    </MutateFormModal>
   )
 })
 

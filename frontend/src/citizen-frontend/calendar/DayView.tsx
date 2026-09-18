@@ -89,7 +89,6 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { faQuestion, faTimes } from 'lib-icons'
 import { faChevronLeft, faChevronRight } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import {
   exportCitizenCalendarEventIcs,
   exportCitizenDiscussionReservationIcs
@@ -411,7 +410,7 @@ const DayModal = React.memo(function DayModal({
   const { openReservationModal } = useCalendarModalState()
 
   return (
-    <ModalAccessibilityWrapper>
+    <>
       {confirmationModalState.visible && (
         <MutateFormModal
           data-qa="confirm-cancel-modal"
@@ -728,7 +727,7 @@ const DayModal = React.memo(function DayModal({
           </BottomFooterContainer>
         </CalendarModalBackground>
       </PlainModal>
-    </ModalAccessibilityWrapper>
+    </>
   )
 })
 
