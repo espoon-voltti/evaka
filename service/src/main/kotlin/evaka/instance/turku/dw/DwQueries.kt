@@ -344,6 +344,7 @@ object DwQueries {
                             WHERE departed IS NOT NULL
                                 AND (current_date::DATE - interval '2 week' <= DATE(arrived) OR current_date::DATE - interval '2 week' <= DATE(departed))
                         ) saa ON g.id = saa.group_id
+                            AND (t::DATE = DATE(saa.arrived) OR t::DATE = DATE(saa.departed))
                         LEFT JOIN staff_attendance s ON g.id = s.group_id
                             AND t::DATE = s.date
                     WHERE date_part('isodow', t::DATE) = ANY(u.operation_days)
@@ -666,6 +667,7 @@ object DwQueries {
                             FROM staff_attendance_external
                             WHERE departed IS NOT null
                         ) sar ON g.id = sar.group_id
+                            AND (current_date::DATE = DATE(sar.arrived) OR current_date::DATE = DATE(sar.departed))
                         LEFT JOIN staff_attendance s ON g.id = s.group_id
                             AND current_date::DATE = s.date
                     WHERE date_part('isodow', current_date::DATE) = ANY(u.operation_days)
