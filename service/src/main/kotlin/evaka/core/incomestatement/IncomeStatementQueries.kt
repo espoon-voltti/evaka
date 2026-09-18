@@ -4,6 +4,7 @@
 
 package evaka.core.incomestatement
 
+import evaka.core.application.ApplicationStatus
 import evaka.core.application.utils.exhaust
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.invoicing.controller.SortDirection
@@ -663,7 +664,7 @@ private fun awaitingHandlerQuery(
                 .takeIf { providerTypes.isNotEmpty() },
             PredicateSql {
                 where(
-                    "p.start_date IS NOT NULL AND p.end_date IS NOT NULL AND daterange(p.start_date, p.end_date, '[]') @> ${bind(placementValidDate)}"
+                    "family_unit.start_date IS NOT NULL AND family_unit.end_date IS NOT NULL AND daterange(family_unit.start_date, family_unit.end_date, '[]') @> ${bind(placementValidDate)}"
                 )
             }
                 .takeIf { placementValidDate != null },
@@ -704,42 +705,63 @@ SELECT
 FROM income_statement i
 JOIN person ON person.id = i.person_id
 
--- guardian
-LEFT JOIN guardian g ON g.guardian_id = i.person_id
+-- guardian relations count only for applications: a family that has just applied may not have
+-- fridge relations yet
+JOIN LATERAL (
+    SELECT
+        array_agg(DISTINCT c.child_id) FILTER (WHERE NOT c.guardian_only) AS placement_children,
+        array_agg(DISTINCT c.child_id) AS application_children
+    FROM (
+        SELECT i.person_id AS child_id, false AS guardian_only
+        UNION ALL
+        SELECT fc_head.child_id, false
+        FROM fridge_child fc_head
+        WHERE fc_head.head_of_child = i.person_id
+          AND ${bind(today)} BETWEEN fc_head.start_date AND fc_head.end_date
+        UNION ALL
+        SELECT fc_spouse.child_id, false
+        FROM fridge_partner fp
+        JOIN fridge_partner fp_spouse ON fp_spouse.partnership_id = fp.partnership_id
+          AND fp_spouse.person_id <> fp.person_id
+          AND ${bind(today)} BETWEEN fp_spouse.start_date AND coalesce(fp_spouse.end_date, 'infinity')
+        JOIN fridge_child fc_spouse ON fc_spouse.head_of_child = fp_spouse.person_id
+          AND ${bind(today)} BETWEEN fc_spouse.start_date AND fc_spouse.end_date
+        WHERE fp.person_id = i.person_id
+          AND ${bind(today)} BETWEEN fp.start_date AND coalesce(fp.end_date, 'infinity')
+        UNION ALL
+        SELECT g.child_id, true
+        FROM guardian g
+        WHERE g.guardian_id = i.person_id
+    ) c
+) family ON true
 
--- head of child
-LEFT JOIN fridge_child fc_head ON (
-    fc_head.head_of_child = i.person_id AND
-    ${bind(today)} BETWEEN fc_head.start_date AND fc_head.end_date
-)
-
--- spouse of the head of child
-LEFT JOIN fridge_partner fp ON fp.person_id = i.person_id AND ${bind(today)} BETWEEN fp.start_date AND coalesce(fp.end_date, 'infinity')
-LEFT JOIN fridge_partner fp_spouse ON (
-    fp_spouse.partnership_id = fp.partnership_id AND
-    fp_spouse.person_id <> i.person_id AND
-    ${bind(today)} BETWEEN fp_spouse.start_date AND coalesce(fp_spouse.end_date, 'infinity')
-)
-LEFT JOIN fridge_child fc_spouse ON (
-    fc_spouse.head_of_child = fp_spouse.person_id AND
-    ${bind(today)} BETWEEN fc_spouse.start_date AND fc_spouse.end_date
-)
-
-LEFT JOIN placement p ON ${bind(today)} BETWEEN p.start_date AND p.end_date AND p.child_id IN (
-    i.person_id,  -- child's own income statement
-    fc_head.child_id,
-    fc_spouse.child_id
-)
-
--- find an application too, but only if a placement was not found
-LEFT JOIN application a ON p.id IS NULL AND a.child_id IN (
-    i.person_id,
-    g.child_id,
-    fc_head.child_id,
-    fc_spouse.child_id
-)
-
-LEFT JOIN daycare d ON d.id IN (p.unit_id, a.primary_preferred_unit)
+-- units come from the first tier that has any: 1 = current placements,
+-- 2 = pending applications and future placements
+LEFT JOIN LATERAL (
+    SELECT u.unit_id, u.start_date, u.end_date
+    FROM (
+        SELECT candidate.*, min(candidate.tier) OVER () AS best_tier
+        FROM (
+            SELECT p.unit_id, p.start_date, p.end_date, 1 AS tier
+            FROM placement p
+            WHERE p.child_id = ANY(family.placement_children)
+              AND ${bind(today)} BETWEEN p.start_date AND p.end_date
+            UNION ALL
+            SELECT a.primary_preferred_unit, NULL, NULL, 2
+            FROM application a
+            WHERE a.child_id = ANY(family.application_children)
+              AND a.status = ANY(${bind(ApplicationStatus.pending)})
+              AND a.primary_preferred_unit IS NOT NULL
+            UNION ALL
+            SELECT p.unit_id, p.start_date, p.end_date, 2
+            FROM placement p
+            WHERE p.child_id = ANY(family.placement_children)
+              AND p.start_date > ${bind(today)}
+        ) candidate
+    ) u
+    WHERE u.tier = u.best_tier
+) family_unit ON true
+LEFT JOIN daycare d ON d.id = family_unit.unit_id
 LEFT JOIN care_area ca ON ca.id = d.care_area_id
 WHERE
     between_start_and_end(tstzrange(${bind(sentStart)}, ${bind(sentEnd)}, '[)'), i.sent_at) AND
