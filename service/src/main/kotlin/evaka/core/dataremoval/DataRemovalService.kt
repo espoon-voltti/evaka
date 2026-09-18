@@ -76,13 +76,13 @@ EXISTS (
     )
 }
 
-private fun auditExpiredDelete(
+internal fun auditExpiredDelete(
     entity: String,
     targetId: AuditId,
     meta: Map<String, Any?> = emptyMap(),
 ) = Audit.DataRemovalExpiredDelete.log(targetId = targetId, meta = meta + ("entity" to entity))
 
-private fun auditExpiredUnset(
+internal fun auditExpiredUnset(
     entity: String,
     targetId: AuditId,
     meta: Map<String, Any?> = emptyMap(),
@@ -98,6 +98,8 @@ class DataRemovalService(
         asyncJobRunner.registerHandler(::deleteExpiredData)
         asyncJobRunner.registerHandler(::deleteChildImage)
         asyncJobRunner.registerHandler(::deleteDecisionPdf)
+        asyncJobRunner.registerHandler(::deleteFeeDecisionPdf)
+        asyncJobRunner.registerHandler(::deleteVoucherValueDecisionPdf)
     }
 
     fun planDataRemoval(db: Database.Connection, clock: EvakaClock) {
@@ -344,6 +346,22 @@ class DataRemovalService(
         msg: AsyncJob.DeleteDecisionPdf,
     ) {
         documentClient.delete(DocumentKey.Decision(msg.key))
+    }
+
+    fun deleteFeeDecisionPdf(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.DeleteFeeDecisionPdf,
+    ) {
+        documentClient.delete(DocumentKey.FeeDecision(msg.key))
+    }
+
+    fun deleteVoucherValueDecisionPdf(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.DeleteVoucherValueDecisionPdf,
+    ) {
+        documentClient.delete(DocumentKey.VoucherValueDecision(msg.key))
     }
 
     fun deleteExpiredChildImages(
