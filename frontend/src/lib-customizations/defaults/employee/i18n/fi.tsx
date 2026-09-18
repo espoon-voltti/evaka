@@ -4190,11 +4190,8 @@ export const fi = {
     },
     vardaChildErrors: {
       title: 'Varda-lapsivirheet',
-      ma003: {
-        include: 'Sisällytä MA003-virheet',
-        exclude: 'Piilota MA003-virheet',
-        only: 'Näytä vain MA003-virheet'
-      },
+      showMA003Errors: 'Näytä MA003-virheet',
+      include8yAndOlder: 'Näytä 8v ja vanhemmat lapset',
       description: 'Varda-lasten päivityksissä tapahtuneet virheet',
       updated: 'Päivitetty viimeksi',
       age: 'Ikä (päivää)',
