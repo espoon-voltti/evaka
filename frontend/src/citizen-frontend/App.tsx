@@ -37,7 +37,7 @@ import Header from './navigation/Header'
 import MobileNav from './navigation/MobileNav'
 import { headerHeightMobile, mobileBottomNavHeight } from './navigation/const'
 import GlobalDialog from './overlay/GlobalDialog'
-import { OverlayContext, OverlayContextProvider } from './overlay/state'
+import { OverlayContextProvider } from './overlay/state'
 import { InstallSuggestion } from './pwa/InstallSuggestion'
 import { useStandaloneAttribute } from './pwa/installed'
 import { useNotificationClickRouting } from './pwa/notificationRouting'
@@ -82,7 +82,6 @@ export function App({ children }: { children: React.ReactNode }) {
                     <Content>{children}</Content>
                     <GlobalDialog />
                     <LoginErrorModal />
-                    <div id="modal-container" />
                     <div id="datepicker-container" />
                     <div id="tooltip-container" />
                   </MessageDraftsProvider>
@@ -169,7 +168,6 @@ const Content = React.memo(function Content({
 }) {
   const t = useTranslation()
   const { apiVersion } = useContext(AuthContext)
-  const { modalOpen } = useContext(OverlayContext)
 
   const { user } = useContext(AuthContext)
   const sessionKeepalive = useSessionKeepalive()
@@ -185,12 +183,12 @@ const Content = React.memo(function Content({
   return (
     <AppShell>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
-      <Header ariaHidden={modalOpen} />
+      <Header />
       <InstallSuggestion />
       <Notifications apiVersion={apiVersion} sticky offsetTop />
       <ScrollArea ref={scrollAreaRef} data-qa="scroll-area">
         <FullPageContainer>
-          <MainContainer ariaHidden={modalOpen}>{children}</MainContainer>
+          <MainContainer>{children}</MainContainer>
         </FullPageContainer>
       </ScrollArea>
       <MobileNav />
@@ -205,16 +203,14 @@ const Content = React.memo(function Content({
 })
 
 const MainContainer = React.memo(function MainContainer({
-  ariaHidden,
   children
 }: {
-  ariaHidden: boolean
   children: ReactNode
 }) {
   const { user } = useContext(AuthContext)
   const render = useCallback(() => <>{children}</>, [children])
   return (
-    <ScrollableMain aria-hidden={ariaHidden}>
+    <ScrollableMain>
       <UnwrapResult result={user}>{render}</UnwrapResult>
     </ScrollableMain>
   )

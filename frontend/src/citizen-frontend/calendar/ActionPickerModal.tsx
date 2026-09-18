@@ -19,7 +19,6 @@ import { featureFlags } from 'lib-customizations/citizen'
 import { faComment, faLockAlt } from 'lib-icons'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 import { mobileBottomNavHeight } from '../navigation/const'
@@ -59,53 +58,51 @@ export default React.memo(function ActionPickerModal({
   )
 
   return (
-    <ModalAccessibilityWrapper>
-      <ModalBackground onClick={close}>
-        <Container>
-          {questionnaireAvailable && (
-            <Action onClick={openHolidays} data-qa="calendar-action-holidays">
-              {questionnaireAvailable === 'with-strong-auth' ? (
-                <LabelContainer>
-                  <FontAwesomeIcon icon={faLockAlt} />
-                  {i18n.calendar.newHoliday}
-                </LabelContainer>
-              ) : (
-                i18n.calendar.newHoliday
-              )}
-              <IconBackground>
-                <FontAwesomeIcon icon={faTreePalm} size="1x" />
-              </IconBackground>
-            </Action>
-          )}
-          {featureFlags.discussionReservations && isDiscussionActionVisible && (
-            <Action
-              onClick={onOpenDiscussionReservation}
-              data-qa="calendar-action-discussions"
-            >
-              {i18n.calendar.discussionTimeReservation.surveyModalButtonText}
-              <IconBackground>
-                <FontAwesomeIcon icon={faComment} size="1x" />
-              </IconBackground>
-            </Action>
-          )}
-          <Action onClick={onCreateAbsences} data-qa="calendar-action-absences">
-            {i18n.calendar.newAbsence}
+    <ModalBackground onClick={close}>
+      <Container>
+        {questionnaireAvailable && (
+          <Action onClick={openHolidays} data-qa="calendar-action-holidays">
+            {questionnaireAvailable === 'with-strong-auth' ? (
+              <LabelContainer>
+                <FontAwesomeIcon icon={faLockAlt} />
+                {i18n.calendar.newHoliday}
+              </LabelContainer>
+            ) : (
+              i18n.calendar.newHoliday
+            )}
             <IconBackground>
-              <FontAwesomeIcon icon={faUserMinus} size="1x" />
+              <FontAwesomeIcon icon={faTreePalm} size="1x" />
             </IconBackground>
           </Action>
+        )}
+        {featureFlags.discussionReservations && isDiscussionActionVisible && (
           <Action
-            onClick={openReservations}
-            data-qa="calendar-action-reservations"
+            onClick={onOpenDiscussionReservation}
+            data-qa="calendar-action-discussions"
           >
-            {i18n.calendar.newReservationBtn}
+            {i18n.calendar.discussionTimeReservation.surveyModalButtonText}
             <IconBackground>
-              <FontAwesomeIcon icon={faCalendarPlus} size="1x" />
+              <FontAwesomeIcon icon={faComment} size="1x" />
             </IconBackground>
           </Action>
-        </Container>
-      </ModalBackground>
-    </ModalAccessibilityWrapper>
+        )}
+        <Action onClick={onCreateAbsences} data-qa="calendar-action-absences">
+          {i18n.calendar.newAbsence}
+          <IconBackground>
+            <FontAwesomeIcon icon={faUserMinus} size="1x" />
+          </IconBackground>
+        </Action>
+        <Action
+          onClick={openReservations}
+          data-qa="calendar-action-reservations"
+        >
+          {i18n.calendar.newReservationBtn}
+          <IconBackground>
+            <FontAwesomeIcon icon={faCalendarPlus} size="1x" />
+          </IconBackground>
+        </Action>
+      </Container>
+    </ModalBackground>
   )
 })
 

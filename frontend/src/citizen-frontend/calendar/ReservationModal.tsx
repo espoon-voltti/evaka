@@ -32,7 +32,6 @@ import { H1, H2, Label, Light } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faTimes } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../localization'
 
 import { BottomFooterContainer } from './BottomFooterContainer'
@@ -235,187 +234,176 @@ export default React.memo(function ReservationModal({
   }, [reservationsResponse, holidayPeriods, dateRange, timesBranch, timesForm])
 
   return (
-    <ModalAccessibilityWrapper>
-      <PlainModal
-        mobileFullScreen
-        margin="auto"
-        data-qa="reservation-modal"
-        onEscapeKey={onClose}
-      >
-        <CalendarModalBackground>
-          <BottomFooterContainer>
-            <div>
-              <CalendarModalSection>
-                <Gap $size="L" $sizeOnMobile="zero" />
-                <ModalHeader
-                  headingComponent={(props) => (
-                    <H1 $noMargin data-qa="title" {...props}>
-                      {props.children}
-                    </H1>
-                  )}
-                >
-                  {i18n.calendar.reservationModal.title}
-                </ModalHeader>
-              </CalendarModalSection>
-
-              <Gap $size="zero" $sizeOnMobile="s" />
-
-              <CalendarModalSection
-                role="group"
-                aria-labelledby="select-children"
+    <PlainModal
+      mobileFullScreen
+      margin="auto"
+      data-qa="reservation-modal"
+      onEscapeKey={onClose}
+    >
+      <CalendarModalBackground>
+        <BottomFooterContainer>
+          <div>
+            <CalendarModalSection>
+              <Gap $size="L" $sizeOnMobile="zero" />
+              <ModalHeader
+                headingComponent={(props) => (
+                  <H1 $noMargin data-qa="title" {...props}>
+                    {props.children}
+                  </H1>
+                )}
               >
-                <H2 id="select-children">
-                  {i18n.calendar.reservationModal.selectChildren}
-                </H2>
-                <Gap $size="xs" />
-                <ChildSelector
-                  bind={selectedChildren}
-                  childItems={reservationsResponse.children.filter(
-                    (child) => child.upcomingPlacementType !== null
-                  )}
-                  rangeEnd={selectedRange?.end}
-                />
-              </CalendarModalSection>
+                {i18n.calendar.reservationModal.title}
+              </ModalHeader>
+            </CalendarModalSection>
 
-              <Gap $size="xxs" $sizeOnMobile="s" />
+            <Gap $size="zero" $sizeOnMobile="s" />
 
-              <CalendarModalSection>
-                <TabletAndDesktop>
-                  <HorizontalLine $slim $dashed />
-                </TabletAndDesktop>
-
-                <H2>{i18n.calendar.reservationModal.dateRange}</H2>
-
-                <HolidayPeriodInfoBox holidayPeriods={holidayPeriods} />
-
-                <Label htmlFor="recurrence">
-                  {i18n.calendar.reservationModal.selectRecurrence}
-                </Label>
-                <Gap $size="xxs" />
-                <SelectF
-                  bind={repetition}
-                  data-qa="repetition"
-                  id="recurrence"
-                />
-                <Gap $size="s" />
-
-                <ExpandingInfo
-                  width="auto"
-                  info={
-                    dayProperties.maxDate !== undefined ? (
-                      <>
-                        {i18n.calendar.reservationModal.dateRangeInfo(
-                          dayProperties.maxDate
-                        )}
-                        {anyShiftCare && i18n.calendar.shiftCareInfo()}
-                      </>
-                    ) : (
-                      i18n.calendar.reservationModal.noReservableDays
-                    )
-                  }
-                  inlineChildren
-                >
-                  <Label id="reservation-daterange-label">
-                    {i18n.calendar.reservationModal.dateRangeLabel}
-                  </Label>
-                </ExpandingInfo>
-                <DateRangePickerF
-                  bind={dateRange}
-                  locale={lang}
-                  hideErrorsBeforeTouched={!showAllErrors}
-                  onFocus={(ev) => {
-                    scrollIntoViewSoftKeyboard(ev.target, 'start')
-                  }}
-                  required
-                  ariaId="reservation-daterange-label"
-                />
-
-                {overlappingClosedHolidayPeriods.length > 0 && (
-                  <InfoBox
-                    title={i18n.calendar.closedHolidayPeriodAbsence.title(
-                      overlappingClosedHolidayPeriods
-                    )}
-                    message={
-                      i18n.calendar.closedHolidayPeriodAbsence.infoMessage
-                    }
-                  />
+            <CalendarModalSection
+              role="group"
+              aria-labelledby="select-children"
+            >
+              <H2 id="select-children">
+                {i18n.calendar.reservationModal.selectChildren}
+              </H2>
+              <Gap $size="xs" />
+              <ChildSelector
+                bind={selectedChildren}
+                childItems={reservationsResponse.children.filter(
+                  (child) => child.upcomingPlacementType !== null
                 )}
-
-                <Gap $size="m" />
-
-                {selectedRange ? (
-                  <RepetitionTimeInputGrid
-                    bind={times}
-                    showAllErrors={showAllErrors}
-                  />
-                ) : (
-                  <MissingDateRange>
-                    {i18n.calendar.reservationModal.missingDateRange}
-                  </MissingDateRange>
-                )}
-                {incompletelyAnsweredHolidayPeriods.length > 0 && (
-                  <InfoBox
-                    title={i18n.calendar.incompletelyAnsweredHolidayPeriods.title(
-                      incompletelyAnsweredHolidayPeriods
-                    )}
-                    message={
-                      i18n.calendar.incompletelyAnsweredHolidayPeriods
-                        .infoMessage
-                    }
-                    data-qa="incompletely-answered-periods-info"
-                  />
-                )}
-              </CalendarModalSection>
-            </div>
-            <Gap $size="m" />
-            {saveError !== undefined && (
-              <AlertBox
-                title={i18n.calendar.reservationModal.saveErrors.failure}
-                message={saveError}
-                wide
-                noMargin
+                rangeEnd={selectedRange?.end}
               />
-            )}
-            <CalendarModalButtons>
-              <Button
-                onClick={onClose}
-                data-qa="modal-cancelBtn"
-                text={i18n.common.cancel}
-              />
-              <MutateButton
-                primary
-                text={i18n.common.confirm}
-                textDone={i18n.common.saveSuccess}
-                disabled={
-                  form.state.selectedChildren.length === 0 || !form.isValid()
+            </CalendarModalSection>
+
+            <Gap $size="xxs" $sizeOnMobile="s" />
+
+            <CalendarModalSection>
+              <TabletAndDesktop>
+                <HorizontalLine $slim $dashed />
+              </TabletAndDesktop>
+
+              <H2>{i18n.calendar.reservationModal.dateRange}</H2>
+
+              <HolidayPeriodInfoBox holidayPeriods={holidayPeriods} />
+
+              <Label htmlFor="recurrence">
+                {i18n.calendar.reservationModal.selectRecurrence}
+              </Label>
+              <Gap $size="xxs" />
+              <SelectF bind={repetition} data-qa="repetition" id="recurrence" />
+              <Gap $size="s" />
+
+              <ExpandingInfo
+                width="auto"
+                info={
+                  dayProperties.maxDate !== undefined ? (
+                    <>
+                      {i18n.calendar.reservationModal.dateRangeInfo(
+                        dayProperties.maxDate
+                      )}
+                      {anyShiftCare && i18n.calendar.shiftCareInfo()}
+                    </>
+                  ) : (
+                    i18n.calendar.reservationModal.noReservableDays
+                  )
                 }
-                mutation={postReservationsMutation}
-                onClick={() => {
-                  if (!form.isValid()) {
-                    setShowAllErrors(true)
-                    return cancelMutation
-                  } else {
-                    const request = form.value().toRequest(dayProperties)
-                    return request.length > 0
-                      ? { body: request }
-                      : cancelMutation
-                  }
+                inlineChildren
+              >
+                <Label id="reservation-daterange-label">
+                  {i18n.calendar.reservationModal.dateRangeLabel}
+                </Label>
+              </ExpandingInfo>
+              <DateRangePickerF
+                bind={dateRange}
+                locale={lang}
+                hideErrorsBeforeTouched={!showAllErrors}
+                onFocus={(ev) => {
+                  scrollIntoViewSoftKeyboard(ev.target, 'start')
                 }}
-                onSuccess={onSuccess}
-                onFailure={(reason) => showSaveError(reason)}
-                data-qa="modal-okBtn"
-                successTimeout={2500}
+                required
+                ariaId="reservation-daterange-label"
               />
-            </CalendarModalButtons>
-          </BottomFooterContainer>
-        </CalendarModalBackground>
-        <CalendarModalCloseButton
-          onClick={onClose}
-          aria-label={i18n.common.closeModal}
-          icon={faTimes}
-        />
-      </PlainModal>
-    </ModalAccessibilityWrapper>
+
+              {overlappingClosedHolidayPeriods.length > 0 && (
+                <InfoBox
+                  title={i18n.calendar.closedHolidayPeriodAbsence.title(
+                    overlappingClosedHolidayPeriods
+                  )}
+                  message={i18n.calendar.closedHolidayPeriodAbsence.infoMessage}
+                />
+              )}
+
+              <Gap $size="m" />
+
+              {selectedRange ? (
+                <RepetitionTimeInputGrid
+                  bind={times}
+                  showAllErrors={showAllErrors}
+                />
+              ) : (
+                <MissingDateRange>
+                  {i18n.calendar.reservationModal.missingDateRange}
+                </MissingDateRange>
+              )}
+              {incompletelyAnsweredHolidayPeriods.length > 0 && (
+                <InfoBox
+                  title={i18n.calendar.incompletelyAnsweredHolidayPeriods.title(
+                    incompletelyAnsweredHolidayPeriods
+                  )}
+                  message={
+                    i18n.calendar.incompletelyAnsweredHolidayPeriods.infoMessage
+                  }
+                  data-qa="incompletely-answered-periods-info"
+                />
+              )}
+            </CalendarModalSection>
+          </div>
+          <Gap $size="m" />
+          {saveError !== undefined && (
+            <AlertBox
+              title={i18n.calendar.reservationModal.saveErrors.failure}
+              message={saveError}
+              wide
+              noMargin
+            />
+          )}
+          <CalendarModalButtons>
+            <Button
+              onClick={onClose}
+              data-qa="modal-cancelBtn"
+              text={i18n.common.cancel}
+            />
+            <MutateButton
+              primary
+              text={i18n.common.confirm}
+              textDone={i18n.common.saveSuccess}
+              disabled={
+                form.state.selectedChildren.length === 0 || !form.isValid()
+              }
+              mutation={postReservationsMutation}
+              onClick={() => {
+                if (!form.isValid()) {
+                  setShowAllErrors(true)
+                  return cancelMutation
+                } else {
+                  const request = form.value().toRequest(dayProperties)
+                  return request.length > 0 ? { body: request } : cancelMutation
+                }
+              }}
+              onSuccess={onSuccess}
+              onFailure={(reason) => showSaveError(reason)}
+              data-qa="modal-okBtn"
+              successTimeout={2500}
+            />
+          </CalendarModalButtons>
+        </BottomFooterContainer>
+      </CalendarModalBackground>
+      <CalendarModalCloseButton
+        onClick={onClose}
+        aria-label={i18n.common.closeModal}
+        icon={faTimes}
+      />
+    </PlainModal>
   )
 })
 

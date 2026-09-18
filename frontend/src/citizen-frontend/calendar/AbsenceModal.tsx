@@ -45,7 +45,6 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 import { faTimes } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { renderResult } from '../async-rendering'
 import { useLang, useTranslation } from '../localization'
 
@@ -194,219 +193,211 @@ export default React.memo(function AbsenceModal({
   }, [absenceType, preschoolOperationalDatesResult, selectedChildren])
 
   return (
-    <ModalAccessibilityWrapper>
-      <PlainModal mobileFullScreen margin="auto" onEscapeKey={close}>
-        <CalendarModalBackground>
-          <BottomFooterContainer>
-            <div>
-              <CalendarModalSection>
-                <Gap $size="L" $sizeOnMobile="zero" />
-                <ModalHeader
-                  headingComponent={(props) => (
-                    <H1 $noMargin data-qa="title" {...props}>
-                      {props.children}
-                    </H1>
-                  )}
-                >
-                  {i18n.calendar.absenceModal.title}
-                </ModalHeader>
-              </CalendarModalSection>
-              <Gap $size="s" />
-              <CalendarModalSection>
-                <H2>{i18n.calendar.absenceModal.selectedChildren}</H2>
-                <Gap $size="xs" />
-                <ChildSelector
-                  bind={selectedChildren}
-                  childItems={reservationsResponse.children.filter(
-                    (child) => child.upcomingPlacementType !== null
-                  )}
-                  rangeEnd={range.isValid() ? range.value().end : undefined}
-                />
-              </CalendarModalSection>
-              <Gap $size="zero" $sizeOnMobile="s" />
-              <LineContainer>
-                <TabletAndDesktop>
-                  <HorizontalLine $dashed $slim />
-                </TabletAndDesktop>
-              </LineContainer>
-              <CalendarModalSection>
-                <H2 id="absence-daterange-label">
-                  {i18n.calendar.absenceModal.dateRange}
-                </H2>
-                <DateRangePickerF
-                  bind={range}
-                  locale={lang}
-                  hideErrorsBeforeTouched={!showAllErrors}
-                  onFocus={(ev) => {
-                    scrollIntoViewSoftKeyboard(ev.target, 'start')
-                  }}
-                  required
-                  ariaId="absence-daterange-label"
-                />
-                <Gap $size="s" />
-                <P $noMargin>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
-                {absencesWarning ? (
-                  <AlertBox
-                    title={
-                      i18n.calendar.absenceModal.lockedAbsencesWarningTitle
-                    }
-                    message={
-                      i18n.calendar.absenceModal.lockedAbsencesWarningText
-                    }
-                  />
-                ) : closedHolidayPeriods.length > 0 ? (
-                  <AlertBox
-                    title={i18n.calendar.closedHolidayPeriodAbsence.title(
-                      closedHolidayPeriods
-                    )}
-                    message={
-                      i18n.calendar.closedHolidayPeriodAbsence.warningMessage
-                    }
-                  />
-                ) : null}
-                {attendanceAlreadyExistsError && (
-                  <AlertBox
-                    title={
-                      i18n.calendar.absenceModal
-                        .attendanceAlreadyExistsErrorTitle
-                    }
-                    message={
-                      i18n.calendar.absenceModal
-                        .attendanceAlreadyExistsErrorDescription
-                    }
-                  />
+    <PlainModal mobileFullScreen margin="auto" onEscapeKey={close}>
+      <CalendarModalBackground>
+        <BottomFooterContainer>
+          <div>
+            <CalendarModalSection>
+              <Gap $size="L" $sizeOnMobile="zero" />
+              <ModalHeader
+                headingComponent={(props) => (
+                  <H1 $noMargin data-qa="title" {...props}>
+                    {props.children}
+                  </H1>
                 )}
-                {renderResult(tooManyAbsencesErrors, (errors) => (
-                  <>
-                    {errors.map((child) => (
-                      <AlertBox
-                        key={child.id}
-                        title={formatPersonName(child, 'FirstFirst Last')}
-                        message={
-                          <>
+              >
+                {i18n.calendar.absenceModal.title}
+              </ModalHeader>
+            </CalendarModalSection>
+            <Gap $size="s" />
+            <CalendarModalSection>
+              <H2>{i18n.calendar.absenceModal.selectedChildren}</H2>
+              <Gap $size="xs" />
+              <ChildSelector
+                bind={selectedChildren}
+                childItems={reservationsResponse.children.filter(
+                  (child) => child.upcomingPlacementType !== null
+                )}
+                rangeEnd={range.isValid() ? range.value().end : undefined}
+              />
+            </CalendarModalSection>
+            <Gap $size="zero" $sizeOnMobile="s" />
+            <LineContainer>
+              <TabletAndDesktop>
+                <HorizontalLine $dashed $slim />
+              </TabletAndDesktop>
+            </LineContainer>
+            <CalendarModalSection>
+              <H2 id="absence-daterange-label">
+                {i18n.calendar.absenceModal.dateRange}
+              </H2>
+              <DateRangePickerF
+                bind={range}
+                locale={lang}
+                hideErrorsBeforeTouched={!showAllErrors}
+                onFocus={(ev) => {
+                  scrollIntoViewSoftKeyboard(ev.target, 'start')
+                }}
+                required
+                ariaId="absence-daterange-label"
+              />
+              <Gap $size="s" />
+              <P $noMargin>{i18n.calendar.absenceModal.selectChildrenInfo}</P>
+              {absencesWarning ? (
+                <AlertBox
+                  title={i18n.calendar.absenceModal.lockedAbsencesWarningTitle}
+                  message={i18n.calendar.absenceModal.lockedAbsencesWarningText}
+                />
+              ) : closedHolidayPeriods.length > 0 ? (
+                <AlertBox
+                  title={i18n.calendar.closedHolidayPeriodAbsence.title(
+                    closedHolidayPeriods
+                  )}
+                  message={
+                    i18n.calendar.closedHolidayPeriodAbsence.warningMessage
+                  }
+                />
+              ) : null}
+              {attendanceAlreadyExistsError && (
+                <AlertBox
+                  title={
+                    i18n.calendar.absenceModal.attendanceAlreadyExistsErrorTitle
+                  }
+                  message={
+                    i18n.calendar.absenceModal
+                      .attendanceAlreadyExistsErrorDescription
+                  }
+                />
+              )}
+              {renderResult(tooManyAbsencesErrors, (errors) => (
+                <>
+                  {errors.map((child) => (
+                    <AlertBox
+                      key={child.id}
+                      title={formatPersonName(child, 'FirstFirst Last')}
+                      message={
+                        <>
+                          {
+                            i18n.calendar.absenceModal
+                              .tooManyAbsencesErrorDescription
+                          }
+                          <br />
+                          <br />
+                          <Link
+                            to={`/children/${child.id}/absence-application`}
+                          >
                             {
                               i18n.calendar.absenceModal
-                                .tooManyAbsencesErrorDescription
+                                .tooManyAbsencesErrorLink
                             }
-                            <br />
-                            <br />
-                            <Link
-                              to={`/children/${child.id}/absence-application`}
-                            >
-                              {
-                                i18n.calendar.absenceModal
-                                  .tooManyAbsencesErrorLink
-                              }
-                            </Link>
-                          </>
-                        }
-                        data-qa={`too-many-absences-error-${child.id}`}
-                      />
-                    ))}
-                  </>
-                ))}
-              </CalendarModalSection>
-              <Gap $size="zero" $sizeOnMobile="s" />
-              <LineContainer>
-                <TabletAndDesktop>
-                  <HorizontalLine $dashed $slim />
-                </TabletAndDesktop>
-              </LineContainer>
-              <CalendarModalSection>
-                <H2 id="absence-type-heading">
-                  {i18n.calendar.absenceModal.absenceType}
-                </H2>
-                <FixedSpaceFlexWrap $verticalSpacing="xs">
-                  <SelectionChip
-                    text={i18n.calendar.absenceModal.absenceTypes.SICKLEAVE}
-                    selected={absenceType.state === 'SICKLEAVE'}
-                    onChange={(selected) =>
-                      absenceType.set(selected ? 'SICKLEAVE' : undefined)
-                    }
-                    data-qa="absence-SICKLEAVE"
-                    hideIcon
-                  />
-                  <SelectionChip
-                    text={i18n.calendar.absenceModal.absenceTypes.OTHER_ABSENCE}
-                    selected={absenceType.state === 'OTHER_ABSENCE'}
-                    onChange={(selected) =>
-                      absenceType.set(selected ? 'OTHER_ABSENCE' : undefined)
-                    }
-                    data-qa="absence-OTHER_ABSENCE"
-                    hideIcon
-                  />
-                  {showShiftCareAbsenceType ? (
-                    <>
-                      <SelectionChip
-                        text={
-                          i18n.calendar.absenceModal.absenceTypes
-                            .PLANNED_ABSENCE
-                        }
-                        selected={absenceType.state === 'PLANNED_ABSENCE'}
-                        onChange={(selected) =>
-                          absenceType.set(
-                            selected ? 'PLANNED_ABSENCE' : undefined
-                          )
-                        }
-                        data-qa="absence-PLANNED_ABSENCE"
-                        hideIcon
-                      />
-                    </>
-                  ) : null}
-                </FixedSpaceFlexWrap>
-                {showAllErrors && !absenceType.isValid() ? (
-                  <Warning
-                    data-qa="modal-absence-type-required-error"
-                    role="alert"
-                    aria-labelledby="absence-type-heading"
-                  >
-                    {i18n.validationErrors.requiredSelection}
-                  </Warning>
-                ) : null}
-              </CalendarModalSection>
-            </div>
-            <CalendarModalButtons>
-              <Button
-                onClick={onReturn}
-                data-qa="modal-cancelBtn"
-                text={i18n.common.cancel}
-              />
-              <MutateButton
-                primary
-                text={i18n.common.confirm}
-                textDone={i18n.common.saveSuccess}
-                disabled={
-                  selectedChildren.state.length === 0 ||
-                  tooManyAbsencesErrors.isLoading ||
-                  tooManyAbsencesErrors.getOrElse([]).length > 0
-                }
-                mutation={postAbsencesMutation}
-                onClick={() => {
-                  if (!form.isValid()) {
-                    useShowAllErrors.on()
-                    return cancelMutation
+                          </Link>
+                        </>
+                      }
+                      data-qa={`too-many-absences-error-${child.id}`}
+                    />
+                  ))}
+                </>
+              ))}
+            </CalendarModalSection>
+            <Gap $size="zero" $sizeOnMobile="s" />
+            <LineContainer>
+              <TabletAndDesktop>
+                <HorizontalLine $dashed $slim />
+              </TabletAndDesktop>
+            </LineContainer>
+            <CalendarModalSection>
+              <H2 id="absence-type-heading">
+                {i18n.calendar.absenceModal.absenceType}
+              </H2>
+              <FixedSpaceFlexWrap $verticalSpacing="xs">
+                <SelectionChip
+                  text={i18n.calendar.absenceModal.absenceTypes.SICKLEAVE}
+                  selected={absenceType.state === 'SICKLEAVE'}
+                  onChange={(selected) =>
+                    absenceType.set(selected ? 'SICKLEAVE' : undefined)
                   }
-                  return { body: form.value() }
-                }}
-                onSuccess={close}
-                data-qa="modal-okBtn"
-                onFailure={(failure: Failure<unknown>) => {
-                  setAttendanceAlreadyExistsError(
-                    failure.errorCode === 'ATTENDANCE_ALREADY_EXISTS'
-                  )
-                }}
-                successTimeout={2500}
-              />
-            </CalendarModalButtons>
-          </BottomFooterContainer>
-        </CalendarModalBackground>
-        <CalendarModalCloseButton
-          onClick={close}
-          aria-label={i18n.common.closeModal}
-          icon={faTimes}
-        />
-      </PlainModal>
-    </ModalAccessibilityWrapper>
+                  data-qa="absence-SICKLEAVE"
+                  hideIcon
+                />
+                <SelectionChip
+                  text={i18n.calendar.absenceModal.absenceTypes.OTHER_ABSENCE}
+                  selected={absenceType.state === 'OTHER_ABSENCE'}
+                  onChange={(selected) =>
+                    absenceType.set(selected ? 'OTHER_ABSENCE' : undefined)
+                  }
+                  data-qa="absence-OTHER_ABSENCE"
+                  hideIcon
+                />
+                {showShiftCareAbsenceType ? (
+                  <>
+                    <SelectionChip
+                      text={
+                        i18n.calendar.absenceModal.absenceTypes.PLANNED_ABSENCE
+                      }
+                      selected={absenceType.state === 'PLANNED_ABSENCE'}
+                      onChange={(selected) =>
+                        absenceType.set(
+                          selected ? 'PLANNED_ABSENCE' : undefined
+                        )
+                      }
+                      data-qa="absence-PLANNED_ABSENCE"
+                      hideIcon
+                    />
+                  </>
+                ) : null}
+              </FixedSpaceFlexWrap>
+              {showAllErrors && !absenceType.isValid() ? (
+                <Warning
+                  data-qa="modal-absence-type-required-error"
+                  role="alert"
+                  aria-labelledby="absence-type-heading"
+                >
+                  {i18n.validationErrors.requiredSelection}
+                </Warning>
+              ) : null}
+            </CalendarModalSection>
+          </div>
+          <CalendarModalButtons>
+            <Button
+              onClick={onReturn}
+              data-qa="modal-cancelBtn"
+              text={i18n.common.cancel}
+            />
+            <MutateButton
+              primary
+              text={i18n.common.confirm}
+              textDone={i18n.common.saveSuccess}
+              disabled={
+                selectedChildren.state.length === 0 ||
+                tooManyAbsencesErrors.isLoading ||
+                tooManyAbsencesErrors.getOrElse([]).length > 0
+              }
+              mutation={postAbsencesMutation}
+              onClick={() => {
+                if (!form.isValid()) {
+                  useShowAllErrors.on()
+                  return cancelMutation
+                }
+                return { body: form.value() }
+              }}
+              onSuccess={close}
+              data-qa="modal-okBtn"
+              onFailure={(failure: Failure<unknown>) => {
+                setAttendanceAlreadyExistsError(
+                  failure.errorCode === 'ATTENDANCE_ALREADY_EXISTS'
+                )
+              }}
+              successTimeout={2500}
+            />
+          </CalendarModalButtons>
+        </BottomFooterContainer>
+      </CalendarModalBackground>
+      <CalendarModalCloseButton
+        onClick={close}
+        aria-label={i18n.common.closeModal}
+        icon={faTimes}
+      />
+    </PlainModal>
   )
 })
 
