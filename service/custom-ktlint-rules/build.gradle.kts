@@ -23,6 +23,14 @@ dependencies {
     implementation("com.pinterest.ktlint:ktlint-rule-engine-core")
     testImplementation("org.slf4j:slf4j-simple")
     testImplementation("com.pinterest.ktlint:ktlint-test")
+
+    // ktlint's rule engine breaks on kotlin-compiler-embeddable 2.4.20. Use custom version instead
+    // of the one coming from BOM.
+    constraints {
+        implementation(libs.ktlint.kotlin.compiler.embeddable) {
+            version { strictly(libs.versions.ktlint.kotlin.get()) }
+        }
+    }
 }
 
 ktfmt { kotlinLangStyle() }
