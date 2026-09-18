@@ -2897,7 +2897,11 @@ class VardaUpdaterIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.execute {
                 sql("INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)")
             }
-            tx.freezeVardaSync(listOf(child.id), now)
+            tx.execute {
+                sql(
+                    "UPDATE child SET varda_data_first_removed_at = ${bind(now)} WHERE id = ${bind(child.id)}"
+                )
+            }
         }
 
         val updater =

@@ -363,6 +363,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     fun `deleteExpiredChildLeafRows records when Koski input data was first removed`() {
         insertExpiredPlacement(child.id)
         insertPreschoolAssistance(child.id)
+        markSentToKoski(child.id)
 
         deleteExpiredChildLeafRows(
             db,
@@ -399,6 +400,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         insertExpiredPlacement(child.id)
         insertPreschoolAssistance(child.id)
         insertOtherAssistanceMeasure(child.id)
+        markSentToKoski(child.id)
 
         deleteExpiredChildLeafRows(
             db,
@@ -613,6 +615,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     fun `deleteExpiredData removes ten-year leaf rows for a child whose last placement ended over ten years ago`() {
         insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
         insertTenYearLeafData(child.id)
+        markSentToKoski(child.id)
 
         withLimit(100) {
             dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)
@@ -1185,6 +1188,7 @@ class DataRemovalServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val guardian = insertAdult()
         insertGuardianship(guardian, child.id)
         insertPlacementEnding(child.id, tenYearExpireDate.minusDays(1))
+        markSentToVarda(child.id)
 
         deleteExpiredGuardians(
             db,
@@ -2201,6 +2205,26 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
             .exactlyOne<HelsinkiDateTime?>()
     }
 
+    /** The freezes apply only to a child the integration has seen */
+    private fun markSentToKoski(childId: ChildId) = db.transaction { tx ->
+        tx.execute {
+            sql(
+                """
+INSERT INTO koski_study_right (child_id, unit_id, type, payload, version, data_version)
+VALUES (${bind(childId)}, ${bind(daycare.id)}, 'PRESCHOOL', '{}', 0, 1)
+"""
+            )
+        }
+    }
+
+    private fun markSentToVarda(childId: ChildId) = db.transaction { tx ->
+        tx.execute {
+            sql(
+                "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(childId)}, NULL, ${bind(now)})"
+            )
+        }
+    }
+
     private fun countChildrenWithNull(column: String): Int = db.read { tx ->
         tx.createQuery { sql("SELECT count(*) FROM child WHERE $column IS NULL") }.exactlyOne<Int>()
     }
@@ -2318,6 +2342,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
     @Test
     fun `deleteExpiredApplications records when Varda input data was first removed`() {
         val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
+        markSentToVarda(tree.childId)
 
         dataRemovalService.deleteExpiredApplications(db, now, applicationExpireDate, limit = 100)
 
@@ -2343,6 +2368,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
     @Test
     fun `a later removal does not overwrite when Varda input data was first removed`() {
         val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
+        markSentToVarda(tree.childId)
 
         dataRemovalService.deleteExpiredApplications(db, now, applicationExpireDate, limit = 100)
         deleteExpiredGuardians(
@@ -2361,6 +2387,7 @@ VALUES (${bind(documentId)}, ${bind(personId)}, ${bind(now)})
     @Test
     fun `deleteExpiredData freezes Varda sync when it removes applications and guardianships`() {
         val tree = insertApplicationTree(placementEnd = applicationExpireDate.minusDays(1))
+        markSentToVarda(tree.childId)
 
         withLimit(100) {
             dataRemovalService.deleteExpiredData(db, clock, AsyncJob.DeleteExpiredData)

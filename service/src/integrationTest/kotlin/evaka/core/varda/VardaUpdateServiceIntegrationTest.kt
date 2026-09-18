@@ -6,6 +6,7 @@ package evaka.core.varda
 
 import evaka.core.FullApplicationTest
 import evaka.core.OphEnv
+import evaka.core.dataremoval.SAFE_DATA_REMOVAL_AGE
 import evaka.core.shared.ChildId
 import evaka.core.shared.dev.DevCareArea
 import evaka.core.shared.dev.DevDaycare
@@ -34,12 +35,15 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val now = HelsinkiDateTime.of(LocalDate.of(2024, 1, 1), LocalTime.of(12, 0))
     private val clock = MockEvakaClock(now)
 
+    /** Matches the test SSNs below, and must stay younger than [SAFE_DATA_REMOVAL_AGE] at [now] */
+    private val dateOfBirth = LocalDate.of(2020, 3, 3)
+
     @Test
     fun `new children are added to varda_state and update is planned`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id)
-        val child1 = DevPerson(ssn = "030320A904N")
-        val child2 = DevPerson(ssn = "030320A905P")
+        val child1 = DevPerson(ssn = "030320A904N", dateOfBirth = dateOfBirth)
+        val child2 = DevPerson(ssn = "030320A905P", dateOfBirth = dateOfBirth)
 
         db.transaction { tx ->
             tx.insert(area)
@@ -75,10 +79,20 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     fun `children without ssn and oph_person_oid are not added to varda_state`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id)
-        val childWithSsn = DevPerson(ssn = "030320A904N", ophPersonOid = null)
-        val childWithOid = DevPerson(ssn = null, ophPersonOid = "1.2.3.4")
-        val childWithEmptyOid = DevPerson(ssn = null, ophPersonOid = "")
-        val childWithNeither = DevPerson(ssn = null, ophPersonOid = null)
+        val childWithSsn =
+            DevPerson(
+                ssn = "030320A904N",
+                ophPersonOid = null,
+                dateOfBirth = dateOfBirth,
+            )
+        val childWithOid =
+            DevPerson(
+                ssn = null,
+                ophPersonOid = "1.2.3.4",
+                dateOfBirth = dateOfBirth,
+            )
+        val childWithEmptyOid = DevPerson(ssn = null, ophPersonOid = "", dateOfBirth = dateOfBirth)
+        val childWithNeither = DevPerson(ssn = null, ophPersonOid = null, dateOfBirth = dateOfBirth)
 
         db.transaction { tx ->
             tx.insert(area)
@@ -96,10 +110,39 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                 )
             }
 
-            tx.addNewChildrenForVardaUpdate()
+            tx.addNewChildrenForVardaUpdate(clock.today())
         }
 
         assertEquals(setOf(childWithSsn.id, childWithOid.id), getVardaStateChildIds())
+    }
+
+    @Test
+    fun `a child past the safe data removal age is not added to varda_state`() {
+        val area = DevCareArea()
+        val unit = DevDaycare(areaId = area.id)
+        val child =
+            DevPerson(
+                ssn = "030320A904N",
+                dateOfBirth = clock.today().minusYears(SAFE_DATA_REMOVAL_AGE),
+            )
+
+        db.transaction { tx ->
+            tx.insert(area)
+            tx.insert(unit)
+            tx.insert(child, DevPersonType.CHILD)
+            tx.insert(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = unit.id,
+                    startDate = LocalDate.of(2021, 1, 1),
+                    endDate = LocalDate.of(2021, 2, 28),
+                )
+            )
+
+            tx.addNewChildrenForVardaUpdate(clock.today())
+        }
+
+        assertEquals(emptySet(), getVardaStateChildIds())
     }
 
     @Test
@@ -107,7 +150,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id, ophOrganizerOid = ophEnv.organizerOid)
         val employee = DevEmployee()
-        val child = DevPerson(ssn = "030320A904N")
+        val child = DevPerson(ssn = "030320A904N", dateOfBirth = dateOfBirth)
 
         db.transaction { tx ->
             tx.insertServiceNeedOption(snDaycareFullDay35)
@@ -163,7 +206,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     fun `a child whose Varda data has been removed is not added to varda_state`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id)
-        val child = DevPerson(ssn = "030320A904N")
+        val child = DevPerson(ssn = "030320A904N", dateOfBirth = dateOfBirth)
 
         db.transaction { tx ->
             tx.insert(area)
@@ -177,7 +220,11 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                     endDate = LocalDate.of(2021, 2, 28),
                 )
             )
-            tx.freezeVardaSync(listOf(child.id), now)
+            tx.execute {
+                sql(
+                    "UPDATE child SET varda_data_first_removed_at = ${bind(now)} WHERE id = ${bind(child.id)}"
+                )
+            }
         }
 
         vardaUpdateService.planChildrenUpdate(db, clock)
@@ -190,7 +237,7 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     fun `no update is planned for a child whose Varda data has been removed`() {
         val area = DevCareArea()
         val unit = DevDaycare(areaId = area.id)
-        val child = DevPerson(ssn = "030320A904N")
+        val child = DevPerson(ssn = "030320A904N", dateOfBirth = dateOfBirth)
 
         db.transaction { tx ->
             tx.insert(area)
@@ -207,7 +254,11 @@ class VardaUpdateServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             tx.execute {
                 sql("INSERT INTO varda_state (child_id, state) VALUES (${bind(child.id)}, NULL)")
             }
-            tx.freezeVardaSync(listOf(child.id), now)
+            tx.execute {
+                sql(
+                    "UPDATE child SET varda_data_first_removed_at = ${bind(now)} WHERE id = ${bind(child.id)}"
+                )
+            }
         }
 
         vardaUpdateService.planChildrenUpdate(db, clock)
