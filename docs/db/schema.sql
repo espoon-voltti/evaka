@@ -3647,8 +3647,8 @@ CREATE TABLE public.pedagogical_document (
 -- Name: pedagogical_document_read; Type: TABLE; Schema: public
 
 CREATE TABLE public.pedagogical_document_read (
-    pedagogical_document_id uuid,
-    person_id uuid,
+    pedagogical_document_id uuid NOT NULL,
+    person_id uuid NOT NULL,
     read_at timestamp without time zone
 );
 
@@ -4561,6 +4561,16 @@ ALTER TABLE ONLY public.fridge_partner
 ALTER TABLE ONLY public.group_note
     ADD CONSTRAINT group_note_pkey PRIMARY KEY (id);
 
+-- Name: guardian_blocklist guardian_blocklist_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.guardian_blocklist
+    ADD CONSTRAINT guardian_blocklist_pkey PRIMARY KEY (guardian_id, child_id);
+
+-- Name: guardian guardian_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.guardian
+    ADD CONSTRAINT guardian_pkey PRIMARY KEY (guardian_id, child_id);
+
 -- Name: holiday_period holiday_period_pkey; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.holiday_period
@@ -4750,6 +4760,11 @@ ALTER TABLE ONLY public.payment
 
 ALTER TABLE ONLY public.pedagogical_document
     ADD CONSTRAINT pedagogical_document_pkey PRIMARY KEY (id);
+
+-- Name: pedagogical_document_read pedagogical_document_read_pkey; Type: CONSTRAINT; Schema: public
+
+ALTER TABLE ONLY public.pedagogical_document_read
+    ADD CONSTRAINT pedagogical_document_read_pkey PRIMARY KEY (pedagogical_document_id, person_id);
 
 -- Name: holiday_period period$no_overlaps; Type: CONSTRAINT; Schema: public
 
@@ -5076,11 +5091,6 @@ ALTER TABLE ONLY public.fee_decision_child
 ALTER TABLE ONLY public.family_contact
     ADD CONSTRAINT unique_child_priority_pair UNIQUE (child_id, priority) DEFERRABLE;
 
--- Name: guardian unique_guardian_child; Type: CONSTRAINT; Schema: public
-
-ALTER TABLE ONLY public.guardian
-    ADD CONSTRAINT unique_guardian_child UNIQUE (guardian_id, child_id);
-
 -- Name: invoice unique_invoice_num; Type: CONSTRAINT; Schema: public
 
 ALTER TABLE ONLY public.invoice
@@ -5257,9 +5267,17 @@ CREATE INDEX "fk$child_document_published_version_created_by" ON public.child_do
 
 CREATE INDEX "fk$child_document_published_version_document_id_version_number" ON public.child_document_published_version USING btree (child_document_id, version_number);
 
+-- Name: fk$child_document_read_person_id; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$child_document_read_person_id" ON public.child_document_read USING btree (person_id);
+
 -- Name: fk$created_by; Type: INDEX; Schema: public
 
 CREATE INDEX "fk$created_by" ON public.placement USING btree (created_by);
+
+-- Name: fk$daycare_assistance_modified_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$daycare_assistance_modified_by" ON public.daycare_assistance USING btree (modified_by);
 
 -- Name: fk$decision_generic_reasoning_id; Type: INDEX; Schema: public
 
@@ -5285,6 +5303,10 @@ CREATE INDEX "fk$foster_parent_created_by" ON public.foster_parent USING btree (
 
 CREATE INDEX "fk$foster_parent_modified_by" ON public.foster_parent USING btree (modified_by);
 
+-- Name: fk$fridge_child_created_by_application; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$fridge_child_created_by_application" ON public.fridge_child USING btree (created_by_application) WHERE (created_by_application IS NOT NULL);
+
 -- Name: fk$invoice_correction_created_by; Type: INDEX; Schema: public
 
 CREATE INDEX "fk$invoice_correction_created_by" ON public.invoice_correction USING btree (created_by);
@@ -5300,6 +5322,10 @@ CREATE INDEX "fk$invoice_correction_unit_id" ON public.invoice_correction USING 
 -- Name: fk$invoiced_fee_decision_fee_decision_id; Type: INDEX; Schema: public
 
 CREATE INDEX "fk$invoiced_fee_decision_fee_decision_id" ON public.invoiced_fee_decision USING btree (fee_decision_id);
+
+-- Name: fk$message_thread_participant_folder_id; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$message_thread_participant_folder_id" ON public.message_thread_participant USING btree (folder_id) WHERE (folder_id IS NOT NULL);
 
 -- Name: fk$modified_by; Type: INDEX; Schema: public
 
@@ -5321,6 +5347,10 @@ CREATE INDEX "fk$nekku_special_diet_choices_diet_id" ON public.nekku_special_die
 
 CREATE INDEX "fk$nekku_special_diet_choices_field_id" ON public.nekku_special_diet_choices USING btree (field_id);
 
+-- Name: fk$other_assistance_measure_modified_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$other_assistance_measure_modified_by" ON public.other_assistance_measure USING btree (modified_by);
+
 -- Name: fk$placement_draft_created_by; Type: INDEX; Schema: public
 
 CREATE INDEX "fk$placement_draft_created_by" ON public.placement_draft USING btree (created_by);
@@ -5340,6 +5370,10 @@ CREATE INDEX "fk$placement_source_application_id" ON public.placement USING btre
 -- Name: fk$placement_source_service_application_id; Type: INDEX; Schema: public
 
 CREATE INDEX "fk$placement_source_service_application_id" ON public.placement USING btree (source_service_application_id) WHERE (source_service_application_id IS NOT NULL);
+
+-- Name: fk$preschool_assistance_modified_by; Type: INDEX; Schema: public
+
+CREATE INDEX "fk$preschool_assistance_modified_by" ON public.preschool_assistance USING btree (modified_by);
 
 -- Name: fk$sfi_message_decision_id_guardian_id; Type: INDEX; Schema: public
 
@@ -5824,10 +5858,6 @@ CREATE INDEX "idx$guardian_blocklist_child" ON public.guardian_blocklist USING b
 -- Name: idx$guardian_child_id; Type: INDEX; Schema: public
 
 CREATE INDEX "idx$guardian_child_id" ON public.guardian USING btree (child_id);
-
--- Name: idx$guardian_guardian_id; Type: INDEX; Schema: public
-
-CREATE INDEX "idx$guardian_guardian_id" ON public.guardian USING btree (guardian_id);
 
 -- Name: idx$income_application; Type: INDEX; Schema: public
 
@@ -6345,10 +6375,6 @@ CREATE UNIQUE INDEX "uniq$evaka_user_mobile_device" ON public.evaka_user USING b
 
 CREATE UNIQUE INDEX "uniq$fridge_child_no_full_duplicates" ON public.fridge_child USING btree (head_of_child, child_id, start_date, end_date, conflict);
 
--- Name: uniq$guardian_blocklist_guardian_child; Type: INDEX; Schema: public
-
-CREATE UNIQUE INDEX "uniq$guardian_blocklist_guardian_child" ON public.guardian_blocklist USING btree (guardian_id, child_id);
-
 -- Name: uniq$invoice_replaced_invoice_id; Type: INDEX; Schema: public
 
 CREATE UNIQUE INDEX "uniq$invoice_replaced_invoice_id" ON public.invoice USING btree (replaced_invoice_id) WHERE (replaced_invoice_id IS NOT NULL);
@@ -6376,10 +6402,6 @@ CREATE UNIQUE INDEX "uniq$pairing_challenge_key" ON public.pairing USING btree (
 -- Name: uniq$pairing_response_key; Type: INDEX; Schema: public
 
 CREATE UNIQUE INDEX "uniq$pairing_response_key" ON public.pairing USING btree (response_key);
-
--- Name: uniq$pedagogical_document_read_by_person; Type: INDEX; Schema: public
-
-CREATE UNIQUE INDEX "uniq$pedagogical_document_read_by_person" ON public.pedagogical_document_read USING btree (pedagogical_document_id, person_id);
 
 -- Name: uniq$person_aad_object_id; Type: INDEX; Schema: public
 
