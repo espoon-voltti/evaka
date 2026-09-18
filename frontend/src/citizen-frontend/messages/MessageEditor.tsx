@@ -4,7 +4,7 @@
 
 import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
-import FocusLock from 'react-focus-lock'
+import { FocusOn } from 'react-focus-on'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
@@ -22,6 +22,7 @@ import type {
 } from 'lib-common/generated/api-types/shared'
 import { formatPersonName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
+import { useMediaQuery } from 'lib-common/utils/useMediaQuery'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { ScreenReaderOnlyInline } from 'lib-components/atoms/ScreenReaderOnly'
 import { AsyncButton } from 'lib-components/atoms/buttons/AsyncButton'
@@ -53,7 +54,6 @@ import { deleteAttachmentMutation } from '../attachments/queries'
 import { useUser } from '../auth/state'
 import { ErrorMessageBox } from '../calendar/ChildSelector'
 import { useTranslation } from '../localization'
-import { useOnEscape } from '../navigation/utils'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import { isPrimaryRecipient } from './utils'
@@ -91,8 +91,6 @@ export default React.memo(function MessageEditor({
   const i18n = useTranslation()
   const user = useUser()
 
-  const closeOnEscape = useOnEscape(onClose)
-
   const childIds = useMemo(
     () =>
       recipientOptions.childrenToMessageAccounts
@@ -110,6 +108,7 @@ export default React.memo(function MessageEditor({
       : emptyMessage
   )
   const title = message.title || i18n.messages.messageEditor.newMessage
+  const fullScreen = useMediaQuery(fullScreenWidth)
 
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [uploadStatus, setUploadStatus] =
@@ -198,8 +197,12 @@ export default React.memo(function MessageEditor({
 
   return (
     <ModalAccessibilityWrapper>
-      <FocusLock>
-        <Container data-qa="message-editor" onKeyDown={closeOnEscape}>
+      <FocusOn
+        onEscapeKey={onClose}
+        scrollLock={fullScreen}
+        noIsolation={!fullScreen}
+      >
+        <Container data-qa="message-editor">
           <TopBar>
             <Title>{title}</Title>
             <IconOnlyButton
@@ -464,7 +467,7 @@ export default React.memo(function MessageEditor({
             />
           </BottomRow>
         </Container>
-      </FocusLock>
+      </FocusOn>
     </ModalAccessibilityWrapper>
   )
 })
@@ -476,6 +479,8 @@ const ChipContainer = styled(FixedSpaceFlexWrap)`
     margin-bottom: ${defaultMargins.xxs};
   }
 `
+
+const fullScreenWidth = `(max-width: ${desktopMin})`
 
 const Container = styled.div`
   width: 100%;
@@ -490,7 +495,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   background-color: ${colors.grayscale.g0};
-  @media (max-width: ${desktopMin}) {
+  @media ${fullScreenWidth} {
     width: 100vw;
     height: 100%;
     max-width: 100vw;
