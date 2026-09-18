@@ -44,8 +44,8 @@ interface Props {
 }
 function BottomModalMenu({ title, onClose, children }: Props) {
   return (
-    <ModalBackground>
-      <MenuBackground>
+    <ModalBackground onEscapeKey={onClose}>
+      <MenuBackground role="dialog" aria-modal="true" aria-label={title}>
         <TopRow>
           <span>{title}</span>
           <FontAwesomeIcon icon={faTimes} onClick={onClose} />
