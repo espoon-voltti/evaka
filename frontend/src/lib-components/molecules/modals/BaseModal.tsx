@@ -246,7 +246,8 @@ type PlainModalProps = Pick<
   'className' | 'zIndex' | 'data-qa' | 'mobileFullScreen' | 'children' | 'width'
 > & {
   margin: string
-  onEscapeKey?: () => void
+  onEscapeKey: () => void
+  'aria-label': string
 }
 
 export const PlainModal = React.memo(function PlainModal(
@@ -260,6 +261,9 @@ export const PlainModal = React.memo(function PlainModal(
         data-qa={props['data-qa']}
       >
         <ModalContainer
+          role="dialog"
+          aria-modal="true"
+          aria-label={props['aria-label']}
           $noPadding
           $mobileFullScreen={props.mobileFullScreen}
           $margin={props.margin}

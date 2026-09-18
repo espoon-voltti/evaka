@@ -173,6 +173,7 @@ export default React.memo(function DiscussionSurveyModal({
         zIndex={100}
         data-qa="discussions-modal"
         onEscapeKey={close}
+        aria-label={i18n.calendar.discussionTimeReservation.surveyModalTitle}
       >
         <CalendarModalBackground>
           <div>

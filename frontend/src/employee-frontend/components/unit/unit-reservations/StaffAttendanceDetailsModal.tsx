@@ -386,6 +386,7 @@ function StaffAttendanceDetailsModal<
       margin="auto"
       data-qa="staff-attendance-details-modal"
       onEscapeKey={onClose}
+      aria-label={`${date.formatExotic('EEEEEE d.M.yyyy')} ${name}`}
     >
       <Content>
         <FixedSpaceRow $alignItems="center">

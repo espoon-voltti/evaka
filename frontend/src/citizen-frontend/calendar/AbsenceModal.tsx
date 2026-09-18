@@ -193,7 +193,12 @@ export default React.memo(function AbsenceModal({
   }, [absenceType, preschoolOperationalDatesResult, selectedChildren])
 
   return (
-    <PlainModal mobileFullScreen margin="auto" onEscapeKey={close}>
+    <PlainModal
+      mobileFullScreen
+      margin="auto"
+      onEscapeKey={close}
+      aria-label={i18n.calendar.absenceModal.title}
+    >
       <CalendarModalBackground>
         <BottomFooterContainer>
           <div>

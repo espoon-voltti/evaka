@@ -239,6 +239,7 @@ export default React.memo(function ReservationModal({
       margin="auto"
       data-qa="reservation-modal"
       onEscapeKey={onClose}
+      aria-label={i18n.calendar.reservationModal.title}
     >
       <CalendarModalBackground>
         <BottomFooterContainer>

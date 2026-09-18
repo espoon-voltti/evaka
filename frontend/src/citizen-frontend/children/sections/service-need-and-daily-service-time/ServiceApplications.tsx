@@ -314,6 +314,7 @@ const ServiceApplicationsDetails = React.memo(
         margin="auto"
         data-qa="service-application-modal"
         onEscapeKey={onClose}
+        aria-label={i18n.children.serviceApplication.createTitle}
       >
         <CalendarModalBackground>
           <CalendarModalSection>

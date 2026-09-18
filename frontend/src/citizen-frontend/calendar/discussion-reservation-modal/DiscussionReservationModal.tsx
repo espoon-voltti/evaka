@@ -159,6 +159,7 @@ export default React.memo(function DiscussionReservationModal({
       margin="auto"
       data-qa="discussion-reservations-modal"
       onEscapeKey={close}
+      aria-label={t.surveyModalTitle}
     >
       <CalendarModalBackground>
         <BottomFooterContainer>
