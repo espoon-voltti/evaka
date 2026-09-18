@@ -40,6 +40,7 @@ import evaka.core.placement.PlacementType.PRESCHOOL
 import evaka.core.placement.PlacementType.PRESCHOOL_CLUB
 import evaka.core.placement.PlacementType.PRESCHOOL_DAYCARE
 import evaka.core.placement.PlacementType.SCHOOL_SHIFT_CARE
+import evaka.core.serviceneed.ServiceNeedOption
 import evaka.core.serviceneed.ServiceNeedOptionFee
 import evaka.core.serviceneed.ShiftCareType
 import evaka.core.shared.ChildId
@@ -65,6 +66,7 @@ import evaka.core.shared.dev.DevPersonType
 import evaka.core.shared.dev.DevPlacement
 import evaka.core.shared.dev.DevServiceNeed
 import evaka.core.shared.dev.insert
+import evaka.core.shared.dev.insertServiceNeedOption
 import evaka.core.shared.dev.insertTestPartnership
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
@@ -75,6 +77,7 @@ import evaka.core.snDaycareFullDay25to35
 import evaka.core.snDaycareFullDay35
 import evaka.core.snDaycareFullDayPartWeek25
 import evaka.core.snDefaultDaycare
+import evaka.core.snDefaultFiveYearOldsPartDayDaycare
 import evaka.core.snDefaultPreparatoryDaycare
 import evaka.core.snDefaultPreschoolDaycare
 import evaka.core.snPreparatoryDaycare50
@@ -2663,6 +2666,144 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `free service need generates a zero fee decision from the free service need min date`() {
+        val minDate = evakaEnv.feeDecisionFreeServiceNeedMinDate
+        val period = FiniteDateRange(minDate, minDate.plusMonths(3).minusDays(1))
+        val freeServiceNeed = insertFreeFiveYearOldsPartDayServiceNeedOption()
+        insertFamilyRelations(adult1.id, listOf(child4.id), period)
+        insertServiceNeed(
+            insertPlacement(child4.id, period, DAYCARE_PART_TIME_FIVE_YEAR_OLDS, daycare.id),
+            period,
+            freeServiceNeed.id,
+        )
+
+        db.transaction { generator.generateNewDecisionsForChild(it, child4.id) }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+        decisions.first().let { decision ->
+            assertEquals(FeeDecisionStatus.DRAFT, decision.status)
+            assertEquals(period, decision.validDuring)
+            assertEquals(1, decision.children.size)
+            decision.children.first().let { child ->
+                assertEquals(child4.id, child.child.id)
+                assertEquals(DAYCARE_PART_TIME_FIVE_YEAR_OLDS, child.placement.type)
+                assertEquals(freeServiceNeed.id, child.serviceNeed.optionId)
+                assertEquals(BigDecimal("0.00"), child.serviceNeed.feeCoefficient)
+                assertEquals(0, child.fee)
+                assertEquals(0, child.finalFee)
+            }
+        }
+    }
+
+    @Test
+    fun `free service need spanning the free service need min date generates a decision only from the min date`() {
+        val minDate = evakaEnv.feeDecisionFreeServiceNeedMinDate
+        val period = FiniteDateRange(minDate.minusMonths(2), minDate.plusMonths(3).minusDays(1))
+        val freeServiceNeed = insertFreeFiveYearOldsPartDayServiceNeedOption()
+        insertFamilyRelations(adult1.id, listOf(child4.id), period)
+        insertServiceNeed(
+            insertPlacement(child4.id, period, DAYCARE_PART_TIME_FIVE_YEAR_OLDS, daycare.id),
+            period,
+            freeServiceNeed.id,
+        )
+
+        db.transaction { generator.generateNewDecisionsForChild(it, child4.id) }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+        decisions.first().let { decision ->
+            assertEquals(FiniteDateRange(minDate, period.end), decision.validDuring)
+            assertEquals(listOf(child4.id), decision.children.map { it.child.id })
+            assertEquals(0, decision.children.first().finalFee)
+        }
+    }
+
+    @Test
+    fun `free child is added to the decision with zero fee without changing the paying sibling's fee`() {
+        val minDate = evakaEnv.feeDecisionFreeServiceNeedMinDate
+        val period = FiniteDateRange(minDate.minusMonths(1), minDate.plusMonths(3).minusDays(1))
+        val freeServiceNeed = insertFreeFiveYearOldsPartDayServiceNeedOption()
+        insertFamilyRelations(adult1.id, listOf(child3.id, child4.id), period)
+        insertPlacement(child3.id, period, DAYCARE, daycare.id)
+        insertServiceNeed(
+            insertPlacement(child4.id, period, DAYCARE_PART_TIME_FIVE_YEAR_OLDS, daycare.id),
+            period,
+            freeServiceNeed.id,
+        )
+
+        db.transaction { generator.generateNewDecisionsForChild(it, child3.id) }
+
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
+        assertEquals(2, decisions.size)
+        val (beforeMinDate, fromMinDate) = decisions
+        assertEquals(FiniteDateRange(period.start, minDate.minusDays(1)), beforeMinDate.validDuring)
+        assertEquals(FiniteDateRange(minDate, period.end), fromMinDate.validDuring)
+
+        assertEquals(listOf(child3.id), beforeMinDate.children.map { it.child.id })
+        assertEquals(
+            setOf(child3.id, child4.id),
+            fromMinDate.children.map { it.child.id }.toSet(),
+        )
+
+        val payingSiblingBefore = beforeMinDate.children.single()
+        val payingSiblingAfter = fromMinDate.children.single { it.child.id == child3.id }
+        assertTrue(payingSiblingBefore.finalFee > 0)
+        assertEquals(payingSiblingBefore.siblingDiscount, payingSiblingAfter.siblingDiscount)
+        assertEquals(payingSiblingBefore.finalFee, payingSiblingAfter.finalFee)
+        assertEquals(0, fromMinDate.children.single { it.child.id == child4.id }.finalFee)
+    }
+
+    @Test
+    fun `club and preschool placements do not generate fee decisions after the free service need min date`() {
+        val minDate = evakaEnv.feeDecisionFreeServiceNeedMinDate
+        val period = FiniteDateRange(minDate, minDate.plusMonths(3).minusDays(1))
+        insertFamilyRelations(adult1.id, listOf(child3.id, child4.id), period)
+        insertPlacement(child3.id, period, PRESCHOOL, daycare.id)
+        insertPlacement(child4.id, period, CLUB, club.id)
+
+        db.transaction { generator.generateNewDecisionsForChild(it, child3.id) }
+
+        assertEquals(0, getAllFeeDecisions().size)
+    }
+
+    @Test
+    fun `free service need with a fee increase generates a decision with the increased fee`() {
+        val minDate = evakaEnv.feeDecisionFreeServiceNeedMinDate
+        val period = FiniteDateRange(minDate, minDate.plusMonths(3).minusDays(1))
+        val freeServiceNeed = insertFreeFiveYearOldsPartDayServiceNeedOption()
+        insertFamilyRelations(adult1.id, listOf(child4.id), period)
+        insertServiceNeed(
+            insertPlacement(child4.id, period, DAYCARE_PART_TIME_FIVE_YEAR_OLDS, daycare.id),
+            period,
+            freeServiceNeed.id,
+        )
+        db.transaction { tx ->
+            tx.insert(
+                DevFeeAlteration(
+                    personId = child4.id,
+                    type = FeeAlterationType.INCREASE,
+                    amount = 50.0,
+                    isAbsolute = true,
+                    validFrom = period.start,
+                    validTo = period.end,
+                    modifiedBy = employee.evakaUserId,
+                )
+            )
+        }
+
+        db.transaction { generator.generateNewDecisionsForChild(it, child4.id) }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(1, decisions.size)
+        decisions.first().children.single().let { child ->
+            assertEquals(child4.id, child.child.id)
+            assertEquals(0, child.fee)
+            assertEquals(5000, child.finalFee)
+        }
+    }
+
+    @Test
     fun `an empty draft is generated when a placement is moved to start later and a family update is triggered`() {
         val originalPlacementPeriod =
             FiniteDateRange(LocalDate.now().minusWeeks(2), LocalDate.now().plusYears(1))
@@ -3254,6 +3395,18 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 )
             )
         }
+    }
+
+    private fun insertFreeFiveYearOldsPartDayServiceNeedOption(): ServiceNeedOption {
+        val option =
+            snDefaultFiveYearOldsPartDayDaycare.copy(
+                id = ServiceNeedOptionId(UUID.randomUUID()),
+                nameFi = "Maksuton osapäiväinen",
+                defaultOption = false,
+                feeCoefficient = BigDecimal("0.00"),
+            )
+        db.transaction { tx -> tx.insertServiceNeedOption(option) }
+        return option
     }
 
     private fun insertFamilyRelations(

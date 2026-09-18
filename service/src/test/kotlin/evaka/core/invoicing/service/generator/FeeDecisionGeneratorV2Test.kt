@@ -68,7 +68,7 @@ class FeeDecisionGeneratorV2Test {
     fun `FeeBasis produces correct decision`() {
         val feeBasis = createFeeBasis()
         val childBasis = feeBasis.children[2]
-        val decision = feeBasis.toFeeDecision()!!
+        val decision = feeBasis.toFeeDecision(freeServiceNeedMinDate = date(31))!!
         assertEquals(
             decision,
             FeeDecision(

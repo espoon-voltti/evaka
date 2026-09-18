@@ -28,6 +28,7 @@ class FinanceDecisionGenerator(
     private val featureConfig: FeatureConfig,
 ) {
     private val feeDecisionMinDate = env.feeDecisionMinDate
+    private val feeDecisionFreeServiceNeedMinDate = env.feeDecisionFreeServiceNeedMinDate
 
     fun scheduleBatchGeneration(tx: Database.Transaction) {
         val inserted =
@@ -82,6 +83,7 @@ FROM ids
             incomeTypesProvider = incomeTypesProvider,
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             financeMinDate = feeDecisionMinDate,
+            freeServiceNeedMinDate = feeDecisionFreeServiceNeedMinDate,
             headOfFamilyId = headOfFamily,
             retroactiveOverride = from,
         )
@@ -123,6 +125,7 @@ FROM ids
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
+                freeServiceNeedMinDate = feeDecisionFreeServiceNeedMinDate,
                 headOfFamilyId = adult,
             )
         }
@@ -147,6 +150,7 @@ FROM ids
                 incomeTypesProvider = incomeTypesProvider,
                 coefficientMultiplierProvider = coefficientMultiplierProvider,
                 financeMinDate = feeDecisionMinDate,
+                freeServiceNeedMinDate = feeDecisionFreeServiceNeedMinDate,
                 headOfFamilyId = adultId,
             )
         }

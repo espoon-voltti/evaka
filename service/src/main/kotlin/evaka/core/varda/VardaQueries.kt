@@ -12,6 +12,7 @@ import evaka.core.shared.db.Database
 import evaka.core.shared.domain.DateRange
 import evaka.core.shared.domain.FiniteDateRange
 import evaka.core.shared.domain.HelsinkiDateTime
+import java.math.BigDecimal
 import java.time.LocalDate
 import org.jdbi.v3.core.result.UnableToProduceResultException
 import tools.jackson.databind.DatabindException
@@ -146,6 +147,7 @@ data class VardaFeeData(
     val childFee: Int,
     val ophOrganizerOid: String,
     val voucherValue: Int?,
+    val serviceNeedFeeCoefficient: BigDecimal,
 )
 
 fun Database.Read.getVardaFeeData(
@@ -163,7 +165,8 @@ SELECT
     fd.family_size,
     fdc.final_fee AS child_fee,
     u.oph_organizer_oid,
-    NULL AS voucher_value
+    NULL AS voucher_value,
+    fdc.service_need_fee_coefficient
 FROM fee_decision fd
 JOIN fee_decision_child fdc ON fdc.fee_decision_id = fd.id
 JOIN daycare u ON u.id = fdc.placement_unit_id
@@ -184,7 +187,8 @@ SELECT
     vvd.family_size,
     vvd.final_co_payment AS child_fee,
     u.oph_organizer_oid,
-    vvd.voucher_value
+    vvd.voucher_value,
+    vvd.service_need_fee_coefficient
 FROM voucher_value_decision vvd
 JOIN daycare u ON u.id = vvd.placement_unit_id
 WHERE
