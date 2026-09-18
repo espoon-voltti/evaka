@@ -267,6 +267,11 @@ class CitizenApplicationEditor {
   }
 
   async verifyAndSend({ hasOtherGuardian }: { hasOtherGuardian: boolean }) {
+    await this.send({ hasOtherGuardian })
+    await this.dismissApplicationSentModal()
+  }
+
+  async send({ hasOtherGuardian }: { hasOtherGuardian: boolean }) {
     await this.goToVerification()
     await this.#verifyCheckbox.evaluate((e) =>
       e.scrollIntoView({ block: 'center' })
@@ -277,7 +282,11 @@ class CitizenApplicationEditor {
     }
     await this.#sendButton.click()
     await expect(this.#applicationSentModal).toBeVisible()
+  }
+
+  async dismissApplicationSentModal() {
     await this.#applicationSentModal.find('[data-qa="modal-okBtn"]').click()
+    await expect(this.#applicationSentModal).toBeHidden()
   }
 
   async assertErrorsExist() {
