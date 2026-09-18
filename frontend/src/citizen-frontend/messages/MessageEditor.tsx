@@ -4,7 +4,7 @@
 
 import partition from 'lodash/partition'
 import React, { useCallback, useMemo, useState } from 'react'
-import FocusLock from 'react-focus-lock'
+import { FocusOn } from 'react-focus-on'
 import styled from 'styled-components'
 
 import type { Result } from 'lib-common/api'
@@ -53,7 +53,6 @@ import { deleteAttachmentMutation } from '../attachments/queries'
 import { useUser } from '../auth/state'
 import { ErrorMessageBox } from '../calendar/ChildSelector'
 import { useTranslation } from '../localization'
-import { useOnEscape } from '../navigation/utils'
 import { getDuplicateChildInfo } from '../utils/duplicated-child-utils'
 
 import { isPrimaryRecipient } from './utils'
@@ -90,8 +89,6 @@ export default React.memo(function MessageEditor({
 }: Props) {
   const i18n = useTranslation()
   const user = useUser()
-
-  const closeOnEscape = useOnEscape(onClose)
 
   const childIds = useMemo(
     () =>
@@ -198,8 +195,8 @@ export default React.memo(function MessageEditor({
 
   return (
     <ModalAccessibilityWrapper>
-      <FocusLock>
-        <Container data-qa="message-editor" onKeyDown={closeOnEscape}>
+      <FocusOn onEscapeKey={onClose}>
+        <Container data-qa="message-editor">
           <TopBar>
             <Title>{title}</Title>
             <IconOnlyButton
@@ -464,7 +461,7 @@ export default React.memo(function MessageEditor({
             />
           </BottomRow>
         </Container>
-      </FocusLock>
+      </FocusOn>
     </ModalAccessibilityWrapper>
   )
 })
