@@ -35,7 +35,6 @@ import {
   faTrash
 } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { renderResult } from '../async-rendering'
 import { createPasskeyCredential, passkeysSupported } from '../auth/passkeys'
 import type { User } from '../auth/state'
@@ -151,24 +150,22 @@ export default React.memo(function PasskeysSection({ user }: { user: User }) {
           </FixedSpaceColumn>
         </FixedSpaceColumn>
       ))}
-      <ModalAccessibilityWrapper>
-        {passkeyToDelete !== null && (
-          <MutateFormModal
-            data-qa="delete-passkey-modal"
-            type="danger"
-            title={t.deleteConfirmTitle}
-            text={t.deleteConfirmText(passkeyToDelete.name)}
-            icon={faTrash}
-            resolveLabel={t.deletePasskey}
-            resolveDanger
-            rejectLabel={i18n.common.cancel}
-            resolveMutation={deletePasskeyMutation}
-            resolveAction={() => ({ id: passkeyToDelete.id })}
-            rejectAction={() => setPasskeyToDelete(null)}
-            onSuccess={() => setPasskeyToDelete(null)}
-          />
-        )}
-      </ModalAccessibilityWrapper>
+      {passkeyToDelete !== null && (
+        <MutateFormModal
+          data-qa="delete-passkey-modal"
+          type="danger"
+          title={t.deleteConfirmTitle}
+          text={t.deleteConfirmText(passkeyToDelete.name)}
+          icon={faTrash}
+          resolveLabel={t.deletePasskey}
+          resolveDanger
+          rejectLabel={i18n.common.cancel}
+          resolveMutation={deletePasskeyMutation}
+          resolveAction={() => ({ id: passkeyToDelete.id })}
+          rejectAction={() => setPasskeyToDelete(null)}
+          onSuccess={() => setPasskeyToDelete(null)}
+        />
+      )}
     </div>
   )
 })

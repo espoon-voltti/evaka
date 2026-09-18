@@ -90,4 +90,28 @@ test.describe('Citizen page', () => {
     await enduserLogin(otherBrowser, testAdult2, '/')
     await new CitizenHeader(otherBrowser).assertDOMLangAttrib('sv')
   })
+
+  test('the language in the URL replaces the one used earlier in the browser', async ({
+    newEvakaPage
+  }) => {
+    const browser = await newEvakaPage()
+    await browser.goto(config.enduserLoginUrl)
+    await new CitizenHeader(browser).selectLanguage('fi')
+
+    await browser.goto(`${config.enduserLoginUrl}?lang=sv`)
+    await new CitizenHeader(browser).assertDOMLangAttrib('sv')
+
+    // the browser keeps using the URL language after the parameter is gone
+    await browser.goto(config.enduserLoginUrl)
+    await new CitizenHeader(browser).assertDOMLangAttrib('sv')
+  })
+
+  test('the UI language chosen by a citizen wins over the language in the URL', async () => {
+    const languageSaved = waitForPreferredLanguageSaved(page, 'FI')
+    await header.selectLanguage('fi')
+    await languageSaved
+
+    await page.goto(`${config.enduserUrl}/?lang=sv`)
+    await header.assertSubNavMenuHasText('Valikko')
+  })
 })

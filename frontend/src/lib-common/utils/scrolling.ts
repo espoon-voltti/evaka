@@ -12,30 +12,33 @@ type ScrollContainerResolver = () => HTMLElement | null
 /**
  * Registers how to find the element that scrolls the page in place of the
  * window. The page-level scroll helpers below ask the resolver on every call,
- * because which element scrolls, if any, can depend on the viewport width and
- * on the app layout. Without a resolver, or when it returns null, they scroll
- * the window.
+ * because whether the registered element scrolls depends on the app layout.
+ * Without a resolver, or when it returns null, they scroll the window.
  */
 let resolveScrollContainer: ScrollContainerResolver = () => null
 
 const scrollsItsContent = (el: HTMLElement) =>
   /auto|scroll/.test(getComputedStyle(el).overflowY)
 
-// Which of the two scrolls, if either, depends on the viewport width and on
-// the app layout, so the choice is made on every call rather than once
+const scrollportHeight = (elem: HTMLElement) => {
+  for (let el = elem.parentElement; el !== null; el = el.parentElement) {
+    if (scrollsItsContent(el)) return el.clientHeight
+  }
+  return window.innerHeight
+}
+
 export function useRegisterScrollContainer() {
-  const shellRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    resolveScrollContainer = () =>
-      [scrollAreaRef.current, shellRef.current].find(
-        (el): el is HTMLDivElement => !!el && scrollsItsContent(el)
-      ) ?? null
+    resolveScrollContainer = () => {
+      const el = scrollAreaRef.current
+      return el && scrollsItsContent(el) ? el : null
+    }
     return () => {
       resolveScrollContainer = () => null
     }
   }, [])
-  return { shellRef, scrollAreaRef }
+  return scrollAreaRef
 }
 
 export function scrollToPos(options: ScrollToOptions, timeout = 0) {
@@ -95,6 +98,21 @@ export function scrollRefIntoView(
   )
 }
 
+/** Shows the end of the element, or its start when the element does not fit in view */
+export function scrollRefEndIntoView(
+  ref: RefObject<HTMLElement | null>,
+  timeout = 0
+) {
+  scrollIntoViewWithTimeout(
+    () => ref.current ?? undefined,
+    timeout,
+    (elem) =>
+      elem.getBoundingClientRect().height > scrollportHeight(elem)
+        ? 'start'
+        : 'end'
+  )
+}
+
 export function scrollIntoViewSoftKeyboard(
   target: Element,
   blockPosition: ScrollLogicalPosition = 'center'
@@ -135,13 +153,22 @@ function scrollWithTimeout(
 function scrollIntoViewWithTimeout(
   getElement: () => HTMLElement | undefined,
   timeout = 0,
-  blockPosition: ScrollLogicalPosition
+  blockPosition:
+    | ScrollLogicalPosition
+    | ((elem: HTMLElement) => ScrollLogicalPosition)
 ) {
   if (isAutomatedTest) return
 
   withTimeout(() => {
     const elem = getElement()
-    if (elem) elem.scrollIntoView({ behavior: 'smooth', block: blockPosition })
+    if (elem)
+      elem.scrollIntoView({
+        behavior: 'smooth',
+        block:
+          typeof blockPosition === 'function'
+            ? blockPosition(elem)
+            : blockPosition
+      })
   }, timeout)
 }
 

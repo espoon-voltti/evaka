@@ -35,7 +35,7 @@ import { Localization, useTranslation } from './localization'
 import { MessageDraftsProvider } from './messages/drafts'
 import Header from './navigation/Header'
 import MobileNav from './navigation/MobileNav'
-import { mobileBottomNavHeight } from './navigation/const'
+import { headerHeightMobile, mobileBottomNavHeight } from './navigation/const'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import { InstallSuggestion } from './pwa/InstallSuggestion'
@@ -43,7 +43,20 @@ import { useStandaloneAttribute } from './pwa/installed'
 import { useNotificationClickRouting } from './pwa/notificationRouting'
 import { queryClient, QueryClientProvider } from './query'
 
+// Scrolling an element into view must leave it clear of the sticky header and
+// the fixed mobile navi. In PWA they do not overlay the scrolling ScrollArea,
+// so the document's scroll padding does not matter there.
 const GlobalStyle = createGlobalStyle`
+  html {
+    scroll-padding-top: ${headerHeightMobile}px;
+    scroll-padding-bottom: ${mobileBottomNavHeight}px;
+
+    @media (min-width: ${desktopMin}) {
+      scroll-padding-top: 0;
+      scroll-padding-bottom: 0;
+    }
+  }
+
   @media screen and (max-width: ${zoomedMobileMax}) {
     html {
       overflow-x: auto;
@@ -167,10 +180,10 @@ const Content = React.memo(function Content({
     )
   useChildrenStartingNotification()
   useStandaloneAttribute()
-  const { shellRef, scrollAreaRef } = useRegisterScrollContainer()
+  const scrollAreaRef = useRegisterScrollContainer()
   useNotificationClickRouting()
   return (
-    <AppShell ref={shellRef}>
+    <AppShell>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
       <InstallSuggestion />

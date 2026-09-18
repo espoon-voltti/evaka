@@ -8,6 +8,7 @@ import type { EmailVerificationStatusResponse } from 'lib-common/generated/api-t
 import type { CitizenPasskey } from 'lib-common/generated/api-types/user'
 import { constantQuery, useQuery } from 'lib-common/query'
 
+import { passkeysSupported } from '../auth/passkeys'
 import type { User } from '../auth/state'
 import { useUser } from '../auth/state'
 import { useInstallAvailability } from '../pwa/installAvailability'
@@ -79,7 +80,7 @@ export const personalDetailsTaskConfig: Record<
   },
   ADD_WEAK_LOGIN: {
     dataQa: 'task-add-weak-login',
-    section: 'passkeys',
+    section: passkeysSupported() ? 'passkeys' : 'login',
     isPending: ({ user, passkeys }) =>
       passkeys.length === 0 && !user.weakLoginUsername
   }
