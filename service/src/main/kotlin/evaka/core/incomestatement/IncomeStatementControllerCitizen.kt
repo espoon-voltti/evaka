@@ -5,7 +5,7 @@
 package evaka.core.incomestatement
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.attachment.AttachmentParent
 import evaka.core.attachment.associateOrphanAttachments
 import evaka.core.attachment.dissociateAttachmentsOfParent
@@ -41,6 +41,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @RequestParam page: Int,
     ): PagedIncomeStatements {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -51,19 +52,19 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         user.id,
                     )
                     tx.readIncomeStatementsForPerson(
-                        user = user,
-                        personId = user.id,
-                        page = page,
-                        pageSize = 10,
-                    )
+                            user = user,
+                            personId = user.id,
+                            page = page,
+                            pageSize = 10,
+                        )
+                        .also { statements ->
+                            statements.data.forEach {
+                                audit.add(it.id).add(it.attachmentIds).observeDate(it.startDate)
+                            }
+                        }
                 }
             }
-            .also {
-                Audit.IncomeStatementsOfPerson.log(
-                    targetId = AuditId(user.id),
-                    meta = mapOf("total" to it.total),
-                )
-            }
+            .also { audit.log(Audit.IncomeStatementsOfPerson, clock) }
     }
 
     @GetMapping("/child/{childId}")
@@ -74,6 +75,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable childId: ChildId,
         @RequestParam page: Int,
     ): PagedIncomeStatements {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -84,19 +86,19 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         childId,
                     )
                     tx.readIncomeStatementsForPerson(
-                        user = user,
-                        personId = childId,
-                        page = page,
-                        pageSize = 10,
-                    )
+                            user = user,
+                            personId = childId,
+                            page = page,
+                            pageSize = 10,
+                        )
+                        .also { statements ->
+                            statements.data.forEach {
+                                audit.add(it.id).add(it.attachmentIds).observeDate(it.startDate)
+                            }
+                        }
                 }
             }
-            .also {
-                Audit.IncomeStatementsOfChild.log(
-                    targetId = AuditId(childId),
-                    meta = mapOf("total" to it.total),
-                )
-            }
+            .also { audit.log(Audit.IncomeStatementsOfChild, clock) }
     }
 
     data class PartnerIncomeStatementStatusResponse(val partner: PartnerIncomeStatementStatus?)
@@ -107,6 +109,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): PartnerIncomeStatementStatusResponse {
+        val audit = AuditContext()
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -118,10 +121,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     )
                     PartnerIncomeStatementStatusResponse(
                         tx.getPartnerIncomeStatementStatus(user.id, clock.today())
+                            ?.also { audit.add(it.partnerId) }
+                            ?.status
                     )
                 }
             }
-            .also { Audit.IncomeStatementStatusOfPartner.log() }
+            .also { audit.log(Audit.IncomeStatementStatusOfPartner, clock) }
     }
 
     @GetMapping("/child/start-dates/{childId}")
@@ -131,24 +136,23 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): List<LocalDate> {
+        val audit = AuditContext().add(childId)
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Child.READ_INCOME_STATEMENTS,
                         childId,
                     )
-                    it.readIncomeStatementStartDates(childId)
+                    tx.readIncomeStatementStartDates(childId).also { dates ->
+                        dates.forEach { audit.observeDate(it) }
+                        audit.addMeta("count", dates.size)
+                    }
                 }
             }
-            .also {
-                Audit.IncomeStatementStartDatesOfChild.log(
-                    targetId = AuditId(childId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.IncomeStatementStartDatesOfChild, clock) }
     }
 
     @GetMapping("/start-dates/")
@@ -157,24 +161,23 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): List<LocalDate> {
+        val audit = AuditContext()
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Person.READ_INCOME_STATEMENTS,
                         user.id,
                     )
-                    it.readIncomeStatementStartDates(user.id)
+                    tx.readIncomeStatementStartDates(user.id).also { dates ->
+                        dates.forEach { audit.observeDate(it) }
+                        audit.addMeta("count", dates.size)
+                    }
                 }
             }
-            .also {
-                Audit.IncomeStatementStartDates.log(
-                    targetId = AuditId(user.id),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.IncomeStatementStartDates, clock) }
     }
 
     @GetMapping("/{incomeStatementId}")
@@ -184,6 +187,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
+        val audit = AuditContext().add(incomeStatementId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -194,10 +198,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                         incomeStatementId,
                     )
                     tx.readIncomeStatement(user = user, incomeStatementId = incomeStatementId)
-                        ?: throw NotFound("No such income statement")
+                        ?.also {
+                            audit.add(it.personId).add(it.attachmentIds).observeDate(it.startDate)
+                        } ?: throw NotFound("No such income statement")
                 }
             }
-            .also { Audit.IncomeStatementRead.log(targetId = AuditId(incomeStatementId)) }
+            .also { audit.log(Audit.IncomeStatementRead, clock) }
     }
 
     @PostMapping
@@ -208,7 +214,8 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @RequestBody body: IncomeStatementBody,
         @RequestParam draft: Boolean,
     ) {
-        val id = db.connect { dbc ->
+        val audit = AuditContext().observeDate(body.startDate).addMeta("draft", draft)
+        db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
                     tx,
@@ -224,10 +231,11 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     personId = user.id,
                     body = body,
                     draft = draft,
+                    audit = audit,
                 )
             }
         }
-        Audit.IncomeStatementCreate.log(targetId = AuditId(user.id), objectId = AuditId(id))
+        audit.log(Audit.IncomeStatementCreate, clock)
     }
 
     @PostMapping("/child/{childId}")
@@ -239,7 +247,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @RequestBody body: IncomeStatementBody,
         @RequestParam draft: Boolean?,
     ) {
-        val id = db.connect { dbc ->
+        val audit =
+            AuditContext().add(childId).observeDate(body.startDate).addMeta("draft", draft ?: false)
+        db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
                     tx,
@@ -255,10 +265,11 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     personId = childId,
                     body = body,
                     draft = draft ?: false,
+                    audit = audit,
                 )
             }
         }
-        Audit.IncomeStatementCreateForChild.log(targetId = AuditId(user.id), objectId = AuditId(id))
+        audit.log(Audit.IncomeStatementCreateForChild, clock)
     }
 
     @PutMapping("/{incomeStatementId}")
@@ -270,6 +281,11 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @RequestBody body: IncomeStatementBody,
         @RequestParam draft: Boolean,
     ) {
+        val audit =
+            AuditContext()
+                .add(incomeStatementId)
+                .observeDate(body.startDate)
+                .addMeta("draft", draft)
         if (!draft && !validateIncomeStatementBody(body))
             throw BadRequest("Invalid income statement body")
 
@@ -284,8 +300,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 )
 
                 val original =
-                    tx.readIncomeStatement(user, incomeStatementId)
-                        ?: throw NotFound("Income statement not found")
+                    tx.readIncomeStatement(user, incomeStatementId)?.also {
+                        audit.add(it.personId).add(it.attachmentIds).observeDate(it.startDate)
+                    } ?: throw NotFound("Income statement not found")
 
                 if (original.status != IncomeStatementStatus.DRAFT) {
                     throw Forbidden("Only draft income statements can be updated")
@@ -307,11 +324,12 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     is IncomeStatementBody.ChildIncome -> body.attachmentIds
                     else -> null
                 }?.also { attachmentIds ->
+                    audit.add(attachmentIds)
                     tx.associateOrphanAttachments(user.evakaUserId, parent, attachmentIds)
                 }
             }
         }
-        Audit.IncomeStatementUpdate.log(targetId = AuditId(incomeStatementId))
+        audit.log(Audit.IncomeStatementUpdate, clock)
     }
 
     data class UpdateSentIncomeStatementBody(
@@ -327,6 +345,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: UpdateSentIncomeStatementBody,
     ) {
+        val audit = AuditContext().add(incomeStatementId).add(body.attachmentIds)
         val now = clock.now()
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -346,8 +365,9 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 )
 
                 val original =
-                    tx.readIncomeStatement(user, incomeStatementId)
-                        ?: throw NotFound("Income statement not found")
+                    tx.readIncomeStatement(user, incomeStatementId)?.also {
+                        audit.add(it.personId).add(it.attachmentIds).observeDate(it.startDate)
+                    } ?: throw NotFound("Income statement not found")
 
                 if (
                     (original !is IncomeStatement.Income &&
@@ -372,7 +392,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 tx.associateOrphanAttachments(user.evakaUserId, parent, body.attachmentIds)
             }
         }
-        Audit.IncomeStatementUpdate.log(targetId = AuditId(incomeStatementId))
+        audit.log(Audit.IncomeStatementUpdate, clock)
     }
 
     @DeleteMapping("/{id}")
@@ -382,6 +402,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable id: IncomeStatementId,
     ) {
+        val audit = AuditContext().add(id)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -391,11 +412,11 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                     Action.Citizen.IncomeStatement.DELETE,
                     id,
                 )
-                verifyIncomeStatementDeletionAllowed(tx, user, id)
-                tx.removeIncomeStatement(id)
+                verifyIncomeStatementDeletionAllowed(tx, user, id, audit)
+                audit.add(tx.removeIncomeStatement(id))
             }
         }
-        Audit.IncomeStatementDelete.log(targetId = AuditId(id))
+        audit.log(Audit.IncomeStatementDelete, clock)
     }
 
     @GetMapping("/children")
@@ -405,33 +426,39 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
     ): List<ChildBasicInfo> {
         val personId = user.id
+        val audit = AuditContext()
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Citizen.Person.READ_CHILDREN,
                         personId,
                     )
-                    it.getIncomeStatementChildrenByGuardian(personId, clock.today())
+                    tx.getIncomeStatementChildrenByGuardian(personId, clock.today()).also {
+                        audit.add(it.map { child -> child.id })
+                    }
                 }
             }
-            .also {
-                Audit.CitizenChildrenRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.CitizenChildrenRead, clock) }
     }
 
     private fun verifyIncomeStatementDeletionAllowed(
         tx: Database.Transaction,
         user: AuthenticatedUser.Citizen,
         id: IncomeStatementId,
+        audit: AuditContext,
     ) {
         val incomeStatement =
-            tx.readIncomeStatement(user, id) ?: throw NotFound("Income statement not found")
+            tx.readIncomeStatement(user, id)?.also {
+                audit
+                    .add(it.personId)
+                    .observeDate(it.startDate)
+                    .addMeta("type", it.type)
+                    .addMeta("status", it.status)
+                    .addMeta("endDate", it.endDate)
+            } ?: throw NotFound("Income statement not found")
         if (incomeStatement.status == IncomeStatementStatus.HANDLING) {
             throw Forbidden("Income statement cannot be removed while being handled")
         }

@@ -5,7 +5,7 @@
 package evaka.core.incomestatement
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.invoicing.controller.SortDirection
 import evaka.core.shared.DaycareId
@@ -38,29 +38,30 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @PathVariable personId: PersonId,
         @RequestParam page: Int,
     ): PagedIncomeStatements {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Person.READ_INCOME_STATEMENTS,
                         personId,
                     )
-                    it.readIncomeStatementsForPerson(
-                        user = user,
-                        personId = personId,
-                        page = page,
-                        pageSize = 10,
-                    )
+                    tx.readIncomeStatementsForPerson(
+                            user = user,
+                            personId = personId,
+                            page = page,
+                            pageSize = 10,
+                        )
+                        .also { statements ->
+                            statements.data.forEach {
+                                audit.add(it.id).add(it.attachmentIds).observeDate(it.startDate)
+                            }
+                        }
                 }
             }
-            .also {
-                Audit.IncomeStatementsOfPerson.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("total" to it.total),
-                )
-            }
+            .also { audit.log(Audit.IncomeStatementsOfPerson, clock) }
     }
 
     @GetMapping("/{incomeStatementId}")
@@ -70,6 +71,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
+        val audit = AuditContext().add(incomeStatementId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -80,9 +82,12 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                         incomeStatementId,
                     )
                     tx.readIncomeStatement(user = user, incomeStatementId = incomeStatementId)
+                        ?.also {
+                            audit.add(it.personId).add(it.attachmentIds).observeDate(it.startDate)
+                        }
                 } ?: throw NotFound("No such income statement")
             }
-            .also { Audit.IncomeStatementRead.log(targetId = AuditId(incomeStatementId)) }
+            .also { audit.log(Audit.IncomeStatementRead, clock) }
     }
 
     data class SetIncomeStatementHandledBody(
@@ -98,6 +103,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: SetIncomeStatementHandledBody,
     ) {
+        val audit = AuditContext().add(incomeStatementId).addMeta("status", body.status)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -113,15 +119,16 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                 }
 
                 tx.updateIncomeStatementHandled(
-                    user,
-                    clock.now(),
-                    incomeStatementId,
-                    body.handlerNote,
-                    body.status,
-                )
+                        user,
+                        clock.now(),
+                        incomeStatementId,
+                        body.handlerNote,
+                        body.status,
+                    )
+                    ?.also { (personId, startDate) -> audit.add(personId).observeDate(startDate) }
             }
         }
-        Audit.IncomeStatementUpdateHandled.log(targetId = AuditId(incomeStatementId))
+        audit.log(Audit.IncomeStatementUpdateHandled, clock)
     }
 
     @PostMapping("/awaiting-handler")
@@ -131,6 +138,14 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: SearchIncomeStatementsRequest,
     ): PagedIncomeStatementsAwaitingHandler {
+        val audit =
+            AuditContext()
+                .add(body.unitIds.orEmpty())
+                .observeDate(body.sentStartDate)
+                .observeDate(body.placementValidDate)
+        body.areas?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("areas", it) }
+        body.providerTypes?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("providerTypes", it) }
+        body.status?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("status", it) }
         return db.connect { dbc ->
                 dbc.read { it ->
                     accessControl.requirePermissionFor(
@@ -149,22 +164,23 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                     }
 
                     it.fetchIncomeStatementsAwaitingHandler(
-                        clock.now().toLocalDate(),
-                        body.areas ?: emptyList(),
-                        body.unitIds ?: emptyList(),
-                        body.providerTypes ?: emptyList(),
-                        body.sentStartDate,
-                        body.sentEndDate,
-                        body.placementValidDate,
-                        body.status ?: emptyList(),
-                        body.page,
-                        pageSize = 50,
-                        body.sortBy ?: IncomeStatementSortParam.SENT_AT,
-                        body.sortDirection ?: SortDirection.ASC,
-                    )
+                            clock.now().toLocalDate(),
+                            body.areas ?: emptyList(),
+                            body.unitIds ?: emptyList(),
+                            body.providerTypes ?: emptyList(),
+                            body.sentStartDate,
+                            body.sentEndDate,
+                            body.placementValidDate,
+                            body.status ?: emptyList(),
+                            body.page,
+                            pageSize = 50,
+                            body.sortBy ?: IncomeStatementSortParam.SENT_AT,
+                            body.sortDirection ?: SortDirection.ASC,
+                        )
+                        .also { statements -> audit.addMeta("count", statements.total) }
                 }
             }
-            .also { Audit.IncomeStatementsAwaitingHandler.log(meta = mapOf("total" to it.total)) }
+            .also { audit.log(Audit.IncomeStatementsAwaitingHandler, clock) }
     }
 
     @GetMapping("/guardian/{guardianId}/children")
@@ -174,24 +190,22 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable guardianId: PersonId,
     ): List<ChildBasicInfo> {
+        val audit = AuditContext().add(guardianId)
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Person.READ_INCOME_STATEMENTS,
                         guardianId,
                     )
-                    it.getIncomeStatementChildrenByGuardian(guardianId, clock.today())
+                    tx.getIncomeStatementChildrenByGuardian(guardianId, clock.today()).also {
+                        audit.add(it.map { child -> child.id })
+                    }
                 }
             }
-            .also {
-                Audit.GuardianChildrenRead.log(
-                    targetId = AuditId(guardianId),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.GuardianChildrenRead, clock) }
     }
 }
 

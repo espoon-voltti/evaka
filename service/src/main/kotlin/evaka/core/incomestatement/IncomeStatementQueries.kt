@@ -8,6 +8,7 @@ import evaka.core.application.utils.exhaust
 import evaka.core.daycare.domain.ProviderType
 import evaka.core.invoicing.controller.SortDirection
 import evaka.core.placement.PlacementType
+import evaka.core.shared.AttachmentId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
 import evaka.core.shared.EvakaUserId
@@ -597,17 +598,17 @@ WHERE id = ${bind(incomeStatementId)}
     }
 }
 
+@IgnorableReturnValue
 fun Database.Transaction.updateIncomeStatementHandled(
     user: AuthenticatedUser.Employee,
     now: HelsinkiDateTime,
     incomeStatementId: IncomeStatementId,
     note: String,
     status: IncomeStatementStatus,
-) {
-    execute {
-        sql(
-            """
-UPDATE income_statement 
+): Pair<PersonId, LocalDate>? = createQuery {
+    sql(
+        """
+UPDATE income_statement
 SET modified_at = ${bind(now)},
     modified_by = ${bind(user.evakaUserId)},
     handler_note = ${bind(note)},
@@ -615,18 +616,28 @@ SET modified_at = ${bind(now)},
     handled_at = ${bind(now.takeIf { status == IncomeStatementStatus.HANDLED })},
     status = ${bind(status)}
 WHERE id = ${bind(incomeStatementId)}
+RETURNING person_id, start_date
+"""
+    )
+}
+    .exactlyOneOrNull { column<PersonId>("person_id") to column<LocalDate>("start_date") }
+
+/** Returns the ids of the attachments that were orphaned, including employee-uploaded ones. */
+@IgnorableReturnValue
+fun Database.Transaction.removeIncomeStatement(id: IncomeStatementId): List<AttachmentId> {
+    val orphanedAttachmentIds = createQuery {
+        sql(
+            """
+UPDATE attachment
+SET income_statement_id = NULL
+WHERE income_statement_id = ${bind(id)}
+RETURNING id
 """
         )
     }
-}
-
-fun Database.Transaction.removeIncomeStatement(id: IncomeStatementId) {
-    execute {
-        sql(
-            "UPDATE attachment SET income_statement_id = NULL WHERE income_statement_id = ${bind(id)}"
-        )
-    }
+        .toList<AttachmentId>()
     execute { sql("DELETE FROM income_statement WHERE id = ${bind(id)}") }
+    return orphanedAttachmentIds
 }
 
 data class IncomeStatementAwaitingHandler(
@@ -880,13 +891,19 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
 
 data class PartnerIncomeStatementStatus(val name: String, val hasIncomeStatement: Boolean)
 
+data class PartnerIncomeStatementStatusRow(
+    val partnerId: PersonId,
+    val status: PartnerIncomeStatementStatus,
+)
+
 fun Database.Read.getPartnerIncomeStatementStatus(
     personId: PersonId,
     today: LocalDate,
-): PartnerIncomeStatementStatus? = createQuery {
+): PartnerIncomeStatementStatusRow? = createQuery {
     sql(
         """
-    SELECT 
+    SELECT
+        fp.partner_person_id AS partner_id,
         partner_first_name || ' ' || partner_last_name AS name,
         (
             EXISTS (
@@ -901,8 +918,17 @@ fun Database.Read.getPartnerIncomeStatementStatus(
     FROM fridge_partner_view fp
     WHERE fp.person_id = ${bind(personId)} 
         AND daterange(fp.start_date, fp.end_date, '[]') @> ${bind(today)}
-        AND NOT fp.conflict 
+        AND NOT fp.conflict
 """
     )
 }
-    .exactlyOneOrNull()
+    .exactlyOneOrNull {
+        PartnerIncomeStatementStatusRow(
+            partnerId = column("partner_id"),
+            status =
+                PartnerIncomeStatementStatus(
+                    name = column("name"),
+                    hasIncomeStatement = column("has_income_statement"),
+                ),
+        )
+    }

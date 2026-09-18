@@ -5,7 +5,7 @@
 package evaka.core.invoicing.controller
 
 import evaka.core.Audit
-import evaka.core.AuditId
+import evaka.core.AuditContext
 import evaka.core.attachment.AttachmentParent
 import evaka.core.attachment.associateOrphanAttachments
 import evaka.core.invoicing.data.deleteIncome
@@ -61,6 +61,7 @@ class IncomeController(
         clock: EvakaClock,
         @RequestParam personId: PersonId,
     ): List<IncomeWithPermittedActions> {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -73,10 +74,11 @@ class IncomeController(
 
                     val incomes =
                         tx.getIncomesForPerson(
-                            incomeTypesProvider,
-                            coefficientMultiplierProvider,
-                            personId,
-                        )
+                                incomeTypesProvider,
+                                coefficientMultiplierProvider,
+                                personId,
+                            )
+                            .onEach { audit.add(it.id).observeDate(it.validFrom) }
                     val permittedActions =
                         accessControl.getPermittedActions<IncomeId, Action.Income>(
                             tx,
@@ -89,12 +91,7 @@ class IncomeController(
                     }
                 }
             }
-            .also { incomes ->
-                Audit.PersonIncomeRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to incomes.size),
-                )
-            }
+            .also { audit.log(Audit.PersonIncomeRead, clock) }
     }
 
     data class IncomeWithPermittedActions(
@@ -109,6 +106,11 @@ class IncomeController(
         clock: EvakaClock,
         @RequestBody income: IncomeRequest,
     ): IncomeId {
+        val audit =
+            AuditContext()
+                .add(income.personId)
+                .add(income.attachments.map { it.id })
+                .observeDate(income.validFrom)
         val period =
             try {
                 DateRange(income.validFrom, income.validTo)
@@ -130,12 +132,14 @@ class IncomeController(
                     val incomeTypes = incomeTypesProvider.get()
                     val validIncome = validateIncome(income, incomeTypes)
                     tx.endEarlierOverlappingIncome(
-                        now,
-                        validIncome.personId,
-                        period,
-                        user.evakaUserId,
-                    )
-                    val id = tx.insertIncome(now, validIncome, user.evakaUserId)
+                            now,
+                            validIncome.personId,
+                            period,
+                            user.evakaUserId,
+                        )
+                        .forEach { (id, validFrom) -> audit.add(id).observeDate(validFrom) }
+                    val id =
+                        tx.insertIncome(now, validIncome, user.evakaUserId).also { audit.add(it) }
                     tx.associateOrphanAttachments(
                         user.evakaUserId,
                         AttachmentParent.Income(id),
@@ -158,12 +162,7 @@ class IncomeController(
                     id
                 }
             }
-            .also { incomeId ->
-                Audit.PersonIncomeCreate.log(
-                    targetId = AuditId(income.personId),
-                    objectId = AuditId(incomeId),
-                )
-            }
+            .also { audit.log(Audit.PersonIncomeCreate, clock) }
     }
 
     @PutMapping("/{incomeId}")
@@ -174,12 +173,14 @@ class IncomeController(
         @PathVariable incomeId: IncomeId,
         @RequestBody income: IncomeRequest,
     ) {
+        val audit = AuditContext().add(incomeId).add(income.personId).observeDate(income.validFrom)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, Action.Income.UPDATE, incomeId)
 
                 val existing =
                     tx.getIncome(incomeTypesProvider, coefficientMultiplierProvider, incomeId)
+                        ?.also { audit.add(it.personId).observeDate(it.validFrom) }
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome = validateIncome(income, incomeTypes)
                 tx.updateIncome(clock, incomeId, validIncome, user.evakaUserId)
@@ -214,7 +215,7 @@ class IncomeController(
                 )
             }
         }
-        Audit.PersonIncomeUpdate.log(targetId = AuditId(incomeId))
+        audit.log(Audit.PersonIncomeUpdate, clock)
     }
 
     @DeleteMapping("/{incomeId}")
@@ -224,13 +225,21 @@ class IncomeController(
         clock: EvakaClock,
         @PathVariable incomeId: IncomeId,
     ) {
+        val audit = AuditContext().add(incomeId)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(tx, user, clock, Action.Income.DELETE, incomeId)
 
                 val existing =
                     tx.getIncome(incomeTypesProvider, coefficientMultiplierProvider, incomeId)
-                        ?: throw BadRequest("Income not found")
+                        ?.also {
+                            audit
+                                .add(it.personId)
+                                .add(it.attachments.map { attachment -> attachment.id })
+                                .observeDate(it.validFrom)
+                                .addMeta("effect", it.effect)
+                                .addMeta("validTo", it.validTo)
+                        } ?: throw BadRequest("Income not found")
                 val period = DateRange(existing.validFrom, existing.validTo)
                 tx.deleteIncome(incomeId)
 
@@ -246,7 +255,7 @@ class IncomeController(
                 )
             }
         }
-        Audit.PersonIncomeDelete.log(targetId = AuditId(incomeId))
+        audit.log(Audit.PersonIncomeDelete, clock)
     }
 
     data class IncomeOption(
@@ -268,6 +277,7 @@ class IncomeController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): IncomeTypeOptions {
+        val audit = AuditContext()
         db.connect { dbc ->
             dbc.read {
                 accessControl.requirePermissionFor(it, user, clock, Action.Global.READ_INCOME_TYPES)
@@ -286,6 +296,7 @@ class IncomeController(
             }
             .partition { it.multiplier > 0 }
             .let { IncomeTypeOptions(incomeTypes = it.first, expenseTypes = it.second) }
+            .also { audit.log(Audit.IncomeTypeOptionsRead, clock) }
     }
 
     @GetMapping("/multipliers")
@@ -294,6 +305,7 @@ class IncomeController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
     ): Map<IncomeCoefficient, BigDecimal> {
+        val audit = AuditContext()
         db.connect { dbc ->
             dbc.read {
                 accessControl.requirePermissionFor(
@@ -304,9 +316,9 @@ class IncomeController(
                 )
             }
         }
-        return IncomeCoefficient.entries.associateWith {
-            coefficientMultiplierProvider.multiplier(it)
-        }
+        return IncomeCoefficient.entries
+            .associateWith { coefficientMultiplierProvider.multiplier(it) }
+            .also { audit.log(Audit.IncomeCoefficientMultipliersRead, clock) }
     }
 
     @GetMapping("/notifications")
@@ -316,6 +328,7 @@ class IncomeController(
         clock: EvakaClock,
         @RequestParam personId: PersonId,
     ): List<IncomeNotification> {
+        val audit = AuditContext().add(personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -325,15 +338,13 @@ class IncomeController(
                         Action.Person.READ_INCOME_NOTIFICATIONS,
                         personId,
                     )
-                    tx.getIncomeNotifications(personId)
+                    tx.getIncomeNotifications(personId).also { notifications ->
+                        notifications.forEach { audit.observeDate(it.created.toLocalDate()) }
+                        audit.addMeta("count", notifications.size)
+                    }
                 }
             }
-            .also { incomeNotifications ->
-                Audit.PersonIncomeNotificationRead.log(
-                    targetId = AuditId(personId),
-                    meta = mapOf("count" to incomeNotifications.size),
-                )
-            }
+            .also { audit.log(Audit.PersonIncomeNotificationRead, clock) }
     }
 }
 
