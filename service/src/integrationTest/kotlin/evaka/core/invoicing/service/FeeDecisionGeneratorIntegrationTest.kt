@@ -4,6 +4,7 @@
 
 package evaka.core.invoicing.service
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.daycare.CareType
 import evaka.core.feeThresholds
@@ -1208,7 +1209,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(child1.id, period, DAYCARE, daycare.id)
 
         db.transaction { tx ->
-            generator.createRetroactiveFeeDecisions(tx, adult1.id, period.start)
+            generator.createRetroactiveFeeDecisions(tx, adult1.id, period.start, AuditContext())
         }
 
         assertEquals(

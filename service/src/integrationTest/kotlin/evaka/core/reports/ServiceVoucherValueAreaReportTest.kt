@@ -4,6 +4,7 @@
 
 package evaka.core.reports
 
+import evaka.core.AuditContext
 import evaka.core.FullApplicationTest
 import evaka.core.caseprocess.CaseProcessMetadataService
 import evaka.core.invoicing.controller.sendVoucherValueDecisions
@@ -228,6 +229,7 @@ class ServiceVoucherValueAreaReportTest : FullApplicationTest(resetDbBeforeEach 
                 ids = listOf(decision.id),
                 decisionHandlerId = null,
                 false,
+                AuditContext(),
             )
 
             decision

@@ -6,7 +6,6 @@ package evaka.core.invoicing.controller
 
 import evaka.core.Audit
 import evaka.core.AuditContext
-import evaka.core.AuditId
 import evaka.core.ConstList
 import evaka.core.EvakaEnv
 import evaka.core.document.archival.validateArchivability
@@ -94,6 +93,16 @@ class FeeDecisionController(
         if (body.startDate != null && body.endDate != null && body.endDate < body.startDate) {
             throw BadRequest("End date cannot be before start date")
         }
+        val audit =
+            AuditContext()
+                .add(listOfNotNull(body.unit))
+                .add(listOfNotNull(body.financeDecisionHandlerId))
+                .observeDate(body.startDate)
+        body.statuses?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("statuses", it) }
+        body.area?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("areas", it) }
+        body.distinctions?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("distinctions", it) }
+        body.difference?.takeIf { it.isNotEmpty() }?.let { audit.addMeta("difference", it) }
+        if (body.searchByStartDate) audit.addMeta("searchByStartDate", true)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -103,26 +112,30 @@ class FeeDecisionController(
                         Action.Global.SEARCH_FEE_DECISIONS,
                     )
                     tx.searchFeeDecisions(
-                        clock,
-                        featureConfig.postOffice,
-                        body.page,
-                        pageSize = 200,
-                        body.sortBy ?: FeeDecisionSortParam.STATUS,
-                        body.sortDirection ?: SortDirection.DESC,
-                        body.statuses ?: emptyList(),
-                        body.area ?: emptyList(),
-                        body.unit,
-                        body.distinctions ?: emptyList(),
-                        body.searchTerms ?: "",
-                        body.startDate,
-                        body.endDate,
-                        body.searchByStartDate,
-                        body.financeDecisionHandlerId,
-                        body.difference ?: emptySet(),
-                    )
+                            clock,
+                            featureConfig.postOffice,
+                            body.page,
+                            pageSize = 200,
+                            body.sortBy ?: FeeDecisionSortParam.STATUS,
+                            body.sortDirection ?: SortDirection.DESC,
+                            body.statuses ?: emptyList(),
+                            body.area ?: emptyList(),
+                            body.unit,
+                            body.distinctions ?: emptyList(),
+                            body.searchTerms ?: "",
+                            body.startDate,
+                            body.endDate,
+                            body.searchByStartDate,
+                            body.financeDecisionHandlerId,
+                            body.difference ?: emptySet(),
+                        )
+                        .also { page ->
+                            audit.addMeta("count", page.data.size)
+                            audit.add(page.data.map { it.headOfFamily.id })
+                        }
                 }
             }
-            .also { Audit.FeeDecisionSearch.log(meta = mapOf("total" to it.total)) }
+            .also { audit.log(Audit.FeeDecisionSearch, clock) }
     }
 
     @PostMapping("/confirm")
@@ -133,6 +146,7 @@ class FeeDecisionController(
         @RequestBody feeDecisionIds: List<FeeDecisionId>,
         @RequestParam decisionHandlerId: EmployeeId?,
     ) {
+        val audit = AuditContext().add(feeDecisionIds).add(listOfNotNull(decisionHandlerId))
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -150,6 +164,7 @@ class FeeDecisionController(
                         clock.now(),
                         decisionHandlerId,
                         featureConfig.alwaysUseDaycareFinanceDecisionHandler,
+                        audit,
                     )
                 asyncJobRunner.plan(
                     tx,
@@ -158,7 +173,7 @@ class FeeDecisionController(
                 )
             }
         }
-        Audit.FeeDecisionConfirm.log(targetId = AuditId(feeDecisionIds))
+        audit.log(Audit.FeeDecisionConfirm, clock)
     }
 
     @PostMapping("/ignore")
@@ -168,6 +183,7 @@ class FeeDecisionController(
         clock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>,
     ) {
+        val audit = AuditContext().add(feeDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -177,10 +193,10 @@ class FeeDecisionController(
                     Action.FeeDecision.IGNORE,
                     feeDecisionIds,
                 )
-                service.ignoreDrafts(tx, feeDecisionIds, clock.today())
+                service.ignoreDrafts(tx, feeDecisionIds, clock.today(), audit)
             }
         }
-        Audit.FeeDecisionIgnore.log(targetId = AuditId(feeDecisionIds))
+        audit.log(Audit.FeeDecisionIgnore, clock)
     }
 
     @PostMapping("/unignore")
@@ -190,6 +206,7 @@ class FeeDecisionController(
         clock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>,
     ) {
+        val audit = AuditContext().add(feeDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -199,7 +216,7 @@ class FeeDecisionController(
                     Action.FeeDecision.UNIGNORE,
                     feeDecisionIds,
                 )
-                val headsOfFamilies = service.unignoreDrafts(tx, feeDecisionIds)
+                val headsOfFamilies = service.unignoreDrafts(tx, feeDecisionIds, audit)
                 asyncJobRunner.plan(
                     tx,
                     headsOfFamilies.map { personId ->
@@ -212,7 +229,7 @@ class FeeDecisionController(
                 )
             }
         }
-        Audit.FeeDecisionUnignore.log(targetId = AuditId(feeDecisionIds))
+        audit.log(Audit.FeeDecisionUnignore, clock)
     }
 
     @PostMapping("/mark-sent")
@@ -222,6 +239,7 @@ class FeeDecisionController(
         clock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>,
     ) {
+        val audit = AuditContext().add(feeDecisionIds)
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -231,7 +249,7 @@ class FeeDecisionController(
                     Action.FeeDecision.UPDATE,
                     feeDecisionIds,
                 )
-                service.setManuallySent(it, clock, user, feeDecisionIds)
+                service.setManuallySent(it, clock, user, feeDecisionIds, audit)
                 // emails should be sent only after decisions are actually visible to citizens in
                 // eVaka
                 asyncJobRunner.plan(
@@ -241,7 +259,7 @@ class FeeDecisionController(
                 )
             }
         }
-        Audit.FeeDecisionMarkSent.log(targetId = AuditId(feeDecisionIds))
+        audit.log(Audit.FeeDecisionMarkSent, clock)
     }
 
     @GetMapping("/pdf/{decisionId}")
@@ -251,6 +269,7 @@ class FeeDecisionController(
         clock: EvakaClock,
         @PathVariable decisionId: FeeDecisionId,
     ): ResponseEntity<Any> {
+        val audit = AuditContext().add(decisionId)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(
@@ -280,9 +299,9 @@ class FeeDecisionController(
                         )
                     }
                 }
-                service.getFeeDecisionPdfResponse(dbc, decisionId)
+                service.getFeeDecisionPdfResponse(dbc, decisionId, audit)
             }
-            .also { Audit.FeeDecisionPdfRead.log(targetId = AuditId(decisionId)) }
+            .also { audit.log(Audit.FeeDecisionPdfRead, clock) }
     }
 
     data class FeeDecisionResponse(
@@ -297,19 +316,26 @@ class FeeDecisionController(
         clock: EvakaClock,
         @PathVariable id: FeeDecisionId,
     ): FeeDecisionResponse {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 dbc.read { tx ->
                     accessControl.requirePermissionFor(tx, user, clock, Action.FeeDecision.READ, id)
                     val decision =
                         tx.getFeeDecision(id)
                             ?: throw NotFound("No fee decision found with given ID ($id)")
+                    audit
+                        .add(decision.headOfFamily.id)
+                        .add(listOfNotNull(decision.partner?.id))
+                        .add(decision.children.map { it.child.id })
+                        .add(decision.children.map { it.placementUnit.id })
+                        .observeDate(decision.validDuring.start)
                     FeeDecisionResponse(
                         data = decision,
                         permittedActions = accessControl.getPermittedActions(tx, user, clock, id),
                     )
                 }
             }
-            .also { Audit.FeeDecisionRead.log(targetId = AuditId(id)) }
+            .also { audit.log(Audit.FeeDecisionRead, clock) }
     }
 
     data class FeeDecisionWithPermittedActions(
@@ -324,6 +350,7 @@ class FeeDecisionController(
         clock: EvakaClock,
         @PathVariable id: PersonId,
     ): List<FeeDecisionWithPermittedActions> {
+        val audit = AuditContext().add(id)
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
@@ -333,7 +360,15 @@ class FeeDecisionController(
                         Action.Person.READ_FEE_DECISIONS,
                         id,
                     )
-                    val decisions = it.findFeeDecisionsForHeadOfFamily(id, null, null)
+                    val decisions =
+                        it.findFeeDecisionsForHeadOfFamily(id, null, null).onEach { decision ->
+                            audit
+                                .add(decision.id)
+                                .add(listOfNotNull(decision.partnerId))
+                                .add(decision.children.map { child -> child.child.id })
+                                .add(decision.children.map { child -> child.placement.unitId })
+                                .observeDate(decision.validDuring.start)
+                        }
                     val permittedActions =
                         accessControl.getPermittedActions<FeeDecisionId, Action.FeeDecision>(
                             it,
@@ -349,12 +384,7 @@ class FeeDecisionController(
                     }
                 }
             }
-            .also {
-                Audit.FeeDecisionHeadOfFamilyRead.log(
-                    targetId = AuditId(id),
-                    meta = mapOf("count" to it.size),
-                )
-            }
+            .also { audit.log(Audit.FeeDecisionHeadOfFamilyRead, clock) }
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
@@ -365,6 +395,7 @@ class FeeDecisionController(
         @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody,
     ) {
+        val audit = AuditContext().add(id).observeDate(body.from)
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(
@@ -374,10 +405,10 @@ class FeeDecisionController(
                     Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS,
                     id,
                 )
-                generator.createRetroactiveFeeDecisions(it, id, body.from)
+                generator.createRetroactiveFeeDecisions(it, id, body.from, audit)
             }
         }
-        Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = AuditId(id))
+        audit.log(Audit.FeeDecisionHeadOfFamilyCreateRetroactive, clock)
     }
 
     @PostMapping("/set-type/{id}")
@@ -388,13 +419,14 @@ class FeeDecisionController(
         @PathVariable id: FeeDecisionId,
         @RequestBody request: FeeDecisionTypeRequest,
     ) {
+        val audit = AuditContext().add(id).addMeta("type", request.type)
         db.connect { dbc ->
             dbc.transaction {
                 accessControl.requirePermissionFor(it, user, clock, Action.FeeDecision.UPDATE, id)
-                service.setType(it, id, request.type)
+                service.setType(it, id, request.type, audit)
             }
         }
-        Audit.FeeDecisionSetType.log(targetId = AuditId(id), meta = mapOf("type" to request.type))
+        audit.log(Audit.FeeDecisionSetType, clock)
     }
 
     @PostMapping("/{id}/archive")

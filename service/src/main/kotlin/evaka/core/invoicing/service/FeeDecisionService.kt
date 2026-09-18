@@ -4,6 +4,7 @@
 
 package evaka.core.invoicing.service
 
+import evaka.core.AuditContext
 import evaka.core.EmailEnv
 import evaka.core.EvakaEnv
 import evaka.core.caseprocess.CaseProcessMetadataService
@@ -32,6 +33,7 @@ import evaka.core.invoicing.data.setFeeDecisionType
 import evaka.core.invoicing.data.setFeeDecisionWaitingForManualSending
 import evaka.core.invoicing.data.updateFeeDecisionDocumentKey
 import evaka.core.invoicing.data.updateFeeDecisionStatusAndDates
+import evaka.core.invoicing.domain.FeeDecision
 import evaka.core.invoicing.domain.FeeDecisionDetailed
 import evaka.core.invoicing.domain.FeeDecisionStatus.DRAFT
 import evaka.core.invoicing.domain.FeeDecisionStatus.IGNORED
@@ -100,9 +102,10 @@ class FeeDecisionService(
         confirmDateTime: HelsinkiDateTime,
         decisionHandlerId: EmployeeId?,
         alwaysUseDaycareFinanceDecisionHandler: Boolean,
+        audit: AuditContext,
     ): List<FeeDecisionId> {
         tx.lockFeeDecisions(ids)
-        val decisions = tx.getFeeDecisionsByIds(ids)
+        val decisions = tx.getFeeDecisionsByIds(ids).onEach { audit.observeDate(it.validFrom) }
         if (decisions.isEmpty()) return listOf()
         val notDrafts = decisions.filterNot { it.status == DRAFT }
         if (notDrafts.isNotEmpty()) {
@@ -166,6 +169,7 @@ class FeeDecisionService(
 
         val updatedConflicts =
             updateEndDatesOrAnnulConflictingDecisions(remainingDecisions, remainingConflicts)
+                .onEach { audit.add(it.id).observeDate(it.validFrom) }
         tx.updateFeeDecisionStatusAndDates(updatedConflicts)
 
         val (emptyDecisions, validDecisions) =
@@ -216,8 +220,14 @@ class FeeDecisionService(
         return validDecisions.map { it.id }
     }
 
-    fun ignoreDrafts(tx: Database.Transaction, ids: List<FeeDecisionId>, today: LocalDate) {
+    fun ignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<FeeDecisionId>,
+        today: LocalDate,
+        audit: AuditContext,
+    ) {
         tx.getFeeDecisionsByIds(ids)
+            .onEach { audit.observeDate(it.validFrom) }
             .map { decision ->
                 if (decision.status != DRAFT) {
                     throw BadRequest(
@@ -234,8 +244,13 @@ class FeeDecisionService(
             .forEach { tx.setFeeDecisionToIgnored(it.id) }
     }
 
-    fun unignoreDrafts(tx: Database.Transaction, ids: List<FeeDecisionId>): Set<PersonId> {
+    fun unignoreDrafts(
+        tx: Database.Transaction,
+        ids: List<FeeDecisionId>,
+        audit: AuditContext,
+    ): Set<PersonId> {
         return tx.getFeeDecisionsByIds(ids)
+            .onEach { audit.addDecision(it) }
             .map { decision ->
                 if (decision.status != IGNORED) {
                     throw BadRequest("Error with decision ${decision.id}: not ignored")
@@ -356,8 +371,12 @@ class FeeDecisionService(
         clock: EvakaClock,
         user: AuthenticatedUser,
         ids: List<FeeDecisionId>,
+        audit: AuditContext,
     ) {
-        val decisions = tx.getDetailedFeeDecisionsByIds(ids)
+        val decisions =
+            tx.getDetailedFeeDecisionsByIds(ids).onEach { decision ->
+                audit.observeDate(decision.validDuring.start)
+            }
         if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
             throw BadRequest("Some decisions were not supposed to be sent manually")
         }
@@ -388,10 +407,17 @@ class FeeDecisionService(
     fun getFeeDecisionPdfResponse(
         dbc: Database.Connection,
         decisionId: FeeDecisionId,
+        audit: AuditContext,
     ): ResponseEntity<Any> {
         val (documentKey, fileName) =
             dbc.read { tx ->
                 val decision = tx.getFeeDecision(decisionId) ?: throw NotFound("Decision not found")
+                audit
+                    .add(decision.headOfFamily.id)
+                    .add(listOfNotNull(decision.partner?.id))
+                    .add(decision.children.map { it.child.id })
+                    .add(decision.children.map { it.placementUnit.id })
+                    .observeDate(decision.validDuring.start)
                 if (decision.documentKey == null)
                     throw NotFound("Document key not found for decision $decisionId")
                 val lang = getDecisionLanguage(decision)
@@ -402,10 +428,20 @@ class FeeDecisionService(
         return documentClient.responseAttachment(documentLocation, fileName)
     }
 
-    fun setType(tx: Database.Transaction, decisionId: FeeDecisionId, type: FeeDecisionType) {
+    fun setType(
+        tx: Database.Transaction,
+        decisionId: FeeDecisionId,
+        type: FeeDecisionType,
+        audit: AuditContext,
+    ) {
         val decision =
             tx.getFeeDecision(decisionId)
                 ?: throw BadRequest("Decision not found with id $decisionId")
+        audit
+            .add(decision.headOfFamily.id)
+            .add(listOfNotNull(decision.partner?.id))
+            .add(decision.children.map { it.child.id })
+            .observeDate(decision.validDuring.start)
         if (decision.status != DRAFT) {
             throw BadRequest("Can't change type for decision $decisionId")
         }
@@ -462,3 +498,10 @@ class FeeDecisionService(
         }
     }
 }
+
+@IgnorableReturnValue
+internal fun AuditContext.addDecision(decision: FeeDecision): AuditContext =
+    add(decision.headOfFamilyId)
+        .add(listOfNotNull(decision.partnerId))
+        .add(decision.children.map { it.child.id })
+        .observeDate(decision.validFrom)

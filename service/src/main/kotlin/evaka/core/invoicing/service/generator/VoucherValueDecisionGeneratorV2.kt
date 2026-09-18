@@ -44,6 +44,17 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.*
 
+/**
+ * What [generateAndInsertVoucherValueDecisionsV2] did: the drafts it wrote, and the existing drafts
+ * it removed for good. An unchanged draft keeps its id (see [withMetadataFromExisting]) and is
+ * re-inserted, so it counts as written, not removed.
+ */
+data class GeneratedVoucherValueDecisions(
+    val written: List<VoucherValueDecision>,
+    val removed: List<VoucherValueDecision>,
+)
+
+@IgnorableReturnValue
 fun generateAndInsertVoucherValueDecisionsV2(
     tx: Database.Transaction,
     incomeTypesProvider: IncomeTypesProvider,
@@ -52,7 +63,7 @@ fun generateAndInsertVoucherValueDecisionsV2(
     valueDecisionCapacityFactorEnabled: Boolean,
     childId: ChildId,
     retroactiveOverride: LocalDate? = null, // allows extending beyond normal min date
-) {
+): GeneratedVoucherValueDecisions {
     val existingDecisions = tx.findValueDecisionsForChild(childId = childId, lockForUpdate = true)
 
     val activeDecisions = existingDecisions.filter {
@@ -78,6 +89,12 @@ fun generateAndInsertVoucherValueDecisionsV2(
 
     tx.deleteValueDecisions(existingDrafts.map { it.id })
     tx.upsertValueDecisions(newDrafts)
+
+    val writtenIds = newDrafts.map { it.id }.toSet()
+    return GeneratedVoucherValueDecisions(
+        written = newDrafts,
+        removed = existingDrafts.filterNot { writtenIds.contains(it.id) },
+    )
 }
 
 fun generateVoucherValueDecisionsDrafts(
