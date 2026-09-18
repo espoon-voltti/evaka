@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import partition from 'lodash/partition'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useId, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { mapScheduleType } from 'lib-common/api-types/placement'
@@ -383,6 +383,7 @@ const DayModal = React.memo(function DayModal({
 }: DayModalProps) {
   const i18n = useTranslation()
   const [lang] = useLang()
+  const titleId = useId()
   const today = LocalDate.todayInHelsinkiTz()
   const [confirmationModalState, setConfirmationModalState] =
     useState<ConfirmModalState>({
@@ -446,6 +447,7 @@ const DayModal = React.memo(function DayModal({
         data-qa="calendar-dayview"
         zIndex={100}
         onEscapeKey={onClose}
+        aria-labelledby={titleId}
       >
         <CalendarModalBackground>
           <BottomFooterContainer>
@@ -465,6 +467,7 @@ const DayModal = React.memo(function DayModal({
                       aria-label={i18n.calendar.previousDay}
                     />
                     <ModalHeader
+                      id={titleId}
                       headingComponent={DayOfWeek}
                       aria-live="polite"
                       aria-label={date.formatExotic('cccc do MMMM', lang)}

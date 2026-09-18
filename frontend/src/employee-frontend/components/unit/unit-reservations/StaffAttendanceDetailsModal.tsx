@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import initial from 'lodash/initial'
 import last from 'lodash/last'
 import orderBy from 'lodash/orderBy'
-import React, { Fragment, useCallback, useMemo, useState } from 'react'
+import React, { Fragment, useCallback, useId, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { Link } from 'wouter'
 
@@ -131,6 +131,8 @@ function StaffAttendanceDetailsModal<
   unitId
 }: Props<T>) {
   const { i18n } = useTranslation()
+  const dateId = useId()
+  const nameId = useId()
 
   const sortedAttendances = useMemo(
     () => orderBy(attendances ?? [], ({ arrived }) => arrived),
@@ -386,12 +388,15 @@ function StaffAttendanceDetailsModal<
       margin="auto"
       data-qa="staff-attendance-details-modal"
       onEscapeKey={onClose}
+      aria-labelledby={`${dateId} ${nameId}`}
     >
       <Content>
         <FixedSpaceRow $alignItems="center">
-          <H1 $noMargin>{date.formatExotic('EEEEEE d.M.yyyy')}</H1>
+          <H1 $noMargin id={dateId}>
+            {date.formatExotic('EEEEEE d.M.yyyy')}
+          </H1>
         </FixedSpaceRow>
-        <H2>{name}</H2>
+        <H2 id={nameId}>{name}</H2>
         {!isExternal ? (
           <>
             <H3>{i18n.unit.staffAttendance.summary}</H3>

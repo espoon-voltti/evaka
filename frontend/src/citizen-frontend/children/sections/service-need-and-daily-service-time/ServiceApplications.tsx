@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useContext, useId, useMemo, useState } from 'react'
 import { useLocation } from 'wouter'
 
 import type {
@@ -313,6 +313,7 @@ const ServiceApplicationsDetails = React.memo(
   }) {
     const i18n = useTranslation()
     const [lang] = useLang()
+    const titleId = useId()
 
     return (
       <PlainModal
@@ -320,11 +321,13 @@ const ServiceApplicationsDetails = React.memo(
         margin="auto"
         data-qa="service-application-modal"
         onEscapeKey={onClose}
+        aria-labelledby={titleId}
       >
         <CalendarModalBackground>
           <CalendarModalSection>
             <Gap $size="L" $sizeOnMobile="zero" />
             <ModalHeader
+              id={titleId}
               headingComponent={(props) => (
                 <H1 $noMargin data-qa="title" {...props}>
                   {props.children}

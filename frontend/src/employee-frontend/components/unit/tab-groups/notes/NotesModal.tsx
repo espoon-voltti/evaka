@@ -238,7 +238,11 @@ export default React.memo(function NotesModal({
   )
 
   return (
-    <PlainModal margin={`${defaultMargins.XL} auto`} onEscapeKey={onClose}>
+    <PlainModal
+      margin={`${defaultMargins.XL} auto`}
+      onEscapeKey={onClose}
+      aria-label={i18n.unit.groups.daycareDailyNote.dailyNote}
+    >
       <HeaderContainer>
         <Tabs>{tabs}</Tabs>
         <CloseContainer>
