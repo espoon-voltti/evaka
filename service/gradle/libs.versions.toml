@@ -11,6 +11,7 @@ kotlin = "2.4.20"
 ktfmt = "0.27.0"
 ktlint = "1.8.0"
 ktlint-gradle = "14.2.0"
+ktlint-kotlin = "2.2.21"
 mockito = "5.23.0"
 spring-boot = "4.1.1"
 versions = "0.61.0"
@@ -24,6 +25,7 @@ flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 ktlint = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint" }
 ktlint-cli-ruleset-core = { module = "com.pinterest.ktlint:ktlint-cli-ruleset-core", version.ref = "ktlint" }
+ktlint-kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "ktlint-kotlin" }
 ktlint-rule-engine-core = { module = "com.pinterest.ktlint:ktlint-rule-engine-core", version.ref = "ktlint" }
 ktlint-test = { module = "com.pinterest.ktlint:ktlint-test", version.ref = "ktlint" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }

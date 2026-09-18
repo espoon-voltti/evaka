@@ -92,6 +92,11 @@
       rangeStrategy: 'replace',
     },
     {
+      // ktlint runs on embeddable compiler, and fails on 2.4.20. No ktlint upgrade expected before ktlint 2.0
+      matchPackageNames: ['org.jetbrains.kotlin:kotlin-compiler-embeddable'],
+      allowedVersions: '< 2.4.20',
+    },
+    {
       // Paid Font Awesome packages are not avilable in public npm
       matchPackageNames: [
         '@fortawesome/pro-light-svg-icons',
