@@ -38,7 +38,6 @@ import colors from 'lib-customizations/common'
 import { faQuestion } from 'lib-icons'
 import { faTimes } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
 import { exportCitizenDiscussionReservationIcs } from '../../generated/api-clients/calendarevent'
 import { useLang, useTranslation } from '../../localization'
 import { CalendarEventExportButton } from '../CalendarEventExportButton'
@@ -138,7 +137,7 @@ export default React.memo(function DiscussionSurveyModal({
   )
 
   return (
-    <ModalAccessibilityWrapper>
+    <>
       {confirmationModalState.visible && (
         <MutateFormModal
           resolveMutation={deleteCalendarEventTimeReservationMutation}
@@ -174,6 +173,7 @@ export default React.memo(function DiscussionSurveyModal({
         zIndex={100}
         data-qa="discussions-modal"
         onEscapeKey={close}
+        aria-label={i18n.calendar.discussionTimeReservation.surveyModalTitle}
       >
         <CalendarModalBackground>
           <div>
@@ -238,7 +238,7 @@ export default React.memo(function DiscussionSurveyModal({
           </div>
         </CalendarModalBackground>
       </PlainModal>
-    </ModalAccessibilityWrapper>
+    </>
   )
 })
 

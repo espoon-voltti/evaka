@@ -23,7 +23,6 @@ import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H3, Label } from 'lib-components/typography'
 
-import ModalAccessibilityWrapper from '../../../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../../../localization'
 import { terminatePlacementMutation } from '../../queries'
 
@@ -245,19 +244,17 @@ export default React.memo(function PlacementTerminationForm({
       />
 
       {showConfirmDialog && terminationState.type === 'valid' && (
-        <ModalAccessibilityWrapper>
-          <AsyncFormModal
-            title={t.children.placementTermination.confirmQuestion}
-            text={t.children.placementTermination.confirmDescription(
-              terminationState.data.terminationDate.format()
-            )}
-            resolveAction={onSubmit}
-            resolveLabel={t.children.placementTermination.terminate}
-            onSuccess={onTerminateSuccess}
-            rejectAction={() => setShowConfirmDialog(false)}
-            rejectLabel={t.common.cancel}
-          />
-        </ModalAccessibilityWrapper>
+        <AsyncFormModal
+          title={t.children.placementTermination.confirmQuestion}
+          text={t.children.placementTermination.confirmDescription(
+            terminationState.data.terminationDate.format()
+          )}
+          resolveAction={onSubmit}
+          resolveLabel={t.children.placementTermination.terminate}
+          onSuccess={onTerminateSuccess}
+          rejectAction={() => setShowConfirmDialog(false)}
+          rejectLabel={t.common.cancel}
+        />
       )}
     </>
   )

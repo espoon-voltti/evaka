@@ -34,7 +34,6 @@ import { H2, H3, H4, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faExclamation } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
 import { PdfLink } from '../PdfLink'
@@ -318,35 +317,32 @@ export default React.memo(function DecisionResponse({
         </Fragment>
       )}
       {displayCascadeWarning && (
-        <ModalAccessibilityWrapper>
-          <AsyncFormModal
-            title={
-              t.decisions.applicationDecisions.warnings.doubleRejectWarning
-                .title
-            }
-            icon={faExclamation}
-            type="warning"
-            text={
-              t.decisions.applicationDecisions.warnings.doubleRejectWarning.text
-            }
-            resolveLabel={
-              t.decisions.applicationDecisions.warnings.doubleRejectWarning
-                .resolveLabel
-            }
-            resolveAction={onSubmit}
-            onSuccess={() => {
-              setDisplayCascadeWarning(false)
-              onSuccess()
-            }}
-            onFailure={onFailure}
-            rejectLabel={
-              t.decisions.applicationDecisions.warnings.doubleRejectWarning
-                .rejectLabel
-            }
-            rejectAction={() => setDisplayCascadeWarning(false)}
-            data-qa="cascade-warning-modal"
-          />
-        </ModalAccessibilityWrapper>
+        <AsyncFormModal
+          title={
+            t.decisions.applicationDecisions.warnings.doubleRejectWarning.title
+          }
+          icon={faExclamation}
+          type="warning"
+          text={
+            t.decisions.applicationDecisions.warnings.doubleRejectWarning.text
+          }
+          resolveLabel={
+            t.decisions.applicationDecisions.warnings.doubleRejectWarning
+              .resolveLabel
+          }
+          resolveAction={onSubmit}
+          onSuccess={() => {
+            setDisplayCascadeWarning(false)
+            onSuccess()
+          }}
+          onFailure={onFailure}
+          rejectLabel={
+            t.decisions.applicationDecisions.warnings.doubleRejectWarning
+              .rejectLabel
+          }
+          rejectAction={() => setDisplayCascadeWarning(false)}
+          data-qa="cascade-warning-modal"
+        />
       )}
     </div>
   )

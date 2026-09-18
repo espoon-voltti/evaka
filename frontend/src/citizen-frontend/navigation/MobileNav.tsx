@@ -30,7 +30,6 @@ import {
   fasEnvelope
 } from 'lib-icons'
 
-import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import type { User } from '../auth/state'
 import { AuthContext } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
@@ -321,35 +320,33 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
     'long'
   )
   return (
-    <ModalAccessibilityWrapper data-qa="children-menu">
-      <MenuContainer>
-        {childrenWithOwnPage.map((child) => (
-          <DropDownLink
-            key={child.id}
-            data-qa={`children-menu-${child.id}`}
-            to={`/children/${child.id}`}
-            onClick={closeMenu}
-            $alignRight
-            translate="no"
-          >
-            <PersonName person={child} format="FirstFirst Last" />
-            {unreadChildNotifications[child.id] ? (
-              <CircledChar
-                aria-label={`${unreadChildNotifications[child.id]} ${
-                  t.header.notifications
-                }`}
-                data-qa="sub-nav-menu-decisions-notification-count"
-              >
-                {unreadChildNotifications[child.id]}
-              </CircledChar>
-            ) : null}
-            {duplicateChildInfo[child.id] !== undefined && (
-              <DropDownInfo>{duplicateChildInfo[child.id]}</DropDownInfo>
-            )}
-          </DropDownLink>
-        ))}
-      </MenuContainer>
-    </ModalAccessibilityWrapper>
+    <MenuContainer>
+      {childrenWithOwnPage.map((child) => (
+        <DropDownLink
+          key={child.id}
+          data-qa={`children-menu-${child.id}`}
+          to={`/children/${child.id}`}
+          onClick={closeMenu}
+          $alignRight
+          translate="no"
+        >
+          <PersonName person={child} format="FirstFirst Last" />
+          {unreadChildNotifications[child.id] ? (
+            <CircledChar
+              aria-label={`${unreadChildNotifications[child.id]} ${
+                t.header.notifications
+              }`}
+              data-qa="sub-nav-menu-decisions-notification-count"
+            >
+              {unreadChildNotifications[child.id]}
+            </CircledChar>
+          ) : null}
+          {duplicateChildInfo[child.id] !== undefined && (
+            <DropDownInfo>{duplicateChildInfo[child.id]}</DropDownInfo>
+          )}
+        </DropDownLink>
+      ))}
+    </MenuContainer>
   )
 })
 
@@ -369,77 +366,75 @@ const Menu = React.memo(function Menu({
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
-    <ModalAccessibilityWrapper>
-      <MenuContainer>
-        <ResponsiveLanguageRow $spacing="xs" $justifyContent="flex-end">
-          {langs.map((l) => (
-            <SelectionChip
-              key={l}
-              text={t.header.langMobile[l]}
-              selected={lang === l}
-              onChange={() => setLang(l)}
-            />
-          ))}
-        </ResponsiveLanguageRow>
-        <Separator />
+    <MenuContainer>
+      <ResponsiveLanguageRow $spacing="xs" $justifyContent="flex-end">
+        {langs.map((l) => (
+          <SelectionChip
+            key={l}
+            text={t.header.langMobile[l]}
+            selected={lang === l}
+            onChange={() => setLang(l)}
+          />
+        ))}
+      </ResponsiveLanguageRow>
+      <Separator />
+      <DropDownLink
+        data-qa="sub-nav-menu-applications"
+        to="/applications"
+        onClick={closeMenu}
+      >
+        {t.header.nav.applications} {lock}
+      </DropDownLink>
+      <AttentionIndicator
+        toggled={unreadDecisions > 0}
+        position="top"
+        closerToText
+        data-qa="messages-notification"
+      >
         <DropDownLink
-          data-qa="sub-nav-menu-applications"
-          to="/applications"
+          data-qa="sub-nav-menu-decisions"
+          to="/decisions"
           onClick={closeMenu}
         >
-          {t.header.nav.applications} {lock}
+          {t.header.nav.decisions} {lock}
+          {unreadDecisions ? (
+            <CircledChar
+              aria-label={`${unreadDecisions} ${t.header.notifications}`}
+              data-qa="sub-nav-menu-decisions-notification-count"
+            >
+              {unreadDecisions}
+            </CircledChar>
+          ) : null}
         </DropDownLink>
-        <AttentionIndicator
-          toggled={unreadDecisions > 0}
-          position="top"
-          closerToText
-          data-qa="messages-notification"
-        >
-          <DropDownLink
-            data-qa="sub-nav-menu-decisions"
-            to="/decisions"
-            onClick={closeMenu}
-          >
-            {t.header.nav.decisions} {lock}
-            {unreadDecisions ? (
-              <CircledChar
-                aria-label={`${unreadDecisions} ${t.header.notifications}`}
-                data-qa="sub-nav-menu-decisions-notification-count"
-              >
-                {unreadDecisions}
-              </CircledChar>
-            ) : null}
-          </DropDownLink>
-        </AttentionIndicator>
+      </AttentionIndicator>
+      <DropDownLink
+        data-qa="sub-nav-menu-income"
+        to="/income"
+        matchRoutes={['/income', '/child-income']}
+        onClick={closeMenu}
+      >
+        {t.header.nav.income} {lock}
+      </DropDownLink>
+      <Separator />
+      <AttentionIndicator
+        toggled={hasPersonalDetailsTasks}
+        position="top"
+        closerToText
+        data-qa="personal-details-notification"
+      >
         <DropDownLink
-          data-qa="sub-nav-menu-income"
-          to="/income"
-          matchRoutes={['/income', '/child-income']}
+          data-qa="sub-nav-menu-personal-details"
+          to="/personal-details"
           onClick={closeMenu}
         >
-          {t.header.nav.income} {lock}
+          {t.header.nav.personalDetails}
         </DropDownLink>
-        <Separator />
-        <AttentionIndicator
-          toggled={hasPersonalDetailsTasks}
-          position="top"
-          closerToText
-          data-qa="personal-details-notification"
-        >
-          <DropDownLink
-            data-qa="sub-nav-menu-personal-details"
-            to="/personal-details"
-            onClick={closeMenu}
-          >
-            {t.header.nav.personalDetails}
-          </DropDownLink>
-        </AttentionIndicator>
-        <DropDownLocalLink key="sub-nav-menu-logout" href={logoutUrl}>
-          {t.header.logout}
-          <FontAwesomeIcon icon={farSignOut} />
-        </DropDownLocalLink>
-      </MenuContainer>
-    </ModalAccessibilityWrapper>
+      </AttentionIndicator>
+      <DropDownLocalLink key="sub-nav-menu-logout" href={logoutUrl}>
+        {t.header.logout}
+        <FontAwesomeIcon icon={farSignOut} />
+      </DropDownLocalLink>
+    </MenuContainer>
   )
 })
 

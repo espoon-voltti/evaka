@@ -39,8 +39,7 @@ export interface OverlayState {
   infoMessage: InfoMessage | null
   setInfoMessage: (message: InfoMessage | null) => void
   clearInfoMessage: () => void
-  modalOpen: boolean
-  setModalOpen: (v: boolean) => void
+  globalDialogOpen: boolean
 }
 
 const defaultState = {
@@ -50,8 +49,7 @@ const defaultState = {
   infoMessage: null,
   setInfoMessage: () => undefined,
   clearInfoMessage: () => undefined,
-  modalOpen: false,
-  setModalOpen: () => undefined
+  globalDialogOpen: false
 }
 
 export const OverlayContext = createContext<OverlayState>(defaultState)
@@ -64,8 +62,6 @@ export const OverlayContextProvider = React.memo(
     const [infoMessage, setInfoMessage] = useState<InfoMessage | null>(null)
     const clearInfoMessage = useCallback(() => setInfoMessage(null), [])
 
-    const [modalOpen, setModalOpen] = useState<boolean>(false)
-
     const value = useMemo(
       () => ({
         errorMessage,
@@ -74,17 +70,9 @@ export const OverlayContextProvider = React.memo(
         infoMessage,
         setInfoMessage,
         clearInfoMessage,
-        modalOpen: errorMessage !== null || infoMessage !== null || modalOpen,
-        setModalOpen
+        globalDialogOpen: errorMessage !== null || infoMessage !== null
       }),
-      [
-        errorMessage,
-        clearErrorMessage,
-        infoMessage,
-        clearInfoMessage,
-        modalOpen,
-        setModalOpen
-      ]
+      [errorMessage, clearErrorMessage, infoMessage, clearInfoMessage]
     )
 
     return (
