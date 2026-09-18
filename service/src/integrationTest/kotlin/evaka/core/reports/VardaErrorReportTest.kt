@@ -44,6 +44,11 @@ class VardaErrorReportTest : FullApplicationTest(resetDbBeforeEach = true) {
                 }
                 tx.setVardaUpdateError(child.id, now, "boom")
             }
+            tx.execute {
+                sql(
+                    "UPDATE varda_state SET last_success_at = ${bind(now)} WHERE child_id = ${bind(frozenChild.id)}"
+                )
+            }
             tx.freezeVardaSync(listOf(frozenChild.id), now)
         }
     }
