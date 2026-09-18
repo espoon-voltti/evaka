@@ -9,6 +9,7 @@ import type { PlacementType } from 'lib-common/generated/api-types/placement'
 import type { ApplicationId } from 'lib-common/generated/api-types/shared'
 import { fromUuid } from 'lib-common/id-type'
 import type { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import type { UUID } from 'lib-common/types'
 
 import { expect } from '../../playwright'
@@ -267,6 +268,11 @@ class CitizenApplicationEditor {
   }
 
   async verifyAndSend({ hasOtherGuardian }: { hasOtherGuardian: boolean }) {
+    await this.send({ hasOtherGuardian })
+    await this.dismissApplicationSentModal()
+  }
+
+  async send({ hasOtherGuardian }: { hasOtherGuardian: boolean }) {
     await this.goToVerification()
     await this.#verifyCheckbox.evaluate((e) =>
       e.scrollIntoView({ block: 'center' })
@@ -277,7 +283,11 @@ class CitizenApplicationEditor {
     }
     await this.#sendButton.click()
     await expect(this.#applicationSentModal).toBeVisible()
+  }
+
+  async dismissApplicationSentModal() {
     await this.#applicationSentModal.find('[data-qa="modal-okBtn"]').click()
+    await expect(this.#applicationSentModal).toBeHidden()
   }
 
   async assertErrorsExist() {
@@ -322,6 +332,12 @@ class CitizenApplicationEditor {
     pressEnterAfter = false
   ) {
     const element = new TextInput(this.page.findByDataQa(`${field}-input`))
+    if ((await element.getAttribute('type')) === 'date') {
+      // eVaka uses a native date input on Android, and it takes an ISO value
+      // instead of the keystrokes that the Finnish format needs
+      await element.fill(LocalDate.parseFiOrThrow(value).formatIso())
+      return
+    }
     if (clearFirst) {
       await element.clear()
     }
