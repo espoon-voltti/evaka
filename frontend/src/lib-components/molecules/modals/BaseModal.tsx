@@ -5,7 +5,7 @@
 import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { FocusEventHandler } from 'react'
-import React, { useState } from 'react'
+import React, { useId, useState } from 'react'
 import styled, { css } from 'styled-components'
 
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
@@ -40,6 +40,7 @@ interface Props extends ModalBaseProps {
 }
 
 export default React.memo(function BaseModal(props: Props) {
+  const titleId = useId()
   return (
     <ModalBackground zIndex={props.zIndex} onEscapeKey={props.close}>
       <ModalWrapper
@@ -49,6 +50,9 @@ export default React.memo(function BaseModal(props: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <ModalContainer
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={props.title ? titleId : undefined}
           $mobileFullScreen={props.mobileFullScreen}
           $margin="auto"
           data-qa="modal"
@@ -66,9 +70,9 @@ export default React.memo(function BaseModal(props: Props) {
             )}
             {!!props.title && (
               <ModalHeader
-                headingComponent={(props) => (
-                  <H1 $hyphenate {...props} data-qa="title">
-                    {props.children}
+                headingComponent={(headingProps) => (
+                  <H1 $hyphenate {...headingProps} id={titleId} data-qa="title">
+                    {headingProps.children}
                   </H1>
                 )}
               >
