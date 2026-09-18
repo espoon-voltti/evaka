@@ -452,6 +452,16 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insert(minorChild, DevPersonType.CHILD)
             tx.insertGuardian(adult.id, adultChild.id)
             tx.insertGuardian(adult.id, minorChild.id)
+            // Only a child already sent to Varda is frozen, so both are sent and the age is the
+            // only difference between them
+            for (child in listOf(adultChild, minorChild)) {
+                tx.createUpdate {
+                        sql(
+                            "INSERT INTO varda_state (child_id, state, last_success_at) VALUES (${bind(child.id)}, NULL, ${bind(now)})"
+                        )
+                    }
+                    .updateExactlyOne()
+            }
         }
 
         scheduledJobs.removeGuardiansFromAdults(db, clock)

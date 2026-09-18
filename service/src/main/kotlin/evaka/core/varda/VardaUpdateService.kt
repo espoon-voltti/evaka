@@ -139,7 +139,7 @@ class VardaUpdateService(
         val updater = VardaUpdater(vardaEnabledRange, ophEnv.organizerOid, vardaEnv.sourceSystem)
 
         val childIds = dbc.transaction { tx ->
-            val count = tx.addNewChildrenForVardaUpdate()
+            val count = tx.addNewChildrenForVardaUpdate(today)
             logger.info { "Added $count new children for Varda update" }
 
             tx.getVardaUpdateChildIds()
