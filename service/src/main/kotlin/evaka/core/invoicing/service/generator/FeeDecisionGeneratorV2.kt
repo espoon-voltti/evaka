@@ -46,6 +46,7 @@ fun generateAndInsertFeeDecisionsV2(
     incomeTypesProvider: IncomeTypesProvider,
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     financeMinDate: LocalDate,
+    freeServiceNeedMinDate: LocalDate,
     headOfFamilyId: PersonId,
     retroactiveOverride: LocalDate? = null, // allows extending beyond normal min date
 ) {
@@ -67,6 +68,7 @@ fun generateAndInsertFeeDecisionsV2(
             activeDecisions = activeDecisions,
             existingDrafts = existingDrafts,
             ignoredDrafts = ignoredDrafts,
+            freeServiceNeedMinDate = freeServiceNeedMinDate,
             minDate =
                 if (retroactiveOverride != null) minOf(retroactiveOverride, financeMinDate)
                 else financeMinDate,
@@ -84,6 +86,7 @@ fun generateFeeDecisionsDrafts(
     activeDecisions: List<FeeDecision>,
     existingDrafts: List<FeeDecision>,
     ignoredDrafts: List<FeeDecision>,
+    freeServiceNeedMinDate: LocalDate,
     minDate: LocalDate,
 ): List<FeeDecision> {
     val feeBases =
@@ -93,10 +96,11 @@ fun generateFeeDecisionsDrafts(
             coefficientMultiplierProvider = coefficientMultiplierProvider,
             targetAdultId = targetAdultId,
             activeDecisions = activeDecisions,
+            freeServiceNeedMinDate = freeServiceNeedMinDate,
             minDate = minDate,
         )
 
-    val newDrafts = feeBases.mapNotNull { it.toFeeDecision() }
+    val newDrafts = feeBases.mapNotNull { it.toFeeDecision(freeServiceNeedMinDate) }
 
     return filterAndMergeDrafts(
             newDrafts = newDrafts,
@@ -123,6 +127,7 @@ private fun getFeeBases(
     coefficientMultiplierProvider: IncomeCoefficientMultiplierProvider,
     targetAdultId: PersonId,
     activeDecisions: List<FeeDecision>,
+    freeServiceNeedMinDate: LocalDate,
     minDate: LocalDate,
 ): List<FeeBasis> {
     val familyRelations =
@@ -168,7 +173,9 @@ private fun getFeeBases(
             *feeAlterationsByChild.flatMap { it.value }.toTypedArray(),
             *allFeeThresholds.toTypedArray(),
             *allServiceNeedOptionFees.toTypedArray(),
-        ) + activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo.plusDays(1)) }
+        ) +
+            activeDecisions.flatMap { listOfNotNull(it.validFrom, it.validTo.plusDays(1)) } +
+            freeServiceNeedMinDate
 
     return buildDateRanges(datesOfChange).mapNotNull { range ->
         if (!range.overlaps(DateRange(minDate, null))) return@mapNotNull null
@@ -263,7 +270,7 @@ data class FeeBasis(
     val familySize: Int,
     val feeThresholds: FeeThresholds,
 ) : WithRange {
-    fun toFeeDecision(): FeeDecision? {
+    fun toFeeDecision(freeServiceNeedMinDate: LocalDate): FeeDecision? {
         if (range.end == null) return null
         return FeeDecision(
             id = FeeDecisionId(UUID.randomUUID()),
@@ -281,6 +288,7 @@ data class FeeBasis(
                     childFeeBasis.toFeeDecisionChild(
                         feeThresholds = feeThresholds,
                         familySize = familySize,
+                        includeFreeServiceNeeds = range.start >= freeServiceNeedMinDate,
                         parentIncomes =
                             if (partnerId != null) listOf(headOfFamilyIncome, partnerIncome)
                             else listOf(headOfFamilyIncome),
@@ -302,9 +310,13 @@ data class ChildFeeBasis(
     fun toFeeDecisionChild(
         feeThresholds: FeeThresholds,
         familySize: Int,
+        includeFreeServiceNeeds: Boolean,
         parentIncomes: List<DecisionIncome?>,
     ): FeeDecisionChild? {
-        if (placement.financeDecisionType != FinanceDecisionType.FEE_DECISION) {
+        if (
+            placement.financeDecisionType(includeFreeServiceNeeds) !=
+                FinanceDecisionType.FEE_DECISION
+        ) {
             return null
         }
 

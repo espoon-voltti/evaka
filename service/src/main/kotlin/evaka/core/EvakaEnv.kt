@@ -50,6 +50,7 @@ data class EvakaEnv(
     val frontendBaseUrlFi: String,
     val frontendBaseUrlSv: String,
     val feeDecisionMinDate: LocalDate,
+    val feeDecisionFreeServiceNeedMinDate: LocalDate,
     val maxAttachmentsPerUser: Int,
     val mockClock: Boolean,
     val nrOfDaysFeeDecisionCanBeSentInAdvance: Long,
@@ -96,6 +97,10 @@ data class EvakaEnv(
                 frontendBaseUrlSv = env.lookup("evaka.frontend.base_url.sv"),
                 feeDecisionMinDate =
                     LocalDate.parse(env.lookup<String>("evaka.fee_decision.min_date")),
+                feeDecisionFreeServiceNeedMinDate =
+                    LocalDate.parse(
+                        env.lookup<String>("evaka.fee_decision.free_service_need_min_date")
+                    ),
                 maxAttachmentsPerUser = env.lookup("evaka.max_attachments_per_user"),
                 mockClock = env.lookup("evaka.clock.mock") ?: false,
                 nrOfDaysFeeDecisionCanBeSentInAdvance =

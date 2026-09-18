@@ -65,20 +65,28 @@ data class PlacementDetails(
     val serviceNeedVoucherValues: ServiceNeedOptionVoucherValueRange?,
 ) : WithFiniteRange {
     val financeDecisionType: FinanceDecisionType?
-        get() =
-            when {
-                providerType == ProviderType.PRIVATE_SERVICE_VOUCHER -> {
-                    FinanceDecisionType.VOUCHER_VALUE_DECISION
-                }
+        get() = financeDecisionType(includeFreeServiceNeeds = false)
 
-                invoicedUnit && serviceNeedOption.feeCoefficient > BigDecimal.ZERO -> {
-                    FinanceDecisionType.FEE_DECISION
-                }
-
-                else -> {
-                    null
-                }
+    fun financeDecisionType(includeFreeServiceNeeds: Boolean): FinanceDecisionType? =
+        when {
+            providerType == ProviderType.PRIVATE_SERVICE_VOUCHER -> {
+                FinanceDecisionType.VOUCHER_VALUE_DECISION
             }
+
+            invoicedUnit && serviceNeedOption.feeCoefficient > BigDecimal.ZERO -> {
+                FinanceDecisionType.FEE_DECISION
+            }
+
+            invoicedUnit &&
+                includeFreeServiceNeeds &&
+                placementType in freeServiceNeedFeeDecisionPlacementTypes -> {
+                FinanceDecisionType.FEE_DECISION
+            }
+
+            else -> {
+                null
+            }
+        }
 }
 
 data class Child(val id: PersonId, override val dateOfBirth: LocalDate, val ssn: String?) :
