@@ -37,6 +37,7 @@ class AsyncJobConfig {
                 AsyncJob.urgent,
                 AsyncJob.citizenPush,
                 AsyncJob.varda,
+                AsyncJob.dataRetention,
                 AsyncJob.suomiFi.withThrottleInterval(
                     Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") }
                 ),

@@ -54,6 +54,8 @@ sealed interface DatabaseTable {
 
     sealed class ChildDocumentDecision : DatabaseTable
 
+    sealed class ChildDocumentPublishedVersion : DatabaseTable
+
     sealed class ChildImage : DatabaseTable
 
     sealed class ChildStickyNote : DatabaseTable
@@ -96,6 +98,8 @@ sealed interface DatabaseTable {
 
     sealed class FeeDecision : DatabaseTable
 
+    sealed class FeeDecisionChild : DatabaseTable
+
     sealed class FeeThresholds : DatabaseTable
 
     sealed class FinanceNote : DatabaseTable
@@ -125,6 +129,8 @@ sealed interface DatabaseTable {
     sealed class InvoiceRow : DatabaseTable
 
     sealed class KoskiStudyRight : DatabaseTable
+
+    sealed class KoskiUploadError : DatabaseTable
 
     sealed class Message : DatabaseTable
 
@@ -166,6 +172,8 @@ sealed interface DatabaseTable {
 
     sealed class PlacementPlan : DatabaseTable
 
+    sealed class PlacementDraft : DatabaseTable
+
     sealed class PreschoolAssistance : DatabaseTable
 
     sealed class PreschoolTerm : DatabaseTable
@@ -191,6 +199,8 @@ sealed interface DatabaseTable {
     sealed class TitaniaErrors : DatabaseTable
 
     sealed class VoucherValueDecision : DatabaseTable
+
+    sealed class VardaState : DatabaseTable
 
     sealed class SfiMessage : DatabaseTable
 
@@ -239,6 +249,8 @@ typealias ChildDocumentId = Id<DatabaseTable.ChildDocument>
 
 typealias ChildDocumentDecisionId = Id<DatabaseTable.ChildDocumentDecision>
 
+typealias ChildDocumentPublishedVersionId = Id<DatabaseTable.ChildDocumentPublishedVersion>
+
 typealias ChildId = Id<DatabaseTable.Person>
 
 typealias ChildImageId = Id<DatabaseTable.ChildImage>
@@ -281,6 +293,8 @@ typealias FeeAlterationId = Id<DatabaseTable.FeeAlteration>
 
 typealias FeeDecisionId = Id<DatabaseTable.FeeDecision>
 
+typealias FeeDecisionChildId = Id<DatabaseTable.FeeDecisionChild>
+
 typealias FeeThresholdsId = Id<DatabaseTable.FeeThresholds>
 
 typealias FinanceNoteId = Id<DatabaseTable.FinanceNote>
@@ -312,6 +326,8 @@ typealias InvoiceId = Id<DatabaseTable.Invoice>
 typealias InvoiceRowId = Id<DatabaseTable.InvoiceRow>
 
 typealias KoskiStudyRightId = Id<DatabaseTable.KoskiStudyRight>
+
+typealias KoskiUploadErrorId = Id<DatabaseTable.KoskiUploadError>
 
 typealias MessageAccountId = Id<DatabaseTable.MessageAccount>
 
@@ -374,6 +390,8 @@ typealias StaffAttendanceRealtimeId = Id<DatabaseTable.StaffAttendanceRealtime>
 typealias StaffOccupancyCoefficientId = Id<DatabaseTable.StaffOccupancyCoefficient>
 
 typealias TitaniaConflictId = Id<DatabaseTable.TitaniaErrors>
+
+typealias VardaStateId = Id<DatabaseTable.VardaState>
 
 typealias VoucherValueDecisionId = Id<DatabaseTable.VoucherValueDecision>
 

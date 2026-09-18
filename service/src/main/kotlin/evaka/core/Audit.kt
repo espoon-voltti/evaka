@@ -171,6 +171,9 @@ enum class Audit(
     ClubTermDelete,
     // ClubTermRead,
     CustomerFeesReportRead,
+    // DataRetentionService already logs these four through AuditContext; they move below the
+    // separator once the legacy DataRemovalService and ScheduledJobs callers are migrated or
+    // removed
     DataRemovalExpiredDelete,
     DataRemovalExpiredUnset,
     DataRemovalKoskiSyncFrozen,

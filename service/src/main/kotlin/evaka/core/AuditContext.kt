@@ -8,9 +8,11 @@ import evaka.core.shared.DatabaseTable
 import evaka.core.shared.Id
 import evaka.core.shared.domain.EvakaClock
 import java.time.LocalDate
+import java.util.UUID
+import kotlin.reflect.KClass
 
 class AuditContext {
-    @PublishedApi internal val ids = mutableMapOf<String, MutableSet<Id<*>>>()
+    private val ids = mutableMapOf<String, MutableSet<Id<*>>>()
     private val metaEntries = mutableMapOf<String, Any?>()
 
     /**
@@ -23,16 +25,22 @@ class AuditContext {
         private set
 
     @IgnorableReturnValue
-    inline fun <reified T : DatabaseTable> add(id: Id<T>): AuditContext {
-        val key = T::class.simpleName!!.replaceFirstChar { it.lowercase() } + "Id"
-        ids.getOrPut(key) { mutableSetOf() }.add(id)
-        return this
-    }
+    inline fun <reified T : DatabaseTable> add(id: Id<T>): AuditContext =
+        addIds(T::class, listOf(id))
 
     @IgnorableReturnValue
-    inline fun <reified T : DatabaseTable> add(ids: Collection<Id<T>>): AuditContext {
+    inline fun <reified T : DatabaseTable> add(ids: Collection<Id<T>>): AuditContext =
+        addIds(T::class, ids)
+
+    /** For generic code that knows the table only at runtime */
+    @IgnorableReturnValue
+    fun add(table: KClass<out DatabaseTable>, ids: Collection<UUID>): AuditContext =
+        addIds(table, ids.map { Id<DatabaseTable>(it) })
+
+    @PublishedApi
+    internal fun addIds(table: KClass<out DatabaseTable>, ids: Collection<Id<*>>): AuditContext {
         if (ids.isEmpty()) return this
-        val key = T::class.simpleName!!.replaceFirstChar { it.lowercase() } + "Id"
+        val key = table.simpleName!!.replaceFirstChar { it.lowercase() } + "Id"
         this.ids.getOrPut(key) { mutableSetOf() }.addAll(ids)
         return this
     }
