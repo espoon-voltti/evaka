@@ -4,7 +4,7 @@
 
 [tools]
 java = "zulu-25"
-lefthook = "2.1.12"
+lefthook = "2.1.14"
 node = "24.21.0"
 "npm:pm2" = "7.0.4"
 uv = "0.12.13"
