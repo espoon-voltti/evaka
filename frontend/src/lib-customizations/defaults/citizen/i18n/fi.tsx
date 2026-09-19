@@ -301,11 +301,11 @@ export default {
       'Asiakirjan täyttäminen vaatii vahvan tunnistautumisen.'
   },
   pwa: {
+    stepsHeading: 'Toimi näin',
     install: {
       text: 'Voit käyttää eVakaa kuin sovellusta, kun lisäät sen kotinäytölle.',
       action: 'Lisää eVaka kotinäytölle',
       device: 'iPhone tai iPad',
-      stepsHeading: 'Toimi näin',
       steps: [
         <>
           Napauta selaimen <strong>Jaa</strong>-kuvaketta.
@@ -323,6 +323,62 @@ export default {
         </>
       ]
     },
+    pushSuggestion: {
+      title: 'Push-ilmoitukset',
+      text: 'Anna eVakalle lupa lähettää sinulle ilmoituksia, jotta saat tärkeät ilmoitukset laitteeseesi.',
+      settingsHint: 'Voit hallita ilmoitusasetuksia Omat tiedot -sivulla.',
+      enable: 'Ota käyttöön',
+      later: 'Myöhemmin',
+      enabledText: 'eVaka lähettää push-ilmoitukset laitteeseesi.',
+      sendTest: 'Lähetä testi-ilmoitus',
+      close: 'Sulje',
+      dismissedNote: 'Push-ilmoitusohjeet löytyvät Omat tiedot -sivulta.',
+      device: {
+        ios: 'iPhone tai iPad',
+        android: 'Android-laite',
+        other: 'Tietokone'
+      },
+      blockedSteps: {
+        ios: [
+          <>
+            Sulje tämä sovellus ja avaa laitteesi <strong>Asetukset</strong>.
+          </>,
+          <>
+            Valitse <strong>Ilmoitukset</strong>.
+          </>,
+          <>
+            Etsi listalta <strong>eVaka</strong> ja valitse se.
+          </>,
+          <>
+            Kytke <strong>Salli ilmoitukset</strong> päälle.
+          </>
+        ],
+        android: [
+          <>
+            Sulje tämä sovellus ja avaa laitteesi <strong>Asetukset</strong>.
+          </>,
+          <>
+            Valitse <strong>Sovellukset</strong> ja etsi listalta{' '}
+            <strong>eVaka</strong>.
+          </>,
+          <>
+            Valitse <strong>Ilmoitukset</strong>.
+          </>,
+          <>
+            Kytke <strong>Salli ilmoitukset</strong> päälle.
+          </>
+        ],
+        other: [
+          <>Napsauta selaimen osoitepalkissa sivuston asetusten kuvaketta.</>,
+          <>
+            Valitse <strong>Ilmoitukset</strong>.
+          </>,
+          <>
+            Vaihda asetukseksi <strong>Salli</strong> ja lataa sivu uudelleen.
+          </>
+        ]
+      }
+    },
     installSuggestion: {
       title: 'Tärkeät ilmoitukset laitteeseen',
       dismissedNote:
@@ -331,12 +387,15 @@ export default {
     homeScreenSection: {
       title: 'Lisää eVaka kotinäytölle'
     },
+    pushStatus: {
+      enabled: 'Käytössä',
+      disabled: 'Ei käytössä',
+      blocked: 'Estetty'
+    },
     pushSection: {
       title: 'Push-ilmoitukset',
       description:
         'eVaka lähettää ilmoitukset niihin laitteisiin, joissa olet ottanut ne käyttöön.',
-      enabled: 'Käytössä',
-      blocked: 'Estetty',
       thisDevice: 'Tämä laite',
       notEnabledOnThisDevice:
         'Ilmoitukset eivät ole käytössä tällä laitteella.',

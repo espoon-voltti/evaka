@@ -298,11 +298,11 @@ const en: Translations = {
       'Filling in the document requires strong authentication.'
   },
   pwa: {
+    stepsHeading: 'Follow these steps',
     install: {
       text: 'You can use eVaka like an app when you add it to your home screen.',
       action: 'Add eVaka to the home screen',
       device: 'iPhone or iPad',
-      stepsHeading: 'Follow these steps',
       steps: [
         <>
           Tap the <strong>Share</strong> icon in the browser.
@@ -320,6 +320,64 @@ const en: Translations = {
         </>
       ]
     },
+    pushSuggestion: {
+      title: 'Push notifications',
+      text: 'Allow eVaka to send you notifications, so that you get important notifications on your device.',
+      settingsHint:
+        'You can manage the notification settings on the Personal information page.',
+      enable: 'Enable',
+      later: 'Later',
+      enabledText: 'eVaka sends push notifications to your device.',
+      sendTest: 'Send a test notification',
+      close: 'Close',
+      dismissedNote:
+        'The push notification instructions are on the Personal information page.',
+      device: {
+        ios: 'iPhone or iPad',
+        android: 'Android device',
+        other: 'Computer'
+      },
+      blockedSteps: {
+        ios: [
+          <>
+            Close this app and open the device <strong>Settings</strong>.
+          </>,
+          <>
+            Select <strong>Notifications</strong>.
+          </>,
+          <>
+            Find <strong>eVaka</strong> in the list and select it.
+          </>,
+          <>
+            Turn on <strong>Allow Notifications</strong>.
+          </>
+        ],
+        android: [
+          <>
+            Close this app and open the device <strong>Settings</strong>.
+          </>,
+          <>
+            Select <strong>Apps</strong> and find <strong>eVaka</strong> in the
+            list.
+          </>,
+          <>
+            Select <strong>Notifications</strong>.
+          </>,
+          <>
+            Turn on <strong>Allow notifications</strong>.
+          </>
+        ],
+        other: [
+          <>Click the site settings icon in the browser address bar.</>,
+          <>
+            Select <strong>Notifications</strong>.
+          </>,
+          <>
+            Change the setting to <strong>Allow</strong> and reload the page.
+          </>
+        ]
+      }
+    },
     installSuggestion: {
       title: 'Important notifications on your phone',
       dismissedNote:
@@ -328,12 +386,15 @@ const en: Translations = {
     homeScreenSection: {
       title: 'Add eVaka to the home screen'
     },
+    pushStatus: {
+      enabled: 'Enabled',
+      disabled: 'Not enabled',
+      blocked: 'Blocked'
+    },
     pushSection: {
       title: 'Push notifications',
       description:
         'eVaka sends notifications to the devices where you have enabled them.',
-      enabled: 'Enabled',
-      blocked: 'Blocked',
       thisDevice: 'This device',
       notEnabledOnThisDevice: 'Notifications are not enabled on this device.',
       enable: 'Enable',
