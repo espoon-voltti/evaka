@@ -19,7 +19,7 @@ dependencies {
         api("com.yubico:webauthn-server-core:2.9.0")
         api("com.zaxxer:HikariCP:7.1.0")
         api("io.github.oshai:kotlin-logging-jvm:8.0.4")
-        api("io.kotest:kotest-property:6.2.4")
+        api("io.kotest:kotest-property:6.2.5")
         api("jakarta.annotation:jakarta.annotation-api:3.0.0")
         api("jakarta.jws:jakarta.jws-api:3.0.0")
         api("jakarta.xml.ws:jakarta.xml.ws-api:4.0.3")
