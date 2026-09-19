@@ -85,7 +85,7 @@
     "playwright": "1.63.0",
     "postcss": "8.5.28",
     "postcss-preset-env": "11.5.3",
-    "rollup": "4.63.2",
+    "rollup": "4.63.3",
     "terser": "5.51.2",
     "ts-node": "10.9.2",
     "tsx": "4.23.13",
