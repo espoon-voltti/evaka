@@ -818,7 +818,7 @@ const AssistanceActionOptionFilterRow = ({
   onChange: (selectedOptions: AssistanceActionOption[]) => void
   value: AssistanceActionOption[]
 }) => {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
 
   return (
     <FilterRow>
@@ -830,7 +830,9 @@ const AssistanceActionOptionFilterRow = ({
             onChange={onChange}
             value={value}
             getOptionId={(option) => option.value}
-            getOptionLabel={(option) => option.nameFi}
+            getOptionLabel={(option) =>
+              lang === 'sv' ? option.nameSv : option.nameFi
+            }
             placeholder={i18n.common.all}
             data-qa="assistance-action-option-filter"
           />
@@ -957,7 +959,7 @@ const ReportByGroupTable = ({
   report: AssistanceNeedsAndActionsReport
   filename: string
 }) => {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({})
 
   const documentDecisionKeys = useMemo(() => {
@@ -1080,7 +1082,7 @@ const ReportByGroupTable = ({
               row.otherAssistanceMeasureCounts[type] ?? 0
           })),
           ...selectedAssistanceActionColumns.map((action) => ({
-            label: action.nameFi,
+            label: lang === 'sv' ? action.nameSv : action.nameFi,
             value: (row: AssistanceNeedsAndActionsReportRow) =>
               row.actionCounts[action.value] ?? 0
           })),
@@ -1143,7 +1145,9 @@ const ReportByGroupTable = ({
               </Th>
             ))}
             {selectedAssistanceActionColumns.map((action) => (
-              <Th key={action.value}>{action.nameFi}</Th>
+              <Th key={action.value}>
+                {lang === 'sv' ? action.nameSv : action.nameFi}
+              </Th>
             ))}
             {featureFlags.assistanceActionOther && (
               <Th>
@@ -1395,7 +1399,7 @@ const ReportByChildTable = ({
   report: AssistanceNeedsAndActionsReportByChild
   filename: string
 }) => {
-  const { i18n } = useTranslation()
+  const { i18n, lang } = useTranslation()
   const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({})
 
   const documentDecisionKeys = useMemo(() => {
@@ -1514,7 +1518,7 @@ const ReportByChildTable = ({
               row.otherAssistanceMeasureCounts[type] ?? 0
           })),
           ...selectedAssistanceActionColumns.map((action) => ({
-            label: action.nameFi,
+            label: lang === 'sv' ? action.nameSv : action.nameFi,
             value: (row: AssistanceNeedsAndActionsReportRowByChild) =>
               row.actions.includes(action.value) ? 1 : 0
           })),
@@ -1696,7 +1700,7 @@ const ReportByChildTable = ({
                         .map((action, index) => (
                           <span key={action.value}>
                             {index !== 0 && <ActionSeparator />}
-                            {action.nameFi}
+                            {lang === 'sv' ? action.nameSv : action.nameFi}
                           </span>
                         ))}
                       {featureFlags.assistanceActionOther &&

@@ -32,8 +32,10 @@ export interface AssistanceAction {
 export interface AssistanceActionOption {
   category: AssistanceActionOptionCategory
   descriptionFi: string | null
+  descriptionSv: string | null
   displayOrder: number | null
   nameFi: string
+  nameSv: string
   validFrom: LocalDate | null
   validTo: LocalDate | null
   value: string
