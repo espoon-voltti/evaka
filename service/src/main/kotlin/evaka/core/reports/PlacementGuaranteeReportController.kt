@@ -4,6 +4,8 @@
 
 package evaka.core.reports
 
+import evaka.core.Audit
+import evaka.core.AuditContext
 import evaka.core.shared.AreaId
 import evaka.core.shared.ChildId
 import evaka.core.shared.DaycareId
@@ -30,19 +32,24 @@ class PlacementGuaranteeReportController(private val accessControl: AccessContro
         @RequestParam date: LocalDate,
         @RequestParam unitId: DaycareId? = null,
     ): List<PlacementGuaranteeReportRow> {
+        val audit = AuditContext().observeDate(date)
+        unitId?.let { audit.add(it) }
         return db.connect { dbc ->
-            dbc.read { tx ->
-                val filter =
-                    accessControl.requireAuthorizationFilter(
-                        tx,
-                        user,
-                        clock,
-                        Action.Unit.READ_PLACEMENT_GUARANTEE_REPORT,
-                    )
-                tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                tx.getPlacementGuaranteeRows(filter, date, unitId)
+                dbc.read { tx ->
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.READ_PLACEMENT_GUARANTEE_REPORT,
+                        )
+                    tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    tx.getPlacementGuaranteeRows(filter, date, unitId).also { rows ->
+                        audit.add(rows.map { it.childId }).add(rows.map { it.unitId })
+                    }
+                }
             }
-        }
+            .also { audit.log(Audit.PlacementGuaranteeReportRead, clock) }
     }
 }
 
