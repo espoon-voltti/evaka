@@ -181,6 +181,89 @@ FOR UPDATE OF mt
     return deleteMessageThreads(threadIds)
 }
 
+/** Selects the finance threads that have had no activity for their whole retention period */
+private fun expiredFinanceThreadIdsQuery(expiresBefore: HelsinkiDateTime) = QuerySql {
+    sql(
+        """
+SELECT ft.id
+FROM message_thread ft
+WHERE
+    EXISTS (
+        SELECT 1
+        FROM message sent
+        JOIN message_account sender ON sender.id = sent.sender_id
+        WHERE sent.thread_id = ft.id AND sender.type = 'FINANCE'
+    ) AND
+    ft.created < ${bind(expiresBefore)} AND
+    NOT EXISTS (
+        SELECT 1
+        FROM message later
+        WHERE later.thread_id = ft.id AND later.created >= ${bind(expiresBefore)}
+    )
+"""
+    )
+}
+
+/**
+ * Deletes the finance threads once all children of the recipient citizen have expired, and there
+ * has been no activity in the message thread since the expiration date.
+ */
+fun Database.Transaction.deleteExpiredFinanceThreads(
+    financeConnectionsQuery: QuerySql,
+    expiredChildIdsQuery: QuerySql,
+    expiresBefore: HelsinkiDateTime,
+    limit: Int,
+): DeletedMessageThreadBatch {
+    val threadIds = createQuery {
+        sql(
+            """
+WITH expired_child (id) AS (
+    ${subquery(expiredChildIdsQuery)}
+), finance_connection AS (
+    ${subquery(financeConnectionsQuery)}
+), expired_finance_thread (id) AS (
+    ${subquery(expiredFinanceThreadIdsQuery(expiresBefore))}
+)
+SELECT mt.id
+FROM expired_finance_thread eft
+JOIN message_thread mt ON mt.id = eft.id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM message m
+    JOIN message_recipients mr ON mr.message_id = m.id
+    JOIN message_account acc ON acc.id = mr.recipient_id AND acc.type = 'CITIZEN'
+    JOIN finance_connection fc ON fc.person_id = acc.person_id
+    WHERE
+        m.thread_id = mt.id AND
+        NOT EXISTS (SELECT 1 FROM expired_child ec WHERE ec.id = fc.child_id)
+)
+LIMIT ${bind(limit)}
+FOR UPDATE OF mt
+"""
+        )
+    }
+        .toList<MessageThreadId>()
+
+    return deleteMessageThreads(threadIds)
+}
+
+fun personIdsWithFinanceThreads() = QuerySql {
+    sql(
+        """
+SELECT DISTINCT recipient.person_id
+FROM message m
+JOIN message_recipients mr ON mr.message_id = m.id
+JOIN message_account recipient ON recipient.id = mr.recipient_id AND recipient.type = 'CITIZEN'
+WHERE EXISTS (
+    SELECT 1
+    FROM message sent
+    JOIN message_account sender ON sender.id = sent.sender_id
+    WHERE sent.thread_id = m.thread_id AND sender.type = 'FINANCE'
+)
+"""
+    )
+}
+
 private fun Database.Transaction.deleteMessageThreads(
     threadIds: List<MessageThreadId>
 ): DeletedMessageThreadBatch {
