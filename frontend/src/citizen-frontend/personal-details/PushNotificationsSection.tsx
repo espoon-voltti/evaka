@@ -10,6 +10,7 @@ import type { DeviceClass } from 'lib-common/generated/api-types/user'
 import type { CitizenPushDevice } from 'lib-common/generated/api-types/webpush'
 import { useMutationResult, useQueryResult } from 'lib-common/query'
 import IconChip from 'lib-components/atoms/IconChip'
+import TextOnlyChip from 'lib-components/atoms/TextOnlyChip'
 import { Button } from 'lib-components/atoms/buttons/Button'
 import { IconOnlyButton } from 'lib-components/atoms/buttons/IconOnlyButton'
 import { MutateButton } from 'lib-components/atoms/buttons/MutateButton'
@@ -19,7 +20,6 @@ import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { InformationText, LabelLike, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
-  faBell,
   faCheckCircle,
   faExclamation,
   faLaptop,
@@ -43,6 +43,7 @@ import {
   sendTestPushNotificationMutation
 } from '../pwa/queries'
 
+import * as chipColors from './chipColors'
 import { SectionTitle } from './components'
 
 export default React.memo(
@@ -96,9 +97,9 @@ export default React.memo(
                   <IconChip
                     label={t.enabled}
                     icon={faCheckCircle}
-                    textColor={colors.accents.a1greenDark}
-                    backgroundColor={colors.accents.a7mint}
-                    iconColor={colors.status.success}
+                    textColor={chipColors.green.fg}
+                    backgroundColor={chipColors.green.bg}
+                    iconColor={chipColors.green.fg}
                     iconBackgroundColor="transparent"
                     data-qa="push-account-status"
                   />
@@ -174,15 +175,13 @@ export default React.memo(
                       </LabelLike>
                       <Chips>
                         {device.id === currentDevice?.id && (
-                          <IconChip
-                            label={t.thisDevice}
-                            icon={faBell}
-                            textColor={colors.grayscale.g100}
-                            backgroundColor={colors.main.m4}
-                            iconColor={colors.grayscale.g0}
-                            iconBackgroundColor={colors.main.m2}
+                          <TextOnlyChip
+                            $backgroundColor={chipColors.blue.bg}
+                            $textColor={chipColors.blue.fg}
                             data-qa="push-device-current"
-                          />
+                          >
+                            {t.thisDevice}
+                          </TextOnlyChip>
                         )}
                         {device.id === currentDevice?.id &&
                           availability.kind === 'blocked' && (
