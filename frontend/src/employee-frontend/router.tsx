@@ -21,6 +21,7 @@ import ApplicationsPage from './components/applications/ApplicationsPage'
 import ChildDocumentEditView from './components/child-documents/ChildDocumentEditView'
 import ChildDocumentReadView from './components/child-documents/ChildDocumentReadView'
 import ChildInformation from './components/child-information/ChildInformation'
+import DataRetentionGraphPage from './components/data-retention-graph/DataRetentionGraphPage'
 import DecisionPage from './components/decision-draft/DecisionDraft'
 import DecisionReasoningsPage from './components/decision-reasonings/DecisionReasoningsPage'
 import DocumentTemplatesPage from './components/document-templates/template-editor/DocumentTemplatesPage'
@@ -123,6 +124,7 @@ interface EmployeeRoute {
 const routes: EmployeeRoute[] = [
   { path: '/login', component: LoginPage, auth: false, title: 'login' },
   { path: '/settings', component: SettingsPage, title: 'settings' },
+  { path: '/data-retention-graph', component: DataRetentionGraphPage },
   {
     path: '/system-notifications',
     component: SystemNotificationsPage,

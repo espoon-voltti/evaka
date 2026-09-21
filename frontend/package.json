@@ -19,6 +19,7 @@
     "e2e": "LC_ALL=fi_FI.UTF-8 tsx node_modules/.bin/playwright test -c src/e2e-test/playwright.config.ts"
   },
   "dependencies": {
+    "@dagrejs/dagre": "3.1.3",
     "@fortawesome/fontawesome-svg-core": "7.3.1",
     "@fortawesome/free-regular-svg-icons": "7.3.1",
     "@fortawesome/free-solid-svg-icons": "7.3.1",

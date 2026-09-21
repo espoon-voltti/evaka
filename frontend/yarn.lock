@@ -1888,6 +1888,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dagrejs/dagre@npm:3.1.3":
+  version: 3.1.3
+  resolution: "@dagrejs/dagre@npm:3.1.3"
+  dependencies:
+    "@dagrejs/graphlib": "npm:4.0.6"
+  checksum: 10/9508557253e00c671818abf3a87545bba9bf51bfcb9f7edbb6a26e452b11d1befefb57a1521a7c059fd64f544f9138792f051344bbe6fdab0c2ced74b3501625
+  languageName: node
+  linkType: hard
+
+"@dagrejs/graphlib@npm:4.0.6":
+  version: 4.0.6
+  resolution: "@dagrejs/graphlib@npm:4.0.6"
+  checksum: 10/f7e1238f32cc101ff115bc11996d20662226ef631cc3563e540470e5724edd9763b5a751f934863a013628a3c7257d4f8d00bd6ac8d4c5c0549a90dc5e4c972d
+  languageName: node
+  linkType: hard
+
 "@date-fns/tz@npm:^1.4.1":
   version: 1.4.1
   resolution: "@date-fns/tz@npm:1.4.1"
@@ -4893,6 +4909,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "evaka-frontend@workspace:."
   dependencies:
+    "@dagrejs/dagre": "npm:3.1.3"
     "@fortawesome/fontawesome-svg-core": "npm:7.3.1"
     "@fortawesome/free-regular-svg-icons": "npm:7.3.1"
     "@fortawesome/free-solid-svg-icons": "npm:7.3.1"
